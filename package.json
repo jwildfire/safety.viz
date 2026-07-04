@@ -1,0 +1,30 @@
+{
+  "name": "safety.viz",
+  "version": "0.1.0",
+  "description": "Consolidated Chart.js charting library for clinical safety graphics.",
+  "private": true,
+  "type": "module",
+  "module": "src/main.js",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "build:check-dist": "node scripts/check-dist-drift.mjs",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.1",
+    "esbuild": "^0.28.1",
+    "prettier": "^3.9.4",
+    "vitest": "^4.1.9"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jwildfire/safety.viz.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jwildfire/safety.viz/issues"
+  },
+  "homepage": "https://github.com/jwildfire/safety.viz#readme"
+}
