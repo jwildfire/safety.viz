@@ -9,6 +9,7 @@ Traceability for the histogram module, per the convention in
 | -------------- | -------------------------- | ----- | ----------------------------------------------------------------- |
 | SH-CTRL-004    | SH-FUNC-004A, SH-FUNC-004B | #2    | normal range checkbox toggles a stable overlay region             |
 | —              | SH-FUNC-011                | #2    | selecting a bar de-emphasizes the bars outside the linked listing |
+| SH-DATA-002    | SH-CFG-005                 | #2    | missing results are dropped with a note                           |
 
 ## Unit evidence (Vitest — `tests/unit/histogram/`)
 

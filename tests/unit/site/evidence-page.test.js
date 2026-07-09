@@ -38,7 +38,7 @@ describe('site generator: coverage parsing', () => {
 
   it('parses the browser and unit tables plus the routing-status tail (#7)', () => {
     expect(coverage.sections.map((s) => s.kind)).toEqual(['browser', 'unit']);
-    expect(coverage.sections[0].rows).toHaveLength(2);
+    expect(coverage.sections[0].rows).toHaveLength(3);
     expect(coverage.sections[1].rows).toHaveLength(2);
     expect(coverage.sections[0].rows[0].test).toBe(
       'normal range checkbox toggles a stable overlay region'
@@ -65,6 +65,13 @@ describe('site generator: evidence page', () => {
     expect(html).toContain('status-fail');
   });
 
+  it('falls back to requirement-ID matching when a browser row wording drifts from the spec name (#7)', () => {
+    // The coverage table says "missing results are dropped with a note"; the
+    // spec name reads differently but evidences the same requirement ID.
+    expect(html).toContain('missing and non-numeric results are dropped with a reported count');
+    expect(html).not.toContain('status-none');
+  });
+
   it('matches unit rows to records through expanded requirement IDs (#7)', () => {
     // The range row must pick up both fixture configure records; the
     // slash row must pick up the listing record.
@@ -84,5 +91,12 @@ describe('site generator: evidence page', () => {
     expect(html).toContain('Source-matrix routing status');
     expect(html).toContain('manual');
     expect(html).toContain('Legacy-API note');
+  });
+
+  it('rewrites repo-relative coverage links to repository URLs (#7)', () => {
+    // The coverage doc lives at docs/, so its ../CONTRIBUTING.md link must
+    // point back at the repository, not at a path inside the site.
+    expect(html).not.toContain('href="../CONTRIBUTING.md"');
+    expect(html).toContain('https://github.com/jwildfire/safety.viz/blob/HEAD/CONTRIBUTING.md');
   });
 });

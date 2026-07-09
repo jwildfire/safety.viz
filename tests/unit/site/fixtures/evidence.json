@@ -18,6 +18,14 @@
       "screenshots": []
     },
     {
+      "test": "SH-DATA-002: missing and non-numeric results are dropped with a reported count and note (#2)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SH-DATA-002"],
+      "issueRefs": [2],
+      "screenshots": []
+    },
+    {
       "test": "SH-CFG-004: numeric bin default follows the pilot (#2)",
       "suite": "unit",
       "status": "pass",

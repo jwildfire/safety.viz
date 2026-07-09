@@ -3,3 +3,4 @@ playwright-report/
 test-results/
 dist/.drift-check-*/
 _api/
+_site/
