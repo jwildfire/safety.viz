@@ -1,0 +1,421 @@
+{
+  "module": "histogram",
+  "records": [
+    {
+      "test": "demo page loads with no console errors (#1)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [1],
+      "screenshots": []
+    },
+    {
+      "test": "SH-API-001: lifecycle API supports init, setData, setSettings, render, resize, and destroy (#2)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SH-API-001"],
+      "issueRefs": [2],
+      "screenshots": []
+    },
+    {
+      "test": "SH-CHART-003/SH-FUNC-010/SH-FUNC-012: selecting a canvas bar opens a linked listing with record details and count (#2)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SH-CHART-003", "SH-FUNC-010", "SH-FUNC-012"],
+      "issueRefs": [2],
+      "screenshots": ["SH-FUNC-010-linked-listing.png"]
+    },
+    {
+      "test": "SH-CHART-004: group-by renders grouped histograms (#2)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SH-CHART-004"],
+      "issueRefs": [2],
+      "screenshots": ["SH-CHART-004-grouped-multiples.png"]
+    },
+    {
+      "test": "SH-CHART-005: p-value annotations display the approximation and validation disclaimer (#2)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SH-CHART-005"],
+      "issueRefs": [2],
+      "screenshots": ["SH-CHART-005-pvalue-disclaimer.png"]
+    },
+    {
+      "test": "SH-CTRL-001/SH-CTRL-002/SH-CTRL-006: renders measure, filter, axis, bin, and group controls (#2)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SH-CTRL-001", "SH-CTRL-002", "SH-CTRL-006"],
+      "issueRefs": [2],
+      "screenshots": ["SH-CTRL-001-control-panel.png"]
+    },
+    {
+      "test": "SH-CTRL-003: participant note updates when a filter is applied (#2)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SH-CTRL-003"],
+      "issueRefs": [2],
+      "screenshots": []
+    },
+    {
+      "test": "SH-CTRL-004/SH-FUNC-004A/SH-FUNC-004B: normal range checkbox toggles a stable overlay region (#2)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SH-CTRL-004", "SH-FUNC-004A", "SH-FUNC-004B"],
+      "issueRefs": [2],
+      "screenshots": ["SH-CTRL-004-normal-range-overlay.png"]
+    },
+    {
+      "test": "SH-CTRL-005/SH-FUNC-005A/SH-FUNC-005B/SH-FUNC-005D: x-axis limit inputs redraw and normalize invalid ranges (#2)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SH-CTRL-005", "SH-FUNC-005A", "SH-FUNC-005B", "SH-FUNC-005D"],
+      "issueRefs": [2],
+      "screenshots": ["SH-CTRL-005-axis-limits.png"]
+    },
+    {
+      "test": "SH-CTRL-007: x-axis tick mode switches labels between centers and bin boundaries (#2)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SH-CTRL-007"],
+      "issueRefs": [2],
+      "screenshots": ["SH-CTRL-007-boundary-ticks.png"]
+    },
+    {
+      "test": "SH-DATA-002: missing and non-numeric results are dropped with a reported count and visible note (#2)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SH-DATA-002"],
+      "issueRefs": [2],
+      "screenshots": ["SH-DATA-002-invalid-data-note.png"]
+    },
+    {
+      "test": "SH-FUNC-004C: normal range control is hidden when the measure has no normal range data (#2)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SH-FUNC-004C"],
+      "issueRefs": [2],
+      "screenshots": ["SH-FUNC-004C-control-hidden-for-pulse.png"]
+    },
+    {
+      "test": "SH-FUNC-005C: x-axis limit inputs support stepper increments of 1 (#2)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SH-FUNC-005C"],
+      "issueRefs": [2],
+      "screenshots": []
+    },
+    {
+      "test": "SH-FUNC-011: selecting a bar de-emphasizes the bars outside the linked listing (#2)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SH-FUNC-011"],
+      "issueRefs": [2],
+      "screenshots": ["SH-FUNC-011-bar-de-emphasis.png"]
+    },
+    {
+      "test": "SH-LIST-001/SH-LIST-002/SH-LIST-003/SH-LIST-004: listing supports pagination, search, sorting, and CSV export (#2)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SH-LIST-001", "SH-LIST-002", "SH-LIST-003", "SH-LIST-004"],
+      "issueRefs": [2],
+      "screenshots": ["SH-LIST-004-search-sort-paginate.png"]
+    },
+    {
+      "test": "evidence normalizer buildEvidence merges suites deterministically and attaches screenshots by requirement ID (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer compareEvidence flags status drift and test-set changes, ignoring screenshots (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer normalizePlaywright walks nested suites into browser-suite records (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer normalizeVitest maps assertion results to unit-suite records (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer parseTestName extracts requirement IDs and issue refs (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "histogram checkInputs SH-DATA-001: missing required variables throw the pilot's error message (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-DATA-001"],
+      "issueRefs": [2],
+      "screenshots": []
+    },
+    {
+      "test": "histogram checkInputs SH-DATA-001: the JSON schema publishes the data contract with required column mappings (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-DATA-001"],
+      "issueRefs": [2],
+      "screenshots": []
+    },
+    {
+      "test": "histogram checkInputs SH-DATA-001/SH-DATA-003: valid long-format data with optional columns passes (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-DATA-001", "SH-DATA-003"],
+      "issueRefs": [2],
+      "screenshots": []
+    },
+    {
+      "test": "histogram configure SH-CFG-004..009: default settings map the standard measure, result, id, unit, and normal-range columns (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-CFG-004"],
+      "issueRefs": [2],
+      "screenshots": []
+    },
+    {
+      "test": "histogram configure SH-CFG-010: filter specs normalize strings and objects to value_col/label pairs (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-CFG-010"],
+      "issueRefs": [2],
+      "screenshots": []
+    },
+    {
+      "test": "histogram configure SH-CFG-011: details default to id, filters, result, normal limits, and unit when unset (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-CFG-011"],
+      "issueRefs": [2],
+      "screenshots": []
+    },
+    {
+      "test": "histogram configure SH-CFG-013/SH-CFG-014: normal-range control and initial display flags are configurable (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-CFG-013", "SH-CFG-014"],
+      "issueRefs": [2],
+      "screenshots": []
+    },
+    {
+      "test": "histogram configure SH-CHART-004: the group list always offers None and adopts an unknown group_by column (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-CHART-004"],
+      "issueRefs": [2],
+      "screenshots": ["SH-CHART-004-grouped-multiples.png"]
+    },
+    {
+      "test": "histogram getPlugins SH-CHART-002: bin descriptions report the count and value range in the pilot's wording (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-CHART-002"],
+      "issueRefs": [2],
+      "screenshots": []
+    },
+    {
+      "test": "histogram getPlugins SH-CHART-005: p-values format with bounded precision (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-CHART-005"],
+      "issueRefs": [2],
+      "screenshots": ["SH-CHART-005-pvalue-disclaimer.png"]
+    },
+    {
+      "test": "histogram getPlugins SH-CHART-005: the group-comparison screen needs 2+ groups and separates distinct groups (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-CHART-005"],
+      "issueRefs": [2],
+      "screenshots": ["SH-CHART-005-pvalue-disclaimer.png"]
+    },
+    {
+      "test": "histogram getPlugins SH-CHART-005: the normality screen needs at least 3 values and stays within (0, 1) (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-CHART-005"],
+      "issueRefs": [2],
+      "screenshots": ["SH-CHART-005-pvalue-disclaimer.png"]
+    },
+    {
+      "test": "histogram getPlugins SH-FUNC-011: selection colors keep the selected bar and fade the rest (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-FUNC-011"],
+      "issueRefs": [2],
+      "screenshots": ["SH-FUNC-011-bar-de-emphasis.png"]
+    },
+    {
+      "test": "histogram getScales buildScales keeps the count axis integer-based at zero (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [2],
+      "screenshots": []
+    },
+    {
+      "test": "histogram getScales formatNumber trims to significant digits and blanks non-finite values (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [2],
+      "screenshots": []
+    },
+    {
+      "test": "histogram getScales SH-CTRL-005: normalizeDomain swaps inverted lower/upper limits (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-CTRL-005"],
+      "issueRefs": [2],
+      "screenshots": ["SH-CTRL-005-axis-limits.png"]
+    },
+    {
+      "test": "histogram getScales SH-CTRL-005/SH-FUNC-005A/SH-FUNC-005B: resolveDomain applies user limits over the data extent (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-CTRL-005", "SH-FUNC-005A", "SH-FUNC-005B"],
+      "issueRefs": [2],
+      "screenshots": ["SH-CTRL-005-axis-limits.png"]
+    },
+    {
+      "test": "histogram getScales SH-CTRL-007: tick labels switch between bin centers and bin boundaries (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-CTRL-007"],
+      "issueRefs": [2],
+      "screenshots": ["SH-CTRL-007-boundary-ticks.png"]
+    },
+    {
+      "test": "histogram listing SH-LIST-002: pagination slices pages and clamps out-of-range page numbers (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-LIST-002"],
+      "issueRefs": [2],
+      "screenshots": []
+    },
+    {
+      "test": "histogram listing SH-LIST-003: CSV export renders label headers and quoted, null-safe values (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-LIST-003"],
+      "issueRefs": [2],
+      "screenshots": []
+    },
+    {
+      "test": "histogram listing SH-LIST-004: search filters rows case-insensitively across listing columns (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-LIST-004"],
+      "issueRefs": [2],
+      "screenshots": ["SH-LIST-004-search-sort-paginate.png"]
+    },
+    {
+      "test": "histogram listing SH-LIST-004: sorting is numeric when both values are numeric, string otherwise, and null-safe (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-LIST-004"],
+      "issueRefs": [2],
+      "screenshots": ["SH-LIST-004-search-sort-paginate.png"]
+    },
+    {
+      "test": "histogram structureData helpers: unique drops empty values; quantile, mean, sd, and precision match the pilot (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [2],
+      "screenshots": []
+    },
+    {
+      "test": "histogram structureData SH-CTRL-002: active filters subset rows by stringified equality (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-CTRL-002"],
+      "issueRefs": [2],
+      "screenshots": []
+    },
+    {
+      "test": "histogram structureData SH-CTRL-005: an explicit domain bounds the bins and clamps edge values (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-CTRL-005"],
+      "issueRefs": [2],
+      "screenshots": ["SH-CTRL-005-axis-limits.png"]
+    },
+    {
+      "test": "histogram structureData SH-CTRL-006: binning algorithms produce the pilot's bin quantities (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-CTRL-006"],
+      "issueRefs": [2],
+      "screenshots": []
+    },
+    {
+      "test": "histogram structureData SH-CTRL-006: custom quantity and custom width drive the bin count (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-CTRL-006"],
+      "issueRefs": [2],
+      "screenshots": []
+    },
+    {
+      "test": "histogram structureData SH-DATA-001: measure labels combine the measure with its unit when present (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-DATA-001"],
+      "issueRefs": [2],
+      "screenshots": []
+    },
+    {
+      "test": "histogram structureData SH-DATA-002: missing and non-numeric results are removed with a reported count (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-DATA-002"],
+      "issueRefs": [2],
+      "screenshots": ["SH-DATA-002-invalid-data-note.png"]
+    },
+    {
+      "test": "histogram structureData SH-FUNC-004C: measures without normal-range data are detected (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-FUNC-004C"],
+      "issueRefs": [2],
+      "screenshots": ["SH-FUNC-004C-control-hidden-for-pulse.png"]
+    },
+    {
+      "test": "safety.viz scaffold SH-API-001: the collection exposes the histogram module factory (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-API-001"],
+      "issueRefs": [2],
+      "screenshots": []
+    },
+    {
+      "test": "safety.viz scaffold src/main.js exports the public module collection (#1)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [1],
+      "screenshots": []
+    }
+  ]
+}

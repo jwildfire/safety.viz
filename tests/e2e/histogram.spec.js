@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import { test, expect } from '@playwright/test';
+import { captureEvidence } from './evidence.js';
 
 // Browser evidence for the histogram module (#2), ported from the safety-histogram
 // pilot's 10 Playwright specs (dev @ a3ff9f7) and extended to the remaining
@@ -81,6 +82,7 @@ test.describe('safety.viz histogram module', () => {
         'X-axis Ticks'
       ])
     );
+    await captureEvidence(page, 'SH-CTRL-001', 'control-panel');
   });
 
   test('SH-CTRL-003: participant note updates when a filter is applied (#2)', async ({ page }) => {
@@ -99,6 +101,7 @@ test.describe('safety.viz histogram module', () => {
     await expect(page.locator('.sh-notes .sh-warning')).toContainText(
       '2 missing or non-numeric results removed.'
     );
+    await captureEvidence(page, 'SH-DATA-002', 'invalid-data-note');
   });
 
   test('SH-CHART-003/SH-FUNC-010/SH-FUNC-012: selecting a canvas bar opens a linked listing with record details and count (#2)', async ({
@@ -114,6 +117,7 @@ test.describe('safety.viz histogram module', () => {
     expect(headers.join(',')).toContain('Lower Limit of Normal');
     expect(headers.join(',')).toContain('Upper Limit of Normal');
     await expect(page.locator('.sh-footnote')).toContainText(/Selected: \d+ records/);
+    await captureEvidence(page, 'SH-FUNC-010', 'linked-listing');
   });
 
   test('SH-FUNC-011: selecting a bar de-emphasizes the bars outside the linked listing (#2)', async ({
@@ -136,6 +140,7 @@ test.describe('safety.viz histogram module', () => {
     });
     expect(colors.isArray).toBe(true);
     expect(colors.selectedColor).not.toBe(colors.otherColor);
+    await captureEvidence(page, 'SH-FUNC-011', 'bar-de-emphasis');
 
     // A re-render clears the selection back to uniform bar colors.
     await page.evaluate(() => window.__safetyHistogramInstance.render());
@@ -172,6 +177,7 @@ test.describe('safety.viz histogram module', () => {
     await page.locator('.sh-listing th', { hasText: /Result/ }).click();
     await expect(page.locator('.sh-listing th', { hasText: 'Result ▼' })).toBeVisible();
     await expect(page.locator('.sh-listing tbody tr').first()).toContainText('SUBJ-030');
+    await captureEvidence(page, 'SH-LIST-004', 'search-sort-paginate');
 
     const download = page.waitForEvent('download');
     await page.locator('.sh-listing-actions button', { hasText: 'Export: CSV' }).click();
@@ -201,6 +207,7 @@ test.describe('safety.viz histogram module', () => {
     expect(overlay.width).toBeGreaterThan(0);
     expect(overlay.left).toBeGreaterThanOrEqual(0);
     expect(overlay.right).toBeGreaterThan(overlay.left);
+    await captureEvidence(page, 'SH-CTRL-004', 'normal-range-overlay');
 
     await page.evaluate(() => {
       const instance = window.__safetyHistogramInstance;
@@ -224,6 +231,7 @@ test.describe('safety.viz histogram module', () => {
     await expect(normalRangeControl).toBeVisible();
     await measureSelect.selectOption('Pulse (bpm)');
     await expect(normalRangeControl).toBeHidden();
+    await captureEvidence(page, 'SH-FUNC-004C', 'control-hidden-for-pulse');
     await measureSelect.selectOption('Albumin (g/dL)');
     await expect(normalRangeControl).toBeVisible();
   });
@@ -249,6 +257,7 @@ test.describe('safety.viz histogram module', () => {
       window.__safetyHistogramInstance.chart.$shBins.at(-1).upper
     ]);
     expect(domain).toEqual([5, 25, 5, 25]);
+    await captureEvidence(page, 'SH-CTRL-005', 'axis-limits');
   });
 
   test('SH-FUNC-005C: x-axis limit inputs support stepper increments of 1 (#2)', async ({
@@ -286,6 +295,7 @@ test.describe('safety.viz histogram module', () => {
       () => window.__safetyHistogramInstance.chart.data.labels
     );
     expect(boundaryLabels.some((label) => label.includes('–'))).toBe(true);
+    await captureEvidence(page, 'SH-CTRL-007', 'boundary-ticks');
   });
 
   test('SH-CHART-005: p-value annotations display the approximation and validation disclaimer (#2)', async ({
@@ -304,6 +314,7 @@ test.describe('safety.viz histogram module', () => {
       'title',
       /not validated/
     );
+    await captureEvidence(page, 'SH-CHART-005', 'pvalue-disclaimer');
   });
 
   test('SH-CHART-004: group-by renders grouped histograms (#2)', async ({ page }) => {
@@ -312,6 +323,7 @@ test.describe('safety.viz histogram module', () => {
       .locator('select')
       .selectOption('SEX');
     await expect(page.locator('.sh-multiple').first()).toBeVisible();
+    await captureEvidence(page, 'SH-CHART-004', 'grouped-multiples');
   });
 
   test('SH-API-001: lifecycle API supports init, setData, setSettings, render, resize, and destroy (#2)', async ({
