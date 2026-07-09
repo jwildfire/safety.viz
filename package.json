@@ -26,5 +26,8 @@
   "bugs": {
     "url": "https://github.com/jwildfire/safety.viz/issues"
   },
-  "homepage": "https://github.com/jwildfire/safety.viz#readme"
+  "homepage": "https://github.com/jwildfire/safety.viz#readme",
+  "dependencies": {
+    "chart.js": "^4.5.1"
+  }
 }

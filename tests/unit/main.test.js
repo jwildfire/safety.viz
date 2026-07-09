@@ -6,4 +6,8 @@ describe('safety.viz scaffold', () => {
     expect(safetyViz).toBeDefined();
     expect(typeof safetyViz).toBe('object');
   });
+
+  it('SH-API-001: the collection exposes the histogram module factory (#2)', () => {
+    expect(typeof safetyViz.histogram).toBe('function');
+  });
 });

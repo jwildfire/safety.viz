@@ -11,7 +11,8 @@ export default defineConfig({
     screenshot: 'only-on-failure'
   },
   webServer: {
-    command: 'python3 -m http.server 8099 --directory tests/e2e/fixtures',
+    // Serve the repo root so fixture pages can load the committed dist/ bundles.
+    command: 'python3 -m http.server 8099 --directory .',
     url: 'http://127.0.0.1:8099/',
     reuseExistingServer: !process.env.CI,
     timeout: 10_000
