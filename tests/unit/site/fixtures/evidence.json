@@ -1,0 +1,53 @@
+{
+  "module": "histogram",
+  "records": [
+    {
+      "test": "SH-CTRL-004/SH-FUNC-004A/SH-FUNC-004B: normal range checkbox toggles a stable overlay region (#2)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SH-CTRL-004", "SH-FUNC-004A", "SH-FUNC-004B"],
+      "issueRefs": [2],
+      "screenshots": ["SH-CTRL-004-normal-range-overlay.png"]
+    },
+    {
+      "test": "SH-FUNC-011: selecting a bar de-emphasizes the bars outside the linked listing (#2)",
+      "suite": "browser",
+      "status": "fail",
+      "requirementIds": ["SH-FUNC-011"],
+      "issueRefs": [2],
+      "screenshots": []
+    },
+    {
+      "test": "SH-CFG-004: numeric bin default follows the pilot (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-CFG-004"],
+      "issueRefs": [2],
+      "screenshots": []
+    },
+    {
+      "test": "SH-CFG-005/SH-CFG-006: missing-value and normal-range defaults follow the pilot (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-CFG-005", "SH-CFG-006"],
+      "issueRefs": [2],
+      "screenshots": []
+    },
+    {
+      "test": "SH-LIST-002/SH-LIST-003: listing search and sort operate on the visible columns (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-LIST-002", "SH-LIST-003"],
+      "issueRefs": [2],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer maps assertion results to unit-suite records (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    }
+  ]
+}
