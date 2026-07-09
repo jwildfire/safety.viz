@@ -12,6 +12,6 @@ Template:
 | -------------- | ----- | ----------------------------- |
 | SH-CTRL-004    | #12   | `tests/e2e/histogram.spec.js` |
 
-No renderer modules exist yet (the histogram lands via #2), so no
-`<module>-coverage.md` file exists yet either — add one alongside each
-module's first PR.
+Current coverage tables:
+
+- [`histogram-coverage.md`](histogram-coverage.md) — the histogram module (#2)

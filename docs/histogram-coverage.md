@@ -1,0 +1,71 @@
+# Histogram requirement coverage
+
+Traceability for the histogram module (extracted from the
+[safety-histogram pilot](https://github.com/jwildfire/safety-histogram), `dev`
+@ a3ff9f7, under [#2](https://github.com/jwildfire/safety.viz/issues/2)), per
+the convention in [CONTRIBUTING.md](../CONTRIBUTING.md). Two requirement-ID
+schemes appear:
+
+- **Module IDs** (`SH-CTRL-*`, `SH-CHART-*`, `SH-LIST-*`, `SH-DATA-*`,
+  `SH-API-*`) — the pilot's condensed matrix, used by
+  [design #2](https://jwildfire.github.io/obot.roadmap/requirements/design/2_design.html)'s
+  decomposition mapping.
+- **Source matrix rows** (`SH-FUNC-*`, `SH-REG-*`, `SH-CFG-*`, …) — the
+  125-row reviewed matrix at
+  [safety.agent `docs/requirements/safety-histogram.md`](https://github.com/jwildfire/safety.agent/blob/main/docs/requirements/safety-histogram.md),
+  whose `Evidence Type` column routes rows (`unit` → Vitest, `browser` →
+  Playwright).
+
+## Browser evidence (Playwright — `tests/e2e/histogram.spec.js`)
+
+| Requirement ID                      | Source matrix rows                       | Issue | Test                                                                        |
+| ----------------------------------- | ---------------------------------------- | ----- | --------------------------------------------------------------------------- |
+| SH-CTRL-001/SH-CTRL-002/SH-CTRL-006 | SH-FUNC-001, SH-FUNC-002                 | #2    | renders measure, filter, axis, bin, and group controls                      |
+| SH-CTRL-003                         | SH-FUNC-003                              | #2    | participant note updates when a filter is applied                           |
+| SH-DATA-002                         | SH-CFG-005                               | #2    | missing and non-numeric results are dropped with a reported count and note  |
+| SH-CHART-003                        | SH-FUNC-008, SH-FUNC-010, SH-FUNC-012    | #2    | selecting a canvas bar opens a linked listing with record details and count |
+| —                                   | SH-FUNC-011                              | #2    | selecting a bar de-emphasizes the bars outside the linked listing           |
+| SH-LIST-001/002/003/004             | SH-FUNC-008                              | #2    | listing supports pagination, search, sorting, and CSV export                |
+| SH-CTRL-004                         | SH-FUNC-004A, SH-FUNC-004B               | #2    | normal range checkbox toggles a stable overlay region                       |
+| —                                   | SH-FUNC-004C                             | #2    | normal range control is hidden when the measure has no normal range data    |
+| SH-CTRL-005                         | SH-FUNC-005A, SH-FUNC-005B, SH-FUNC-005D | #2    | x-axis limit inputs redraw and normalize invalid ranges                     |
+| —                                   | SH-FUNC-005C                             | #2    | x-axis limit inputs support stepper increments of 1                         |
+| SH-CTRL-007                         | —                                        | #2    | x-axis tick mode switches labels between centers and bin boundaries         |
+| SH-CHART-005                        | — (see SH-REG-078 note)                  | #2    | p-value annotations display the approximation and validation disclaimer     |
+| SH-CHART-004                        | —                                        | #2    | group-by renders grouped histograms                                         |
+| SH-API-001 (module scheme)          | — (see legacy-API note)                  | #2    | lifecycle API supports init, setData, setSettings, render, resize, destroy  |
+
+## Unit evidence (Vitest — `tests/unit/histogram/`)
+
+| Requirement ID               | Source matrix rows         | Issue | Test file               |
+| ---------------------------- | -------------------------- | ----- | ----------------------- |
+| SH-CFG-004..009 (defaults)   | SH-CFG-004..009            | #2    | `configure.test.js`     |
+| SH-CFG-010/011, SH-CHART-004 | SH-CFG-010, SH-CFG-011     | #2    | `configure.test.js`     |
+| SH-CFG-013/014               | SH-CFG-013, SH-CFG-014     | #2    | `configure.test.js`     |
+| SH-DATA-001/002              | SH-CFG-005                 | #2    | `structureData.test.js` |
+| SH-CTRL-002/005/006          | SH-FUNC-004C (detection)   | #2    | `structureData.test.js` |
+| SH-CTRL-005/007              | SH-FUNC-005A, SH-FUNC-005B | #2    | `getScales.test.js`     |
+| SH-CHART-002/005             | SH-FUNC-011 (colors)       | #2    | `getPlugins.test.js`    |
+| SH-LIST-002/003/004          | —                          | #2    | `listing.test.js`       |
+| SH-DATA-001/003 (schema)     | SH-DATA-001                | #2    | `checkInputs.test.js`   |
+| SH-API-001 (module export)   | —                          | #2    | `../main.test.js`       |
+
+## Source-matrix routing status (125 rows)
+
+- **`browser` (11 rows):** the 10 reviewed rows are covered above
+  (SH-FUNC-004A–C, SH-FUNC-005A–D, SH-FUNC-010, SH-FUNC-011, SH-FUNC-012).
+  **SH-REG-078** (status `replaced`) is superseded by design #2's p-value
+  disposition: the shipped approximate screening annotations intentionally
+  carry the validation disclaimer, so no test asserts the legacy text's
+  removal.
+- **`manual` (8 rows):** SH-REG-044/045/047/058/059/061/081/082 carry manual
+  review evidence and are out of scope for automated coverage.
+- **`planned` (106 rows):** not yet routed to `unit`/`browser` in the source
+  matrix. Where a test here already evidences a planned row it is listed under
+  "Source matrix rows" above; re-typing those rows (`planned` → `unit`/
+  `browser`) with links back to these tests is a safety.agent follow-up.
+
+**Legacy-API note:** source-matrix SH-API-001 ("a factory to create a custom
+Webcharts chart object") describes the legacy Webcharts API, which the designs
+intentionally do not preserve (pilot SH-API-002). The module ships the pilot's
+lifecycle API instead — SH-API-001 in the module scheme.
