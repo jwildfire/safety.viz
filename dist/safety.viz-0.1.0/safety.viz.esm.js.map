@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/main.js"],
+  "sourcesContent": ["// Public module collection. Renderer modules register themselves here as they land\n// (histogram is first, via #2); nothing to export yet.\nexport default {};\n"],
+  "mappings": ";AAEA,IAAO,eAAQ,CAAC;",
+  "names": []
+}
