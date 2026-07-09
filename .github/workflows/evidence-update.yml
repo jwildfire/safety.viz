@@ -8,11 +8,6 @@ name: Update evidence baselines
 
 on:
   workflow_dispatch:
-  # TEMPORARY bootstrap trigger: workflow_dispatch only registers once this
-  # file reaches the default branch, so the first baseline generation runs on
-  # push to this feature branch. Removed before merge.
-  push:
-    branches: [5-evidence-pipeline]
 
 permissions:
   contents: write

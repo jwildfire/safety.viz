@@ -47,13 +47,17 @@ export function normalizePlaywright(json) {
   return records;
 }
 
-// Screenshot files are named `${requirementId}_${slug}.png`; each attaches to
-// every record evidencing that requirement ID.
+// Screenshot files are named `${requirementId}-${slug}.png` (Playwright
+// sanitizes snapshot names, so dashes are the canonical separator); each
+// attaches to every record evidencing that requirement ID.
 export function buildEvidence({ module, vitest, playwright, screenshots = [] }) {
   const records = [...normalizeVitest(vitest || {}), ...normalizePlaywright(playwright || {})];
   for (const rec of records) {
     rec.screenshots = screenshots
-      .filter((file) => rec.requirementIds.includes(file.split('_')[0].replace(/\.png$/, '')))
+      .filter((file) => {
+        const prefix = file.match(/^SH-[A-Z]+-\d+[A-D]?/);
+        return prefix && rec.requirementIds.includes(prefix[0]);
+      })
       .sort();
   }
   records.sort((a, b) => a.suite.localeCompare(b.suite) || a.test.localeCompare(b.test));

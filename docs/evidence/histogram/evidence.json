@@ -23,7 +23,7 @@
       "status": "pass",
       "requirementIds": ["SH-CHART-003", "SH-FUNC-010", "SH-FUNC-012"],
       "issueRefs": [2],
-      "screenshots": []
+      "screenshots": ["SH-FUNC-010-linked-listing.png"]
     },
     {
       "test": "SH-CHART-004: group-by renders grouped histograms (#2)",
@@ -31,7 +31,7 @@
       "status": "pass",
       "requirementIds": ["SH-CHART-004"],
       "issueRefs": [2],
-      "screenshots": []
+      "screenshots": ["SH-CHART-004-grouped-multiples.png"]
     },
     {
       "test": "SH-CHART-005: p-value annotations display the approximation and validation disclaimer (#2)",
@@ -39,7 +39,7 @@
       "status": "pass",
       "requirementIds": ["SH-CHART-005"],
       "issueRefs": [2],
-      "screenshots": []
+      "screenshots": ["SH-CHART-005-pvalue-disclaimer.png"]
     },
     {
       "test": "SH-CTRL-001/SH-CTRL-002/SH-CTRL-006: renders measure, filter, axis, bin, and group controls (#2)",
@@ -47,7 +47,7 @@
       "status": "pass",
       "requirementIds": ["SH-CTRL-001", "SH-CTRL-002", "SH-CTRL-006"],
       "issueRefs": [2],
-      "screenshots": []
+      "screenshots": ["SH-CTRL-001-control-panel.png"]
     },
     {
       "test": "SH-CTRL-003: participant note updates when a filter is applied (#2)",
@@ -63,7 +63,7 @@
       "status": "pass",
       "requirementIds": ["SH-CTRL-004", "SH-FUNC-004A", "SH-FUNC-004B"],
       "issueRefs": [2],
-      "screenshots": []
+      "screenshots": ["SH-CTRL-004-normal-range-overlay.png"]
     },
     {
       "test": "SH-CTRL-005/SH-FUNC-005A/SH-FUNC-005B/SH-FUNC-005D: x-axis limit inputs redraw and normalize invalid ranges (#2)",
@@ -71,7 +71,7 @@
       "status": "pass",
       "requirementIds": ["SH-CTRL-005", "SH-FUNC-005A", "SH-FUNC-005B", "SH-FUNC-005D"],
       "issueRefs": [2],
-      "screenshots": []
+      "screenshots": ["SH-CTRL-005-axis-limits.png"]
     },
     {
       "test": "SH-CTRL-007: x-axis tick mode switches labels between centers and bin boundaries (#2)",
@@ -79,7 +79,7 @@
       "status": "pass",
       "requirementIds": ["SH-CTRL-007"],
       "issueRefs": [2],
-      "screenshots": []
+      "screenshots": ["SH-CTRL-007-boundary-ticks.png"]
     },
     {
       "test": "SH-DATA-002: missing and non-numeric results are dropped with a reported count and visible note (#2)",
@@ -87,7 +87,7 @@
       "status": "pass",
       "requirementIds": ["SH-DATA-002"],
       "issueRefs": [2],
-      "screenshots": []
+      "screenshots": ["SH-DATA-002-invalid-data-note.png"]
     },
     {
       "test": "SH-FUNC-004C: normal range control is hidden when the measure has no normal range data (#2)",
@@ -95,7 +95,7 @@
       "status": "pass",
       "requirementIds": ["SH-FUNC-004C"],
       "issueRefs": [2],
-      "screenshots": []
+      "screenshots": ["SH-FUNC-004C-control-hidden-for-pulse.png"]
     },
     {
       "test": "SH-FUNC-005C: x-axis limit inputs support stepper increments of 1 (#2)",
@@ -111,7 +111,7 @@
       "status": "pass",
       "requirementIds": ["SH-FUNC-011"],
       "issueRefs": [2],
-      "screenshots": []
+      "screenshots": ["SH-FUNC-011-bar-de-emphasis.png"]
     },
     {
       "test": "SH-LIST-001/SH-LIST-002/SH-LIST-003/SH-LIST-004: listing supports pagination, search, sorting, and CSV export (#2)",
@@ -119,7 +119,7 @@
       "status": "pass",
       "requirementIds": ["SH-LIST-001", "SH-LIST-002", "SH-LIST-003", "SH-LIST-004"],
       "issueRefs": [2],
-      "screenshots": []
+      "screenshots": ["SH-LIST-004-search-sort-paginate.png"]
     },
     {
       "test": "evidence normalizer buildEvidence merges suites deterministically and attaches screenshots by requirement ID (#5)",
@@ -223,7 +223,7 @@
       "status": "pass",
       "requirementIds": ["SH-CHART-004"],
       "issueRefs": [2],
-      "screenshots": []
+      "screenshots": ["SH-CHART-004-grouped-multiples.png"]
     },
     {
       "test": "histogram getPlugins SH-CHART-002: bin descriptions report the count and value range in the pilot's wording (#2)",
@@ -239,7 +239,7 @@
       "status": "pass",
       "requirementIds": ["SH-CHART-005"],
       "issueRefs": [2],
-      "screenshots": []
+      "screenshots": ["SH-CHART-005-pvalue-disclaimer.png"]
     },
     {
       "test": "histogram getPlugins SH-CHART-005: the group-comparison screen needs 2+ groups and separates distinct groups (#2)",
@@ -247,7 +247,7 @@
       "status": "pass",
       "requirementIds": ["SH-CHART-005"],
       "issueRefs": [2],
-      "screenshots": []
+      "screenshots": ["SH-CHART-005-pvalue-disclaimer.png"]
     },
     {
       "test": "histogram getPlugins SH-CHART-005: the normality screen needs at least 3 values and stays within (0, 1) (#2)",
@@ -255,7 +255,7 @@
       "status": "pass",
       "requirementIds": ["SH-CHART-005"],
       "issueRefs": [2],
-      "screenshots": []
+      "screenshots": ["SH-CHART-005-pvalue-disclaimer.png"]
     },
     {
       "test": "histogram getPlugins SH-FUNC-011: selection colors keep the selected bar and fade the rest (#2)",
@@ -263,7 +263,7 @@
       "status": "pass",
       "requirementIds": ["SH-FUNC-011"],
       "issueRefs": [2],
-      "screenshots": []
+      "screenshots": ["SH-FUNC-011-bar-de-emphasis.png"]
     },
     {
       "test": "histogram getScales buildScales keeps the count axis integer-based at zero (#2)",
@@ -287,7 +287,7 @@
       "status": "pass",
       "requirementIds": ["SH-CTRL-005"],
       "issueRefs": [2],
-      "screenshots": []
+      "screenshots": ["SH-CTRL-005-axis-limits.png"]
     },
     {
       "test": "histogram getScales SH-CTRL-005/SH-FUNC-005A/SH-FUNC-005B: resolveDomain applies user limits over the data extent (#2)",
@@ -295,7 +295,7 @@
       "status": "pass",
       "requirementIds": ["SH-CTRL-005", "SH-FUNC-005A", "SH-FUNC-005B"],
       "issueRefs": [2],
-      "screenshots": []
+      "screenshots": ["SH-CTRL-005-axis-limits.png"]
     },
     {
       "test": "histogram getScales SH-CTRL-007: tick labels switch between bin centers and bin boundaries (#2)",
@@ -303,7 +303,7 @@
       "status": "pass",
       "requirementIds": ["SH-CTRL-007"],
       "issueRefs": [2],
-      "screenshots": []
+      "screenshots": ["SH-CTRL-007-boundary-ticks.png"]
     },
     {
       "test": "histogram listing SH-LIST-002: pagination slices pages and clamps out-of-range page numbers (#2)",
@@ -327,7 +327,7 @@
       "status": "pass",
       "requirementIds": ["SH-LIST-004"],
       "issueRefs": [2],
-      "screenshots": []
+      "screenshots": ["SH-LIST-004-search-sort-paginate.png"]
     },
     {
       "test": "histogram listing SH-LIST-004: sorting is numeric when both values are numeric, string otherwise, and null-safe (#2)",
@@ -335,7 +335,7 @@
       "status": "pass",
       "requirementIds": ["SH-LIST-004"],
       "issueRefs": [2],
-      "screenshots": []
+      "screenshots": ["SH-LIST-004-search-sort-paginate.png"]
     },
     {
       "test": "histogram structureData helpers: unique drops empty values; quantile, mean, sd, and precision match the pilot (#2)",
@@ -359,7 +359,7 @@
       "status": "pass",
       "requirementIds": ["SH-CTRL-005"],
       "issueRefs": [2],
-      "screenshots": []
+      "screenshots": ["SH-CTRL-005-axis-limits.png"]
     },
     {
       "test": "histogram structureData SH-CTRL-006: binning algorithms produce the pilot's bin quantities (#2)",
@@ -391,7 +391,7 @@
       "status": "pass",
       "requirementIds": ["SH-DATA-002"],
       "issueRefs": [2],
-      "screenshots": []
+      "screenshots": ["SH-DATA-002-invalid-data-note.png"]
     },
     {
       "test": "histogram structureData SH-FUNC-004C: measures without normal-range data are detected (#2)",
@@ -399,7 +399,7 @@
       "status": "pass",
       "requirementIds": ["SH-FUNC-004C"],
       "issueRefs": [2],
-      "screenshots": []
+      "screenshots": ["SH-FUNC-004C-control-hidden-for-pulse.png"]
     },
     {
       "test": "safety.viz scaffold SH-API-001: the collection exposes the histogram module factory (#2)",

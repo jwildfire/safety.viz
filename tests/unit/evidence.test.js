@@ -101,14 +101,14 @@ describe('evidence normalizer', () => {
       module: 'histogram',
       vitest: VITEST_FIXTURE,
       playwright: PLAYWRIGHT_FIXTURE,
-      screenshots: ['SH-CTRL-004_overlay-visible.png', 'SH-FUNC-011_bar-de-emphasis.png']
+      screenshots: ['SH-CTRL-004-normal-range-overlay.png', 'SH-FUNC-011-bar-de-emphasis.png']
     });
     expect(evidence.module).toBe('histogram');
     expect(evidence.records).toHaveLength(4);
     // Deterministic: no timestamps, stable sort by suite then test name.
     expect(JSON.stringify(evidence)).not.toMatch(/\d{4}-\d{2}-\d{2}T/);
     const overlay = evidence.records.find((r) => r.requirementIds.includes('SH-CTRL-004'));
-    expect(overlay.screenshots).toEqual(['SH-CTRL-004_overlay-visible.png']);
+    expect(overlay.screenshots).toEqual(['SH-CTRL-004-normal-range-overlay.png']);
     const unitRec = evidence.records.find((r) => r.requirementIds.includes('SH-DATA-002'));
     expect(unitRec.screenshots).toEqual([]);
     expect(
@@ -133,7 +133,7 @@ describe('evidence normalizer', () => {
       module: 'histogram',
       vitest: VITEST_FIXTURE,
       playwright: PLAYWRIGHT_FIXTURE,
-      screenshots: ['SH-CTRL-004_overlay-visible.png']
+      screenshots: ['SH-CTRL-004-normal-range-overlay.png']
     });
     const same = buildEvidence({
       module: 'histogram',

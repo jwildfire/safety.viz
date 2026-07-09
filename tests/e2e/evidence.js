@@ -11,7 +11,7 @@ import { expect } from '@playwright/test';
 export const CANONICAL = process.platform === 'linux';
 
 export async function captureEvidence(page, requirementId, slug) {
-  const name = `${requirementId}_${slug}.png`;
+  const name = `${requirementId}-${slug}.png`;
   if (CANONICAL) {
     await expect(page).toHaveScreenshot(name);
   } else {
