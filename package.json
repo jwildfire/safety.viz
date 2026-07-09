@@ -16,6 +16,7 @@
   "devDependencies": {
     "@playwright/test": "^1.61.1",
     "esbuild": "^0.28.1",
+    "jsdoc": "^4.0.5",
     "prettier": "^3.9.4",
     "vitest": "^4.1.9"
   },
