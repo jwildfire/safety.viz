@@ -1,0 +1,195 @@
+[
+  {
+    "kind": "typedef",
+    "name": "HistogramSettings",
+    "longname": "HistogramSettings",
+    "scope": "global",
+    "description": "Rendering and data-mapping settings for the histogram module.",
+    "type": { "names": ["Object"] },
+    "properties": [
+      {
+        "type": { "names": ["string"] },
+        "optional": true,
+        "defaultvalue": "'TEST'",
+        "description": "Column holding the measure name.",
+        "name": "measure_col"
+      },
+      {
+        "type": { "names": ["boolean"] },
+        "optional": true,
+        "defaultvalue": true,
+        "description": "Show the normal-range control.",
+        "name": "normal_range"
+      },
+      {
+        "type": { "names": ["string"] },
+        "optional": true,
+        "nullable": true,
+        "defaultvalue": null,
+        "description": "Measure selected on first render.",
+        "name": "start_value"
+      },
+      {
+        "type": { "names": ["Array.<(string|Object)>"] },
+        "optional": true,
+        "defaultvalue": "[]",
+        "description": "Filter columns rendered as controls.",
+        "name": "filters"
+      },
+      {
+        "type": { "names": ["number"] },
+        "optional": true,
+        "defaultvalue": 10,
+        "name": "page_size"
+      }
+    ],
+    "meta": { "filename": "configure.js" }
+  },
+  {
+    "kind": "constant",
+    "name": "DEFAULT_SETTINGS",
+    "longname": "DEFAULT_SETTINGS",
+    "scope": "global",
+    "type": { "names": ["HistogramSettings"] },
+    "description": "Built-in defaults for every histogram setting.",
+    "meta": { "filename": "configure.js" }
+  },
+  {
+    "kind": "constant",
+    "name": "DEFAULT_SETTINGS",
+    "longname": "DEFAULT_SETTINGS",
+    "scope": "global",
+    "undocumented": true,
+    "params": [],
+    "meta": { "filename": "configure.js" }
+  },
+  {
+    "kind": "member",
+    "name": "measure_col",
+    "longname": "DEFAULT_SETTINGS.measure_col",
+    "memberof": "DEFAULT_SETTINGS",
+    "scope": "static",
+    "undocumented": true,
+    "meta": { "filename": "configure.js" }
+  },
+  {
+    "kind": "class",
+    "name": "SafetyHistogram",
+    "longname": "SafetyHistogram",
+    "scope": "global",
+    "description": "Interactive safety histogram bound to a DOM element.",
+    "meta": { "filename": "histogram.js" }
+  },
+  {
+    "kind": "function",
+    "name": "init",
+    "longname": "SafetyHistogram#init",
+    "memberof": "SafetyHistogram",
+    "scope": "instance",
+    "description": "Load data and render the histogram.",
+    "params": [
+      {
+        "type": { "names": ["Array.<Object>"] },
+        "description": "Long-format result records.",
+        "name": "data"
+      }
+    ],
+    "returns": [
+      {
+        "type": { "names": ["SafetyHistogram"] },
+        "description": "The instance, for chaining."
+      }
+    ],
+    "meta": { "filename": "histogram.js" }
+  },
+  {
+    "kind": "function",
+    "name": "setSettings",
+    "longname": "SafetyHistogram#setSettings",
+    "memberof": "SafetyHistogram",
+    "scope": "instance",
+    "description": "Merge new settings onto the current ones and re-render.",
+    "params": [
+      {
+        "type": { "names": ["HistogramSettings"] },
+        "optional": true,
+        "defaultvalue": "{}",
+        "description": "Setting overrides.",
+        "name": "settings"
+      }
+    ],
+    "returns": [
+      {
+        "type": { "names": ["SafetyHistogram"] },
+        "description": "The instance, for chaining."
+      }
+    ],
+    "meta": { "filename": "histogram.js" }
+  },
+  {
+    "kind": "function",
+    "name": "renderShell",
+    "longname": "SafetyHistogram#renderShell",
+    "memberof": "SafetyHistogram",
+    "scope": "instance",
+    "access": "private",
+    "params": [],
+    "description": "",
+    "meta": { "filename": "histogram.js" }
+  },
+  {
+    "kind": "function",
+    "name": "destroyCharts",
+    "longname": "SafetyHistogram#destroyCharts",
+    "memberof": "SafetyHistogram",
+    "scope": "instance",
+    "undocumented": true,
+    "params": [],
+    "meta": { "filename": "histogram.js" }
+  },
+  {
+    "kind": "function",
+    "name": "exports",
+    "longname": "module.exports",
+    "memberof": "module",
+    "scope": "static",
+    "description": "Create a safety histogram inside the target element.",
+    "params": [
+      {
+        "type": { "names": ["string", "HTMLElement"] },
+        "optional": true,
+        "defaultvalue": "'body'",
+        "description": "Target node or CSS selector.",
+        "name": "element"
+      },
+      {
+        "type": { "names": ["HistogramSettings"] },
+        "optional": true,
+        "defaultvalue": "{}",
+        "description": "Setting overrides merged onto DEFAULT_SETTINGS.",
+        "name": "settings"
+      }
+    ],
+    "returns": [
+      {
+        "type": { "names": ["SafetyHistogram"] },
+        "description": "A rendered, interactive histogram instance."
+      }
+    ],
+    "meta": { "filename": "histogram.js" }
+  },
+  {
+    "kind": "function",
+    "name": "histogram",
+    "longname": "histogram",
+    "scope": "global",
+    "undocumented": true,
+    "params": [],
+    "meta": { "filename": "histogram.js" }
+  },
+  {
+    "kind": "package",
+    "longname": "package:undefined",
+    "description": ""
+  }
+]

@@ -14,6 +14,7 @@
     },
     "settings": {
       "type": "object",
+      "description": "Column mappings and rendering options; merged onto the module's DEFAULT_SETTINGS, so only overrides need to be supplied.",
       "required": ["measure_col", "value_col"],
       "properties": {
         "measure_col": {
