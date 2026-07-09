@@ -8,6 +8,7 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "build:check-dist": "node scripts/check-dist-drift.mjs",
+    "docs:api": "node scripts/api/build-api-data.mjs",
     "test": "vitest run",
     "test:e2e": "playwright test",
     "format": "prettier --write .",

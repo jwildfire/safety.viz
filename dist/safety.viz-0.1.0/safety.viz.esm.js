@@ -11260,6 +11260,7 @@ var histogram_default = {
     },
     settings: {
       type: "object",
+      description: "Column mappings and rendering options; merged onto the module's DEFAULT_SETTINGS, so only overrides need to be supplied.",
       required: ["measure_col", "value_col"],
       properties: {
         measure_col: {
@@ -11724,6 +11725,10 @@ var SafetyHistogram = class {
     };
     this.renderShell();
   }
+  /**
+   * Build the static DOM shell the charts and listing render into.
+   * @private
+   */
   renderShell() {
     this.element.innerHTML = "";
     this.root = createElement("div", "safety-histogram");
@@ -11749,6 +11754,10 @@ var SafetyHistogram = class {
     this.element.append(this.root);
     this.applyStyles();
   }
+  /**
+   * Inject the module stylesheet once per document.
+   * @private
+   */
   applyStyles() {
     if (document.getElementById("safety-histogram-nextgen-styles")) return;
     const style = document.createElement("style");
@@ -11757,10 +11766,25 @@ var SafetyHistogram = class {
 .safety-histogram{width:100%;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#1f2933}.sh-controls{display:flex;flex-wrap:wrap;align-items:flex-start;gap:.5rem;margin:.75rem 0 1rem;padding:.75rem;border:1px solid #d8dee4;border-radius:8px;background:#f6f8fa}.sh-control{display:inline-block;vertical-align:top;min-width:140px;margin:2px}.sh-control label{display:block;font-size:.8rem;font-weight:700;margin-bottom:.2rem}.sh-control select,.sh-control input{width:100%;box-sizing:border-box;padding:.35rem;border:1px solid #b8c0cc;border-radius:4px;background:white}.sh-control-inline{display:flex;align-items:center;gap:.4rem}.sh-control-fieldset{display:inline-flex;flex-wrap:wrap;gap:.25rem;margin:0 5px 0 0;padding:.35rem .45rem .5rem;border:1px solid #b8c0cc;border-radius:6px;background:white}.sh-control-fieldset legend{font-size:.78rem;font-weight:700;padding:0 .25rem;color:#52616f}.sh-control-fieldset .sh-control{margin:0 2px 2px}.sh-control-fieldset.sh-filters-fieldset .sh-control{min-width:150px}.sh-control-fieldset.sh-x-axis-limits-fieldset .sh-control,.sh-control-fieldset.sh-bins-fieldset .sh-control{min-width:110px}.sh-control-standalone{background:white;border:1px solid #d8dee4;border-radius:6px;padding:.35rem .45rem .5rem}.sh-group-controls{display:flex;justify-content:flex-end;margin:.5rem 0}.sh-group-controls .sh-control{min-width:180px}.sh-notes{display:flex;justify-content:space-between;gap:1rem;font-size:.9rem;margin:.5rem 0}.sh-warning{color:#9a3412}.sh-chart-wrap{height:460px;position:relative;border:1px solid #d8dee4;border-radius:8px;padding:1rem;background:white}.sh-footnote{margin:.75rem 0;padding:.65rem;border-top:1px solid #d8dee4;border-bottom:1px solid #d8dee4}.sh-multiples{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;margin-top:1rem}.sh-multiple{border:1px solid #d8dee4;border-radius:8px;padding:.75rem;background:#fff}.sh-multiple h3{font-size:1rem;margin:0 0 .5rem}.sh-multiple-canvas{height:220px}.sh-listing{margin-top:1rem}.sh-listing table{width:100%;border-collapse:collapse;font-size:.9rem}.sh-listing th,.sh-listing td{border:1px solid #d8dee4;padding:.35rem;text-align:left}.sh-listing th{background:#f6f8fa;cursor:pointer}.sh-listing-actions{display:flex;align-items:center;justify-content:space-between;gap:.75rem;margin:.5rem 0}.sh-listing-tools{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}.sh-listing-search{padding:.35rem;border:1px solid #b8c0cc;border-radius:4px}.sh-listing-actions button{padding:.35rem .6rem}.sh-annotation,.sh-main-annotation{font-size:.85rem;background:rgba(255,255,255,.9);border:1px solid #d8dee4;border-radius:4px;padding:.25rem .4rem}.sh-main-annotation{position:absolute;right:1.25rem;top:1.25rem;z-index:2}.sh-info{text-decoration:none}.sh-hidden{display:none!important}`;
     document.head.append(style);
   }
+  /**
+   * Load data and render: an alias for setData that keeps the pilot's
+   * two-step create-then-init call shape working (SH-API-001).
+   * @param {Object[]} data Long-format result records matching the histogram data contract.
+   * @returns {SafetyHistogram} The instance, for chaining.
+   */
   init(data) {
     this.setData(data);
     return this;
   }
+  /**
+   * Replace the bound data and re-render. The data is validated against the
+   * settings mapping (throwing, and rendering the message into the target
+   * element, when required columns are missing), rows with missing or
+   * non-numeric results are removed with a console warning, and the
+   * controls are rebuilt from the new data's measures and filter values.
+   * @param {Object[]} data Long-format result records matching the histogram data contract.
+   * @returns {SafetyHistogram} The instance, for chaining.
+   */
   setData(data) {
     this.rawData = Array.isArray(data) ? data : [];
     this.validateAndCleanData();
@@ -11768,12 +11792,22 @@ var SafetyHistogram = class {
     this.render();
     return this;
   }
+  /**
+   * Merge setting overrides onto the current settings, re-normalize them
+   * (same rules as the factory), rebuild the controls, and re-render.
+   * @param {HistogramSettings} settings Setting overrides to merge.
+   * @returns {SafetyHistogram} The instance, for chaining.
+   */
   setSettings(settings) {
     this.settings = syncSettings({ ...this.settings, ...settings });
     this.buildControls();
     this.render();
     return this;
   }
+  /**
+   * Validate the raw data against the settings mapping and drop unusable rows.
+   * @private
+   */
   validateAndCleanData() {
     try {
       checkInputs(this.rawData, this.settings);
@@ -11793,9 +11827,17 @@ var SafetyHistogram = class {
     }
     this.state.measure = measures.includes(this.state.measure) ? this.state.measure : measures[0];
   }
+  /**
+   * Sorted distinct measure labels present in the cleaned data.
+   * @private
+   */
   measures() {
     return unique(this.cleanData.map((row) => measureLabel(row, this.settings))).sort();
   }
+  /**
+   * Rebuild the measure/filter/bin/normal-range/group controls from data + state.
+   * @private
+   */
   buildControls() {
     this.controls.innerHTML = "";
     this.groupControls.innerHTML = "";
@@ -11937,22 +11979,46 @@ var SafetyHistogram = class {
     };
     this.updateNormalRangeControl();
   }
-  // Hides the normal-range control for measures without normal data (SH-FUNC-004C).
+  /**
+   * Hides the normal-range control for measures without normal data (SH-FUNC-004C).
+   * @private
+   */
   updateNormalRangeControl() {
     if (!this.normalRangeControl) return;
     const available = measureHasNormalRange(this.currentMeasureData(), this.settings);
     this.normalRangeControl.classList.toggle("sh-hidden", !available);
   }
+  /**
+   * Clear the x-axis limit overrides when the measure changes.
+   * @private
+   */
   resetDomain() {
     this.state.lower = null;
     this.state.upper = null;
   }
+  /**
+   * Cleaned rows for the selected measure.
+   * @private
+   */
   currentMeasureData() {
     return this.cleanData.filter((row) => measureLabel(row, this.settings) === this.state.measure);
   }
+  /**
+   * Cleaned rows for the selected measure after the active filters.
+   * @private
+   */
   currentFilteredData() {
     return applyFilters(this.currentMeasureData(), this.state.filters);
   }
+  /**
+   * Redraw everything from the current data, settings, and control state:
+   * destroys the live charts, clears the listing and any bar selection,
+   * then draws the main chart, the grouped small multiples, and the
+   * participant-count notes. Called automatically by the controls and the
+   * data/settings setters; call it directly only after mutating state by
+   * hand.
+   * @returns {void}
+   */
   render() {
     this.destroyCharts();
     this.listingWrap.innerHTML = "";
@@ -11973,6 +12039,10 @@ var SafetyHistogram = class {
     this.drawMultiples();
     this.updateNotes();
   }
+  /**
+   * Refresh the shown/total participant counts and removed-record note.
+   * @private
+   */
   updateNotes() {
     const totalParticipants = unique(
       this.currentMeasureData().map((row) => row[this.settings.id_col])
@@ -11983,6 +12053,10 @@ var SafetyHistogram = class {
     const pct = totalParticipants ? (shownParticipants / totalParticipants * 100).toFixed(1) : "0.0";
     this.notes.innerHTML = `<span>${shownParticipants} of ${totalParticipants} participants shown (${pct}%).</span><span class="sh-warning">${this.removedRecords || 0} missing or non-numeric results removed.</span>`;
   }
+  /**
+   * Compute the domain, bins, and display precision for a set of rows.
+   * @private
+   */
   chartInputs(rows) {
     const values = rows.map((row) => row.__sh_value);
     const domain = resolveDomain(values, this.state.lower, this.state.upper);
@@ -12003,6 +12077,10 @@ var SafetyHistogram = class {
     }));
     return { bins, domain, digits, quantity: binResult.quantity, width: binResult.width };
   }
+  /**
+   * Draw the main Chart.js bar chart with tooltips, selection, and normal range.
+   * @private
+   */
   drawMainChart() {
     const inputs = this.chartInputs(this.filteredData);
     this.state.quantity = inputs.quantity;
@@ -12058,8 +12136,11 @@ var SafetyHistogram = class {
     this.charts.push(chart);
     this.drawMainAnnotation(this.filteredData);
   }
-  // De-emphasizes the bars outside the linked listing (SH-FUNC-011); render()
-  // rebuilds the charts, which clears the selection.
+  /**
+   * De-emphasizes the bars outside the linked listing (SH-FUNC-011);
+   * render() rebuilds the charts, which clears the selection.
+   * @private
+   */
   highlightSelection(chart, index) {
     if (!chart || index == null) return;
     const dataset = chart.data.datasets[0];
@@ -12068,6 +12149,10 @@ var SafetyHistogram = class {
     chart.$shSelectedBin = index;
     chart.update();
   }
+  /**
+   * Annotate the main chart with the normality screen when enabled.
+   * @private
+   */
   drawMainAnnotation(rows) {
     this.mainAnnotation.innerHTML = "";
     if (!this.settings.test_normality) return;
@@ -12081,6 +12166,10 @@ var SafetyHistogram = class {
       )
     );
   }
+  /**
+   * Draw one small-multiple panel per group value when grouping is active.
+   * @private
+   */
   drawMultiples() {
     this.multiplesWrap.innerHTML = "";
     if (!this.state.groupBy || this.state.groupBy === "sh_none") return;
@@ -12144,9 +12233,17 @@ var SafetyHistogram = class {
       this.charts.push(chart);
     });
   }
+  /**
+   * Describe a hovered or selected bin in the footnote.
+   * @private
+   */
   describeBin(bin, digits, clicked) {
     this.footnote.textContent = `${clicked ? "Selected" : "Hover"}: ${binDescription(bin, this.state.measure, digits)}.`;
   }
+  /**
+   * Show the participant listing for a clicked bin's records.
+   * @private
+   */
   showListing(records, bin, digits) {
     this.currentTableData = records;
     this.listingSearch = "";
@@ -12155,13 +12252,29 @@ var SafetyHistogram = class {
     this.describeBin(bin, digits, true);
     renderListing(this);
   }
+  /**
+   * Resize every live chart (the main chart and any small multiples) to its
+   * container. For host layouts that change the container size without a
+   * window resize — e.g. the R htmlwidget bindings.
+   * @returns {void}
+   */
   resize() {
     this.charts.forEach((chart) => chart.resize());
   }
+  /**
+   * Destroy the live Chart.js instances without touching the shell.
+   * @private
+   */
   destroyCharts() {
     this.charts.forEach((chart) => chart.destroy());
     this.charts = [];
   }
+  /**
+   * Tear the histogram down: destroy every Chart.js instance and empty the
+   * target element. The instance cannot be reused afterwards — create a new
+   * one via the factory instead.
+   * @returns {void}
+   */
   destroy() {
     this.destroyCharts();
     this.element.innerHTML = "";
