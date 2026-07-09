@@ -8,7 +8,7 @@ test.describe('safety.viz scaffold', () => {
       if (msg.type() === 'error') errors.push(msg.text());
     });
 
-    await page.goto('/');
+    await page.goto('/tests/e2e/fixtures/');
 
     await expect(page.locator('#scaffold-heading')).toHaveText('safety.viz scaffold');
     expect(errors).toEqual([]);
