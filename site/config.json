@@ -15,8 +15,9 @@
     {
       "module": "outlier-explorer",
       "title": "Safety Outlier Explorer",
-      "status": "planned",
-      "blurb": "Participant-level results over time, highlighting outlying values against the study population.",
+      "status": "available",
+      "blurb": "Participant-level results over time: one line per participant for the selected measure against a population normal-range band, with filters, x-axis and y-limit controls, color-by grouping, and click-to-select participant detail.",
+      "hero": "SOE-FUNC-010-participant-detail.png",
       "matrix": "safety-outlier-explorer.md"
     },
     {

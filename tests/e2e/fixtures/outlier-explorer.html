@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>safety.viz outlier-explorer demo page</title>
+  </head>
+  <body>
+    <h1 id="outlier-explorer-heading">safety.viz outlier explorer demo</h1>
+    <p>
+      Demo and Playwright harness page for the outlier-explorer module (#24). Loads the committed
+      IIFE bundle against a small crafted dataset with explicit visit / study-day columns, so the
+      x-axis toggle, normal-range methods, grouping, and selection can be asserted
+      deterministically.
+    </p>
+    <div id="container"></div>
+    <!-- Bundle path tracks the package.json version; bump them together. -->
+    <script src="/dist/safety.viz-0.1.0/safety.viz.js"></script>
+    <script>
+      // Crafted long-format data: 4 participants x 2 measures x 3 visits, plus
+      // two invalid Albumin rows (one empty, one non-numeric) so the removed-
+      // records note is exercised. Values are chosen to keep two clear high/low
+      // outlier participants (P3 high, P4 low).
+      const PARTICIPANTS = {
+        'SUBJ-001': { ARM: 'Placebo', SEX: 'F', RACE: 'WHITE', AGE: 45 },
+        'SUBJ-002': { ARM: 'Drug', SEX: 'M', RACE: 'BLACK', AGE: 52 },
+        'SUBJ-003': { ARM: 'Placebo', SEX: 'F', RACE: 'ASIAN', AGE: 38 },
+        'SUBJ-004': { ARM: 'Drug', SEX: 'M', RACE: 'WHITE', AGE: 61 }
+      };
+      const VISITS = [
+        { VISIT: 'Baseline', VISITNUM: 1, DY: 1 },
+        { VISIT: 'Week 4', VISITNUM: 2, DY: 28 },
+        { VISIT: 'Week 8', VISITNUM: 3, DY: 56 }
+      ];
+      const MEASURES = {
+        Albumin: {
+          STRESU: 'g/L',
+          STNRLO: 35,
+          STNRHI: 50,
+          values: {
+            'SUBJ-001': [40, 42, 45],
+            'SUBJ-002': [38, 40, 44],
+            'SUBJ-003': [55, 52, 58],
+            'SUBJ-004': [30, 28, 33]
+          }
+        },
+        Sodium: {
+          STRESU: 'mmol/L',
+          STNRLO: 135,
+          STNRHI: 145,
+          values: {
+            'SUBJ-001': [138, 140, 139],
+            'SUBJ-002': [142, 144, 141],
+            'SUBJ-003': [150, 148, 152],
+            'SUBJ-004': [130, 132, 131]
+          }
+        }
+      };
+
+      const data = [];
+      Object.entries(MEASURES).forEach(([TEST, meta]) => {
+        Object.entries(PARTICIPANTS).forEach(([USUBJID, demo]) => {
+          VISITS.forEach((visit, i) => {
+            data.push({
+              TEST,
+              STRESN: meta.values[USUBJID][i],
+              STRESU: meta.STRESU,
+              STNRLO: meta.STNRLO,
+              STNRHI: meta.STNRHI,
+              USUBJID,
+              VISIT: visit.VISIT,
+              VISITNUM: visit.VISITNUM,
+              DY: visit.DY,
+              ...demo
+            });
+          });
+        });
+      });
+      // Two invalid Albumin results at an extra visit — removed with a note.
+      data.push({
+        TEST: 'Albumin',
+        STRESN: '',
+        STRESU: 'g/L',
+        STNRLO: 35,
+        STNRHI: 50,
+        USUBJID: 'SUBJ-001',
+        VISIT: 'Week 12',
+        VISITNUM: 4,
+        DY: 84,
+        ...PARTICIPANTS['SUBJ-001']
+      });
+      data.push({
+        TEST: 'Albumin',
+        STRESN: 'NA',
+        STRESU: 'g/L',
+        STNRLO: 35,
+        STNRHI: 50,
+        USUBJID: 'SUBJ-002',
+        VISIT: 'Week 12',
+        VISITNUM: 4,
+        DY: 84,
+        ...PARTICIPANTS['SUBJ-002']
+      });
+
+      const instance = SafetyViz.outlierExplorer('#container', {
+        time_cols: [
+          { value_col: 'VISIT', label: 'Visit', type: 'ordinal', order_col: 'VISITNUM' },
+          { value_col: 'DY', label: 'Study Day', type: 'linear' }
+        ],
+        filters: [
+          { value_col: 'SEX', label: 'Sex' },
+          { value_col: 'ARM', label: 'Treatment Group' }
+        ],
+        groups: [
+          { value_col: 'ARM', label: 'Treatment Group' },
+          { value_col: 'SEX', label: 'Sex' }
+        ],
+        details: [
+          { value_col: '__oe_timeLabel', label: 'Visit' },
+          { value_col: 'USUBJID', label: 'Participant ID' },
+          { value_col: 'STRESN', label: 'Result' },
+          { value_col: 'AGE', label: 'Age' },
+          { value_col: 'SEX', label: 'Sex' },
+          { value_col: 'RACE', label: 'Race' }
+        ]
+      });
+      window.__safetyOutlierExplorerInstance = instance;
+      instance.init(data);
+    </script>
+  </body>
+</html>
