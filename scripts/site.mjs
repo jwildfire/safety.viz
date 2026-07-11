@@ -72,11 +72,9 @@ for (const renderer of config.renderers.filter((entry) => entry.status === 'avai
     copyFileSync(path.join(evidenceDir, file), path.join(moduleDir, 'evidence', file));
   }
 
-  // Live demo: shell + intro around the harness fixture's mount.
-  copyFileSync(
-    path.join(rootDir, 'tests/e2e/fixtures/adbds.csv'),
-    path.join(moduleDir, 'adbds.csv')
-  );
+  // Live demo: shell + intro around the demo mount, against the vendored
+  // real example data (#15) — not the crafted e2e fixture.
+  copyFileSync(path.join(rootDir, 'site/data/adbds.csv'), path.join(moduleDir, 'adbds.csv'));
   copyFileSync(path.join(rootDir, `site/demo/${module}.js`), path.join(moduleDir, 'demo.js'));
   page(
     path.join(moduleDir, 'index.html'),
