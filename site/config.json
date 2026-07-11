@@ -22,8 +22,9 @@
     {
       "module": "results-over-time",
       "title": "Safety Results Over Time",
-      "status": "planned",
-      "blurb": "Population-level distribution of results at each study visit, with grouping and outlier context.",
+      "status": "available",
+      "blurb": "Population-level distribution of a measure at each study visit as box-and-whisker marks, with grouping, an outlier overlay, and linear/log y-axis controls.",
+      "hero": "SROT-FUNC-001-control-panel.png",
       "matrix": "safety-results-over-time.md"
     },
     {

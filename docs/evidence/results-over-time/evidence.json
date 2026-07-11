@@ -1,0 +1,853 @@
+{
+  "module": "results-over-time",
+  "generatedAt": "2026-07-11T14:54:54.653Z",
+  "environment": {
+    "os": "darwin 23.6.0",
+    "node": "v24.14.0",
+    "playwright": "1.61.1",
+    "chromium": "149.0.7827.55"
+  },
+  "run": null,
+  "records": [
+    {
+      "test": "built histogram demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built results-over-time demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "demo page loads with no console errors (#1)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [1],
+      "screenshots": []
+    },
+    {
+      "test": "gallery shows one card per available renderer (#7)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "SROT-API: lifecycle API supports init, setData, setSettings, render, resize, and destroy (#27)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "SROT-DATA-002: missing and non-numeric results are dropped with a reported count and visible note (#27)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SROT-DATA-002"],
+      "issueRefs": [27],
+      "screenshots": ["SROT-DATA-002-invalid-data-note.png"]
+    },
+    {
+      "test": "SROT-FUNC-001/SROT-FUNC-002: renders measure, group, filter, y-axis, scale, and display controls (#27)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SROT-FUNC-001", "SROT-FUNC-002"],
+      "issueRefs": [27],
+      "screenshots": ["SROT-FUNC-001-control-panel.png"]
+    },
+    {
+      "test": "SROT-FUNC-003: participant note updates when a filter is applied (#27)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SROT-FUNC-003"],
+      "issueRefs": [27],
+      "screenshots": ["SROT-FUNC-003-participant-count.png"]
+    },
+    {
+      "test": "SROT-FUNC-004/SROT-REG-016/SROT-REG-017: y-limit inputs redraw and invert a crossed pair (#27)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SROT-FUNC-004", "SROT-REG-016", "SROT-REG-017"],
+      "issueRefs": [27],
+      "screenshots": ["SROT-FUNC-004-y-limits.png"]
+    },
+    {
+      "test": "SROT-FUNC-005/SROT-REG-020: Reset Limits restores the data extent (#27)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SROT-FUNC-005", "SROT-REG-020"],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "SROT-FUNC-006/SROT-REG-004/SROT-REG-005: the Visits without data control adds empty timepoints (#27)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SROT-FUNC-006", "SROT-REG-004", "SROT-REG-005"],
+      "issueRefs": [27],
+      "screenshots": ["SROT-FUNC-006-visits-without-data.png"]
+    },
+    {
+      "test": "SROT-FUNC-007/SROT-REG-006/SROT-REG-007: the Unscheduled visits control shows unscheduled timepoints (#27)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SROT-FUNC-007", "SROT-REG-006", "SROT-REG-007"],
+      "issueRefs": [27],
+      "screenshots": ["SROT-FUNC-007-unscheduled-visits.png"]
+    },
+    {
+      "test": "SROT-FUNC-008: box-and-whisker marks render and toggle off with the Box plots control (#27)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SROT-FUNC-008"],
+      "issueRefs": [27],
+      "screenshots": ["SROT-FUNC-008-box-plots.png"]
+    },
+    {
+      "test": "SROT-REG-002/SROT-REG-003: grouping draws side-by-side boxes with a group-ordered legend (#27)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SROT-REG-002", "SROT-REG-003"],
+      "issueRefs": [27],
+      "screenshots": ["SROT-REG-002-grouped-box-plots.png"]
+    },
+    {
+      "test": "SROT-REG-010/SROT-REG-012: the outlier overlay shows and hides with the Outliers control (#27)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SROT-REG-010", "SROT-REG-012"],
+      "issueRefs": [27],
+      "screenshots": ["SROT-REG-010-outliers.png"]
+    },
+    {
+      "test": "SROT-REG-011: outlier points carry a larger hover radius than their resting radius (#27)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SROT-REG-011"],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "SROT-REG-014/SROT-REG-015: hovering a box exposes the summary statistics tooltip (#27)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SROT-REG-014", "SROT-REG-015"],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "SROT-REG-018: the Scale control switches the y-axis between linear and log (#27)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SROT-REG-018"],
+      "issueRefs": [27],
+      "screenshots": ["SROT-REG-018-log-scale.png"]
+    },
+    {
+      "test": "SROT-REG-023/SROT-REG-024: start_value selects the initial measure and falls back when absent (#27)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SROT-REG-023", "SROT-REG-024"],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "buildApiModel API-XFORM-010: assembles the artifact with module, factory, methods, settings, data contract, and missing docs (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-010"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "buildApiModel API-XFORM-011: flags DEFAULT_SETTINGS keys absent from the settings typedef (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-011"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer buildEvidenceSets splits records per module and duplicates shared scaffold records (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer buildRun builds GitHub Actions run provenance from the environment (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer compareEvidence flags status drift and test-set changes, ignoring screenshots (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer compareEvidence ignores provenance so --check never drifts on generatedAt/environment/run (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer moduleForFile routes test files to renderer modules by path (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer normalizePlaywright walks nested suites into browser-suite records (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer normalizeVitest maps assertion results to unit-suite records (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer parseTestName extracts requirement IDs and issue refs (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer parseTestName recognizes every renderer requirement-ID prefix, not just SH (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer provenance lives in dedicated top-level keys; the records array stays timestamp-free (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-001: the documented settings are exactly the DEFAULT_SETTINGS keys (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-001"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-002: every setting row has a type, default, and description (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-002"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-003: the factory is documented with params and a return value (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-003"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-004: every lifecycle method is documented with a description and return value (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-004"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-005: no missing-documentation entries remain across the public surface (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-005"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-006: the data contract derives from the schema and its settings map onto real setting names (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-006"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time checkInputs SROT-DATA-001: passes when the required measure, result, and visit columns are present (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-DATA-001"],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time checkInputs SROT-DATA-001: throws naming every missing required column (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-DATA-001"],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time checkInputs SROT-DATA-002: an empty dataset reports all required columns missing (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-DATA-002"],
+      "issueRefs": [27],
+      "screenshots": ["SROT-DATA-002-invalid-data-note.png"]
+    },
+    {
+      "test": "results-over-time configure every DEFAULT_SETTINGS key is a documented default (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time configure SROT-CFG-004/005/006/007/009: default column mappings match the original renderer (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-CFG-004"],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time configure SROT-CFG-012: filters normalize to { value_col, label } specs and drop blanks (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-CFG-012"],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time configure SROT-CFG-013/014: groups always offer a leading None and group_by falls back to it (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-CFG-013"],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time configure SROT-CFG-014: an explicit group_by is honored and its column is offered (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-CFG-014"],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time configure SROT-CFG-015/DATA-003: box/outlier/visit toggles default to the original renderer values (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-CFG-015"],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time configure SROT-CFG-017/018/019: unscheduled-visit detection defaults are preserved (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-CFG-017"],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time configure SROT-REG-018: Y_SCALES enumerates the linear and log axis options (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-REG-018"],
+      "issueRefs": [27],
+      "screenshots": ["SROT-REG-018-log-scale.png"]
+    },
+    {
+      "test": "results-over-time export SROT-API: main.js exports the resultsOverTime factory (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time getPlugins SROT-REG-003: groupColors assigns a stable color per group in order (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-REG-003"],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time getPlugins SROT-REG-011: outlierTooltip names the participant and its value (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-REG-011"],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time getPlugins SROT-REG-014/015: summaryTooltip lists every statistic at the required precision (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-REG-014"],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time getScales formatFixed keeps trailing zeros and reports NA for non-finite input (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time getScales SROT-REG-015: statPrecisions gives min/max the base, quantiles +1, and StDev +2 (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-REG-015"],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time getScales SROT-REG-015: yPrecision follows the original log10-range rule (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-REG-015"],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time getScales SROT-REG-016/020: resolveYDomain uses the data extent unless a limit overrides it (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-REG-016"],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time getScales SROT-REG-017: normalizeDomain swaps a crossed lower/upper pair in place (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-REG-017"],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time structureData quantile follows the R-7 / d3.quantile rule (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time structureData sd is the sample (n-1) standard deviation (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time structureData SROT-CFG-005: computeVisitOrder falls back to alphanumeric order without an order column (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-CFG-005"],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time structureData SROT-CFG-005/006: computeVisitOrder sorts by the numeric order column when present (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-CFG-005"],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time structureData SROT-CFG-017/018: parseUnscheduledPattern reads the /.../flags string form (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-CFG-017"],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time structureData SROT-CFG-019: isUnscheduledVisit lets an explicit values list take precedence over the pattern (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-CFG-019"],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time structureData SROT-DATA-002: cleanData drops missing and non-numeric results with a reported count (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-DATA-002"],
+      "issueRefs": [27],
+      "screenshots": ["SROT-DATA-002-invalid-data-note.png"]
+    },
+    {
+      "test": "results-over-time structureData SROT-REG-010/012: flagOutliers marks values outside the 5th/95th percentiles only when enabled (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-REG-010"],
+      "issueRefs": [27],
+      "screenshots": ["SROT-REG-010-outliers.png"]
+    },
+    {
+      "test": "results-over-time structureData SROT-REG-014/015: summarize returns the tooltip statistics for a sorted sample (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-REG-014"],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time structureData SROT-REG-021: measureLabel appends the unit when present (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-REG-021"],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time structureData summarizeVisitGroups nests statistics by visit then group (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time structureData unique keeps distinct, non-empty values in first-seen order (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "safety.viz scaffold SH-API-001: the collection exposes the histogram module factory (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-API-001"],
+      "issueRefs": [2],
+      "screenshots": []
+    },
+    {
+      "test": "safety.viz scaffold src/main.js exports the public module collection (#1)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [1],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders each lifecycle method with signature, params, and returns (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders the factory signature and parameters (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders the schema-derived data contract (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders the settings table with type, default, and description (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: coverage parsing parses the browser and unit tables plus the routing-status tail (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page carries the routing-status sections onto the page (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page falls back to requirement-ID matching when a browser row wording drifts from the spec name (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page joins browser rows to their evidence record with status chip and screenshot (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page links source matrix rows to the safety.agent matrix (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page matches unit rows to records through expanded requirement IDs (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page rewrites repo-relative coverage links to repository URLs (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page surfaces failing records with a fail status chip (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery links available renderers to demo, evidence, and API pages with a hero thumbnail (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery lists every renderer from config with its status badge (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery renders unmigrated renderers as placeholders without page links (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: requirement-ID expansion expands double-dot ranges and slash shorthand into full IDs (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site validation: evidence screenshots flags screenshots referenced in evidence.json but missing from the evidence set (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site validation: internal links flags internal links and asset references that do not resolve (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site validation: internal links passes a site whose internal links all resolve, ignoring external and fragment links (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: factory API-XFORM-004: maps the documented module.exports doclet to the factory, named for its source file (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-004"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: factory API-XFORM-005: ignores the spurious undocumented global doclet jsdoc emits for the default export (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-005"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: methods table API-XFORM-001: extracts documented instance methods in source order with signature, params, and returns (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-001"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: methods table API-XFORM-002: brackets optional params in signatures and carries their defaults (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-002"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: methods table API-XFORM-003: excludes private and undocumented methods from the table (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-003"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: missing-doc detection API-XFORM-008: flags undocumented public methods and settings properties without descriptions (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-008"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: missing-doc detection API-XFORM-009: flags a missing factory when no documented default export exists (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-009"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: settings table API-XFORM-006: extracts settings rows from the typedef properties with display-ready types and defaults (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-006"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: settings table API-XFORM-007: normalizes non-string defaults (booleans, numbers, null) to display strings (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-007"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-001: carries the schema title and description onto the contract (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-001"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-002: flattens top-level and nested settings properties into dotted field rows (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-002"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-003: derives required flags from each level’s required array (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-003"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-004: carries types, defaults, and descriptions through from the schema (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-004"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-005: resolves local $defs references to their concrete type (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-005"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-006: every contract field carries a non-empty description (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-006"],
+      "issueRefs": [6],
+      "screenshots": []
+    }
+  ]
+}
