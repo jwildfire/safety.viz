@@ -100,3 +100,67 @@ describe('site generator: evidence page', () => {
     expect(html).toContain('https://github.com/jwildfire/safety.viz/blob/HEAD/CONTRIBUTING.md');
   });
 });
+
+// Qualification-report framing (#21): the evidence page opens with a summary
+// fact panel — scope, result counts, and run provenance — rendered from
+// evidence.json's top-level provenance fields when present (they land with
+// the multi-module evidence pipeline, #20) and degrading gracefully when the
+// committed evidence set predates them.
+describe('site generator: evidence report provenance (#21)', () => {
+  const base = { module: 'histogram', config, coverage: parseCoverage(coverageMd) };
+  const html = renderEvidencePage({ ...base, evidence });
+
+  it('summarizes scope and results in a fact panel (#21)', () => {
+    expect(html).toContain('class="facts"');
+    // Fixture: 7 records — 3 browser, 4 unit, 1 failing.
+    expect(html).toContain('7');
+    expect(html).toContain('1 failing');
+  });
+
+  it('renders generation date, environment, and CI run when evidence.json carries them (#21)', () => {
+    const withProvenance = {
+      ...evidence,
+      generatedAt: '2026-07-11T14:03:22.000Z',
+      environment: {
+        os: 'ubuntu-24.04',
+        node: '24.4.0',
+        playwright: '1.61.1',
+        chromium: '141.0.0.0'
+      },
+      run: {
+        id: 29160000001,
+        url: 'https://github.com/jwildfire/safety.viz/actions/runs/29160000001'
+      }
+    };
+    const provenanceHtml = renderEvidencePage({ ...base, evidence: withProvenance });
+    expect(provenanceHtml).toContain('2026-07-11');
+    expect(provenanceHtml).toContain('ubuntu-24.04');
+    expect(provenanceHtml).toContain(
+      'https://github.com/jwildfire/safety.viz/actions/runs/29160000001'
+    );
+  });
+
+  it('degrades gracefully when provenance fields are absent (#21)', () => {
+    expect(html).toContain('Not recorded');
+    expect(html).not.toContain('undefined');
+  });
+
+  it('links result chips to the CI run when a run is recorded (#21)', () => {
+    const withRun = {
+      ...evidence,
+      run: {
+        id: 29160000002,
+        url: 'https://github.com/jwildfire/safety.viz/actions/runs/29160000002'
+      }
+    };
+    const runHtml = renderEvidencePage({ ...base, evidence: withRun });
+    expect(runHtml).toContain('chip-link');
+    expect(html).not.toContain('chip-link');
+  });
+
+  it('presents a captioned visual-evidence gallery of the committed screenshots (#21)', () => {
+    expect(html).toContain('evidence-gallery');
+    expect(html).toContain('SH-CTRL-004');
+    expect(html).toContain('normal range overlay');
+  });
+});

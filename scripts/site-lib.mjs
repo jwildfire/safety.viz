@@ -180,9 +180,31 @@ export function rewriteRelativeLinks(markdown, repoUrl, fromDir = 'docs') {
   });
 }
 
-function statusChip(status) {
+function statusChip(status, runUrl) {
   const label = { pass: 'pass', fail: 'fail', none: 'no record' }[status];
-  return `<span class="chip status-${status}">${label}</span>`;
+  const chip = `<span class="chip status-${status}">${label}</span>`;
+  // Result chips link to the CI run that executed them when evidence.json
+  // carries run provenance (#20/#21).
+  if (runUrl && status !== 'none') {
+    return `<a class="chip-link" href="${escapeHtml(runUrl)}" title="View the CI run that executed this test">${chip}</a>`;
+  }
+  return chip;
+}
+
+// Sub-page tabs shared by every renderer page (demo / evidence / API).
+export function moduleTabs(active, matrixUrl) {
+  const tab = (id, href, label) =>
+    id === active
+      ? `<a class="current" aria-current="page" href="${href}">${label}</a>`
+      : `<a href="${href}">${label}</a>`;
+  return (
+    `<nav class="page-tabs">` +
+    tab('demo', 'index.html', 'Live demo') +
+    tab('evidence', 'evidence.html', 'Test evidence') +
+    tab('api', 'api.html', 'API reference') +
+    `<a href="${matrixUrl}">Requirement matrix ↗</a>` +
+    `</nav>`
+  );
 }
 
 function matchRecords(row, kind, records) {
@@ -205,7 +227,7 @@ function renderMatrixCell(row, matrixUrl) {
   return cell;
 }
 
-function renderEvidenceCell(row, records, kind) {
+function renderEvidenceCell(row, records, kind, runUrl) {
   const parts = [];
   if (kind === 'unit') {
     parts.push(`<p class="test-file">${mdInline(row.test)}</p>`);
@@ -215,7 +237,7 @@ function renderEvidenceCell(row, records, kind) {
     return parts.join('\n');
   }
   const tests = records
-    .map((record) => `<li>${statusChip(record.status)} ${escapeHtml(record.test)}</li>`)
+    .map((record) => `<li>${statusChip(record.status, runUrl)} ${escapeHtml(record.test)}</li>`)
     .join('');
   parts.push(`<ul class="tests">${tests}</ul>`);
   const screenshots = [...new Set(records.flatMap((record) => record.screenshots))];
@@ -232,38 +254,163 @@ function renderEvidenceCell(row, records, kind) {
   return parts.join('\n');
 }
 
-// Evidence page (#21 pillar 2): coverage rows joined to evidence.json —
-// requirement → matrix rows (linked to the safety.agent matrix) → test →
-// status chip → screenshot(s) — plus the routing-status tail verbatim.
+// Provenance fields (#20 contract): evidence.json optionally carries
+// generatedAt (ISO string), environment ({os, node, playwright, chromium}),
+// and run ({id, url} of the CI run, or null when generated locally). The
+// report renders them when present and states their absence honestly when the
+// committed evidence set predates the contract.
+const NOT_RECORDED = '<span class="sub">Not recorded for this evidence set</span>';
+
+function generatedFact(evidence) {
+  if (!evidence.generatedAt) return NOT_RECORDED;
+  const date = new Date(evidence.generatedAt);
+  if (Number.isNaN(date.valueOf())) return escapeHtml(evidence.generatedAt);
+  return `${date.toISOString().slice(0, 16).replace('T', ' ')} UTC`;
+}
+
+function environmentFact(evidence) {
+  const env = evidence.environment;
+  if (!env) return NOT_RECORDED;
+  const parts = [
+    env.os && escapeHtml(env.os),
+    env.node && `node ${escapeHtml(env.node)}`,
+    env.playwright && `playwright ${escapeHtml(env.playwright)}`,
+    env.chromium && `chromium ${escapeHtml(env.chromium)}`
+  ].filter(Boolean);
+  return parts.length ? `<code>${parts.join(' · ')}</code>` : NOT_RECORDED;
+}
+
+function runFact(evidence) {
+  if (evidence.run && evidence.run.url) {
+    return (
+      `<a href="${escapeHtml(evidence.run.url)}">Actions run` +
+      (evidence.run.id ? ` #${escapeHtml(evidence.run.id)}` : '') +
+      `</a>`
+    );
+  }
+  if (evidence.run === null || evidence.generatedAt) {
+    return '<span class="sub">Generated locally — no CI run recorded</span>';
+  }
+  return NOT_RECORDED;
+}
+
+// Humanize an evidence screenshot filename: "SH-CTRL-004-normal-range.png" →
+// { id: 'SH-CTRL-004', caption: 'normal range' }.
+function screenshotCaption(file) {
+  const match = file.match(/^(SH-[A-Z]+-\d+[A-D]?)-(.+)\.png$/);
+  if (!match) return { id: '', caption: file.replace(/\.png$/, '').replace(/-/g, ' ') };
+  return { id: match[1], caption: match[2].replace(/-/g, ' ') };
+}
+
+// Evidence page (#21 pillar 2, reframed for v1.0): a qualification-style
+// report — summary facts (scope, results, provenance), scope & approach,
+// requirement-traceability tables joined to evidence.json, a captioned
+// visual-evidence gallery, the routing-status appendix, and a reproduction
+// note. Adopting groups should be able to review and adapt it as a basic
+// audit artifact.
 export function renderEvidencePage({ module, config, coverage, evidence }) {
   const renderer = config.renderers.find((entry) => entry.module === module);
   const matrixUrl = `${config.matrixBaseUrl}/${renderer.matrix}`;
+  const runUrl = evidence.run && evidence.run.url ? evidence.run.url : null;
   const html = [];
+
+  const records = evidence.records || [];
+  const browser = records.filter((record) => record.suite === 'browser');
+  const unit = records.filter((record) => record.suite === 'unit');
+  const failing = records.filter((record) => record.status === 'fail');
+  const screenshots = [...new Set(records.flatMap((record) => record.screenshots))].sort();
+  const coverageRows = coverage.sections.reduce((n, section) => n + section.rows.length, 0);
+  const matrixIds = new Set(
+    coverage.sections.flatMap((section) =>
+      section.rows.flatMap((row) => [...row.requirementIds, ...row.matrixIds])
+    )
+  );
 
   html.push(`<h1>${escapeHtml(renderer.title)}: test evidence</h1>`);
   html.push(
-    `<p class="page-links"><a href="index.html">Live demo</a> · <a href="api.html">API reference</a>` +
-      ` · <a href="${matrixUrl}">Requirement matrix</a></p>`
+    `<p class="tagline">Requirement-traced qualification evidence for the safety.viz` +
+      ` <code>${escapeHtml(module)}</code> module.</p>`
   );
+  html.push(moduleTabs('evidence', matrixUrl));
+
+  html.push(
+    `<dl class="facts">` +
+      `<div class="fact"><dt>Scope</dt><dd>${coverageRows} coverage rows` +
+      `<span class="sub">${matrixIds.size} distinct requirement IDs</span></dd></div>` +
+      `<div class="fact"><dt>Tests executed</dt><dd>${records.length} automated checks` +
+      `<span class="sub">${browser.length} browser · ${unit.length} unit</span></dd></div>` +
+      `<div class="fact"><dt>Result</dt><dd>${
+        failing.length
+          ? `${statusChip('fail', runUrl)} ${failing.length} failing`
+          : `${statusChip('pass', runUrl)} all passing`
+      }<span class="sub">${screenshots.length} evidence screenshots</span></dd></div>` +
+      `<div class="fact"><dt>Generated</dt><dd>${generatedFact(evidence)}</dd></div>` +
+      `<div class="fact"><dt>Environment</dt><dd>${environmentFact(evidence)}</dd></div>` +
+      `<div class="fact"><dt>Test run</dt><dd>${runFact(evidence)}</dd></div>` +
+      `</dl>`
+  );
+
+  html.push(`<h2 id="scope">Scope &amp; approach</h2>`);
   if (coverage.intro) html.push(mdBlock(rewriteRelativeLinks(coverage.intro, config.repoUrl)));
+  html.push(
+    `<p>Each table row traces one requirement to the automated test(s) that evidence it:` +
+      ` the requirement ID and its source-matrix rows link back to the reviewed specification,` +
+      ` the issue column links the implementing work, and the result column shows the recorded` +
+      ` outcome of every matching test from the committed` +
+      ` <a href="${config.repoUrl}/blob/HEAD/docs/evidence/${module}/evidence.json">evidence.json</a>` +
+      ` with its captured screenshots. Browser evidence is captured at fixed conditions` +
+      ` (1280×800, device scale 1) on the canonical Linux CI environment.</p>`
+  );
 
   for (const section of coverage.sections) {
+    const sectionRecords = new Set(
+      section.rows.flatMap((row) =>
+        matchRecords(row, section.kind, records).map((record) => record.test)
+      )
+    );
     html.push(`<h2>${mdInline(section.heading)}</h2>`);
+    html.push(
+      `<p class="section-summary">${section.rows.length} requirement rows · ` +
+        `${sectionRecords.size} tests</p>`
+    );
     const rows = section.rows
       .map((row) => {
-        const records = matchRecords(row, section.kind, evidence.records);
+        const matched = matchRecords(row, section.kind, records);
         return (
           `<tr><td>${escapeHtml(row.requirementCell)}</td>` +
           `<td>${renderMatrixCell(row, matrixUrl)}</td>` +
           `<td><a href="${config.repoUrl}/issues/${row.issue}">#${row.issue}</a></td>` +
-          `<td>${renderEvidenceCell(row, records, section.kind)}</td></tr>`
+          `<td>${renderEvidenceCell(row, matched, section.kind, runUrl)}</td></tr>`
         );
       })
       .join('\n');
     html.push(
-      `<table class="evidence"><thead><tr><th>Requirement</th><th>Source matrix rows</th>` +
-        `<th>Issue</th><th>Tests &amp; evidence</th></tr></thead><tbody>${rows}</tbody></table>`
+      `<div class="table-scroll">` +
+        `<table class="evidence"><thead><tr><th>Requirement</th><th>Source matrix rows</th>` +
+        `<th>Issue</th><th>Tests &amp; evidence</th></tr></thead><tbody>${rows}</tbody></table>` +
+        `</div>`
     );
+  }
+
+  if (screenshots.length) {
+    html.push(`<h2 id="visual-evidence">Visual evidence</h2>`);
+    html.push(
+      `<p class="section-summary">Every screenshot below is a committed baseline: the same PNG` +
+        ` is the visual-regression baseline the browser suite asserts against and the evidence` +
+        ` artifact shown here. Click any capture for the full-resolution image.</p>`
+    );
+    const figures = screenshots
+      .map((file) => {
+        const { id, caption } = screenshotCaption(file);
+        return (
+          `<li><figure><a href="evidence/${file}">` +
+          `<img src="evidence/${file}" alt="Evidence screenshot: ${escapeHtml(caption)}" loading="lazy">` +
+          `</a><figcaption>${id ? `<code>${id}</code> — ` : ''}${escapeHtml(caption)}</figcaption>` +
+          `</figure></li>`
+        );
+      })
+      .join('\n');
+    html.push(`<ul class="evidence-gallery">${figures}</ul>`);
   }
 
   if (coverage.tail) {
@@ -271,48 +418,109 @@ export function renderEvidencePage({ module, config, coverage, evidence }) {
       `<section class="routing">${mdBlock(rewriteRelativeLinks(coverage.tail, config.repoUrl))}</section>`
     );
   }
+
+  html.push(
+    `<section class="reproduce"><h2 id="reproduce">Reproducing this report</h2>` +
+      `<p>The evidence set is regenerated from a full test run and committed with the code it` +
+      ` qualifies; CI fails when they drift. To verify or rebuild it:</p>` +
+      `<pre><code>npm ci\nnpm run evidence:check   # compare a fresh run against the committed evidence\nnpm run evidence         # regenerate docs/evidence/${module}/evidence.json</code></pre>` +
+      `<p>Screenshot baselines are canonical to the Linux CI runner; the repository&#39;s` +
+      ` <em>Update evidence baselines</em> workflow is the authoritative way to refresh them.` +
+      ` See <a href="${config.repoUrl}/blob/HEAD/CONTRIBUTING.md">CONTRIBUTING.md</a> for the` +
+      ` traceability convention.</p></section>`
+  );
+
   return html.join('\n');
 }
 
-// Gallery (#21 pillar 1): one card per renderer, status badge from config;
-// available renderers link to their pages with the hero evidence screenshot.
+// Gallery (#21 pillar 1, reframed for v1.0 under site issue #21): the
+// homepage tells the project story — lineage, architecture mirror, audience —
+// then splits the renderer cards into the migrated set and the migration
+// queue. Available renderers link to their pages with a dedicated hero asset
+// when configured (site/assets/), falling back to the hero evidence
+// screenshot.
 export function renderGallery(config) {
-  const cards = config.renderers
-    .map((renderer) => {
-      const badge = `<span class="badge badge-${renderer.status}">${renderer.status}</span>`;
-      const matrixUrl = `${config.matrixBaseUrl}/${renderer.matrix}`;
-      if (renderer.status !== 'available') {
-        return (
-          `<li class="card status-${renderer.status}"><div class="card-body">` +
-          `<h2>${escapeHtml(renderer.title)}</h2>${badge}` +
-          `<p>${escapeHtml(renderer.blurb)}</p>` +
-          `<p class="card-links"><a href="${matrixUrl}">Requirement matrix</a></p>` +
-          `</div></li>`
-        );
-      }
-      const base = renderer.module;
-      return (
-        `<li class="card status-available">` +
-        `<a class="card-thumb" href="${base}/index.html">` +
-        `<img src="${base}/evidence/${renderer.hero}" alt="${escapeHtml(renderer.title)} preview" loading="lazy">` +
-        `</a><div class="card-body">` +
-        `<h2><a href="${base}/index.html">${escapeHtml(renderer.title)}</a></h2>${badge}` +
-        `<p>${escapeHtml(renderer.blurb)}</p>` +
-        `<p class="card-links"><a href="${base}/index.html">Demo</a> · ` +
-        `<a href="${base}/evidence.html">Evidence</a> · ` +
-        `<a href="${base}/api.html">API</a> · ` +
-        `<a href="${matrixUrl}">Matrix</a></p>` +
-        `</div></li>`
-      );
-    })
-    .join('\n');
-  return (
-    `<h1>safety.viz</h1>` +
-    `<p class="site-intro">Consolidated Chart.js charting library for clinical safety graphics —` +
-    ` interactive renderers migrated from the safetyGraphics ecosystem. Each renderer ships with a` +
-    ` live demo, a requirement-keyed test-evidence page, and a generated API reference.</p>` +
-    `<ul class="gallery">${cards}</ul>`
+  const statusBadge = (renderer) =>
+    `<span class="badge badge-${renderer.status}">${renderer.status}</span>`;
+
+  const placeholderCard = (renderer) => {
+    const matrixUrl = `${config.matrixBaseUrl}/${renderer.matrix}`;
+    return (
+      `<li class="card status-${renderer.status}"><div class="card-body">` +
+      `<h3>${escapeHtml(renderer.title)}</h3>${statusBadge(renderer)}` +
+      `<p>${escapeHtml(renderer.blurb)}</p>` +
+      `<p class="card-links"><a href="${matrixUrl}">Requirement matrix</a></p>` +
+      `</div></li>`
+    );
+  };
+
+  const availableCard = (renderer) => {
+    const base = renderer.module;
+    const matrixUrl = `${config.matrixBaseUrl}/${renderer.matrix}`;
+    const hero = renderer.heroAsset
+      ? `assets/${renderer.heroAsset}`
+      : `${base}/evidence/${renderer.hero}`;
+    return (
+      `<li class="card status-available">` +
+      `<a class="card-thumb" href="${base}/index.html">` +
+      `<img src="${hero}" alt="${escapeHtml(renderer.title)} preview" loading="lazy">` +
+      `</a><div class="card-body">` +
+      `<h3><a href="${base}/index.html">${escapeHtml(renderer.title)}</a></h3>${statusBadge(renderer)}` +
+      `<p>${escapeHtml(renderer.blurb)}</p>` +
+      `<p class="card-links"><a href="${base}/index.html">Demo</a> · ` +
+      `<a href="${base}/evidence.html">Evidence</a> · ` +
+      `<a href="${base}/api.html">API</a> · ` +
+      `<a href="${matrixUrl}">Matrix</a></p>` +
+      `</div></li>`
+    );
+  };
+
+  const available = config.renderers.filter((renderer) => renderer.status === 'available');
+  const queued = config.renderers.filter((renderer) => renderer.status !== 'available');
+  const first = available[0];
+
+  const html = [];
+  html.push(
+    `<h1>safety.viz</h1>`,
+    `<p class="tagline">Nine classic clinical-safety graphics, rebuilt on one modern charting stack.</p>`,
+    `<div class="lead">` +
+      `<p>safety.viz consolidates the interactive safety displays of the` +
+      ` <a href="https://github.com/SafetyGraphics">safetyGraphics</a> ecosystem — nine archived` +
+      ` <a href="https://github.com/RhoInc">Rho,&nbsp;Inc.</a> renderers built on decade-old` +
+      ` Webcharts — into a single maintained <a href="https://www.chartjs.org/">Chart.js</a>` +
+      ` library: one bundle, a JSON-Schema data contract per chart, and requirement-traced test` +
+      ` evidence behind every renderer.</p>` +
+      `<p>It is built to be consumed from R: <a href="https://github.com/jwildfire/gsm.safety">gsm.safety</a>` +
+      ` wraps this same bundle as <code>Widget_*</code> htmlwidgets, mirroring how` +
+      ` <a href="https://github.com/Gilead-BioStats/gsm.kri">gsm.kri</a> consumes` +
+      ` <a href="https://github.com/Gilead-BioStats/rbm-viz">gsm.viz</a> in the OpenRBQM ecosystem.` +
+      ` If you review clinical-trial safety data — medical monitor, biostatistician, or data` +
+      ` scientist — each migrated renderer ships with a live demo, an audit-style test-evidence` +
+      ` report, and a generated API reference.</p>` +
+      `</div>`
   );
+
+  const ctas = [];
+  if (first) {
+    ctas.push(
+      `<a class="primary" href="${first.module}/index.html">Live demo: ${escapeHtml(first.title)}</a>`
+    );
+  }
+  ctas.push(`<a href="architecture.html">How it works</a>`);
+  ctas.push(`<a href="about.html">About the project</a>`);
+  html.push(`<div class="home-ctas">${ctas.join('')}</div>`);
+
+  html.push(
+    `<h2>Available renderers <span class="gallery-count">${available.length} of ` +
+      `${config.renderers.length} migrated</span></h2>`,
+    `<ul class="gallery">${available.map(availableCard).join('\n')}</ul>`,
+    `<h2>Migration queue <span class="gallery-count">${queued.length} to go</span></h2>`,
+    `<p class="site-intro">Each queued renderer already has a reviewed requirement matrix in` +
+      ` <a href="https://github.com/jwildfire/safety.agent">safety.agent</a> — the specification` +
+      ` its migration will be built and tested against.</p>`,
+    `<ul class="gallery gallery-planned">${queued.map(placeholderCard).join('\n')}</ul>`
+  );
+  return html.join('\n');
 }
 
 function paramsTable(params) {
