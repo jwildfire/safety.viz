@@ -1,13 +1,16 @@
 {
   "module": "histogram",
-  "generatedAt": "2026-07-11T15:28:41.563Z",
+  "generatedAt": "2026-07-11T15:35:11.423Z",
   "environment": {
-    "os": "darwin 23.6.0",
-    "node": "v24.14.0",
+    "os": "linux 6.17.0-1018-azure",
+    "node": "v22.23.1",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": null,
+  "run": {
+    "id": "29158159976",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29158159976"
+  },
   "records": [
     {
       "test": "built ae-timelines demo mounts the shared shell with no console errors (#7) (#17)",
@@ -103,7 +106,7 @@
       "status": "pass",
       "requirementIds": ["SH-CHART-004", "SH-CTRL-006"],
       "issueRefs": [19],
-      "screenshots": ["SH-CHART-004-grouped-multiples.png"]
+      "screenshots": ["SH-CHART-004-grouped-multiples.png", "SH-CTRL-006-shared-bin-multiples.png"]
     },
     {
       "test": "SH-CHART-005: p-value annotations display the approximation and validation disclaimer (#2)",
@@ -119,7 +122,7 @@
       "status": "pass",
       "requirementIds": ["SH-CTRL-001", "SH-CTRL-002", "SH-CTRL-006"],
       "issueRefs": [2],
-      "screenshots": ["SH-CTRL-001-control-panel.png"]
+      "screenshots": ["SH-CTRL-001-control-panel.png", "SH-CTRL-006-shared-bin-multiples.png"]
     },
     {
       "test": "SH-CTRL-003: participant note updates when a filter is applied (#2)",
@@ -151,7 +154,7 @@
       "status": "pass",
       "requirementIds": ["SH-CTRL-006"],
       "issueRefs": [19],
-      "screenshots": []
+      "screenshots": ["SH-CTRL-006-shared-bin-multiples.png"]
     },
     {
       "test": "SH-CTRL-007: x-axis tick mode switches labels between centers and bin boundaries (#2)",
@@ -351,7 +354,7 @@
       "status": "pass",
       "requirementIds": ["SH-CTRL-006"],
       "issueRefs": [19, 19],
-      "screenshots": []
+      "screenshots": ["SH-CTRL-006-shared-bin-multiples.png"]
     },
     {
       "test": "histogram binning matches the original renderer (#19) SH-CTRL-006: bin quantity is clamped to the count of unique results (#19)",
@@ -359,7 +362,7 @@
       "status": "pass",
       "requirementIds": ["SH-CTRL-006"],
       "issueRefs": [19, 19],
-      "screenshots": []
+      "screenshots": ["SH-CTRL-006-shared-bin-multiples.png"]
     },
     {
       "test": "histogram binning matches the original renderer (#19) SH-CTRL-006: Scott's rule and Freedman-Diaconis enforce the original's 5-bin floor (#19)",
@@ -367,7 +370,7 @@
       "status": "pass",
       "requirementIds": ["SH-CTRL-006"],
       "issueRefs": [19, 19],
-      "screenshots": []
+      "screenshots": ["SH-CTRL-006-shared-bin-multiples.png"]
     },
     {
       "test": "histogram binning matches the original renderer (#19) SH-CTRL-006: Shimazaki-Shinomoto minimizes the original's cost function (#19)",
@@ -375,7 +378,7 @@
       "status": "pass",
       "requirementIds": ["SH-CTRL-006"],
       "issueRefs": [19, 19],
-      "screenshots": []
+      "screenshots": ["SH-CTRL-006-shared-bin-multiples.png"]
     },
     {
       "test": "histogram binning matches the original renderer (#19) SH-CTRL-006: zero-spread results collapse to a single bin (#19)",
@@ -383,7 +386,7 @@
       "status": "pass",
       "requirementIds": ["SH-CTRL-006"],
       "issueRefs": [19, 19],
-      "screenshots": []
+      "screenshots": ["SH-CTRL-006-shared-bin-multiples.png"]
     },
     {
       "test": "histogram checkInputs SH-DATA-001: missing required variables throw the pilot's error message (#2)",
@@ -599,7 +602,7 @@
       "status": "pass",
       "requirementIds": ["SH-CTRL-006"],
       "issueRefs": [2],
-      "screenshots": []
+      "screenshots": ["SH-CTRL-006-shared-bin-multiples.png"]
     },
     {
       "test": "histogram structureData SH-CTRL-006: custom quantity and custom width drive the bin count (#2)",
@@ -607,7 +610,7 @@
       "status": "pass",
       "requirementIds": ["SH-CTRL-006"],
       "issueRefs": [2],
-      "screenshots": []
+      "screenshots": ["SH-CTRL-006-shared-bin-multiples.png"]
     },
     {
       "test": "histogram structureData SH-DATA-001: measure labels combine the measure with its unit when present (#2)",
