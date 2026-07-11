@@ -15618,7 +15618,7 @@ function summarizeVisitGroups(rows, { timeCol, valueCol, groupCol }) {
 function flagOutliers(rows, statsByVisitGroup, settings, groupCol) {
   for (const row of rows) {
     const visit = row[settings.time_col];
-    const group = row.__srot_group !== void 0 ? row.__srot_group : groupKey(row, groupCol);
+    const group = groupKey(row, groupCol);
     row.__srot_group = group;
     const stats = (statsByVisitGroup[visit] || {})[group];
     row.__srot_outlier = settings.outliers && stats ? row.__srot_value < stats.q5 || row.__srot_value > stats.q95 : false;
@@ -17039,7 +17039,8 @@ var SafetyOutlierExplorer = class {
     this.footnote.textContent = "Hover a point for details; click a point to highlight a participant.";
     this.filteredData = this.currentFilteredData();
     if (!this.filteredData.length) {
-      this.notes.innerHTML = "<span>No records match the current filters.</span>";
+      this.updateNotes();
+      this.notes.innerHTML = "<span>No records match the current filters.</span>" + this.notes.innerHTML;
       return;
     }
     this.drawChart();
