@@ -33,6 +33,8 @@ schemes appear:
 | SH-CTRL-007                         | —                                        | #2    | x-axis tick mode switches labels between centers and bin boundaries         |
 | SH-CHART-005                        | — (see SH-REG-078 note)                  | #2    | p-value annotations display the approximation and validation disclaimer     |
 | SH-CHART-004                        | —                                        | #2    | group-by renders grouped histograms                                         |
+| SH-CHART-004/SH-CTRL-006            | —                                        | #19   | grouped small multiples share the main chart's bin boundaries               |
+| SH-CTRL-006                         | —                                        | #19   | bin boundaries anchor to the measure results, not the filtered subset       |
 | SH-API-001 (module scheme)          | — (see legacy-API note)                  | #2    | lifecycle API supports init, setData, setSettings, render, resize, destroy  |
 
 ## Unit evidence (Vitest — `tests/unit/histogram/`)
@@ -44,6 +46,7 @@ schemes appear:
 | SH-CFG-013/014               | SH-CFG-013, SH-CFG-014     | #2    | `configure.test.js`     |
 | SH-DATA-001/002              | SH-CFG-005                 | #2    | `structureData.test.js` |
 | SH-CTRL-002/005/006          | SH-FUNC-004C (detection)   | #2    | `structureData.test.js` |
+| SH-CTRL-006 (original QC)    | —                          | #19   | `binning.test.js`       |
 | SH-CTRL-005/007              | SH-FUNC-005A, SH-FUNC-005B | #2    | `getScales.test.js`     |
 | SH-CHART-002/005             | SH-FUNC-011 (colors)       | #2    | `getPlugins.test.js`    |
 | SH-LIST-002/003/004          | —                          | #2    | `listing.test.js`       |
