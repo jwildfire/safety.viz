@@ -21,22 +21,150 @@ import {
 // One row per participant × measure × visit. Two blank results (SDD-REG-008)
 // are removed on cleaning. Visits (by VISITNUM): Screening 0, Week 2 2, Week 4 4.
 const RAW = [
-  { USUBJID: '01-001', TEST: 'Albumin', VISIT: 'Screening', VISITNUM: 0, STRESN: 10, SITE: 'A', ARM: 'Placebo' },
-  { USUBJID: '01-001', TEST: 'Albumin', VISIT: 'Week 4', VISITNUM: 4, STRESN: 14, SITE: 'A', ARM: 'Placebo' },
-  { USUBJID: '01-001', TEST: 'Bilirubin', VISIT: 'Screening', VISITNUM: 0, STRESN: 20, SITE: 'A', ARM: 'Placebo' },
-  { USUBJID: '01-001', TEST: 'Bilirubin', VISIT: 'Week 4', VISITNUM: 4, STRESN: 15, SITE: 'A', ARM: 'Placebo' },
-  { USUBJID: '01-001', TEST: 'Calcium', VISIT: 'Screening', VISITNUM: 0, STRESN: 1, SITE: 'A', ARM: 'Placebo' },
-  { USUBJID: '01-001', TEST: 'Calcium', VISIT: 'Week 4', VISITNUM: 4, STRESN: 2, SITE: 'A', ARM: 'Placebo' },
-  { USUBJID: '01-002', TEST: 'Albumin', VISIT: 'Screening', VISITNUM: 0, STRESN: 8, SITE: 'A', ARM: 'Drug' },
-  { USUBJID: '01-002', TEST: 'Albumin', VISIT: 'Week 2', VISITNUM: 2, STRESN: '', SITE: 'A', ARM: 'Drug' },
-  { USUBJID: '01-002', TEST: 'Albumin', VISIT: 'Week 4', VISITNUM: 4, STRESN: 8, SITE: 'A', ARM: 'Drug' },
-  { USUBJID: '01-002', TEST: 'Bilirubin', VISIT: 'Screening', VISITNUM: 0, STRESN: 5, SITE: 'A', ARM: 'Drug' },
-  { USUBJID: '01-002', TEST: 'Bilirubin', VISIT: 'Week 4', VISITNUM: 4, STRESN: '', SITE: 'A', ARM: 'Drug' },
-  { USUBJID: '01-003', TEST: 'Albumin', VISIT: 'Screening', VISITNUM: 0, STRESN: 6, SITE: 'B', ARM: 'Placebo' },
-  { USUBJID: '01-003', TEST: 'Albumin', VISIT: 'Week 2', VISITNUM: 2, STRESN: 6.5, SITE: 'B', ARM: 'Placebo' },
-  { USUBJID: '01-003', TEST: 'Albumin', VISIT: 'Week 4', VISITNUM: 4, STRESN: 12, SITE: 'B', ARM: 'Placebo' },
-  { USUBJID: '01-003', TEST: 'Bilirubin', VISIT: 'Screening', VISITNUM: 0, STRESN: 10, SITE: 'B', ARM: 'Placebo' },
-  { USUBJID: '01-003', TEST: 'Bilirubin', VISIT: 'Week 4', VISITNUM: 4, STRESN: 13, SITE: 'B', ARM: 'Placebo' }
+  {
+    USUBJID: '01-001',
+    TEST: 'Albumin',
+    VISIT: 'Screening',
+    VISITNUM: 0,
+    STRESN: 10,
+    SITE: 'A',
+    ARM: 'Placebo'
+  },
+  {
+    USUBJID: '01-001',
+    TEST: 'Albumin',
+    VISIT: 'Week 4',
+    VISITNUM: 4,
+    STRESN: 14,
+    SITE: 'A',
+    ARM: 'Placebo'
+  },
+  {
+    USUBJID: '01-001',
+    TEST: 'Bilirubin',
+    VISIT: 'Screening',
+    VISITNUM: 0,
+    STRESN: 20,
+    SITE: 'A',
+    ARM: 'Placebo'
+  },
+  {
+    USUBJID: '01-001',
+    TEST: 'Bilirubin',
+    VISIT: 'Week 4',
+    VISITNUM: 4,
+    STRESN: 15,
+    SITE: 'A',
+    ARM: 'Placebo'
+  },
+  {
+    USUBJID: '01-001',
+    TEST: 'Calcium',
+    VISIT: 'Screening',
+    VISITNUM: 0,
+    STRESN: 1,
+    SITE: 'A',
+    ARM: 'Placebo'
+  },
+  {
+    USUBJID: '01-001',
+    TEST: 'Calcium',
+    VISIT: 'Week 4',
+    VISITNUM: 4,
+    STRESN: 2,
+    SITE: 'A',
+    ARM: 'Placebo'
+  },
+  {
+    USUBJID: '01-002',
+    TEST: 'Albumin',
+    VISIT: 'Screening',
+    VISITNUM: 0,
+    STRESN: 8,
+    SITE: 'A',
+    ARM: 'Drug'
+  },
+  {
+    USUBJID: '01-002',
+    TEST: 'Albumin',
+    VISIT: 'Week 2',
+    VISITNUM: 2,
+    STRESN: '',
+    SITE: 'A',
+    ARM: 'Drug'
+  },
+  {
+    USUBJID: '01-002',
+    TEST: 'Albumin',
+    VISIT: 'Week 4',
+    VISITNUM: 4,
+    STRESN: 8,
+    SITE: 'A',
+    ARM: 'Drug'
+  },
+  {
+    USUBJID: '01-002',
+    TEST: 'Bilirubin',
+    VISIT: 'Screening',
+    VISITNUM: 0,
+    STRESN: 5,
+    SITE: 'A',
+    ARM: 'Drug'
+  },
+  {
+    USUBJID: '01-002',
+    TEST: 'Bilirubin',
+    VISIT: 'Week 4',
+    VISITNUM: 4,
+    STRESN: '',
+    SITE: 'A',
+    ARM: 'Drug'
+  },
+  {
+    USUBJID: '01-003',
+    TEST: 'Albumin',
+    VISIT: 'Screening',
+    VISITNUM: 0,
+    STRESN: 6,
+    SITE: 'B',
+    ARM: 'Placebo'
+  },
+  {
+    USUBJID: '01-003',
+    TEST: 'Albumin',
+    VISIT: 'Week 2',
+    VISITNUM: 2,
+    STRESN: 6.5,
+    SITE: 'B',
+    ARM: 'Placebo'
+  },
+  {
+    USUBJID: '01-003',
+    TEST: 'Albumin',
+    VISIT: 'Week 4',
+    VISITNUM: 4,
+    STRESN: 12,
+    SITE: 'B',
+    ARM: 'Placebo'
+  },
+  {
+    USUBJID: '01-003',
+    TEST: 'Bilirubin',
+    VISIT: 'Screening',
+    VISITNUM: 0,
+    STRESN: 10,
+    SITE: 'B',
+    ARM: 'Placebo'
+  },
+  {
+    USUBJID: '01-003',
+    TEST: 'Bilirubin',
+    VISIT: 'Week 4',
+    VISITNUM: 4,
+    STRESN: 13,
+    SITE: 'B',
+    ARM: 'Placebo'
+  }
 ];
 
 const settings = syncSettings({ filters: ['SITE', 'ARM'] });
@@ -88,7 +216,13 @@ describe('delta-delta structureData', () => {
     const byId = participantsById(rows, { ...baseState, baseline: ['Screening', 'Week 2'] });
     // 01-003 Albumin baseline = mean(6, 6.5) = 6.25; comparison Week 4 = 12.
     expect(byId['01-003'].delta_x).toBeCloseTo(5.75, 10);
-    expect(visitMean(rows.filter((r) => r.USUBJID === '01-003' && r.TEST === 'Albumin'), ['Screening', 'Week 2'], settings)).toBeCloseTo(6.25, 10);
+    expect(
+      visitMean(
+        rows.filter((r) => r.USUBJID === '01-003' && r.TEST === 'Albumin'),
+        ['Screening', 'Week 2'],
+        settings
+      )
+    ).toBeCloseTo(6.25, 10);
   });
 
   it('SDD-REG-019/025: measure rows sort X-measure, Y-measure, then alphabetical, tagged by axis (#25)', () => {
@@ -108,7 +242,11 @@ describe('delta-delta structureData', () => {
       baseState
     );
     const albumin = details.find((detail) => detail.key === 'Albumin');
-    expect(albumin.records.map((record) => record.VISIT)).toEqual(['Screening', 'Week 2', 'Week 4']);
+    expect(albumin.records.map((record) => record.VISIT)).toEqual([
+      'Screening',
+      'Week 2',
+      'Week 4'
+    ]);
     expect(albumin.records.map((record) => record.color)).toEqual([
       BASELINE_COLOR,
       OTHER_COLOR,
@@ -125,11 +263,16 @@ describe('delta-delta structureData', () => {
 
   it('SDD-REG-006: filters keep only the participants whose metadata matches (#25)', () => {
     const built = buildParticipants(rows, settings, baseState);
-    expect(applyFilters(built, { SITE: 'A' }).map((p) => p.id).sort()).toEqual(['01-001', '01-002']);
-    expect(applyFilters(built, { ARM: 'Placebo' }).map((p) => p.id).sort()).toEqual([
-      '01-001',
-      '01-003'
-    ]);
+    expect(
+      applyFilters(built, { SITE: 'A' })
+        .map((p) => p.id)
+        .sort()
+    ).toEqual(['01-001', '01-002']);
+    expect(
+      applyFilters(built, { ARM: 'Placebo' })
+        .map((p) => p.id)
+        .sort()
+    ).toEqual(['01-001', '01-003']);
     expect(applyFilters(built, { SITE: null }).length).toBe(3);
   });
 });

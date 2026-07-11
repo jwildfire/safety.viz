@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { DEFAULT_SETTINGS, arrayify, fieldSpec, syncSettings } from '../../../src/delta-delta/configure.js';
+import {
+  DEFAULT_SETTINGS,
+  arrayify,
+  fieldSpec,
+  syncSettings
+} from '../../../src/delta-delta/configure.js';
 
 // Unit evidence for the delta-delta settings layer (#25): the configuration
 // defaults and their normalization, keyed to the safety.agent matrix
@@ -23,7 +28,9 @@ describe('delta-delta configure', () => {
   });
 
   it('SDD-CFG-014: filters accept strings and objects, normalized to { value_col, label } (#25)', () => {
-    const synced = syncSettings({ filters: ['SITE', { value_col: 'ARM', label: 'Treatment Group' }] });
+    const synced = syncSettings({
+      filters: ['SITE', { value_col: 'ARM', label: 'Treatment Group' }]
+    });
     expect(synced.filters).toEqual([
       { value_col: 'SITE', label: 'SITE' },
       { value_col: 'ARM', label: 'Treatment Group' }
@@ -41,7 +48,10 @@ describe('delta-delta configure', () => {
   it('SDD-CFG-015: supplied details extend the defaults without duplicating (#25)', () => {
     const synced = syncSettings({
       filters: ['SITE'],
-      details: [{ value_col: 'SITE', label: 'Site' }, { value_col: 'AGE', label: 'Age' }]
+      details: [
+        { value_col: 'SITE', label: 'Site' },
+        { value_col: 'AGE', label: 'Age' }
+      ]
     });
     expect(synced.details.map((detail) => detail.value_col)).toEqual(['USUBJID', 'SITE', 'AGE']);
   });
