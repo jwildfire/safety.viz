@@ -38,11 +38,9 @@
           window.__aeTimelinesInstance = instance;
           const selections = [];
           window.__aetParticipantsSelected = selections;
-          document
-            .querySelector('#container')
-            .addEventListener('participantsSelected', (event) => {
-              selections.push(event.detail.data);
-            });
+          document.querySelector('#container').addEventListener('participantsSelected', (event) => {
+            selections.push(event.detail.data);
+          });
           instance.init(parseCsv(text));
         })
         .catch((error) => {

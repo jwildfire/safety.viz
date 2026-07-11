@@ -34,7 +34,10 @@ describe('ae-timelines checkInputs', () => {
       'Required variable(s) missing: AESEV'
     );
     expect(() =>
-      checkInputs([{ ...noSeverity, AEREL: 'RELATED' }], syncSettings({ color: { value_col: 'AEREL' } }))
+      checkInputs(
+        [{ ...noSeverity, AEREL: 'RELATED' }],
+        syncSettings({ color: { value_col: 'AEREL' } })
+      )
     ).not.toThrow();
   });
 

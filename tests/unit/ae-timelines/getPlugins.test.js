@@ -86,9 +86,7 @@ describe('ae-timelines getPlugins', () => {
       ...events[1],
       record: { ...events[1].record, AESERDTL: 'Hospitalization' }
     };
-    expect(tooltipLines(detailEvent, detailSettings).at(-1)).toBe(
-      'Serious Event: Hospitalization'
-    );
+    expect(tooltipLines(detailEvent, detailSettings).at(-1)).toBe('Serious Event: Hospitalization');
   });
 
   it('AET-FUNC-003: withAlpha converts hex colors to rgba fills (#26)', () => {

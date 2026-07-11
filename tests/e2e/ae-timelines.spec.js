@@ -226,9 +226,7 @@ test.describe('safety.viz ae-timelines module', () => {
     expect(detail.labels).toEqual(['1', '2']);
     expect(detail.min).toBe(detail.mainMin);
     expect(detail.max).toBe(detail.mainMax);
-    expect(await page.evaluate(() => window.__aetParticipantsSelected.at(-1))).toEqual([
-      'SUBJ-01'
-    ]);
+    expect(await page.evaluate(() => window.__aetParticipantsSelected.at(-1))).toEqual(['SUBJ-01']);
     await captureEvidence(page, 'AET-FUNC-009', 'participant-detail');
   });
 

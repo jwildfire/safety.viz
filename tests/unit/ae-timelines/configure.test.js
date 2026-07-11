@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { DEFAULT_SETTINGS, SORT_OPTIONS, syncSettings } from '../../../src/ae-timelines/configure.js';
+import {
+  DEFAULT_SETTINGS,
+  SORT_OPTIONS,
+  syncSettings
+} from '../../../src/ae-timelines/configure.js';
 
 // Settings defaults + merge for the ae-timelines module (#26), matching the
 // original renderer's defaultSettings.js/syncSettings behavior. Requirement

@@ -111,7 +111,10 @@ describe('ae-timelines structureData', () => {
       'SUBJ-07', // day 11 (its day-'UNK' record was removed)
       'SUBJ-04' // day 15
     ]);
-    const tied = [ae('SUBJ-B', '1', '5', '6', 'AE', 'MILD'), ae('SUBJ-A', '1', '5', '6', 'AE', 'MILD')];
+    const tied = [
+      ae('SUBJ-B', '1', '5', '6', 'AE', 'MILD'),
+      ae('SUBJ-A', '1', '5', '6', 'AE', 'MILD')
+    ];
     expect(sortSubjects(cleanData(tied, settings).rows, settings, 'earliest')).toEqual([
       'SUBJ-A',
       'SUBJ-B'
