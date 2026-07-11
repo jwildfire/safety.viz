@@ -1,5 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
 
+// PW_PORT lets parallel worktrees run the browser suite side by side without
+// sharing (and silently cross-serving) the fixture web server.
+const port = Number(process.env.PW_PORT || 8099);
+
 export default defineConfig({
   testDir: './tests/e2e',
   timeout: 30_000,
@@ -15,14 +19,14 @@ export default defineConfig({
   snapshotPathTemplate: 'docs/evidence/histogram/{arg}{ext}',
   reporter: [['list'], ['html', { outputFolder: 'playwright-report', open: 'never' }]],
   use: {
-    baseURL: 'http://127.0.0.1:8099',
+    baseURL: `http://127.0.0.1:${port}`,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure'
   },
   webServer: {
     // Serve the repo root so fixture pages can load the committed dist/ bundles.
-    command: 'python3 -m http.server 8099 --directory .',
-    url: 'http://127.0.0.1:8099/',
+    command: `python3 -m http.server ${port} --directory .`,
+    url: `http://127.0.0.1:${port}/`,
     reuseExistingServer: !process.env.CI,
     timeout: 10_000
   },
