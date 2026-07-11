@@ -1,12 +1,11 @@
 // Demo mount for the shift-plot page (#14): recreates the original
 // safety-shift-plot test page (baseline-versus-comparison scatter with the
 // measure and baseline/comparison visit controls) against the real ADBDS
-// example data vendored in ./adbds.csv. That file carries one row per
-// participant per measure but no visit column, so — exactly as a study feed
-// would supply VISIT/VISITNUM — the demo derives a visit per repeated
-// measurement from its row order (first result = Visit 1, next = Visit 2, …),
-// then pairs Visit 1 against Visit 2. Loaded by shift-plot/index.html after the
-// dist/ bundle.
+// example data vendored in ./adbds.csv, using its real VISIT/VISITNUM
+// columns (Screening through End of Study, unscheduled visits included).
+// The initial view pairs the classic shift — Screening against End of
+// Study — and the visit controls expose every other pairing. Loaded by
+// shift-plot/index.html after the dist/ bundle.
 (function () {
   // Quote-aware CSV parser: the real data quotes fields with embedded commas
   // (e.g. "Aminotransferase, alanine (ALT)").
@@ -57,19 +56,6 @@
     });
   }
 
-  // Assign a visit per repeated (participant, measure) result in row order.
-  function addVisits(records) {
-    const counts = new Map();
-    records.forEach(function (record) {
-      const key = record.USUBJID + '||' + record.TEST;
-      const n = (counts.get(key) || 0) + 1;
-      counts.set(key, n);
-      record.VISITNUM = String(n);
-      record.VISIT = 'Visit ' + n;
-    });
-    return records;
-  }
-
   fetch('./adbds.csv')
     .then(function (response) {
       return response.text();
@@ -82,11 +68,17 @@
           { value_col: 'RACE', label: 'Race' },
           { value_col: 'ARM', label: 'Treatment Group' }
         ],
-        baseline_visits: ['Visit 1'],
-        comparison_visits: ['Visit 2']
+        baseline_visits: ['Screening'],
+        comparison_visits: ['End of Study']
       });
       window.__safetyShiftPlotInstance = instance;
-      instance.init(addVisits(parseCsv(text)));
+      // A handful of source rows carry no visit assignment; they cannot join a
+      // baseline/comparison pairing, so drop them before mounting.
+      instance.init(
+        parseCsv(text).filter(function (record) {
+          return record.VISIT !== '';
+        })
+      );
     })
     .catch(function (error) {
       console.error(error);
