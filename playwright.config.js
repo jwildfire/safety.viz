@@ -15,8 +15,10 @@ export default defineConfig({
   },
   // Dual-purpose evidence screenshots live with the module's evidence set —
   // no platform suffix: baselines are canonical to the Linux CI runner (see
-  // tests/e2e/evidence.js and scripts/evidence.mjs).
-  snapshotPathTemplate: 'docs/evidence/histogram/{arg}{ext}',
+  // tests/e2e/evidence.js and scripts/evidence.mjs). captureEvidence passes
+  // ['<module>', '<name>.png'] path segments, so {arg} resolves to
+  // docs/evidence/<module>/<name>.png per renderer module (#20).
+  snapshotPathTemplate: 'docs/evidence/{arg}{ext}',
   reporter: [['list'], ['html', { outputFolder: 'playwright-report', open: 'never' }]],
   use: {
     baseURL: `http://127.0.0.1:${port}`,
