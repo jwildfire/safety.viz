@@ -266,7 +266,13 @@ ul.tests li {
   margin: 0.35rem 0 1rem;
 }
 
-/* Demo page: the module brings its own styles; give it room. */
+/* Demo page: the module brings its own styles; give it room. The demo-page
+   wrapper (renderDemoPage) widens the shell so the control sidebar and chart
+   both get full room. */
+
+.site-main:has(.demo-page) {
+  max-width: 85rem;
+}
 
 #container {
   margin-top: 1rem;

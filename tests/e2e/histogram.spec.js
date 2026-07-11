@@ -87,8 +87,10 @@ test.describe('safety.viz histogram module', () => {
 
   test('SH-CTRL-003: participant note updates when a filter is applied (#2)', async ({ page }) => {
     const before = await page.locator('.sh-notes').innerText();
+    // label:text-is keeps this unambiguous: the Group charts by select also
+    // offers a "Sex" option, and both controls now live in .sh-controls (#15).
     await page
-      .locator('.sh-controls .sh-control', { hasText: 'Sex' })
+      .locator('.sh-controls .sh-control', { has: page.locator('label:text-is("Sex")') })
       .locator('select')
       .selectOption({ index: 1 });
     const after = await page.locator('.sh-notes').innerText();

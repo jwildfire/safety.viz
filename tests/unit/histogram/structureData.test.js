@@ -10,6 +10,7 @@ import {
   mean,
   sd,
   precision,
+  displayDigits,
   calculateBins
 } from '../../../src/histogram/structureData.js';
 
@@ -73,6 +74,16 @@ describe('histogram structureData', () => {
     expect(precision([1, 2.5, 3.25])).toBe(2);
     expect(precision([1.123456])).toBe(4);
     expect(precision([1, 2])).toBe(0);
+  });
+
+  it('display digits resolve the bin width without exceeding the data precision (#15)', () => {
+    expect(displayDigits(4.09, [18.6212, 79.8105])).toBe(0); // wide bins: whole numbers
+    expect(displayDigits(0.5, [0.123456, 4.2])).toBe(1);
+    expect(displayDigits(0.05, [0.123456, 4.2])).toBe(2);
+    expect(displayDigits(0.5, [1, 2])).toBe(0); // integer data never gains decimals
+    expect(displayDigits(0.0001, [1.5])).toBe(1); // capped by the data precision
+    expect(displayDigits(0, [1.25])).toBe(2); // no width yet: fall back to data precision
+    expect(displayDigits(NaN, [1.25])).toBe(2);
   });
 
   it("SH-CTRL-006: binning algorithms produce the pilot's bin quantities (#2)", () => {

@@ -395,19 +395,24 @@ export function renderApiPage(model) {
   return html.join('\n');
 }
 
-// Demo page (#21 pillar 1): the site shell around the same mount the
-// Playwright harness fixture uses — committed IIFE bundle + fixture data.
+// Demo page (#21 pillar 1, reworked under #15): the site shell around the
+// recreated original safety-histogram example — committed IIFE bundle + the
+// vendored real ADBDS example data. The .demo-page wrapper widens the layout
+// (site.css) so the control sidebar and chart get full room.
 export function renderDemoPage({ renderer, version, config }) {
   return (
+    `<div class="demo-page">` +
     `<h1>${escapeHtml(renderer.title)}</h1>` +
     `<p class="page-links"><a href="evidence.html">Test evidence</a> · <a href="api.html">API reference</a>` +
     ` · <a href="${config.matrixBaseUrl}/${renderer.matrix}">Requirement matrix</a></p>` +
     `<p>${escapeHtml(renderer.blurb)} This live demo mounts the committed` +
     ` <code>dist/safety.viz-${version}</code> IIFE bundle — the same asset gsm.safety vendors —` +
-    ` against the committed <code>adbds.csv</code> fixture data, with the full control panel active.</p>` +
+    ` against the original safety-histogram example data (<code>adbds.csv</code> from the` +
+    ` <a href="https://github.com/RhoInc/data-library">RhoInc data library</a>), with the full control panel active.</p>` +
     `<div id="container"></div>` +
     `<script src="../dist/safety.viz-${version}/safety.viz.js"></script>` +
-    `<script src="./demo.js"></script>`
+    `<script src="./demo.js"></script>` +
+    `</div>`
   );
 }
 

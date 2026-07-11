@@ -37,6 +37,15 @@ export function precision(values) {
   return Math.min(4, Math.max(0, ...decimals));
 }
 
+// Display precision for bin labels and tooltips (#15): just enough decimals
+// to resolve the bin width (d3's precisionFixed rule), never more than the
+// data itself carries — so real-world results with long fractional tails
+// don't produce noisy axis labels.
+export function displayDigits(width, values) {
+  if (!Number.isFinite(width) || width <= 0) return precision(values);
+  return Math.min(precision(values), Math.max(0, -Math.floor(Math.log10(width))));
+}
+
 // Removes missing/non-numeric results, reporting how many were dropped (SH-DATA-002).
 export function cleanData(rawData, settings) {
   let removed = 0;
