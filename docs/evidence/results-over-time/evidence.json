@@ -1,16 +1,13 @@
 {
   "module": "results-over-time",
-  "generatedAt": "2026-07-11T23:15:32.840Z",
+  "generatedAt": "2026-07-11T23:18:34.549Z",
   "environment": {
-    "os": "linux 6.17.0-1018-azure",
-    "node": "v22.23.1",
+    "os": "darwin 23.6.0",
+    "node": "v24.14.0",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": {
-    "id": "29171816896",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29171816896"
-  },
+  "run": null,
   "records": [
     {
       "test": "built ae-timelines demo mounts the shared shell with no console errors (#7) (#17)",
@@ -557,20 +554,20 @@
       "screenshots": ["SROT-DATA-002-invalid-data-note.png"]
     },
     {
+      "test": "results-over-time structureData SROT-REG-002/010: flagOutliers recomputes each row group when the grouping changes between renders (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-REG-002"],
+      "issueRefs": [27],
+      "screenshots": ["SROT-REG-002-grouped-box-plots.png"]
+    },
+    {
       "test": "results-over-time structureData SROT-REG-010/012: flagOutliers marks values outside the 5th/95th percentiles only when enabled (#27)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["SROT-REG-010"],
       "issueRefs": [27],
       "screenshots": ["SROT-REG-010-outliers.png"]
-    },
-    {
-      "test": "results-over-time structureData SROT-REG-013: flagOutliers recomputes each row group when the grouping changes between renders (#27)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SROT-REG-013"],
-      "issueRefs": [27],
-      "screenshots": []
     },
     {
       "test": "results-over-time structureData SROT-REG-014/015: summarize returns the tooltip statistics for a sorted sample (#27)",

@@ -120,7 +120,7 @@ describe('results-over-time structureData', () => {
     expect(rows.every((row) => row.__srot_outlier === false)).toBe(true);
   });
 
-  it('SROT-REG-013: flagOutliers recomputes each row group when the grouping changes between renders (#27)', () => {
+  it('SROT-REG-002/010: flagOutliers recomputes each row group when the grouping changes between renders (#27)', () => {
     // Same row objects flagged twice, as render does when the Group-by control
     // changes: first grouped by ARM, then pooled. The pooled pass must key its
     // stats lookups on the pooled group, not a group memoized on first render.

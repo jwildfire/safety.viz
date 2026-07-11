@@ -31,17 +31,18 @@ Playwright).
 
 ## Unit evidence (Vitest — `tests/unit/results-over-time/`)
 
-| Requirement ID                      | Source matrix rows                                     | Issue | Test file                                       |
-| ----------------------------------- | ------------------------------------------------------ | ----- | ----------------------------------------------- |
-| SROT-CFG-004/005/006/007/009        | SROT-CFG-004, SROT-CFG-005, SROT-CFG-007, SROT-CFG-009 | #27   | `configure.test.js`                             |
-| SROT-CFG-008/012/013/014/015        | SROT-CFG-008, SROT-CFG-012, SROT-CFG-013, SROT-CFG-014 | #27   | `configure.test.js`                             |
-| SROT-CFG-017/018/019, SROT-DATA-003 | SROT-CFG-017, SROT-CFG-019, SROT-DATA-003              | #27   | `configure.test.js` / `structureData.test.js`   |
-| SROT-DATA-001/002                   | SROT-DATA-001, SROT-DATA-002                           | #27   | `checkInputs.test.js` / `structureData.test.js` |
-| SROT-CFG-005/006                    | SROT-CFG-005, SROT-CFG-006                             | #27   | `structureData.test.js`                         |
-| SROT-REG-010/012                    | SROT-REG-010, SROT-REG-012                             | #27   | `structureData.test.js`                         |
-| SROT-REG-021                        | SROT-REG-021                                           | #27   | `structureData.test.js`                         |
-| SROT-REG-015/016/017/020            | SROT-REG-015, SROT-REG-016, SROT-REG-017, SROT-REG-020 | #27   | `getScales.test.js`                             |
-| SROT-REG-003/011/014/015            | SROT-REG-003, SROT-REG-011, SROT-REG-014, SROT-REG-015 | #27   | `getPlugins.test.js`                            |
+| Requirement ID                                | Source matrix rows                                     | Issue | Test file                                       |
+| --------------------------------------------- | ------------------------------------------------------ | ----- | ----------------------------------------------- |
+| SROT-CFG-004/005/006/007/009                  | SROT-CFG-004, SROT-CFG-005, SROT-CFG-007, SROT-CFG-009 | #27   | `configure.test.js`                             |
+| SROT-CFG-008/012/013/014/015                  | SROT-CFG-008, SROT-CFG-012, SROT-CFG-013, SROT-CFG-014 | #27   | `configure.test.js`                             |
+| SROT-CFG-017/018/019, SROT-DATA-003           | SROT-CFG-017, SROT-CFG-019, SROT-DATA-003              | #27   | `configure.test.js` / `structureData.test.js`   |
+| SROT-DATA-001/002                             | SROT-DATA-001, SROT-DATA-002                           | #27   | `checkInputs.test.js` / `structureData.test.js` |
+| SROT-CFG-005/006                              | SROT-CFG-005, SROT-CFG-006                             | #27   | `structureData.test.js`                         |
+| SROT-REG-010/012                              | SROT-REG-010, SROT-REG-012                             | #27   | `structureData.test.js`                         |
+| SROT-REG-002/010 (grouping-change regression) | SROT-REG-002, SROT-REG-010                             | #27   | `structureData.test.js`                         |
+| SROT-REG-021                                  | SROT-REG-021                                           | #27   | `structureData.test.js`                         |
+| SROT-REG-015/016/017/020                      | SROT-REG-015, SROT-REG-016, SROT-REG-017, SROT-REG-020 | #27   | `getScales.test.js`                             |
+| SROT-REG-003/011/014/015                      | SROT-REG-003, SROT-REG-011, SROT-REG-014, SROT-REG-015 | #27   | `getPlugins.test.js`                            |
 
 ## Source-matrix routing status (58 rows)
 
