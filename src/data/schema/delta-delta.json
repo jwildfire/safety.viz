@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/jwildfire/safety.viz/main/src/data/schema/delta-delta.json",
+  "title": "safety.viz delta-delta data contract",
+  "description": "Long-format results data: one record per measurement at a visit (SDD-DATA-001). Column names are supplied by the settings mapping; each participant needs at least a baseline and a comparison visit for the two selected measures so change-from-baseline can be computed. The renderer removes missing/non-numeric results with a reported count (SDD-REG-008) and plots one point per participant (change in measure X vs change in measure Y).",
+  "type": "object",
+  "required": ["data", "settings"],
+  "properties": {
+    "data": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "object" },
+      "description": "d3.csv()-style records; every row carries the measure, result, participant, and visit columns named in settings."
+    },
+    "settings": {
+      "type": "object",
+      "description": "Column mappings and rendering options; merged onto the module's DEFAULT_SETTINGS, so only overrides need to be supplied.",
+      "required": ["measure_col", "value_col", "id_col", "visit_col"],
+      "properties": {
+        "measure_col": {
+          "type": "string",
+          "default": "TEST",
+          "description": "Column holding the measure name; required in data (SDD-CFG-004)."
+        },
+        "value_col": {
+          "type": "string",
+          "default": "STRESN",
+          "description": "Column holding the numeric result; required in data. Non-numeric results are removed with a logged count (SDD-CFG-005, SDD-REG-008)."
+        },
+        "id_col": {
+          "type": "string",
+          "default": "USUBJID",
+          "description": "Participant identifier column; one plotted point per participant (SDD-CFG-006)."
+        },
+        "visit_col": {
+          "type": "string",
+          "default": "VISIT",
+          "description": "Categorical visit column; drives the baseline/comparison visit selectors (SDD-CFG-007)."
+        },
+        "visitn_col": {
+          "type": "string",
+          "default": "VISITNUM",
+          "description": "Optional numeric visit column; orders the visit selectors and the sparkline (SDD-CFG-008)."
+        },
+        "measure_x": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "Measure plotted on the x-axis; defaults to the first measure in the data (SDD-CFG-009, SDD-CFG-010)."
+        },
+        "measure_y": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "Measure plotted on the y-axis; defaults to the second measure in the data (SDD-CFG-011)."
+        },
+        "baseline_visits": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [],
+          "description": "Baseline visit(s); multiple visits are averaged. Defaults to the first visit (SDD-CFG-012)."
+        },
+        "comparison_visits": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [],
+          "description": "Comparison visit(s); multiple visits are averaged. Defaults to the last visit (SDD-CFG-013)."
+        },
+        "add_regression_line": {
+          "type": "boolean",
+          "default": true,
+          "description": "Draw a simple linear regression line with an equation and R² note (SDD-REG-026)."
+        },
+        "filters": {
+          "$ref": "#/$defs/fieldList",
+          "description": "Optional filter columns rendered as controls (SDD-CFG-014)."
+        },
+        "details": {
+          "$ref": "#/$defs/fieldList",
+          "description": "Optional participant-detail columns shown above the linked measure table; defaults derive from id_col and the filters (SDD-CFG-015)."
+        }
+      }
+    }
+  },
+  "$defs": {
+    "fieldList": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          { "type": "string" },
+          {
+            "type": "object",
+            "required": ["value_col"],
+            "properties": {
+              "value_col": { "type": "string" },
+              "label": { "type": "string" }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

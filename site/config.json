@@ -37,8 +37,9 @@
     {
       "module": "delta-delta",
       "title": "Safety Delta-Delta",
-      "status": "planned",
-      "blurb": "Paired change-from-baseline comparison of two measures on one scatter plot.",
+      "status": "available",
+      "blurb": "Paired change-from-baseline comparison of two measures on one scatter — quadrant reference lines, an optional regression line, measure and visit pickers, and a linked per-measure detail table with sparklines.",
+      "hero": "SDD-FUNC-002-baseline-scatter.png",
       "matrix": "safety-delta-delta.md"
     },
     {
