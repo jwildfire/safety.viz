@@ -264,8 +264,10 @@ test.describe('safety.viz ae-timelines module', () => {
     await page.locator('.sv-listing-actions button', { hasText: 'Export: CSV' }).click();
     const csvDownload = await download;
     const csv = fs.readFileSync(await csvDownload.path(), 'utf8');
+    // Configured filter columns (Sex here) join the default listing columns,
+    // matching the original's details derivation.
     expect(csv.split('\n')[0]).toBe(
-      'Sequence Number,Start Day,Stop Day,Reported Term,Severity/Intensity,Serious Event'
+      'Sequence Number,Start Day,Stop Day,Reported Term,Severity/Intensity,Serious Event,Sex'
     );
     expect(csv).toContain('Nausea');
     await captureEvidence(page, 'AET-REG-009', 'detail-listing');
