@@ -447,10 +447,6 @@ a.chip-link {
   border-top: 2px solid var(--accent-bright);
 }
 
-.page-links {
-  color: var(--muted);
-}
-
 /* ---- 5. safety.viz pages ------------------------------------------------- */
 
 /* Homepage gallery */
