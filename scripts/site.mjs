@@ -20,7 +20,9 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   parseCoverage,
+  renderAboutPage,
   renderApiPage,
+  renderArchitecturePage,
   renderDemoPage,
   renderEvidencePage,
   renderGallery,
@@ -36,19 +38,48 @@ const config = JSON.parse(readFileSync(path.join(rootDir, 'site/config.json'), '
 const shell = readFileSync(path.join(rootDir, 'site/shell.html'), 'utf8');
 
 const errors = [];
-const page = (file, title, content, root) =>
-  writeFileSync(file, renderShell({ shell, title, content, root }));
+const page = (file, title, content, root, description = '') =>
+  writeFileSync(file, renderShell({ shell, title, content, root, version, description }));
 
 rmSync(siteDir, { recursive: true, force: true });
 mkdirSync(siteDir, { recursive: true });
 copyFileSync(path.join(rootDir, 'site/site.css'), path.join(siteDir, 'site.css'));
+
+// Dedicated site assets (gallery hero images etc.), when present.
+const assetsDir = path.join(rootDir, 'site/assets');
+if (existsSync(assetsDir)) {
+  mkdirSync(path.join(siteDir, 'assets'), { recursive: true });
+  for (const file of readdirSync(assetsDir)) {
+    copyFileSync(path.join(assetsDir, file), path.join(siteDir, 'assets', file));
+  }
+}
 
 // Homepage gallery.
 page(
   path.join(siteDir, 'index.html'),
   'safety.viz — clinical safety graphics',
   renderGallery(config),
-  ''
+  '',
+  'Nine classic clinical-safety graphics from the safetyGraphics ecosystem, rebuilt on ' +
+    'Chart.js with live demos, requirement-traced test evidence, and generated API references.'
+);
+
+// About + architecture (#21): the project story and the technical overview.
+page(
+  path.join(siteDir, 'about.html'),
+  'About · safety.viz',
+  renderAboutPage(config),
+  '',
+  'The story behind safety.viz: the R/Pharma 2026 agentic build, the safetyGraphics ' +
+    'lineage, and credits for the original Rho, Inc. renderers.'
+);
+page(
+  path.join(siteDir, 'architecture.html'),
+  'Architecture · safety.viz',
+  renderArchitecturePage({ config, version }),
+  '',
+  'How safety.viz works: JSON-Schema data contracts, the shared renderer shell, ' +
+    'committed versioned bundles, and the gsm.safety R bindings.'
 );
 
 // Shared dist bundle for the demo pages (IIFE + source map).
@@ -83,7 +114,8 @@ for (const renderer of config.renderers.filter((entry) => entry.status === 'avai
     path.join(moduleDir, 'index.html'),
     `${renderer.title} demo · safety.viz`,
     renderDemoPage({ renderer, version, config }),
-    '../'
+    '../',
+    `Live ${renderer.title} demo: ${renderer.blurb}`
   );
 
   // Test evidence: coverage table joined with evidence.json.
@@ -94,7 +126,9 @@ for (const renderer of config.renderers.filter((entry) => entry.status === 'avai
     path.join(moduleDir, 'evidence.html'),
     `${renderer.title} test evidence · safety.viz`,
     renderEvidencePage({ module, config, coverage, evidence }),
-    '../'
+    '../',
+    `Requirement-traced qualification evidence for the safety.viz ${module} module: ` +
+      'scope, environment, results, and captured screenshots.'
   );
 
   // API reference from the generated data artifact.
@@ -106,8 +140,12 @@ for (const renderer of config.renderers.filter((entry) => entry.status === 'avai
   page(
     path.join(moduleDir, 'api.html'),
     `${renderer.title} API reference · safety.viz`,
-    renderApiPage(JSON.parse(readFileSync(apiFile, 'utf8'))),
-    '../'
+    renderApiPage(JSON.parse(readFileSync(apiFile, 'utf8')), {
+      matrixUrl: `${config.matrixBaseUrl}/${renderer.matrix}`
+    }),
+    '../',
+    `Generated API reference for the safety.viz ${module} module: factory, lifecycle ` +
+      'methods, settings, and the JSON-Schema data contract.'
   );
 }
 

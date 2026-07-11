@@ -10,6 +10,7 @@
       "status": "available",
       "blurb": "Distribution of a chosen lab or vital-sign measure with filters, grouping, normal-range overlay, and a linked participant listing.",
       "hero": "SH-CTRL-001-control-panel.png",
+      "heroAsset": "histogram-hero.png",
       "matrix": "safety-histogram.md"
     },
     {

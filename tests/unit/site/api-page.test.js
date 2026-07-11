@@ -88,4 +88,17 @@ describe('site generator: API page', () => {
     expect(html).toContain('Histogram data contract');
     expect(html).toContain('d3.csv()-style records.');
   });
+
+  it('renders a sidebar table of contents linking every section and method (#21)', () => {
+    expect(html).toContain('class="api-toc"');
+    expect(html).toContain('href="#factory"');
+    expect(html).toContain('href="#settings"');
+    expect(html).toContain('href="#data-contract"');
+    expect(html).toContain('href="#init"');
+  });
+
+  it('opens with a module-anatomy overview linking the architecture page (#21)', () => {
+    expect(html).toContain('id="overview"');
+    expect(html).toContain('href="../architecture.html"');
+  });
 });
