@@ -1,13 +1,16 @@
 {
   "module": "shift-plot",
-  "generatedAt": "2026-07-11T23:18:34.549Z",
+  "generatedAt": "2026-07-11T23:19:49.340Z",
   "environment": {
-    "os": "darwin 23.6.0",
-    "node": "v24.14.0",
+    "os": "linux 6.17.0-1018-azure",
+    "node": "v22.23.1",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": null,
+  "run": {
+    "id": "29171934966",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29171934966"
+  },
   "records": [
     {
       "test": "built ae-timelines demo mounts the shared shell with no console errors (#7) (#17)",
