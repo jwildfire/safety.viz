@@ -1,0 +1,789 @@
+{
+  "module": "ae-timelines",
+  "generatedAt": "2026-07-11T14:50:46.877Z",
+  "environment": {
+    "os": "darwin 23.6.0",
+    "node": "v24.14.0",
+    "playwright": "1.61.1",
+    "chromium": "149.0.7827.55"
+  },
+  "run": null,
+  "records": [
+    {
+      "test": "AET-API-001: lifecycle API supports init, setData, setSettings, render, resize, and destroy (#26)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["AET-API-001"],
+      "issueRefs": [26],
+      "screenshots": []
+    },
+    {
+      "test": "AET-DATA-001: blank-term and non-integer-start-day records are removed with visible counts (#26)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["AET-DATA-001"],
+      "issueRefs": [26],
+      "screenshots": []
+    },
+    {
+      "test": "AET-FUNC-002/AET-FUNC-003/AET-FUNC-004/AET-FUNC-005: renders the timeline with filter and sort controls and a severity legend (#26)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["AET-FUNC-002", "AET-FUNC-003", "AET-FUNC-004", "AET-FUNC-005"],
+      "issueRefs": [26],
+      "screenshots": ["AET-FUNC-002-baseline-timelines.png"]
+    },
+    {
+      "test": "AET-FUNC-006/AET-REG-003: the sort control switches between earliest and alphabetical participant order (#26)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["AET-FUNC-006", "AET-REG-003"],
+      "issueRefs": [26],
+      "screenshots": ["AET-FUNC-006-alphabetical-sort.png"]
+    },
+    {
+      "test": "AET-FUNC-007/AET-REG-002/AET-REG-013: the italicized participant annotation reports shown of total and updates on filter (#26)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["AET-FUNC-007", "AET-REG-002", "AET-REG-013"],
+      "issueRefs": [26],
+      "screenshots": ["AET-FUNC-007-participant-annotation.png"]
+    },
+    {
+      "test": "AET-FUNC-008/AET-REG-004: hovering an event shows the reported term, start day, and stop day (#26)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["AET-FUNC-008", "AET-REG-004"],
+      "issueRefs": [26],
+      "screenshots": ["AET-FUNC-008-hover-tooltip.png"]
+    },
+    {
+      "test": "AET-FUNC-009/AET-REG-008/AET-API-003: clicking a participant ID opens the detail view and fires participantsSelected (#26)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["AET-FUNC-009", "AET-REG-008", "AET-API-003"],
+      "issueRefs": [26],
+      "screenshots": ["AET-FUNC-009-participant-detail.png"]
+    },
+    {
+      "test": "AET-FUNC-010/AET-REG-012/AET-API-003: the Back button returns to the timelines and clears the selection (#26)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["AET-FUNC-010", "AET-REG-012", "AET-API-003"],
+      "issueRefs": [26],
+      "screenshots": ["AET-FUNC-010-back-to-timelines.png"]
+    },
+    {
+      "test": "AET-REG-001: filtering by severity changes the visible events and participants (#26)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["AET-REG-001"],
+      "issueRefs": [26],
+      "screenshots": ["AET-REG-001-severity-filter.png"]
+    },
+    {
+      "test": "AET-REG-005/AET-REG-006: serious events carry a distinct mark and dots sit at start days only (#26)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["AET-REG-005", "AET-REG-006"],
+      "issueRefs": [26],
+      "screenshots": ["AET-REG-006-serious-markers.png"]
+    },
+    {
+      "test": "AET-REG-009/AET-REG-010/AET-REG-011: the detail listing supports search, header sorting, and CSV export (#26)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["AET-REG-009", "AET-REG-010", "AET-REG-011"],
+      "issueRefs": [26],
+      "screenshots": ["AET-REG-009-detail-listing.png"]
+    },
+    {
+      "test": "built ae-timelines demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built histogram demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "demo page loads with no console errors (#1)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [1],
+      "screenshots": []
+    },
+    {
+      "test": "gallery shows one card per available renderer (#7)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "ae-timelines checkInputs AET-DATA-001: custom column mappings validate against the renamed columns (#26)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-DATA-001"],
+      "issueRefs": [26],
+      "screenshots": []
+    },
+    {
+      "test": "ae-timelines checkInputs AET-DATA-001: missing required columns throw with every missing column named (#26)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-DATA-001"],
+      "issueRefs": [26],
+      "screenshots": []
+    },
+    {
+      "test": "ae-timelines checkInputs AET-DATA-001: the schema names the data and settings contract for the ADAE shape (#26)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-DATA-001"],
+      "issueRefs": [26],
+      "screenshots": []
+    },
+    {
+      "test": "ae-timelines checkInputs AET-DATA-001/AET-DATA-004: ADaM-named data passes validation with default settings (#26)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-DATA-001", "AET-DATA-004"],
+      "issueRefs": [26],
+      "screenshots": []
+    },
+    {
+      "test": "ae-timelines checkInputs AET-DATA-003/AET-DATA-006: the coloring variable is required but remappable (#26)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-DATA-003", "AET-DATA-006"],
+      "issueRefs": [26],
+      "screenshots": []
+    },
+    {
+      "test": "ae-timelines configure AET-CFG-005/AET-CFG-006/AET-DATA-003: the color object defaults to severity levels and merges overrides (#26)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-CFG-005", "AET-CFG-006", "AET-DATA-003"],
+      "issueRefs": [26],
+      "screenshots": []
+    },
+    {
+      "test": "ae-timelines configure AET-CFG-007/AET-CFG-008/AET-CFG-009/AET-CFG-010: the highlight object defaults to serious events and merges overrides (#26)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-CFG-007", "AET-CFG-008", "AET-CFG-009", "AET-CFG-010"],
+      "issueRefs": [26],
+      "screenshots": []
+    },
+    {
+      "test": "ae-timelines configure AET-CFG-012/AET-FUNC-009: details default to sequence, days, term, severity, and seriousness without duplicates (#26)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-CFG-012", "AET-FUNC-009"],
+      "issueRefs": [26],
+      "screenshots": ["AET-FUNC-009-participant-detail.png"]
+    },
+    {
+      "test": "ae-timelines configure AET-DATA-001/AET-DATA-004: default settings map the standard ADaM adverse-event columns (#26)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-DATA-001", "AET-DATA-004"],
+      "issueRefs": [26],
+      "screenshots": []
+    },
+    {
+      "test": "ae-timelines configure AET-FUNC-002/AET-FUNC-003/AET-FUNC-004: default filters are serious event, severity, and participant ID (#26)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-FUNC-002", "AET-FUNC-003", "AET-FUNC-004"],
+      "issueRefs": [26],
+      "screenshots": ["AET-FUNC-002-baseline-timelines.png"]
+    },
+    {
+      "test": "ae-timelines configure AET-FUNC-005/AET-CFG-011: custom filters replace the defaults and normalize strings to specs (#26)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-FUNC-005", "AET-CFG-011"],
+      "issueRefs": [26],
+      "screenshots": []
+    },
+    {
+      "test": "ae-timelines configure AET-FUNC-006: the participant sort defaults to earliest and rejects unknown orders (#26)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-FUNC-006"],
+      "issueRefs": [26],
+      "screenshots": ["AET-FUNC-006-alphabetical-sort.png"]
+    },
+    {
+      "test": "ae-timelines getPlugins AET-FUNC-002/AET-CFG-009: serious events append the highlight label and detail to the tooltip (#26)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-FUNC-002", "AET-CFG-009"],
+      "issueRefs": [26],
+      "screenshots": ["AET-FUNC-002-baseline-timelines.png"]
+    },
+    {
+      "test": "ae-timelines getPlugins AET-FUNC-002/AET-REG-006: the serious-event legend dataset draws nothing but carries the highlight style (#26)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-FUNC-002", "AET-REG-006"],
+      "issueRefs": [26],
+      "screenshots": ["AET-FUNC-002-baseline-timelines.png", "AET-REG-006-serious-markers.png"]
+    },
+    {
+      "test": "ae-timelines getPlugins AET-FUNC-003: one dataset per color-domain level, colored in the configured order (#26)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-FUNC-003"],
+      "issueRefs": [26],
+      "screenshots": []
+    },
+    {
+      "test": "ae-timelines getPlugins AET-FUNC-003: withAlpha converts hex colors to rgba fills (#26)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-FUNC-003"],
+      "issueRefs": [26],
+      "screenshots": []
+    },
+    {
+      "test": "ae-timelines getPlugins AET-FUNC-008/AET-REG-004: tooltips report the term, start day, and stop day (#26)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-FUNC-008", "AET-REG-004"],
+      "issueRefs": [26],
+      "screenshots": ["AET-FUNC-008-hover-tooltip.png"]
+    },
+    {
+      "test": "ae-timelines getScales AET-FUNC-008: the study-day domain spans the earliest start to the latest stop day (#26)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-FUNC-008"],
+      "issueRefs": [26],
+      "screenshots": ["AET-FUNC-008-hover-tooltip.png"]
+    },
+    {
+      "test": "ae-timelines getScales AET-REG-001: the y-axis lists subjects in the supplied order and the x-axes share the domain (#26)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-REG-001"],
+      "issueRefs": [26],
+      "screenshots": ["AET-REG-001-severity-filter.png"]
+    },
+    {
+      "test": "ae-timelines structureData AET-DATA-001: cleaning coerces study days and falls back to the start day for unusable stop days (#26)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-DATA-001"],
+      "issueRefs": [26],
+      "screenshots": []
+    },
+    {
+      "test": "ae-timelines structureData AET-DATA-001: cleaning removes blank-term and non-integer-start-day records with reported counts (#26)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-DATA-001"],
+      "issueRefs": [26],
+      "screenshots": []
+    },
+    {
+      "test": "ae-timelines structureData AET-FUNC-002/AET-CFG-008: timeline rows carry duration, color value, and the serious flag (#26)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-FUNC-002", "AET-CFG-008"],
+      "issueRefs": [26],
+      "screenshots": ["AET-FUNC-002-baseline-timelines.png"]
+    },
+    {
+      "test": "ae-timelines structureData AET-FUNC-003: colors map by domain position with N/A rendered gray (#26)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-FUNC-003"],
+      "issueRefs": [26],
+      "screenshots": []
+    },
+    {
+      "test": "ae-timelines structureData AET-FUNC-003: missing severity values are normalized to N/A (#26)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-FUNC-003"],
+      "issueRefs": [26],
+      "screenshots": []
+    },
+    {
+      "test": "ae-timelines structureData AET-FUNC-003/AET-CFG-005: the color domain keeps the configured order, then extras, with N/A last (#26)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-FUNC-003", "AET-CFG-005"],
+      "issueRefs": [26],
+      "screenshots": []
+    },
+    {
+      "test": "ae-timelines structureData AET-FUNC-006/AET-REG-003: alphabetical-descending sort matches the original top-to-bottom order (#26)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-FUNC-006", "AET-REG-003"],
+      "issueRefs": [26],
+      "screenshots": ["AET-FUNC-006-alphabetical-sort.png"]
+    },
+    {
+      "test": "ae-timelines structureData AET-FUNC-006/AET-REG-003: earliest sort orders participants by first AE start day, ties by ID (#26)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-FUNC-006", "AET-REG-003"],
+      "issueRefs": [26],
+      "screenshots": ["AET-FUNC-006-alphabetical-sort.png"]
+    },
+    {
+      "test": "ae-timelines structureData AET-FUNC-007: the population counts every participant in the raw data, including AE-free placeholders (#26)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-FUNC-007"],
+      "issueRefs": [26],
+      "screenshots": ["AET-FUNC-007-participant-annotation.png"]
+    },
+    {
+      "test": "buildApiModel API-XFORM-010: assembles the artifact with module, factory, methods, settings, data contract, and missing docs (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-010"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "buildApiModel API-XFORM-011: flags DEFAULT_SETTINGS keys absent from the settings typedef (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-011"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer buildEvidenceSets splits records per module and duplicates shared scaffold records (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer buildRun builds GitHub Actions run provenance from the environment (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer compareEvidence flags status drift and test-set changes, ignoring screenshots (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer compareEvidence ignores provenance so --check never drifts on generatedAt/environment/run (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer moduleForFile routes test files to renderer modules by path (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer normalizePlaywright walks nested suites into browser-suite records (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer normalizeVitest maps assertion results to unit-suite records (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer parseTestName extracts requirement IDs and issue refs (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer parseTestName recognizes every renderer requirement-ID prefix, not just SH (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer provenance lives in dedicated top-level keys; the records array stays timestamp-free (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-001: the documented settings are exactly the DEFAULT_SETTINGS keys (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-001"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-002: every setting row has a type, default, and description (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-002"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-003: the factory is documented with params and a return value (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-003"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-004: every lifecycle method is documented with a description and return value (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-004"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-005: no missing-documentation entries remain across the public surface (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-005"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-006: the data contract derives from the schema and its settings map onto real setting names (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-006"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "safety.viz scaffold SH-API-001: the collection exposes the histogram module factory (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-API-001"],
+      "issueRefs": [2],
+      "screenshots": []
+    },
+    {
+      "test": "safety.viz scaffold src/main.js exports the public module collection (#1)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [1],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders each lifecycle method with signature, params, and returns (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders the factory signature and parameters (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders the schema-derived data contract (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders the settings table with type, default, and description (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: coverage parsing parses the browser and unit tables plus the routing-status tail (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page carries the routing-status sections onto the page (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page falls back to requirement-ID matching when a browser row wording drifts from the spec name (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page joins browser rows to their evidence record with status chip and screenshot (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page links source matrix rows to the safety.agent matrix (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page matches unit rows to records through expanded requirement IDs (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page rewrites repo-relative coverage links to repository URLs (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page surfaces failing records with a fail status chip (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery links available renderers to demo, evidence, and API pages with a hero thumbnail (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery lists every renderer from config with its status badge (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery renders unmigrated renderers as placeholders without page links (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: requirement-ID expansion expands double-dot ranges and slash shorthand into full IDs (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site validation: evidence screenshots flags screenshots referenced in evidence.json but missing from the evidence set (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site validation: internal links flags internal links and asset references that do not resolve (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site validation: internal links passes a site whose internal links all resolve, ignoring external and fragment links (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: factory API-XFORM-004: maps the documented module.exports doclet to the factory, named for its source file (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-004"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: factory API-XFORM-005: ignores the spurious undocumented global doclet jsdoc emits for the default export (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-005"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: methods table API-XFORM-001: extracts documented instance methods in source order with signature, params, and returns (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-001"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: methods table API-XFORM-002: brackets optional params in signatures and carries their defaults (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-002"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: methods table API-XFORM-003: excludes private and undocumented methods from the table (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-003"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: missing-doc detection API-XFORM-008: flags undocumented public methods and settings properties without descriptions (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-008"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: missing-doc detection API-XFORM-009: flags a missing factory when no documented default export exists (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-009"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: settings table API-XFORM-006: extracts settings rows from the typedef properties with display-ready types and defaults (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-006"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: settings table API-XFORM-007: normalizes non-string defaults (booleans, numbers, null) to display strings (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-007"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-001: carries the schema title and description onto the contract (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-001"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-002: flattens top-level and nested settings properties into dotted field rows (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-002"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-003: derives required flags from each level’s required array (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-003"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-004: carries types, defaults, and descriptions through from the schema (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-004"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-005: resolves local $defs references to their concrete type (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-005"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-006: every contract field carries a non-empty description (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-006"],
+      "issueRefs": [6],
+      "screenshots": []
+    }
+  ]
+}

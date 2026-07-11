@@ -61,9 +61,11 @@
     {
       "module": "ae-timelines",
       "title": "Adverse Event Timelines",
-      "status": "planned",
-      "blurb": "Participant-level adverse-event timelines by severity and onset relative to study start.",
-      "matrix": "ae-timelines.md"
+      "status": "available",
+      "blurb": "Participant-level adverse-event timelines by severity and onset relative to study start, with serious-event marks and click-through participant detail.",
+      "hero": "AET-FUNC-002-baseline-timelines.png",
+      "matrix": "ae-timelines.md",
+      "data": "adae.csv"
     },
     {
       "module": "web-codebook",

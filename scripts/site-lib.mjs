@@ -71,8 +71,9 @@ export function mdBlock(markdown) {
 // shorthands: full IDs (SH-CFG-004, SSP-CTRL-001, suffixed SH-FUNC-004A),
 // slash lists continuing the last prefix (SH-LIST-002/003), and double-dot
 // ranges (SH-CFG-004..009). The leading module prefix is any 2–4 letter code
-// (SH-, SSP-, SDD-, …) so every renderer's coverage doc parses (#14). Prose
-// like "(defaults)" or "—" contributes nothing.
+// (SH-, SSP-, SDD-, AET-, …) per the safety.agent matrices, so every
+// renderer's coverage doc parses (#14, #26). Prose like "(defaults)" or "—"
+// contributes nothing.
 export function expandRequirementIds(cell) {
   const ids = [];
   const token = /[A-Z]{2,4}-[A-Z]+-(\d+)([A-D])?|\.\.(\d+)([A-D])?|\/(\d+)([A-D])?/g;
@@ -398,8 +399,9 @@ export function renderApiPage(model) {
 }
 
 // Demo page (#21 pillar 1, reworked under #15): the site shell around the
-// recreated original safety-histogram example — committed IIFE bundle + the
-// vendored real ADBDS example data. The .demo-page wrapper widens the layout
+// recreated original renderer example — committed IIFE bundle + the vendored
+// real example data (the renderer's `data` config key, defaulting to the
+// shared ADBDS extract, #26). The .demo-page wrapper widens the layout
 // (site.css) so the control sidebar and chart get full room.
 export function renderDemoPage({ renderer, version, config }) {
   return (
@@ -409,7 +411,7 @@ export function renderDemoPage({ renderer, version, config }) {
     ` · <a href="${config.matrixBaseUrl}/${renderer.matrix}">Requirement matrix</a></p>` +
     `<p>${escapeHtml(renderer.blurb)} This live demo mounts the committed` +
     ` <code>dist/safety.viz-${version}</code> IIFE bundle — the same asset gsm.safety vendors —` +
-    ` against the original safety-histogram example data (<code>adbds.csv</code> from the` +
+    ` against the renderer's original example data (<code>${escapeHtml(renderer.data || 'adbds.csv')}</code> from the` +
     ` <a href="https://github.com/RhoInc/data-library">RhoInc data library</a>), with the full control panel active.</p>` +
     `<div id="container"></div>` +
     `<script src="../dist/safety.viz-${version}/safety.viz.js"></script>` +
