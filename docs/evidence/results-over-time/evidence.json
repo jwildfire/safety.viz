@@ -1,5 +1,5 @@
 {
-  "module": "histogram",
+  "module": "results-over-time",
   "generatedAt": "2026-07-11T14:54:54.653Z",
   "environment": {
     "os": "darwin 23.6.0",
@@ -42,132 +42,124 @@
       "screenshots": []
     },
     {
-      "test": "SH-API-001: lifecycle API supports init, setData, setSettings, render, resize, and destroy (#2)",
+      "test": "SROT-API: lifecycle API supports init, setData, setSettings, render, resize, and destroy (#27)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["SH-API-001"],
-      "issueRefs": [2],
+      "requirementIds": [],
+      "issueRefs": [27],
       "screenshots": []
     },
     {
-      "test": "SH-CHART-003/SH-FUNC-010/SH-FUNC-012: selecting a canvas bar opens a linked listing with record details and count (#2)",
+      "test": "SROT-DATA-002: missing and non-numeric results are dropped with a reported count and visible note (#27)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["SH-CHART-003", "SH-FUNC-010", "SH-FUNC-012"],
-      "issueRefs": [2],
-      "screenshots": ["SH-FUNC-010-linked-listing.png"]
+      "requirementIds": ["SROT-DATA-002"],
+      "issueRefs": [27],
+      "screenshots": ["SROT-DATA-002-invalid-data-note.png"]
     },
     {
-      "test": "SH-CHART-004: group-by renders grouped histograms (#2)",
+      "test": "SROT-FUNC-001/SROT-FUNC-002: renders measure, group, filter, y-axis, scale, and display controls (#27)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["SH-CHART-004"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CHART-004-grouped-multiples.png"]
+      "requirementIds": ["SROT-FUNC-001", "SROT-FUNC-002"],
+      "issueRefs": [27],
+      "screenshots": ["SROT-FUNC-001-control-panel.png"]
     },
     {
-      "test": "SH-CHART-004/SH-CTRL-006: grouped small multiples share the main chart's bin boundaries (#19)",
+      "test": "SROT-FUNC-003: participant note updates when a filter is applied (#27)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["SH-CHART-004", "SH-CTRL-006"],
-      "issueRefs": [19],
-      "screenshots": ["SH-CHART-004-grouped-multiples.png"]
+      "requirementIds": ["SROT-FUNC-003"],
+      "issueRefs": [27],
+      "screenshots": ["SROT-FUNC-003-participant-count.png"]
     },
     {
-      "test": "SH-CHART-005: p-value annotations display the approximation and validation disclaimer (#2)",
+      "test": "SROT-FUNC-004/SROT-REG-016/SROT-REG-017: y-limit inputs redraw and invert a crossed pair (#27)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["SH-CHART-005"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CHART-005-pvalue-disclaimer.png"]
+      "requirementIds": ["SROT-FUNC-004", "SROT-REG-016", "SROT-REG-017"],
+      "issueRefs": [27],
+      "screenshots": ["SROT-FUNC-004-y-limits.png"]
     },
     {
-      "test": "SH-CTRL-001/SH-CTRL-002/SH-CTRL-006: renders measure, filter, axis, bin, and group controls (#2)",
+      "test": "SROT-FUNC-005/SROT-REG-020: Reset Limits restores the data extent (#27)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["SH-CTRL-001", "SH-CTRL-002", "SH-CTRL-006"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CTRL-001-control-panel.png"]
-    },
-    {
-      "test": "SH-CTRL-003: participant note updates when a filter is applied (#2)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-003"],
-      "issueRefs": [2],
+      "requirementIds": ["SROT-FUNC-005", "SROT-REG-020"],
+      "issueRefs": [27],
       "screenshots": []
     },
     {
-      "test": "SH-CTRL-004/SH-FUNC-004A/SH-FUNC-004B: normal range checkbox toggles a stable overlay region (#2)",
+      "test": "SROT-FUNC-006/SROT-REG-004/SROT-REG-005: the Visits without data control adds empty timepoints (#27)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["SH-CTRL-004", "SH-FUNC-004A", "SH-FUNC-004B"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CTRL-004-normal-range-overlay.png"]
+      "requirementIds": ["SROT-FUNC-006", "SROT-REG-004", "SROT-REG-005"],
+      "issueRefs": [27],
+      "screenshots": ["SROT-FUNC-006-visits-without-data.png"]
     },
     {
-      "test": "SH-CTRL-005/SH-FUNC-005A/SH-FUNC-005B/SH-FUNC-005D: x-axis limit inputs redraw and normalize invalid ranges (#2)",
+      "test": "SROT-FUNC-007/SROT-REG-006/SROT-REG-007: the Unscheduled visits control shows unscheduled timepoints (#27)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["SH-CTRL-005", "SH-FUNC-005A", "SH-FUNC-005B", "SH-FUNC-005D"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CTRL-005-axis-limits.png"]
+      "requirementIds": ["SROT-FUNC-007", "SROT-REG-006", "SROT-REG-007"],
+      "issueRefs": [27],
+      "screenshots": ["SROT-FUNC-007-unscheduled-visits.png"]
     },
     {
-      "test": "SH-CTRL-006: bin boundaries anchor to the measure results, not the filtered subset (#19)",
+      "test": "SROT-FUNC-008: box-and-whisker marks render and toggle off with the Box plots control (#27)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["SH-CTRL-006"],
-      "issueRefs": [19],
+      "requirementIds": ["SROT-FUNC-008"],
+      "issueRefs": [27],
+      "screenshots": ["SROT-FUNC-008-box-plots.png"]
+    },
+    {
+      "test": "SROT-REG-002/SROT-REG-003: grouping draws side-by-side boxes with a group-ordered legend (#27)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SROT-REG-002", "SROT-REG-003"],
+      "issueRefs": [27],
+      "screenshots": ["SROT-REG-002-grouped-box-plots.png"]
+    },
+    {
+      "test": "SROT-REG-010/SROT-REG-012: the outlier overlay shows and hides with the Outliers control (#27)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SROT-REG-010", "SROT-REG-012"],
+      "issueRefs": [27],
+      "screenshots": ["SROT-REG-010-outliers.png"]
+    },
+    {
+      "test": "SROT-REG-011: outlier points carry a larger hover radius than their resting radius (#27)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SROT-REG-011"],
+      "issueRefs": [27],
       "screenshots": []
     },
     {
-      "test": "SH-CTRL-007: x-axis tick mode switches labels between centers and bin boundaries (#2)",
+      "test": "SROT-REG-014/SROT-REG-015: hovering a box exposes the summary statistics tooltip (#27)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["SH-CTRL-007"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CTRL-007-boundary-ticks.png"]
-    },
-    {
-      "test": "SH-DATA-002: missing and non-numeric results are dropped with a reported count and visible note (#2)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-DATA-002"],
-      "issueRefs": [2],
-      "screenshots": ["SH-DATA-002-invalid-data-note.png"]
-    },
-    {
-      "test": "SH-FUNC-004C: normal range control is hidden when the measure has no normal range data (#2)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-FUNC-004C"],
-      "issueRefs": [2],
-      "screenshots": ["SH-FUNC-004C-control-hidden-for-pulse.png"]
-    },
-    {
-      "test": "SH-FUNC-005C: x-axis limit inputs support stepper increments of 1 (#2)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-FUNC-005C"],
-      "issueRefs": [2],
+      "requirementIds": ["SROT-REG-014", "SROT-REG-015"],
+      "issueRefs": [27],
       "screenshots": []
     },
     {
-      "test": "SH-FUNC-011: selecting a bar de-emphasizes the bars outside the linked listing (#2)",
+      "test": "SROT-REG-018: the Scale control switches the y-axis between linear and log (#27)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["SH-FUNC-011"],
-      "issueRefs": [2],
-      "screenshots": ["SH-FUNC-011-bar-de-emphasis.png"]
+      "requirementIds": ["SROT-REG-018"],
+      "issueRefs": [27],
+      "screenshots": ["SROT-REG-018-log-scale.png"]
     },
     {
-      "test": "SH-LIST-001/SH-LIST-002/SH-LIST-003/SH-LIST-004: listing supports pagination, search, sorting, and CSV export (#2)",
+      "test": "SROT-REG-023/SROT-REG-024: start_value selects the initial measure and falls back when absent (#27)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["SH-LIST-001", "SH-LIST-002", "SH-LIST-003", "SH-LIST-004"],
-      "issueRefs": [2],
-      "screenshots": ["SH-LIST-004-search-sort-paginate.png"]
+      "requirementIds": ["SROT-REG-023", "SROT-REG-024"],
+      "issueRefs": [27],
+      "screenshots": []
     },
     {
       "test": "buildApiModel API-XFORM-010: assembles the artifact with module, factory, methods, settings, data contract, and missing docs (#6)",
@@ -314,292 +306,260 @@
       "screenshots": []
     },
     {
-      "test": "histogram binning matches the original renderer (#19) SH-CTRL-006: ADBDS Albumin reproduces the original renderer's bin parameters (#19)",
+      "test": "results-over-time checkInputs SROT-DATA-001: passes when the required measure, result, and visit columns are present (#27)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SH-CTRL-006"],
-      "issueRefs": [19, 19],
+      "requirementIds": ["SROT-DATA-001"],
+      "issueRefs": [27],
       "screenshots": []
     },
     {
-      "test": "histogram binning matches the original renderer (#19) SH-CTRL-006: bin quantity is clamped to the count of unique results (#19)",
+      "test": "results-over-time checkInputs SROT-DATA-001: throws naming every missing required column (#27)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SH-CTRL-006"],
-      "issueRefs": [19, 19],
+      "requirementIds": ["SROT-DATA-001"],
+      "issueRefs": [27],
       "screenshots": []
     },
     {
-      "test": "histogram binning matches the original renderer (#19) SH-CTRL-006: Scott's rule and Freedman-Diaconis enforce the original's 5-bin floor (#19)",
+      "test": "results-over-time checkInputs SROT-DATA-002: an empty dataset reports all required columns missing (#27)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SH-CTRL-006"],
-      "issueRefs": [19, 19],
-      "screenshots": []
+      "requirementIds": ["SROT-DATA-002"],
+      "issueRefs": [27],
+      "screenshots": ["SROT-DATA-002-invalid-data-note.png"]
     },
     {
-      "test": "histogram binning matches the original renderer (#19) SH-CTRL-006: Shimazaki-Shinomoto minimizes the original's cost function (#19)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-006"],
-      "issueRefs": [19, 19],
-      "screenshots": []
-    },
-    {
-      "test": "histogram binning matches the original renderer (#19) SH-CTRL-006: zero-spread results collapse to a single bin (#19)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-006"],
-      "issueRefs": [19, 19],
-      "screenshots": []
-    },
-    {
-      "test": "histogram checkInputs SH-DATA-001: missing required variables throw the pilot's error message (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-DATA-001"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram checkInputs SH-DATA-001: the JSON schema publishes the data contract with required column mappings (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-DATA-001"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram checkInputs SH-DATA-001/SH-DATA-003: valid long-format data with optional columns passes (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-DATA-001", "SH-DATA-003"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram configure SH-CFG-004..009: default settings map the standard measure, result, id, unit, and normal-range columns (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CFG-004"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram configure SH-CFG-010: filter specs normalize strings and objects to value_col/label pairs (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CFG-010"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram configure SH-CFG-011: details default to id, filters, result, normal limits, and unit when unset (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CFG-011"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram configure SH-CFG-013/SH-CFG-014: normal-range control and initial display flags are configurable (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CFG-013", "SH-CFG-014"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram configure SH-CHART-004: the group list always offers None and adopts an unknown group_by column (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CHART-004"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CHART-004-grouped-multiples.png"]
-    },
-    {
-      "test": "histogram getPlugins SH-CHART-002: bin descriptions report the count and value range in the pilot's wording (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CHART-002"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram getPlugins SH-CHART-005: p-values format with bounded precision (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CHART-005"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CHART-005-pvalue-disclaimer.png"]
-    },
-    {
-      "test": "histogram getPlugins SH-CHART-005: the group-comparison screen needs 2+ groups and separates distinct groups (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CHART-005"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CHART-005-pvalue-disclaimer.png"]
-    },
-    {
-      "test": "histogram getPlugins SH-CHART-005: the normality screen needs at least 3 values and stays within (0, 1) (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CHART-005"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CHART-005-pvalue-disclaimer.png"]
-    },
-    {
-      "test": "histogram getPlugins SH-FUNC-011: selection colors keep the selected bar and fade the rest (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-FUNC-011"],
-      "issueRefs": [2],
-      "screenshots": ["SH-FUNC-011-bar-de-emphasis.png"]
-    },
-    {
-      "test": "histogram getScales buildScales keeps the count axis integer-based at zero (#2)",
+      "test": "results-over-time configure every DEFAULT_SETTINGS key is a documented default (#27)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": [],
-      "issueRefs": [2],
+      "issueRefs": [27],
       "screenshots": []
     },
     {
-      "test": "histogram getScales formatNumber trims to significant digits and blanks non-finite values (#2)",
+      "test": "results-over-time configure SROT-CFG-004/005/006/007/009: default column mappings match the original renderer (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-CFG-004"],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time configure SROT-CFG-012: filters normalize to { value_col, label } specs and drop blanks (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-CFG-012"],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time configure SROT-CFG-013/014: groups always offer a leading None and group_by falls back to it (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-CFG-013"],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time configure SROT-CFG-014: an explicit group_by is honored and its column is offered (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-CFG-014"],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time configure SROT-CFG-015/DATA-003: box/outlier/visit toggles default to the original renderer values (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-CFG-015"],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time configure SROT-CFG-017/018/019: unscheduled-visit detection defaults are preserved (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-CFG-017"],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time configure SROT-REG-018: Y_SCALES enumerates the linear and log axis options (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-REG-018"],
+      "issueRefs": [27],
+      "screenshots": ["SROT-REG-018-log-scale.png"]
+    },
+    {
+      "test": "results-over-time export SROT-API: main.js exports the resultsOverTime factory (#27)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": [],
-      "issueRefs": [2],
+      "issueRefs": [27],
       "screenshots": []
     },
     {
-      "test": "histogram getScales SH-CTRL-005: normalizeDomain swaps inverted lower/upper limits (#2)",
+      "test": "results-over-time getPlugins SROT-REG-003: groupColors assigns a stable color per group in order (#27)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SH-CTRL-005"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CTRL-005-axis-limits.png"]
-    },
-    {
-      "test": "histogram getScales SH-CTRL-005/SH-FUNC-005A/SH-FUNC-005B: resolveDomain applies user limits over the data extent (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-005", "SH-FUNC-005A", "SH-FUNC-005B"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CTRL-005-axis-limits.png"]
-    },
-    {
-      "test": "histogram getScales SH-CTRL-007: tick labels switch between bin centers and bin boundaries (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-007"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CTRL-007-boundary-ticks.png"]
-    },
-    {
-      "test": "histogram listing SH-LIST-002: pagination slices pages and clamps out-of-range page numbers (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-LIST-002"],
-      "issueRefs": [2],
+      "requirementIds": ["SROT-REG-003"],
+      "issueRefs": [27],
       "screenshots": []
     },
     {
-      "test": "histogram listing SH-LIST-003: CSV export renders label headers and quoted, null-safe values (#2)",
+      "test": "results-over-time getPlugins SROT-REG-011: outlierTooltip names the participant and its value (#27)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SH-LIST-003"],
-      "issueRefs": [2],
+      "requirementIds": ["SROT-REG-011"],
+      "issueRefs": [27],
       "screenshots": []
     },
     {
-      "test": "histogram listing SH-LIST-004: search filters rows case-insensitively across listing columns (#2)",
+      "test": "results-over-time getPlugins SROT-REG-014/015: summaryTooltip lists every statistic at the required precision (#27)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SH-LIST-004"],
-      "issueRefs": [2],
-      "screenshots": ["SH-LIST-004-search-sort-paginate.png"]
+      "requirementIds": ["SROT-REG-014"],
+      "issueRefs": [27],
+      "screenshots": []
     },
     {
-      "test": "histogram listing SH-LIST-004: sorting is numeric when both values are numeric, string otherwise, and null-safe (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-LIST-004"],
-      "issueRefs": [2],
-      "screenshots": ["SH-LIST-004-search-sort-paginate.png"]
-    },
-    {
-      "test": "histogram structureData display digits resolve the bin width without exceeding the data precision (#15)",
+      "test": "results-over-time getScales formatFixed keeps trailing zeros and reports NA for non-finite input (#27)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": [],
-      "issueRefs": [15],
+      "issueRefs": [27],
       "screenshots": []
     },
     {
-      "test": "histogram structureData helpers: unique drops empty values; quantile, mean, sd, and precision match the pilot (#2)",
+      "test": "results-over-time getScales SROT-REG-015: statPrecisions gives min/max the base, quantiles +1, and StDev +2 (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-REG-015"],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time getScales SROT-REG-015: yPrecision follows the original log10-range rule (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-REG-015"],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time getScales SROT-REG-016/020: resolveYDomain uses the data extent unless a limit overrides it (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-REG-016"],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time getScales SROT-REG-017: normalizeDomain swaps a crossed lower/upper pair in place (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-REG-017"],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time structureData quantile follows the R-7 / d3.quantile rule (#27)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": [],
-      "issueRefs": [2],
+      "issueRefs": [27],
       "screenshots": []
     },
     {
-      "test": "histogram structureData SH-CTRL-002: active filters subset rows by stringified equality (#2)",
+      "test": "results-over-time structureData sd is the sample (n-1) standard deviation (#27)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SH-CTRL-002"],
-      "issueRefs": [2],
+      "requirementIds": [],
+      "issueRefs": [27],
       "screenshots": []
     },
     {
-      "test": "histogram structureData SH-CTRL-005: an explicit domain bounds the bins and clamps edge values (#2)",
+      "test": "results-over-time structureData SROT-CFG-005: computeVisitOrder falls back to alphanumeric order without an order column (#27)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SH-CTRL-005"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CTRL-005-axis-limits.png"]
-    },
-    {
-      "test": "histogram structureData SH-CTRL-006: binning algorithms produce the original renderer's bin quantities (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-006"],
-      "issueRefs": [2],
+      "requirementIds": ["SROT-CFG-005"],
+      "issueRefs": [27],
       "screenshots": []
     },
     {
-      "test": "histogram structureData SH-CTRL-006: custom quantity and custom width drive the bin count (#2)",
+      "test": "results-over-time structureData SROT-CFG-005/006: computeVisitOrder sorts by the numeric order column when present (#27)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SH-CTRL-006"],
-      "issueRefs": [2],
+      "requirementIds": ["SROT-CFG-005"],
+      "issueRefs": [27],
       "screenshots": []
     },
     {
-      "test": "histogram structureData SH-DATA-001: measure labels combine the measure with its unit when present (#2)",
+      "test": "results-over-time structureData SROT-CFG-017/018: parseUnscheduledPattern reads the /.../flags string form (#27)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SH-DATA-001"],
-      "issueRefs": [2],
+      "requirementIds": ["SROT-CFG-017"],
+      "issueRefs": [27],
       "screenshots": []
     },
     {
-      "test": "histogram structureData SH-DATA-002: missing and non-numeric results are removed with a reported count (#2)",
+      "test": "results-over-time structureData SROT-CFG-019: isUnscheduledVisit lets an explicit values list take precedence over the pattern (#27)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SH-DATA-002"],
-      "issueRefs": [2],
-      "screenshots": ["SH-DATA-002-invalid-data-note.png"]
+      "requirementIds": ["SROT-CFG-019"],
+      "issueRefs": [27],
+      "screenshots": []
     },
     {
-      "test": "histogram structureData SH-FUNC-004C: measures without normal-range data are detected (#2)",
+      "test": "results-over-time structureData SROT-DATA-002: cleanData drops missing and non-numeric results with a reported count (#27)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SH-FUNC-004C"],
-      "issueRefs": [2],
-      "screenshots": ["SH-FUNC-004C-control-hidden-for-pulse.png"]
+      "requirementIds": ["SROT-DATA-002"],
+      "issueRefs": [27],
+      "screenshots": ["SROT-DATA-002-invalid-data-note.png"]
+    },
+    {
+      "test": "results-over-time structureData SROT-REG-010/012: flagOutliers marks values outside the 5th/95th percentiles only when enabled (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-REG-010"],
+      "issueRefs": [27],
+      "screenshots": ["SROT-REG-010-outliers.png"]
+    },
+    {
+      "test": "results-over-time structureData SROT-REG-014/015: summarize returns the tooltip statistics for a sorted sample (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-REG-014"],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time structureData SROT-REG-021: measureLabel appends the unit when present (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-REG-021"],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time structureData summarizeVisitGroups nests statistics by visit then group (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time structureData unique keeps distinct, non-empty values in first-seen order (#27)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [27],
+      "screenshots": []
     },
     {
       "test": "safety.viz scaffold SH-API-001: the collection exposes the histogram module factory (#2)",
