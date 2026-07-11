@@ -68,12 +68,14 @@ export function mdBlock(markdown) {
 }
 
 // Expand a coverage-table requirement cell into full IDs. Handles the doc's
-// shorthands: full IDs (SH-CFG-004, suffixed SH-FUNC-004A), slash lists
-// continuing the last prefix (SH-LIST-002/003), and double-dot ranges
-// (SH-CFG-004..009). Prose like "(defaults)" or "—" contributes nothing.
+// shorthands: full IDs (SH-CFG-004, SSP-CTRL-001, suffixed SH-FUNC-004A),
+// slash lists continuing the last prefix (SH-LIST-002/003), and double-dot
+// ranges (SH-CFG-004..009). The leading module prefix is any 2–4 letter code
+// (SH-, SSP-, SDD-, …) so every renderer's coverage doc parses (#14). Prose
+// like "(defaults)" or "—" contributes nothing.
 export function expandRequirementIds(cell) {
   const ids = [];
-  const token = /SH-[A-Z]+-(\d+)([A-D])?|\.\.(\d+)([A-D])?|\/(\d+)([A-D])?/g;
+  const token = /[A-Z]{2,4}-[A-Z]+-(\d+)([A-D])?|\.\.(\d+)([A-D])?|\/(\d+)([A-D])?/g;
   let prefix = null;
   let lastNumber = null;
   let width = 3;
