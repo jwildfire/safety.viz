@@ -109,15 +109,39 @@ describe('results-over-time structureData', () => {
   it('SROT-REG-010/012: flagOutliers marks values outside the 5th/95th percentiles only when enabled (#27)', () => {
     const statsByVisitGroup = { V1: { All: { q5: 1.2, q95: 4.8 } } };
     const rows = [
-      { VISIT: 'V1', __srot_group: 'All', __srot_value: 0.5 },
-      { VISIT: 'V1', __srot_group: 'All', __srot_value: 3 },
-      { VISIT: 'V1', __srot_group: 'All', __srot_value: 5 }
+      { VISIT: 'V1', __srot_value: 0.5 },
+      { VISIT: 'V1', __srot_value: 3 },
+      { VISIT: 'V1', __srot_value: 5 }
     ];
     flagOutliers(rows, statsByVisitGroup, { time_col: 'VISIT', outliers: true });
     expect(rows.map((row) => row.__srot_outlier)).toEqual([true, false, true]);
 
     flagOutliers(rows, statsByVisitGroup, { time_col: 'VISIT', outliers: false });
     expect(rows.every((row) => row.__srot_outlier === false)).toBe(true);
+  });
+
+  it('SROT-REG-013: flagOutliers recomputes each row group when the grouping changes between renders (#27)', () => {
+    // Same row objects flagged twice, as render does when the Group-by control
+    // changes: first grouped by ARM, then pooled. The pooled pass must key its
+    // stats lookups on the pooled group, not a group memoized on first render.
+    const rows = [
+      ...Array.from({ length: 18 }, (_, i) => ({ VISIT: 'V1', ARM: 'A', __srot_value: i + 1 })),
+      { VISIT: 'V1', ARM: 'B', __srot_value: 95 },
+      { VISIT: 'V1', ARM: 'B', __srot_value: 100 },
+      { VISIT: 'V1', ARM: 'B', __srot_value: 105 }
+    ];
+    const columns = { timeCol: 'VISIT', valueCol: '__srot_value' };
+    const flagSettings = { time_col: 'VISIT', outliers: true };
+
+    const grouped = summarizeVisitGroups(rows, { ...columns, groupCol: 'ARM' });
+    flagOutliers(rows, grouped, flagSettings, 'ARM');
+
+    const pooled = summarizeVisitGroups(rows, { ...columns, groupCol: null });
+    flagOutliers(rows, pooled, flagSettings, null);
+
+    // Pooled n=21: q5 = 2, q95 = 100 — outliers are exactly 1 and 105.
+    const flagged = rows.filter((row) => row.__srot_outlier).map((row) => row.__srot_value);
+    expect(flagged).toEqual([1, 105]);
   });
 
   it('SROT-CFG-017/018: parseUnscheduledPattern reads the /.../flags string form (#27)', () => {
