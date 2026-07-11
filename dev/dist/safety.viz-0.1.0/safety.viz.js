@@ -11201,6 +11201,154 @@ var SafetyViz = (() => {
     }
   };
 
+  // src/shell.js
+  function createElement(tag, className, text) {
+    const element = document.createElement(tag);
+    if (className) element.className = className;
+    if (text !== void 0) element.textContent = text;
+    return element;
+  }
+  function option(select, value, label, selected) {
+    const opt = document.createElement("option");
+    opt.value = value;
+    opt.textContent = label;
+    opt.selected = selected;
+    select.appendChild(opt);
+  }
+  var SHELL_STYLE_ID = "safety-viz-shell-styles";
+  var SHELL_STYLES = `
+.sv-root{display:flex;align-items:flex-start;gap:1.25rem;width:100%;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#1f2933}
+.sv-sidebar{position:sticky;top:1rem;flex:0 0 250px;max-height:calc(100vh - 2rem);overflow-y:auto;border:1px solid #d8dee4;border-radius:10px;background:#f6f8fa;padding:.8rem .9rem 1rem}
+.sv-sidebar-header{display:flex;align-items:center;justify-content:space-between;gap:.5rem}
+.sv-sidebar-title{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#52616f}
+.sv-sidebar-toggle{border:1px solid #d8dee4;border-radius:6px;background:#fff;color:#52616f;font:inherit;font-size:.85rem;line-height:1;padding:.25rem .5rem;cursor:pointer}
+.sv-sidebar-toggle:hover{color:#1f2933;border-color:#b8c0cc}
+.sv-collapsed .sv-sidebar{flex-basis:auto;padding:.5rem}
+.sv-collapsed .sv-sidebar-title,.sv-collapsed .sv-controls{display:none}
+.sv-control-section{border-top:1px solid #e3e8ee;margin-top:.8rem;padding-top:.65rem}
+.sv-section-title{margin:0 0 .5rem;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#52616f}
+.sv-controls>.sv-control{margin-top:.75rem}
+.sv-control{margin:0 0 .55rem}
+.sv-control:last-child{margin-bottom:0}
+.sv-control label{display:block;font-size:.78rem;font-weight:600;margin-bottom:.25rem}
+.sv-control select,.sv-control input{width:100%;box-sizing:border-box;padding:.35rem .45rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.85rem;color:inherit}
+.sv-control input[type=checkbox]{width:auto;margin:0;accent-color:#0b62a4}
+.sv-control select:focus-visible,.sv-control input:focus-visible,.sv-sidebar-toggle:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
+.sv-control-row{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.sv-control-row .sv-control{margin:0}
+.sv-control-inline{display:flex;align-items:center;gap:.4rem;font-size:.85rem}
+.sv-main{flex:1 1 auto;min-width:0}
+.sv-notes{display:flex;flex-wrap:wrap;gap:.25rem 1.25rem;font-size:.85rem;color:#52616f;margin:0 0 .6rem}
+.sv-warning{color:#9a3412}
+.sv-chart-wrap{height:460px;position:relative;border:1px solid #d8dee4;border-radius:10px;padding:1rem;background:#fff}
+.sv-footnote{margin:.6rem 0 0;font-size:.85rem;color:#52616f}
+.sv-multiples{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;margin-top:1.25rem}
+.sv-multiples:empty{display:none}
+.sv-multiple{border:1px solid #d8dee4;border-radius:10px;padding:.75rem .85rem;background:#fff}
+.sv-multiple h3{font-size:.92rem;margin:0 0 .4rem}
+.sv-multiple-canvas{height:200px}
+.sv-listing{margin-top:1.25rem}
+.sv-listing table{width:100%;border-collapse:collapse;font-size:.85rem;background:#fff}
+.sv-listing th,.sv-listing td{border-bottom:1px solid #e3e8ee;padding:.45rem .55rem;text-align:left;vertical-align:top}
+.sv-listing th{border-bottom:2px solid #d8dee4;cursor:pointer;font-size:.75rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f;white-space:nowrap}
+.sv-listing tbody tr:hover{background:#f6f8fa}
+.sv-listing-actions{display:flex;align-items:center;justify-content:space-between;gap:.75rem;margin:.5rem 0;font-size:.85rem;flex-wrap:wrap}
+.sv-listing-tools{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.sv-listing-search{padding:.35rem .45rem;border:1px solid #b8c0cc;border-radius:6px;font:inherit;font-size:.85rem}
+.sv-listing-actions button{padding:.3rem .6rem;border:1px solid #d8dee4;border-radius:6px;background:#fff;color:#1f2933;font:inherit;font-size:.8rem;cursor:pointer}
+.sv-listing-actions button:hover:not(:disabled){border-color:#b8c0cc;background:#f6f8fa}
+.sv-listing-actions button:disabled{opacity:.45;cursor:default}
+.sv-annotation,.sv-main-annotation{font-size:.85rem;background:rgba(255,255,255,.92);border:1px solid #d8dee4;border-radius:6px;padding:.25rem .4rem}
+.sv-main-annotation{position:absolute;right:1.25rem;top:1.25rem;z-index:2}
+.sv-main-annotation:empty{display:none}
+.sv-info{text-decoration:none}
+.sv-hidden{display:none!important}
+@media (max-width:900px){
+.sv-root{flex-direction:column}
+.sv-sidebar{position:static;flex:1 1 auto;width:100%;max-height:none}
+.sv-controls{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:0 1.25rem;align-items:start}
+.sv-control-section{border-top:none}
+}`;
+  function applyShellStyles() {
+    if (document.getElementById(SHELL_STYLE_ID)) return;
+    const style = document.createElement("style");
+    style.id = SHELL_STYLE_ID;
+    style.textContent = SHELL_STYLES;
+    document.head.append(style);
+  }
+  function renderShell(element, { moduleClass = "", onToggle } = {}) {
+    element.innerHTML = "";
+    const root = createElement("div", `sv-root ${moduleClass}`.trim());
+    const sidebar = createElement("aside", "sv-sidebar");
+    const sidebarHeader = createElement("div", "sv-sidebar-header");
+    sidebarHeader.append(createElement("span", "sv-sidebar-title", "Controls"));
+    const sidebarToggle = createElement("button", "sv-sidebar-toggle");
+    sidebarToggle.type = "button";
+    const setCollapsed = (collapsed) => {
+      root.classList.toggle("sv-collapsed", collapsed);
+      sidebarToggle.setAttribute("aria-expanded", String(!collapsed));
+      sidebarToggle.setAttribute("aria-label", collapsed ? "Show controls" : "Hide controls");
+      sidebarToggle.textContent = collapsed ? "\xBB" : "\xAB";
+    };
+    sidebarToggle.onclick = () => {
+      setCollapsed(!root.classList.contains("sv-collapsed"));
+      if (onToggle) onToggle();
+    };
+    setCollapsed(false);
+    sidebarHeader.append(sidebarToggle);
+    const controls = createElement("div", "sv-controls");
+    sidebar.append(sidebarHeader, controls);
+    const main = createElement("div", "sv-main");
+    const notes = createElement("div", "sv-notes");
+    const chartWrap = createElement("div", "sv-chart-wrap");
+    const canvas = createElement("canvas", "sv-chart");
+    const mainAnnotation = createElement("div", "sv-main-annotation");
+    const footnote = createElement("div", "sv-footnote");
+    const multiplesWrap = createElement("div", "sv-multiples");
+    const listingWrap = createElement("div", "sv-listing");
+    chartWrap.append(canvas, mainAnnotation);
+    main.append(notes, chartWrap, footnote, multiplesWrap, listingWrap);
+    root.append(sidebar, main);
+    element.append(root);
+    applyShellStyles();
+    return {
+      root,
+      sidebar,
+      sidebarToggle,
+      controls,
+      main,
+      notes,
+      chartWrap,
+      canvas,
+      mainAnnotation,
+      footnote,
+      multiplesWrap,
+      listingWrap
+    };
+  }
+  function controlBuilders(controls) {
+    return {
+      addSection(label) {
+        const section = createElement("section", "sv-control-section");
+        section.append(createElement("h4", "sv-section-title", label));
+        controls.append(section);
+        return section;
+      },
+      addRow(parent) {
+        const row = createElement("div", "sv-control-row");
+        parent.append(row);
+        return row;
+      },
+      addControl(label, input, parent = controls) {
+        const wrap = createElement("div", "sv-control");
+        const lab = createElement("label", null, label);
+        wrap.append(lab, input);
+        parent.append(wrap);
+        return input;
+      }
+    };
+  }
+
   // src/histogram/configure.js
   var DEFAULT_SETTINGS = {
     measure_col: "TEST",
@@ -11503,19 +11651,6 @@ var SafetyViz = (() => {
   }
 
   // src/histogram/getPlugins.js
-  function createElement(tag, className, text) {
-    const element = document.createElement(tag);
-    if (className) element.className = className;
-    if (text !== void 0) element.textContent = text;
-    return element;
-  }
-  function option(select, value, label, selected) {
-    const opt = document.createElement("option");
-    opt.value = value;
-    opt.textContent = label;
-    opt.selected = selected;
-    select.appendChild(opt);
-  }
   function formatPValue(value) {
     if (!Number.isFinite(value)) return "NA";
     if (value < 1e-3) return "<0.001";
@@ -11550,10 +11685,10 @@ var SafetyViz = (() => {
   }
   function statisticalAnnotation(label, pValue, testName, url) {
     const text = `${label}: p=${formatPValue(pValue)}`;
-    const annotation = createElement("div", "sh-annotation");
+    const annotation = createElement("div", "sv-annotation");
     const value = createElement("span", null, text);
     value.title = `${testName}. Caution: This graphic has been thoroughly tested, but is not validated.`;
-    const link = createElement("a", "sh-info", "\u24D8");
+    const link = createElement("a", "sv-info", "\u24D8");
     link.href = url;
     link.target = "_blank";
     link.rel = "noopener noreferrer";
@@ -11662,12 +11797,12 @@ var SafetyViz = (() => {
     const { visible, pages, page } = paginate(rows, instance.page, pageSize);
     instance.page = page;
     instance.listingWrap.innerHTML = "";
-    const actions = createElement("div", "sh-listing-actions");
+    const actions = createElement("div", "sv-listing-actions");
     actions.append(
       createElement("strong", null, `${rows.length} of ${instance.currentTableData.length} records`)
     );
-    const tools = createElement("div", "sh-listing-tools");
-    const search = createElement("input", "sh-listing-search");
+    const tools = createElement("div", "sv-listing-tools");
+    const search = createElement("input", "sv-listing-search");
     search.type = "search";
     search.placeholder = "Search listing";
     search.value = instance.listingSearch;
@@ -11760,108 +11895,14 @@ var SafetyViz = (() => {
      * @private
      */
     renderShell() {
-      this.element.innerHTML = "";
-      this.root = createElement("div", "safety-histogram");
-      this.sidebar = createElement("aside", "sh-sidebar");
-      const sidebarHeader = createElement("div", "sh-sidebar-header");
-      sidebarHeader.append(createElement("span", "sh-sidebar-title", "Controls"));
-      this.sidebarToggle = createElement("button", "sh-sidebar-toggle");
-      this.sidebarToggle.type = "button";
-      this.sidebarToggle.onclick = () => {
-        const collapsed = this.root.classList.toggle("sh-collapsed");
-        this.sidebarToggle.setAttribute("aria-expanded", String(!collapsed));
-        this.sidebarToggle.setAttribute("aria-label", collapsed ? "Show controls" : "Hide controls");
-        this.sidebarToggle.textContent = collapsed ? "\xBB" : "\xAB";
-        this.resize();
-      };
-      this.sidebarToggle.setAttribute("aria-expanded", "true");
-      this.sidebarToggle.setAttribute("aria-label", "Hide controls");
-      this.sidebarToggle.textContent = "\xAB";
-      sidebarHeader.append(this.sidebarToggle);
-      this.controls = createElement("div", "sh-controls");
-      this.sidebar.append(sidebarHeader, this.controls);
-      this.main = createElement("div", "sh-main");
-      this.notes = createElement("div", "sh-notes");
-      this.chartWrap = createElement("div", "sh-chart-wrap");
-      this.canvas = createElement("canvas", "sh-chart");
-      this.mainAnnotation = createElement("div", "sh-main-annotation");
-      this.footnote = createElement("div", "sh-footnote", "Hover over or click a bar for details.");
-      this.multiplesWrap = createElement("div", "sh-multiples");
-      this.listingWrap = createElement("div", "sh-listing");
-      this.chartWrap.append(this.canvas, this.mainAnnotation);
-      this.main.append(
-        this.notes,
-        this.chartWrap,
-        this.footnote,
-        this.multiplesWrap,
-        this.listingWrap
+      Object.assign(
+        this,
+        renderShell(this.element, {
+          moduleClass: "safety-histogram",
+          onToggle: () => this.resize()
+        })
       );
-      this.root.append(this.sidebar, this.main);
-      this.element.append(this.root);
-      this.applyStyles();
-    }
-    /**
-     * Inject the module stylesheet once per document.
-     * @private
-     */
-    applyStyles() {
-      if (document.getElementById("safety-histogram-nextgen-styles")) return;
-      const style = document.createElement("style");
-      style.id = "safety-histogram-nextgen-styles";
-      style.textContent = `
-.safety-histogram{display:flex;align-items:flex-start;gap:1.25rem;width:100%;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#1f2933}
-.sh-sidebar{position:sticky;top:1rem;flex:0 0 250px;max-height:calc(100vh - 2rem);overflow-y:auto;border:1px solid #d8dee4;border-radius:10px;background:#f6f8fa;padding:.8rem .9rem 1rem}
-.sh-sidebar-header{display:flex;align-items:center;justify-content:space-between;gap:.5rem}
-.sh-sidebar-title{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#52616f}
-.sh-sidebar-toggle{border:1px solid #d8dee4;border-radius:6px;background:#fff;color:#52616f;font:inherit;font-size:.85rem;line-height:1;padding:.25rem .5rem;cursor:pointer}
-.sh-sidebar-toggle:hover{color:#1f2933;border-color:#b8c0cc}
-.sh-collapsed .sh-sidebar{flex-basis:auto;padding:.5rem}
-.sh-collapsed .sh-sidebar-title,.sh-collapsed .sh-controls{display:none}
-.sh-control-section{border-top:1px solid #e3e8ee;margin-top:.8rem;padding-top:.65rem}
-.sh-section-title{margin:0 0 .5rem;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#52616f}
-.sh-controls>.sh-control{margin-top:.75rem}
-.sh-control{margin:0 0 .55rem}
-.sh-control:last-child{margin-bottom:0}
-.sh-control label{display:block;font-size:.78rem;font-weight:600;margin-bottom:.25rem}
-.sh-control select,.sh-control input{width:100%;box-sizing:border-box;padding:.35rem .45rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.85rem;color:inherit}
-.sh-control input[type=checkbox]{width:auto;margin:0;accent-color:#0b62a4}
-.sh-control select:focus-visible,.sh-control input:focus-visible,.sh-sidebar-toggle:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
-.sh-control-row{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
-.sh-control-row .sh-control{margin:0}
-.sh-control-inline{display:flex;align-items:center;gap:.4rem;font-size:.85rem}
-.sh-main{flex:1 1 auto;min-width:0}
-.sh-notes{display:flex;flex-wrap:wrap;gap:.25rem 1.25rem;font-size:.85rem;color:#52616f;margin:0 0 .6rem}
-.sh-warning{color:#9a3412}
-.sh-chart-wrap{height:460px;position:relative;border:1px solid #d8dee4;border-radius:10px;padding:1rem;background:#fff}
-.sh-footnote{margin:.6rem 0 0;font-size:.85rem;color:#52616f}
-.sh-multiples{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;margin-top:1.25rem}
-.sh-multiples:empty{display:none}
-.sh-multiple{border:1px solid #d8dee4;border-radius:10px;padding:.75rem .85rem;background:#fff}
-.sh-multiple h3{font-size:.92rem;margin:0 0 .4rem}
-.sh-multiple-canvas{height:200px}
-.sh-listing{margin-top:1.25rem}
-.sh-listing table{width:100%;border-collapse:collapse;font-size:.85rem;background:#fff}
-.sh-listing th,.sh-listing td{border-bottom:1px solid #e3e8ee;padding:.45rem .55rem;text-align:left;vertical-align:top}
-.sh-listing th{border-bottom:2px solid #d8dee4;cursor:pointer;font-size:.75rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f;white-space:nowrap}
-.sh-listing tbody tr:hover{background:#f6f8fa}
-.sh-listing-actions{display:flex;align-items:center;justify-content:space-between;gap:.75rem;margin:.5rem 0;font-size:.85rem;flex-wrap:wrap}
-.sh-listing-tools{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
-.sh-listing-search{padding:.35rem .45rem;border:1px solid #b8c0cc;border-radius:6px;font:inherit;font-size:.85rem}
-.sh-listing-actions button{padding:.3rem .6rem;border:1px solid #d8dee4;border-radius:6px;background:#fff;color:#1f2933;font:inherit;font-size:.8rem;cursor:pointer}
-.sh-listing-actions button:hover:not(:disabled){border-color:#b8c0cc;background:#f6f8fa}
-.sh-listing-actions button:disabled{opacity:.45;cursor:default}
-.sh-annotation,.sh-main-annotation{font-size:.85rem;background:rgba(255,255,255,.92);border:1px solid #d8dee4;border-radius:6px;padding:.25rem .4rem}
-.sh-main-annotation{position:absolute;right:1.25rem;top:1.25rem;z-index:2}
-.sh-main-annotation:empty{display:none}
-.sh-info{text-decoration:none}
-.sh-hidden{display:none!important}
-@media (max-width:900px){
-.safety-histogram{flex-direction:column}
-.sh-sidebar{position:static;flex:1 1 auto;width:100%;max-height:none}
-.sh-controls{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:0 1.25rem;align-items:start}
-.sh-control-section{border-top:none}
-}`;
-      document.head.append(style);
+      this.footnote.textContent = "Hover over or click a bar for details.";
     }
     /**
      * Load data and render: an alias for setData that keeps the pilot's
@@ -11909,7 +11950,7 @@ var SafetyViz = (() => {
       try {
         checkInputs(this.rawData, this.settings);
       } catch (error) {
-        this.element.innerHTML = `<div class="sh-warning">${error.message}</div>`;
+        this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
         throw error;
       }
       const { rows, removed } = cleanData(this.rawData, this.settings);
@@ -11937,24 +11978,7 @@ var SafetyViz = (() => {
      */
     buildControls() {
       this.controls.innerHTML = "";
-      const addControl = (label, input, parent = this.controls) => {
-        const wrap = createElement("div", "sh-control");
-        const lab = createElement("label", null, label);
-        wrap.append(lab, input);
-        parent.append(wrap);
-        return input;
-      };
-      const addSection = (label) => {
-        const section = createElement("section", "sh-control-section");
-        section.append(createElement("h4", "sh-section-title", label));
-        this.controls.append(section);
-        return section;
-      };
-      const addRow = (parent) => {
-        const row = createElement("div", "sh-control-row");
-        parent.append(row);
-        return row;
-      };
+      const { addSection, addRow, addControl } = controlBuilders(this.controls);
       const measure = addControl("Measure", document.createElement("select"));
       this.measures().forEach((value) => option(measure, value, value, value === this.state.measure));
       measure.onchange = () => {
@@ -12043,10 +12067,10 @@ var SafetyViz = (() => {
           this.state.displayNormalRange = nr.checked;
           this.render();
         };
-        const inline = createElement("div", "sh-control-inline");
+        const inline = createElement("div", "sv-control-inline");
         inline.append(nr, document.createTextNode("Show"));
         addControl("Normal Range", inline, displayParent);
-        this.normalRangeControl = inline.closest(".sh-control");
+        this.normalRangeControl = inline.closest(".sv-control");
       }
       const ticks = document.createElement("select");
       option(ticks, "linear", "linear", !this.state.annotateBoundaries);
@@ -12079,7 +12103,7 @@ var SafetyViz = (() => {
     updateNormalRangeControl() {
       if (!this.normalRangeControl) return;
       const available = measureHasNormalRange(this.currentMeasureData(), this.settings);
-      this.normalRangeControl.classList.toggle("sh-hidden", !available);
+      this.normalRangeControl.classList.toggle("sv-hidden", !available);
     }
     /**
      * Clear the x-axis limit overrides when the measure changes.
@@ -12144,7 +12168,7 @@ var SafetyViz = (() => {
         this.filteredData.map((row) => row[this.settings.id_col])
       ).length;
       const pct = totalParticipants ? (shownParticipants / totalParticipants * 100).toFixed(1) : "0.0";
-      const removedNote = this.removedRecords ? `<span class="sh-warning">${this.removedRecords} missing or non-numeric results removed.</span>` : "";
+      const removedNote = this.removedRecords ? `<span class="sv-warning">${this.removedRecords} missing or non-numeric results removed.</span>` : "";
       this.notes.innerHTML = `<span>${shownParticipants} of ${totalParticipants} participants shown (${pct}%).</span>${removedNote}`;
     }
     /**
@@ -12272,7 +12296,7 @@ var SafetyViz = (() => {
         const rows = this.filteredData.filter(
           (row) => String(row[this.state.groupBy]) === String(groupValue)
         );
-        const panel = createElement("div", "sh-multiple");
+        const panel = createElement("div", "sv-multiple");
         panel.append(createElement("h3", null, `${groupValue} (${rows.length} records)`));
         if (this.settings.compare_distributions) {
           const groupedValues = Object.fromEntries(
@@ -12290,7 +12314,7 @@ var SafetyViz = (() => {
             )
           );
         }
-        const canvasWrap = createElement("div", "sh-multiple-canvas");
+        const canvasWrap = createElement("div", "sv-multiple-canvas");
         const canvas = document.createElement("canvas");
         canvasWrap.append(canvas);
         panel.append(canvasWrap);
