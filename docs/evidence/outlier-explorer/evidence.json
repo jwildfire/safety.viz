@@ -1,5 +1,5 @@
 {
-  "module": "histogram",
+  "module": "outlier-explorer",
   "generatedAt": "2026-07-11T14:54:09.779Z",
   "environment": {
     "os": "darwin 23.6.0",
@@ -42,132 +42,127 @@
       "screenshots": []
     },
     {
-      "test": "SH-API-001: lifecycle API supports init, setData, setSettings, render, resize, and destroy (#2)",
+      "test": "SOE-API-001: lifecycle API supports init, setData, setSettings, render, resize, and destroy (#24)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["SH-API-001"],
-      "issueRefs": [2],
+      "requirementIds": ["SOE-API-001"],
+      "issueRefs": [24],
       "screenshots": []
     },
     {
-      "test": "SH-CHART-003/SH-FUNC-010/SH-FUNC-012: selecting a canvas bar opens a linked listing with record details and count (#2)",
+      "test": "SOE-API-003: participantsSelected fires on select and clear (#24)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["SH-CHART-003", "SH-FUNC-010", "SH-FUNC-012"],
-      "issueRefs": [2],
-      "screenshots": ["SH-FUNC-010-linked-listing.png"]
-    },
-    {
-      "test": "SH-CHART-004: group-by renders grouped histograms (#2)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-CHART-004"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CHART-004-grouped-multiples.png"]
-    },
-    {
-      "test": "SH-CHART-004/SH-CTRL-006: grouped small multiples share the main chart's bin boundaries (#19)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-CHART-004", "SH-CTRL-006"],
-      "issueRefs": [19],
-      "screenshots": ["SH-CHART-004-grouped-multiples.png"]
-    },
-    {
-      "test": "SH-CHART-005: p-value annotations display the approximation and validation disclaimer (#2)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-CHART-005"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CHART-005-pvalue-disclaimer.png"]
-    },
-    {
-      "test": "SH-CTRL-001/SH-CTRL-002/SH-CTRL-006: renders measure, filter, axis, bin, and group controls (#2)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-001", "SH-CTRL-002", "SH-CTRL-006"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CTRL-001-control-panel.png"]
-    },
-    {
-      "test": "SH-CTRL-003: participant note updates when a filter is applied (#2)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-003"],
-      "issueRefs": [2],
+      "requirementIds": ["SOE-API-003"],
+      "issueRefs": [24],
       "screenshots": []
     },
     {
-      "test": "SH-CTRL-004/SH-FUNC-004A/SH-FUNC-004B: normal range checkbox toggles a stable overlay region (#2)",
+      "test": "SOE-FUNC-001/SOE-FUNC-002/SOE-FUNC-004/SOE-FUNC-005/SOE-FUNC-006/SOE-FUNC-007: renders the full control panel (#24)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["SH-CTRL-004", "SH-FUNC-004A", "SH-FUNC-004B"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CTRL-004-normal-range-overlay.png"]
+      "requirementIds": [
+        "SOE-FUNC-001",
+        "SOE-FUNC-002",
+        "SOE-FUNC-004",
+        "SOE-FUNC-005",
+        "SOE-FUNC-006",
+        "SOE-FUNC-007"
+      ],
+      "issueRefs": [24],
+      "screenshots": ["SOE-FUNC-001-control-panel.png", "SOE-FUNC-007-normal-range-band.png"]
     },
     {
-      "test": "SH-CTRL-005/SH-FUNC-005A/SH-FUNC-005B/SH-FUNC-005D: x-axis limit inputs redraw and normalize invalid ranges (#2)",
+      "test": "SOE-FUNC-003/SOE-REG-001/SOE-REG-002: participant note reports N and % and updates on filter (#24)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["SH-CTRL-005", "SH-FUNC-005A", "SH-FUNC-005B", "SH-FUNC-005D"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CTRL-005-axis-limits.png"]
-    },
-    {
-      "test": "SH-CTRL-006: bin boundaries anchor to the measure results, not the filtered subset (#19)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-006"],
-      "issueRefs": [19],
+      "requirementIds": ["SOE-FUNC-003", "SOE-REG-001", "SOE-REG-002"],
+      "issueRefs": [24],
       "screenshots": []
     },
     {
-      "test": "SH-CTRL-007: x-axis tick mode switches labels between centers and bin boundaries (#2)",
+      "test": "SOE-FUNC-004/SOE-REG-003: the x-axis toggle switches between the visit and study-day axes (#24)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["SH-CTRL-007"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CTRL-007-boundary-ticks.png"]
-    },
-    {
-      "test": "SH-DATA-002: missing and non-numeric results are dropped with a reported count and visible note (#2)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-DATA-002"],
-      "issueRefs": [2],
-      "screenshots": ["SH-DATA-002-invalid-data-note.png"]
-    },
-    {
-      "test": "SH-FUNC-004C: normal range control is hidden when the measure has no normal range data (#2)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-FUNC-004C"],
-      "issueRefs": [2],
-      "screenshots": ["SH-FUNC-004C-control-hidden-for-pulse.png"]
-    },
-    {
-      "test": "SH-FUNC-005C: x-axis limit inputs support stepper increments of 1 (#2)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-FUNC-005C"],
-      "issueRefs": [2],
+      "requirementIds": ["SOE-FUNC-004", "SOE-REG-003"],
+      "issueRefs": [24],
       "screenshots": []
     },
     {
-      "test": "SH-FUNC-011: selecting a bar de-emphasizes the bars outside the linked listing (#2)",
+      "test": "SOE-FUNC-005/SOE-FUNC-006/SOE-REG-004/SOE-REG-005/SOE-REG-006: y-axis limits redraw, normalize, and reset (#24)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["SH-FUNC-011"],
-      "issueRefs": [2],
-      "screenshots": ["SH-FUNC-011-bar-de-emphasis.png"]
+      "requirementIds": [
+        "SOE-FUNC-005",
+        "SOE-FUNC-006",
+        "SOE-REG-004",
+        "SOE-REG-005",
+        "SOE-REG-006"
+      ],
+      "issueRefs": [24],
+      "screenshots": []
     },
     {
-      "test": "SH-LIST-001/SH-LIST-002/SH-LIST-003/SH-LIST-004: listing supports pagination, search, sorting, and CSV export (#2)",
+      "test": "SOE-FUNC-007/SOE-REG-025/SOE-REG-026/SOE-REG-027: normal-range methods drive the band and conditional inputs (#24)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["SH-LIST-001", "SH-LIST-002", "SH-LIST-003", "SH-LIST-004"],
-      "issueRefs": [2],
-      "screenshots": ["SH-LIST-004-search-sort-paginate.png"]
+      "requirementIds": ["SOE-FUNC-007", "SOE-REG-025", "SOE-REG-026", "SOE-REG-027"],
+      "issueRefs": [24],
+      "screenshots": ["SOE-FUNC-007-normal-range-band.png"]
+    },
+    {
+      "test": "SOE-FUNC-010/SOE-FUNC-012/SOE-REG-013/SOE-REG-014/SOE-REG-016: clicking a point highlights the participant and opens a linked listing (#24)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [
+        "SOE-FUNC-010",
+        "SOE-FUNC-012",
+        "SOE-REG-013",
+        "SOE-REG-014",
+        "SOE-REG-016"
+      ],
+      "issueRefs": [24],
+      "screenshots": ["SOE-FUNC-010-participant-detail.png"]
+    },
+    {
+      "test": "SOE-FUNC-010/SOE-REG-020: clicking the background clears the selection and listing (#24)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SOE-FUNC-010", "SOE-REG-020"],
+      "issueRefs": [24],
+      "screenshots": ["SOE-FUNC-010-participant-detail.png"]
+    },
+    {
+      "test": "SOE-REG-011: point tooltips list participant, result, and time (#24)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SOE-REG-011"],
+      "issueRefs": [24],
+      "screenshots": []
+    },
+    {
+      "test": "SOE-REG-037/SOE-REG-038: missing and non-numeric results are dropped with a reported count and note (#24)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SOE-REG-037", "SOE-REG-038"],
+      "issueRefs": [24],
+      "screenshots": ["SOE-REG-037-invalid-data-note.png"]
+    },
+    {
+      "test": "SOE-REG-048/SOE-REG-049/SOE-REG-050: grouping colors the marks and renders a legend (#24)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SOE-REG-048", "SOE-REG-049", "SOE-REG-050"],
+      "issueRefs": [24],
+      "screenshots": ["SOE-REG-049-color-by-group.png"]
+    },
+    {
+      "test": "SOE-REG-051/SOE-REG-052/SOE-REG-053: a filter with a start value initializes filtered and offers no All option (#24)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SOE-REG-051", "SOE-REG-052", "SOE-REG-053"],
+      "issueRefs": [24],
+      "screenshots": []
     },
     {
       "test": "buildApiModel API-XFORM-010: assembles the artifact with module, factory, methods, settings, data contract, and missing docs (#6)",
@@ -314,292 +309,236 @@
       "screenshots": []
     },
     {
-      "test": "histogram binning matches the original renderer (#19) SH-CTRL-006: ADBDS Albumin reproduces the original renderer's bin parameters (#19)",
+      "test": "outlier-explorer checkInputs SOE-DATA-001: missing required measure/value columns throw a naming error (#24)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SH-CTRL-006"],
-      "issueRefs": [19, 19],
+      "requirementIds": ["SOE-DATA-001"],
+      "issueRefs": [24],
       "screenshots": []
     },
     {
-      "test": "histogram binning matches the original renderer (#19) SH-CTRL-006: bin quantity is clamped to the count of unique results (#19)",
+      "test": "outlier-explorer checkInputs SOE-DATA-001: valid long-format data with the required columns passes (#24)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SH-CTRL-006"],
-      "issueRefs": [19, 19],
+      "requirementIds": ["SOE-DATA-001"],
+      "issueRefs": [24],
       "screenshots": []
     },
     {
-      "test": "histogram binning matches the original renderer (#19) SH-CTRL-006: Scott's rule and Freedman-Diaconis enforce the original's 5-bin floor (#19)",
+      "test": "outlier-explorer checkInputs SOE-DATA-003: an empty settings object initializes from the defaults (#24)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SH-CTRL-006"],
-      "issueRefs": [19, 19],
+      "requirementIds": ["SOE-DATA-003"],
+      "issueRefs": [24],
       "screenshots": []
     },
     {
-      "test": "histogram binning matches the original renderer (#19) SH-CTRL-006: Shimazaki-Shinomoto minimizes the original's cost function (#19)",
+      "test": "outlier-explorer configure SOE-CFG-004: filter specs normalize strings and objects and preserve a start value (#24)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SH-CTRL-006"],
-      "issueRefs": [19, 19],
+      "requirementIds": ["SOE-CFG-004"],
+      "issueRefs": [24],
       "screenshots": []
     },
     {
-      "test": "histogram binning matches the original renderer (#19) SH-CTRL-006: zero-spread results collapse to a single bin (#19)",
+      "test": "outlier-explorer configure SOE-CFG-005: details default to time, id, result, normal limits, and unit when unset (#24)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SH-CTRL-006"],
-      "issueRefs": [19, 19],
+      "requirementIds": ["SOE-CFG-005"],
+      "issueRefs": [24],
       "screenshots": []
     },
     {
-      "test": "histogram checkInputs SH-DATA-001: missing required variables throw the pilot's error message (#2)",
+      "test": "outlier-explorer configure SOE-CFG-006/013/014: tooltip_cols normalize and mark attributes merge over defaults (#24)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SH-DATA-001"],
-      "issueRefs": [2],
+      "requirementIds": ["SOE-CFG-006"],
+      "issueRefs": [24],
       "screenshots": []
     },
     {
-      "test": "histogram checkInputs SH-DATA-001: the JSON schema publishes the data contract with required column mappings (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-DATA-001"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram checkInputs SH-DATA-001/SH-DATA-003: valid long-format data with optional columns passes (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-DATA-001", "SH-DATA-003"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram configure SH-CFG-004..009: default settings map the standard measure, result, id, unit, and normal-range columns (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CFG-004"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram configure SH-CFG-010: filter specs normalize strings and objects to value_col/label pairs (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CFG-010"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram configure SH-CFG-011: details default to id, filters, result, normal limits, and unit when unset (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CFG-011"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram configure SH-CFG-013/SH-CFG-014: normal-range control and initial display flags are configurable (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CFG-013", "SH-CFG-014"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram configure SH-CHART-004: the group list always offers None and adopts an unknown group_by column (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CHART-004"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CHART-004-grouped-multiples.png"]
-    },
-    {
-      "test": "histogram getPlugins SH-CHART-002: bin descriptions report the count and value range in the pilot's wording (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CHART-002"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram getPlugins SH-CHART-005: p-values format with bounded precision (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CHART-005"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CHART-005-pvalue-disclaimer.png"]
-    },
-    {
-      "test": "histogram getPlugins SH-CHART-005: the group-comparison screen needs 2+ groups and separates distinct groups (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CHART-005"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CHART-005-pvalue-disclaimer.png"]
-    },
-    {
-      "test": "histogram getPlugins SH-CHART-005: the normality screen needs at least 3 values and stays within (0, 1) (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CHART-005"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CHART-005-pvalue-disclaimer.png"]
-    },
-    {
-      "test": "histogram getPlugins SH-FUNC-011: selection colors keep the selected bar and fade the rest (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-FUNC-011"],
-      "issueRefs": [2],
-      "screenshots": ["SH-FUNC-011-bar-de-emphasis.png"]
-    },
-    {
-      "test": "histogram getScales buildScales keeps the count axis integer-based at zero (#2)",
+      "test": "outlier-explorer configure SOE-CFG-defaults: default settings map the standard measure, result, id, unit, and normal-range columns (#24)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": [],
-      "issueRefs": [2],
+      "issueRefs": [24],
       "screenshots": []
     },
     {
-      "test": "histogram getScales formatNumber trims to significant digits and blanks non-finite values (#2)",
+      "test": "outlier-explorer configure SOE-FUNC-004: time_cols default to a derived Measurement axis and normalize ordinal specs (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-FUNC-004"],
+      "issueRefs": [24],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer configure SOE-FUNC-007/SOE-CFG-007..009: normal-range method defaults to LLN-ULN with sd and quantile defaults (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-FUNC-007", "SOE-CFG-007"],
+      "issueRefs": [24],
+      "screenshots": ["SOE-FUNC-007-normal-range-band.png"]
+    },
+    {
+      "test": "outlier-explorer configure SOE-REG-048: groups always offer a leading None option and honor group_by (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-REG-048"],
+      "issueRefs": [24],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer getPlugins hexToRgba converts a hex color to rgba at the given opacity (#24)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": [],
-      "issueRefs": [2],
+      "issueRefs": [24],
       "screenshots": []
     },
     {
-      "test": "histogram getScales SH-CTRL-005: normalizeDomain swaps inverted lower/upper limits (#2)",
+      "test": "outlier-explorer getPlugins SOE-CFG-006/SOE-REG-012: pointTooltip appends configured tooltip_cols when present (#24)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SH-CTRL-005"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CTRL-005-axis-limits.png"]
-    },
-    {
-      "test": "histogram getScales SH-CTRL-005/SH-FUNC-005A/SH-FUNC-005B: resolveDomain applies user limits over the data extent (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-005", "SH-FUNC-005A", "SH-FUNC-005B"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CTRL-005-axis-limits.png"]
-    },
-    {
-      "test": "histogram getScales SH-CTRL-007: tick labels switch between bin centers and bin boundaries (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-007"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CTRL-007-boundary-ticks.png"]
-    },
-    {
-      "test": "histogram listing SH-LIST-002: pagination slices pages and clamps out-of-range page numbers (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-LIST-002"],
-      "issueRefs": [2],
+      "requirementIds": ["SOE-CFG-006", "SOE-REG-012"],
+      "issueRefs": [24],
       "screenshots": []
     },
     {
-      "test": "histogram listing SH-LIST-003: CSV export renders label headers and quoted, null-safe values (#2)",
+      "test": "outlier-explorer getPlugins SOE-REG-011: pointTooltip lists participant, result, and time (#24)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SH-LIST-003"],
-      "issueRefs": [2],
+      "requirementIds": ["SOE-REG-011"],
+      "issueRefs": [24],
       "screenshots": []
     },
     {
-      "test": "histogram listing SH-LIST-004: search filters rows case-insensitively across listing columns (#2)",
+      "test": "outlier-explorer getPlugins SOE-REG-049: groupColorScale maps distinct group values to palette colors and cycles (#24)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SH-LIST-004"],
-      "issueRefs": [2],
-      "screenshots": ["SH-LIST-004-search-sort-paginate.png"]
+      "requirementIds": ["SOE-REG-049"],
+      "issueRefs": [24],
+      "screenshots": ["SOE-REG-049-color-by-group.png"]
     },
     {
-      "test": "histogram listing SH-LIST-004: sorting is numeric when both values are numeric, string otherwise, and null-safe (#2)",
+      "test": "outlier-explorer getScales SOE-FUNC-005: resolveYDomain honors user lower/upper and falls back to default (#24)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SH-LIST-004"],
-      "issueRefs": [2],
-      "screenshots": ["SH-LIST-004-search-sort-paginate.png"]
-    },
-    {
-      "test": "histogram structureData display digits resolve the bin width without exceeding the data precision (#15)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [15],
+      "requirementIds": ["SOE-FUNC-005"],
+      "issueRefs": [24],
       "screenshots": []
     },
     {
-      "test": "histogram structureData helpers: unique drops empty values; quantile, mean, sd, and precision match the pilot (#2)",
+      "test": "outlier-explorer getScales SOE-FUNC-005/SOE-REG-004: normalizeYDomain swaps inverted limits in place (#24)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [2],
+      "requirementIds": ["SOE-FUNC-005", "SOE-REG-004"],
+      "issueRefs": [24],
       "screenshots": []
     },
     {
-      "test": "histogram structureData SH-CTRL-002: active filters subset rows by stringified equality (#2)",
+      "test": "outlier-explorer getScales SOE-FUNC-005/SOE-REG-034: default y-domain pads the measure extent so points are not clipped (#24)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SH-CTRL-002"],
-      "issueRefs": [2],
+      "requirementIds": ["SOE-FUNC-005", "SOE-REG-034"],
+      "issueRefs": [24],
       "screenshots": []
     },
     {
-      "test": "histogram structureData SH-CTRL-005: an explicit domain bounds the bins and clamps edge values (#2)",
+      "test": "outlier-explorer getScales SOE-REG-028: buildXScale rotates ordinal visit ticks and keeps linear ticks upright (#24)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SH-CTRL-005"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CTRL-005-axis-limits.png"]
-    },
-    {
-      "test": "histogram structureData SH-CTRL-006: binning algorithms produce the original renderer's bin quantities (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-006"],
-      "issueRefs": [2],
+      "requirementIds": ["SOE-REG-028"],
+      "issueRefs": [24],
       "screenshots": []
     },
     {
-      "test": "histogram structureData SH-CTRL-006: custom quantity and custom width drive the bin count (#2)",
+      "test": "outlier-explorer getScales SOE-REG-033: axisStep snaps ~1/15 of the range to a power of ten (#24)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SH-CTRL-006"],
-      "issueRefs": [2],
+      "requirementIds": ["SOE-REG-033"],
+      "issueRefs": [24],
       "screenshots": []
     },
     {
-      "test": "histogram structureData SH-DATA-001: measure labels combine the measure with its unit when present (#2)",
+      "test": "outlier-explorer module export SOE-API-001: the public collection exposes the outlierExplorer factory (#24)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SH-DATA-001"],
-      "issueRefs": [2],
+      "requirementIds": ["SOE-API-001"],
+      "issueRefs": [24],
       "screenshots": []
     },
     {
-      "test": "histogram structureData SH-DATA-002: missing and non-numeric results are removed with a reported count (#2)",
+      "test": "outlier-explorer structureData SOE-FUNC-004: assignSequence derives a 1-based per-participant measurement index (#24)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SH-DATA-002"],
-      "issueRefs": [2],
-      "screenshots": ["SH-DATA-002-invalid-data-note.png"]
+      "requirementIds": ["SOE-FUNC-004"],
+      "issueRefs": [24],
+      "screenshots": []
     },
     {
-      "test": "histogram structureData SH-FUNC-004C: measures without normal-range data are detected (#2)",
+      "test": "outlier-explorer structureData SOE-FUNC-007: countInliers counts observations inside the band (#24)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SH-FUNC-004C"],
-      "issueRefs": [2],
-      "screenshots": ["SH-FUNC-004C-control-hidden-for-pulse.png"]
+      "requirementIds": ["SOE-FUNC-007"],
+      "issueRefs": [24],
+      "screenshots": ["SOE-FUNC-007-normal-range-band.png"]
+    },
+    {
+      "test": "outlier-explorer structureData SOE-FUNC-007/SOE-CFG-007: Standard Deviation normal range uses mean +/- k*sd (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-FUNC-007", "SOE-CFG-007"],
+      "issueRefs": [24],
+      "screenshots": ["SOE-FUNC-007-normal-range-band.png"]
+    },
+    {
+      "test": "outlier-explorer structureData SOE-FUNC-007/SOE-CFG-008: Quantiles normal range uses the configured quantiles (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-FUNC-007", "SOE-CFG-008"],
+      "issueRefs": [24],
+      "screenshots": ["SOE-FUNC-007-normal-range-band.png"]
+    },
+    {
+      "test": "outlier-explorer structureData SOE-FUNC-007/SOE-REG-025: LLN-ULN normal range is the median of the limit columns; None is null (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-FUNC-007", "SOE-REG-025"],
+      "issueRefs": [24],
+      "screenshots": ["SOE-FUNC-007-normal-range-band.png"]
+    },
+    {
+      "test": "outlier-explorer structureData SOE-FUNC-010/SOE-REG-016: buildSeries makes one time-sorted series per participant (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-FUNC-010", "SOE-REG-016"],
+      "issueRefs": [24],
+      "screenshots": ["SOE-FUNC-010-participant-detail.png"]
+    },
+    {
+      "test": "outlier-explorer structureData SOE-REG-028: orderedCategories sorts ordinal visits by their order column (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-REG-028"],
+      "issueRefs": [24],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer structureData SOE-REG-029/SOE-REG-031: measureLabel appends the unit when present (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-REG-029", "SOE-REG-031"],
+      "issueRefs": [24],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer structureData SOE-REG-037/SOE-REG-038: cleanData drops missing and non-numeric results with a count (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-REG-037", "SOE-REG-038"],
+      "issueRefs": [24],
+      "screenshots": ["SOE-REG-037-invalid-data-note.png"]
     },
     {
       "test": "safety.viz scaffold SH-API-001: the collection exposes the histogram module factory (#2)",
