@@ -202,7 +202,7 @@ export function moduleTabs(active, matrixUrl) {
     tab('demo', 'index.html', 'Live demo') +
     tab('evidence', 'evidence.html', 'Test evidence') +
     tab('api', 'api.html', 'API reference') +
-    `<a href="${matrixUrl}">Requirement matrix ↗</a>` +
+    (matrixUrl ? `<a href="${matrixUrl}">Requirement matrix ↗</a>` : '') +
     `</nav>`
   );
 }
@@ -523,6 +523,176 @@ export function renderGallery(config) {
   return html.join('\n');
 }
 
+// Each safety.viz module traces to the Rho, Inc. repository it re-implements;
+// module names were normalized during migration, so the mapping is explicit.
+const ORIGINAL_REPOS = {
+  histogram: 'safety-histogram',
+  'outlier-explorer': 'safety-outlier-explorer',
+  'results-over-time': 'safety-results-over-time',
+  'shift-plot': 'safety-shift-plot',
+  'delta-delta': 'safety-delta-delta',
+  'paneled-outlier-explorer': 'paneled-outlier-explorer',
+  'ae-explorer': 'aeexplorer',
+  'ae-timelines': 'ae-timelines',
+  'web-codebook': 'web-codebook'
+};
+
+// About page (#21): the keynote/project story, the safetyGraphics lineage,
+// and full attribution for the original RhoInc renderers.
+export function renderAboutPage(config) {
+  const first = config.renderers.find((renderer) => renderer.status === 'available');
+  const evidenceRef = first
+    ? `<a href="${first.module}/evidence.html">test-evidence report</a>`
+    : 'test-evidence report';
+  const creditRows = config.renderers
+    .map((renderer) => {
+      const repo = ORIGINAL_REPOS[renderer.module];
+      const repoCell = repo
+        ? `<a href="https://github.com/RhoInc/${repo}"><code>${repo}</code></a>`
+        : '—';
+      const here =
+        renderer.status === 'available'
+          ? `<a href="${renderer.module}/index.html">${escapeHtml(renderer.title)}</a>`
+          : escapeHtml(renderer.title);
+      return (
+        `<tr><td>${repoCell}</td><td>${here} ` +
+        `<span class="badge badge-${renderer.status}">${renderer.status}</span></td>` +
+        `<td>${escapeHtml(renderer.blurb)}</td></tr>`
+      );
+    })
+    .join('\n');
+
+  return [
+    `<h1>About safety.viz</h1>`,
+    `<p class="tagline">An agentic rebuild of the safetyGraphics interactive renderers,` +
+      ` documented in the open for R/Pharma 2026.</p>`,
+
+    `<h2 id="project">The project</h2>`,
+    `<p>safety.viz is one workstream of a larger experiment: modernizing the safetyGraphics` +
+      ` clinical-safety graphics ecosystem with AI agents doing the engineering — requirements,` +
+      ` tests, implementation, and this site — under human review, with every requirement,` +
+      ` design decision, and release tracked in public. The build is the subject of a` +
+      ` developer-diary keynote at R/Pharma 2026; the running story lives on the` +
+      ` <a href="${config.hubUrl}">obot roadmap</a>.</p>`,
+    `<p>The working method is deliberately conservative for safety software: each renderer` +
+      ` starts from a reviewed requirement matrix in` +
+      ` <a href="https://github.com/jwildfire/safety.agent">safety.agent</a>, extracted from the` +
+      ` original renderer&#39;s documented behavior; development is red-green (a failing,` +
+      ` requirement-keyed test first, then the minimal change); and a renderer only counts as` +
+      ` migrated when its live demo, requirement-traced ${evidenceRef}, and generated API` +
+      ` reference are all on this site. The R-side companion,` +
+      ` <a href="https://github.com/jwildfire/gsm.safety">gsm.safety</a>, wraps the same` +
+      ` committed bundle as <code>Widget_*</code> htmlwidgets.</p>`,
+
+    `<h2 id="lineage">Lineage</h2>`,
+    `<p>The charts themselves are not new — that is the point. Each renderer re-implements an` +
+      ` interactive display designed, reviewed, and used in practice under the` +
+      ` <a href="https://github.com/SafetyGraphics">safetyGraphics</a> project, the open-source` +
+      ` framework for clinical-trial safety monitoring that grew out of the ASA Biopharm / DIA` +
+      ` Safety Working Group&#39;s Interactive Safety Graphics task force. The original` +
+      ` implementations were built by the open-source team at` +
+      ` <a href="https://github.com/RhoInc">Rho, Inc.</a> on their` +
+      ` <a href="https://github.com/RhoInc/Webcharts">Webcharts</a> D3 library. safety.viz ports` +
+      ` that behavior onto maintained <a href="https://www.chartjs.org/">Chart.js</a>, preserving` +
+      ` each chart&#39;s clinical intent while adding JSON-Schema data contracts and` +
+      ` requirement-traced evidence.</p>`,
+
+    `<h2 id="credits">Original renderers</h2>`,
+    `<p>Full credit to the original authors — each safety.viz module traces to one of these` +
+      ` open-source Rho, Inc. repositories:</p>`,
+    `<div class="table-scroll"><table class="renderer-credits">` +
+      `<thead><tr><th>Original renderer</th><th>In safety.viz</th><th>What it shows</th></tr></thead>` +
+      `<tbody>${creditRows}</tbody></table></div>`,
+    `<p>If you use these displays in your own work, please also cite the safetyGraphics` +
+      ` project and the original repositories above.</p>`
+  ].join('\n');
+}
+
+// Architecture page (#21): the technical overview — pipeline, data-contract
+// philosophy, module anatomy, the shared shell, and the quality machinery.
+export function renderArchitecturePage({ config, version }) {
+  const first = config.renderers.find((renderer) => renderer.status === 'available');
+  const apiHref = first ? `${first.module}/api.html` : null;
+  const apiLink = (label) => (apiHref ? `<a href="${apiHref}">${label}</a>` : label);
+  return [
+    `<h1>Architecture</h1>`,
+    `<p class="tagline">One bundle, one shared shell, one data contract per chart — built to be` +
+      ` embedded anywhere JavaScript or R can reach.</p>`,
+
+    `<h2 id="overview">The big picture</h2>`,
+    `<p>safety.viz mirrors the architecture proven by OpenRBQM&#39;s` +
+      ` <a href="https://github.com/Gilead-BioStats/gsm.kri">gsm.kri</a> ↔` +
+      ` <a href="https://github.com/Gilead-BioStats/rbm-viz">gsm.viz</a> pairing: a plain` +
+      ` JavaScript charting library (this repository) owns all rendering, and a thin R package` +
+      ` (<a href="https://github.com/jwildfire/gsm.safety">gsm.safety</a>) wraps the committed` +
+      ` bundle as htmlwidgets. The JavaScript side never knows about R; the R side never draws.</p>`,
+    `<ol class="pipeline">` +
+      `<li><strong>Data contract</strong> — every module publishes a JSON Schema` +
+      ` (<a href="${config.repoUrl}/tree/HEAD/src/data/schema">src/data/schema/</a>) describing its` +
+      ` long-format input records and settings mapping. The same schema validates data at the` +
+      ` boundary at runtime and generates the API reference&#39;s data-contract table.</li>` +
+      `<li><strong>Module</strong> — a factory (for example` +
+      ` ${apiLink('<code>histogram(element, settings)</code>')}) that mounts` +
+      ` into any container. Settings merge onto the module&#39;s defaults, so callers supply only` +
+      ` overrides. Internals follow the gsm.viz-style flow: <code>checkInputs</code> →` +
+      ` <code>configure</code> → <code>structureData</code> → <code>getScales</code> /` +
+      ` <code>getPlugins</code> → <code>new Chart</code>.</li>` +
+      `<li><strong>Shared shell</strong> — <code>src/shell.js</code> renders the chrome every` +
+      ` renderer shares by construction: a collapsible <code>sv-</code>-prefixed control sidebar` +
+      ` beside a main column of chart, footnote, small-multiples, and listing slots.</li>` +
+      `<li><strong>Charts</strong> — rendering is <a href="https://www.chartjs.org/">Chart.js 4</a>` +
+      ` with module-scoped plugins (normal-range overlay, annotations, selection styling) —` +
+      ` no bespoke SVG layer to maintain.</li>` +
+      `<li><strong>Committed bundle</strong> — esbuild emits versioned IIFE and ESM bundles to` +
+      ` <code>dist/safety.viz-${escapeHtml(version)}/</code>, committed to the repository so` +
+      ` consumers (and this site&#39;s demos) pin exactly the artifact that was tested. CI fails` +
+      ` when <code>dist/</code> drifts from <code>src/</code>.</li>` +
+      `<li><strong>R bindings</strong> — gsm.safety vendors the same IIFE bundle as` +
+      ` <code>Widget_*</code> htmlwidgets, completing the gsm.kri ↔ gsm.viz mirror.</li>` +
+      `</ol>`,
+
+    `<h2 id="data-contract">The data-contract philosophy</h2>`,
+    `<p>Clinical data rarely arrives renderer-shaped, so no column name is hard-coded. Each` +
+      ` renderer names its inputs through a settings mapping whose defaults follow ADaM` +
+      ` conventions (<code>STRESN</code>, <code>USUBJID</code>, <code>STNRLO</code>…): standard` +
+      ` data works untouched, and anything else is one mapping away. Validation happens once, at` +
+      ` the boundary — missing required columns throw with a rendered message, missing or` +
+      ` non-numeric results are removed with a reported count, and optional columns degrade` +
+      ` gracefully (the normal-range control, for instance, hides for measures without normal` +
+      ` data). The JSON Schema is the single source of truth: runtime validation, the generated` +
+      ` API data-contract table, and the requirement matrix all key to it.</p>`,
+
+    `<h2 id="module-anatomy">Module anatomy</h2>`,
+    `<p>Every module exposes the same lifecycle, kept shape-compatible with the original` +
+      ` safetyGraphics renderers: <code>init(data)</code> / <code>setData(data)</code> to bind and` +
+      ` draw, <code>setSettings(overrides)</code> to re-normalize and rebuild,` +
+      ` <code>render()</code> to redraw from current state, <code>resize()</code> for host layouts` +
+      ` that change container size without a window resize (the R htmlwidget case), and` +
+      ` <code>destroy()</code> to tear down every Chart.js instance. The full per-module surface` +
+      ` is documented on each ${apiLink('API reference')} page, generated from` +
+      ` JSDoc — the build fails on undocumented public surface.</p>`,
+
+    `<h2 id="shell">How a renderer plugs into the shell</h2>`,
+    `<p>A module never rolls its own layout. It calls <code>renderShell(element)</code>, which` +
+      ` empties the container and returns named slots — controls, chart canvas, annotation,` +
+      ` footnote, small-multiples, listing — then declares its control panel with the bound` +
+      ` <code>controlBuilders</code> helpers (sections, rows, labeled inputs) and draws into the` +
+      ` main-column slots. One stylesheet is injected per document by whichever module mounts` +
+      ` first, and the browser suite enforces per available renderer that its demo renders this` +
+      ` shared chrome.</p>`,
+
+    `<h2 id="quality">Quality machinery</h2>`,
+    `<p>Each migration starts from a reviewed requirement matrix in` +
+      ` <a href="https://github.com/jwildfire/safety.agent">safety.agent</a>; matrix rows route to` +
+      ` unit (Vitest) or browser (Playwright) tests whose names carry the requirement IDs. The` +
+      ` evidence pipeline replays both suites and commits results plus screenshots to` +
+      ` <a href="${config.repoUrl}/tree/HEAD/docs/evidence">docs/evidence/</a>, which this site` +
+      ` joins into each module&#39;s ${first ? `<a href="${first.module}/evidence.html">qualification report</a>` : 'qualification report'}.` +
+      ` The site build itself fails on broken links or missing screenshots, so a bad page cannot` +
+      ` publish.</p>`
+  ].join('\n');
+}
+
 function paramsTable(params) {
   if (!params || !params.length) return '';
   const rows = params
@@ -555,17 +725,44 @@ function methodSection(method) {
   return parts.filter(Boolean).join('\n');
 }
 
-// API page (#21 pillar 3): rendered straight from the _api/<module>.json
-// artifact (scripts/api/build-api-data.mjs, #6) — factory, methods, settings,
-// and the schema-derived data contract.
-export function renderApiPage(model) {
-  const html = [];
-  html.push(`<h1><code>${escapeHtml(model.module)}</code> API reference</h1>`);
-  html.push(
-    `<p class="page-links"><a href="index.html">Live demo</a> · <a href="evidence.html">Test evidence</a></p>`
+// API page (#21 pillar 3, reframed for v1.0): rendered straight from the
+// _api/<module>.json artifact (scripts/api/build-api-data.mjs, #6) — a
+// module-anatomy overview, then factory, methods, settings, and the
+// schema-derived data contract, with a sticky sidebar table of contents.
+// matrixUrl is optional so the generator stays a pure function of the model.
+export function renderApiPage(model, { matrixUrl } = {}) {
+  const toc =
+    `<nav class="api-toc" aria-label="On this page"><h2>On this page</h2><ul>` +
+    `<li><a href="#overview">Overview</a></li>` +
+    `<li><a href="#factory"><code>${escapeHtml(model.factory.name)}()</code></a></li>` +
+    `<li><a href="#methods">Methods</a><ul>` +
+    model.methods
+      .map(
+        (method) =>
+          `<li><a href="#${escapeHtml(method.name)}"><code>${escapeHtml(method.name)}()</code></a></li>`
+      )
+      .join('') +
+    `</ul></li>` +
+    `<li><a href="#settings">Settings</a></li>` +
+    `<li><a href="#data-contract">Data contract</a></li>` +
+    `</ul></nav>`;
+
+  const body = [];
+  body.push(
+    `<section id="overview"><h2>Overview</h2>` +
+      `<p>Every safety.viz renderer is one factory call. <code>${escapeHtml(model.factory.name)}(element, settings)</code>` +
+      ` empties the container, renders the <a href="../architecture.html">shared control shell</a>,` +
+      ` and returns a chart instance; pass data to <code>setData</code> (or <code>init</code>) and the` +
+      ` module validates it against its <a href="#data-contract">data contract</a>, structures it, and` +
+      ` draws. Settings are merged onto the module&#39;s defaults, so callers supply only overrides —` +
+      ` column mappings follow ADaM naming out of the box. The same lifecycle` +
+      ` (<code>${model.methods.map((method) => escapeHtml(method.name)).join('</code>, <code>')}</code>)` +
+      ` is shared by every module and consumed unchanged by the gsm.safety R bindings.` +
+      ` See <a href="../architecture.html">Architecture</a> for how the pieces fit together.</p>` +
+      `</section>`
   );
-  html.push('<h2>Factory</h2>', methodSection(model.factory));
-  html.push('<h2>Methods</h2>', ...model.methods.map(methodSection));
+  body.push(`<h2 id="factory">Factory</h2>`, methodSection(model.factory));
+  body.push(`<h2 id="methods">Methods</h2>`, ...model.methods.map(methodSection));
 
   const settingsRows = model.settings
     .map(
@@ -576,10 +773,10 @@ export function renderApiPage(model) {
         `<td>${escapeHtml(setting.description)}</td></tr>`
     )
     .join('');
-  html.push(
-    '<h2>Settings</h2>',
-    `<table class="api"><thead><tr><th>Setting</th><th>Type</th><th>Default</th>` +
-      `<th>Description</th></tr></thead><tbody>${settingsRows}</tbody></table>`
+  body.push(
+    `<h2 id="settings">Settings</h2>`,
+    `<div class="table-scroll"><table class="api"><thead><tr><th>Setting</th><th>Type</th><th>Default</th>` +
+      `<th>Description</th></tr></thead><tbody>${settingsRows}</tbody></table></div>`
   );
 
   const contract = model.dataContract;
@@ -593,13 +790,22 @@ export function renderApiPage(model) {
         `<td>${escapeHtml(field.description)}</td></tr>`
     )
     .join('');
-  html.push(
-    '<h2>Data contract</h2>',
+  body.push(
+    `<h2 id="data-contract">Data contract</h2>`,
     `<h3>${escapeHtml(contract.title)}</h3>`,
     `<p>${escapeHtml(contract.description)}</p>`,
-    `<table class="api"><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Default</th>` +
-      `<th>Description</th></tr></thead><tbody>${fieldRows}</tbody></table>`
+    `<div class="table-scroll"><table class="api"><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Default</th>` +
+      `<th>Description</th></tr></thead><tbody>${fieldRows}</tbody></table></div>`
   );
+
+  const html = [];
+  html.push(`<h1><code>${escapeHtml(model.module)}</code> API reference</h1>`);
+  html.push(
+    `<p class="tagline">Generated from the module&#39;s JSDoc and JSON-Schema data contract` +
+      ` — <code>npm run docs:api</code> fails on undocumented surface.</p>`
+  );
+  html.push(moduleTabs('api', matrixUrl));
+  html.push(`<div class="api-layout">${toc}<div class="api-body">${body.join('\n')}</div></div>`);
   return html.join('\n');
 }
 
@@ -611,9 +817,9 @@ export function renderDemoPage({ renderer, version, config }) {
   return (
     `<div class="demo-page">` +
     `<h1>${escapeHtml(renderer.title)}</h1>` +
-    `<p class="page-links"><a href="evidence.html">Test evidence</a> · <a href="api.html">API reference</a>` +
-    ` · <a href="${config.matrixBaseUrl}/${renderer.matrix}">Requirement matrix</a></p>` +
-    `<p>${escapeHtml(renderer.blurb)} This live demo mounts the committed` +
+    `<p class="tagline">${escapeHtml(renderer.blurb)}</p>` +
+    moduleTabs('demo', `${config.matrixBaseUrl}/${renderer.matrix}`) +
+    `<p>This live demo mounts the committed` +
     ` <code>dist/safety.viz-${version}</code> IIFE bundle — the same asset gsm.safety vendors —` +
     ` against the original safety-histogram example data (<code>adbds.csv</code> from the` +
     ` <a href="https://github.com/RhoInc/data-library">RhoInc data library</a>), with the full control panel active.</p>` +
@@ -624,11 +830,14 @@ export function renderDemoPage({ renderer, version, config }) {
   );
 }
 
-// Shared shell: replaces {{title}}, {{root}}, and {{content}} tokens. {{root}}
-// prefixes shell-level links so one shell serves pages at any depth.
-export function renderShell({ shell, title, content, root = '' }) {
+// Shared shell: replaces {{title}}, {{description}}, {{version}}, {{root}},
+// and {{content}} tokens. {{root}} prefixes shell-level links so one shell
+// serves pages at any depth.
+export function renderShell({ shell, title, content, root = '', version = '', description = '' }) {
   return shell
     .replaceAll('{{title}}', escapeHtml(title))
+    .replaceAll('{{description}}', escapeHtml(description))
+    .replaceAll('{{version}}', escapeHtml(version))
     .replaceAll('{{root}}', root)
     .replace('{{content}}', content);
 }
