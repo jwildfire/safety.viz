@@ -2,7 +2,7 @@
 // listing DOM — extracted from the safety-histogram pilot (dev @ a3ff9f7)
 // under #2 (SH-LIST-001..004).
 
-import { createElement } from './getPlugins.js';
+import { createElement } from '../shell.js';
 
 export function searchRows(rows, cols, query) {
   if (!query) return rows;
@@ -74,12 +74,12 @@ export function renderListing(instance) {
   const { visible, pages, page } = paginate(rows, instance.page, pageSize);
   instance.page = page;
   instance.listingWrap.innerHTML = '';
-  const actions = createElement('div', 'sh-listing-actions');
+  const actions = createElement('div', 'sv-listing-actions');
   actions.append(
     createElement('strong', null, `${rows.length} of ${instance.currentTableData.length} records`)
   );
-  const tools = createElement('div', 'sh-listing-tools');
-  const search = createElement('input', 'sh-listing-search');
+  const tools = createElement('div', 'sv-listing-tools');
+  const search = createElement('input', 'sv-listing-search');
   search.type = 'search';
   search.placeholder = 'Search listing';
   search.value = instance.listingSearch;

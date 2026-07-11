@@ -65,6 +65,10 @@ Released — until its entry on the
       committed real example data (`site/data/`, recreating the renderer's
       original safetyGraphics test page — see #15) with the full control
       panel active (`site/demo/<module>.js`).
+- [ ] **Shared shell chrome**: the module renders into the shared layout from
+      `src/shell.js` (collapsible `sv-*` control sidebar + main-column slots,
+      see #17) rather than rolling its own shell or styles — enforced per
+      available renderer by `tests/e2e/site.spec.js`.
 - [ ] **Evidence page**: `docs/<module>-coverage.md` +
       `docs/evidence/<module>/` (evidence.json + screenshots) green for every
       matrix-routed row.

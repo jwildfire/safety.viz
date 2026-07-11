@@ -2,23 +2,9 @@
 // and bar-selection highlighting — extracted from the safety-histogram pilot
 // (dev @ a3ff9f7) under #2.
 
+import { createElement } from '../shell.js';
 import { mean, sd } from './structureData.js';
 import { formatNumber } from './getScales.js';
-
-export function createElement(tag, className, text) {
-  const element = document.createElement(tag);
-  if (className) element.className = className;
-  if (text !== undefined) element.textContent = text;
-  return element;
-}
-
-export function option(select, value, label, selected) {
-  const opt = document.createElement('option');
-  opt.value = value;
-  opt.textContent = label;
-  opt.selected = selected;
-  select.appendChild(opt);
-}
 
 export function formatPValue(value) {
   if (!Number.isFinite(value)) return 'NA';
@@ -65,10 +51,10 @@ export function approximateGroupP(groups) {
 // rows stay deferred).
 export function statisticalAnnotation(label, pValue, testName, url) {
   const text = `${label}: p=${formatPValue(pValue)}`;
-  const annotation = createElement('div', 'sh-annotation');
+  const annotation = createElement('div', 'sv-annotation');
   const value = createElement('span', null, text);
   value.title = `${testName}. Caution: This graphic has been thoroughly tested, but is not validated.`;
-  const link = createElement('a', 'sh-info', 'ⓘ');
+  const link = createElement('a', 'sv-info', 'ⓘ');
   link.href = url;
   link.target = '_blank';
   link.rel = 'noopener noreferrer';
