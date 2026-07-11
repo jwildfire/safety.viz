@@ -1,10 +1,11 @@
 // Demo mount for the outlier-explorer page (#24): recreates the original
 // safety-outlier-explorer test page (RhoInc/safety-outlier-explorer/test-page)
 // call shape against the real ADBDS example data vendored in ./adbds.csv
-// (RhoInc data-library, trimmed to the mapped columns). That shared demo data
-// is a distribution set with no visit/study-day column, so the module derives a
-// per-participant "Measurement" sequence for the time axis; real ADaM data maps
-// time_cols to VISIT/DY instead. Loaded by outlier-explorer/index.html after
+// (RhoInc data-library, trimmed to the mapped columns). The demo leaves
+// time_cols unset to exercise the module's derived per-participant
+// "Measurement" sequence axis; the data also carries real VISIT/VISITNUM
+// columns, which a real deployment would map via time_cols (as the
+// results-over-time demo does). Loaded by outlier-explorer/index.html after
 // the dist/ bundle.
 (function () {
   // Quote-aware CSV parser: the real data quotes fields with embedded commas
