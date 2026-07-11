@@ -410,6 +410,14 @@
       "screenshots": ["SH-LIST-004-search-sort-paginate.png"]
     },
     {
+      "test": "histogram structureData display digits resolve the bin width without exceeding the data precision (#15)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [15],
+      "screenshots": []
+    },
+    {
       "test": "histogram structureData helpers: unique drops empty values; quantile, mean, sd, and precision match the pilot (#2)",
       "suite": "unit",
       "status": "pass",
