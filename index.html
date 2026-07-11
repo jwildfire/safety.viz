@@ -3,21 +3,32 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>safety.viz</title>
-    <style>
-      body { font-family: system-ui, sans-serif; max-width: 40rem; margin: 4rem auto; padding: 0 1rem; line-height: 1.5; }
-    </style>
+    <title>safety.viz — clinical safety graphics</title>
+    <link rel="stylesheet" href="site.css" />
   </head>
   <body>
-    <h1>safety.viz</h1>
-    <p>
-      The release documentation site publishes here with the first
-      <code>dev → main</code> release.
-    </p>
-    <p>
-      Until then: <a href="./dev/">development site</a> (tracks the
-      <code>dev</code> branch) ·
-      <a href="https://github.com/jwildfire/safety.viz">repository</a>
-    </p>
+    <header class="site-header">
+      <a class="site-name" href="index.html">safety.viz</a>
+      <nav class="site-nav">
+        <a href="https://github.com/jwildfire/safety.viz">GitHub</a>
+        <a href="https://jwildfire.github.io/obot.roadmap/">Roadmap</a>
+      </nav>
+    </header>
+    <main class="site-main"><h1>safety.viz</h1><p class="site-intro">Consolidated Chart.js charting library for clinical safety graphics — interactive renderers migrated from the safetyGraphics ecosystem. Each renderer ships with a live demo, a requirement-keyed test-evidence page, and a generated API reference.</p><ul class="gallery"><li class="card status-available"><a class="card-thumb" href="histogram/index.html"><img src="histogram/evidence/SH-CTRL-001-control-panel.png" alt="Safety Histogram preview" loading="lazy"></a><div class="card-body"><h2><a href="histogram/index.html">Safety Histogram</a></h2><span class="badge badge-available">available</span><p>Distribution of a chosen lab or vital-sign measure with filters, grouping, normal-range overlay, and a linked participant listing.</p><p class="card-links"><a href="histogram/index.html">Demo</a> · <a href="histogram/evidence.html">Evidence</a> · <a href="histogram/api.html">API</a> · <a href="https://github.com/jwildfire/safety.agent/blob/main/docs/requirements/safety-histogram.md">Matrix</a></p></div></li>
+<li class="card status-planned"><div class="card-body"><h2>Safety Outlier Explorer</h2><span class="badge badge-planned">planned</span><p>Participant-level results over time, highlighting outlying values against the study population.</p><p class="card-links"><a href="https://github.com/jwildfire/safety.agent/blob/main/docs/requirements/safety-outlier-explorer.md">Requirement matrix</a></p></div></li>
+<li class="card status-planned"><div class="card-body"><h2>Safety Results Over Time</h2><span class="badge badge-planned">planned</span><p>Population-level distribution of results at each study visit, with grouping and outlier context.</p><p class="card-links"><a href="https://github.com/jwildfire/safety.agent/blob/main/docs/requirements/safety-results-over-time.md">Requirement matrix</a></p></div></li>
+<li class="card status-planned"><div class="card-body"><h2>Safety Shift Plot</h2><span class="badge badge-planned">planned</span><p>Baseline versus comparison-visit values for a measure, flagging participants who shift across normal-range limits.</p><p class="card-links"><a href="https://github.com/jwildfire/safety.agent/blob/main/docs/requirements/safety-shift-plot.md">Requirement matrix</a></p></div></li>
+<li class="card status-planned"><div class="card-body"><h2>Safety Delta-Delta</h2><span class="badge badge-planned">planned</span><p>Paired change-from-baseline comparison of two measures on one scatter plot.</p><p class="card-links"><a href="https://github.com/jwildfire/safety.agent/blob/main/docs/requirements/safety-delta-delta.md">Requirement matrix</a></p></div></li>
+<li class="card status-planned"><div class="card-body"><h2>Paneled Outlier Explorer</h2><span class="badge badge-planned">planned</span><p>Small-multiple outlier views across a panel of related measures.</p><p class="card-links"><a href="https://github.com/jwildfire/safety.agent/blob/main/docs/requirements/paneled-outlier-explorer.md">Requirement matrix</a></p></div></li>
+<li class="card status-planned"><div class="card-body"><h2>Adverse Event Explorer</h2><span class="badge badge-planned">planned</span><p>Hierarchical adverse-event incidence explorer with treatment-arm comparison and drill-down to participant detail.</p><p class="card-links"><a href="https://github.com/jwildfire/safety.agent/blob/main/docs/requirements/aeexplorer.md">Requirement matrix</a></p></div></li>
+<li class="card status-planned"><div class="card-body"><h2>Adverse Event Timelines</h2><span class="badge badge-planned">planned</span><p>Participant-level adverse-event timelines by severity and onset relative to study start.</p><p class="card-links"><a href="https://github.com/jwildfire/safety.agent/blob/main/docs/requirements/ae-timelines.md">Requirement matrix</a></p></div></li>
+<li class="card status-planned"><div class="card-body"><h2>Web Codebook</h2><span class="badge badge-planned">planned</span><p>Interactive data codebook: variable-level summaries, distributions, and filters for any dataset.</p><p class="card-links"><a href="https://github.com/jwildfire/safety.agent/blob/main/docs/requirements/web-codebook.md">Requirement matrix</a></p></div></li></ul></main>
+    <footer class="site-footer">
+      <p>
+        safety.viz — consolidated Chart.js charting library for clinical safety graphics, migrated
+        from the <a href="https://github.com/RhoInc">safetyGraphics ecosystem</a>. Tracked on the
+        <a href="https://jwildfire.github.io/obot.roadmap/">obot roadmap</a>.
+      </p>
+    </footer>
   </body>
 </html>
