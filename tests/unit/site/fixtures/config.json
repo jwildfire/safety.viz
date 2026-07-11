@@ -1,0 +1,30 @@
+{
+  "siteTitle": "safety.viz",
+  "repoUrl": "https://github.com/jwildfire/safety.viz",
+  "hubUrl": "https://jwildfire.github.io/obot.roadmap/",
+  "matrixBaseUrl": "https://github.com/jwildfire/safety.agent/blob/main/docs/requirements",
+  "renderers": [
+    {
+      "module": "histogram",
+      "title": "Safety Histogram",
+      "status": "available",
+      "blurb": "Distribution of a chosen measure with filters, grouping, and a linked listing.",
+      "hero": "SH-CTRL-001-control-panel.png",
+      "matrix": "safety-histogram.md"
+    },
+    {
+      "module": "outlier-explorer",
+      "title": "Safety Outlier Explorer",
+      "status": "in-migration",
+      "blurb": "Participant-level results over time with outlier highlighting.",
+      "matrix": "safety-outlier-explorer.md"
+    },
+    {
+      "module": "ae-explorer",
+      "title": "Adverse Event Explorer",
+      "status": "planned",
+      "blurb": "Hierarchical adverse-event incidence tables with drill-down.",
+      "matrix": "aeexplorer.md"
+    }
+  ]
+}
