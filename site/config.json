@@ -29,8 +29,9 @@
     {
       "module": "shift-plot",
       "title": "Safety Shift Plot",
-      "status": "planned",
-      "blurb": "Baseline versus comparison-visit values for a measure, flagging participants who shift across normal-range limits.",
+      "status": "available",
+      "blurb": "Baseline versus comparison-visit values for a measure on a scatter with an identity line, measure and visit controls, filters, and a brush selection that opens a linked participant listing.",
+      "hero": "SSP-CTRL-001-baseline-scatter.png",
       "matrix": "safety-shift-plot.md"
     },
     {
