@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/jwildfire/safety.viz/main/src/data/schema/histogram.json",
+  "title": "safety.viz histogram data contract",
+  "description": "Long-format results data: one record per measurement (SH-DATA-001). Column names are supplied by the settings mapping; the histogram removes missing/non-numeric results with a reported count (SH-DATA-002) and degrades gracefully when optional columns are absent (SH-DATA-003).",
+  "type": "object",
+  "required": ["data", "settings"],
+  "properties": {
+    "data": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "object" },
+      "description": "d3.csv()-style records; every row carries the measure and result columns named in settings."
+    },
+    "settings": {
+      "type": "object",
+      "description": "Column mappings and rendering options; merged onto the module's DEFAULT_SETTINGS, so only overrides need to be supplied.",
+      "required": ["measure_col", "value_col"],
+      "properties": {
+        "measure_col": {
+          "type": "string",
+          "default": "TEST",
+          "description": "Column holding the measure name; required in data."
+        },
+        "value_col": {
+          "type": "string",
+          "default": "STRESN",
+          "description": "Column holding the numeric result; required in data."
+        },
+        "id_col": {
+          "type": "string",
+          "default": "USUBJID",
+          "description": "Optional participant identifier column."
+        },
+        "unit_col": {
+          "type": "string",
+          "default": "STRESU",
+          "description": "Optional unit column, appended to measure labels."
+        },
+        "normal_col_low": {
+          "type": "string",
+          "default": "STNRLO",
+          "description": "Optional lower limit of normal; normal-range UI hides for measures without normal data (SH-FUNC-004C)."
+        },
+        "normal_col_high": {
+          "type": "string",
+          "default": "STNRHI",
+          "description": "Optional upper limit of normal."
+        },
+        "filters": {
+          "$ref": "#/$defs/fieldList",
+          "description": "Optional filter columns rendered as controls."
+        },
+        "groups": {
+          "$ref": "#/$defs/fieldList",
+          "description": "Optional group-by columns for small-multiple charts."
+        },
+        "details": {
+          "$ref": "#/$defs/fieldList",
+          "description": "Optional listing columns; defaults derive from the other mappings."
+        }
+      }
+    }
+  },
+  "$defs": {
+    "fieldList": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          { "type": "string" },
+          {
+            "type": "object",
+            "required": ["value_col"],
+            "properties": {
+              "value_col": { "type": "string" },
+              "label": { "type": "string" }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

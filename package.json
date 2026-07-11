@@ -8,14 +8,20 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "build:check-dist": "node scripts/check-dist-drift.mjs",
+    "docs:api": "node scripts/api/build-api-data.mjs",
+    "site": "node scripts/api/build-api-data.mjs && node scripts/site.mjs",
     "test": "vitest run",
     "test:e2e": "playwright test",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "evidence": "node scripts/evidence.mjs",
+    "evidence:check": "node scripts/evidence.mjs --check",
+    "evidence:update": "node scripts/evidence.mjs --update"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.1",
     "esbuild": "^0.28.1",
+    "jsdoc": "^4.0.5",
     "prettier": "^3.9.4",
     "vitest": "^4.1.9"
   },
@@ -26,5 +32,8 @@
   "bugs": {
     "url": "https://github.com/jwildfire/safety.viz/issues"
   },
-  "homepage": "https://github.com/jwildfire/safety.viz#readme"
+  "homepage": "https://github.com/jwildfire/safety.viz#readme",
+  "dependencies": {
+    "chart.js": "^4.5.1"
+  }
 }

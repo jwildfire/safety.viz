@@ -1,0 +1,72 @@
+{
+  "siteTitle": "safety.viz",
+  "repoUrl": "https://github.com/jwildfire/safety.viz",
+  "hubUrl": "https://jwildfire.github.io/obot.roadmap/",
+  "matrixBaseUrl": "https://github.com/jwildfire/safety.agent/blob/main/docs/requirements",
+  "renderers": [
+    {
+      "module": "histogram",
+      "title": "Safety Histogram",
+      "status": "available",
+      "blurb": "Distribution of a chosen lab or vital-sign measure with filters, grouping, normal-range overlay, and a linked participant listing.",
+      "hero": "SH-CTRL-001-control-panel.png",
+      "matrix": "safety-histogram.md"
+    },
+    {
+      "module": "outlier-explorer",
+      "title": "Safety Outlier Explorer",
+      "status": "planned",
+      "blurb": "Participant-level results over time, highlighting outlying values against the study population.",
+      "matrix": "safety-outlier-explorer.md"
+    },
+    {
+      "module": "results-over-time",
+      "title": "Safety Results Over Time",
+      "status": "planned",
+      "blurb": "Population-level distribution of results at each study visit, with grouping and outlier context.",
+      "matrix": "safety-results-over-time.md"
+    },
+    {
+      "module": "shift-plot",
+      "title": "Safety Shift Plot",
+      "status": "planned",
+      "blurb": "Baseline versus comparison-visit values for a measure, flagging participants who shift across normal-range limits.",
+      "matrix": "safety-shift-plot.md"
+    },
+    {
+      "module": "delta-delta",
+      "title": "Safety Delta-Delta",
+      "status": "planned",
+      "blurb": "Paired change-from-baseline comparison of two measures on one scatter plot.",
+      "matrix": "safety-delta-delta.md"
+    },
+    {
+      "module": "paneled-outlier-explorer",
+      "title": "Paneled Outlier Explorer",
+      "status": "planned",
+      "blurb": "Small-multiple outlier views across a panel of related measures.",
+      "matrix": "paneled-outlier-explorer.md"
+    },
+    {
+      "module": "ae-explorer",
+      "title": "Adverse Event Explorer",
+      "status": "planned",
+      "blurb": "Hierarchical adverse-event incidence explorer with treatment-arm comparison and drill-down to participant detail.",
+      "matrix": "aeexplorer.md"
+    },
+    {
+      "module": "ae-timelines",
+      "title": "Adverse Event Timelines",
+      "status": "planned",
+      "blurb": "Participant-level adverse-event timelines by severity and onset relative to study start.",
+      "matrix": "ae-timelines.md"
+    },
+    {
+      "module": "web-codebook",
+      "title": "Web Codebook",
+      "status": "planned",
+      "blurb": "Interactive data codebook: variable-level summaries, distributions, and filters for any dataset.",
+      "matrix": "web-codebook.md"
+    }
+  ]
+}
