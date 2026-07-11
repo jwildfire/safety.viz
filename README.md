@@ -9,6 +9,11 @@ modernization (project P004), mirroring the architecture of
 Design: [obot.roadmap#1](https://github.com/jwildfire/obot.roadmap/issues/1) ·
 [design doc](https://jwildfire.github.io/obot.roadmap/requirements/design/1_design.html).
 
+**Documentation site:** <https://jwildfire.github.io/safety.viz/> — gallery,
+live demos, test evidence, and API reference (releases at the root;
+[`/dev/`](https://jwildfire.github.io/safety.viz/dev/) tracks the `dev` branch;
+pull requests get `/pr/{N}/` previews).
+
 ## Status
 
 **Scaffolded** ([#1](https://github.com/jwildfire/safety.viz/issues/1)) — repo
