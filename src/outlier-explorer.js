@@ -422,7 +422,11 @@ class SafetyOutlierExplorer {
       'Hover a point for details; click a point to highlight a participant.';
     this.filteredData = this.currentFilteredData();
     if (!this.filteredData.length) {
-      this.notes.innerHTML = '<span>No records match the current filters.</span>';
+      // Keep the participant-count and removed-record notes: when cleanData
+      // dropped every row, the removed note is what explains the empty chart.
+      this.updateNotes();
+      this.notes.innerHTML =
+        '<span>No records match the current filters.</span>' + this.notes.innerHTML;
       return;
     }
     this.drawChart();
