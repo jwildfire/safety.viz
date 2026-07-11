@@ -319,6 +319,66 @@ test.describe('safety.viz histogram module', () => {
     await captureEvidence(page, 'SH-CHART-005', 'pvalue-disclaimer');
   });
 
+  test("SH-CHART-004/SH-CTRL-006: grouped small multiples share the main chart's bin boundaries (#19)", async ({
+    page
+  }) => {
+    // The original renderer clones x.bin and x.domain from the main chart
+    // into the small multiples, so every group panel bins on the same edges.
+    await setHarnessSettings(page, { group_by: 'ARM', compare_distributions: true });
+    await expect(page.locator('.sv-multiple')).toHaveCount(2);
+    const result = await page.evaluate(() => {
+      const instance = window.__safetyHistogramInstance;
+      const edges = (chart) => (chart.$shBins || []).map((bin) => [bin.lower, bin.upper]);
+      const main = instance.chart;
+      const multiples = instance.charts.filter((chart) => chart !== main);
+      return {
+        mainEdges: edges(main),
+        multipleEdges: multiples.map(edges),
+        multipleTotals: multiples.map((chart) =>
+          (chart.$shBins || []).reduce((sum, bin) => sum + bin.records.length, 0)
+        )
+      };
+    });
+    // Albumin 1..30: Scott gives ceil(29/9.9163) = 3 raw bins, floored to the
+    // original's 5-bin minimum → 5 shared bins of width 5.8 over [1, 30].
+    expect(result.mainEdges).toHaveLength(5);
+    expect(result.mainEdges[0][0]).toBe(1);
+    expect(result.mainEdges.at(-1)[1]).toBe(30);
+    for (const edges of result.multipleEdges) expect(edges).toEqual(result.mainEdges);
+    // Placebo and Drug each hold 15 of the 30 Albumin results.
+    expect(result.multipleTotals).toEqual([15, 15]);
+    await captureEvidence(page, 'SH-CTRL-006', 'shared-bin-multiples');
+  });
+
+  test('SH-CTRL-006: bin boundaries anchor to the measure results, not the filtered subset (#19)', async ({
+    page
+  }) => {
+    // In the original renderer, filters change bar heights but never the bin
+    // edges: bin width/count are computed from the measure's full result set
+    // while the x-domain is untouched.
+    await setHarnessSettings(page);
+    const edgesOf = () =>
+      page.evaluate(() =>
+        window.__safetyHistogramInstance.chart.$shBins.map((bin) => [bin.lower, bin.upper])
+      );
+    const before = await edgesOf();
+    await page
+      .locator('.sv-controls .sv-control', {
+        has: page.locator('label:text-is("Treatment Group")')
+      })
+      .locator('select')
+      .selectOption('Placebo');
+    const after = await edgesOf();
+    expect(after).toEqual(before);
+    const total = await page.evaluate(() =>
+      window.__safetyHistogramInstance.chart.$shBins.reduce(
+        (sum, bin) => sum + bin.records.length,
+        0
+      )
+    );
+    expect(total).toBe(15);
+  });
+
   test('SH-CHART-004: group-by renders grouped histograms (#2)', async ({ page }) => {
     await page
       .locator('.sv-control', { hasText: 'Group charts by' })
