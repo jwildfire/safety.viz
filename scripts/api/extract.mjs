@@ -10,9 +10,18 @@ import path from 'node:path';
 const require = createRequire(import.meta.url);
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
-// The histogram module's documented surface: the factory + lifecycle class,
-// and the settings typedef next to DEFAULT_SETTINGS.
-export const API_SOURCE_FILES = ['src/histogram.js', 'src/histogram/configure.js'];
+// A renderer module's documented surface: the factory + lifecycle class in
+// src/<module>.js, and the settings typedef next to DEFAULT_SETTINGS in
+// src/<module>/configure.js. Every module follows this two-file anatomy, so
+// the build discovers each module's sources by name (#27) with no per-module
+// edits.
+export function apiSourceFiles(module) {
+  return [`src/${module}.js`, `src/${module}/configure.js`];
+}
+
+// The histogram module's source files, kept as a named export for the
+// completeness unit test and back-compat.
+export const API_SOURCE_FILES = apiSourceFiles('histogram');
 
 export function extractDoclets(files = API_SOURCE_FILES, { cwd = repoRoot } = {}) {
   const jsdoc = require.resolve('jsdoc/jsdoc.js');
