@@ -1,6 +1,6 @@
 {
   "module": "histogram",
-  "generatedAt": "2026-07-11T14:21:06.917Z",
+  "generatedAt": "2026-07-11T14:50:46.877Z",
   "environment": {
     "os": "darwin 23.6.0",
     "node": "v24.14.0",
@@ -9,6 +9,14 @@
   },
   "run": null,
   "records": [
+    {
+      "test": "built ae-timelines demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
     {
       "test": "built histogram demo mounts the shared shell with no console errors (#7) (#17)",
       "suite": "browser",

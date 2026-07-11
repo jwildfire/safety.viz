@@ -15,3 +15,4 @@ Template:
 Current coverage tables:
 
 - [`histogram-coverage.md`](histogram-coverage.md) — the histogram module (#2)
+- [`ae-timelines-coverage.md`](ae-timelines-coverage.md) — the ae-timelines module (#26)
