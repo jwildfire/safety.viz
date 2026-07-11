@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Nine classic clinical-safety graphics from the safetyGraphics ecosystem, rebuilt on Chart.js with live demos, requirement-traced test evidence, and generated API references." />
+    <title>safety.viz — clinical safety graphics</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23271810'/%3E%3Crect x='2.5' y='8' width='3' height='5.5' fill='%23f97316'/%3E%3Crect x='6.5' y='3.5' width='3' height='10' fill='%23fb923c'/%3E%3Crect x='10.5' y='6' width='3' height='7.5' fill='%23f97316'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="site.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="site-name" href="index.html">
+        safety.viz
+        <span class="site-version">v0.1.0</span>
+      </a>
+      <nav class="site-nav">
+        <a href="index.html">Gallery</a>
+        <a href="architecture.html">Architecture</a>
+        <a href="about.html">About</a>
+        <a href="https://github.com/jwildfire/safety.viz">GitHub</a>
+        <a href="https://jwildfire.github.io/obot.roadmap/">Roadmap</a>
+      </nav>
+    </header>
+    <main class="site-main"><h1>safety.viz</h1>
+<p class="tagline">Nine classic clinical-safety graphics, rebuilt on one modern charting stack.</p>
+<div class="lead"><p>safety.viz consolidates the interactive safety displays of the <a href="https://github.com/SafetyGraphics">safetyGraphics</a> ecosystem — nine archived <a href="https://github.com/RhoInc">Rho,&nbsp;Inc.</a> renderers built on decade-old Webcharts — into a single maintained <a href="https://www.chartjs.org/">Chart.js</a> library: one bundle, a JSON-Schema data contract per chart, and requirement-traced test evidence behind every renderer.</p><p>It is built to be consumed from R: <a href="https://github.com/jwildfire/gsm.safety">gsm.safety</a> wraps this same bundle as <code>Widget_*</code> htmlwidgets, mirroring how <a href="https://github.com/Gilead-BioStats/gsm.kri">gsm.kri</a> consumes <a href="https://github.com/Gilead-BioStats/rbm-viz">gsm.viz</a> in the OpenRBQM ecosystem. If you review clinical-trial safety data — medical monitor, biostatistician, or data scientist — each migrated renderer ships with a live demo, an audit-style test-evidence report, and a generated API reference.</p></div>
+<div class="home-ctas"><a class="primary" href="histogram/index.html">Live demo: Safety Histogram</a><a href="architecture.html">How it works</a><a href="about.html">About the project</a></div>
+<h2>Available renderers <span class="gallery-count">6 of 9 migrated</span></h2>
+<ul class="gallery"><li class="card status-available"><a class="card-thumb" href="histogram/index.html"><img src="assets/histogram-hero.png" alt="Safety Histogram preview" loading="lazy"></a><div class="card-body"><h3><a href="histogram/index.html">Safety Histogram</a></h3><span class="badge badge-available">available</span><p>Distribution of a chosen lab or vital-sign measure with filters, grouping, normal-range overlay, and a linked participant listing.</p><p class="card-links"><a href="histogram/index.html">Demo</a> · <a href="histogram/evidence.html">Evidence</a> · <a href="histogram/api.html">API</a> · <a href="https://github.com/jwildfire/safety.agent/blob/main/docs/requirements/safety-histogram.md">Matrix</a></p></div></li>
+<li class="card status-available"><a class="card-thumb" href="outlier-explorer/index.html"><img src="outlier-explorer/evidence/SOE-FUNC-010-participant-detail.png" alt="Safety Outlier Explorer preview" loading="lazy"></a><div class="card-body"><h3><a href="outlier-explorer/index.html">Safety Outlier Explorer</a></h3><span class="badge badge-available">available</span><p>Participant-level results over time: one line per participant for the selected measure against a population normal-range band, with filters, x-axis and y-limit controls, color-by grouping, and click-to-select participant detail.</p><p class="card-links"><a href="outlier-explorer/index.html">Demo</a> · <a href="outlier-explorer/evidence.html">Evidence</a> · <a href="outlier-explorer/api.html">API</a> · <a href="https://github.com/jwildfire/safety.agent/blob/main/docs/requirements/safety-outlier-explorer.md">Matrix</a></p></div></li>
+<li class="card status-available"><a class="card-thumb" href="results-over-time/index.html"><img src="results-over-time/evidence/SROT-FUNC-001-control-panel.png" alt="Safety Results Over Time preview" loading="lazy"></a><div class="card-body"><h3><a href="results-over-time/index.html">Safety Results Over Time</a></h3><span class="badge badge-available">available</span><p>Population-level distribution of a measure at each study visit as box-and-whisker marks, with grouping, an outlier overlay, and linear/log y-axis controls.</p><p class="card-links"><a href="results-over-time/index.html">Demo</a> · <a href="results-over-time/evidence.html">Evidence</a> · <a href="results-over-time/api.html">API</a> · <a href="https://github.com/jwildfire/safety.agent/blob/main/docs/requirements/safety-results-over-time.md">Matrix</a></p></div></li>
+<li class="card status-available"><a class="card-thumb" href="shift-plot/index.html"><img src="shift-plot/evidence/SSP-CTRL-001-baseline-scatter.png" alt="Safety Shift Plot preview" loading="lazy"></a><div class="card-body"><h3><a href="shift-plot/index.html">Safety Shift Plot</a></h3><span class="badge badge-available">available</span><p>Baseline versus comparison-visit values for a measure on a scatter with an identity line, measure and visit controls, filters, and a brush selection that opens a linked participant listing.</p><p class="card-links"><a href="shift-plot/index.html">Demo</a> · <a href="shift-plot/evidence.html">Evidence</a> · <a href="shift-plot/api.html">API</a> · <a href="https://github.com/jwildfire/safety.agent/blob/main/docs/requirements/safety-shift-plot.md">Matrix</a></p></div></li>
+<li class="card status-available"><a class="card-thumb" href="delta-delta/index.html"><img src="delta-delta/evidence/SDD-FUNC-002-baseline-scatter.png" alt="Safety Delta-Delta preview" loading="lazy"></a><div class="card-body"><h3><a href="delta-delta/index.html">Safety Delta-Delta</a></h3><span class="badge badge-available">available</span><p>Paired change-from-baseline comparison of two measures on one scatter — quadrant reference lines, an optional regression line, measure and visit pickers, and a linked per-measure detail table with sparklines.</p><p class="card-links"><a href="delta-delta/index.html">Demo</a> · <a href="delta-delta/evidence.html">Evidence</a> · <a href="delta-delta/api.html">API</a> · <a href="https://github.com/jwildfire/safety.agent/blob/main/docs/requirements/safety-delta-delta.md">Matrix</a></p></div></li>
+<li class="card status-available"><a class="card-thumb" href="ae-timelines/index.html"><img src="ae-timelines/evidence/AET-FUNC-002-baseline-timelines.png" alt="Adverse Event Timelines preview" loading="lazy"></a><div class="card-body"><h3><a href="ae-timelines/index.html">Adverse Event Timelines</a></h3><span class="badge badge-available">available</span><p>Participant-level adverse-event timelines by severity and onset relative to study start, with serious-event marks and click-through participant detail.</p><p class="card-links"><a href="ae-timelines/index.html">Demo</a> · <a href="ae-timelines/evidence.html">Evidence</a> · <a href="ae-timelines/api.html">API</a> · <a href="https://github.com/jwildfire/safety.agent/blob/main/docs/requirements/ae-timelines.md">Matrix</a></p></div></li></ul>
+<h2>Migration queue <span class="gallery-count">3 to go</span></h2>
+<p class="site-intro">Each queued renderer already has a reviewed requirement matrix in <a href="https://github.com/jwildfire/safety.agent">safety.agent</a> — the specification its migration will be built and tested against.</p>
+<ul class="gallery gallery-planned"><li class="card status-planned"><div class="card-body"><h3>Paneled Outlier Explorer</h3><span class="badge badge-planned">planned</span><p>Small-multiple outlier views across a panel of related measures.</p><p class="card-links"><a href="https://github.com/jwildfire/safety.agent/blob/main/docs/requirements/paneled-outlier-explorer.md">Requirement matrix</a></p></div></li>
+<li class="card status-planned"><div class="card-body"><h3>Adverse Event Explorer</h3><span class="badge badge-planned">planned</span><p>Hierarchical adverse-event incidence explorer with treatment-arm comparison and drill-down to participant detail.</p><p class="card-links"><a href="https://github.com/jwildfire/safety.agent/blob/main/docs/requirements/aeexplorer.md">Requirement matrix</a></p></div></li>
+<li class="card status-planned"><div class="card-body"><h3>Web Codebook</h3><span class="badge badge-planned">planned</span><p>Interactive data codebook: variable-level summaries, distributions, and filters for any dataset.</p><p class="card-links"><a href="https://github.com/jwildfire/safety.agent/blob/main/docs/requirements/web-codebook.md">Requirement matrix</a></p></div></li></ul></main>
+    <footer class="site-footer">
+      <p>
+        safety.viz v0.1.0 — clinical safety graphics on one modern charting stack, migrated
+        from the <a href="https://github.com/SafetyGraphics">safetyGraphics</a> ecosystem originally
+        built by <a href="https://github.com/RhoInc">Rho, Inc.</a> (<a href="about.html"
+          >credits</a
+        >).
+      </p>
+      <p>
+        Built in the open for the R/Pharma 2026 keynote — follow the
+        <a href="https://jwildfire.github.io/obot.roadmap/">obot roadmap</a> ·
+        <a href="https://github.com/jwildfire/safety.viz">source on GitHub</a> ·
+        <a href="https://github.com/jwildfire/safety.viz/releases">releases</a>.
+      </p>
+    </footer>
+    <script>
+      // Mark the nav link whose resolved URL is this page; works at any mount
+      // depth (site root, /dev/, /pr/N/). Renderer sub-pages match nothing.
+      (function () {
+        var here = location.pathname.replace(/\/$/, '/index.html');
+        var links = document.querySelectorAll('.site-nav a');
+        for (var i = 0; i < links.length; i += 1) {
+          var href = links[i].getAttribute('href');
+          if (!href || href.indexOf('http') === 0) continue;
+          if (new URL(href, location.href).pathname === here) {
+            links[i].className = 'current';
+            links[i].setAttribute('aria-current', 'page');
+            break;
+          }
+        }
+      })();
+    </script>
+  </body>
+</html>
