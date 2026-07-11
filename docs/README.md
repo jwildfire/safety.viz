@@ -15,3 +15,4 @@ Template:
 Current coverage tables:
 
 - [`histogram-coverage.md`](histogram-coverage.md) — the histogram module (#2)
+- [`results-over-time-coverage.md`](results-over-time-coverage.md) — the results-over-time module (#27)
