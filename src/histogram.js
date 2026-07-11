@@ -14,6 +14,7 @@ import {
   Legend
 } from 'chart.js';
 
+import { controlBuilders, createElement, option, renderShell } from './shell.js';
 import { ALGORITHMS, syncSettings } from './histogram/configure.js';
 import { checkInputs } from './histogram/checkInputs.js';
 import {
@@ -35,9 +36,7 @@ import {
   approximateGroupP,
   approximateNormalityP,
   binDescription,
-  createElement,
   normalRangePlugin,
-  option,
   selectionColors,
   statisticalAnnotation
 } from './histogram/getPlugins.js';
@@ -86,113 +85,14 @@ class SafetyHistogram {
    * @private
    */
   renderShell() {
-    this.element.innerHTML = '';
-    this.root = createElement('div', 'safety-histogram');
-
-    // Collapsible control sidebar (hep-explorer-style layout, #15).
-    this.sidebar = createElement('aside', 'sh-sidebar');
-    const sidebarHeader = createElement('div', 'sh-sidebar-header');
-    sidebarHeader.append(createElement('span', 'sh-sidebar-title', 'Controls'));
-    this.sidebarToggle = createElement('button', 'sh-sidebar-toggle');
-    this.sidebarToggle.type = 'button';
-    this.sidebarToggle.onclick = () => {
-      const collapsed = this.root.classList.toggle('sh-collapsed');
-      this.sidebarToggle.setAttribute('aria-expanded', String(!collapsed));
-      this.sidebarToggle.setAttribute('aria-label', collapsed ? 'Show controls' : 'Hide controls');
-      this.sidebarToggle.textContent = collapsed ? '»' : '«';
-      this.resize();
-    };
-    this.sidebarToggle.setAttribute('aria-expanded', 'true');
-    this.sidebarToggle.setAttribute('aria-label', 'Hide controls');
-    this.sidebarToggle.textContent = '«';
-    sidebarHeader.append(this.sidebarToggle);
-    this.controls = createElement('div', 'sh-controls');
-    this.sidebar.append(sidebarHeader, this.controls);
-
-    this.main = createElement('div', 'sh-main');
-    this.notes = createElement('div', 'sh-notes');
-    this.chartWrap = createElement('div', 'sh-chart-wrap');
-    this.canvas = createElement('canvas', 'sh-chart');
-    this.mainAnnotation = createElement('div', 'sh-main-annotation');
-    this.footnote = createElement('div', 'sh-footnote', 'Hover over or click a bar for details.');
-    this.multiplesWrap = createElement('div', 'sh-multiples');
-    this.listingWrap = createElement('div', 'sh-listing');
-    this.chartWrap.append(this.canvas, this.mainAnnotation);
-    this.main.append(
-      this.notes,
-      this.chartWrap,
-      this.footnote,
-      this.multiplesWrap,
-      this.listingWrap
+    Object.assign(
+      this,
+      renderShell(this.element, {
+        moduleClass: 'safety-histogram',
+        onToggle: () => this.resize()
+      })
     );
-
-    this.root.append(this.sidebar, this.main);
-    this.element.append(this.root);
-    this.applyStyles();
-  }
-
-  /**
-   * Inject the module stylesheet once per document.
-   * @private
-   */
-  applyStyles() {
-    if (document.getElementById('safety-histogram-nextgen-styles')) return;
-    const style = document.createElement('style');
-    style.id = 'safety-histogram-nextgen-styles';
-    style.textContent = `
-.safety-histogram{display:flex;align-items:flex-start;gap:1.25rem;width:100%;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#1f2933}
-.sh-sidebar{position:sticky;top:1rem;flex:0 0 250px;max-height:calc(100vh - 2rem);overflow-y:auto;border:1px solid #d8dee4;border-radius:10px;background:#f6f8fa;padding:.8rem .9rem 1rem}
-.sh-sidebar-header{display:flex;align-items:center;justify-content:space-between;gap:.5rem}
-.sh-sidebar-title{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#52616f}
-.sh-sidebar-toggle{border:1px solid #d8dee4;border-radius:6px;background:#fff;color:#52616f;font:inherit;font-size:.85rem;line-height:1;padding:.25rem .5rem;cursor:pointer}
-.sh-sidebar-toggle:hover{color:#1f2933;border-color:#b8c0cc}
-.sh-collapsed .sh-sidebar{flex-basis:auto;padding:.5rem}
-.sh-collapsed .sh-sidebar-title,.sh-collapsed .sh-controls{display:none}
-.sh-control-section{border-top:1px solid #e3e8ee;margin-top:.8rem;padding-top:.65rem}
-.sh-section-title{margin:0 0 .5rem;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#52616f}
-.sh-controls>.sh-control{margin-top:.75rem}
-.sh-control{margin:0 0 .55rem}
-.sh-control:last-child{margin-bottom:0}
-.sh-control label{display:block;font-size:.78rem;font-weight:600;margin-bottom:.25rem}
-.sh-control select,.sh-control input{width:100%;box-sizing:border-box;padding:.35rem .45rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.85rem;color:inherit}
-.sh-control input[type=checkbox]{width:auto;margin:0;accent-color:#0b62a4}
-.sh-control select:focus-visible,.sh-control input:focus-visible,.sh-sidebar-toggle:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
-.sh-control-row{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
-.sh-control-row .sh-control{margin:0}
-.sh-control-inline{display:flex;align-items:center;gap:.4rem;font-size:.85rem}
-.sh-main{flex:1 1 auto;min-width:0}
-.sh-notes{display:flex;flex-wrap:wrap;gap:.25rem 1.25rem;font-size:.85rem;color:#52616f;margin:0 0 .6rem}
-.sh-warning{color:#9a3412}
-.sh-chart-wrap{height:460px;position:relative;border:1px solid #d8dee4;border-radius:10px;padding:1rem;background:#fff}
-.sh-footnote{margin:.6rem 0 0;font-size:.85rem;color:#52616f}
-.sh-multiples{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;margin-top:1.25rem}
-.sh-multiples:empty{display:none}
-.sh-multiple{border:1px solid #d8dee4;border-radius:10px;padding:.75rem .85rem;background:#fff}
-.sh-multiple h3{font-size:.92rem;margin:0 0 .4rem}
-.sh-multiple-canvas{height:200px}
-.sh-listing{margin-top:1.25rem}
-.sh-listing table{width:100%;border-collapse:collapse;font-size:.85rem;background:#fff}
-.sh-listing th,.sh-listing td{border-bottom:1px solid #e3e8ee;padding:.45rem .55rem;text-align:left;vertical-align:top}
-.sh-listing th{border-bottom:2px solid #d8dee4;cursor:pointer;font-size:.75rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f;white-space:nowrap}
-.sh-listing tbody tr:hover{background:#f6f8fa}
-.sh-listing-actions{display:flex;align-items:center;justify-content:space-between;gap:.75rem;margin:.5rem 0;font-size:.85rem;flex-wrap:wrap}
-.sh-listing-tools{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
-.sh-listing-search{padding:.35rem .45rem;border:1px solid #b8c0cc;border-radius:6px;font:inherit;font-size:.85rem}
-.sh-listing-actions button{padding:.3rem .6rem;border:1px solid #d8dee4;border-radius:6px;background:#fff;color:#1f2933;font:inherit;font-size:.8rem;cursor:pointer}
-.sh-listing-actions button:hover:not(:disabled){border-color:#b8c0cc;background:#f6f8fa}
-.sh-listing-actions button:disabled{opacity:.45;cursor:default}
-.sh-annotation,.sh-main-annotation{font-size:.85rem;background:rgba(255,255,255,.92);border:1px solid #d8dee4;border-radius:6px;padding:.25rem .4rem}
-.sh-main-annotation{position:absolute;right:1.25rem;top:1.25rem;z-index:2}
-.sh-main-annotation:empty{display:none}
-.sh-info{text-decoration:none}
-.sh-hidden{display:none!important}
-@media (max-width:900px){
-.safety-histogram{flex-direction:column}
-.sh-sidebar{position:static;flex:1 1 auto;width:100%;max-height:none}
-.sh-controls{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:0 1.25rem;align-items:start}
-.sh-control-section{border-top:none}
-}`;
-    document.head.append(style);
+    this.footnote.textContent = 'Hover over or click a bar for details.';
   }
 
   /**
@@ -244,7 +144,7 @@ class SafetyHistogram {
     try {
       checkInputs(this.rawData, this.settings);
     } catch (error) {
-      this.element.innerHTML = `<div class="sh-warning">${error.message}</div>`;
+      this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
       throw error;
     }
     const { rows, removed } = cleanData(this.rawData, this.settings);
@@ -275,26 +175,7 @@ class SafetyHistogram {
   buildControls() {
     this.controls.innerHTML = '';
 
-    const addControl = (label, input, parent = this.controls) => {
-      const wrap = createElement('div', 'sh-control');
-      const lab = createElement('label', null, label);
-      wrap.append(lab, input);
-      parent.append(wrap);
-      return input;
-    };
-    // Sidebar sections replace the old inline fieldsets (#15): a heading and
-    // a vertical stack of full-width controls.
-    const addSection = (label) => {
-      const section = createElement('section', 'sh-control-section');
-      section.append(createElement('h4', 'sh-section-title', label));
-      this.controls.append(section);
-      return section;
-    };
-    const addRow = (parent) => {
-      const row = createElement('div', 'sh-control-row');
-      parent.append(row);
-      return row;
-    };
+    const { addSection, addRow, addControl } = controlBuilders(this.controls);
 
     const measure = addControl('Measure', document.createElement('select'));
     this.measures().forEach((value) => option(measure, value, value, value === this.state.measure));
@@ -393,10 +274,10 @@ class SafetyHistogram {
         this.state.displayNormalRange = nr.checked;
         this.render();
       };
-      const inline = createElement('div', 'sh-control-inline');
+      const inline = createElement('div', 'sv-control-inline');
       inline.append(nr, document.createTextNode('Show'));
       addControl('Normal Range', inline, displayParent);
-      this.normalRangeControl = inline.closest('.sh-control');
+      this.normalRangeControl = inline.closest('.sv-control');
     }
 
     const ticks = document.createElement('select');
@@ -433,7 +314,7 @@ class SafetyHistogram {
   updateNormalRangeControl() {
     if (!this.normalRangeControl) return;
     const available = measureHasNormalRange(this.currentMeasureData(), this.settings);
-    this.normalRangeControl.classList.toggle('sh-hidden', !available);
+    this.normalRangeControl.classList.toggle('sv-hidden', !available);
   }
 
   /**
@@ -506,7 +387,7 @@ class SafetyHistogram {
       ? ((shownParticipants / totalParticipants) * 100).toFixed(1)
       : '0.0';
     const removedNote = this.removedRecords
-      ? `<span class="sh-warning">${this.removedRecords} missing or non-numeric results removed.</span>`
+      ? `<span class="sv-warning">${this.removedRecords} missing or non-numeric results removed.</span>`
       : '';
     this.notes.innerHTML = `<span>${shownParticipants} of ${totalParticipants} participants shown (${pct}%).</span>${removedNote}`;
   }
@@ -645,7 +526,7 @@ class SafetyHistogram {
       const rows = this.filteredData.filter(
         (row) => String(row[this.state.groupBy]) === String(groupValue)
       );
-      const panel = createElement('div', 'sh-multiple');
+      const panel = createElement('div', 'sv-multiple');
       panel.append(createElement('h3', null, `${groupValue} (${rows.length} records)`));
       if (this.settings.compare_distributions) {
         const groupedValues = Object.fromEntries(
@@ -665,7 +546,7 @@ class SafetyHistogram {
           )
         );
       }
-      const canvasWrap = createElement('div', 'sh-multiple-canvas');
+      const canvasWrap = createElement('div', 'sv-multiple-canvas');
       const canvas = document.createElement('canvas');
       canvasWrap.append(canvas);
       panel.append(canvasWrap);

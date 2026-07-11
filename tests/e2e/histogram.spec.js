@@ -28,7 +28,7 @@ async function showFullListing(page) {
     const rows = instance.currentFilteredData();
     instance.showListing(rows, { records: rows, lower: 1, upper: 30 }, 0);
   });
-  await expect(page.locator('.sh-listing table')).toBeVisible();
+  await expect(page.locator('.sv-listing table')).toBeVisible();
 }
 
 async function selectFirstPopulatedCanvasBar(page) {
@@ -38,7 +38,7 @@ async function selectFirstPopulatedCanvasBar(page) {
     const index = chart.$shBins.findIndex((bin) => bin.records.length > 0);
     chart.options.onClick({}, [{ index }]);
   });
-  await expect(page.locator('.sh-listing table')).toBeVisible();
+  await expect(page.locator('.sv-listing table')).toBeVisible();
 }
 
 test.describe('safety.viz histogram module', () => {
@@ -53,7 +53,7 @@ test.describe('safety.viz histogram module', () => {
     await page.waitForFunction(
       () => window.__safetyHistogramInstance && window.__safetyHistogramInstance.chart
     );
-    await page.waitForSelector('canvas.sh-chart');
+    await page.waitForSelector('canvas.sv-chart');
   });
 
   test.afterEach(async ({ page }) => {
@@ -63,7 +63,7 @@ test.describe('safety.viz histogram module', () => {
   test('SH-CTRL-001/SH-CTRL-002/SH-CTRL-006: renders measure, filter, axis, bin, and group controls (#2)', async ({
     page
   }) => {
-    const labels = await page.locator('.sh-control label').allTextContents();
+    const labels = await page.locator('.sv-control label').allTextContents();
     await expect(labels).toEqual(
       expect.arrayContaining([
         'Measure',
@@ -86,21 +86,21 @@ test.describe('safety.viz histogram module', () => {
   });
 
   test('SH-CTRL-003: participant note updates when a filter is applied (#2)', async ({ page }) => {
-    const before = await page.locator('.sh-notes').innerText();
+    const before = await page.locator('.sv-notes').innerText();
     // label:text-is keeps this unambiguous: the Group charts by select also
-    // offers a "Sex" option, and both controls now live in .sh-controls (#15).
+    // offers a "Sex" option, and both controls now live in .sv-controls (#15).
     await page
-      .locator('.sh-controls .sh-control', { has: page.locator('label:text-is("Sex")') })
+      .locator('.sv-controls .sv-control', { has: page.locator('label:text-is("Sex")') })
       .locator('select')
       .selectOption({ index: 1 });
-    const after = await page.locator('.sh-notes').innerText();
+    const after = await page.locator('.sv-notes').innerText();
     expect(after).not.toBe(before);
   });
 
   test('SH-DATA-002: missing and non-numeric results are dropped with a reported count and visible note (#2)', async ({
     page
   }) => {
-    await expect(page.locator('.sh-notes .sh-warning')).toContainText(
+    await expect(page.locator('.sv-notes .sv-warning')).toContainText(
       '2 missing or non-numeric results removed.'
     );
     await captureEvidence(page, 'SH-DATA-002', 'invalid-data-note');
@@ -111,14 +111,14 @@ test.describe('safety.viz histogram module', () => {
   }) => {
     await setHarnessSettings(page);
     await selectFirstPopulatedCanvasBar(page);
-    await expect(page.locator('.sh-listing-actions')).toContainText('records');
-    await expect(page.locator('.sh-listing-actions')).toContainText('Export: CSV');
-    const headers = await page.locator('.sh-listing th').allTextContents();
+    await expect(page.locator('.sv-listing-actions')).toContainText('records');
+    await expect(page.locator('.sv-listing-actions')).toContainText('Export: CSV');
+    const headers = await page.locator('.sv-listing th').allTextContents();
     expect(headers.join(',')).toContain('Participant ID');
     expect(headers.join(',')).toContain('Result');
     expect(headers.join(',')).toContain('Lower Limit of Normal');
     expect(headers.join(',')).toContain('Upper Limit of Normal');
-    await expect(page.locator('.sh-footnote')).toContainText(/Selected: \d+ records/);
+    await expect(page.locator('.sv-footnote')).toContainText(/Selected: \d+ records/);
     await captureEvidence(page, 'SH-FUNC-010', 'linked-listing');
   });
 
@@ -158,31 +158,31 @@ test.describe('safety.viz histogram module', () => {
     await setHarnessSettings(page);
     await showFullListing(page);
 
-    await expect(page.locator('.sh-listing tbody tr')).toHaveCount(5);
+    await expect(page.locator('.sv-listing tbody tr')).toHaveCount(5);
     await page.getByRole('button', { name: '>', exact: true }).click();
-    await expect(page.locator('.sh-listing tbody')).toContainText('SUBJ-006');
+    await expect(page.locator('.sv-listing tbody')).toContainText('SUBJ-006');
     await page.getByRole('button', { name: '>>' }).click();
-    await expect(page.locator('.sh-listing tbody')).toContainText('SUBJ-026');
+    await expect(page.locator('.sv-listing tbody')).toContainText('SUBJ-026');
     await page.getByRole('button', { name: '<', exact: true }).click();
-    await expect(page.locator('.sh-listing tbody')).toContainText('SUBJ-021');
+    await expect(page.locator('.sv-listing tbody')).toContainText('SUBJ-021');
     await page.getByRole('button', { name: '<<' }).click();
-    await expect(page.locator('.sh-listing tbody')).toContainText('SUBJ-001');
+    await expect(page.locator('.sv-listing tbody')).toContainText('SUBJ-001');
 
-    await page.locator('.sh-listing-search').fill('SUBJ-012');
-    await expect(page.locator('.sh-listing tbody tr')).toHaveCount(1);
-    await expect(page.locator('.sh-listing tbody')).toContainText('SUBJ-012');
+    await page.locator('.sv-listing-search').fill('SUBJ-012');
+    await expect(page.locator('.sv-listing tbody tr')).toHaveCount(1);
+    await expect(page.locator('.sv-listing tbody')).toContainText('SUBJ-012');
 
-    await page.locator('.sh-listing-search').fill('');
-    await page.locator('.sh-listing th', { hasText: 'Result' }).click();
-    await expect(page.locator('.sh-listing th', { hasText: 'Result ▲' })).toBeVisible();
-    await expect(page.locator('.sh-listing tbody tr').first()).toContainText('SUBJ-001');
-    await page.locator('.sh-listing th', { hasText: /Result/ }).click();
-    await expect(page.locator('.sh-listing th', { hasText: 'Result ▼' })).toBeVisible();
-    await expect(page.locator('.sh-listing tbody tr').first()).toContainText('SUBJ-030');
+    await page.locator('.sv-listing-search').fill('');
+    await page.locator('.sv-listing th', { hasText: 'Result' }).click();
+    await expect(page.locator('.sv-listing th', { hasText: 'Result ▲' })).toBeVisible();
+    await expect(page.locator('.sv-listing tbody tr').first()).toContainText('SUBJ-001');
+    await page.locator('.sv-listing th', { hasText: /Result/ }).click();
+    await expect(page.locator('.sv-listing th', { hasText: 'Result ▼' })).toBeVisible();
+    await expect(page.locator('.sv-listing tbody tr').first()).toContainText('SUBJ-030');
     await captureEvidence(page, 'SH-LIST-004', 'search-sort-paginate');
 
     const download = page.waitForEvent('download');
-    await page.locator('.sh-listing-actions button', { hasText: 'Export: CSV' }).click();
+    await page.locator('.sv-listing-actions button', { hasText: 'Export: CSV' }).click();
     const csvDownload = await download;
     expect(csvDownload.suggestedFilename()).toBe('safety-histogram-listing.csv');
     const csv = fs.readFileSync(await csvDownload.path(), 'utf8');
@@ -227,8 +227,8 @@ test.describe('safety.viz histogram module', () => {
   test('SH-FUNC-004C: normal range control is hidden when the measure has no normal range data (#2)', async ({
     page
   }) => {
-    const measureSelect = page.locator('.sh-control', { hasText: 'Measure' }).locator('select');
-    const normalRangeControl = page.locator('.sh-control', { hasText: 'Normal Range' });
+    const measureSelect = page.locator('.sv-control', { hasText: 'Measure' }).locator('select');
+    const normalRangeControl = page.locator('.sv-control', { hasText: 'Normal Range' });
 
     await expect(normalRangeControl).toBeVisible();
     await measureSelect.selectOption('Pulse (bpm)');
@@ -242,14 +242,14 @@ test.describe('safety.viz histogram module', () => {
     page
   }) => {
     await setHarnessSettings(page);
-    await page.locator('.sh-control', { hasText: 'Lower' }).locator('input').fill('25');
+    await page.locator('.sv-control', { hasText: 'Lower' }).locator('input').fill('25');
     await page
-      .locator('.sh-control', { hasText: 'Lower' })
+      .locator('.sv-control', { hasText: 'Lower' })
       .locator('input')
       .dispatchEvent('change');
-    await page.locator('.sh-control', { hasText: 'Upper' }).locator('input').fill('5');
+    await page.locator('.sv-control', { hasText: 'Upper' }).locator('input').fill('5');
     await page
-      .locator('.sh-control', { hasText: 'Upper' })
+      .locator('.sv-control', { hasText: 'Upper' })
       .locator('input')
       .dispatchEvent('change');
     const domain = await page.evaluate(() => [
@@ -266,7 +266,7 @@ test.describe('safety.viz histogram module', () => {
     page
   }) => {
     await setHarnessSettings(page);
-    const lower = page.locator('.sh-control', { hasText: 'Lower' }).locator('input');
+    const lower = page.locator('.sv-control', { hasText: 'Lower' }).locator('input');
     await lower.fill('5');
     await lower.dispatchEvent('change');
     await lower.focus();
@@ -290,7 +290,7 @@ test.describe('safety.viz histogram module', () => {
     expect(midpointLabels.some((label) => label.includes('–'))).toBe(false);
 
     await page
-      .locator('.sh-control', { hasText: 'X-axis Ticks' })
+      .locator('.sv-control', { hasText: 'X-axis Ticks' })
       .locator('select')
       .selectOption('boundaries');
     const boundaryLabels = await page.evaluate(
@@ -304,15 +304,15 @@ test.describe('safety.viz histogram module', () => {
     page
   }) => {
     await setHarnessSettings(page, { group_by: 'ARM', compare_distributions: true });
-    await expect(page.locator('.sh-main-annotation')).toContainText(/Normality: p=/);
-    await expect(page.locator('.sh-main-annotation .sh-info')).toHaveAttribute(
+    await expect(page.locator('.sv-main-annotation')).toContainText(/Normality: p=/);
+    await expect(page.locator('.sv-main-annotation .sv-info')).toHaveAttribute(
       'title',
       /not validated/
     );
-    await expect(page.locator('.sh-multiple .sh-annotation').first()).toContainText(
+    await expect(page.locator('.sv-multiple .sv-annotation').first()).toContainText(
       /Group comparison: p=/
     );
-    await expect(page.locator('.sh-multiple .sh-info').first()).toHaveAttribute(
+    await expect(page.locator('.sv-multiple .sv-info').first()).toHaveAttribute(
       'title',
       /not validated/
     );
@@ -321,10 +321,10 @@ test.describe('safety.viz histogram module', () => {
 
   test('SH-CHART-004: group-by renders grouped histograms (#2)', async ({ page }) => {
     await page
-      .locator('.sh-control', { hasText: 'Group charts by' })
+      .locator('.sv-control', { hasText: 'Group charts by' })
       .locator('select')
       .selectOption('SEX');
-    await expect(page.locator('.sh-multiple').first()).toBeVisible();
+    await expect(page.locator('.sv-multiple').first()).toBeVisible();
     await captureEvidence(page, 'SH-CHART-004', 'grouped-multiples');
   });
 
