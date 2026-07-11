@@ -26,7 +26,7 @@ test.describe('docs site', () => {
   });
 
   for (const renderer of available) {
-    test(`built ${renderer.module} demo mounts the shared shell with no console errors (#7, #17)`, async ({
+    test(`built ${renderer.module} demo mounts the shared shell with no console errors (#7) (#17)`, async ({
       page
     }) => {
       const errors = [];

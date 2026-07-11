@@ -2,11 +2,11 @@
   "module": "histogram",
   "records": [
     {
-      "test": "built demo page mounts the histogram with no console errors (#7)",
+      "test": "built histogram demo mounts the shared shell with no console errors (#7) (#17)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": [],
-      "issueRefs": [7],
+      "issueRefs": [7, 17],
       "screenshots": []
     },
     {
@@ -15,6 +15,14 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [1],
+      "screenshots": []
+    },
+    {
+      "test": "gallery shows one card per available renderer (#7)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
       "screenshots": []
     },
     {
