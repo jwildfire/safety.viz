@@ -11201,6 +11201,154 @@ var SafetyViz = (() => {
     }
   };
 
+  // src/shell.js
+  function createElement(tag, className, text) {
+    const element = document.createElement(tag);
+    if (className) element.className = className;
+    if (text !== void 0) element.textContent = text;
+    return element;
+  }
+  function option(select, value, label, selected) {
+    const opt = document.createElement("option");
+    opt.value = value;
+    opt.textContent = label;
+    opt.selected = selected;
+    select.appendChild(opt);
+  }
+  var SHELL_STYLE_ID = "safety-viz-shell-styles";
+  var SHELL_STYLES = `
+.sv-root{display:flex;align-items:flex-start;gap:1.25rem;width:100%;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#1f2933}
+.sv-sidebar{position:sticky;top:1rem;flex:0 0 250px;max-height:calc(100vh - 2rem);overflow-y:auto;border:1px solid #d8dee4;border-radius:10px;background:#f6f8fa;padding:.8rem .9rem 1rem}
+.sv-sidebar-header{display:flex;align-items:center;justify-content:space-between;gap:.5rem}
+.sv-sidebar-title{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#52616f}
+.sv-sidebar-toggle{border:1px solid #d8dee4;border-radius:6px;background:#fff;color:#52616f;font:inherit;font-size:.85rem;line-height:1;padding:.25rem .5rem;cursor:pointer}
+.sv-sidebar-toggle:hover{color:#1f2933;border-color:#b8c0cc}
+.sv-collapsed .sv-sidebar{flex-basis:auto;padding:.5rem}
+.sv-collapsed .sv-sidebar-title,.sv-collapsed .sv-controls{display:none}
+.sv-control-section{border-top:1px solid #e3e8ee;margin-top:.8rem;padding-top:.65rem}
+.sv-section-title{margin:0 0 .5rem;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#52616f}
+.sv-controls>.sv-control{margin-top:.75rem}
+.sv-control{margin:0 0 .55rem}
+.sv-control:last-child{margin-bottom:0}
+.sv-control label{display:block;font-size:.78rem;font-weight:600;margin-bottom:.25rem}
+.sv-control select,.sv-control input{width:100%;box-sizing:border-box;padding:.35rem .45rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.85rem;color:inherit}
+.sv-control input[type=checkbox]{width:auto;margin:0;accent-color:#0b62a4}
+.sv-control select:focus-visible,.sv-control input:focus-visible,.sv-sidebar-toggle:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
+.sv-control-row{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.sv-control-row .sv-control{margin:0}
+.sv-control-inline{display:flex;align-items:center;gap:.4rem;font-size:.85rem}
+.sv-main{flex:1 1 auto;min-width:0}
+.sv-notes{display:flex;flex-wrap:wrap;gap:.25rem 1.25rem;font-size:.85rem;color:#52616f;margin:0 0 .6rem}
+.sv-warning{color:#9a3412}
+.sv-chart-wrap{height:460px;position:relative;border:1px solid #d8dee4;border-radius:10px;padding:1rem;background:#fff}
+.sv-footnote{margin:.6rem 0 0;font-size:.85rem;color:#52616f}
+.sv-multiples{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;margin-top:1.25rem}
+.sv-multiples:empty{display:none}
+.sv-multiple{border:1px solid #d8dee4;border-radius:10px;padding:.75rem .85rem;background:#fff}
+.sv-multiple h3{font-size:.92rem;margin:0 0 .4rem}
+.sv-multiple-canvas{height:200px}
+.sv-listing{margin-top:1.25rem}
+.sv-listing table{width:100%;border-collapse:collapse;font-size:.85rem;background:#fff}
+.sv-listing th,.sv-listing td{border-bottom:1px solid #e3e8ee;padding:.45rem .55rem;text-align:left;vertical-align:top}
+.sv-listing th{border-bottom:2px solid #d8dee4;cursor:pointer;font-size:.75rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f;white-space:nowrap}
+.sv-listing tbody tr:hover{background:#f6f8fa}
+.sv-listing-actions{display:flex;align-items:center;justify-content:space-between;gap:.75rem;margin:.5rem 0;font-size:.85rem;flex-wrap:wrap}
+.sv-listing-tools{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.sv-listing-search{padding:.35rem .45rem;border:1px solid #b8c0cc;border-radius:6px;font:inherit;font-size:.85rem}
+.sv-listing-actions button{padding:.3rem .6rem;border:1px solid #d8dee4;border-radius:6px;background:#fff;color:#1f2933;font:inherit;font-size:.8rem;cursor:pointer}
+.sv-listing-actions button:hover:not(:disabled){border-color:#b8c0cc;background:#f6f8fa}
+.sv-listing-actions button:disabled{opacity:.45;cursor:default}
+.sv-annotation,.sv-main-annotation{font-size:.85rem;background:rgba(255,255,255,.92);border:1px solid #d8dee4;border-radius:6px;padding:.25rem .4rem}
+.sv-main-annotation{position:absolute;right:1.25rem;top:1.25rem;z-index:2}
+.sv-main-annotation:empty{display:none}
+.sv-info{text-decoration:none}
+.sv-hidden{display:none!important}
+@media (max-width:900px){
+.sv-root{flex-direction:column}
+.sv-sidebar{position:static;flex:1 1 auto;width:100%;max-height:none}
+.sv-controls{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:0 1.25rem;align-items:start}
+.sv-control-section{border-top:none}
+}`;
+  function applyShellStyles() {
+    if (document.getElementById(SHELL_STYLE_ID)) return;
+    const style = document.createElement("style");
+    style.id = SHELL_STYLE_ID;
+    style.textContent = SHELL_STYLES;
+    document.head.append(style);
+  }
+  function renderShell(element, { moduleClass = "", onToggle } = {}) {
+    element.innerHTML = "";
+    const root = createElement("div", `sv-root ${moduleClass}`.trim());
+    const sidebar = createElement("aside", "sv-sidebar");
+    const sidebarHeader = createElement("div", "sv-sidebar-header");
+    sidebarHeader.append(createElement("span", "sv-sidebar-title", "Controls"));
+    const sidebarToggle = createElement("button", "sv-sidebar-toggle");
+    sidebarToggle.type = "button";
+    const setCollapsed = (collapsed) => {
+      root.classList.toggle("sv-collapsed", collapsed);
+      sidebarToggle.setAttribute("aria-expanded", String(!collapsed));
+      sidebarToggle.setAttribute("aria-label", collapsed ? "Show controls" : "Hide controls");
+      sidebarToggle.textContent = collapsed ? "\xBB" : "\xAB";
+    };
+    sidebarToggle.onclick = () => {
+      setCollapsed(!root.classList.contains("sv-collapsed"));
+      if (onToggle) onToggle();
+    };
+    setCollapsed(false);
+    sidebarHeader.append(sidebarToggle);
+    const controls = createElement("div", "sv-controls");
+    sidebar.append(sidebarHeader, controls);
+    const main = createElement("div", "sv-main");
+    const notes = createElement("div", "sv-notes");
+    const chartWrap = createElement("div", "sv-chart-wrap");
+    const canvas = createElement("canvas", "sv-chart");
+    const mainAnnotation = createElement("div", "sv-main-annotation");
+    const footnote = createElement("div", "sv-footnote");
+    const multiplesWrap = createElement("div", "sv-multiples");
+    const listingWrap = createElement("div", "sv-listing");
+    chartWrap.append(canvas, mainAnnotation);
+    main.append(notes, chartWrap, footnote, multiplesWrap, listingWrap);
+    root.append(sidebar, main);
+    element.append(root);
+    applyShellStyles();
+    return {
+      root,
+      sidebar,
+      sidebarToggle,
+      controls,
+      main,
+      notes,
+      chartWrap,
+      canvas,
+      mainAnnotation,
+      footnote,
+      multiplesWrap,
+      listingWrap
+    };
+  }
+  function controlBuilders(controls) {
+    return {
+      addSection(label) {
+        const section = createElement("section", "sv-control-section");
+        section.append(createElement("h4", "sv-section-title", label));
+        controls.append(section);
+        return section;
+      },
+      addRow(parent) {
+        const row = createElement("div", "sv-control-row");
+        parent.append(row);
+        return row;
+      },
+      addControl(label, input, parent = controls) {
+        const wrap = createElement("div", "sv-control");
+        const lab = createElement("label", null, label);
+        wrap.append(lab, input);
+        parent.append(wrap);
+        return input;
+      }
+    };
+  }
+
   // src/histogram/configure.js
   var DEFAULT_SETTINGS = {
     measure_col: "TEST",
@@ -11398,6 +11546,10 @@ var SafetyViz = (() => {
     });
     return Math.min(4, Math.max(0, ...decimals));
   }
+  function displayDigits(width, values) {
+    if (!Number.isFinite(width) || width <= 0) return precision(values);
+    return Math.min(precision(values), Math.max(0, -Math.floor(Math.log10(width))));
+  }
   function cleanData(rawData, settings) {
     let removed = 0;
     const rows = rawData.map((row, index) => ({
@@ -11499,19 +11651,6 @@ var SafetyViz = (() => {
   }
 
   // src/histogram/getPlugins.js
-  function createElement(tag, className, text) {
-    const element = document.createElement(tag);
-    if (className) element.className = className;
-    if (text !== void 0) element.textContent = text;
-    return element;
-  }
-  function option(select, value, label, selected) {
-    const opt = document.createElement("option");
-    opt.value = value;
-    opt.textContent = label;
-    opt.selected = selected;
-    select.appendChild(opt);
-  }
   function formatPValue(value) {
     if (!Number.isFinite(value)) return "NA";
     if (value < 1e-3) return "<0.001";
@@ -11546,10 +11685,10 @@ var SafetyViz = (() => {
   }
   function statisticalAnnotation(label, pValue, testName, url) {
     const text = `${label}: p=${formatPValue(pValue)}`;
-    const annotation = createElement("div", "sh-annotation");
+    const annotation = createElement("div", "sv-annotation");
     const value = createElement("span", null, text);
     value.title = `${testName}. Caution: This graphic has been thoroughly tested, but is not validated.`;
-    const link = createElement("a", "sh-info", "\u24D8");
+    const link = createElement("a", "sv-info", "\u24D8");
     link.href = url;
     link.target = "_blank";
     link.rel = "noopener noreferrer";
@@ -11658,12 +11797,12 @@ var SafetyViz = (() => {
     const { visible, pages, page } = paginate(rows, instance.page, pageSize);
     instance.page = page;
     instance.listingWrap.innerHTML = "";
-    const actions = createElement("div", "sh-listing-actions");
+    const actions = createElement("div", "sv-listing-actions");
     actions.append(
       createElement("strong", null, `${rows.length} of ${instance.currentTableData.length} records`)
     );
-    const tools = createElement("div", "sh-listing-tools");
-    const search = createElement("input", "sh-listing-search");
+    const tools = createElement("div", "sv-listing-tools");
+    const search = createElement("input", "sv-listing-search");
     search.type = "search";
     search.placeholder = "Search listing";
     search.value = instance.listingSearch;
@@ -11756,41 +11895,14 @@ var SafetyViz = (() => {
      * @private
      */
     renderShell() {
-      this.element.innerHTML = "";
-      this.root = createElement("div", "safety-histogram");
-      this.controls = createElement("div", "sh-controls");
-      this.notes = createElement("div", "sh-notes");
-      this.chartWrap = createElement("div", "sh-chart-wrap");
-      this.canvas = createElement("canvas", "sh-chart");
-      this.mainAnnotation = createElement("div", "sh-main-annotation");
-      this.footnote = createElement("div", "sh-footnote", "Hover over or click a bar for details.");
-      this.groupControls = createElement("div", "sh-group-controls");
-      this.multiplesWrap = createElement("div", "sh-multiples");
-      this.listingWrap = createElement("div", "sh-listing");
-      this.chartWrap.append(this.canvas, this.mainAnnotation);
-      this.root.append(
-        this.controls,
-        this.notes,
-        this.chartWrap,
-        this.footnote,
-        this.groupControls,
-        this.multiplesWrap,
-        this.listingWrap
+      Object.assign(
+        this,
+        renderShell(this.element, {
+          moduleClass: "safety-histogram",
+          onToggle: () => this.resize()
+        })
       );
-      this.element.append(this.root);
-      this.applyStyles();
-    }
-    /**
-     * Inject the module stylesheet once per document.
-     * @private
-     */
-    applyStyles() {
-      if (document.getElementById("safety-histogram-nextgen-styles")) return;
-      const style = document.createElement("style");
-      style.id = "safety-histogram-nextgen-styles";
-      style.textContent = `
-.safety-histogram{width:100%;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#1f2933}.sh-controls{display:flex;flex-wrap:wrap;align-items:flex-start;gap:.5rem;margin:.75rem 0 1rem;padding:.75rem;border:1px solid #d8dee4;border-radius:8px;background:#f6f8fa}.sh-control{display:inline-block;vertical-align:top;min-width:140px;margin:2px}.sh-control label{display:block;font-size:.8rem;font-weight:700;margin-bottom:.2rem}.sh-control select,.sh-control input{width:100%;box-sizing:border-box;padding:.35rem;border:1px solid #b8c0cc;border-radius:4px;background:white}.sh-control-inline{display:flex;align-items:center;gap:.4rem}.sh-control-fieldset{display:inline-flex;flex-wrap:wrap;gap:.25rem;margin:0 5px 0 0;padding:.35rem .45rem .5rem;border:1px solid #b8c0cc;border-radius:6px;background:white}.sh-control-fieldset legend{font-size:.78rem;font-weight:700;padding:0 .25rem;color:#52616f}.sh-control-fieldset .sh-control{margin:0 2px 2px}.sh-control-fieldset.sh-filters-fieldset .sh-control{min-width:150px}.sh-control-fieldset.sh-x-axis-limits-fieldset .sh-control,.sh-control-fieldset.sh-bins-fieldset .sh-control{min-width:110px}.sh-control-standalone{background:white;border:1px solid #d8dee4;border-radius:6px;padding:.35rem .45rem .5rem}.sh-group-controls{display:flex;justify-content:flex-end;margin:.5rem 0}.sh-group-controls .sh-control{min-width:180px}.sh-notes{display:flex;justify-content:space-between;gap:1rem;font-size:.9rem;margin:.5rem 0}.sh-warning{color:#9a3412}.sh-chart-wrap{height:460px;position:relative;border:1px solid #d8dee4;border-radius:8px;padding:1rem;background:white}.sh-footnote{margin:.75rem 0;padding:.65rem;border-top:1px solid #d8dee4;border-bottom:1px solid #d8dee4}.sh-multiples{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;margin-top:1rem}.sh-multiple{border:1px solid #d8dee4;border-radius:8px;padding:.75rem;background:#fff}.sh-multiple h3{font-size:1rem;margin:0 0 .5rem}.sh-multiple-canvas{height:220px}.sh-listing{margin-top:1rem}.sh-listing table{width:100%;border-collapse:collapse;font-size:.9rem}.sh-listing th,.sh-listing td{border:1px solid #d8dee4;padding:.35rem;text-align:left}.sh-listing th{background:#f6f8fa;cursor:pointer}.sh-listing-actions{display:flex;align-items:center;justify-content:space-between;gap:.75rem;margin:.5rem 0}.sh-listing-tools{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}.sh-listing-search{padding:.35rem;border:1px solid #b8c0cc;border-radius:4px}.sh-listing-actions button{padding:.35rem .6rem}.sh-annotation,.sh-main-annotation{font-size:.85rem;background:rgba(255,255,255,.9);border:1px solid #d8dee4;border-radius:4px;padding:.25rem .4rem}.sh-main-annotation{position:absolute;right:1.25rem;top:1.25rem;z-index:2}.sh-info{text-decoration:none}.sh-hidden{display:none!important}`;
-      document.head.append(style);
+      this.footnote.textContent = "Hover over or click a bar for details.";
     }
     /**
      * Load data and render: an alias for setData that keeps the pilot's
@@ -11838,7 +11950,7 @@ var SafetyViz = (() => {
       try {
         checkInputs(this.rawData, this.settings);
       } catch (error) {
-        this.element.innerHTML = `<div class="sh-warning">${error.message}</div>`;
+        this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
         throw error;
       }
       const { rows, removed } = cleanData(this.rawData, this.settings);
@@ -11866,27 +11978,8 @@ var SafetyViz = (() => {
      */
     buildControls() {
       this.controls.innerHTML = "";
-      this.groupControls.innerHTML = "";
-      const addControl = (label, input, parent = this.controls, className = "") => {
-        const wrap = createElement("div", `sh-control ${className}`.trim());
-        const lab = createElement("label", null, label);
-        wrap.append(lab, input);
-        parent.append(wrap);
-        return input;
-      };
-      const addFieldset = (label) => {
-        const fieldset = document.createElement("fieldset");
-        fieldset.className = `sh-control-fieldset ${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-fieldset`;
-        fieldset.append(createElement("legend", null, label));
-        this.controls.append(fieldset);
-        return fieldset;
-      };
-      const measure = addControl(
-        "Measure",
-        document.createElement("select"),
-        this.controls,
-        "sh-control-standalone"
-      );
+      const { addSection, addRow, addControl } = controlBuilders(this.controls);
+      const measure = addControl("Measure", document.createElement("select"));
       this.measures().forEach((value) => option(measure, value, value, value === this.state.measure));
       measure.onchange = () => {
         this.state.measure = measure.value;
@@ -11902,14 +11995,9 @@ var SafetyViz = (() => {
           );
         return exists;
       });
-      const filterParent = filterSpecs.length > 1 ? addFieldset("Filters") : this.controls;
+      const filterParent = filterSpecs.length ? addSection("Filters") : this.controls;
       filterSpecs.forEach((filter) => {
-        const select = addControl(
-          filter.label,
-          document.createElement("select"),
-          filterParent,
-          filterSpecs.length > 1 ? "" : "sh-control-standalone"
-        );
+        const select = addControl(filter.label, document.createElement("select"), filterParent);
         option(select, "__all__", "All", !this.state.filters[filter.value_col]);
         unique(this.cleanData.map((row) => row[filter.value_col])).sort().forEach(
           (value) => option(select, value, value, this.state.filters[filter.value_col] === value)
@@ -11919,8 +12007,9 @@ var SafetyViz = (() => {
           this.render();
         };
       });
-      const xAxisParent = addFieldset("X-axis Limits");
-      const lower = addControl("Lower", document.createElement("input"), xAxisParent);
+      const xAxisParent = addSection("X-axis Limits");
+      const xAxisRow = addRow(xAxisParent);
+      const lower = addControl("Lower", document.createElement("input"), xAxisRow);
       lower.type = "number";
       lower.step = "any";
       lower.value = this.state.lower == null ? "" : this.state.lower;
@@ -11929,7 +12018,7 @@ var SafetyViz = (() => {
         normalizeDomain(this.state);
         this.render();
       };
-      const upper = addControl("Upper", document.createElement("input"), xAxisParent);
+      const upper = addControl("Upper", document.createElement("input"), xAxisRow);
       upper.type = "number";
       upper.step = "any";
       upper.value = this.state.upper == null ? "" : this.state.upper;
@@ -11938,14 +12027,15 @@ var SafetyViz = (() => {
         normalizeDomain(this.state);
         this.render();
       };
-      const binParent = addFieldset("Bins");
+      const binParent = addSection("Bins");
       const algorithm = addControl("Algorithm", document.createElement("select"), binParent);
       ALGORITHMS.forEach((value) => option(algorithm, value, value, value === this.state.algorithm));
       algorithm.onchange = () => {
         this.state.algorithm = algorithm.value;
         this.render();
       };
-      const quantity = addControl("Quantity", document.createElement("input"), binParent);
+      const binRow = addRow(binParent);
+      const quantity = addControl("Quantity", document.createElement("input"), binRow);
       quantity.type = "number";
       quantity.min = "1";
       quantity.step = "1";
@@ -11956,7 +12046,7 @@ var SafetyViz = (() => {
         this.buildControls();
         this.render();
       };
-      const width = addControl("Width", document.createElement("input"), binParent);
+      const width = addControl("Width", document.createElement("input"), binRow);
       width.type = "number";
       width.min = "0";
       width.step = "any";
@@ -11967,6 +12057,7 @@ var SafetyViz = (() => {
         this.buildControls();
         this.render();
       };
+      const displayParent = addSection("Display");
       this.normalRangeControl = null;
       if (this.settings.normal_range) {
         const nr = document.createElement("input");
@@ -11976,10 +12067,10 @@ var SafetyViz = (() => {
           this.state.displayNormalRange = nr.checked;
           this.render();
         };
-        const inline = createElement("div", "sh-control-inline");
+        const inline = createElement("div", "sv-control-inline");
         inline.append(nr, document.createTextNode("Show"));
-        addControl("Normal Range", inline, this.controls, "sh-control-standalone");
-        this.normalRangeControl = inline.closest(".sh-control");
+        addControl("Normal Range", inline, displayParent);
+        this.normalRangeControl = inline.closest(".sv-control");
       }
       const ticks = document.createElement("select");
       option(ticks, "linear", "linear", !this.state.annotateBoundaries);
@@ -11988,17 +12079,17 @@ var SafetyViz = (() => {
         this.state.annotateBoundaries = ticks.value === "boundaries";
         this.render();
       };
-      addControl("X-axis Ticks", ticks, this.controls, "sh-control-standalone");
+      addControl("X-axis Ticks", ticks, displayParent);
+      this.groupControls = addSection("Grouping");
       const group = addControl(
         "Group charts by",
         document.createElement("select"),
-        this.groupControls,
-        "sh-control-standalone"
+        this.groupControls
       );
       this.settings.groups.forEach(
         (spec) => option(group, spec.value_col, spec.label, spec.value_col === this.state.groupBy)
       );
-      this.groupControls.style.display = this.settings.groups.length <= 1 ? "none" : "flex";
+      this.groupControls.style.display = this.settings.groups.length <= 1 ? "none" : "";
       group.onchange = () => {
         this.state.groupBy = group.value;
         this.render();
@@ -12012,7 +12103,7 @@ var SafetyViz = (() => {
     updateNormalRangeControl() {
       if (!this.normalRangeControl) return;
       const available = measureHasNormalRange(this.currentMeasureData(), this.settings);
-      this.normalRangeControl.classList.toggle("sh-hidden", !available);
+      this.normalRangeControl.classList.toggle("sv-hidden", !available);
     }
     /**
      * Clear the x-axis limit overrides when the measure changes.
@@ -12077,7 +12168,8 @@ var SafetyViz = (() => {
         this.filteredData.map((row) => row[this.settings.id_col])
       ).length;
       const pct = totalParticipants ? (shownParticipants / totalParticipants * 100).toFixed(1) : "0.0";
-      this.notes.innerHTML = `<span>${shownParticipants} of ${totalParticipants} participants shown (${pct}%).</span><span class="sh-warning">${this.removedRecords || 0} missing or non-numeric results removed.</span>`;
+      const removedNote = this.removedRecords ? `<span class="sv-warning">${this.removedRecords} missing or non-numeric results removed.</span>` : "";
+      this.notes.innerHTML = `<span>${shownParticipants} of ${totalParticipants} participants shown (${pct}%).</span>${removedNote}`;
     }
     /**
      * Compute the domain, bins, and display precision for a set of rows.
@@ -12096,7 +12188,7 @@ var SafetyViz = (() => {
         this.state.width,
         domain
       );
-      const digits = precision(values);
+      const digits = displayDigits(binResult.width, values);
       const bins = binResult.bins.map((bin) => ({
         ...bin,
         records: bin.records.map((idx) => inDomainRows[idx])
@@ -12204,7 +12296,7 @@ var SafetyViz = (() => {
         const rows = this.filteredData.filter(
           (row) => String(row[this.state.groupBy]) === String(groupValue)
         );
-        const panel = createElement("div", "sh-multiple");
+        const panel = createElement("div", "sv-multiple");
         panel.append(createElement("h3", null, `${groupValue} (${rows.length} records)`));
         if (this.settings.compare_distributions) {
           const groupedValues = Object.fromEntries(
@@ -12222,7 +12314,7 @@ var SafetyViz = (() => {
             )
           );
         }
-        const canvasWrap = createElement("div", "sh-multiple-canvas");
+        const canvasWrap = createElement("div", "sv-multiple-canvas");
         const canvas = document.createElement("canvas");
         canvasWrap.append(canvas);
         panel.append(canvasWrap);
