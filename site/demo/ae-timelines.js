@@ -1,8 +1,8 @@
 // Demo mount for the ae-timelines page (#26): recreates the original
 // ae-timelines test page (RhoInc/ae-timelines/test-page) — all-default
 // settings, `aeTimelines('#container', {}).init(data)` — against the real
-// ADAE example data vendored in ./adae.csv (RhoInc data-library
-// clinical-trials/adam/adae.csv, trimmed to the columns the demo maps).
+// ADAE example data vendored in ./adae.csv (built from pharmaverseadam adae —
+// CDISC Pilot 01, MedDRA-coded — by scripts/build-demo-data.mjs; see docs/DATA_SOURCES.md).
 // Loaded by ae-timelines/index.html after the dist/ bundle.
 (function () {
   // Quote-aware CSV parser: the real data quotes fields with embedded commas

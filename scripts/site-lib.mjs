@@ -803,8 +803,8 @@ export function renderDemoPage({ renderer, version, config }) {
     moduleTabs('demo', `${config.matrixBaseUrl}/${renderer.matrix}`) +
     `<p>This live demo mounts the committed` +
     ` <code>dist/safety.viz-${version}</code> IIFE bundle — the same asset gsm.safety vendors —` +
-    ` against the renderer's original example data (<code>${escapeHtml(renderer.data || 'adbds.csv')}</code> from the` +
-    ` <a href="https://github.com/RhoInc/data-library">RhoInc data library</a>), with the full control panel active.</p>` +
+    ` against real example data (<code>${escapeHtml(renderer.data || 'adbds.csv')}</code>, built from the` +
+    ` <a href="https://github.com/pharmaverse/pharmaverseadam">pharmaverseadam</a> CDISC Pilot 01 ADaM datasets), with the full control panel active.</p>` +
     `<div id="container"></div>` +
     `<script src="../dist/safety.viz-${version}/safety.viz.js"></script>` +
     `<script src="./demo.js"></script>` +

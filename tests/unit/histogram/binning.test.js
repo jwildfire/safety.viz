@@ -12,10 +12,15 @@ import { calculateBins } from '../../../src/histogram/structureData.js';
 
 const range = (n) => Array.from({ length: n }, (_, i) => i + 1);
 
-// Quote-aware CSV parse of the real ADBDS demo data (site/data/adbds.csv),
-// the dataset on which the staging-review discrepancy was observed.
+// Quote-aware CSV parse of the frozen ADBDS Albumin reference
+// (fixtures/adbds-albumin-reference.csv) — the 531 Albumin results from the
+// original vendored demo data, on which the #19 staging-review discrepancy was
+// observed and against which the original renderer's bin parameters below were
+// cross-validated. Kept as a fixed fixture (not the live site/data/adbds.csv,
+// now sourced from pharmaverseadam — see scripts/build-demo-data.mjs) so this
+// original-renderer QC stays anchored to the values it was validated against.
 function loadAlbuminValues() {
-  const csvPath = new URL('../../../site/data/adbds.csv', import.meta.url);
+  const csvPath = new URL('./fixtures/adbds-albumin-reference.csv', import.meta.url);
   const text = fs.readFileSync(csvPath, 'utf8');
   const rows = [];
   let row = [];
