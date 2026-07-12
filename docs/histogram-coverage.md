@@ -35,6 +35,8 @@ schemes appear:
 | SH-CHART-004                        | —                                        | #2    | group-by renders grouped histograms                                         |
 | SH-CHART-004/SH-CTRL-006            | —                                        | #19   | grouped small multiples share the main chart's bin boundaries               |
 | SH-CTRL-006                         | —                                        | #19   | bin boundaries anchor to the measure results, not the filtered subset       |
+| SH-CTRL-008                         | SH-REG-024, SH-REG-025, SH-REG-026       | #19   | bin quantity and width inputs reflect the resolved binning                  |
+| SH-CTRL-008                         | SH-REG-020                               | #19   | editing Quantity switches the algorithm to Custom and recomputes the width  |
 | SH-API-001 (module scheme)          | — (see legacy-API note)                  | #2    | lifecycle API supports init, setData, setSettings, render, resize, destroy  |
 
 ## Unit evidence (Vitest — `tests/unit/histogram/`)
@@ -72,3 +74,7 @@ schemes appear:
 Webcharts chart object") describes the legacy Webcharts API, which the designs
 intentionally do not preserve (pilot SH-API-002). The module ships the pilot's
 lifecycle API instead — SH-API-001 in the module scheme.
+
+**SH-REG-024 note:** the row's inputs-update behavior is evidenced by
+SH-CTRL-008; its info-icon clause (an ⓘ link to the algorithm's description)
+is not ported.

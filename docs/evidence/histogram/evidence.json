@@ -114,6 +114,22 @@
       "screenshots": ["SH-CTRL-007-boundary-ticks.png"]
     },
     {
+      "test": "SH-CTRL-008/SH-REG-020: editing Quantity switches the algorithm to Custom and recomputes the width (#19)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SH-CTRL-008", "SH-REG-020"],
+      "issueRefs": [19],
+      "screenshots": []
+    },
+    {
+      "test": "SH-CTRL-008/SH-REG-024/SH-REG-025/SH-REG-026: bin quantity and width inputs reflect the resolved binning (#19)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SH-CTRL-008", "SH-REG-024", "SH-REG-025", "SH-REG-026"],
+      "issueRefs": [19],
+      "screenshots": []
+    },
+    {
       "test": "SH-DATA-002: missing and non-numeric results are dropped with a reported count and visible note (#2)",
       "suite": "browser",
       "status": "pass",
