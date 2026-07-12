@@ -1,10 +1,11 @@
 // Demo mount for the shift-plot page (#14): recreates the original
 // safety-shift-plot test page (baseline-versus-comparison scatter with the
 // measure and baseline/comparison visit controls) against the real ADBDS
-// example data vendored in ./adbds.csv, using its real VISIT/VISITNUM
-// columns (Screening through End of Study, unscheduled visits included).
-// The initial view pairs the classic shift — Screening against End of
-// Study — and the visit controls expose every other pairing. Loaded by
+// example data vendored in ./adbds.csv (built from pharmaverseadam by
+// scripts/build-demo-data.mjs), using its real VISIT/VISITNUM columns
+// (Baseline through Week 26, unscheduled visits included). The initial view
+// pairs the classic shift — Baseline against Week 26 (the last scheduled
+// visit) — and the visit controls expose every other pairing. Loaded by
 // shift-plot/index.html after the dist/ bundle.
 (function () {
   // Quote-aware CSV parser: the real data quotes fields with embedded commas
@@ -68,8 +69,8 @@
           { value_col: 'RACE', label: 'Race' },
           { value_col: 'ARM', label: 'Treatment Group' }
         ],
-        baseline_visits: ['Screening'],
-        comparison_visits: ['End of Study']
+        baseline_visits: ['Baseline'],
+        comparison_visits: ['Week 26']
       });
       window.__safetyShiftPlotInstance = instance;
       // A handful of source rows carry no visit assignment; they cannot join a
