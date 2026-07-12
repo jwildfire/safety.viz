@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Live Adverse Event Timelines demo: Participant-level adverse-event timelines by severity and onset relative to study start, with serious-event marks and click-through participant detail." />
+    <title>Adverse Event Timelines demo · safety.viz</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23271810'/%3E%3Crect x='2.5' y='8' width='3' height='5.5' fill='%23f97316'/%3E%3Crect x='6.5' y='3.5' width='3' height='10' fill='%23fb923c'/%3E%3Crect x='10.5' y='6' width='3' height='7.5' fill='%23f97316'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="../site.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="site-name" href="../index.html">
+        safety.viz
+        <span class="site-version">v1.1.0</span>
+      </a>
+      <nav class="site-nav">
+        <a href="../index.html">Gallery</a>
+        <a href="../architecture.html">Architecture</a>
+        <a href="../about.html">About</a>
+        <a href="https://github.com/jwildfire/safety.viz">GitHub</a>
+        <a href="https://jwildfire.github.io/obot.roadmap/">Roadmap</a>
+      </nav>
+    </header>
+    <main class="site-main"><div class="demo-page"><h1>Adverse Event Timelines</h1><p class="tagline">Participant-level adverse-event timelines by severity and onset relative to study start, with serious-event marks and click-through participant detail.</p><nav class="page-tabs"><a class="current" aria-current="page" href="index.html">Live demo</a><a href="evidence.html">Test evidence</a><a href="api.html">API reference</a><a href="https://github.com/jwildfire/safety.agent/blob/main/docs/requirements/ae-timelines.md">Requirement matrix ↗</a></nav><p>This live demo mounts the committed <code>dist/safety.viz-1.1.0</code> IIFE bundle — the same asset gsm.safety vendors — against real example data (<code>adae.csv</code>, built from the <a href="https://github.com/pharmaverse/pharmaverseadam">pharmaverseadam</a> CDISC Pilot 01 ADaM datasets), with the full control panel active.</p><div id="container"></div><script src="../dist/safety.viz-1.1.0/safety.viz.js"></script><script src="./demo.js"></script></div></main>
+    <footer class="site-footer">
+      <p>
+        safety.viz v1.1.0 — clinical safety graphics on one modern charting stack, migrated
+        from the <a href="https://github.com/SafetyGraphics">safetyGraphics</a> ecosystem originally
+        built by <a href="https://github.com/RhoInc">Rho, Inc.</a> (<a href="../about.html"
+          >credits</a
+        >).
+      </p>
+      <p>
+        Built in the open for the R/Pharma 2026 keynote — follow the
+        <a href="https://jwildfire.github.io/obot.roadmap/">obot roadmap</a> ·
+        <a href="https://github.com/jwildfire/safety.viz">source on GitHub</a> ·
+        <a href="https://github.com/jwildfire/safety.viz/releases">releases</a>.
+      </p>
+    </footer>
+    <script>
+      // Mark the nav link whose resolved URL is this page; works at any mount
+      // depth (site root, /dev/, /pr/N/). Renderer sub-pages match nothing.
+      (function () {
+        var here = location.pathname.replace(/\/$/, '/index.html');
+        var links = document.querySelectorAll('.site-nav a');
+        for (var i = 0; i < links.length; i += 1) {
+          var href = links[i].getAttribute('href');
+          if (!href || href.indexOf('http') === 0) continue;
+          if (new URL(href, location.href).pathname === here) {
+            links[i].className = 'current';
+            links[i].setAttribute('aria-current', 'page');
+            break;
+          }
+        }
+      })();
+    </script>
+  </body>
+</html>
