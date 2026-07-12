@@ -13,7 +13,7 @@
     </p>
     <div id="container"></div>
     <!-- Bundle path tracks the package.json version; bump them together. -->
-    <script src="/dist/safety.viz-1.0.0/safety.viz.js"></script>
+    <script src="/dist/safety.viz-1.1.0/safety.viz.js"></script>
     <script>
       function parseCsv(text) {
         const [header, ...lines] = text.trim().split(/\r?\n/);
@@ -28,6 +28,7 @@
         .then((response) => response.text())
         .then((text) => {
           const instance = SafetyViz.histogram('#container', {
+            start_value: 'Albumin (g/dL)',
             filters: [
               { value_col: 'SITEID', label: 'Site ID' },
               { value_col: 'SEX', label: 'Sex' },
@@ -48,7 +49,8 @@
             compare_distributions: true
           });
           window.__safetyHistogramInstance = instance;
-          instance.init(parseCsv(text));
+          window.__safetyHistogramData = parseCsv(text);
+          instance.init(window.__safetyHistogramData);
         })
         .catch((error) => {
           console.error(error);

@@ -1,7 +1,7 @@
 // Demo mount for the results-over-time page (#27): recreates the original
 // safety-results-over-time test page (RhoInc/safety-results-over-time/test-page)
 // — the same call shape and options (grouped by treatment arm) — against the
-// real ADBDS example data vendored in ./adbds.csv (RhoInc data-library, the
+// real ADBDS example data vendored in ./adbds.csv (built from pharmaverseadam, the
 // same superset the histogram demo maps, with the VISIT/VISITNUM columns a
 // time-series renderer needs). Loaded by results-over-time/index.html after
 // the dist/ bundle.

@@ -1,7 +1,7 @@
 // Demo mount for the outlier-explorer page (#24): recreates the original
 // safety-outlier-explorer test page (RhoInc/safety-outlier-explorer/test-page)
 // call shape against the real ADBDS example data vendored in ./adbds.csv
-// (RhoInc data-library, trimmed to the mapped columns). The demo leaves
+// (built from pharmaverseadam by scripts/build-demo-data.mjs). The demo leaves
 // time_cols unset to exercise the module's derived per-participant
 // "Measurement" sequence axis; the data also carries real VISIT/VISITNUM
 // columns, which a real deployment would map via time_cols (as the

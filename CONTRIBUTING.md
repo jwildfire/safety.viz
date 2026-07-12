@@ -104,8 +104,9 @@ Released — until its entry on the
 - [ ] **Gallery card**: `site/config.json` entry flipped to `available`, with
       a hero screenshot chosen from the committed evidence set.
 - [ ] **Live demo page**: mounts the committed `dist/` bundle against
-      committed real example data (`site/data/`, recreating the renderer's
-      original safetyGraphics test page — see #15) with the full control
+      committed real example data (`site/data/`, built from the canonical
+      pharmaverseadam CDISC Pilot 01 source — see
+      [`docs/DATA_SOURCES.md`](docs/DATA_SOURCES.md)) with the full control
       panel active (`site/demo/<module>.js`).
 - [ ] **Shared shell chrome**: the module renders into the shared layout from
       `src/shell.js` (collapsible `sv-*` control sidebar + main-column slots,

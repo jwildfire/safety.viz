@@ -1,35 +1,102 @@
 # safety.viz
 
-Consolidated JavaScript charting library for clinical safety graphics, built on
-[Chart.js](https://www.chartjs.org/). Part of the safetyGraphics → gsm
-modernization (project P004), mirroring the architecture of
-[gsm.viz](https://github.com/Gilead-BioStats/rbm-viz) (the JS library behind
-[gsm.kri](https://github.com/Gilead-BioStats/gsm.kri)).
+**safety.viz is a charting library for monitoring clinical trial safety.**
+Point any of its six interactive charts at your study data and review it in
+the browser: filter, group, zoom, and click through from a pattern on the
+screen to the participant records behind it. It's an
+[agent-assisted update](https://jwildfire.github.io/keynote/) of the
+[safetyGraphics](https://github.com/SafetyGraphics) interactive renderers.
 
-Design: [obot.roadmap#1](https://github.com/jwildfire/obot.roadmap/issues/1) ·
-[design doc](https://jwildfire.github.io/obot.roadmap/requirements/design/1_design.html).
+**▶ Try every chart live: <https://jwildfire.github.io/safety.viz/>**
 
-**Documentation site:** <https://jwildfire.github.io/safety.viz/> — gallery,
-live demos, test evidence, and API reference (releases at the root;
-[`/dev/`](https://jwildfire.github.io/safety.viz/dev/) tracks the `dev` branch;
-pull requests get `/pr/{N}/` previews).
+## The charts
 
-## Status
+| Chart                                                                                               | What it shows                                                                                                                               |
+| --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| **[Safety Histogram](https://jwildfire.github.io/safety.viz/histogram/index.html)**                 | Distribution of any lab or vital-sign measure, with normal-range overlay, treatment-group small multiples, and a linked participant listing |
+| **[Safety Outlier Explorer](https://jwildfire.github.io/safety.viz/outlier-explorer/index.html)**   | Every participant's results over time as one line each, against the population — click a line to isolate a participant                      |
+| **[Safety Results Over Time](https://jwildfire.github.io/safety.viz/results-over-time/index.html)** | Population distribution of a measure at each visit as box-and-whisker marks, with grouping and outlier flags                                |
+| **[Safety Shift Plot](https://jwildfire.github.io/safety.viz/shift-plot/index.html)**               | Baseline vs. comparison-visit values on a scatter — who moved, and which direction                                                          |
+| **[Safety Delta-Delta](https://jwildfire.github.io/safety.viz/delta-delta/index.html)**             | Paired change-from-baseline for two measures on one scatter (e.g. ALT change vs. AST change)                                                |
+| **[Adverse Event Timelines](https://jwildfire.github.io/safety.viz/ae-timelines/index.html)**       | Each participant's AEs as timelines colored by severity, serious events marked, with click-through detail                                   |
 
-**Scaffolded** ([#1](https://github.com/jwildfire/safety.viz/issues/1)) — repo
-layout, build/test stack, and CI are in place. No renderer modules yet; the
-histogram lands via [#2](https://github.com/jwildfire/safety.viz/issues/2).
+Every chart has a live demo against real example data, a generated API
+reference documenting every setting, and its own test-evidence report — all
+linked from its page on the site.
+
+## Using it
+
+Vendor the committed bundle — no build step, no npm install:
+
+```html
+<script src="dist/safety.viz-1.1.0/safety.viz.js"></script>
+<script>
+  SafetyViz.histogram('#container', {
+    value_col: 'STRESN',
+    measure_col: 'TEST',
+    filters: [{ value_col: 'ARM', label: 'Treatment Group' }]
+  }).init(rows); // rows: array of records, e.g. parsed from an ADaM BDS extract
+</script>
+```
+
+An ESM build is committed alongside:
+
+```js
+import { histogram } from './dist/safety.viz-1.1.0/safety.viz.esm.js';
+histogram('#container', settings).init(rows);
+```
+
+**Data.** Charts take an array of plain records, one row per result — a parsed
+CSV or JSON extract. Each chart declares its expected columns in a
+[JSON-Schema data contract](src/data/schema/) and validates its input on
+`init`: malformed rows are removed and counted, not silently plotted. Column
+defaults follow ADaM-style names (`USUBJID`, `TEST`, `STRESN`, `VISIT`, …) and
+every mapping is a setting, so any tidy dataset works.
+
+**Settings.** Every setting has a default, a type, and a description in the
+generated API reference — e.g. the
+[histogram API](https://jwildfire.github.io/safety.viz/histogram/api.html);
+each chart's site page links its own.
+
+**Using R?** [gsm.safety](https://github.com/jwildfire/gsm.safety) wraps this
+same bundle as `Widget_*` htmlwidgets — the histogram widget is next on its
+roadmap.
+
+## Quality and evidence
+
+Each chart re-implements an interactive display built by
+[Rho, Inc.](https://github.com/RhoInc) and used in practice under the
+safetyGraphics project. The port is held to that standard: every chart traces
+to a reviewed
+[requirement matrix](https://github.com/jwildfire/obot.agent/tree/main/docs/requirements),
+tests are keyed to requirement IDs, and results are published as audit-style
+[evidence reports](https://jwildfire.github.io/safety.viz/histogram/evidence.html)
+with every release.
+
+## Documentation site
+
+<https://jwildfire.github.io/safety.viz/> — gallery, live demos, API
+reference, and evidence reports.
+
+| Tier                                                   | Tracks                     |
+| ------------------------------------------------------ | -------------------------- |
+| [root](https://jwildfire.github.io/safety.viz/)        | latest release (`main`)    |
+| [`/dev/`](https://jwildfire.github.io/safety.viz/dev/) | the `dev` branch           |
+| `/pr/{N}/`                                             | open pull-request previews |
 
 ## Layout
 
 ```
 src/
-├── main.js               # public module collection; renderer modules land here
-└── data/schema/          # JSON Schema data contracts, one per module
+├── main.js               # public module collection (the six renderers)
+├── {chart}.js            # one entry per renderer, plus a {chart}/ dir of parts
+└── data/schema/          # JSON Schema data contracts, one per chart
+site/                     # documentation-site sources (gallery, demos, shell)
+docs/                     # requirement-coverage docs + evidence data
+scripts/                  # build, site, API-reference, and evidence tooling
 tests/
 ├── unit/                 # Vitest specs
-└── e2e/                  # Playwright specs + fixtures/demo pages
-examples/                 # static demo pages (deferred — see examples/README.md)
+└── e2e/                  # Playwright specs + fixtures
 dist/                     # committed, versioned esbuild bundles
 ```
 
@@ -46,7 +113,11 @@ like `gsm.safety` vendor a specific version at
 `inst/htmlwidgets/lib/safety.viz-{version}/`, the precedent set by gsm.kri
 vendoring gsm.viz.
 
-Tests are keyed to requirement IDs from the
-[safety.agent](https://github.com/jwildfire/safety.agent) requirement
-matrices and reference the GitHub issue(s) they evidence — see
-[CONTRIBUTING.md](CONTRIBUTING.md).
+## Lineage
+
+safety.viz is part of the safetyGraphics → gsm modernization
+([design doc](https://jwildfire.github.io/obot.roadmap/requirements/design/1_design.html) ·
+[roadmap](https://github.com/jwildfire/obot.roadmap/issues/1)), mirroring the
+architecture of [gsm.viz](https://github.com/Gilead-BioStats/rbm-viz) behind
+[gsm.kri](https://github.com/Gilead-BioStats/gsm.kri). Full credits are on the
+[about page](https://jwildfire.github.io/safety.viz/about.html).

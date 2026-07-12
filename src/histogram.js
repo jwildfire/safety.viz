@@ -45,10 +45,17 @@ import { renderListing } from './histogram/listing.js';
 
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
+// Measure-control sentinel for the all-measures overview, following the
+// group control's 'sh_none' precedent. Internally the overview is
+// state.measure == null.
+const OVERVIEW = 'sh_overview';
+
 /**
  * Interactive safety histogram: a Chart.js bar chart of result
  * distributions with measure/filter/bin/normal-range controls, optional
- * grouped small multiples, and a linked participant listing. Construct via
+ * grouped small multiples, and a linked participant listing. Opens on an
+ * all-measures overview — one small-multiple histogram per measure, click
+ * one to drill in — unless start_value names a measure (#39). Construct via
  * the histogram() factory rather than directly; the constructor renders the
  * control shell immediately and waits for data.
  */
@@ -153,12 +160,34 @@ class SafetyHistogram {
     this.removedRecords = removed;
     if (removed) console.warn(`${removed} missing or non-numeric results have been removed.`);
     const measures = this.measures();
-    if (this.state.measure && !measures.includes(this.state.measure)) {
+    if (this.state.measure != null && !measures.includes(this.state.measure)) {
       console.warn(
-        `The initial measure [${this.state.measure}] does not exist. Defaulting to the first measure.`
+        `The initial measure [${this.state.measure}] does not exist. Defaulting to the all-measures overview.`
       );
+      this.state.measure = null;
     }
-    this.state.measure = measures.includes(this.state.measure) ? this.state.measure : measures[0];
+  }
+
+  /**
+   * Whether the all-measures overview is active (no measure selected, #39).
+   * @private
+   */
+  isOverview() {
+    return this.state.measure == null;
+  }
+
+  /**
+   * Switch between the overview and a single-measure view: sets the measure
+   * (null for the overview), clears the x-axis overrides, and rebuilds the
+   * controls so the Measure dropdown and section visibility stay in sync.
+   * Used by the Measure control and the overview panels (#39).
+   * @private
+   */
+  selectMeasure(measure) {
+    this.state.measure = measure;
+    this.resetDomain();
+    this.buildControls();
+    this.render();
   }
 
   /**
@@ -179,12 +208,10 @@ class SafetyHistogram {
     const { addSection, addRow, addControl } = controlBuilders(this.controls);
 
     const measure = addControl('Measure', document.createElement('select'));
+    option(measure, OVERVIEW, 'All Measures', this.isOverview());
     this.measures().forEach((value) => option(measure, value, value, value === this.state.measure));
     measure.onchange = () => {
-      this.state.measure = measure.value;
-      this.resetDomain();
-      this.updateNormalRangeControl();
-      this.render();
+      this.selectMeasure(measure.value === OVERVIEW ? null : measure.value);
     };
 
     const filterSpecs = this.settings.filters.filter((filter) => {
@@ -211,6 +238,7 @@ class SafetyHistogram {
     });
 
     const xAxisParent = addSection('X-axis Limits');
+    this.xAxisSection = xAxisParent;
     const xAxisRow = addRow(xAxisParent);
     const lower = addControl('Lower', document.createElement('input'), xAxisRow);
     lower.type = 'number';
@@ -233,6 +261,7 @@ class SafetyHistogram {
     };
 
     const binParent = addSection('Bins');
+    this.binSection = binParent;
     const algorithm = addControl('Algorithm', document.createElement('select'), binParent);
     ALGORITHMS.forEach((value) => option(algorithm, value, value, value === this.state.algorithm));
     algorithm.onchange = () => {
@@ -264,6 +293,7 @@ class SafetyHistogram {
     this.binWidthInput = width;
 
     const displayParent = addSection('Display');
+    this.displaySection = displayParent;
     this.normalRangeControl = null;
     if (this.settings.normal_range) {
       const nr = document.createElement('input');
@@ -303,6 +333,12 @@ class SafetyHistogram {
       this.render();
     };
 
+    // The x-axis, bin, display, and grouping controls only apply to a single
+    // measure — hide them while the overview is active (SH-OVW-005).
+    [this.xAxisSection, this.binSection, this.displaySection, this.groupControls].forEach(
+      (section) => section.classList.toggle('sv-hidden', this.isOverview())
+    );
+
     this.updateNormalRangeControl();
   }
 
@@ -326,10 +362,13 @@ class SafetyHistogram {
   }
 
   /**
-   * Cleaned rows for the selected measure.
+   * Cleaned rows for the selected measure — or every measure while the
+   * overview is active, so the filters and participant notes span the whole
+   * dataset (#39).
    * @private
    */
   currentMeasureData() {
+    if (this.isOverview()) return this.cleanData;
     return this.cleanData.filter((row) => measureLabel(row, this.settings) === this.state.measure);
   }
 
@@ -352,6 +391,7 @@ class SafetyHistogram {
    */
   render() {
     this.destroyCharts();
+    this.chart = null;
     this.listingWrap.innerHTML = '';
     this.currentTableData = [];
     this.listingSearch = '';
@@ -361,9 +401,16 @@ class SafetyHistogram {
     this.mainAnnotation.innerHTML = '';
     this.notes.innerHTML = '';
     this.multiplesWrap.innerHTML = '';
+    this.chartWrap.classList.toggle('sv-hidden', this.isOverview());
     this.filteredData = this.currentFilteredData();
     if (!this.filteredData.length) {
       this.footnote.textContent = 'No records match the current filters.';
+      return;
+    }
+    if (this.isOverview()) {
+      this.footnote.textContent = 'Click a chart to view that measure.';
+      this.drawOverview();
+      this.updateNotes();
       return;
     }
     this.binInputs = this.computeBinInputs();
@@ -604,6 +651,77 @@ class SafetyHistogram {
         }
       });
       chart.$shBins = inputs.bins;
+      this.charts.push(chart);
+    });
+  }
+
+  /**
+   * Draw the all-measures overview: one small-multiple histogram per
+   * measure, in Measure-control order, each independently binned over the
+   * measure's full value range with the configured bin algorithm so filters
+   * only change the bar heights. Clicking a panel (or pressing Enter/Space
+   * on it) opens that measure in the single-measure view (SH-OVW-002/003).
+   * @private
+   */
+  drawOverview() {
+    this.multiplesWrap.innerHTML = '';
+    this.measures().forEach((measureValue) => {
+      const measureRows = this.cleanData.filter(
+        (row) => measureLabel(row, this.settings) === measureValue
+      );
+      const rows = applyFilters(measureRows, this.state.filters);
+      const values = measureRows.map((row) => row.__sh_value);
+      const domain = resolveDomain(values, null, null);
+      const binResult = calculateBins(values, this.settings.bin_algorithm, null, null, domain);
+      const digits = displayDigits(binResult.width, values);
+      const bins = binResult.bins.map((bin) => ({ ...bin, records: [] }));
+      rows.forEach((row) => {
+        if (row.__sh_value < domain[0] || row.__sh_value > domain[1]) return;
+        bins[binIndex(row.__sh_value, domain[0], binResult.width, bins.length)].records.push(row);
+      });
+
+      const panel = createElement('div', 'sv-multiple sv-overview-panel');
+      panel.setAttribute('role', 'button');
+      panel.tabIndex = 0;
+      panel.setAttribute('aria-label', `View ${measureValue}`);
+      const open = () => this.selectMeasure(measureValue);
+      panel.onclick = open;
+      panel.onkeydown = (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          open();
+        }
+      };
+      panel.append(createElement('h3', null, `${measureValue} (${rows.length} results)`));
+      const canvasWrap = createElement('div', 'sv-multiple-canvas');
+      const canvas = document.createElement('canvas');
+      canvasWrap.append(canvas);
+      panel.append(canvasWrap);
+      this.multiplesWrap.append(panel);
+
+      const chart = new Chart(canvas.getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: buildTickLabels(bins, digits, false),
+          datasets: [
+            {
+              data: bins.map((bin) => bin.records.length),
+              backgroundColor: 'rgba(37, 99, 235, .72)'
+            }
+          ]
+        },
+        options: {
+          maintainAspectRatio: false,
+          responsive: true,
+          events: [],
+          plugins: { legend: { display: false }, tooltip: { enabled: false } },
+          scales: {
+            y: { beginAtZero: true, ticks: { precision: 0 } },
+            x: { ticks: { display: false } }
+          }
+        }
+      });
+      chart.$shBins = bins;
       this.charts.push(chart);
     });
   }

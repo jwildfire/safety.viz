@@ -1,13 +1,16 @@
 {
   "module": "histogram",
-  "generatedAt": "2026-07-12T02:12:40.554Z",
+  "generatedAt": "2026-07-12T03:34:34.901Z",
   "environment": {
-    "os": "darwin 23.6.0",
-    "node": "v24.14.0",
+    "os": "linux 6.17.0-1018-azure",
+    "node": "v22.23.1",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": null,
+  "run": {
+    "id": "29178424785",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29178424785"
+  },
   "records": [
     {
       "test": "built ae-timelines demo mounts the shared shell with no console errors (#7) (#17)",
@@ -216,6 +219,54 @@
       "requirementIds": ["SH-LIST-001", "SH-LIST-002", "SH-LIST-003", "SH-LIST-004"],
       "issueRefs": [2],
       "screenshots": ["SH-LIST-004-search-sort-paginate.png"]
+    },
+    {
+      "test": "SH-OVW-001: an unknown start_value warns and falls back to the overview (#39)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SH-OVW-001"],
+      "issueRefs": [39],
+      "screenshots": []
+    },
+    {
+      "test": "SH-OVW-001: the overview is the default view when start_value is not set (#39)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SH-OVW-001"],
+      "issueRefs": [39],
+      "screenshots": []
+    },
+    {
+      "test": "SH-OVW-002: the overview renders one independently binned panel per measure (#39)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SH-OVW-002"],
+      "issueRefs": [39],
+      "screenshots": ["SH-OVW-002-overview-panels.png"]
+    },
+    {
+      "test": "SH-OVW-003: clicking a small multiple opens that measure in the single-measure view (#39)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SH-OVW-003"],
+      "issueRefs": [39],
+      "screenshots": ["SH-OVW-003-click-through-to-pulse.png"]
+    },
+    {
+      "test": "SH-OVW-004: selecting All Measures returns from a single-measure view to the overview (#39)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SH-OVW-004"],
+      "issueRefs": [39],
+      "screenshots": []
+    },
+    {
+      "test": "SH-OVW-005: filters stay active in the overview and measure controls hide (#39)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SH-OVW-005"],
+      "issueRefs": [39],
+      "screenshots": ["SH-OVW-005-overview-filtered.png"]
     },
     {
       "test": "buildApiModel API-XFORM-010: assembles the artifact with module, factory, methods, settings, data contract, and missing docs (#6)",
