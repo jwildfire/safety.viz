@@ -3,13 +3,24 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="{{description}}" />
     <title>{{title}}</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23271810'/%3E%3Crect x='2.5' y='8' width='3' height='5.5' fill='%23f97316'/%3E%3Crect x='6.5' y='3.5' width='3' height='10' fill='%23fb923c'/%3E%3Crect x='10.5' y='6' width='3' height='7.5' fill='%23f97316'/%3E%3C/svg%3E"
+    />
     <link rel="stylesheet" href="{{root}}site.css" />
   </head>
   <body>
     <header class="site-header">
-      <a class="site-name" href="{{root}}index.html">safety.viz</a>
+      <a class="site-name" href="{{root}}index.html">
+        safety.viz
+        <span class="site-version">v{{version}}</span>
+      </a>
       <nav class="site-nav">
+        <a href="{{root}}index.html">Gallery</a>
+        <a href="{{root}}architecture.html">Architecture</a>
+        <a href="{{root}}about.html">About</a>
         <a href="https://github.com/jwildfire/safety.viz">GitHub</a>
         <a href="https://jwildfire.github.io/obot.roadmap/">Roadmap</a>
       </nav>
@@ -17,10 +28,35 @@
     <main class="site-main">{{content}}</main>
     <footer class="site-footer">
       <p>
-        safety.viz — consolidated Chart.js charting library for clinical safety graphics, migrated
-        from the <a href="https://github.com/RhoInc">safetyGraphics ecosystem</a>. Tracked on the
-        <a href="https://jwildfire.github.io/obot.roadmap/">obot roadmap</a>.
+        safety.viz v{{version}} — clinical safety graphics on one modern charting stack, migrated
+        from the <a href="https://github.com/SafetyGraphics">safetyGraphics</a> ecosystem originally
+        built by <a href="https://github.com/RhoInc">Rho, Inc.</a> (<a href="{{root}}about.html"
+          >credits</a
+        >).
+      </p>
+      <p>
+        Built in the open for the R/Pharma 2026 keynote — follow the
+        <a href="https://jwildfire.github.io/obot.roadmap/">obot roadmap</a> ·
+        <a href="https://github.com/jwildfire/safety.viz">source on GitHub</a> ·
+        <a href="https://github.com/jwildfire/safety.viz/releases">releases</a>.
       </p>
     </footer>
+    <script>
+      // Mark the nav link whose resolved URL is this page; works at any mount
+      // depth (site root, /dev/, /pr/N/). Renderer sub-pages match nothing.
+      (function () {
+        var here = location.pathname.replace(/\/$/, '/index.html');
+        var links = document.querySelectorAll('.site-nav a');
+        for (var i = 0; i < links.length; i += 1) {
+          var href = links[i].getAttribute('href');
+          if (!href || href.indexOf('http') === 0) continue;
+          if (new URL(href, location.href).pathname === here) {
+            links[i].className = 'current';
+            links[i].setAttribute('aria-current', 'page');
+            break;
+          }
+        }
+      })();
+    </script>
   </body>
 </html>

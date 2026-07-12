@@ -10,35 +10,44 @@
       "status": "available",
       "blurb": "Distribution of a chosen lab or vital-sign measure with filters, grouping, normal-range overlay, and a linked participant listing.",
       "hero": "SH-CTRL-001-control-panel.png",
+      "heroAsset": "histogram-hero.png",
       "matrix": "safety-histogram.md"
     },
     {
       "module": "outlier-explorer",
       "title": "Safety Outlier Explorer",
-      "status": "planned",
-      "blurb": "Participant-level results over time, highlighting outlying values against the study population.",
-      "matrix": "safety-outlier-explorer.md"
+      "status": "available",
+      "blurb": "Participant-level results over time: one line per participant for the selected measure against a population normal-range band, with filters, x-axis and y-limit controls, color-by grouping, and click-to-select participant detail.",
+      "hero": "SOE-FUNC-010-participant-detail.png",
+      "matrix": "safety-outlier-explorer.md",
+      "heroAsset": "outlier-explorer-hero.png"
     },
     {
       "module": "results-over-time",
       "title": "Safety Results Over Time",
-      "status": "planned",
-      "blurb": "Population-level distribution of results at each study visit, with grouping and outlier context.",
-      "matrix": "safety-results-over-time.md"
+      "status": "available",
+      "blurb": "Population-level distribution of a measure at each study visit as box-and-whisker marks, with grouping, an outlier overlay, and linear/log y-axis controls.",
+      "hero": "SROT-FUNC-001-control-panel.png",
+      "matrix": "safety-results-over-time.md",
+      "heroAsset": "results-over-time-hero.png"
     },
     {
       "module": "shift-plot",
       "title": "Safety Shift Plot",
-      "status": "planned",
-      "blurb": "Baseline versus comparison-visit values for a measure, flagging participants who shift across normal-range limits.",
-      "matrix": "safety-shift-plot.md"
+      "status": "available",
+      "blurb": "Baseline versus comparison-visit values for a measure on a scatter with an identity line, measure and visit controls, filters, and a brush selection that opens a linked participant listing.",
+      "hero": "SSP-CTRL-001-baseline-scatter.png",
+      "matrix": "safety-shift-plot.md",
+      "heroAsset": "shift-plot-hero.png"
     },
     {
       "module": "delta-delta",
       "title": "Safety Delta-Delta",
-      "status": "planned",
-      "blurb": "Paired change-from-baseline comparison of two measures on one scatter plot.",
-      "matrix": "safety-delta-delta.md"
+      "status": "available",
+      "blurb": "Paired change-from-baseline comparison of two measures on one scatter \u2014 quadrant reference lines, an optional regression line, measure and visit pickers, and a linked per-measure detail table with sparklines.",
+      "hero": "SDD-FUNC-002-baseline-scatter.png",
+      "matrix": "safety-delta-delta.md",
+      "heroAsset": "delta-delta-hero.png"
     },
     {
       "module": "paneled-outlier-explorer",
@@ -57,9 +66,12 @@
     {
       "module": "ae-timelines",
       "title": "Adverse Event Timelines",
-      "status": "planned",
-      "blurb": "Participant-level adverse-event timelines by severity and onset relative to study start.",
-      "matrix": "ae-timelines.md"
+      "status": "available",
+      "blurb": "Participant-level adverse-event timelines by severity and onset relative to study start, with serious-event marks and click-through participant detail.",
+      "hero": "AET-FUNC-002-baseline-timelines.png",
+      "matrix": "ae-timelines.md",
+      "data": "adae.csv",
+      "heroAsset": "ae-timelines-hero.png"
     },
     {
       "module": "web-codebook",

@@ -1,0 +1,72 @@
+USUBJID,TEST,VISIT,VISITNUM,STRESN,SITE,SEX,ARM
+SUBJ-01,Albumin,Screening,0,41.0,North,F,Placebo
+SUBJ-01,Albumin,Week 2,2,41.5,North,F,Placebo
+SUBJ-01,Albumin,Week 4,4,38.0,North,F,Placebo
+SUBJ-01,Bilirubin,Screening,0,1.00,North,F,Placebo
+SUBJ-01,Bilirubin,Week 2,2,0.85,North,F,Placebo
+SUBJ-01,Bilirubin,Week 4,4,0.70,North,F,Placebo
+SUBJ-01,Calcium,Screening,0,9.0,North,F,Placebo
+SUBJ-01,Calcium,Week 4,4,9.2,North,F,Placebo
+SUBJ-02,Albumin,Screening,0,42.0,North,M,Drug
+SUBJ-02,Albumin,Week 2,2,41.5,North,M,Drug
+SUBJ-02,Albumin,Week 4,4,40.0,North,M,Drug
+SUBJ-02,Bilirubin,Screening,0,1.00,North,M,Drug
+SUBJ-02,Bilirubin,Week 2,2,0.90,North,M,Drug
+SUBJ-02,Bilirubin,Week 4,4,0.80,North,M,Drug
+SUBJ-02,Calcium,Screening,0,9.0,North,M,Drug
+SUBJ-02,Calcium,Week 4,4,9.2,North,M,Drug
+SUBJ-03,Albumin,Screening,0,43.0,North,F,Placebo
+SUBJ-03,Albumin,Week 2,2,43.5,North,F,Placebo
+SUBJ-03,Albumin,Week 4,4,42.0,North,F,Placebo
+SUBJ-03,Bilirubin,Screening,0,1.00,North,F,Placebo
+SUBJ-03,Bilirubin,Week 2,2,0.95,North,F,Placebo
+SUBJ-03,Bilirubin,Week 4,4,0.90,North,F,Placebo
+SUBJ-03,Calcium,Screening,0,9.0,North,F,Placebo
+SUBJ-03,Calcium,Week 4,4,9.2,North,F,Placebo
+SUBJ-04,Albumin,Screening,0,44.0,North,M,Drug
+SUBJ-04,Albumin,Week 2,2,43.5,North,M,Drug
+SUBJ-04,Albumin,Week 4,4,44.0,North,M,Drug
+SUBJ-04,Bilirubin,Screening,0,1.00,North,M,Drug
+SUBJ-04,Bilirubin,Week 2,2,1.00,North,M,Drug
+SUBJ-04,Bilirubin,Week 4,4,1.00,North,M,Drug
+SUBJ-04,Calcium,Screening,0,9.0,North,M,Drug
+SUBJ-04,Calcium,Week 4,4,9.2,North,M,Drug
+SUBJ-05,Albumin,Screening,0,45.0,South,F,Placebo
+SUBJ-05,Albumin,Week 2,2,45.5,South,F,Placebo
+SUBJ-05,Albumin,Week 4,4,46.0,South,F,Placebo
+SUBJ-05,Bilirubin,Screening,0,1.00,South,F,Placebo
+SUBJ-05,Bilirubin,Week 2,2,1.05,South,F,Placebo
+SUBJ-05,Bilirubin,Week 4,4,1.10,South,F,Placebo
+SUBJ-05,Calcium,Screening,0,9.0,South,F,Placebo
+SUBJ-05,Calcium,Week 4,4,9.2,South,F,Placebo
+SUBJ-06,Albumin,Screening,0,46.0,South,M,Drug
+SUBJ-06,Albumin,Week 2,2,45.5,South,M,Drug
+SUBJ-06,Albumin,Week 4,4,48.0,South,M,Drug
+SUBJ-06,Bilirubin,Screening,0,1.00,South,M,Drug
+SUBJ-06,Bilirubin,Week 2,2,1.10,South,M,Drug
+SUBJ-06,Bilirubin,Week 4,4,1.20,South,M,Drug
+SUBJ-06,Calcium,Screening,0,9.0,South,M,Drug
+SUBJ-06,Calcium,Week 4,4,9.2,South,M,Drug
+SUBJ-07,Albumin,Screening,0,47.0,South,F,Placebo
+SUBJ-07,Albumin,Week 2,2,47.5,South,F,Placebo
+SUBJ-07,Albumin,Week 4,4,50.0,South,F,Placebo
+SUBJ-07,Bilirubin,Screening,0,1.00,South,F,Placebo
+SUBJ-07,Bilirubin,Week 2,2,1.15,South,F,Placebo
+SUBJ-07,Bilirubin,Week 4,4,1.30,South,F,Placebo
+SUBJ-07,Calcium,Screening,0,9.0,South,F,Placebo
+SUBJ-07,Calcium,Week 4,4,9.2,South,F,Placebo
+SUBJ-08,Albumin,Screening,0,48.0,South,M,Drug
+SUBJ-08,Albumin,Week 2,2,47.5,South,M,Drug
+SUBJ-08,Albumin,Week 4,4,52.0,South,M,Drug
+SUBJ-08,Bilirubin,Screening,0,1.00,South,M,Drug
+SUBJ-08,Bilirubin,Week 2,2,1.20,South,M,Drug
+SUBJ-08,Bilirubin,Week 4,4,1.40,South,M,Drug
+SUBJ-08,Calcium,Screening,0,9.0,South,M,Drug
+SUBJ-08,Calcium,Week 4,4,9.2,South,M,Drug
+SUBJ-09,Albumin,Screening,0,45.0,South,F,Placebo
+SUBJ-09,Albumin,Week 4,4,NR,South,F,Placebo
+SUBJ-09,Bilirubin,Screening,0,1.00,South,F,Placebo
+SUBJ-09,Bilirubin,Week 2,2,1.05,South,F,Placebo
+SUBJ-09,Bilirubin,Week 4,4,1.10,South,F,Placebo
+SUBJ-09,Calcium,Screening,0,9.0,South,F,Placebo
+SUBJ-09,Calcium,Week 4,4,9.2,South,F,Placebo

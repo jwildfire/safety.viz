@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>safety.viz delta-delta demo page</title>
+  </head>
+  <body>
+    <h1 id="delta-delta-heading">safety.viz delta-delta demo</h1>
+    <p>
+      Demo and Playwright harness page for the delta-delta module (#25). Loads the committed IIFE
+      bundle — the same asset gsm.safety vendors — against the crafted fixture data in
+      <code>delta-delta.csv</code>.
+    </p>
+    <div id="container"></div>
+    <!-- Bundle path tracks the package.json version; bump them together. -->
+    <script src="/dist/safety.viz-1.0.0/safety.viz.js"></script>
+    <script>
+      function parseCsv(text) {
+        const [header, ...lines] = text.trim().split(/\r?\n/);
+        const cols = header.split(',');
+        return lines.map((line) => {
+          const cells = line.split(',');
+          return Object.fromEntries(cols.map((col, i) => [col, cells[i] ?? '']));
+        });
+      }
+
+      fetch('./delta-delta.csv')
+        .then((response) => response.text())
+        .then((text) => {
+          const instance = SafetyViz.deltaDelta('#container', {
+            filters: [
+              { value_col: 'SITE', label: 'Site' },
+              { value_col: 'SEX', label: 'Sex' },
+              { value_col: 'ARM', label: 'Treatment Group' }
+            ]
+          });
+          window.__safetyDeltaDeltaInstance = instance;
+          instance.init(parseCsv(text));
+        })
+        .catch((error) => {
+          console.error(error);
+          document.querySelector('#container').textContent =
+            `Failed to load demo data: ${error.message}`;
+        });
+    </script>
+  </body>
+</html>

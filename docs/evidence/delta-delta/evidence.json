@@ -1,0 +1,1053 @@
+{
+  "module": "delta-delta",
+  "generatedAt": "2026-07-12T02:12:40.554Z",
+  "environment": {
+    "os": "darwin 23.6.0",
+    "node": "v24.14.0",
+    "playwright": "1.61.1",
+    "chromium": "149.0.7827.55"
+  },
+  "run": null,
+  "records": [
+    {
+      "test": "built ae-timelines demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built delta-delta demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built histogram demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built outlier-explorer demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built results-over-time demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built shift-plot demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "demo page loads with no console errors (#1)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [1],
+      "screenshots": []
+    },
+    {
+      "test": "gallery shows one card per available renderer (#7)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "SDD-API-001: lifecycle API supports init, setData, setSettings, render, resize, and destroy (#25)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SDD-API-001"],
+      "issueRefs": [25],
+      "screenshots": []
+    },
+    {
+      "test": "SDD-FUNC-001/SDD-FUNC-002/SDD-FUNC-003: renders visit, measure, filter, and display controls (#25)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SDD-FUNC-001", "SDD-FUNC-002", "SDD-FUNC-003"],
+      "issueRefs": [25],
+      "screenshots": ["SDD-FUNC-001-control-panel.png", "SDD-FUNC-002-baseline-scatter.png"]
+    },
+    {
+      "test": "SDD-FUNC-002/SDD-REG-003: defaults to the first/second measure and first/last visit, plotting one point per participant (#25)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SDD-FUNC-002", "SDD-REG-003"],
+      "issueRefs": [25],
+      "screenshots": ["SDD-FUNC-002-baseline-scatter.png"]
+    },
+    {
+      "test": "SDD-FUNC-004: the participant-count note reports the total and percentage shown (#25)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SDD-FUNC-004"],
+      "issueRefs": [25],
+      "screenshots": []
+    },
+    {
+      "test": "SDD-FUNC-005: the tooltip reports the participant ID and both change values (#25)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SDD-FUNC-005"],
+      "issueRefs": [25],
+      "screenshots": []
+    },
+    {
+      "test": "SDD-FUNC-006/SDD-REG-011/SDD-REG-016/SDD-REG-018/SDD-REG-019/SDD-REG-020/SDD-REG-024: clicking a point opens the linked measure table (#25)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [
+        "SDD-FUNC-006",
+        "SDD-REG-011",
+        "SDD-REG-016",
+        "SDD-REG-018",
+        "SDD-REG-019",
+        "SDD-REG-020",
+        "SDD-REG-024"
+      ],
+      "issueRefs": [25],
+      "screenshots": ["SDD-FUNC-006-measure-table.png"]
+    },
+    {
+      "test": "SDD-REG-001: changing the Y measure changes the plotted distribution (#25)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SDD-REG-001"],
+      "issueRefs": [25],
+      "screenshots": []
+    },
+    {
+      "test": "SDD-REG-002: changing the comparison visit changes the plotted distribution (#25)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SDD-REG-002"],
+      "issueRefs": [25],
+      "screenshots": []
+    },
+    {
+      "test": "SDD-REG-006/SDD-REG-005: a filter narrows the plotted points and updates the count (#25)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SDD-REG-006", "SDD-REG-005"],
+      "issueRefs": [25],
+      "screenshots": []
+    },
+    {
+      "test": "SDD-REG-007: a filter for a non-existent variable logs a console warning (#25)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SDD-REG-007"],
+      "issueRefs": [25],
+      "screenshots": []
+    },
+    {
+      "test": "SDD-REG-008: missing/non-numeric results are dropped with a reported count and visible note (#25)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SDD-REG-008"],
+      "issueRefs": [25],
+      "screenshots": ["SDD-REG-008-invalid-data-note.png"]
+    },
+    {
+      "test": "SDD-REG-010: a non-existent required column errors into the container and tears the chart down (#25)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SDD-REG-010"],
+      "issueRefs": [25],
+      "screenshots": []
+    },
+    {
+      "test": "SDD-REG-012/SDD-REG-013: the clicked point is highlighted and clicking another redraws the table (#25)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SDD-REG-012", "SDD-REG-013"],
+      "issueRefs": [25],
+      "screenshots": ["SDD-REG-012-point-selected.png"]
+    },
+    {
+      "test": "SDD-REG-014: changing a control removes the detail table (#25)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SDD-REG-014"],
+      "issueRefs": [25],
+      "screenshots": []
+    },
+    {
+      "test": "SDD-REG-021/SDD-REG-022/SDD-REG-025: change values are signed and colored, with axis tags (#25)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SDD-REG-021", "SDD-REG-022", "SDD-REG-025"],
+      "issueRefs": [25],
+      "screenshots": []
+    },
+    {
+      "test": "SDD-REG-026: the regression line toggles with an equation and R² note (#25)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SDD-REG-026"],
+      "issueRefs": [25],
+      "screenshots": ["SDD-REG-026-regression-line.png"]
+    },
+    {
+      "test": "buildApiModel API-XFORM-010: assembles the artifact with module, factory, methods, settings, data contract, and missing docs (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-010"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "buildApiModel API-XFORM-011: flags DEFAULT_SETTINGS keys absent from the settings typedef (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-011"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "delta-delta checkInputs SDD-DATA-001: valid long-format data with the required columns passes (#25)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-DATA-001"],
+      "issueRefs": [25],
+      "screenshots": []
+    },
+    {
+      "test": "delta-delta checkInputs SDD-REG-010: an empty dataset reports every required column missing (#25)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-REG-010"],
+      "issueRefs": [25],
+      "screenshots": []
+    },
+    {
+      "test": "delta-delta checkInputs SDD-REG-010: missing a required mapped column throws a named error (#25)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-REG-010"],
+      "issueRefs": [25],
+      "screenshots": []
+    },
+    {
+      "test": "delta-delta configure SDD-CFG-004/005/006/007/008: default column mappings match the data contract (#25)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-CFG-004"],
+      "issueRefs": [25],
+      "screenshots": []
+    },
+    {
+      "test": "delta-delta configure SDD-CFG-009/010/011/012/013: measure and visit selections default to data-driven (#25)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-CFG-009"],
+      "issueRefs": [25],
+      "screenshots": []
+    },
+    {
+      "test": "delta-delta configure SDD-CFG-012/013: baseline/comparison visit scalars are coerced to arrays (#25)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-CFG-012"],
+      "issueRefs": [25],
+      "screenshots": []
+    },
+    {
+      "test": "delta-delta configure SDD-CFG-014: arrayify and fieldSpec normalize helpers behave (#25)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-CFG-014"],
+      "issueRefs": [25],
+      "screenshots": []
+    },
+    {
+      "test": "delta-delta configure SDD-CFG-014: filters accept strings and objects, normalized to { value_col, label } (#25)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-CFG-014"],
+      "issueRefs": [25],
+      "screenshots": []
+    },
+    {
+      "test": "delta-delta configure SDD-CFG-015: details default to Participant ID plus the filter columns (#25)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-CFG-015"],
+      "issueRefs": [25],
+      "screenshots": []
+    },
+    {
+      "test": "delta-delta configure SDD-CFG-015: supplied details extend the defaults without duplicating (#25)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-CFG-015"],
+      "issueRefs": [25],
+      "screenshots": []
+    },
+    {
+      "test": "delta-delta getPlugins SDD-FUNC-004: participant count text reports total and percentage to one decimal (#25)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-FUNC-004"],
+      "issueRefs": [25],
+      "screenshots": []
+    },
+    {
+      "test": "delta-delta getPlugins SDD-REG-012: selection borders thicken and blacken the selected point only (#25)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-REG-012"],
+      "issueRefs": [25],
+      "screenshots": ["SDD-REG-012-point-selected.png"]
+    },
+    {
+      "test": "delta-delta getPlugins SDD-REG-026: linear regression matches a hand-computed non-trivial fit (#25)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-REG-026"],
+      "issueRefs": [25],
+      "screenshots": ["SDD-REG-026-regression-line.png"]
+    },
+    {
+      "test": "delta-delta getPlugins SDD-REG-026: linear regression recovers a perfect fit (#25)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-REG-026"],
+      "issueRefs": [25],
+      "screenshots": ["SDD-REG-026-regression-line.png"]
+    },
+    {
+      "test": "delta-delta getPlugins SDD-REG-026: regression is null without a resolvable fit (#25)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-REG-026"],
+      "issueRefs": [25],
+      "screenshots": ["SDD-REG-026-regression-line.png"]
+    },
+    {
+      "test": "delta-delta getScales formatNumber trims trailing zeros for compact labels (#25)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [25],
+      "screenshots": []
+    },
+    {
+      "test": "delta-delta getScales SDD-REG-003: axis labels describe the change in the selected measure (#25)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-REG-003"],
+      "issueRefs": [25],
+      "screenshots": []
+    },
+    {
+      "test": "delta-delta getScales SDD-REG-015: an empty or flat domain falls back to a finite window (#25)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-REG-015"],
+      "issueRefs": [25],
+      "screenshots": []
+    },
+    {
+      "test": "delta-delta getScales SDD-REG-015: the delta domain includes 0 and pads beyond the data extent (#25)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-REG-015"],
+      "issueRefs": [25],
+      "screenshots": []
+    },
+    {
+      "test": "delta-delta getScales SDD-REG-021: change values format with an explicit sign and two decimals (#25)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-REG-021"],
+      "issueRefs": [25],
+      "screenshots": []
+    },
+    {
+      "test": "delta-delta getScales SDD-REG-021/022: change values are colored by sign, gray for zero/NA (#25)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-REG-021"],
+      "issueRefs": [25],
+      "screenshots": []
+    },
+    {
+      "test": "delta-delta getScales SDD-REG-022: a missing change value renders as NA (#25)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-REG-022"],
+      "issueRefs": [25],
+      "screenshots": []
+    },
+    {
+      "test": "delta-delta structureData SDD-CFG-004: getMeasures returns the sorted distinct measures (#25)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-CFG-004"],
+      "issueRefs": [25],
+      "screenshots": []
+    },
+    {
+      "test": "delta-delta structureData SDD-CFG-008: getVisits orders visits by the numeric visit column (#25)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-CFG-008"],
+      "issueRefs": [25],
+      "screenshots": []
+    },
+    {
+      "test": "delta-delta structureData SDD-FUNC-001/SDD-REG-004: multiple baseline visits are averaged (#25)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-FUNC-001", "SDD-REG-004"],
+      "issueRefs": [25],
+      "screenshots": ["SDD-FUNC-001-control-panel.png"]
+    },
+    {
+      "test": "delta-delta structureData SDD-FUNC-006: participant metadata carries the filter and detail columns (#25)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-FUNC-006"],
+      "issueRefs": [25],
+      "screenshots": ["SDD-FUNC-006-measure-table.png"]
+    },
+    {
+      "test": "delta-delta structureData SDD-REG-003: plotted deltas are comparison minus baseline per measure (#25)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-REG-003"],
+      "issueRefs": [25],
+      "screenshots": []
+    },
+    {
+      "test": "delta-delta structureData SDD-REG-006: filters keep only the participants whose metadata matches (#25)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-REG-006"],
+      "issueRefs": [25],
+      "screenshots": []
+    },
+    {
+      "test": "delta-delta structureData SDD-REG-008: missing/non-numeric results are removed with a count (#25)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-REG-008"],
+      "issueRefs": [25],
+      "screenshots": ["SDD-REG-008-invalid-data-note.png"]
+    },
+    {
+      "test": "delta-delta structureData SDD-REG-019/025: measure rows sort X-measure, Y-measure, then alphabetical, tagged by axis (#25)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-REG-019"],
+      "issueRefs": [25],
+      "screenshots": []
+    },
+    {
+      "test": "delta-delta structureData SDD-REG-022: a participant missing the comparison result yields a non-plottable NaN delta (#25)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-REG-022"],
+      "issueRefs": [25],
+      "screenshots": []
+    },
+    {
+      "test": "delta-delta structureData SDD-REG-023: sparkline records are visit-ordered and role-colored (#25)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-REG-023"],
+      "issueRefs": [25],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer buildEvidenceSets splits records per module and duplicates shared scaffold records (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer buildRun builds GitHub Actions run provenance from the environment (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer compareEvidence flags status drift and test-set changes, ignoring screenshots (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer compareEvidence ignores provenance so --check never drifts on generatedAt/environment/run (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer moduleForFile routes test files to renderer modules by path (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer normalizePlaywright walks nested suites into browser-suite records (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer normalizeVitest maps assertion results to unit-suite records (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer parseTestName extracts requirement IDs and issue refs (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer parseTestName recognizes every renderer requirement-ID prefix, not just SH (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer provenance lives in dedicated top-level keys; the records array stays timestamp-free (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-001: the documented settings are exactly the DEFAULT_SETTINGS keys (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-001"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-002: every setting row has a type, default, and description (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-002"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-003: the factory is documented with params and a return value (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-003"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-004: every lifecycle method is documented with a description and return value (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-004"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-005: no missing-documentation entries remain across the public surface (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-005"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-006: the data contract derives from the schema and its settings map onto real setting names (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-006"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "safety.viz scaffold SH-API-001: the collection exposes the histogram module factory (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-API-001"],
+      "issueRefs": [2],
+      "screenshots": []
+    },
+    {
+      "test": "safety.viz scaffold src/main.js exports the public module collection (#1)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [1],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: about page (#21) carries the OpenRBQM mirror and audience framing moved off the homepage (#29)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 29],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: about page (#21) credits the safetyGraphics project and every original RhoInc renderer (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: about page (#21) describes each original renderer alongside its credit link (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: about page (#21) tells the keynote / developer-diary story and links the roadmap hub (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page opens with a module-anatomy overview linking the architecture page (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders a sidebar table of contents linking every section and method (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders each lifecycle method with signature, params, and returns (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders the factory signature and parameters (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders the schema-derived data contract (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders the settings table with type, default, and description (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: architecture page (#21) explains the shared shell and module anatomy (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: architecture page (#21) names the committed bundle for the running version (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: architecture page (#21) walks the pipeline from data contract to R htmlwidget (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: coverage parsing parses the browser and unit tables plus the routing-status tail (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page carries the routing-status sections onto the page (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page falls back to requirement-ID matching when a browser row wording drifts from the spec name (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page joins browser rows to their evidence record with status chip and screenshot (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page links source matrix rows to the safety.agent matrix (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page matches unit rows to records through expanded requirement IDs (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page rewrites repo-relative coverage links to repository URLs (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page surfaces failing records with a fail status chip (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence report provenance (#21) degrades gracefully when provenance fields are absent (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence report provenance (#21) links result chips to the CI run when a run is recorded (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence report provenance (#21) presents a captioned visual-evidence gallery of the committed screenshots (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence report provenance (#21) renders generation date, environment, and CI run when evidence.json carries them (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence report provenance (#21) summarizes scope and results in a fact panel (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery compresses the migration queue to a one-line strip after the cards (#29)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [29],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery leads with the two-sentence intro linking the keynote and safetyGraphics (#29)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [29],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery links available renderers to demo, evidence, and API pages with a hero thumbnail (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery lists every renderer: available as cards, queued in the status strip (#7) (#29)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 29],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery prefers a dedicated hero asset over the evidence baseline when configured (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery queued renderers link their requirement matrices, not site pages (#7) (#29)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 29],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: requirement-ID expansion expands double-dot ranges and slash shorthand into full IDs (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: shell tokens (#21) falls back to an empty description when none is given (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: shell tokens (#21) replaces version and description tokens across the shell (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site validation: evidence screenshots flags screenshots referenced in evidence.json but missing from the evidence set (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site validation: internal links flags internal links and asset references that do not resolve (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site validation: internal links passes a site whose internal links all resolve, ignoring external and fragment links (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: factory API-XFORM-004: maps the documented module.exports doclet to the factory, named for its source file (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-004"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: factory API-XFORM-005: ignores the spurious undocumented global doclet jsdoc emits for the default export (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-005"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: methods table API-XFORM-001: extracts documented instance methods in source order with signature, params, and returns (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-001"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: methods table API-XFORM-002: brackets optional params in signatures and carries their defaults (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-002"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: methods table API-XFORM-003: excludes private and undocumented methods from the table (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-003"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: missing-doc detection API-XFORM-008: flags undocumented public methods and settings properties without descriptions (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-008"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: missing-doc detection API-XFORM-009: flags a missing factory when no documented default export exists (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-009"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: settings table API-XFORM-006: extracts settings rows from the typedef properties with display-ready types and defaults (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-006"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: settings table API-XFORM-007: normalizes non-string defaults (booleans, numbers, null) to display strings (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-007"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-001: carries the schema title and description onto the contract (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-001"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-002: flattens top-level and nested settings properties into dotted field rows (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-002"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-003: derives required flags from each level’s required array (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-003"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-004: carries types, defaults, and descriptions through from the schema (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-004"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-005: resolves local $defs references to their concrete type (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-005"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-006: every contract field carries a non-empty description (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-006"],
+      "issueRefs": [6],
+      "screenshots": []
+    }
+  ]
+}

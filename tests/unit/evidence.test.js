@@ -1,15 +1,31 @@
 import { describe, it, expect } from 'vitest';
 import {
   parseTestName,
+  moduleForFile,
   normalizeVitest,
   normalizePlaywright,
-  buildEvidence,
+  buildRun,
+  buildEvidenceSets,
   compareEvidence
 } from '../../scripts/evidence-lib.mjs';
 
-// Evidence pipeline (#5): reporter output → docs/evidence/<module>/evidence.json.
-// The normalizer is the unit-testable core; capture assertions are enforced by
-// the browser suite itself.
+// Evidence pipeline (#5, multi-module #20): reporter output →
+// docs/evidence/<module>/evidence.json, one set per renderer module. The
+// normalizer + router are the unit-testable core; capture assertions are
+// enforced by the browser suite itself.
+
+const MODULES = ['histogram', 'shift-plot'];
+
+const PROVENANCE = {
+  generatedAt: '2026-07-11T12:00:00.000Z',
+  environment: {
+    os: 'linux 6.8.0',
+    node: 'v22.17.0',
+    playwright: '1.61.1',
+    chromium: '149.0.7827.55'
+  },
+  run: { id: '123', url: 'https://github.com/jwildfire/safety.viz/actions/runs/123' }
+};
 
 const VITEST_FIXTURE = {
   testResults: [
@@ -27,6 +43,25 @@ const VITEST_FIXTURE = {
           status: 'failed'
         }
       ]
+    },
+    {
+      name: '/repo/tests/unit/shift-plot/structureData.test.js',
+      assertionResults: [
+        {
+          fullName:
+            'shift-plot structureData > SSP-DATA-001: baseline and comparison values pair by participant (#23)',
+          status: 'passed'
+        }
+      ]
+    },
+    {
+      name: '/repo/tests/unit/main.test.js',
+      assertionResults: [
+        {
+          fullName: 'safety.viz entry > module entry exposes the renderer factories (#1)',
+          status: 'passed'
+        }
+      ]
     }
   ]
 };
@@ -35,19 +70,57 @@ const PLAYWRIGHT_FIXTURE = {
   suites: [
     {
       title: 'histogram.spec.js',
+      file: 'histogram.spec.js',
       suites: [
         {
           title: 'safety.viz histogram module',
+          file: 'histogram.spec.js',
           specs: [
             {
               title:
                 'SH-CTRL-004/SH-FUNC-004A/SH-FUNC-004B: normal range checkbox toggles a stable overlay region (#2)',
+              file: 'histogram.spec.js',
               tests: [{ results: [{ status: 'passed' }] }]
             },
             {
               title:
                 'SH-FUNC-011: selecting a bar de-emphasizes the bars outside the linked listing (#2)',
+              file: 'histogram.spec.js',
               tests: [{ results: [{ status: 'failed' }] }]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      title: 'shift-plot.spec.js',
+      file: 'shift-plot.spec.js',
+      suites: [
+        {
+          title: 'safety.viz shift-plot module',
+          file: 'shift-plot.spec.js',
+          specs: [
+            {
+              title: 'SSP-CHART-001: baseline versus comparison scatter renders (#23)',
+              file: 'shift-plot.spec.js',
+              tests: [{ results: [{ status: 'passed' }] }]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      title: 'smoke.spec.js',
+      file: 'smoke.spec.js',
+      suites: [
+        {
+          title: 'safety.viz scaffold',
+          file: 'smoke.spec.js',
+          specs: [
+            {
+              title: 'demo page loads with no console errors (#1)',
+              file: 'smoke.spec.js',
+              tests: [{ results: [{ status: 'passed' }] }]
             }
           ]
         }
@@ -72,14 +145,51 @@ describe('evidence normalizer', () => {
     expect(parseTestName('demo page loads with no console errors (#1)').requirementIds).toEqual([]);
   });
 
+  it('parseTestName recognizes every renderer requirement-ID prefix, not just SH (#20)', () => {
+    expect(
+      parseTestName('SSP-DATA-001: baseline and comparison values pair by participant (#23)')
+        .requirementIds
+    ).toEqual(['SSP-DATA-001']);
+    expect(
+      parseTestName('SROT-CHART-002A/AET-FUNC-003: combined evidence row (#24)').requirementIds
+    ).toEqual(['SROT-CHART-002A', 'AET-FUNC-003']);
+    // Prose that merely looks dashed must not mint requirement IDs.
+    expect(parseTestName('exports SUBJ-006 rows to CSV (#2)').requirementIds).toEqual([]);
+  });
+
+  it('moduleForFile routes test files to renderer modules by path (#20)', () => {
+    // Unit tests live in tests/unit/<module>/.
+    expect(moduleForFile('/repo/tests/unit/histogram/structureData.test.js', MODULES)).toBe(
+      'histogram'
+    );
+    expect(moduleForFile('tests/unit/shift-plot/configure.test.js', MODULES)).toBe('shift-plot');
+    // Browser specs are tests/e2e/<module>.spec.js (the JSON reporter emits
+    // testDir-relative paths).
+    expect(moduleForFile('histogram.spec.js', MODULES)).toBe('histogram');
+    expect(moduleForFile('tests/e2e/shift-plot.spec.js', MODULES)).toBe('shift-plot');
+    // Everything else is shared scaffold evidence.
+    for (const shared of [
+      'site.spec.js',
+      'smoke.spec.js',
+      '/repo/tests/unit/main.test.js',
+      '/repo/tests/unit/evidence.test.js',
+      '/repo/tests/unit/api/schema.test.js',
+      '/repo/tests/unit/site/gallery.test.js',
+      'tests/unit/not-a-renderer/foo.test.js'
+    ]) {
+      expect(moduleForFile(shared, MODULES)).toBe(null);
+    }
+  });
+
   it('normalizeVitest maps assertion results to unit-suite records (#5)', () => {
     const records = normalizeVitest(VITEST_FIXTURE);
-    expect(records).toHaveLength(2);
+    expect(records).toHaveLength(4);
     expect(records[0]).toMatchObject({
       suite: 'unit',
       status: 'pass',
       requirementIds: ['SH-DATA-002'],
-      issueRefs: [2]
+      issueRefs: [2],
+      file: '/repo/tests/unit/histogram/structureData.test.js'
     });
     expect(records[1].status).toBe('fail');
     expect(records[1].requirementIds).toEqual(['SH-CTRL-006']);
@@ -87,60 +197,111 @@ describe('evidence normalizer', () => {
 
   it('normalizePlaywright walks nested suites into browser-suite records (#5)', () => {
     const records = normalizePlaywright(PLAYWRIGHT_FIXTURE);
-    expect(records).toHaveLength(2);
+    expect(records).toHaveLength(4);
     expect(records[0]).toMatchObject({
       suite: 'browser',
       status: 'pass',
-      requirementIds: ['SH-CTRL-004', 'SH-FUNC-004A', 'SH-FUNC-004B']
+      requirementIds: ['SH-CTRL-004', 'SH-FUNC-004A', 'SH-FUNC-004B'],
+      file: 'histogram.spec.js'
     });
     expect(records[1]).toMatchObject({ suite: 'browser', status: 'fail' });
+    expect(records[2]).toMatchObject({ file: 'shift-plot.spec.js' });
   });
 
-  it('buildEvidence merges suites deterministically and attaches screenshots by requirement ID (#5)', () => {
-    const evidence = buildEvidence({
-      module: 'histogram',
+  it('buildRun builds GitHub Actions run provenance from the environment (#20)', () => {
+    expect(buildRun({})).toBe(null);
+    expect(
+      buildRun({
+        GITHUB_RUN_ID: '123',
+        GITHUB_SERVER_URL: 'https://github.com',
+        GITHUB_REPOSITORY: 'jwildfire/safety.viz'
+      })
+    ).toEqual({ id: '123', url: 'https://github.com/jwildfire/safety.viz/actions/runs/123' });
+  });
+
+  it('buildEvidenceSets splits records per module and duplicates shared scaffold records (#20)', () => {
+    const sets = buildEvidenceSets({
+      modules: MODULES,
       vitest: VITEST_FIXTURE,
       playwright: PLAYWRIGHT_FIXTURE,
-      screenshots: ['SH-CTRL-004-normal-range-overlay.png', 'SH-FUNC-011-bar-de-emphasis.png']
+      screenshotsByModule: {
+        histogram: ['SH-CTRL-004-normal-range-overlay.png'],
+        'shift-plot': ['SSP-CHART-001-scatter.png']
+      },
+      provenance: PROVENANCE
     });
-    expect(evidence.module).toBe('histogram');
-    expect(evidence.records).toHaveLength(4);
-    // Deterministic: no timestamps, stable sort by suite then test name.
-    expect(JSON.stringify(evidence)).not.toMatch(/\d{4}-\d{2}-\d{2}T/);
-    const overlay = evidence.records.find((r) => r.requirementIds.includes('SH-CTRL-004'));
+
+    // Only modules with module-routed records get an evidence set.
+    expect(Object.keys(sets).sort()).toEqual(['histogram', 'shift-plot']);
+
+    // histogram: 2 unit + 2 browser of its own, plus the 2 shared scaffold
+    // records (main.test.js, smoke.spec.js).
+    expect(sets.histogram.module).toBe('histogram');
+    expect(sets.histogram.records).toHaveLength(6);
+    // shift-plot: 1 unit + 1 browser of its own, plus the same 2 shared records.
+    expect(sets['shift-plot'].records).toHaveLength(4);
+    const sharedTest = 'demo page loads with no console errors (#1)';
+    expect(sets.histogram.records.some((r) => r.test === sharedTest)).toBe(true);
+    expect(sets['shift-plot'].records.some((r) => r.test === sharedTest)).toBe(true);
+    // Module records never leak across sets.
+    expect(sets['shift-plot'].records.some((r) => r.requirementIds.includes('SH-DATA-002'))).toBe(
+      false
+    );
+
+    // Screenshots attach per module, by requirement-ID prefix.
+    const overlay = sets.histogram.records.find((r) => r.requirementIds.includes('SH-CTRL-004'));
     expect(overlay.screenshots).toEqual(['SH-CTRL-004-normal-range-overlay.png']);
-    const unitRec = evidence.records.find((r) => r.requirementIds.includes('SH-DATA-002'));
-    expect(unitRec.screenshots).toEqual([]);
-    expect(
-      buildEvidence({
-        module: 'histogram',
-        vitest: VITEST_FIXTURE,
-        playwright: PLAYWRIGHT_FIXTURE,
-        screenshots: []
-      })
-    ).toEqual(
-      buildEvidence({
-        module: 'histogram',
-        vitest: VITEST_FIXTURE,
-        playwright: PLAYWRIGHT_FIXTURE,
-        screenshots: []
-      })
+    const scatter = sets['shift-plot'].records.find((r) =>
+      r.requirementIds.includes('SSP-CHART-001')
+    );
+    expect(scatter.screenshots).toEqual(['SSP-CHART-001-scatter.png']);
+
+    // Records are the committed contract: sorted, file-free, screenshot-ready.
+    for (const set of Object.values(sets)) {
+      for (const rec of set.records) {
+        expect(rec).not.toHaveProperty('file');
+        expect(rec).toHaveProperty('screenshots');
+      }
+    }
+
+    // Deterministic given the same inputs.
+    const again = buildEvidenceSets({
+      modules: MODULES,
+      vitest: VITEST_FIXTURE,
+      playwright: PLAYWRIGHT_FIXTURE,
+      screenshotsByModule: { histogram: ['SH-CTRL-004-normal-range-overlay.png'] },
+      provenance: PROVENANCE
+    });
+    expect(again.histogram.records.map((r) => r.test)).toEqual(
+      sets.histogram.records.map((r) => r.test)
     );
   });
 
+  it('provenance lives in dedicated top-level keys; the records array stays timestamp-free (#20)', () => {
+    const sets = buildEvidenceSets({
+      modules: MODULES,
+      vitest: VITEST_FIXTURE,
+      playwright: PLAYWRIGHT_FIXTURE,
+      provenance: PROVENANCE
+    });
+    expect(sets.histogram.generatedAt).toBe('2026-07-11T12:00:00.000Z');
+    expect(sets.histogram.environment).toEqual(PROVENANCE.environment);
+    expect(sets.histogram.run).toEqual(PROVENANCE.run);
+    // The records array remains a pure function of the test run.
+    expect(JSON.stringify(sets.histogram.records)).not.toMatch(/\d{4}-\d{2}-\d{2}T/);
+  });
+
   it('compareEvidence flags status drift and test-set changes, ignoring screenshots (#5)', () => {
-    const committed = buildEvidence({
-      module: 'histogram',
-      vitest: VITEST_FIXTURE,
-      playwright: PLAYWRIGHT_FIXTURE,
-      screenshots: ['SH-CTRL-004-normal-range-overlay.png']
-    });
-    const same = buildEvidence({
-      module: 'histogram',
-      vitest: VITEST_FIXTURE,
-      playwright: PLAYWRIGHT_FIXTURE,
-      screenshots: []
-    });
+    const build = (screenshotsByModule) =>
+      buildEvidenceSets({
+        modules: MODULES,
+        vitest: VITEST_FIXTURE,
+        playwright: PLAYWRIGHT_FIXTURE,
+        screenshotsByModule,
+        provenance: PROVENANCE
+      }).histogram;
+    const committed = build({ histogram: ['SH-CTRL-004-normal-range-overlay.png'] });
+    const same = build({});
     expect(compareEvidence(committed, same).stale).toBe(false);
 
     const flipped = JSON.parse(JSON.stringify(same));
@@ -152,5 +313,30 @@ describe('evidence normalizer', () => {
     const missing = JSON.parse(JSON.stringify(same));
     missing.records.pop();
     expect(compareEvidence(committed, missing).stale).toBe(true);
+  });
+
+  it('compareEvidence ignores provenance so --check never drifts on generatedAt/environment/run (#20)', () => {
+    const sets = buildEvidenceSets({
+      modules: MODULES,
+      vitest: VITEST_FIXTURE,
+      playwright: PLAYWRIGHT_FIXTURE,
+      provenance: PROVENANCE
+    });
+    const fresh = buildEvidenceSets({
+      modules: MODULES,
+      vitest: VITEST_FIXTURE,
+      playwright: PLAYWRIGHT_FIXTURE,
+      provenance: {
+        generatedAt: '2026-08-01T00:00:00.000Z',
+        environment: {
+          os: 'darwin 23.6.0',
+          node: 'v24.0.0',
+          playwright: '1.62.0',
+          chromium: '150.0.0.0'
+        },
+        run: null
+      }
+    });
+    expect(compareEvidence(sets.histogram, fresh.histogram).stale).toBe(false);
   });
 });

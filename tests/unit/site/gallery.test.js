@@ -11,14 +11,15 @@ const config = JSON.parse(readFileSync(new URL('./fixtures/config.json', import.
 describe('site generator: gallery', () => {
   const html = renderGallery(config);
 
-  it('gallery lists every renderer from config with its status badge (#7)', () => {
+  it('gallery lists every renderer: available as cards, queued in the status strip (#7) (#29)', () => {
     for (const renderer of config.renderers) {
       expect(html).toContain(renderer.title);
+    }
+    // Card blurbs are an available-renderer feature; queued blurbs live on About.
+    for (const renderer of config.renderers.filter((r) => r.status === 'available')) {
       expect(html).toContain(renderer.blurb);
     }
-    expect(html).toContain('available');
-    expect(html).toContain('in-migration');
-    expect(html).toContain('planned');
+    expect(html).toContain('status-available');
   });
 
   it('gallery links available renderers to demo, evidence, and API pages with a hero thumbnail (#7)', () => {
@@ -28,8 +29,38 @@ describe('site generator: gallery', () => {
     expect(html).toContain('src="histogram/evidence/SH-CTRL-001-control-panel.png"');
   });
 
-  it('gallery renders unmigrated renderers as placeholders without page links (#7)', () => {
+  it('queued renderers link their requirement matrices, not site pages (#7) (#29)', () => {
     expect(html).not.toContain('href="outlier-explorer/index.html"');
     expect(html).not.toContain('href="ae-explorer/index.html"');
+    for (const renderer of config.renderers.filter((r) => r.status !== 'available')) {
+      expect(html).toContain(`/${renderer.matrix}"`);
+    }
+  });
+
+  it('gallery prefers a dedicated hero asset over the evidence baseline when configured (#21)', () => {
+    const withAsset = JSON.parse(JSON.stringify(config));
+    withAsset.renderers[0].heroAsset = 'histogram-hero.png';
+    const assetHtml = renderGallery(withAsset);
+    expect(assetHtml).toContain('src="assets/histogram-hero.png"');
+    expect(assetHtml).not.toContain('src="histogram/evidence/SH-CTRL-001-control-panel.png"');
+  });
+
+  it('gallery compresses the migration queue to a one-line strip after the cards (#29)', () => {
+    expect(html).toContain('class="queue-strip"');
+    expect(html).not.toContain('gallery-planned');
+    expect(html).not.toContain('Migration queue');
+    expect(html.indexOf('status-available')).toBeGreaterThan(-1);
+    expect(html.indexOf('status-available')).toBeLessThan(html.indexOf('queue-strip'));
+  });
+
+  it('gallery leads with the two-sentence intro linking the keynote and safetyGraphics (#29)', () => {
+    expect(html).toContain('charting library for monitoring clinical trial safety');
+    expect(html).toContain('href="https://jwildfire.github.io/keynote/"');
+    expect(html).toContain('https://github.com/SafetyGraphics');
+    expect(html).not.toContain('class="home-ctas"');
+    expect(html).toContain('href="histogram/index.html"');
+    // The long story block moved to the About page (#29).
+    expect(html).not.toContain('class="lead"');
+    expect(html).not.toContain('gsm.kri');
   });
 });

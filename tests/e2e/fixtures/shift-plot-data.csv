@@ -1,0 +1,33 @@
+TEST,STRESN,USUBJID,STRESU,VISIT,VISITNUM,SITEID,SEX,RACE,ARM
+Albumin,10,S01,g/dL,Baseline,1,101,F,WHITE,Placebo
+Albumin,12,S01,g/dL,Week 12,2,101,F,WHITE,Placebo
+Albumin,11,S02,g/dL,Baseline,1,101,M,BLACK,Drug
+Albumin,10,S02,g/dL,Week 12,2,101,M,BLACK,Drug
+Albumin,12,S03,g/dL,Baseline,1,102,F,ASIAN,Placebo
+Albumin,15,S03,g/dL,Week 12,2,102,F,ASIAN,Placebo
+Albumin,13,S04,g/dL,Baseline,1,102,M,WHITE,Drug
+Albumin,13,S04,g/dL,Week 12,2,102,M,WHITE,Drug
+Albumin,14,S05,g/dL,Baseline,1,103,F,BLACK,Placebo
+Albumin,12,S05,g/dL,Week 12,2,103,F,BLACK,Placebo
+Albumin,15,S06,g/dL,Baseline,1,103,M,ASIAN,Drug
+Albumin,18,S06,g/dL,Week 12,2,103,M,ASIAN,Drug
+Albumin,16,S07,g/dL,Baseline,1,104,F,WHITE,Placebo
+Albumin,14,S07,g/dL,Week 12,2,104,F,WHITE,Placebo
+Albumin,17,S08,g/dL,Baseline,1,104,M,BLACK,Drug
+Albumin,17,S08,g/dL,Week 12,2,104,M,BLACK,Drug
+Albumin,18,S09,g/dL,Baseline,1,105,F,ASIAN,Placebo
+Albumin,21,S09,g/dL,Week 12,2,105,F,ASIAN,Placebo
+Albumin,19,S10,g/dL,Baseline,1,105,M,WHITE,Drug
+Albumin,16,S10,g/dL,Week 12,2,105,M,WHITE,Drug
+Albumin,20,S11,g/dL,Baseline,1,106,F,BLACK,Placebo
+Albumin,20,S11,g/dL,Week 12,2,106,F,BLACK,Placebo
+Albumin,21,S12,g/dL,Baseline,1,106,M,ASIAN,Drug
+Albumin,19,S12,g/dL,Week 12,2,106,M,ASIAN,Drug
+Pulse,70,P01,bpm,Baseline,1,107,F,WHITE,Placebo
+Pulse,72,P01,bpm,Week 12,2,107,F,WHITE,Placebo
+Pulse,65,P02,bpm,Baseline,1,107,M,BLACK,Drug
+Pulse,68,P02,bpm,Week 12,2,107,M,BLACK,Drug
+Pulse,80,P03,bpm,Baseline,1,108,F,ASIAN,Placebo
+Pulse,76,P03,bpm,Week 12,2,108,F,ASIAN,Placebo
+Albumin,,S13,g/dL,Baseline,1,108,F,WHITE,Placebo
+Albumin,NR,S13,g/dL,Week 12,2,108,F,WHITE,Placebo

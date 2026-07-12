@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>safety.viz shift-plot demo page</title>
+  </head>
+  <body>
+    <h1 id="shift-plot-heading">safety.viz shift plot demo</h1>
+    <p>
+      Demo and Playwright harness page for the shift-plot module (#14). Loads the committed IIFE
+      bundle — the same asset gsm.safety vendors — against the fixture data in
+      <code>shift-plot-data.csv</code>.
+    </p>
+    <div id="container"></div>
+    <!-- Bundle path tracks the package.json version; bump them together. -->
+    <script src="/dist/safety.viz-1.0.0/safety.viz.js"></script>
+    <script>
+      function parseCsv(text) {
+        const [header, ...lines] = text.trim().split(/\r?\n/);
+        const cols = header.split(',');
+        return lines.map((line) => {
+          const cells = line.split(',');
+          return Object.fromEntries(cols.map((col, i) => [col, cells[i] ?? '']));
+        });
+      }
+
+      fetch('./shift-plot-data.csv')
+        .then((response) => response.text())
+        .then((text) => {
+          const instance = SafetyViz.shiftPlot('#container', {
+            filters: [
+              { value_col: 'SITEID', label: 'Site ID' },
+              { value_col: 'SEX', label: 'Sex' },
+              { value_col: 'RACE', label: 'Race' },
+              { value_col: 'ARM', label: 'Treatment Group' }
+            ]
+          });
+          window.__safetyShiftPlotInstance = instance;
+          instance.init(parseCsv(text));
+        })
+        .catch((error) => {
+          console.error(error);
+          document.querySelector('#container').textContent =
+            `Failed to load demo data: ${error.message}`;
+        });
+    </script>
+  </body>
+</html>

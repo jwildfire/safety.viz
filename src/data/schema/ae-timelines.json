@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/jwildfire/safety.viz/main/src/data/schema/ae-timelines.json",
+  "title": "safety.viz ae-timelines data contract",
+  "description": "Adverse-event data: one record per adverse event, with placeholder rows (blank term and start day) keeping AE-free participants in the population denominator (AET-DATA-001). Column names default to the ADaM ADAE standard and are supplied by the settings mapping; records with blank reported terms or non-integer start days are removed with reported counts, and a coloring variable — severity by default — is required but remappable (AET-DATA-003).",
+  "type": "object",
+  "required": ["data", "settings"],
+  "properties": {
+    "data": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "object" },
+      "description": "d3.csv()-style records; every row carries the participant, sequence, study-day, term, and coloring columns named in settings."
+    },
+    "settings": {
+      "type": "object",
+      "description": "Column mappings and rendering options; merged onto the module's DEFAULT_SETTINGS, so only overrides need to be supplied.",
+      "required": ["id_col", "seq_col", "stdy_col", "endy_col", "term_col", "color"],
+      "properties": {
+        "id_col": {
+          "type": "string",
+          "default": "USUBJID",
+          "description": "Participant identifier column; required in data. Drives the timeline rows, the participant counts, and the detail-view click-through."
+        },
+        "seq_col": {
+          "type": "string",
+          "default": "AESEQ",
+          "description": "Adverse-event sequence number column; required in data. Blank in placeholder rows for participants without adverse events."
+        },
+        "stdy_col": {
+          "type": "string",
+          "default": "ASTDY",
+          "description": "Study day of adverse-event onset; required in data. Records with non-integer values are removed with a reported count."
+        },
+        "endy_col": {
+          "type": "string",
+          "default": "AENDY",
+          "description": "Study day of adverse-event resolution; required in data. Events with unusable stop days render as zero-length events at the start day."
+        },
+        "term_col": {
+          "type": "string",
+          "default": "AETERM",
+          "description": "Verbatim adverse-event term column; required in data (AET-CFG-004). Records with blank terms are removed with a reported count."
+        },
+        "color": {
+          "type": "object",
+          "required": ["value_col"],
+          "description": "Event color stratification: the variable, its label, its expected levels, and their colors (AET-CFG-005). A coloring variable is required but does not have to be severity (AET-DATA-003).",
+          "properties": {
+            "value_col": {
+              "type": "string",
+              "default": "AESEV",
+              "description": "Color stratification variable name, usually event severity (AET-CFG-006); required in data. Blank values normalize to N/A."
+            },
+            "label": { "type": "string", "default": "Severity/Intensity" },
+            "values": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Expected levels in legend order; unexpected levels found in the data append alphabetically, with N/A last."
+            },
+            "colors": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Colors assigned by domain position; N/A always renders gray."
+            }
+          }
+        },
+        "highlight": {
+          "type": ["object", "null"],
+          "description": "What events to mark distinctly and how — serious events by default (AET-CFG-007). Pass null to disable highlighting.",
+          "properties": {
+            "value_col": { "type": "string", "default": "AESER" },
+            "label": { "type": "string", "default": "Serious Event" },
+            "value": {
+              "type": "string",
+              "default": "Y",
+              "description": "Value of highlight.value_col that identifies events to highlight (AET-CFG-008)."
+            },
+            "detail_col": {
+              "type": ["string", "null"],
+              "default": null,
+              "description": "Optional column with highlight detail text for tooltips and the detail listing (AET-CFG-009)."
+            },
+            "attributes": {
+              "type": "object",
+              "description": "Mark style for highlighted events (AET-CFG-010): stroke (color) and stroke-width map onto the highlight outline and overlay line."
+            }
+          }
+        },
+        "filters": {
+          "$ref": "#/$defs/fieldList",
+          "description": "Filter columns rendered as controls (AET-CFG-011); defaults to serious event, severity, and participant identifier."
+        },
+        "details": {
+          "$ref": "#/$defs/fieldList",
+          "description": "Columns for the participant detail listing (AET-CFG-012); custom columns append to the defaults."
+        },
+        "sort_participants": {
+          "type": "string",
+          "enum": ["earliest", "alphabetical-descending"],
+          "default": "earliest",
+          "description": "Initial participant sort: by earliest adverse-event onset, or alphabetically."
+        }
+      }
+    }
+  },
+  "$defs": {
+    "fieldList": {
+      "type": ["array", "null"],
+      "items": {
+        "anyOf": [
+          { "type": "string" },
+          {
+            "type": "object",
+            "required": ["value_col"],
+            "properties": {
+              "value_col": { "type": "string" },
+              "label": { "type": "string" }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
