@@ -1,13 +1,16 @@
 {
   "module": "histogram",
-  "generatedAt": "2026-07-12T00:32:04.292Z",
+  "generatedAt": "2026-07-12T00:35:40.304Z",
   "environment": {
-    "os": "darwin 23.6.0",
-    "node": "v24.14.0",
+    "os": "linux 6.17.0-1018-azure",
+    "node": "v22.23.1",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": null,
+  "run": {
+    "id": "29173937370",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29173937370"
+  },
   "records": [
     {
       "test": "built ae-timelines demo mounts the shared shell with no console errors (#7) (#17)",
@@ -167,7 +170,7 @@
       "status": "pass",
       "requirementIds": ["SH-CTRL-008", "SH-REG-020"],
       "issueRefs": [19],
-      "screenshots": []
+      "screenshots": ["SH-CTRL-008-bins-inputs-populated.png"]
     },
     {
       "test": "SH-CTRL-008/SH-REG-024/SH-REG-025/SH-REG-026: bin quantity and width inputs reflect the resolved binning (#19)",
@@ -175,7 +178,7 @@
       "status": "pass",
       "requirementIds": ["SH-CTRL-008", "SH-REG-024", "SH-REG-025", "SH-REG-026"],
       "issueRefs": [19],
-      "screenshots": []
+      "screenshots": ["SH-CTRL-008-bins-inputs-populated.png"]
     },
     {
       "test": "SH-DATA-002: missing and non-numeric results are dropped with a reported count and visible note (#2)",
