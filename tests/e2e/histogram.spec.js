@@ -379,6 +379,46 @@ test.describe('safety.viz histogram module', () => {
     expect(total).toBe(15);
   });
 
+  test('SH-CTRL-008/SH-REG-024/SH-REG-025/SH-REG-026: bin quantity and width inputs reflect the resolved binning (#19)', async ({
+    page
+  }) => {
+    // The original renderer writes the resolved bin count and width back into
+    // the Bins inputs after every render (updateBinQuantity/updateBinWidth),
+    // with the Width input disabled as a display of the resolved value.
+    const quantity = page.locator('.sv-control', { hasText: 'Quantity' }).locator('input');
+    const width = page.locator('.sv-control', { hasText: 'Width' }).locator('input');
+    // Scott's rule (the default) resolves 5 bins of width 5.8 for the fixture measure.
+    await expect(quantity).toHaveValue('5');
+    await expect(width).toHaveValue('5.8');
+    await expect(width).toBeDisabled();
+
+    await page
+      .locator('.sv-control', { hasText: 'Algorithm' })
+      .locator('select')
+      .selectOption("Shimazaki and Shinomoto's choice");
+    await expect(quantity).toHaveValue('2');
+    await expect(width).toHaveValue('14.5');
+    const bars = await page.evaluate(() => window.__safetyHistogramInstance.chart.$shBins.length);
+    expect(bars).toBe(2);
+    await captureEvidence(page, 'SH-CTRL-008', 'bins-inputs-populated');
+  });
+
+  test('SH-CTRL-008/SH-REG-020: editing Quantity switches the algorithm to Custom and recomputes the width (#19)', async ({
+    page
+  }) => {
+    const quantity = page.locator('.sv-control', { hasText: 'Quantity' }).locator('input');
+    await quantity.fill('10');
+    await quantity.dispatchEvent('change');
+    await expect(
+      page.locator('.sv-control', { hasText: 'Algorithm' }).locator('select')
+    ).toHaveValue('Custom');
+    await expect(page.locator('.sv-control', { hasText: 'Width' }).locator('input')).toHaveValue(
+      '2.9'
+    );
+    const bars = await page.evaluate(() => window.__safetyHistogramInstance.chart.$shBins.length);
+    expect(bars).toBe(10);
+  });
+
   test('SH-CHART-004: group-by renders grouped histograms (#2)', async ({ page }) => {
     await page
       .locator('.sv-control', { hasText: 'Group charts by' })
