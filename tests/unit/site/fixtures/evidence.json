@@ -1,5 +1,16 @@
 {
   "module": "histogram",
+  "generatedAt": "2026-07-11T12:00:00.000Z",
+  "environment": {
+    "os": "linux 6.8.0-1027-azure",
+    "node": "v22.17.0",
+    "playwright": "1.61.1",
+    "chromium": "149.0.7827.55"
+  },
+  "run": {
+    "id": "16203040506",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/16203040506"
+  },
   "records": [
     {
       "test": "SH-CTRL-004/SH-FUNC-004A/SH-FUNC-004B: normal range checkbox toggles a stable overlay region (#2)",

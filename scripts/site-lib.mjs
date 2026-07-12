@@ -68,12 +68,15 @@ export function mdBlock(markdown) {
 }
 
 // Expand a coverage-table requirement cell into full IDs. Handles the doc's
-// shorthands: full IDs (SH-CFG-004, suffixed SH-FUNC-004A), slash lists
-// continuing the last prefix (SH-LIST-002/003), and double-dot ranges
-// (SH-CFG-004..009). Prose like "(defaults)" or "—" contributes nothing.
+// shorthands: full IDs (SH-CFG-004, SSP-CTRL-001, suffixed SH-FUNC-004A),
+// slash lists continuing the last prefix (SH-LIST-002/003), and double-dot
+// ranges (SH-CFG-004..009). The leading module prefix is any 2–4 letter code
+// (SH-, SSP-, SDD-, AET-, …) per the safety.agent matrices, so every
+// renderer's coverage doc parses (#14, #26). Prose like "(defaults)" or "—"
+// contributes nothing.
 export function expandRequirementIds(cell) {
   const ids = [];
-  const token = /SH-[A-Z]+-(\d+)([A-D])?|\.\.(\d+)([A-D])?|\/(\d+)([A-D])?/g;
+  const token = /[A-Z]{2,4}-[A-Z]+-(\d+)([A-D])?|\.\.(\d+)([A-D])?|\/(\d+)([A-D])?/g;
   let prefix = null;
   let lastNumber = null;
   let width = 3;
@@ -180,9 +183,31 @@ export function rewriteRelativeLinks(markdown, repoUrl, fromDir = 'docs') {
   });
 }
 
-function statusChip(status) {
+function statusChip(status, runUrl) {
   const label = { pass: 'pass', fail: 'fail', none: 'no record' }[status];
-  return `<span class="chip status-${status}">${label}</span>`;
+  const chip = `<span class="chip status-${status}">${label}</span>`;
+  // Result chips link to the CI run that executed them when evidence.json
+  // carries run provenance (#20/#21).
+  if (runUrl && status !== 'none') {
+    return `<a class="chip-link" href="${escapeHtml(runUrl)}" title="View the CI run that executed this test">${chip}</a>`;
+  }
+  return chip;
+}
+
+// Sub-page tabs shared by every renderer page (demo / evidence / API).
+export function moduleTabs(active, matrixUrl) {
+  const tab = (id, href, label) =>
+    id === active
+      ? `<a class="current" aria-current="page" href="${href}">${label}</a>`
+      : `<a href="${href}">${label}</a>`;
+  return (
+    `<nav class="page-tabs">` +
+    tab('demo', 'index.html', 'Live demo') +
+    tab('evidence', 'evidence.html', 'Test evidence') +
+    tab('api', 'api.html', 'API reference') +
+    (matrixUrl ? `<a href="${matrixUrl}">Requirement matrix ↗</a>` : '') +
+    `</nav>`
+  );
 }
 
 function matchRecords(row, kind, records) {
@@ -205,7 +230,7 @@ function renderMatrixCell(row, matrixUrl) {
   return cell;
 }
 
-function renderEvidenceCell(row, records, kind) {
+function renderEvidenceCell(row, records, kind, runUrl) {
   const parts = [];
   if (kind === 'unit') {
     parts.push(`<p class="test-file">${mdInline(row.test)}</p>`);
@@ -215,7 +240,7 @@ function renderEvidenceCell(row, records, kind) {
     return parts.join('\n');
   }
   const tests = records
-    .map((record) => `<li>${statusChip(record.status)} ${escapeHtml(record.test)}</li>`)
+    .map((record) => `<li>${statusChip(record.status, runUrl)} ${escapeHtml(record.test)}</li>`)
     .join('');
   parts.push(`<ul class="tests">${tests}</ul>`);
   const screenshots = [...new Set(records.flatMap((record) => record.screenshots))];
@@ -232,38 +257,163 @@ function renderEvidenceCell(row, records, kind) {
   return parts.join('\n');
 }
 
-// Evidence page (#21 pillar 2): coverage rows joined to evidence.json —
-// requirement → matrix rows (linked to the safety.agent matrix) → test →
-// status chip → screenshot(s) — plus the routing-status tail verbatim.
+// Provenance fields (#20 contract): evidence.json optionally carries
+// generatedAt (ISO string), environment ({os, node, playwright, chromium}),
+// and run ({id, url} of the CI run, or null when generated locally). The
+// report renders them when present and states their absence honestly when the
+// committed evidence set predates the contract.
+const NOT_RECORDED = '<span class="sub">Not recorded for this evidence set</span>';
+
+function generatedFact(evidence) {
+  if (!evidence.generatedAt) return NOT_RECORDED;
+  const date = new Date(evidence.generatedAt);
+  if (Number.isNaN(date.valueOf())) return escapeHtml(evidence.generatedAt);
+  return `${date.toISOString().slice(0, 16).replace('T', ' ')} UTC`;
+}
+
+function environmentFact(evidence) {
+  const env = evidence.environment;
+  if (!env) return NOT_RECORDED;
+  const parts = [
+    env.os && escapeHtml(env.os),
+    env.node && `node ${escapeHtml(env.node)}`,
+    env.playwright && `playwright ${escapeHtml(env.playwright)}`,
+    env.chromium && `chromium ${escapeHtml(env.chromium)}`
+  ].filter(Boolean);
+  return parts.length ? `<code>${parts.join(' · ')}</code>` : NOT_RECORDED;
+}
+
+function runFact(evidence) {
+  if (evidence.run && evidence.run.url) {
+    return (
+      `<a href="${escapeHtml(evidence.run.url)}">Actions run` +
+      (evidence.run.id ? ` #${escapeHtml(evidence.run.id)}` : '') +
+      `</a>`
+    );
+  }
+  if (evidence.run === null || evidence.generatedAt) {
+    return '<span class="sub">Generated locally — no CI run recorded</span>';
+  }
+  return NOT_RECORDED;
+}
+
+// Humanize an evidence screenshot filename: "SH-CTRL-004-normal-range.png" →
+// { id: 'SH-CTRL-004', caption: 'normal range' }.
+function screenshotCaption(file) {
+  const match = file.match(/^(SH-[A-Z]+-\d+[A-D]?)-(.+)\.png$/);
+  if (!match) return { id: '', caption: file.replace(/\.png$/, '').replace(/-/g, ' ') };
+  return { id: match[1], caption: match[2].replace(/-/g, ' ') };
+}
+
+// Evidence page (#21 pillar 2, reframed for v1.0): a qualification-style
+// report — summary facts (scope, results, provenance), scope & approach,
+// requirement-traceability tables joined to evidence.json, a captioned
+// visual-evidence gallery, the routing-status appendix, and a reproduction
+// note. Adopting groups should be able to review and adapt it as a basic
+// audit artifact.
 export function renderEvidencePage({ module, config, coverage, evidence }) {
   const renderer = config.renderers.find((entry) => entry.module === module);
   const matrixUrl = `${config.matrixBaseUrl}/${renderer.matrix}`;
+  const runUrl = evidence.run && evidence.run.url ? evidence.run.url : null;
   const html = [];
+
+  const records = evidence.records || [];
+  const browser = records.filter((record) => record.suite === 'browser');
+  const unit = records.filter((record) => record.suite === 'unit');
+  const failing = records.filter((record) => record.status === 'fail');
+  const screenshots = [...new Set(records.flatMap((record) => record.screenshots))].sort();
+  const coverageRows = coverage.sections.reduce((n, section) => n + section.rows.length, 0);
+  const matrixIds = new Set(
+    coverage.sections.flatMap((section) =>
+      section.rows.flatMap((row) => [...row.requirementIds, ...row.matrixIds])
+    )
+  );
 
   html.push(`<h1>${escapeHtml(renderer.title)}: test evidence</h1>`);
   html.push(
-    `<p class="page-links"><a href="index.html">Live demo</a> · <a href="api.html">API reference</a>` +
-      ` · <a href="${matrixUrl}">Requirement matrix</a></p>`
+    `<p class="tagline">Requirement-traced qualification evidence for the safety.viz` +
+      ` <code>${escapeHtml(module)}</code> module.</p>`
   );
+  html.push(moduleTabs('evidence', matrixUrl));
+
+  html.push(
+    `<dl class="facts">` +
+      `<div class="fact"><dt>Scope</dt><dd>${coverageRows} coverage rows` +
+      `<span class="sub">${matrixIds.size} distinct requirement IDs</span></dd></div>` +
+      `<div class="fact"><dt>Tests executed</dt><dd>${records.length} automated checks` +
+      `<span class="sub">${browser.length} browser · ${unit.length} unit</span></dd></div>` +
+      `<div class="fact"><dt>Result</dt><dd>${
+        failing.length
+          ? `${statusChip('fail', runUrl)} ${failing.length} failing`
+          : `${statusChip('pass', runUrl)} all passing`
+      }<span class="sub">${screenshots.length} evidence screenshots</span></dd></div>` +
+      `<div class="fact"><dt>Generated</dt><dd>${generatedFact(evidence)}</dd></div>` +
+      `<div class="fact"><dt>Environment</dt><dd>${environmentFact(evidence)}</dd></div>` +
+      `<div class="fact"><dt>Test run</dt><dd>${runFact(evidence)}</dd></div>` +
+      `</dl>`
+  );
+
+  html.push(`<h2 id="scope">Scope &amp; approach</h2>`);
   if (coverage.intro) html.push(mdBlock(rewriteRelativeLinks(coverage.intro, config.repoUrl)));
+  html.push(
+    `<p>Each table row traces one requirement to the automated test(s) that evidence it:` +
+      ` the requirement ID and its source-matrix rows link back to the reviewed specification,` +
+      ` the issue column links the implementing work, and the result column shows the recorded` +
+      ` outcome of every matching test from the committed` +
+      ` <a href="${config.repoUrl}/blob/HEAD/docs/evidence/${module}/evidence.json">evidence.json</a>` +
+      ` with its captured screenshots. Browser evidence is captured at fixed conditions` +
+      ` (1280×800, device scale 1) on the canonical Linux CI environment.</p>`
+  );
 
   for (const section of coverage.sections) {
+    const sectionRecords = new Set(
+      section.rows.flatMap((row) =>
+        matchRecords(row, section.kind, records).map((record) => record.test)
+      )
+    );
     html.push(`<h2>${mdInline(section.heading)}</h2>`);
+    html.push(
+      `<p class="section-summary">${section.rows.length} requirement rows · ` +
+        `${sectionRecords.size} tests</p>`
+    );
     const rows = section.rows
       .map((row) => {
-        const records = matchRecords(row, section.kind, evidence.records);
+        const matched = matchRecords(row, section.kind, records);
         return (
           `<tr><td>${escapeHtml(row.requirementCell)}</td>` +
           `<td>${renderMatrixCell(row, matrixUrl)}</td>` +
           `<td><a href="${config.repoUrl}/issues/${row.issue}">#${row.issue}</a></td>` +
-          `<td>${renderEvidenceCell(row, records, section.kind)}</td></tr>`
+          `<td>${renderEvidenceCell(row, matched, section.kind, runUrl)}</td></tr>`
         );
       })
       .join('\n');
     html.push(
-      `<table class="evidence"><thead><tr><th>Requirement</th><th>Source matrix rows</th>` +
-        `<th>Issue</th><th>Tests &amp; evidence</th></tr></thead><tbody>${rows}</tbody></table>`
+      `<div class="table-scroll">` +
+        `<table class="evidence"><thead><tr><th>Requirement</th><th>Source matrix rows</th>` +
+        `<th>Issue</th><th>Tests &amp; evidence</th></tr></thead><tbody>${rows}</tbody></table>` +
+        `</div>`
     );
+  }
+
+  if (screenshots.length) {
+    html.push(`<h2 id="visual-evidence">Visual evidence</h2>`);
+    html.push(
+      `<p class="section-summary">Every screenshot below is a committed baseline: the same PNG` +
+        ` is the visual-regression baseline the browser suite asserts against and the evidence` +
+        ` artifact shown here. Click any capture for the full-resolution image.</p>`
+    );
+    const figures = screenshots
+      .map((file) => {
+        const { id, caption } = screenshotCaption(file);
+        return (
+          `<li><figure><a href="evidence/${file}">` +
+          `<img src="evidence/${file}" alt="Evidence screenshot: ${escapeHtml(caption)}" loading="lazy">` +
+          `</a><figcaption>${id ? `<code>${id}</code> — ` : ''}${escapeHtml(caption)}</figcaption>` +
+          `</figure></li>`
+        );
+      })
+      .join('\n');
+    html.push(`<ul class="evidence-gallery">${figures}</ul>`);
   }
 
   if (coverage.tail) {
@@ -271,48 +421,279 @@ export function renderEvidencePage({ module, config, coverage, evidence }) {
       `<section class="routing">${mdBlock(rewriteRelativeLinks(coverage.tail, config.repoUrl))}</section>`
     );
   }
+
+  html.push(
+    `<section class="reproduce"><h2 id="reproduce">Reproducing this report</h2>` +
+      `<p>The evidence set is regenerated from a full test run and committed with the code it` +
+      ` qualifies; CI fails when they drift. To verify or rebuild it:</p>` +
+      `<pre><code>npm ci\nnpm run evidence:check   # compare a fresh run against the committed evidence\nnpm run evidence         # regenerate docs/evidence/${module}/evidence.json</code></pre>` +
+      `<p>Screenshot baselines are canonical to the Linux CI runner; the repository&#39;s` +
+      ` <em>Update evidence baselines</em> workflow is the authoritative way to refresh them.` +
+      ` See <a href="${config.repoUrl}/blob/HEAD/CONTRIBUTING.md">CONTRIBUTING.md</a> for the` +
+      ` traceability convention.</p></section>`
+  );
+
   return html.join('\n');
 }
 
-// Gallery (#21 pillar 1): one card per renderer, status badge from config;
-// available renderers link to their pages with the hero evidence screenshot.
+// Gallery (#21 pillar 1, reframed for v1.0 under site issue #21): the
+// homepage tells the project story — lineage, architecture mirror, audience —
+// then splits the renderer cards into the migrated set and the migration
+// queue. Available renderers link to their pages with a dedicated hero asset
+// when configured (site/assets/), falling back to the hero evidence
+// screenshot.
 export function renderGallery(config) {
-  const cards = config.renderers
+  const statusBadge = (renderer) =>
+    `<span class="badge badge-${renderer.status}">${renderer.status}</span>`;
+
+  const placeholderCard = (renderer) => {
+    const matrixUrl = `${config.matrixBaseUrl}/${renderer.matrix}`;
+    return (
+      `<li class="card status-${renderer.status}"><div class="card-body">` +
+      `<h3>${escapeHtml(renderer.title)}</h3>${statusBadge(renderer)}` +
+      `<p>${escapeHtml(renderer.blurb)}</p>` +
+      `<p class="card-links"><a href="${matrixUrl}">Requirement matrix</a></p>` +
+      `</div></li>`
+    );
+  };
+
+  const availableCard = (renderer) => {
+    const base = renderer.module;
+    const matrixUrl = `${config.matrixBaseUrl}/${renderer.matrix}`;
+    const hero = renderer.heroAsset
+      ? `assets/${renderer.heroAsset}`
+      : `${base}/evidence/${renderer.hero}`;
+    return (
+      `<li class="card status-available">` +
+      `<a class="card-thumb" href="${base}/index.html">` +
+      `<img src="${hero}" alt="${escapeHtml(renderer.title)} preview" loading="lazy">` +
+      `</a><div class="card-body">` +
+      `<h3><a href="${base}/index.html">${escapeHtml(renderer.title)}</a></h3>${statusBadge(renderer)}` +
+      `<p>${escapeHtml(renderer.blurb)}</p>` +
+      `<p class="card-links"><a href="${base}/index.html">Demo</a> · ` +
+      `<a href="${base}/evidence.html">Evidence</a> · ` +
+      `<a href="${base}/api.html">API</a> · ` +
+      `<a href="${matrixUrl}">Matrix</a></p>` +
+      `</div></li>`
+    );
+  };
+
+  const available = config.renderers.filter((renderer) => renderer.status === 'available');
+  const queued = config.renderers.filter((renderer) => renderer.status !== 'available');
+  const first = available[0];
+
+  const html = [];
+  html.push(
+    `<h1>safety.viz</h1>`,
+    `<p class="tagline">Nine classic clinical-safety graphics, rebuilt on one modern charting stack.</p>`,
+    `<div class="lead">` +
+      `<p>safety.viz consolidates the interactive safety displays of the` +
+      ` <a href="https://github.com/SafetyGraphics">safetyGraphics</a> ecosystem — nine archived` +
+      ` <a href="https://github.com/RhoInc">Rho,&nbsp;Inc.</a> renderers built on decade-old` +
+      ` Webcharts — into a single maintained <a href="https://www.chartjs.org/">Chart.js</a>` +
+      ` library: one bundle, a JSON-Schema data contract per chart, and requirement-traced test` +
+      ` evidence behind every renderer.</p>` +
+      `<p>It is built to be consumed from R: <a href="https://github.com/jwildfire/gsm.safety">gsm.safety</a>` +
+      ` wraps this same bundle as <code>Widget_*</code> htmlwidgets, mirroring how` +
+      ` <a href="https://github.com/Gilead-BioStats/gsm.kri">gsm.kri</a> consumes` +
+      ` <a href="https://github.com/Gilead-BioStats/rbm-viz">gsm.viz</a> in the OpenRBQM ecosystem.` +
+      ` If you review clinical-trial safety data — medical monitor, biostatistician, or data` +
+      ` scientist — each migrated renderer ships with a live demo, an audit-style test-evidence` +
+      ` report, and a generated API reference.</p>` +
+      `</div>`
+  );
+
+  const ctas = [];
+  if (first) {
+    ctas.push(
+      `<a class="primary" href="${first.module}/index.html">Live demo: ${escapeHtml(first.title)}</a>`
+    );
+  }
+  ctas.push(`<a href="architecture.html">How it works</a>`);
+  ctas.push(`<a href="about.html">About the project</a>`);
+  html.push(`<div class="home-ctas">${ctas.join('')}</div>`);
+
+  html.push(
+    `<h2>Available renderers <span class="gallery-count">${available.length} of ` +
+      `${config.renderers.length} migrated</span></h2>`,
+    `<ul class="gallery">${available.map(availableCard).join('\n')}</ul>`,
+    `<h2>Migration queue <span class="gallery-count">${queued.length} to go</span></h2>`,
+    `<p class="site-intro">Each queued renderer already has a reviewed requirement matrix in` +
+      ` <a href="https://github.com/jwildfire/safety.agent">safety.agent</a> — the specification` +
+      ` its migration will be built and tested against.</p>`,
+    `<ul class="gallery gallery-planned">${queued.map(placeholderCard).join('\n')}</ul>`
+  );
+  return html.join('\n');
+}
+
+// Each safety.viz module traces to the Rho, Inc. repository it re-implements;
+// module names were normalized during migration, so the mapping is explicit.
+const ORIGINAL_REPOS = {
+  histogram: 'safety-histogram',
+  'outlier-explorer': 'safety-outlier-explorer',
+  'results-over-time': 'safety-results-over-time',
+  'shift-plot': 'safety-shift-plot',
+  'delta-delta': 'safety-delta-delta',
+  'paneled-outlier-explorer': 'paneled-outlier-explorer',
+  'ae-explorer': 'aeexplorer',
+  'ae-timelines': 'ae-timelines',
+  'web-codebook': 'web-codebook'
+};
+
+// About page (#21): the keynote/project story, the safetyGraphics lineage,
+// and full attribution for the original RhoInc renderers.
+export function renderAboutPage(config) {
+  const first = config.renderers.find((renderer) => renderer.status === 'available');
+  const evidenceRef = first
+    ? `<a href="${first.module}/evidence.html">test-evidence report</a>`
+    : 'test-evidence report';
+  const creditRows = config.renderers
     .map((renderer) => {
-      const badge = `<span class="badge badge-${renderer.status}">${renderer.status}</span>`;
-      const matrixUrl = `${config.matrixBaseUrl}/${renderer.matrix}`;
-      if (renderer.status !== 'available') {
-        return (
-          `<li class="card status-${renderer.status}"><div class="card-body">` +
-          `<h2>${escapeHtml(renderer.title)}</h2>${badge}` +
-          `<p>${escapeHtml(renderer.blurb)}</p>` +
-          `<p class="card-links"><a href="${matrixUrl}">Requirement matrix</a></p>` +
-          `</div></li>`
-        );
-      }
-      const base = renderer.module;
+      const repo = ORIGINAL_REPOS[renderer.module];
+      const repoCell = repo
+        ? `<a href="https://github.com/RhoInc/${repo}"><code>${repo}</code></a>`
+        : '—';
+      const here =
+        renderer.status === 'available'
+          ? `<a href="${renderer.module}/index.html">${escapeHtml(renderer.title)}</a>`
+          : escapeHtml(renderer.title);
       return (
-        `<li class="card status-available">` +
-        `<a class="card-thumb" href="${base}/index.html">` +
-        `<img src="${base}/evidence/${renderer.hero}" alt="${escapeHtml(renderer.title)} preview" loading="lazy">` +
-        `</a><div class="card-body">` +
-        `<h2><a href="${base}/index.html">${escapeHtml(renderer.title)}</a></h2>${badge}` +
-        `<p>${escapeHtml(renderer.blurb)}</p>` +
-        `<p class="card-links"><a href="${base}/index.html">Demo</a> · ` +
-        `<a href="${base}/evidence.html">Evidence</a> · ` +
-        `<a href="${base}/api.html">API</a> · ` +
-        `<a href="${matrixUrl}">Matrix</a></p>` +
-        `</div></li>`
+        `<tr><td>${repoCell}</td><td>${here} ` +
+        `<span class="badge badge-${renderer.status}">${renderer.status}</span></td>` +
+        `<td>${escapeHtml(renderer.blurb)}</td></tr>`
       );
     })
     .join('\n');
-  return (
-    `<h1>safety.viz</h1>` +
-    `<p class="site-intro">Consolidated Chart.js charting library for clinical safety graphics —` +
-    ` interactive renderers migrated from the safetyGraphics ecosystem. Each renderer ships with a` +
-    ` live demo, a requirement-keyed test-evidence page, and a generated API reference.</p>` +
-    `<ul class="gallery">${cards}</ul>`
-  );
+
+  return [
+    `<h1>About safety.viz</h1>`,
+    `<p class="tagline">An agentic rebuild of the safetyGraphics interactive renderers,` +
+      ` documented in the open for R/Pharma 2026.</p>`,
+
+    `<h2 id="project">The project</h2>`,
+    `<p>safety.viz is one workstream of a larger experiment: modernizing the safetyGraphics` +
+      ` clinical-safety graphics ecosystem with AI agents doing the engineering — requirements,` +
+      ` tests, implementation, and this site — under human review, with every requirement,` +
+      ` design decision, and release tracked in public. The build is the subject of a` +
+      ` developer-diary keynote at R/Pharma 2026; the running story lives on the` +
+      ` <a href="${config.hubUrl}">obot roadmap</a>.</p>`,
+    `<p>The working method is deliberately conservative for safety software: each renderer` +
+      ` starts from a reviewed requirement matrix in` +
+      ` <a href="https://github.com/jwildfire/safety.agent">safety.agent</a>, extracted from the` +
+      ` original renderer&#39;s documented behavior; development is red-green (a failing,` +
+      ` requirement-keyed test first, then the minimal change); and a renderer only counts as` +
+      ` migrated when its live demo, requirement-traced ${evidenceRef}, and generated API` +
+      ` reference are all on this site. The R-side companion,` +
+      ` <a href="https://github.com/jwildfire/gsm.safety">gsm.safety</a>, wraps the same` +
+      ` committed bundle as <code>Widget_*</code> htmlwidgets.</p>`,
+
+    `<h2 id="lineage">Lineage</h2>`,
+    `<p>The charts themselves are not new — that is the point. Each renderer re-implements an` +
+      ` interactive display designed, reviewed, and used in practice under the` +
+      ` <a href="https://github.com/SafetyGraphics">safetyGraphics</a> project, the open-source` +
+      ` framework for clinical-trial safety monitoring that grew out of the ASA Biopharm / DIA` +
+      ` Safety Working Group&#39;s Interactive Safety Graphics task force. The original` +
+      ` implementations were built by the open-source team at` +
+      ` <a href="https://github.com/RhoInc">Rho, Inc.</a> on their` +
+      ` <a href="https://github.com/RhoInc/Webcharts">Webcharts</a> D3 library. safety.viz ports` +
+      ` that behavior onto maintained <a href="https://www.chartjs.org/">Chart.js</a>, preserving` +
+      ` each chart&#39;s clinical intent while adding JSON-Schema data contracts and` +
+      ` requirement-traced evidence.</p>`,
+
+    `<h2 id="credits">Original renderers</h2>`,
+    `<p>Full credit to the original authors — each safety.viz module traces to one of these` +
+      ` open-source Rho, Inc. repositories:</p>`,
+    `<div class="table-scroll"><table class="renderer-credits">` +
+      `<thead><tr><th>Original renderer</th><th>In safety.viz</th><th>What it shows</th></tr></thead>` +
+      `<tbody>${creditRows}</tbody></table></div>`,
+    `<p>If you use these displays in your own work, please also cite the safetyGraphics` +
+      ` project and the original repositories above.</p>`
+  ].join('\n');
+}
+
+// Architecture page (#21): the technical overview — pipeline, data-contract
+// philosophy, module anatomy, the shared shell, and the quality machinery.
+export function renderArchitecturePage({ config, version }) {
+  const first = config.renderers.find((renderer) => renderer.status === 'available');
+  const apiHref = first ? `${first.module}/api.html` : null;
+  const apiLink = (label) => (apiHref ? `<a href="${apiHref}">${label}</a>` : label);
+  return [
+    `<h1>Architecture</h1>`,
+    `<p class="tagline">One bundle, one shared shell, one data contract per chart — built to be` +
+      ` embedded anywhere JavaScript or R can reach.</p>`,
+
+    `<h2 id="overview">The big picture</h2>`,
+    `<p>safety.viz mirrors the architecture proven by OpenRBQM&#39;s` +
+      ` <a href="https://github.com/Gilead-BioStats/gsm.kri">gsm.kri</a> ↔` +
+      ` <a href="https://github.com/Gilead-BioStats/rbm-viz">gsm.viz</a> pairing: a plain` +
+      ` JavaScript charting library (this repository) owns all rendering, and a thin R package` +
+      ` (<a href="https://github.com/jwildfire/gsm.safety">gsm.safety</a>) wraps the committed` +
+      ` bundle as htmlwidgets. The JavaScript side never knows about R; the R side never draws.</p>`,
+    `<ol class="pipeline">` +
+      `<li><strong>Data contract</strong> — every module publishes a JSON Schema` +
+      ` (<a href="${config.repoUrl}/tree/HEAD/src/data/schema">src/data/schema/</a>) describing its` +
+      ` long-format input records and settings mapping. The same schema validates data at the` +
+      ` boundary at runtime and generates the API reference&#39;s data-contract table.</li>` +
+      `<li><strong>Module</strong> — a factory (for example` +
+      ` ${apiLink('<code>histogram(element, settings)</code>')}) that mounts` +
+      ` into any container. Settings merge onto the module&#39;s defaults, so callers supply only` +
+      ` overrides. Internals follow the gsm.viz-style flow: <code>checkInputs</code> →` +
+      ` <code>configure</code> → <code>structureData</code> → <code>getScales</code> /` +
+      ` <code>getPlugins</code> → <code>new Chart</code>.</li>` +
+      `<li><strong>Shared shell</strong> — <code>src/shell.js</code> renders the chrome every` +
+      ` renderer shares by construction: a collapsible <code>sv-</code>-prefixed control sidebar` +
+      ` beside a main column of chart, footnote, small-multiples, and listing slots.</li>` +
+      `<li><strong>Charts</strong> — rendering is <a href="https://www.chartjs.org/">Chart.js 4</a>` +
+      ` with module-scoped plugins (normal-range overlay, annotations, selection styling) —` +
+      ` no bespoke SVG layer to maintain.</li>` +
+      `<li><strong>Committed bundle</strong> — esbuild emits versioned IIFE and ESM bundles to` +
+      ` <code>dist/safety.viz-${escapeHtml(version)}/</code>, committed to the repository so` +
+      ` consumers (and this site&#39;s demos) pin exactly the artifact that was tested. CI fails` +
+      ` when <code>dist/</code> drifts from <code>src/</code>.</li>` +
+      `<li><strong>R bindings</strong> — gsm.safety vendors the same IIFE bundle as` +
+      ` <code>Widget_*</code> htmlwidgets, completing the gsm.kri ↔ gsm.viz mirror.</li>` +
+      `</ol>`,
+
+    `<h2 id="data-contract">The data-contract philosophy</h2>`,
+    `<p>Clinical data rarely arrives renderer-shaped, so no column name is hard-coded. Each` +
+      ` renderer names its inputs through a settings mapping whose defaults follow ADaM` +
+      ` conventions (<code>STRESN</code>, <code>USUBJID</code>, <code>STNRLO</code>…): standard` +
+      ` data works untouched, and anything else is one mapping away. Validation happens once, at` +
+      ` the boundary — missing required columns throw with a rendered message, missing or` +
+      ` non-numeric results are removed with a reported count, and optional columns degrade` +
+      ` gracefully (the normal-range control, for instance, hides for measures without normal` +
+      ` data). The JSON Schema is the single source of truth: runtime validation, the generated` +
+      ` API data-contract table, and the requirement matrix all key to it.</p>`,
+
+    `<h2 id="module-anatomy">Module anatomy</h2>`,
+    `<p>Every module exposes the same lifecycle, kept shape-compatible with the original` +
+      ` safetyGraphics renderers: <code>init(data)</code> / <code>setData(data)</code> to bind and` +
+      ` draw, <code>setSettings(overrides)</code> to re-normalize and rebuild,` +
+      ` <code>render()</code> to redraw from current state, <code>resize()</code> for host layouts` +
+      ` that change container size without a window resize (the R htmlwidget case), and` +
+      ` <code>destroy()</code> to tear down every Chart.js instance. The full per-module surface` +
+      ` is documented on each ${apiLink('API reference')} page, generated from` +
+      ` JSDoc — the build fails on undocumented public surface.</p>`,
+
+    `<h2 id="shell">How a renderer plugs into the shell</h2>`,
+    `<p>A module never rolls its own layout. It calls <code>renderShell(element)</code>, which` +
+      ` empties the container and returns named slots — controls, chart canvas, annotation,` +
+      ` footnote, small-multiples, listing — then declares its control panel with the bound` +
+      ` <code>controlBuilders</code> helpers (sections, rows, labeled inputs) and draws into the` +
+      ` main-column slots. One stylesheet is injected per document by whichever module mounts` +
+      ` first, and the browser suite enforces per available renderer that its demo renders this` +
+      ` shared chrome.</p>`,
+
+    `<h2 id="quality">Quality machinery</h2>`,
+    `<p>Each migration starts from a reviewed requirement matrix in` +
+      ` <a href="https://github.com/jwildfire/safety.agent">safety.agent</a>; matrix rows route to` +
+      ` unit (Vitest) or browser (Playwright) tests whose names carry the requirement IDs. The` +
+      ` evidence pipeline replays both suites and commits results plus screenshots to` +
+      ` <a href="${config.repoUrl}/tree/HEAD/docs/evidence">docs/evidence/</a>, which this site` +
+      ` joins into each module&#39;s ${first ? `<a href="${first.module}/evidence.html">qualification report</a>` : 'qualification report'}.` +
+      ` The site build itself fails on broken links or missing screenshots, so a bad page cannot` +
+      ` publish.</p>`
+  ].join('\n');
 }
 
 function paramsTable(params) {
@@ -347,17 +728,44 @@ function methodSection(method) {
   return parts.filter(Boolean).join('\n');
 }
 
-// API page (#21 pillar 3): rendered straight from the _api/<module>.json
-// artifact (scripts/api/build-api-data.mjs, #6) — factory, methods, settings,
-// and the schema-derived data contract.
-export function renderApiPage(model) {
-  const html = [];
-  html.push(`<h1><code>${escapeHtml(model.module)}</code> API reference</h1>`);
-  html.push(
-    `<p class="page-links"><a href="index.html">Live demo</a> · <a href="evidence.html">Test evidence</a></p>`
+// API page (#21 pillar 3, reframed for v1.0): rendered straight from the
+// _api/<module>.json artifact (scripts/api/build-api-data.mjs, #6) — a
+// module-anatomy overview, then factory, methods, settings, and the
+// schema-derived data contract, with a sticky sidebar table of contents.
+// matrixUrl is optional so the generator stays a pure function of the model.
+export function renderApiPage(model, { matrixUrl } = {}) {
+  const toc =
+    `<nav class="api-toc" aria-label="On this page"><h2>On this page</h2><ul>` +
+    `<li><a href="#overview">Overview</a></li>` +
+    `<li><a href="#factory"><code>${escapeHtml(model.factory.name)}()</code></a></li>` +
+    `<li><a href="#methods">Methods</a><ul>` +
+    model.methods
+      .map(
+        (method) =>
+          `<li><a href="#${escapeHtml(method.name)}"><code>${escapeHtml(method.name)}()</code></a></li>`
+      )
+      .join('') +
+    `</ul></li>` +
+    `<li><a href="#settings">Settings</a></li>` +
+    `<li><a href="#data-contract">Data contract</a></li>` +
+    `</ul></nav>`;
+
+  const body = [];
+  body.push(
+    `<section id="overview"><h2>Overview</h2>` +
+      `<p>Every safety.viz renderer is one factory call. <code>${escapeHtml(model.factory.name)}(element, settings)</code>` +
+      ` empties the container, renders the <a href="../architecture.html">shared control shell</a>,` +
+      ` and returns a chart instance; pass data to <code>setData</code> (or <code>init</code>) and the` +
+      ` module validates it against its <a href="#data-contract">data contract</a>, structures it, and` +
+      ` draws. Settings are merged onto the module&#39;s defaults, so callers supply only overrides —` +
+      ` column mappings follow ADaM naming out of the box. The same lifecycle` +
+      ` (<code>${model.methods.map((method) => escapeHtml(method.name)).join('</code>, <code>')}</code>)` +
+      ` is shared by every module and consumed unchanged by the gsm.safety R bindings.` +
+      ` See <a href="../architecture.html">Architecture</a> for how the pieces fit together.</p>` +
+      `</section>`
   );
-  html.push('<h2>Factory</h2>', methodSection(model.factory));
-  html.push('<h2>Methods</h2>', ...model.methods.map(methodSection));
+  body.push(`<h2 id="factory">Factory</h2>`, methodSection(model.factory));
+  body.push(`<h2 id="methods">Methods</h2>`, ...model.methods.map(methodSection));
 
   const settingsRows = model.settings
     .map(
@@ -368,10 +776,10 @@ export function renderApiPage(model) {
         `<td>${escapeHtml(setting.description)}</td></tr>`
     )
     .join('');
-  html.push(
-    '<h2>Settings</h2>',
-    `<table class="api"><thead><tr><th>Setting</th><th>Type</th><th>Default</th>` +
-      `<th>Description</th></tr></thead><tbody>${settingsRows}</tbody></table>`
+  body.push(
+    `<h2 id="settings">Settings</h2>`,
+    `<div class="table-scroll"><table class="api"><thead><tr><th>Setting</th><th>Type</th><th>Default</th>` +
+      `<th>Description</th></tr></thead><tbody>${settingsRows}</tbody></table></div>`
   );
 
   const contract = model.dataContract;
@@ -385,29 +793,39 @@ export function renderApiPage(model) {
         `<td>${escapeHtml(field.description)}</td></tr>`
     )
     .join('');
-  html.push(
-    '<h2>Data contract</h2>',
+  body.push(
+    `<h2 id="data-contract">Data contract</h2>`,
     `<h3>${escapeHtml(contract.title)}</h3>`,
     `<p>${escapeHtml(contract.description)}</p>`,
-    `<table class="api"><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Default</th>` +
-      `<th>Description</th></tr></thead><tbody>${fieldRows}</tbody></table>`
+    `<div class="table-scroll"><table class="api"><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Default</th>` +
+      `<th>Description</th></tr></thead><tbody>${fieldRows}</tbody></table></div>`
   );
+
+  const html = [];
+  html.push(`<h1><code>${escapeHtml(model.module)}</code> API reference</h1>`);
+  html.push(
+    `<p class="tagline">Generated from the module&#39;s JSDoc and JSON-Schema data contract` +
+      ` — <code>npm run docs:api</code> fails on undocumented surface.</p>`
+  );
+  html.push(moduleTabs('api', matrixUrl));
+  html.push(`<div class="api-layout">${toc}<div class="api-body">${body.join('\n')}</div></div>`);
   return html.join('\n');
 }
 
 // Demo page (#21 pillar 1, reworked under #15): the site shell around the
-// recreated original safety-histogram example — committed IIFE bundle + the
-// vendored real ADBDS example data. The .demo-page wrapper widens the layout
+// recreated original renderer example — committed IIFE bundle + the vendored
+// real example data (the renderer's `data` config key, defaulting to the
+// shared ADBDS extract, #26). The .demo-page wrapper widens the layout
 // (site.css) so the control sidebar and chart get full room.
 export function renderDemoPage({ renderer, version, config }) {
   return (
     `<div class="demo-page">` +
     `<h1>${escapeHtml(renderer.title)}</h1>` +
-    `<p class="page-links"><a href="evidence.html">Test evidence</a> · <a href="api.html">API reference</a>` +
-    ` · <a href="${config.matrixBaseUrl}/${renderer.matrix}">Requirement matrix</a></p>` +
-    `<p>${escapeHtml(renderer.blurb)} This live demo mounts the committed` +
+    `<p class="tagline">${escapeHtml(renderer.blurb)}</p>` +
+    moduleTabs('demo', `${config.matrixBaseUrl}/${renderer.matrix}`) +
+    `<p>This live demo mounts the committed` +
     ` <code>dist/safety.viz-${version}</code> IIFE bundle — the same asset gsm.safety vendors —` +
-    ` against the original safety-histogram example data (<code>adbds.csv</code> from the` +
+    ` against the renderer's original example data (<code>${escapeHtml(renderer.data || 'adbds.csv')}</code> from the` +
     ` <a href="https://github.com/RhoInc/data-library">RhoInc data library</a>), with the full control panel active.</p>` +
     `<div id="container"></div>` +
     `<script src="../dist/safety.viz-${version}/safety.viz.js"></script>` +
@@ -416,11 +834,14 @@ export function renderDemoPage({ renderer, version, config }) {
   );
 }
 
-// Shared shell: replaces {{title}}, {{root}}, and {{content}} tokens. {{root}}
-// prefixes shell-level links so one shell serves pages at any depth.
-export function renderShell({ shell, title, content, root = '' }) {
+// Shared shell: replaces {{title}}, {{description}}, {{version}}, {{root}},
+// and {{content}} tokens. {{root}} prefixes shell-level links so one shell
+// serves pages at any depth.
+export function renderShell({ shell, title, content, root = '', version = '', description = '' }) {
   return shell
     .replaceAll('{{title}}', escapeHtml(title))
+    .replaceAll('{{description}}', escapeHtml(description))
+    .replaceAll('{{version}}', escapeHtml(version))
     .replaceAll('{{root}}', root)
     .replace('{{content}}', content);
 }

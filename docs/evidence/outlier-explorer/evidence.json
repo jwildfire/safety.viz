@@ -1,0 +1,1011 @@
+{
+  "module": "outlier-explorer",
+  "generatedAt": "2026-07-12T00:35:40.304Z",
+  "environment": {
+    "os": "linux 6.17.0-1018-azure",
+    "node": "v22.23.1",
+    "playwright": "1.61.1",
+    "chromium": "149.0.7827.55"
+  },
+  "run": {
+    "id": "29173937370",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29173937370"
+  },
+  "records": [
+    {
+      "test": "built ae-timelines demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built delta-delta demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built histogram demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built outlier-explorer demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built results-over-time demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built shift-plot demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "demo page loads with no console errors (#1)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [1],
+      "screenshots": []
+    },
+    {
+      "test": "gallery shows one card per available renderer (#7)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "SOE-API-001: lifecycle API supports init, setData, setSettings, render, resize, and destroy (#24)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SOE-API-001"],
+      "issueRefs": [24],
+      "screenshots": []
+    },
+    {
+      "test": "SOE-API-003: participantsSelected fires on select and clear (#24)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SOE-API-003"],
+      "issueRefs": [24],
+      "screenshots": []
+    },
+    {
+      "test": "SOE-FUNC-001/SOE-FUNC-002/SOE-FUNC-004/SOE-FUNC-005/SOE-FUNC-006/SOE-FUNC-007: renders the full control panel (#24)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [
+        "SOE-FUNC-001",
+        "SOE-FUNC-002",
+        "SOE-FUNC-004",
+        "SOE-FUNC-005",
+        "SOE-FUNC-006",
+        "SOE-FUNC-007"
+      ],
+      "issueRefs": [24],
+      "screenshots": ["SOE-FUNC-001-control-panel.png", "SOE-FUNC-007-normal-range-band.png"]
+    },
+    {
+      "test": "SOE-FUNC-003/SOE-REG-001/SOE-REG-002: participant note reports N and % and updates on filter (#24)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SOE-FUNC-003", "SOE-REG-001", "SOE-REG-002"],
+      "issueRefs": [24],
+      "screenshots": []
+    },
+    {
+      "test": "SOE-FUNC-004/SOE-REG-003: the x-axis toggle switches between the visit and study-day axes (#24)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SOE-FUNC-004", "SOE-REG-003"],
+      "issueRefs": [24],
+      "screenshots": []
+    },
+    {
+      "test": "SOE-FUNC-005/SOE-FUNC-006/SOE-REG-004/SOE-REG-005/SOE-REG-006: y-axis limits redraw, normalize, and reset (#24)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [
+        "SOE-FUNC-005",
+        "SOE-FUNC-006",
+        "SOE-REG-004",
+        "SOE-REG-005",
+        "SOE-REG-006"
+      ],
+      "issueRefs": [24],
+      "screenshots": []
+    },
+    {
+      "test": "SOE-FUNC-007/SOE-REG-025/SOE-REG-026/SOE-REG-027: normal-range methods drive the band and conditional inputs (#24)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SOE-FUNC-007", "SOE-REG-025", "SOE-REG-026", "SOE-REG-027"],
+      "issueRefs": [24],
+      "screenshots": ["SOE-FUNC-007-normal-range-band.png"]
+    },
+    {
+      "test": "SOE-FUNC-010/SOE-FUNC-012/SOE-REG-013/SOE-REG-014/SOE-REG-016: clicking a point highlights the participant and opens a linked listing (#24)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [
+        "SOE-FUNC-010",
+        "SOE-FUNC-012",
+        "SOE-REG-013",
+        "SOE-REG-014",
+        "SOE-REG-016"
+      ],
+      "issueRefs": [24],
+      "screenshots": ["SOE-FUNC-010-participant-detail.png"]
+    },
+    {
+      "test": "SOE-FUNC-010/SOE-REG-020: clicking the background clears the selection and listing (#24)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SOE-FUNC-010", "SOE-REG-020"],
+      "issueRefs": [24],
+      "screenshots": ["SOE-FUNC-010-participant-detail.png"]
+    },
+    {
+      "test": "SOE-REG-011: point tooltips list participant, result, and time (#24)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SOE-REG-011"],
+      "issueRefs": [24],
+      "screenshots": []
+    },
+    {
+      "test": "SOE-REG-037/SOE-REG-038: missing and non-numeric results are dropped with a reported count and note (#24)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SOE-REG-037", "SOE-REG-038"],
+      "issueRefs": [24],
+      "screenshots": ["SOE-REG-037-invalid-data-note.png"]
+    },
+    {
+      "test": "SOE-REG-048/SOE-REG-049/SOE-REG-050: grouping colors the marks and renders a legend (#24)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SOE-REG-048", "SOE-REG-049", "SOE-REG-050"],
+      "issueRefs": [24],
+      "screenshots": ["SOE-REG-049-color-by-group.png"]
+    },
+    {
+      "test": "SOE-REG-051/SOE-REG-052/SOE-REG-053: a filter with a start value initializes filtered and offers no All option (#24)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SOE-REG-051", "SOE-REG-052", "SOE-REG-053"],
+      "issueRefs": [24],
+      "screenshots": []
+    },
+    {
+      "test": "buildApiModel API-XFORM-010: assembles the artifact with module, factory, methods, settings, data contract, and missing docs (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-010"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "buildApiModel API-XFORM-011: flags DEFAULT_SETTINGS keys absent from the settings typedef (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-011"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer buildEvidenceSets splits records per module and duplicates shared scaffold records (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer buildRun builds GitHub Actions run provenance from the environment (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer compareEvidence flags status drift and test-set changes, ignoring screenshots (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer compareEvidence ignores provenance so --check never drifts on generatedAt/environment/run (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer moduleForFile routes test files to renderer modules by path (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer normalizePlaywright walks nested suites into browser-suite records (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer normalizeVitest maps assertion results to unit-suite records (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer parseTestName extracts requirement IDs and issue refs (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer parseTestName recognizes every renderer requirement-ID prefix, not just SH (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer provenance lives in dedicated top-level keys; the records array stays timestamp-free (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-001: the documented settings are exactly the DEFAULT_SETTINGS keys (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-001"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-002: every setting row has a type, default, and description (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-002"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-003: the factory is documented with params and a return value (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-003"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-004: every lifecycle method is documented with a description and return value (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-004"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-005: no missing-documentation entries remain across the public surface (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-005"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-006: the data contract derives from the schema and its settings map onto real setting names (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-006"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer checkInputs SOE-DATA-001: missing required measure/value columns throw a naming error (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-DATA-001"],
+      "issueRefs": [24],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer checkInputs SOE-DATA-001: valid long-format data with the required columns passes (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-DATA-001"],
+      "issueRefs": [24],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer checkInputs SOE-DATA-003: an empty settings object initializes from the defaults (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-DATA-003"],
+      "issueRefs": [24],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer configure SOE-CFG-004: filter specs normalize strings and objects and preserve a start value (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-CFG-004"],
+      "issueRefs": [24],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer configure SOE-CFG-005: details default to time, id, result, normal limits, and unit when unset (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-CFG-005"],
+      "issueRefs": [24],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer configure SOE-CFG-006/013/014: tooltip_cols normalize and mark attributes merge over defaults (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-CFG-006"],
+      "issueRefs": [24],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer configure SOE-CFG-defaults: default settings map the standard measure, result, id, unit, and normal-range columns (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [24],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer configure SOE-FUNC-004: time_cols default to a derived Measurement axis and normalize ordinal specs (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-FUNC-004"],
+      "issueRefs": [24],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer configure SOE-FUNC-007/SOE-CFG-007..009: normal-range method defaults to LLN-ULN with sd and quantile defaults (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-FUNC-007", "SOE-CFG-007"],
+      "issueRefs": [24],
+      "screenshots": ["SOE-FUNC-007-normal-range-band.png"]
+    },
+    {
+      "test": "outlier-explorer configure SOE-REG-048: groups always offer a leading None option and honor group_by (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-REG-048"],
+      "issueRefs": [24],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer getPlugins hexToRgba converts a hex color to rgba at the given opacity (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [24],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer getPlugins SOE-CFG-006/SOE-REG-012: pointTooltip appends configured tooltip_cols when present (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-CFG-006", "SOE-REG-012"],
+      "issueRefs": [24],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer getPlugins SOE-REG-011: pointTooltip lists participant, result, and time (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-REG-011"],
+      "issueRefs": [24],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer getPlugins SOE-REG-049: groupColorScale maps distinct group values to palette colors and cycles (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-REG-049"],
+      "issueRefs": [24],
+      "screenshots": ["SOE-REG-049-color-by-group.png"]
+    },
+    {
+      "test": "outlier-explorer getScales SOE-FUNC-005: resolveYDomain honors user lower/upper and falls back to default (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-FUNC-005"],
+      "issueRefs": [24],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer getScales SOE-FUNC-005/SOE-REG-004: normalizeYDomain swaps inverted limits in place (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-FUNC-005", "SOE-REG-004"],
+      "issueRefs": [24],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer getScales SOE-FUNC-005/SOE-REG-034: default y-domain pads the measure extent so points are not clipped (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-FUNC-005", "SOE-REG-034"],
+      "issueRefs": [24],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer getScales SOE-REG-028: buildXScale rotates ordinal visit ticks and keeps linear ticks upright (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-REG-028"],
+      "issueRefs": [24],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer getScales SOE-REG-033: axisStep snaps ~1/15 of the range to a power of ten (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-REG-033"],
+      "issueRefs": [24],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer module export SOE-API-001: the public collection exposes the outlierExplorer factory (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-API-001"],
+      "issueRefs": [24],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer structureData SOE-FUNC-004: assignSequence derives a 1-based per-participant measurement index (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-FUNC-004"],
+      "issueRefs": [24],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer structureData SOE-FUNC-007: countInliers counts observations inside the band (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-FUNC-007"],
+      "issueRefs": [24],
+      "screenshots": ["SOE-FUNC-007-normal-range-band.png"]
+    },
+    {
+      "test": "outlier-explorer structureData SOE-FUNC-007/SOE-CFG-007: Standard Deviation normal range uses mean +/- k*sd (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-FUNC-007", "SOE-CFG-007"],
+      "issueRefs": [24],
+      "screenshots": ["SOE-FUNC-007-normal-range-band.png"]
+    },
+    {
+      "test": "outlier-explorer structureData SOE-FUNC-007/SOE-CFG-008: Quantiles normal range uses the configured quantiles (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-FUNC-007", "SOE-CFG-008"],
+      "issueRefs": [24],
+      "screenshots": ["SOE-FUNC-007-normal-range-band.png"]
+    },
+    {
+      "test": "outlier-explorer structureData SOE-FUNC-007/SOE-REG-025: LLN-ULN normal range is the median of the limit columns; None is null (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-FUNC-007", "SOE-REG-025"],
+      "issueRefs": [24],
+      "screenshots": ["SOE-FUNC-007-normal-range-band.png"]
+    },
+    {
+      "test": "outlier-explorer structureData SOE-FUNC-010/SOE-REG-016: buildSeries makes one time-sorted series per participant (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-FUNC-010", "SOE-REG-016"],
+      "issueRefs": [24],
+      "screenshots": ["SOE-FUNC-010-participant-detail.png"]
+    },
+    {
+      "test": "outlier-explorer structureData SOE-REG-028: orderedCategories sorts ordinal visits by their order column (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-REG-028"],
+      "issueRefs": [24],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer structureData SOE-REG-029/SOE-REG-031: measureLabel appends the unit when present (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-REG-029", "SOE-REG-031"],
+      "issueRefs": [24],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer structureData SOE-REG-037/SOE-REG-038: cleanData drops missing and non-numeric results with a count (#24)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-REG-037", "SOE-REG-038"],
+      "issueRefs": [24],
+      "screenshots": ["SOE-REG-037-invalid-data-note.png"]
+    },
+    {
+      "test": "safety.viz scaffold SH-API-001: the collection exposes the histogram module factory (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-API-001"],
+      "issueRefs": [2],
+      "screenshots": []
+    },
+    {
+      "test": "safety.viz scaffold src/main.js exports the public module collection (#1)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [1],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: about page (#21) credits the safetyGraphics project and every original RhoInc renderer (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: about page (#21) describes each original renderer alongside its credit link (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: about page (#21) tells the keynote / developer-diary story and links the roadmap hub (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page opens with a module-anatomy overview linking the architecture page (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders a sidebar table of contents linking every section and method (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders each lifecycle method with signature, params, and returns (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders the factory signature and parameters (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders the schema-derived data contract (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders the settings table with type, default, and description (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: architecture page (#21) explains the shared shell and module anatomy (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: architecture page (#21) names the committed bundle for the running version (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: architecture page (#21) walks the pipeline from data contract to R htmlwidget (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: coverage parsing parses the browser and unit tables plus the routing-status tail (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page carries the routing-status sections onto the page (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page falls back to requirement-ID matching when a browser row wording drifts from the spec name (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page joins browser rows to their evidence record with status chip and screenshot (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page links source matrix rows to the safety.agent matrix (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page matches unit rows to records through expanded requirement IDs (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page rewrites repo-relative coverage links to repository URLs (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page surfaces failing records with a fail status chip (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence report provenance (#21) degrades gracefully when provenance fields are absent (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence report provenance (#21) links result chips to the CI run when a run is recorded (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence report provenance (#21) presents a captioned visual-evidence gallery of the committed screenshots (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence report provenance (#21) renders generation date, environment, and CI run when evidence.json carries them (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence report provenance (#21) summarizes scope and results in a fact panel (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery leads with the project story and a live-demo call to action (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery links available renderers to demo, evidence, and API pages with a hero thumbnail (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery lists every renderer from config with its status badge (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery prefers a dedicated hero asset over the evidence baseline when configured (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery renders unmigrated renderers as placeholders without page links (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery separates available renderers from the migration queue (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: requirement-ID expansion expands double-dot ranges and slash shorthand into full IDs (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: shell tokens (#21) falls back to an empty description when none is given (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: shell tokens (#21) replaces version and description tokens across the shell (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site validation: evidence screenshots flags screenshots referenced in evidence.json but missing from the evidence set (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site validation: internal links flags internal links and asset references that do not resolve (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site validation: internal links passes a site whose internal links all resolve, ignoring external and fragment links (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: factory API-XFORM-004: maps the documented module.exports doclet to the factory, named for its source file (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-004"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: factory API-XFORM-005: ignores the spurious undocumented global doclet jsdoc emits for the default export (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-005"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: methods table API-XFORM-001: extracts documented instance methods in source order with signature, params, and returns (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-001"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: methods table API-XFORM-002: brackets optional params in signatures and carries their defaults (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-002"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: methods table API-XFORM-003: excludes private and undocumented methods from the table (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-003"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: missing-doc detection API-XFORM-008: flags undocumented public methods and settings properties without descriptions (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-008"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: missing-doc detection API-XFORM-009: flags a missing factory when no documented default export exists (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-009"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: settings table API-XFORM-006: extracts settings rows from the typedef properties with display-ready types and defaults (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-006"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: settings table API-XFORM-007: normalizes non-string defaults (booleans, numbers, null) to display strings (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-007"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-001: carries the schema title and description onto the contract (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-001"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-002: flattens top-level and nested settings properties into dotted field rows (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-002"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-003: derives required flags from each level’s required array (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-003"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-004: carries types, defaults, and descriptions through from the schema (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-004"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-005: resolves local $defs references to their concrete type (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-005"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-006: every contract field carries a non-empty description (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-006"],
+      "issueRefs": [6],
+      "screenshots": []
+    }
+  ]
+}

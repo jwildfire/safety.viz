@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/jwildfire/safety.viz/main/src/data/schema/outlier-explorer.json",
+  "title": "safety.viz outlier-explorer data contract",
+  "description": "Long-format results data: one record per participant per time point per measure (SOE-DATA-001). Column names are supplied by the settings mapping; the outlier-explorer removes missing/non-numeric results with a reported count (SOE-REG-037) and derives a per-participant measurement sequence when the data carries no visit/study-day column.",
+  "type": "object",
+  "required": ["data", "settings"],
+  "properties": {
+    "data": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "object" },
+      "description": "d3.csv()-style records; every row carries the measure and result columns named in settings, one row per participant per time point per measure."
+    },
+    "settings": {
+      "type": "object",
+      "description": "Column mappings and rendering options; merged onto the module's DEFAULT_SETTINGS, so only overrides need to be supplied (SOE-DATA-003).",
+      "required": ["measure_col", "value_col"],
+      "properties": {
+        "measure_col": {
+          "type": "string",
+          "default": "TEST",
+          "description": "Column holding the measure name; required in data."
+        },
+        "value_col": {
+          "type": "string",
+          "default": "STRESN",
+          "description": "Column holding the numeric result; required in data."
+        },
+        "id_col": {
+          "type": "string",
+          "default": "USUBJID",
+          "description": "Participant identifier column; drives the one-line-per-participant series and counts."
+        },
+        "unit_col": {
+          "type": "string",
+          "default": "STRESU",
+          "description": "Optional unit column, appended to measure labels."
+        },
+        "normal_col_low": {
+          "type": "string",
+          "default": "STNRLO",
+          "description": "Optional lower limit of normal; feeds the LLN-ULN normal-range band."
+        },
+        "normal_col_high": {
+          "type": "string",
+          "default": "STNRHI",
+          "description": "Optional upper limit of normal; feeds the LLN-ULN normal-range band."
+        },
+        "normal_range_method": {
+          "type": "string",
+          "default": "LLN-ULN",
+          "description": "Normal-range method: None, LLN-ULN, Standard Deviation, or Quantiles (SOE-FUNC-007)."
+        },
+        "time_cols": {
+          "$ref": "#/$defs/fieldList",
+          "description": "Optional time-axis options ({ value_col, label, type, order_col }); when omitted a derived Measurement sequence is used (SOE-FUNC-004)."
+        },
+        "filters": {
+          "$ref": "#/$defs/fieldList",
+          "description": "Optional filter columns rendered as controls (SOE-CFG-004)."
+        },
+        "groups": {
+          "$ref": "#/$defs/fieldList",
+          "description": "Optional color-by columns for grouping the marks (SOE-REG-048)."
+        },
+        "details": {
+          "$ref": "#/$defs/fieldList",
+          "description": "Optional listing columns; defaults derive from the other mappings (SOE-CFG-005)."
+        },
+        "tooltip_cols": {
+          "$ref": "#/$defs/fieldList",
+          "description": "Optional extra columns appended to the point tooltip (SOE-CFG-006)."
+        }
+      }
+    }
+  },
+  "$defs": {
+    "fieldList": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          { "type": "string" },
+          {
+            "type": "object",
+            "required": ["value_col"],
+            "properties": {
+              "value_col": { "type": "string" },
+              "label": { "type": "string" }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

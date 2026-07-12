@@ -52,6 +52,48 @@ naming convention future-proofs the evidence until full qcthat-compatible
 reporting for the JS stack lands (tracked as
 [obot.roadmap#15](https://github.com/jwildfire/obot.roadmap/issues/15)).
 
+## Evidence pipeline
+
+Each renderer module owns one evidence set: `docs/evidence/<module>/` holds
+`evidence.json` plus the canonical screenshots. `npm run evidence` runs Vitest
+and Playwright **once each** and routes every test record to its module by
+test-file path:
+
+- `tests/unit/<module>/**` → `<module>`
+- `tests/e2e/<module>.spec.js` → `<module>`
+- everything else (`site.spec.js`, `smoke.spec.js`, `tests/unit/main.test.js`,
+  `tests/unit/evidence.test.js`, `tests/unit/api/`, `tests/unit/site/`) is
+  shared scaffold evidence, included in **every** module's `evidence.json`
+
+`<module>` must match a `module` entry in `site/config.json` (any status) —
+that registry is the module universe, so plugging a new renderer in takes no
+pipeline edits: add the config entry, name the test paths as above, and its
+`docs/evidence/<module>/evidence.json` appears on the next `npm run evidence`.
+
+In browser specs, capture evidence screenshots with the shared helper — the
+module (and so the output directory) is derived from the spec's file name:
+
+```js
+import { captureEvidence } from './evidence.js';
+await captureEvidence(page, 'SSP-CHART-001', 'baseline-scatter');
+// → docs/evidence/shift-plot/SSP-CHART-001-baseline-scatter.png (from shift-plot.spec.js)
+```
+
+Baselines are canonical to the Linux CI runner: on Linux `captureEvidence` is
+a visual-regression assertion; on macOS it writes a preview under
+`test-results/evidence-preview/<module>/` instead. Refresh baselines with the
+**evidence-update workflow** (Actions tab), which runs
+`npm run evidence:update` on the canonical environment and commits
+`docs/evidence/` back to the branch.
+
+Besides `module` and `records`, each `evidence.json` carries provenance in
+three top-level keys — `generatedAt` (ISO timestamp), `environment`
+(`{ os, node, playwright, chromium }` versions), and `run` (`{ id, url }` of
+the GitHub Actions run, `null` for local runs). The freshness guard
+(`npm run evidence:check`, run by CI) ignores provenance and compares only the
+record set and pass/fail statuses, keyed by test title — so don't rename tests
+without regenerating evidence.
+
 ## Renderer definition of done
 
 Per [obot.roadmap#21](https://github.com/jwildfire/obot.roadmap/issues/21), a

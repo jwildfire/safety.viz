@@ -32,4 +32,25 @@ describe('site generator: gallery', () => {
     expect(html).not.toContain('href="outlier-explorer/index.html"');
     expect(html).not.toContain('href="ae-explorer/index.html"');
   });
+
+  it('gallery prefers a dedicated hero asset over the evidence baseline when configured (#21)', () => {
+    const withAsset = JSON.parse(JSON.stringify(config));
+    withAsset.renderers[0].heroAsset = 'histogram-hero.png';
+    const assetHtml = renderGallery(withAsset);
+    expect(assetHtml).toContain('src="assets/histogram-hero.png"');
+    expect(assetHtml).not.toContain('src="histogram/evidence/SH-CTRL-001-control-panel.png"');
+  });
+
+  it('gallery separates available renderers from the migration queue (#21)', () => {
+    expect(html).toContain('Migration queue');
+    expect(html.indexOf('status-available')).toBeGreaterThan(-1);
+    expect(html.indexOf('status-available')).toBeLessThan(html.indexOf('gallery-planned'));
+  });
+
+  it('gallery leads with the project story and a live-demo call to action (#21)', () => {
+    expect(html).toContain('safetyGraphics');
+    expect(html).toContain('gsm.safety');
+    expect(html).toContain('class="home-ctas"');
+    expect(html).toContain('href="histogram/index.html"');
+  });
 });
