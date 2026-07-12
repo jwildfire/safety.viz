@@ -11,10 +11,12 @@ schemes appear:
   [design #2](https://jwildfire.github.io/obot.roadmap/requirements/design/2_design.html)'s
   decomposition mapping.
 - **Source matrix rows** (`SH-FUNC-*`, `SH-REG-*`, `SH-CFG-*`, …) — the
-  125-row reviewed matrix at
-  [safety.agent `docs/requirements/safety-histogram.md`](https://github.com/jwildfire/safety.agent/blob/main/docs/requirements/safety-histogram.md),
+  reviewed matrix at
+  [obot.agent `docs/requirements/safety-histogram.md`](https://github.com/jwildfire/obot.agent/blob/main/docs/requirements/safety-histogram.md),
   whose `Evidence Type` column routes rows (`unit` → Vitest, `browser` →
-  Playwright).
+  Playwright). `SH-OVW-*` rows are post-pilot additions — the all-measures
+  overview ([#39](https://github.com/jwildfire/safety.viz/issues/39)) is new
+  capability beyond the original renderer.
 
 ## Browser evidence (Playwright — `tests/e2e/histogram.spec.js`)
 
@@ -38,6 +40,12 @@ schemes appear:
 | SH-CTRL-008                         | SH-REG-024, SH-REG-025, SH-REG-026       | #19   | bin quantity and width inputs reflect the resolved binning                  |
 | SH-CTRL-008                         | SH-REG-020                               | #19   | editing Quantity switches the algorithm to Custom and recomputes the width  |
 | SH-API-001 (module scheme)          | — (see legacy-API note)                  | #2    | lifecycle API supports init, setData, setSettings, render, resize, destroy  |
+| —                                   | SH-OVW-001                               | #39   | the overview is the default view when start_value is not set                |
+| —                                   | SH-OVW-001                               | #39   | an unknown start_value warns and falls back to the overview                 |
+| —                                   | SH-OVW-002                               | #39   | the overview renders one independently binned panel per measure             |
+| —                                   | SH-OVW-003                               | #39   | clicking a small multiple opens that measure in the single-measure view     |
+| —                                   | SH-OVW-004                               | #39   | selecting All Measures returns from a single-measure view to the overview   |
+| —                                   | SH-OVW-005                               | #39   | filters stay active in the overview and measure controls hide               |
 
 ## Unit evidence (Vitest — `tests/unit/histogram/`)
 

@@ -37,7 +37,10 @@ test.describe('docs site', () => {
 
       await page.goto(`/_site/${renderer.module}/index.html`);
       await expect(page.locator('#container .sv-sidebar .sv-controls')).toBeVisible();
-      await expect(page.locator('#container .sv-main canvas').first()).toBeVisible();
+      // Any visible chart canvas counts: the histogram opens on the
+      // all-measures overview (#39), which hides the main-chart canvas in
+      // favor of the per-measure panels.
+      await expect(page.locator('#container .sv-main canvas:visible').first()).toBeVisible();
       expect(errors).toEqual([]);
     });
   }

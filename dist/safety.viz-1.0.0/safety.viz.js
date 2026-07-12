@@ -12402,6 +12402,8 @@ var SafetyViz = (() => {
 .sv-multiple{border:1px solid #d8dee4;border-radius:10px;padding:.75rem .85rem;background:#fff}
 .sv-multiple h3{font-size:.92rem;margin:0 0 .4rem}
 .sv-multiple-canvas{height:200px}
+.sv-overview-panel{cursor:pointer;transition:border-color .15s ease,box-shadow .15s ease}
+.sv-overview-panel:hover,.sv-overview-panel:focus-visible{border-color:#0b62a4;box-shadow:0 0 0 2px rgba(11,98,164,.18);outline:none}
 .sv-listing{margin-top:1.25rem}
 .sv-listing table{width:100%;border-collapse:collapse;font-size:.85rem;background:#fff}
 .sv-listing th,.sv-listing td{border-bottom:1px solid #e3e8ee;padding:.45rem .55rem;text-align:left;vertical-align:top}
@@ -13047,6 +13049,7 @@ var SafetyViz = (() => {
 
   // src/histogram.js
   Chart.register(BarController, BarElement, CategoryScale, LinearScale, plugin_tooltip, plugin_legend);
+  var OVERVIEW = "sh_overview";
   var SafetyHistogram = class {
     constructor(element = "body", settings = {}) {
       this.element = typeof element === "string" ? document.querySelector(element) : element;
@@ -13143,12 +13146,32 @@ var SafetyViz = (() => {
       this.removedRecords = removed;
       if (removed) console.warn(`${removed} missing or non-numeric results have been removed.`);
       const measures = this.measures();
-      if (this.state.measure && !measures.includes(this.state.measure)) {
+      if (this.state.measure != null && !measures.includes(this.state.measure)) {
         console.warn(
-          `The initial measure [${this.state.measure}] does not exist. Defaulting to the first measure.`
+          `The initial measure [${this.state.measure}] does not exist. Defaulting to the all-measures overview.`
         );
+        this.state.measure = null;
       }
-      this.state.measure = measures.includes(this.state.measure) ? this.state.measure : measures[0];
+    }
+    /**
+     * Whether the all-measures overview is active (no measure selected, #39).
+     * @private
+     */
+    isOverview() {
+      return this.state.measure == null;
+    }
+    /**
+     * Switch between the overview and a single-measure view: sets the measure
+     * (null for the overview), clears the x-axis overrides, and rebuilds the
+     * controls so the Measure dropdown and section visibility stay in sync.
+     * Used by the Measure control and the overview panels (#39).
+     * @private
+     */
+    selectMeasure(measure) {
+      this.state.measure = measure;
+      this.resetDomain();
+      this.buildControls();
+      this.render();
     }
     /**
      * Sorted distinct measure labels present in the cleaned data.
@@ -13165,12 +13188,10 @@ var SafetyViz = (() => {
       this.controls.innerHTML = "";
       const { addSection, addRow, addControl } = controlBuilders(this.controls);
       const measure = addControl("Measure", document.createElement("select"));
+      option(measure, OVERVIEW, "All Measures", this.isOverview());
       this.measures().forEach((value) => option(measure, value, value, value === this.state.measure));
       measure.onchange = () => {
-        this.state.measure = measure.value;
-        this.resetDomain();
-        this.updateNormalRangeControl();
-        this.render();
+        this.selectMeasure(measure.value === OVERVIEW ? null : measure.value);
       };
       const filterSpecs = this.settings.filters.filter((filter) => {
         const exists = this.cleanData.some((row) => row[filter.value_col] !== void 0);
@@ -13193,6 +13214,7 @@ var SafetyViz = (() => {
         };
       });
       const xAxisParent = addSection("X-axis Limits");
+      this.xAxisSection = xAxisParent;
       const xAxisRow = addRow(xAxisParent);
       const lower = addControl("Lower", document.createElement("input"), xAxisRow);
       lower.type = "number";
@@ -13213,6 +13235,7 @@ var SafetyViz = (() => {
         this.render();
       };
       const binParent = addSection("Bins");
+      this.binSection = binParent;
       const algorithm = addControl("Algorithm", document.createElement("select"), binParent);
       ALGORITHMS.forEach((value) => option(algorithm, value, value, value === this.state.algorithm));
       algorithm.onchange = () => {
@@ -13238,6 +13261,7 @@ var SafetyViz = (() => {
       width.value = this.state.width || "";
       this.binWidthInput = width;
       const displayParent = addSection("Display");
+      this.displaySection = displayParent;
       this.normalRangeControl = null;
       if (this.settings.normal_range) {
         const nr = document.createElement("input");
@@ -13274,6 +13298,9 @@ var SafetyViz = (() => {
         this.state.groupBy = group.value;
         this.render();
       };
+      [this.xAxisSection, this.binSection, this.displaySection, this.groupControls].forEach(
+        (section) => section.classList.toggle("sv-hidden", this.isOverview())
+      );
       this.updateNormalRangeControl();
     }
     /**
@@ -13294,10 +13321,13 @@ var SafetyViz = (() => {
       this.state.upper = null;
     }
     /**
-     * Cleaned rows for the selected measure.
+     * Cleaned rows for the selected measure — or every measure while the
+     * overview is active, so the filters and participant notes span the whole
+     * dataset (#39).
      * @private
      */
     currentMeasureData() {
+      if (this.isOverview()) return this.cleanData;
       return this.cleanData.filter((row) => measureLabel(row, this.settings) === this.state.measure);
     }
     /**
@@ -13318,6 +13348,7 @@ var SafetyViz = (() => {
      */
     render() {
       this.destroyCharts();
+      this.chart = null;
       this.listingWrap.innerHTML = "";
       this.currentTableData = [];
       this.listingSearch = "";
@@ -13327,9 +13358,16 @@ var SafetyViz = (() => {
       this.mainAnnotation.innerHTML = "";
       this.notes.innerHTML = "";
       this.multiplesWrap.innerHTML = "";
+      this.chartWrap.classList.toggle("sv-hidden", this.isOverview());
       this.filteredData = this.currentFilteredData();
       if (!this.filteredData.length) {
         this.footnote.textContent = "No records match the current filters.";
+        return;
+      }
+      if (this.isOverview()) {
+        this.footnote.textContent = "Click a chart to view that measure.";
+        this.drawOverview();
+        this.updateNotes();
         return;
       }
       this.binInputs = this.computeBinInputs();
@@ -13552,6 +13590,74 @@ var SafetyViz = (() => {
           }
         });
         chart.$shBins = inputs.bins;
+        this.charts.push(chart);
+      });
+    }
+    /**
+     * Draw the all-measures overview: one small-multiple histogram per
+     * measure, in Measure-control order, each independently binned over the
+     * measure's full value range with the configured bin algorithm so filters
+     * only change the bar heights. Clicking a panel (or pressing Enter/Space
+     * on it) opens that measure in the single-measure view (SH-OVW-002/003).
+     * @private
+     */
+    drawOverview() {
+      this.multiplesWrap.innerHTML = "";
+      this.measures().forEach((measureValue) => {
+        const measureRows = this.cleanData.filter(
+          (row) => measureLabel(row, this.settings) === measureValue
+        );
+        const rows = applyFilters(measureRows, this.state.filters);
+        const values = measureRows.map((row) => row.__sh_value);
+        const domain = resolveDomain(values, null, null);
+        const binResult = calculateBins(values, this.settings.bin_algorithm, null, null, domain);
+        const digits = displayDigits(binResult.width, values);
+        const bins = binResult.bins.map((bin) => ({ ...bin, records: [] }));
+        rows.forEach((row) => {
+          if (row.__sh_value < domain[0] || row.__sh_value > domain[1]) return;
+          bins[binIndex(row.__sh_value, domain[0], binResult.width, bins.length)].records.push(row);
+        });
+        const panel = createElement("div", "sv-multiple sv-overview-panel");
+        panel.setAttribute("role", "button");
+        panel.tabIndex = 0;
+        panel.setAttribute("aria-label", `View ${measureValue}`);
+        const open = () => this.selectMeasure(measureValue);
+        panel.onclick = open;
+        panel.onkeydown = (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            open();
+          }
+        };
+        panel.append(createElement("h3", null, `${measureValue} (${rows.length} results)`));
+        const canvasWrap = createElement("div", "sv-multiple-canvas");
+        const canvas = document.createElement("canvas");
+        canvasWrap.append(canvas);
+        panel.append(canvasWrap);
+        this.multiplesWrap.append(panel);
+        const chart = new Chart(canvas.getContext("2d"), {
+          type: "bar",
+          data: {
+            labels: buildTickLabels(bins, digits, false),
+            datasets: [
+              {
+                data: bins.map((bin) => bin.records.length),
+                backgroundColor: "rgba(37, 99, 235, .72)"
+              }
+            ]
+          },
+          options: {
+            maintainAspectRatio: false,
+            responsive: true,
+            events: [],
+            plugins: { legend: { display: false }, tooltip: { enabled: false } },
+            scales: {
+              y: { beginAtZero: true, ticks: { precision: 0 } },
+              x: { ticks: { display: false } }
+            }
+          }
+        });
+        chart.$shBins = bins;
         this.charts.push(chart);
       });
     }
