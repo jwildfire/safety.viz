@@ -119,7 +119,7 @@
       "status": "pass",
       "requirementIds": ["SH-CTRL-008", "SH-REG-020"],
       "issueRefs": [19],
-      "screenshots": []
+      "screenshots": ["SH-CTRL-008-bins-inputs-populated.png"]
     },
     {
       "test": "SH-CTRL-008/SH-REG-024/SH-REG-025/SH-REG-026: bin quantity and width inputs reflect the resolved binning (#19)",
@@ -127,7 +127,7 @@
       "status": "pass",
       "requirementIds": ["SH-CTRL-008", "SH-REG-024", "SH-REG-025", "SH-REG-026"],
       "issueRefs": [19],
-      "screenshots": []
+      "screenshots": ["SH-CTRL-008-bins-inputs-populated.png"]
     },
     {
       "test": "SH-DATA-002: missing and non-numeric results are dropped with a reported count and visible note (#2)",
