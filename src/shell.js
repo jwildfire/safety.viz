@@ -67,6 +67,8 @@ const SHELL_STYLES = `
 .sv-multiple{border:1px solid #d8dee4;border-radius:10px;padding:.75rem .85rem;background:#fff}
 .sv-multiple h3{font-size:.92rem;margin:0 0 .4rem}
 .sv-multiple-canvas{height:200px}
+.sv-overview-panel{cursor:pointer;transition:border-color .15s ease,box-shadow .15s ease}
+.sv-overview-panel:hover,.sv-overview-panel:focus-visible{border-color:#0b62a4;box-shadow:0 0 0 2px rgba(11,98,164,.18);outline:none}
 .sv-listing{margin-top:1.25rem}
 .sv-listing table{width:100%;border-collapse:collapse;font-size:.85rem;background:#fff}
 .sv-listing th,.sv-listing td{border-bottom:1px solid #e3e8ee;padding:.45rem .55rem;text-align:left;vertical-align:top}

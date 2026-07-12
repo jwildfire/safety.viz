@@ -17,7 +17,7 @@
  * @property {Array<string|Object>} [filters=[]] Filter controls: column names or { value_col, label } specs. Filters whose column is absent from the data are dropped with a console warning.
  * @property {Array<string|Object>} [groups=[]] Group-by options for the small-multiple charts; a "None" option is always offered first.
  * @property {?Array<string|Object>} [details=null] Columns for the linked participant listing; when null, defaults to participant ID, the filter columns, result, normal limits, and unit.
- * @property {?string} [start_value=null] Measure selected on first render; falls back to the first measure (with a console warning) when absent from the data.
+ * @property {?string} [start_value=null] Measure selected on first render. When null (the default) the histogram opens on the all-measures overview — one small-multiple histogram per measure, click one to drill in. A measure absent from the data falls back to the overview with a console warning.
  * @property {string} [bin_algorithm="Scott's normal reference rule"] Binning algorithm applied on first render; one of the ALGORITHMS options. Setting an explicit bin quantity or width in the UI switches it to "Custom".
  * @property {boolean} [normal_range=true] Offer the Show Normal Range control (visible only for measures with normal-range data).
  * @property {boolean} [display_normal_range=false] Draw the normal-range overlay on first render. The pilot's camelCase alias displayNormalRange is still honored.
