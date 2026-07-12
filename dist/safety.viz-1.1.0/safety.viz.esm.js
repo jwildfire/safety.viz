@@ -18604,7 +18604,7 @@ function pointTooltip2(point, state, measureValues) {
     )}`
   ];
   if (Number.isFinite(point.day_diff)) {
-    lines.push(`${point.day_diff} days apart`);
+    lines.push(`${formatNumber4(point.day_diff)} days apart`);
   }
   return lines;
 }

@@ -96,7 +96,7 @@ export function pointTooltip(point, state, measureValues) {
     )}`
   ];
   if (Number.isFinite(point.day_diff)) {
-    lines.push(`${point.day_diff} days apart`);
+    lines.push(`${formatNumber(point.day_diff)} days apart`);
   }
   return lines;
 }
