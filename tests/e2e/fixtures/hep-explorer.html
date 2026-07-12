@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>safety.viz hep-explorer demo page</title>
+  </head>
+  <body>
+    <h1 id="hep-explorer-heading">safety.viz hep explorer demo</h1>
+    <p>
+      Demo and Playwright harness page for the hep-explorer module (#43). Loads the committed IIFE
+      bundle against a small crafted dataset engineered so each Hy's-Law quadrant is populated
+      deterministically — exactly one participant in the Possible Hy's Law Range — so the quadrant
+      classification, eDISH/mDISH display modes, timing highlight, grouping, and the coordinated
+      participant drill-down views can all be asserted deterministically.
+    </p>
+    <div id="container"></div>
+    <!-- Bundle path tracks the package.json version; bump them together. -->
+    <script src="/dist/safety.viz-1.1.0/safety.viz.js"></script>
+    <script>
+      // Crafted long-format data: 5 participants x 3 liver measures x 3 visits,
+      // plus two invalid ALT rows (one empty, one non-numeric) so the removed-
+      // records note is exercised. With the default cutpoints (ALT >= 3xULN,
+      // TB >= 2xULN) the peak values below land exactly one participant per
+      // quadrant, with two in the Normal Range:
+      //   SUBJ-001  ALT 4.0xULN, TB 2.5xULN  -> Possible Hy's Law Range (peaks
+      //             both on day 28, so the point renders filled)
+      //   SUBJ-002  ALT 1.5xULN, TB 2.5xULN  -> Hyperbilirubinemia (peaks 55
+      //             days apart, so the point renders hollow)
+      //   SUBJ-003  ALT 3.5xULN, TB 1.0xULN  -> Temple's Corollary
+      //   SUBJ-004  ALT 1.0xULN, TB 0.9xULN  -> Normal Range
+      //   SUBJ-005  ALT 0.75xULN, TB 0.7xULN -> Normal Range
+      const PARTICIPANTS = {
+        'SUBJ-001': { ARM: 'Drug', SEX: 'F', RACE: 'WHITE', AGE: 45 },
+        'SUBJ-002': { ARM: 'Placebo', SEX: 'M', RACE: 'BLACK', AGE: 52 },
+        'SUBJ-003': { ARM: 'Placebo', SEX: 'F', RACE: 'ASIAN', AGE: 38 },
+        'SUBJ-004': { ARM: 'Drug', SEX: 'M', RACE: 'WHITE', AGE: 61 },
+        'SUBJ-005': { ARM: 'Drug', SEX: 'M', RACE: 'OTHER', AGE: 29 }
+      };
+      const VISITS = [
+        { VISIT: 'Baseline', VISITNUM: 1, DY: 1 },
+        { VISIT: 'Week 4', VISITNUM: 2, DY: 28 },
+        { VISIT: 'Week 8', VISITNUM: 3, DY: 56 }
+      ];
+      // TEST strings match the default settings.measure_values mapping.
+      const MEASURES = {
+        'Aminotransferase, alanine (ALT)': {
+          STRESU: 'U/L',
+          STNRLO: 6,
+          STNRHI: 40,
+          values: {
+            'SUBJ-001': [40, 160, 80],
+            'SUBJ-002': [60, 48, 40],
+            'SUBJ-003': [40, 140, 100],
+            'SUBJ-004': [40, 36, 32],
+            'SUBJ-005': [20, 30, 24]
+          }
+        },
+        'Total Bilirubin': {
+          STRESU: 'mg/dL',
+          STNRLO: 0.1,
+          STNRHI: 1.2,
+          values: {
+            'SUBJ-001': [1.2, 3.0, 1.8],
+            'SUBJ-002': [1.2, 1.8, 3.0],
+            'SUBJ-003': [0.6, 1.2, 0.9],
+            'SUBJ-004': [0.6, 1.08, 0.9],
+            'SUBJ-005': [0.6, 0.84, 0.6]
+          }
+        },
+        'Alkaline phosphatase (ALP)': {
+          STRESU: 'U/L',
+          STNRLO: 40,
+          STNRHI: 120,
+          values: {
+            'SUBJ-001': [120, 132, 120],
+            'SUBJ-002': [120, 110, 100],
+            'SUBJ-003': [100, 120, 110],
+            'SUBJ-004': [120, 96, 84],
+            'SUBJ-005': [60, 66, 72]
+          }
+        }
+      };
+
+      const data = [];
+      Object.entries(MEASURES).forEach(([TEST, meta]) => {
+        Object.entries(PARTICIPANTS).forEach(([USUBJID, demo]) => {
+          VISITS.forEach((visit, i) => {
+            data.push({
+              TEST,
+              STRESN: meta.values[USUBJID][i],
+              STRESU: meta.STRESU,
+              STNRLO: meta.STNRLO,
+              STNRHI: meta.STNRHI,
+              USUBJID,
+              VISIT: visit.VISIT,
+              VISITNUM: visit.VISITNUM,
+              DY: visit.DY,
+              ...demo
+            });
+          });
+        });
+      });
+      // Two invalid ALT results at an extra visit — removed with a note.
+      data.push({
+        TEST: 'Aminotransferase, alanine (ALT)',
+        STRESN: '',
+        STRESU: 'U/L',
+        STNRLO: 6,
+        STNRHI: 40,
+        USUBJID: 'SUBJ-001',
+        VISIT: 'Week 12',
+        VISITNUM: 4,
+        DY: 84,
+        ...PARTICIPANTS['SUBJ-001']
+      });
+      data.push({
+        TEST: 'Aminotransferase, alanine (ALT)',
+        STRESN: 'NA',
+        STRESU: 'U/L',
+        STNRLO: 6,
+        STNRHI: 40,
+        USUBJID: 'SUBJ-002',
+        VISIT: 'Week 12',
+        VISITNUM: 4,
+        DY: 84,
+        ...PARTICIPANTS['SUBJ-002']
+      });
+
+      const instance = SafetyViz.hepExplorer('#container', {
+        studyday_col: 'DY',
+        visit_col: 'VISIT',
+        visitn_col: 'VISITNUM',
+        filters: [
+          { value_col: 'SEX', label: 'Sex' },
+          { value_col: 'ARM', label: 'Treatment Group' }
+        ],
+        groups: [
+          { value_col: 'ARM', label: 'Treatment Group' },
+          { value_col: 'SEX', label: 'Sex' }
+        ]
+      });
+      window.__safetyHepExplorerInstance = instance;
+      instance.init(data);
+    </script>
+  </body>
+</html>
