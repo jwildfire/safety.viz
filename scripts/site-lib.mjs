@@ -446,17 +446,6 @@ export function renderGallery(config) {
   const statusBadge = (renderer) =>
     `<span class="badge badge-${renderer.status}">${renderer.status}</span>`;
 
-  const placeholderCard = (renderer) => {
-    const matrixUrl = `${config.matrixBaseUrl}/${renderer.matrix}`;
-    return (
-      `<li class="card status-${renderer.status}"><div class="card-body">` +
-      `<h3>${escapeHtml(renderer.title)}</h3>${statusBadge(renderer)}` +
-      `<p>${escapeHtml(renderer.blurb)}</p>` +
-      `<p class="card-links"><a href="${matrixUrl}">Requirement matrix</a></p>` +
-      `</div></li>`
-    );
-  };
-
   const availableCard = (renderer) => {
     const base = renderer.module;
     const matrixUrl = `${config.matrixBaseUrl}/${renderer.matrix}`;
@@ -480,35 +469,30 @@ export function renderGallery(config) {
 
   const available = config.renderers.filter((renderer) => renderer.status === 'available');
   const queued = config.renderers.filter((renderer) => renderer.status !== 'available');
-  const first = available[0];
+
+  // Gallery-first layout (#29, option D): the two-sentence intro, then the
+  // cards are the page. The migration queue compresses to a one-line strip —
+  // each queued title links its reviewed requirement matrix.
+  const queueLinks = queued
+    .map(
+      (renderer) =>
+        `<a href="${config.matrixBaseUrl}/${renderer.matrix}">${escapeHtml(renderer.title)}</a>`
+    )
+    .join(' · ');
 
   const html = [];
   html.push(
     `<h1>safety.viz</h1>`,
-    `<p class="tagline">safety.viz is a charting library for monitoring clinical trial safety.` +
-      ` It&#39;s an <a href="https://jwildfire.github.io/keynote/">agent-assisted update</a> of` +
-      ` the <a href="https://github.com/SafetyGraphics">safetyGraphics</a> framework.</p>`
-  );
-
-  const ctas = [];
-  if (first) {
-    ctas.push(
-      `<a class="primary" href="${first.module}/index.html">Live demo: ${escapeHtml(first.title)}</a>`
-    );
-  }
-  ctas.push(`<a href="architecture.html">How it works</a>`);
-  ctas.push(`<a href="about.html">About the project</a>`);
-  html.push(`<div class="home-ctas">${ctas.join('')}</div>`);
-
-  html.push(
+    `<p class="tagline home-intro">safety.viz is a charting library for monitoring clinical` +
+      ` trial safety. It&#39;s an <a href="https://jwildfire.github.io/keynote/">agent-assisted` +
+      ` update</a> of the <a href="https://github.com/SafetyGraphics">safetyGraphics</a>` +
+      ` framework.</p>`,
     `<h2>Available renderers <span class="gallery-count">${available.length} of ` +
       `${config.renderers.length} migrated</span></h2>`,
-    `<ul class="gallery">${available.map(availableCard).join('\n')}</ul>`,
-    `<h2>Migration queue <span class="gallery-count">${queued.length} to go</span></h2>`,
-    `<p class="site-intro">Each queued renderer already has a reviewed requirement matrix in` +
-      ` <a href="https://github.com/jwildfire/safety.agent">safety.agent</a> — the specification` +
-      ` its migration will be built and tested against.</p>`,
-    `<ul class="gallery gallery-planned">${queued.map(placeholderCard).join('\n')}</ul>`
+    `<ul class="gallery gallery-lead">${available.map(availableCard).join('\n')}</ul>`,
+    `<p class="queue-strip">In the queue: ${queueLinks} — each already has a reviewed` +
+      ` requirement matrix in` +
+      ` <a href="https://github.com/jwildfire/safety.agent">safety.agent</a>.</p>`
   );
   return html.join('\n');
 }

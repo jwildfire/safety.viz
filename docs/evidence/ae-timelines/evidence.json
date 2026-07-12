@@ -1,6 +1,6 @@
 {
   "module": "ae-timelines",
-  "generatedAt": "2026-07-12T01:57:06.210Z",
+  "generatedAt": "2026-07-12T02:12:40.554Z",
   "environment": {
     "os": "darwin 23.6.0",
     "node": "v24.14.0",
@@ -754,6 +754,14 @@
       "screenshots": []
     },
     {
+      "test": "site generator: gallery gallery compresses the migration queue to a one-line strip after the cards (#29)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [29],
+      "screenshots": []
+    },
+    {
       "test": "site generator: gallery gallery leads with the two-sentence intro linking the keynote and safetyGraphics (#29)",
       "suite": "unit",
       "status": "pass",
@@ -770,11 +778,11 @@
       "screenshots": []
     },
     {
-      "test": "site generator: gallery gallery lists every renderer from config with its status badge (#7)",
+      "test": "site generator: gallery gallery lists every renderer: available as cards, queued in the status strip (#7) (#29)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": [],
-      "issueRefs": [7],
+      "issueRefs": [7, 29],
       "screenshots": []
     },
     {
@@ -786,19 +794,11 @@
       "screenshots": []
     },
     {
-      "test": "site generator: gallery gallery renders unmigrated renderers as placeholders without page links (#7)",
+      "test": "site generator: gallery queued renderers link their requirement matrices, not site pages (#7) (#29)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": [],
-      "issueRefs": [7],
-      "screenshots": []
-    },
-    {
-      "test": "site generator: gallery gallery separates available renderers from the migration queue (#21)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [21],
+      "issueRefs": [7, 29],
       "screenshots": []
     },
     {
