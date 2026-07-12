@@ -485,22 +485,9 @@ export function renderGallery(config) {
   const html = [];
   html.push(
     `<h1>safety.viz</h1>`,
-    `<p class="tagline">Nine classic clinical-safety graphics, rebuilt on one modern charting stack.</p>`,
-    `<div class="lead">` +
-      `<p>safety.viz consolidates the interactive safety displays of the` +
-      ` <a href="https://github.com/SafetyGraphics">safetyGraphics</a> ecosystem — nine archived` +
-      ` <a href="https://github.com/RhoInc">Rho,&nbsp;Inc.</a> renderers built on decade-old` +
-      ` Webcharts — into a single maintained <a href="https://www.chartjs.org/">Chart.js</a>` +
-      ` library: one bundle, a JSON-Schema data contract per chart, and requirement-traced test` +
-      ` evidence behind every renderer.</p>` +
-      `<p>It is built to be consumed from R: <a href="https://github.com/jwildfire/gsm.safety">gsm.safety</a>` +
-      ` wraps this same bundle as <code>Widget_*</code> htmlwidgets, mirroring how` +
-      ` <a href="https://github.com/Gilead-BioStats/gsm.kri">gsm.kri</a> consumes` +
-      ` <a href="https://github.com/Gilead-BioStats/rbm-viz">gsm.viz</a> in the OpenRBQM ecosystem.` +
-      ` If you review clinical-trial safety data — medical monitor, biostatistician, or data` +
-      ` scientist — each migrated renderer ships with a live demo, an audit-style test-evidence` +
-      ` report, and a generated API reference.</p>` +
-      `</div>`
+    `<p class="tagline">safety.viz is a charting library for monitoring clinical trial safety.` +
+      ` It&#39;s an <a href="https://jwildfire.github.io/keynote/">agent-assisted update</a> of` +
+      ` the <a href="https://github.com/SafetyGraphics">safetyGraphics</a> framework.</p>`
   );
 
   const ctas = [];
@@ -585,7 +572,14 @@ export function renderAboutPage(config) {
       ` migrated when its live demo, requirement-traced ${evidenceRef}, and generated API` +
       ` reference are all on this site. The R-side companion,` +
       ` <a href="https://github.com/jwildfire/gsm.safety">gsm.safety</a>, wraps the same` +
-      ` committed bundle as <code>Widget_*</code> htmlwidgets.</p>`,
+      ` committed bundle as <code>Widget_*</code> htmlwidgets, mirroring how` +
+      ` <a href="https://github.com/Gilead-BioStats/gsm.kri">gsm.kri</a> consumes` +
+      ` <a href="https://github.com/Gilead-BioStats/rbm-viz">gsm.viz</a> in the OpenRBQM` +
+      ` ecosystem.</p>`,
+    `<p>The audience is anyone who reviews clinical-trial safety data — medical monitor,` +
+      ` biostatistician, or data scientist. For each migrated renderer, the proof is on this` +
+      ` site: a live demo against real example data, an audit-style test-evidence report, and` +
+      ` a generated API reference.</p>`,
 
     `<h2 id="lineage">Lineage</h2>`,
     `<p>The charts themselves are not new — that is the point. Each renderer re-implements an` +
