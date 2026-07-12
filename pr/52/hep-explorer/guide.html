@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Clinical guide for the safety.viz hep-explorer module: how to read the graphic to review participant liver safety, cross-referenced to the live controls." />
+    <title>Hepatic Safety Explorer clinical guide · safety.viz</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23271810'/%3E%3Crect x='2.5' y='8' width='3' height='5.5' fill='%23f97316'/%3E%3Crect x='6.5' y='3.5' width='3' height='10' fill='%23fb923c'/%3E%3Crect x='10.5' y='6' width='3' height='7.5' fill='%23f97316'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="../site.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="site-name" href="../index.html">
+        safety.viz
+        <span class="site-version">v1.1.0</span>
+      </a>
+      <nav class="site-nav">
+        <a href="../index.html">Gallery</a>
+        <a href="../architecture.html">Architecture</a>
+        <a href="../about.html">About</a>
+        <a href="https://github.com/jwildfire/safety.viz">GitHub</a>
+        <a href="https://jwildfire.github.io/obot.roadmap/">Roadmap</a>
+      </nav>
+    </header>
+    <main class="site-main"><h1>Hepatic Safety Explorer: clinical guide</h1>
+<p class="tagline">How to read the Hepatic Safety Explorer to review participant liver safety, and where each step lives in the controls on this page.</p>
+<nav class="page-tabs"><a href="index.html">Live demo</a><a class="current" aria-current="page" href="guide.html">Clinical guide</a><a href="evidence.html">Test evidence</a><a href="api.html">API reference</a><a href="https://github.com/jwildfire/safety.agent/blob/main/docs/requirements/hep-explorer.md">Requirement matrix ↗</a></nav>
+<p class="guide-caution"><strong>Exploratory review aid, not a validated diagnostic tool.</strong> A drug-induced-liver-injury conclusion is a diagnosis of exclusion that requires evidence beyond what this graphic shows.</p>
+<div class="guide-body"><h2>What the eDISH plot shows</h2>
+<p>The Hepatic Safety Explorer is an interactive version of the eDISH (&quot;evaluation of Drug-Induced Serious Hepatotoxicity&quot;) plot. Each point is one study participant, placed at that participant&#39;s <strong>peak transaminase</strong> on the x-axis and <strong>peak total bilirubin</strong> on the y-axis. Both values are fold-change units, so a value of <code>3</code> means three times the upper limit of normal (ULN). Because the two peaks can occur on different study days, a single point summarizes a participant&#39;s worst observed liver chemistry over the whole study.</p>
+<p>Two dashed cut-lines divide the plane into four regions. The vertical line sits at the transaminase threshold (ALT at <code>3x</code> ULN by convention) and the horizontal line at the bilirubin threshold (<code>2x</code> ULN). The four named quadrants read as follows:</p>
+<ul><li><strong>Normal</strong> (lower-left): neither transaminase nor bilirubin is meaningfully elevated.</li><li><strong>Isolated hyperbilirubinemia</strong> (upper-left): bilirubin is up but transaminase is not, which points away from hepatocellular injury and toward causes such as cholestasis, hemolysis, or benign unconjugated hyperbilirubinemia.</li><li><strong>Temple&#39;s Corollary / isolated ALT</strong> (lower-right): transaminase is elevated without qualifying bilirubin, i.e. hepatocellular signal that has not (yet) produced jaundice.</li><li><strong>Possible Hy&#39;s Law</strong> (upper-right): both transaminase and bilirubin are elevated, the pattern historically associated with serious drug-induced liver injury.</li></ul>
+<p>A point in the upper-right quadrant is only a <strong>potential</strong> Hy&#39;s Law case: the plot flags it for review, it does not diagnose. Drug-induced liver injury (DILI) is a diagnosis of exclusion, so every upper-right case needs the evaluation below before any conclusion is drawn.</p>
+<h2>The evaluation workflow</h2>
+<p>Start from a quadrant of interest and gather evidence for or against a drug cause. The workflow forks by quadrant, but each branch asks the same question: is the timing, pattern, and magnitude of the liver signal consistent with drug injury, or is it better explained by the population, a competing diagnosis, or an artifact?</p>
+<h3>Quadrant orientation</h3>
+<p>Locate the case. Possible Hy&#39;s Law (upper-right), Temple&#39;s Corollary (lower-right), and isolated hyperbilirubinemia (upper-left) each open a distinct decision path. Note how many participants sit in each region before drilling in.</p>
+<h3>Step 1: potential Hy&#39;s-Law cases and population confounders</h3>
+<p>If the default ULN plot shows no upper-right cases, re-examine the data on a baseline-corrected scale before concluding there is no signal, because participants who start with low-normal chemistry can develop a large <strong>relative</strong> rise that never crosses an absolute ULN threshold. If cases do appear upper-right, ask whether the population explains them. An oncology population with liver metastases, for example, can carry elevated baseline chemistry, and the thresholds should be raised to account for it. On a baseline-corrected (mDISH) scale, suggested boundaries are roughly <code>3.8x</code> baseline for ALT and <code>4.8x</code> baseline for total bilirubin.</p>
+<h3>Step 2a: timing coincidence and cholestasis screen</h3>
+<p>Confirm that the transaminase and bilirubin elevations are plausibly linked. The peaks should fall within about <strong>2 to 4 weeks</strong> of each other, with bilirubin rising after transaminase. Then screen out cholestasis: alkaline phosphatase (ALP) should stay <strong>below <code>2x</code> ULN</strong>. A coincident ALP elevation suggests a cholestatic component rather than pure hepatocellular injury, though it does not by itself rule out a drug cause.</p>
+<h3>R-Ratio and nR: hepatocellular versus cholestatic pattern</h3>
+<p>Characterize the injury type with the R-Ratio, defined as <code>R = (ALT/ULN) / (ALP/ULN)</code>. As a rule of thumb, <code>R &gt; 5</code> indicates a hepatocellular pattern, <code>R</code> of <code>2 to 5</code> a mixed pattern, and <code>R &lt; 2</code> a cholestatic pattern. A newer variant, nR, also incorporates AST so that injury with prominent AST is not missed.</p>
+<h3>Step 2b: onset window and rate of rise</h3>
+<p>Read when and how fast the transaminase rose. The first <strong>12 weeks</strong> of dosing is generally the highest-risk window; peaks well beyond it are less often drug-attributable. A steeper climb across the <code>3x</code>, <code>5x</code>, <code>10x</code>, and <code>20x</code> ULN levels suggests a more acute insult.</p>
+<h3>Step 2c: hepatocyte-loss magnitude</h3>
+<p>A peak-ALT / exposure-derived estimate of hepatocyte loss (P_ALT) can grade severity beyond raw peak ALT, distinguishing mild from moderate injury and from loss sufficient to produce Hy&#39;s Law. This estimate and its exposure track are coming in a later release, not part of this chart yet.</p>
+<h3>Step 2d to 2f: AST corroboration and resolution</h3>
+<p>Cross-check the AST time course and the AST:ALT ratio to separate hepatocellular injury from mitochondrial, muscle, alcohol, or hemolysis-related sources, and confirm that values resolve after (or despite continued) dosing.</p>
+<h3>Temple&#39;s Corollary branch</h3>
+<p>For an isolated transaminase elevation without qualifying bilirubin, judge whether it reflects real hepatocellular injury that could later progress into the Hy&#39;s Law quadrant, running the analogous timing, rate-of-rise, and AST checks.</p>
+<h3>Isolated hyperbilirubinemia branch</h3>
+<p>For an isolated bilirubin elevation without transaminase, weigh non-hepatocellular explanations such as cholestasis, hemolysis, or benign unconjugated hyperbilirubinemia, which can place a participant in this quadrant without any drug injury.</p>
+<h2>How this maps to the controls on this page</h2>
+<ul><li><strong>Named quadrants and per-quadrant counts</strong> → the Quadrants overlay with named corners, live per-quadrant percentages, and the Quadrant / # / % summary table.</li><li><strong>Moving the ALT and bilirubin thresholds</strong> → the X and Y Reference Line number inputs, which reposition the two dashed cut-lines and reclassify points live (draggable cut-lines are coming in a later release; use the numeric inputs for now).</li><li><strong>Baseline-corrected (mDISH) reasoning</strong> → the Display Type toggle, eDISH (÷ ULN) versus mDISH (÷ day-0 baseline).</li><li><strong>Which analyte is on each axis</strong> → the measure pickers for ALT, AST, total bilirubin, and ALP, plus the linear/log Axis Type toggle.</li><li><strong>Timing coincidence between peaks</strong> → the timing-window days input, which renders in-window points filled and out-of-window ones hollow, alongside the day-gap in the tooltip.</li><li><strong>Injury pattern (hepatocellular versus cholestatic)</strong> → the R-Ratio value in the tooltip and the R-Ratio range filter; point size can also encode R-Ratio via the Point Size toggle (Uniform / rRatio).</li><li><strong>Onset window and rate of rise</strong> → click a point to open the Standardized Lab Values by Study Day line chart and read each peak&#39;s study day.</li><li><strong>AST corroboration and per-measure detail</strong> → the same drill-down, with its Measure / N / Min / Median / Max summary table and linked record listing.</li><li><strong>Population and subgroup context</strong> → the Group color-by control with its legend, plus the categorical data filters.</li><li><strong>Hepatocyte-loss (P_ALT) magnitude and the exposure track</strong> → not yet on this page; both are planned for a later release, so no control corresponds to them today.</li></ul>
+<h2>Try it in the demo</h2>
+<p>Open the <a href="index.html">Live demo</a> and work a few of the steps against real data.</p>
+<ul><li>Switch the Display Type from eDISH to mDISH to see who moves into the upper-right quadrant once values are read against each participant&#39;s own baseline.</li><li>Nudge the X (ALT) Reference Line upward, toward an oncology-adjusted value, and watch the per-quadrant percentages update as points are reclassified.</li><li>Set an R-Ratio range filter to isolate the hepatocellular cases (<code>R &gt; 5</code>) from mixed and cholestatic ones.</li><li>Click a point in the possible Hy&#39;s Law quadrant to open its lab trajectory, then check whether the transaminase and bilirubin peaks fall within a few weeks of each other and whether ALP stayed below <code>2x</code> ULN.</li></ul>
+<h2>Source and attribution</h2>
+<p>This guide is adapted, in our own words, from the &quot;Interactive Safety Graphic – Hepatic Safety Explorer User&#39;s Manual&quot; (v1.2.1), a product of the DIA-ASA Interactive Safety Graphics Working Group. It summarizes the workflow structure and clinical rationale rather than reproducing the manual. For the full workflow, citations, and clinical detail, see the authoritative manual: <a href="https://github.com/SafetyGraphics/SafetyGraphics.github.io/raw/master/guide/HepExplorerWorkflow_v1_2_1.pdf">HepExplorerWorkflow v1.2.1 (PDF)</a>.</p></div></main>
+    <footer class="site-footer">
+      <p>
+        safety.viz v1.1.0 — clinical safety graphics on one modern charting stack, migrated
+        from the <a href="https://github.com/SafetyGraphics">safetyGraphics</a> ecosystem originally
+        built by <a href="https://github.com/RhoInc">Rho, Inc.</a> (<a href="../about.html"
+          >credits</a
+        >).
+      </p>
+      <p>
+        Built in the open for the R/Pharma 2026 keynote — follow the
+        <a href="https://jwildfire.github.io/obot.roadmap/">obot roadmap</a> ·
+        <a href="https://github.com/jwildfire/safety.viz">source on GitHub</a> ·
+        <a href="https://github.com/jwildfire/safety.viz/releases">releases</a>.
+      </p>
+    </footer>
+    <script>
+      // Mark the nav link whose resolved URL is this page; works at any mount
+      // depth (site root, /dev/, /pr/N/). Renderer sub-pages match nothing.
+      (function () {
+        var here = location.pathname.replace(/\/$/, '/index.html');
+        var links = document.querySelectorAll('.site-nav a');
+        for (var i = 0; i < links.length; i += 1) {
+          var href = links[i].getAttribute('href');
+          if (!href || href.indexOf('http') === 0) continue;
+          if (new URL(href, location.href).pathname === here) {
+            links[i].className = 'current';
+            links[i].setAttribute('aria-current', 'page');
+            break;
+          }
+        }
+      })();
+    </script>
+  </body>
+</html>
