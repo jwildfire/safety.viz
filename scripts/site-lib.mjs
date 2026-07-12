@@ -13,16 +13,101 @@ export function escapeHtml(text) {
 }
 
 // Minimal inline-markdown renderer for the subset the coverage docs use:
-// `code`, [links](url), and **bold**. Escapes HTML first.
+// `code`, ![images](src), [links](url), and **bold**. Escapes HTML first.
+// The image rule runs before the link rule so `![alt](src)` is not mis-parsed
+// as a link with a stray leading `!` (block-level figures are handled by
+// mdBlock; this covers any image that appears mid-paragraph).
 export function mdInline(text) {
   return escapeHtml(text)
     .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g, '<img src="$2" alt="$1">')
     .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2">$1</a>')
     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
 }
 
-// Block renderer for the coverage doc's routing-status tail: ## headings,
-// - bullet lists (with wrapped continuation lines), and paragraphs.
+// A standalone image line becomes a captioned <figure>: `![alt](src)` or
+// `![alt](src "caption")`. The title may be double- or single-quoted (Prettier
+// normalizes Markdown image titles to single quotes), and the caption falls
+// back to the alt text when no title is given. Only whole-line images are
+// figures; mid-paragraph images are handled inline by mdInline. Guides use this
+// for the ported workflow diagrams.
+const FIGURE_RE = /^!\[([^\]]*)\]\(([^)\s]+)(?:\s+(?:"([^"]*)"|'([^']*)'))?\)\s*$/;
+
+function figureBlock(alt, src, caption) {
+  const cap = caption || alt;
+  return (
+    `<figure class="guide-figure">` +
+    `<img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" loading="lazy">` +
+    (cap ? `<figcaption>${mdInline(cap)}</figcaption>` : '') +
+    `</figure>`
+  );
+}
+
+// GitHub-flavored pipe tables: a header row, a delimiter row of dashes (with
+// optional :colons for column alignment), then body rows. A table is only
+// recognized when both the header and the delimiter carry pipes, so a bare
+// `---` horizontal rule is never mistaken for a delimiter.
+function splitTableCells(line) {
+  return line
+    .trim()
+    .replace(/^\|/, '')
+    .replace(/\|$/, '')
+    .split('|')
+    .map((cell) => cell.trim());
+}
+
+function isTableDelimiter(line) {
+  return line.includes('|') && line.includes('-') && /^[\s|:-]+$/.test(line.trim());
+}
+
+function isTableHeader(lines, i) {
+  const header = lines[i];
+  const delimiter = lines[i + 1];
+  return (
+    header && header.includes('|') && header.trim() && delimiter && isTableDelimiter(delimiter)
+  );
+}
+
+function cellAlign(spec) {
+  const left = spec.startsWith(':');
+  const right = spec.endsWith(':');
+  if (left && right) return ' style="text-align:center"';
+  if (right) return ' style="text-align:right"';
+  if (left) return ' style="text-align:left"';
+  return '';
+}
+
+// Render the pipe table beginning at line `start`; returns the HTML and the
+// index of the first line past the table.
+function renderPipeTable(lines, start) {
+  const headers = splitTableCells(lines[start]);
+  const aligns = splitTableCells(lines[start + 1]).map(cellAlign);
+  const align = (col) => aligns[col] || '';
+  let end = start + 2;
+  const bodyRows = [];
+  while (end < lines.length && lines[end].includes('|') && lines[end].trim()) {
+    bodyRows.push(splitTableCells(lines[end]));
+    end += 1;
+  }
+  const head = headers.map((cell, col) => `<th${align(col)}>${mdInline(cell)}</th>`).join('');
+  const body = bodyRows
+    .map(
+      (cells) =>
+        `<tr>${cells.map((cell, col) => `<td${align(col)}>${mdInline(cell)}</td>`).join('')}</tr>`
+    )
+    .join('');
+  const table =
+    `<div class="table-scroll"><table class="guide-table"><thead><tr>${head}</tr></thead>` +
+    `<tbody>${body}</tbody></table></div>`;
+  return { table, end };
+}
+
+// Block renderer for authored guide content and the coverage doc's
+// routing-status tail: ## headings, - bullet and 1. numbered lists (with
+// wrapped continuation lines), paragraphs, standalone image figures, and
+// GitHub-flavored pipe tables. The figure, table, and ordered-list handling is
+// additive — the coverage docs use none of them, so their rendering is
+// unchanged.
 export function mdBlock(markdown) {
   const html = [];
   let list = null;
@@ -36,12 +121,39 @@ export function mdBlock(markdown) {
   };
   const flushList = () => {
     if (list) {
-      html.push(`<ul>${list.map((item) => `<li>${mdInline(item)}</li>`).join('')}</ul>`);
+      const items = list.items.map((item) => `<li>${mdInline(item)}</li>`).join('');
+      html.push(`<${list.tag}>${items}</${list.tag}>`);
       list = null;
     }
   };
+  const startList = (tag) => {
+    if (!list || list.tag !== tag) {
+      flushList();
+      list = { tag, items: [] };
+    }
+  };
 
-  for (const line of markdown.split('\n')) {
+  const lines = markdown.split('\n');
+  for (let i = 0; i < lines.length; i += 1) {
+    const line = lines[i];
+
+    if (isTableHeader(lines, i)) {
+      flushParagraph();
+      flushList();
+      const { table, end } = renderPipeTable(lines, i);
+      html.push(table);
+      i = end - 1;
+      continue;
+    }
+
+    const figure = line.match(FIGURE_RE);
+    if (figure) {
+      flushParagraph();
+      flushList();
+      html.push(figureBlock(figure[1], figure[2], figure[3] ?? figure[4]));
+      continue;
+    }
+
     const heading = line.match(/^(#{2,4})\s+(.*)$/);
     if (heading) {
       flushParagraph();
@@ -50,10 +162,14 @@ export function mdBlock(markdown) {
       html.push(`<h${level}>${mdInline(heading[2])}</h${level}>`);
     } else if (/^-\s+/.test(line)) {
       flushParagraph();
-      if (!list) list = [];
-      list.push(line.replace(/^-\s+/, ''));
+      startList('ul');
+      list.items.push(line.replace(/^-\s+/, ''));
+    } else if (/^\d+\.\s+/.test(line)) {
+      flushParagraph();
+      startList('ol');
+      list.items.push(line.replace(/^\d+\.\s+/, ''));
     } else if (/^\s+\S/.test(line) && list) {
-      list[list.length - 1] += ` ${line.trim()}`;
+      list.items[list.items.length - 1] += ` ${line.trim()}`;
     } else if (!line.trim()) {
       flushParagraph();
       flushList();

@@ -158,6 +158,21 @@ for (const renderer of config.renderers.filter((entry) => entry.status === 'avai
     if (!existsSync(guidePath)) {
       errors.push(`missing docs/guides/${renderer.guide} — referenced by the config guide field`);
     } else {
+      // A guide may ship figures in a sibling docs/guides/<guide-basename>/
+      // directory; copy them under the module's guide/ folder so the markdown
+      // can reference them relative to guide.html as guide/<file>.
+      const guideAssetsDir = path.join(
+        rootDir,
+        'docs/guides',
+        path.basename(renderer.guide, '.md')
+      );
+      if (existsSync(guideAssetsDir)) {
+        const guideAssetsDest = path.join(moduleDir, 'guide');
+        mkdirSync(guideAssetsDest, { recursive: true });
+        for (const file of readdirSync(guideAssetsDir)) {
+          copyFileSync(path.join(guideAssetsDir, file), path.join(guideAssetsDest, file));
+        }
+      }
       page(
         path.join(moduleDir, 'guide.html'),
         `${renderer.title} clinical guide · safety.viz`,
