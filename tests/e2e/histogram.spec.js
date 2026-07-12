@@ -458,4 +458,142 @@ test.describe('safety.viz histogram module', () => {
     expect(result.chartCountBeforeDestroy).toBeGreaterThan(0);
     expect(result.containerText).toBe('');
   });
+
+  test.describe('all-measures overview (#39)', () => {
+    const measureSelect = (page) =>
+      page.locator('.sv-control', { hasText: 'Measure' }).locator('select');
+
+    async function selectAllMeasures(page) {
+      await measureSelect(page).selectOption({ label: 'All Measures' });
+      await expect(page.locator('#container .sv-overview-panel')).toHaveCount(3);
+    }
+
+    test('SH-OVW-001: the overview is the default view when start_value is not set (#39)', async ({
+      page
+    }) => {
+      const result = await page.evaluate(() => {
+        const mount = document.createElement('div');
+        mount.id = 'default-container';
+        document.body.append(mount);
+        const instance = window.SafetyViz.histogram('#default-container', {});
+        instance.init(window.__safetyHistogramData);
+        const select = mount.querySelector('.sv-control select');
+        return {
+          selectedLabel: select.selectedOptions[0].textContent,
+          panelCount: mount.querySelectorAll('.sv-overview-panel').length,
+          mainChartHidden: mount.querySelector('.sv-chart-wrap').classList.contains('sv-hidden'),
+          mainChart: instance.chart ?? null
+        };
+      });
+      expect(result.selectedLabel).toBe('All Measures');
+      expect(result.panelCount).toBe(3);
+      expect(result.mainChartHidden).toBe(true);
+      expect(result.mainChart).toBeNull();
+    });
+
+    test('SH-OVW-001: an unknown start_value warns and falls back to the overview (#39)', async ({
+      page
+    }) => {
+      const result = await page.evaluate(() => {
+        const warnings = [];
+        const original = console.warn;
+        console.warn = (message) => warnings.push(String(message));
+        const mount = document.createElement('div');
+        mount.id = 'unknown-container';
+        document.body.append(mount);
+        const instance = window.SafetyViz.histogram('#unknown-container', {
+          start_value: 'Bogus Measure'
+        });
+        instance.init(window.__safetyHistogramData);
+        console.warn = original;
+        return {
+          warnings,
+          panelCount: mount.querySelectorAll('.sv-overview-panel').length
+        };
+      });
+      expect(result.warnings.join(' ')).toContain('Bogus Measure');
+      expect(result.panelCount).toBe(3);
+    });
+
+    test('SH-OVW-002: the overview renders one independently binned panel per measure (#39)', async ({
+      page
+    }) => {
+      await selectAllMeasures(page);
+      const titles = await page.locator('#container .sv-overview-panel h3').allTextContents();
+      expect(titles.map((title) => title.replace(/ \(\d+ results\)$/, ''))).toEqual([
+        'Albumin (g/dL)',
+        'Bilirubin (mg/dL)',
+        'Pulse (bpm)'
+      ]);
+      titles.forEach((title) => expect(title).toMatch(/ \(\d+ results\)$/));
+      await expect(page.locator('#container .sv-overview-panel canvas')).toHaveCount(3);
+      const binning = await page.evaluate(() =>
+        window.__safetyHistogramInstance.charts.map((chart) => ({
+          bins: chart.$shBins.length,
+          lower: chart.$shBins[0].lower,
+          upper: chart.$shBins.at(-1).upper
+        }))
+      );
+      expect(binning).toHaveLength(3);
+      const domains = new Set(binning.map((panel) => `${panel.lower}:${panel.upper}`));
+      expect(domains.size).toBe(3);
+      await captureEvidence(page, 'SH-OVW-002', 'overview-panels');
+    });
+
+    test('SH-OVW-003: clicking a small multiple opens that measure in the single-measure view (#39)', async ({
+      page
+    }) => {
+      await selectAllMeasures(page);
+      await expect(page.locator('#container .sv-footnote')).toHaveText(
+        'Click a chart to view that measure.'
+      );
+      await page.locator('#container .sv-overview-panel', { hasText: 'Pulse (bpm)' }).click();
+      await expect(measureSelect(page)).toHaveValue('Pulse (bpm)');
+      await expect(page.locator('#container .sv-chart-wrap')).toBeVisible();
+      await page.waitForFunction(() => window.__safetyHistogramInstance.chart);
+      await expect(page.locator('#container .sv-overview-panel')).toHaveCount(0);
+      await captureEvidence(page, 'SH-OVW-003', 'click-through-to-pulse');
+    });
+
+    test('SH-OVW-004: selecting All Measures returns from a single-measure view to the overview (#39)', async ({
+      page
+    }) => {
+      await selectAllMeasures(page);
+      await measureSelect(page).selectOption('Albumin (g/dL)');
+      await page.waitForFunction(() => window.__safetyHistogramInstance.chart);
+      await expect(page.locator('#container .sv-overview-panel')).toHaveCount(0);
+      await selectAllMeasures(page);
+      await expect(page.locator('#container .sv-chart-wrap')).toBeHidden();
+    });
+
+    test('SH-OVW-005: filters stay active in the overview and measure controls hide (#39)', async ({
+      page
+    }) => {
+      await selectAllMeasures(page);
+      for (const section of ['X-axis Limits', 'Bins', 'Display', 'Grouping']) {
+        await expect(
+          page.locator('#container .sv-control-section', { hasText: section })
+        ).toBeHidden();
+      }
+      await expect(
+        page.locator('#container .sv-control-section', { hasText: 'Filters' })
+      ).toBeVisible();
+      const albuminTitle = page.locator('#container .sv-overview-panel h3', {
+        hasText: 'Albumin'
+      });
+      const before = await albuminTitle.textContent();
+      const sexFilter = page.locator('.sv-control', { hasText: 'Sex' }).first().locator('select');
+      await sexFilter.selectOption('F');
+      await expect(page.locator('#container .sv-overview-panel')).toHaveCount(3);
+      const after = await albuminTitle.textContent();
+      expect(after).not.toBe(before);
+      await captureEvidence(page, 'SH-OVW-005', 'overview-filtered');
+      await measureSelect(page).selectOption('Albumin (g/dL)');
+      for (const section of ['X-axis Limits', 'Bins', 'Display', 'Grouping']) {
+        await expect(
+          page.locator('#container .sv-control-section', { hasText: section })
+        ).toBeVisible();
+      }
+    });
+  });
 });
