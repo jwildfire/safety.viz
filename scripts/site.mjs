@@ -26,6 +26,7 @@ import {
   renderDemoPage,
   renderEvidencePage,
   renderGallery,
+  renderGuidePage,
   renderShell,
   validateEvidenceScreenshots,
   validateSiteLinks
@@ -141,12 +142,32 @@ for (const renderer of config.renderers.filter((entry) => entry.status === 'avai
     path.join(moduleDir, 'api.html'),
     `${renderer.title} API reference · safety.viz`,
     renderApiPage(JSON.parse(readFileSync(apiFile, 'utf8')), {
-      matrixUrl: `${config.matrixBaseUrl}/${renderer.matrix}`
+      matrixUrl: `${config.matrixBaseUrl}/${renderer.matrix}`,
+      hasGuide: !!renderer.guide
     }),
     '../',
     `Generated API reference for the safety.viz ${module} module: factory, lifecycle ` +
       'methods, settings, and the JSON-Schema data contract.'
   );
+
+  // Clinical guide (v1.2): a reviewer's guide rendered from docs/guides/<module>.md
+  // when the config entry opts in via `guide`. Optional, so renderers without a
+  // guide simply omit the tab (like the conditional Requirement matrix link).
+  if (renderer.guide) {
+    const guidePath = path.join(rootDir, 'docs/guides', renderer.guide);
+    if (!existsSync(guidePath)) {
+      errors.push(`missing docs/guides/${renderer.guide} — referenced by the config guide field`);
+    } else {
+      page(
+        path.join(moduleDir, 'guide.html'),
+        `${renderer.title} clinical guide · safety.viz`,
+        renderGuidePage({ renderer, config, guideMarkdown: readFileSync(guidePath, 'utf8') }),
+        '../',
+        `Clinical guide for the safety.viz ${module} module: how to read the graphic to ` +
+          'review participant liver safety, cross-referenced to the live controls.'
+      );
+    }
+  }
 }
 
 errors.push(...validateSiteLinks(siteDir));

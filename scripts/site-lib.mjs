@@ -195,7 +195,7 @@ function statusChip(status, runUrl) {
 }
 
 // Sub-page tabs shared by every renderer page (demo / evidence / API).
-export function moduleTabs(active, matrixUrl) {
+export function moduleTabs(active, matrixUrl, hasGuide = false) {
   const tab = (id, href, label) =>
     id === active
       ? `<a class="current" aria-current="page" href="${href}">${label}</a>`
@@ -203,6 +203,7 @@ export function moduleTabs(active, matrixUrl) {
   return (
     `<nav class="page-tabs">` +
     tab('demo', 'index.html', 'Live demo') +
+    (hasGuide ? tab('guide', 'guide.html', 'Clinical guide') : '') +
     tab('evidence', 'evidence.html', 'Test evidence') +
     tab('api', 'api.html', 'API reference') +
     (matrixUrl ? `<a href="${matrixUrl}">Requirement matrix ↗</a>` : '') +
@@ -334,7 +335,7 @@ export function renderEvidencePage({ module, config, coverage, evidence }) {
     `<p class="tagline">Requirement-traced qualification evidence for the safety.viz` +
       ` <code>${escapeHtml(module)}</code> module.</p>`
   );
-  html.push(moduleTabs('evidence', matrixUrl));
+  html.push(moduleTabs('evidence', matrixUrl, !!renderer.guide));
 
   html.push(
     `<dl class="facts">` +
@@ -716,7 +717,7 @@ function methodSection(method) {
 // module-anatomy overview, then factory, methods, settings, and the
 // schema-derived data contract, with a sticky sidebar table of contents.
 // matrixUrl is optional so the generator stays a pure function of the model.
-export function renderApiPage(model, { matrixUrl } = {}) {
+export function renderApiPage(model, { matrixUrl, hasGuide = false } = {}) {
   const toc =
     `<nav class="api-toc" aria-label="On this page"><h2>On this page</h2><ul>` +
     `<li><a href="#overview">Overview</a></li>` +
@@ -790,7 +791,7 @@ export function renderApiPage(model, { matrixUrl } = {}) {
     `<p class="tagline">Generated from the module&#39;s JSDoc and JSON-Schema data contract` +
       ` — <code>npm run docs:api</code> fails on undocumented surface.</p>`
   );
-  html.push(moduleTabs('api', matrixUrl));
+  html.push(moduleTabs('api', matrixUrl, hasGuide));
   html.push(`<div class="api-layout">${toc}<div class="api-body">${body.join('\n')}</div></div>`);
   return html.join('\n');
 }
@@ -805,7 +806,7 @@ export function renderDemoPage({ renderer, version, config }) {
     `<div class="demo-page">` +
     `<h1>${escapeHtml(renderer.title)}</h1>` +
     `<p class="tagline">${escapeHtml(renderer.blurb)}</p>` +
-    moduleTabs('demo', `${config.matrixBaseUrl}/${renderer.matrix}`) +
+    moduleTabs('demo', `${config.matrixBaseUrl}/${renderer.matrix}`, !!renderer.guide) +
     `<p>This live demo mounts the committed` +
     ` <code>dist/safety.viz-${version}</code> IIFE bundle — the same asset gsm.safety vendors —` +
     ` against real example data (<code>${escapeHtml(renderer.data || 'adbds.csv')}</code>, built from the` +
@@ -815,6 +816,30 @@ export function renderDemoPage({ renderer, version, config }) {
     `<script src="./demo.js"></script>` +
     `</div>`
   );
+}
+
+// Clinical guide (v1.2): an authored, per-renderer reviewer's guide rendered
+// from docs/guides/<module>.md via mdBlock. Teaches the clinical reading of the
+// graphic and cross-references the live controls. Opt-in through the config
+// `guide` field, so only renderers that ship a guide get the tab. A standing
+// non-diagnostic caution is rendered by the page itself, so every guide carries
+// it regardless of the authored content.
+export function renderGuidePage({ renderer, config, guideMarkdown }) {
+  const matrixUrl = `${config.matrixBaseUrl}/${renderer.matrix}`;
+  const html = [];
+  html.push(`<h1>${escapeHtml(renderer.title)}: clinical guide</h1>`);
+  html.push(
+    `<p class="tagline">How to read the ${escapeHtml(renderer.title)} to review participant` +
+      ` liver safety, and where each step lives in the controls on this page.</p>`
+  );
+  html.push(moduleTabs('guide', matrixUrl, true));
+  html.push(
+    `<p class="guide-caution"><strong>Exploratory review aid, not a validated diagnostic tool.</strong>` +
+      ` A drug-induced-liver-injury conclusion is a diagnosis of exclusion that requires evidence` +
+      ` beyond what this graphic shows.</p>`
+  );
+  html.push(`<div class="guide-body">${mdBlock(guideMarkdown)}</div>`);
+  return html.join('\n');
 }
 
 // Shared shell: replaces {{title}}, {{description}}, {{version}}, {{root}},
