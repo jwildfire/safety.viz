@@ -95,6 +95,53 @@ export function applyFilters(rows, filters) {
   );
 }
 
+// Faithful port of the original renderer's Shimazaki-Shinomoto choice
+// (calculateSSBinWidth.js, validated by executing the original against d3 v3,
+// quirks included): for candidate bin counts 2..99, count the results in
+// candidate−1 uniform bins over the results' extent (d3 v3
+// layout.histogram().bins(candidate − 1)), score
+// cost = (2·mean − Σ(count − mean)²/candidate) / (span/candidate)², and keep
+// the first candidate that minimizes the cost.
+export function shimazakiShinomotoBins(values, span) {
+  const sorted = [...values].sort((a, b) => a - b);
+  const lo = sorted[0];
+  const hi = sorted[sorted.length - 1];
+  let best = 2;
+  let bestCost = Infinity;
+  for (let candidate = 2; candidate < 100; candidate += 1) {
+    const binWidth = span / candidate;
+    const binCount = candidate - 1;
+    const counts = new Array(binCount).fill(0);
+    const countWidth = (hi - lo) / binCount;
+    for (const value of values) counts[binIndex(value, lo, countWidth, binCount)] += 1;
+    const meanCount = counts.reduce((sum, count) => sum + count, 0) / binCount;
+    const residual =
+      counts.reduce((sum, count) => sum + Math.pow(count - meanCount, 2), 0) / candidate;
+    const cost = (2 * meanCount - residual) / Math.pow(binWidth, 2);
+    if (cost < bestCost) {
+      bestCost = cost;
+      best = candidate;
+    }
+  }
+  return best;
+}
+
+// Uniform-bin assignment matching the original's Webcharts quantile-scale
+// thresholds over a two-point domain: right-open bins, boundary values move
+// up a bin, and the extremes clamp into the first/last bin.
+export function binIndex(value, min, width, binCount) {
+  if (!(width > 0)) return 0;
+  let index = Math.floor((value - min) / width);
+  if (index < 0) index = 0;
+  if (index >= binCount) index = binCount - 1;
+  return index;
+}
+
+// Bin count/width/edges per the original renderer's onPreprocess pipeline
+// (#19): each algorithm proposes a count, Scott/FD floor at 5 bins, and every
+// algorithmic count is clamped to the number of unique results (a zero-spread
+// NaN proposal also falls back to it). The final width is always
+// range/quantity, with uniform edges over the domain.
 export function calculateBins(values, algorithm, customQuantity, customWidth, domain) {
   const n = values.length;
   const min = domain ? domain[0] : Math.min(...values);
@@ -109,17 +156,23 @@ export function calculateBins(values, algorithm, customQuantity, customWidth, do
   }
 
   if (!quantity && !width) {
-    if (algorithm === 'Square-root choice') quantity = Math.ceil(Math.sqrt(n));
-    else if (algorithm === "Sturges' formula") quantity = Math.ceil(Math.log2(n) + 1);
-    else if (algorithm === 'Rice Rule') quantity = Math.ceil(2 * Math.cbrt(n));
+    const nUnique = new Set(values).size;
+    let proposed;
+    if (algorithm === 'Square-root choice') proposed = Math.ceil(Math.sqrt(n));
+    else if (algorithm === "Sturges' formula") proposed = Math.ceil(Math.log2(n)) + 1;
+    else if (algorithm === 'Rice Rule') proposed = Math.ceil(2 * Math.cbrt(n));
     else if (algorithm === "Freedman-Diaconis' choice") {
-      width = (2 * (quantile(values, 0.75) - quantile(values, 0.25))) / Math.cbrt(n);
-      quantity = width > 0 ? Math.ceil(range / width) : Math.ceil(Math.sqrt(n));
-    } else if (algorithm === "Shimazaki and Shinomoto's choice") quantity = Math.ceil(Math.sqrt(n));
+      const fdWidth = (2 * (quantile(values, 0.75) - quantile(values, 0.25))) / Math.cbrt(n);
+      proposed = fdWidth > 0 ? Math.max(Math.ceil(range / fdWidth), 5) : NaN;
+    } else if (algorithm === "Shimazaki and Shinomoto's choice")
+      proposed = n ? shimazakiShinomotoBins(values, range) : NaN;
     else {
-      width = (3.5 * sd(values)) / Math.cbrt(n);
-      quantity = width > 0 ? Math.ceil(range / width) : Math.ceil(Math.sqrt(n));
+      const scottWidth = (3.5 * sd(values)) / Math.cbrt(n);
+      proposed = scottWidth > 0 ? Math.max(Math.ceil(range / scottWidth), 5) : NaN;
     }
+    // The original's clamp: `proposed < nUnique ? proposed : nUnique`, which
+    // also routes NaN proposals to the unique-result count.
+    quantity = proposed < nUnique ? proposed : nUnique;
   }
 
   if (!quantity && width) quantity = Math.ceil(range / width);
@@ -133,10 +186,7 @@ export function calculateBins(values, algorithm, customQuantity, customWidth, do
   });
 
   values.forEach((value, idx) => {
-    let binIndex = Math.floor((value - min) / width);
-    if (binIndex < 0) binIndex = 0;
-    if (binIndex >= bins.length) binIndex = bins.length - 1;
-    bins[binIndex].records.push(idx);
+    bins[binIndex(value, min, width, bins.length)].records.push(idx);
   });
 
   return { bins, quantity, width, domain: [min, max] };

@@ -86,15 +86,18 @@ describe('histogram structureData', () => {
     expect(displayDigits(NaN, [1.25])).toBe(2);
   });
 
-  it("SH-CTRL-006: binning algorithms produce the pilot's bin quantities (#2)", () => {
+  it("SH-CTRL-006: binning algorithms produce the original renderer's bin quantities (#2)", () => {
     const values = range(100);
+    // Shimazaki-Shinomoto was 10 here while the pilot stubbed it with the
+    // square-root rule; the original's cost minimization picks 2 bins for
+    // uniform 1..100 (#19).
     const expected = {
       'Square-root choice': 10,
       "Sturges' formula": 8,
       'Rice Rule': 10,
       "Scott's normal reference rule": 5,
       "Freedman-Diaconis' choice": 5,
-      "Shimazaki and Shinomoto's choice": 10
+      "Shimazaki and Shinomoto's choice": 2
     };
     for (const [algorithm, quantity] of Object.entries(expected)) {
       const result = calculateBins(values, algorithm, null, null, null);

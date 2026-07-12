@@ -11555,6 +11555,35 @@ function applyFilters(rows, filters) {
     (row) => Object.entries(filters).every(([key, value]) => !value || String(row[key]) === String(value))
   );
 }
+function shimazakiShinomotoBins(values, span) {
+  const sorted = [...values].sort((a, b) => a - b);
+  const lo = sorted[0];
+  const hi = sorted[sorted.length - 1];
+  let best = 2;
+  let bestCost = Infinity;
+  for (let candidate = 2; candidate < 100; candidate += 1) {
+    const binWidth = span / candidate;
+    const binCount = candidate - 1;
+    const counts = new Array(binCount).fill(0);
+    const countWidth = (hi - lo) / binCount;
+    for (const value of values) counts[binIndex(value, lo, countWidth, binCount)] += 1;
+    const meanCount = counts.reduce((sum, count) => sum + count, 0) / binCount;
+    const residual = counts.reduce((sum, count) => sum + Math.pow(count - meanCount, 2), 0) / candidate;
+    const cost = (2 * meanCount - residual) / Math.pow(binWidth, 2);
+    if (cost < bestCost) {
+      bestCost = cost;
+      best = candidate;
+    }
+  }
+  return best;
+}
+function binIndex(value, min, width, binCount) {
+  if (!(width > 0)) return 0;
+  let index = Math.floor((value - min) / width);
+  if (index < 0) index = 0;
+  if (index >= binCount) index = binCount - 1;
+  return index;
+}
 function calculateBins(values, algorithm, customQuantity, customWidth, domain) {
   const n = values.length;
   const min = domain ? domain[0] : Math.min(...values);
@@ -11567,17 +11596,21 @@ function calculateBins(values, algorithm, customQuantity, customWidth, domain) {
     width = customWidth ? Math.max(Number.EPSILON, Number(customWidth)) : null;
   }
   if (!quantity && !width) {
-    if (algorithm === "Square-root choice") quantity = Math.ceil(Math.sqrt(n));
-    else if (algorithm === "Sturges' formula") quantity = Math.ceil(Math.log2(n) + 1);
-    else if (algorithm === "Rice Rule") quantity = Math.ceil(2 * Math.cbrt(n));
+    const nUnique = new Set(values).size;
+    let proposed;
+    if (algorithm === "Square-root choice") proposed = Math.ceil(Math.sqrt(n));
+    else if (algorithm === "Sturges' formula") proposed = Math.ceil(Math.log2(n)) + 1;
+    else if (algorithm === "Rice Rule") proposed = Math.ceil(2 * Math.cbrt(n));
     else if (algorithm === "Freedman-Diaconis' choice") {
-      width = 2 * (quantile(values, 0.75) - quantile(values, 0.25)) / Math.cbrt(n);
-      quantity = width > 0 ? Math.ceil(range / width) : Math.ceil(Math.sqrt(n));
-    } else if (algorithm === "Shimazaki and Shinomoto's choice") quantity = Math.ceil(Math.sqrt(n));
+      const fdWidth = 2 * (quantile(values, 0.75) - quantile(values, 0.25)) / Math.cbrt(n);
+      proposed = fdWidth > 0 ? Math.max(Math.ceil(range / fdWidth), 5) : NaN;
+    } else if (algorithm === "Shimazaki and Shinomoto's choice")
+      proposed = n ? shimazakiShinomotoBins(values, range) : NaN;
     else {
-      width = 3.5 * sd(values) / Math.cbrt(n);
-      quantity = width > 0 ? Math.ceil(range / width) : Math.ceil(Math.sqrt(n));
+      const scottWidth = 3.5 * sd(values) / Math.cbrt(n);
+      proposed = scottWidth > 0 ? Math.max(Math.ceil(range / scottWidth), 5) : NaN;
     }
+    quantity = proposed < nUnique ? proposed : nUnique;
   }
   if (!quantity && width) quantity = Math.ceil(range / width);
   quantity = Math.max(1, quantity || 1);
@@ -11588,10 +11621,7 @@ function calculateBins(values, algorithm, customQuantity, customWidth, domain) {
     return { index, lower, upper, records: [] };
   });
   values.forEach((value, idx) => {
-    let binIndex = Math.floor((value - min) / width);
-    if (binIndex < 0) binIndex = 0;
-    if (binIndex >= bins.length) binIndex = bins.length - 1;
-    bins[binIndex].records.push(idx);
+    bins[binIndex(value, min, width, bins.length)].records.push(idx);
   });
   return { bins, quantity, width, domain: [min, max] };
 }
@@ -12020,17 +12050,12 @@ var SafetyHistogram = class {
       this.buildControls();
       this.render();
     };
+    this.binQuantityInput = quantity;
     const width = addControl("Width", document.createElement("input"), binRow);
     width.type = "number";
-    width.min = "0";
-    width.step = "any";
+    width.disabled = true;
     width.value = this.state.width || "";
-    width.onchange = () => {
-      this.state.width = Math.max(Number.EPSILON, Number(width.value) || 0);
-      this.state.algorithm = "Custom";
-      this.buildControls();
-      this.render();
-    };
+    this.binWidthInput = width;
     const displayParent = addSection("Display");
     this.normalRangeControl = null;
     if (this.settings.normal_range) {
@@ -12126,9 +12151,39 @@ var SafetyHistogram = class {
       this.footnote.textContent = "No records match the current filters.";
       return;
     }
+    this.binInputs = this.computeBinInputs();
     this.drawMainChart();
     this.drawMultiples();
     this.updateNotes();
+  }
+  /**
+   * Compute the shared bin parameters for the current render, following the
+   * original renderer's onPreprocess pipeline (#19): the domain and bin
+   * count/width anchor to the full result set of the selected measure —
+   * not the filtered subset — so filters and group multiples reuse the same
+   * bin boundaries and only the bar heights change. When the x-axis limits
+   * are user-modified, the parameters recompute from the measure results
+   * inside that domain (the original's "custom" domain state).
+   * @private
+   */
+  computeBinInputs() {
+    const measureValues = this.currentMeasureData().map((row) => row.__sh_value);
+    const domain = resolveDomain(measureValues, this.state.lower, this.state.upper);
+    const binValues = measureValues.filter((value) => domain[0] <= value && value <= domain[1]);
+    const binResult = calculateBins(
+      binValues,
+      this.state.algorithm,
+      this.state.quantity,
+      this.state.width,
+      domain
+    );
+    return {
+      domain,
+      quantity: binResult.quantity,
+      width: binResult.width,
+      bins: binResult.bins,
+      digits: displayDigits(binResult.width, measureValues)
+    };
   }
   /**
    * Refresh the shown/total participant counts and removed-record note.
@@ -12146,28 +12201,19 @@ var SafetyHistogram = class {
     this.notes.innerHTML = `<span>${shownParticipants} of ${totalParticipants} participants shown (${pct}%).</span>${removedNote}`;
   }
   /**
-   * Compute the domain, bins, and display precision for a set of rows.
+   * Assign a set of rows into the shared bins computed by computeBinInputs.
+   * Every chart of a render — the main chart and each group multiple — uses
+   * the same bin boundaries; only the per-bin record sets differ (#19).
    * @private
    */
   chartInputs(rows) {
-    const values = rows.map((row) => row.__sh_value);
-    const domain = resolveDomain(values, this.state.lower, this.state.upper);
-    const inDomainRows = rows.filter(
-      (row) => row.__sh_value >= domain[0] && row.__sh_value <= domain[1]
-    );
-    const binResult = calculateBins(
-      inDomainRows.map((row) => row.__sh_value),
-      this.state.algorithm,
-      this.state.quantity,
-      this.state.width,
-      domain
-    );
-    const digits = displayDigits(binResult.width, values);
-    const bins = binResult.bins.map((bin) => ({
-      ...bin,
-      records: bin.records.map((idx) => inDomainRows[idx])
-    }));
-    return { bins, domain, digits, quantity: binResult.quantity, width: binResult.width };
+    const { domain, digits, quantity, width } = this.binInputs;
+    const bins = this.binInputs.bins.map((bin) => ({ ...bin, records: [] }));
+    rows.forEach((row) => {
+      if (row.__sh_value < domain[0] || row.__sh_value > domain[1]) return;
+      bins[binIndex(row.__sh_value, domain[0], width, bins.length)].records.push(row);
+    });
+    return { bins, domain, digits, quantity, width };
   }
   /**
    * Draw the main Chart.js bar chart with tooltips, selection, and normal range.
@@ -12177,6 +12223,8 @@ var SafetyHistogram = class {
     const inputs = this.chartInputs(this.filteredData);
     this.state.quantity = inputs.quantity;
     this.state.width = Number(inputs.width.toPrecision(4));
+    if (this.binQuantityInput) this.binQuantityInput.value = this.state.quantity;
+    if (this.binWidthInput) this.binWidthInput.value = this.state.width;
     const first = this.filteredData[0];
     this.state.normalRange = this.settings.normal_col_low && this.settings.normal_col_high ? {
       low: Number(first[this.settings.normal_col_low]),
@@ -12322,6 +12370,7 @@ var SafetyHistogram = class {
           }
         }
       });
+      chart.$shBins = inputs.bins;
       this.charts.push(chart);
     });
   }

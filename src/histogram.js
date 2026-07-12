@@ -19,6 +19,7 @@ import { ALGORITHMS, syncSettings } from './histogram/configure.js';
 import { checkInputs } from './histogram/checkInputs.js';
 import {
   applyFilters,
+  binIndex,
   calculateBins,
   cleanData,
   displayDigits,
@@ -251,18 +252,16 @@ class SafetyHistogram {
       this.buildControls();
       this.render();
     };
+    this.binQuantityInput = quantity;
 
+    // Like the original renderer's Width control: a disabled display of the
+    // resolved bin width — every render writes the resolved quantity and
+    // width back into these inputs (SH-REG-024/025/026).
     const width = addControl('Width', document.createElement('input'), binRow);
     width.type = 'number';
-    width.min = '0';
-    width.step = 'any';
+    width.disabled = true;
     width.value = this.state.width || '';
-    width.onchange = () => {
-      this.state.width = Math.max(Number.EPSILON, Number(width.value) || 0);
-      this.state.algorithm = 'Custom';
-      this.buildControls();
-      this.render();
-    };
+    this.binWidthInput = width;
 
     const displayParent = addSection('Display');
     this.normalRangeControl = null;
@@ -367,9 +366,40 @@ class SafetyHistogram {
       this.footnote.textContent = 'No records match the current filters.';
       return;
     }
+    this.binInputs = this.computeBinInputs();
     this.drawMainChart();
     this.drawMultiples();
     this.updateNotes();
+  }
+
+  /**
+   * Compute the shared bin parameters for the current render, following the
+   * original renderer's onPreprocess pipeline (#19): the domain and bin
+   * count/width anchor to the full result set of the selected measure —
+   * not the filtered subset — so filters and group multiples reuse the same
+   * bin boundaries and only the bar heights change. When the x-axis limits
+   * are user-modified, the parameters recompute from the measure results
+   * inside that domain (the original's "custom" domain state).
+   * @private
+   */
+  computeBinInputs() {
+    const measureValues = this.currentMeasureData().map((row) => row.__sh_value);
+    const domain = resolveDomain(measureValues, this.state.lower, this.state.upper);
+    const binValues = measureValues.filter((value) => domain[0] <= value && value <= domain[1]);
+    const binResult = calculateBins(
+      binValues,
+      this.state.algorithm,
+      this.state.quantity,
+      this.state.width,
+      domain
+    );
+    return {
+      domain,
+      quantity: binResult.quantity,
+      width: binResult.width,
+      bins: binResult.bins,
+      digits: displayDigits(binResult.width, measureValues)
+    };
   }
 
   /**
@@ -393,28 +423,19 @@ class SafetyHistogram {
   }
 
   /**
-   * Compute the domain, bins, and display precision for a set of rows.
+   * Assign a set of rows into the shared bins computed by computeBinInputs.
+   * Every chart of a render — the main chart and each group multiple — uses
+   * the same bin boundaries; only the per-bin record sets differ (#19).
    * @private
    */
   chartInputs(rows) {
-    const values = rows.map((row) => row.__sh_value);
-    const domain = resolveDomain(values, this.state.lower, this.state.upper);
-    const inDomainRows = rows.filter(
-      (row) => row.__sh_value >= domain[0] && row.__sh_value <= domain[1]
-    );
-    const binResult = calculateBins(
-      inDomainRows.map((row) => row.__sh_value),
-      this.state.algorithm,
-      this.state.quantity,
-      this.state.width,
-      domain
-    );
-    const digits = displayDigits(binResult.width, values);
-    const bins = binResult.bins.map((bin) => ({
-      ...bin,
-      records: bin.records.map((idx) => inDomainRows[idx])
-    }));
-    return { bins, domain, digits, quantity: binResult.quantity, width: binResult.width };
+    const { domain, digits, quantity, width } = this.binInputs;
+    const bins = this.binInputs.bins.map((bin) => ({ ...bin, records: [] }));
+    rows.forEach((row) => {
+      if (row.__sh_value < domain[0] || row.__sh_value > domain[1]) return;
+      bins[binIndex(row.__sh_value, domain[0], width, bins.length)].records.push(row);
+    });
+    return { bins, domain, digits, quantity, width };
   }
 
   /**
@@ -425,6 +446,8 @@ class SafetyHistogram {
     const inputs = this.chartInputs(this.filteredData);
     this.state.quantity = inputs.quantity;
     this.state.width = Number(inputs.width.toPrecision(4));
+    if (this.binQuantityInput) this.binQuantityInput.value = this.state.quantity;
+    if (this.binWidthInput) this.binWidthInput.value = this.state.width;
     const first = this.filteredData[0];
     this.state.normalRange =
       this.settings.normal_col_low && this.settings.normal_col_high
@@ -580,6 +603,7 @@ class SafetyHistogram {
           }
         }
       });
+      chart.$shBins = inputs.bins;
       this.charts.push(chart);
     });
   }

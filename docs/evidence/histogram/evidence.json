@@ -50,6 +50,14 @@
       "screenshots": ["SH-CHART-004-grouped-multiples.png"]
     },
     {
+      "test": "SH-CHART-004/SH-CTRL-006: grouped small multiples share the main chart's bin boundaries (#19)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SH-CHART-004", "SH-CTRL-006"],
+      "issueRefs": [19],
+      "screenshots": ["SH-CHART-004-grouped-multiples.png", "SH-CTRL-006-shared-bin-multiples.png"]
+    },
+    {
       "test": "SH-CHART-005: p-value annotations display the approximation and validation disclaimer (#2)",
       "suite": "browser",
       "status": "pass",
@@ -63,7 +71,7 @@
       "status": "pass",
       "requirementIds": ["SH-CTRL-001", "SH-CTRL-002", "SH-CTRL-006"],
       "issueRefs": [2],
-      "screenshots": ["SH-CTRL-001-control-panel.png"]
+      "screenshots": ["SH-CTRL-001-control-panel.png", "SH-CTRL-006-shared-bin-multiples.png"]
     },
     {
       "test": "SH-CTRL-003: participant note updates when a filter is applied (#2)",
@@ -90,12 +98,36 @@
       "screenshots": ["SH-CTRL-005-axis-limits.png"]
     },
     {
+      "test": "SH-CTRL-006: bin boundaries anchor to the measure results, not the filtered subset (#19)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SH-CTRL-006"],
+      "issueRefs": [19],
+      "screenshots": ["SH-CTRL-006-shared-bin-multiples.png"]
+    },
+    {
       "test": "SH-CTRL-007: x-axis tick mode switches labels between centers and bin boundaries (#2)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["SH-CTRL-007"],
       "issueRefs": [2],
       "screenshots": ["SH-CTRL-007-boundary-ticks.png"]
+    },
+    {
+      "test": "SH-CTRL-008/SH-REG-020: editing Quantity switches the algorithm to Custom and recomputes the width (#19)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SH-CTRL-008", "SH-REG-020"],
+      "issueRefs": [19],
+      "screenshots": ["SH-CTRL-008-bins-inputs-populated.png"]
+    },
+    {
+      "test": "SH-CTRL-008/SH-REG-024/SH-REG-025/SH-REG-026: bin quantity and width inputs reflect the resolved binning (#19)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SH-CTRL-008", "SH-REG-024", "SH-REG-025", "SH-REG-026"],
+      "issueRefs": [19],
+      "screenshots": ["SH-CTRL-008-bins-inputs-populated.png"]
     },
     {
       "test": "SH-DATA-002: missing and non-numeric results are dropped with a reported count and visible note (#2)",
@@ -240,6 +272,46 @@
       "requirementIds": [],
       "issueRefs": [6],
       "screenshots": []
+    },
+    {
+      "test": "histogram binning matches the original renderer (#19) SH-CTRL-006: ADBDS Albumin reproduces the original renderer's bin parameters (#19)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-CTRL-006"],
+      "issueRefs": [19, 19],
+      "screenshots": ["SH-CTRL-006-shared-bin-multiples.png"]
+    },
+    {
+      "test": "histogram binning matches the original renderer (#19) SH-CTRL-006: bin quantity is clamped to the count of unique results (#19)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-CTRL-006"],
+      "issueRefs": [19, 19],
+      "screenshots": ["SH-CTRL-006-shared-bin-multiples.png"]
+    },
+    {
+      "test": "histogram binning matches the original renderer (#19) SH-CTRL-006: Scott's rule and Freedman-Diaconis enforce the original's 5-bin floor (#19)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-CTRL-006"],
+      "issueRefs": [19, 19],
+      "screenshots": ["SH-CTRL-006-shared-bin-multiples.png"]
+    },
+    {
+      "test": "histogram binning matches the original renderer (#19) SH-CTRL-006: Shimazaki-Shinomoto minimizes the original's cost function (#19)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-CTRL-006"],
+      "issueRefs": [19, 19],
+      "screenshots": ["SH-CTRL-006-shared-bin-multiples.png"]
+    },
+    {
+      "test": "histogram binning matches the original renderer (#19) SH-CTRL-006: zero-spread results collapse to a single bin (#19)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-CTRL-006"],
+      "issueRefs": [19, 19],
+      "screenshots": ["SH-CTRL-006-shared-bin-multiples.png"]
     },
     {
       "test": "histogram checkInputs SH-DATA-001: missing required variables throw the pilot's error message (#2)",
@@ -450,12 +522,12 @@
       "screenshots": ["SH-CTRL-005-axis-limits.png"]
     },
     {
-      "test": "histogram structureData SH-CTRL-006: binning algorithms produce the pilot's bin quantities (#2)",
+      "test": "histogram structureData SH-CTRL-006: binning algorithms produce the original renderer's bin quantities (#2)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["SH-CTRL-006"],
       "issueRefs": [2],
-      "screenshots": []
+      "screenshots": ["SH-CTRL-006-shared-bin-multiples.png"]
     },
     {
       "test": "histogram structureData SH-CTRL-006: custom quantity and custom width drive the bin count (#2)",
@@ -463,7 +535,7 @@
       "status": "pass",
       "requirementIds": ["SH-CTRL-006"],
       "issueRefs": [2],
-      "screenshots": []
+      "screenshots": ["SH-CTRL-006-shared-bin-multiples.png"]
     },
     {
       "test": "histogram structureData SH-DATA-001: measure labels combine the measure with its unit when present (#2)",
