@@ -47,10 +47,14 @@ describe('site generator: gallery', () => {
     expect(html.indexOf('status-available')).toBeLessThan(html.indexOf('gallery-planned'));
   });
 
-  it('gallery leads with the project story and a live-demo call to action (#21)', () => {
-    expect(html).toContain('safetyGraphics');
-    expect(html).toContain('gsm.safety');
+  it('gallery leads with the two-sentence intro linking the keynote and safetyGraphics (#29)', () => {
+    expect(html).toContain('charting library for monitoring clinical trial safety');
+    expect(html).toContain('href="https://jwildfire.github.io/keynote/"');
+    expect(html).toContain('https://github.com/SafetyGraphics');
     expect(html).toContain('class="home-ctas"');
     expect(html).toContain('href="histogram/index.html"');
+    // The long story block moved to the About page (#29).
+    expect(html).not.toContain('class="lead"');
+    expect(html).not.toContain('gsm.kri');
   });
 });
