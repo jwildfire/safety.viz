@@ -15,22 +15,23 @@ pending; each row lists the module IDs its test covers.
 
 ## Browser evidence (Playwright — `tests/e2e/hep-explorer.spec.js`)
 
-| Requirement ID                               | Source matrix rows | Issue | Test                                                                                                     |
-| -------------------------------------------- | ------------------ | ----- | -------------------------------------------------------------------------------------------------------- |
-| HEP-CTRL-001/002/006/007/008/009/010/011/012 | —                  | #43   | renders the full control panel                                                                           |
-| HEP-DATA-001, HEP-CTRL-011                   | —                  | #43   | participant note reports N and % and updates on filter                                                   |
-| HEP-DATA-003                                 | —                  | #43   | missing and non-numeric results are dropped with a reported count and note                               |
-| HEP-QUAD-002/003/004/005                     | —                  | #43   | quadrant cut-lines classify one participant per quadrant and drive the summary table                     |
-| HEP-QUAD-001/004                             | —                  | #43   | changing the x-axis reference line reclassifies the quadrants                                            |
-| HEP-DISPLAY-001/002, HEP-CHART-002           | —                  | #43   | the display toggle switches eDISH and mDISH axis titles and cutpoints                                    |
-| HEP-SELECT-001/002/003/005/006               | —                  | #43   | clicking a point draws the visit path, detail panels, and linked listing                                 |
-| HEP-SELECT-007                               | —                  | #43   | clicking the background clears the selection, detail panels, and listing                                 |
-| HEP-SELECT-006                               | —                  | #43   | changing Display Type while a participant is selected re-renders the coordinated panels in the new units |
-| HEP-CTRL-009                                 | —                  | #43   | grouping colors the points and renders a legend                                                          |
-| HEP-CTRL-006, HEP-CHART-003                  | —                  | #43   | the axis-type toggle switches both axes between linear and log                                           |
-| HEP-CHART-004                                | —                  | #43   | point tooltips list participant, R Ratio, peaks with days, and the day difference                        |
-| HEP-API-003                                  | —                  | #43   | participantsSelected fires on select and clear                                                           |
-| HEP-API-001                                  | —                  | #43   | lifecycle API supports init, setData, setSettings, render, resize, and destroy                           |
+| Requirement ID                               | Source matrix rows | Issue | Test                                                                                                         |
+| -------------------------------------------- | ------------------ | ----- | ------------------------------------------------------------------------------------------------------------ |
+| HEP-CTRL-001/002/006/007/008/009/010/011/012 | —                  | #43   | renders the full control panel                                                                               |
+| HEP-DATA-001, HEP-CTRL-011                   | —                  | #43   | participant note reports N and % and updates on filter                                                       |
+| HEP-DATA-003                                 | —                  | #43   | missing and non-numeric results are dropped with a reported count and note                                   |
+| HEP-QUAD-002/003/004/005                     | —                  | #43   | quadrant cut-lines classify one participant per quadrant and drive the summary table                         |
+| HEP-QUAD-001/004                             | —                  | #43   | changing the x-axis reference line reclassifies the quadrants                                                |
+| HEP-DISPLAY-001/002, HEP-CHART-002           | —                  | #43   | the display toggle switches eDISH and mDISH axis titles and cutpoints                                        |
+| HEP-SELECT-001/002/003/005/006               | —                  | #43   | clicking a point draws the visit path, detail panels, and linked listing                                     |
+| HEP-SELECT-002                               | —                  | #43   | selecting a second participant without a background click destroys the prior detail chart (no Chart.js leak) |
+| HEP-SELECT-007                               | —                  | #43   | clicking the background clears the selection, detail panels, and listing                                     |
+| HEP-SELECT-006                               | —                  | #43   | changing Display Type while a participant is selected re-renders the coordinated panels in the new units     |
+| HEP-CTRL-009                                 | —                  | #43   | grouping colors the points and renders a legend                                                              |
+| HEP-CTRL-006, HEP-CHART-003                  | —                  | #43   | the axis-type toggle switches both axes between linear and log                                               |
+| HEP-CHART-004                                | —                  | #43   | point tooltips list participant, R Ratio, peaks with days, and the day difference                            |
+| HEP-API-003                                  | —                  | #43   | participantsSelected fires on select and clear                                                               |
+| HEP-API-001                                  | —                  | #43   | lifecycle API supports init, setData, setSettings, render, resize, and destroy                               |
 
 ## Unit evidence (Vitest — `tests/unit/hep-explorer/`)
 
