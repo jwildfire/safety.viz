@@ -12076,17 +12076,12 @@ var SafetyViz = (() => {
         this.buildControls();
         this.render();
       };
+      this.binQuantityInput = quantity;
       const width = addControl("Width", document.createElement("input"), binRow);
       width.type = "number";
-      width.min = "0";
-      width.step = "any";
+      width.disabled = true;
       width.value = this.state.width || "";
-      width.onchange = () => {
-        this.state.width = Math.max(Number.EPSILON, Number(width.value) || 0);
-        this.state.algorithm = "Custom";
-        this.buildControls();
-        this.render();
-      };
+      this.binWidthInput = width;
       const displayParent = addSection("Display");
       this.normalRangeControl = null;
       if (this.settings.normal_range) {
@@ -12254,6 +12249,8 @@ var SafetyViz = (() => {
       const inputs = this.chartInputs(this.filteredData);
       this.state.quantity = inputs.quantity;
       this.state.width = Number(inputs.width.toPrecision(4));
+      if (this.binQuantityInput) this.binQuantityInput.value = this.state.quantity;
+      if (this.binWidthInput) this.binWidthInput.value = this.state.width;
       const first = this.filteredData[0];
       this.state.normalRange = this.settings.normal_col_low && this.settings.normal_col_high ? {
         low: Number(first[this.settings.normal_col_low]),
