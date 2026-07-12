@@ -34,6 +34,11 @@ describe('site generator: about page (#21)', () => {
     expect(html).toContain('https://jwildfire.github.io/obot.roadmap/');
   });
 
+  it('carries the OpenRBQM mirror and audience framing moved off the homepage (#29)', () => {
+    expect(html).toContain('gsm.kri');
+    expect(html).toContain('medical monitor');
+  });
+
   it('credits the safetyGraphics project and every original RhoInc renderer (#21)', () => {
     expect(html).toContain('safetyGraphics');
     for (const repo of ORIGINAL_REPOS) {

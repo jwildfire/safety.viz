@@ -19,7 +19,8 @@
       "status": "available",
       "blurb": "Participant-level results over time: one line per participant for the selected measure against a population normal-range band, with filters, x-axis and y-limit controls, color-by grouping, and click-to-select participant detail.",
       "hero": "SOE-FUNC-010-participant-detail.png",
-      "matrix": "safety-outlier-explorer.md"
+      "matrix": "safety-outlier-explorer.md",
+      "heroAsset": "outlier-explorer-hero.png"
     },
     {
       "module": "results-over-time",
@@ -27,7 +28,8 @@
       "status": "available",
       "blurb": "Population-level distribution of a measure at each study visit as box-and-whisker marks, with grouping, an outlier overlay, and linear/log y-axis controls.",
       "hero": "SROT-FUNC-001-control-panel.png",
-      "matrix": "safety-results-over-time.md"
+      "matrix": "safety-results-over-time.md",
+      "heroAsset": "results-over-time-hero.png"
     },
     {
       "module": "shift-plot",
@@ -35,15 +37,17 @@
       "status": "available",
       "blurb": "Baseline versus comparison-visit values for a measure on a scatter with an identity line, measure and visit controls, filters, and a brush selection that opens a linked participant listing.",
       "hero": "SSP-CTRL-001-baseline-scatter.png",
-      "matrix": "safety-shift-plot.md"
+      "matrix": "safety-shift-plot.md",
+      "heroAsset": "shift-plot-hero.png"
     },
     {
       "module": "delta-delta",
       "title": "Safety Delta-Delta",
       "status": "available",
-      "blurb": "Paired change-from-baseline comparison of two measures on one scatter — quadrant reference lines, an optional regression line, measure and visit pickers, and a linked per-measure detail table with sparklines.",
+      "blurb": "Paired change-from-baseline comparison of two measures on one scatter \u2014 quadrant reference lines, an optional regression line, measure and visit pickers, and a linked per-measure detail table with sparklines.",
       "hero": "SDD-FUNC-002-baseline-scatter.png",
-      "matrix": "safety-delta-delta.md"
+      "matrix": "safety-delta-delta.md",
+      "heroAsset": "delta-delta-hero.png"
     },
     {
       "module": "paneled-outlier-explorer",
@@ -66,7 +70,8 @@
       "blurb": "Participant-level adverse-event timelines by severity and onset relative to study start, with serious-event marks and click-through participant detail.",
       "hero": "AET-FUNC-002-baseline-timelines.png",
       "matrix": "ae-timelines.md",
-      "data": "adae.csv"
+      "data": "adae.csv",
+      "heroAsset": "ae-timelines-hero.png"
     },
     {
       "module": "web-codebook",
