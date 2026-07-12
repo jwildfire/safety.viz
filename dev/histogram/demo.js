@@ -1,7 +1,8 @@
 // Demo mount for the histogram page (#7, #15): recreates the original
 // safety-histogram test page (RhoInc/safety-histogram/test-page) — the same
 // call shape and options — against the real ADBDS example data vendored in
-// ./adbds.csv (RhoInc data-library, trimmed to the columns the demo maps).
+// ./adbds.csv (built from pharmaverseadam — CDISC Pilot 01 ADaM labs + vitals —
+// by scripts/build-demo-data.mjs; see docs/DATA_SOURCES.md).
 // Loaded by histogram/index.html after the dist/ bundle.
 (function () {
   // Quote-aware CSV parser: the real data quotes fields with embedded commas

@@ -1,7 +1,7 @@
 // Demo mount for the delta-delta page (#25): recreates the original
 // safety-delta-delta test page (RhoInc/safety-delta-delta/test-page/example0) —
 // the same call shape and filter set — against the real ADBDS example data
-// vendored in ./adbds.csv (RhoInc data-library), which carries the VISIT /
+// vendored in ./adbds.csv (built from pharmaverseadam), which carries the VISIT /
 // VISITNUM columns the change-from-baseline transform needs. Loaded by
 // delta-delta/index.html after the dist/ bundle.
 (function () {
@@ -68,11 +68,11 @@
           { value_col: 'USUBJID', label: 'Participant ID' }
         ],
         // A classic paired hepatotoxicity comparison: change in ALT vs change
-        // in AST from Screening (baseline) to End of Study (comparison, the
-        // data's last visit). Baseline/comparison default to the first/last
-        // visit; the pickers let the reviewer choose any measures or visits.
-        measure_x: 'Aminotransferase, alanine (ALT)',
-        measure_y: 'Aminotransferase, aspartate (AST)',
+        // in AST from Baseline to Week 26 (comparison, the data's last scheduled
+        // visit). Baseline/comparison default to the first/last visit; the
+        // pickers let the reviewer choose any measures or visits.
+        measure_x: 'Alanine Aminotransferase',
+        measure_y: 'Aspartate Aminotransferase',
         add_regression_line: true
       });
       window.__safetyDeltaDeltaInstance = instance;
