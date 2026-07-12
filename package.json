@@ -1,6 +1,6 @@
 {
   "name": "safety.viz",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Consolidated Chart.js charting library for clinical safety graphics.",
   "private": true,
   "type": "module",
