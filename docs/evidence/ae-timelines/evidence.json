@@ -1067,6 +1067,54 @@
       "requirementIds": [],
       "issueRefs": [],
       "screenshots": []
+    },
+    {
+      "test": "mdBlock: heading ids and the guide TOC adds no heading ids by default (coverage docs stay unchanged)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: heading ids and the guide TOC adds slug ids to headings when opted in",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: heading ids and the guide TOC disambiguates repeated headings",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: heading ids and the guide TOC extractHeadings ids match the ids mdBlock emits",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: heading ids and the guide TOC slugify lowercases and collapses non-alphanumerics",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderGuidePage: composition renders a sticky TOC sidebar whose links anchor to the heading ids",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
     }
   ]
 }
