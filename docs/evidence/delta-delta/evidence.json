@@ -1059,6 +1059,142 @@
       "requirementIds": ["API-SCHEMA-006"],
       "issueRefs": [6],
       "screenshots": []
+    },
+    {
+      "test": "mdBlock: image figures renders a standalone image line as a captioned figure",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: image figures falls back to the alt text when no caption title is given",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: image figures accepts a single-quoted caption (Prettier normalizes titles to single quotes)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: image figures treats a mid-paragraph image inline, not as a broken link",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: pipe tables renders a GFM pipe table inside a scroll wrapper with header and body",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: pipe tables applies column alignment from the delimiter row",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: pipe tables does not mistake a bare horizontal rule for a table delimiter",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: existing blocks are unchanged still renders headings, bullets, and paragraphs",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: existing blocks are unchanged renders a numbered list as an ordered list",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderGuidePage: composition renders the title, non-diagnostic caution, and the guide tab",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderGuidePage: composition renders authored figures from the guide markdown",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: heading ids and the guide TOC adds no heading ids by default (coverage docs stay unchanged)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: heading ids and the guide TOC adds slug ids to headings when opted in",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: heading ids and the guide TOC disambiguates repeated headings",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: heading ids and the guide TOC extractHeadings ids match the ids mdBlock emits",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: heading ids and the guide TOC slugify lowercases and collapses non-alphanumerics",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderGuidePage: composition renders a sticky TOC sidebar whose links anchor to the heading ids",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
     }
   ]
 }

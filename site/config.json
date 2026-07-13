@@ -56,6 +56,7 @@
       "blurb": "eDISH scatter of peak ALT vs peak total bilirubin (×ULN) with Hy's-Law quadrant cut-lines, a quadrant summary table, eDISH/mDISH display modes, R-Ratio and timing controls, and click-to-inspect participant visit paths.",
       "hero": "HEP-SELECT-001-participant-detail.png",
       "matrix": "hep-explorer.md",
+      "guide": "hep-explorer.md",
       "heroAsset": "hep-explorer-hero.png",
       "data": "adbds.csv"
     },
