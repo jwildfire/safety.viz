@@ -352,7 +352,7 @@ function statusChip(status, runUrl) {
 }
 
 // Sub-page tabs shared by every renderer page (demo / evidence / API).
-export function moduleTabs(active, matrixUrl, hasGuide = false) {
+export function moduleTabs(active, hasGuide = false) {
   const tab = (id, href, label) =>
     id === active
       ? `<a class="current" aria-current="page" href="${href}">${label}</a>`
@@ -363,7 +363,6 @@ export function moduleTabs(active, matrixUrl, hasGuide = false) {
     (hasGuide ? tab('guide', 'guide.html', 'Clinical guide') : '') +
     tab('evidence', 'evidence.html', 'Test evidence') +
     tab('api', 'api.html', 'API reference') +
-    (matrixUrl ? `<a href="${matrixUrl}">Requirement matrix ↗</a>` : '') +
     `</nav>`
   );
 }
@@ -492,7 +491,11 @@ export function renderEvidencePage({ module, config, coverage, evidence }) {
     `<p class="tagline">Requirement-traced qualification evidence for the safety.viz` +
       ` <code>${escapeHtml(module)}</code> module.</p>`
   );
-  html.push(moduleTabs('evidence', matrixUrl, !!renderer.guide));
+  html.push(moduleTabs('evidence', !!renderer.guide));
+  html.push(
+    `<p class="matrix-link"><a href="${matrixUrl}">Requirement matrix ↗</a>` +
+      ` — the reviewed source specification these tests trace to.</p>`
+  );
 
   html.push(
     `<dl class="facts">` +
@@ -873,8 +876,7 @@ function methodSection(method) {
 // _api/<module>.json artifact (scripts/api/build-api-data.mjs, #6) — a
 // module-anatomy overview, then factory, methods, settings, and the
 // schema-derived data contract, with a sticky sidebar table of contents.
-// matrixUrl is optional so the generator stays a pure function of the model.
-export function renderApiPage(model, { matrixUrl, hasGuide = false } = {}) {
+export function renderApiPage(model, { hasGuide = false } = {}) {
   const toc =
     `<nav class="api-toc" aria-label="On this page"><h2>On this page</h2><ul>` +
     `<li><a href="#overview">Overview</a></li>` +
@@ -948,7 +950,7 @@ export function renderApiPage(model, { matrixUrl, hasGuide = false } = {}) {
     `<p class="tagline">Generated from the module&#39;s JSDoc and JSON-Schema data contract` +
       ` — <code>npm run docs:api</code> fails on undocumented surface.</p>`
   );
-  html.push(moduleTabs('api', matrixUrl, hasGuide));
+  html.push(moduleTabs('api', hasGuide));
   html.push(`<div class="api-layout">${toc}<div class="api-body">${body.join('\n')}</div></div>`);
   return html.join('\n');
 }
@@ -958,12 +960,12 @@ export function renderApiPage(model, { matrixUrl, hasGuide = false } = {}) {
 // real example data (the renderer's `data` config key, defaulting to the
 // shared ADBDS extract, #26). The .demo-page wrapper widens the layout
 // (site.css) so the control sidebar and chart get full room.
-export function renderDemoPage({ renderer, version, config }) {
+export function renderDemoPage({ renderer, version }) {
   return (
     `<div class="demo-page">` +
     `<h1>${escapeHtml(renderer.title)}</h1>` +
     `<p class="tagline">${escapeHtml(renderer.blurb)}</p>` +
-    moduleTabs('demo', `${config.matrixBaseUrl}/${renderer.matrix}`, !!renderer.guide) +
+    moduleTabs('demo', !!renderer.guide) +
     `<p>This live demo mounts the committed` +
     ` <code>dist/safety.viz-${version}</code> IIFE bundle — the same asset gsm.safety vendors —` +
     ` against real example data (<code>${escapeHtml(renderer.data || 'adbds.csv')}</code>, built from the` +

@@ -114,7 +114,7 @@ for (const renderer of config.renderers.filter((entry) => entry.status === 'avai
   page(
     path.join(moduleDir, 'index.html'),
     `${renderer.title} demo · safety.viz`,
-    renderDemoPage({ renderer, version, config }),
+    renderDemoPage({ renderer, version }),
     '../',
     `Live ${renderer.title} demo: ${renderer.blurb}`
   );
@@ -142,7 +142,6 @@ for (const renderer of config.renderers.filter((entry) => entry.status === 'avai
     path.join(moduleDir, 'api.html'),
     `${renderer.title} API reference · safety.viz`,
     renderApiPage(JSON.parse(readFileSync(apiFile, 'utf8')), {
-      matrixUrl: `${config.matrixBaseUrl}/${renderer.matrix}`,
       hasGuide: !!renderer.guide
     }),
     '../',
