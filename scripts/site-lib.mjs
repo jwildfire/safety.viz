@@ -604,12 +604,8 @@ export function renderEvidencePage({ module, config, coverage, evidence }) {
 // when configured (site/assets/), falling back to the hero evidence
 // screenshot.
 export function renderGallery(config) {
-  const statusBadge = (renderer) =>
-    `<span class="badge badge-${renderer.status}">${renderer.status}</span>`;
-
   const availableCard = (renderer) => {
     const base = renderer.module;
-    const matrixUrl = `${config.matrixBaseUrl}/${renderer.matrix}`;
     const hero = renderer.heroAsset
       ? `assets/${renderer.heroAsset}`
       : `${base}/evidence/${renderer.hero}`;
@@ -618,12 +614,11 @@ export function renderGallery(config) {
       `<a class="card-thumb" href="${base}/index.html">` +
       `<img src="${hero}" alt="${escapeHtml(renderer.title)} preview" loading="lazy">` +
       `</a><div class="card-body">` +
-      `<h3><a href="${base}/index.html">${escapeHtml(renderer.title)}</a></h3>${statusBadge(renderer)}` +
+      `<h3><a href="${base}/index.html">${escapeHtml(renderer.title)}</a></h3>` +
       `<p>${escapeHtml(renderer.blurb)}</p>` +
       `<p class="card-links"><a href="${base}/index.html">Demo</a> · ` +
       `<a href="${base}/evidence.html">Evidence</a> · ` +
-      `<a href="${base}/api.html">API</a> · ` +
-      `<a href="${matrixUrl}">Matrix</a></p>` +
+      `<a href="${base}/api.html">API</a></p>` +
       `</div></li>`
     );
   };
