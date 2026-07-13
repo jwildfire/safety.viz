@@ -502,12 +502,15 @@ export function renderGallery(config) {
 
 // Each safety.viz module traces to the Rho, Inc. repository it re-implements;
 // module names were normalized during migration, so the mapping is explicit.
+// Bare names live under the RhoInc org; originals hosted elsewhere (e.g. the
+// SafetyGraphics hep-explorer) are stored as full URLs.
 const ORIGINAL_REPOS = {
   histogram: 'safety-histogram',
   'outlier-explorer': 'safety-outlier-explorer',
   'results-over-time': 'safety-results-over-time',
   'shift-plot': 'safety-shift-plot',
   'delta-delta': 'safety-delta-delta',
+  'hep-explorer': 'https://github.com/SafetyGraphics/hep-explorer',
   'paneled-outlier-explorer': 'paneled-outlier-explorer',
   'ae-explorer': 'aeexplorer',
   'ae-timelines': 'ae-timelines',
@@ -524,8 +527,10 @@ export function renderAboutPage(config) {
   const creditRows = config.renderers
     .map((renderer) => {
       const repo = ORIGINAL_REPOS[renderer.module];
+      const repoUrl =
+        repo && repo.startsWith('https://') ? repo : `https://github.com/RhoInc/${repo}`;
       const repoCell = repo
-        ? `<a href="https://github.com/RhoInc/${repo}"><code>${repo}</code></a>`
+        ? `<a href="${repoUrl}"><code>${repoUrl.split('/').pop()}</code></a>`
         : '—';
       const here =
         renderer.status === 'available'

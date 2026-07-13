@@ -1,5 +1,5 @@
 {
-  "module": "shift-plot",
+  "module": "hep-explorer",
   "generatedAt": "2026-07-12T05:50:29.147Z",
   "environment": {
     "os": "linux 6.17.0-1018-azure",
@@ -85,108 +85,147 @@
       "screenshots": []
     },
     {
-      "test": "SSP-API-001: lifecycle API supports init, setData, setSettings, render, resize, and destroy (#14)",
+      "test": "HEP-API-001: lifecycle API supports init, setData, setSettings, render, resize, and destroy (#43)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["SSP-API-001"],
-      "issueRefs": [14],
+      "requirementIds": ["HEP-API-001"],
+      "issueRefs": [43],
       "screenshots": []
     },
     {
-      "test": "SSP-API-003: brushing dispatches participantsSelected with the selected ids (#14)",
+      "test": "HEP-API-003: participantsSelected fires on select and clear (#43)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["SSP-API-003"],
-      "issueRefs": [14],
+      "requirementIds": ["HEP-API-003"],
+      "issueRefs": [43],
       "screenshots": []
     },
     {
-      "test": "SSP-CHART-002: the identity line spans a domain shared by both axes (#14)",
+      "test": "HEP-CHART-004: point tooltips list participant, R Ratio, peaks with days, and the day difference (#43)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["SSP-CHART-002"],
-      "issueRefs": [14],
+      "requirementIds": ["HEP-CHART-004"],
+      "issueRefs": [43],
       "screenshots": []
     },
     {
-      "test": "SSP-COUNT-001/SSP-REG-005: the participant note reports shown-of-total participants (#14)",
+      "test": "HEP-CTRL-001/HEP-CTRL-002/HEP-QUAD-001/HEP-DISPLAY-001/HEP-CTRL-006/HEP-CTRL-007/HEP-CTRL-008/HEP-CTRL-009/HEP-CTRL-010/HEP-CTRL-011/HEP-CTRL-012: renders the full control panel (#43)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["SSP-COUNT-001", "SSP-REG-005"],
-      "issueRefs": [14],
-      "screenshots": ["SSP-COUNT-001-participant-count.png"]
+      "requirementIds": [
+        "HEP-CTRL-001",
+        "HEP-CTRL-002",
+        "HEP-QUAD-001",
+        "HEP-DISPLAY-001",
+        "HEP-CTRL-006",
+        "HEP-CTRL-007",
+        "HEP-CTRL-008",
+        "HEP-CTRL-009",
+        "HEP-CTRL-010",
+        "HEP-CTRL-011",
+        "HEP-CTRL-012"
+      ],
+      "issueRefs": [43],
+      "screenshots": [
+        "HEP-CTRL-001-control-panel.png",
+        "HEP-CTRL-006-log-axes.png",
+        "HEP-CTRL-009-color-by-group.png",
+        "HEP-DISPLAY-001-mdish-display.png"
+      ]
     },
     {
-      "test": "SSP-CTRL-001/SSP-REQ-002/SSP-CTRL-002/SSP-CTRL-003: renders measure, baseline/comparison visit, and filter controls (#14)",
+      "test": "HEP-CTRL-006/HEP-CHART-003: the axis-type toggle switches both axes between linear and log (#43)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["SSP-CTRL-001", "SSP-REQ-002", "SSP-CTRL-002", "SSP-CTRL-003"],
-      "issueRefs": [14],
-      "screenshots": ["SSP-CTRL-001-baseline-scatter.png"]
+      "requirementIds": ["HEP-CTRL-006", "HEP-CHART-003"],
+      "issueRefs": [43],
+      "screenshots": ["HEP-CTRL-006-log-axes.png"]
     },
     {
-      "test": "SSP-CTRL-003: applying a filter updates the participant note (#14)",
+      "test": "HEP-CTRL-009: grouping colors the points and renders a legend (#43)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["SSP-CTRL-003"],
-      "issueRefs": [14],
+      "requirementIds": ["HEP-CTRL-009"],
+      "issueRefs": [43],
+      "screenshots": ["HEP-CTRL-009-color-by-group.png"]
+    },
+    {
+      "test": "HEP-DATA-001/HEP-CTRL-011: participant note reports N and % and updates on filter (#43)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HEP-DATA-001", "HEP-CTRL-011"],
+      "issueRefs": [43],
       "screenshots": []
     },
     {
-      "test": "SSP-REG-001: changing the measure re-pairs the scatter (#14)",
+      "test": "HEP-DATA-003: missing and non-numeric results are dropped with a reported count and note (#43)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["SSP-REG-001"],
-      "issueRefs": [14],
+      "requirementIds": ["HEP-DATA-003"],
+      "issueRefs": [43],
+      "screenshots": ["HEP-DATA-003-invalid-data-note.png"]
+    },
+    {
+      "test": "HEP-DISPLAY-001/HEP-DISPLAY-002/HEP-CHART-002: the display toggle switches eDISH and mDISH axis titles and cutpoints (#43)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HEP-DISPLAY-001", "HEP-DISPLAY-002", "HEP-CHART-002"],
+      "issueRefs": [43],
+      "screenshots": ["HEP-DISPLAY-001-mdish-display.png"]
+    },
+    {
+      "test": "HEP-QUAD-001/HEP-QUAD-004: changing the x-axis reference line reclassifies the quadrants (#43)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HEP-QUAD-001", "HEP-QUAD-004"],
+      "issueRefs": [43],
       "screenshots": []
     },
     {
-      "test": "SSP-REG-002/SSP-REG-003: changing baseline and comparison visits swaps the axes (#14)",
+      "test": "HEP-QUAD-002/HEP-QUAD-003/HEP-QUAD-004/HEP-QUAD-005: quadrant cut-lines classify one participant per quadrant and drive the summary table (#43)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["SSP-REG-002", "SSP-REG-003"],
-      "issueRefs": [14],
+      "requirementIds": ["HEP-QUAD-002", "HEP-QUAD-003", "HEP-QUAD-004", "HEP-QUAD-005"],
+      "issueRefs": [43],
+      "screenshots": ["HEP-QUAD-002-quadrant-summary.png"]
+    },
+    {
+      "test": "HEP-SELECT-001/HEP-SELECT-002/HEP-SELECT-003/HEP-SELECT-005/HEP-SELECT-006: clicking a point draws the visit path, detail panels, and linked listing (#43)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [
+        "HEP-SELECT-001",
+        "HEP-SELECT-002",
+        "HEP-SELECT-003",
+        "HEP-SELECT-005",
+        "HEP-SELECT-006"
+      ],
+      "issueRefs": [43],
+      "screenshots": ["HEP-SELECT-001-participant-detail.png"]
+    },
+    {
+      "test": "HEP-SELECT-002: selecting a second participant without a background click destroys the prior detail chart (no Chart.js leak) (#43)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HEP-SELECT-002"],
+      "issueRefs": [43],
       "screenshots": []
     },
     {
-      "test": "SSP-REG-006: the point tooltip reports id, baseline, comparison, change, and percent change (#14)",
+      "test": "HEP-SELECT-006: changing Display Type while a participant is selected re-renders the coordinated panels in the new units (#43)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["SSP-REG-006"],
-      "issueRefs": [14],
+      "requirementIds": ["HEP-SELECT-006"],
+      "issueRefs": [43],
       "screenshots": []
     },
     {
-      "test": "SSP-REG-008/SSP-REG-009/SSP-REG-010: the listing searches, sorts, and exports to CSV (#14)",
+      "test": "HEP-SELECT-007: clicking the background clears the selection, detail panels, and listing (#43)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["SSP-REG-008", "SSP-REG-009", "SSP-REG-010"],
-      "issueRefs": [14],
-      "screenshots": ["SSP-REG-008-linked-listing.png"]
-    },
-    {
-      "test": "SSP-REG-011: clearing the selection resets the points and hides the listing (#14)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SSP-REG-011"],
-      "issueRefs": [14],
+      "requirementIds": ["HEP-SELECT-007"],
+      "issueRefs": [43],
       "screenshots": []
-    },
-    {
-      "test": "SSP-REG-020: missing and non-numeric results are dropped with a reported count and note (#14)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SSP-REG-020"],
-      "issueRefs": [14],
-      "screenshots": ["SSP-REG-020-invalid-data-note.png"]
-    },
-    {
-      "test": "SSP-REQ-003/SSP-REQ-006/SSP-REQ-007/SSP-REG-004/SSP-REG-012: brushing opens the listing, boxes the selection, and de-emphasizes the rest (#14)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SSP-REQ-003", "SSP-REQ-006", "SSP-REQ-007", "SSP-REG-004", "SSP-REG-012"],
-      "issueRefs": [14],
-      "screenshots": ["SSP-REQ-003-brushed-selection.png"]
     },
     {
       "test": "buildApiModel API-XFORM-010: assembles the artifact with module, factory, methods, settings, data contract, and missing docs (#6)",
@@ -285,6 +324,470 @@
       "screenshots": []
     },
     {
+      "test": "hep-explorer checkInputs HEP-DATA-005: missing required columns throw a single error naming every missing variable (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DATA-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer checkInputs HEP-DATA-005: non-array or empty data reports every required column as missing (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DATA-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer checkInputs HEP-DATA-005: remapped column settings are validated against the remapped names (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DATA-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer checkInputs HEP-DATA-005: valid long-format data with the required columns passes (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DATA-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer configure HEP-API: arrayify and fieldSpec normalize scalars, nullish values, and spec objects (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer configure HEP-CTRL-001/002: measure-option lists coerce a single string to an array (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-001"],
+      "issueRefs": [],
+      "screenshots": ["HEP-CTRL-001-control-panel.png"]
+    },
+    {
+      "test": "hep-explorer configure HEP-CTRL-008: the timing window defaults to 30 days (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-008"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer configure HEP-CTRL-009: groups always offer a leading None option and honor group_by (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-009"],
+      "issueRefs": [],
+      "screenshots": ["HEP-CTRL-009-color-by-group.png"]
+    },
+    {
+      "test": "hep-explorer configure HEP-CTRL-010: r_ratio normalizes to a [min, max] pair with a data-resolved null max by default (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-010"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer configure HEP-CTRL-011: filter specs normalize strings and objects and preserve a start value (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-011"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer configure HEP-DATA-001..004: default settings map the standard id, measure, value, unit, normal-range, and timing columns (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DATA-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer configure HEP-DATA-002: a partial measure_values override back-fills the other measures from the defaults (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DATA-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer configure HEP-DATA-002/HEP-CTRL-001/002: measure_values map the short keys to full TEST strings and x/y defaults are ALT vs TB (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DATA-002", "HEP-CTRL-001"],
+      "issueRefs": [],
+      "screenshots": ["HEP-CTRL-001-control-panel.png"]
+    },
+    {
+      "test": "hep-explorer configure HEP-DISPLAY-001/HEP-CTRL-006/007: display, axis-type, point-size, and measure constants match the original renderer (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DISPLAY-001", "HEP-CTRL-006"],
+      "issueRefs": [],
+      "screenshots": ["HEP-CTRL-006-log-axes.png", "HEP-DISPLAY-001-mdish-display.png"]
+    },
+    {
+      "test": "hep-explorer configure HEP-QUAD-001: a partial cuts override deep-merges onto the defaults so untouched measures keep their cuts (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-QUAD-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer configure HEP-QUAD-001: cutFor back-fills unlisted measures and missing display modes from the defaults entry (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-QUAD-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer configure HEP-QUAD-001: default cuts give the classic eDISH view — ALT >= 3xULN via the defaults entry, TB >= 2xULN (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-QUAD-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer configure HEP-SELECT-006: details normalize to spec arrays and default to an empty list for the derived columns (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-SELECT-006"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer getPlugins HEP-CHART-004: pointTooltip lists participant, R Ratio, both peaks with days, and the day gap (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CHART-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer getPlugins HEP-CHART-004: pointTooltip names each measure with its full label from measure_values (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CHART-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer getPlugins HEP-CHART-004: pointTooltip shows NA for a missing R Ratio or day and omits an unknown day gap (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CHART-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer getPlugins HEP-CTRL-009: groupColorScale maps distinct group values to palette colors and cycles (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-009"],
+      "issueRefs": [],
+      "screenshots": ["HEP-CTRL-009-color-by-group.png"]
+    },
+    {
+      "test": "hep-explorer getPlugins HEP-QUAD-002: QUADRANT_LABELS pin the four Hy's-Law quadrants to their corner and High/Normal combination (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-QUAD-002"],
+      "issueRefs": [],
+      "screenshots": ["HEP-QUAD-002-quadrant-summary.png"]
+    },
+    {
+      "test": "hep-explorer getPlugins HEP-SELECT-001: the selection highlight color is a hex color distinct from the group palette (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-SELECT-001"],
+      "issueRefs": [],
+      "screenshots": ["HEP-SELECT-001-participant-detail.png"]
+    },
+    {
+      "test": "hep-explorer getPlugins hexToRgba converts a hex color to rgba at the given opacity (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer getScales HEP-CHART-002: buildScales titles both axes with the full measure labels in the active display units (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CHART-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer getScales HEP-CHART-003: a linear eDISH domain starts at 0 and always keeps the cutpoint in view (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CHART-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer getScales HEP-CHART-003: degenerate linear domains fall back sanely (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CHART-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer getScales HEP-CHART-003/HEP-CTRL-006: a log domain runs from the smallest positive value to the max, padded, including the cut (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CHART-003", "HEP-CTRL-006"],
+      "issueRefs": [],
+      "screenshots": ["HEP-CTRL-006-log-axes.png"]
+    },
+    {
+      "test": "hep-explorer getScales HEP-CHART-004: formatNumber trims trailing zeros at the requested precision and blanks non-finite values (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CHART-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer getScales HEP-CTRL-006: the log axis type switches both scales to logarithmic and drops a non-positive min (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-006"],
+      "issueRefs": [],
+      "screenshots": ["HEP-CTRL-006-log-axes.png"]
+    },
+    {
+      "test": "hep-explorer getScales HEP-DISPLAY-001/HEP-CHART-002: axis suffix and label reflect the active display mode and use the full measure label (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DISPLAY-001", "HEP-CHART-002"],
+      "issueRefs": [],
+      "screenshots": ["HEP-DISPLAY-001-mdish-display.png"]
+    },
+    {
+      "test": "hep-explorer module export HEP-API-001: the public collection exposes the hepExplorer factory (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-API-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-API: unique, mean, quantile, and median match hand computations (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-CHART-001/HEP-DISPLAY-003: buildPoints reduces to one peak-vs-peak point per participant with timing and rRatio (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CHART-001", "HEP-DISPLAY-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-CTRL-008: buildPoints flags points outside the timing window as hollow (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-008"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-CTRL-009: buildPoints tags each point with its participant-level group value when grouping (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-009"],
+      "issueRefs": [],
+      "screenshots": ["HEP-CTRL-009-color-by-group.png"]
+    },
+    {
+      "test": "hep-explorer structureData HEP-CTRL-010: maxRRatio is the largest finite participant R-Ratio, 0 when none is finite (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-010"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-CTRL-011: applyFilters keeps points matching every active filter; unset filters match everything (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-011"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-DATA-002: resolveMeasureRows matches rows via the measure_values TEST strings (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DATA-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-DATA-003: cleanData drops blank/non-numeric values and non-positive ULNs with a count (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DATA-003"],
+      "issueRefs": [],
+      "screenshots": ["HEP-DATA-003-invalid-data-note.png"]
+    },
+    {
+      "test": "hep-explorer structureData HEP-DATA-004: a non-numeric study-day value is treated as absent (NaN), not coerced (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DATA-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-DATA-004: without a study-day column __hep_day is NaN and timing falls back to filled points (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DATA-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-DATA-004/HEP-DISPLAY-002: cleanData tags rows with numeric value, ULN, day, and the xULN derivation (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DATA-004", "HEP-DISPLAY-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-DISPLAY-001: buildPoints in mDISH uses the xBaseline peaks (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DISPLAY-001"],
+      "issueRefs": [],
+      "screenshots": ["HEP-DISPLAY-001-mdish-display.png"]
+    },
+    {
+      "test": "hep-explorer structureData HEP-DISPLAY-001: deriveBaseline uses the day-0 record, else the earliest day, as the xBaseline denominator (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DISPLAY-001"],
+      "issueRefs": [],
+      "screenshots": ["HEP-DISPLAY-001-mdish-display.png"]
+    },
+    {
+      "test": "hep-explorer structureData HEP-DISPLAY-003: participantPeak picks the record with the max active-display value, per display mode (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DISPLAY-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-DISPLAY-004: a zero baseline leaves xBaseline NaN so mDISH drops the participant (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DISPLAY-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-DISPLAY-004: buildPoints in mDISH drops participants without a usable baseline (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DISPLAY-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-DISPLAY-006: computeRRatio is peak ALT xULN over peak ALP xULN, NaN without ALP (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DISPLAY-006"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-QUAD-004: a point exactly on a cutpoint classifies as High, and empty data yields zero percents (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-QUAD-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-QUAD-004: classifyQuadrants buckets one point per quadrant with counts and percents (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-QUAD-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-SELECT-002: participantMeasureSeries returns one day-ordered series per present measure in display units (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-SELECT-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-SELECT-003: visitPathSeries pairs the X/Y values by visit in chronological order (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-SELECT-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-SELECT-003: visitPathSeries respects the active display mode (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-SELECT-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-SELECT-003: without a visit column the path pairs by study day and labels the days (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-SELECT-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-SELECT-004/HEP-DATA-004: with no study day, assignSequence orders and pairs by per-measure input order (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-SELECT-004", "HEP-DATA-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-SELECT-005: measureSummary reports n/min/median/max of the raw values per present measure (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-SELECT-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
       "test": "histogram API documentation completeness API-COMPLETE-001: the documented settings are exactly the DEFAULT_SETTINGS keys (#6)",
       "suite": "unit",
       "status": "pass",
@@ -346,150 +849,6 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [1],
-      "screenshots": []
-    },
-    {
-      "test": "shift-plot checkInputs SSP-DATA-001: missing required variables throw a clear message (#14)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SSP-DATA-001"],
-      "issueRefs": [14],
-      "screenshots": []
-    },
-    {
-      "test": "shift-plot checkInputs SSP-DATA-001: the JSON schema publishes the data contract with required column mappings (#14)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SSP-DATA-001"],
-      "issueRefs": [14],
-      "screenshots": []
-    },
-    {
-      "test": "shift-plot checkInputs SSP-DATA-003: valid long-format data with optional columns passes (#14)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SSP-DATA-003"],
-      "issueRefs": [14],
-      "screenshots": []
-    },
-    {
-      "test": "shift-plot configure SSP-API: the module collection exposes the shift-plot factory (#14)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [14],
-      "screenshots": []
-    },
-    {
-      "test": "shift-plot configure SSP-CFG-004/005: baseline/comparison visits normalize to arrays and stats fall back to mean (#14)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SSP-CFG-004"],
-      "issueRefs": [14],
-      "screenshots": []
-    },
-    {
-      "test": "shift-plot configure SSP-CFG-004/005/006: default settings map the standard measure, result, visit, and id columns (#14)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SSP-CFG-004"],
-      "issueRefs": [14],
-      "screenshots": []
-    },
-    {
-      "test": "shift-plot configure SSP-CFG-006: filter specs normalize strings and objects to value_col/label pairs (#14)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SSP-CFG-006"],
-      "issueRefs": [14],
-      "screenshots": []
-    },
-    {
-      "test": "shift-plot configure SSP-REQ-005: details default to id, baseline, comparison, change, and percent change (#14)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SSP-REQ-005"],
-      "issueRefs": [14],
-      "screenshots": []
-    },
-    {
-      "test": "shift-plot structureData applyStat collapses a visit set with mean/min/max/first and the single-value shortcut (#14)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [14],
-      "screenshots": []
-    },
-    {
-      "test": "shift-plot structureData helpers: unique drops empties; roundValue and formatPercent format cleanly (#14)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [14],
-      "screenshots": []
-    },
-    {
-      "test": "shift-plot structureData SSP-CFG-005: multiple comparison visits collapse with the comparison statistic (#14)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SSP-CFG-005"],
-      "issueRefs": [14],
-      "screenshots": []
-    },
-    {
-      "test": "shift-plot structureData SSP-CHART-002: the shared domain spans both axes with padding (#14)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SSP-CHART-002"],
-      "issueRefs": [14],
-      "screenshots": []
-    },
-    {
-      "test": "shift-plot structureData SSP-CTRL-001: only the selected measure is paired (#14)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SSP-CTRL-001"],
-      "issueRefs": [14],
-      "screenshots": ["SSP-CTRL-001-baseline-scatter.png"]
-    },
-    {
-      "test": "shift-plot structureData SSP-CTRL-003: active filters subset rows by stringified equality (#14)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SSP-CTRL-003"],
-      "issueRefs": [14],
-      "screenshots": []
-    },
-    {
-      "test": "shift-plot structureData SSP-DATA-001: measure labels are the raw measure value (#14)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SSP-DATA-001"],
-      "issueRefs": [14],
-      "screenshots": []
-    },
-    {
-      "test": "shift-plot structureData SSP-REG-013/SSP-REG-014: visits order by visit_order_col, else alphanumerically (#14)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SSP-REG-013", "SSP-REG-014"],
-      "issueRefs": [14],
-      "screenshots": []
-    },
-    {
-      "test": "shift-plot structureData SSP-REG-020: missing and non-numeric results are removed with a reported count (#14)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SSP-REG-020"],
-      "issueRefs": [14],
-      "screenshots": ["SSP-REG-020-invalid-data-note.png"]
-    },
-    {
-      "test": "shift-plot structureData SSP-REQ-005/SSP-REG-019: pairs baseline against comparison per participant with change and percent change (#14)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SSP-REQ-005", "SSP-REG-019"],
-      "issueRefs": [14],
       "screenshots": []
     },
     {

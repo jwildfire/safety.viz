@@ -1,6 +1,6 @@
 {
   "module": "outlier-explorer",
-  "generatedAt": "2026-07-12T03:34:34.901Z",
+  "generatedAt": "2026-07-12T05:50:29.147Z",
   "environment": {
     "os": "linux 6.17.0-1018-azure",
     "node": "v22.23.1",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "29178424785",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29178424785"
+    "id": "29181741704",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29181741704"
   },
   "records": [
     {
@@ -22,6 +22,14 @@
     },
     {
       "test": "built delta-delta demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built hep-explorer demo mounts the shared shell with no console errors (#7) (#17)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": [],

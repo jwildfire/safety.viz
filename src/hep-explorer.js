@@ -1,0 +1,1104 @@
+// Public entrypoint for the hep-explorer module (#43): the eDISH/mDISH hepatic
+// safety explorer, a Chart.js reimplementation of the SafetyGraphics
+// hep-explorer (originally D3v3 + Webcharts). One point per participant plots
+// that participant's peak standardized ALT (x) against peak standardized total
+// bilirubin (y); two Hy's-Law cut-lines split the plot into four labeled
+// quadrants; and clicking a point drives the coordinated participant
+// drill-down views — a visit-path overlay on the scatter, a companion
+// lab-over-time line chart, a per-measure summary table, and the shared linked
+// listing, all in the active display units. Same lifecycle API as the other
+// modules (init, setData, setSettings, render, resize, destroy) and the same
+// gsm.viz-style module flow (checkInputs → configure → structureData →
+// getScales/getPlugins → new Chart). Requirement groups: HEP-CHART-* (scatter/
+// axes), HEP-QUAD-* (quadrants/cutpoints), HEP-CTRL-* (controls), HEP-DISPLAY-*
+// (eDISH/mDISH), HEP-SELECT-* (participant detail/visit path), HEP-DATA-*,
+// HEP-API-*.
+
+import {
+  Chart,
+  ScatterController,
+  LineController,
+  PointElement,
+  LineElement,
+  LinearScale,
+  LogarithmicScale,
+  Tooltip,
+  Legend
+} from 'chart.js';
+
+import { controlBuilders, createElement, option, renderShell } from './shell.js';
+import {
+  GROUP_NONE,
+  DISPLAY_MODES,
+  AXIS_TYPES,
+  POINT_SIZE_OPTIONS,
+  syncSettings,
+  cutFor
+} from './hep-explorer/configure.js';
+import { checkInputs } from './hep-explorer/checkInputs.js';
+import {
+  applyFilters,
+  assignSequence,
+  buildPoints,
+  classifyQuadrants,
+  cleanData,
+  deriveBaseline,
+  maxRRatio,
+  measureSummary,
+  participantMeasureSeries,
+  unique,
+  visitPathSeries
+} from './hep-explorer/structureData.js';
+import { axisSuffix, buildScales, edishDomain, formatNumber } from './hep-explorer/getScales.js';
+import {
+  GROUP_COLORS,
+  SELECTION_COLOR,
+  groupColorScale,
+  hexToRgba,
+  pointTooltip,
+  quadrantPlugin
+} from './hep-explorer/getPlugins.js';
+import { renderListing } from './histogram/listing.js';
+
+Chart.register(
+  ScatterController,
+  LineController,
+  PointElement,
+  LineElement,
+  LinearScale,
+  LogarithmicScale,
+  Tooltip,
+  Legend
+);
+
+// Base point color when no grouping is active (HEP-CTRL-009 default).
+const BASE_POINT_COLOR = GROUP_COLORS[0];
+
+/**
+ * Interactive hepatic safety explorer: a Chart.js eDISH scatter of peak
+ * standardized ALT vs peak standardized total bilirubin — one point per
+ * participant — with Hy's-Law quadrant cut-lines, a quadrant summary table,
+ * eDISH/mDISH display modes, linear/log axes, R-Ratio and timing controls,
+ * color-by grouping, and click-to-inspect participant panels (a visit-path
+ * overlay, a lab-over-time companion chart, a measure summary table, and the
+ * shared linked listing). Construct via the hepExplorer() factory rather than
+ * directly; the constructor renders the control shell immediately and waits
+ * for data.
+ */
+class SafetyHepExplorer {
+  constructor(element = 'body', settings = {}) {
+    this.element = typeof element === 'string' ? document.querySelector(element) : element;
+    if (!this.element) throw new Error(`Safety Hep Explorer target not found: ${element}`);
+    this.settings = syncSettings(settings);
+    this.rawData = [];
+    this.cleanRows = [];
+    this.removedRecords = 0;
+    this.droppedParticipants = 0;
+    this.allPoints = [];
+    this.points = [];
+    this.rRatioMax = 0;
+    this.groupValues = [];
+    this.colorScale = new Map();
+    this.quadrants = { counts: {}, labels: [] };
+    this.currentTableData = [];
+    this.listingSearch = '';
+    this.listingSort = null;
+    this.page = 1;
+    this.charts = [];
+    this.chart = null;
+    this.participantsSelected = [];
+    this.state = {
+      measureX: this.settings.x_default,
+      measureY: this.settings.y_default,
+      display: 'relative_uln',
+      axisType: 'linear',
+      pointSize: 'Uniform',
+      visitWindow: this.settings.visit_window,
+      groupBy: this.settings.group_by,
+      filters: {},
+      rRatio: [...this.settings.r_ratio],
+      cuts: JSON.parse(JSON.stringify(this.settings.cuts)),
+      selectedId: null,
+      xCut: null,
+      yCut: null
+    };
+    this.renderShell();
+  }
+
+  /**
+   * Build the static DOM shell the scatter, legend, quadrant summary,
+   * participant-detail panels, and listing render into.
+   * @private
+   */
+  renderShell() {
+    Object.assign(
+      this,
+      renderShell(this.element, {
+        moduleClass: 'safety-hep-explorer',
+        onToggle: () => this.resize()
+      })
+    );
+    this.legendEl = createElement('div', 'hep-legend');
+    this.legendEl.style.cssText =
+      'display:flex;flex-wrap:wrap;gap:.35rem .9rem;font-size:.8rem;color:#52616f;margin:0 0 .5rem';
+    this.main.insertBefore(this.legendEl, this.chartWrap);
+
+    // Quadrant summary table sits directly below the chart footnote.
+    this.quadrantWrap = createElement('div', 'hep-quadrant-summary');
+    this.main.insertBefore(this.quadrantWrap, this.multiplesWrap);
+
+    // Participant drill-down container (lab-over-time chart + measure summary),
+    // hidden until a point is selected (HEP-SELECT-002, HEP-SELECT-005).
+    this.detailWrap = createElement('div', 'hep-detail');
+    this.detailWrap.style.display = 'none';
+    this.main.insertBefore(this.detailWrap, this.listingWrap);
+
+    this.applyModuleStyles();
+    this.footnote.textContent = this.baseFootnote();
+  }
+
+  /**
+   * Inject the module-specific stylesheet (quadrant summary + detail panels)
+   * once per document; the shared shell stylesheet stays module-agnostic.
+   * @private
+   */
+  applyModuleStyles() {
+    const id = 'safety-viz-hep-explorer-styles';
+    if (typeof document === 'undefined' || document.getElementById(id)) return;
+    const style = document.createElement('style');
+    style.id = id;
+    style.textContent = `
+.safety-hep-explorer .hep-quadrant-summary{margin-top:1rem}
+.safety-hep-explorer .hep-quadrant-summary table{width:100%;max-width:420px;border-collapse:collapse;font-size:.85rem;background:#fff}
+.safety-hep-explorer .hep-quadrant-summary th,.safety-hep-explorer .hep-quadrant-summary td{border-bottom:1px solid #e3e8ee;padding:.4rem .55rem;text-align:left}
+.safety-hep-explorer .hep-quadrant-summary th{border-bottom:2px solid #d8dee4;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f}
+.safety-hep-explorer .hep-quadrant-summary td.hep-num,.safety-hep-explorer .hep-quadrant-summary th.hep-num{text-align:right;font-variant-numeric:tabular-nums}
+.safety-hep-explorer .hep-detail{margin-top:1.25rem;border-top:2px solid #111827;padding-top:.75rem}
+.safety-hep-explorer .hep-detail-title{font-size:.95rem;margin:0 0 .5rem}
+.safety-hep-explorer .hep-detail-chart{height:220px;position:relative;border:1px solid #d8dee4;border-radius:10px;padding:.75rem;background:#fff}
+.safety-hep-explorer .hep-summary-table{width:100%;max-width:520px;border-collapse:collapse;font-size:.85rem;background:#fff;margin-top:.9rem}
+.safety-hep-explorer .hep-summary-table th,.safety-hep-explorer .hep-summary-table td{border-bottom:1px solid #e3e8ee;padding:.4rem .55rem;text-align:left}
+.safety-hep-explorer .hep-summary-table th{border-bottom:2px solid #d8dee4;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f}
+.safety-hep-explorer .hep-summary-table td.hep-num,.safety-hep-explorer .hep-summary-table th.hep-num{text-align:right;font-variant-numeric:tabular-nums}`;
+    document.head.append(style);
+  }
+
+  /**
+   * The base footnote: usage hint plus the timing-window sentence explaining
+   * filled vs hollow points (HEP-DISPLAY-005).
+   * @private
+   */
+  baseFootnote() {
+    return (
+      'Use controls to update the chart or click a point to see participant details. ' +
+      `Points are filled when a participant's peak ${this.state.measureX} and peak ` +
+      `${this.state.measureY} occur within ${this.state.visitWindow} days of each other.`
+    );
+  }
+
+  /**
+   * Load data and render: an alias for setData that keeps the two-step
+   * create-then-init call shape working (HEP-API-001).
+   * @param {Object[]} data Long-format lab records matching the hep-explorer data contract.
+   * @returns {SafetyHepExplorer} The instance, for chaining.
+   */
+  init(data) {
+    this.setData(data);
+    return this;
+  }
+
+  /**
+   * Replace the bound data and re-render. The data is validated against the
+   * settings mapping (throwing, and rendering the message into the target
+   * element, when required columns are missing), rows with missing or
+   * non-numeric values/ULN are removed with a console warning, baselines are
+   * derived for the mDISH view, and the controls are rebuilt from the new data.
+   * @param {Object[]} data Long-format lab records matching the hep-explorer data contract.
+   * @returns {SafetyHepExplorer} The instance, for chaining.
+   */
+  setData(data) {
+    this.rawData = Array.isArray(data) ? data : [];
+    this.validateAndCleanData();
+    this.buildControls();
+    this.render();
+    return this;
+  }
+
+  /**
+   * Merge setting overrides onto the current settings, re-normalize them (same
+   * rules as the factory), re-seed the affected control state, rebuild the
+   * controls, and re-render.
+   * @param {HepExplorerSettings} settings Setting overrides to merge.
+   * @returns {SafetyHepExplorer} The instance, for chaining.
+   */
+  setSettings(settings) {
+    this.settings = syncSettings({ ...this.settings, ...settings });
+    if ('x_default' in settings) this.state.measureX = this.settings.x_default;
+    if ('y_default' in settings) this.state.measureY = this.settings.y_default;
+    if ('visit_window' in settings) this.state.visitWindow = this.settings.visit_window;
+    if ('group_by' in settings) this.state.groupBy = this.settings.group_by;
+    if ('cuts' in settings) this.state.cuts = JSON.parse(JSON.stringify(this.settings.cuts));
+    if ('r_ratio' in settings) this.state.rRatio = [...this.settings.r_ratio];
+    this.state.filters = {};
+    if (this.rawData.length) this.validateAndCleanData();
+    this.buildControls();
+    this.render();
+    return this;
+  }
+
+  /**
+   * Validate the raw data against the settings mapping, drop unusable rows,
+   * derive baselines, resolve the active measure selections, and derive the
+   * linked-listing columns when none were supplied.
+   * @private
+   */
+  validateAndCleanData() {
+    try {
+      checkInputs(this.rawData, this.settings);
+    } catch (error) {
+      this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+      throw error;
+    }
+    const { rows, removed } = cleanData(this.rawData, this.settings);
+    deriveBaseline(rows, this.settings);
+    // Number each participant × measure record in input order, the timing
+    // fallback used when the data carries no usable study day (HEP-DATA-004).
+    assignSequence(rows, this.settings);
+    this.cleanRows = rows;
+    this.removedRecords = removed;
+    // Precompute the data-derived R-Ratio maximum so the R-Ratio range filter's
+    // max input seeds correctly on the first buildControls, before render()
+    // populates this.allPoints (HEP-CTRL-010).
+    this.rRatioMax = maxRRatio(rows, this.settings);
+    if (removed)
+      console.warn(
+        `${removed} missing or non-numeric result${removed > 1 ? 's have' : ' has'} been removed.`
+      );
+
+    const xOptions = this.settings.x_options;
+    const yOptions = this.settings.y_options;
+    if (!xOptions.includes(this.state.measureX)) this.state.measureX = xOptions[0];
+    if (!yOptions.includes(this.state.measureY)) this.state.measureY = yOptions[0];
+
+    if (!this.settings.details.length) {
+      this.settings.details = [
+        { value_col: this.settings.id_col, label: 'Participant' },
+        { value_col: this.settings.measure_col, label: 'Measure' },
+        { value_col: '__hep_dayLabel', label: 'Study Day' },
+        { value_col: this.settings.value_col, label: 'Result' },
+        { value_col: this.settings.normal_col_high, label: 'ULN' },
+        { value_col: '__hep_relText', label: '×ULN' }
+      ];
+    }
+  }
+
+  /**
+   * The categorical filters whose column is present in the data; absent-column
+   * filters are dropped with a console warning (HEP-CTRL-011).
+   * @private
+   */
+  activeFilterSpecs() {
+    return this.settings.filters.filter((filter) => {
+      const exists = this.cleanRows.some((row) => row[filter.value_col] !== undefined);
+      if (!exists)
+        console.warn(
+          `The [ ${filter.label} ] filter has been removed because the variable does not exist.`
+        );
+      return exists;
+    });
+  }
+
+  /**
+   * The R-Ratio [min, max] range in effect, resolving a null max to the largest
+   * finite participant R-Ratio in the data (HEP-CTRL-010).
+   * @private
+   */
+  effectiveRRatio() {
+    const values = this.allPoints.map((point) => point.rRatio).filter(Number.isFinite);
+    // Before render() builds this.allPoints (e.g. the first buildControls in
+    // setData), fall back to the data-derived maximum computed at clean time so
+    // the max input never seeds to 0 (HEP-CTRL-010).
+    const dataMax = values.length ? Math.max(...values) : this.rRatioMax || 0;
+    const min = Number.isFinite(this.state.rRatio[0]) ? this.state.rRatio[0] : 0;
+    const max = Number.isFinite(this.state.rRatio[1]) ? this.state.rRatio[1] : dataMax;
+    return { min, max, dataMax };
+  }
+
+  /**
+   * Rebuild the settings/filters controls from data + state (HEP-CTRL-*). Only
+   * controls with ≥2 meaningful options are rendered: the Y-measure picker is
+   * dropped when a single option, Group when only None, and the R-Ratio filter
+   * when r_ratio_filter is false.
+   * @private
+   */
+  buildControls() {
+    this.controls.innerHTML = '';
+    const { addSection, addRow, addControl } = controlBuilders(this.controls);
+    const settingsParent = addSection('Settings');
+
+    // X-axis Measure (HEP-CTRL-001).
+    const measureX = addControl('X-axis Measure', document.createElement('select'), settingsParent);
+    this.settings.x_options.forEach((key) =>
+      option(measureX, key, key, key === this.state.measureX)
+    );
+    measureX.onchange = () => {
+      this.state.measureX = measureX.value;
+      this.buildControls();
+      this.render();
+    };
+
+    // Y-axis Measure — dropped when only one option (HEP-CTRL-002).
+    if (this.settings.y_options.length > 1) {
+      const measureY = addControl(
+        'Y-axis Measure',
+        document.createElement('select'),
+        settingsParent
+      );
+      this.settings.y_options.forEach((key) =>
+        option(measureY, key, key, key === this.state.measureY)
+      );
+      measureY.onchange = () => {
+        this.state.measureY = measureY.value;
+        this.buildControls();
+        this.render();
+      };
+    }
+
+    // Reference lines (the Hy's-Law cutpoints) for each axis (HEP-QUAD-001).
+    this.addCutControl(addControl, settingsParent, 'measureX');
+    this.addCutControl(addControl, settingsParent, 'measureY');
+
+    // Display Type: eDISH / mDISH (HEP-DISPLAY-001).
+    const display = addControl('Display Type', document.createElement('select'), settingsParent);
+    DISPLAY_MODES.forEach((mode) =>
+      option(display, mode.value, mode.label, mode.value === this.state.display)
+    );
+    display.onchange = () => {
+      this.state.display = display.value;
+      this.buildControls();
+      this.render();
+    };
+
+    // Axis Type: linear / log (HEP-CTRL-006).
+    const axisType = addControl('Axis Type', document.createElement('select'), settingsParent);
+    AXIS_TYPES.forEach((type) => option(axisType, type, type, type === this.state.axisType));
+    axisType.onchange = () => {
+      this.state.axisType = axisType.value;
+      this.render();
+    };
+
+    // Point Size: uniform / rRatio-scaled (HEP-CTRL-007).
+    const pointSize = addControl('Point Size', document.createElement('select'), settingsParent);
+    POINT_SIZE_OPTIONS.forEach((value) =>
+      option(pointSize, value, value, value === this.state.pointSize)
+    );
+    pointSize.onchange = () => {
+      this.state.pointSize = pointSize.value;
+      this.render();
+    };
+
+    // Timing window (HEP-CTRL-008).
+    const window = addControl(
+      'Highlight Points Based on Timing',
+      document.createElement('input'),
+      settingsParent
+    );
+    window.type = 'number';
+    window.min = '0';
+    window.step = '1';
+    window.value = this.state.visitWindow;
+    window.onchange = () => {
+      const value = Number(window.value);
+      this.state.visitWindow = Number.isFinite(value) && value >= 0 ? value : 0;
+      window.value = this.state.visitWindow;
+      this.render();
+    };
+
+    // Group / color-by — dropped when only the None option (HEP-CTRL-009).
+    if (this.settings.groups.length > 1) {
+      const group = addControl('Group', document.createElement('select'), settingsParent);
+      this.settings.groups.forEach((spec) =>
+        option(group, spec.value_col, spec.label, spec.value_col === this.state.groupBy)
+      );
+      group.onchange = () => {
+        this.state.groupBy = group.value;
+        this.render();
+      };
+    }
+
+    // Filters section (HEP-CTRL-011) plus the R-Ratio range filter (HEP-CTRL-010).
+    const filterSpecs = this.activeFilterSpecs();
+    const showRRatio = this.settings.r_ratio_filter;
+    if (filterSpecs.length || showRRatio) {
+      const filterParent = addSection('Filters');
+      filterSpecs.forEach((filter) => {
+        const select = addControl(filter.label, document.createElement('select'), filterParent);
+        option(select, '__all__', 'All', !this.state.filters[filter.value_col]);
+        unique(this.cleanRows.map((row) => row[filter.value_col]))
+          .sort()
+          .forEach((value) =>
+            option(
+              select,
+              value,
+              value,
+              String(this.state.filters[filter.value_col]) === String(value)
+            )
+          );
+        select.onchange = () => {
+          this.state.filters[filter.value_col] = select.value === '__all__' ? null : select.value;
+          this.render();
+        };
+      });
+      if (showRRatio) this.addRRatioControl(addRow, addControl, filterParent);
+    }
+
+    // Reset Chart (HEP-CTRL-012).
+    const reset = addControl(' ', document.createElement('button'), this.controls);
+    reset.type = 'button';
+    reset.textContent = 'Reset Chart';
+    reset.className = 'hep-reset';
+    reset.style.cssText =
+      'width:100%;margin-top:.75rem;padding:.35rem .45rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.82rem;cursor:pointer';
+    reset.onclick = () => this.resetChart();
+  }
+
+  /**
+   * Add a reference-line (cutpoint) number input for one axis; edits write the
+   * per-measure, per-display cut into state.cuts and clamp it to ≥ 0 so it
+   * cannot fall below the axis minimum (HEP-QUAD-001).
+   * @private
+   */
+  addCutControl(addControl, parent, axisKey) {
+    const measureKey = this.state[axisKey];
+    const input = addControl(
+      `${measureKey} Reference Line`,
+      document.createElement('input'),
+      parent
+    );
+    input.type = 'number';
+    input.step = '0.1';
+    input.min = '0';
+    const current = cutFor(this.state.cuts, measureKey, this.state.display);
+    input.value = Number.isFinite(current) ? current : '';
+    input.onchange = () => {
+      const value = Math.max(0, Number(input.value) || 0);
+      if (!this.state.cuts[measureKey]) this.state.cuts[measureKey] = {};
+      this.state.cuts[measureKey][this.state.display] = value;
+      input.value = value;
+      this.render();
+    };
+  }
+
+  /**
+   * Add the R-Ratio range filter: min/max number inputs plus a Reset button
+   * that restores the initial range (HEP-CTRL-010).
+   * @private
+   */
+  addRRatioControl(addRow, addControl, parent) {
+    const { max, dataMax } = this.effectiveRRatio();
+    const row = addRow(parent);
+    const min = addControl('R Ratio min', document.createElement('input'), row);
+    min.type = 'number';
+    min.step = '0.1';
+    min.value = Number.isFinite(this.state.rRatio[0]) ? this.state.rRatio[0] : 0;
+    min.onchange = () => {
+      this.state.rRatio[0] = min.value === '' ? 0 : Number(min.value);
+      this.render();
+    };
+    const maxInput = addControl('R Ratio max', document.createElement('input'), row);
+    maxInput.type = 'number';
+    maxInput.step = '0.1';
+    maxInput.value = formatNumber(max) || dataMax;
+    maxInput.onchange = () => {
+      this.state.rRatio[1] = maxInput.value === '' ? null : Number(maxInput.value);
+      this.render();
+    };
+    const reset = addControl(' ', document.createElement('button'), parent);
+    reset.type = 'button';
+    reset.textContent = 'Reset R Ratio';
+    reset.style.cssText =
+      'width:100%;padding:.3rem .45rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.8rem;cursor:pointer';
+    reset.onclick = () => {
+      this.state.rRatio = [...this.settings.r_ratio];
+      this.buildControls();
+      this.render();
+    };
+  }
+
+  /**
+   * Reset the cutpoints, display mode, axis type, point size, filters, and
+   * R-Ratio range to their initial values, then rebuild and redraw
+   * (HEP-CTRL-012).
+   * @private
+   */
+  resetChart() {
+    this.state.cuts = JSON.parse(JSON.stringify(this.settings.cuts));
+    this.state.display = 'relative_uln';
+    this.state.axisType = 'linear';
+    this.state.pointSize = 'Uniform';
+    this.state.visitWindow = this.settings.visit_window;
+    this.state.filters = {};
+    this.state.rRatio = [...this.settings.r_ratio];
+    this.buildControls();
+    this.render();
+  }
+
+  /**
+   * The shown scatter points after the categorical filters and the R-Ratio
+   * range (HEP-CTRL-010, HEP-CTRL-011). Points with an unknown (NA) R-Ratio are
+   * retained.
+   * @private
+   */
+  filteredPoints() {
+    const filtered = applyFilters(this.allPoints, this.state.filters);
+    const { min, max } = this.effectiveRRatio();
+    return filtered.filter((point) => {
+      if (!Number.isFinite(point.rRatio)) return true;
+      return point.rRatio >= min && point.rRatio <= max;
+    });
+  }
+
+  /**
+   * Redraw everything from the current data, settings, and control state:
+   * destroys the live charts, clears the listing, legend, quadrant summary,
+   * and any selection, recomputes the per-participant points and quadrants,
+   * then draws the scatter, legend, and quadrant summary table (or an
+   * empty-data message). A live participant selection survives the redraw:
+   * when the participant is still shown, every coordinated panel — scatter
+   * highlight, visit path, lab-over-time chart, summary table, and listing —
+   * is re-rendered from the same selection in the active display units
+   * (HEP-SELECT-006); otherwise the selection is cleared and listeners are
+   * notified. Called automatically by the controls and the data/settings
+   * setters.
+   * @returns {void}
+   */
+  render() {
+    // Remember a live selection so control-driven redraws (display type, axis
+    // type, cutpoints, timing window, …) restore the coordinated participant
+    // panels in the new units instead of dropping them (HEP-SELECT-006).
+    const previousSelectedId = this.state.selectedId;
+    this.destroyCharts();
+    this.listingWrap.innerHTML = '';
+    this.legendEl.innerHTML = '';
+    this.quadrantWrap.innerHTML = '';
+    this.detailWrap.innerHTML = '';
+    this.detailWrap.style.display = 'none';
+    this.currentTableData = [];
+    this.listingSearch = '';
+    this.listingSort = null;
+    this.page = 1;
+    this.state.selectedId = null;
+    this.participantsSelected = [];
+    this.notes.innerHTML = '';
+    this.mainAnnotation.textContent = '';
+    this.footnote.textContent = this.baseFootnote();
+
+    this.state.xCut = cutFor(this.state.cuts, this.state.measureX, this.state.display);
+    this.state.yCut = cutFor(this.state.cuts, this.state.measureY, this.state.display);
+
+    if (!this.cleanRows.length) {
+      this.notes.innerHTML = '<span>No data selected. Provide records to draw the chart.</span>';
+      if (previousSelectedId != null) this.dispatchSelection([]);
+      return;
+    }
+
+    const built = buildPoints(this.cleanRows, this.settings, this.state);
+    this.allPoints = built.points;
+    this.droppedParticipants = built.droppedParticipants;
+    this.points = this.filteredPoints();
+    this.updateNotes();
+
+    if (!this.points.length) {
+      this.mainAnnotation.textContent = 'No participants to plot for the current selection.';
+      if (previousSelectedId != null) this.dispatchSelection([]);
+      return;
+    }
+
+    const grouped = this.state.groupBy && this.state.groupBy !== GROUP_NONE;
+    this.groupValues = grouped
+      ? unique(this.points.map((point) => point.group))
+          .filter((value) => value !== null && value !== undefined)
+          .map(String)
+          .sort()
+      : [];
+    this.colorScale = groupColorScale(this.groupValues);
+
+    this.quadrants = classifyQuadrants(this.points, this.state.xCut, this.state.yCut);
+    this.drawScatter();
+    this.drawLegend();
+    this.drawQuadrantSummary();
+    if (previousSelectedId != null) this.restoreSelection(previousSelectedId);
+  }
+
+  /**
+   * Re-apply a participant selection that was live before a redraw. When the
+   * participant is still among the shown points, selectParticipant re-renders
+   * every coordinated panel — visit path, lab-over-time chart, measure summary
+   * table, and listing — in the active display units and re-announces the
+   * selection (HEP-SELECT-006); when the participant is no longer shown (for
+   * example filtered out, or dropped by the mDISH view for lacking a
+   * baseline), the already-cleared selection is confirmed to listeners with an
+   * empty participantsSelected event.
+   * @param {string|number} id The previously selected participant identifier.
+   * @private
+   */
+  restoreSelection(id) {
+    const shown = this.points.some((point) => String(point.id) === String(id));
+    if (shown) this.selectParticipant(id);
+    else this.dispatchSelection([]);
+  }
+
+  /**
+   * Refresh the shown/total participant counts, the removed-record note, and
+   * the dropped-participant note (HEP-DATA-003, HEP-DISPLAY-004).
+   * @private
+   */
+  updateNotes() {
+    const totalParticipants = unique(this.cleanRows.map((row) => row[this.settings.id_col])).length;
+    const shown = this.points.length;
+    const pct = totalParticipants ? ((shown / totalParticipants) * 100).toFixed(1) : '0.0';
+    const removedNote = this.removedRecords
+      ? `<span class="sv-warning">${this.removedRecords} missing or non-numeric results removed.</span>`
+      : '';
+    const dropReason =
+      this.state.display === 'relative_baseline'
+        ? `missing ${this.state.measureX}/${this.state.measureY} peak or baseline`
+        : `missing ${this.state.measureX}/${this.state.measureY} peak`;
+    const droppedNote = this.droppedParticipants
+      ? `<span class="sv-warning">${this.droppedParticipants} participants dropped (${dropReason}).</span>`
+      : '';
+    this.notes.innerHTML =
+      `<span>${shown} of ${totalParticipants} participants shown (${pct}%).</span>` +
+      removedNote +
+      droppedNote;
+  }
+
+  /**
+   * Whether a point is the currently selected participant.
+   * @private
+   */
+  isSelected(point) {
+    return this.state.selectedId != null && String(point.id) === String(this.state.selectedId);
+  }
+
+  /**
+   * The palette color for a point given the active grouping (HEP-CTRL-009).
+   * @private
+   */
+  colorFor(point) {
+    if (this.groupValues.length && point.group != null) {
+      return this.colorScale.get(String(point.group)) || BASE_POINT_COLOR;
+    }
+    return BASE_POINT_COLOR;
+  }
+
+  /**
+   * The point radius for the active Point Size mode (HEP-CTRL-007): a uniform
+   * radius, or a radius scaled by the participant R-Ratio.
+   * @private
+   */
+  radiusFor(point) {
+    if (this.state.pointSize !== 'rRatio') return 5;
+    const values = this.points.map((candidate) => candidate.rRatio).filter(Number.isFinite);
+    const rMax = values.length ? Math.max(...values) : 0;
+    if (!Number.isFinite(point.rRatio) || rMax <= 0) return 3;
+    return 3 + 7 * (point.rRatio / rMax);
+  }
+
+  /**
+   * Draw the Chart.js eDISH scatter: dataset 0 = participant points styled by
+   * group, timing, and selection; dataset 1 = the (initially empty) visit-path
+   * line overlay. The quadrant plugin draws the cut-lines and labels; clicking
+   * a point selects the participant, clicking empty space clears the selection.
+   * @private
+   */
+  drawScatter() {
+    const points = this.points;
+    const data = points.map((point) => ({ x: point.x, y: point.y }));
+    const type = this.state.axisType === 'log' ? 'log' : 'linear';
+    const xDomain = edishDomain(
+      points.map((point) => point.x),
+      this.state.xCut,
+      type
+    );
+    const yDomain = edishDomain(
+      points.map((point) => point.y),
+      this.state.yCut,
+      type
+    );
+
+    const fill = (ctx) => {
+      const point = points[ctx.dataIndex];
+      if (!point) return 'rgba(0,0,0,0)';
+      const selected = this.isSelected(point);
+      if (!point.withinWindow && !selected) return 'rgba(0,0,0,0)';
+      const color = selected ? SELECTION_COLOR : this.colorFor(point);
+      const opacity = this.state.selectedId != null ? (selected ? 1 : 0.15) : 0.75;
+      return hexToRgba(color, opacity);
+    };
+    const border = (ctx) => {
+      const point = points[ctx.dataIndex];
+      if (!point) return 'rgba(0,0,0,0)';
+      const selected = this.isSelected(point);
+      const color = selected ? SELECTION_COLOR : this.colorFor(point);
+      const opacity = this.state.selectedId != null ? (selected ? 1 : 0.25) : 0.9;
+      return hexToRgba(color, opacity);
+    };
+
+    const chart = new Chart(this.canvas.getContext('2d'), {
+      type: 'scatter',
+      data: {
+        datasets: [
+          {
+            label: 'Participants',
+            data,
+            pointBackgroundColor: fill,
+            pointBorderColor: border,
+            pointBorderWidth: (ctx) => (this.isSelected(points[ctx.dataIndex]) ? 2.5 : 1.25),
+            pointRadius: (ctx) =>
+              this.radiusFor(points[ctx.dataIndex]) +
+              (this.isSelected(points[ctx.dataIndex]) ? 2 : 0),
+            pointHoverRadius: (ctx) => this.radiusFor(points[ctx.dataIndex]) + 2
+          },
+          {
+            type: 'line',
+            label: 'Visit path',
+            data: [],
+            showLine: true,
+            borderColor: hexToRgba(SELECTION_COLOR, 0.7),
+            borderWidth: 1.5,
+            pointRadius: 3,
+            pointHoverRadius: 4,
+            pointBackgroundColor: SELECTION_COLOR,
+            pointBorderColor: SELECTION_COLOR
+          }
+        ]
+      },
+      options: {
+        maintainAspectRatio: false,
+        responsive: true,
+        animation: false,
+        layout: { padding: 6 },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            // Exclude the visit-path overlay (dataset 1) so hovering the path
+            // line never pops an empty tooltip box; only the participant points
+            // (dataset 0) carry a tooltip (HEP-CHART-004, HEP-SELECT-003).
+            filter: (item) => item.datasetIndex === 0,
+            callbacks: {
+              title: () => '',
+              label: (ctx) =>
+                ctx.datasetIndex === 0
+                  ? pointTooltip(points[ctx.dataIndex], this.state, this.settings.measure_values)
+                  : ''
+            }
+          }
+        },
+        scales: buildScales(this.state, xDomain, yDomain, this.settings.measure_values),
+        onHover: (event, active) => {
+          const target = event?.native?.target;
+          if (target) target.style.cursor = active.length ? 'pointer' : 'default';
+        },
+        onClick: (event, active) => {
+          const hit = active.find((element) => element.datasetIndex === 0);
+          if (hit) this.selectParticipant(points[hit.index].id);
+          else this.clearSelection();
+        }
+      },
+      plugins: [quadrantPlugin(this)]
+    });
+    this.chart = chart;
+    this.charts.push(chart);
+  }
+
+  /**
+   * Render the color-by legend for the active grouping (HEP-CTRL-009).
+   * @private
+   */
+  drawLegend() {
+    this.legendEl.innerHTML = '';
+    if (!this.groupValues.length) return;
+    const groupLabel =
+      (this.settings.groups.find((spec) => spec.value_col === this.state.groupBy) || {}).label ||
+      this.state.groupBy;
+    this.legendEl.append(createElement('strong', null, `${groupLabel}:`));
+    this.groupValues.forEach((value) => {
+      const chip = createElement('span', 'hep-legend-item');
+      chip.style.cssText = 'display:inline-flex;align-items:center;gap:.3rem';
+      const swatch = createElement('span');
+      swatch.style.cssText = `display:inline-block;width:.75rem;height:.75rem;border-radius:2px;background:${this.colorScale.get(
+        String(value)
+      )}`;
+      chip.append(swatch, document.createTextNode(String(value)));
+      this.legendEl.append(chip);
+    });
+  }
+
+  /**
+   * Render the quadrant summary table (Quadrant | # | %) below the chart from
+   * the live classification (HEP-QUAD-005).
+   * @private
+   */
+  drawQuadrantSummary() {
+    this.quadrantWrap.innerHTML = '';
+    const table = createElement('table');
+    const thead = document.createElement('thead');
+    const headRow = document.createElement('tr');
+    headRow.append(createElement('th', null, 'Quadrant'));
+    headRow.append(createElement('th', 'hep-num', '#'));
+    headRow.append(createElement('th', 'hep-num', '%'));
+    thead.append(headRow);
+    table.append(thead);
+    const tbody = document.createElement('tbody');
+    this.quadrants.labels.forEach((entry) => {
+      const tr = document.createElement('tr');
+      tr.append(createElement('td', null, entry.label));
+      tr.append(createElement('td', 'hep-num', String(entry.count)));
+      tr.append(
+        createElement(
+          'td',
+          'hep-num',
+          `${Number.isFinite(entry.percent) ? entry.percent.toFixed(1) : '0.0'}%`
+        )
+      );
+      tbody.append(tr);
+    });
+    table.append(tbody);
+    this.quadrantWrap.append(table);
+  }
+
+  /**
+   * The selected participant's cleaned lab records, augmented with the derived
+   * display columns the linked listing shows.
+   * @private
+   */
+  participantRecords(id) {
+    return this.cleanRows
+      .filter((row) => String(row[this.settings.id_col]) === String(id))
+      .map((row) => ({
+        ...row,
+        __hep_dayLabel: Number.isFinite(row.__hep_day) ? row.__hep_day : '',
+        __hep_relText: formatNumber(row.__hep_relative_uln)
+      }));
+  }
+
+  /**
+   * Select a participant and drive every coordinated view (HEP-SELECT-001..006):
+   * highlight the point, trace the visit path on the scatter, draw the
+   * lab-over-time companion chart and the measure summary table, open the
+   * linked listing of the participant's raw records, annotate the chart, and
+   * dispatch the participantsSelected event — all in the active display units.
+   * @param {string|number} id The participant identifier.
+   * @returns {void}
+   */
+  selectParticipant(id) {
+    this.state.selectedId = id;
+    if (this.chart) {
+      const path = visitPathSeries(this.cleanRows, id, this.settings, this.state);
+      this.chart.data.datasets[1].data = path.map((entry) => ({ x: entry.x, y: entry.y }));
+      this.chart.update();
+    }
+    this.currentTableData = this.participantRecords(id);
+    this.listingSearch = '';
+    this.listingSort = null;
+    this.page = 1;
+    renderListing(this);
+    this.drawDetail(id);
+    this.mainAnnotation.textContent = `Participant ${id} selected.`;
+    this.footnote.textContent = `Participant ${id} selected.`;
+    this.dispatchSelection([id]);
+  }
+
+  /**
+   * Clear any participant selection: erase the visit-path overlay, close the
+   * detail panels and listing, and restore the base annotation/footnote
+   * (HEP-SELECT-007).
+   * @returns {void}
+   */
+  clearSelection() {
+    if (this.state.selectedId == null) return;
+    this.state.selectedId = null;
+    if (this.chart) {
+      this.chart.data.datasets[1].data = [];
+      this.chart.update();
+    }
+    // Tear down the detail chart (kept on this.charts) but leave the scatter.
+    this.charts = this.charts.filter((chart) => {
+      if (chart === this.chart) return true;
+      chart.destroy();
+      return false;
+    });
+    this.currentTableData = [];
+    this.listingWrap.innerHTML = '';
+    this.detailWrap.innerHTML = '';
+    this.detailWrap.style.display = 'none';
+    this.mainAnnotation.textContent = '';
+    this.footnote.textContent = this.baseFootnote();
+    this.dispatchSelection([]);
+  }
+
+  /**
+   * Draw the participant drill-down panels into the detail container: the
+   * "Standardized Lab Values by Study Day" line chart (one line per measure in
+   * the active display units) and the Measure | N | Min | Median | Max summary
+   * table (HEP-SELECT-002, HEP-SELECT-005).
+   * @private
+   */
+  drawDetail(id) {
+    // Selecting a second participant without an intervening background click
+    // must not leak the previous detail chart. Tear down every chart that is
+    // not the main scatter before building the new one (the exact teardown
+    // clearSelection() uses), so this.charts holds only the scatter plus this
+    // one detail chart (HEP-SELECT-002).
+    this.charts = this.charts.filter((chart) => {
+      if (chart === this.chart) return true;
+      chart.destroy();
+      return false;
+    });
+    this.detailWrap.innerHTML = '';
+    this.detailWrap.style.display = '';
+    this.detailWrap.append(
+      createElement('h3', 'hep-detail-title', 'Standardized Lab Values by Study Day')
+    );
+
+    const chartWrap = createElement('div', 'hep-detail-chart');
+    const canvas = createElement('canvas', 'hep-detail-canvas');
+    chartWrap.append(canvas);
+    this.detailWrap.append(chartWrap);
+
+    const series = participantMeasureSeries(this.cleanRows, id, this.settings, this.state);
+    const colors = groupColorScale(series.map((entry) => entry.key));
+    const datasets = series.map((entry) => ({
+      label: entry.label,
+      data: entry.points.map((point) => ({
+        x: Number.isFinite(point.day) ? point.day : null,
+        y: point.value
+      })),
+      borderColor: colors.get(entry.key),
+      backgroundColor: colors.get(entry.key),
+      showLine: true,
+      spanGaps: true,
+      borderWidth: 1.5,
+      pointRadius: 2.5,
+      pointHoverRadius: 4
+    }));
+
+    const suffix = axisSuffix(this.state.display);
+    const detailChart = new Chart(canvas.getContext('2d'), {
+      type: 'line',
+      data: { datasets },
+      options: {
+        maintainAspectRatio: false,
+        responsive: true,
+        animation: false,
+        plugins: {
+          legend: { display: true, position: 'bottom' },
+          tooltip: {
+            callbacks: {
+              label: (ctx) =>
+                `${ctx.dataset.label}: ${formatNumber(ctx.parsed.y)}${suffix} @ day ${ctx.parsed.x}`
+            }
+          }
+        },
+        scales: {
+          x: { type: 'linear', title: { display: true, text: 'Study Day' } },
+          y: {
+            type: this.state.axisType === 'log' ? 'logarithmic' : 'linear',
+            title: { display: true, text: `Standardized value${suffix}` }
+          }
+        }
+      }
+    });
+    this.charts.push(detailChart);
+
+    this.detailWrap.append(this.buildSummaryTable(id));
+  }
+
+  /**
+   * Build the per-measure raw-value summary table (Measure | N | Min | Median |
+   * Max) for the selected participant (HEP-SELECT-005).
+   * @private
+   */
+  buildSummaryTable(id) {
+    const table = createElement('table', 'hep-summary-table');
+    const thead = document.createElement('thead');
+    const headRow = document.createElement('tr');
+    headRow.append(createElement('th', null, 'Measure'));
+    ['N', 'Min', 'Median', 'Max'].forEach((label) =>
+      headRow.append(createElement('th', 'hep-num', label))
+    );
+    thead.append(headRow);
+    table.append(thead);
+    const tbody = document.createElement('tbody');
+    measureSummary(this.cleanRows, id, this.settings).forEach((row) => {
+      const tr = document.createElement('tr');
+      tr.append(createElement('td', null, row.label));
+      tr.append(createElement('td', 'hep-num', String(row.n)));
+      tr.append(createElement('td', 'hep-num', formatNumber(row.min)));
+      tr.append(createElement('td', 'hep-num', formatNumber(row.median)));
+      tr.append(createElement('td', 'hep-num', formatNumber(row.max)));
+      tbody.append(tr);
+    });
+    table.append(tbody);
+    return table;
+  }
+
+  /**
+   * Dispatch the custom participantsSelected event on the shell root with the
+   * selected IDs (HEP-API-003).
+   * @private
+   */
+  dispatchSelection(ids) {
+    this.participantsSelected = ids;
+    if (this.root) {
+      this.root.dispatchEvent(
+        new CustomEvent('participantsSelected', { detail: { data: ids }, bubbles: true })
+      );
+    }
+  }
+
+  /**
+   * Resize the live charts to their containers. For host layouts that change
+   * the container size without a window resize — e.g. the R htmlwidget
+   * bindings.
+   * @returns {void}
+   */
+  resize() {
+    this.charts.forEach((chart) => chart.resize());
+  }
+
+  /**
+   * Destroy the live Chart.js instances without touching the shell.
+   * @private
+   */
+  destroyCharts() {
+    this.charts.forEach((chart) => chart.destroy());
+    this.charts = [];
+    this.chart = null;
+  }
+
+  /**
+   * Tear the hep explorer down: destroy the Chart.js instances and empty the
+   * target element. The instance cannot be reused afterwards — create a new one
+   * via the factory instead.
+   * @returns {void}
+   */
+  destroy() {
+    this.destroyCharts();
+    this.element.innerHTML = '';
+  }
+}
+
+/**
+ * Create a safety hep explorer inside a container element. The control shell
+ * renders immediately; pass long-format lab records to setData (or init) on the
+ * returned instance to validate the data and draw the eDISH scatter.
+ * @param {string|HTMLElement} [element='body'] Container node, or a CSS selector for it.
+ * @param {HepExplorerSettings} [settings={}] Setting overrides, merged onto DEFAULT_SETTINGS and normalized.
+ * @returns {SafetyHepExplorer} The live hep-explorer instance.
+ * @throws {Error} When no element matches the target selector.
+ */
+export default function hepExplorer(element = 'body', settings = {}) {
+  return new SafetyHepExplorer(element, settings);
+}
