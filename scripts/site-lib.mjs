@@ -13,18 +13,143 @@ export function escapeHtml(text) {
 }
 
 // Minimal inline-markdown renderer for the subset the coverage docs use:
-// `code`, [links](url), and **bold**. Escapes HTML first.
+// `code`, ![images](src), [links](url), and **bold**. Escapes HTML first.
+// The image rule runs before the link rule so `![alt](src)` is not mis-parsed
+// as a link with a stray leading `!` (block-level figures are handled by
+// mdBlock; this covers any image that appears mid-paragraph).
 export function mdInline(text) {
   return escapeHtml(text)
     .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g, '<img src="$2" alt="$1">')
     .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2">$1</a>')
     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
 }
 
-// Block renderer for the coverage doc's routing-status tail: ## headings,
-// - bullet lists (with wrapped continuation lines), and paragraphs.
-export function mdBlock(markdown) {
+// GitHub-style heading slug: lowercase, non-alphanumerics collapsed to a single
+// dash, edges trimmed. Used for in-page anchor ids and the guide TOC.
+export function slugify(text) {
+  return (
+    String(text)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'section'
+  );
+}
+
+// A stateful slugger that disambiguates repeated headings (foo, foo-2, foo-3),
+// so mdBlock's emitted ids and extractHeadings' TOC ids stay in lock-step when
+// both walk the same document in order.
+function headingSlugger() {
+  const seen = new Map();
+  return (text) => {
+    const base = slugify(text);
+    const count = seen.get(base) || 0;
+    seen.set(base, count + 1);
+    return count ? `${base}-${count + 1}` : base;
+  };
+}
+
+// Collect a document's ## / ### / #### headings in order, each with the slug id
+// mdBlock(markdown, { headingIds: true }) assigns it — the two share
+// headingSlugger, so a TOC built from this list links straight to the body.
+export function extractHeadings(markdown) {
+  const slug = headingSlugger();
+  const headings = [];
+  for (const line of markdown.split('\n')) {
+    const heading = line.match(/^(#{2,4})\s+(.*)$/);
+    if (heading)
+      headings.push({ level: heading[1].length, text: heading[2], id: slug(heading[2]) });
+  }
+  return headings;
+}
+
+// A standalone image line becomes a captioned <figure>: `![alt](src)` or
+// `![alt](src "caption")`. The title may be double- or single-quoted (Prettier
+// normalizes Markdown image titles to single quotes), and the caption falls
+// back to the alt text when no title is given. Only whole-line images are
+// figures; mid-paragraph images are handled inline by mdInline. Guides use this
+// for the ported workflow diagrams.
+const FIGURE_RE = /^!\[([^\]]*)\]\(([^)\s]+)(?:\s+(?:"([^"]*)"|'([^']*)'))?\)\s*$/;
+
+function figureBlock(alt, src, caption) {
+  const cap = caption || alt;
+  return (
+    `<figure class="guide-figure">` +
+    `<img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" loading="lazy">` +
+    (cap ? `<figcaption>${mdInline(cap)}</figcaption>` : '') +
+    `</figure>`
+  );
+}
+
+// GitHub-flavored pipe tables: a header row, a delimiter row of dashes (with
+// optional :colons for column alignment), then body rows. A table is only
+// recognized when both the header and the delimiter carry pipes, so a bare
+// `---` horizontal rule is never mistaken for a delimiter.
+function splitTableCells(line) {
+  return line
+    .trim()
+    .replace(/^\|/, '')
+    .replace(/\|$/, '')
+    .split('|')
+    .map((cell) => cell.trim());
+}
+
+function isTableDelimiter(line) {
+  return line.includes('|') && line.includes('-') && /^[\s|:-]+$/.test(line.trim());
+}
+
+function isTableHeader(lines, i) {
+  const header = lines[i];
+  const delimiter = lines[i + 1];
+  return (
+    header && header.includes('|') && header.trim() && delimiter && isTableDelimiter(delimiter)
+  );
+}
+
+function cellAlign(spec) {
+  const left = spec.startsWith(':');
+  const right = spec.endsWith(':');
+  if (left && right) return ' style="text-align:center"';
+  if (right) return ' style="text-align:right"';
+  if (left) return ' style="text-align:left"';
+  return '';
+}
+
+// Render the pipe table beginning at line `start`; returns the HTML and the
+// index of the first line past the table.
+function renderPipeTable(lines, start) {
+  const headers = splitTableCells(lines[start]);
+  const aligns = splitTableCells(lines[start + 1]).map(cellAlign);
+  const align = (col) => aligns[col] || '';
+  let end = start + 2;
+  const bodyRows = [];
+  while (end < lines.length && lines[end].includes('|') && lines[end].trim()) {
+    bodyRows.push(splitTableCells(lines[end]));
+    end += 1;
+  }
+  const head = headers.map((cell, col) => `<th${align(col)}>${mdInline(cell)}</th>`).join('');
+  const body = bodyRows
+    .map(
+      (cells) =>
+        `<tr>${cells.map((cell, col) => `<td${align(col)}>${mdInline(cell)}</td>`).join('')}</tr>`
+    )
+    .join('');
+  const table =
+    `<div class="table-scroll"><table class="guide-table"><thead><tr>${head}</tr></thead>` +
+    `<tbody>${body}</tbody></table></div>`;
+  return { table, end };
+}
+
+// Block renderer for authored guide content and the coverage doc's
+// routing-status tail: ## headings, - bullet and 1. numbered lists (with
+// wrapped continuation lines), paragraphs, standalone image figures, and
+// GitHub-flavored pipe tables. The figure, table, and ordered-list handling is
+// additive — the coverage docs use none of them, so their rendering is
+// unchanged. `headingIds` (opt-in) adds slug ids to headings so an on-page TOC
+// can anchor to them; it stays off for the coverage docs, which need no ids.
+export function mdBlock(markdown, { headingIds = false } = {}) {
   const html = [];
+  const slug = headingIds ? headingSlugger() : null;
   let list = null;
   let paragraph = [];
 
@@ -36,24 +161,56 @@ export function mdBlock(markdown) {
   };
   const flushList = () => {
     if (list) {
-      html.push(`<ul>${list.map((item) => `<li>${mdInline(item)}</li>`).join('')}</ul>`);
+      const items = list.items.map((item) => `<li>${mdInline(item)}</li>`).join('');
+      html.push(`<${list.tag}>${items}</${list.tag}>`);
       list = null;
     }
   };
+  const startList = (tag) => {
+    if (!list || list.tag !== tag) {
+      flushList();
+      list = { tag, items: [] };
+    }
+  };
 
-  for (const line of markdown.split('\n')) {
+  const lines = markdown.split('\n');
+  for (let i = 0; i < lines.length; i += 1) {
+    const line = lines[i];
+
+    if (isTableHeader(lines, i)) {
+      flushParagraph();
+      flushList();
+      const { table, end } = renderPipeTable(lines, i);
+      html.push(table);
+      i = end - 1;
+      continue;
+    }
+
+    const figure = line.match(FIGURE_RE);
+    if (figure) {
+      flushParagraph();
+      flushList();
+      html.push(figureBlock(figure[1], figure[2], figure[3] ?? figure[4]));
+      continue;
+    }
+
     const heading = line.match(/^(#{2,4})\s+(.*)$/);
     if (heading) {
       flushParagraph();
       flushList();
       const level = heading[1].length;
-      html.push(`<h${level}>${mdInline(heading[2])}</h${level}>`);
+      const idAttr = slug ? ` id="${slug(heading[2])}"` : '';
+      html.push(`<h${level}${idAttr}>${mdInline(heading[2])}</h${level}>`);
     } else if (/^-\s+/.test(line)) {
       flushParagraph();
-      if (!list) list = [];
-      list.push(line.replace(/^-\s+/, ''));
+      startList('ul');
+      list.items.push(line.replace(/^-\s+/, ''));
+    } else if (/^\d+\.\s+/.test(line)) {
+      flushParagraph();
+      startList('ol');
+      list.items.push(line.replace(/^\d+\.\s+/, ''));
     } else if (/^\s+\S/.test(line) && list) {
-      list[list.length - 1] += ` ${line.trim()}`;
+      list.items[list.items.length - 1] += ` ${line.trim()}`;
     } else if (!line.trim()) {
       flushParagraph();
       flushList();
@@ -195,7 +352,7 @@ function statusChip(status, runUrl) {
 }
 
 // Sub-page tabs shared by every renderer page (demo / evidence / API).
-export function moduleTabs(active, matrixUrl) {
+export function moduleTabs(active, hasGuide = false) {
   const tab = (id, href, label) =>
     id === active
       ? `<a class="current" aria-current="page" href="${href}">${label}</a>`
@@ -203,9 +360,9 @@ export function moduleTabs(active, matrixUrl) {
   return (
     `<nav class="page-tabs">` +
     tab('demo', 'index.html', 'Live demo') +
+    (hasGuide ? tab('guide', 'guide.html', 'Clinical guide') : '') +
     tab('evidence', 'evidence.html', 'Test evidence') +
     tab('api', 'api.html', 'API reference') +
-    (matrixUrl ? `<a href="${matrixUrl}">Requirement matrix ↗</a>` : '') +
     `</nav>`
   );
 }
@@ -334,7 +491,11 @@ export function renderEvidencePage({ module, config, coverage, evidence }) {
     `<p class="tagline">Requirement-traced qualification evidence for the safety.viz` +
       ` <code>${escapeHtml(module)}</code> module.</p>`
   );
-  html.push(moduleTabs('evidence', matrixUrl));
+  html.push(moduleTabs('evidence', !!renderer.guide));
+  html.push(
+    `<p class="matrix-link"><a href="${matrixUrl}">Requirement matrix ↗</a>` +
+      ` — the reviewed source specification these tests trace to.</p>`
+  );
 
   html.push(
     `<dl class="facts">` +
@@ -443,12 +604,8 @@ export function renderEvidencePage({ module, config, coverage, evidence }) {
 // when configured (site/assets/), falling back to the hero evidence
 // screenshot.
 export function renderGallery(config) {
-  const statusBadge = (renderer) =>
-    `<span class="badge badge-${renderer.status}">${renderer.status}</span>`;
-
   const availableCard = (renderer) => {
     const base = renderer.module;
-    const matrixUrl = `${config.matrixBaseUrl}/${renderer.matrix}`;
     const hero = renderer.heroAsset
       ? `assets/${renderer.heroAsset}`
       : `${base}/evidence/${renderer.hero}`;
@@ -457,12 +614,11 @@ export function renderGallery(config) {
       `<a class="card-thumb" href="${base}/index.html">` +
       `<img src="${hero}" alt="${escapeHtml(renderer.title)} preview" loading="lazy">` +
       `</a><div class="card-body">` +
-      `<h3><a href="${base}/index.html">${escapeHtml(renderer.title)}</a></h3>${statusBadge(renderer)}` +
+      `<h3><a href="${base}/index.html">${escapeHtml(renderer.title)}</a></h3>` +
       `<p>${escapeHtml(renderer.blurb)}</p>` +
       `<p class="card-links"><a href="${base}/index.html">Demo</a> · ` +
       `<a href="${base}/evidence.html">Evidence</a> · ` +
-      `<a href="${base}/api.html">API</a> · ` +
-      `<a href="${matrixUrl}">Matrix</a></p>` +
+      `<a href="${base}/api.html">API</a></p>` +
       `</div></li>`
     );
   };
@@ -499,12 +655,15 @@ export function renderGallery(config) {
 
 // Each safety.viz module traces to the Rho, Inc. repository it re-implements;
 // module names were normalized during migration, so the mapping is explicit.
+// Bare names live under the RhoInc org; originals hosted elsewhere (e.g. the
+// SafetyGraphics hep-explorer) are stored as full URLs.
 const ORIGINAL_REPOS = {
   histogram: 'safety-histogram',
   'outlier-explorer': 'safety-outlier-explorer',
   'results-over-time': 'safety-results-over-time',
   'shift-plot': 'safety-shift-plot',
   'delta-delta': 'safety-delta-delta',
+  'hep-explorer': 'https://github.com/SafetyGraphics/hep-explorer',
   'paneled-outlier-explorer': 'paneled-outlier-explorer',
   'ae-explorer': 'aeexplorer',
   'ae-timelines': 'ae-timelines',
@@ -521,8 +680,10 @@ export function renderAboutPage(config) {
   const creditRows = config.renderers
     .map((renderer) => {
       const repo = ORIGINAL_REPOS[renderer.module];
+      const repoUrl =
+        repo && repo.startsWith('https://') ? repo : `https://github.com/RhoInc/${repo}`;
       const repoCell = repo
-        ? `<a href="https://github.com/RhoInc/${repo}"><code>${repo}</code></a>`
+        ? `<a href="${repoUrl}"><code>${repoUrl.split('/').pop()}</code></a>`
         : '—';
       const here =
         renderer.status === 'available'
@@ -710,8 +871,7 @@ function methodSection(method) {
 // _api/<module>.json artifact (scripts/api/build-api-data.mjs, #6) — a
 // module-anatomy overview, then factory, methods, settings, and the
 // schema-derived data contract, with a sticky sidebar table of contents.
-// matrixUrl is optional so the generator stays a pure function of the model.
-export function renderApiPage(model, { matrixUrl } = {}) {
+export function renderApiPage(model, { hasGuide = false } = {}) {
   const toc =
     `<nav class="api-toc" aria-label="On this page"><h2>On this page</h2><ul>` +
     `<li><a href="#overview">Overview</a></li>` +
@@ -785,7 +945,7 @@ export function renderApiPage(model, { matrixUrl } = {}) {
     `<p class="tagline">Generated from the module&#39;s JSDoc and JSON-Schema data contract` +
       ` — <code>npm run docs:api</code> fails on undocumented surface.</p>`
   );
-  html.push(moduleTabs('api', matrixUrl));
+  html.push(moduleTabs('api', hasGuide));
   html.push(`<div class="api-layout">${toc}<div class="api-body">${body.join('\n')}</div></div>`);
   return html.join('\n');
 }
@@ -795,12 +955,12 @@ export function renderApiPage(model, { matrixUrl } = {}) {
 // real example data (the renderer's `data` config key, defaulting to the
 // shared ADBDS extract, #26). The .demo-page wrapper widens the layout
 // (site.css) so the control sidebar and chart get full room.
-export function renderDemoPage({ renderer, version, config }) {
+export function renderDemoPage({ renderer, version }) {
   return (
     `<div class="demo-page">` +
     `<h1>${escapeHtml(renderer.title)}</h1>` +
     `<p class="tagline">${escapeHtml(renderer.blurb)}</p>` +
-    moduleTabs('demo', `${config.matrixBaseUrl}/${renderer.matrix}`) +
+    moduleTabs('demo', !!renderer.guide) +
     `<p>This live demo mounts the committed` +
     ` <code>dist/safety.viz-${version}</code> IIFE bundle — the same asset gsm.safety vendors —` +
     ` against real example data (<code>${escapeHtml(renderer.data || 'adbds.csv')}</code>, built from the` +
@@ -810,6 +970,66 @@ export function renderDemoPage({ renderer, version, config }) {
     `<script src="./demo.js"></script>` +
     `</div>`
   );
+}
+
+// Build the guide's on-page table of contents from its ## sections and their
+// ### subsections, nested one level (mirroring the API page's sticky TOC). The
+// ids come from extractHeadings, so they match mdBlock's heading ids exactly.
+function renderGuideToc(headings) {
+  const entries = headings.filter((heading) => heading.level === 2 || heading.level === 3);
+  if (!entries.length) return '';
+  let html = '<ul>';
+  let openSub = false;
+  let openTop = false;
+  for (const { level, text, id } of entries) {
+    const link = `<a href="#${id}">${mdInline(text)}</a>`;
+    if (level === 2) {
+      if (openSub) {
+        html += '</ul>';
+        openSub = false;
+      }
+      if (openTop) html += '</li>';
+      html += `<li>${link}`;
+      openTop = true;
+    } else {
+      if (!openSub) {
+        html += '<ul>';
+        openSub = true;
+      }
+      html += `<li>${link}</li>`;
+    }
+  }
+  if (openSub) html += '</ul>';
+  if (openTop) html += '</li>';
+  html += '</ul>';
+  return `<nav class="guide-toc" aria-label="On this page"><h2>On this page</h2>${html}</nav>`;
+}
+
+// Clinical guide (v1.2): an authored, per-renderer reviewer's guide rendered
+// from docs/guides/<module>.md via mdBlock. Teaches the clinical reading of the
+// graphic and cross-references the live controls. Opt-in through the config
+// `guide` field, so only renderers that ship a guide get the tab. A standing
+// non-diagnostic caution is rendered by the page itself, so every guide carries
+// it regardless of the authored content. A sticky sidebar TOC (built from the
+// authored ## / ### headings) sits beside the body for a long, step-based guide.
+export function renderGuidePage({ renderer, config, guideMarkdown }) {
+  const matrixUrl = `${config.matrixBaseUrl}/${renderer.matrix}`;
+  const html = [];
+  html.push(`<h1>${escapeHtml(renderer.title)}: clinical guide</h1>`);
+  html.push(
+    `<p class="tagline">How to read the ${escapeHtml(renderer.title)} to review participant` +
+      ` liver safety, and where each step lives in the controls on this page.</p>`
+  );
+  html.push(moduleTabs('guide', matrixUrl, true));
+  html.push(
+    `<p class="guide-caution"><strong>Exploratory review aid, not a validated diagnostic tool.</strong>` +
+      ` A drug-induced-liver-injury conclusion is a diagnosis of exclusion that requires evidence` +
+      ` beyond what this graphic shows.</p>`
+  );
+  const toc = renderGuideToc(extractHeadings(guideMarkdown));
+  const body = `<div class="guide-body">${mdBlock(guideMarkdown, { headingIds: true })}</div>`;
+  html.push(toc ? `<div class="guide-layout">${toc}${body}</div>` : body);
+  return html.join('\n');
 }
 
 // Shared shell: replaces {{title}}, {{description}}, {{version}}, {{root}},

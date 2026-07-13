@@ -23,13 +23,14 @@ var SafetyViz = (() => {
     aeTimelines: () => aeTimelines,
     default: () => main_default,
     deltaDelta: () => deltaDelta,
+    hepExplorer: () => hepExplorer,
     histogram: () => histogram,
     outlierExplorer: () => outlierExplorer,
     resultsOverTime: () => resultsOverTime,
     shiftPlot: () => shiftPlot
   });
 
-  // node_modules/@kurkle/color/dist/color.esm.js
+  // ../hep-explorer/node_modules/@kurkle/color/dist/color.esm.js
   function round(v) {
     return v + 0.5 | 0;
   }
@@ -586,7 +587,7 @@ var SafetyViz = (() => {
     }
   };
 
-  // node_modules/chart.js/dist/chunks/helpers.dataset.js
+  // ../hep-explorer/node_modules/chart.js/dist/chunks/helpers.dataset.js
   function noop() {
   }
   var uid = /* @__PURE__ */ (() => {
@@ -2984,7 +2985,7 @@ var SafetyViz = (() => {
     };
   }
 
-  // node_modules/chart.js/dist/chart.js
+  // ../hep-explorer/node_modules/chart.js/dist/chart.js
   var Animator = class {
     constructor() {
       this._request = null;
@@ -18277,8 +18278,1615 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     return new AETimelines(element, settings);
   }
 
+  // src/hep-explorer/configure.js
+  var GROUP_NONE2 = "hep_none";
+  var DISPLAY_MODES = [
+    { value: "relative_uln", label: "Upper limit of normal adjusted (eDISH)" },
+    { value: "relative_baseline", label: "Baseline adjusted (mDISH)" }
+  ];
+  var AXIS_TYPES = ["linear", "log"];
+  var POINT_SIZE_OPTIONS = ["Uniform", "rRatio"];
+  var MEASURE_KEYS = ["ALT", "AST", "TB", "ALP"];
+  var DEFAULT_SETTINGS7 = {
+    id_col: "USUBJID",
+    measure_col: "TEST",
+    value_col: "STRESN",
+    unit_col: "STRESU",
+    normal_col_high: "STNRHI",
+    normal_col_low: "STNRLO",
+    studyday_col: "DY",
+    visit_col: "VISIT",
+    visitn_col: "VISITNUM",
+    measure_values: {
+      ALT: "Aminotransferase, alanine (ALT)",
+      AST: "Aminotransferase, aspartate (AST)",
+      TB: "Total Bilirubin",
+      ALP: "Alkaline phosphatase (ALP)"
+    },
+    x_default: "ALT",
+    y_default: "TB",
+    x_options: ["ALT", "AST", "TB", "ALP"],
+    y_options: ["TB"],
+    cuts: {
+      TB: { relative_uln: 2, relative_baseline: 4.8 },
+      ALP: { relative_uln: 1, relative_baseline: 3.8 },
+      rRatio: { relative_uln: 5, relative_baseline: 5 },
+      defaults: { relative_uln: 3, relative_baseline: 3.8 }
+    },
+    visit_window: 30,
+    r_ratio_filter: true,
+    r_ratio: [0, null],
+    filters: [],
+    groups: [],
+    group_by: GROUP_NONE2,
+    details: null,
+    page_size: 10,
+    width: "100%",
+    height: 460
+  };
+  function arrayify6(value) {
+    if (value === void 0 || value === null || value === "") return [];
+    return Array.isArray(value) ? value : [value];
+  }
+  function fieldSpec6(value, fallbackLabel) {
+    if (typeof value === "string") return { value_col: value, label: fallbackLabel || value };
+    return { ...value, value_col: value.value_col, label: value.label || value.value_col };
+  }
+  function syncSettings7(settings) {
+    const synced = { ...DEFAULT_SETTINGS7, ...settings };
+    synced.filters = arrayify6(synced.filters).map((value) => fieldSpec6(value)).filter((d) => d.value_col);
+    const defaultGroup = { value_col: GROUP_NONE2, label: "None" };
+    synced.groups = [
+      defaultGroup,
+      ...arrayify6(synced.groups).map((value) => fieldSpec6(value)).filter((d) => d.value_col)
+    ];
+    if (synced.group_by && !synced.groups.some((group) => group.value_col === synced.group_by)) {
+      synced.groups.push({ value_col: synced.group_by, label: synced.group_by });
+    }
+    synced.group_by = synced.groups.some((group) => group.value_col === synced.group_by) ? synced.group_by : synced.groups[0].value_col;
+    synced.details = arrayify6(synced.details).map((value) => fieldSpec6(value)).filter((d) => d.value_col);
+    synced.x_options = arrayify6(synced.x_options);
+    synced.y_options = arrayify6(synced.y_options);
+    synced.measure_values = {
+      ...DEFAULT_SETTINGS7.measure_values,
+      ...settings.measure_values || {}
+    };
+    const cutKeys = /* @__PURE__ */ new Set([
+      ...Object.keys(DEFAULT_SETTINGS7.cuts),
+      ...Object.keys(settings.cuts || {})
+    ]);
+    const mergedCuts = {};
+    cutKeys.forEach((key) => {
+      mergedCuts[key] = {
+        ...DEFAULT_SETTINGS7.cuts[key] || {},
+        ...(settings.cuts || {})[key] || {}
+      };
+    });
+    synced.cuts = mergedCuts;
+    synced.r_ratio = arrayify6(synced.r_ratio);
+    if (synced.r_ratio.length < 2) synced.r_ratio = [0, null];
+    return synced;
+  }
+  function cutFor(cuts, measureKey, display) {
+    const entry = cuts && cuts[measureKey] || cuts && cuts.defaults || {};
+    const fallback = cuts && cuts.defaults || {};
+    const value = entry[display];
+    return Number.isFinite(value) ? value : fallback[display];
+  }
+
+  // src/data/schema/hep-explorer.json
+  var hep_explorer_default = {
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    $id: "https://raw.githubusercontent.com/jwildfire/safety.viz/main/src/data/schema/hep-explorer.json",
+    title: "safety.viz hep-explorer data contract",
+    description: "Long-format liver-lab data: one record per participant per measure per visit/day (HEP-DATA-001). Column names are supplied by the settings mapping; the hep-explorer standardizes each value to \xD7ULN and \xD7Baseline, reduces to one point per participant (peak X measure vs peak Y measure), and removes missing/non-numeric results with a reported count (HEP-DATA-003). The four liver measures (ALT/AST/TB/ALP) are matched from the measure column via measure_values.",
+    type: "object",
+    required: ["data", "settings"],
+    properties: {
+      data: {
+        type: "array",
+        minItems: 1,
+        items: { type: "object" },
+        description: "d3.csv()-style records; every row carries the measure, result, participant, and ULN columns named in settings, one row per participant per measure per visit/day."
+      },
+      settings: {
+        type: "object",
+        description: "Column mappings and rendering options; merged onto the module's DEFAULT_SETTINGS, so only overrides need to be supplied (HEP-DATA-003).",
+        required: ["id_col", "measure_col", "value_col", "normal_col_high"],
+        properties: {
+          id_col: {
+            type: "string",
+            default: "USUBJID",
+            description: "Participant identifier column; one plotted point per participant (HEP-DATA-001)."
+          },
+          measure_col: {
+            type: "string",
+            default: "TEST",
+            description: "Column holding the measure name; required in data. Matched to the ALT/AST/TB/ALP keys via measure_values (HEP-DATA-002)."
+          },
+          value_col: {
+            type: "string",
+            default: "STRESN",
+            description: "Column holding the numeric result; required in data. Non-numeric results are removed with a logged count (HEP-DATA-003)."
+          },
+          unit_col: {
+            type: "string",
+            default: "STRESU",
+            description: "Optional unit column, appended to measure labels and shown in the linked listing."
+          },
+          normal_col_high: {
+            type: "string",
+            default: "STNRHI",
+            description: "Upper limit of normal (ULN); required in data \u2014 the \xD7ULN standardization divides each value by it (HEP-DISPLAY-002)."
+          },
+          normal_col_low: {
+            type: ["string", "null"],
+            default: "STNRLO",
+            description: "Optional lower limit of normal, carried into the linked listing."
+          },
+          studyday_col: {
+            type: ["string", "null"],
+            default: "DY",
+            description: "Optional study-day column; drives the timing test and visit-path ordering. When absent, a per-participant per-measure input-order sequence is derived (HEP-DATA-004, HEP-SELECT-004)."
+          },
+          visit_col: {
+            type: ["string", "null"],
+            default: "VISIT",
+            description: "Optional categorical visit column; labels the visit-path overlay and pairs the X/Y trajectory points (HEP-SELECT-003)."
+          },
+          visitn_col: {
+            type: ["string", "null"],
+            default: "VISITNUM",
+            description: "Optional numeric visit column; orders visit-keyed series when present."
+          },
+          measure_values: {
+            type: "object",
+            default: {
+              ALT: "Aminotransferase, alanine (ALT)",
+              AST: "Aminotransferase, aspartate (AST)",
+              TB: "Total Bilirubin",
+              ALP: "Alkaline phosphatase (ALP)"
+            },
+            description: "Map of the short measure key (ALT/AST/TB/ALP) to the full measure string in the data (HEP-DATA-002)."
+          },
+          x_default: {
+            type: "string",
+            default: "ALT",
+            description: "Measure plotted on the x-axis on first render (HEP-CTRL-001)."
+          },
+          y_default: {
+            type: "string",
+            default: "TB",
+            description: "Measure plotted on the y-axis on first render (HEP-CTRL-002)."
+          },
+          x_options: {
+            type: "array",
+            items: { type: "string" },
+            default: ["ALT", "AST", "TB", "ALP"],
+            description: "Measures offered by the X-axis Measure control (HEP-CTRL-001)."
+          },
+          y_options: {
+            type: "array",
+            items: { type: "string" },
+            default: ["TB"],
+            description: "Measures offered by the Y-axis Measure control; a single option drops the control (HEP-CTRL-002)."
+          },
+          cuts: {
+            type: "object",
+            default: {
+              TB: { relative_uln: 2, relative_baseline: 4.8 },
+              ALP: { relative_uln: 1, relative_baseline: 3.8 },
+              rRatio: { relative_uln: 5, relative_baseline: 5 },
+              defaults: { relative_uln: 3, relative_baseline: 3.8 }
+            },
+            description: "Per-measure Hy's-Law cutpoints keyed by measure then display mode; a `defaults` entry back-fills any measure without its own cuts (HEP-QUAD-001)."
+          },
+          visit_window: {
+            type: "number",
+            default: 30,
+            description: "Timing window (days): points whose peak-X and peak-Y days are within this many days render filled, else hollow (HEP-CTRL-008, HEP-DISPLAY-005)."
+          },
+          r_ratio_filter: {
+            type: "boolean",
+            default: true,
+            description: "Whether to render the R-Ratio range filter control (HEP-CTRL-010)."
+          },
+          r_ratio: {
+            type: "array",
+            items: { type: ["number", "null"] },
+            default: [0, null],
+            description: "Initial R-Ratio [min, max]; a null max is resolved from the data on first render (HEP-CTRL-010)."
+          },
+          filters: {
+            $ref: "#/$defs/fieldList",
+            description: "Optional filter columns rendered as controls (HEP-CTRL-011)."
+          },
+          groups: {
+            $ref: "#/$defs/fieldList",
+            description: "Optional color-by columns for grouping the points (HEP-CTRL-009)."
+          },
+          details: {
+            $ref: "#/$defs/fieldList",
+            description: "Optional listing columns; defaults derive from the measure/day/value mappings (HEP-SELECT-006)."
+          }
+        }
+      }
+    },
+    $defs: {
+      fieldList: {
+        type: "array",
+        items: {
+          anyOf: [
+            { type: "string" },
+            {
+              type: "object",
+              required: ["value_col"],
+              properties: {
+                value_col: { type: "string" },
+                label: { type: "string" }
+              }
+            }
+          ]
+        }
+      }
+    }
+  };
+
+  // src/hep-explorer/checkInputs.js
+  var REQUIRED_COLUMN_SETTINGS7 = hep_explorer_default.properties.settings.required;
+  function checkInputs7(data, settings) {
+    const rows = Array.isArray(data) ? data : [];
+    const missing = REQUIRED_COLUMN_SETTINGS7.map((key) => settings[key]).filter(
+      (col) => !rows.some((row) => row[col] !== void 0)
+    );
+    if (missing.length) {
+      throw new Error(`Required variable(s) missing: ${missing.join(", ")}`);
+    }
+  }
+
+  // src/hep-explorer/getScales.js
+  function formatNumber4(value, digits = 2) {
+    if (!Number.isFinite(value)) return "";
+    return Number(value.toFixed(digits)).toString();
+  }
+  function axisSuffix(display) {
+    return display === "relative_baseline" ? " [\xD7Baseline]" : " [\xD7ULN]";
+  }
+  function measureLabel5(measureKey, measureValues) {
+    if (measureValues && measureValues[measureKey]) return measureValues[measureKey];
+    return measureKey ?? "";
+  }
+  function axisLabel2(measureKey, display, measureValues) {
+    return `${measureLabel5(measureKey, measureValues)}${axisSuffix(display)}`;
+  }
+  function edishDomain(values, cut, type = "linear") {
+    const nums = values.filter(Number.isFinite);
+    const all = Number.isFinite(cut) ? [...nums, cut] : nums;
+    if (!all.length) return type === "log" ? [0.1, 1] : [0, 1];
+    const max = Math.max(...all);
+    if (type === "log") {
+      const positives = all.filter((value) => value > 0);
+      const min = positives.length ? Math.min(...positives) : 0.1;
+      return [min / 1.5, max * 1.5];
+    }
+    return [0, max * 1.05 || 1];
+  }
+  function buildScales5(state, xDomain, yDomain, measureValues) {
+    const type = state.axisType === "log" ? "logarithmic" : "linear";
+    const axis = (domain, label) => {
+      const min = type === "logarithmic" && !(domain[0] > 0) ? void 0 : domain[0];
+      return {
+        type,
+        min,
+        max: domain[1],
+        title: { display: true, text: label },
+        grid: { color: "rgba(148, 163, 184, 0.25)" }
+      };
+    };
+    return {
+      x: axis(xDomain, axisLabel2(state.measureX, state.display, measureValues)),
+      y: axis(yDomain, axisLabel2(state.measureY, state.display, measureValues))
+    };
+  }
+
+  // src/hep-explorer/getPlugins.js
+  var GROUP_COLORS2 = [
+    "#1f78b4",
+    "#e31a1c",
+    "#33a02c",
+    "#ff7f00",
+    "#6a3d9a",
+    "#b15928",
+    "#00838f",
+    "#c2185b"
+  ];
+  var SELECTION_COLOR2 = "#111827";
+  var QUADRANT_LABELS = [
+    { position: "upper-right", label: "Possible Hy's Law Range", xCat: "High", yCat: "High" },
+    { position: "upper-left", label: "Hyperbilirubinemia", xCat: "Normal", yCat: "High" },
+    { position: "lower-right", label: "Temple's Corollary", xCat: "High", yCat: "Normal" },
+    { position: "lower-left", label: "Normal Range", xCat: "Normal", yCat: "Normal" }
+  ];
+  function hexToRgba3(hex2, opacity) {
+    const clean = hex2.replace("#", "");
+    const r = parseInt(clean.slice(0, 2), 16);
+    const g = parseInt(clean.slice(2, 4), 16);
+    const b = parseInt(clean.slice(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  }
+  function groupColorScale2(groupValues) {
+    const scale = /* @__PURE__ */ new Map();
+    groupValues.forEach((value, index) => {
+      scale.set(String(value), GROUP_COLORS2[index % GROUP_COLORS2.length]);
+    });
+    return scale;
+  }
+  function dayText(day) {
+    return Number.isFinite(day) ? String(day) : "NA";
+  }
+  function pointTooltip2(point, state, measureValues) {
+    const lines = [
+      `Participant: ${point.id}`,
+      `R Ratio: ${Number.isFinite(point.rRatio) ? formatNumber4(point.rRatio) : "NA"}`,
+      `${measureLabel5(state.measureX, measureValues)}: ${formatNumber4(point.x)} @ day ${dayText(
+        point.days_x
+      )}`,
+      `${measureLabel5(state.measureY, measureValues)}: ${formatNumber4(point.y)} @ day ${dayText(
+        point.days_y
+      )}`
+    ];
+    if (Number.isFinite(point.day_diff)) {
+      lines.push(`${formatNumber4(point.day_diff)} days apart`);
+    }
+    return lines;
+  }
+  function quadrantPlugin(instance) {
+    return {
+      id: `hep-quadrants-${Math.random().toString(36).slice(2)}`,
+      beforeDatasetsDraw(chart) {
+        chart.$hepQuadrants = null;
+        const state = instance.state || {};
+        const { xCut, yCut } = state;
+        if (!Number.isFinite(xCut) || !Number.isFinite(yCut)) return;
+        const { ctx, chartArea, scales } = chart;
+        if (!scales.x || !scales.y) return;
+        const xPixel = scales.x.getPixelForValue(xCut);
+        const yPixel = scales.y.getPixelForValue(yCut);
+        const quadrants = instance.quadrants || { labels: [] };
+        const counts = {};
+        const percents = {};
+        quadrants.labels.forEach((entry) => {
+          counts[entry.position] = entry.count;
+          percents[entry.position] = entry.percent;
+        });
+        chart.$hepQuadrants = { xCut, yCut, xPixel, yPixel, counts, percents };
+        ctx.save();
+        ctx.strokeStyle = "rgba(100, 116, 139, 0.7)";
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        if (xPixel >= chartArea.left && xPixel <= chartArea.right) {
+          ctx.beginPath();
+          ctx.moveTo(xPixel, chartArea.top);
+          ctx.lineTo(xPixel, chartArea.bottom);
+          ctx.stroke();
+        }
+        if (yPixel >= chartArea.top && yPixel <= chartArea.bottom) {
+          ctx.beginPath();
+          ctx.moveTo(chartArea.left, yPixel);
+          ctx.lineTo(chartArea.right, yPixel);
+          ctx.stroke();
+        }
+        ctx.setLineDash([]);
+        ctx.fillStyle = "rgba(51, 65, 85, 0.9)";
+        ctx.font = "11px system-ui, sans-serif";
+        ctx.textBaseline = "middle";
+        const anchors = {
+          "upper-left": { x: chartArea.left + 6, y: chartArea.top + 12, align: "left" },
+          "upper-right": { x: chartArea.right - 6, y: chartArea.top + 12, align: "right" },
+          "lower-left": { x: chartArea.left + 6, y: chartArea.bottom - 12, align: "left" },
+          "lower-right": { x: chartArea.right - 6, y: chartArea.bottom - 12, align: "right" }
+        };
+        quadrants.labels.forEach((entry) => {
+          const anchor = anchors[entry.position];
+          if (!anchor) return;
+          ctx.textAlign = anchor.align;
+          const percent = Number.isFinite(entry.percent) ? entry.percent.toFixed(1) : "0.0";
+          ctx.fillText(`${entry.label} (${percent}%)`, anchor.x, anchor.y);
+        });
+        ctx.restore();
+      }
+    };
+  }
+
+  // src/hep-explorer/structureData.js
+  function unique6(values) {
+    return [
+      ...new Set(values.filter((value) => value !== void 0 && value !== null && value !== ""))
+    ];
+  }
+  function quantile4(values, p) {
+    const nums = values.map(Number).filter(Number.isFinite);
+    if (!nums.length) return NaN;
+    const sorted = [...nums].sort((a, b) => a - b);
+    const idx = (sorted.length - 1) * p;
+    const lo = Math.floor(idx);
+    const hi = Math.ceil(idx);
+    if (lo === hi) return sorted[lo];
+    return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
+  }
+  function median2(values) {
+    return quantile4(values, 0.5);
+  }
+  function displayField(display) {
+    return display === "relative_baseline" ? "__hep_relative_baseline" : "__hep_relative_uln";
+  }
+  function dayThenIndex(a, b) {
+    const da = Number.isFinite(a.__hep_day) ? a.__hep_day : Number.MAX_SAFE_INTEGER;
+    const db = Number.isFinite(b.__hep_day) ? b.__hep_day : Number.MAX_SAFE_INTEGER;
+    return da - db || a.__hep_index - b.__hep_index;
+  }
+  function resolveMeasureRows(rows, settings, key) {
+    const testName = settings.measure_values ? settings.measure_values[key] : key;
+    return rows.filter((row) => row[settings.measure_col] === testName);
+  }
+  function cleanData6(rawData, settings) {
+    let removed = 0;
+    const rows = rawData.map((row, index) => {
+      const value = Number(row[settings.value_col]);
+      const uln = Number(row[settings.normal_col_high]);
+      const day = settings.studyday_col && row[settings.studyday_col] !== "" && row[settings.studyday_col] !== void 0 ? Number(row[settings.studyday_col]) : NaN;
+      return {
+        ...row,
+        __hep_index: index,
+        __hep_seq: NaN,
+        __hep_value: value,
+        __hep_uln: uln,
+        __hep_day: day,
+        __hep_relative_uln: value / uln,
+        __hep_relative_baseline: NaN,
+        __hep_baseline: NaN
+      };
+    }).filter((row) => {
+      const keep = row[settings.value_col] !== "" && row[settings.value_col] !== void 0 && Number.isFinite(row.__hep_value) && Number.isFinite(row.__hep_uln) && row.__hep_uln > 0;
+      if (!keep) removed += 1;
+      return keep;
+    });
+    return { rows, removed };
+  }
+  function assignSequence2(rows, settings) {
+    const counts = /* @__PURE__ */ new Map();
+    rows.forEach((row) => {
+      const key = `${row[settings.id_col]}\0${row[settings.measure_col]}`;
+      const next = (counts.get(key) || 0) + 1;
+      counts.set(key, next);
+      row.__hep_seq = next;
+    });
+    return rows;
+  }
+  function hasStudyDay(rows) {
+    return rows.some((row) => Number.isFinite(row.__hep_day));
+  }
+  function maxRRatio(cleanRows, settings) {
+    const byId = /* @__PURE__ */ new Map();
+    cleanRows.forEach((row) => {
+      const id = row[settings.id_col];
+      if (!byId.has(id)) byId.set(id, []);
+      byId.get(id).push(row);
+    });
+    let max = 0;
+    byId.forEach((participantRows) => {
+      const ratio = computeRRatio(participantRows, settings);
+      if (Number.isFinite(ratio) && ratio > max) max = ratio;
+    });
+    return max;
+  }
+  function deriveBaseline(rows, settings) {
+    const groups = /* @__PURE__ */ new Map();
+    rows.forEach((row) => {
+      const key = `${row[settings.id_col]}\0${row[settings.measure_col]}`;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(row);
+    });
+    groups.forEach((records) => {
+      const ordered = [...records].sort(dayThenIndex);
+      const zero = ordered.find((row) => row.__hep_day === 0);
+      const baselineRow = zero || ordered[0];
+      const baselineValue = baselineRow ? baselineRow.__hep_value : NaN;
+      records.forEach((row) => {
+        row.__hep_baseline = baselineValue;
+        row.__hep_relative_baseline = Number.isFinite(baselineValue) && baselineValue !== 0 ? row.__hep_value / baselineValue : NaN;
+      });
+    });
+    return rows;
+  }
+  function participantPeak(rows, key, display) {
+    const field = displayField(display);
+    let best = null;
+    rows.forEach((row) => {
+      const value = row[field];
+      if (!Number.isFinite(value)) return;
+      if (!best || value > best.value) {
+        best = { key, value, day: row.__hep_day, raw: row };
+      }
+    });
+    return best;
+  }
+  function computeRRatio(participantRows, settings) {
+    const altPeak = participantPeak(
+      resolveMeasureRows(participantRows, settings, "ALT"),
+      "ALT",
+      "relative_uln"
+    );
+    const alpPeak = participantPeak(
+      resolveMeasureRows(participantRows, settings, "ALP"),
+      "ALP",
+      "relative_uln"
+    );
+    if (!altPeak || !alpPeak || !(alpPeak.value > 0)) return NaN;
+    return altPeak.value / alpPeak.value;
+  }
+  function buildPoints(cleanRows, settings, state) {
+    const { measureX, measureY, display, visitWindow, groupBy } = state;
+    const timed = hasStudyDay(cleanRows);
+    const metaCols = unique6([
+      settings.id_col,
+      ...settings.filters.map((filter) => filter.value_col),
+      ...settings.groups.map((group) => group.value_col)
+    ]).filter((col) => col && col !== GROUP_NONE2);
+    const byId = /* @__PURE__ */ new Map();
+    cleanRows.forEach((row) => {
+      const id = row[settings.id_col];
+      if (!byId.has(id)) byId.set(id, []);
+      byId.get(id).push(row);
+    });
+    const points = [];
+    let droppedParticipants = 0;
+    byId.forEach((participantRows, id) => {
+      const peakX = participantPeak(
+        resolveMeasureRows(participantRows, settings, measureX),
+        measureX,
+        display
+      );
+      const peakY = participantPeak(
+        resolveMeasureRows(participantRows, settings, measureY),
+        measureY,
+        display
+      );
+      if (!peakX || !peakY || !(peakX.value > 0) || !(peakY.value > 0)) {
+        droppedParticipants += 1;
+        return;
+      }
+      const daysX = peakX.day;
+      const daysY = peakY.day;
+      const dayDiff = Number.isFinite(daysX) && Number.isFinite(daysY) ? Math.abs(daysX - daysY) : NaN;
+      const withinWindow = Number.isFinite(dayDiff) ? dayDiff <= visitWindow : !timed;
+      const groupValue = groupBy && groupBy !== GROUP_NONE2 ? participantRows[0][groupBy] : null;
+      const meta = {};
+      metaCols.forEach((col) => {
+        meta[col] = participantRows[0][col] === void 0 ? "" : String(participantRows[0][col]);
+      });
+      points.push({
+        id,
+        x: peakX.value,
+        y: peakY.value,
+        days_x: daysX,
+        days_y: daysY,
+        day_diff: dayDiff,
+        withinWindow,
+        rRatio: computeRRatio(participantRows, settings),
+        group: groupValue === null || groupValue === void 0 ? null : String(groupValue),
+        raw: meta
+      });
+    });
+    return { points, droppedParticipants };
+  }
+  function applyFilters6(points, filters) {
+    return points.filter(
+      (point) => Object.entries(filters).every(
+        ([key, value]) => !value || String(point.raw[key]) === String(value)
+      )
+    );
+  }
+  function classifyQuadrants(points, xCut, yCut) {
+    const counts = {};
+    QUADRANT_LABELS.forEach((entry) => {
+      counts[entry.position] = 0;
+    });
+    points.forEach((point) => {
+      const xCat = point.x >= xCut ? "High" : "Normal";
+      const yCat = point.y >= yCut ? "High" : "Normal";
+      const quadrant = QUADRANT_LABELS.find((entry) => entry.xCat === xCat && entry.yCat === yCat);
+      if (quadrant) counts[quadrant.position] += 1;
+    });
+    const total = points.length;
+    const labels = QUADRANT_LABELS.map((entry) => {
+      const count = counts[entry.position];
+      return {
+        position: entry.position,
+        label: entry.label,
+        count,
+        percent: total ? count / total * 100 : 0
+      };
+    });
+    return { counts, labels };
+  }
+  function visitPathSeries(cleanRows, id, settings, state) {
+    const { measureX, measureY, display } = state;
+    const field = displayField(display);
+    const participantRows = cleanRows.filter((row) => row[settings.id_col] === id);
+    const xRows = resolveMeasureRows(participantRows, settings, measureX);
+    const yRows = resolveMeasureRows(participantRows, settings, measureY);
+    const keyOf = (row) => {
+      if (settings.visit_col && row[settings.visit_col] !== void 0 && row[settings.visit_col] !== "") {
+        return `v:${row[settings.visit_col]}`;
+      }
+      if (Number.isFinite(row.__hep_day)) return `d:${row.__hep_day}`;
+      return `s:${Number.isFinite(row.__hep_seq) ? row.__hep_seq : row.__hep_index}`;
+    };
+    const entries = /* @__PURE__ */ new Map();
+    const ingest = (rows, axis) => {
+      rows.forEach((row) => {
+        const key = keyOf(row);
+        if (!entries.has(key)) {
+          entries.set(key, { x: NaN, y: NaN, day: NaN, seq: NaN, visit: null, order: Infinity });
+        }
+        const entry = entries.get(key);
+        entry[axis] = row[field];
+        if (Number.isFinite(row.__hep_day)) entry.day = row.__hep_day;
+        if (Number.isFinite(row.__hep_seq)) {
+          entry.seq = Number.isFinite(entry.seq) ? Math.min(entry.seq, row.__hep_seq) : row.__hep_seq;
+        }
+        if (settings.visit_col && row[settings.visit_col] !== void 0) {
+          entry.visit = row[settings.visit_col];
+        }
+        entry.order = Math.min(entry.order, row.__hep_index);
+      });
+    };
+    ingest(xRows, "x");
+    ingest(yRows, "y");
+    return [...entries.values()].filter((entry) => Number.isFinite(entry.x) && Number.isFinite(entry.y)).sort((a, b) => {
+      const da = Number.isFinite(a.day) ? a.day : Number.MAX_SAFE_INTEGER;
+      const db = Number.isFinite(b.day) ? b.day : Number.MAX_SAFE_INTEGER;
+      return da - db || a.order - b.order;
+    }).map((entry) => ({
+      x: entry.x,
+      y: entry.y,
+      day: entry.day,
+      visit: entry.visit,
+      label: entry.visit ? String(entry.visit) : Number.isFinite(entry.day) ? `Day ${entry.day}` : `#${Number.isFinite(entry.seq) ? entry.seq : entry.order}`
+    }));
+  }
+  function participantMeasureSeries(cleanRows, id, settings, state) {
+    const field = displayField(state.display);
+    const participantRows = cleanRows.filter((row) => row[settings.id_col] === id);
+    return MEASURE_KEYS.map((key) => {
+      const rows = resolveMeasureRows(participantRows, settings, key);
+      const points = rows.filter((row) => Number.isFinite(row[field])).sort(dayThenIndex).map((row) => ({ day: row.__hep_day, value: row[field], raw: row }));
+      return { key, label: key, points };
+    }).filter((series) => series.points.length > 0);
+  }
+  function measureSummary(cleanRows, id, settings) {
+    const participantRows = cleanRows.filter((row) => row[settings.id_col] === id);
+    return MEASURE_KEYS.map((key) => {
+      const values = resolveMeasureRows(participantRows, settings, key).map((row) => row.__hep_value).filter(Number.isFinite);
+      return {
+        key,
+        label: key,
+        n: values.length,
+        min: values.length ? Math.min(...values) : NaN,
+        median: values.length ? median2(values) : NaN,
+        max: values.length ? Math.max(...values) : NaN
+      };
+    }).filter((row) => row.n > 0);
+  }
+
+  // src/hep-explorer.js
+  Chart.register(
+    ScatterController,
+    LineController,
+    PointElement,
+    LineElement,
+    LinearScale,
+    LogarithmicScale,
+    plugin_tooltip,
+    plugin_legend
+  );
+  var BASE_POINT_COLOR = GROUP_COLORS2[0];
+  var SafetyHepExplorer = class {
+    constructor(element = "body", settings = {}) {
+      this.element = typeof element === "string" ? document.querySelector(element) : element;
+      if (!this.element) throw new Error(`Safety Hep Explorer target not found: ${element}`);
+      this.settings = syncSettings7(settings);
+      this.rawData = [];
+      this.cleanRows = [];
+      this.removedRecords = 0;
+      this.droppedParticipants = 0;
+      this.allPoints = [];
+      this.points = [];
+      this.rRatioMax = 0;
+      this.groupValues = [];
+      this.colorScale = /* @__PURE__ */ new Map();
+      this.quadrants = { counts: {}, labels: [] };
+      this.currentTableData = [];
+      this.listingSearch = "";
+      this.listingSort = null;
+      this.page = 1;
+      this.charts = [];
+      this.chart = null;
+      this.participantsSelected = [];
+      this.state = {
+        measureX: this.settings.x_default,
+        measureY: this.settings.y_default,
+        display: "relative_uln",
+        axisType: "linear",
+        pointSize: "Uniform",
+        visitWindow: this.settings.visit_window,
+        groupBy: this.settings.group_by,
+        filters: {},
+        rRatio: [...this.settings.r_ratio],
+        cuts: JSON.parse(JSON.stringify(this.settings.cuts)),
+        selectedId: null,
+        xCut: null,
+        yCut: null
+      };
+      this.renderShell();
+    }
+    /**
+     * Build the static DOM shell the scatter, legend, quadrant summary,
+     * participant-detail panels, and listing render into.
+     * @private
+     */
+    renderShell() {
+      Object.assign(
+        this,
+        renderShell(this.element, {
+          moduleClass: "safety-hep-explorer",
+          onToggle: () => this.resize()
+        })
+      );
+      this.legendEl = createElement("div", "hep-legend");
+      this.legendEl.style.cssText = "display:flex;flex-wrap:wrap;gap:.35rem .9rem;font-size:.8rem;color:#52616f;margin:0 0 .5rem";
+      this.main.insertBefore(this.legendEl, this.chartWrap);
+      this.quadrantWrap = createElement("div", "hep-quadrant-summary");
+      this.main.insertBefore(this.quadrantWrap, this.multiplesWrap);
+      this.detailWrap = createElement("div", "hep-detail");
+      this.detailWrap.style.display = "none";
+      this.main.insertBefore(this.detailWrap, this.listingWrap);
+      this.applyModuleStyles();
+      this.footnote.textContent = this.baseFootnote();
+    }
+    /**
+     * Inject the module-specific stylesheet (quadrant summary + detail panels)
+     * once per document; the shared shell stylesheet stays module-agnostic.
+     * @private
+     */
+    applyModuleStyles() {
+      const id = "safety-viz-hep-explorer-styles";
+      if (typeof document === "undefined" || document.getElementById(id)) return;
+      const style = document.createElement("style");
+      style.id = id;
+      style.textContent = `
+.safety-hep-explorer .hep-quadrant-summary{margin-top:1rem}
+.safety-hep-explorer .hep-quadrant-summary table{width:100%;max-width:420px;border-collapse:collapse;font-size:.85rem;background:#fff}
+.safety-hep-explorer .hep-quadrant-summary th,.safety-hep-explorer .hep-quadrant-summary td{border-bottom:1px solid #e3e8ee;padding:.4rem .55rem;text-align:left}
+.safety-hep-explorer .hep-quadrant-summary th{border-bottom:2px solid #d8dee4;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f}
+.safety-hep-explorer .hep-quadrant-summary td.hep-num,.safety-hep-explorer .hep-quadrant-summary th.hep-num{text-align:right;font-variant-numeric:tabular-nums}
+.safety-hep-explorer .hep-detail{margin-top:1.25rem;border-top:2px solid #111827;padding-top:.75rem}
+.safety-hep-explorer .hep-detail-title{font-size:.95rem;margin:0 0 .5rem}
+.safety-hep-explorer .hep-detail-chart{height:220px;position:relative;border:1px solid #d8dee4;border-radius:10px;padding:.75rem;background:#fff}
+.safety-hep-explorer .hep-summary-table{width:100%;max-width:520px;border-collapse:collapse;font-size:.85rem;background:#fff;margin-top:.9rem}
+.safety-hep-explorer .hep-summary-table th,.safety-hep-explorer .hep-summary-table td{border-bottom:1px solid #e3e8ee;padding:.4rem .55rem;text-align:left}
+.safety-hep-explorer .hep-summary-table th{border-bottom:2px solid #d8dee4;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f}
+.safety-hep-explorer .hep-summary-table td.hep-num,.safety-hep-explorer .hep-summary-table th.hep-num{text-align:right;font-variant-numeric:tabular-nums}`;
+      document.head.append(style);
+    }
+    /**
+     * The base footnote: usage hint plus the timing-window sentence explaining
+     * filled vs hollow points (HEP-DISPLAY-005).
+     * @private
+     */
+    baseFootnote() {
+      return `Use controls to update the chart or click a point to see participant details. Points are filled when a participant's peak ${this.state.measureX} and peak ${this.state.measureY} occur within ${this.state.visitWindow} days of each other.`;
+    }
+    /**
+     * Load data and render: an alias for setData that keeps the two-step
+     * create-then-init call shape working (HEP-API-001).
+     * @param {Object[]} data Long-format lab records matching the hep-explorer data contract.
+     * @returns {SafetyHepExplorer} The instance, for chaining.
+     */
+    init(data) {
+      this.setData(data);
+      return this;
+    }
+    /**
+     * Replace the bound data and re-render. The data is validated against the
+     * settings mapping (throwing, and rendering the message into the target
+     * element, when required columns are missing), rows with missing or
+     * non-numeric values/ULN are removed with a console warning, baselines are
+     * derived for the mDISH view, and the controls are rebuilt from the new data.
+     * @param {Object[]} data Long-format lab records matching the hep-explorer data contract.
+     * @returns {SafetyHepExplorer} The instance, for chaining.
+     */
+    setData(data) {
+      this.rawData = Array.isArray(data) ? data : [];
+      this.validateAndCleanData();
+      this.buildControls();
+      this.render();
+      return this;
+    }
+    /**
+     * Merge setting overrides onto the current settings, re-normalize them (same
+     * rules as the factory), re-seed the affected control state, rebuild the
+     * controls, and re-render.
+     * @param {HepExplorerSettings} settings Setting overrides to merge.
+     * @returns {SafetyHepExplorer} The instance, for chaining.
+     */
+    setSettings(settings) {
+      this.settings = syncSettings7({ ...this.settings, ...settings });
+      if ("x_default" in settings) this.state.measureX = this.settings.x_default;
+      if ("y_default" in settings) this.state.measureY = this.settings.y_default;
+      if ("visit_window" in settings) this.state.visitWindow = this.settings.visit_window;
+      if ("group_by" in settings) this.state.groupBy = this.settings.group_by;
+      if ("cuts" in settings) this.state.cuts = JSON.parse(JSON.stringify(this.settings.cuts));
+      if ("r_ratio" in settings) this.state.rRatio = [...this.settings.r_ratio];
+      this.state.filters = {};
+      if (this.rawData.length) this.validateAndCleanData();
+      this.buildControls();
+      this.render();
+      return this;
+    }
+    /**
+     * Validate the raw data against the settings mapping, drop unusable rows,
+     * derive baselines, resolve the active measure selections, and derive the
+     * linked-listing columns when none were supplied.
+     * @private
+     */
+    validateAndCleanData() {
+      try {
+        checkInputs7(this.rawData, this.settings);
+      } catch (error) {
+        this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+        throw error;
+      }
+      const { rows, removed } = cleanData6(this.rawData, this.settings);
+      deriveBaseline(rows, this.settings);
+      assignSequence2(rows, this.settings);
+      this.cleanRows = rows;
+      this.removedRecords = removed;
+      this.rRatioMax = maxRRatio(rows, this.settings);
+      if (removed)
+        console.warn(
+          `${removed} missing or non-numeric result${removed > 1 ? "s have" : " has"} been removed.`
+        );
+      const xOptions = this.settings.x_options;
+      const yOptions = this.settings.y_options;
+      if (!xOptions.includes(this.state.measureX)) this.state.measureX = xOptions[0];
+      if (!yOptions.includes(this.state.measureY)) this.state.measureY = yOptions[0];
+      if (!this.settings.details.length) {
+        this.settings.details = [
+          { value_col: this.settings.id_col, label: "Participant" },
+          { value_col: this.settings.measure_col, label: "Measure" },
+          { value_col: "__hep_dayLabel", label: "Study Day" },
+          { value_col: this.settings.value_col, label: "Result" },
+          { value_col: this.settings.normal_col_high, label: "ULN" },
+          { value_col: "__hep_relText", label: "\xD7ULN" }
+        ];
+      }
+    }
+    /**
+     * The categorical filters whose column is present in the data; absent-column
+     * filters are dropped with a console warning (HEP-CTRL-011).
+     * @private
+     */
+    activeFilterSpecs() {
+      return this.settings.filters.filter((filter) => {
+        const exists = this.cleanRows.some((row) => row[filter.value_col] !== void 0);
+        if (!exists)
+          console.warn(
+            `The [ ${filter.label} ] filter has been removed because the variable does not exist.`
+          );
+        return exists;
+      });
+    }
+    /**
+     * The R-Ratio [min, max] range in effect, resolving a null max to the largest
+     * finite participant R-Ratio in the data (HEP-CTRL-010).
+     * @private
+     */
+    effectiveRRatio() {
+      const values = this.allPoints.map((point) => point.rRatio).filter(Number.isFinite);
+      const dataMax = values.length ? Math.max(...values) : this.rRatioMax || 0;
+      const min = Number.isFinite(this.state.rRatio[0]) ? this.state.rRatio[0] : 0;
+      const max = Number.isFinite(this.state.rRatio[1]) ? this.state.rRatio[1] : dataMax;
+      return { min, max, dataMax };
+    }
+    /**
+     * Rebuild the settings/filters controls from data + state (HEP-CTRL-*). Only
+     * controls with ≥2 meaningful options are rendered: the Y-measure picker is
+     * dropped when a single option, Group when only None, and the R-Ratio filter
+     * when r_ratio_filter is false.
+     * @private
+     */
+    buildControls() {
+      this.controls.innerHTML = "";
+      const { addSection, addRow, addControl } = controlBuilders(this.controls);
+      const settingsParent = addSection("Settings");
+      const measureX = addControl("X-axis Measure", document.createElement("select"), settingsParent);
+      this.settings.x_options.forEach(
+        (key) => option(measureX, key, key, key === this.state.measureX)
+      );
+      measureX.onchange = () => {
+        this.state.measureX = measureX.value;
+        this.buildControls();
+        this.render();
+      };
+      if (this.settings.y_options.length > 1) {
+        const measureY = addControl(
+          "Y-axis Measure",
+          document.createElement("select"),
+          settingsParent
+        );
+        this.settings.y_options.forEach(
+          (key) => option(measureY, key, key, key === this.state.measureY)
+        );
+        measureY.onchange = () => {
+          this.state.measureY = measureY.value;
+          this.buildControls();
+          this.render();
+        };
+      }
+      this.addCutControl(addControl, settingsParent, "measureX");
+      this.addCutControl(addControl, settingsParent, "measureY");
+      const display = addControl("Display Type", document.createElement("select"), settingsParent);
+      DISPLAY_MODES.forEach(
+        (mode) => option(display, mode.value, mode.label, mode.value === this.state.display)
+      );
+      display.onchange = () => {
+        this.state.display = display.value;
+        this.buildControls();
+        this.render();
+      };
+      const axisType = addControl("Axis Type", document.createElement("select"), settingsParent);
+      AXIS_TYPES.forEach((type) => option(axisType, type, type, type === this.state.axisType));
+      axisType.onchange = () => {
+        this.state.axisType = axisType.value;
+        this.render();
+      };
+      const pointSize = addControl("Point Size", document.createElement("select"), settingsParent);
+      POINT_SIZE_OPTIONS.forEach(
+        (value) => option(pointSize, value, value, value === this.state.pointSize)
+      );
+      pointSize.onchange = () => {
+        this.state.pointSize = pointSize.value;
+        this.render();
+      };
+      const window2 = addControl(
+        "Highlight Points Based on Timing",
+        document.createElement("input"),
+        settingsParent
+      );
+      window2.type = "number";
+      window2.min = "0";
+      window2.step = "1";
+      window2.value = this.state.visitWindow;
+      window2.onchange = () => {
+        const value = Number(window2.value);
+        this.state.visitWindow = Number.isFinite(value) && value >= 0 ? value : 0;
+        window2.value = this.state.visitWindow;
+        this.render();
+      };
+      if (this.settings.groups.length > 1) {
+        const group = addControl("Group", document.createElement("select"), settingsParent);
+        this.settings.groups.forEach(
+          (spec) => option(group, spec.value_col, spec.label, spec.value_col === this.state.groupBy)
+        );
+        group.onchange = () => {
+          this.state.groupBy = group.value;
+          this.render();
+        };
+      }
+      const filterSpecs = this.activeFilterSpecs();
+      const showRRatio = this.settings.r_ratio_filter;
+      if (filterSpecs.length || showRRatio) {
+        const filterParent = addSection("Filters");
+        filterSpecs.forEach((filter) => {
+          const select = addControl(filter.label, document.createElement("select"), filterParent);
+          option(select, "__all__", "All", !this.state.filters[filter.value_col]);
+          unique6(this.cleanRows.map((row) => row[filter.value_col])).sort().forEach(
+            (value) => option(
+              select,
+              value,
+              value,
+              String(this.state.filters[filter.value_col]) === String(value)
+            )
+          );
+          select.onchange = () => {
+            this.state.filters[filter.value_col] = select.value === "__all__" ? null : select.value;
+            this.render();
+          };
+        });
+        if (showRRatio) this.addRRatioControl(addRow, addControl, filterParent);
+      }
+      const reset = addControl(" ", document.createElement("button"), this.controls);
+      reset.type = "button";
+      reset.textContent = "Reset Chart";
+      reset.className = "hep-reset";
+      reset.style.cssText = "width:100%;margin-top:.75rem;padding:.35rem .45rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.82rem;cursor:pointer";
+      reset.onclick = () => this.resetChart();
+    }
+    /**
+     * Add a reference-line (cutpoint) number input for one axis; edits write the
+     * per-measure, per-display cut into state.cuts and clamp it to ≥ 0 so it
+     * cannot fall below the axis minimum (HEP-QUAD-001).
+     * @private
+     */
+    addCutControl(addControl, parent, axisKey) {
+      const measureKey = this.state[axisKey];
+      const input = addControl(
+        `${measureKey} Reference Line`,
+        document.createElement("input"),
+        parent
+      );
+      input.type = "number";
+      input.step = "0.1";
+      input.min = "0";
+      const current = cutFor(this.state.cuts, measureKey, this.state.display);
+      input.value = Number.isFinite(current) ? current : "";
+      input.onchange = () => {
+        const value = Math.max(0, Number(input.value) || 0);
+        if (!this.state.cuts[measureKey]) this.state.cuts[measureKey] = {};
+        this.state.cuts[measureKey][this.state.display] = value;
+        input.value = value;
+        this.render();
+      };
+    }
+    /**
+     * Add the R-Ratio range filter: min/max number inputs plus a Reset button
+     * that restores the initial range (HEP-CTRL-010).
+     * @private
+     */
+    addRRatioControl(addRow, addControl, parent) {
+      const { max, dataMax } = this.effectiveRRatio();
+      const row = addRow(parent);
+      const min = addControl("R Ratio min", document.createElement("input"), row);
+      min.type = "number";
+      min.step = "0.1";
+      min.value = Number.isFinite(this.state.rRatio[0]) ? this.state.rRatio[0] : 0;
+      min.onchange = () => {
+        this.state.rRatio[0] = min.value === "" ? 0 : Number(min.value);
+        this.render();
+      };
+      const maxInput = addControl("R Ratio max", document.createElement("input"), row);
+      maxInput.type = "number";
+      maxInput.step = "0.1";
+      maxInput.value = formatNumber4(max) || dataMax;
+      maxInput.onchange = () => {
+        this.state.rRatio[1] = maxInput.value === "" ? null : Number(maxInput.value);
+        this.render();
+      };
+      const reset = addControl(" ", document.createElement("button"), parent);
+      reset.type = "button";
+      reset.textContent = "Reset R Ratio";
+      reset.style.cssText = "width:100%;padding:.3rem .45rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.8rem;cursor:pointer";
+      reset.onclick = () => {
+        this.state.rRatio = [...this.settings.r_ratio];
+        this.buildControls();
+        this.render();
+      };
+    }
+    /**
+     * Reset the cutpoints, display mode, axis type, point size, filters, and
+     * R-Ratio range to their initial values, then rebuild and redraw
+     * (HEP-CTRL-012).
+     * @private
+     */
+    resetChart() {
+      this.state.cuts = JSON.parse(JSON.stringify(this.settings.cuts));
+      this.state.display = "relative_uln";
+      this.state.axisType = "linear";
+      this.state.pointSize = "Uniform";
+      this.state.visitWindow = this.settings.visit_window;
+      this.state.filters = {};
+      this.state.rRatio = [...this.settings.r_ratio];
+      this.buildControls();
+      this.render();
+    }
+    /**
+     * The shown scatter points after the categorical filters and the R-Ratio
+     * range (HEP-CTRL-010, HEP-CTRL-011). Points with an unknown (NA) R-Ratio are
+     * retained.
+     * @private
+     */
+    filteredPoints() {
+      const filtered = applyFilters6(this.allPoints, this.state.filters);
+      const { min, max } = this.effectiveRRatio();
+      return filtered.filter((point) => {
+        if (!Number.isFinite(point.rRatio)) return true;
+        return point.rRatio >= min && point.rRatio <= max;
+      });
+    }
+    /**
+     * Redraw everything from the current data, settings, and control state:
+     * destroys the live charts, clears the listing, legend, quadrant summary,
+     * and any selection, recomputes the per-participant points and quadrants,
+     * then draws the scatter, legend, and quadrant summary table (or an
+     * empty-data message). A live participant selection survives the redraw:
+     * when the participant is still shown, every coordinated panel — scatter
+     * highlight, visit path, lab-over-time chart, summary table, and listing —
+     * is re-rendered from the same selection in the active display units
+     * (HEP-SELECT-006); otherwise the selection is cleared and listeners are
+     * notified. Called automatically by the controls and the data/settings
+     * setters.
+     * @returns {void}
+     */
+    render() {
+      const previousSelectedId = this.state.selectedId;
+      this.destroyCharts();
+      this.listingWrap.innerHTML = "";
+      this.legendEl.innerHTML = "";
+      this.quadrantWrap.innerHTML = "";
+      this.detailWrap.innerHTML = "";
+      this.detailWrap.style.display = "none";
+      this.currentTableData = [];
+      this.listingSearch = "";
+      this.listingSort = null;
+      this.page = 1;
+      this.state.selectedId = null;
+      this.participantsSelected = [];
+      this.notes.innerHTML = "";
+      this.mainAnnotation.textContent = "";
+      this.footnote.textContent = this.baseFootnote();
+      this.state.xCut = cutFor(this.state.cuts, this.state.measureX, this.state.display);
+      this.state.yCut = cutFor(this.state.cuts, this.state.measureY, this.state.display);
+      if (!this.cleanRows.length) {
+        this.notes.innerHTML = "<span>No data selected. Provide records to draw the chart.</span>";
+        if (previousSelectedId != null) this.dispatchSelection([]);
+        return;
+      }
+      const built = buildPoints(this.cleanRows, this.settings, this.state);
+      this.allPoints = built.points;
+      this.droppedParticipants = built.droppedParticipants;
+      this.points = this.filteredPoints();
+      this.updateNotes();
+      if (!this.points.length) {
+        this.mainAnnotation.textContent = "No participants to plot for the current selection.";
+        if (previousSelectedId != null) this.dispatchSelection([]);
+        return;
+      }
+      const grouped = this.state.groupBy && this.state.groupBy !== GROUP_NONE2;
+      this.groupValues = grouped ? unique6(this.points.map((point) => point.group)).filter((value) => value !== null && value !== void 0).map(String).sort() : [];
+      this.colorScale = groupColorScale2(this.groupValues);
+      this.quadrants = classifyQuadrants(this.points, this.state.xCut, this.state.yCut);
+      this.drawScatter();
+      this.drawLegend();
+      this.drawQuadrantSummary();
+      if (previousSelectedId != null) this.restoreSelection(previousSelectedId);
+    }
+    /**
+     * Re-apply a participant selection that was live before a redraw. When the
+     * participant is still among the shown points, selectParticipant re-renders
+     * every coordinated panel — visit path, lab-over-time chart, measure summary
+     * table, and listing — in the active display units and re-announces the
+     * selection (HEP-SELECT-006); when the participant is no longer shown (for
+     * example filtered out, or dropped by the mDISH view for lacking a
+     * baseline), the already-cleared selection is confirmed to listeners with an
+     * empty participantsSelected event.
+     * @param {string|number} id The previously selected participant identifier.
+     * @private
+     */
+    restoreSelection(id) {
+      const shown = this.points.some((point) => String(point.id) === String(id));
+      if (shown) this.selectParticipant(id);
+      else this.dispatchSelection([]);
+    }
+    /**
+     * Refresh the shown/total participant counts, the removed-record note, and
+     * the dropped-participant note (HEP-DATA-003, HEP-DISPLAY-004).
+     * @private
+     */
+    updateNotes() {
+      const totalParticipants = unique6(this.cleanRows.map((row) => row[this.settings.id_col])).length;
+      const shown = this.points.length;
+      const pct = totalParticipants ? (shown / totalParticipants * 100).toFixed(1) : "0.0";
+      const removedNote = this.removedRecords ? `<span class="sv-warning">${this.removedRecords} missing or non-numeric results removed.</span>` : "";
+      const dropReason = this.state.display === "relative_baseline" ? `missing ${this.state.measureX}/${this.state.measureY} peak or baseline` : `missing ${this.state.measureX}/${this.state.measureY} peak`;
+      const droppedNote = this.droppedParticipants ? `<span class="sv-warning">${this.droppedParticipants} participants dropped (${dropReason}).</span>` : "";
+      this.notes.innerHTML = `<span>${shown} of ${totalParticipants} participants shown (${pct}%).</span>` + removedNote + droppedNote;
+    }
+    /**
+     * Whether a point is the currently selected participant.
+     * @private
+     */
+    isSelected(point) {
+      return this.state.selectedId != null && String(point.id) === String(this.state.selectedId);
+    }
+    /**
+     * The palette color for a point given the active grouping (HEP-CTRL-009).
+     * @private
+     */
+    colorFor(point) {
+      if (this.groupValues.length && point.group != null) {
+        return this.colorScale.get(String(point.group)) || BASE_POINT_COLOR;
+      }
+      return BASE_POINT_COLOR;
+    }
+    /**
+     * The point radius for the active Point Size mode (HEP-CTRL-007): a uniform
+     * radius, or a radius scaled by the participant R-Ratio.
+     * @private
+     */
+    radiusFor(point) {
+      if (this.state.pointSize !== "rRatio") return 5;
+      const values = this.points.map((candidate) => candidate.rRatio).filter(Number.isFinite);
+      const rMax = values.length ? Math.max(...values) : 0;
+      if (!Number.isFinite(point.rRatio) || rMax <= 0) return 3;
+      return 3 + 7 * (point.rRatio / rMax);
+    }
+    /**
+     * Draw the Chart.js eDISH scatter: dataset 0 = participant points styled by
+     * group, timing, and selection; dataset 1 = the (initially empty) visit-path
+     * line overlay. The quadrant plugin draws the cut-lines and labels; clicking
+     * a point selects the participant, clicking empty space clears the selection.
+     * @private
+     */
+    drawScatter() {
+      const points = this.points;
+      const data = points.map((point) => ({ x: point.x, y: point.y }));
+      const type = this.state.axisType === "log" ? "log" : "linear";
+      const xDomain = edishDomain(
+        points.map((point) => point.x),
+        this.state.xCut,
+        type
+      );
+      const yDomain = edishDomain(
+        points.map((point) => point.y),
+        this.state.yCut,
+        type
+      );
+      const fill = (ctx) => {
+        const point = points[ctx.dataIndex];
+        if (!point) return "rgba(0,0,0,0)";
+        const selected = this.isSelected(point);
+        if (!point.withinWindow && !selected) return "rgba(0,0,0,0)";
+        const color2 = selected ? SELECTION_COLOR2 : this.colorFor(point);
+        const opacity = this.state.selectedId != null ? selected ? 1 : 0.15 : 0.75;
+        return hexToRgba3(color2, opacity);
+      };
+      const border = (ctx) => {
+        const point = points[ctx.dataIndex];
+        if (!point) return "rgba(0,0,0,0)";
+        const selected = this.isSelected(point);
+        const color2 = selected ? SELECTION_COLOR2 : this.colorFor(point);
+        const opacity = this.state.selectedId != null ? selected ? 1 : 0.25 : 0.9;
+        return hexToRgba3(color2, opacity);
+      };
+      const chart = new Chart(this.canvas.getContext("2d"), {
+        type: "scatter",
+        data: {
+          datasets: [
+            {
+              label: "Participants",
+              data,
+              pointBackgroundColor: fill,
+              pointBorderColor: border,
+              pointBorderWidth: (ctx) => this.isSelected(points[ctx.dataIndex]) ? 2.5 : 1.25,
+              pointRadius: (ctx) => this.radiusFor(points[ctx.dataIndex]) + (this.isSelected(points[ctx.dataIndex]) ? 2 : 0),
+              pointHoverRadius: (ctx) => this.radiusFor(points[ctx.dataIndex]) + 2
+            },
+            {
+              type: "line",
+              label: "Visit path",
+              data: [],
+              showLine: true,
+              borderColor: hexToRgba3(SELECTION_COLOR2, 0.7),
+              borderWidth: 1.5,
+              pointRadius: 3,
+              pointHoverRadius: 4,
+              pointBackgroundColor: SELECTION_COLOR2,
+              pointBorderColor: SELECTION_COLOR2
+            }
+          ]
+        },
+        options: {
+          maintainAspectRatio: false,
+          responsive: true,
+          animation: false,
+          layout: { padding: 6 },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              // Exclude the visit-path overlay (dataset 1) so hovering the path
+              // line never pops an empty tooltip box; only the participant points
+              // (dataset 0) carry a tooltip (HEP-CHART-004, HEP-SELECT-003).
+              filter: (item) => item.datasetIndex === 0,
+              callbacks: {
+                title: () => "",
+                label: (ctx) => ctx.datasetIndex === 0 ? pointTooltip2(points[ctx.dataIndex], this.state, this.settings.measure_values) : ""
+              }
+            }
+          },
+          scales: buildScales5(this.state, xDomain, yDomain, this.settings.measure_values),
+          onHover: (event, active) => {
+            const target = event?.native?.target;
+            if (target) target.style.cursor = active.length ? "pointer" : "default";
+          },
+          onClick: (event, active) => {
+            const hit = active.find((element) => element.datasetIndex === 0);
+            if (hit) this.selectParticipant(points[hit.index].id);
+            else this.clearSelection();
+          }
+        },
+        plugins: [quadrantPlugin(this)]
+      });
+      this.chart = chart;
+      this.charts.push(chart);
+    }
+    /**
+     * Render the color-by legend for the active grouping (HEP-CTRL-009).
+     * @private
+     */
+    drawLegend() {
+      this.legendEl.innerHTML = "";
+      if (!this.groupValues.length) return;
+      const groupLabel = (this.settings.groups.find((spec) => spec.value_col === this.state.groupBy) || {}).label || this.state.groupBy;
+      this.legendEl.append(createElement("strong", null, `${groupLabel}:`));
+      this.groupValues.forEach((value) => {
+        const chip = createElement("span", "hep-legend-item");
+        chip.style.cssText = "display:inline-flex;align-items:center;gap:.3rem";
+        const swatch = createElement("span");
+        swatch.style.cssText = `display:inline-block;width:.75rem;height:.75rem;border-radius:2px;background:${this.colorScale.get(
+          String(value)
+        )}`;
+        chip.append(swatch, document.createTextNode(String(value)));
+        this.legendEl.append(chip);
+      });
+    }
+    /**
+     * Render the quadrant summary table (Quadrant | # | %) below the chart from
+     * the live classification (HEP-QUAD-005).
+     * @private
+     */
+    drawQuadrantSummary() {
+      this.quadrantWrap.innerHTML = "";
+      const table = createElement("table");
+      const thead = document.createElement("thead");
+      const headRow = document.createElement("tr");
+      headRow.append(createElement("th", null, "Quadrant"));
+      headRow.append(createElement("th", "hep-num", "#"));
+      headRow.append(createElement("th", "hep-num", "%"));
+      thead.append(headRow);
+      table.append(thead);
+      const tbody = document.createElement("tbody");
+      this.quadrants.labels.forEach((entry) => {
+        const tr = document.createElement("tr");
+        tr.append(createElement("td", null, entry.label));
+        tr.append(createElement("td", "hep-num", String(entry.count)));
+        tr.append(
+          createElement(
+            "td",
+            "hep-num",
+            `${Number.isFinite(entry.percent) ? entry.percent.toFixed(1) : "0.0"}%`
+          )
+        );
+        tbody.append(tr);
+      });
+      table.append(tbody);
+      this.quadrantWrap.append(table);
+    }
+    /**
+     * The selected participant's cleaned lab records, augmented with the derived
+     * display columns the linked listing shows.
+     * @private
+     */
+    participantRecords(id) {
+      return this.cleanRows.filter((row) => String(row[this.settings.id_col]) === String(id)).map((row) => ({
+        ...row,
+        __hep_dayLabel: Number.isFinite(row.__hep_day) ? row.__hep_day : "",
+        __hep_relText: formatNumber4(row.__hep_relative_uln)
+      }));
+    }
+    /**
+     * Select a participant and drive every coordinated view (HEP-SELECT-001..006):
+     * highlight the point, trace the visit path on the scatter, draw the
+     * lab-over-time companion chart and the measure summary table, open the
+     * linked listing of the participant's raw records, annotate the chart, and
+     * dispatch the participantsSelected event — all in the active display units.
+     * @param {string|number} id The participant identifier.
+     * @returns {void}
+     */
+    selectParticipant(id) {
+      this.state.selectedId = id;
+      if (this.chart) {
+        const path = visitPathSeries(this.cleanRows, id, this.settings, this.state);
+        this.chart.data.datasets[1].data = path.map((entry) => ({ x: entry.x, y: entry.y }));
+        this.chart.update();
+      }
+      this.currentTableData = this.participantRecords(id);
+      this.listingSearch = "";
+      this.listingSort = null;
+      this.page = 1;
+      renderListing(this);
+      this.drawDetail(id);
+      this.mainAnnotation.textContent = `Participant ${id} selected.`;
+      this.footnote.textContent = `Participant ${id} selected.`;
+      this.dispatchSelection([id]);
+    }
+    /**
+     * Clear any participant selection: erase the visit-path overlay, close the
+     * detail panels and listing, and restore the base annotation/footnote
+     * (HEP-SELECT-007).
+     * @returns {void}
+     */
+    clearSelection() {
+      if (this.state.selectedId == null) return;
+      this.state.selectedId = null;
+      if (this.chart) {
+        this.chart.data.datasets[1].data = [];
+        this.chart.update();
+      }
+      this.charts = this.charts.filter((chart) => {
+        if (chart === this.chart) return true;
+        chart.destroy();
+        return false;
+      });
+      this.currentTableData = [];
+      this.listingWrap.innerHTML = "";
+      this.detailWrap.innerHTML = "";
+      this.detailWrap.style.display = "none";
+      this.mainAnnotation.textContent = "";
+      this.footnote.textContent = this.baseFootnote();
+      this.dispatchSelection([]);
+    }
+    /**
+     * Draw the participant drill-down panels into the detail container: the
+     * "Standardized Lab Values by Study Day" line chart (one line per measure in
+     * the active display units) and the Measure | N | Min | Median | Max summary
+     * table (HEP-SELECT-002, HEP-SELECT-005).
+     * @private
+     */
+    drawDetail(id) {
+      this.charts = this.charts.filter((chart) => {
+        if (chart === this.chart) return true;
+        chart.destroy();
+        return false;
+      });
+      this.detailWrap.innerHTML = "";
+      this.detailWrap.style.display = "";
+      this.detailWrap.append(
+        createElement("h3", "hep-detail-title", "Standardized Lab Values by Study Day")
+      );
+      const chartWrap = createElement("div", "hep-detail-chart");
+      const canvas = createElement("canvas", "hep-detail-canvas");
+      chartWrap.append(canvas);
+      this.detailWrap.append(chartWrap);
+      const series = participantMeasureSeries(this.cleanRows, id, this.settings, this.state);
+      const colors2 = groupColorScale2(series.map((entry) => entry.key));
+      const datasets = series.map((entry) => ({
+        label: entry.label,
+        data: entry.points.map((point) => ({
+          x: Number.isFinite(point.day) ? point.day : null,
+          y: point.value
+        })),
+        borderColor: colors2.get(entry.key),
+        backgroundColor: colors2.get(entry.key),
+        showLine: true,
+        spanGaps: true,
+        borderWidth: 1.5,
+        pointRadius: 2.5,
+        pointHoverRadius: 4
+      }));
+      const suffix = axisSuffix(this.state.display);
+      const detailChart = new Chart(canvas.getContext("2d"), {
+        type: "line",
+        data: { datasets },
+        options: {
+          maintainAspectRatio: false,
+          responsive: true,
+          animation: false,
+          plugins: {
+            legend: { display: true, position: "bottom" },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `${ctx.dataset.label}: ${formatNumber4(ctx.parsed.y)}${suffix} @ day ${ctx.parsed.x}`
+              }
+            }
+          },
+          scales: {
+            x: { type: "linear", title: { display: true, text: "Study Day" } },
+            y: {
+              type: this.state.axisType === "log" ? "logarithmic" : "linear",
+              title: { display: true, text: `Standardized value${suffix}` }
+            }
+          }
+        }
+      });
+      this.charts.push(detailChart);
+      this.detailWrap.append(this.buildSummaryTable(id));
+    }
+    /**
+     * Build the per-measure raw-value summary table (Measure | N | Min | Median |
+     * Max) for the selected participant (HEP-SELECT-005).
+     * @private
+     */
+    buildSummaryTable(id) {
+      const table = createElement("table", "hep-summary-table");
+      const thead = document.createElement("thead");
+      const headRow = document.createElement("tr");
+      headRow.append(createElement("th", null, "Measure"));
+      ["N", "Min", "Median", "Max"].forEach(
+        (label) => headRow.append(createElement("th", "hep-num", label))
+      );
+      thead.append(headRow);
+      table.append(thead);
+      const tbody = document.createElement("tbody");
+      measureSummary(this.cleanRows, id, this.settings).forEach((row) => {
+        const tr = document.createElement("tr");
+        tr.append(createElement("td", null, row.label));
+        tr.append(createElement("td", "hep-num", String(row.n)));
+        tr.append(createElement("td", "hep-num", formatNumber4(row.min)));
+        tr.append(createElement("td", "hep-num", formatNumber4(row.median)));
+        tr.append(createElement("td", "hep-num", formatNumber4(row.max)));
+        tbody.append(tr);
+      });
+      table.append(tbody);
+      return table;
+    }
+    /**
+     * Dispatch the custom participantsSelected event on the shell root with the
+     * selected IDs (HEP-API-003).
+     * @private
+     */
+    dispatchSelection(ids) {
+      this.participantsSelected = ids;
+      if (this.root) {
+        this.root.dispatchEvent(
+          new CustomEvent("participantsSelected", { detail: { data: ids }, bubbles: true })
+        );
+      }
+    }
+    /**
+     * Resize the live charts to their containers. For host layouts that change
+     * the container size without a window resize — e.g. the R htmlwidget
+     * bindings.
+     * @returns {void}
+     */
+    resize() {
+      this.charts.forEach((chart) => chart.resize());
+    }
+    /**
+     * Destroy the live Chart.js instances without touching the shell.
+     * @private
+     */
+    destroyCharts() {
+      this.charts.forEach((chart) => chart.destroy());
+      this.charts = [];
+      this.chart = null;
+    }
+    /**
+     * Tear the hep explorer down: destroy the Chart.js instances and empty the
+     * target element. The instance cannot be reused afterwards — create a new one
+     * via the factory instead.
+     * @returns {void}
+     */
+    destroy() {
+      this.destroyCharts();
+      this.element.innerHTML = "";
+    }
+  };
+  function hepExplorer(element = "body", settings = {}) {
+    return new SafetyHepExplorer(element, settings);
+  }
+
   // src/main.js
-  var main_default = { histogram, shiftPlot, deltaDelta, resultsOverTime, outlierExplorer, aeTimelines };
+  var main_default = {
+    histogram,
+    shiftPlot,
+    deltaDelta,
+    resultsOverTime,
+    outlierExplorer,
+    aeTimelines,
+    hepExplorer
+  };
   return __toCommonJS(main_exports);
 })();
 /*! Bundled license information:

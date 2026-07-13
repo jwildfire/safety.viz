@@ -1,0 +1,1415 @@
+{
+  "module": "hep-explorer",
+  "generatedAt": "2026-07-12T05:50:29.147Z",
+  "environment": {
+    "os": "linux 6.17.0-1018-azure",
+    "node": "v22.23.1",
+    "playwright": "1.61.1",
+    "chromium": "149.0.7827.55"
+  },
+  "run": {
+    "id": "29181741704",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29181741704"
+  },
+  "records": [
+    {
+      "test": "built ae-timelines demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built delta-delta demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built hep-explorer demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built histogram demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built outlier-explorer demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built results-over-time demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built shift-plot demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "demo page loads with no console errors (#1)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [1],
+      "screenshots": []
+    },
+    {
+      "test": "gallery shows one card per available renderer (#7)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "HEP-API-001: lifecycle API supports init, setData, setSettings, render, resize, and destroy (#43)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HEP-API-001"],
+      "issueRefs": [43],
+      "screenshots": []
+    },
+    {
+      "test": "HEP-API-003: participantsSelected fires on select and clear (#43)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HEP-API-003"],
+      "issueRefs": [43],
+      "screenshots": []
+    },
+    {
+      "test": "HEP-CHART-004: point tooltips list participant, R Ratio, peaks with days, and the day difference (#43)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HEP-CHART-004"],
+      "issueRefs": [43],
+      "screenshots": []
+    },
+    {
+      "test": "HEP-CTRL-001/HEP-CTRL-002/HEP-QUAD-001/HEP-DISPLAY-001/HEP-CTRL-006/HEP-CTRL-007/HEP-CTRL-008/HEP-CTRL-009/HEP-CTRL-010/HEP-CTRL-011/HEP-CTRL-012: renders the full control panel (#43)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [
+        "HEP-CTRL-001",
+        "HEP-CTRL-002",
+        "HEP-QUAD-001",
+        "HEP-DISPLAY-001",
+        "HEP-CTRL-006",
+        "HEP-CTRL-007",
+        "HEP-CTRL-008",
+        "HEP-CTRL-009",
+        "HEP-CTRL-010",
+        "HEP-CTRL-011",
+        "HEP-CTRL-012"
+      ],
+      "issueRefs": [43],
+      "screenshots": [
+        "HEP-CTRL-001-control-panel.png",
+        "HEP-CTRL-006-log-axes.png",
+        "HEP-CTRL-009-color-by-group.png",
+        "HEP-DISPLAY-001-mdish-display.png"
+      ]
+    },
+    {
+      "test": "HEP-CTRL-006/HEP-CHART-003: the axis-type toggle switches both axes between linear and log (#43)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-006", "HEP-CHART-003"],
+      "issueRefs": [43],
+      "screenshots": ["HEP-CTRL-006-log-axes.png"]
+    },
+    {
+      "test": "HEP-CTRL-009: grouping colors the points and renders a legend (#43)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-009"],
+      "issueRefs": [43],
+      "screenshots": ["HEP-CTRL-009-color-by-group.png"]
+    },
+    {
+      "test": "HEP-DATA-001/HEP-CTRL-011: participant note reports N and % and updates on filter (#43)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HEP-DATA-001", "HEP-CTRL-011"],
+      "issueRefs": [43],
+      "screenshots": []
+    },
+    {
+      "test": "HEP-DATA-003: missing and non-numeric results are dropped with a reported count and note (#43)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HEP-DATA-003"],
+      "issueRefs": [43],
+      "screenshots": ["HEP-DATA-003-invalid-data-note.png"]
+    },
+    {
+      "test": "HEP-DISPLAY-001/HEP-DISPLAY-002/HEP-CHART-002: the display toggle switches eDISH and mDISH axis titles and cutpoints (#43)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HEP-DISPLAY-001", "HEP-DISPLAY-002", "HEP-CHART-002"],
+      "issueRefs": [43],
+      "screenshots": ["HEP-DISPLAY-001-mdish-display.png"]
+    },
+    {
+      "test": "HEP-QUAD-001/HEP-QUAD-004: changing the x-axis reference line reclassifies the quadrants (#43)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HEP-QUAD-001", "HEP-QUAD-004"],
+      "issueRefs": [43],
+      "screenshots": []
+    },
+    {
+      "test": "HEP-QUAD-002/HEP-QUAD-003/HEP-QUAD-004/HEP-QUAD-005: quadrant cut-lines classify one participant per quadrant and drive the summary table (#43)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HEP-QUAD-002", "HEP-QUAD-003", "HEP-QUAD-004", "HEP-QUAD-005"],
+      "issueRefs": [43],
+      "screenshots": ["HEP-QUAD-002-quadrant-summary.png"]
+    },
+    {
+      "test": "HEP-SELECT-001/HEP-SELECT-002/HEP-SELECT-003/HEP-SELECT-005/HEP-SELECT-006: clicking a point draws the visit path, detail panels, and linked listing (#43)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [
+        "HEP-SELECT-001",
+        "HEP-SELECT-002",
+        "HEP-SELECT-003",
+        "HEP-SELECT-005",
+        "HEP-SELECT-006"
+      ],
+      "issueRefs": [43],
+      "screenshots": ["HEP-SELECT-001-participant-detail.png"]
+    },
+    {
+      "test": "HEP-SELECT-002: selecting a second participant without a background click destroys the prior detail chart (no Chart.js leak) (#43)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HEP-SELECT-002"],
+      "issueRefs": [43],
+      "screenshots": []
+    },
+    {
+      "test": "HEP-SELECT-006: changing Display Type while a participant is selected re-renders the coordinated panels in the new units (#43)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HEP-SELECT-006"],
+      "issueRefs": [43],
+      "screenshots": []
+    },
+    {
+      "test": "HEP-SELECT-007: clicking the background clears the selection, detail panels, and listing (#43)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HEP-SELECT-007"],
+      "issueRefs": [43],
+      "screenshots": []
+    },
+    {
+      "test": "buildApiModel API-XFORM-010: assembles the artifact with module, factory, methods, settings, data contract, and missing docs (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-010"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "buildApiModel API-XFORM-011: flags DEFAULT_SETTINGS keys absent from the settings typedef (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-011"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer buildEvidenceSets splits records per module and duplicates shared scaffold records (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer buildRun builds GitHub Actions run provenance from the environment (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer compareEvidence flags status drift and test-set changes, ignoring screenshots (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer compareEvidence ignores provenance so --check never drifts on generatedAt/environment/run (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer moduleForFile routes test files to renderer modules by path (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer normalizePlaywright walks nested suites into browser-suite records (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer normalizeVitest maps assertion results to unit-suite records (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer parseTestName extracts requirement IDs and issue refs (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer parseTestName recognizes every renderer requirement-ID prefix, not just SH (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer provenance lives in dedicated top-level keys; the records array stays timestamp-free (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer checkInputs HEP-DATA-005: missing required columns throw a single error naming every missing variable (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DATA-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer checkInputs HEP-DATA-005: non-array or empty data reports every required column as missing (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DATA-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer checkInputs HEP-DATA-005: remapped column settings are validated against the remapped names (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DATA-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer checkInputs HEP-DATA-005: valid long-format data with the required columns passes (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DATA-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer configure HEP-API: arrayify and fieldSpec normalize scalars, nullish values, and spec objects (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer configure HEP-CTRL-001/002: measure-option lists coerce a single string to an array (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-001"],
+      "issueRefs": [],
+      "screenshots": ["HEP-CTRL-001-control-panel.png"]
+    },
+    {
+      "test": "hep-explorer configure HEP-CTRL-008: the timing window defaults to 30 days (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-008"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer configure HEP-CTRL-009: groups always offer a leading None option and honor group_by (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-009"],
+      "issueRefs": [],
+      "screenshots": ["HEP-CTRL-009-color-by-group.png"]
+    },
+    {
+      "test": "hep-explorer configure HEP-CTRL-010: r_ratio normalizes to a [min, max] pair with a data-resolved null max by default (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-010"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer configure HEP-CTRL-011: filter specs normalize strings and objects and preserve a start value (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-011"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer configure HEP-DATA-001..004: default settings map the standard id, measure, value, unit, normal-range, and timing columns (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DATA-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer configure HEP-DATA-002: a partial measure_values override back-fills the other measures from the defaults (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DATA-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer configure HEP-DATA-002/HEP-CTRL-001/002: measure_values map the short keys to full TEST strings and x/y defaults are ALT vs TB (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DATA-002", "HEP-CTRL-001"],
+      "issueRefs": [],
+      "screenshots": ["HEP-CTRL-001-control-panel.png"]
+    },
+    {
+      "test": "hep-explorer configure HEP-DISPLAY-001/HEP-CTRL-006/007: display, axis-type, point-size, and measure constants match the original renderer (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DISPLAY-001", "HEP-CTRL-006"],
+      "issueRefs": [],
+      "screenshots": ["HEP-CTRL-006-log-axes.png", "HEP-DISPLAY-001-mdish-display.png"]
+    },
+    {
+      "test": "hep-explorer configure HEP-QUAD-001: a partial cuts override deep-merges onto the defaults so untouched measures keep their cuts (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-QUAD-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer configure HEP-QUAD-001: cutFor back-fills unlisted measures and missing display modes from the defaults entry (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-QUAD-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer configure HEP-QUAD-001: default cuts give the classic eDISH view — ALT >= 3xULN via the defaults entry, TB >= 2xULN (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-QUAD-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer configure HEP-SELECT-006: details normalize to spec arrays and default to an empty list for the derived columns (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-SELECT-006"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer getPlugins HEP-CHART-004: pointTooltip lists participant, R Ratio, both peaks with days, and the day gap (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CHART-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer getPlugins HEP-CHART-004: pointTooltip names each measure with its full label from measure_values (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CHART-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer getPlugins HEP-CHART-004: pointTooltip shows NA for a missing R Ratio or day and omits an unknown day gap (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CHART-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer getPlugins HEP-CTRL-009: groupColorScale maps distinct group values to palette colors and cycles (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-009"],
+      "issueRefs": [],
+      "screenshots": ["HEP-CTRL-009-color-by-group.png"]
+    },
+    {
+      "test": "hep-explorer getPlugins HEP-QUAD-002: QUADRANT_LABELS pin the four Hy's-Law quadrants to their corner and High/Normal combination (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-QUAD-002"],
+      "issueRefs": [],
+      "screenshots": ["HEP-QUAD-002-quadrant-summary.png"]
+    },
+    {
+      "test": "hep-explorer getPlugins HEP-SELECT-001: the selection highlight color is a hex color distinct from the group palette (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-SELECT-001"],
+      "issueRefs": [],
+      "screenshots": ["HEP-SELECT-001-participant-detail.png"]
+    },
+    {
+      "test": "hep-explorer getPlugins hexToRgba converts a hex color to rgba at the given opacity (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer getScales HEP-CHART-002: buildScales titles both axes with the full measure labels in the active display units (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CHART-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer getScales HEP-CHART-003: a linear eDISH domain starts at 0 and always keeps the cutpoint in view (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CHART-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer getScales HEP-CHART-003: degenerate linear domains fall back sanely (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CHART-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer getScales HEP-CHART-003/HEP-CTRL-006: a log domain runs from the smallest positive value to the max, padded, including the cut (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CHART-003", "HEP-CTRL-006"],
+      "issueRefs": [],
+      "screenshots": ["HEP-CTRL-006-log-axes.png"]
+    },
+    {
+      "test": "hep-explorer getScales HEP-CHART-004: formatNumber trims trailing zeros at the requested precision and blanks non-finite values (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CHART-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer getScales HEP-CTRL-006: the log axis type switches both scales to logarithmic and drops a non-positive min (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-006"],
+      "issueRefs": [],
+      "screenshots": ["HEP-CTRL-006-log-axes.png"]
+    },
+    {
+      "test": "hep-explorer getScales HEP-DISPLAY-001/HEP-CHART-002: axis suffix and label reflect the active display mode and use the full measure label (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DISPLAY-001", "HEP-CHART-002"],
+      "issueRefs": [],
+      "screenshots": ["HEP-DISPLAY-001-mdish-display.png"]
+    },
+    {
+      "test": "hep-explorer module export HEP-API-001: the public collection exposes the hepExplorer factory (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-API-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-API: unique, mean, quantile, and median match hand computations (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-CHART-001/HEP-DISPLAY-003: buildPoints reduces to one peak-vs-peak point per participant with timing and rRatio (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CHART-001", "HEP-DISPLAY-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-CTRL-008: buildPoints flags points outside the timing window as hollow (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-008"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-CTRL-009: buildPoints tags each point with its participant-level group value when grouping (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-009"],
+      "issueRefs": [],
+      "screenshots": ["HEP-CTRL-009-color-by-group.png"]
+    },
+    {
+      "test": "hep-explorer structureData HEP-CTRL-010: maxRRatio is the largest finite participant R-Ratio, 0 when none is finite (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-010"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-CTRL-011: applyFilters keeps points matching every active filter; unset filters match everything (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-011"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-DATA-002: resolveMeasureRows matches rows via the measure_values TEST strings (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DATA-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-DATA-003: cleanData drops blank/non-numeric values and non-positive ULNs with a count (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DATA-003"],
+      "issueRefs": [],
+      "screenshots": ["HEP-DATA-003-invalid-data-note.png"]
+    },
+    {
+      "test": "hep-explorer structureData HEP-DATA-004: a non-numeric study-day value is treated as absent (NaN), not coerced (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DATA-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-DATA-004: without a study-day column __hep_day is NaN and timing falls back to filled points (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DATA-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-DATA-004/HEP-DISPLAY-002: cleanData tags rows with numeric value, ULN, day, and the xULN derivation (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DATA-004", "HEP-DISPLAY-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-DISPLAY-001: buildPoints in mDISH uses the xBaseline peaks (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DISPLAY-001"],
+      "issueRefs": [],
+      "screenshots": ["HEP-DISPLAY-001-mdish-display.png"]
+    },
+    {
+      "test": "hep-explorer structureData HEP-DISPLAY-001: deriveBaseline uses the day-0 record, else the earliest day, as the xBaseline denominator (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DISPLAY-001"],
+      "issueRefs": [],
+      "screenshots": ["HEP-DISPLAY-001-mdish-display.png"]
+    },
+    {
+      "test": "hep-explorer structureData HEP-DISPLAY-003: participantPeak picks the record with the max active-display value, per display mode (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DISPLAY-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-DISPLAY-004: a zero baseline leaves xBaseline NaN so mDISH drops the participant (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DISPLAY-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-DISPLAY-004: buildPoints in mDISH drops participants without a usable baseline (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DISPLAY-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-DISPLAY-006: computeRRatio is peak ALT xULN over peak ALP xULN, NaN without ALP (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DISPLAY-006"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-QUAD-004: a point exactly on a cutpoint classifies as High, and empty data yields zero percents (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-QUAD-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-QUAD-004: classifyQuadrants buckets one point per quadrant with counts and percents (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-QUAD-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-SELECT-002: participantMeasureSeries returns one day-ordered series per present measure in display units (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-SELECT-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-SELECT-003: visitPathSeries pairs the X/Y values by visit in chronological order (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-SELECT-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-SELECT-003: visitPathSeries respects the active display mode (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-SELECT-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-SELECT-003: without a visit column the path pairs by study day and labels the days (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-SELECT-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-SELECT-004/HEP-DATA-004: with no study day, assignSequence orders and pairs by per-measure input order (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-SELECT-004", "HEP-DATA-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-SELECT-005: measureSummary reports n/min/median/max of the raw values per present measure (port)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-SELECT-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-001: the documented settings are exactly the DEFAULT_SETTINGS keys (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-001"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-002: every setting row has a type, default, and description (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-002"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-003: the factory is documented with params and a return value (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-003"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-004: every lifecycle method is documented with a description and return value (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-004"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-005: no missing-documentation entries remain across the public surface (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-005"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-006: the data contract derives from the schema and its settings map onto real setting names (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-006"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "safety.viz scaffold SH-API-001: the collection exposes the histogram module factory (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-API-001"],
+      "issueRefs": [2],
+      "screenshots": []
+    },
+    {
+      "test": "safety.viz scaffold src/main.js exports the public module collection (#1)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [1],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: about page (#21) carries the OpenRBQM mirror and audience framing moved off the homepage (#29)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 29],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: about page (#21) credits the safetyGraphics project and every original RhoInc renderer (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: about page (#21) describes each original renderer alongside its credit link (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: about page (#21) tells the keynote / developer-diary story and links the roadmap hub (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page opens with a module-anatomy overview linking the architecture page (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders a sidebar table of contents linking every section and method (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders each lifecycle method with signature, params, and returns (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders the factory signature and parameters (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders the schema-derived data contract (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders the settings table with type, default, and description (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: architecture page (#21) explains the shared shell and module anatomy (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: architecture page (#21) names the committed bundle for the running version (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: architecture page (#21) walks the pipeline from data contract to R htmlwidget (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: coverage parsing parses the browser and unit tables plus the routing-status tail (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page carries the routing-status sections onto the page (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page falls back to requirement-ID matching when a browser row wording drifts from the spec name (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page joins browser rows to their evidence record with status chip and screenshot (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page links source matrix rows to the safety.agent matrix (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page matches unit rows to records through expanded requirement IDs (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page rewrites repo-relative coverage links to repository URLs (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page surfaces failing records with a fail status chip (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence report provenance (#21) degrades gracefully when provenance fields are absent (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence report provenance (#21) links result chips to the CI run when a run is recorded (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence report provenance (#21) presents a captioned visual-evidence gallery of the committed screenshots (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence report provenance (#21) renders generation date, environment, and CI run when evidence.json carries them (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence report provenance (#21) summarizes scope and results in a fact panel (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery compresses the migration queue to a one-line strip after the cards (#29)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [29],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery leads with the two-sentence intro linking the keynote and safetyGraphics (#29)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [29],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery links available renderers to demo, evidence, and API pages with a hero thumbnail (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery lists every renderer: available as cards, queued in the status strip (#7) (#29)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 29],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery prefers a dedicated hero asset over the evidence baseline when configured (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery queued renderers link their requirement matrices, not site pages (#7) (#29)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 29],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: requirement-ID expansion expands double-dot ranges and slash shorthand into full IDs (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: shell tokens (#21) falls back to an empty description when none is given (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: shell tokens (#21) replaces version and description tokens across the shell (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site validation: evidence screenshots flags screenshots referenced in evidence.json but missing from the evidence set (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site validation: internal links flags internal links and asset references that do not resolve (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site validation: internal links passes a site whose internal links all resolve, ignoring external and fragment links (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: factory API-XFORM-004: maps the documented module.exports doclet to the factory, named for its source file (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-004"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: factory API-XFORM-005: ignores the spurious undocumented global doclet jsdoc emits for the default export (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-005"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: methods table API-XFORM-001: extracts documented instance methods in source order with signature, params, and returns (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-001"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: methods table API-XFORM-002: brackets optional params in signatures and carries their defaults (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-002"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: methods table API-XFORM-003: excludes private and undocumented methods from the table (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-003"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: missing-doc detection API-XFORM-008: flags undocumented public methods and settings properties without descriptions (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-008"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: missing-doc detection API-XFORM-009: flags a missing factory when no documented default export exists (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-009"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: settings table API-XFORM-006: extracts settings rows from the typedef properties with display-ready types and defaults (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-006"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: settings table API-XFORM-007: normalizes non-string defaults (booleans, numbers, null) to display strings (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-007"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-001: carries the schema title and description onto the contract (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-001"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-002: flattens top-level and nested settings properties into dotted field rows (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-002"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-003: derives required flags from each level’s required array (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-003"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-004: carries types, defaults, and descriptions through from the schema (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-004"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-005: resolves local $defs references to their concrete type (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-005"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-006: every contract field carries a non-empty description (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-006"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: image figures renders a standalone image line as a captioned figure",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: image figures falls back to the alt text when no caption title is given",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: image figures accepts a single-quoted caption (Prettier normalizes titles to single quotes)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: image figures treats a mid-paragraph image inline, not as a broken link",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: pipe tables renders a GFM pipe table inside a scroll wrapper with header and body",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: pipe tables applies column alignment from the delimiter row",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: pipe tables does not mistake a bare horizontal rule for a table delimiter",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: existing blocks are unchanged still renders headings, bullets, and paragraphs",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: existing blocks are unchanged renders a numbered list as an ordered list",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderGuidePage: composition renders the title, non-diagnostic caution, and the guide tab",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderGuidePage: composition renders authored figures from the guide markdown",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: heading ids and the guide TOC adds no heading ids by default (coverage docs stay unchanged)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: heading ids and the guide TOC adds slug ids to headings when opted in",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: heading ids and the guide TOC disambiguates repeated headings",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: heading ids and the guide TOC extractHeadings ids match the ids mdBlock emits",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: heading ids and the guide TOC slugify lowercases and collapses non-alphanumerics",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderGuidePage: composition renders a sticky TOC sidebar whose links anchor to the heading ids",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    }
+  ]
+}
