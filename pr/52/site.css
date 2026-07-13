@@ -893,3 +893,8 @@ ol.pipeline strong {
     margin-bottom: 1.5rem;
   }
 }
+/* Requirement-matrix link in the Test evidence area (replaces the former tab). */
+.matrix-link {
+  margin: -0.4rem 0 1.4rem;
+  font-size: 0.95rem;
+}
