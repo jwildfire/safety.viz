@@ -775,6 +775,124 @@ ol.pipeline strong {
   margin-top: 1.25rem;
 }
 
+/* Clinical guide (v1.2): the reviewer's guide page (docs/guides/<module>.md). */
+.guide-caution {
+  border-left: 4px solid var(--warn-rule);
+  background: var(--warn-bg);
+  color: var(--warn);
+  padding: 0.7rem 0.95rem;
+  margin: 0 0 1.6rem;
+  border-radius: 0 4px 4px 0;
+  font-size: 0.95rem;
+}
+.guide-body h2 {
+  margin-top: 2rem;
+}
+.guide-body h3 {
+  margin-top: 1.4rem;
+}
+.guide-body ul,
+.guide-body ol {
+  padding-left: 1.4rem;
+}
+.guide-body li {
+  margin: 0.25rem 0;
+}
+
+/* Ported workflow diagrams and reference tables (#52 full port). Figures are
+   framed as light cards with a muted caption; guide tables size to content
+   rather than the wide-table 40rem minimum, scrolling only when they must. */
+.guide-figure {
+  margin: 1.75rem 0;
+  padding: 0.75rem;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: var(--card);
+  text-align: center;
+}
+.guide-figure img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+  border-radius: 3px;
+}
+.guide-figure figcaption {
+  margin-top: 0.65rem;
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+.guide-body .table-scroll > table.guide-table {
+  min-width: 0;
+}
+.guide-table td {
+  font-size: 0.92rem;
+}
+
+/* Sticky sidebar TOC beside the guide body (long, step-based guide). Mirrors
+   the API page's .api-toc, but the TOC scrolls within its own sticky column
+   since the step list is long, and collapses above the body on narrow screens. */
+.guide-layout {
+  display: grid;
+  grid-template-columns: 15rem minmax(0, 1fr);
+  gap: 2rem;
+  align-items: start;
+}
+.guide-toc {
+  position: sticky;
+  top: 1rem;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--card);
+  padding: 0.9rem 1rem 1rem;
+  font-size: 0.85rem;
+}
+.guide-toc h2 {
+  margin: 0 0 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.guide-toc ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.guide-toc > ul > li {
+  margin: 0.4rem 0;
+}
+.guide-toc > ul > li > a {
+  font-weight: 600;
+}
+.guide-toc li {
+  margin: 0.25rem 0;
+}
+.guide-toc ul ul {
+  margin: 0.2rem 0 0.4rem 0.7rem;
+  border-left: 1px solid var(--rule);
+  padding-left: 0.6rem;
+}
+.guide-toc a {
+  display: inline-block;
+  line-height: 1.3;
+  text-decoration: none;
+}
+@media (max-width: 60rem) {
+  .guide-layout {
+    grid-template-columns: 1fr;
+  }
+  .guide-toc {
+    position: static;
+    max-height: 45vh;
+    margin-bottom: 1.5rem;
+  }
+}
 /* Requirement-matrix link in the Test evidence area (replaces the former tab). */
 .matrix-link {
   margin: -0.4rem 0 1.4rem;

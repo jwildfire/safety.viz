@@ -15,7 +15,7 @@
     <header class="site-header">
       <a class="site-name" href="../index.html">
         safety.viz
-        <span class="site-version">v1.1.0</span>
+        <span class="site-version">v1.2.0</span>
       </a>
       <nav class="site-nav">
         <a href="../index.html">Gallery</a>
@@ -29,7 +29,7 @@
 <p class="tagline">Requirement-traced qualification evidence for the safety.viz <code>shift-plot</code> module.</p>
 <nav class="page-tabs"><a href="index.html">Live demo</a><a class="current" aria-current="page" href="evidence.html">Test evidence</a><a href="api.html">API reference</a></nav>
 <p class="matrix-link"><a href="https://github.com/jwildfire/safety.agent/blob/main/docs/requirements/safety-shift-plot.md">Requirement matrix ↗</a> — the reviewed source specification these tests trace to.</p>
-<dl class="facts"><div class="fact"><dt>Scope</dt><dd>24 coverage rows<span class="sub">34 distinct requirement IDs</span></dd></div><div class="fact"><dt>Tests executed</dt><dd>113 automated checks<span class="sub">22 browser · 91 unit</span></dd></div><div class="fact"><dt>Result</dt><dd><a class="chip-link" href="https://github.com/jwildfire/safety.viz/actions/runs/29181741704" title="View the CI run that executed this test"><span class="chip status-pass">pass</span></a> all passing<span class="sub">5 evidence screenshots</span></dd></div><div class="fact"><dt>Generated</dt><dd>2026-07-12 05:50 UTC</dd></div><div class="fact"><dt>Environment</dt><dd><code>linux 6.17.0-1018-azure · node v22.23.1 · playwright 1.61.1 · chromium 149.0.7827.55</code></dd></div><div class="fact"><dt>Test run</dt><dd><a href="https://github.com/jwildfire/safety.viz/actions/runs/29181741704">Actions run #29181741704</a></dd></div></dl>
+<dl class="facts"><div class="fact"><dt>Scope</dt><dd>24 coverage rows<span class="sub">34 distinct requirement IDs</span></dd></div><div class="fact"><dt>Tests executed</dt><dd>130 automated checks<span class="sub">22 browser · 108 unit</span></dd></div><div class="fact"><dt>Result</dt><dd><a class="chip-link" href="https://github.com/jwildfire/safety.viz/actions/runs/29181741704" title="View the CI run that executed this test"><span class="chip status-pass">pass</span></a> all passing<span class="sub">5 evidence screenshots</span></dd></div><div class="fact"><dt>Generated</dt><dd>2026-07-12 05:50 UTC</dd></div><div class="fact"><dt>Environment</dt><dd><code>linux 6.17.0-1018-azure · node v22.23.1 · playwright 1.61.1 · chromium 149.0.7827.55</code></dd></div><div class="fact"><dt>Test run</dt><dd><a href="https://github.com/jwildfire/safety.viz/actions/runs/29181741704">Actions run #29181741704</a></dd></div></dl>
 <h2 id="scope">Scope &amp; approach</h2>
 <p>Traceability for the shift-plot module (#14) — the second full renderer, built on the framework proven by the histogram (#2) — per the convention in <a href="https://github.com/jwildfire/safety.viz/blob/HEAD/CONTRIBUTING.md">CONTRIBUTING.md</a>. Requirement IDs are the <code>SSP-*</code> rows of the 39-row reviewed matrix at <a href="https://github.com/jwildfire/safety.agent/blob/main/docs/requirements/safety-shift-plot.md">safety.agent <code>docs/requirements/safety-shift-plot.md</code></a>; a few module-scheme IDs (<code>SSP-CHART-002</code>, the module-API <code>SSP-API-001</code> note) name behavior the matrix does not enumerate. Development follows red-green TDD: matrix row → failing test → minimal implementation.</p>
 <p>Each table row traces one requirement to the automated test(s) that evidence it: the requirement ID and its source-matrix rows link back to the reviewed specification, the issue column links the implementing work, and the result column shows the recorded outcome of every matching test from the committed <a href="https://github.com/jwildfire/safety.viz/blob/HEAD/docs/evidence/shift-plot/evidence.json">evidence.json</a> with its captured screenshots. Browser evidence is captured at fixed conditions (1280×800, device scale 1) on the canonical Linux CI environment.</p>
@@ -93,7 +93,7 @@ npm run evidence:check   # compare a fresh run against the committed evidence
 npm run evidence         # regenerate docs/evidence/shift-plot/evidence.json</code></pre><p>Screenshot baselines are canonical to the Linux CI runner; the repository&#39;s <em>Update evidence baselines</em> workflow is the authoritative way to refresh them. See <a href="https://github.com/jwildfire/safety.viz/blob/HEAD/CONTRIBUTING.md">CONTRIBUTING.md</a> for the traceability convention.</p></section></main>
     <footer class="site-footer">
       <p>
-        safety.viz v1.1.0 — clinical safety graphics on one modern charting stack, migrated
+        safety.viz v1.2.0 — clinical safety graphics on one modern charting stack, migrated
         from the <a href="https://github.com/SafetyGraphics">safetyGraphics</a> ecosystem originally
         built by <a href="https://github.com/RhoInc">Rho, Inc.</a> (<a href="../about.html"
           >credits</a
