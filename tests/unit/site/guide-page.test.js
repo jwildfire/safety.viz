@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { mdBlock, mdInline, renderGuidePage } from '../../../scripts/site-lib.mjs';
+import {
+  extractHeadings,
+  mdBlock,
+  mdInline,
+  renderGuidePage,
+  slugify
+} from '../../../scripts/site-lib.mjs';
 
 // Clinical-guide rendering (#52 full port): mdBlock gained standalone image
 // figures and GitHub-flavored pipe tables so a guide can carry the ported
@@ -81,6 +87,36 @@ describe('mdBlock: existing blocks are unchanged', () => {
   });
 });
 
+describe('mdBlock: heading ids and the guide TOC', () => {
+  it('adds no heading ids by default (coverage docs stay unchanged)', () => {
+    expect(mdBlock('## Routing status')).toContain('<h2>Routing status</h2>');
+  });
+
+  it('adds slug ids to headings when opted in', () => {
+    const html = mdBlock('## Step 2a — Timing\n\n### Sub step', { headingIds: true });
+    expect(html).toContain('<h2 id="step-2a-timing">');
+    expect(html).toContain('<h3 id="sub-step">');
+  });
+
+  it('disambiguates repeated headings', () => {
+    const html = mdBlock('## Step\n\ntext\n\n## Step', { headingIds: true });
+    expect(html).toContain('<h2 id="step">');
+    expect(html).toContain('<h2 id="step-2">');
+  });
+
+  it('extractHeadings ids match the ids mdBlock emits', () => {
+    const md = '## First\n\n### Detail\n\n## First\n\n## Second';
+    const headings = extractHeadings(md);
+    const body = mdBlock(md, { headingIds: true });
+    expect(headings.map((h) => h.id)).toEqual(['first', 'detail', 'first-2', 'second']);
+    for (const { id } of headings) expect(body).toContain(`id="${id}"`);
+  });
+
+  it('slugify lowercases and collapses non-alphanumerics', () => {
+    expect(slugify('Step 5c — Hepatocyte-loss (P_ALT)')).toBe('step-5c-hepatocyte-loss-p-alt');
+  });
+});
+
 describe('renderGuidePage: composition', () => {
   const renderer = {
     module: 'hep-explorer',
@@ -91,7 +127,8 @@ describe('renderGuidePage: composition', () => {
   const html = renderGuidePage({
     renderer,
     config,
-    guideMarkdown: '## What it shows\n\n![Overview](guide/edish.png)\n'
+    guideMarkdown:
+      '## What it shows\n\n![Overview](guide/edish.png)\n\n## Workflow\n\n### Step 1\n\ntext\n'
   });
 
   it('renders the title, non-diagnostic caution, and the guide tab', () => {
@@ -103,5 +140,16 @@ describe('renderGuidePage: composition', () => {
   it('renders authored figures from the guide markdown', () => {
     expect(html).toContain('<figure class="guide-figure">');
     expect(html).toContain('src="guide/edish.png"');
+  });
+
+  it('renders a sticky TOC sidebar whose links anchor to the heading ids', () => {
+    expect(html).toContain('<div class="guide-layout">');
+    expect(html).toContain('<nav class="guide-toc"');
+    // Top-level sections and their nested subsection, linked to matching ids.
+    expect(html).toContain('<a href="#what-it-shows">What it shows</a>');
+    expect(html).toContain('<a href="#workflow">Workflow</a>');
+    expect(html).toContain('<a href="#step-1">Step 1</a>');
+    expect(html).toContain('<h2 id="workflow">');
+    expect(html).toContain('<h3 id="step-1">');
   });
 });

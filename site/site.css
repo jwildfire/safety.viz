@@ -829,3 +829,67 @@ ol.pipeline strong {
 .guide-table td {
   font-size: 0.92rem;
 }
+
+/* Sticky sidebar TOC beside the guide body (long, step-based guide). Mirrors
+   the API page's .api-toc, but the TOC scrolls within its own sticky column
+   since the step list is long, and collapses above the body on narrow screens. */
+.guide-layout {
+  display: grid;
+  grid-template-columns: 15rem minmax(0, 1fr);
+  gap: 2rem;
+  align-items: start;
+}
+.guide-toc {
+  position: sticky;
+  top: 1rem;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--card);
+  padding: 0.9rem 1rem 1rem;
+  font-size: 0.85rem;
+}
+.guide-toc h2 {
+  margin: 0 0 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.guide-toc ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.guide-toc > ul > li {
+  margin: 0.4rem 0;
+}
+.guide-toc > ul > li > a {
+  font-weight: 600;
+}
+.guide-toc li {
+  margin: 0.25rem 0;
+}
+.guide-toc ul ul {
+  margin: 0.2rem 0 0.4rem 0.7rem;
+  border-left: 1px solid var(--rule);
+  padding-left: 0.6rem;
+}
+.guide-toc a {
+  display: inline-block;
+  line-height: 1.3;
+  text-decoration: none;
+}
+@media (max-width: 60rem) {
+  .guide-layout {
+    grid-template-columns: 1fr;
+  }
+  .guide-toc {
+    position: static;
+    max-height: 45vh;
+    margin-bottom: 1.5rem;
+  }
+}

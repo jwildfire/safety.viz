@@ -25,6 +25,44 @@ export function mdInline(text) {
     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
 }
 
+// GitHub-style heading slug: lowercase, non-alphanumerics collapsed to a single
+// dash, edges trimmed. Used for in-page anchor ids and the guide TOC.
+export function slugify(text) {
+  return (
+    String(text)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'section'
+  );
+}
+
+// A stateful slugger that disambiguates repeated headings (foo, foo-2, foo-3),
+// so mdBlock's emitted ids and extractHeadings' TOC ids stay in lock-step when
+// both walk the same document in order.
+function headingSlugger() {
+  const seen = new Map();
+  return (text) => {
+    const base = slugify(text);
+    const count = seen.get(base) || 0;
+    seen.set(base, count + 1);
+    return count ? `${base}-${count + 1}` : base;
+  };
+}
+
+// Collect a document's ## / ### / #### headings in order, each with the slug id
+// mdBlock(markdown, { headingIds: true }) assigns it — the two share
+// headingSlugger, so a TOC built from this list links straight to the body.
+export function extractHeadings(markdown) {
+  const slug = headingSlugger();
+  const headings = [];
+  for (const line of markdown.split('\n')) {
+    const heading = line.match(/^(#{2,4})\s+(.*)$/);
+    if (heading)
+      headings.push({ level: heading[1].length, text: heading[2], id: slug(heading[2]) });
+  }
+  return headings;
+}
+
 // A standalone image line becomes a captioned <figure>: `![alt](src)` or
 // `![alt](src "caption")`. The title may be double- or single-quoted (Prettier
 // normalizes Markdown image titles to single quotes), and the caption falls
@@ -107,9 +145,11 @@ function renderPipeTable(lines, start) {
 // wrapped continuation lines), paragraphs, standalone image figures, and
 // GitHub-flavored pipe tables. The figure, table, and ordered-list handling is
 // additive — the coverage docs use none of them, so their rendering is
-// unchanged.
-export function mdBlock(markdown) {
+// unchanged. `headingIds` (opt-in) adds slug ids to headings so an on-page TOC
+// can anchor to them; it stays off for the coverage docs, which need no ids.
+export function mdBlock(markdown, { headingIds = false } = {}) {
   const html = [];
+  const slug = headingIds ? headingSlugger() : null;
   let list = null;
   let paragraph = [];
 
@@ -159,7 +199,8 @@ export function mdBlock(markdown) {
       flushParagraph();
       flushList();
       const level = heading[1].length;
-      html.push(`<h${level}>${mdInline(heading[2])}</h${level}>`);
+      const idAttr = slug ? ` id="${slug(heading[2])}"` : '';
+      html.push(`<h${level}${idAttr}>${mdInline(heading[2])}</h${level}>`);
     } else if (/^-\s+/.test(line)) {
       flushParagraph();
       startList('ul');
@@ -934,12 +975,46 @@ export function renderDemoPage({ renderer, version, config }) {
   );
 }
 
+// Build the guide's on-page table of contents from its ## sections and their
+// ### subsections, nested one level (mirroring the API page's sticky TOC). The
+// ids come from extractHeadings, so they match mdBlock's heading ids exactly.
+function renderGuideToc(headings) {
+  const entries = headings.filter((heading) => heading.level === 2 || heading.level === 3);
+  if (!entries.length) return '';
+  let html = '<ul>';
+  let openSub = false;
+  let openTop = false;
+  for (const { level, text, id } of entries) {
+    const link = `<a href="#${id}">${mdInline(text)}</a>`;
+    if (level === 2) {
+      if (openSub) {
+        html += '</ul>';
+        openSub = false;
+      }
+      if (openTop) html += '</li>';
+      html += `<li>${link}`;
+      openTop = true;
+    } else {
+      if (!openSub) {
+        html += '<ul>';
+        openSub = true;
+      }
+      html += `<li>${link}</li>`;
+    }
+  }
+  if (openSub) html += '</ul>';
+  if (openTop) html += '</li>';
+  html += '</ul>';
+  return `<nav class="guide-toc" aria-label="On this page"><h2>On this page</h2>${html}</nav>`;
+}
+
 // Clinical guide (v1.2): an authored, per-renderer reviewer's guide rendered
 // from docs/guides/<module>.md via mdBlock. Teaches the clinical reading of the
 // graphic and cross-references the live controls. Opt-in through the config
 // `guide` field, so only renderers that ship a guide get the tab. A standing
 // non-diagnostic caution is rendered by the page itself, so every guide carries
-// it regardless of the authored content.
+// it regardless of the authored content. A sticky sidebar TOC (built from the
+// authored ## / ### headings) sits beside the body for a long, step-based guide.
 export function renderGuidePage({ renderer, config, guideMarkdown }) {
   const matrixUrl = `${config.matrixBaseUrl}/${renderer.matrix}`;
   const html = [];
@@ -954,7 +1029,9 @@ export function renderGuidePage({ renderer, config, guideMarkdown }) {
       ` A drug-induced-liver-injury conclusion is a diagnosis of exclusion that requires evidence` +
       ` beyond what this graphic shows.</p>`
   );
-  html.push(`<div class="guide-body">${mdBlock(guideMarkdown)}</div>`);
+  const toc = renderGuideToc(extractHeadings(guideMarkdown));
+  const body = `<div class="guide-body">${mdBlock(guideMarkdown, { headingIds: true })}</div>`;
+  html.push(toc ? `<div class="guide-layout">${toc}${body}</div>` : body);
   return html.join('\n');
 }
 
