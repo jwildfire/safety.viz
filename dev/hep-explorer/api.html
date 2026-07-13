@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Generated API reference for the safety.viz hep-explorer module: factory, lifecycle methods, settings, and the JSON-Schema data contract." />
+    <title>Hepatic Safety Explorer API reference · safety.viz</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23271810'/%3E%3Crect x='2.5' y='8' width='3' height='5.5' fill='%23f97316'/%3E%3Crect x='6.5' y='3.5' width='3' height='10' fill='%23fb923c'/%3E%3Crect x='10.5' y='6' width='3' height='7.5' fill='%23f97316'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="../site.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="site-name" href="../index.html">
+        safety.viz
+        <span class="site-version">v1.1.0</span>
+      </a>
+      <nav class="site-nav">
+        <a href="../index.html">Gallery</a>
+        <a href="../architecture.html">Architecture</a>
+        <a href="../about.html">About</a>
+        <a href="https://github.com/jwildfire/safety.viz">GitHub</a>
+        <a href="https://jwildfire.github.io/obot.roadmap/">Roadmap</a>
+      </nav>
+    </header>
+    <main class="site-main"><h1><code>hep-explorer</code> API reference</h1>
+<p class="tagline">Generated from the module&#39;s JSDoc and JSON-Schema data contract — <code>npm run docs:api</code> fails on undocumented surface.</p>
+<nav class="page-tabs"><a href="index.html">Live demo</a><a href="evidence.html">Test evidence</a><a class="current" aria-current="page" href="api.html">API reference</a></nav>
+<div class="api-layout"><nav class="api-toc" aria-label="On this page"><h2>On this page</h2><ul><li><a href="#overview">Overview</a></li><li><a href="#factory"><code>hepExplorer()</code></a></li><li><a href="#methods">Methods</a><ul><li><a href="#init"><code>init()</code></a></li><li><a href="#setData"><code>setData()</code></a></li><li><a href="#setSettings"><code>setSettings()</code></a></li><li><a href="#render"><code>render()</code></a></li><li><a href="#selectParticipant"><code>selectParticipant()</code></a></li><li><a href="#clearSelection"><code>clearSelection()</code></a></li><li><a href="#resize"><code>resize()</code></a></li><li><a href="#destroy"><code>destroy()</code></a></li></ul></li><li><a href="#settings">Settings</a></li><li><a href="#data-contract">Data contract</a></li></ul></nav><div class="api-body"><section id="overview"><h2>Overview</h2><p>Every safety.viz renderer is one factory call. <code>hepExplorer(element, settings)</code> empties the container, renders the <a href="../architecture.html">shared control shell</a>, and returns a chart instance; pass data to <code>setData</code> (or <code>init</code>) and the module validates it against its <a href="#data-contract">data contract</a>, structures it, and draws. Settings are merged onto the module&#39;s defaults, so callers supply only overrides — column mappings follow ADaM naming out of the box. The same lifecycle (<code>init</code>, <code>setData</code>, <code>setSettings</code>, <code>render</code>, <code>selectParticipant</code>, <code>clearSelection</code>, <code>resize</code>, <code>destroy</code>) is shared by every module and consumed unchanged by the gsm.safety R bindings. See <a href="../architecture.html">Architecture</a> for how the pieces fit together.</p></section>
+<h2 id="factory">Factory</h2>
+<h3 id="hepExplorer"><code>hepExplorer([element], [settings])</code></h3>
+<p>Create a safety hep explorer inside a container element. The control shell
+renders immediately; pass long-format lab records to setData (or init) on the
+returned instance to validate the data and draw the eDISH scatter.</p>
+<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>element</code> <em>(optional)</em></td><td><code>string | HTMLElement</code></td><td><code>&#39;body&#39;</code></td><td>Container node, or a CSS selector for it.</td></tr><tr><td><code>settings</code> <em>(optional)</em></td><td><code>HepExplorerSettings</code></td><td><code>{}</code></td><td>Setting overrides, merged onto DEFAULT_SETTINGS and normalized.</td></tr></tbody></table>
+<p class="returns"><strong>Returns:</strong> <code>SafetyHepExplorer</code> — The live hep-explorer instance.</p>
+<h2 id="methods">Methods</h2>
+<h3 id="init"><code>init(data)</code></h3>
+<p>Load data and render: an alias for setData that keeps the two-step
+create-then-init call shape working (HEP-API-001).</p>
+<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>data</code></td><td><code>Array.&lt;Object&gt;</code></td><td>—</td><td>Long-format lab records matching the hep-explorer data contract.</td></tr></tbody></table>
+<p class="returns"><strong>Returns:</strong> <code>SafetyHepExplorer</code> — The instance, for chaining.</p>
+<h3 id="setData"><code>setData(data)</code></h3>
+<p>Replace the bound data and re-render. The data is validated against the
+settings mapping (throwing, and rendering the message into the target
+element, when required columns are missing), rows with missing or
+non-numeric values/ULN are removed with a console warning, baselines are
+derived for the mDISH view, and the controls are rebuilt from the new data.</p>
+<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>data</code></td><td><code>Array.&lt;Object&gt;</code></td><td>—</td><td>Long-format lab records matching the hep-explorer data contract.</td></tr></tbody></table>
+<p class="returns"><strong>Returns:</strong> <code>SafetyHepExplorer</code> — The instance, for chaining.</p>
+<h3 id="setSettings"><code>setSettings(settings)</code></h3>
+<p>Merge setting overrides onto the current settings, re-normalize them (same
+rules as the factory), re-seed the affected control state, rebuild the
+controls, and re-render.</p>
+<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>settings</code></td><td><code>HepExplorerSettings</code></td><td>—</td><td>Setting overrides to merge.</td></tr></tbody></table>
+<p class="returns"><strong>Returns:</strong> <code>SafetyHepExplorer</code> — The instance, for chaining.</p>
+<h3 id="render"><code>render()</code></h3>
+<p>Redraw everything from the current data, settings, and control state:
+destroys the live charts, clears the listing, legend, quadrant summary,
+and any selection, recomputes the per-participant points and quadrants,
+then draws the scatter, legend, and quadrant summary table (or an
+empty-data message). A live participant selection survives the redraw:
+when the participant is still shown, every coordinated panel — scatter
+highlight, visit path, lab-over-time chart, summary table, and listing —
+is re-rendered from the same selection in the active display units
+(HEP-SELECT-006); otherwise the selection is cleared and listeners are
+notified. Called automatically by the controls and the data/settings
+setters.</p>
+<p class="returns"><strong>Returns:</strong> <code>void</code> — </p>
+<h3 id="selectParticipant"><code>selectParticipant(id)</code></h3>
+<p>Select a participant and drive every coordinated view (HEP-SELECT-001..006):
+highlight the point, trace the visit path on the scatter, draw the
+lab-over-time companion chart and the measure summary table, open the
+linked listing of the participant&#39;s raw records, annotate the chart, and
+dispatch the participantsSelected event — all in the active display units.</p>
+<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>id</code></td><td><code>string | number</code></td><td>—</td><td>The participant identifier.</td></tr></tbody></table>
+<p class="returns"><strong>Returns:</strong> <code>void</code> — </p>
+<h3 id="clearSelection"><code>clearSelection()</code></h3>
+<p>Clear any participant selection: erase the visit-path overlay, close the
+detail panels and listing, and restore the base annotation/footnote
+(HEP-SELECT-007).</p>
+<p class="returns"><strong>Returns:</strong> <code>void</code> — </p>
+<h3 id="resize"><code>resize()</code></h3>
+<p>Resize the live charts to their containers. For host layouts that change
+the container size without a window resize — e.g. the R htmlwidget
+bindings.</p>
+<p class="returns"><strong>Returns:</strong> <code>void</code> — </p>
+<h3 id="destroy"><code>destroy()</code></h3>
+<p>Tear the hep explorer down: destroy the Chart.js instances and empty the
+target element. The instance cannot be reused afterwards — create a new one
+via the factory instead.</p>
+<p class="returns"><strong>Returns:</strong> <code>void</code> — </p>
+<h2 id="settings">Settings</h2>
+<div class="table-scroll"><table class="api"><thead><tr><th>Setting</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>id_col</code></td><td><code>string</code></td><td><code>&#39;USUBJID&#39;</code></td><td>Participant identifier column; drives the one-point-per-participant scatter, the participant counts, and the linked listing (HEP-DATA-001).</td></tr><tr><td><code>measure_col</code></td><td><code>string</code></td><td><code>&#39;TEST&#39;</code></td><td>Column holding the measure name; required in the data. Rows are matched to the ALT/AST/TB/ALP keys via measure_values (HEP-DATA-002).</td></tr><tr><td><code>value_col</code></td><td><code>string</code></td><td><code>&#39;STRESN&#39;</code></td><td>Column holding the numeric result; required in the data. Rows with missing or non-numeric values are removed with a console warning (HEP-DATA-003).</td></tr><tr><td><code>unit_col</code></td><td><code>string</code></td><td><code>&#39;STRESU&#39;</code></td><td>Optional unit column, appended to measure labels and shown in the linked listing.</td></tr><tr><td><code>normal_col_high</code></td><td><code>string</code></td><td><code>&#39;STNRHI&#39;</code></td><td>Upper-limit-of-normal (ULN) column; required in the data — the ×ULN standardization divides each value by it (HEP-DISPLAY-002).</td></tr><tr><td><code>normal_col_low</code></td><td><code>string | null</code></td><td><code>&#39;STNRLO&#39;</code></td><td>Optional lower-limit-of-normal column, carried into the linked listing.</td></tr><tr><td><code>studyday_col</code></td><td><code>string | null</code></td><td><code>&#39;DY&#39;</code></td><td>Optional study-day column; drives the day_diff timing test and the visit-path ordering. When absent, a per-participant per-measure input-order sequence is derived (HEP-SELECT-004, HEP-DATA-004).</td></tr><tr><td><code>visit_col</code></td><td><code>string | null</code></td><td><code>&#39;VISIT&#39;</code></td><td>Optional categorical visit column; labels the visit-path overlay and pairs the X/Y trajectory points (HEP-SELECT-003).</td></tr><tr><td><code>visitn_col</code></td><td><code>string | null</code></td><td><code>&#39;VISITNUM&#39;</code></td><td>Optional numeric visit column; orders visit-keyed series when present.</td></tr><tr><td><code>measure_values</code></td><td><code>Object</code></td><td>—</td><td>Map of the short measure key (ALT/AST/TB/ALP) to the full TEST string in the data; controls present the short keys but resolve rows via these strings (HEP-DATA-002).</td></tr><tr><td><code>x_default</code></td><td><code>string</code></td><td><code>&#39;ALT&#39;</code></td><td>Measure plotted on the x-axis on first render (HEP-CTRL-001).</td></tr><tr><td><code>y_default</code></td><td><code>string</code></td><td><code>&#39;TB&#39;</code></td><td>Measure plotted on the y-axis on first render (HEP-CTRL-002).</td></tr><tr><td><code>x_options</code></td><td><code>Array.&lt;string&gt;</code></td><td><code>[&#39;ALT&#39;,&#39;AST&#39;,&#39;TB&#39;,&#39;ALP&#39;]</code></td><td>Measures offered by the X-axis Measure control (HEP-CTRL-001).</td></tr><tr><td><code>y_options</code></td><td><code>Array.&lt;string&gt;</code></td><td><code>[&#39;TB&#39;]</code></td><td>Measures offered by the Y-axis Measure control; when only one option the control is dropped (HEP-CTRL-002).</td></tr><tr><td><code>cuts</code></td><td><code>Object</code></td><td>—</td><td>Per-measure Hy&#39;s-Law cutpoints keyed by measure then display mode; a `defaults` entry back-fills any measure without its own cuts (HEP-QUAD-001).</td></tr><tr><td><code>visit_window</code></td><td><code>number</code></td><td><code>30</code></td><td>Timing window (days): points whose peak-X and peak-Y days are within this many days render filled, else hollow (HEP-CTRL-008, HEP-DISPLAY-005).</td></tr><tr><td><code>r_ratio_filter</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Whether to render the R-Ratio range filter control (HEP-CTRL-010).</td></tr><tr><td><code>r_ratio</code></td><td><code>Array.&lt;number&gt;</code></td><td><code>[0,null]</code></td><td>Initial R-Ratio [min, max] range; a null max is resolved from the data on first render (HEP-CTRL-010).</td></tr><tr><td><code>filters</code></td><td><code>Array.&lt;(string|Object)&gt;</code></td><td><code>[]</code></td><td>Filter controls: column names or { value_col, label } specs. Filters whose column is absent from the data are dropped with a console warning (HEP-CTRL-011).</td></tr><tr><td><code>groups</code></td><td><code>Array.&lt;(string|Object)&gt;</code></td><td><code>[]</code></td><td>Color-by options; a &quot;None&quot; option is always offered first (HEP-CTRL-009).</td></tr><tr><td><code>group_by</code></td><td><code>string</code></td><td><code>&#39;hep_none&#39;</code></td><td>Column the points are colored by on first render; &#39;hep_none&#39; disables grouping.</td></tr><tr><td><code>details</code></td><td><code>Array.&lt;(string|Object)&gt; | null</code></td><td><code>null</code></td><td>Columns for the linked participant listing; when null, defaults derive from the measure/day/value mappings (HEP-SELECT-006).</td></tr><tr><td><code>page_size</code></td><td><code>number</code></td><td><code>10</code></td><td>Rows per page in the linked participant listing.</td></tr><tr><td><code>width</code></td><td><code>string</code></td><td><code>&#39;100%&#39;</code></td><td>Widget width, carried over for the R widget bindings; the shell always spans its container.</td></tr><tr><td><code>height</code></td><td><code>number</code></td><td><code>460</code></td><td>Chart-area height in pixels, carried over for the R widget bindings; the shell fixes the chart-area height.</td></tr></tbody></table></div>
+<h2 id="data-contract">Data contract</h2>
+<h3>safety.viz hep-explorer data contract</h3>
+<p>Long-format liver-lab data: one record per participant per measure per visit/day (HEP-DATA-001). Column names are supplied by the settings mapping; the hep-explorer standardizes each value to ×ULN and ×Baseline, reduces to one point per participant (peak X measure vs peak Y measure), and removes missing/non-numeric results with a reported count (HEP-DATA-003). The four liver measures (ALT/AST/TB/ALP) are matched from the measure column via measure_values.</p>
+<div class="table-scroll"><table class="api"><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>data</code></td><td><code>array</code></td><td>yes</td><td>—</td><td>d3.csv()-style records; every row carries the measure, result, participant, and ULN columns named in settings, one row per participant per measure per visit/day.</td></tr><tr><td><code>settings</code></td><td><code>object</code></td><td>yes</td><td>—</td><td>Column mappings and rendering options; merged onto the module&#39;s DEFAULT_SETTINGS, so only overrides need to be supplied (HEP-DATA-003).</td></tr><tr><td><code>settings.id_col</code></td><td><code>string</code></td><td>yes</td><td><code>USUBJID</code></td><td>Participant identifier column; one plotted point per participant (HEP-DATA-001).</td></tr><tr><td><code>settings.measure_col</code></td><td><code>string</code></td><td>yes</td><td><code>TEST</code></td><td>Column holding the measure name; required in data. Matched to the ALT/AST/TB/ALP keys via measure_values (HEP-DATA-002).</td></tr><tr><td><code>settings.value_col</code></td><td><code>string</code></td><td>yes</td><td><code>STRESN</code></td><td>Column holding the numeric result; required in data. Non-numeric results are removed with a logged count (HEP-DATA-003).</td></tr><tr><td><code>settings.unit_col</code></td><td><code>string</code></td><td>no</td><td><code>STRESU</code></td><td>Optional unit column, appended to measure labels and shown in the linked listing.</td></tr><tr><td><code>settings.normal_col_high</code></td><td><code>string</code></td><td>yes</td><td><code>STNRHI</code></td><td>Upper limit of normal (ULN); required in data — the ×ULN standardization divides each value by it (HEP-DISPLAY-002).</td></tr><tr><td><code>settings.normal_col_low</code></td><td><code>string,null</code></td><td>no</td><td><code>STNRLO</code></td><td>Optional lower limit of normal, carried into the linked listing.</td></tr><tr><td><code>settings.studyday_col</code></td><td><code>string,null</code></td><td>no</td><td><code>DY</code></td><td>Optional study-day column; drives the timing test and visit-path ordering. When absent, a per-participant per-measure input-order sequence is derived (HEP-DATA-004, HEP-SELECT-004).</td></tr><tr><td><code>settings.visit_col</code></td><td><code>string,null</code></td><td>no</td><td><code>VISIT</code></td><td>Optional categorical visit column; labels the visit-path overlay and pairs the X/Y trajectory points (HEP-SELECT-003).</td></tr><tr><td><code>settings.visitn_col</code></td><td><code>string,null</code></td><td>no</td><td><code>VISITNUM</code></td><td>Optional numeric visit column; orders visit-keyed series when present.</td></tr><tr><td><code>settings.measure_values</code></td><td><code>object</code></td><td>no</td><td><code>[object Object]</code></td><td>Map of the short measure key (ALT/AST/TB/ALP) to the full measure string in the data (HEP-DATA-002).</td></tr><tr><td><code>settings.x_default</code></td><td><code>string</code></td><td>no</td><td><code>ALT</code></td><td>Measure plotted on the x-axis on first render (HEP-CTRL-001).</td></tr><tr><td><code>settings.y_default</code></td><td><code>string</code></td><td>no</td><td><code>TB</code></td><td>Measure plotted on the y-axis on first render (HEP-CTRL-002).</td></tr><tr><td><code>settings.x_options</code></td><td><code>array</code></td><td>no</td><td><code>ALT,AST,TB,ALP</code></td><td>Measures offered by the X-axis Measure control (HEP-CTRL-001).</td></tr><tr><td><code>settings.y_options</code></td><td><code>array</code></td><td>no</td><td><code>TB</code></td><td>Measures offered by the Y-axis Measure control; a single option drops the control (HEP-CTRL-002).</td></tr><tr><td><code>settings.cuts</code></td><td><code>object</code></td><td>no</td><td><code>[object Object]</code></td><td>Per-measure Hy&#39;s-Law cutpoints keyed by measure then display mode; a `defaults` entry back-fills any measure without its own cuts (HEP-QUAD-001).</td></tr><tr><td><code>settings.visit_window</code></td><td><code>number</code></td><td>no</td><td><code>30</code></td><td>Timing window (days): points whose peak-X and peak-Y days are within this many days render filled, else hollow (HEP-CTRL-008, HEP-DISPLAY-005).</td></tr><tr><td><code>settings.r_ratio_filter</code></td><td><code>boolean</code></td><td>no</td><td><code>true</code></td><td>Whether to render the R-Ratio range filter control (HEP-CTRL-010).</td></tr><tr><td><code>settings.r_ratio</code></td><td><code>array</code></td><td>no</td><td><code>0,</code></td><td>Initial R-Ratio [min, max]; a null max is resolved from the data on first render (HEP-CTRL-010).</td></tr><tr><td><code>settings.filters</code></td><td><code>array</code></td><td>no</td><td>—</td><td>Optional filter columns rendered as controls (HEP-CTRL-011).</td></tr><tr><td><code>settings.groups</code></td><td><code>array</code></td><td>no</td><td>—</td><td>Optional color-by columns for grouping the points (HEP-CTRL-009).</td></tr><tr><td><code>settings.details</code></td><td><code>array</code></td><td>no</td><td>—</td><td>Optional listing columns; defaults derive from the measure/day/value mappings (HEP-SELECT-006).</td></tr></tbody></table></div></div></div></main>
+    <footer class="site-footer">
+      <p>
+        safety.viz v1.1.0 — clinical safety graphics on one modern charting stack, migrated
+        from the <a href="https://github.com/SafetyGraphics">safetyGraphics</a> ecosystem originally
+        built by <a href="https://github.com/RhoInc">Rho, Inc.</a> (<a href="../about.html"
+          >credits</a
+        >).
+      </p>
+      <p>
+        Built in the open for the R/Pharma 2026 keynote — follow the
+        <a href="https://jwildfire.github.io/obot.roadmap/">obot roadmap</a> ·
+        <a href="https://github.com/jwildfire/safety.viz">source on GitHub</a> ·
+        <a href="https://github.com/jwildfire/safety.viz/releases">releases</a>.
+      </p>
+    </footer>
+    <script>
+      // Mark the nav link whose resolved URL is this page; works at any mount
+      // depth (site root, /dev/, /pr/N/). Renderer sub-pages match nothing.
+      (function () {
+        var here = location.pathname.replace(/\/$/, '/index.html');
+        var links = document.querySelectorAll('.site-nav a');
+        for (var i = 0; i < links.length; i += 1) {
+          var href = links[i].getAttribute('href');
+          if (!href || href.indexOf('http') === 0) continue;
+          if (new URL(href, location.href).pathname === here) {
+            links[i].className = 'current';
+            links[i].setAttribute('aria-current', 'page');
+            break;
+          }
+        }
+      })();
+    </script>
+  </body>
+</html>
