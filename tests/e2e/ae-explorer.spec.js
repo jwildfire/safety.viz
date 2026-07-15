@@ -208,9 +208,9 @@ test.describe('safety.viz ae-explorer module', () => {
     await expect(row.locator('.ae-diffplot path.ae-diamond').first().locator('title')).toHaveText(
       'A: 50.0% (2/4) vs B: 33.3% (1/3) — difference 16.7%'
     );
-    // Three groups: interval lines hide until the diamond is hovered.
+    // Three groups: interval lines hide until the difference cell is hovered.
     await expect(row.locator('line.ae-ci-hidden').first()).toBeAttached();
-    await row.locator('path.ae-diamond').first().hover();
+    await row.locator('td.ae-diffplot').hover();
     await expect(row).toHaveClass(/ae-show-ci/);
     await expect(row.locator('.ae-cell-count').first()).toBeVisible();
     await captureEvidence(page, 'AE-REG-017', 'diff-hover');

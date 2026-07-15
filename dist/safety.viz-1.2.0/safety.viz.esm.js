@@ -20929,7 +20929,9 @@ var AEExplorer = class {
     tr.append(rateTd);
     if (plan.diffCol) {
       const diffTd = createElement("td", "ae-diffplot");
-      diffTd.append(this.buildDiffPlot(item, tr, color2, diffScale));
+      diffTd.append(this.buildDiffPlot(item, color2, diffScale));
+      diffTd.addEventListener("mouseenter", () => tr.classList.add("ae-show-ci"));
+      diffTd.addEventListener("mouseleave", () => tr.classList.remove("ae-show-ci"));
       tr.append(diffTd);
     }
     return tr;
@@ -20984,10 +20986,10 @@ var AEExplorer = class {
    * difference in rates with its 95% interval line — solid when the
    * interval excludes zero, faint otherwise, colored by the higher group
    * (AE-USER-013). With more than two groups the interval lines stay
-   * hidden until the row is hovered (AE-REG-017).
+   * hidden until the difference cell is hovered (AE-REG-017).
    * @private
    */
-  buildDiffPlot(item, tr, color2, diffScale) {
+  buildDiffPlot(item, color2, diffScale) {
     const { height, width, radius } = this.settings.plot_settings;
     const svg = document.createElementNS(SVG_NS2, "svg");
     svg.setAttribute("width", width);
@@ -21020,8 +21022,6 @@ var AEExplorer = class {
       const title = document.createElementNS(SVG_NS2, "title");
       title.textContent = diffTitle(diff, item.cells);
       diamond.append(title);
-      diamond.addEventListener("mouseenter", () => tr.classList.add("ae-show-ci"));
-      diamond.addEventListener("mouseleave", () => tr.classList.remove("ae-show-ci"));
       svg.append(diamond);
     });
     return svg;
