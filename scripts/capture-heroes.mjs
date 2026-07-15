@@ -55,7 +55,11 @@ const page = await browser.newPage({
 
 for (const module of modules) {
   await page.goto(`http://127.0.0.1:${port}/${module}/index.html`);
-  const canvas = page.locator('#container canvas').first();
+  // Chart renderers surface a canvas; table-first renderers (ae-explorer,
+  // #60) surface a table in the same main-column slot.
+  const canvas = page
+    .locator('#container canvas:visible, #container .sv-main table:visible')
+    .first();
   await canvas.waitFor({ state: 'visible' });
   // Charts animate in and some demos fetch CSV first; settle before shooting.
   await page.waitForTimeout(1200);
