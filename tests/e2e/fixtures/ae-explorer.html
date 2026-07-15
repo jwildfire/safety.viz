@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>safety.viz ae-explorer demo page</title>
+  </head>
+  <body>
+    <h1 id="ae-explorer-heading">safety.viz ae-explorer demo</h1>
+    <p>
+      Demo and Playwright harness page for the ae-explorer module (#60). Loads the committed IIFE
+      bundle — the same asset gsm.safety vendors — against the hand-crafted fixture data in
+      <code>ae-explorer.csv</code> (three arms, one placeholder row per arm A/B and one for arm C,
+      so the group denominators prove the placeholder model).
+    </p>
+    <div id="container"></div>
+    <!-- Bundle path tracks the package.json version; bump them together. -->
+    <script src="/dist/safety.viz-1.2.0/safety.viz.js"></script>
+    <script>
+      function parseCsv(text) {
+        const [header, ...lines] = text.trim().split(/\r?\n/);
+        const cols = header.split(',');
+        return lines.map((line) => {
+          const cells = line.split(',');
+          return Object.fromEntries(cols.map((col, i) => [col, cells[i] ?? '']));
+        });
+      }
+
+      fetch('./ae-explorer.csv')
+        .then((response) => response.text())
+        .then((text) => {
+          window.__aeExplorerData = parseCsv(text);
+          const instance = SafetyViz.aeExplorer('#container', {
+            validation: true,
+            variable_options: { group: ['SEX'] }
+          });
+          window.__aeExplorerInstance = instance;
+          instance.init(window.__aeExplorerData);
+        })
+        .catch((error) => {
+          console.error(error);
+          document.querySelector('#container').textContent =
+            `Failed to load demo data: ${error.message}`;
+        });
+    </script>
+  </body>
+</html>
