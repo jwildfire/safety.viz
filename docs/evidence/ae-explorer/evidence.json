@@ -1,13 +1,16 @@
 {
   "module": "ae-explorer",
-  "generatedAt": "2026-07-15T01:23:18.654Z",
+  "generatedAt": "2026-07-15T01:32:02.457Z",
   "environment": {
-    "os": "darwin 23.6.0",
-    "node": "v24.14.0",
+    "os": "linux 6.17.0-1018-azure",
+    "node": "v22.23.1",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": null,
+  "run": {
+    "id": "29381827344",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29381827344"
+  },
   "records": [
     {
       "test": "AE-CFG-004/AE-REG-041/AE-REG-043/AE-REG-044: the group re-mapping control offers the current column and redraws on change (#60)",
@@ -31,7 +34,7 @@
       "status": "pass",
       "requirementIds": ["AE-DATA-003", "AE-API-001"],
       "issueRefs": [60],
-      "screenshots": []
+      "screenshots": ["AE-DATA-003-default-table.png"]
     },
     {
       "test": "AE-REG-006/AE-USER-002/AE-USER-003/AE-USER-018/AE-REG-018: event filters narrow the counted events without changing denominators, and carry explanatory badges (#60)",
@@ -79,7 +82,7 @@
       "status": "pass",
       "requirementIds": ["AE-USER-007", "AE-REG-003", "AE-REG-004"],
       "issueRefs": [60],
-      "screenshots": []
+      "screenshots": ["AE-REG-003-search-highlight.png"]
     },
     {
       "test": "AE-USER-008/AE-REG-005: clearing the search resets the table, and a no-match term leaves it unchanged (#60)",
@@ -103,7 +106,7 @@
       "status": "pass",
       "requirementIds": ["AE-USER-013", "AE-USER-011", "AE-REG-017"],
       "issueRefs": [60],
-      "screenshots": []
+      "screenshots": ["AE-REG-017-diff-hover.png"]
     },
     {
       "test": "AE-USER-014/AE-USER-015/AE-REG-001/AE-REG-002: the category toggle expands and collapses the nested preferred terms (#60)",
@@ -119,7 +122,7 @@
       "status": "pass",
       "requirementIds": ["AE-USER-016", "AE-REG-019", "AE-REG-022"],
       "issueRefs": [60],
-      "screenshots": []
+      "screenshots": ["AE-USER-016-details-view.png"]
     },
     {
       "test": "AE-USER-017/AE-REG-020/AE-REG-021: the details view reports the active filters and Return to the Summary View restores the table (#60)",
@@ -263,7 +266,7 @@
       "status": "pass",
       "requirementIds": ["AE-DATA-003"],
       "issueRefs": [60],
-      "screenshots": []
+      "screenshots": ["AE-DATA-003-default-table.png"]
     },
     {
       "test": "ae-explorer configure AE-CFG-001/AE-DATA-003: every setting has a default, so an empty settings object maps the ADaM ADAE columns (#60)",
@@ -271,7 +274,7 @@
       "status": "pass",
       "requirementIds": ["AE-CFG-001", "AE-DATA-003"],
       "issueRefs": [60],
-      "screenshots": []
+      "screenshots": ["AE-DATA-003-default-table.png"]
     },
     {
       "test": "ae-explorer configure AE-CFG-002/AE-CFG-003: caller overrides win over any default, remapping the variables (#60)",
@@ -399,7 +402,7 @@
       "status": "pass",
       "requirementIds": ["AE-USER-011", "AE-REG-017"],
       "issueRefs": [60],
-      "screenshots": []
+      "screenshots": ["AE-REG-017-diff-hover.png"]
     },
     {
       "test": "ae-explorer getPlugins AE-USER-020/AE-REG-030: the summarized CSV carries one row per category per group as currently summarized (#60)",
