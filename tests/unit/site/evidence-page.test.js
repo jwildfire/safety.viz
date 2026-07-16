@@ -164,3 +164,47 @@ describe('site generator: evidence report provenance (#21)', () => {
     expect(html).toContain('normal range overlay');
   });
 });
+
+// Requirement text on the evidence page (#63): a reviewer should see what each
+// test evidences without leaving the page. The vendored docs/requirements/
+// <module>.json (id → reviewed text) is passed to renderEvidencePage, which
+// renders each row's requirement text beneath its ID in the Requirement column.
+describe('site generator: requirement text (#63)', () => {
+  const base = { module: 'histogram', config, coverage: parseCoverage(coverageMd) };
+  const requirements = JSON.parse(
+    readFileSync(new URL('./fixtures/requirements.json', import.meta.url), 'utf8')
+  );
+
+  it('renders the reviewed requirement text for a row’s source-matrix IDs', () => {
+    const html = renderEvidencePage({ ...base, evidence, requirements });
+    // The SH-CTRL-004 row traces to SH-FUNC-004A/B — their reviewed text shows.
+    expect(html).toContain('Render a gray normal-range band behind histogram data');
+    expect(html).toContain('Normal ranges are hidden by default');
+    // Each text is labelled with the requirement ID it came from.
+    expect(html).toMatch(/SH-FUNC-004A[\s\S]{0,120}gray normal-range band/);
+  });
+
+  it('escapes HTML in requirement text', () => {
+    const html = renderEvidencePage({ ...base, evidence, requirements });
+    // The SH-FUNC-011 text contains an ampersand; it must be escaped.
+    expect(html).toContain('linked detail table &amp; keep the selection');
+    expect(html).not.toContain('linked detail table & keep the selection');
+  });
+
+  it('shows no requirement text for IDs the matrix does not enumerate', () => {
+    const html = renderEvidencePage({ ...base, evidence, requirements });
+    // The SH-LIST-002/003 unit row is module-scheme only (matrix cell “—”); it
+    // still renders its ID cell and must not emit an empty text wrapper.
+    expect(html).toContain('SH-LIST-002/003');
+    expect(html).not.toContain('<p class="req-text"></p>');
+    expect(html).not.toContain('undefined');
+  });
+
+  it('degrades to IDs-only when no requirements map is supplied', () => {
+    const html = renderEvidencePage({ ...base, evidence });
+    // The Requirement IDs still render, but no requirement-text block appears.
+    expect(html).toContain('SH-CTRL-004');
+    expect(html).not.toContain('class="req-text"');
+    expect(html).not.toContain('undefined');
+  });
+});

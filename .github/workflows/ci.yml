@@ -55,6 +55,21 @@ jobs:
       - name: Evidence freshness guard
         run: npm run evidence:check
 
+      # Requirement text shown on the evidence pages is vendored from the
+      # reviewed matrices in the public obot.agent repo (#63). Check it out and
+      # assert the committed docs/requirements/*.json still match, so an
+      # upstream matrix edit surfaces here instead of drifting silently.
+      - name: Checkout requirement matrices (obot.agent)
+        uses: actions/checkout@v4
+        with:
+          repository: jwildfire/obot.agent
+          path: .requirements-src
+
+      - name: Requirement-text sync guard
+        run: npm run requirements:check
+        env:
+          REQUIREMENTS_SRC: .requirements-src/docs/requirements
+
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v4
