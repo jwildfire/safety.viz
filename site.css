@@ -577,6 +577,47 @@ ul.tests li {
   color: var(--muted);
 }
 
+/* Requirement cell (#63): the traceability IDs sit above the reviewed
+   requirement text so a reviewer sees what each test evidences without
+   leaving the page for the matrix. */
+table.evidence td:first-child {
+  min-width: 13rem;
+  vertical-align: top;
+}
+
+.req-ids {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.req-texts {
+  margin-top: 0.45rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.req-text {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+.req-id {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 0.05rem 0.3rem;
+  margin-right: 0.35rem;
+  white-space: nowrap;
+}
+
 .screenshots {
   margin-top: 0.5rem;
   display: flex;
