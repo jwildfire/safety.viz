@@ -20403,8 +20403,8 @@ var MODULE_STYLES = `
 .safety-ae-explorer .ae-table tfoot td{border-top:2px solid #d8dee4;font-weight:600}
 .safety-ae-explorer .ae-plot line.ae-ci-hidden{visibility:hidden}
 .safety-ae-explorer tr.ae-show-ci .ae-plot line.ae-ci-hidden{visibility:visible}
-.safety-ae-explorer .ae-cell-count{color:#52616f;font-weight:400;visibility:hidden;margin-left:.25em}
-.safety-ae-explorer tr.ae-show-ci .ae-cell-count{visibility:visible}
+.safety-ae-explorer .ae-cell-count{color:#52616f;font-weight:400;display:none;margin-left:.25em}
+.safety-ae-explorer tr.ae-show-ci .ae-cell-count{display:inline}
 .safety-ae-explorer .ae-search-note{font-size:.8rem;color:#52616f;margin-top:.25rem}
 .safety-ae-explorer sup.ae-filter-type{cursor:help;color:#0b62a4;margin-left:.25em}
 .safety-ae-explorer .ae-error{color:#9a3412;padding:1rem 0}
