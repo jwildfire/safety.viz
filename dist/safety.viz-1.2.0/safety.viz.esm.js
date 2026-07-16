@@ -20381,14 +20381,14 @@ var MODULE_STYLE_ID = "safety-viz-ae-explorer-styles";
 var MODULE_STYLES = `
 .safety-ae-explorer .ae-table-wrap{border:1px solid #d8dee4;border-radius:10px;background:#fff;padding:.5rem .75rem;overflow-x:auto}
 .safety-ae-explorer .ae-table{width:100%;border-collapse:collapse;font-size:.85rem}
-.safety-ae-explorer .ae-table th{border-bottom:2px solid #d8dee4;padding:.4rem .5rem;text-align:left;font-size:.75rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f;white-space:normal;vertical-align:bottom}
-.safety-ae-explorer .ae-table th.ae-value{text-align:right}
+.safety-ae-explorer .ae-table th{border-bottom:2px solid #d8dee4;padding:.4rem .5rem;text-align:center;font-size:.75rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f;white-space:normal;vertical-align:bottom}
+.safety-ae-explorer .ae-table th.ae-category{text-align:left}
 .safety-ae-explorer .ae-table th .ae-grp-n{display:block;font-weight:400;opacity:.85}
 .safety-ae-explorer .ae-groups-super{text-align:center;font-weight:600;color:#52616f;padding-bottom:.2rem;border-bottom:1px solid #e3e8ee}
 .safety-ae-explorer .ae-plot-head{text-align:center;vertical-align:bottom}
 .safety-ae-explorer svg.ae-axis{display:block;margin:.3rem auto 0}
 .safety-ae-explorer .ae-table td{border-bottom:1px solid #e3e8ee;padding:.3rem .5rem;vertical-align:middle}
-.safety-ae-explorer .ae-table td.ae-value{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.safety-ae-explorer .ae-table td.ae-value{text-align:center;font-variant-numeric:tabular-nums;white-space:nowrap}
 .safety-ae-explorer .ae-table tbody tr:hover{background:#f0f3f6}
 .safety-ae-explorer tr.ae-major td{font-weight:600}
 .safety-ae-explorer tr.ae-minor td{font-weight:400;color:#3d4852}
