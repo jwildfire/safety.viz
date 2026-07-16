@@ -29,7 +29,7 @@ linked from its page on the site.
 Vendor the committed bundle — no build step, no npm install:
 
 ```html
-<script src="dist/safety.viz-1.2.0/safety.viz.js"></script>
+<script src="dist/safety.viz-1.3.0/safety.viz.js"></script>
 <script>
   SafetyViz.histogram('#container', {
     value_col: 'STRESN',
@@ -42,7 +42,7 @@ Vendor the committed bundle — no build step, no npm install:
 An ESM build is committed alongside:
 
 ```js
-import { histogram } from './dist/safety.viz-1.2.0/safety.viz.esm.js';
+import { histogram } from './dist/safety.viz-1.3.0/safety.viz.esm.js';
 histogram('#container', settings).init(rows);
 ```
 
