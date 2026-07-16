@@ -35,7 +35,7 @@ const REPO_ROOT = join(__dirname, '..');
 
 const PHARMAVERSEADAM_BASE =
   'https://raw.githubusercontent.com/pharmaverse/pharmaverseadam/main/inst/extdata';
-const SOURCE_FILES = ['adlb.csv', 'advs.csv', 'adae.csv'];
+const SOURCE_FILES = ['adlb.csv', 'advs.csv', 'adae.csv', 'adsl.csv'];
 
 // Curated measure panel for the demo BDS. The full pilot carries 55 measures
 // (incl. sparse cell-morphology / qualitative-urinalysis labs); the demo keeps a
@@ -253,7 +253,7 @@ function buildBds(adlbText, advsText) {
   return { columns, records };
 }
 
-function buildAe(adaeText) {
+function buildAe(adaeText, adslText) {
   // AETERM is the verbatim term the AE Timelines renderer requires (term_col);
   // AEDECOD/AEBODSYS are the MedDRA PT/SOC the AE Explorer's hierarchy uses.
   const columns = [
@@ -286,19 +286,41 @@ function buildAe(adaeText) {
       ASTDY: num(r.ASTDY),
       AENDY: num(r.AENDY)
     }));
-  return { columns, records };
+
+  // One placeholder row (all AE columns blank) per safety-population subject
+  // with no treatment-emergent AEs, so participant denominators are the
+  // treated population, not just participants with events — the AE
+  // renderers' shared placeholder-row convention (AE Explorer counts them
+  // toward group denominators; AE Timelines keeps them in its participant
+  // total while dropping the blank-term record with a reported count).
+  const seen = new Set(records.map((r) => r.USUBJID));
+  const placeholders = toRecords(adslText)
+    .filter((r) => r.SAFFL === 'Y' && !seen.has(clean(r.USUBJID)))
+    .map((r) => ({
+      USUBJID: clean(r.USUBJID),
+      ARM: clean(r.TRT01A) || clean(r.ARM),
+      AESEQ: '',
+      AEBODSYS: '',
+      AEDECOD: '',
+      AETERM: '',
+      AESEV: '',
+      AESER: '',
+      ASTDY: '',
+      AENDY: ''
+    }));
+  return { columns, records: [...records, ...placeholders], placeholders: placeholders.length };
 }
 
 // ---- main -----------------------------------------------------------------
 async function main() {
   const { sourceDir, outDir } = parseArgs(process.argv.slice(2));
   console.log('Loading pharmaverseadam source datasets…');
-  const [adlbText, advsText, adaeText] = await Promise.all(
+  const [adlbText, advsText, adaeText, adslText] = await Promise.all(
     SOURCE_FILES.map((f) => loadSource(f, sourceDir))
   );
 
   const bds = buildBds(adlbText, advsText);
-  const ae = buildAe(adaeText);
+  const ae = buildAe(adaeText, adslText);
 
   await mkdir(outDir, { recursive: true });
   await writeFile(join(outDir, 'adbds.csv'), toCsv(bds.columns, bds.records));
@@ -312,8 +334,9 @@ async function main() {
       `${measures.size} measures · arms {${[...arms].join(', ')}}`
   );
   console.log(
-    `adae.csv : ${ae.records.length} events · ` +
-      `${new Set(ae.records.map((r) => r.AEBODSYS)).size} body systems`
+    `adae.csv : ${ae.records.length - ae.placeholders} events + ${ae.placeholders} ` +
+      `placeholder rows · ${new Set(ae.records.map((r) => r.USUBJID)).size} participants · ` +
+      `${new Set(ae.records.map((r) => r.AEBODSYS).filter(Boolean)).size} body systems`
   );
 }
 

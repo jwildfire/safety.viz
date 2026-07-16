@@ -70,9 +70,12 @@
     {
       "module": "ae-explorer",
       "title": "Adverse Event Explorer",
-      "status": "planned",
-      "blurb": "Hierarchical adverse-event incidence explorer with treatment-arm comparison and drill-down to participant detail.",
-      "matrix": "aeexplorer.md"
+      "status": "available",
+      "blurb": "Hierarchical adverse-event incidence table — System Organ Class rows expandable to Preferred Terms — with per-arm rates, an inline rate dot plot, group-difference confidence intervals, prevalence/search/characteristic filters, and drill-down to the underlying records.",
+      "hero": "AE-DATA-003-default-table.png",
+      "matrix": "aeexplorer.md",
+      "data": "adae.csv",
+      "heroAsset": "ae-explorer-hero.png"
     },
     {
       "module": "ae-timelines",

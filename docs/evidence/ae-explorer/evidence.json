@@ -1,5 +1,5 @@
 {
-  "module": "outlier-explorer",
+  "module": "ae-explorer",
   "generatedAt": "2026-07-16T01:42:17.617Z",
   "environment": {
     "os": "linux 6.17.0-1020-azure",
@@ -12,6 +12,158 @@
     "url": "https://github.com/jwildfire/safety.viz/actions/runs/29464758219"
   },
   "records": [
+    {
+      "test": "AE-CFG-004/AE-REG-041/AE-REG-043/AE-REG-044: the group re-mapping control offers the current column and redraws on change (#60)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["AE-CFG-004", "AE-REG-041", "AE-REG-043", "AE-REG-044"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "AE-CFG-006/AE-USER-019: the per-arm columns sit under a Groups super-header and color-match their rate dots (#60)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["AE-CFG-006", "AE-USER-019"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "AE-DATA-001: placeholder rows keep AE-free participants in the group denominators (#60)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["AE-DATA-001"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "AE-DATA-003/AE-API-001: default-column data renders the hierarchical summary table from the factory with an empty settings object (#60)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["AE-DATA-003", "AE-API-001"],
+      "issueRefs": [60],
+      "screenshots": ["AE-DATA-003-default-table.png"]
+    },
+    {
+      "test": "AE-REG-006/AE-USER-002/AE-USER-003/AE-USER-018/AE-REG-018: event filters narrow the counted events without changing denominators, and carry explanatory badges (#60)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["AE-REG-006", "AE-USER-002", "AE-USER-003", "AE-USER-018", "AE-REG-018"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "AE-REG-008: participant mode counts each participant once — arm A palpitations reads 25.0 despite two records (#60)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["AE-REG-008"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "AE-REG-014: filters with no matching events show the exact no-results error (#60)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["AE-REG-014"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "AE-USER-001/AE-REG-007/AE-REG-012/AE-REG-013: the numeric prevalence filter hides rows below the threshold as it is typed (#60)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["AE-USER-001", "AE-REG-007", "AE-REG-012", "AE-REG-013"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "AE-USER-006/AE-REG-009/AE-REG-033/AE-REG-035: the summarize-by toggle switches both numerators and denominators to the event basis (#60)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["AE-USER-006", "AE-REG-009", "AE-REG-033", "AE-REG-035"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "AE-USER-007/AE-REG-003/AE-REG-004: search shows only matching categories, highlighted, with a match count (#60)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["AE-USER-007", "AE-REG-003", "AE-REG-004"],
+      "issueRefs": [60],
+      "screenshots": ["AE-REG-003-search-highlight.png"]
+    },
+    {
+      "test": "AE-USER-008/AE-REG-005: clearing the search resets the table, and a no-match term leaves it unchanged (#60)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["AE-USER-008", "AE-REG-005"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "AE-USER-012/AE-REG-016: the rate plot draws one group-colored dot per group with the percentage on hover (#60)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["AE-USER-012", "AE-REG-016"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "AE-USER-013/AE-USER-011/AE-REG-017: difference diamonds compare each group pair, revealing intervals and cell counts on hover (#60)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["AE-USER-013", "AE-USER-011", "AE-REG-017"],
+      "issueRefs": [60],
+      "screenshots": ["AE-REG-017-diff-hover.png"]
+    },
+    {
+      "test": "AE-USER-014/AE-USER-015/AE-REG-001/AE-REG-002: the category toggle expands and collapses the nested preferred terms (#60)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["AE-USER-014", "AE-USER-015", "AE-REG-001", "AE-REG-002"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "AE-USER-016/AE-REG-019/AE-REG-022: clicking a category opens the details listing with the record count in the header (#60)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["AE-USER-016", "AE-REG-019", "AE-REG-022"],
+      "issueRefs": [60],
+      "screenshots": ["AE-USER-016-details-view.png"]
+    },
+    {
+      "test": "AE-USER-017/AE-REG-020/AE-REG-021: the details view reports the active filters and Return to the Summary View restores the table (#60)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["AE-USER-017", "AE-REG-020", "AE-REG-021"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "AE-USER-019/AE-REG-037/AE-REG-039: group configuration drives the Total and Difference columns (#60)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["AE-USER-019", "AE-REG-037", "AE-REG-039"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "AE-USER-020/AE-CFG-009/AE-REG-026/AE-REG-027/AE-REG-028/AE-REG-029/AE-REG-030: validation mode offers the summarized CSV named major-minor-basis with the filtered data (#60)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [
+        "AE-USER-020",
+        "AE-CFG-009",
+        "AE-REG-026",
+        "AE-REG-027",
+        "AE-REG-028",
+        "AE-REG-029",
+        "AE-REG-030"
+      ],
+      "issueRefs": [60],
+      "screenshots": []
+    },
     {
       "test": "built ae-explorer demo mounts the shared shell with no console errors (#7) (#17)",
       "suite": "browser",
@@ -93,126 +245,347 @@
       "screenshots": []
     },
     {
-      "test": "SOE-API-001: lifecycle API supports init, setData, setSettings, render, resize, and destroy (#24)",
-      "suite": "browser",
+      "test": "ae-explorer checkInputs AE-CFG-003: remapped columns are validated under their new names (#60)",
+      "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SOE-API-001"],
-      "issueRefs": [24],
+      "requirementIds": ["AE-CFG-003"],
+      "issueRefs": [60],
       "screenshots": []
     },
     {
-      "test": "SOE-API-003: participantsSelected fires on select and clear (#24)",
-      "suite": "browser",
+      "test": "ae-explorer checkInputs AE-DATA-001: a single error names every missing required column (#60)",
+      "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SOE-API-003"],
-      "issueRefs": [24],
+      "requirementIds": ["AE-DATA-001"],
+      "issueRefs": [60],
       "screenshots": []
     },
     {
-      "test": "SOE-FUNC-001/SOE-FUNC-002/SOE-FUNC-004/SOE-FUNC-005/SOE-FUNC-006/SOE-FUNC-007: renders the full control panel (#24)",
-      "suite": "browser",
+      "test": "ae-explorer checkInputs AE-DATA-001: empty data still reports the missing mapped columns (#60)",
+      "suite": "unit",
       "status": "pass",
-      "requirementIds": [
-        "SOE-FUNC-001",
-        "SOE-FUNC-002",
-        "SOE-FUNC-004",
-        "SOE-FUNC-005",
-        "SOE-FUNC-006",
-        "SOE-FUNC-007"
-      ],
-      "issueRefs": [24],
-      "screenshots": ["SOE-FUNC-001-control-panel.png", "SOE-FUNC-007-normal-range-band.png"]
-    },
-    {
-      "test": "SOE-FUNC-003/SOE-REG-001/SOE-REG-002: participant note reports N and % and updates on filter (#24)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SOE-FUNC-003", "SOE-REG-001", "SOE-REG-002"],
-      "issueRefs": [24],
+      "requirementIds": ["AE-DATA-001"],
+      "issueRefs": [60],
       "screenshots": []
     },
     {
-      "test": "SOE-FUNC-004/SOE-REG-003: the x-axis toggle switches between the visit and study-day axes (#24)",
-      "suite": "browser",
+      "test": "ae-explorer checkInputs AE-DATA-003: default-column data passes with no settings (#60)",
+      "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SOE-FUNC-004", "SOE-REG-003"],
-      "issueRefs": [24],
+      "requirementIds": ["AE-DATA-003"],
+      "issueRefs": [60],
+      "screenshots": ["AE-DATA-003-default-table.png"]
+    },
+    {
+      "test": "ae-explorer configure AE-CFG-001/AE-DATA-003: every setting has a default, so an empty settings object maps the ADaM ADAE columns (#60)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-CFG-001", "AE-DATA-003"],
+      "issueRefs": [60],
+      "screenshots": ["AE-DATA-003-default-table.png"]
+    },
+    {
+      "test": "ae-explorer configure AE-CFG-002/AE-CFG-003: caller overrides win over any default, remapping the variables (#60)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-CFG-002", "AE-CFG-003"],
+      "issueRefs": [60],
       "screenshots": []
     },
     {
-      "test": "SOE-FUNC-005/SOE-FUNC-006/SOE-REG-004/SOE-REG-005/SOE-REG-006: y-axis limits redraw, normalize, and reset (#24)",
-      "suite": "browser",
+      "test": "ae-explorer configure AE-CFG-005/AE-CFG-006: groups and colors pass through as arrays (#60)",
+      "suite": "unit",
       "status": "pass",
-      "requirementIds": [
-        "SOE-FUNC-005",
-        "SOE-FUNC-006",
-        "SOE-REG-004",
-        "SOE-REG-005",
-        "SOE-REG-006"
-      ],
-      "issueRefs": [24],
+      "requirementIds": ["AE-CFG-005", "AE-CFG-006"],
+      "issueRefs": [60],
       "screenshots": []
     },
     {
-      "test": "SOE-FUNC-007/SOE-REG-025/SOE-REG-026/SOE-REG-027: normal-range methods drive the band and conditional inputs (#24)",
-      "suite": "browser",
+      "test": "ae-explorer configure AE-CFG-007/AE-CFG-008/AE-REG-046: defaults-style options and plot_settings merge key-by-key onto their defaults (#60)",
+      "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SOE-FUNC-007", "SOE-REG-025", "SOE-REG-026", "SOE-REG-027"],
-      "issueRefs": [24],
-      "screenshots": ["SOE-FUNC-007-normal-range-band.png"]
-    },
-    {
-      "test": "SOE-FUNC-010/SOE-FUNC-012/SOE-REG-013/SOE-REG-014/SOE-REG-016: clicking a point highlights the participant and opens a linked listing (#24)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": [
-        "SOE-FUNC-010",
-        "SOE-FUNC-012",
-        "SOE-REG-013",
-        "SOE-REG-014",
-        "SOE-REG-016"
-      ],
-      "issueRefs": [24],
-      "screenshots": ["SOE-FUNC-010-participant-detail.png"]
-    },
-    {
-      "test": "SOE-FUNC-010/SOE-REG-020: clicking the background clears the selection and listing (#24)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SOE-FUNC-010", "SOE-REG-020"],
-      "issueRefs": [24],
-      "screenshots": ["SOE-FUNC-010-participant-detail.png"]
-    },
-    {
-      "test": "SOE-REG-011: point tooltips list participant, result, and time (#24)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SOE-REG-011"],
-      "issueRefs": [24],
+      "requirementIds": ["AE-CFG-007", "AE-CFG-008", "AE-REG-046"],
+      "issueRefs": [60],
       "screenshots": []
     },
     {
-      "test": "SOE-REG-037/SOE-REG-038: missing and non-numeric results are dropped with a reported count and note (#24)",
-      "suite": "browser",
+      "test": "ae-explorer configure AE-DATA-001: the placeholder flag column follows a remapped major_col unless set explicitly (#60)",
+      "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SOE-REG-037", "SOE-REG-038"],
-      "issueRefs": [24],
-      "screenshots": ["SOE-REG-037-invalid-data-note.png"]
+      "requirementIds": ["AE-DATA-001"],
+      "issueRefs": [60],
+      "screenshots": []
     },
     {
-      "test": "SOE-REG-048/SOE-REG-049/SOE-REG-050: grouping colors the marks and renders a legend (#24)",
-      "suite": "browser",
+      "test": "ae-explorer configure AE-REG-033/AE-REG-035: summarize_by accepts participant and event and falls back on anything else (#60)",
+      "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SOE-REG-048", "SOE-REG-049", "SOE-REG-050"],
-      "issueRefs": [24],
-      "screenshots": ["SOE-REG-049-color-by-group.png"]
+      "requirementIds": ["AE-REG-033", "AE-REG-035"],
+      "issueRefs": [60],
+      "screenshots": []
     },
     {
-      "test": "SOE-REG-051/SOE-REG-052/SOE-REG-053: a filter with a start value initializes filtered and offers no All option (#24)",
-      "suite": "browser",
+      "test": "ae-explorer configure AE-REG-037: group_cols false leaves a Total-only table and suppresses the Difference column (#60)",
+      "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SOE-REG-051", "SOE-REG-052", "SOE-REG-053"],
-      "issueRefs": [24],
+      "requirementIds": ["AE-REG-037"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "ae-explorer configure AE-REG-037: hiding both the group and Total columns is a configuration error (#60)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-REG-037"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "ae-explorer configure AE-USER-002/AE-USER-003/AE-USER-004/AE-USER-005: filters default to the four ADAE event filters (#60)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-USER-002", "AE-USER-003", "AE-USER-004", "AE-USER-005"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "ae-explorer configure AE-USER-018/AE-REG-031: custom filter specs normalize with type and start preserved (#60)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-USER-018", "AE-REG-031"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "ae-explorer configure AE-USER-019: a single shown group suppresses the Total and Difference columns (#60)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-USER-019"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "ae-explorer getPlugins AE-CFG-006: groups color in configured order and the Total column always renders gray (#60)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-CFG-006"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "ae-explorer getPlugins AE-REG-016: rate dots title with the group and its percentage (#60)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-REG-016"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "ae-explorer getPlugins AE-REG-027/AE-REG-028/AE-REG-029: the CSV downloads as major-minor-summary basis (#60)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-REG-027", "AE-REG-028", "AE-REG-029"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "ae-explorer getPlugins AE-REG-040: the default palette carries no yellow for any group position (#60)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-REG-040"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "ae-explorer getPlugins AE-USER-010/AE-REG-015: group cells title with numerator over denominator (#60)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-USER-010", "AE-REG-015"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "ae-explorer getPlugins AE-USER-011/AE-REG-017: difference marks title with both groups compared and the difference (#60)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-USER-011", "AE-REG-017"],
+      "issueRefs": [60],
+      "screenshots": ["AE-REG-017-diff-hover.png"]
+    },
+    {
+      "test": "ae-explorer getPlugins AE-USER-020/AE-REG-030: the summarized CSV carries one row per category per group as currently summarized (#60)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-USER-020", "AE-REG-030"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "ae-explorer getScales a degenerate extent still yields a drawable scale (#60)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "ae-explorer getScales AE-REG-046: margins inset the rate axis exactly as configured (#60)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-REG-046"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "ae-explorer getScales AE-USER-012: the percent scale maps 0..max onto the margin-inset plot width (#60)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-USER-012"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "ae-explorer getScales AE-USER-013: the difference scale is symmetric around zero over the observed extent (#60)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-USER-013"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "ae-explorer getScales percentages format to one decimal (#60)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "ae-explorer structureData AE-CFG-005: groups derive sorted from the data, and configured levels missing from the data drop with a warning (#60)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-CFG-005"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "ae-explorer structureData AE-CFG-005: more groups than max_groups throws (#60)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-CFG-005"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "ae-explorer structureData AE-DATA-001: blank and NA System Organ Class rows flag as placeholders (#60)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-DATA-001"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "ae-explorer structureData AE-DATA-001: placeholder participants count toward group denominators but never as events (#60)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-DATA-001"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "ae-explorer structureData AE-REG-006: event filters narrow the events counted without touching denominators (#60)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-REG-006"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "ae-explorer structureData AE-REG-008: participant mode counts distinct participants per category over the group denominator (#60)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-REG-008"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "ae-explorer structureData AE-REG-009: event mode counts records over the group event totals (#60)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-REG-009"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "ae-explorer structureData AE-USER-001/AE-REG-007: rows hide only when every group rate is below the prevalence threshold (#60)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-USER-001", "AE-REG-007"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "ae-explorer structureData AE-USER-006: the overall any-adverse-event summary uses the same participant basis (#60)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-USER-006"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "ae-explorer structureData AE-USER-007: search matches System Organ Class and Preferred Term labels case-insensitively with a match count (#60)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-USER-007"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "ae-explorer structureData AE-USER-012: every group gets a cell — categories absent from a group produce zero-count shells (#60)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-USER-012"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "ae-explorer structureData AE-USER-013: one difference per group pair, keyed to both groups (#60)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-USER-013"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "ae-explorer structureData AE-USER-013: the group difference is the unpooled Wald interval on the difference in proportions (#60)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-USER-013"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "ae-explorer structureData AE-USER-018: participant filters narrow the population and its denominators — placeholders included (#60)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-USER-018"],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "ae-explorer structureData rates round to one decimal the way the original does (#60)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "ae-explorer structureData rows sort by descending peak group prevalence, ties alphabetical (#60)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [60],
       "screenshots": []
     },
     {
@@ -470,238 +843,6 @@
       "requirementIds": [],
       "issueRefs": [],
       "screenshots": []
-    },
-    {
-      "test": "outlier-explorer checkInputs SOE-DATA-001: missing required measure/value columns throw a naming error (#24)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SOE-DATA-001"],
-      "issueRefs": [24],
-      "screenshots": []
-    },
-    {
-      "test": "outlier-explorer checkInputs SOE-DATA-001: valid long-format data with the required columns passes (#24)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SOE-DATA-001"],
-      "issueRefs": [24],
-      "screenshots": []
-    },
-    {
-      "test": "outlier-explorer checkInputs SOE-DATA-003: an empty settings object initializes from the defaults (#24)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SOE-DATA-003"],
-      "issueRefs": [24],
-      "screenshots": []
-    },
-    {
-      "test": "outlier-explorer configure SOE-CFG-004: filter specs normalize strings and objects and preserve a start value (#24)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SOE-CFG-004"],
-      "issueRefs": [24],
-      "screenshots": []
-    },
-    {
-      "test": "outlier-explorer configure SOE-CFG-005: details default to time, id, result, normal limits, and unit when unset (#24)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SOE-CFG-005"],
-      "issueRefs": [24],
-      "screenshots": []
-    },
-    {
-      "test": "outlier-explorer configure SOE-CFG-006/013/014: tooltip_cols normalize and mark attributes merge over defaults (#24)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SOE-CFG-006"],
-      "issueRefs": [24],
-      "screenshots": []
-    },
-    {
-      "test": "outlier-explorer configure SOE-CFG-defaults: default settings map the standard measure, result, id, unit, and normal-range columns (#24)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [24],
-      "screenshots": []
-    },
-    {
-      "test": "outlier-explorer configure SOE-FUNC-004: time_cols default to a derived Measurement axis and normalize ordinal specs (#24)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SOE-FUNC-004"],
-      "issueRefs": [24],
-      "screenshots": []
-    },
-    {
-      "test": "outlier-explorer configure SOE-FUNC-007/SOE-CFG-007..009: normal-range method defaults to LLN-ULN with sd and quantile defaults (#24)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SOE-FUNC-007", "SOE-CFG-007"],
-      "issueRefs": [24],
-      "screenshots": ["SOE-FUNC-007-normal-range-band.png"]
-    },
-    {
-      "test": "outlier-explorer configure SOE-REG-048: groups always offer a leading None option and honor group_by (#24)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SOE-REG-048"],
-      "issueRefs": [24],
-      "screenshots": []
-    },
-    {
-      "test": "outlier-explorer getPlugins hexToRgba converts a hex color to rgba at the given opacity (#24)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [24],
-      "screenshots": []
-    },
-    {
-      "test": "outlier-explorer getPlugins SOE-CFG-006/SOE-REG-012: pointTooltip appends configured tooltip_cols when present (#24)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SOE-CFG-006", "SOE-REG-012"],
-      "issueRefs": [24],
-      "screenshots": []
-    },
-    {
-      "test": "outlier-explorer getPlugins SOE-REG-011: pointTooltip lists participant, result, and time (#24)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SOE-REG-011"],
-      "issueRefs": [24],
-      "screenshots": []
-    },
-    {
-      "test": "outlier-explorer getPlugins SOE-REG-049: groupColorScale maps distinct group values to palette colors and cycles (#24)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SOE-REG-049"],
-      "issueRefs": [24],
-      "screenshots": ["SOE-REG-049-color-by-group.png"]
-    },
-    {
-      "test": "outlier-explorer getScales SOE-FUNC-005: resolveYDomain honors user lower/upper and falls back to default (#24)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SOE-FUNC-005"],
-      "issueRefs": [24],
-      "screenshots": []
-    },
-    {
-      "test": "outlier-explorer getScales SOE-FUNC-005/SOE-REG-004: normalizeYDomain swaps inverted limits in place (#24)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SOE-FUNC-005", "SOE-REG-004"],
-      "issueRefs": [24],
-      "screenshots": []
-    },
-    {
-      "test": "outlier-explorer getScales SOE-FUNC-005/SOE-REG-034: default y-domain pads the measure extent so points are not clipped (#24)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SOE-FUNC-005", "SOE-REG-034"],
-      "issueRefs": [24],
-      "screenshots": []
-    },
-    {
-      "test": "outlier-explorer getScales SOE-REG-028: buildXScale rotates ordinal visit ticks and keeps linear ticks upright (#24)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SOE-REG-028"],
-      "issueRefs": [24],
-      "screenshots": []
-    },
-    {
-      "test": "outlier-explorer getScales SOE-REG-033: axisStep snaps ~1/15 of the range to a power of ten (#24)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SOE-REG-033"],
-      "issueRefs": [24],
-      "screenshots": []
-    },
-    {
-      "test": "outlier-explorer module export SOE-API-001: the public collection exposes the outlierExplorer factory (#24)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SOE-API-001"],
-      "issueRefs": [24],
-      "screenshots": []
-    },
-    {
-      "test": "outlier-explorer structureData SOE-FUNC-004: assignSequence derives a 1-based per-participant measurement index (#24)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SOE-FUNC-004"],
-      "issueRefs": [24],
-      "screenshots": []
-    },
-    {
-      "test": "outlier-explorer structureData SOE-FUNC-007: countInliers counts observations inside the band (#24)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SOE-FUNC-007"],
-      "issueRefs": [24],
-      "screenshots": ["SOE-FUNC-007-normal-range-band.png"]
-    },
-    {
-      "test": "outlier-explorer structureData SOE-FUNC-007/SOE-CFG-007: Standard Deviation normal range uses mean +/- k*sd (#24)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SOE-FUNC-007", "SOE-CFG-007"],
-      "issueRefs": [24],
-      "screenshots": ["SOE-FUNC-007-normal-range-band.png"]
-    },
-    {
-      "test": "outlier-explorer structureData SOE-FUNC-007/SOE-CFG-008: Quantiles normal range uses the configured quantiles (#24)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SOE-FUNC-007", "SOE-CFG-008"],
-      "issueRefs": [24],
-      "screenshots": ["SOE-FUNC-007-normal-range-band.png"]
-    },
-    {
-      "test": "outlier-explorer structureData SOE-FUNC-007/SOE-REG-025: LLN-ULN normal range is the median of the limit columns; None is null (#24)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SOE-FUNC-007", "SOE-REG-025"],
-      "issueRefs": [24],
-      "screenshots": ["SOE-FUNC-007-normal-range-band.png"]
-    },
-    {
-      "test": "outlier-explorer structureData SOE-FUNC-010/SOE-REG-016: buildSeries makes one time-sorted series per participant (#24)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SOE-FUNC-010", "SOE-REG-016"],
-      "issueRefs": [24],
-      "screenshots": ["SOE-FUNC-010-participant-detail.png"]
-    },
-    {
-      "test": "outlier-explorer structureData SOE-REG-028: orderedCategories sorts ordinal visits by their order column (#24)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SOE-REG-028"],
-      "issueRefs": [24],
-      "screenshots": []
-    },
-    {
-      "test": "outlier-explorer structureData SOE-REG-029/SOE-REG-031: measureLabel appends the unit when present (#24)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SOE-REG-029", "SOE-REG-031"],
-      "issueRefs": [24],
-      "screenshots": []
-    },
-    {
-      "test": "outlier-explorer structureData SOE-REG-037/SOE-REG-038: cleanData drops missing and non-numeric results with a count (#24)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SOE-REG-037", "SOE-REG-038"],
-      "issueRefs": [24],
-      "screenshots": ["SOE-REG-037-invalid-data-note.png"]
     },
     {
       "test": "renderGuidePage: composition renders a sticky TOC sidebar whose links anchor to the heading ids",

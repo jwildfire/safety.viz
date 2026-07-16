@@ -39,8 +39,14 @@ test.describe('docs site', () => {
       await expect(page.locator('#container .sv-sidebar .sv-controls')).toBeVisible();
       // Any visible chart canvas counts: the histogram opens on the
       // all-measures overview (#39), which hides the main-chart canvas in
-      // favor of the per-measure panels.
-      await expect(page.locator('#container .sv-main canvas:visible').first()).toBeVisible();
+      // favor of the per-measure panels. Table-first renderers (ae-explorer,
+      // #60) satisfy the contract with a visible table in the main column
+      // instead of a canvas.
+      await expect(
+        page
+          .locator('#container .sv-main canvas:visible, #container .sv-main table:visible')
+          .first()
+      ).toBeVisible();
       expect(errors).toEqual([]);
     });
   }
