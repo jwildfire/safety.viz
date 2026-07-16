@@ -387,6 +387,40 @@ function renderMatrixCell(row, matrixUrl) {
   return cell;
 }
 
+// Reviewed requirement text for a coverage row (#63). Source-matrix IDs carry
+// the reviewed text, so they lead; a requirement-scheme ID that also resolves
+// (non-histogram modules key both columns to the matrix) is appended. IDs the
+// matrix does not enumerate (module-scheme behaviors) contribute nothing, so
+// the cell degrades to IDs-only exactly as before the extract existed.
+function requirementTexts(row, requirements) {
+  const entries = [];
+  const seen = new Set();
+  for (const id of [...row.matrixIds, ...row.requirementIds]) {
+    if (seen.has(id)) continue;
+    seen.add(id);
+    const text = requirements[id];
+    if (text) entries.push({ id, text });
+  }
+  return entries;
+}
+
+// Requirement cell (#63): the traceability IDs, then each resolvable
+// requirement's reviewed text beneath them so a reviewer sees what is under
+// test without opening the matrix. Falls back to the bare ID cell when no
+// text resolves (no extract yet, or module-scheme-only rows).
+function renderRequirementCell(row, requirements) {
+  const ids = `<div class="req-ids">${escapeHtml(row.requirementCell)}</div>`;
+  const texts = requirementTexts(row, requirements);
+  if (!texts.length) return ids;
+  const list = texts
+    .map(
+      ({ id, text }) =>
+        `<p class="req-text"><span class="req-id">${escapeHtml(id)}</span> ${mdInline(text)}</p>`
+    )
+    .join('');
+  return `${ids}<div class="req-texts">${list}</div>`;
+}
+
 function renderEvidenceCell(row, records, kind, runUrl) {
   const parts = [];
   if (kind === 'unit') {
@@ -468,7 +502,7 @@ function screenshotCaption(file) {
 // visual-evidence gallery, the routing-status appendix, and a reproduction
 // note. Adopting groups should be able to review and adapt it as a basic
 // audit artifact.
-export function renderEvidencePage({ module, config, coverage, evidence }) {
+export function renderEvidencePage({ module, config, coverage, evidence, requirements = {} }) {
   const renderer = config.renderers.find((entry) => entry.module === module);
   const matrixUrl = `${config.matrixBaseUrl}/${renderer.matrix}`;
   const runUrl = evidence.run && evidence.run.url ? evidence.run.url : null;
@@ -518,8 +552,9 @@ export function renderEvidencePage({ module, config, coverage, evidence }) {
   if (coverage.intro) html.push(mdBlock(rewriteRelativeLinks(coverage.intro, config.repoUrl)));
   html.push(
     `<p>Each table row traces one requirement to the automated test(s) that evidence it:` +
-      ` the requirement ID and its source-matrix rows link back to the reviewed specification,` +
-      ` the issue column links the implementing work, and the result column shows the recorded` +
+      ` the Requirement column shows the reviewed requirement text and its ID, the source-matrix` +
+      ` rows link back to the specification, the issue column links the implementing work, and` +
+      ` the result column shows the recorded` +
       ` outcome of every matching test from the committed` +
       ` <a href="${config.repoUrl}/blob/HEAD/docs/evidence/${module}/evidence.json">evidence.json</a>` +
       ` with its captured screenshots. Browser evidence is captured at fixed conditions` +
@@ -541,7 +576,7 @@ export function renderEvidencePage({ module, config, coverage, evidence }) {
       .map((row) => {
         const matched = matchRecords(row, section.kind, records);
         return (
-          `<tr><td>${escapeHtml(row.requirementCell)}</td>` +
+          `<tr><td>${renderRequirementCell(row, requirements)}</td>` +
           `<td>${renderMatrixCell(row, matrixUrl)}</td>` +
           `<td><a href="${config.repoUrl}/issues/${row.issue}">#${row.issue}</a></td>` +
           `<td>${renderEvidenceCell(row, matched, section.kind, runUrl)}</td></tr>`

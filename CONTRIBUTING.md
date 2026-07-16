@@ -16,6 +16,7 @@ npm ci
 | `npm run test:e2e`                        | Playwright browser tests (`tests/e2e/`)                                                    |
 | `npm run format` / `npm run format:check` | Prettier write / check                                                                     |
 | `npm run evidence` / `evidence:check`     | (Re)build `docs/evidence/<module>/evidence.json` from a fresh run / CI freshness guard     |
+| `npm run requirements` / `:check`         | (Re)build `docs/requirements/<module>.json` requirement-text extracts / CI freshness guard |
 | `npm run docs:api`                        | Generate the `_api/<module>.json` API data artifact from JSDoc + the data schema           |
 | `npm run site`                            | Build the docs site into `_site/` (gitignored); fails on broken links/missing screenshots  |
 
@@ -46,6 +47,23 @@ Each renderer module also maintains a coverage table under `docs/` mapping
 requirement ID → issue → test file — see [docs/README.md](docs/README.md)
 for the template. Development follows red-green TDD: matrix row → failing
 test → minimal implementation.
+
+### Requirement text on the evidence pages
+
+So the evidence pages can show what each test evidences without leaving the
+page, the reviewed requirement **text** is vendored into
+`docs/requirements/<module>.json` (`{ module, matrix, requirements: { id: text } }`)
+and rendered beneath each ID in the evidence table's Requirement column. The
+site build is a pure function of the repo tree, so the text is committed rather
+than fetched at build time. `npm run requirements` regenerates the extracts
+from the matrices; it reads them from `REQUIREMENTS_SRC` (default the sibling
+`../obot.agent/docs/requirements` checkout). The set of modules is data-driven
+from `site/config.json`, so a new renderer needs no edits — add its config
+entry with the `matrix` filename and its extract appears on the next run. A
+module whose matrix has not been harvested yet is skipped and its evidence page
+simply shows requirement IDs. `npm run requirements:check` (a CI step that
+checks out the public `obot.agent`) fails if a committed extract has drifted
+from its matrix.
 
 qcthat itself doesn't support JS test frameworks yet; this issue-linked
 naming convention future-proofs the evidence until full qcthat-compatible

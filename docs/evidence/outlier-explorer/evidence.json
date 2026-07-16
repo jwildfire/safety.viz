@@ -1,15 +1,15 @@
 {
   "module": "outlier-explorer",
-  "generatedAt": "2026-07-16T01:42:17.617Z",
+  "generatedAt": "2026-07-16T03:02:39.525Z",
   "environment": {
-    "os": "linux 6.17.0-1020-azure",
+    "os": "linux 6.17.0-1018-azure",
     "node": "v22.23.1",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "29464758219",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29464758219"
+    "id": "29467991826",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29467991826"
   },
   "records": [
     {
@@ -728,6 +728,62 @@
       "screenshots": []
     },
     {
+      "test": "requirements-lib: freshness guard (#63) flags added and removed requirement IDs",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "requirements-lib: freshness guard (#63) flags changed requirement text",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "requirements-lib: freshness guard (#63) reports fresh when the committed set matches a fresh extraction",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "requirements-lib: matrix parsing (#63) ignores the header, separator, and non-requirement content",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "requirements-lib: matrix parsing (#63) keeps an escaped pipe inside a requirement cell as a single row",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "requirements-lib: matrix parsing (#63) maps each requirement ID to its reviewed text",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "requirements-lib: requirement set (#63) wraps the parsed map with module + matrix provenance",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
       "test": "safety.viz scaffold SH-API-001: the collection exposes the histogram module factory (#2)",
       "suite": "unit",
       "status": "pass",
@@ -997,6 +1053,38 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [7, 29],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: requirement text (#63) degrades to IDs-only when no requirements map is supplied",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: requirement text (#63) escapes HTML in requirement text",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: requirement text (#63) renders the reviewed requirement text for a row’s source-matrix IDs",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: requirement text (#63) shows no requirement text for IDs the matrix does not enumerate",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
       "screenshots": []
     },
     {

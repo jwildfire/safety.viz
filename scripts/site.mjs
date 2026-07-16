@@ -119,14 +119,21 @@ for (const renderer of config.renderers.filter((entry) => entry.status === 'avai
     `Live ${renderer.title} demo: ${renderer.blurb}`
   );
 
-  // Test evidence: coverage table joined with evidence.json.
+  // Test evidence: coverage table joined with evidence.json, plus the vendored
+  // requirement-text extract (#63) so each row shows what it evidences. The
+  // extract is optional — a module whose matrix has not been harvested yet
+  // simply renders requirement IDs, as before.
   const coverage = parseCoverage(
     readFileSync(path.join(rootDir, `docs/${module}-coverage.md`), 'utf8')
   );
+  const requirementsFile = path.join(rootDir, 'docs/requirements', `${module}.json`);
+  const requirements = existsSync(requirementsFile)
+    ? JSON.parse(readFileSync(requirementsFile, 'utf8')).requirements || {}
+    : {};
   page(
     path.join(moduleDir, 'evidence.html'),
     `${renderer.title} test evidence · safety.viz`,
-    renderEvidencePage({ module, config, coverage, evidence }),
+    renderEvidencePage({ module, config, coverage, evidence, requirements }),
     '../',
     `Requirement-traced qualification evidence for the safety.viz ${module} module: ` +
       'scope, environment, results, and captured screenshots.'
