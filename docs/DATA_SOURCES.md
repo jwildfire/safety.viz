@@ -25,11 +25,12 @@ Alzheimer's trial randomized to Placebo / Xanomeline Low Dose / Xanomeline High
 Dose, with real MedDRA-coded adverse events and reference-range–bearing labs and
 vital signs.
 
-The generator reads three published CSVs from the package's `inst/extdata/`:
+The generator reads four published CSVs from the package's `inst/extdata/`:
 
 - `adlb.csv` (ADaM lab chemistry + hematology) → BDS lab rows
 - `advs.csv` (ADaM vital signs) → BDS vital-sign rows
 - `adae.csv` (ADaM adverse events) → AE rows
+- `adsl.csv` (ADaM subject-level) → AE placeholder rows for AE-free participants
 
 ### Transform summary
 
@@ -56,9 +57,17 @@ STRESN, STNRLO, STNRHI`).
   axis). Columns projected: `USUBJID`, arm, verbatim term (`AETERM`, required by AE
   Timelines), MedDRA body system / preferred term (`AEBODSYS`/`AEDECOD`, the AE
   Explorer hierarchy), severity, seriousness, and start/stop study day.
+- **AE placeholder rows.** One all-blank AE row per safety-population subject
+  (`adsl` `SAFFL='Y'`) with no treatment-emergent AEs — the AE renderers'
+  shared convention (per the original RhoInc data guidelines) that keeps
+  participant denominators at the treated population rather than only
+  participants with events. AE Explorer counts them toward its group
+  denominators (AE-DATA-001); AE Timelines keeps them in its participant
+  total while dropping the blank-term record with a reported count.
 
 Resulting sizes: `adbds.csv` ≈ 5.5 MB (≈ 56k rows, 254 participants, 28 measures);
-`adae.csv` ≈ 0.1 MB (1,122 treatment-emergent events, 23 body systems).
+`adae.csv` ≈ 0.1 MB (1,122 treatment-emergent events + 37 placeholder rows,
+254 participants, 23 body systems).
 
 ## License and attribution
 
