@@ -20414,7 +20414,12 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
   var MODULE_STYLES = `
 .safety-ae-explorer .ae-table-wrap{border:1px solid #d8dee4;border-radius:10px;background:#fff;padding:.5rem .75rem;overflow-x:auto}
 .safety-ae-explorer .ae-table{width:100%;border-collapse:collapse;font-size:.85rem}
-.safety-ae-explorer .ae-table th{border-bottom:2px solid #d8dee4;padding:.4rem .5rem;text-align:left;font-size:.75rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f;white-space:nowrap;vertical-align:bottom}
+.safety-ae-explorer .ae-table th{border-bottom:2px solid #d8dee4;padding:.4rem .5rem;text-align:left;font-size:.75rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f;white-space:normal;vertical-align:bottom}
+.safety-ae-explorer .ae-table th.ae-value{text-align:right}
+.safety-ae-explorer .ae-table th .ae-grp-n{display:block;font-weight:400;opacity:.85}
+.safety-ae-explorer .ae-groups-super{text-align:center;font-weight:600;color:#52616f;padding-bottom:.2rem;border-bottom:1px solid #e3e8ee}
+.safety-ae-explorer .ae-plot-head{text-align:center;vertical-align:bottom}
+.safety-ae-explorer svg.ae-axis{display:block;margin:.3rem auto 0}
 .safety-ae-explorer .ae-table td{border-bottom:1px solid #e3e8ee;padding:.3rem .5rem;vertical-align:middle}
 .safety-ae-explorer .ae-table td.ae-value{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .safety-ae-explorer .ae-table tbody tr:hover{background:#f0f3f6}
@@ -20853,33 +20858,63 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       return table;
     }
     /**
-     * The header row: the category column, one group column per shown group
-     * with its (n=…) denominator, the Total column, and the rate/difference
-     * plot columns with their axes.
+     * The header: the category column, one group column per shown group with
+     * its (n=…) denominator color-matched to its rate dot, the Total column,
+     * and the rate/difference plot columns with their axes. Two or more group
+     * columns draw a two-row head — a "Groups" super-header spanning the arms
+     * over their per-arm names — otherwise a single row carries everything.
      * @private
      */
     buildHead(percentScale, diffScale) {
       const { plan, groups, counts } = this;
+      const color2 = colorScale(groups, this.settings.colors);
       const thead = document.createElement("thead");
+      const countHead = (label, n, key) => {
+        const th = createElement("th", "ae-value");
+        th.style.color = color2(key);
+        th.append(
+          document.createTextNode(`${label} `),
+          createElement("span", "ae-grp-n", `(n=${n})`)
+        );
+        return th;
+      };
+      const rateHead = () => {
+        const th = createElement("th", "ae-plot-head", "AE Rate by Group");
+        th.append(this.buildAxis(percentScale, (value) => `${Math.round(value)}%`));
+        return th;
+      };
+      const diffHead = () => {
+        const th = createElement("th", "ae-plot-head", "Difference Between Groups");
+        th.append(this.buildAxis(diffScale, (value) => `${Math.round(value)}`));
+        return th;
+      };
+      const totalN = () => counts.reduce((sum, count) => sum + count.n, 0);
+      if (plan.groupCols && groups.length >= 2) {
+        const top = document.createElement("tr");
+        const bottom = document.createElement("tr");
+        const span2 = (th) => {
+          th.rowSpan = 2;
+          return th;
+        };
+        top.append(span2(createElement("th", "ae-category", "Category")));
+        const superHead = createElement("th", "ae-groups-super", "Groups");
+        superHead.colSpan = groups.length;
+        top.append(superHead);
+        groups.forEach((group, index) => bottom.append(countHead(group, counts[index].n, group)));
+        if (plan.totalCol) top.append(span2(countHead("Total", totalN(), "Total")));
+        top.append(span2(rateHead()));
+        if (plan.diffCol) top.append(span2(diffHead()));
+        thead.append(top, bottom);
+        return thead;
+      }
       const row = document.createElement("tr");
       row.append(createElement("th", "ae-category", "Category"));
       if (plan.groupCols) {
-        groups.forEach(
-          (group, index) => row.append(createElement("th", "ae-value", `${group} (n=${counts[index].n})`))
-        );
+        groups.forEach((group, index) => row.append(countHead(group, counts[index].n, group)));
       }
-      if (plan.totalCol) {
-        const total = counts.reduce((sum, count) => sum + count.n, 0);
-        row.append(createElement("th", "ae-value", `Total (n=${total})`));
-      }
-      const rateHead = createElement("th", "ae-plot-head", "AE Rate by Group");
-      rateHead.append(this.buildAxis(percentScale, (value) => `${Math.round(value)}%`));
-      row.append(rateHead);
-      if (plan.diffCol) {
-        const diffHead = createElement("th", "ae-plot-head", "Difference Between Groups");
-        diffHead.append(this.buildAxis(diffScale, (value) => `${Math.round(value)}`));
-        row.append(diffHead);
-      }
+      if (plan.totalCol) row.append(countHead("Total", totalN(), "Total"));
+      row.append(rateHead());
+      if (plan.diffCol) row.append(diffHead());
       thead.append(row);
       return thead;
     }
@@ -20901,11 +20936,12 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       line.setAttribute("y2", 4);
       line.setAttribute("stroke", "#b8c0cc");
       svg.append(line);
-      [d0, (d0 + d1) / 2, d1].forEach((value) => {
+      const anchors = ["start", "middle", "end"];
+      [d0, (d0 + d1) / 2, d1].forEach((value, index) => {
         const text = document.createElementNS(SVG_NS2, "text");
         text.setAttribute("x", scale.x(value));
         text.setAttribute("y", 15);
-        text.setAttribute("text-anchor", "middle");
+        text.setAttribute("text-anchor", anchors[index]);
         text.setAttribute("font-size", "9");
         text.setAttribute("fill", "#52616f");
         text.textContent = format(value);

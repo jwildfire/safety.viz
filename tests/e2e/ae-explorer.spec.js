@@ -66,6 +66,31 @@ test.describe('safety.viz ae-explorer module', () => {
     await expect(page.locator('th', { hasText: 'Total (n=9)' })).toBeVisible();
   });
 
+  test('AE-CFG-006/AE-USER-019: the per-arm columns sit under a Groups super-header and color-match their rate dots (#60)', async ({
+    page
+  }) => {
+    // Two or more shown groups draw a "Groups" super-header spanning the
+    // per-arm columns, so the header reads as one grouped block (reference
+    // parity with RhoInc/aeexplorer).
+    const groupsSuper = page.locator('thead th.ae-groups-super');
+    await expect(groupsSuper).toHaveText('Groups');
+    await expect(groupsSuper).toHaveAttribute('colspan', '3');
+    // Each group header carries its rate-dot color (ColorBrewer Set1 order):
+    // arm A blue, arm B green, arm C purple; the Total column stays gray.
+    await expect(page.locator('thead th', { hasText: 'A (n=4)' })).toHaveCSS(
+      'color',
+      'rgb(55, 126, 184)'
+    );
+    await expect(page.locator('thead th', { hasText: 'B (n=3)' })).toHaveCSS(
+      'color',
+      'rgb(77, 175, 74)'
+    );
+    await expect(page.locator('thead th', { hasText: 'Total (n=9)' })).toHaveCSS(
+      'color',
+      'rgb(119, 119, 119)'
+    );
+  });
+
   test('AE-USER-014/AE-USER-015/AE-REG-001/AE-REG-002: the category toggle expands and collapses the nested preferred terms (#60)', async ({
     page
   }) => {
