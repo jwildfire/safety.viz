@@ -16,7 +16,9 @@
     "format:check": "prettier --check .",
     "evidence": "node scripts/evidence.mjs",
     "evidence:check": "node scripts/evidence.mjs --check",
-    "evidence:update": "node scripts/evidence.mjs --update"
+    "evidence:update": "node scripts/evidence.mjs --update",
+    "requirements": "node scripts/requirements.mjs",
+    "requirements:check": "node scripts/requirements.mjs --check"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.1",

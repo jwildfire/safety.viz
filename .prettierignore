@@ -5,3 +5,4 @@ test-results/
 package-lock.json
 _site/
 _api/
+.requirements-src/

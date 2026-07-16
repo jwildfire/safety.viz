@@ -1,0 +1,8 @@
+{
+  "SH-FUNC-004A": "Render a gray normal-range band behind histogram data using the measure limits.",
+  "SH-FUNC-004B": "Normal ranges are hidden by default and shown via the Normal Range checkbox.",
+  "SH-FUNC-011": "Visually de-emphasize bars not represented in the linked detail table & keep the selection.",
+  "SH-CFG-004": "Numeric bin default follows the pilot configuration.",
+  "SH-CFG-005": "Missing and non-numeric results are dropped and counted.",
+  "SH-CFG-006": "Normal-range display defaults follow the pilot configuration."
+}
