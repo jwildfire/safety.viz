@@ -102,6 +102,58 @@ export function pointTooltip(point, state, measureValues) {
 }
 
 /**
+ * Chart.js plugin drawing dashed reference lines at fixed axis values with
+ * small labels (HEP-COMP-001/003): vertical lines at each `vLines` x-value and
+ * horizontal lines at each `hLines` y-value. Used by the composite plot for the
+ * eDISH cut-lines (ALT 3×ULN, BILI 2×ULN) and the ×Baseline reference lines
+ * (1×/3×/5×BLN). Lines outside the current axis range are skipped.
+ * @param {{vLines?: Array<{value: number, label?: string}>, hLines?: Array<{value: number, label?: string}>}} config The lines to draw.
+ * @returns {Object} A Chart.js plugin object.
+ */
+export function referenceLinePlugin({ vLines = [], hLines = [] } = {}) {
+  return {
+    id: `hep-reflines-${Math.random().toString(36).slice(2)}`,
+    beforeDatasetsDraw(chart) {
+      const { ctx, chartArea, scales } = chart;
+      if (!scales.x || !scales.y) return;
+      ctx.save();
+      ctx.strokeStyle = 'rgba(100, 116, 139, 0.65)';
+      ctx.fillStyle = 'rgba(51, 65, 85, 0.85)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.font = '10px system-ui, sans-serif';
+      vLines.forEach(({ value, label }) => {
+        const px = scales.x.getPixelForValue(value);
+        if (!(px >= chartArea.left && px <= chartArea.right)) return;
+        ctx.beginPath();
+        ctx.moveTo(px, chartArea.top);
+        ctx.lineTo(px, chartArea.bottom);
+        ctx.stroke();
+        if (label) {
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'bottom';
+          ctx.fillText(label, px + 2, chartArea.bottom - 2);
+        }
+      });
+      hLines.forEach(({ value, label }) => {
+        const py = scales.y.getPixelForValue(value);
+        if (!(py >= chartArea.top && py <= chartArea.bottom)) return;
+        ctx.beginPath();
+        ctx.moveTo(chartArea.left, py);
+        ctx.lineTo(chartArea.right, py);
+        ctx.stroke();
+        if (label) {
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'bottom';
+          ctx.fillText(label, chartArea.left + 2, py - 2);
+        }
+      });
+      ctx.restore();
+    }
+  };
+}
+
+/**
  * Chart.js plugin drawing the two Hy's-Law cut-lines and the four corner
  * quadrant labels with live percents (HEP-QUAD-002, HEP-QUAD-003). Reads
  * `instance.state.xCut`/`yCut` for the line positions and `instance.quadrants`

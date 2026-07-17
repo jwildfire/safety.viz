@@ -473,3 +473,118 @@ test.describe('safety.viz hep-explorer module', () => {
     expect(result.containerText).toBe('');
   });
 });
+
+// Composite plot (#67, HEP-COMP-*): the baseline-referenced composite view for
+// subjects with abnormal baseline liver tests (Tesfaldet et al., Drug Safety
+// 2024). Loads a dedicated fixture whose crafted chronic-liver cohort populates
+// every pretreatment quadrant and every level of DILI concern, and opens on the
+// composite view.
+test.describe('safety.viz hep-explorer composite plot', () => {
+  test.beforeEach(async ({ page }) => {
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') errors.push(msg.text());
+    });
+    page._hepErrors = errors;
+    await page.goto('/tests/e2e/fixtures/hep-explorer-composite.html');
+    await page.waitForFunction(
+      () =>
+        window.__safetyHepExplorerInstance &&
+        document.querySelectorAll('.hep-composite-panels canvas').length === 4
+    );
+  });
+
+  test.afterEach(async ({ page }) => {
+    expect(page._hepErrors).toEqual([]);
+  });
+
+  test('HEP-COMP-006: opens on the composite view with a reduced control set (#67)', async ({
+    page
+  }) => {
+    const view = await page.evaluate(() => window.__safetyHepExplorerInstance.state.view);
+    expect(view).toBe('composite');
+    const labels = await page.locator('.sv-control label').allTextContents();
+    expect(labels).toContain('View');
+    expect(labels).toContain('Group');
+    // Scatter-only controls are hidden in the composite view.
+    expect(labels).not.toContain('X-axis Measure');
+    expect(labels).not.toContain('Display Type');
+    expect(labels).not.toContain('R Ratio min');
+  });
+
+  test('HEP-COMP-001/HEP-COMP-002/HEP-COMP-003: draws the eDISH panels, xBLN four-panel plot, and baseline-quadrant legend (#67)', async ({
+    page
+  }) => {
+    // Two eDISH scatters (pretreatment + on-treatment) + four xBLN panels.
+    await expect(page.locator('.hep-composite-edish canvas')).toHaveCount(2);
+    await expect(page.locator('.hep-composite-panels canvas')).toHaveCount(4);
+    const chartCount = await page.evaluate(() => window.__safetyHepExplorerInstance.charts.length);
+    expect(chartCount).toBe(6);
+    // Panels are labelled by on-treatment quadrant.
+    const panelTitles = await page
+      .locator('.hep-composite-panels .hep-composite-card h4')
+      .allTextContents();
+    expect(panelTitles.join(' ')).toContain('Cholestasis');
+    expect(panelTitles.join(' ')).toContain("Hy's Law");
+    expect(panelTitles.join(' ')).toContain('Normal & NN');
+    expect(panelTitles.join(' ')).toContain("Temple's Corollary");
+    // The baseline-quadrant legend names all four quadrants.
+    const legend = await page.locator('.hep-composite-legend').textContent();
+    expect(legend).toContain('Baseline quadrant');
+    await captureEvidence(page, 'HEP-COMP-001', 'composite-plot');
+  });
+
+  test('HEP-COMP-004/HEP-COMP-005: migration table counts and by-arm concern summary (#67)', async ({
+    page
+  }) => {
+    const tables = page.locator('.hep-composite .hep-migration table');
+    await expect(tables).toHaveCount(2);
+    // Migration table grand total (last cell of the last body row) = 8 subjects.
+    const grandTotal = await tables
+      .first()
+      .locator('tbody tr:last-child td:last-child')
+      .textContent();
+    expect(grandTotal.trim()).toBe('8');
+    // By-arm summary lists both arms.
+    const armSummary = await tables.nth(1).textContent();
+    expect(armSummary).toContain('Study Drug');
+    expect(armSummary).toContain('Placebo');
+    // Concern legend is present.
+    await expect(page.locator('.hep-concern-legend')).toBeVisible();
+    await captureEvidence(page, 'HEP-COMP-004', 'migration-table');
+  });
+
+  test('HEP-COMP-006: the View control toggles between the composite and scatter views (#67)', async ({
+    page
+  }) => {
+    // Switch to the classic scatter view: the single scatter canvas appears and
+    // the composite container is hidden.
+    await page.evaluate(() => {
+      window.__safetyHepExplorerInstance.state.view = 'scatter';
+      window.__safetyHepExplorerInstance.buildControls();
+      window.__safetyHepExplorerInstance.render();
+    });
+    await page.waitForFunction(() => window.__safetyHepExplorerInstance.chart !== null);
+    await expect(page.locator('canvas.sv-chart')).toBeVisible();
+    const compositeHidden = await page.evaluate(
+      () => window.__safetyHepExplorerInstance.compositeWrap.style.display === 'none'
+    );
+    expect(compositeHidden).toBe(true);
+  });
+
+  test('HEP-COMP-006: degrades gracefully when baseline or on-treatment values are absent (#67)', async ({
+    page
+  }) => {
+    // Rebind to baseline-only records: no on-treatment peak, so no subject
+    // qualifies and the composite shows an explanatory note instead of panels.
+    const note = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      const baselineOnly = instance.rawData.filter((row) => row.VISIT === 'Baseline');
+      instance.setData(baselineOnly);
+      return instance.compositeWrap.textContent;
+    });
+    expect(note).toContain('needs baseline and on-treatment ALT and total bilirubin');
+    await expect(page.locator('.hep-composite-panels canvas')).toHaveCount(0);
+  });
+});

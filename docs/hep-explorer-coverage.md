@@ -8,8 +8,9 @@ in [CONTRIBUTING.md](../CONTRIBUTING.md). Requirement IDs use the module's
 condensed **`HEP-*`** scheme cited in the source and test names — `HEP-CHART-*`
 (scatter/axes), `HEP-QUAD-*` (quadrants/cutpoints), `HEP-CTRL-*` (controls),
 `HEP-DISPLAY-*` (eDISH/mDISH standardization), `HEP-SELECT-*` (participant
-detail/visit path), `HEP-DATA-*` (data contract/cleaning), and `HEP-API-*`
-(lifecycle/events). A reviewed source requirement matrix (`hep-explorer.md` in
+detail/visit path), `HEP-DATA-*` (data contract/cleaning), `HEP-API-*`
+(lifecycle/events), and `HEP-COMP-*` (the composite plot for abnormal-baseline
+subjects, [#67](https://github.com/jwildfire/safety.viz/issues/67)). A reviewed source requirement matrix (`hep-explorer.md` in
 the requirements repo) is not yet published, so the source-matrix column is
 pending; each row lists the module IDs its test covers.
 
@@ -32,6 +33,11 @@ pending; each row lists the module IDs its test covers.
 | HEP-CHART-004                                | —                  | #43   | point tooltips list participant, R Ratio, peaks with days, and the day difference                            |
 | HEP-API-003                                  | —                  | #43   | participantsSelected fires on select and clear                                                               |
 | HEP-API-001                                  | —                  | #43   | lifecycle API supports init, setData, setSettings, render, resize, and destroy                               |
+| HEP-COMP-006                                 | —                  | #67   | opens on the composite view with a reduced control set                                                       |
+| HEP-COMP-001/002/003                         | —                  | #67   | draws the eDISH panels, xBLN four-panel plot, and baseline-quadrant legend                                   |
+| HEP-COMP-004/005                             | —                  | #67   | migration table counts and by-arm concern summary                                                            |
+| HEP-COMP-006                                 | —                  | #67   | the View control toggles between the composite and scatter views                                             |
+| HEP-COMP-006                                 | —                  | #67   | degrades gracefully when baseline or on-treatment values are absent                                          |
 
 ## Unit evidence (Vitest — `tests/unit/hep-explorer/`)
 
@@ -48,6 +54,7 @@ pending; each row lists the module IDs its test covers.
 | HEP-CHART-002/003/004, HEP-CTRL-006, HEP-DISPLAY-001 (domains, log, labels)                | —                  | #43   | `getScales.test.js`     |
 | HEP-CHART-004, HEP-CTRL-009, HEP-QUAD-002, HEP-SELECT-001 (tooltip, palette, plugin)       | —                  | #43   | `getPlugins.test.js`    |
 | HEP-API-001 (module export)                                                                | —                  | #43   | `export.test.js`        |
+| HEP-COMP-001/002/003/004/005/006 (classification, migration, concern matrix, by-arm)       | —                  | #67   | `composite.test.js`     |
 
 ## Source-matrix routing status
 
@@ -66,8 +73,12 @@ repo), so routing is against the port spec's scope rather than matrix rows.
   (HEP-DISPLAY-001..006), the coordinated participant drill-down: point
   selection with visit-path overlay, lab-over-time panel, measure summary
   table, and linked listing (HEP-SELECT-001..007), data cleaning and the data
-  contract (HEP-DATA-001..005), and the lifecycle API + `participantsSelected`
-  event (HEP-API-001/003).
+  contract (HEP-DATA-001..005), the lifecycle API + `participantsSelected`
+  event (HEP-API-001/003), and the baseline-referenced **composite plot** for
+  subjects with abnormal baseline liver tests (Tesfaldet et al., Drug Safety 2024) — the pretreatment and peak on-treatment eDISH panels colored by
+  baseline quadrant, the four-panel ×Baseline shift plot, the migration table
+  with concern coding, and the by-arm concern-vs-benefit summary
+  (HEP-COMP-001..006).
 
 - **Deferred (follow-ups, not part of the coordinated-views claim):**
   draggable cut-lines (v1 uses the reference-line number inputs), the study-day

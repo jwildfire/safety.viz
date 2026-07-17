@@ -18285,6 +18285,10 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     { value: "relative_uln", label: "Upper limit of normal adjusted (eDISH)" },
     { value: "relative_baseline", label: "Baseline adjusted (mDISH)" }
   ];
+  var VIEW_MODES = [
+    { value: "scatter", label: "eDISH / mDISH scatter" },
+    { value: "composite", label: "Composite plot (baseline-referenced)" }
+  ];
   var AXIS_TYPES = ["linear", "log"];
   var POINT_SIZE_OPTIONS = ["Uniform", "rRatio"];
   var MEASURE_KEYS = ["ALT", "AST", "TB", "ALP"];
@@ -18304,6 +18308,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       TB: "Total Bilirubin",
       ALP: "Alkaline phosphatase (ALP)"
     },
+    view: "scatter",
     x_default: "ALT",
     y_default: "TB",
     x_options: ["ALT", "AST", "TB", "ALP"],
@@ -18449,6 +18454,12 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
               ALP: "Alkaline phosphatase (ALP)"
             },
             description: "Map of the short measure key (ALT/AST/TB/ALP) to the full measure string in the data (HEP-DATA-002)."
+          },
+          view: {
+            type: "string",
+            enum: ["scatter", "composite"],
+            default: "scatter",
+            description: "Initial view mode: `scatter` (eDISH/mDISH one-point-per-participant scatter) or `composite` (baseline-referenced composite plot for subjects with abnormal baseline liver tests \u2014 pretreatment and on-treatment eDISH panels, a four-panel \xD7Baseline shift plot, and a migration table) (HEP-COMP-006)."
           },
           x_default: {
             type: "string",
@@ -18640,6 +18651,48 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       lines.push(`${formatNumber4(point.day_diff)} days apart`);
     }
     return lines;
+  }
+  function referenceLinePlugin({ vLines = [], hLines = [] } = {}) {
+    return {
+      id: `hep-reflines-${Math.random().toString(36).slice(2)}`,
+      beforeDatasetsDraw(chart) {
+        const { ctx, chartArea, scales } = chart;
+        if (!scales.x || !scales.y) return;
+        ctx.save();
+        ctx.strokeStyle = "rgba(100, 116, 139, 0.65)";
+        ctx.fillStyle = "rgba(51, 65, 85, 0.85)";
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        ctx.font = "10px system-ui, sans-serif";
+        vLines.forEach(({ value, label }) => {
+          const px = scales.x.getPixelForValue(value);
+          if (!(px >= chartArea.left && px <= chartArea.right)) return;
+          ctx.beginPath();
+          ctx.moveTo(px, chartArea.top);
+          ctx.lineTo(px, chartArea.bottom);
+          ctx.stroke();
+          if (label) {
+            ctx.textAlign = "left";
+            ctx.textBaseline = "bottom";
+            ctx.fillText(label, px + 2, chartArea.bottom - 2);
+          }
+        });
+        hLines.forEach(({ value, label }) => {
+          const py = scales.y.getPixelForValue(value);
+          if (!(py >= chartArea.top && py <= chartArea.bottom)) return;
+          ctx.beginPath();
+          ctx.moveTo(chartArea.left, py);
+          ctx.lineTo(chartArea.right, py);
+          ctx.stroke();
+          if (label) {
+            ctx.textAlign = "left";
+            ctx.textBaseline = "bottom";
+            ctx.fillText(label, chartArea.left + 2, py - 2);
+          }
+        });
+        ctx.restore();
+      }
+    };
   }
   function quadrantPlugin(instance) {
     return {
@@ -18981,6 +19034,153 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     }).filter((row) => row.n > 0);
   }
 
+  // src/hep-explorer/composite.js
+  var COMPOSITE_QUADRANTS = ["Normal & NN", "Cholestasis", "Temple's Corollary", "Hy's Law"];
+  var [NN, CH, TC, HL] = COMPOSITE_QUADRANTS;
+  var ALT_ULN_CUT = 3;
+  var BILI_ULN_CUT = 2;
+  var BLN_LINES = [1, 3, 5];
+  var QUADRANT_STYLE = {
+    [NN]: { color: "#33a02c", pointStyle: "rect", label: NN },
+    [CH]: { color: "#e6a000", pointStyle: "circle", label: CH },
+    [TC]: { color: "#1f78b4", pointStyle: "cross", label: TC },
+    [HL]: { color: "#e31a1c", pointStyle: "triangle", label: HL }
+  };
+  var CONCERN_COLORS = {
+    red: "#f28b82",
+    yellow: "#fdd663",
+    green: "#81c995",
+    gray: "#dadce0"
+  };
+  var CONCERN_MATRIX = {
+    [NN]: { [NN]: "gray", [CH]: "red", [TC]: "red", [HL]: "red" },
+    [CH]: { [NN]: "green", [CH]: "gray", [TC]: "yellow", [HL]: "red" },
+    [TC]: { [NN]: "green", [CH]: "yellow", [TC]: "gray", [HL]: "red" },
+    [HL]: { [NN]: "green", [CH]: "green", [TC]: "green", [HL]: "gray" }
+  };
+  function concernOf(pretreatQuadrant, onTreatQuadrant) {
+    const row = CONCERN_MATRIX[pretreatQuadrant];
+    return row && row[onTreatQuadrant] || "gray";
+  }
+  function classifyComposite(altULN, biliULN) {
+    const altElevated = altULN > ALT_ULN_CUT;
+    const biliElevated = biliULN > BILI_ULN_CUT;
+    if (!altElevated && !biliElevated) return NN;
+    if (!altElevated && biliElevated) return CH;
+    if (altElevated && biliElevated) return HL;
+    return TC;
+  }
+  function dayThenIndex2(a, b) {
+    const da = Number.isFinite(a.__hep_day) ? a.__hep_day : Number.MAX_SAFE_INTEGER;
+    const db = Number.isFinite(b.__hep_day) ? b.__hep_day : Number.MAX_SAFE_INTEGER;
+    return da - db || a.__hep_index - b.__hep_index;
+  }
+  function reduceMeasure(rows) {
+    if (!rows.length) return null;
+    const ordered = [...rows].sort(dayThenIndex2);
+    const baselineRow = ordered.find((row) => row.__hep_day === 0) || ordered[0];
+    if (!baselineRow || !Number.isFinite(baselineRow.__hep_value) || !(baselineRow.__hep_value > 0) || !Number.isFinite(baselineRow.__hep_relative_uln)) {
+      return null;
+    }
+    const hasDay = rows.some((row) => Number.isFinite(row.__hep_day));
+    const isOnTreatment = (row) => hasDay ? Number.isFinite(row.__hep_day) && row.__hep_day > 0 : row !== baselineRow;
+    let peakULN = NaN;
+    let peakBLN = NaN;
+    rows.forEach((row) => {
+      if (!isOnTreatment(row)) return;
+      if (Number.isFinite(row.__hep_relative_uln) && !(row.__hep_relative_uln <= peakULN)) {
+        peakULN = row.__hep_relative_uln;
+      }
+      if (Number.isFinite(row.__hep_relative_baseline) && !(row.__hep_relative_baseline <= peakBLN)) {
+        peakBLN = row.__hep_relative_baseline;
+      }
+    });
+    if (!Number.isFinite(peakULN) || !Number.isFinite(peakBLN)) return null;
+    return { baselineULN: baselineRow.__hep_relative_uln, peakULN, peakBLN };
+  }
+  function buildCompositeSubjects(cleanRows, settings) {
+    const metaCols = [
+      ...settings.groups.map((group) => group.value_col),
+      ...settings.filters.map((filter) => filter.value_col)
+    ].filter((col) => col && col !== GROUP_NONE2);
+    const byId = /* @__PURE__ */ new Map();
+    cleanRows.forEach((row) => {
+      const id = row[settings.id_col];
+      if (!byId.has(id)) byId.set(id, []);
+      byId.get(id).push(row);
+    });
+    const subjects = [];
+    let excluded = 0;
+    byId.forEach((participantRows, id) => {
+      const alt = reduceMeasure(resolveMeasureRows(participantRows, settings, "ALT"));
+      const bili = reduceMeasure(resolveMeasureRows(participantRows, settings, "TB"));
+      if (!alt || !bili) {
+        excluded += 1;
+        return;
+      }
+      const pretreatQuadrant = classifyComposite(alt.baselineULN, bili.baselineULN);
+      const onTreatQuadrant = classifyComposite(alt.peakULN, bili.peakULN);
+      const raw = {};
+      metaCols.forEach((col) => {
+        raw[col] = participantRows[0][col] === void 0 ? "" : String(participantRows[0][col]);
+      });
+      subjects.push({
+        id,
+        raw,
+        baselineAltULN: alt.baselineULN,
+        baselineBiliULN: bili.baselineULN,
+        peakAltULN: alt.peakULN,
+        peakBiliULN: bili.peakULN,
+        peakAltBLN: alt.peakBLN,
+        peakBiliBLN: bili.peakBLN,
+        pretreatQuadrant,
+        onTreatQuadrant,
+        concern: concernOf(pretreatQuadrant, onTreatQuadrant)
+      });
+    });
+    return { subjects, excluded };
+  }
+  function migrationMatrix(subjects) {
+    const counts = {};
+    const rowTotals = {};
+    const colTotals = {};
+    COMPOSITE_QUADRANTS.forEach((pre) => {
+      counts[pre] = {};
+      rowTotals[pre] = 0;
+      colTotals[pre] = 0;
+      COMPOSITE_QUADRANTS.forEach((post) => {
+        counts[pre][post] = 0;
+      });
+    });
+    let total = 0;
+    subjects.forEach((subject) => {
+      const pre = subject.pretreatQuadrant;
+      const post = subject.onTreatQuadrant;
+      if (counts[pre] && counts[pre][post] !== void 0) {
+        counts[pre][post] += 1;
+        rowTotals[pre] += 1;
+        colTotals[post] += 1;
+        total += 1;
+      }
+    });
+    return { counts, rowTotals, colTotals, total };
+  }
+  function byArmSummary(subjects, armCol) {
+    const buckets = /* @__PURE__ */ new Map();
+    const bucketFor = (arm) => {
+      if (!buckets.has(arm))
+        buckets.set(arm, { arm, red: 0, yellow: 0, green: 0, gray: 0, total: 0 });
+      return buckets.get(arm);
+    };
+    subjects.forEach((subject) => {
+      const arm = armCol ? subject.raw[armCol] ?? "" : "All";
+      const bucket = bucketFor(arm === "" ? "(missing)" : arm);
+      bucket[subject.concern] += 1;
+      bucket.total += 1;
+    });
+    return [...buckets.values()].sort((a, b) => String(a.arm).localeCompare(String(b.arm)));
+  }
+
   // src/hep-explorer.js
   Chart.register(
     ScatterController,
@@ -19016,6 +19216,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       this.chart = null;
       this.participantsSelected = [];
       this.state = {
+        view: this.settings.view === "composite" ? "composite" : "scatter",
         measureX: this.settings.x_default,
         measureY: this.settings.y_default,
         display: "relative_uln",
@@ -19050,6 +19251,9 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       this.main.insertBefore(this.legendEl, this.chartWrap);
       this.quadrantWrap = createElement("div", "hep-quadrant-summary");
       this.main.insertBefore(this.quadrantWrap, this.multiplesWrap);
+      this.compositeWrap = createElement("div", "hep-composite");
+      this.compositeWrap.style.display = "none";
+      this.main.insertBefore(this.compositeWrap, this.multiplesWrap);
       this.detailWrap = createElement("div", "hep-detail");
       this.detailWrap.style.display = "none";
       this.main.insertBefore(this.detailWrap, this.listingWrap);
@@ -19078,7 +19282,27 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
 .safety-hep-explorer .hep-summary-table{width:100%;max-width:520px;border-collapse:collapse;font-size:.85rem;background:#fff;margin-top:.9rem}
 .safety-hep-explorer .hep-summary-table th,.safety-hep-explorer .hep-summary-table td{border-bottom:1px solid #e3e8ee;padding:.4rem .55rem;text-align:left}
 .safety-hep-explorer .hep-summary-table th{border-bottom:2px solid #d8dee4;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f}
-.safety-hep-explorer .hep-summary-table td.hep-num,.safety-hep-explorer .hep-summary-table th.hep-num{text-align:right;font-variant-numeric:tabular-nums}`;
+.safety-hep-explorer .hep-summary-table td.hep-num,.safety-hep-explorer .hep-summary-table th.hep-num{text-align:right;font-variant-numeric:tabular-nums}
+.safety-hep-explorer .hep-composite{margin-top:.5rem}
+.safety-hep-explorer .hep-composite-legend{display:flex;flex-wrap:wrap;gap:.35rem 1rem;font-size:.8rem;color:#52616f;margin:0 0 .75rem}
+.safety-hep-explorer .hep-composite-legend .hep-legend-item{display:inline-flex;align-items:center;gap:.3rem}
+.safety-hep-explorer .hep-composite-section-title{font-size:.9rem;margin:1rem 0 .5rem;color:#1f2933}
+.safety-hep-explorer .hep-composite-edish{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem}
+.safety-hep-explorer .hep-composite-panels{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;max-width:760px}
+.safety-hep-explorer .hep-composite-card{border:1px solid #d8dee4;border-radius:10px;padding:.6rem .7rem;background:#fff}
+.safety-hep-explorer .hep-composite-card h4{font-size:.82rem;margin:0 0 .4rem;color:#52616f;font-weight:600}
+.safety-hep-explorer .hep-composite-canvas{height:280px;position:relative}
+.safety-hep-explorer .hep-composite-panel-canvas{height:210px;position:relative}
+.safety-hep-explorer .hep-migration{margin-top:1.25rem}
+.safety-hep-explorer .hep-migration table{border-collapse:collapse;font-size:.82rem;background:#fff}
+.safety-hep-explorer .hep-migration th,.safety-hep-explorer .hep-migration td{border:1px solid #d8dee4;padding:.35rem .55rem;text-align:center}
+.safety-hep-explorer .hep-migration th{font-size:.72rem;text-transform:uppercase;letter-spacing:.02em;color:#52616f;font-weight:700}
+.safety-hep-explorer .hep-migration td.hep-rowhead{text-align:left;font-weight:600;color:#1f2933;white-space:nowrap}
+.safety-hep-explorer .hep-migration td.hep-total,.safety-hep-explorer .hep-migration th.hep-total{background:#f6f8fa;font-weight:700}
+.safety-hep-explorer .hep-migration caption{caption-side:top;text-align:left;font-size:.82rem;color:#52616f;margin-bottom:.35rem}
+.safety-hep-explorer .hep-concern-legend{display:flex;flex-wrap:wrap;gap:.35rem .9rem;font-size:.76rem;color:#52616f;margin:.5rem 0 0}
+.safety-hep-explorer .hep-concern-legend .hep-legend-item{display:inline-flex;align-items:center;gap:.3rem}
+.safety-hep-explorer .hep-concern-swatch{display:inline-block;width:.8rem;height:.8rem;border:1px solid #b8c0cc;border-radius:2px}`;
       document.head.append(style);
     }
     /**
@@ -19124,6 +19348,8 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
      */
     setSettings(settings) {
       this.settings = syncSettings7({ ...this.settings, ...settings });
+      if ("view" in settings)
+        this.state.view = this.settings.view === "composite" ? "composite" : "scatter";
       if ("x_default" in settings) this.state.measureX = this.settings.x_default;
       if ("y_default" in settings) this.state.measureY = this.settings.y_default;
       if ("visit_window" in settings) this.state.visitWindow = this.settings.visit_window;
@@ -19212,70 +19438,86 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       this.controls.innerHTML = "";
       const { addSection, addRow, addControl } = controlBuilders(this.controls);
       const settingsParent = addSection("Settings");
-      const measureX = addControl("X-axis Measure", document.createElement("select"), settingsParent);
-      this.settings.x_options.forEach(
-        (key) => option(measureX, key, key, key === this.state.measureX)
+      const scatter = this.state.view !== "composite";
+      const view = addControl("View", document.createElement("select"), settingsParent);
+      VIEW_MODES.forEach(
+        (mode) => option(view, mode.value, mode.label, mode.value === this.state.view)
       );
-      measureX.onchange = () => {
-        this.state.measureX = measureX.value;
+      view.onchange = () => {
+        this.state.view = view.value === "composite" ? "composite" : "scatter";
         this.buildControls();
         this.render();
       };
-      if (this.settings.y_options.length > 1) {
-        const measureY = addControl(
-          "Y-axis Measure",
+      if (scatter) {
+        const measureX = addControl(
+          "X-axis Measure",
           document.createElement("select"),
           settingsParent
         );
-        this.settings.y_options.forEach(
-          (key) => option(measureY, key, key, key === this.state.measureY)
+        this.settings.x_options.forEach(
+          (key) => option(measureX, key, key, key === this.state.measureX)
         );
-        measureY.onchange = () => {
-          this.state.measureY = measureY.value;
+        measureX.onchange = () => {
+          this.state.measureX = measureX.value;
           this.buildControls();
           this.render();
         };
-      }
-      this.addCutControl(addControl, settingsParent, "measureX");
-      this.addCutControl(addControl, settingsParent, "measureY");
-      const display = addControl("Display Type", document.createElement("select"), settingsParent);
-      DISPLAY_MODES.forEach(
-        (mode) => option(display, mode.value, mode.label, mode.value === this.state.display)
-      );
-      display.onchange = () => {
-        this.state.display = display.value;
-        this.buildControls();
-        this.render();
-      };
-      const axisType = addControl("Axis Type", document.createElement("select"), settingsParent);
-      AXIS_TYPES.forEach((type) => option(axisType, type, type, type === this.state.axisType));
-      axisType.onchange = () => {
-        this.state.axisType = axisType.value;
-        this.render();
-      };
-      const pointSize = addControl("Point Size", document.createElement("select"), settingsParent);
-      POINT_SIZE_OPTIONS.forEach(
-        (value) => option(pointSize, value, value, value === this.state.pointSize)
-      );
-      pointSize.onchange = () => {
-        this.state.pointSize = pointSize.value;
-        this.render();
-      };
-      const window2 = addControl(
-        "Highlight Points Based on Timing",
-        document.createElement("input"),
-        settingsParent
-      );
-      window2.type = "number";
-      window2.min = "0";
-      window2.step = "1";
-      window2.value = this.state.visitWindow;
-      window2.onchange = () => {
-        const value = Number(window2.value);
-        this.state.visitWindow = Number.isFinite(value) && value >= 0 ? value : 0;
+        if (this.settings.y_options.length > 1) {
+          const measureY = addControl(
+            "Y-axis Measure",
+            document.createElement("select"),
+            settingsParent
+          );
+          this.settings.y_options.forEach(
+            (key) => option(measureY, key, key, key === this.state.measureY)
+          );
+          measureY.onchange = () => {
+            this.state.measureY = measureY.value;
+            this.buildControls();
+            this.render();
+          };
+        }
+        this.addCutControl(addControl, settingsParent, "measureX");
+        this.addCutControl(addControl, settingsParent, "measureY");
+        const display = addControl("Display Type", document.createElement("select"), settingsParent);
+        DISPLAY_MODES.forEach(
+          (mode) => option(display, mode.value, mode.label, mode.value === this.state.display)
+        );
+        display.onchange = () => {
+          this.state.display = display.value;
+          this.buildControls();
+          this.render();
+        };
+        const axisType = addControl("Axis Type", document.createElement("select"), settingsParent);
+        AXIS_TYPES.forEach((type) => option(axisType, type, type, type === this.state.axisType));
+        axisType.onchange = () => {
+          this.state.axisType = axisType.value;
+          this.render();
+        };
+        const pointSize = addControl("Point Size", document.createElement("select"), settingsParent);
+        POINT_SIZE_OPTIONS.forEach(
+          (value) => option(pointSize, value, value, value === this.state.pointSize)
+        );
+        pointSize.onchange = () => {
+          this.state.pointSize = pointSize.value;
+          this.render();
+        };
+        const window2 = addControl(
+          "Highlight Points Based on Timing",
+          document.createElement("input"),
+          settingsParent
+        );
+        window2.type = "number";
+        window2.min = "0";
+        window2.step = "1";
         window2.value = this.state.visitWindow;
-        this.render();
-      };
+        window2.onchange = () => {
+          const value = Number(window2.value);
+          this.state.visitWindow = Number.isFinite(value) && value >= 0 ? value : 0;
+          window2.value = this.state.visitWindow;
+          this.render();
+        };
+      }
       if (this.settings.groups.length > 1) {
         const group = addControl("Group", document.createElement("select"), settingsParent);
         this.settings.groups.forEach(
@@ -19287,7 +19529,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
         };
       }
       const filterSpecs = this.activeFilterSpecs();
-      const showRRatio = this.settings.r_ratio_filter;
+      const showRRatio = this.settings.r_ratio_filter && scatter;
       if (filterSpecs.length || showRRatio) {
         const filterParent = addSection("Filters");
         filterSpecs.forEach((filter) => {
@@ -19426,6 +19668,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       this.listingWrap.innerHTML = "";
       this.legendEl.innerHTML = "";
       this.quadrantWrap.innerHTML = "";
+      this.compositeWrap.innerHTML = "";
       this.detailWrap.innerHTML = "";
       this.detailWrap.style.display = "none";
       this.currentTableData = [];
@@ -19437,10 +19680,17 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       this.notes.innerHTML = "";
       this.mainAnnotation.textContent = "";
       this.footnote.textContent = this.baseFootnote();
+      const composite = this.state.view === "composite";
+      this.setViewVisibility(composite);
       this.state.xCut = cutFor(this.state.cuts, this.state.measureX, this.state.display);
       this.state.yCut = cutFor(this.state.cuts, this.state.measureY, this.state.display);
       if (!this.cleanRows.length) {
         this.notes.innerHTML = "<span>No data selected. Provide records to draw the chart.</span>";
+        if (previousSelectedId != null) this.dispatchSelection([]);
+        return;
+      }
+      if (composite) {
+        this.renderComposite();
         if (previousSelectedId != null) this.dispatchSelection([]);
         return;
       }
@@ -19673,6 +19923,388 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       });
       table.append(tbody);
       this.quadrantWrap.append(table);
+    }
+    /**
+     * Show either the scatter chrome (single canvas, legend, quadrant summary) or
+     * the composite container, per the active view (HEP-COMP-006).
+     * @private
+     */
+    setViewVisibility(composite) {
+      this.chartWrap.style.display = composite ? "none" : "";
+      this.legendEl.style.display = composite ? "none" : "flex";
+      this.quadrantWrap.style.display = composite ? "none" : "";
+      this.compositeWrap.style.display = composite ? "" : "none";
+    }
+    /**
+     * Render the composite plot into the composite container (HEP-COMP-001..006):
+     * a baseline-quadrant legend, the pretreatment and peak on-treatment eDISH
+     * panels (each point colored/shaped by its baseline quadrant so migration is
+     * visible), the four-panel ×Baseline shift plot (one panel per on-treatment
+     * quadrant, with 1×/3×/5× reference lines), the pretreatment × on-treatment
+     * migration table with concern coding, and the by-arm concern/benefit
+     * summary. Degrades to an explanatory note when no participant in the current
+     * selection has a usable baseline and on-treatment ALT and total bilirubin.
+     * @private
+     */
+    renderComposite() {
+      const { subjects, excluded } = buildCompositeSubjects(this.cleanRows, this.settings);
+      const shown = applyFilters6(subjects, this.state.filters);
+      const totalParticipants = unique6(this.cleanRows.map((row) => row[this.settings.id_col])).length;
+      const excludedNote = excluded ? `<span class="sv-warning">${excluded} participant${excluded > 1 ? "s" : ""} excluded (missing baseline or on-treatment ALT/total bilirubin).</span>` : "";
+      this.notes.innerHTML = `<span>${shown.length} of ${totalParticipants} participants shown in the composite plot.</span>` + excludedNote;
+      this.footnote.textContent = "Composite plot (Tesfaldet et al., Drug Safety 2024): symbol color and shape mark each participant\u2019s baseline (pretreatment) eDISH quadrant, carried through every panel so migration is visible. \xD7Baseline = peak on-treatment value \xF7 the participant\u2019s own baseline.";
+      if (!shown.length) {
+        const note = createElement("div", "sv-warning");
+        note.textContent = "The composite plot needs baseline and on-treatment ALT and total bilirubin for at least one participant. No participant in the current selection qualifies.";
+        this.compositeWrap.append(note);
+        return;
+      }
+      this.compositeWrap.append(this.buildCompositeLegend());
+      this.compositeWrap.append(
+        createElement("h3", "hep-composite-section-title", "Baseline \u2192 on-treatment eDISH (\xD7ULN)")
+      );
+      const edishRow = createElement("div", "hep-composite-edish");
+      edishRow.append(this.buildEdishCard("Pretreatment (baseline)", shown, "pretreat"));
+      edishRow.append(this.buildEdishCard("Peak on-treatment", shown, "ontreat"));
+      this.compositeWrap.append(edishRow);
+      this.compositeWrap.append(
+        createElement(
+          "h3",
+          "hep-composite-section-title",
+          "Peak on-treatment relative to own baseline (\xD7Baseline)"
+        )
+      );
+      this.compositeWrap.append(this.buildCompositePanels(shown));
+      this.compositeWrap.append(this.buildMigrationTable(shown));
+      this.compositeWrap.append(this.buildByArmSummary(shown));
+    }
+    /**
+     * The baseline-quadrant legend for the composite plot: the four quadrants,
+     * each with its coded color and symbol (HEP-COMP-001).
+     * @private
+     */
+    buildCompositeLegend() {
+      const legend = createElement("div", "hep-composite-legend");
+      legend.append(createElement("strong", null, "Baseline quadrant:"));
+      COMPOSITE_QUADRANTS.forEach((quadrant) => {
+        const style = QUADRANT_STYLE[quadrant];
+        const item = createElement("span", "hep-legend-item");
+        const swatch = createElement("span");
+        swatch.style.cssText = `display:inline-block;width:.7rem;height:.7rem;border-radius:${style.pointStyle === "circle" ? "50%" : "2px"};background:${style.color}`;
+        item.append(swatch, document.createTextNode(quadrant));
+        legend.append(item);
+      });
+      return legend;
+    }
+    /**
+     * Log-log Chart.js scale configs for the composite eDISH scatters, widened to
+     * keep the ALT 3×ULN / BILI 2×ULN cut-lines in view.
+     * @private
+     */
+    compositeEdishScales(xValues, yValues) {
+      const xDomain = edishDomain(xValues, ALT_ULN_CUT, "log");
+      const yDomain = edishDomain(yValues, BILI_ULN_CUT, "log");
+      return {
+        x: {
+          type: "logarithmic",
+          min: xDomain[0],
+          max: xDomain[1],
+          title: { display: true, text: "ALT [\xD7ULN]" },
+          grid: { color: "rgba(148, 163, 184, 0.25)" }
+        },
+        y: {
+          type: "logarithmic",
+          min: yDomain[0],
+          max: yDomain[1],
+          title: { display: true, text: "Total Bilirubin [\xD7ULN]" },
+          grid: { color: "rgba(148, 163, 184, 0.25)" }
+        }
+      };
+    }
+    /**
+     * Build one composite eDISH scatter card (pretreatment or peak on-treatment):
+     * peak/baseline ALT (x) vs total bilirubin (y) in ×ULN, each point colored and
+     * shaped by its baseline quadrant, with the ALT 3×ULN / BILI 2×ULN cut-lines
+     * (HEP-COMP-001, HEP-COMP-002).
+     * @private
+     */
+    buildEdishCard(title, subjects, which) {
+      const card = createElement("div", "hep-composite-card");
+      card.append(createElement("h4", null, title));
+      const wrap = createElement("div", "hep-composite-canvas");
+      const canvas = document.createElement("canvas");
+      wrap.append(canvas);
+      card.append(wrap);
+      const xKey = which === "pretreat" ? "baselineAltULN" : "peakAltULN";
+      const yKey = which === "pretreat" ? "baselineBiliULN" : "peakBiliULN";
+      const data = subjects.map((subject) => ({ x: subject[xKey], y: subject[yKey] }));
+      const colors2 = subjects.map((subject) => QUADRANT_STYLE[subject.pretreatQuadrant].color);
+      const styles = subjects.map((subject) => QUADRANT_STYLE[subject.pretreatQuadrant].pointStyle);
+      const chart = new Chart(canvas.getContext("2d"), {
+        type: "scatter",
+        data: {
+          datasets: [
+            {
+              data,
+              pointBackgroundColor: colors2.map((color2) => hexToRgba3(color2, 0.8)),
+              pointBorderColor: colors2,
+              pointStyle: styles,
+              pointRadius: 5,
+              pointHoverRadius: 7
+            }
+          ]
+        },
+        options: {
+          maintainAspectRatio: false,
+          responsive: true,
+          animation: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                title: () => "",
+                label: (ctx) => this.compositeTooltip(subjects[ctx.dataIndex], which)
+              }
+            }
+          },
+          scales: this.compositeEdishScales(
+            subjects.map((subject) => subject[xKey]),
+            subjects.map((subject) => subject[yKey])
+          )
+        },
+        plugins: [
+          referenceLinePlugin({
+            vLines: [{ value: ALT_ULN_CUT, label: `${ALT_ULN_CUT}\xD7ULN` }],
+            hLines: [{ value: BILI_ULN_CUT, label: `${BILI_ULN_CUT}\xD7ULN` }]
+          })
+        ]
+      });
+      this.charts.push(chart);
+      return card;
+    }
+    /**
+     * A log-log ×Baseline domain over a set of values, always including the
+     * 1×/3×/5× reference lines and padded so no point sits on the frame.
+     * @private
+     */
+    blnDomain(values) {
+      const positives = [...values.filter(Number.isFinite), ...BLN_LINES].filter((v) => v > 0);
+      if (!positives.length) return [0.5, 5];
+      const min = Math.min(...positives, 0.5);
+      const max = Math.max(...positives);
+      return [min / 1.3, max * 1.3];
+    }
+    /**
+     * Build the four-panel ×Baseline shift plot (HEP-COMP-003): one panel per
+     * on-treatment quadrant, arranged in the eDISH spatial layout (Cholestasis
+     * upper-left, Hy's Law upper-right, Normal & NN lower-left, Temple's Corollary
+     * lower-right, matching the paper's Figs 4–6). Each point is the participant's
+     * peak ALT vs total bilirubin as multiples of its own baseline, colored/shaped
+     * by baseline quadrant, over shared axes with 1×/3×/5× reference lines.
+     * @private
+     */
+    buildCompositePanels(subjects) {
+      const grid = createElement("div", "hep-composite-panels");
+      const order = ["Cholestasis", "Hy's Law", "Normal & NN", "Temple's Corollary"];
+      const xDomain = this.blnDomain(subjects.map((subject) => subject.peakAltBLN));
+      const yDomain = this.blnDomain(subjects.map((subject) => subject.peakBiliBLN));
+      const refLines = BLN_LINES.map((value) => ({ value, label: `${value}\xD7` }));
+      order.forEach((quadrant) => {
+        const members = subjects.filter((subject) => subject.onTreatQuadrant === quadrant);
+        const card = createElement("div", "hep-composite-card");
+        card.append(createElement("h4", null, `${quadrant} (${members.length})`));
+        const wrap = createElement("div", "hep-composite-panel-canvas");
+        const canvas = document.createElement("canvas");
+        wrap.append(canvas);
+        card.append(wrap);
+        const data = members.map((subject) => ({ x: subject.peakAltBLN, y: subject.peakBiliBLN }));
+        const colors2 = members.map((subject) => QUADRANT_STYLE[subject.pretreatQuadrant].color);
+        const styles = members.map((subject) => QUADRANT_STYLE[subject.pretreatQuadrant].pointStyle);
+        const chart = new Chart(canvas.getContext("2d"), {
+          type: "scatter",
+          data: {
+            datasets: [
+              {
+                data,
+                pointBackgroundColor: colors2.map((color2) => hexToRgba3(color2, 0.8)),
+                pointBorderColor: colors2,
+                pointStyle: styles,
+                pointRadius: 4.5,
+                pointHoverRadius: 6.5
+              }
+            ]
+          },
+          options: {
+            maintainAspectRatio: false,
+            responsive: true,
+            animation: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  title: () => "",
+                  label: (ctx) => this.compositeTooltip(members[ctx.dataIndex], "bln")
+                }
+              }
+            },
+            scales: {
+              x: {
+                type: "logarithmic",
+                min: xDomain[0],
+                max: xDomain[1],
+                title: { display: true, text: "ALT [\xD7Baseline]" },
+                grid: { color: "rgba(148, 163, 184, 0.2)" }
+              },
+              y: {
+                type: "logarithmic",
+                min: yDomain[0],
+                max: yDomain[1],
+                title: { display: true, text: "TB [\xD7Baseline]" },
+                grid: { color: "rgba(148, 163, 184, 0.2)" }
+              }
+            }
+          },
+          plugins: [referenceLinePlugin({ vLines: refLines, hLines: refLines })]
+        });
+        this.charts.push(chart);
+        grid.append(card);
+      });
+      return grid;
+    }
+    /**
+     * Tooltip line for a composite point: the participant id, the panel-relevant
+     * standardized values, and the baseline → on-treatment migration.
+     * @private
+     */
+    compositeTooltip(subject, which) {
+      if (!subject) return "";
+      if (which === "bln") {
+        return `${subject.id}: ALT ${formatNumber4(subject.peakAltBLN)}\xD7BLN, TB ${formatNumber4(subject.peakBiliBLN)}\xD7BLN (baseline ${subject.pretreatQuadrant})`;
+      }
+      const alt = which === "pretreat" ? subject.baselineAltULN : subject.peakAltULN;
+      const bili = which === "pretreat" ? subject.baselineBiliULN : subject.peakBiliULN;
+      return `${subject.id}: ALT ${formatNumber4(alt)}\xD7ULN, TB ${formatNumber4(bili)}\xD7ULN \u2014 ${subject.pretreatQuadrant} \u2192 ${subject.onTreatQuadrant}`;
+    }
+    /**
+     * Build the pretreatment × on-treatment migration table (HEP-COMP-004): counts
+     * with row/column totals, each interior cell shaded by its level of DILI
+     * concern (red/yellow/green/gray), plus the concern legend.
+     * @private
+     */
+    buildMigrationTable(subjects) {
+      const wrap = createElement("div", "hep-migration");
+      const matrix = migrationMatrix(subjects);
+      const table = createElement("table");
+      table.append(
+        createElement(
+          "caption",
+          null,
+          "Migration table \u2014 pretreatment (rows) \xD7 on-treatment (columns) quadrant counts"
+        )
+      );
+      const thead = document.createElement("thead");
+      const headRow = document.createElement("tr");
+      headRow.append(createElement("th", null, "Baseline \u2193 / On-treatment \u2192"));
+      COMPOSITE_QUADRANTS.forEach((quadrant) => headRow.append(createElement("th", null, quadrant)));
+      headRow.append(createElement("th", "hep-total", "Total"));
+      thead.append(headRow);
+      table.append(thead);
+      const tbody = document.createElement("tbody");
+      COMPOSITE_QUADRANTS.forEach((pre) => {
+        const tr = document.createElement("tr");
+        tr.append(createElement("td", "hep-rowhead", pre));
+        COMPOSITE_QUADRANTS.forEach((post) => {
+          const td = createElement("td", null, String(matrix.counts[pre][post]));
+          td.style.background = CONCERN_COLORS[concernOf(pre, post)];
+          tr.append(td);
+        });
+        tr.append(createElement("td", "hep-total", String(matrix.rowTotals[pre])));
+        tbody.append(tr);
+      });
+      const totalRow = document.createElement("tr");
+      totalRow.append(createElement("td", "hep-rowhead hep-total", "Total"));
+      COMPOSITE_QUADRANTS.forEach(
+        (post) => totalRow.append(createElement("td", "hep-total", String(matrix.colTotals[post])))
+      );
+      totalRow.append(createElement("td", "hep-total", String(matrix.total)));
+      tbody.append(totalRow);
+      table.append(tbody);
+      wrap.append(table);
+      wrap.append(this.buildConcernLegend());
+      return wrap;
+    }
+    /**
+     * The concern color legend for the migration table (HEP-COMP-004).
+     * @private
+     */
+    buildConcernLegend() {
+      const legend = createElement("div", "hep-concern-legend");
+      const items = [
+        ["red", "Migration of concern"],
+        ["yellow", "Migration of potential concern"],
+        ["green", "Migration of no concern (potential benefit)"],
+        ["gray", "No migration"]
+      ];
+      items.forEach(([key, label]) => {
+        const item = createElement("span", "hep-legend-item");
+        const swatch = createElement("span", "hep-concern-swatch");
+        swatch.style.background = CONCERN_COLORS[key];
+        item.append(swatch, document.createTextNode(label));
+        legend.append(item);
+      });
+      return legend;
+    }
+    /**
+     * Build the by-arm concern/benefit summary table (HEP-COMP-005): per value of
+     * the active Group column (or all participants when no grouping), the count of
+     * subjects whose migration is a concern (red), potential concern (yellow), no
+     * concern / benefit (green), or no migration (gray), with the arm total.
+     * @private
+     */
+    buildByArmSummary(subjects) {
+      const armCol = this.state.groupBy && this.state.groupBy !== GROUP_NONE2 ? this.state.groupBy : null;
+      const armLabel = armCol ? (this.settings.groups.find((group) => group.value_col === armCol) || {}).label || armCol : null;
+      const rows = byArmSummary(subjects, armCol);
+      const wrap = createElement("div", "hep-migration");
+      const table = createElement("table");
+      table.append(
+        createElement(
+          "caption",
+          null,
+          armCol ? `Concern vs. benefit summary by ${armLabel}` : "Concern vs. benefit summary (all participants)"
+        )
+      );
+      const thead = document.createElement("thead");
+      const headRow = document.createElement("tr");
+      [
+        armCol ? armLabel : "Group",
+        "Concern",
+        "Potential concern",
+        "No concern / benefit",
+        "No migration",
+        "Total"
+      ].forEach((label) => headRow.append(createElement("th", null, label)));
+      thead.append(headRow);
+      table.append(thead);
+      const tbody = document.createElement("tbody");
+      const cell2 = (count, key) => {
+        const td = createElement("td", null, String(count));
+        td.style.background = CONCERN_COLORS[key];
+        return td;
+      };
+      rows.forEach((row) => {
+        const tr = document.createElement("tr");
+        tr.append(createElement("td", "hep-rowhead", String(row.arm)));
+        tr.append(cell2(row.red, "red"));
+        tr.append(cell2(row.yellow, "yellow"));
+        tr.append(cell2(row.green, "green"));
+        tr.append(cell2(row.gray, "gray"));
+        tr.append(createElement("td", "hep-total", String(row.total)));
+        tbody.append(tr);
+      });
+      table.append(tbody);
+      wrap.append(table);
+      return wrap;
     }
     /**
      * The selected participant's cleaned lab records, augmented with the derived
