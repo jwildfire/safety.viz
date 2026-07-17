@@ -1,13 +1,16 @@
 {
   "module": "hep-explorer",
-  "generatedAt": "2026-07-17T23:40:57.642Z",
+  "generatedAt": "2026-07-17T23:45:43.051Z",
   "environment": {
-    "os": "darwin 23.6.0",
-    "node": "v24.14.0",
+    "os": "linux 6.17.0-1020-azure",
+    "node": "v22.23.1",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": null,
+  "run": {
+    "id": "29621472099",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29621472099"
+  },
   "records": [
     {
       "test": "built ae-explorer demo mounts the shared shell with no console errors (#7) (#17)",
@@ -119,7 +122,7 @@
       "status": "pass",
       "requirementIds": ["HEP-COMP-001", "HEP-COMP-002", "HEP-COMP-003"],
       "issueRefs": [67],
-      "screenshots": []
+      "screenshots": ["HEP-COMP-001-composite-plot.png"]
     },
     {
       "test": "HEP-COMP-004/HEP-COMP-005: migration table counts and by-arm concern summary (#67)",
@@ -127,7 +130,7 @@
       "status": "pass",
       "requirementIds": ["HEP-COMP-004", "HEP-COMP-005"],
       "issueRefs": [67],
-      "screenshots": []
+      "screenshots": ["HEP-COMP-004-migration-table.png"]
     },
     {
       "test": "HEP-COMP-006: degrades gracefully when baseline or on-treatment values are absent (#67)",
@@ -406,7 +409,7 @@
       "status": "pass",
       "requirementIds": ["HEP-COMP-001"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["HEP-COMP-001-composite-plot.png"]
     },
     {
       "test": "hep-explorer composite — buildCompositeSubjects HEP-COMP-001/002: derives baseline & on-treatment-peak xULN and quadrants",
@@ -414,7 +417,7 @@
       "status": "pass",
       "requirementIds": ["HEP-COMP-001"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["HEP-COMP-001-composite-plot.png"]
     },
     {
       "test": "hep-explorer composite — buildCompositeSubjects HEP-COMP-002: on-treatment BILI exactly 2xULN is NOT elevated (S4 diagonal)",
@@ -478,7 +481,7 @@
       "status": "pass",
       "requirementIds": ["HEP-COMP-001"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["HEP-COMP-001-composite-plot.png"]
     },
     {
       "test": "hep-explorer composite — classifyComposite (strict thresholds) HEP-COMP-001: the threshold value itself is on the NORMAL side (strict >)",
@@ -486,7 +489,7 @@
       "status": "pass",
       "requirementIds": ["HEP-COMP-001"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["HEP-COMP-001-composite-plot.png"]
     },
     {
       "test": "hep-explorer composite — concernOf (4x4 matrix) HEP-COMP-004: diagonal is gray (no migration)",
@@ -494,7 +497,7 @@
       "status": "pass",
       "requirementIds": ["HEP-COMP-004"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["HEP-COMP-004-migration-table.png"]
     },
     {
       "test": "hep-explorer composite — concernOf (4x4 matrix) HEP-COMP-004: improvement toward Normal / partial resolution is green",
@@ -502,7 +505,7 @@
       "status": "pass",
       "requirementIds": ["HEP-COMP-004"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["HEP-COMP-004-migration-table.png"]
     },
     {
       "test": "hep-explorer composite — concernOf (4x4 matrix) HEP-COMP-004: lateral single-analyte migrations are yellow",
@@ -510,7 +513,7 @@
       "status": "pass",
       "requirementIds": ["HEP-COMP-004"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["HEP-COMP-004-migration-table.png"]
     },
     {
       "test": "hep-explorer composite — concernOf (4x4 matrix) HEP-COMP-004: the full matrix has 5 red, 2 yellow, 5 green, 4 gray",
@@ -518,7 +521,7 @@
       "status": "pass",
       "requirementIds": ["HEP-COMP-004"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["HEP-COMP-004-migration-table.png"]
     },
     {
       "test": "hep-explorer composite — concernOf (4x4 matrix) HEP-COMP-004: worsening migrations are red",
@@ -526,7 +529,7 @@
       "status": "pass",
       "requirementIds": ["HEP-COMP-004"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["HEP-COMP-004-migration-table.png"]
     },
     {
       "test": "hep-explorer composite — constants HEP-COMP-001: quadrant order and thresholds match the FDA reference",
@@ -534,7 +537,7 @@
       "status": "pass",
       "requirementIds": ["HEP-COMP-001"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["HEP-COMP-001-composite-plot.png"]
     },
     {
       "test": "hep-explorer composite — migrationMatrix HEP-COMP-004: counts pretreatment x on-treatment migrations",
@@ -542,7 +545,7 @@
       "status": "pass",
       "requirementIds": ["HEP-COMP-004"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["HEP-COMP-004-migration-table.png"]
     },
     {
       "test": "hep-explorer composite — migrationMatrix HEP-COMP-004: row totals, column totals, and grand total",
@@ -550,7 +553,7 @@
       "status": "pass",
       "requirementIds": ["HEP-COMP-004"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["HEP-COMP-004-migration-table.png"]
     },
     {
       "test": "hep-explorer composite — peak is on-treatment only (FDA AVISITN>0) HEP-COMP-002: a duplicate day-0 record is not treated as on-treatment",
