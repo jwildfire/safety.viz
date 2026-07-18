@@ -13,6 +13,14 @@
   },
   "records": [
     {
+      "test": "a chart link navigates straight to that renderer demo (#71)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71],
+      "screenshots": []
+    },
+    {
       "test": "AE-CFG-004/AE-REG-041/AE-REG-043/AE-REG-044: the group re-mapping control offers the current column and redraws on change (#60)",
       "suite": "browser",
       "status": "pass",
@@ -242,6 +250,38 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "is keyboard operable: ArrowDown opens and focuses, Escape closes (#71)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71],
+      "screenshots": []
+    },
+    {
+      "test": "lists one chart link per available renderer, closed by default (#71)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71],
+      "screenshots": []
+    },
+    {
+      "test": "marks the current chart inside the dropdown on a renderer sub-page (#71)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71],
+      "screenshots": []
+    },
+    {
+      "test": "opens on hover and the top link still points at the gallery index (#71)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71],
       "screenshots": []
     },
     {
@@ -1186,6 +1226,38 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery nav dropdown (#71) applies the mount-depth root prefix to every internal link (#71)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71, 71],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery nav dropdown (#71) lists one link per available renderer, data-driven from config (#71)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71, 71],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery nav dropdown (#71) renders a disclosure control wired to the chart menu (#71)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71, 71],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery nav dropdown (#71) shell substitutes the {{galleryNav}} token from the passed renderers (#71)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71, 71],
       "screenshots": []
     },
     {

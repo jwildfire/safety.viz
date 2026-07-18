@@ -1067,14 +1067,53 @@ export function renderGuidePage({ renderer, config, guideMarkdown }) {
   return html.join('\n');
 }
 
+// Gallery nav dropdown (#71): the top-level "Gallery" link keeps navigating to
+// the gallery index, and an adjacent disclosure button reveals one link per
+// available renderer straight to its demo page. The list is data-driven from
+// the same config.renderers the gallery cards use, so a newly-migrated renderer
+// appears automatically. Links carry the {{root}} mount-depth prefix (baked in
+// here, not deferred to a token) so the menu resolves at site root and under
+// /<module>/ sub-pages alike. Interaction/ARIA state is progressively enhanced
+// by the shell's inline script; with no JavaScript the Gallery link and the
+// hover/focus-revealed chart links stay reachable.
+export function renderGalleryNav(renderers, root = '') {
+  const items = renderers
+    .filter((renderer) => renderer.status === 'available')
+    .map(
+      (renderer) =>
+        `<li><a href="${root}${renderer.module}/index.html">` +
+        `${escapeHtml(renderer.title)}</a></li>`
+    )
+    .join('');
+  return (
+    `<div class="nav-group">` +
+    `<a href="${root}index.html">Gallery</a>` +
+    `<button type="button" class="nav-disclosure" aria-expanded="false" ` +
+    `aria-controls="gallery-menu" aria-label="Show charts">` +
+    `<span class="nav-caret" aria-hidden="true"></span></button>` +
+    `<ul id="gallery-menu" class="nav-menu">${items}</ul>` +
+    `</div>`
+  );
+}
+
 // Shared shell: replaces {{title}}, {{description}}, {{version}}, {{root}},
-// and {{content}} tokens. {{root}} prefixes shell-level links so one shell
-// serves pages at any depth.
-export function renderShell({ shell, title, content, root = '', version = '', description = '' }) {
+// {{galleryNav}}, and {{content}} tokens. {{root}} prefixes shell-level links so
+// one shell serves pages at any depth; {{galleryNav}} is built from the passed
+// renderer list (see renderGalleryNav) — empty when none are supplied.
+export function renderShell({
+  shell,
+  title,
+  content,
+  root = '',
+  version = '',
+  description = '',
+  renderers = []
+}) {
   return shell
     .replaceAll('{{title}}', escapeHtml(title))
     .replaceAll('{{description}}', escapeHtml(description))
     .replaceAll('{{version}}', escapeHtml(version))
+    .replaceAll('{{galleryNav}}', renderGalleryNav(renderers, root))
     .replaceAll('{{root}}', root)
     .replace('{{content}}', content);
 }

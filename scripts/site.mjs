@@ -40,7 +40,10 @@ const shell = readFileSync(path.join(rootDir, 'site/shell.html'), 'utf8');
 
 const errors = [];
 const page = (file, title, content, root, description = '') =>
-  writeFileSync(file, renderShell({ shell, title, content, root, version, description }));
+  writeFileSync(
+    file,
+    renderShell({ shell, title, content, root, version, description, renderers: config.renderers })
+  );
 
 rmSync(siteDir, { recursive: true, force: true });
 mkdirSync(siteDir, { recursive: true });
