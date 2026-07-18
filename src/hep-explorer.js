@@ -93,6 +93,15 @@ const BASE_POINT_COLOR = GROUP_COLORS[0];
 const COMPOSITE_HEADER_HINT =
   'Hover a point to trace a participant across every panel; click to keep it selected.';
 
+// Shared participant highlight styling for both views (HEP-SELECT-001,
+// HEP-COMP-007): a traced (hovered or selected) point keeps its own color, gains
+// a dark ring, and grows; every other point dims. Kept as one set of values so
+// the scatter and composite highlights match.
+const HIGHLIGHT_DIM_FILL = 0.15;
+const HIGHLIGHT_DIM_BORDER = 0.25;
+const HIGHLIGHT_RADIUS_BOOST = 2.5;
+const HIGHLIGHT_BORDER_WIDTH = 2.5;
+
 /**
  * Interactive hepatic safety explorer: a Chart.js eDISH scatter of peak
  * standardized ALT vs peak standardized total bilirubin — one point per
@@ -147,6 +156,7 @@ class SafetyHepExplorer {
       rRatio: [...this.settings.r_ratio],
       cuts: JSON.parse(JSON.stringify(this.settings.cuts)),
       selectedId: null,
+      hoverId: null,
       xCut: null,
       yCut: null
     };
@@ -215,6 +225,11 @@ class SafetyHepExplorer {
 .safety-hep-explorer .hep-summary-table th,.safety-hep-explorer .hep-summary-table td{border-bottom:1px solid #e3e8ee;padding:.4rem .55rem;text-align:left}
 .safety-hep-explorer .hep-summary-table th{border-bottom:2px solid #d8dee4;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f}
 .safety-hep-explorer .hep-summary-table td.hep-num,.safety-hep-explorer .hep-summary-table th.hep-num{text-align:right;font-variant-numeric:tabular-nums}
+.safety-hep-explorer .hep-view-list{display:flex;flex-direction:column;gap:.35rem}
+.safety-hep-explorer .hep-view-option{display:block;width:100%;text-align:left;padding:.45rem .55rem;border:1px solid #d8dee4;border-radius:8px;background:#fff;font:inherit;font-size:.85rem;line-height:1.3;color:#1f2933;cursor:pointer}
+.safety-hep-explorer .hep-view-option:hover{border-color:#b8c0cc;background:#f6f8fa}
+.safety-hep-explorer .hep-view-option.is-active{border-color:#0b62a4;background:#eaf2fb;color:#0b3d63;font-weight:600;box-shadow:inset 0 0 0 1px #0b62a4}
+.safety-hep-explorer .hep-view-option:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
 .safety-hep-explorer .hep-composite{margin-top:.5rem}
 .safety-hep-explorer .hep-composite-header{font-size:.85rem;color:#52616f;background:#f6f8fa;border:1px solid #e3e8ee;border-radius:8px;padding:.4rem .6rem;margin:0 0 .6rem;min-height:1.2rem}
 .safety-hep-explorer .hep-composite-header.is-active{color:#1f2933;font-weight:600;border-color:#b8c0cc;background:#eef2f6}
@@ -384,6 +399,38 @@ class SafetyHepExplorer {
   }
 
   /**
+   * Render the View selector into its own section as a visible list of options
+   * (HEP-COMP-006): one styled, clickable row per view mode with the active mode
+   * highlighted, so both the eDISH/mDISH scatter and the composite plot are
+   * always shown rather than hidden inside a dropdown.
+   * @param {Function} addSection The shell's section builder.
+   * @private
+   */
+  buildViewControl(addSection) {
+    const section = addSection('View');
+    const list = createElement('div', 'hep-view-list');
+    VIEW_MODES.forEach((mode) => {
+      const active = mode.value === this.state.view;
+      const optionButton = createElement(
+        'button',
+        `hep-view-option${active ? ' is-active' : ''}`,
+        mode.label
+      );
+      optionButton.type = 'button';
+      optionButton.setAttribute('aria-pressed', String(active));
+      optionButton.onclick = () => {
+        const next = mode.value === 'composite' ? 'composite' : 'scatter';
+        if (this.state.view === next) return;
+        this.state.view = next;
+        this.buildControls();
+        this.render();
+      };
+      list.append(optionButton);
+    });
+    section.append(list);
+  }
+
+  /**
    * Rebuild the settings/filters controls from data + state (HEP-CTRL-*). Only
    * controls with ≥2 meaningful options are rendered: the Y-measure picker is
    * dropped when a single option, Group when only None, and the R-Ratio filter
@@ -393,21 +440,13 @@ class SafetyHepExplorer {
   buildControls() {
     this.controls.innerHTML = '';
     const { addSection, addRow, addControl } = controlBuilders(this.controls);
-    const settingsParent = addSection('Settings');
 
-    // View: scatter (eDISH/mDISH) or the baseline-referenced composite plot
-    // (HEP-COMP-006). The composite view replaces the single scatter and its
-    // scatter-only controls with the composite panels + migration table.
+    // View selector in its own section (HEP-COMP-006), rendered as a visible
+    // list of options rather than a dropdown so both views are always in view.
     const scatter = this.state.view !== 'composite';
-    const view = addControl('View', document.createElement('select'), settingsParent);
-    VIEW_MODES.forEach((mode) =>
-      option(view, mode.value, mode.label, mode.value === this.state.view)
-    );
-    view.onchange = () => {
-      this.state.view = view.value === 'composite' ? 'composite' : 'scatter';
-      this.buildControls();
-      this.render();
-    };
+    this.buildViewControl(addSection);
+
+    const settingsParent = addSection('Settings');
 
     // X-axis Measure (HEP-CTRL-001).
     if (scatter) {
@@ -669,6 +708,7 @@ class SafetyHepExplorer {
     this.listingSort = null;
     this.page = 1;
     this.state.selectedId = null;
+    this.state.hoverId = null;
     this.participantsSelected = [];
     this.notes.innerHTML = '';
     this.mainAnnotation.textContent = '';
@@ -764,11 +804,57 @@ class SafetyHepExplorer {
   }
 
   /**
-   * Whether a point is the currently selected participant.
+   * The scatter participant being traced: the hovered participant takes priority
+   * over the clicked (sticky) selection, or null when neither is active — the
+   * same hover-over-select rule the composite view uses (HEP-SELECT-001).
    * @private
    */
-  isSelected(point) {
-    return this.state.selectedId != null && String(point.id) === String(this.state.selectedId);
+  scatterActiveId() {
+    return this.state.hoverId != null ? this.state.hoverId : this.state.selectedId;
+  }
+
+  /**
+   * Whether a scatter point is the one currently traced (HEP-SELECT-001).
+   * @private
+   */
+  isScatterActive(point) {
+    const id = this.scatterActiveId();
+    return id != null && point != null && String(point.id) === String(id);
+  }
+
+  /**
+   * Whether the given participant id is the sticky (clicked) selection.
+   * @private
+   */
+  isSelectedId(id) {
+    return this.state.selectedId != null && String(this.state.selectedId) === String(id);
+  }
+
+  /**
+   * The shared annotation text for a traced participant, identical in both views
+   * (HEP-SELECT-001, HEP-COMP-007): "Participant {id} selected." when it is the
+   * clicked selection, else "Participant {id}" for a transient hover.
+   * @private
+   */
+  participantAnnotationText(id, selected) {
+    return `Participant ${id}${selected ? ' selected.' : ''}`;
+  }
+
+  /**
+   * Set the transient hovered scatter participant and restyle the scatter +
+   * overlay annotation when it changes, without triggering the drill-down (which
+   * stays a click action). The overlay follows the hover, then reverts to the
+   * sticky selection when the pointer leaves (HEP-SELECT-001).
+   * @private
+   */
+  setScatterHover(id) {
+    const norm = id ?? null;
+    if (String(norm ?? '') === String(this.state.hoverId ?? '')) return;
+    this.state.hoverId = norm;
+    if (this.chart) this.chart.update('none');
+    const activeId = this.scatterActiveId();
+    this.mainAnnotation.textContent =
+      activeId == null ? '' : this.participantAnnotationText(activeId, this.isSelectedId(activeId));
   }
 
   /**
@@ -817,22 +903,26 @@ class SafetyHepExplorer {
       type
     );
 
+    // A participant is "active" when hovered or selected; the active point keeps
+    // its color with a dark ring while the rest dim — the same treatment the
+    // composite view uses (HEP-SELECT-001, HEP-COMP-007).
+    const anyActive = () => this.scatterActiveId() != null;
+    const isActive = (point) => this.isScatterActive(point);
     const fill = (ctx) => {
       const point = points[ctx.dataIndex];
       if (!point) return 'rgba(0,0,0,0)';
-      const selected = this.isSelected(point);
-      if (!point.withinWindow && !selected) return 'rgba(0,0,0,0)';
-      const color = selected ? SELECTION_COLOR : this.colorFor(point);
-      const opacity = this.state.selectedId != null ? (selected ? 1 : 0.15) : 0.75;
+      const active = isActive(point);
+      if (!point.withinWindow && !active) return 'rgba(0,0,0,0)';
+      const color = this.colorFor(point);
+      const opacity = anyActive() ? (active ? 1 : HIGHLIGHT_DIM_FILL) : 0.75;
       return hexToRgba(color, opacity);
     };
     const border = (ctx) => {
       const point = points[ctx.dataIndex];
       if (!point) return 'rgba(0,0,0,0)';
-      const selected = this.isSelected(point);
-      const color = selected ? SELECTION_COLOR : this.colorFor(point);
-      const opacity = this.state.selectedId != null ? (selected ? 1 : 0.25) : 0.9;
-      return hexToRgba(color, opacity);
+      if (isActive(point)) return SELECTION_COLOR;
+      const opacity = anyActive() ? HIGHLIGHT_DIM_BORDER : 0.9;
+      return hexToRgba(this.colorFor(point), opacity);
     };
 
     const chart = new Chart(this.canvas.getContext('2d'), {
@@ -844,10 +934,11 @@ class SafetyHepExplorer {
             data,
             pointBackgroundColor: fill,
             pointBorderColor: border,
-            pointBorderWidth: (ctx) => (this.isSelected(points[ctx.dataIndex]) ? 2.5 : 1.25),
+            pointBorderWidth: (ctx) =>
+              isActive(points[ctx.dataIndex]) ? HIGHLIGHT_BORDER_WIDTH : 1.25,
             pointRadius: (ctx) =>
               this.radiusFor(points[ctx.dataIndex]) +
-              (this.isSelected(points[ctx.dataIndex]) ? 2 : 0),
+              (isActive(points[ctx.dataIndex]) ? HIGHLIGHT_RADIUS_BOOST : 0),
             pointHoverRadius: (ctx) => this.radiusFor(points[ctx.dataIndex]) + 2
           },
           {
@@ -889,6 +980,10 @@ class SafetyHepExplorer {
         onHover: (event, active) => {
           const target = event?.native?.target;
           if (target) target.style.cursor = active.length ? 'pointer' : 'default';
+          // Trace the hovered participant point (dataset 0 only, never the
+          // visit-path overlay) with the same highlight as a selection.
+          const hit = active.find((element) => element.datasetIndex === 0);
+          this.setScatterHover(hit ? points[hit.index].id : null);
         },
         onClick: (event, active) => {
           const hit = active.find((element) => element.datasetIndex === 0);
@@ -1124,12 +1219,7 @@ class SafetyHepExplorer {
         animation: false,
         plugins: {
           legend: { display: false },
-          tooltip: {
-            callbacks: {
-              title: () => '',
-              label: (ctx) => this.compositeTooltip(subjects[ctx.dataIndex], which)
-            }
-          }
+          tooltip: this.compositeTooltipConfig(subjects, which)
         },
         scales: this.compositeEdishScales(
           subjects.map((subject) => subject[xKey]),
@@ -1199,12 +1289,7 @@ class SafetyHepExplorer {
           animation: false,
           plugins: {
             legend: { display: false },
-            tooltip: {
-              callbacks: {
-                title: () => '',
-                label: (ctx) => this.compositeTooltip(members[ctx.dataIndex], 'bln')
-              }
-            }
+            tooltip: this.compositeTooltipConfig(members, 'bln')
           },
           scales: {
             x: {
@@ -1254,6 +1339,36 @@ class SafetyHepExplorer {
   }
 
   /**
+   * Tooltip config for a composite chart (HEP-COMP-007): when more than two
+   * points overlap under the cursor (dense panels), the tooltip collapses to a
+   * "N participants" count instead of stacking a line per participant, so the
+   * box stays small and does not cover the points beneath it. With one or two
+   * points it lists each participant's detail line.
+   * @param {Object[]} subjects The subjects backing this chart's single dataset.
+   * @param {string} which The panel kind ('pretreat' | 'ontreat' | 'bln').
+   * @private
+   */
+  compositeTooltipConfig(subjects, which) {
+    // The filter runs over the full item set before the body callbacks, so it
+    // is where we learn how many points the cursor caught; keeping only the
+    // first item when there are more than two makes the label fire once.
+    let itemCount = 0;
+    return {
+      filter: (item, index, items) => {
+        itemCount = items.length;
+        return items.length > 2 ? index === 0 : true;
+      },
+      callbacks: {
+        title: () => '',
+        label: (ctx) =>
+          itemCount > 2
+            ? `${itemCount} participants`
+            : this.compositeTooltip(subjects[ctx.dataIndex], which)
+      }
+    };
+  }
+
+  /**
    * The participant currently traced across the composite panels: the hovered
    * participant takes priority over the clicked (sticky) selection, or null when
    * neither is active (HEP-COMP-007).
@@ -1291,18 +1406,19 @@ class SafetyHepExplorer {
         if (!subject) return 'rgba(0, 0, 0, 0)';
         const color = QUADRANT_STYLE[subject.pretreatQuadrant].color;
         if (this.compositeActiveId() == null) return hexToRgba(color, 0.8);
-        return hexToRgba(color, this.compositeIsActive(subject) ? 1 : 0.12);
+        return hexToRgba(color, this.compositeIsActive(subject) ? 1 : HIGHLIGHT_DIM_FILL);
       },
       pointBorderColor: (ctx) => {
         const subject = subjects[ctx.dataIndex];
         if (!subject) return 'rgba(0, 0, 0, 0)';
         const color = QUADRANT_STYLE[subject.pretreatQuadrant].color;
         if (this.compositeIsActive(subject)) return SELECTION_COLOR;
-        return this.compositeActiveId() == null ? color : hexToRgba(color, 0.2);
+        return this.compositeActiveId() == null ? color : hexToRgba(color, HIGHLIGHT_DIM_BORDER);
       },
-      pointBorderWidth: (ctx) => (this.compositeIsActive(subjects[ctx.dataIndex]) ? 2 : 1),
+      pointBorderWidth: (ctx) =>
+        this.compositeIsActive(subjects[ctx.dataIndex]) ? HIGHLIGHT_BORDER_WIDTH : 1,
       pointRadius: (ctx) =>
-        baseRadius + (this.compositeIsActive(subjects[ctx.dataIndex]) ? 2.5 : 0),
+        baseRadius + (this.compositeIsActive(subjects[ctx.dataIndex]) ? HIGHLIGHT_RADIUS_BOOST : 0),
       pointHoverRadius: baseRadius + 2
     };
   }
@@ -1400,13 +1516,9 @@ class SafetyHepExplorer {
       this.compositeHeaderEl.classList.remove('is-active');
       return;
     }
-    const subject = this.compositeSubjectsShown.find((entry) => String(entry.id) === String(id));
     const selected =
       this.compositeSelectedId != null && String(this.compositeSelectedId) === String(id);
-    const migration = subject ? ` — ${subject.pretreatQuadrant} → ${subject.onTreatQuadrant}` : '';
-    this.compositeHeaderEl.textContent = `Participant ${id}${
-      selected ? ' (selected — click again to clear)' : ''
-    }${migration}`;
+    this.compositeHeaderEl.textContent = this.participantAnnotationText(id, selected);
     this.compositeHeaderEl.classList.add('is-active');
   }
 
@@ -1582,8 +1694,9 @@ class SafetyHepExplorer {
     this.page = 1;
     renderListing(this);
     this.drawDetail(id);
-    this.mainAnnotation.textContent = `Participant ${id} selected.`;
-    this.footnote.textContent = `Participant ${id} selected.`;
+    const annotation = this.participantAnnotationText(id, true);
+    this.mainAnnotation.textContent = annotation;
+    this.footnote.textContent = annotation;
     this.dispatchSelection([id]);
   }
 
