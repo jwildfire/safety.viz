@@ -184,8 +184,9 @@ for (const renderer of config.renderers.filter((entry) => entry.status === 'avai
         `${renderer.title} clinical guide · safety.viz`,
         renderGuidePage({ renderer, config, guideMarkdown: readFileSync(guidePath, 'utf8') }),
         '../',
-        `Clinical guide for the safety.viz ${module} module: how to read the graphic to ` +
-          'review participant liver safety, cross-referenced to the live controls.'
+        renderer.guideTagline ||
+          `Clinical guide for the safety.viz ${module} module: how to read the graphic to ` +
+            'review participant liver safety, cross-referenced to the live controls.'
       );
     }
   }

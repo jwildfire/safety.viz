@@ -1051,15 +1051,17 @@ export function renderGuidePage({ renderer, config, guideMarkdown }) {
   const matrixUrl = `${config.matrixBaseUrl}/${renderer.matrix}`;
   const html = [];
   html.push(`<h1>${escapeHtml(renderer.title)}: clinical guide</h1>`);
-  html.push(
-    `<p class="tagline">How to read the ${escapeHtml(renderer.title)} to review participant` +
-      ` liver safety, and where each step lives in the controls on this page.</p>`
-  );
+  const tagline =
+    renderer.guideTagline ||
+    `How to read the ${renderer.title} to review participant liver safety, and where each step lives in the controls on this page.`;
+  html.push(`<p class="tagline">${escapeHtml(tagline)}</p>`);
   html.push(moduleTabs('guide', matrixUrl, true));
+  const caution =
+    renderer.guideCaution ||
+    'A drug-induced-liver-injury conclusion is a diagnosis of exclusion that requires evidence beyond what this graphic shows.';
   html.push(
     `<p class="guide-caution"><strong>Exploratory review aid, not a validated diagnostic tool.</strong>` +
-      ` A drug-induced-liver-injury conclusion is a diagnosis of exclusion that requires evidence` +
-      ` beyond what this graphic shows.</p>`
+      ` ${escapeHtml(caution)}</p>`
   );
   const toc = renderGuideToc(extractHeadings(guideMarkdown));
   const body = `<div class="guide-body">${mdBlock(guideMarkdown, { headingIds: true })}</div>`;
