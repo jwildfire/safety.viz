@@ -19189,8 +19189,10 @@ var SafetyHepExplorer = class {
     this.compositeCharts = [];
     this.compositeSubjectsShown = [];
     this.compositeHoverId = null;
-    this.compositeSelectedId = null;
+    this.compositeSelectedIds = [];
     this.compositeHeaderEl = null;
+    this.compositeSelectEl = null;
+    this.compositeSelectSection = null;
     this.participantsSelected = [];
     this.state = {
       view: this.settings.view === "composite" ? "composite" : "scatter",
@@ -19269,6 +19271,8 @@ var SafetyHepExplorer = class {
 .safety-hep-explorer .hep-composite{margin-top:.5rem}
 .safety-hep-explorer .hep-composite-header{font-size:.85rem;color:#52616f;background:#f6f8fa;border:1px solid #e3e8ee;border-radius:8px;padding:.4rem .6rem;margin:0 0 .6rem;min-height:1.2rem}
 .safety-hep-explorer .hep-composite-header.is-active{color:#1f2933;font-weight:600;border-color:#b8c0cc;background:#eef2f6}
+.safety-hep-explorer .hep-composite-select select{padding:.25rem;font-size:.82rem}
+.safety-hep-explorer .hep-composite-select option{padding:.15rem .3rem}
 .safety-hep-explorer .hep-composite-legend{display:flex;flex-wrap:wrap;gap:.35rem 1rem;font-size:.8rem;color:#52616f;margin:0 0 .75rem}
 .safety-hep-explorer .hep-composite-legend .hep-legend-item{display:inline-flex;align-items:center;gap:.3rem}
 .safety-hep-explorer .hep-composite-section-title{font-size:.9rem;margin:1rem 0 .5rem;color:#1f2933}
@@ -19558,6 +19562,7 @@ var SafetyHepExplorer = class {
       });
       if (showRRatio) this.addRRatioControl(addRow, addControl, filterParent);
     }
+    this.compositeSelectSection = scatter ? null : addSection("Participants");
     const reset = addControl(" ", document.createElement("button"), this.controls);
     reset.type = "button";
     reset.textContent = "Reset Chart";
@@ -19677,6 +19682,7 @@ var SafetyHepExplorer = class {
     this.legendEl.innerHTML = "";
     this.quadrantWrap.innerHTML = "";
     this.compositeWrap.innerHTML = "";
+    this.mountCompositeSelect([]);
     this.detailWrap.innerHTML = "";
     this.detailWrap.style.display = "none";
     this.currentTableData = [];
@@ -20005,8 +20011,10 @@ var SafetyHepExplorer = class {
     this.compositeCharts = [];
     this.compositeSubjectsShown = shown;
     this.compositeHoverId = null;
-    this.compositeSelectedId = null;
+    this.compositeSelectedIds = [];
     this.compositeHeaderEl = null;
+    this.compositeSelectEl = null;
+    this.mountCompositeSelect(shown);
     const totalParticipants = unique6(this.cleanRows.map((row) => row[this.settings.id_col])).length;
     const excludedNote = excluded ? `<span class="sv-warning">${excluded} participant${excluded > 1 ? "s" : ""} excluded (missing baseline or on-treatment ALT/total bilirubin).</span>` : "";
     this.notes.innerHTML = `<span>${shown.length} of ${totalParticipants} participants shown in the composite plot.</span>` + excludedNote;
@@ -20240,21 +20248,23 @@ var SafetyHepExplorer = class {
     };
   }
   /**
-   * The participant currently traced across the composite panels: the hovered
-   * participant takes priority over the clicked (sticky) selection, or null when
-   * neither is active (HEP-COMP-007).
+   * Whether any participant is currently traced — hovered, or in the sticky
+   * multi-selection (HEP-COMP-007).
    * @private
    */
-  compositeActiveId() {
-    return this.compositeHoverId != null ? this.compositeHoverId : this.compositeSelectedId;
+  anyCompositeActive() {
+    return this.compositeHoverId != null || this.compositeSelectedIds.length > 0;
   }
   /**
-   * Whether a composite subject is the one currently traced (HEP-COMP-007).
+   * Whether a composite subject is currently traced: hovered, or one of the
+   * clicked multi-selection (HEP-COMP-007).
    * @private
    */
   compositeIsActive(subject) {
-    const id = this.compositeActiveId();
-    return id != null && subject != null && String(subject.id) === String(id);
+    if (!subject) return false;
+    const id = String(subject.id);
+    if (this.compositeHoverId != null && String(this.compositeHoverId) === id) return true;
+    return this.compositeSelectedIds.includes(id);
   }
   /**
    * Scriptable point styling shared by every composite chart (HEP-COMP-007): each
@@ -20274,7 +20284,7 @@ var SafetyHepExplorer = class {
         const subject = subjects[ctx.dataIndex];
         if (!subject) return "rgba(0, 0, 0, 0)";
         const color2 = QUADRANT_STYLE[subject.pretreatQuadrant].color;
-        if (this.compositeActiveId() == null) return hexToRgba3(color2, 0.8);
+        if (!this.anyCompositeActive()) return hexToRgba3(color2, 0.8);
         return hexToRgba3(color2, this.compositeIsActive(subject) ? 1 : HIGHLIGHT_DIM_FILL);
       },
       pointBorderColor: (ctx) => {
@@ -20282,7 +20292,7 @@ var SafetyHepExplorer = class {
         if (!subject) return "rgba(0, 0, 0, 0)";
         const color2 = QUADRANT_STYLE[subject.pretreatQuadrant].color;
         if (this.compositeIsActive(subject)) return SELECTION_COLOR2;
-        return this.compositeActiveId() == null ? color2 : hexToRgba3(color2, HIGHLIGHT_DIM_BORDER);
+        return !this.anyCompositeActive() ? color2 : hexToRgba3(color2, HIGHLIGHT_DIM_BORDER);
       },
       pointBorderWidth: (ctx) => this.compositeIsActive(subjects[ctx.dataIndex]) ? HIGHLIGHT_BORDER_WIDTH : 1,
       pointRadius: (ctx) => baseRadius + (this.compositeIsActive(subjects[ctx.dataIndex]) ? HIGHLIGHT_RADIUS_BOOST : 0),
@@ -20292,30 +20302,31 @@ var SafetyHepExplorer = class {
   /**
    * The hover/click handlers shared by every composite chart (HEP-COMP-007):
    * hovering a point traces its participant everywhere; clicking a point toggles
-   * a sticky selection; clicking empty space clears the selection.
+   * that participant in the multi-selection; clicking empty space clears the
+   * selection. Chart.js passes the chart as the THIRD handler argument (the
+   * active elements carry no chart reference), so the backing subjects are
+   * looked up from that chart.
    * @private
    */
   compositeInteractionOptions() {
-    const idFor = (element) => {
-      const subjects = element?.chart?.$compositeSubjects;
-      const subject = subjects && subjects[element.index];
+    const idAt = (chart, element) => {
+      const subjects = chart && chart.$compositeSubjects;
+      const subject = subjects && element && subjects[element.index];
       return subject ? subject.id : null;
     };
     return {
-      onHover: (event, active) => {
+      onHover: (event, active, chart) => {
         const target = event?.native?.target;
         if (target) target.style.cursor = active.length ? "pointer" : "default";
-        this.setCompositeHover(active.length ? idFor(active[0]) : null);
+        this.setCompositeHover(active.length ? idAt(chart, active[0]) : null);
       },
-      onClick: (event, active) => {
+      onClick: (event, active, chart) => {
         if (!active.length) {
-          this.setCompositeSelection(null);
+          this.clearCompositeSelection();
           return;
         }
-        const id = idFor(active[0]);
-        if (id == null) return;
-        const same = this.compositeSelectedId != null && String(this.compositeSelectedId) === String(id);
-        this.setCompositeSelection(same ? null : id);
+        const id = idAt(chart, active[0]);
+        if (id != null) this.toggleCompositeSelection(id);
       }
     };
   }
@@ -20333,25 +20344,91 @@ var SafetyHepExplorer = class {
     canvas.addEventListener("pointerleave", () => this.setCompositeHover(null));
   }
   /**
+   * Mount the participant multi-select into the sidebar's Participants section
+   * (HEP-COMP-007): the section is created by buildControls (composite view
+   * only) and filled here once the shown subjects are known; with nothing shown
+   * the whole section is hidden.
+   * @param {Object[]} shown The shown composite subjects.
+   * @private
+   */
+  mountCompositeSelect(shown) {
+    const section = this.compositeSelectSection;
+    if (!section) return;
+    [...section.querySelectorAll(".sv-control")].forEach((el) => el.remove());
+    section.style.display = shown.length ? "" : "none";
+    if (shown.length) section.append(this.buildCompositeSelect(shown));
+  }
+  /**
+   * Build the participant multi-select dropdown for the sidebar's Participants
+   * section (HEP-COMP-007): one option per shown participant, its selected
+   * options mirroring the click-driven multi-selection. Editing it drives the
+   * highlight, and clicking points keeps it in sync.
+   * @param {Object[]} shown The shown composite subjects.
+   * @private
+   */
+  buildCompositeSelect(shown) {
+    const wrap = createElement("div", "hep-composite-select sv-control");
+    wrap.append(createElement("label", null, "Selected participants"));
+    const select = document.createElement("select");
+    select.multiple = true;
+    select.size = Math.min(8, Math.max(3, shown.length));
+    shown.forEach((subject) => option(select, String(subject.id), String(subject.id), false));
+    select.onchange = () => {
+      this.compositeSelectedIds = [...select.selectedOptions].map((opt) => opt.value);
+      this.refreshCompositeHighlight();
+      this.dispatchSelection([...this.compositeSelectedIds]);
+    };
+    this.compositeSelectEl = select;
+    wrap.append(select);
+    return wrap;
+  }
+  /**
    * Set the transient hovered participant and restyle the panels + header when it
    * changes (HEP-COMP-007).
    * @private
    */
   setCompositeHover(id) {
-    if (String(id ?? "") === String(this.compositeHoverId ?? "")) return;
-    this.compositeHoverId = id ?? null;
+    const norm = id == null ? null : String(id);
+    if (String(norm ?? "") === String(this.compositeHoverId ?? "")) return;
+    this.compositeHoverId = norm;
     this.refreshCompositeHighlight();
   }
   /**
-   * Set the sticky (clicked) participant selection, restyle the panels + header,
-   * and dispatch the participantsSelected event so host apps stay in sync
-   * (HEP-COMP-007, HEP-API-003).
+   * Toggle a participant in the click-driven multi-selection (HEP-COMP-007).
    * @private
    */
-  setCompositeSelection(id) {
-    this.compositeSelectedId = id ?? null;
+  toggleCompositeSelection(id) {
+    const key = String(id);
+    const index = this.compositeSelectedIds.indexOf(key);
+    if (index >= 0) this.compositeSelectedIds.splice(index, 1);
+    else this.compositeSelectedIds.push(key);
+    this.afterCompositeSelectionChange();
+  }
+  /**
+   * Clear the whole multi-selection (e.g. a click on empty plot space)
+   * (HEP-COMP-007).
+   * @private
+   */
+  clearCompositeSelection() {
+    if (!this.compositeSelectedIds.length) return;
+    this.compositeSelectedIds = [];
+    this.afterCompositeSelectionChange();
+  }
+  /**
+   * Sync the dropdown to the current multi-selection, restyle the panels +
+   * header, and dispatch the participantsSelected event so host apps stay in
+   * sync (HEP-COMP-007, HEP-API-003).
+   * @private
+   */
+  afterCompositeSelectionChange() {
+    if (this.compositeSelectEl) {
+      const set2 = new Set(this.compositeSelectedIds);
+      [...this.compositeSelectEl.options].forEach((opt) => {
+        opt.selected = set2.has(opt.value);
+      });
+    }
     this.refreshCompositeHighlight();
-    this.dispatchSelection(this.compositeSelectedId == null ? [] : [this.compositeSelectedId]);
+    this.dispatchSelection([...this.compositeSelectedIds]);
   }
   /**
    * Restyle every composite chart to the current trace and refresh the header.
@@ -20370,15 +20447,24 @@ var SafetyHepExplorer = class {
    */
   updateCompositeHeader() {
     if (!this.compositeHeaderEl) return;
-    const id = this.compositeActiveId();
-    if (id == null) {
-      this.compositeHeaderEl.textContent = COMPOSITE_HEADER_HINT;
-      this.compositeHeaderEl.classList.remove("is-active");
-      return;
+    const selected = this.compositeSelectedIds;
+    let text;
+    let active = true;
+    if (this.compositeHoverId != null) {
+      text = this.participantAnnotationText(
+        this.compositeHoverId,
+        selected.includes(String(this.compositeHoverId))
+      );
+    } else if (selected.length === 1) {
+      text = this.participantAnnotationText(selected[0], true);
+    } else if (selected.length > 1) {
+      text = `${selected.length} participants selected.`;
+    } else {
+      text = COMPOSITE_HEADER_HINT;
+      active = false;
     }
-    const selected = this.compositeSelectedId != null && String(this.compositeSelectedId) === String(id);
-    this.compositeHeaderEl.textContent = this.participantAnnotationText(id, selected);
-    this.compositeHeaderEl.classList.add("is-active");
+    this.compositeHeaderEl.textContent = text;
+    this.compositeHeaderEl.classList.toggle("is-active", active);
   }
   /**
    * Build the pretreatment × on-treatment migration table (HEP-COMP-004): counts

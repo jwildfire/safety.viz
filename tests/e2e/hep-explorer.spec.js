@@ -588,64 +588,91 @@ test.describe('safety.viz hep-explorer composite plot', () => {
     await expect(page.locator('.hep-composite-panels canvas')).toHaveCount(0);
   });
 
-  test('HEP-COMP-007: hovering and clicking a point traces the participant across all panels (#67)', async ({
+  test('HEP-COMP-007: hovering and clicking points traces + multi-selects participants across all panels (#67)', async ({
     page
   }) => {
-    // The trace header starts on the idle hint.
+    // The trace header starts on the idle hint, and the multi-select lists every
+    // shown participant.
     await expect(page.locator('.hep-composite-header')).toHaveText(/Hover a point to trace/);
+    await expect(page.locator('.hep-composite-select select option')).toHaveCount(8);
 
-    // Hovering a point (via the shared chart handler) traces its participant and
-    // names it in the header, without a sticky selection.
+    // Hovering a point traces its participant (Chart.js passes the chart as the
+    // THIRD handler argument; the element carries no chart reference), without a
+    // sticky selection.
     const hover = await page.evaluate(() => {
       const instance = window.__safetyHepExplorerInstance;
       const chart = instance.compositeCharts[1]; // peak on-treatment eDISH
       const id = chart.$compositeSubjects[0].id;
-      chart.options.onHover({ native: { target: { style: {} } } }, [{ index: 0, chart }]);
+      chart.options.onHover({ native: { target: { style: {} } } }, [{ index: 0 }], chart);
       return {
         id,
-        activeId: instance.compositeActiveId(),
-        selectedId: instance.compositeSelectedId,
+        hoverId: instance.compositeHoverId,
+        selected: instance.compositeSelectedIds.slice(),
         header: instance.compositeHeaderEl.textContent
       };
     });
-    expect(hover.activeId).toBe(hover.id);
-    expect(hover.selectedId).toBeNull(); // hover does not stick
+    expect(hover.hoverId).toBe(hover.id);
+    expect(hover.selected).toEqual([]); // hover does not stick
     expect(hover.header).toContain(`Participant ${hover.id}`);
 
-    // Clicking a point perma-selects it; the header marks it selected and the
-    // is-active styling turns on.
+    // Clicking two points multi-selects them; the header counts them and the
+    // dropdown mirrors the selection.
     const clicked = await page.evaluate(() => {
       const instance = window.__safetyHepExplorerInstance;
       const chart = instance.compositeCharts[0]; // pretreatment eDISH
-      chart.options.onHover({ native: { target: { style: {} } } }, []); // clear hover first
-      const id = chart.$compositeSubjects[0].id;
-      chart.options.onClick({}, [{ index: 0, chart }]);
+      chart.options.onHover({ native: { target: { style: {} } } }, [], chart); // clear hover
+      const idA = chart.$compositeSubjects[0].id;
+      const idB = chart.$compositeSubjects[1].id;
+      chart.options.onClick({}, [{ index: 0 }], chart);
+      chart.options.onClick({}, [{ index: 1 }], chart);
       return {
-        id,
-        selectedId: instance.compositeSelectedId,
+        idA,
+        idB,
+        selected: instance.compositeSelectedIds.slice(),
         header: instance.compositeHeaderEl.textContent,
-        isActive: instance.compositeHeaderEl.classList.contains('is-active')
+        dropdownSelected: [...instance.compositeSelectEl.selectedOptions].map((o) => o.value)
       };
     });
-    expect(clicked.selectedId).toBe(clicked.id);
-    expect(clicked.header).toContain('selected');
-    expect(clicked.isActive).toBe(true);
+    expect(clicked.selected).toEqual([clicked.idA, clicked.idB]);
+    expect(clicked.header).toBe('2 participants selected.');
+    expect(clicked.dropdownSelected.sort()).toEqual([clicked.idA, clicked.idB].sort());
     await expect(page.locator('.hep-composite-header.is-active')).toBeVisible();
     await captureEvidence(page, 'HEP-COMP-007', 'participant-trace');
 
-    // Clicking the same point again clears the selection and resets the header.
-    const cleared = await page.evaluate(() => {
+    // Clicking a selected point again toggles it off, leaving the other selected.
+    const toggled = await page.evaluate(() => {
       const instance = window.__safetyHepExplorerInstance;
       const chart = instance.compositeCharts[0];
-      chart.options.onClick({}, [{ index: 0, chart }]);
+      chart.options.onClick({}, [{ index: 0 }], chart);
       return {
-        selectedId: instance.compositeSelectedId,
-        activeId: instance.compositeActiveId(),
+        selected: instance.compositeSelectedIds.slice(),
         header: instance.compositeHeaderEl.textContent
       };
     });
-    expect(cleared.selectedId).toBeNull();
-    expect(cleared.activeId).toBeNull();
+    expect(toggled.selected).toEqual([clicked.idB]);
+    expect(toggled.header).toBe(`Participant ${clicked.idB} selected.`);
+
+    // Editing the dropdown drives the selection too.
+    const viaDropdown = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      const select = instance.compositeSelectEl;
+      [...select.options].forEach((o, k) => (o.selected = k < 3));
+      select.dispatchEvent(new Event('change'));
+      return { selected: instance.compositeSelectedIds.slice() };
+    });
+    expect(viaDropdown.selected).toHaveLength(3);
+
+    // Clicking empty plot space clears the whole selection.
+    const cleared = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      const chart = instance.compositeCharts[0];
+      chart.options.onClick({}, [], chart);
+      return {
+        selected: instance.compositeSelectedIds.slice(),
+        header: instance.compositeHeaderEl.textContent
+      };
+    });
+    expect(cleared.selected).toEqual([]);
     expect(cleared.header).toMatch(/Hover a point to trace/);
   });
 });
