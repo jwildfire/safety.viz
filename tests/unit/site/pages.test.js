@@ -3,8 +3,13 @@ import { describe, it, expect } from 'vitest';
 import {
   renderAboutPage,
   renderArchitecturePage,
+  renderGalleryNav,
   renderShell
 } from '../../../scripts/site-lib.mjs';
+
+const fixtureConfig = JSON.parse(
+  readFileSync(new URL('./fixtures/config.json', import.meta.url), 'utf8')
+);
 
 // Site pages added for v1.0 (#21): the About page (keynote/project story +
 // lineage credits) and the Architecture technical overview, plus the shell's
@@ -98,5 +103,57 @@ describe('site generator: shell tokens (#21)', () => {
   it('falls back to an empty description when none is given (#21)', () => {
     const html = renderShell({ shell, title: 'T', content: 'C' });
     expect(html).not.toContain('{{');
+  });
+});
+
+describe('site generator: gallery nav dropdown (#71)', () => {
+  const available = fixtureConfig.renderers.filter((r) => r.status === 'available');
+  const queued = fixtureConfig.renderers.filter((r) => r.status !== 'available');
+
+  it('renders a disclosure control wired to the chart menu (#71)', () => {
+    const html = renderGalleryNav(fixtureConfig.renderers, '');
+    // The top-level Gallery item still navigates to the gallery index.
+    expect(html).toContain('href="index.html"');
+    expect(html).toContain('>Gallery<');
+    // Disclosure button: collapsed by default, controlling the menu by id.
+    expect(html).toMatch(/<button[^>]*aria-expanded="false"[^>]*aria-controls="gallery-menu"/);
+    expect(html).toContain('id="gallery-menu"');
+  });
+
+  it('lists one link per available renderer, data-driven from config (#71)', () => {
+    const html = renderGalleryNav(fixtureConfig.renderers, '');
+    for (const renderer of available) {
+      expect(html).toContain(`href="${renderer.module}/index.html"`);
+      expect(html).toContain(`>${renderer.title}<`);
+    }
+    // Non-available renderers never appear as direct chart links.
+    for (const renderer of queued) {
+      expect(html).not.toContain(`href="${renderer.module}/index.html"`);
+    }
+    const items = html.match(/<li\b/g) || [];
+    expect(items.length).toBe(available.length);
+  });
+
+  it('applies the mount-depth root prefix to every internal link (#71)', () => {
+    const html = renderGalleryNav(fixtureConfig.renderers, '../');
+    expect(html).toContain('href="../index.html"');
+    for (const renderer of available) {
+      expect(html).toContain(`href="../${renderer.module}/index.html"`);
+    }
+  });
+
+  it('shell substitutes the {{galleryNav}} token from the passed renderers (#71)', () => {
+    const shell =
+      '<nav class="site-nav">{{galleryNav}}<a href="{{root}}about.html">About</a></nav>';
+    const html = renderShell({
+      shell,
+      title: 'T',
+      content: 'C',
+      root: '',
+      renderers: fixtureConfig.renderers
+    });
+    expect(html).not.toContain('{{');
+    expect(html).toContain('id="gallery-menu"');
+    expect(html).toContain('href="histogram/index.html"');
   });
 });

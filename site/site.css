@@ -253,6 +253,120 @@ a.site-version:hover {
   padding-bottom: 0.1rem;
 }
 
+/* Gallery dropdown (#71): the Gallery link plus an adjacent disclosure caret,
+   revealing a data-driven list of chart pages. Opens on pointer hover and when
+   the disclosure button reports expanded (click / touch / keyboard). The menu
+   sits flush under the group so there is no hover gap to cross. */
+.nav-group {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.nav-disclosure {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.15rem 0.2rem;
+  margin: 0;
+  background: none;
+  border: 0;
+  color: var(--side-soft);
+  line-height: 1;
+  cursor: pointer;
+  border-radius: var(--radius-small);
+}
+
+.nav-disclosure:hover,
+.nav-group:hover .nav-disclosure,
+.nav-disclosure[aria-expanded='true'] {
+  color: var(--accent-bright);
+}
+
+.nav-disclosure:focus-visible {
+  outline: 2px solid var(--accent-bright);
+  outline-offset: 2px;
+}
+
+.nav-caret {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid currentColor;
+  transition: transform 0.15s ease;
+}
+
+.nav-disclosure[aria-expanded='true'] .nav-caret {
+  transform: rotate(180deg);
+}
+
+.nav-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 50;
+  display: none;
+  min-width: 13rem;
+  /* Flush under the trigger (no margin) so the pointer never crosses a gap;
+     the top row of padding provides the visual breathing room. */
+  margin: 0;
+  padding: 0.4rem 0.3rem 0.3rem;
+  list-style: none;
+  background: var(--side-bg);
+  border: 1px solid rgba(196, 169, 149, 0.25);
+  border-radius: var(--radius-small);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* Reveal on pointer hover or when the disclosure button reports expanded
+   (click / touch / arrow-key open). aria-expanded is the single source of
+   truth for keyboard/AT state, so it never disagrees with what is shown. */
+.nav-group:hover .nav-menu,
+.nav-disclosure[aria-expanded='true'] + .nav-menu {
+  display: block;
+}
+
+.nav-menu li {
+  margin: 0;
+}
+
+.nav-menu a {
+  display: block;
+  padding: 0.32rem 0.6rem;
+  border-radius: var(--radius-small);
+  color: var(--side-ink);
+  white-space: nowrap;
+}
+
+.nav-menu a:hover,
+.nav-menu a:focus-visible {
+  color: var(--accent-bright);
+  background: rgba(249, 115, 22, 0.12);
+}
+
+.nav-menu a.current {
+  color: var(--accent-bright);
+  border-bottom: 0;
+  padding-bottom: 0.32rem;
+}
+
+/* Narrow / touch layouts: the header already wraps, so let the dropdown span
+   the nav width instead of overflowing off a small screen. */
+@media (max-width: 34rem) {
+  .nav-group {
+    position: static;
+  }
+
+  .nav-menu {
+    left: 0;
+    right: 0;
+    min-width: 0;
+  }
+}
+
 .site-footer {
   margin-top: 3.5rem;
   padding: 1.4rem var(--band-pad) 2rem;
