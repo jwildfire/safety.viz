@@ -1,6 +1,6 @@
 {
   "module": "qt-explorer",
-  "generatedAt": "2026-07-18T01:43:34.641Z",
+  "generatedAt": "2026-07-18T01:59:50.642Z",
   "environment": {
     "os": "linux 6.17.0-1020-azure",
     "node": "v22.23.1",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "29625732872",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29625732872"
+    "id": "29626219396",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29626219396"
   },
   "records": [
     {
@@ -139,14 +139,6 @@
       "requirementIds": ["QT-CTRL-001", "QT-CTRL-002", "QT-CTRL-003"],
       "issueRefs": [68],
       "screenshots": ["QT-CTRL-001-central-tendency-delta.png"]
-    },
-    {
-      "test": "QT-CTRL-004: the chart card carries an Experimental badge that hides with the chart on the table view (#68)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["QT-CTRL-004"],
-      "issueRefs": [68],
-      "screenshots": []
     },
     {
       "test": "QT-DATA-003: the participant note / removed-count path leaves no page errors (#68)",
