@@ -1,13 +1,16 @@
 {
   "module": "hep-explorer",
-  "generatedAt": "2026-07-18T00:11:43.708Z",
+  "generatedAt": "2026-07-18T00:13:50.884Z",
   "environment": {
-    "os": "darwin 23.6.0",
-    "node": "v24.14.0",
+    "os": "linux 6.17.0-1020-azure",
+    "node": "v22.23.1",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": null,
+  "run": {
+    "id": "29622601791",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29622601791"
+  },
   "records": [
     {
       "test": "built ae-explorer demo mounts the shared shell with no console errors (#7) (#17)",
@@ -159,7 +162,7 @@
       "status": "pass",
       "requirementIds": ["HEP-COMP-007"],
       "issueRefs": [67],
-      "screenshots": []
+      "screenshots": ["HEP-COMP-007-participant-trace.png"]
     },
     {
       "test": "HEP-CTRL-001/HEP-CTRL-002/HEP-QUAD-001/HEP-DISPLAY-001/HEP-CTRL-006/HEP-CTRL-007/HEP-CTRL-008/HEP-CTRL-009/HEP-CTRL-010/HEP-CTRL-011/HEP-CTRL-012: renders the full control panel (#43)",
