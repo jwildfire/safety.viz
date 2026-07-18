@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Generated API reference for the safety.viz delta-delta module: factory, lifecycle methods, settings, and the JSON-Schema data contract." />
+    <title>Safety Delta-Delta API reference · safety.viz</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23271810'/%3E%3Crect x='2.5' y='8' width='3' height='5.5' fill='%23f97316'/%3E%3Crect x='6.5' y='3.5' width='3' height='10' fill='%23fb923c'/%3E%3Crect x='10.5' y='6' width='3' height='7.5' fill='%23f97316'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="../site.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="site-name" href="../index.html">
+        safety.viz
+        <span class="site-version">v1.3.1</span>
+      </a>
+      <nav class="site-nav" aria-label="Primary">
+        <div class="nav-group"><a href="../index.html">Gallery</a><button type="button" class="nav-disclosure" aria-expanded="false" aria-controls="gallery-menu" aria-label="Show charts"><span class="nav-caret" aria-hidden="true"></span></button><ul id="gallery-menu" class="nav-menu"><li><a href="../histogram/index.html">Safety Histogram</a></li><li><a href="../outlier-explorer/index.html">Safety Outlier Explorer</a></li><li><a href="../results-over-time/index.html">Safety Results Over Time</a></li><li><a href="../shift-plot/index.html">Safety Shift Plot</a></li><li><a href="../delta-delta/index.html">Safety Delta-Delta</a></li><li><a href="../hep-explorer/index.html">Hepatic Safety Explorer</a></li><li><a href="../ae-explorer/index.html">Adverse Event Explorer</a></li><li><a href="../ae-timelines/index.html">Adverse Event Timelines</a></li></ul></div>
+        <a href="../architecture.html">Architecture</a>
+        <a href="../about.html">About</a>
+        <a href="https://github.com/jwildfire/safety.viz">GitHub</a>
+        <a href="https://jwildfire.github.io/obot.roadmap/">Roadmap</a>
+      </nav>
+    </header>
+    <main class="site-main"><h1><code>delta-delta</code> API reference</h1>
+<p class="tagline">Generated from the module&#39;s JSDoc and JSON-Schema data contract — <code>npm run docs:api</code> fails on undocumented surface.</p>
+<nav class="page-tabs"><a href="index.html">Live demo</a><a href="evidence.html">Test evidence</a><a class="current" aria-current="page" href="api.html">API reference</a></nav>
+<div class="api-layout"><nav class="api-toc" aria-label="On this page"><h2>On this page</h2><ul><li><a href="#overview">Overview</a></li><li><a href="#factory"><code>deltaDelta()</code></a></li><li><a href="#methods">Methods</a><ul><li><a href="#init"><code>init()</code></a></li><li><a href="#setData"><code>setData()</code></a></li><li><a href="#setSettings"><code>setSettings()</code></a></li><li><a href="#render"><code>render()</code></a></li><li><a href="#resize"><code>resize()</code></a></li><li><a href="#destroy"><code>destroy()</code></a></li></ul></li><li><a href="#settings">Settings</a></li><li><a href="#data-contract">Data contract</a></li></ul></nav><div class="api-body"><section id="overview"><h2>Overview</h2><p>Every safety.viz renderer is one factory call. <code>deltaDelta(element, settings)</code> empties the container, renders the <a href="../architecture.html">shared control shell</a>, and returns a chart instance; pass data to <code>setData</code> (or <code>init</code>) and the module validates it against its <a href="#data-contract">data contract</a>, structures it, and draws. Settings are merged onto the module&#39;s defaults, so callers supply only overrides — column mappings follow ADaM naming out of the box. The same lifecycle (<code>init</code>, <code>setData</code>, <code>setSettings</code>, <code>render</code>, <code>resize</code>, <code>destroy</code>) is shared by every module and consumed unchanged by the gsm.safety R bindings. See <a href="../architecture.html">Architecture</a> for how the pieces fit together.</p></section>
+<h2 id="factory">Factory</h2>
+<h3 id="deltaDelta"><code>deltaDelta([element], [settings])</code></h3>
+<p>Create a safety delta-delta plot inside a container element. The control
+shell renders immediately; pass long-format result records to setData (or
+init) on the returned instance to validate the data and draw the scatter.</p>
+<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>element</code> <em>(optional)</em></td><td><code>string | HTMLElement</code></td><td><code>&#39;body&#39;</code></td><td>Container node, or a CSS selector for it.</td></tr><tr><td><code>settings</code> <em>(optional)</em></td><td><code>DeltaDeltaSettings</code></td><td><code>{}</code></td><td>Setting overrides, merged onto DEFAULT_SETTINGS and normalized.</td></tr></tbody></table>
+<p class="returns"><strong>Returns:</strong> <code>SafetyDeltaDelta</code> — The live delta-delta instance.</p>
+<h2 id="methods">Methods</h2>
+<h3 id="init"><code>init(data)</code></h3>
+<p>Load data and render: an alias for setData that keeps the two-step
+create-then-init call shape working.</p>
+<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>data</code></td><td><code>Array.&lt;Object&gt;</code></td><td>—</td><td>Long-format result records matching the delta-delta data contract.</td></tr></tbody></table>
+<p class="returns"><strong>Returns:</strong> <code>SafetyDeltaDelta</code> — The instance, for chaining.</p>
+<h3 id="setData"><code>setData(data)</code></h3>
+<p>Replace the bound data and re-render. The data is validated against the
+settings mapping (throwing, and rendering the message into the target
+element, when required columns are missing), rows with missing or
+non-numeric results are removed with a console warning, and the controls
+are rebuilt from the new data&#39;s measures and visits.</p>
+<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>data</code></td><td><code>Array.&lt;Object&gt;</code></td><td>—</td><td>Long-format result records matching the delta-delta data contract.</td></tr></tbody></table>
+<p class="returns"><strong>Returns:</strong> <code>SafetyDeltaDelta</code> — The instance, for chaining.</p>
+<h3 id="setSettings"><code>setSettings(settings)</code></h3>
+<p>Merge setting overrides onto the current settings, adopt any provided
+measure/visit/regression selections into the control state, re-normalize
+the settings, rebuild the controls, and re-render.</p>
+<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>settings</code></td><td><code>DeltaDeltaSettings</code></td><td>—</td><td>Setting overrides to merge.</td></tr></tbody></table>
+<p class="returns"><strong>Returns:</strong> <code>SafetyDeltaDelta</code> — The instance, for chaining.</p>
+<h3 id="render"><code>render()</code></h3>
+<p>Redraw everything from the current data, settings, and control state:
+destroys the live chart, clears the measure table and any point selection,
+recomputes the per-participant points, and draws the scatter plus the
+participant-count and regression notes. Called automatically by the
+controls and the data/settings setters.</p>
+<p class="returns"><strong>Returns:</strong> <code>void</code> — </p>
+<h3 id="resize"><code>resize()</code></h3>
+<p>Resize the live chart to its container. For host layouts that change the
+container size without a window resize — e.g. the R htmlwidget bindings.</p>
+<p class="returns"><strong>Returns:</strong> <code>void</code> — </p>
+<h3 id="destroy"><code>destroy()</code></h3>
+<p>Tear the delta-delta plot down: destroy the Chart.js instance and empty
+the target element. The instance cannot be reused afterwards — create a
+new one via the factory instead.</p>
+<p class="returns"><strong>Returns:</strong> <code>void</code> — </p>
+<h2 id="settings">Settings</h2>
+<div class="table-scroll"><table class="api"><thead><tr><th>Setting</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>measure_col</code></td><td><code>string</code></td><td><code>&#39;TEST&#39;</code></td><td>Column holding the measure name; required in the data. Each distinct measure becomes an option in the X and Y Measure controls (SDD-CFG-004).</td></tr><tr><td><code>value_col</code></td><td><code>string</code></td><td><code>&#39;STRESN&#39;</code></td><td>Column holding the numeric result; required in the data. Rows with missing or non-numeric values are removed with a console warning (SDD-CFG-005, SDD-REG-008).</td></tr><tr><td><code>id_col</code></td><td><code>string</code></td><td><code>&#39;USUBJID&#39;</code></td><td>Participant identifier column; drives the participant counts and the one-point-per-participant scatter (SDD-CFG-006).</td></tr><tr><td><code>visit_col</code></td><td><code>string</code></td><td><code>&#39;VISIT&#39;</code></td><td>Categorical visit column; drives the baseline/comparison visit multi-selects (SDD-CFG-007).</td></tr><tr><td><code>visitn_col</code></td><td><code>string</code></td><td><code>&#39;VISITNUM&#39;</code></td><td>Numeric visit column used to order the visit selectors and the linked-table sparklines; ignored when absent (SDD-CFG-008).</td></tr><tr><td><code>measure_x</code></td><td><code>string | null</code></td><td><code>null</code></td><td>Measure plotted on the x-axis; falls back to the first measure in the data when absent (SDD-CFG-009, SDD-CFG-010).</td></tr><tr><td><code>measure_y</code></td><td><code>string | null</code></td><td><code>null</code></td><td>Measure plotted on the y-axis; falls back to the second measure in the data when absent (SDD-CFG-011).</td></tr><tr><td><code>baseline_visits</code></td><td><code>Array.&lt;string&gt;</code></td><td><code>[]</code></td><td>Baseline visit(s); multiple selected visits are averaged. Falls back to the first visit in the data (SDD-CFG-012, SDD-FUNC-001).</td></tr><tr><td><code>comparison_visits</code></td><td><code>Array.&lt;string&gt;</code></td><td><code>[]</code></td><td>Comparison visit(s); multiple selected visits are averaged. Falls back to the last visit in the data (SDD-CFG-013, SDD-FUNC-001).</td></tr><tr><td><code>add_regression_line</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Draw a simple linear regression line with an equation and R² note on first render (SDD-REG-026).</td></tr><tr><td><code>filters</code></td><td><code>Array.&lt;(string|Object)&gt;</code></td><td><code>[]</code></td><td>Filter controls: column names or { value_col, label } specs. Filters whose column is absent from the data are dropped with a console warning (SDD-CFG-014, SDD-REG-007).</td></tr><tr><td><code>details</code></td><td><code>Array.&lt;(string|Object)&gt; | null</code></td><td><code>null</code></td><td>Participant-detail columns shown above the linked measure table; when null, defaults to the participant ID and the filter columns (SDD-CFG-015).</td></tr><tr><td><code>width</code></td><td><code>string</code></td><td><code>&#39;100%&#39;</code></td><td>Widget width, carried over for the R widget bindings; the current shell always spans its container.</td></tr><tr><td><code>height</code></td><td><code>number</code></td><td><code>460</code></td><td>Chart-area height in pixels, carried over for the R widget bindings; the current shell fixes the chart area at 460px.</td></tr></tbody></table></div>
+<h2 id="data-contract">Data contract</h2>
+<h3>safety.viz delta-delta data contract</h3>
+<p>Long-format results data: one record per measurement at a visit (SDD-DATA-001). Column names are supplied by the settings mapping; each participant needs at least a baseline and a comparison visit for the two selected measures so change-from-baseline can be computed. The renderer removes missing/non-numeric results with a reported count (SDD-REG-008) and plots one point per participant (change in measure X vs change in measure Y).</p>
+<div class="table-scroll"><table class="api"><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>data</code></td><td><code>array</code></td><td>yes</td><td>—</td><td>d3.csv()-style records; every row carries the measure, result, participant, and visit columns named in settings.</td></tr><tr><td><code>settings</code></td><td><code>object</code></td><td>yes</td><td>—</td><td>Column mappings and rendering options; merged onto the module&#39;s DEFAULT_SETTINGS, so only overrides need to be supplied.</td></tr><tr><td><code>settings.measure_col</code></td><td><code>string</code></td><td>yes</td><td><code>TEST</code></td><td>Column holding the measure name; required in data (SDD-CFG-004).</td></tr><tr><td><code>settings.value_col</code></td><td><code>string</code></td><td>yes</td><td><code>STRESN</code></td><td>Column holding the numeric result; required in data. Non-numeric results are removed with a logged count (SDD-CFG-005, SDD-REG-008).</td></tr><tr><td><code>settings.id_col</code></td><td><code>string</code></td><td>yes</td><td><code>USUBJID</code></td><td>Participant identifier column; one plotted point per participant (SDD-CFG-006).</td></tr><tr><td><code>settings.visit_col</code></td><td><code>string</code></td><td>yes</td><td><code>VISIT</code></td><td>Categorical visit column; drives the baseline/comparison visit selectors (SDD-CFG-007).</td></tr><tr><td><code>settings.visitn_col</code></td><td><code>string</code></td><td>no</td><td><code>VISITNUM</code></td><td>Optional numeric visit column; orders the visit selectors and the sparkline (SDD-CFG-008).</td></tr><tr><td><code>settings.measure_x</code></td><td><code>string,null</code></td><td>no</td><td>—</td><td>Measure plotted on the x-axis; defaults to the first measure in the data (SDD-CFG-009, SDD-CFG-010).</td></tr><tr><td><code>settings.measure_y</code></td><td><code>string,null</code></td><td>no</td><td>—</td><td>Measure plotted on the y-axis; defaults to the second measure in the data (SDD-CFG-011).</td></tr><tr><td><code>settings.baseline_visits</code></td><td><code>array</code></td><td>no</td><td><code></code></td><td>Baseline visit(s); multiple visits are averaged. Defaults to the first visit (SDD-CFG-012).</td></tr><tr><td><code>settings.comparison_visits</code></td><td><code>array</code></td><td>no</td><td><code></code></td><td>Comparison visit(s); multiple visits are averaged. Defaults to the last visit (SDD-CFG-013).</td></tr><tr><td><code>settings.add_regression_line</code></td><td><code>boolean</code></td><td>no</td><td><code>true</code></td><td>Draw a simple linear regression line with an equation and R² note (SDD-REG-026).</td></tr><tr><td><code>settings.filters</code></td><td><code>array</code></td><td>no</td><td>—</td><td>Optional filter columns rendered as controls (SDD-CFG-014).</td></tr><tr><td><code>settings.details</code></td><td><code>array</code></td><td>no</td><td>—</td><td>Optional participant-detail columns shown above the linked measure table; defaults derive from id_col and the filters (SDD-CFG-015).</td></tr></tbody></table></div></div></div></main>
+    <footer class="site-footer">
+      <p>
+        safety.viz v1.3.1 — clinical safety graphics on one modern charting stack, migrated
+        from the <a href="https://github.com/SafetyGraphics">safetyGraphics</a> ecosystem originally
+        built by <a href="https://github.com/RhoInc">Rho, Inc.</a> (<a href="../about.html"
+          >credits</a
+        >).
+      </p>
+      <p>
+        Built in the open for the R/Pharma 2026 keynote — follow the
+        <a href="https://jwildfire.github.io/obot.roadmap/">obot roadmap</a> ·
+        <a href="https://github.com/jwildfire/safety.viz">source on GitHub</a> ·
+        <a href="https://github.com/jwildfire/safety.viz/releases">releases</a>.
+      </p>
+    </footer>
+    <script>
+      // Mark the nav link whose resolved URL is this page; works at any mount
+      // depth (site root, /dev/, /pr/N/). Renderer sub-pages match a chart link
+      // inside the Gallery dropdown, highlighting the current chart.
+      (function () {
+        var here = location.pathname.replace(/\/$/, '/index.html');
+        var links = document.querySelectorAll('.site-nav a');
+        for (var i = 0; i < links.length; i += 1) {
+          var href = links[i].getAttribute('href');
+          if (!href || href.indexOf('http') === 0) continue;
+          if (new URL(href, location.href).pathname === here) {
+            links[i].classList.add('current');
+            links[i].setAttribute('aria-current', 'page');
+            break;
+          }
+        }
+      })();
+
+      // Gallery dropdown (#71): progressive enhancement over the hover/focus CSS.
+      // The disclosure button toggles aria-expanded (which drives the menu open
+      // via CSS), supports keyboard access (Enter/Space toggle, Arrow keys to
+      // enter and move through items, Escape to close), and closes on outside
+      // click or when focus leaves the group. With JS off, hover/focus still
+      // reveal the menu and the Gallery link still works.
+      (function () {
+        var group = document.querySelector('.site-nav .nav-group');
+        if (!group) return;
+        var button = group.querySelector('.nav-disclosure');
+        var menu = group.querySelector('.nav-menu');
+        if (!button || !menu) return;
+        var items = Array.prototype.slice.call(menu.querySelectorAll('a'));
+
+        var isOpen = function () {
+          return button.getAttribute('aria-expanded') === 'true';
+        };
+        var setOpen = function (open) {
+          button.setAttribute('aria-expanded', open ? 'true' : 'false');
+        };
+        var focusItem = function (index) {
+          if (!items.length) return;
+          setOpen(true);
+          items[(index + items.length) % items.length].focus();
+        };
+
+        button.addEventListener('click', function () {
+          setOpen(!isOpen());
+        });
+        button.addEventListener('keydown', function (event) {
+          if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            focusItem(0);
+          } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            focusItem(items.length - 1);
+          } else if (event.key === 'Escape') {
+            setOpen(false);
+          }
+        });
+        menu.addEventListener('keydown', function (event) {
+          var index = items.indexOf(document.activeElement);
+          if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            focusItem(index + 1);
+          } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            focusItem(index - 1);
+          } else if (event.key === 'Home') {
+            event.preventDefault();
+            focusItem(0);
+          } else if (event.key === 'End') {
+            event.preventDefault();
+            focusItem(items.length - 1);
+          } else if (event.key === 'Escape') {
+            event.preventDefault();
+            setOpen(false);
+            button.focus();
+          }
+        });
+
+        // Close when focus leaves the group or on an outside pointer press.
+        group.addEventListener('focusout', function (event) {
+          if (!group.contains(event.relatedTarget)) setOpen(false);
+        });
+        document.addEventListener('click', function (event) {
+          if (!group.contains(event.target)) setOpen(false);
+        });
+      })();
+    </script>
+  </body>
+</html>
