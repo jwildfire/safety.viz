@@ -1,18 +1,21 @@
 {
   "module": "qt-explorer",
-  "generatedAt": "2026-07-17T23:59:06.154Z",
+  "generatedAt": "2026-07-18T00:21:41.827Z",
   "environment": {
-    "os": "darwin 23.6.0",
-    "node": "v24.14.0",
+    "os": "linux 6.17.0-1020-azure",
+    "node": "v22.23.1",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": null,
+  "run": {
+    "id": "29622893272",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29622893272"
+  },
   "records": [
     {
       "test": "built ae-explorer demo mounts the shared shell with no console errors (#7) (#17)",
       "suite": "browser",
-      "status": "fail",
+      "status": "pass",
       "requirementIds": [],
       "issueRefs": [7, 17],
       "screenshots": []
@@ -20,7 +23,7 @@
     {
       "test": "built ae-timelines demo mounts the shared shell with no console errors (#7) (#17)",
       "suite": "browser",
-      "status": "fail",
+      "status": "pass",
       "requirementIds": [],
       "issueRefs": [7, 17],
       "screenshots": []
@@ -28,7 +31,7 @@
     {
       "test": "built delta-delta demo mounts the shared shell with no console errors (#7) (#17)",
       "suite": "browser",
-      "status": "fail",
+      "status": "pass",
       "requirementIds": [],
       "issueRefs": [7, 17],
       "screenshots": []
@@ -36,7 +39,7 @@
     {
       "test": "built hep-explorer demo mounts the shared shell with no console errors (#7) (#17)",
       "suite": "browser",
-      "status": "fail",
+      "status": "pass",
       "requirementIds": [],
       "issueRefs": [7, 17],
       "screenshots": []
@@ -44,7 +47,7 @@
     {
       "test": "built histogram demo mounts the shared shell with no console errors (#7) (#17)",
       "suite": "browser",
-      "status": "fail",
+      "status": "pass",
       "requirementIds": [],
       "issueRefs": [7, 17],
       "screenshots": []
@@ -52,7 +55,7 @@
     {
       "test": "built outlier-explorer demo mounts the shared shell with no console errors (#7) (#17)",
       "suite": "browser",
-      "status": "fail",
+      "status": "pass",
       "requirementIds": [],
       "issueRefs": [7, 17],
       "screenshots": []
@@ -60,7 +63,7 @@
     {
       "test": "built qt-explorer demo mounts the shared shell with no console errors (#7) (#17)",
       "suite": "browser",
-      "status": "fail",
+      "status": "pass",
       "requirementIds": [],
       "issueRefs": [7, 17],
       "screenshots": []
@@ -68,7 +71,7 @@
     {
       "test": "built results-over-time demo mounts the shared shell with no console errors (#7) (#17)",
       "suite": "browser",
-      "status": "fail",
+      "status": "pass",
       "requirementIds": [],
       "issueRefs": [7, 17],
       "screenshots": []
@@ -76,7 +79,7 @@
     {
       "test": "built shift-plot demo mounts the shared shell with no console errors (#7) (#17)",
       "suite": "browser",
-      "status": "fail",
+      "status": "pass",
       "requirementIds": [],
       "issueRefs": [7, 17],
       "screenshots": []
@@ -92,7 +95,7 @@
     {
       "test": "gallery shows one card per available renderer (#7)",
       "suite": "browser",
-      "status": "fail",
+      "status": "pass",
       "requirementIds": [],
       "issueRefs": [7],
       "screenshots": []
@@ -103,7 +106,7 @@
       "status": "pass",
       "requirementIds": ["QT-CAT-001", "QT-CAT-002", "QT-CAT-003"],
       "issueRefs": [68],
-      "screenshots": []
+      "screenshots": ["QT-CAT-002-categorical-table.png"]
     },
     {
       "test": "QT-CT-002/QT-CT-003/QT-CT-006: central tendency draws per-arm lines, a CI band, the reference line and the peak marker (#68)",
@@ -119,7 +122,7 @@
       "status": "pass",
       "requirementIds": ["QT-CT-004", "QT-CT-005"],
       "issueRefs": [68],
-      "screenshots": []
+      "screenshots": ["QT-CT-005-delta-delta-ich-metric.png"]
     },
     {
       "test": "QT-CT-007: heart rate is offered in central tendency without the QTc reference line (#68)",
@@ -135,7 +138,7 @@
       "status": "pass",
       "requirementIds": ["QT-CTRL-001", "QT-CTRL-002", "QT-CTRL-003"],
       "issueRefs": [68],
-      "screenshots": []
+      "screenshots": ["QT-CTRL-001-central-tendency-delta.png"]
     },
     {
       "test": "QT-DATA-003: the participant note / removed-count path leaves no page errors (#68)",
@@ -151,7 +154,7 @@
       "status": "pass",
       "requirementIds": ["QT-OUT-002", "QT-OUT-003", "QT-OUT-004"],
       "issueRefs": [68],
-      "screenshots": []
+      "screenshots": ["QT-OUT-003-outlier-scatter-max.png"]
     },
     {
       "test": "QT-OUT-003: a specific visit adds the change-from-baseline lines (#68)",
@@ -159,7 +162,7 @@
       "status": "pass",
       "requirementIds": ["QT-OUT-003"],
       "issueRefs": [68],
-      "screenshots": []
+      "screenshots": ["QT-OUT-003-outlier-scatter-max.png"]
     },
     {
       "test": "QT-OUT-007: heart rate shows a QTc-only note in the outlier view (#68)",
@@ -519,7 +522,7 @@
       "status": "pass",
       "requirementIds": ["QT-CAT-002", "QT-CAT-001"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["QT-CAT-002-categorical-table.png"]
     },
     {
       "test": "qt-explorer classifyThresholds (QT-CAT-002/003) QT-CAT-002: absolute >450 counts D1(470) and D2(500) in Drug",
@@ -527,7 +530,7 @@
       "status": "pass",
       "requirementIds": ["QT-CAT-002"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["QT-CAT-002-categorical-table.png"]
     },
     {
       "test": "qt-explorer classifyThresholds (QT-CAT-002/003) QT-CAT-002: absolute >500 excludes the boundary value 500 (strict >)",
@@ -535,7 +538,7 @@
       "status": "pass",
       "requirementIds": ["QT-CAT-002"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["QT-CAT-002-categorical-table.png"]
     },
     {
       "test": "qt-explorer classifyThresholds (QT-CAT-002/003) QT-CAT-003: change >60 counts only D2(70) using max change independently",
@@ -543,7 +546,7 @@
       "status": "pass",
       "requirementIds": ["QT-CAT-002", "QT-CAT-003"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["QT-CAT-002-categorical-table.png"]
     },
     {
       "test": "qt-explorer cleanData (QT-DATA-003/004) QT-DATA-003: drops missing / non-numeric values with a count",
@@ -571,6 +574,22 @@
     },
     {
       "test": "qt-explorer cleanData (QT-DATA-003/004) QT-DATA-005: flags the ABLFL=Y baseline record as not post-baseline",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-DATA-003", "QT-DATA-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer cleanData (QT-DATA-003/004) QT-DATA-005: when the flag column is present, a post-baseline change-0 row with a missing flag stays post-baseline",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-DATA-003", "QT-DATA-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer cleanData (QT-DATA-003/004) QT-DATA-005: with no baseline-flag column at all, a change-0 row is treated as the baseline",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["QT-DATA-003", "QT-DATA-005"],
@@ -759,7 +778,7 @@
       "status": "pass",
       "requirementIds": ["QT-CT-005"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["QT-CT-005-delta-delta-ich-metric.png"]
     },
     {
       "test": "qt-explorer ICH-E14 metric + peak visit (QT-CT-005/006) QT-CT-005: metric is empty outside mean + ΔΔ",
@@ -767,7 +786,7 @@
       "status": "pass",
       "requirementIds": ["QT-CT-005"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["QT-CT-005-delta-delta-ich-metric.png"]
     },
     {
       "test": "qt-explorer ICH-E14 metric + peak visit (QT-CT-005/006) QT-CT-006: peakVisits returns each arm peak",
@@ -775,7 +794,7 @@
       "status": "pass",
       "requirementIds": ["QT-CT-005", "QT-CT-006"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["QT-CT-005-delta-delta-ich-metric.png"]
     },
     {
       "test": "qt-explorer module export QT-API-001: the public collection exposes the qtExplorer factory",
@@ -811,6 +830,14 @@
     },
     {
       "test": "qt-explorer subjectPoints (QT-OUT-001/002) QT-OUT-002: a specific visit picks that visit row",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-OUT-001", "QT-OUT-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer subjectPoints (QT-OUT-001/002) QT-OUT-002: matches a numeric-typed visit against a string timepoint",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["QT-OUT-001", "QT-OUT-002"],
