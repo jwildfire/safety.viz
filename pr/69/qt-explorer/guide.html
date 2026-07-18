@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="How to read the QT Safety Explorer to screen ECG data for drug-induced QT/QTc prolongation, and where each step lives in the controls on this page." />
+    <title>QT Safety Explorer clinical guide · safety.viz</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23271810'/%3E%3Crect x='2.5' y='8' width='3' height='5.5' fill='%23f97316'/%3E%3Crect x='6.5' y='3.5' width='3' height='10' fill='%23fb923c'/%3E%3Crect x='10.5' y='6' width='3' height='7.5' fill='%23f97316'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="../site.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="site-name" href="../index.html">
+        safety.viz
+        <span class="site-version">v1.3.1</span>
+      </a>
+      <nav class="site-nav" aria-label="Primary">
+        <div class="nav-group"><a href="../index.html">Gallery</a><button type="button" class="nav-disclosure" aria-expanded="false" aria-controls="gallery-menu" aria-label="Show charts"><span class="nav-caret" aria-hidden="true"></span></button><ul id="gallery-menu" class="nav-menu"><li><a href="../histogram/index.html">Safety Histogram</a></li><li><a href="../outlier-explorer/index.html">Safety Outlier Explorer</a></li><li><a href="../results-over-time/index.html">Safety Results Over Time</a></li><li><a href="../shift-plot/index.html">Safety Shift Plot</a></li><li><a href="../delta-delta/index.html">Safety Delta-Delta</a></li><li><a href="../hep-explorer/index.html">Hepatic Safety Explorer</a></li><li><a href="../ae-explorer/index.html">Adverse Event Explorer</a></li><li><a href="../ae-timelines/index.html">Adverse Event Timelines</a></li><li><a href="../qt-explorer/index.html">QT Safety Explorer</a></li></ul></div>
+        <a href="../architecture.html">Architecture</a>
+        <a href="../about.html">About</a>
+        <a href="https://github.com/jwildfire/safety.viz">GitHub</a>
+        <a href="https://jwildfire.github.io/obot.roadmap/">Roadmap</a>
+      </nav>
+    </header>
+    <main class="site-main"><h1>QT Safety Explorer: clinical guide <span class="site-badge">Experimental</span></h1>
+<p class="tagline">How to read the QT Safety Explorer to screen ECG data for drug-induced QT/QTc prolongation, and where each step lives in the controls on this page.</p>
+<nav class="page-tabs"><a href="index.html">Live demo</a><a class="current" aria-current="page" href="guide.html">Clinical guide</a><a href="evidence.html">Test evidence</a><a href="api.html">API reference</a></nav>
+<p class="guide-caution"><strong>Exploratory review aid, not a validated diagnostic tool.</strong> A drug-induced QT-prolongation conclusion requires the validated ICH-E14 analyses; this graphic flags signals for review, it does not confirm them.</p>
+<div class="guide-layout"><nav class="guide-toc" aria-label="On this page"><h2>On this page</h2><ul><li><a href="#what-the-qt-safety-explorer-shows">What the QT Safety Explorer shows</a></li><li><a href="#how-the-evaluation-workflow-is-organized">How the evaluation workflow is organized</a></li><li><a href="#central-tendency-evaluation">Central tendency evaluation</a><ul><li><a href="#step-1a-is-there-an-average-qtc-prolongation-within-the-treated-arm">Step 1a — Is there an average QTc prolongation within the treated arm?</a></li><li><a href="#step-1b-could-a-heart-rate-change-explain-it">Step 1b — Could a heart-rate change explain it?</a></li><li><a href="#step-2a-is-the-qtc-prolongation-larger-than-placebo-s">Step 2a — Is the QTc prolongation larger than placebo&#39;s?</a></li><li><a href="#step-2b-is-the-heart-rate-change-larger-than-placebo-s">Step 2b — Is the heart-rate change larger than placebo&#39;s?</a></li></ul></li><li><a href="#outlier-and-categorical-evaluation">Outlier and categorical evaluation</a><ul><li><a href="#step-3a-which-participants-cross-the-absolute-qtc-thresholds">Step 3a — Which participants cross the absolute QTc thresholds?</a></li><li><a href="#step-3b-which-participants-change-most-from-their-own-baseline">Step 3b — Which participants change most from their own baseline?</a></li></ul></li><li><a href="#choosing-a-correction-qtcf-qtcb-and-qtci">Choosing a correction: QTcF, QTcB, and QTcI</a></li><li><a href="#how-this-maps-to-the-controls-on-this-page">How this maps to the controls on this page</a></li><li><a href="#what-is-not-yet-on-this-page">What is not yet on this page</a></li><li><a href="#try-it-in-the-demo">Try it in the demo</a></li><li><a href="#source-and-attribution">Source and attribution</a></li><li><a href="#references">References</a></li></ul></nav><div class="guide-body"><h2 id="what-the-qt-safety-explorer-shows">What the QT Safety Explorer shows</h2>
+<p>The QT Safety Explorer is an interactive tool for screening electrocardiogram (ECG) data for drug-induced <strong>QT/QTc-interval prolongation</strong> — the surrogate marker for the delayed cardiac repolarization that can precipitate the polymorphic ventricular tachycardia <strong>Torsade de Pointes (TdP)</strong>, and, rarely, sudden death. Because the number of drugs withdrawn for this effect is large, the FDA and ICH recommend that every new drug with systemic exposure be screened for a QT signal as part of its premarket risk assessment (ICH E14; FDA 2005).</p>
+<p>The QT interval varies inversely with heart rate, so the measured QT is routinely <strong>corrected</strong> for heart rate to a QTc that is, ideally, rate-independent. This tool works with the two fixed correction formulas present in the demo data — <strong>QTcF</strong> (Fridericia) and <strong>QTcB</strong> (Bazett) — plus <strong>heart rate</strong> itself; the individualized correction (QTcI) is a planned addition. In the ICH-E14 workflow the neutral term <strong>QTcX</strong> denotes whichever correction is in use.</p>
+<p>The tool presents two complementary families of display, switched with the <strong>View</strong> control:</p>
+<ul><li><strong>Central tendency</strong> — the mean or median QTc change across the whole study population over time, one line per treatment arm. This is where an average drug effect first shows up.</li><li><strong>Outlier and categorical analysis</strong> — the individual participants whose QTc falls outside the general range: the outlier scatter of change-from-baseline against baseline QTc, and the categorical table counting how many participants in each arm cross the accepted thresholds.</li></ul>
+<p>This tool is <strong>exploratory</strong>. It is not validated and is not intended to provide clinical or regulatory-grade evidence of drug-induced QT prolongation; a formal conclusion requires the validated statistical analyses and standard operating procedures compliant with ICH E14 and its Q&amp;A updates. It also assumes a generally healthy adult population — ECGs from participants with congenital or acquired long-QT syndromes or other significant structural cardiac abnormalities are assumed to be excluded from the dataset.</p>
+<figure class="guide-figure"><img src="guide/central-tendency.png" alt="The QT Safety Explorer central-tendency view: mean change in QTcF over time, one line per treatment arm, with a shaded 90% confidence band, the 10 ms reference line, and the peak-effect-visit marker." loading="lazy"><figcaption>The central-tendency view. Each line is an arm’s mean QTc change from baseline over the visits; the dashed horizontal marks the 10 ms threshold of regulatory concern.</figcaption></figure>
+<h2 id="how-the-evaluation-workflow-is-organized">How the evaluation workflow is organized</h2>
+<p>The workflow moves from the <strong>population average</strong> to the <strong>individual outliers</strong>, gathering evidence for or against a drug cause at each stage. Step 1 looks for an average QTc effect within the treated population; Step 2 compares that effect against the placebo (or control) arm; Step 3 counts the individual participants who cross the absolute and change-from-baseline thresholds. Because the QT interval is sensitive to other influences — most importantly heart rate — each step is read alongside the heart-rate change, so that a QTc shift driven by a rate change is not mistaken for a direct repolarization effect.</p>
+<p>A prolonged QTc is a marker of <strong>risk</strong>, not of harm: it flags cases and drugs for closer evaluation, it does not diagnose TdP. Each step below pairs the source workflow&#39;s decision with its clinical rationale and points to where it lives in the controls on this page.</p>
+<p>Some steps in the source workflow depend on measures this release does not yet carry — the PR and QRS intervals, the JT interval, the individualized QTcI correction, and the QT-RR hysteresis plot. They are kept here for completeness, flagged where they appear, and listed together in the deferred-features note near the end.</p>
+<h2 id="central-tendency-evaluation">Central tendency evaluation</h2>
+<h3 id="step-1a-is-there-an-average-qtc-prolongation-within-the-treated-arm">Step 1a — Is there an average QTc prolongation within the treated arm?</h3>
+<p>Examine the <strong>central-tendency</strong> display with the <strong>Display type</strong> set to <strong>Δ (change from baseline)</strong>. If the mean or median QTcX equals or exceeds <strong>10 ms</strong> at any timepoint, that may indicate drug-induced QTc prolongation among the study participants. The dashed <strong>10 ms reference line</strong> marks this threshold of regulatory concern (ICH E14). Switch the <strong>Statistic</strong> control between mean and median to check that the signal is not driven by a few extreme values, and read the shaded <strong>90% confidence band</strong> to judge how firmly the estimate sits relative to the line. If a signal is present, proceed to Step 1b before attributing it to the drug.</p>
+<h3 id="step-1b-could-a-heart-rate-change-explain-it">Step 1b — Could a heart-rate change explain it?</h3>
+<p>During the period a QTc prolongation is observed, ask whether the heart rate increased by <strong>≥ 25%</strong> or reached an absolute <strong>≥ 100 bpm</strong>. Although QTcF is less sensitive to rate than the uncorrected QT, a large rate change can still contribute to an apparent QTc shift, and fixed correction formulas have not been validated under conditions of changing heart rate — caution is warranted for drugs that move the rate by 5–10 bpm (Panicker et al. 2018). Anecdotally QTcF, unlike QTcB, can either prolong or shorten with an increase in rate depending on the population. Switch the <strong>Correction</strong> control to <strong>Heart Rate</strong> and read its change over the same visits.</p>
+<p>_The parallel PR-interval and QRS-duration confounder checks in the source workflow (a PR increase ≥ 25% or ≥ 200 ms, suggesting calcium-channel block; a QRS increase to ≥ 120 ms, suggesting sodium-channel block or bundle-branch block, where the JT interval becomes the better repolarization measure) require the PR/QRS intervals, which are not in this dataset and are a planned addition._</p>
+<h3 id="step-2a-is-the-qtc-prolongation-larger-than-placebo-s">Step 2a — Is the QTc prolongation larger than placebo&#39;s?</h3>
+<p>Comparing the treated arm against the placebo arm removes background sources of QTc variability — food intake, circadian rhythm, and the mere passage of time — that both arms share, isolating the part of the signal attributable to the drug. This <strong>double difference</strong> is denoted <strong>ΔΔ</strong>: the arm&#39;s mean change minus the placebo arm&#39;s mean change at each visit.</p>
+<p>Set <strong>Display type</strong> to <strong>ΔΔ (placebo-corrected)</strong>. The placebo arm drops out (it is the reference, ≡ 0) and each remaining arm is plotted as its placebo-corrected change against the same 10 ms reference. A per-visit mean difference at or above 10 ms may indicate a drug effect. Below the chart, the <strong>ICH-E14 metric</strong> table reports, for each arm, the <strong>largest upper bound of the two-sided 90% confidence interval for the mean difference</strong> across the visits, flagged against the 10 ms threshold — the single number the ICH-E14 &quot;concern&quot; assessment turns on.</p>
+<p>The confidence interval here is a large-sample normal approximation intended for exploratory screening; it is <strong>not</strong> the mixed-model (ANCOVA/MMRM) least-squares-means bound a definitive analysis would use, and the flag is a prompt for that analysis, not a substitute for it.</p>
+<h3 id="step-2b-is-the-heart-rate-change-larger-than-placebo-s">Step 2b — Is the heart-rate change larger than placebo&#39;s?</h3>
+<p>As in Step 1b, but between groups: does the heart rate rise by ≥ 25% relative to placebo, or reach ≥ 100 bpm? Read the <strong>Heart Rate</strong> correction in <strong>ΔΔ</strong> mode. _(The between-group PR and QRS comparisons, again, await those intervals.)_</p>
+<h2 id="outlier-and-categorical-evaluation">Outlier and categorical evaluation</h2>
+<p>Central tendency describes the population as a whole; a drug can be safe on average yet prolong QTc dangerously in a susceptible minority. Steps 3a–3b look at the individual participants whose values fall outside the general range.</p>
+<figure class="guide-figure"><img src="guide/outlier-scatter.png" alt="The QT Safety Explorer outlier scatter: each participant’s change from baseline against their baseline QTcF, coloured and shaped by arm, with diagonal absolute-QTc cut-lines at 450, 480, and 500 ms and horizontal change lines at 30 and 60 ms." loading="lazy"><figcaption>The outlier scatter. A point above the 450 ms diagonal has an absolute QTc over 450 ms; a point above the 30 ms horizontal has risen more than 30 ms from its own baseline.</figcaption></figure>
+<h3 id="step-3a-which-participants-cross-the-absolute-qtc-thresholds">Step 3a — Which participants cross the absolute QTc thresholds?</h3>
+<p>Individual participants with QTc values above <strong>450 ms</strong> show evidence of a propensity to QT prolongation; <strong>480 ms</strong> and <strong>500 ms</strong> mark successively greater concern, with <strong>&gt; 500 ms</strong> during therapy a threshold of particular concern in clinical trials. There is no consensus upper limit — lower limits raise the false-positive rate, higher limits risk missing a signal — so the tool shows all three.</p>
+<p>In the <strong>Outlier scatter</strong> view the three absolute thresholds are drawn as <strong>diagonal</strong> cut-lines: because a point&#39;s absolute QTc is its baseline (x) plus its change (y), a fixed absolute threshold _T_ is the line <code>change = T − baseline</code> (slope −1). A point lying above a diagonal has an absolute QTc above that threshold. The <strong>Categorical</strong> view then tabulates, for each arm, the count and percent of participants whose maximum post-baseline QTc exceeds 450, 480, and 500 ms — the proportion of the population showing evidence of prolongation, which is what quantifies the concern.</p>
+<figure class="guide-figure"><img src="guide/categorical.png" alt="The QT Safety Explorer categorical view: a table of the count and percent of participants in each arm whose maximum post-baseline QTcF exceeds 450, 480, and 500 ms, and whose maximum change exceeds 30 and 60 ms." loading="lazy"><figcaption>The categorical exceedance table. Each cell is the number of participants in that arm crossing the threshold, with the percent of the arm’s participants in parentheses.</figcaption></figure>
+<h3 id="step-3b-which-participants-change-most-from-their-own-baseline">Step 3b — Which participants change most from their own baseline?</h3>
+<p>Independently of the absolute value, participants whose QTc rises <strong>&gt; 30 ms</strong> or <strong>&gt; 60 ms</strong> from baseline show evidence of a propensity to prolongation, with a change <strong>&gt; 60 ms</strong> during therapy a threshold of particular concern. In the outlier scatter these are the <strong>horizontal</strong> change lines at 30 and 60 ms (shown when a specific visit is selected, so baseline and change are read from the same reading); the <strong>Categorical</strong> table counts, by arm, the participants whose maximum post-baseline change exceeds 30 and 60 ms.</p>
+<p>Note that the scatter&#39;s default &quot;Maximum post-baseline&quot; mode places each participant at their worst _absolute_ value, whose visit need not be the visit of their worst _change_ — so the categorical table, which tracks the maximum change independently, is the authoritative count for the change thresholds.</p>
+<p>_Steps 3c and 3d of the source workflow extend this to the PR interval (&gt; 220 ms or a &gt; 25% increase) and the QRS duration (&gt; 120 ms or a &gt; 25% increase), which are not in this dataset and are planned additions._</p>
+<h2 id="choosing-a-correction-qtcf-qtcb-and-qtci">Choosing a correction: QTcF, QTcB, and QTcI</h2>
+<p>The <strong>Correction</strong> control selects the heart-rate correction. <strong>QTcF (Fridericia)</strong> largely removes the QT interval&#39;s dependence on heart rate and has gained preference over QTcB. <strong>QTcB (Bazett)</strong> is provided because it is present in the demo data, but it <strong>overcorrects at high heart rates</strong>, producing an artifactually prolonged QTc; it is not the workflow&#39;s preferred method and its signals should be read with that caveat. The workflow&#39;s second recommended correction is the <strong>individualized QTcI</strong>, fitted from each participant&#39;s own QT-RR relationship over a wide range of heart rates — the most robust choice when a drug changes heart rate, and a planned addition to this tool (it needs per-subject QT-RR slopes the demo data does not carry).</p>
+<h2 id="how-this-maps-to-the-controls-on-this-page">How this maps to the controls on this page</h2>
+<ul><li><strong>Within-arm average QTc effect (Step 1a)</strong> → the Central tendency view with Display type Δ, the Statistic (mean/median) toggle, the 90% confidence band, and the 10 ms reference line.</li><li><strong>Placebo-corrected effect and the ICH-E14 concern number (Step 2a)</strong> → Display type ΔΔ, which drops the placebo arm and adds the ICH-E14 metric table (largest upper 90% CI bound vs 10 ms).</li><li><strong>Peak-effect timing</strong> → the peak-effect-visit marker on the central-tendency chart.</li><li><strong>Heart-rate confounding (Steps 1b / 2b)</strong> → the Correction control set to Heart Rate, in Δ or ΔΔ mode.</li><li><strong>Absolute QTc outliers (Step 3a)</strong> → the outlier scatter&#39;s 450/480/500 ms diagonal cut-lines and the Categorical table&#39;s absolute rows.</li><li><strong>Change-from-baseline outliers (Step 3b)</strong> → the scatter&#39;s 30/60 ms change lines (per-visit mode) and the Categorical table&#39;s change rows.</li><li><strong>A specific visit versus the worst reading</strong> → the Timepoint control (Maximum post-baseline, or a named visit).</li><li><strong>Population and subgroup context</strong> → the per-arm colours and mark shapes with the Treatments legend, plus the Sex, Race, and Site filters.</li></ul>
+<h2 id="what-is-not-yet-on-this-page">What is not yet on this page</h2>
+<p>Several steps of the source workflow depend on measures or displays planned for a later release, so no control corresponds to them today:</p>
+<ul><li><strong>The PR and QRS intervals</strong> — the multi-channel confounder checks of Steps 1b/2b and the categorical Steps 3c/3d; the JT interval (JT = QT − QRS), the better repolarization measure in the presence of bundle-branch block, depends on QRS.</li><li><strong>The individualized QTcI correction</strong> — fitted per-participant QT-RR slopes.</li><li><strong>The QT-RR hysteresis plot</strong> — the source workflow&#39;s final addition.</li><li><strong>The per-subject drill-down</strong> — electrolyte and thyroid context (potassium, magnesium, calcium, TSH) for an individual flagged case.</li><li><strong>A moxifloxacin positive-control arm</strong> — the demo&#39;s CDISC Pilot study carries none; the demo therefore covers QTc and heart rate only, without PR/QRS or a positive control.</li></ul>
+<h2 id="try-it-in-the-demo">Try it in the demo</h2>
+<p>Open the <a href="index.html">live demo</a> and work a few of the steps against real data.</p>
+<ul><li>In the Central tendency view, switch Display type from Δ to ΔΔ and watch the placebo arm drop out and the ICH-E14 metric table appear.</li><li>Toggle the Statistic between mean and median to see whether the average effect is driven by the tails.</li><li>Switch the View to Outlier scatter and read which arms&#39; participants sit above the 450 ms diagonal; then pick a specific visit in the Timepoint control to bring in the 30/60 ms change lines.</li><li>Open the Categorical view and compare the exceedance percentages across arms.</li><li>Switch the Correction to Heart Rate to check whether a rate change accompanies any QTc shift.</li></ul>
+<h2 id="source-and-attribution">Source and attribution</h2>
+<p>This guide ports the evaluation workflow and clinical rationale of the <strong>QT Safety Explorer User&#39;s Manual (v0.1)</strong>, a product of the ASA Biopharmaceutical–DIA Safety Working Group&#39;s <strong>Interactive Safety Graphics (ISG)</strong> subteam, developed in collaboration with the <strong>Cardiac Safety Research Consortium (CSRC)</strong>. The step structure and thresholds follow that manual and the <strong>ICH E14</strong> guidance and its Q&amp;A updates. As the manual states, the tool is exploratory and unvalidated; findings must be confirmed with validated analyses compliant with ICH E14 and the user&#39;s organization&#39;s standard operating procedures.</p>
+<h2 id="references">References</h2>
+<ul><li>Bazett HC. An analysis of the time-relations of electrocardiograms. _Heart_ 1920;7:353–370.</li><li>Bogossian H, Linz D, Heijman J, et al. QTc evaluation in patients with bundle branch block. _IJC Heart &amp; Vasculature_ 2020;30:100636.</li><li>Cosansu K, Cakmak HA, Karadag B, et al. Alterations in QTc and PR intervals in renal transplant patients receiving immunosuppressive drugs. _Heart_ 2011;97(Suppl 3):A186.</li><li>Davey P. How to correct the QT interval for the effect of heart rate in clinical studies. _J Pharmacol Toxicol Methods_ 2002;48:3–9.</li><li>Davey PP, Bateman J. Heart rate and catecholamine contribution to QT interval shortening on exercise. _Clin Cardiol_ 1999;22:513–518.</li><li>Food and Drug Administration. Guidance for Industry: Premarketing Risk Assessment. March 2005.</li><li>Fridericia LS. Die Systolendauer im Elektrokardiogramm bei normalen Menschen und bei Herzkranken. _Acta Med Scand_ 1920;53:460–469.</li><li>International Council for Harmonisation. E14: The Clinical Evaluation of QT/QTc Interval Prolongation and Proarrhythmic Potential for Non-Antiarrhythmic Drugs (and Q&amp;A updates).</li><li>Panicker GK, Kadam P, Chakraborty S, et al. Individual-specific QT interval correction for drugs with substantial heart rate effect using Holter ECGs extracted over a wide range of heart rates. _J Clin Pharmacol_ 2018;58:1013–1019.</li></ul></div></div></main>
+    <footer class="site-footer">
+      <p>
+        safety.viz v1.3.1 — clinical safety graphics on one modern charting stack, migrated
+        from the <a href="https://github.com/SafetyGraphics">safetyGraphics</a> ecosystem originally
+        built by <a href="https://github.com/RhoInc">Rho, Inc.</a> (<a href="../about.html"
+          >credits</a
+        >).
+      </p>
+      <p>
+        Built in the open for the R/Pharma 2026 keynote — follow the
+        <a href="https://jwildfire.github.io/obot.roadmap/">obot roadmap</a> ·
+        <a href="https://github.com/jwildfire/safety.viz">source on GitHub</a> ·
+        <a href="https://github.com/jwildfire/safety.viz/releases">releases</a>.
+      </p>
+    </footer>
+    <script>
+      // Mark the nav link whose resolved URL is this page; works at any mount
+      // depth (site root, /dev/, /pr/N/). Renderer sub-pages match a chart link
+      // inside the Gallery dropdown, highlighting the current chart.
+      (function () {
+        var here = location.pathname.replace(/\/$/, '/index.html');
+        var links = document.querySelectorAll('.site-nav a');
+        for (var i = 0; i < links.length; i += 1) {
+          var href = links[i].getAttribute('href');
+          if (!href || href.indexOf('http') === 0) continue;
+          if (new URL(href, location.href).pathname === here) {
+            links[i].classList.add('current');
+            links[i].setAttribute('aria-current', 'page');
+            break;
+          }
+        }
+      })();
+
+      // Gallery dropdown (#71): progressive enhancement over the hover/focus CSS.
+      // The disclosure button toggles aria-expanded (which drives the menu open
+      // via CSS), supports keyboard access (Enter/Space toggle, Arrow keys to
+      // enter and move through items, Escape to close), and closes on outside
+      // click or when focus leaves the group. With JS off, hover/focus still
+      // reveal the menu and the Gallery link still works.
+      (function () {
+        var group = document.querySelector('.site-nav .nav-group');
+        if (!group) return;
+        var button = group.querySelector('.nav-disclosure');
+        var menu = group.querySelector('.nav-menu');
+        if (!button || !menu) return;
+        var items = Array.prototype.slice.call(menu.querySelectorAll('a'));
+
+        var isOpen = function () {
+          return button.getAttribute('aria-expanded') === 'true';
+        };
+        var setOpen = function (open) {
+          button.setAttribute('aria-expanded', open ? 'true' : 'false');
+        };
+        var focusItem = function (index) {
+          if (!items.length) return;
+          setOpen(true);
+          items[(index + items.length) % items.length].focus();
+        };
+
+        button.addEventListener('click', function () {
+          setOpen(!isOpen());
+        });
+        button.addEventListener('keydown', function (event) {
+          if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            focusItem(0);
+          } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            focusItem(items.length - 1);
+          } else if (event.key === 'Escape') {
+            setOpen(false);
+          }
+        });
+        menu.addEventListener('keydown', function (event) {
+          var index = items.indexOf(document.activeElement);
+          if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            focusItem(index + 1);
+          } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            focusItem(index - 1);
+          } else if (event.key === 'Home') {
+            event.preventDefault();
+            focusItem(0);
+          } else if (event.key === 'End') {
+            event.preventDefault();
+            focusItem(items.length - 1);
+          } else if (event.key === 'Escape') {
+            event.preventDefault();
+            setOpen(false);
+            button.focus();
+          }
+        });
+
+        // Close when focus leaves the group or on an outside pointer press.
+        group.addEventListener('focusout', function (event) {
+          if (!group.contains(event.relatedTarget)) setOpen(false);
+        });
+        document.addEventListener('click', function (event) {
+          if (!group.contains(event.target)) setOpen(false);
+        });
+      })();
+    </script>
+  </body>
+</html>
