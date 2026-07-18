@@ -148,6 +148,9 @@ class SafetyHepExplorer {
     this.compositeSelectEl = null;
     this.compositeSelectSection = null;
     this.compositeClearBtn = null;
+    // Scatter-view multi-highlight driven by the shared Participants control
+    // (clicks stay single-select there): the highlighted participant ids.
+    this.scatterSelectedIds = [];
     this.participantsSelected = [];
     this.state = {
       view: this.settings.view === 'composite' ? 'composite' : 'scatter',
@@ -186,6 +189,13 @@ class SafetyHepExplorer {
     this.legendEl.style.cssText =
       'display:flex;flex-wrap:wrap;gap:.35rem .9rem;font-size:.8rem;color:#52616f;margin:0 0 .5rem';
     this.main.insertBefore(this.legendEl, this.chartWrap);
+
+    // Shared participant-trace header, shown above the plots in BOTH views:
+    // names the hovered participant, the single selection, or counts a multiple
+    // one, else shows the idle hint (HEP-SELECT-001, HEP-COMP-007).
+    this.compositeHeaderEl = createElement('div', 'hep-composite-header');
+    this.compositeHeaderEl.textContent = COMPOSITE_HEADER_HINT;
+    this.main.insertBefore(this.compositeHeaderEl, this.legendEl);
 
     // Quadrant summary table sits directly below the chart footnote.
     this.quadrantWrap = createElement('div', 'hep-quadrant-summary');
@@ -581,10 +591,10 @@ class SafetyHepExplorer {
       if (showRRatio) this.addRRatioControl(addRow, addControl, filterParent);
     }
 
-    // Participants section (composite view only): renderComposite fills it with
-    // the participant multi-select once the shown subjects are known
-    // (HEP-COMP-007).
-    this.compositeSelectSection = scatter ? null : addSection('Participants');
+    // Participants section (both views): each view's renderer fills it with the
+    // participant multi-select once the shown participants are known
+    // (HEP-SELECT-001, HEP-COMP-007).
+    this.compositeSelectSection = addSection('Participants');
 
     // Reset Chart (HEP-CTRL-012).
     const reset = addControl(' ', document.createElement('button'), this.controls);
@@ -707,17 +717,19 @@ class SafetyHepExplorer {
    * @returns {void}
    */
   render() {
-    // Remember a live selection so control-driven redraws (display type, axis
-    // type, cutpoints, timing window, …) restore the coordinated participant
-    // panels in the new units instead of dropping them (HEP-SELECT-006).
-    const previousSelectedId = this.state.selectedId;
+    // Remember the live selection (the last participantsSelected dispatch —
+    // covering both views) so control-driven redraws AND view switches restore
+    // it instead of dropping it (HEP-SELECT-006): the coordinated participant
+    // panels reopen in the new units, and a selection made in one view arrives
+    // selected in the other.
+    const carriedIds = this.participantsSelected.map(String);
     this.destroyCharts();
     this.listingWrap.innerHTML = '';
     this.legendEl.innerHTML = '';
     this.quadrantWrap.innerHTML = '';
     this.compositeWrap.innerHTML = '';
-    // Empty (and hide) the sidebar's Participants section; the composite
-    // renderer re-mounts it with the freshly shown subjects (HEP-COMP-007).
+    // Empty (and hide) the sidebar's Participants section; each view re-mounts
+    // it with the freshly shown participants (HEP-COMP-007).
     this.mountCompositeSelect([]);
     this.detailWrap.innerHTML = '';
     this.detailWrap.style.display = 'none';
@@ -727,10 +739,15 @@ class SafetyHepExplorer {
     this.page = 1;
     this.state.selectedId = null;
     this.state.hoverId = null;
+    this.scatterSelectedIds = [];
     this.participantsSelected = [];
     this.notes.innerHTML = '';
     this.mainAnnotation.textContent = '';
     this.footnote.textContent = this.baseFootnote();
+    if (this.compositeHeaderEl) {
+      this.compositeHeaderEl.textContent = COMPOSITE_HEADER_HINT;
+      this.compositeHeaderEl.classList.remove('is-active');
+    }
 
     const composite = this.state.view === 'composite';
     this.setViewVisibility(composite);
@@ -740,15 +757,12 @@ class SafetyHepExplorer {
 
     if (!this.cleanRows.length) {
       this.notes.innerHTML = '<span>No data selected. Provide records to draw the chart.</span>';
-      if (previousSelectedId != null) this.dispatchSelection([]);
+      if (carriedIds.length) this.dispatchSelection([]);
       return;
     }
 
     if (composite) {
-      // A live scatter-view selection carries into the composite view (the
-      // clicked participant arrives already selected); renderComposite clears
-      // and notifies instead when the participant is not part of the cohort.
-      this.renderComposite(previousSelectedId);
+      this.renderComposite(carriedIds);
       return;
     }
 
@@ -760,7 +774,7 @@ class SafetyHepExplorer {
 
     if (!this.points.length) {
       this.mainAnnotation.textContent = 'No participants to plot for the current selection.';
-      if (previousSelectedId != null) this.dispatchSelection([]);
+      if (carriedIds.length) this.dispatchSelection([]);
       return;
     }
 
@@ -777,25 +791,36 @@ class SafetyHepExplorer {
     this.drawScatter();
     this.drawLegend();
     this.drawQuadrantSummary();
-    if (previousSelectedId != null) this.restoreSelection(previousSelectedId);
+    this.mountCompositeSelect(
+      unique(this.points.map((point) => String(point.id))).map((id) => ({ id }))
+    );
+    if (carriedIds.length) this.restoreSelection(carriedIds);
   }
 
   /**
-   * Re-apply a participant selection that was live before a redraw. When the
-   * participant is still among the shown points, selectParticipant re-renders
-   * every coordinated panel — visit path, lab-over-time chart, measure summary
-   * table, and listing — in the active display units and re-announces the
-   * selection (HEP-SELECT-006); when the participant is no longer shown (for
-   * example filtered out, or dropped by the mDISH view for lacking a
-   * baseline), the already-cleared selection is confirmed to listeners with an
-   * empty participantsSelected event.
-   * @param {string|number} id The previously selected participant identifier.
+   * Re-apply the participant selection that was live before a redraw or a view
+   * switch. A single surviving participant reopens every coordinated panel —
+   * visit path, lab-over-time chart, measure summary table, and listing — in
+   * the active display units (HEP-SELECT-006); several survivors restore the
+   * multi-highlight and the Participants control without the single-participant
+   * drill-down; participants no longer shown (filtered out, or dropped by the
+   * mDISH view for lacking a baseline) fall out, and listeners always hear the
+   * surviving selection.
+   * @param {Array<string|number>} ids The previously selected participant ids.
    * @private
    */
-  restoreSelection(id) {
-    const shown = this.points.some((point) => String(point.id) === String(id));
-    if (shown) this.selectParticipant(id);
-    else this.dispatchSelection([]);
+  restoreSelection(ids) {
+    const shownIds = new Set(this.points.map((point) => String(point.id)));
+    const survivors = ids.map(String).filter((id) => shownIds.has(id));
+    if (survivors.length === 1) {
+      this.selectParticipant(survivors[0]);
+      return;
+    }
+    this.scatterSelectedIds = survivors;
+    this.syncSelectControl(survivors);
+    if (this.chart) this.chart.update('none');
+    this.updateScatterHeader();
+    this.dispatchSelection([...survivors]);
   }
 
   /**
@@ -834,12 +859,25 @@ class SafetyHepExplorer {
   }
 
   /**
-   * Whether a scatter point is the one currently traced (HEP-SELECT-001).
+   * Whether any scatter participant is currently traced — hovered, or in the
+   * control-driven multi-highlight (HEP-SELECT-001, HEP-COMP-007).
+   * @private
+   */
+  anyScatterActive() {
+    return this.state.hoverId != null || this.scatterSelectedIds.length > 0;
+  }
+
+  /**
+   * Whether a scatter point is currently traced: hovered, or one of the
+   * Participants-control multi-highlight (a click selection is always mirrored
+   * there) (HEP-SELECT-001).
    * @private
    */
   isScatterActive(point) {
-    const id = this.scatterActiveId();
-    return id != null && point != null && String(point.id) === String(id);
+    if (!point) return false;
+    const id = String(point.id);
+    if (this.state.hoverId != null && String(this.state.hoverId) === id) return true;
+    return this.scatterSelectedIds.includes(id);
   }
 
   /**
@@ -875,6 +913,7 @@ class SafetyHepExplorer {
     const activeId = this.scatterActiveId();
     this.mainAnnotation.textContent =
       activeId == null ? '' : this.participantAnnotationText(activeId, this.isSelectedId(activeId));
+    this.updateScatterHeader();
   }
 
   /**
@@ -923,10 +962,11 @@ class SafetyHepExplorer {
       type
     );
 
-    // A participant is "active" when hovered or selected; the active point keeps
-    // its color with a dark ring while the rest dim — the same treatment the
-    // composite view uses (HEP-SELECT-001, HEP-COMP-007).
-    const anyActive = () => this.scatterActiveId() != null;
+    // A participant is "active" when hovered or selected (including the
+    // Participants-control multi-highlight); the active points keep their color
+    // with a dark ring while the rest dim — the same treatment the composite
+    // view uses (HEP-SELECT-001, HEP-COMP-007).
+    const anyActive = () => this.anyScatterActive();
     const isActive = (point) => this.isScatterActive(point);
     const fill = (ctx) => {
       const point = points[ctx.dataIndex];
@@ -1096,13 +1136,13 @@ class SafetyHepExplorer {
    * migration table with concern coding, and the by-arm concern/benefit
    * summary. Degrades to an explanatory note when no participant in the current
    * selection has a usable baseline and on-treatment ALT and total bilirubin.
-   * @param {string|number} [carriedId] A live scatter-view selection to carry
-   *   into the composite view (HEP-SELECT-006): when the participant is part of
-   *   the composite cohort it arrives selected; otherwise the selection is
+   * @param {Array<string|number>} [carriedIds] A live selection to carry into
+   *   the composite view (HEP-SELECT-006): the participants that are part of
+   *   the composite cohort arrive selected; when none survive the selection is
    *   cleared and listeners notified.
    * @private
    */
-  renderComposite(carriedId) {
+  renderComposite(carriedIds = []) {
     const { subjects, excluded } = buildCompositeSubjects(this.cleanRows, this.settings);
     const shown = applyFilters(subjects, this.state.filters);
 
@@ -1112,7 +1152,6 @@ class SafetyHepExplorer {
     this.compositeSubjectsShown = shown;
     this.compositeHoverId = null;
     this.compositeSelectedIds = [];
-    this.compositeHeaderEl = null;
     this.compositeSelectEl = null;
     this.compositeClearBtn = null;
 
@@ -1142,15 +1181,9 @@ class SafetyHepExplorer {
         'The composite plot needs baseline and on-treatment ALT and total bilirubin for at ' +
         'least one participant. No participant in the current selection qualifies.';
       this.compositeWrap.append(note);
-      if (carriedId != null) this.dispatchSelection([]);
+      if (carriedIds.length) this.dispatchSelection([]);
       return;
     }
-
-    // Participant-trace header: shows the hovered/selected participant id, or
-    // the idle hint (HEP-COMP-007).
-    this.compositeHeaderEl = createElement('div', 'hep-composite-header');
-    this.compositeHeaderEl.textContent = COMPOSITE_HEADER_HINT;
-    this.compositeWrap.append(this.compositeHeaderEl);
 
     this.compositeWrap.append(this.buildCompositeLegend());
 
@@ -1174,14 +1207,15 @@ class SafetyHepExplorer {
     this.compositeWrap.append(this.buildMigrationTable(shown));
     this.compositeWrap.append(this.buildByArmSummary(shown));
 
-    // Carry a live scatter-view selection into the freshly built composite
-    // view (HEP-SELECT-006): seed the multi-selection with the clicked
-    // participant so the panels, dropdown, header, and listeners all pick it
-    // up; a participant outside the cohort clears the selection instead.
-    if (carriedId != null) {
-      const key = String(carriedId);
-      if (shown.some((subject) => String(subject.id) === key)) {
-        this.compositeSelectedIds = [key];
+    // Carry a live selection into the freshly built composite view
+    // (HEP-SELECT-006): seed the multi-selection with the carried participants
+    // still in the cohort so the panels, dropdown, header, and listeners all
+    // pick them up; when none survive the selection clears instead.
+    if (carriedIds.length) {
+      const shownIds = new Set(shown.map((subject) => String(subject.id)));
+      const survivors = carriedIds.map(String).filter((id) => shownIds.has(id));
+      if (survivors.length) {
+        this.compositeSelectedIds = survivors;
         this.afterCompositeSelectionChange();
       } else {
         this.dispatchSelection([]);
@@ -1535,13 +1569,23 @@ class SafetyHepExplorer {
   }
 
   /**
+   * The active view's sticky participant selection: the composite
+   * multi-selection, or the scatter multi-highlight (HEP-SELECT-001,
+   * HEP-COMP-007).
+   * @private
+   */
+  activeSelectedIds() {
+    return this.state.view === 'composite' ? this.compositeSelectedIds : this.scatterSelectedIds;
+  }
+
+  /**
    * Build the participant multi-select dropdown for the sidebar's Participants
-   * section (HEP-COMP-007): one option per shown participant, its selected
-   * options mirroring the click-driven multi-selection, plus a Clear selection
-   * button (disabled while nothing is selected) that resets the whole
-   * selection. Editing the select drives the highlight, and clicking points
-   * keeps it in sync.
-   * @param {Object[]} shown The shown composite subjects.
+   * section, shared by both views (HEP-SELECT-001, HEP-COMP-007): one option
+   * per shown participant, its selected options mirroring the view's sticky
+   * selection, plus a Clear selection button (disabled while nothing is
+   * selected) that resets the whole selection. Editing the select drives the
+   * highlight, and clicking points keeps it in sync.
+   * @param {Object[]} shown The shown participants ({id} each).
    * @private
    */
   buildCompositeSelect(shown) {
@@ -1552,8 +1596,13 @@ class SafetyHepExplorer {
     select.size = Math.min(8, Math.max(3, shown.length));
     shown.forEach((subject) => option(select, String(subject.id), String(subject.id), false));
     select.onchange = () => {
-      this.compositeSelectedIds = [...select.selectedOptions].map((opt) => opt.value);
-      this.afterCompositeSelectionChange();
+      const ids = [...select.selectedOptions].map((opt) => opt.value);
+      if (this.state.view === 'composite') {
+        this.compositeSelectedIds = ids;
+        this.afterCompositeSelectionChange();
+      } else {
+        this.applyScatterControlSelection(ids);
+      }
     };
     this.compositeSelectEl = select;
     wrap.append(select);
@@ -1562,11 +1611,29 @@ class SafetyHepExplorer {
     clear.type = 'button';
     clear.className = 'hep-composite-clear';
     clear.textContent = 'Clear selection';
-    clear.disabled = !this.compositeSelectedIds.length;
-    clear.onclick = () => this.clearCompositeSelection();
+    clear.disabled = !this.activeSelectedIds().length;
+    clear.onclick = () =>
+      this.state.view === 'composite' ? this.clearCompositeSelection() : this.clearSelection();
     this.compositeClearBtn = clear;
     wrap.append(clear);
     return wrap;
+  }
+
+  /**
+   * Mirror a view's sticky selection into the shared Participants control: the
+   * dropdown's selected options and the Clear button's enabled state
+   * (HEP-SELECT-001, HEP-COMP-007).
+   * @param {string[]} ids The view's selected participant ids.
+   * @private
+   */
+  syncSelectControl(ids) {
+    if (this.compositeSelectEl) {
+      const set = new Set(ids.map(String));
+      [...this.compositeSelectEl.options].forEach((opt) => {
+        opt.selected = set.has(opt.value);
+      });
+    }
+    if (this.compositeClearBtn) this.compositeClearBtn.disabled = !ids.length;
   }
 
   /**
@@ -1612,13 +1679,7 @@ class SafetyHepExplorer {
    * @private
    */
   afterCompositeSelectionChange() {
-    if (this.compositeSelectEl) {
-      const set = new Set(this.compositeSelectedIds);
-      [...this.compositeSelectEl.options].forEach((opt) => {
-        opt.selected = set.has(opt.value);
-      });
-    }
-    if (this.compositeClearBtn) this.compositeClearBtn.disabled = !this.compositeSelectedIds.length;
+    this.syncSelectControl(this.compositeSelectedIds);
     this.refreshCompositeHighlight();
     this.dispatchSelection([...this.compositeSelectedIds]);
   }
@@ -1635,22 +1696,21 @@ class SafetyHepExplorer {
   }
 
   /**
-   * Update the participant-trace header to name the traced participant and its
-   * migration, or the idle hint when nothing is traced (HEP-COMP-007).
+   * Update the shared participant-trace header from a view's hover + selection:
+   * a hover names that participant (marked selected when it is also in the
+   * selection), a single selection reads "Participant X selected.", several are
+   * counted, and the idle hint returns when nothing is traced (HEP-SELECT-001,
+   * HEP-COMP-007).
+   * @param {string|number|null} hoverId The view's transient hovered id.
+   * @param {string[]} selected The view's sticky selected ids.
    * @private
    */
-  updateCompositeHeader() {
+  updateTraceHeader(hoverId, selected) {
     if (!this.compositeHeaderEl) return;
-    const selected = this.compositeSelectedIds;
     let text;
     let active = true;
-    if (this.compositeHoverId != null) {
-      // A hover names that participant (marking it selected when it is also in
-      // the multi-selection).
-      text = this.participantAnnotationText(
-        this.compositeHoverId,
-        selected.includes(String(this.compositeHoverId))
-      );
+    if (hoverId != null) {
+      text = this.participantAnnotationText(hoverId, selected.includes(String(hoverId)));
     } else if (selected.length === 1) {
       text = this.participantAnnotationText(selected[0], true);
     } else if (selected.length > 1) {
@@ -1661,6 +1721,24 @@ class SafetyHepExplorer {
     }
     this.compositeHeaderEl.textContent = text;
     this.compositeHeaderEl.classList.toggle('is-active', active);
+  }
+
+  /**
+   * Refresh the shared trace header from the composite view's hover +
+   * multi-selection (HEP-COMP-007).
+   * @private
+   */
+  updateCompositeHeader() {
+    this.updateTraceHeader(this.compositeHoverId, this.compositeSelectedIds);
+  }
+
+  /**
+   * Refresh the shared trace header from the scatter view's hover +
+   * multi-highlight (HEP-SELECT-001).
+   * @private
+   */
+  updateScatterHeader() {
+    this.updateTraceHeader(this.state.hoverId, this.scatterSelectedIds);
   }
 
   /**
@@ -1824,6 +1902,8 @@ class SafetyHepExplorer {
    */
   selectParticipant(id) {
     this.state.selectedId = id;
+    this.scatterSelectedIds = [String(id)];
+    this.syncSelectControl(this.scatterSelectedIds);
     if (this.chart) {
       const path = visitPathSeries(this.cleanRows, id, this.settings, this.state);
       this.chart.data.datasets[1].data = path.map((entry) => ({ x: entry.x, y: entry.y }));
@@ -1838,17 +1918,18 @@ class SafetyHepExplorer {
     const annotation = this.participantAnnotationText(id, true);
     this.mainAnnotation.textContent = annotation;
     this.footnote.textContent = annotation;
+    this.updateScatterHeader();
     this.dispatchSelection([id]);
   }
 
   /**
-   * Clear any participant selection: erase the visit-path overlay, close the
-   * detail panels and listing, and restore the base annotation/footnote
-   * (HEP-SELECT-007).
-   * @returns {void}
+   * Close the single-participant drill-down: erase the visit-path overlay, tear
+   * down the detail chart, close the listing, and restore the base
+   * annotation/footnote — without touching the multi-highlight or notifying
+   * listeners (HEP-SELECT-007).
+   * @private
    */
-  clearSelection() {
-    if (this.state.selectedId == null) return;
+  closeDrillDown() {
     this.state.selectedId = null;
     if (this.chart) {
       this.chart.data.datasets[1].data = [];
@@ -1866,7 +1947,49 @@ class SafetyHepExplorer {
     this.detailWrap.style.display = 'none';
     this.mainAnnotation.textContent = '';
     this.footnote.textContent = this.baseFootnote();
+  }
+
+  /**
+   * Clear any participant selection — the clicked drill-down and the
+   * Participants-control multi-highlight: erase the visit-path overlay, close
+   * the detail panels and listing, restore the base annotation/footnote and
+   * idle header, and notify listeners (HEP-SELECT-007).
+   * @returns {void}
+   */
+  clearSelection() {
+    if (this.state.selectedId == null && !this.scatterSelectedIds.length) return;
+    this.scatterSelectedIds = [];
+    this.closeDrillDown();
+    this.syncSelectControl([]);
+    this.updateScatterHeader();
     this.dispatchSelection([]);
+  }
+
+  /**
+   * Apply a Participants-control selection to the scatter view (HEP-SELECT-001,
+   * HEP-COMP-007): exactly one participant opens the full drill-down (the same
+   * path as clicking their point), none clears everything, and several
+   * highlight those participants across the scatter — dimming the rest and
+   * counting them in the header — while the single-participant drill-down
+   * closes.
+   * @param {string[]} ids The participant ids selected in the control.
+   * @private
+   */
+  applyScatterControlSelection(ids) {
+    if (ids.length === 1) {
+      this.selectParticipant(ids[0]);
+      return;
+    }
+    if (!ids.length) {
+      this.clearSelection();
+      return;
+    }
+    this.closeDrillDown();
+    this.scatterSelectedIds = ids.map(String);
+    this.syncSelectControl(this.scatterSelectedIds);
+    if (this.chart) this.chart.update('none');
+    this.updateScatterHeader();
+    this.dispatchSelection([...this.scatterSelectedIds]);
   }
 
   /**

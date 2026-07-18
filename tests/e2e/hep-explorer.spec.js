@@ -223,7 +223,55 @@ test.describe('safety.viz hep-explorer module', () => {
     expect(headers.join(',')).toContain('Result');
     expect(headers.join(',')).toContain('ULN');
     await expect(page.locator('.sv-footnote')).toContainText('Participant SUBJ-001 selected.');
+
+    // The shared trace header and the sidebar Participants control mirror the
+    // selection in the scatter view too (HEP-SELECT-001, HEP-COMP-007).
+    await expect(page.locator('.hep-composite-header')).toHaveText(
+      'Participant SUBJ-001 selected.'
+    );
+    const control = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      return {
+        dropdownSelected: [...instance.compositeSelectEl.selectedOptions].map((o) => o.value),
+        clearEnabled: !instance.compositeClearBtn.disabled
+      };
+    });
+    expect(control.dropdownSelected).toEqual(['SUBJ-001']);
+    expect(control.clearEnabled).toBe(true);
     await captureEvidence(page, 'HEP-SELECT-001', 'participant-detail');
+
+    // Selecting several via the control highlights them across the scatter and
+    // closes the single-participant drill-down; the header counts them.
+    const multi = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      const select = instance.compositeSelectEl;
+      [...select.options].forEach((o, k) => (o.selected = k < 2));
+      select.dispatchEvent(new Event('change'));
+      return {
+        selected: instance.scatterSelectedIds.slice(),
+        selectedId: instance.state.selectedId,
+        detailHidden: instance.detailWrap.style.display === 'none',
+        header: instance.compositeHeaderEl.textContent
+      };
+    });
+    expect(multi.selected).toHaveLength(2);
+    expect(multi.selectedId).toBeNull();
+    expect(multi.detailHidden).toBe(true);
+    expect(multi.header).toBe('2 participants selected.');
+
+    // Narrowing the control back to one participant reopens the drill-down.
+    const single = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      const select = instance.compositeSelectEl;
+      [...select.options].forEach((o) => (o.selected = o.value === 'SUBJ-001'));
+      select.dispatchEvent(new Event('change'));
+      return {
+        selectedId: instance.state.selectedId,
+        detailVisible: instance.detailWrap.style.display !== 'none'
+      };
+    });
+    expect(single.selectedId).toBe('SUBJ-001');
+    expect(single.detailVisible).toBe(true);
   });
 
   test('HEP-SELECT-002: selecting a second participant without a background click destroys the prior detail chart (no Chart.js leak) (#43)', async ({
@@ -598,6 +646,40 @@ test.describe('safety.viz hep-explorer composite plot', () => {
     expect(carried.dropdownSelected).toEqual([String(selectedId)]);
     expect(carried.header).toBe(`Participant ${selectedId} selected.`);
     expect(carried.clearEnabled).toBe(true);
+
+    // A composite multi-selection carries back into the scatter view: the
+    // participants arrive highlighted with the control and shared header
+    // mirroring them, and the single-participant drill-down stays closed.
+    const compositeMulti = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      const chart = instance.compositeCharts[0];
+      const carriedId = String(instance.compositeSelectedIds[0]);
+      const addIndex = chart.$compositeSubjects.findIndex(
+        (subject) => String(subject.id) !== carriedId
+      );
+      chart.options.onClick({}, [{ index: addIndex }], chart);
+      return instance.compositeSelectedIds.slice();
+    });
+    expect(compositeMulti).toHaveLength(2);
+    await page.locator('.hep-view-option', { hasText: 'scatter' }).click();
+    await page.waitForFunction(() => window.__safetyHepExplorerInstance.chart !== null);
+    const carriedBack = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      return {
+        selected: instance.scatterSelectedIds.slice(),
+        selectedId: instance.state.selectedId,
+        dropdownSelected: [...instance.compositeSelectEl.selectedOptions].map((o) => o.value),
+        header: instance.compositeHeaderEl.textContent,
+        detailHidden: instance.detailWrap.style.display === 'none'
+      };
+    });
+    expect([...carriedBack.selected].sort()).toEqual([...compositeMulti].map(String).sort());
+    expect(carriedBack.selectedId).toBeNull();
+    expect([...carriedBack.dropdownSelected].sort()).toEqual(
+      [...compositeMulti].map(String).sort()
+    );
+    expect(carriedBack.header).toBe('2 participants selected.');
+    expect(carriedBack.detailHidden).toBe(true);
   });
 
   test('HEP-COMP-006: degrades gracefully when baseline or on-treatment values are absent (#67)', async ({

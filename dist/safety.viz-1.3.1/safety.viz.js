@@ -19227,6 +19227,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       this.compositeSelectEl = null;
       this.compositeSelectSection = null;
       this.compositeClearBtn = null;
+      this.scatterSelectedIds = [];
       this.participantsSelected = [];
       this.state = {
         view: this.settings.view === "composite" ? "composite" : "scatter",
@@ -19263,6 +19264,9 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       this.legendEl = createElement("div", "hep-legend");
       this.legendEl.style.cssText = "display:flex;flex-wrap:wrap;gap:.35rem .9rem;font-size:.8rem;color:#52616f;margin:0 0 .5rem";
       this.main.insertBefore(this.legendEl, this.chartWrap);
+      this.compositeHeaderEl = createElement("div", "hep-composite-header");
+      this.compositeHeaderEl.textContent = COMPOSITE_HEADER_HINT;
+      this.main.insertBefore(this.compositeHeaderEl, this.legendEl);
       this.quadrantWrap = createElement("div", "hep-quadrant-summary");
       this.main.insertBefore(this.quadrantWrap, this.multiplesWrap);
       this.compositeWrap = createElement("div", "hep-composite");
@@ -19598,7 +19602,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
         });
         if (showRRatio) this.addRRatioControl(addRow, addControl, filterParent);
       }
-      this.compositeSelectSection = scatter ? null : addSection("Participants");
+      this.compositeSelectSection = addSection("Participants");
       const reset = addControl(" ", document.createElement("button"), this.controls);
       reset.type = "button";
       reset.textContent = "Reset Chart";
@@ -19712,7 +19716,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
      * @returns {void}
      */
     render() {
-      const previousSelectedId = this.state.selectedId;
+      const carriedIds = this.participantsSelected.map(String);
       this.destroyCharts();
       this.listingWrap.innerHTML = "";
       this.legendEl.innerHTML = "";
@@ -19727,21 +19731,26 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       this.page = 1;
       this.state.selectedId = null;
       this.state.hoverId = null;
+      this.scatterSelectedIds = [];
       this.participantsSelected = [];
       this.notes.innerHTML = "";
       this.mainAnnotation.textContent = "";
       this.footnote.textContent = this.baseFootnote();
+      if (this.compositeHeaderEl) {
+        this.compositeHeaderEl.textContent = COMPOSITE_HEADER_HINT;
+        this.compositeHeaderEl.classList.remove("is-active");
+      }
       const composite = this.state.view === "composite";
       this.setViewVisibility(composite);
       this.state.xCut = cutFor(this.state.cuts, this.state.measureX, this.state.display);
       this.state.yCut = cutFor(this.state.cuts, this.state.measureY, this.state.display);
       if (!this.cleanRows.length) {
         this.notes.innerHTML = "<span>No data selected. Provide records to draw the chart.</span>";
-        if (previousSelectedId != null) this.dispatchSelection([]);
+        if (carriedIds.length) this.dispatchSelection([]);
         return;
       }
       if (composite) {
-        this.renderComposite(previousSelectedId);
+        this.renderComposite(carriedIds);
         return;
       }
       const built = buildPoints(this.cleanRows, this.settings, this.state);
@@ -19751,7 +19760,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       this.updateNotes();
       if (!this.points.length) {
         this.mainAnnotation.textContent = "No participants to plot for the current selection.";
-        if (previousSelectedId != null) this.dispatchSelection([]);
+        if (carriedIds.length) this.dispatchSelection([]);
         return;
       }
       const grouped = this.state.groupBy && this.state.groupBy !== GROUP_NONE2;
@@ -19761,24 +19770,35 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       this.drawScatter();
       this.drawLegend();
       this.drawQuadrantSummary();
-      if (previousSelectedId != null) this.restoreSelection(previousSelectedId);
+      this.mountCompositeSelect(
+        unique6(this.points.map((point) => String(point.id))).map((id) => ({ id }))
+      );
+      if (carriedIds.length) this.restoreSelection(carriedIds);
     }
     /**
-     * Re-apply a participant selection that was live before a redraw. When the
-     * participant is still among the shown points, selectParticipant re-renders
-     * every coordinated panel — visit path, lab-over-time chart, measure summary
-     * table, and listing — in the active display units and re-announces the
-     * selection (HEP-SELECT-006); when the participant is no longer shown (for
-     * example filtered out, or dropped by the mDISH view for lacking a
-     * baseline), the already-cleared selection is confirmed to listeners with an
-     * empty participantsSelected event.
-     * @param {string|number} id The previously selected participant identifier.
+     * Re-apply the participant selection that was live before a redraw or a view
+     * switch. A single surviving participant reopens every coordinated panel —
+     * visit path, lab-over-time chart, measure summary table, and listing — in
+     * the active display units (HEP-SELECT-006); several survivors restore the
+     * multi-highlight and the Participants control without the single-participant
+     * drill-down; participants no longer shown (filtered out, or dropped by the
+     * mDISH view for lacking a baseline) fall out, and listeners always hear the
+     * surviving selection.
+     * @param {Array<string|number>} ids The previously selected participant ids.
      * @private
      */
-    restoreSelection(id) {
-      const shown = this.points.some((point) => String(point.id) === String(id));
-      if (shown) this.selectParticipant(id);
-      else this.dispatchSelection([]);
+    restoreSelection(ids) {
+      const shownIds = new Set(this.points.map((point) => String(point.id)));
+      const survivors = ids.map(String).filter((id) => shownIds.has(id));
+      if (survivors.length === 1) {
+        this.selectParticipant(survivors[0]);
+        return;
+      }
+      this.scatterSelectedIds = survivors;
+      this.syncSelectControl(survivors);
+      if (this.chart) this.chart.update("none");
+      this.updateScatterHeader();
+      this.dispatchSelection([...survivors]);
     }
     /**
      * Refresh the shown/total participant counts, the removed-record note, and
@@ -19804,12 +19824,24 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       return this.state.hoverId != null ? this.state.hoverId : this.state.selectedId;
     }
     /**
-     * Whether a scatter point is the one currently traced (HEP-SELECT-001).
+     * Whether any scatter participant is currently traced — hovered, or in the
+     * control-driven multi-highlight (HEP-SELECT-001, HEP-COMP-007).
+     * @private
+     */
+    anyScatterActive() {
+      return this.state.hoverId != null || this.scatterSelectedIds.length > 0;
+    }
+    /**
+     * Whether a scatter point is currently traced: hovered, or one of the
+     * Participants-control multi-highlight (a click selection is always mirrored
+     * there) (HEP-SELECT-001).
      * @private
      */
     isScatterActive(point) {
-      const id = this.scatterActiveId();
-      return id != null && point != null && String(point.id) === String(id);
+      if (!point) return false;
+      const id = String(point.id);
+      if (this.state.hoverId != null && String(this.state.hoverId) === id) return true;
+      return this.scatterSelectedIds.includes(id);
     }
     /**
      * Whether the given participant id is the sticky (clicked) selection.
@@ -19841,6 +19873,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       if (this.chart) this.chart.update("none");
       const activeId = this.scatterActiveId();
       this.mainAnnotation.textContent = activeId == null ? "" : this.participantAnnotationText(activeId, this.isSelectedId(activeId));
+      this.updateScatterHeader();
     }
     /**
      * The palette color for a point given the active grouping (HEP-CTRL-009).
@@ -19885,7 +19918,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
         this.state.yCut,
         type
       );
-      const anyActive = () => this.scatterActiveId() != null;
+      const anyActive = () => this.anyScatterActive();
       const isActive = (point) => this.isScatterActive(point);
       const fill = (ctx) => {
         const point = points[ctx.dataIndex];
@@ -20038,20 +20071,19 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
      * migration table with concern coding, and the by-arm concern/benefit
      * summary. Degrades to an explanatory note when no participant in the current
      * selection has a usable baseline and on-treatment ALT and total bilirubin.
-     * @param {string|number} [carriedId] A live scatter-view selection to carry
-     *   into the composite view (HEP-SELECT-006): when the participant is part of
-     *   the composite cohort it arrives selected; otherwise the selection is
+     * @param {Array<string|number>} [carriedIds] A live selection to carry into
+     *   the composite view (HEP-SELECT-006): the participants that are part of
+     *   the composite cohort arrive selected; when none survive the selection is
      *   cleared and listeners notified.
      * @private
      */
-    renderComposite(carriedId) {
+    renderComposite(carriedIds = []) {
       const { subjects, excluded } = buildCompositeSubjects(this.cleanRows, this.settings);
       const shown = applyFilters6(subjects, this.state.filters);
       this.compositeCharts = [];
       this.compositeSubjectsShown = shown;
       this.compositeHoverId = null;
       this.compositeSelectedIds = [];
-      this.compositeHeaderEl = null;
       this.compositeSelectEl = null;
       this.compositeClearBtn = null;
       this.mountCompositeSelect(shown);
@@ -20063,12 +20095,9 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
         const note = createElement("div", "sv-warning");
         note.textContent = "The composite plot needs baseline and on-treatment ALT and total bilirubin for at least one participant. No participant in the current selection qualifies.";
         this.compositeWrap.append(note);
-        if (carriedId != null) this.dispatchSelection([]);
+        if (carriedIds.length) this.dispatchSelection([]);
         return;
       }
-      this.compositeHeaderEl = createElement("div", "hep-composite-header");
-      this.compositeHeaderEl.textContent = COMPOSITE_HEADER_HINT;
-      this.compositeWrap.append(this.compositeHeaderEl);
       this.compositeWrap.append(this.buildCompositeLegend());
       this.compositeWrap.append(
         createElement("h3", "hep-composite-section-title", "Baseline \u2192 on-treatment eDISH (\xD7ULN)")
@@ -20087,10 +20116,11 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       this.compositeWrap.append(this.buildCompositePanels(shown));
       this.compositeWrap.append(this.buildMigrationTable(shown));
       this.compositeWrap.append(this.buildByArmSummary(shown));
-      if (carriedId != null) {
-        const key = String(carriedId);
-        if (shown.some((subject) => String(subject.id) === key)) {
-          this.compositeSelectedIds = [key];
+      if (carriedIds.length) {
+        const shownIds = new Set(shown.map((subject) => String(subject.id)));
+        const survivors = carriedIds.map(String).filter((id) => shownIds.has(id));
+        if (survivors.length) {
+          this.compositeSelectedIds = survivors;
           this.afterCompositeSelectionChange();
         } else {
           this.dispatchSelection([]);
@@ -20409,13 +20439,22 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       if (shown.length) section.append(this.buildCompositeSelect(shown));
     }
     /**
+     * The active view's sticky participant selection: the composite
+     * multi-selection, or the scatter multi-highlight (HEP-SELECT-001,
+     * HEP-COMP-007).
+     * @private
+     */
+    activeSelectedIds() {
+      return this.state.view === "composite" ? this.compositeSelectedIds : this.scatterSelectedIds;
+    }
+    /**
      * Build the participant multi-select dropdown for the sidebar's Participants
-     * section (HEP-COMP-007): one option per shown participant, its selected
-     * options mirroring the click-driven multi-selection, plus a Clear selection
-     * button (disabled while nothing is selected) that resets the whole
-     * selection. Editing the select drives the highlight, and clicking points
-     * keeps it in sync.
-     * @param {Object[]} shown The shown composite subjects.
+     * section, shared by both views (HEP-SELECT-001, HEP-COMP-007): one option
+     * per shown participant, its selected options mirroring the view's sticky
+     * selection, plus a Clear selection button (disabled while nothing is
+     * selected) that resets the whole selection. Editing the select drives the
+     * highlight, and clicking points keeps it in sync.
+     * @param {Object[]} shown The shown participants ({id} each).
      * @private
      */
     buildCompositeSelect(shown) {
@@ -20426,8 +20465,13 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       select.size = Math.min(8, Math.max(3, shown.length));
       shown.forEach((subject) => option(select, String(subject.id), String(subject.id), false));
       select.onchange = () => {
-        this.compositeSelectedIds = [...select.selectedOptions].map((opt) => opt.value);
-        this.afterCompositeSelectionChange();
+        const ids = [...select.selectedOptions].map((opt) => opt.value);
+        if (this.state.view === "composite") {
+          this.compositeSelectedIds = ids;
+          this.afterCompositeSelectionChange();
+        } else {
+          this.applyScatterControlSelection(ids);
+        }
       };
       this.compositeSelectEl = select;
       wrap.append(select);
@@ -20435,11 +20479,27 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       clear.type = "button";
       clear.className = "hep-composite-clear";
       clear.textContent = "Clear selection";
-      clear.disabled = !this.compositeSelectedIds.length;
-      clear.onclick = () => this.clearCompositeSelection();
+      clear.disabled = !this.activeSelectedIds().length;
+      clear.onclick = () => this.state.view === "composite" ? this.clearCompositeSelection() : this.clearSelection();
       this.compositeClearBtn = clear;
       wrap.append(clear);
       return wrap;
+    }
+    /**
+     * Mirror a view's sticky selection into the shared Participants control: the
+     * dropdown's selected options and the Clear button's enabled state
+     * (HEP-SELECT-001, HEP-COMP-007).
+     * @param {string[]} ids The view's selected participant ids.
+     * @private
+     */
+    syncSelectControl(ids) {
+      if (this.compositeSelectEl) {
+        const set2 = new Set(ids.map(String));
+        [...this.compositeSelectEl.options].forEach((opt) => {
+          opt.selected = set2.has(opt.value);
+        });
+      }
+      if (this.compositeClearBtn) this.compositeClearBtn.disabled = !ids.length;
     }
     /**
      * Set the transient hovered participant and restyle the panels + header when it
@@ -20481,13 +20541,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
      * @private
      */
     afterCompositeSelectionChange() {
-      if (this.compositeSelectEl) {
-        const set2 = new Set(this.compositeSelectedIds);
-        [...this.compositeSelectEl.options].forEach((opt) => {
-          opt.selected = set2.has(opt.value);
-        });
-      }
-      if (this.compositeClearBtn) this.compositeClearBtn.disabled = !this.compositeSelectedIds.length;
+      this.syncSelectControl(this.compositeSelectedIds);
       this.refreshCompositeHighlight();
       this.dispatchSelection([...this.compositeSelectedIds]);
     }
@@ -20502,20 +20556,21 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       this.updateCompositeHeader();
     }
     /**
-     * Update the participant-trace header to name the traced participant and its
-     * migration, or the idle hint when nothing is traced (HEP-COMP-007).
+     * Update the shared participant-trace header from a view's hover + selection:
+     * a hover names that participant (marked selected when it is also in the
+     * selection), a single selection reads "Participant X selected.", several are
+     * counted, and the idle hint returns when nothing is traced (HEP-SELECT-001,
+     * HEP-COMP-007).
+     * @param {string|number|null} hoverId The view's transient hovered id.
+     * @param {string[]} selected The view's sticky selected ids.
      * @private
      */
-    updateCompositeHeader() {
+    updateTraceHeader(hoverId, selected) {
       if (!this.compositeHeaderEl) return;
-      const selected = this.compositeSelectedIds;
       let text;
       let active = true;
-      if (this.compositeHoverId != null) {
-        text = this.participantAnnotationText(
-          this.compositeHoverId,
-          selected.includes(String(this.compositeHoverId))
-        );
+      if (hoverId != null) {
+        text = this.participantAnnotationText(hoverId, selected.includes(String(hoverId)));
       } else if (selected.length === 1) {
         text = this.participantAnnotationText(selected[0], true);
       } else if (selected.length > 1) {
@@ -20526,6 +20581,22 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       }
       this.compositeHeaderEl.textContent = text;
       this.compositeHeaderEl.classList.toggle("is-active", active);
+    }
+    /**
+     * Refresh the shared trace header from the composite view's hover +
+     * multi-selection (HEP-COMP-007).
+     * @private
+     */
+    updateCompositeHeader() {
+      this.updateTraceHeader(this.compositeHoverId, this.compositeSelectedIds);
+    }
+    /**
+     * Refresh the shared trace header from the scatter view's hover +
+     * multi-highlight (HEP-SELECT-001).
+     * @private
+     */
+    updateScatterHeader() {
+      this.updateTraceHeader(this.state.hoverId, this.scatterSelectedIds);
     }
     /**
      * Build the pretreatment × on-treatment migration table (HEP-COMP-004): counts
@@ -20671,6 +20742,8 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
      */
     selectParticipant(id) {
       this.state.selectedId = id;
+      this.scatterSelectedIds = [String(id)];
+      this.syncSelectControl(this.scatterSelectedIds);
       if (this.chart) {
         const path = visitPathSeries(this.cleanRows, id, this.settings, this.state);
         this.chart.data.datasets[1].data = path.map((entry) => ({ x: entry.x, y: entry.y }));
@@ -20685,16 +20758,17 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       const annotation = this.participantAnnotationText(id, true);
       this.mainAnnotation.textContent = annotation;
       this.footnote.textContent = annotation;
+      this.updateScatterHeader();
       this.dispatchSelection([id]);
     }
     /**
-     * Clear any participant selection: erase the visit-path overlay, close the
-     * detail panels and listing, and restore the base annotation/footnote
-     * (HEP-SELECT-007).
-     * @returns {void}
+     * Close the single-participant drill-down: erase the visit-path overlay, tear
+     * down the detail chart, close the listing, and restore the base
+     * annotation/footnote — without touching the multi-highlight or notifying
+     * listeners (HEP-SELECT-007).
+     * @private
      */
-    clearSelection() {
-      if (this.state.selectedId == null) return;
+    closeDrillDown() {
       this.state.selectedId = null;
       if (this.chart) {
         this.chart.data.datasets[1].data = [];
@@ -20711,7 +20785,47 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       this.detailWrap.style.display = "none";
       this.mainAnnotation.textContent = "";
       this.footnote.textContent = this.baseFootnote();
+    }
+    /**
+     * Clear any participant selection — the clicked drill-down and the
+     * Participants-control multi-highlight: erase the visit-path overlay, close
+     * the detail panels and listing, restore the base annotation/footnote and
+     * idle header, and notify listeners (HEP-SELECT-007).
+     * @returns {void}
+     */
+    clearSelection() {
+      if (this.state.selectedId == null && !this.scatterSelectedIds.length) return;
+      this.scatterSelectedIds = [];
+      this.closeDrillDown();
+      this.syncSelectControl([]);
+      this.updateScatterHeader();
       this.dispatchSelection([]);
+    }
+    /**
+     * Apply a Participants-control selection to the scatter view (HEP-SELECT-001,
+     * HEP-COMP-007): exactly one participant opens the full drill-down (the same
+     * path as clicking their point), none clears everything, and several
+     * highlight those participants across the scatter — dimming the rest and
+     * counting them in the header — while the single-participant drill-down
+     * closes.
+     * @param {string[]} ids The participant ids selected in the control.
+     * @private
+     */
+    applyScatterControlSelection(ids) {
+      if (ids.length === 1) {
+        this.selectParticipant(ids[0]);
+        return;
+      }
+      if (!ids.length) {
+        this.clearSelection();
+        return;
+      }
+      this.closeDrillDown();
+      this.scatterSelectedIds = ids.map(String);
+      this.syncSelectControl(this.scatterSelectedIds);
+      if (this.chart) this.chart.update("none");
+      this.updateScatterHeader();
+      this.dispatchSelection([...this.scatterSelectedIds]);
     }
     /**
      * Draw the participant drill-down panels into the detail container: the
