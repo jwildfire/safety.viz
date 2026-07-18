@@ -152,7 +152,8 @@ for (const renderer of config.renderers.filter((entry) => entry.status === 'avai
     path.join(moduleDir, 'api.html'),
     `${renderer.title} API reference · safety.viz`,
     renderApiPage(JSON.parse(readFileSync(apiFile, 'utf8')), {
-      hasGuide: !!renderer.guide
+      hasGuide: !!renderer.guide,
+      experimental: !!renderer.experimental
     }),
     '../',
     `Generated API reference for the safety.viz ${module} module: factory, lifecycle ` +
@@ -187,8 +188,9 @@ for (const renderer of config.renderers.filter((entry) => entry.status === 'avai
         `${renderer.title} clinical guide · safety.viz`,
         renderGuidePage({ renderer, config, guideMarkdown: readFileSync(guidePath, 'utf8') }),
         '../',
-        `Clinical guide for the safety.viz ${module} module: how to read the graphic to ` +
-          'review participant liver safety, cross-referenced to the live controls.'
+        renderer.guideTagline ||
+          `Clinical guide for the safety.viz ${module} module: how to read the graphic to ` +
+            'review participant liver safety, cross-referenced to the live controls.'
       );
     }
   }

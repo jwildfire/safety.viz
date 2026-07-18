@@ -17062,13 +17062,13 @@ var SafetyOutlierExplorer = class {
       this.render();
     };
     if (this.state.normalMethod === "Standard Deviation") {
-      const sd4 = addControl("# Std. Dev.", document.createElement("input"), nrParent);
-      sd4.type = "number";
-      sd4.step = "any";
-      sd4.min = "0";
-      sd4.value = this.state.normalSd;
-      sd4.onchange = () => {
-        this.state.normalSd = Number(sd4.value) || 0;
+      const sd5 = addControl("# Std. Dev.", document.createElement("input"), nrParent);
+      sd5.type = "number";
+      sd5.step = "any";
+      sd5.min = "0";
+      sd5.value = this.state.normalSd;
+      sd5.onchange = () => {
+        this.state.normalSd = Number(sd5.value) || 0;
         this.render();
       };
     } else if (this.state.normalMethod === "Quantiles") {
@@ -21172,6 +21172,1444 @@ function aeExplorer(element = "body", settings = {}) {
   return new AEExplorer(element, settings);
 }
 
+// src/data/schema/qt-explorer.json
+var qt_explorer_default = {
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "https://raw.githubusercontent.com/jwildfire/safety.viz/main/src/data/schema/qt-explorer.json",
+  title: "safety.viz qt-explorer data contract",
+  description: "Long-format ECG-interval data: one record per participant per ECG parameter (QTcF / QTcB / Heart Rate) per visit (QT-DATA-001). Column names are supplied by the settings mapping. The qt-explorer reads a heart-rate-corrected QTc value, its baseline, and its change-from-baseline (taken from the change column, or derived value \u2212 baseline) to drive three views: central-tendency change over time by arm (\u0394 / placebo-corrected \u0394\u0394) with a 90% CI and the ICH-E14 metric, an outlier scatter of change vs baseline with absolute (450/480/500 ms) and change (30/60 ms) cut-lines, and a categorical by-arm exceedance table. Missing / non-numeric results are removed with a reported count (QT-DATA-003).",
+  type: "object",
+  required: ["data", "settings"],
+  properties: {
+    data: {
+      type: "array",
+      minItems: 1,
+      items: { type: "object" },
+      description: "d3.csv()-style records; every row carries the parameter, result, baseline, participant, arm, and visit columns named in settings, one row per participant per parameter per visit."
+    },
+    settings: {
+      type: "object",
+      description: "Column mappings and rendering options; merged onto the module's DEFAULT_SETTINGS, so only overrides need to be supplied (QT-DATA-003).",
+      required: ["measure_col", "value_col", "arm_col", "baseline_col"],
+      properties: {
+        id_col: {
+          type: "string",
+          default: "USUBJID",
+          description: "Participant identifier column; one point per participant in the scatter and the exceedance denominators (QT-DATA-001)."
+        },
+        measure_col: {
+          type: "string",
+          default: "TEST",
+          description: "Column holding the ECG parameter name; required in data. Matched to the correction options (QTcF/QTcB/Heart Rate) (QT-DATA-002)."
+        },
+        value_col: {
+          type: "string",
+          default: "STRESN",
+          description: "Column holding the numeric analysis value; required in data. Non-numeric results are removed with a logged count (QT-DATA-003)."
+        },
+        baseline_col: {
+          type: "string",
+          default: "BASE",
+          description: "Column holding the participant's baseline value; required in data \u2014 the scatter's x-axis and the absolute-threshold diagonals are anchored to it (QT-OUT-001)."
+        },
+        change_col: {
+          type: ["string", "null"],
+          default: "CHG",
+          description: "Optional column holding the source change-from-baseline. When absent or blank for a row, change is derived as value \u2212 baseline (QT-DATA-004)."
+        },
+        unit_col: {
+          type: ["string", "null"],
+          default: "STRESU",
+          description: "Optional unit column, appended to the parameter label."
+        },
+        arm_col: {
+          type: "string",
+          default: "ARM",
+          description: "Treatment-arm column; required in data. Drives the per-arm central-tendency lines, point colors, \u0394\u0394 placebo correction, and the exceedance table columns (QT-CT-001, QT-OUT-004, QT-CAT-001)."
+        },
+        placebo_arm: {
+          type: ["string", "null"],
+          default: null,
+          description: "The arm treated as placebo for the \u0394\u0394 (placebo-corrected) central-tendency mode and the ICH-E14 metric. When null, the arm whose name matches /placebo/i is auto-detected (QT-CT-004)."
+        },
+        visit_col: {
+          type: "string",
+          default: "VISIT",
+          description: "Categorical visit column; the central-tendency x-axis and the outlier-scatter timepoint selector (QT-CT-001, QT-OUT-002)."
+        },
+        visitn_col: {
+          type: ["string", "null"],
+          default: "VISITNUM",
+          description: "Optional numeric visit column ordering the visits; falls back to first-seen order when absent."
+        },
+        baseline_flag_col: {
+          type: ["string", "null"],
+          default: "ABLFL",
+          description: "Optional 'Y'-flagged baseline-record column; when present the baseline visit is excluded from the post-baseline extremes and the central-tendency change series (QT-DATA-005)."
+        },
+        measures: {
+          type: "array",
+          items: { type: "string" },
+          default: ["QTcF", "QTcB", "Heart Rate"],
+          description: "The correction / parameter options offered by the Correction control, in order (QT-CTRL-002)."
+        },
+        qtc_measures: {
+          type: "array",
+          items: { type: "string" },
+          default: ["QTcF", "QTcB"],
+          description: "Which measures are QTc corrections; the outlier scatter's absolute-threshold diagonals and the categorical absolute rows apply only to these (Heart Rate has no QTc cut-lines) (QT-OUT-003)."
+        },
+        start_measure: {
+          type: ["string", "null"],
+          default: "QTcF",
+          description: "Correction selected on first render; falls back to the first available measure (QT-CTRL-002)."
+        },
+        absolute_thresholds: {
+          type: "array",
+          items: { type: "number" },
+          default: [450, 480, 500],
+          description: "Absolute QTc cut-lines (msec) for the outlier-scatter diagonals and the categorical absolute rows (QT-OUT-003, QT-CAT-002; workflow step 3a)."
+        },
+        change_thresholds: {
+          type: "array",
+          items: { type: "number" },
+          default: [30, 60],
+          description: "Change-from-baseline cut-lines (msec) for the outlier-scatter horizontals and the categorical change rows (QT-OUT-003, QT-CAT-003; workflow step 3b)."
+        },
+        reference_threshold: {
+          type: "number",
+          default: 10,
+          description: "Central-tendency reference line (msec): the ICH-E14 threshold of regulatory concern for the mean/\u0394\u0394 change (QT-CT-003; workflow step 1a)."
+        },
+        ci_level: {
+          type: "number",
+          default: 0.9,
+          description: "Confidence level for the two-sided CI on the mean change and the mean difference; the ICH-E14 metric reads the upper bound of this interval (QT-CT-005)."
+        },
+        filters: {
+          $ref: "#/$defs/fieldList",
+          description: "Optional filter columns rendered as controls (QT-CTRL-003)."
+        }
+      }
+    }
+  },
+  $defs: {
+    fieldList: {
+      type: "array",
+      items: {
+        anyOf: [
+          { type: "string" },
+          {
+            type: "object",
+            required: ["value_col"],
+            properties: {
+              value_col: { type: "string" },
+              label: { type: "string" }
+            }
+          }
+        ]
+      }
+    }
+  }
+};
+
+// src/qt-explorer/checkInputs.js
+var REQUIRED_COLUMN_SETTINGS9 = qt_explorer_default.properties.settings.required;
+function checkInputs9(data, settings) {
+  const rows = Array.isArray(data) ? data : [];
+  const missing = REQUIRED_COLUMN_SETTINGS9.map((key) => settings[key]).filter(
+    (col) => !rows.some((row) => row[col] !== void 0)
+  );
+  if (missing.length) {
+    throw new Error(`Required variable(s) missing: ${missing.join(", ")}`);
+  }
+}
+
+// src/qt-explorer/configure.js
+var VIEWS = [
+  { value: "central", label: "Central tendency" },
+  { value: "outlier", label: "Outlier scatter" },
+  { value: "categorical", label: "Categorical" }
+];
+var STATISTICS = [
+  { value: "mean", label: "Mean" },
+  { value: "median", label: "Median" }
+];
+var DISPLAY_MODES2 = [
+  { value: "delta", label: "\u0394 (change from baseline)" },
+  { value: "deltadelta", label: "\u0394\u0394 (placebo-corrected)" }
+];
+var TIMEPOINT_MAX = "__qt_max";
+var DEFAULT_SETTINGS9 = {
+  id_col: "USUBJID",
+  measure_col: "TEST",
+  value_col: "STRESN",
+  baseline_col: "BASE",
+  change_col: "CHG",
+  unit_col: "STRESU",
+  arm_col: "ARM",
+  placebo_arm: null,
+  visit_col: "VISIT",
+  visitn_col: "VISITNUM",
+  baseline_flag_col: "ABLFL",
+  measures: ["QTcF", "QTcB", "Heart Rate"],
+  qtc_measures: ["QTcF", "QTcB"],
+  start_measure: "QTcF",
+  absolute_thresholds: [450, 480, 500],
+  change_thresholds: [30, 60],
+  reference_threshold: 10,
+  ci_level: 0.9,
+  filters: [],
+  width: "100%",
+  height: 460
+};
+function arrayify7(value) {
+  if (value === void 0 || value === null || value === "") return [];
+  return Array.isArray(value) ? value : [value];
+}
+function fieldSpec7(value, fallbackLabel) {
+  if (typeof value === "string") return { value_col: value, label: fallbackLabel || value };
+  return { ...value, value_col: value.value_col, label: value.label || value.value_col };
+}
+function syncSettings9(settings) {
+  const synced = { ...DEFAULT_SETTINGS9, ...settings };
+  synced.filters = arrayify7(synced.filters).map((value) => fieldSpec7(value)).filter((d) => d.value_col);
+  synced.measures = arrayify7(synced.measures);
+  synced.qtc_measures = arrayify7(synced.qtc_measures);
+  synced.absolute_thresholds = arrayify7(synced.absolute_thresholds).map(Number).filter((n) => Number.isFinite(n)).sort((a, b) => a - b);
+  synced.change_thresholds = arrayify7(synced.change_thresholds).map(Number).filter((n) => Number.isFinite(n)).sort((a, b) => a - b);
+  if (!synced.start_measure || !synced.measures.includes(synced.start_measure)) {
+    synced.start_measure = synced.measures[0] || null;
+  }
+  if (!Number.isFinite(synced.ci_level) || synced.ci_level <= 0 || synced.ci_level >= 1) {
+    synced.ci_level = DEFAULT_SETTINGS9.ci_level;
+  }
+  return synced;
+}
+function zForCi(ciLevel) {
+  const table = [
+    [0.8, 1.2816],
+    [0.9, 1.6449],
+    [0.95, 1.96],
+    [0.98, 2.3263],
+    [0.99, 2.5758]
+  ];
+  if (!Number.isFinite(ciLevel)) return 1.6449;
+  if (ciLevel <= table[0][0]) return table[0][1];
+  if (ciLevel >= table[table.length - 1][0]) return table[table.length - 1][1];
+  for (let i = 0; i < table.length - 1; i += 1) {
+    const [lo, zLo] = table[i];
+    const [hi, zHi] = table[i + 1];
+    if (ciLevel >= lo && ciLevel <= hi) {
+      return zLo + (zHi - zLo) * (ciLevel - lo) / (hi - lo);
+    }
+  }
+  return 1.6449;
+}
+function resolvePlaceboArm(arms, placeboSetting) {
+  if (placeboSetting && arms.includes(placeboSetting)) return placeboSetting;
+  return arms.find((arm) => /placebo/i.test(arm)) || null;
+}
+
+// src/qt-explorer/structureData.js
+function unique8(values) {
+  return [
+    ...new Set(values.filter((value) => value !== void 0 && value !== null && value !== ""))
+  ];
+}
+function mean6(values) {
+  if (!values.length) return Number.NaN;
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
+}
+function sd4(values) {
+  if (values.length < 2) return Number.NaN;
+  const m = mean6(values);
+  return Math.sqrt(
+    values.reduce((sum, value) => sum + Math.pow(value - m, 2), 0) / (values.length - 1)
+  );
+}
+function quantile5(values, p) {
+  if (!values.length) return Number.NaN;
+  const sorted = [...values].sort((a, b) => a - b);
+  const idx = (sorted.length - 1) * p;
+  const lo = Math.floor(idx);
+  const hi = Math.ceil(idx);
+  if (lo === hi) return sorted[lo];
+  return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
+}
+function median3(values) {
+  return quantile5(values, 0.5);
+}
+var isFiniteNum = (v) => v !== "" && v !== null && v !== void 0 && Number.isFinite(Number(v));
+function cleanData7(data, settings) {
+  const source = Array.isArray(data) ? data : [];
+  const hasFlagCol = !!settings.baseline_flag_col && source.some((row) => row[settings.baseline_flag_col] !== void 0);
+  const rows = [];
+  let removed = 0;
+  for (const row of source) {
+    const rawValue = row[settings.value_col];
+    if (!isFiniteNum(rawValue)) {
+      removed += 1;
+      continue;
+    }
+    const value = Number(rawValue);
+    const baselineRaw = row[settings.baseline_col];
+    const baseline = isFiniteNum(baselineRaw) ? Number(baselineRaw) : Number.NaN;
+    const changeRaw = settings.change_col ? row[settings.change_col] : void 0;
+    const change = isFiniteNum(changeRaw) ? Number(changeRaw) : Number.isFinite(baseline) ? value - baseline : Number.NaN;
+    const flag = hasFlagCol ? row[settings.baseline_flag_col] : void 0;
+    const isBaseline = hasFlagCol ? flag === "Y" || flag === "y" : Number.isFinite(change) && change === 0;
+    rows.push({
+      ...row,
+      __qt_measure: row[settings.measure_col],
+      __qt_value: value,
+      __qt_baseline: baseline,
+      __qt_change: change,
+      __qt_arm: row[settings.arm_col],
+      __qt_visit: row[settings.visit_col],
+      __qt_postBaseline: !isBaseline
+    });
+  }
+  return { rows, removed };
+}
+function forMeasure(rows, measure) {
+  return rows.filter((row) => row.__qt_measure === measure);
+}
+function measuresPresent(rows) {
+  return unique8(rows.map((row) => row.__qt_measure));
+}
+function armsPresent(rows, placeboArm) {
+  const arms = unique8(rows.map((row) => row.__qt_arm)).map(String);
+  const rest = arms.filter((arm) => arm !== placeboArm).sort();
+  return placeboArm && arms.includes(placeboArm) ? [placeboArm, ...rest] : rest;
+}
+function orderVisits(rows, settings) {
+  const seen = /* @__PURE__ */ new Map();
+  for (const row of rows) {
+    const visit = row.__qt_visit;
+    if (visit === void 0 || visit === null || visit === "") continue;
+    if (!seen.has(visit)) {
+      const n = settings.visitn_col ? Number(row[settings.visitn_col]) : Number.NaN;
+      seen.set(visit, Number.isFinite(n) ? n : Number.POSITIVE_INFINITY);
+    }
+  }
+  return [...seen.keys()].sort((a, b) => {
+    const na = seen.get(a);
+    const nb = seen.get(b);
+    if (na === nb) return String(a).localeCompare(String(b));
+    return na - nb;
+  });
+}
+function applyFilters7(rows, filterState) {
+  const active = Object.entries(filterState || {}).filter(
+    ([, value]) => value !== void 0 && value !== null && value !== ""
+  );
+  if (!active.length) return rows;
+  return rows.filter((row) => active.every(([col, value]) => String(row[col]) === String(value)));
+}
+function centralTendencySeries(measureRows, options) {
+  const {
+    statistic = "mean",
+    mode = "delta",
+    arms = [],
+    visitOrder = [],
+    placeboArm = null
+  } = options;
+  const z = zForCi(options.ciLevel);
+  const cells = /* @__PURE__ */ new Map();
+  for (const visit of visitOrder) cells.set(visit, /* @__PURE__ */ new Map());
+  for (const row of measureRows) {
+    if (!Number.isFinite(row.__qt_change)) continue;
+    const visit = row.__qt_visit;
+    if (!cells.has(visit)) continue;
+    const armMap = cells.get(visit);
+    const arm = String(row.__qt_arm);
+    if (!armMap.has(arm)) armMap.set(arm, []);
+    armMap.get(arm).push(row.__qt_change);
+  }
+  const stat = (visit, arm) => {
+    const values = (cells.get(visit) || /* @__PURE__ */ new Map()).get(arm) || [];
+    if (!values.length) return null;
+    const n = values.length;
+    const m = mean6(values);
+    const s = sd4(values);
+    const se = Number.isFinite(s) ? s / Math.sqrt(n) : Number.NaN;
+    return { n, mean: m, median: median3(values), sd: s, se };
+  };
+  const armsForSeries = mode === "deltadelta" ? arms.filter((arm) => arm !== placeboArm) : arms;
+  const series = armsForSeries.map((arm) => {
+    const points = [];
+    for (const visit of visitOrder) {
+      const cell2 = stat(visit, arm);
+      if (!cell2) continue;
+      if (mode === "deltadelta") {
+        const pbo = stat(visit, placeboArm);
+        if (!pbo) continue;
+        const value = statistic === "median" ? cell2.median - pbo.median : cell2.mean - pbo.mean;
+        const seDiff = Math.sqrt(cell2.se * cell2.se + pbo.se * pbo.se);
+        const ci = statistic === "mean" && Number.isFinite(seDiff) ? { lo: value - z * seDiff, hi: value + z * seDiff } : { lo: Number.NaN, hi: Number.NaN };
+        points.push({ visit, value, n: cell2.n, lo: ci.lo, hi: ci.hi });
+      } else {
+        const value = statistic === "median" ? cell2.median : cell2.mean;
+        const ci = statistic === "mean" && Number.isFinite(cell2.se) ? { lo: value - z * cell2.se, hi: value + z * cell2.se } : { lo: Number.NaN, hi: Number.NaN };
+        points.push({ visit, value, n: cell2.n, lo: ci.lo, hi: ci.hi });
+      }
+    }
+    return { arm, points };
+  });
+  return { mode, statistic, visitOrder, placeboArm, series };
+}
+function ichE14Metric(tendency, referenceThreshold) {
+  if (!tendency || tendency.mode !== "deltadelta" || tendency.statistic !== "mean") return [];
+  return tendency.series.map(({ arm, points }) => {
+    let maxUpper = Number.NEGATIVE_INFINITY;
+    let visit = null;
+    for (const point of points) {
+      if (Number.isFinite(point.hi) && point.hi > maxUpper) {
+        maxUpper = point.hi;
+        visit = point.visit;
+      }
+    }
+    const has = Number.isFinite(maxUpper);
+    return {
+      arm,
+      maxUpper: has ? maxUpper : Number.NaN,
+      visit,
+      exceeds: has && maxUpper >= referenceThreshold
+    };
+  });
+}
+function peakVisits(tendency) {
+  const peaks = /* @__PURE__ */ new Map();
+  if (!tendency) return peaks;
+  for (const { arm, points } of tendency.series) {
+    let best = null;
+    for (const point of points) {
+      if (!Number.isFinite(point.value)) continue;
+      if (!best || point.value > best.value) best = { visit: point.visit, value: point.value };
+    }
+    if (best) peaks.set(arm, best);
+  }
+  return peaks;
+}
+function subjectPoints(measureRows, options) {
+  const { timepoint, idCol } = options;
+  const bySubject = /* @__PURE__ */ new Map();
+  for (const row of measureRows) {
+    const id = row[idCol];
+    if (timepoint === "__qt_max") {
+      if (!row.__qt_postBaseline) continue;
+      const current = bySubject.get(id);
+      if (!current || row.__qt_value > current.__qt_value) bySubject.set(id, row);
+    } else if (String(row.__qt_visit) === String(timepoint)) {
+      bySubject.set(id, row);
+    }
+  }
+  const points = [];
+  for (const [id, row] of bySubject) {
+    if (!Number.isFinite(row.__qt_baseline) || !Number.isFinite(row.__qt_change)) continue;
+    points.push({
+      id: String(id),
+      arm: String(row.__qt_arm),
+      baseline: row.__qt_baseline,
+      value: row.__qt_value,
+      change: row.__qt_change,
+      visit: row.__qt_visit
+    });
+  }
+  return points;
+}
+function subjectExtremes(measureRows, idCol) {
+  const extremes = /* @__PURE__ */ new Map();
+  for (const row of measureRows) {
+    if (!row.__qt_postBaseline) continue;
+    const id = row[idCol];
+    const entry = extremes.get(id) || {
+      arm: String(row.__qt_arm),
+      maxValue: Number.NEGATIVE_INFINITY,
+      maxChange: Number.NEGATIVE_INFINITY
+    };
+    if (Number.isFinite(row.__qt_value)) entry.maxValue = Math.max(entry.maxValue, row.__qt_value);
+    if (Number.isFinite(row.__qt_change))
+      entry.maxChange = Math.max(entry.maxChange, row.__qt_change);
+    extremes.set(id, entry);
+  }
+  return extremes;
+}
+function classifyThresholds(measureRows, options) {
+  const { idCol, arms, absoluteThresholds = [], changeThresholds = [] } = options;
+  const extremes = subjectExtremes(measureRows, idCol);
+  const denominators = {};
+  arms.forEach((arm) => {
+    denominators[arm] = 0;
+  });
+  let allDenom = 0;
+  for (const entry of extremes.values()) {
+    if (denominators[entry.arm] === void 0) denominators[entry.arm] = 0;
+    denominators[entry.arm] += 1;
+    allDenom += 1;
+  }
+  const buildRow = (kind, threshold, pick) => {
+    const byArm = {};
+    let allCount = 0;
+    arms.forEach((arm) => {
+      byArm[arm] = 0;
+    });
+    for (const entry of extremes.values()) {
+      if (pick(entry) > threshold) {
+        if (byArm[entry.arm] === void 0) byArm[entry.arm] = 0;
+        byArm[entry.arm] += 1;
+        allCount += 1;
+      }
+    }
+    const cells = {};
+    arms.forEach((arm) => {
+      const denom = denominators[arm] || 0;
+      cells[arm] = { count: byArm[arm], denom, percent: denom ? byArm[arm] / denom * 100 : 0 };
+    });
+    cells.All = {
+      count: allCount,
+      denom: allDenom,
+      percent: allDenom ? allCount / allDenom * 100 : 0
+    };
+    return {
+      kind,
+      threshold,
+      label: kind === "absolute" ? `> ${threshold} ms` : `\u0394 > ${threshold} ms`,
+      cells
+    };
+  };
+  const rows = [
+    ...absoluteThresholds.map((t) => buildRow("absolute", t, (e) => e.maxValue)),
+    ...changeThresholds.map((t) => buildRow("change", t, (e) => e.maxChange))
+  ];
+  return { arms, denominators, allDenom, rows };
+}
+function placeboArmFor(rows, placeboSetting) {
+  return resolvePlaceboArm(unique8(rows.map((row) => String(row.__qt_arm))), placeboSetting);
+}
+
+// src/qt-explorer/getScales.js
+var CORRECTION_SUFFIX = { QTcF: "Fridericia", QTcB: "Bazett" };
+var ARM_POINT_STYLES = ["circle", "triangle", "rectRot", "rect", "star", "crossRot"];
+function correctionSuffix(measure) {
+  return CORRECTION_SUFFIX[measure] || null;
+}
+function isQtcMeasure(measure, qtcMeasures) {
+  return (qtcMeasures || []).includes(measure);
+}
+function measureUnit(measure, qtcMeasures) {
+  return isQtcMeasure(measure, qtcMeasures) ? "ms" : "bpm";
+}
+function centralAxisTitle(measure, mode, qtcMeasures) {
+  const prefix = mode === "deltadelta" ? "\u0394\u0394" : "\u0394";
+  const suffix = correctionSuffix(measure);
+  const unit = measureUnit(measure, qtcMeasures);
+  return `${prefix} ${measure} (${unit})${suffix ? ` \u2212 ${suffix}` : ""}`;
+}
+function scatterAxisTitles(measure, qtcMeasures) {
+  const suffix = correctionSuffix(measure);
+  const unit = measureUnit(measure, qtcMeasures);
+  const tail = suffix ? ` \u2212 ${suffix}` : "";
+  return {
+    x: `Baseline ${measure} (${unit})${tail}`,
+    y: `${measure} change (${unit})${tail}`
+  };
+}
+function formatNumber5(value) {
+  if (!Number.isFinite(value)) return "NA";
+  return Number(value.toFixed(1)).toString();
+}
+function formatSigned(value) {
+  if (!Number.isFinite(value)) return "NA";
+  const rounded = Number(value.toFixed(1));
+  const sign2 = rounded > 0 ? "+" : rounded < 0 ? "\u2212" : "";
+  return `${sign2}${Math.abs(rounded)}`;
+}
+function paddedDomain(values, include = [], pad = 0.08) {
+  const all = [...values, ...include].filter((v) => Number.isFinite(v));
+  if (!all.length) return [0, 1];
+  let min = Math.min(...all);
+  let max = Math.max(...all);
+  if (min === max) {
+    min -= 1;
+    max += 1;
+  }
+  const span = max - min;
+  return [min - span * pad, max + span * pad];
+}
+function armPointStyles(arms) {
+  const styles = /* @__PURE__ */ new Map();
+  (arms || []).forEach((arm, index) => {
+    styles.set(String(arm), ARM_POINT_STYLES[index % ARM_POINT_STYLES.length]);
+  });
+  return styles;
+}
+
+// src/qt-explorer/getPlugins.js
+var ARM_COLORS = [
+  "#1f78b4",
+  "#e31a1c",
+  "#33a02c",
+  "#ff7f00",
+  "#6a3d9a",
+  "#b15928",
+  "#00838f",
+  "#c2185b"
+];
+var THRESHOLD_COLOR = "rgba(100, 116, 139, 0.75)";
+function hexToRgba4(hex2, opacity) {
+  const clean = hex2.replace("#", "");
+  const r = parseInt(clean.slice(0, 2), 16);
+  const g = parseInt(clean.slice(2, 4), 16);
+  const b = parseInt(clean.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+}
+function armColorScale(arms) {
+  const scale = /* @__PURE__ */ new Map();
+  (arms || []).forEach((arm, index) => {
+    scale.set(String(arm), ARM_COLORS[index % ARM_COLORS.length]);
+  });
+  return scale;
+}
+function scatterTooltip(point, measure) {
+  return [
+    `Participant: ${point.id}`,
+    `Arm: ${point.arm}`,
+    `Baseline ${measure}: ${formatNumber5(point.baseline)}`,
+    `${measure}: ${formatNumber5(point.value)}`,
+    `Change: ${formatSigned(point.change)}`,
+    `Visit: ${point.visit}`
+  ];
+}
+function thresholdScatterPlugin(instance) {
+  return {
+    id: `qt-thresholds-${Math.random().toString(36).slice(2)}`,
+    beforeDatasetsDraw(chart) {
+      chart.$qtThresholds = null;
+      const spec = instance.scatterThresholds || {};
+      const { ctx, chartArea, scales } = chart;
+      if (!scales.x || !scales.y) return;
+      const xMin = scales.x.min;
+      const xMax = scales.x.max;
+      if (!Number.isFinite(xMin) || !Number.isFinite(xMax) || xMin === xMax) return;
+      const recorded = { zero: false, absolute: [], change: [] };
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(chartArea.left, chartArea.top, chartArea.width, chartArea.height);
+      ctx.clip();
+      const yZero = scales.y.getPixelForValue(0);
+      if (yZero >= chartArea.top && yZero <= chartArea.bottom) {
+        ctx.strokeStyle = "rgba(71, 85, 105, 0.9)";
+        ctx.lineWidth = 1;
+        ctx.setLineDash([]);
+        ctx.beginPath();
+        ctx.moveTo(chartArea.left, yZero);
+        ctx.lineTo(chartArea.right, yZero);
+        ctx.stroke();
+        recorded.zero = true;
+      }
+      ctx.strokeStyle = THRESHOLD_COLOR;
+      ctx.fillStyle = "rgba(71, 85, 105, 0.85)";
+      ctx.lineWidth = 1;
+      ctx.setLineDash([5, 4]);
+      ctx.font = "11px system-ui, sans-serif";
+      if (spec.showAbsolute) {
+        for (const threshold of spec.absolute || []) {
+          const left = {
+            x: scales.x.getPixelForValue(xMin),
+            y: scales.y.getPixelForValue(threshold - xMin)
+          };
+          const right = {
+            x: scales.x.getPixelForValue(xMax),
+            y: scales.y.getPixelForValue(threshold - xMax)
+          };
+          ctx.beginPath();
+          ctx.moveTo(left.x, left.y);
+          ctx.lineTo(right.x, right.y);
+          ctx.stroke();
+          const enters = left.y <= chartArea.bottom && right.y >= chartArea.top;
+          if (enters) {
+            ctx.textAlign = "left";
+            ctx.textBaseline = "bottom";
+            let labelX = chartArea.left + 4;
+            let labelY = left.y - 2;
+            if (left.y < chartArea.top) {
+              const topBaseline = threshold - scales.y.max;
+              labelX = Math.min(
+                Math.max(scales.x.getPixelForValue(topBaseline) + 4, chartArea.left + 4),
+                chartArea.right - 44
+              );
+              labelY = chartArea.top + 12;
+            }
+            ctx.fillText(`${threshold} ms`, labelX, labelY);
+          }
+          recorded.absolute.push(threshold);
+        }
+      }
+      if (spec.showChange) {
+        ctx.textAlign = "right";
+        ctx.textBaseline = "bottom";
+        for (const threshold of spec.change || []) {
+          const y = scales.y.getPixelForValue(threshold);
+          if (y < chartArea.top || y > chartArea.bottom) continue;
+          ctx.beginPath();
+          ctx.moveTo(chartArea.left, y);
+          ctx.lineTo(chartArea.right, y);
+          ctx.stroke();
+          ctx.fillText(`\u0394 ${threshold} ms`, chartArea.right - 4, y - 2);
+          recorded.change.push(threshold);
+        }
+      }
+      ctx.restore();
+      chart.$qtThresholds = recorded;
+    }
+  };
+}
+function centralTendencyPlugin(instance) {
+  return {
+    id: `qt-central-${Math.random().toString(36).slice(2)}`,
+    beforeDatasetsDraw(chart) {
+      chart.$qtCentral = null;
+      const spec = instance.centralSpec;
+      if (!spec) return;
+      const { ctx, chartArea, scales } = chart;
+      if (!scales.x || !scales.y) return;
+      const xOf = (visit) => scales.x.getPixelForValue(spec.visitIndex.get(visit));
+      const yOf = (value) => scales.y.getPixelForValue(value);
+      const recorded = { bands: [], reference: null, peaks: [] };
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(chartArea.left, chartArea.top, chartArea.width, chartArea.height);
+      ctx.clip();
+      for (const band of spec.series) {
+        const withCi = band.points.filter(
+          (p) => Number.isFinite(p.lo) && Number.isFinite(p.hi) && spec.visitIndex.has(p.visit)
+        );
+        if (withCi.length < 2) continue;
+        const color2 = spec.colorScale.get(String(band.arm)) || ARM_COLORS[0];
+        ctx.fillStyle = hexToRgba4(color2, 0.14);
+        ctx.beginPath();
+        withCi.forEach((p, i) => {
+          const x = xOf(p.visit);
+          const y = yOf(p.hi);
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        });
+        for (let i = withCi.length - 1; i >= 0; i -= 1) {
+          ctx.lineTo(xOf(withCi[i].visit), yOf(withCi[i].lo));
+        }
+        ctx.closePath();
+        ctx.fill();
+        recorded.bands.push({ arm: band.arm, n: withCi.length });
+      }
+      if (spec.showReference) {
+        const y = yOf(spec.referenceThreshold);
+        if (y >= chartArea.top && y <= chartArea.bottom) {
+          ctx.strokeStyle = THRESHOLD_COLOR;
+          ctx.lineWidth = 1;
+          ctx.setLineDash([5, 4]);
+          ctx.beginPath();
+          ctx.moveTo(chartArea.left, y);
+          ctx.lineTo(chartArea.right, y);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.fillStyle = "rgba(71, 85, 105, 0.85)";
+          ctx.font = "11px system-ui, sans-serif";
+          ctx.textAlign = "right";
+          ctx.textBaseline = "bottom";
+          ctx.fillText(spec.referenceLabel, chartArea.right - 4, y - 2);
+          recorded.reference = spec.referenceThreshold;
+        }
+      }
+      if (spec.peak && spec.visitIndex.has(spec.peak.visit)) {
+        const x = xOf(spec.peak.visit);
+        if (x >= chartArea.left && x <= chartArea.right) {
+          const color2 = spec.colorScale.get(String(spec.peak.arm)) || ARM_COLORS[0];
+          ctx.strokeStyle = hexToRgba4(color2, 0.7);
+          ctx.lineWidth = 1;
+          ctx.setLineDash([2, 3]);
+          ctx.beginPath();
+          ctx.moveTo(x, chartArea.top);
+          ctx.lineTo(x, chartArea.bottom);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.fillStyle = hexToRgba4(color2, 0.95);
+          ctx.font = "10px system-ui, sans-serif";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "top";
+          ctx.fillText("Peak-effect visit", x, chartArea.top + 2);
+          recorded.peaks.push({ arm: spec.peak.arm, visit: spec.peak.visit });
+        }
+      }
+      ctx.restore();
+      chart.$qtCentral = recorded;
+    }
+  };
+}
+
+// src/qt-explorer.js
+Chart.register(ScatterController, PointElement, LineElement, LinearScale, plugin_tooltip, plugin_legend);
+var QT_STYLE_ID = "safety-viz-qt-explorer-styles";
+var QT_STYLES = `
+.safety-qt-explorer .qt-legend{display:flex;flex-wrap:wrap;align-items:center;gap:.35rem .9rem;font-size:.8rem;color:#52616f;margin:0 0 .5rem}
+.safety-qt-explorer .qt-legend-item{display:inline-flex;align-items:center;gap:.3rem}
+.safety-qt-explorer .qt-note{color:#9a3412;font-size:.85rem;margin:0 0 .5rem}
+.safety-qt-explorer .qt-ich{margin:.6rem 0 0;font-size:.85rem;color:#1f2933}
+.safety-qt-explorer .qt-ich table,.safety-qt-explorer .qt-table table{border-collapse:collapse;font-size:.85rem;background:#fff}
+.safety-qt-explorer .qt-ich th,.safety-qt-explorer .qt-ich td,.safety-qt-explorer .qt-table th,.safety-qt-explorer .qt-table td{border-bottom:1px solid #e3e8ee;padding:.35rem .6rem;text-align:left}
+.safety-qt-explorer .qt-table th.qt-num,.safety-qt-explorer .qt-table td.qt-num,.safety-qt-explorer .qt-ich td.qt-num{text-align:right;font-variant-numeric:tabular-nums}
+.safety-qt-explorer .qt-table th{border-bottom:2px solid #d8dee4;font-size:.75rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f;white-space:nowrap}
+.safety-qt-explorer .qt-table caption,.safety-qt-explorer .qt-ich caption{caption-side:top;text-align:left;font-weight:600;margin-bottom:.35rem}
+.safety-qt-explorer .qt-flag{color:#9a3412;font-weight:600}
+.safety-qt-explorer .qt-empty{display:none}
+.safety-qt-explorer .qt-view-list{display:flex;flex-direction:column;gap:.35rem}
+.safety-qt-explorer .qt-view-option{display:block;width:100%;text-align:left;padding:.45rem .55rem;border:1px solid #d8dee4;border-radius:8px;background:#fff;font:inherit;font-size:.85rem;line-height:1.3;color:#1f2933;cursor:pointer}
+.safety-qt-explorer .qt-view-option:hover{border-color:#b8c0cc;background:#f6f8fa}
+.safety-qt-explorer .qt-view-option.is-active{border-color:#0b62a4;background:#eaf2fb;color:#0b3d63;font-weight:600;box-shadow:inset 0 0 0 1px #0b62a4}
+.safety-qt-explorer .qt-view-option:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
+`;
+function applyQtStyles() {
+  if (typeof document === "undefined" || document.getElementById(QT_STYLE_ID)) return;
+  const style = document.createElement("style");
+  style.id = QT_STYLE_ID;
+  style.textContent = QT_STYLES;
+  document.head.append(style);
+}
+var SafetyQtExplorer = class {
+  constructor(element = "body", settings = {}) {
+    this.element = typeof element === "string" ? document.querySelector(element) : element;
+    if (!this.element) throw new Error(`Safety QT Explorer target not found: ${element}`);
+    this.settings = syncSettings9(settings);
+    this.rawData = [];
+    this.cleanRows = [];
+    this.filteredRows = [];
+    this.charts = [];
+    this.arms = [];
+    this.availableMeasures = [];
+    this.state = {
+      view: "central",
+      measure: this.settings.start_measure,
+      statistic: "mean",
+      mode: "delta",
+      timepoint: TIMEPOINT_MAX,
+      filters: {}
+    };
+    this.renderShellDom();
+  }
+  /** Build the shell + module-owned slots (legend, note, table, ICH callout). @private */
+  renderShellDom() {
+    Object.assign(
+      this,
+      renderShell(this.element, {
+        moduleClass: "safety-qt-explorer",
+        onToggle: () => this.resize()
+      })
+    );
+    applyQtStyles();
+    this.legendEl = createElement("div", "qt-legend");
+    this.noteEl = createElement("div", "qt-note qt-empty");
+    this.main.insertBefore(this.noteEl, this.chartWrap);
+    this.main.insertBefore(this.legendEl, this.chartWrap);
+    this.tableWrap = createElement("div", "qt-table qt-empty");
+    this.ichWrap = createElement("div", "qt-ich qt-empty");
+    this.chartWrap.after(this.ichWrap);
+    this.ichWrap.after(this.tableWrap);
+  }
+  /**
+   * Load data and render — an alias for setData keeping the two-step
+   * create-then-init call shape (QT-API-001).
+   * @param {Object[]} data Long-format ECG records matching the qt-explorer data contract.
+   * @returns {SafetyQtExplorer} The instance, for chaining.
+   */
+  init(data) {
+    return this.setData(data);
+  }
+  /**
+   * Replace the bound data and re-render: validate (throwing and rendering the
+   * message into the target when required columns are missing), clean, rebuild
+   * controls, and render the active view.
+   * @param {Object[]} data Long-format ECG records matching the qt-explorer data contract.
+   * @returns {SafetyQtExplorer} The instance, for chaining.
+   */
+  setData(data) {
+    this.rawData = Array.isArray(data) ? data : [];
+    this.validateAndCleanData();
+    this.buildControls();
+    this.render();
+    return this;
+  }
+  /**
+   * Merge setting overrides, re-normalize (same rules as the factory), rebuild
+   * controls, and re-render.
+   * @param {QtExplorerSettings} settings Setting overrides to merge.
+   * @returns {SafetyQtExplorer} The instance, for chaining.
+   */
+  setSettings(settings) {
+    this.settings = syncSettings9({ ...this.settings, ...settings });
+    if ("start_measure" in settings || "measures" in settings) {
+      this.state.measure = this.settings.start_measure;
+    }
+    if (this.rawData.length) this.validateAndCleanData();
+    this.buildControls();
+    this.render();
+    return this;
+  }
+  /** Validate + clean; resolve measures, arms, placebo, visits, and prune stale state. @private */
+  validateAndCleanData() {
+    try {
+      checkInputs9(this.rawData, this.settings);
+    } catch (error) {
+      this.destroyCharts();
+      this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+      throw error;
+    }
+    const { rows, removed } = cleanData7(this.rawData, this.settings);
+    this.cleanRows = rows;
+    this.removedRecords = removed;
+    if (removed) console.warn(`${removed} missing or non-numeric results have been removed.`);
+    this.placeboArm = placeboArmFor(rows, this.settings.placebo_arm);
+    this.arms = armsPresent(rows, this.placeboArm);
+    this.colorScale = armColorScale(this.arms);
+    this.pointStyles = armPointStyles(this.arms);
+    const measures = measuresPresent(rows);
+    const available = this.settings.measures.filter((m) => measures.includes(m));
+    this.availableMeasures = available.length ? available : measures;
+    if (!this.availableMeasures.includes(this.state.measure)) {
+      this.state.measure = this.availableMeasures[0];
+    }
+    const configured = new Set(this.settings.filters.map((f) => f.value_col));
+    for (const col of Object.keys(this.state.filters)) {
+      const present = rows.some((row) => String(row[col]) === String(this.state.filters[col]));
+      if (!configured.has(col) || !present) delete this.state.filters[col];
+    }
+  }
+  /**
+   * Render the View selector into its own section as a visible list of options
+   * (QT-CTRL-001): one styled, clickable row per view with the active view
+   * highlighted, so all three views are always shown rather than hidden inside
+   * a dropdown (matching the hep-explorer view selector).
+   * @param {Function} addSection The shell's section builder.
+   * @private
+   */
+  buildViewControl(addSection) {
+    const section = addSection("View");
+    const list = createElement("div", "qt-view-list");
+    VIEWS.forEach((view) => {
+      const active = view.value === this.state.view;
+      const optionButton = createElement(
+        "button",
+        `qt-view-option${active ? " is-active" : ""}`,
+        view.label
+      );
+      optionButton.type = "button";
+      optionButton.setAttribute("aria-pressed", String(active));
+      optionButton.onclick = () => {
+        if (this.state.view === view.value) return;
+        this.state.view = view.value;
+        this.buildControls();
+        this.render();
+      };
+      list.append(optionButton);
+    });
+    section.append(list);
+  }
+  /** Build the sidebar controls for the active view. @private */
+  buildControls() {
+    this.controls.innerHTML = "";
+    const { addSection, addControl } = controlBuilders(this.controls);
+    this.buildViewControl(addSection);
+    const section = addSection("Display");
+    const measureSelect = addControl("Correction", document.createElement("select"), section);
+    this.availableMeasures.forEach((m) => option(measureSelect, m, m, m === this.state.measure));
+    measureSelect.onchange = () => {
+      this.state.measure = measureSelect.value;
+      this.buildControls();
+      this.render();
+    };
+    if (this.state.view === "central") {
+      const statSelect = addControl("Statistic", document.createElement("select"), section);
+      STATISTICS.forEach(
+        (s) => option(statSelect, s.value, s.label, s.value === this.state.statistic)
+      );
+      statSelect.onchange = () => {
+        this.state.statistic = statSelect.value;
+        this.render();
+      };
+      const modeSelect = addControl("Display type", document.createElement("select"), section);
+      DISPLAY_MODES2.forEach(
+        (m) => option(modeSelect, m.value, m.label, m.value === this.state.mode)
+      );
+      modeSelect.onchange = () => {
+        this.state.mode = modeSelect.value;
+        this.render();
+      };
+    }
+    if (this.state.view === "outlier") {
+      const visits = this.postBaselineVisits();
+      if (this.state.timepoint !== TIMEPOINT_MAX && !visits.includes(this.state.timepoint)) {
+        this.state.timepoint = TIMEPOINT_MAX;
+      }
+      const tpSelect = addControl("Timepoint", document.createElement("select"), section);
+      option(
+        tpSelect,
+        TIMEPOINT_MAX,
+        "Maximum post-baseline",
+        this.state.timepoint === TIMEPOINT_MAX
+      );
+      visits.forEach((v) => option(tpSelect, v, v, this.state.timepoint === v));
+      tpSelect.onchange = () => {
+        this.state.timepoint = tpSelect.value;
+        this.render();
+      };
+    }
+    if (this.settings.filters.length) {
+      const filterSection = addSection("Filters");
+      this.settings.filters.forEach((filter) => {
+        const select = addControl(filter.label, document.createElement("select"), filterSection);
+        option(select, "", "All", !this.state.filters[filter.value_col]);
+        unique8(this.cleanRows.map((row) => row[filter.value_col])).map(String).sort().forEach(
+          (value) => option(select, value, value, this.state.filters[filter.value_col] === value)
+        );
+        select.onchange = () => {
+          if (select.value) this.state.filters[filter.value_col] = select.value;
+          else delete this.state.filters[filter.value_col];
+          this.render();
+        };
+      });
+    }
+  }
+  /** Post-baseline visit labels for the current measure. @private */
+  postBaselineVisits() {
+    const rows = forMeasure(this.cleanRows, this.state.measure).filter((r) => r.__qt_postBaseline);
+    return orderVisits(rows, this.settings);
+  }
+  /** Destroy live charts before re-rendering into the shared canvas. @private */
+  destroyCharts() {
+    this.charts.forEach((chart) => chart.destroy());
+    this.charts = [];
+    this.chart = null;
+  }
+  /**
+   * Render the active view into the shared canvas: destroy prior charts, apply
+   * the filters, and dispatch to the central-tendency, outlier, or categorical
+   * renderer.
+   * @returns {void}
+   */
+  render() {
+    this.destroyCharts();
+    this.legendEl.classList.add("qt-empty");
+    this.noteEl.classList.add("qt-empty");
+    this.tableWrap.classList.add("qt-empty");
+    this.ichWrap.classList.add("qt-empty");
+    this.footnote.textContent = "";
+    this.chartWrap.style.display = "";
+    if (!this.cleanRows.length) {
+      if (this.rawData.length) {
+        this.chartWrap.style.display = "none";
+        this.noteEl.classList.remove("qt-empty");
+        this.noteEl.textContent = "No usable ECG results after cleaning the data.";
+      }
+      return;
+    }
+    this.filteredRows = applyFilters7(this.cleanRows, this.state.filters);
+    if (this.state.view === "central") this.renderCentral();
+    else if (this.state.view === "outlier") this.renderOutlier();
+    else this.renderCategorical();
+  }
+  /** Show a "select a QTc correction" note and hide chart/table (HR, QTc-only views). @private */
+  showQtcOnlyNote() {
+    this.chartWrap.style.display = "none";
+    this.tableWrap.classList.add("qt-empty");
+    this.legendEl.classList.add("qt-empty");
+    this.noteEl.classList.remove("qt-empty");
+    this.noteEl.textContent = `${this.state.measure} is a heart-rate parameter \u2014 the outlier scatter and categorical exceedance apply to the QTc corrections (${this.settings.qtc_measures.join(", ")}). Select a QTc correction, or use the Central tendency view for heart rate.`;
+  }
+  /** Draw the "Treatments" arm legend (color swatch per arm). @private */
+  drawLegend(arms) {
+    this.legendEl.classList.remove("qt-empty");
+    this.legendEl.innerHTML = "";
+    this.legendEl.append(createElement("strong", null, "Treatments:"));
+    arms.forEach((arm) => {
+      const chip = createElement("span", "qt-legend-item");
+      const swatch = createElement("span");
+      swatch.style.cssText = `display:inline-block;width:.75rem;height:.75rem;border-radius:2px;background:${this.colorScale.get(
+        String(arm)
+      )}`;
+      chip.append(swatch, document.createTextNode(String(arm)));
+      this.legendEl.append(chip);
+    });
+  }
+  // ---- Central tendency (QT-CT-*) -----------------------------------------
+  /**
+   * Render the central-tendency view. @private
+   */
+  /**
+   * Render the central-tendency view. @private
+   */
+  /**
+   * Render the central-tendency view. @private
+   */
+  renderCentral() {
+    const measure = this.state.measure;
+    const isQtc = isQtcMeasure(measure, this.settings.qtc_measures);
+    const measureRows = forMeasure(this.filteredRows, measure);
+    const visitOrder = orderVisits(measureRows, this.settings);
+    const tendency = centralTendencySeries(measureRows, {
+      statistic: this.state.statistic,
+      mode: this.state.mode,
+      arms: this.arms,
+      visitOrder,
+      placeboArm: this.placeboArm,
+      ciLevel: this.settings.ci_level
+    });
+    if (this.state.mode === "deltadelta" && !this.placeboArm) {
+      this.chartWrap.style.display = "none";
+      this.noteEl.classList.remove("qt-empty");
+      this.noteEl.textContent = "\u0394\u0394 (placebo-corrected) needs a placebo arm; none was found. Switch to \u0394, or set placebo_arm.";
+      return;
+    }
+    const visitIndex = new Map(visitOrder.map((visit, index) => [visit, index]));
+    const seriesArms = tendency.series.map((s) => s.arm);
+    const datasets = tendency.series.map((band) => {
+      const color2 = this.colorScale.get(String(band.arm)) || ARM_COLORS[0];
+      const points = band.points.filter((p) => visitIndex.has(p.visit) && Number.isFinite(p.value)).map((p) => ({ x: visitIndex.get(p.visit), y: p.value, __point: p, __arm: band.arm }));
+      return {
+        label: band.arm,
+        data: points,
+        showLine: true,
+        borderColor: color2,
+        backgroundColor: color2,
+        pointBackgroundColor: color2,
+        pointBorderColor: color2,
+        pointStyle: this.pointStyles.get(String(band.arm)) || "circle",
+        pointRadius: 3,
+        pointHoverRadius: 5,
+        borderWidth: 2,
+        tension: 0
+      };
+    });
+    const peaks = peakVisits(tendency);
+    let peak = null;
+    for (const [arm, p] of peaks) {
+      if (!peak || p.value > peak.value) peak = { arm, visit: p.visit, value: p.value };
+    }
+    const showReference = isQtc;
+    this.centralSpec = {
+      visitIndex,
+      series: tendency.series,
+      colorScale: this.colorScale,
+      showReference,
+      referenceThreshold: this.settings.reference_threshold,
+      referenceLabel: this.state.mode === "deltadelta" ? `ICH-E14 reference (${this.settings.reference_threshold} ms)` : `Step 1a screening (${this.settings.reference_threshold} ms)`,
+      peak
+    };
+    const values = tendency.series.flatMap(
+      (s) => s.points.flatMap((p) => [p.value, p.lo, p.hi].filter(Number.isFinite))
+    );
+    const yDomain = paddedDomain(
+      values,
+      showReference ? [0, this.settings.reference_threshold] : [0]
+    );
+    this.chart = new Chart(this.canvas.getContext("2d"), {
+      type: "scatter",
+      data: { datasets },
+      options: {
+        maintainAspectRatio: false,
+        responsive: true,
+        animation: false,
+        plugins: {
+          legend: { display: false },
+          title: {
+            display: true,
+            text: `${this.state.mode === "deltadelta" ? "\u0394\u0394" : "\u0394"} ${measure} \u2014 ${this.state.statistic === "mean" ? "Mean" : "Median"} over time by arm`
+          },
+          tooltip: {
+            callbacks: {
+              title: () => "",
+              label: (ctx) => {
+                const p = ctx.raw && ctx.raw.__point;
+                if (!p) return "";
+                const lines = [
+                  `${ctx.raw.__arm} @ ${p.visit}`,
+                  `${formatSigned(p.value)} (n=${p.n})`
+                ];
+                if (Number.isFinite(p.lo) && Number.isFinite(p.hi)) {
+                  lines.push(
+                    `${Math.round(this.settings.ci_level * 100)}% CI ${formatSigned(p.lo)}, ${formatSigned(p.hi)}`
+                  );
+                }
+                return lines;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            type: "linear",
+            min: -0.5,
+            max: Math.max(visitOrder.length - 0.5, 0.5),
+            offset: false,
+            grid: { display: false },
+            title: { display: true, text: "Visit" },
+            ticks: {
+              stepSize: 1,
+              autoSkip: false,
+              maxRotation: 45,
+              callback: (value) => Number.isInteger(value) ? visitOrder[value] ?? "" : ""
+            },
+            afterBuildTicks: (axis) => {
+              axis.ticks = visitOrder.map((_, index) => ({ value: index }));
+            }
+          },
+          y: {
+            type: "linear",
+            min: yDomain[0],
+            max: yDomain[1],
+            title: {
+              display: true,
+              text: centralAxisTitle(measure, this.state.mode, this.settings.qtc_measures)
+            }
+          }
+        }
+      },
+      plugins: [centralTendencyPlugin(this)]
+    });
+    this.charts.push(this.chart);
+    this.drawLegend(seriesArms);
+    this.drawIchCallout(tendency, isQtc);
+    this.setCentralFootnote(measure, isQtc);
+  }
+  /** ICH-E14 metric callout (mean + ΔΔ + QTc only). @private */
+  drawIchCallout(tendency, isQtc) {
+    if (!isQtc || this.state.mode !== "deltadelta" || this.state.statistic !== "mean") return;
+    const metric = ichE14Metric(tendency, this.settings.reference_threshold);
+    if (!metric.length) return;
+    this.ichWrap.classList.remove("qt-empty");
+    this.ichWrap.innerHTML = "";
+    const table = createElement("table");
+    const caption = createElement(
+      "caption",
+      null,
+      `ICH-E14 metric \u2014 largest upper bound of the two-sided ${Math.round(
+        this.settings.ci_level * 100
+      )}% CI for \u0394\u0394 ${this.state.measure} vs ${this.settings.reference_threshold} ms`
+    );
+    table.append(caption);
+    const thead = document.createElement("thead");
+    const hr = document.createElement("tr");
+    ["Arm", "Max upper CI (ms)", "Peak visit", ""].forEach(
+      (h) => hr.append(createElement("th", h.startsWith("Max") ? "qt-num" : null, h))
+    );
+    thead.append(hr);
+    table.append(thead);
+    const tbody = document.createElement("tbody");
+    metric.forEach((m) => {
+      const tr = document.createElement("tr");
+      tr.append(createElement("td", null, m.arm));
+      tr.append(createElement("td", "qt-num", formatNumber5(m.maxUpper)));
+      tr.append(createElement("td", null, m.visit || "\u2014"));
+      tr.append(
+        createElement("td", m.exceeds ? "qt-flag" : null, m.exceeds ? "\u2265 threshold" : "below")
+      );
+      tbody.append(tr);
+    });
+    table.append(tbody);
+    this.ichWrap.append(table);
+  }
+  /** Central-tendency footnote: method + mode caveats. @private */
+  setCentralFootnote(measure, isQtc) {
+    const parts = [];
+    if (this.state.mode === "deltadelta") {
+      parts.push(
+        "\u0394\u0394 is the exploratory difference of mean changes (arm \u2212 placebo); the CI is a large-sample normal approximation, not the regulatory ANCOVA/MMRM bound."
+      );
+    }
+    if (measure === "QTcB") {
+      parts.push(
+        "QTcB (Bazett) overcorrects at high heart rate; QTcF/QTcI are the workflow\u2019s preferred corrections."
+      );
+    }
+    if (!isQtc) {
+      parts.push("Heart rate has no ICH-E14 QTc reference; read alongside the QTc corrections.");
+    }
+    parts.push("Exploratory tool \u2014 confirm signals with validated ICH-E14 analyses.");
+    this.footnote.textContent = parts.join(" ");
+  }
+  // ---- Outlier scatter (QT-OUT-*) -----------------------------------------
+  /**
+   * Render the outlier-scatter view. @private
+   */
+  /**
+   * Render the outlier-scatter view. @private
+   */
+  /**
+   * Render the outlier-scatter view. @private
+   */
+  renderOutlier() {
+    const measure = this.state.measure;
+    if (!isQtcMeasure(measure, this.settings.qtc_measures)) {
+      this.showQtcOnlyNote();
+      this.footnote.textContent = "";
+      return;
+    }
+    const measureRows = forMeasure(this.filteredRows, measure);
+    const points = subjectPoints(measureRows, {
+      timepoint: this.state.timepoint,
+      idCol: this.settings.id_col
+    });
+    const isMax = this.state.timepoint === TIMEPOINT_MAX;
+    this.scatterThresholds = {
+      showAbsolute: true,
+      absolute: this.settings.absolute_thresholds,
+      showChange: !isMax,
+      change: this.settings.change_thresholds
+    };
+    const armsWithPoints = this.arms.filter((arm) => points.some((p) => p.arm === arm));
+    const datasets = armsWithPoints.map((arm) => {
+      const color2 = this.colorScale.get(String(arm)) || ARM_COLORS[0];
+      return {
+        label: arm,
+        data: points.filter((p) => p.arm === arm).map((p) => ({ x: p.baseline, y: p.change, __point: p })),
+        pointStyle: this.pointStyles.get(String(arm)) || "circle",
+        backgroundColor: hexToRgba4(color2, 0.75),
+        borderColor: color2,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        showLine: false
+      };
+    });
+    const titles = scatterAxisTitles(measure, this.settings.qtc_measures);
+    const xDomain = paddedDomain(points.map((p) => p.baseline));
+    const yDomain = paddedDomain(
+      points.map((p) => p.change),
+      [0, ...isMax ? [] : this.settings.change_thresholds]
+    );
+    const tpLabel = isMax ? "Maximum post-baseline" : `Visit: ${this.state.timepoint}`;
+    this.chart = new Chart(this.canvas.getContext("2d"), {
+      type: "scatter",
+      data: { datasets },
+      options: {
+        maintainAspectRatio: false,
+        responsive: true,
+        animation: false,
+        plugins: {
+          legend: { display: false },
+          title: { display: true, text: `${measure} outlier scatter \u2014 ${tpLabel}` },
+          tooltip: {
+            callbacks: {
+              title: () => "",
+              label: (ctx) => ctx.raw && ctx.raw.__point ? scatterTooltip(ctx.raw.__point, measure) : ""
+            }
+          }
+        },
+        scales: {
+          x: {
+            type: "linear",
+            min: xDomain[0],
+            max: xDomain[1],
+            title: { display: true, text: titles.x }
+          },
+          y: {
+            type: "linear",
+            min: yDomain[0],
+            max: yDomain[1],
+            title: { display: true, text: titles.y }
+          }
+        }
+      },
+      plugins: [thresholdScatterPlugin(this)]
+    });
+    this.charts.push(this.chart);
+    this.drawLegend(armsWithPoints);
+    const footParts = [
+      `${points.length} participants.`,
+      isMax ? "Each point is a participant\u2019s maximum post-baseline value; change-from-baseline lines are shown only in per-visit mode \u2014 see the categorical table for change-threshold counts." : "Each point is the selected visit\u2019s reading; diagonals are absolute-QTc thresholds, horizontals are change-from-baseline thresholds.",
+      "Exploratory tool \u2014 confirm signals with validated ICH-E14 analyses."
+    ];
+    this.footnote.textContent = footParts.join(" ");
+  }
+  // ---- Categorical exceedance (QT-CAT-*) ----------------------------------
+  /**
+   * Render the categorical-exceedance view. @private
+   */
+  /**
+   * Render the categorical-exceedance view. @private
+   */
+  /**
+   * Render the categorical-exceedance view. @private
+   */
+  renderCategorical() {
+    const measure = this.state.measure;
+    if (!isQtcMeasure(measure, this.settings.qtc_measures)) {
+      this.showQtcOnlyNote();
+      this.footnote.textContent = "";
+      return;
+    }
+    const measureRows = forMeasure(this.filteredRows, measure);
+    const classification = classifyThresholds(measureRows, {
+      idCol: this.settings.id_col,
+      arms: this.arms,
+      absoluteThresholds: this.settings.absolute_thresholds,
+      changeThresholds: this.settings.change_thresholds
+    });
+    this.classification = classification;
+    this.chartWrap.style.display = "none";
+    this.tableWrap.classList.remove("qt-empty");
+    this.tableWrap.innerHTML = "";
+    const table = createElement("table");
+    table.append(
+      createElement(
+        "caption",
+        null,
+        `${measure} \u2014 participants exceeding thresholds by arm (maximum post-baseline)`
+      )
+    );
+    const thead = document.createElement("thead");
+    const hr = document.createElement("tr");
+    hr.append(createElement("th", null, "Threshold"));
+    const columns = [...classification.arms, "All"];
+    columns.forEach((arm) => {
+      const denom = arm === "All" ? classification.allDenom : classification.denominators[arm] || 0;
+      hr.append(createElement("th", "qt-num", `${arm} (n=${denom})`));
+    });
+    thead.append(hr);
+    table.append(thead);
+    const tbody = document.createElement("tbody");
+    classification.rows.forEach((row) => {
+      const tr = document.createElement("tr");
+      tr.append(createElement("td", null, row.label));
+      columns.forEach((arm) => {
+        const cell2 = row.cells[arm] || { count: 0, percent: 0 };
+        tr.append(createElement("td", "qt-num", `${cell2.count} (${formatNumber5(cell2.percent)}%)`));
+      });
+      tbody.append(tr);
+    });
+    table.append(tbody);
+    this.tableWrap.append(table);
+    this.drawLegend(classification.arms);
+    this.footnote.textContent = "Absolute rows use each participant\u2019s maximum post-baseline value; change rows use the maximum post-baseline change (they may fall at different visits). Exploratory tool \u2014 confirm signals with validated ICH-E14 analyses.";
+  }
+  /**
+   * Resize the live charts (e.g. after the sidebar collapses).
+   * @returns {void}
+   */
+  resize() {
+    this.charts.forEach((chart) => chart.resize());
+  }
+  /**
+   * Destroy the charts and empty the target element.
+   * @returns {void}
+   */
+  destroy() {
+    this.destroyCharts();
+    this.element.innerHTML = "";
+  }
+};
+function qtExplorer(element = "body", settings = {}) {
+  return new SafetyQtExplorer(element, settings);
+}
+
 // src/main.js
 var main_default = {
   histogram,
@@ -21181,7 +22619,8 @@ var main_default = {
   outlierExplorer,
   aeTimelines,
   hepExplorer,
-  aeExplorer
+  aeExplorer,
+  qtExplorer
 };
 export {
   aeExplorer,
@@ -21191,6 +22630,7 @@ export {
   hepExplorer,
   histogram,
   outlierExplorer,
+  qtExplorer,
   resultsOverTime,
   shiftPlot
 };

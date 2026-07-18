@@ -1,5 +1,5 @@
 {
-  "module": "histogram",
+  "module": "qt-explorer",
   "generatedAt": "2026-07-18T02:15:20.935Z",
   "environment": {
     "os": "linux 6.17.0-1020-azure",
@@ -12,14 +12,6 @@
     "url": "https://github.com/jwildfire/safety.viz/actions/runs/29626699664"
   },
   "records": [
-    {
-      "test": "a chart link navigates straight to that renderer demo (#71)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [71],
-      "screenshots": []
-    },
     {
       "test": "built ae-explorer demo mounts the shared shell with no console errors (#7) (#17)",
       "suite": "browser",
@@ -109,228 +101,76 @@
       "screenshots": []
     },
     {
-      "test": "is keyboard operable: ArrowDown opens and focuses, Escape closes (#71)",
+      "test": "QT-CAT-001/QT-CAT-002/QT-CAT-003: the categorical view hides the chart and tabulates by-arm exceedance (#68)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [71],
+      "requirementIds": ["QT-CAT-001", "QT-CAT-002", "QT-CAT-003"],
+      "issueRefs": [68],
+      "screenshots": ["QT-CAT-002-categorical-table.png"]
+    },
+    {
+      "test": "QT-CT-002/QT-CT-003/QT-CT-006: central tendency draws per-arm lines, a CI band, the reference line and the peak marker (#68)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["QT-CT-002", "QT-CT-003", "QT-CT-006"],
+      "issueRefs": [68],
       "screenshots": []
     },
     {
-      "test": "lists one chart link per available renderer, closed by default (#71)",
+      "test": "QT-CT-004/QT-CT-005: ΔΔ drops placebo and reports the ICH-E14 metric above the reference (#68)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [71],
+      "requirementIds": ["QT-CT-004", "QT-CT-005"],
+      "issueRefs": [68],
+      "screenshots": ["QT-CT-005-delta-delta-ich-metric.png"]
+    },
+    {
+      "test": "QT-CT-007: heart rate is offered in central tendency without the QTc reference line (#68)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["QT-CT-007"],
+      "issueRefs": [68],
       "screenshots": []
     },
     {
-      "test": "marks the current chart inside the dropdown on a renderer sub-page (#71)",
+      "test": "QT-CTRL-001/QT-CTRL-002/QT-CTRL-003: renders the view, correction, statistic, display, and filter controls (#68)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [71],
+      "requirementIds": ["QT-CTRL-001", "QT-CTRL-002", "QT-CTRL-003"],
+      "issueRefs": [68],
+      "screenshots": ["QT-CTRL-001-central-tendency-delta.png"]
+    },
+    {
+      "test": "QT-DATA-003: the participant note / removed-count path leaves no page errors (#68)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["QT-DATA-003"],
+      "issueRefs": [68],
       "screenshots": []
     },
     {
-      "test": "opens on hover and the top link still points at the gallery index (#71)",
+      "test": "QT-OUT-002/QT-OUT-003/QT-OUT-004: the outlier scatter draws absolute diagonals, the zero line, and per-arm marks (#68)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [71],
+      "requirementIds": ["QT-OUT-002", "QT-OUT-003", "QT-OUT-004"],
+      "issueRefs": [68],
+      "screenshots": ["QT-OUT-003-outlier-scatter-max.png"]
+    },
+    {
+      "test": "QT-OUT-003: a specific visit adds the change-from-baseline lines (#68)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["QT-OUT-003"],
+      "issueRefs": [68],
+      "screenshots": ["QT-OUT-003-outlier-scatter-max.png"]
+    },
+    {
+      "test": "QT-OUT-007: heart rate shows a QTc-only note in the outlier view (#68)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["QT-OUT-007"],
+      "issueRefs": [68],
       "screenshots": []
-    },
-    {
-      "test": "SH-API-001: lifecycle API supports init, setData, setSettings, render, resize, and destroy (#2)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-API-001"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "SH-CHART-003/SH-FUNC-010/SH-FUNC-012: selecting a canvas bar opens a linked listing with record details and count (#2)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-CHART-003", "SH-FUNC-010", "SH-FUNC-012"],
-      "issueRefs": [2],
-      "screenshots": ["SH-FUNC-010-linked-listing.png"]
-    },
-    {
-      "test": "SH-CHART-004: group-by renders grouped histograms (#2)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-CHART-004"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CHART-004-grouped-multiples.png"]
-    },
-    {
-      "test": "SH-CHART-004/SH-CTRL-006: grouped small multiples share the main chart's bin boundaries (#19)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-CHART-004", "SH-CTRL-006"],
-      "issueRefs": [19],
-      "screenshots": ["SH-CHART-004-grouped-multiples.png", "SH-CTRL-006-shared-bin-multiples.png"]
-    },
-    {
-      "test": "SH-CHART-005: p-value annotations display the approximation and validation disclaimer (#2)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-CHART-005"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CHART-005-pvalue-disclaimer.png"]
-    },
-    {
-      "test": "SH-CTRL-001/SH-CTRL-002/SH-CTRL-006: renders measure, filter, axis, bin, and group controls (#2)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-001", "SH-CTRL-002", "SH-CTRL-006"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CTRL-001-control-panel.png", "SH-CTRL-006-shared-bin-multiples.png"]
-    },
-    {
-      "test": "SH-CTRL-003: participant note updates when a filter is applied (#2)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-003"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "SH-CTRL-004/SH-FUNC-004A/SH-FUNC-004B: normal range checkbox toggles a stable overlay region (#2)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-004", "SH-FUNC-004A", "SH-FUNC-004B"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CTRL-004-normal-range-overlay.png"]
-    },
-    {
-      "test": "SH-CTRL-005/SH-FUNC-005A/SH-FUNC-005B/SH-FUNC-005D: x-axis limit inputs redraw and normalize invalid ranges (#2)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-005", "SH-FUNC-005A", "SH-FUNC-005B", "SH-FUNC-005D"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CTRL-005-axis-limits.png"]
-    },
-    {
-      "test": "SH-CTRL-006: bin boundaries anchor to the measure results, not the filtered subset (#19)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-006"],
-      "issueRefs": [19],
-      "screenshots": ["SH-CTRL-006-shared-bin-multiples.png"]
-    },
-    {
-      "test": "SH-CTRL-007: x-axis tick mode switches labels between centers and bin boundaries (#2)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-007"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CTRL-007-boundary-ticks.png"]
-    },
-    {
-      "test": "SH-CTRL-008/SH-REG-020: editing Quantity switches the algorithm to Custom and recomputes the width (#19)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-008", "SH-REG-020"],
-      "issueRefs": [19],
-      "screenshots": ["SH-CTRL-008-bins-inputs-populated.png"]
-    },
-    {
-      "test": "SH-CTRL-008/SH-REG-024/SH-REG-025/SH-REG-026: bin quantity and width inputs reflect the resolved binning (#19)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-008", "SH-REG-024", "SH-REG-025", "SH-REG-026"],
-      "issueRefs": [19],
-      "screenshots": ["SH-CTRL-008-bins-inputs-populated.png"]
-    },
-    {
-      "test": "SH-DATA-002: missing and non-numeric results are dropped with a reported count and visible note (#2)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-DATA-002"],
-      "issueRefs": [2],
-      "screenshots": ["SH-DATA-002-invalid-data-note.png"]
-    },
-    {
-      "test": "SH-FUNC-004C: normal range control is hidden when the measure has no normal range data (#2)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-FUNC-004C"],
-      "issueRefs": [2],
-      "screenshots": ["SH-FUNC-004C-control-hidden-for-pulse.png"]
-    },
-    {
-      "test": "SH-FUNC-005C: x-axis limit inputs support stepper increments of 1 (#2)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-FUNC-005C"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "SH-FUNC-011: selecting a bar de-emphasizes the bars outside the linked listing (#2)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-FUNC-011"],
-      "issueRefs": [2],
-      "screenshots": ["SH-FUNC-011-bar-de-emphasis.png"]
-    },
-    {
-      "test": "SH-LIST-001/SH-LIST-002/SH-LIST-003/SH-LIST-004: listing supports pagination, search, sorting, and CSV export (#2)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-LIST-001", "SH-LIST-002", "SH-LIST-003", "SH-LIST-004"],
-      "issueRefs": [2],
-      "screenshots": ["SH-LIST-004-search-sort-paginate.png"]
-    },
-    {
-      "test": "SH-OVW-001: an unknown start_value warns and falls back to the overview (#39)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-OVW-001"],
-      "issueRefs": [39],
-      "screenshots": []
-    },
-    {
-      "test": "SH-OVW-001: the overview is the default view when start_value is not set (#39)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-OVW-001"],
-      "issueRefs": [39],
-      "screenshots": []
-    },
-    {
-      "test": "SH-OVW-002: the overview renders one independently binned panel per measure (#39)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-OVW-002"],
-      "issueRefs": [39],
-      "screenshots": ["SH-OVW-002-overview-panels.png"]
-    },
-    {
-      "test": "SH-OVW-003: clicking a small multiple opens that measure in the single-measure view (#39)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-OVW-003"],
-      "issueRefs": [39],
-      "screenshots": ["SH-OVW-003-click-through-to-pulse.png"]
-    },
-    {
-      "test": "SH-OVW-004: selecting All Measures returns from a single-measure view to the overview (#39)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-OVW-004"],
-      "issueRefs": [39],
-      "screenshots": []
-    },
-    {
-      "test": "SH-OVW-005: filters stay active in the overview and measure controls hide (#39)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-OVW-005"],
-      "issueRefs": [39],
-      "screenshots": ["SH-OVW-005-overview-filtered.png"]
     },
     {
       "test": "buildApiModel API-XFORM-010: assembles the artifact with module, factory, methods, settings, data contract, and missing docs (#6)",
@@ -477,294 +317,6 @@
       "screenshots": []
     },
     {
-      "test": "histogram binning matches the original renderer (#19) SH-CTRL-006: ADBDS Albumin reproduces the original renderer's bin parameters (#19)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-006"],
-      "issueRefs": [19, 19],
-      "screenshots": ["SH-CTRL-006-shared-bin-multiples.png"]
-    },
-    {
-      "test": "histogram binning matches the original renderer (#19) SH-CTRL-006: bin quantity is clamped to the count of unique results (#19)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-006"],
-      "issueRefs": [19, 19],
-      "screenshots": ["SH-CTRL-006-shared-bin-multiples.png"]
-    },
-    {
-      "test": "histogram binning matches the original renderer (#19) SH-CTRL-006: Scott's rule and Freedman-Diaconis enforce the original's 5-bin floor (#19)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-006"],
-      "issueRefs": [19, 19],
-      "screenshots": ["SH-CTRL-006-shared-bin-multiples.png"]
-    },
-    {
-      "test": "histogram binning matches the original renderer (#19) SH-CTRL-006: Shimazaki-Shinomoto minimizes the original's cost function (#19)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-006"],
-      "issueRefs": [19, 19],
-      "screenshots": ["SH-CTRL-006-shared-bin-multiples.png"]
-    },
-    {
-      "test": "histogram binning matches the original renderer (#19) SH-CTRL-006: zero-spread results collapse to a single bin (#19)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-006"],
-      "issueRefs": [19, 19],
-      "screenshots": ["SH-CTRL-006-shared-bin-multiples.png"]
-    },
-    {
-      "test": "histogram checkInputs SH-DATA-001: missing required variables throw the pilot's error message (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-DATA-001"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram checkInputs SH-DATA-001: the JSON schema publishes the data contract with required column mappings (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-DATA-001"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram checkInputs SH-DATA-001/SH-DATA-003: valid long-format data with optional columns passes (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-DATA-001", "SH-DATA-003"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram configure SH-CFG-004..009: default settings map the standard measure, result, id, unit, and normal-range columns (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CFG-004"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram configure SH-CFG-010: filter specs normalize strings and objects to value_col/label pairs (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CFG-010"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram configure SH-CFG-011: details default to id, filters, result, normal limits, and unit when unset (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CFG-011"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram configure SH-CFG-013/SH-CFG-014: normal-range control and initial display flags are configurable (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CFG-013", "SH-CFG-014"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram configure SH-CHART-004: the group list always offers None and adopts an unknown group_by column (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CHART-004"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CHART-004-grouped-multiples.png"]
-    },
-    {
-      "test": "histogram getPlugins SH-CHART-002: bin descriptions report the count and value range in the pilot's wording (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CHART-002"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram getPlugins SH-CHART-005: p-values format with bounded precision (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CHART-005"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CHART-005-pvalue-disclaimer.png"]
-    },
-    {
-      "test": "histogram getPlugins SH-CHART-005: the group-comparison screen needs 2+ groups and separates distinct groups (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CHART-005"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CHART-005-pvalue-disclaimer.png"]
-    },
-    {
-      "test": "histogram getPlugins SH-CHART-005: the normality screen needs at least 3 values and stays within (0, 1) (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CHART-005"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CHART-005-pvalue-disclaimer.png"]
-    },
-    {
-      "test": "histogram getPlugins SH-FUNC-011: selection colors keep the selected bar and fade the rest (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-FUNC-011"],
-      "issueRefs": [2],
-      "screenshots": ["SH-FUNC-011-bar-de-emphasis.png"]
-    },
-    {
-      "test": "histogram getScales buildScales keeps the count axis integer-based at zero (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram getScales formatNumber trims to significant digits and blanks non-finite values (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram getScales SH-CTRL-005: normalizeDomain swaps inverted lower/upper limits (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-005"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CTRL-005-axis-limits.png"]
-    },
-    {
-      "test": "histogram getScales SH-CTRL-005/SH-FUNC-005A/SH-FUNC-005B: resolveDomain applies user limits over the data extent (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-005", "SH-FUNC-005A", "SH-FUNC-005B"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CTRL-005-axis-limits.png"]
-    },
-    {
-      "test": "histogram getScales SH-CTRL-007: tick labels switch between bin centers and bin boundaries (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-007"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CTRL-007-boundary-ticks.png"]
-    },
-    {
-      "test": "histogram listing SH-LIST-002: pagination slices pages and clamps out-of-range page numbers (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-LIST-002"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram listing SH-LIST-003: CSV export renders label headers and quoted, null-safe values (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-LIST-003"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram listing SH-LIST-004: search filters rows case-insensitively across listing columns (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-LIST-004"],
-      "issueRefs": [2],
-      "screenshots": ["SH-LIST-004-search-sort-paginate.png"]
-    },
-    {
-      "test": "histogram listing SH-LIST-004: sorting is numeric when both values are numeric, string otherwise, and null-safe (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-LIST-004"],
-      "issueRefs": [2],
-      "screenshots": ["SH-LIST-004-search-sort-paginate.png"]
-    },
-    {
-      "test": "histogram structureData display digits resolve the bin width without exceeding the data precision (#15)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [15],
-      "screenshots": []
-    },
-    {
-      "test": "histogram structureData helpers: unique drops empty values; quantile, mean, sd, and precision match the pilot (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram structureData SH-CTRL-002: active filters subset rows by stringified equality (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-002"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram structureData SH-CTRL-005: an explicit domain bounds the bins and clamps edge values (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-005"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CTRL-005-axis-limits.png"]
-    },
-    {
-      "test": "histogram structureData SH-CTRL-006: binning algorithms produce the original renderer's bin quantities (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-006"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CTRL-006-shared-bin-multiples.png"]
-    },
-    {
-      "test": "histogram structureData SH-CTRL-006: custom quantity and custom width drive the bin count (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-006"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CTRL-006-shared-bin-multiples.png"]
-    },
-    {
-      "test": "histogram structureData SH-DATA-001: measure labels combine the measure with its unit when present (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-DATA-001"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram structureData SH-DATA-002: missing and non-numeric results are removed with a reported count (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-DATA-002"],
-      "issueRefs": [2],
-      "screenshots": ["SH-DATA-002-invalid-data-note.png"]
-    },
-    {
-      "test": "histogram structureData SH-FUNC-004C: measures without normal-range data are detected (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-FUNC-004C"],
-      "issueRefs": [2],
-      "screenshots": ["SH-FUNC-004C-control-hidden-for-pulse.png"]
-    },
-    {
       "test": "mdBlock: existing blocks are unchanged renders a numbered list as an ordered list",
       "suite": "unit",
       "status": "pass",
@@ -873,6 +425,430 @@
       "suite": "unit",
       "status": "pass",
       "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer arms/visits/measures/filters QT-CT-001: orderVisits sorts by numeric visit",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-CT-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer arms/visits/measures/filters QT-CT-004: armsPresent puts the placebo arm first",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-CT-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer arms/visits/measures/filters QT-CT-004: placeboArmFor auto-detects /placebo/i",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-CT-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer arms/visits/measures/filters QT-CTRL-003: applyFilters constrains on active selections only",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-CTRL-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer arms/visits/measures/filters QT-DATA-006: measuresPresent lists distinct measures",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-DATA-006"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer centralTendencySeries (QT-CT-001/004/005) QT-CT-002: median mode carries no CI (lo/hi NaN)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-CT-001", "QT-CT-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer centralTendencySeries (QT-CT-001/004/005) QT-CT-002: Δ mean series carries per-arm means and a 90% CI",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-CT-001", "QT-CT-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer centralTendencySeries (QT-CT-001/004/005) QT-CT-004: ΔΔ drops placebo and subtracts placebo mean change",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-CT-001", "QT-CT-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer checkInputs (QT-DATA-005) QT-DATA-005: an empty dataset reports all required columns missing",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-DATA-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer checkInputs (QT-DATA-005) QT-DATA-005: passes when every required column is present",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-DATA-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer checkInputs (QT-DATA-005) QT-DATA-005: throws naming each missing required column",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-DATA-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer classifyThresholds (QT-CAT-002/003) QT-CAT-001: denominators are post-baseline subjects per arm",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-CAT-002", "QT-CAT-001"],
+      "issueRefs": [],
+      "screenshots": ["QT-CAT-002-categorical-table.png"]
+    },
+    {
+      "test": "qt-explorer classifyThresholds (QT-CAT-002/003) QT-CAT-002: absolute >450 counts D1(470) and D2(500) in Drug",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-CAT-002"],
+      "issueRefs": [],
+      "screenshots": ["QT-CAT-002-categorical-table.png"]
+    },
+    {
+      "test": "qt-explorer classifyThresholds (QT-CAT-002/003) QT-CAT-002: absolute >500 excludes the boundary value 500 (strict >)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-CAT-002"],
+      "issueRefs": [],
+      "screenshots": ["QT-CAT-002-categorical-table.png"]
+    },
+    {
+      "test": "qt-explorer classifyThresholds (QT-CAT-002/003) QT-CAT-003: change >60 counts only D2(70) using max change independently",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-CAT-002", "QT-CAT-003"],
+      "issueRefs": [],
+      "screenshots": ["QT-CAT-002-categorical-table.png"]
+    },
+    {
+      "test": "qt-explorer cleanData (QT-DATA-003/004) QT-DATA-003: drops missing / non-numeric values with a count",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-DATA-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer cleanData (QT-DATA-003/004) QT-DATA-004: derives change as value − baseline when the change column is blank",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-DATA-003", "QT-DATA-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer cleanData (QT-DATA-003/004) QT-DATA-004: keeps the source change when present",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-DATA-003", "QT-DATA-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer cleanData (QT-DATA-003/004) QT-DATA-005: flags the ABLFL=Y baseline record as not post-baseline",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-DATA-003", "QT-DATA-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer cleanData (QT-DATA-003/004) QT-DATA-005: when the flag column is present, a post-baseline change-0 row with a missing flag stays post-baseline",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-DATA-003", "QT-DATA-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer cleanData (QT-DATA-003/004) QT-DATA-005: with no baseline-flag column at all, a change-0 row is treated as the baseline",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-DATA-003", "QT-DATA-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer configure defaults QT-DATA-001: default settings carry the ADEG column mapping",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-DATA-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer configure.resolvePlaceboArm QT-CFG-007: auto-detects /placebo/i otherwise",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-CFG-007"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer configure.resolvePlaceboArm QT-CFG-007: prefers the explicit setting when present",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-CFG-007"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer configure.syncSettings QT-CFG-001: fills defaults and normalizes field lists",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-CFG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer configure.syncSettings QT-CFG-002: sorts and numifies threshold lists",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-CFG-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer configure.syncSettings QT-CFG-003: falls back start_measure to the first available measure",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-CFG-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer configure.syncSettings QT-CFG-004: rejects an out-of-range ci_level, keeping the default",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-CFG-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer configure.syncSettings QT-CFG-005: VIEWS and TIMEPOINT_MAX are stable",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-CFG-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer configure.zForCi QT-CFG-006: interpolates between table points and clamps the ends",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-CFG-006"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer configure.zForCi QT-CFG-006: returns the two-sided z for common levels",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-CFG-006"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer getPlugins helpers (QT-OUT-004/006) QT-PLG-001: hexToRgba converts to rgba at opacity",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-OUT-004", "QT-PLG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer getPlugins helpers (QT-OUT-004/006) QT-PLG-002: armColorScale assigns stable cycling colors",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-OUT-004", "QT-PLG-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer getPlugins helpers (QT-OUT-004/006) QT-PLG-003: scatterTooltip lists id, arm, baseline, value, change, visit",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-OUT-004", "QT-PLG-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer getScales arm point styles (QT-OUT-004) QT-SCL-008: assigns a distinct cycling point style per arm",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-OUT-004", "QT-SCL-008"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer getScales formatting + domains QT-SCL-005: formatNumber trims and guards non-finite",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-SCL-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer getScales formatting + domains QT-SCL-006: formatSigned signs the change with a real minus glyph",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-SCL-006"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer getScales formatting + domains QT-SCL-007: paddedDomain covers values and forced inclusions",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-SCL-007"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer getScales formatting + domains QT-SCL-007: paddedDomain handles an empty / degenerate sample",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-SCL-007"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer getScales titles + units (QT-OUT-005, QT-CT-001) QT-SCL-001: correctionSuffix maps the QTc formulas",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-OUT-005", "QT-CT-001", "QT-SCL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer getScales titles + units (QT-OUT-005, QT-CT-001) QT-SCL-002: isQtcMeasure + measureUnit distinguish QTc from HR",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-OUT-005", "QT-CT-001", "QT-SCL-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer getScales titles + units (QT-OUT-005, QT-CT-001) QT-SCL-003: central axis title carries mode prefix + correction suffix",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-OUT-005", "QT-CT-001", "QT-SCL-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer getScales titles + units (QT-OUT-005, QT-CT-001) QT-SCL-004: scatter titles mirror the mockup",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-OUT-005", "QT-CT-001", "QT-SCL-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer ICH-E14 metric + peak visit (QT-CT-005/006) QT-CT-005: ICH-E14 metric is the largest ΔΔ upper CI bound, flagged vs 10 ms",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-CT-005"],
+      "issueRefs": [],
+      "screenshots": ["QT-CT-005-delta-delta-ich-metric.png"]
+    },
+    {
+      "test": "qt-explorer ICH-E14 metric + peak visit (QT-CT-005/006) QT-CT-005: metric is empty outside mean + ΔΔ",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-CT-005"],
+      "issueRefs": [],
+      "screenshots": ["QT-CT-005-delta-delta-ich-metric.png"]
+    },
+    {
+      "test": "qt-explorer ICH-E14 metric + peak visit (QT-CT-005/006) QT-CT-006: peakVisits returns each arm peak",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-CT-005", "QT-CT-006"],
+      "issueRefs": [],
+      "screenshots": ["QT-CT-005-delta-delta-ich-metric.png"]
+    },
+    {
+      "test": "qt-explorer module export QT-API-001: the public collection exposes the qtExplorer factory",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-API-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer structureData statistics helpers QT-STAT-001: unique keeps first-seen non-empty values",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-STAT-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer structureData statistics helpers QT-STAT-002: mean/sd/quantile/median match hand values",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-STAT-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer subjectExtremes (QT-CAT-001) QT-CAT-001: tracks max value and max change independently",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-CAT-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer subjectPoints (QT-OUT-001/002) QT-OUT-002: a specific visit picks that visit row",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-OUT-001", "QT-OUT-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer subjectPoints (QT-OUT-001/002) QT-OUT-002: matches a numeric-typed visit against a string timepoint",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-OUT-001", "QT-OUT-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer subjectPoints (QT-OUT-001/002) QT-OUT-002: maximum post-baseline picks the max absolute value row",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-OUT-001", "QT-OUT-002"],
       "issueRefs": [],
       "screenshots": []
     },
@@ -1218,38 +1194,6 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [21],
-      "screenshots": []
-    },
-    {
-      "test": "site generator: gallery nav dropdown (#71) applies the mount-depth root prefix to every internal link (#71)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [71, 71],
-      "screenshots": []
-    },
-    {
-      "test": "site generator: gallery nav dropdown (#71) lists one link per available renderer, data-driven from config (#71)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [71, 71],
-      "screenshots": []
-    },
-    {
-      "test": "site generator: gallery nav dropdown (#71) renders a disclosure control wired to the chart menu (#71)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [71, 71],
-      "screenshots": []
-    },
-    {
-      "test": "site generator: gallery nav dropdown (#71) shell substitutes the {{galleryNav}} token from the passed renderers (#71)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [71, 71],
       "screenshots": []
     },
     {

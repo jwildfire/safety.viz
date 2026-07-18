@@ -1,10 +1,12 @@
 // build-demo-data.mjs — regenerate the vendored demo datasets from a canonical source.
 //
-// safety.viz demos and evidence run on two vendored CSVs:
+// safety.viz demos and evidence run on three vendored CSVs:
 //   site/data/adbds.csv — one row per lab / vital-sign measurement (BDS shape)
 //   site/data/adae.csv  — one row per adverse event
+//   site/data/adeg.csv  — one row per ECG interval measurement (QT / QTc / HR), the
+//                         demo dataset for the QT Safety Explorer
 //
-// This script (re)builds both from **pharmaverseadam** (https://github.com/pharmaverse/pharmaverseadam),
+// This script (re)builds all three from **pharmaverseadam** (https://github.com/pharmaverse/pharmaverseadam),
 // the pharmaverse consortium's ADaM test data derived from the CDISC SDTM/ADaM Pilot 01
 // study (Apache-2.0). It replaces an earlier synthetic stopgap of unclear provenance.
 // See obot.roadmap requirement #25 and docs/DATA_SOURCES.md.
@@ -13,11 +15,14 @@
 // carry participant demographics, treatment arm, visit, standardized numeric result, and
 // reference ranges, so no separate `adsl` join is needed. The AE file is `adae` projected
 // to the columns the AE renderers map (MedDRA SOC/PT, severity, seriousness, study days).
+// The ECG file is `adeg` projected to a QT measure contract (QTcF / QTcB / HR, each with
+// its analysis value, source-derived baseline, and change-from-baseline) — see buildEg.
 //
 // Usage:  node scripts/build-demo-data.mjs [--source-dir <dir>] [--out-dir <dir>]
 //   Fetches the source CSVs from raw.githubusercontent.com by default (cached under
-//   node's tmp), or reads them from --source-dir if provided (adlb.csv/advs.csv/adae.csv).
-//   Writes adbds.csv + adae.csv to --out-dir (default: site/data).
+//   node's tmp), or reads them from --source-dir if provided
+//   (adlb.csv/advs.csv/adae.csv/adsl.csv/adeg.csv).
+//   Writes adbds.csv + adae.csv + adeg.csv to --out-dir (default: site/data).
 //
 // The generated CSVs are committed to the repo; rerun this script to refresh them.
 
@@ -35,7 +40,26 @@ const REPO_ROOT = join(__dirname, '..');
 
 const PHARMAVERSEADAM_BASE =
   'https://raw.githubusercontent.com/pharmaverse/pharmaverseadam/main/inst/extdata';
-const SOURCE_FILES = ['adlb.csv', 'advs.csv', 'adae.csv', 'adsl.csv'];
+const SOURCE_FILES = ['adlb.csv', 'advs.csv', 'adae.csv', 'adsl.csv', 'adeg.csv'];
+
+// ECG measure panel for the QT Safety Explorer demo. The pilot ADEG carries eight
+// PARAMCDs; the demo keeps the two fixed heart-rate corrections in scope for Phase 1
+// (QTcF / QTcB) plus heart rate, which the QT workflow reads alongside QTc (an
+// increase to ≥100 bpm or ≥25% can itself drive an apparent QTc change). QT-RR is out
+// of scope, and the pilot has no PR/QRS intervals and no moxifloxacin positive-control
+// arm — expected for CDISC Pilot 01; those are Phase-2 items on a richer dataset.
+// Maps source PARAMCD → display name + unit.
+const EG_PARAMS = [
+  { paramcd: 'QTCFR', test: 'QTcF', unit: 'msec' },
+  { paramcd: 'QTCBR', test: 'QTcB', unit: 'msec' },
+  { paramcd: 'HR', test: 'Heart Rate', unit: 'beats/min' }
+];
+const EG_PARAM_BY_CODE = new Map(EG_PARAMS.map((p) => [p.paramcd, p]));
+// The pilot records each visit at three postural timepoints (supine, standing 1 min,
+// standing 3 min) plus a DTYPE=AVERAGE roll-up. Keep the supine reading — the resting
+// posture ICH-E14 analyses use — which carries the source-derived BASE and CHG the QT
+// displays need (the AVERAGE roll-up rows do not).
+const EG_TIMEPOINT = 'AFTER LYING DOWN FOR 5 MINUTES';
 
 // Curated measure panel for the demo BDS. The full pilot carries 55 measures
 // (incl. sparse cell-morphology / qualitative-urinalysis labs); the demo keeps a
@@ -311,20 +335,90 @@ function buildAe(adaeText, adslText) {
   return { columns, records: [...records, ...placeholders], placeholders: placeholders.length };
 }
 
+// Map one ADaM ADEG record to the QT measure contract. Keeps the source-standardized
+// analysis value (AVAL), the source-derived baseline (BASE) and change-from-baseline
+// (CHG) — no correction formula is recomputed here; QTcF/QTcB arrive pre-derived from
+// the pilot. One row per participant × visit × ECG parameter (supine timepoint).
+function mapEg(rec, param) {
+  return {
+    USUBJID: clean(rec.USUBJID),
+    SITE: isBlank(rec.SITEID) ? '' : `Clinical Site ${rec.SITEID}`,
+    SITEID: clean(rec.SITEID),
+    SEX: clean(rec.SEX),
+    RACE: clean(rec.RACE),
+    AGE: num(rec.AGE),
+    ARM: clean(rec.TRTA) || clean(rec.ARM),
+    VISIT: clean(rec.AVISIT) || clean(rec.VISIT),
+    VISITNUM: clean(rec.AVISITN) || clean(rec.VISITNUM),
+    PARAMCD: param.paramcd,
+    TEST: param.test,
+    STRESU: param.unit,
+    STRESN: rec.AVAL,
+    BASE: num(rec.BASE),
+    CHG: num(rec.CHG),
+    ABLFL: clean(rec.ABLFL)
+  };
+}
+
+// Keep one analysis reading per participant × visit × parameter: the supine timepoint,
+// a source reading (not the DTYPE=AVERAGE roll-up, which lacks BASE/CHG), and either the
+// primary-analysis record (ANL01FL='Y') or the baseline record (ABLFL='Y' — baseline
+// carries ABLFL, not ANL01FL, and anchors every change-from-baseline display). Mirrors
+// the BDS build's isAnalysisMeasure, restricted to the supine posture.
+const isEgAnalysisRecord = (rec) =>
+  isBlank(rec.DTYPE) &&
+  clean(rec.ATPT) === EG_TIMEPOINT &&
+  isNum(rec.AVAL) &&
+  (rec.ANL01FL === 'Y' || rec.ABLFL === 'Y');
+
+function buildEg(adegText) {
+  const columns = [
+    'USUBJID',
+    'SITE',
+    'SITEID',
+    'SEX',
+    'RACE',
+    'AGE',
+    'ARM',
+    'VISIT',
+    'VISITNUM',
+    'PARAMCD',
+    'TEST',
+    'STRESU',
+    'STRESN',
+    'BASE',
+    'CHG',
+    'ABLFL'
+  ];
+  const records = toRecords(adegText)
+    .filter((r) => isEgAnalysisRecord(r) && EG_PARAM_BY_CODE.has(clean(r.PARAMCD)))
+    .map((r) => mapEg(r, EG_PARAM_BY_CODE.get(clean(r.PARAMCD))));
+
+  // Guard: every curated parameter should be present in the source.
+  const found = new Set(records.map((r) => r.PARAMCD));
+  const missing = EG_PARAMS.filter((p) => !found.has(p.paramcd)).map((p) => p.paramcd);
+  if (missing.length)
+    console.warn(`  WARNING: curated ECG parameters not found in source: ${missing.join(', ')}`);
+
+  return { columns, records };
+}
+
 // ---- main -----------------------------------------------------------------
 async function main() {
   const { sourceDir, outDir } = parseArgs(process.argv.slice(2));
   console.log('Loading pharmaverseadam source datasets…');
-  const [adlbText, advsText, adaeText, adslText] = await Promise.all(
+  const [adlbText, advsText, adaeText, adslText, adegText] = await Promise.all(
     SOURCE_FILES.map((f) => loadSource(f, sourceDir))
   );
 
   const bds = buildBds(adlbText, advsText);
   const ae = buildAe(adaeText, adslText);
+  const eg = buildEg(adegText);
 
   await mkdir(outDir, { recursive: true });
   await writeFile(join(outDir, 'adbds.csv'), toCsv(bds.columns, bds.records));
   await writeFile(join(outDir, 'adae.csv'), toCsv(ae.columns, ae.records));
+  await writeFile(join(outDir, 'adeg.csv'), toCsv(eg.columns, eg.records));
 
   const measures = new Set(bds.records.map((r) => r.TEST));
   const subjects = new Set(bds.records.map((r) => r.USUBJID));
@@ -337,6 +431,13 @@ async function main() {
     `adae.csv : ${ae.records.length - ae.placeholders} events + ${ae.placeholders} ` +
       `placeholder rows · ${new Set(ae.records.map((r) => r.USUBJID)).size} participants · ` +
       `${new Set(ae.records.map((r) => r.AEBODSYS).filter(Boolean)).size} body systems`
+  );
+  const egSubjects = new Set(eg.records.map((r) => r.USUBJID));
+  const egParams = new Set(eg.records.map((r) => r.TEST));
+  const egArms = new Set(eg.records.map((r) => r.ARM));
+  console.log(
+    `adeg.csv : ${eg.records.length} rows · ${egSubjects.size} participants · ` +
+      `${egParams.size} parameters {${[...egParams].join(', ')}} · arms {${[...egArms].join(', ')}}`
   );
 }
 

@@ -520,7 +520,7 @@ export function renderEvidencePage({ module, config, coverage, evidence, require
     )
   );
 
-  html.push(`<h1>${escapeHtml(renderer.title)}: test evidence</h1>`);
+  html.push(`<h1>${escapeHtml(renderer.title)}: test evidence${experimentalBadge(renderer)}</h1>`);
   html.push(
     `<p class="tagline">Requirement-traced qualification evidence for the safety.viz` +
       ` <code>${escapeHtml(module)}</code> module.</p>`
@@ -906,7 +906,7 @@ function methodSection(method) {
 // _api/<module>.json artifact (scripts/api/build-api-data.mjs, #6) — a
 // module-anatomy overview, then factory, methods, settings, and the
 // schema-derived data contract, with a sticky sidebar table of contents.
-export function renderApiPage(model, { hasGuide = false } = {}) {
+export function renderApiPage(model, { hasGuide = false, experimental = false } = {}) {
   const toc =
     `<nav class="api-toc" aria-label="On this page"><h2>On this page</h2><ul>` +
     `<li><a href="#overview">Overview</a></li>` +
@@ -975,7 +975,9 @@ export function renderApiPage(model, { hasGuide = false } = {}) {
   );
 
   const html = [];
-  html.push(`<h1><code>${escapeHtml(model.module)}</code> API reference</h1>`);
+  html.push(
+    `<h1><code>${escapeHtml(model.module)}</code> API reference${experimentalBadge({ experimental })}</h1>`
+  );
   html.push(
     `<p class="tagline">Generated from the module&#39;s JSDoc and JSON-Schema data contract` +
       ` — <code>npm run docs:api</code> fails on undocumented surface.</p>`
@@ -990,10 +992,16 @@ export function renderApiPage(model, { hasGuide = false } = {}) {
 // real example data (the renderer's `data` config key, defaulting to the
 // shared ADBDS extract, #26). The .demo-page wrapper widens the layout
 // (site.css) so the control sidebar and chart get full room.
+// A small "Experimental" pill for the page title when the config marks a
+// renderer experimental — an exploratory, not-yet-stable renderer.
+export function experimentalBadge(renderer) {
+  return renderer && renderer.experimental ? ` <span class="site-badge">Experimental</span>` : '';
+}
+
 export function renderDemoPage({ renderer, version }) {
   return (
     `<div class="demo-page">` +
-    `<h1>${escapeHtml(renderer.title)}</h1>` +
+    `<h1>${escapeHtml(renderer.title)}${experimentalBadge(renderer)}</h1>` +
     `<p class="tagline">${escapeHtml(renderer.blurb)}</p>` +
     moduleTabs('demo', !!renderer.guide) +
     `<p>This live demo mounts the committed` +
@@ -1050,16 +1058,18 @@ function renderGuideToc(headings) {
 export function renderGuidePage({ renderer, config, guideMarkdown }) {
   const matrixUrl = `${config.matrixBaseUrl}/${renderer.matrix}`;
   const html = [];
-  html.push(`<h1>${escapeHtml(renderer.title)}: clinical guide</h1>`);
-  html.push(
-    `<p class="tagline">How to read the ${escapeHtml(renderer.title)} to review participant` +
-      ` liver safety, and where each step lives in the controls on this page.</p>`
-  );
+  html.push(`<h1>${escapeHtml(renderer.title)}: clinical guide${experimentalBadge(renderer)}</h1>`);
+  const tagline =
+    renderer.guideTagline ||
+    `How to read the ${renderer.title} to review participant liver safety, and where each step lives in the controls on this page.`;
+  html.push(`<p class="tagline">${escapeHtml(tagline)}</p>`);
   html.push(moduleTabs('guide', matrixUrl, true));
+  const caution =
+    renderer.guideCaution ||
+    'A drug-induced-liver-injury conclusion is a diagnosis of exclusion that requires evidence beyond what this graphic shows.';
   html.push(
     `<p class="guide-caution"><strong>Exploratory review aid, not a validated diagnostic tool.</strong>` +
-      ` A drug-induced-liver-injury conclusion is a diagnosis of exclusion that requires evidence` +
-      ` beyond what this graphic shows.</p>`
+      ` ${escapeHtml(caution)}</p>`
   );
   const toc = renderGuideToc(extractHeadings(guideMarkdown));
   const body = `<div class="guide-body">${mdBlock(guideMarkdown, { headingIds: true })}</div>`;
