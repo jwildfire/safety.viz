@@ -520,7 +520,7 @@ export function renderEvidencePage({ module, config, coverage, evidence, require
     )
   );
 
-  html.push(`<h1>${escapeHtml(renderer.title)}: test evidence</h1>`);
+  html.push(`<h1>${escapeHtml(renderer.title)}: test evidence${experimentalBadge(renderer)}</h1>`);
   html.push(
     `<p class="tagline">Requirement-traced qualification evidence for the safety.viz` +
       ` <code>${escapeHtml(module)}</code> module.</p>`
@@ -906,7 +906,7 @@ function methodSection(method) {
 // _api/<module>.json artifact (scripts/api/build-api-data.mjs, #6) — a
 // module-anatomy overview, then factory, methods, settings, and the
 // schema-derived data contract, with a sticky sidebar table of contents.
-export function renderApiPage(model, { hasGuide = false } = {}) {
+export function renderApiPage(model, { hasGuide = false, experimental = false } = {}) {
   const toc =
     `<nav class="api-toc" aria-label="On this page"><h2>On this page</h2><ul>` +
     `<li><a href="#overview">Overview</a></li>` +
@@ -975,7 +975,9 @@ export function renderApiPage(model, { hasGuide = false } = {}) {
   );
 
   const html = [];
-  html.push(`<h1><code>${escapeHtml(model.module)}</code> API reference</h1>`);
+  html.push(
+    `<h1><code>${escapeHtml(model.module)}</code> API reference${experimentalBadge({ experimental })}</h1>`
+  );
   html.push(
     `<p class="tagline">Generated from the module&#39;s JSDoc and JSON-Schema data contract` +
       ` — <code>npm run docs:api</code> fails on undocumented surface.</p>`
@@ -990,10 +992,16 @@ export function renderApiPage(model, { hasGuide = false } = {}) {
 // real example data (the renderer's `data` config key, defaulting to the
 // shared ADBDS extract, #26). The .demo-page wrapper widens the layout
 // (site.css) so the control sidebar and chart get full room.
+// A small "Experimental" pill for the page title when the config marks a
+// renderer experimental — an exploratory, not-yet-stable renderer.
+export function experimentalBadge(renderer) {
+  return renderer && renderer.experimental ? ` <span class="site-badge">Experimental</span>` : '';
+}
+
 export function renderDemoPage({ renderer, version }) {
   return (
     `<div class="demo-page">` +
-    `<h1>${escapeHtml(renderer.title)}</h1>` +
+    `<h1>${escapeHtml(renderer.title)}${experimentalBadge(renderer)}</h1>` +
     `<p class="tagline">${escapeHtml(renderer.blurb)}</p>` +
     moduleTabs('demo', !!renderer.guide) +
     `<p>This live demo mounts the committed` +
@@ -1050,16 +1058,18 @@ function renderGuideToc(headings) {
 export function renderGuidePage({ renderer, config, guideMarkdown }) {
   const matrixUrl = `${config.matrixBaseUrl}/${renderer.matrix}`;
   const html = [];
-  html.push(`<h1>${escapeHtml(renderer.title)}: clinical guide</h1>`);
-  html.push(
-    `<p class="tagline">How to read the ${escapeHtml(renderer.title)} to review participant` +
-      ` liver safety, and where each step lives in the controls on this page.</p>`
-  );
+  html.push(`<h1>${escapeHtml(renderer.title)}: clinical guide${experimentalBadge(renderer)}</h1>`);
+  const tagline =
+    renderer.guideTagline ||
+    `How to read the ${renderer.title} to review participant liver safety, and where each step lives in the controls on this page.`;
+  html.push(`<p class="tagline">${escapeHtml(tagline)}</p>`);
   html.push(moduleTabs('guide', matrixUrl, true));
+  const caution =
+    renderer.guideCaution ||
+    'A drug-induced-liver-injury conclusion is a diagnosis of exclusion that requires evidence beyond what this graphic shows.';
   html.push(
     `<p class="guide-caution"><strong>Exploratory review aid, not a validated diagnostic tool.</strong>` +
-      ` A drug-induced-liver-injury conclusion is a diagnosis of exclusion that requires evidence` +
-      ` beyond what this graphic shows.</p>`
+      ` ${escapeHtml(caution)}</p>`
   );
   const toc = renderGuideToc(extractHeadings(guideMarkdown));
   const body = `<div class="guide-body">${mdBlock(guideMarkdown, { headingIds: true })}</div>`;
@@ -1067,14 +1077,53 @@ export function renderGuidePage({ renderer, config, guideMarkdown }) {
   return html.join('\n');
 }
 
+// Gallery nav dropdown (#71): the top-level "Gallery" link keeps navigating to
+// the gallery index, and an adjacent disclosure button reveals one link per
+// available renderer straight to its demo page. The list is data-driven from
+// the same config.renderers the gallery cards use, so a newly-migrated renderer
+// appears automatically. Links carry the {{root}} mount-depth prefix (baked in
+// here, not deferred to a token) so the menu resolves at site root and under
+// /<module>/ sub-pages alike. Interaction/ARIA state is progressively enhanced
+// by the shell's inline script; with no JavaScript the Gallery link and the
+// hover/focus-revealed chart links stay reachable.
+export function renderGalleryNav(renderers, root = '') {
+  const items = renderers
+    .filter((renderer) => renderer.status === 'available')
+    .map(
+      (renderer) =>
+        `<li><a href="${root}${renderer.module}/index.html">` +
+        `${escapeHtml(renderer.title)}</a></li>`
+    )
+    .join('');
+  return (
+    `<div class="nav-group">` +
+    `<a href="${root}index.html">Gallery</a>` +
+    `<button type="button" class="nav-disclosure" aria-expanded="false" ` +
+    `aria-controls="gallery-menu" aria-label="Show charts">` +
+    `<span class="nav-caret" aria-hidden="true"></span></button>` +
+    `<ul id="gallery-menu" class="nav-menu">${items}</ul>` +
+    `</div>`
+  );
+}
+
 // Shared shell: replaces {{title}}, {{description}}, {{version}}, {{root}},
-// and {{content}} tokens. {{root}} prefixes shell-level links so one shell
-// serves pages at any depth.
-export function renderShell({ shell, title, content, root = '', version = '', description = '' }) {
+// {{galleryNav}}, and {{content}} tokens. {{root}} prefixes shell-level links so
+// one shell serves pages at any depth; {{galleryNav}} is built from the passed
+// renderer list (see renderGalleryNav) — empty when none are supplied.
+export function renderShell({
+  shell,
+  title,
+  content,
+  root = '',
+  version = '',
+  description = '',
+  renderers = []
+}) {
   return shell
     .replaceAll('{{title}}', escapeHtml(title))
     .replaceAll('{{description}}', escapeHtml(description))
     .replaceAll('{{version}}', escapeHtml(version))
+    .replaceAll('{{galleryNav}}', renderGalleryNav(renderers, root))
     .replaceAll('{{root}}', root)
     .replace('{{content}}', content);
 }

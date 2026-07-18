@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>safety.viz qt-explorer demo page</title>
+  </head>
+  <body>
+    <h1 id="qt-explorer-heading">safety.viz QT Safety Explorer demo</h1>
+    <p>
+      Demo and Playwright harness page for the qt-explorer module (#68). Loads the committed IIFE
+      bundle against a small deterministic ECG cohort — three arms (Placebo, Xanomeline Low Dose,
+      Xanomeline High Dose), QTcF / QTcB / Heart Rate, five visits — engineered so the High Dose arm
+      drives a mean ΔΔ above the 10 ms reference, several High Dose participants cross the
+      450/480/500 ms absolute and 30/60 ms change thresholds, and Placebo stays near zero, so the
+      central-tendency band + ICH-E14 metric, the outlier-scatter cut-lines, and the by-arm
+      categorical table all assert deterministically.
+    </p>
+    <div id="container"></div>
+    <!-- Bundle path tracks the package.json version; bump them together. -->
+    <script src="/dist/safety.viz-1.3.1/safety.viz.js"></script>
+    <script>
+      // Deterministic cohort: no Math.random(). Each arm has a per-visit mean
+      // change profile; participants are spread around it by a fixed offset so
+      // counts against the thresholds are reproducible.
+      const ARMS = [
+        { arm: 'Placebo', code: 'PBO', n: 8, drift: [0, 1, 2, 2, 1] },
+        { arm: 'Xanomeline Low Dose', code: 'XLO', n: 8, drift: [0, 8, 14, 18, 16] },
+        { arm: 'Xanomeline High Dose', code: 'XHI', n: 8, drift: [0, 22, 40, 58, 52] }
+      ];
+      const VISITS = [
+        { VISIT: 'Baseline', VISITNUM: 0, ABLFL: 'Y' },
+        { VISIT: 'Week 2', VISITNUM: 2, ABLFL: '' },
+        { VISIT: 'Week 4', VISITNUM: 4, ABLFL: '' },
+        { VISIT: 'Week 8', VISITNUM: 8, ABLFL: '' },
+        { VISIT: 'Week 12', VISITNUM: 12, ABLFL: '' }
+      ];
+      // Per-participant baseline QTcF spread (deterministic ramp 400..440).
+      const data = [];
+      ARMS.forEach((armSpec, armIdx) => {
+        for (let i = 0; i < armSpec.n; i += 1) {
+          const id = `${armSpec.code}-${i + 1}`;
+          const sex = i % 2 === 0 ? 'F' : 'M';
+          const baseF = 400 + i * 5 + armIdx * 3; // 400..~440
+          const baseB = baseF + 12; // Bazett reads a touch higher
+          const baseHR = 60 + i; // bpm
+          // Per-participant offset around the arm's per-visit drift (−4..+10).
+          const offset = i * 2 - 4;
+          VISITS.forEach((v, vi) => {
+            const chgF = v.ABLFL === 'Y' ? 0 : armSpec.drift[vi] + offset;
+            const chgB = v.ABLFL === 'Y' ? 0 : armSpec.drift[vi] + offset + 3;
+            const chgHR = v.ABLFL === 'Y' ? 0 : Math.round(armSpec.drift[vi] / 6);
+            data.push(
+              row(id, armSpec.arm, sex, v, 'QTcF', baseF, chgF),
+              row(id, armSpec.arm, sex, v, 'QTcB', baseB, chgB),
+              row(id, armSpec.arm, sex, v, 'Heart Rate', baseHR, chgHR)
+            );
+          });
+        }
+      });
+      // Two invalid QTcF rows (empty + non-numeric) exercise the removed-count.
+      data.push(row('PBO-1', 'Placebo', 'F', VISITS[1], 'QTcF', 400, '', ''));
+      data.push(row('PBO-2', 'Placebo', 'M', VISITS[1], 'QTcF', 405, 'NA', 'x'));
+
+      function row(id, arm, sex, v, test, base, chg, forceValue) {
+        const value = forceValue !== undefined ? forceValue : base + chg;
+        return {
+          USUBJID: id,
+          ARM: arm,
+          SEX: sex,
+          RACE: 'WHITE',
+          SITE: 'Clinical Site 701',
+          VISIT: v.VISIT,
+          VISITNUM: v.VISITNUM,
+          ABLFL: v.ABLFL,
+          TEST: test,
+          STRESN: value,
+          BASE: base,
+          CHG: v.ABLFL === 'Y' ? 0 : chg
+        };
+      }
+
+      const instance = SafetyViz.qtExplorer('#container', {
+        filters: [
+          { value_col: 'SEX', label: 'Sex' },
+          { value_col: 'RACE', label: 'Race' }
+        ]
+      });
+      window.__safetyQtExplorerInstance = instance;
+      instance.init(data);
+    </script>
+  </body>
+</html>
