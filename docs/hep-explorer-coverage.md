@@ -38,6 +38,7 @@ pending; each row lists the module IDs its test covers.
 | HEP-COMP-004/005                             | —                  | #67   | migration table counts and by-arm concern summary                                                            |
 | HEP-COMP-006                                 | —                  | #67   | the View control toggles between the composite and scatter views                                             |
 | HEP-COMP-006                                 | —                  | #67   | degrades gracefully when baseline or on-treatment values are absent                                          |
+| HEP-COMP-007                                 | —                  | #67   | hovering and clicking a point traces the participant across all panels                                       |
 
 ## Unit evidence (Vitest — `tests/unit/hep-explorer/`)
 
@@ -77,8 +78,9 @@ repo), so routing is against the port spec's scope rather than matrix rows.
   event (HEP-API-001/003), and the baseline-referenced **composite plot** for
   subjects with abnormal baseline liver tests (Tesfaldet et al., Drug Safety 2024) — the pretreatment and peak on-treatment eDISH panels colored by
   baseline quadrant, the four-panel ×Baseline shift plot, the migration table
-  with concern coding, and the by-arm concern-vs-benefit summary
-  (HEP-COMP-001..006).
+  with concern coding, the by-arm concern-vs-benefit summary, and the
+  participant cross-linking that traces a hovered/clicked participant across
+  every panel with an id header (HEP-COMP-001..007).
 
 - **Deferred (follow-ups, not part of the coordinated-views claim):**
   draggable cut-lines (v1 uses the reference-line number inputs), the study-day

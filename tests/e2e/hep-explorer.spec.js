@@ -587,4 +587,65 @@ test.describe('safety.viz hep-explorer composite plot', () => {
     expect(note).toContain('needs baseline and on-treatment ALT and total bilirubin');
     await expect(page.locator('.hep-composite-panels canvas')).toHaveCount(0);
   });
+
+  test('HEP-COMP-007: hovering and clicking a point traces the participant across all panels (#67)', async ({
+    page
+  }) => {
+    // The trace header starts on the idle hint.
+    await expect(page.locator('.hep-composite-header')).toHaveText(/Hover a point to trace/);
+
+    // Hovering a point (via the shared chart handler) traces its participant and
+    // names it in the header, without a sticky selection.
+    const hover = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      const chart = instance.compositeCharts[1]; // peak on-treatment eDISH
+      const id = chart.$compositeSubjects[0].id;
+      chart.options.onHover({ native: { target: { style: {} } } }, [{ index: 0, chart }]);
+      return {
+        id,
+        activeId: instance.compositeActiveId(),
+        selectedId: instance.compositeSelectedId,
+        header: instance.compositeHeaderEl.textContent
+      };
+    });
+    expect(hover.activeId).toBe(hover.id);
+    expect(hover.selectedId).toBeNull(); // hover does not stick
+    expect(hover.header).toContain(`Participant ${hover.id}`);
+
+    // Clicking a point perma-selects it; the header marks it selected and the
+    // is-active styling turns on.
+    const clicked = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      const chart = instance.compositeCharts[0]; // pretreatment eDISH
+      chart.options.onHover({ native: { target: { style: {} } } }, []); // clear hover first
+      const id = chart.$compositeSubjects[0].id;
+      chart.options.onClick({}, [{ index: 0, chart }]);
+      return {
+        id,
+        selectedId: instance.compositeSelectedId,
+        header: instance.compositeHeaderEl.textContent,
+        isActive: instance.compositeHeaderEl.classList.contains('is-active')
+      };
+    });
+    expect(clicked.selectedId).toBe(clicked.id);
+    expect(clicked.header).toContain('selected');
+    expect(clicked.isActive).toBe(true);
+    await expect(page.locator('.hep-composite-header.is-active')).toBeVisible();
+    await captureEvidence(page, 'HEP-COMP-007', 'participant-trace');
+
+    // Clicking the same point again clears the selection and resets the header.
+    const cleared = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      const chart = instance.compositeCharts[0];
+      chart.options.onClick({}, [{ index: 0, chart }]);
+      return {
+        selectedId: instance.compositeSelectedId,
+        activeId: instance.compositeActiveId(),
+        header: instance.compositeHeaderEl.textContent
+      };
+    });
+    expect(cleared.selectedId).toBeNull();
+    expect(cleared.activeId).toBeNull();
+    expect(cleared.header).toMatch(/Hover a point to trace/);
+  });
 });

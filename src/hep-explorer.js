@@ -88,6 +88,11 @@ Chart.register(
 // Base point color when no grouping is active (HEP-CTRL-009 default).
 const BASE_POINT_COLOR = GROUP_COLORS[0];
 
+// The idle prompt for the composite view's participant-trace header, shown when
+// no participant is hovered or selected (HEP-COMP-007).
+const COMPOSITE_HEADER_HINT =
+  'Hover a point to trace a participant across every panel; click to keep it selected.';
+
 /**
  * Interactive hepatic safety explorer: a Chart.js eDISH scatter of peak
  * standardized ALT vs peak standardized total bilirubin — one point per
@@ -120,6 +125,14 @@ class SafetyHepExplorer {
     this.page = 1;
     this.charts = [];
     this.chart = null;
+    // Composite-view participant cross-linking (HEP-COMP-007): the charts to
+    // restyle together, the shown subjects, the transient hover id and the
+    // sticky (clicked) selection id, and the trace header element.
+    this.compositeCharts = [];
+    this.compositeSubjectsShown = [];
+    this.compositeHoverId = null;
+    this.compositeSelectedId = null;
+    this.compositeHeaderEl = null;
     this.participantsSelected = [];
     this.state = {
       view: this.settings.view === 'composite' ? 'composite' : 'scatter',
@@ -203,6 +216,8 @@ class SafetyHepExplorer {
 .safety-hep-explorer .hep-summary-table th{border-bottom:2px solid #d8dee4;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f}
 .safety-hep-explorer .hep-summary-table td.hep-num,.safety-hep-explorer .hep-summary-table th.hep-num{text-align:right;font-variant-numeric:tabular-nums}
 .safety-hep-explorer .hep-composite{margin-top:.5rem}
+.safety-hep-explorer .hep-composite-header{font-size:.85rem;color:#52616f;background:#f6f8fa;border:1px solid #e3e8ee;border-radius:8px;padding:.4rem .6rem;margin:0 0 .6rem;min-height:1.2rem}
+.safety-hep-explorer .hep-composite-header.is-active{color:#1f2933;font-weight:600;border-color:#b8c0cc;background:#eef2f6}
 .safety-hep-explorer .hep-composite-legend{display:flex;flex-wrap:wrap;gap:.35rem 1rem;font-size:.8rem;color:#52616f;margin:0 0 .75rem}
 .safety-hep-explorer .hep-composite-legend .hep-legend-item{display:inline-flex;align-items:center;gap:.3rem}
 .safety-hep-explorer .hep-composite-section-title{font-size:.9rem;margin:1rem 0 .5rem;color:#1f2933}
@@ -972,6 +987,14 @@ class SafetyHepExplorer {
     const { subjects, excluded } = buildCompositeSubjects(this.cleanRows, this.settings);
     const shown = applyFilters(subjects, this.state.filters);
 
+    // Reset the participant cross-linking state for this fresh render
+    // (HEP-COMP-007); the charts register themselves as they are built.
+    this.compositeCharts = [];
+    this.compositeSubjectsShown = shown;
+    this.compositeHoverId = null;
+    this.compositeSelectedId = null;
+    this.compositeHeaderEl = null;
+
     const totalParticipants = unique(this.cleanRows.map((row) => row[this.settings.id_col])).length;
     const excludedNote = excluded
       ? `<span class="sv-warning">${excluded} participant${
@@ -994,6 +1017,12 @@ class SafetyHepExplorer {
       this.compositeWrap.append(note);
       return;
     }
+
+    // Participant-trace header: shows the hovered/selected participant id and
+    // its migration, or the idle hint (HEP-COMP-007).
+    this.compositeHeaderEl = createElement('div', 'hep-composite-header');
+    this.compositeHeaderEl.textContent = COMPOSITE_HEADER_HINT;
+    this.compositeWrap.append(this.compositeHeaderEl);
 
     this.compositeWrap.append(this.buildCompositeLegend());
 
@@ -1083,22 +1112,11 @@ class SafetyHepExplorer {
     const xKey = which === 'pretreat' ? 'baselineAltULN' : 'peakAltULN';
     const yKey = which === 'pretreat' ? 'baselineBiliULN' : 'peakBiliULN';
     const data = subjects.map((subject) => ({ x: subject[xKey], y: subject[yKey] }));
-    const colors = subjects.map((subject) => QUADRANT_STYLE[subject.pretreatQuadrant].color);
-    const styles = subjects.map((subject) => QUADRANT_STYLE[subject.pretreatQuadrant].pointStyle);
 
     const chart = new Chart(canvas.getContext('2d'), {
       type: 'scatter',
       data: {
-        datasets: [
-          {
-            data,
-            pointBackgroundColor: colors.map((color) => hexToRgba(color, 0.8)),
-            pointBorderColor: colors,
-            pointStyle: styles,
-            pointRadius: 5,
-            pointHoverRadius: 7
-          }
-        ]
+        datasets: [{ data, ...this.compositeDatasetStyle(subjects, 5) }]
       },
       options: {
         maintainAspectRatio: false,
@@ -1116,7 +1134,8 @@ class SafetyHepExplorer {
         scales: this.compositeEdishScales(
           subjects.map((subject) => subject[xKey]),
           subjects.map((subject) => subject[yKey])
-        )
+        ),
+        ...this.compositeInteractionOptions()
       },
       plugins: [
         referenceLinePlugin({
@@ -1125,7 +1144,7 @@ class SafetyHepExplorer {
         })
       ]
     });
-    this.charts.push(chart);
+    this.registerCompositeChart(chart, subjects, canvas);
     return card;
   }
 
@@ -1168,22 +1187,11 @@ class SafetyHepExplorer {
       card.append(wrap);
 
       const data = members.map((subject) => ({ x: subject.peakAltBLN, y: subject.peakBiliBLN }));
-      const colors = members.map((subject) => QUADRANT_STYLE[subject.pretreatQuadrant].color);
-      const styles = members.map((subject) => QUADRANT_STYLE[subject.pretreatQuadrant].pointStyle);
 
       const chart = new Chart(canvas.getContext('2d'), {
         type: 'scatter',
         data: {
-          datasets: [
-            {
-              data,
-              pointBackgroundColor: colors.map((color) => hexToRgba(color, 0.8)),
-              pointBorderColor: colors,
-              pointStyle: styles,
-              pointRadius: 4.5,
-              pointHoverRadius: 6.5
-            }
-          ]
+          datasets: [{ data, ...this.compositeDatasetStyle(members, 4.5) }]
         },
         options: {
           maintainAspectRatio: false,
@@ -1213,11 +1221,12 @@ class SafetyHepExplorer {
               title: { display: true, text: 'TB [×Baseline]' },
               grid: { color: 'rgba(148, 163, 184, 0.2)' }
             }
-          }
+          },
+          ...this.compositeInteractionOptions()
         },
         plugins: [referenceLinePlugin({ vLines: refLines, hLines: refLines })]
       });
-      this.charts.push(chart);
+      this.registerCompositeChart(chart, members, canvas);
       grid.append(card);
     });
     return grid;
@@ -1242,6 +1251,163 @@ class SafetyHepExplorer {
       `${subject.id}: ALT ${formatNumber(alt)}×ULN, TB ${formatNumber(bili)}×ULN — ` +
       `${subject.pretreatQuadrant} → ${subject.onTreatQuadrant}`
     );
+  }
+
+  /**
+   * The participant currently traced across the composite panels: the hovered
+   * participant takes priority over the clicked (sticky) selection, or null when
+   * neither is active (HEP-COMP-007).
+   * @private
+   */
+  compositeActiveId() {
+    return this.compositeHoverId != null ? this.compositeHoverId : this.compositeSelectedId;
+  }
+
+  /**
+   * Whether a composite subject is the one currently traced (HEP-COMP-007).
+   * @private
+   */
+  compositeIsActive(subject) {
+    const id = this.compositeActiveId();
+    return id != null && subject != null && String(subject.id) === String(id);
+  }
+
+  /**
+   * Scriptable point styling shared by every composite chart (HEP-COMP-007): each
+   * point keeps its baseline-quadrant color and shape; when a participant is
+   * traced, that participant's point(s) render full-opacity with a dark ring and
+   * a larger radius while every other point dims, so the traced participant
+   * stands out in each panel it appears in. With no trace active the styling is
+   * the module's default (0.8 opacity, quadrant-colored border).
+   * @param {Object[]} subjects The subjects backing this chart's single dataset.
+   * @param {number} baseRadius The unemphasized point radius.
+   * @private
+   */
+  compositeDatasetStyle(subjects, baseRadius) {
+    return {
+      pointStyle: subjects.map((subject) => QUADRANT_STYLE[subject.pretreatQuadrant].pointStyle),
+      pointBackgroundColor: (ctx) => {
+        const subject = subjects[ctx.dataIndex];
+        if (!subject) return 'rgba(0, 0, 0, 0)';
+        const color = QUADRANT_STYLE[subject.pretreatQuadrant].color;
+        if (this.compositeActiveId() == null) return hexToRgba(color, 0.8);
+        return hexToRgba(color, this.compositeIsActive(subject) ? 1 : 0.12);
+      },
+      pointBorderColor: (ctx) => {
+        const subject = subjects[ctx.dataIndex];
+        if (!subject) return 'rgba(0, 0, 0, 0)';
+        const color = QUADRANT_STYLE[subject.pretreatQuadrant].color;
+        if (this.compositeIsActive(subject)) return SELECTION_COLOR;
+        return this.compositeActiveId() == null ? color : hexToRgba(color, 0.2);
+      },
+      pointBorderWidth: (ctx) => (this.compositeIsActive(subjects[ctx.dataIndex]) ? 2 : 1),
+      pointRadius: (ctx) =>
+        baseRadius + (this.compositeIsActive(subjects[ctx.dataIndex]) ? 2.5 : 0),
+      pointHoverRadius: baseRadius + 2
+    };
+  }
+
+  /**
+   * The hover/click handlers shared by every composite chart (HEP-COMP-007):
+   * hovering a point traces its participant everywhere; clicking a point toggles
+   * a sticky selection; clicking empty space clears the selection.
+   * @private
+   */
+  compositeInteractionOptions() {
+    const idFor = (element) => {
+      const subjects = element?.chart?.$compositeSubjects;
+      const subject = subjects && subjects[element.index];
+      return subject ? subject.id : null;
+    };
+    return {
+      onHover: (event, active) => {
+        const target = event?.native?.target;
+        if (target) target.style.cursor = active.length ? 'pointer' : 'default';
+        this.setCompositeHover(active.length ? idFor(active[0]) : null);
+      },
+      onClick: (event, active) => {
+        if (!active.length) {
+          this.setCompositeSelection(null);
+          return;
+        }
+        const id = idFor(active[0]);
+        if (id == null) return;
+        const same =
+          this.compositeSelectedId != null && String(this.compositeSelectedId) === String(id);
+        this.setCompositeSelection(same ? null : id);
+      }
+    };
+  }
+
+  /**
+   * Register a freshly built composite chart for teardown, resize, and
+   * cross-linking: it joins this.charts and this.compositeCharts, remembers its
+   * backing subjects for the interaction handlers, and clears the hover trace
+   * when the pointer leaves its canvas (HEP-COMP-007).
+   * @private
+   */
+  registerCompositeChart(chart, subjects, canvas) {
+    chart.$compositeSubjects = subjects;
+    this.charts.push(chart);
+    this.compositeCharts.push(chart);
+    canvas.addEventListener('pointerleave', () => this.setCompositeHover(null));
+  }
+
+  /**
+   * Set the transient hovered participant and restyle the panels + header when it
+   * changes (HEP-COMP-007).
+   * @private
+   */
+  setCompositeHover(id) {
+    if (String(id ?? '') === String(this.compositeHoverId ?? '')) return;
+    this.compositeHoverId = id ?? null;
+    this.refreshCompositeHighlight();
+  }
+
+  /**
+   * Set the sticky (clicked) participant selection, restyle the panels + header,
+   * and dispatch the participantsSelected event so host apps stay in sync
+   * (HEP-COMP-007, HEP-API-003).
+   * @private
+   */
+  setCompositeSelection(id) {
+    this.compositeSelectedId = id ?? null;
+    this.refreshCompositeHighlight();
+    this.dispatchSelection(this.compositeSelectedId == null ? [] : [this.compositeSelectedId]);
+  }
+
+  /**
+   * Restyle every composite chart to the current trace and refresh the header.
+   * Uses Chart.js's no-animation update so the highlight tracks the pointer
+   * without flicker (HEP-COMP-007).
+   * @private
+   */
+  refreshCompositeHighlight() {
+    this.compositeCharts.forEach((chart) => chart.update('none'));
+    this.updateCompositeHeader();
+  }
+
+  /**
+   * Update the participant-trace header to name the traced participant and its
+   * migration, or the idle hint when nothing is traced (HEP-COMP-007).
+   * @private
+   */
+  updateCompositeHeader() {
+    if (!this.compositeHeaderEl) return;
+    const id = this.compositeActiveId();
+    if (id == null) {
+      this.compositeHeaderEl.textContent = COMPOSITE_HEADER_HINT;
+      this.compositeHeaderEl.classList.remove('is-active');
+      return;
+    }
+    const subject = this.compositeSubjectsShown.find((entry) => String(entry.id) === String(id));
+    const selected =
+      this.compositeSelectedId != null && String(this.compositeSelectedId) === String(id);
+    const migration = subject ? ` — ${subject.pretreatQuadrant} → ${subject.onTreatQuadrant}` : '';
+    this.compositeHeaderEl.textContent = `Participant ${id}${
+      selected ? ' (selected — click again to clear)' : ''
+    }${migration}`;
+    this.compositeHeaderEl.classList.add('is-active');
   }
 
   /**
@@ -1586,6 +1752,7 @@ class SafetyHepExplorer {
   destroyCharts() {
     this.charts.forEach((chart) => chart.destroy());
     this.charts = [];
+    this.compositeCharts = [];
     this.chart = null;
   }
 
