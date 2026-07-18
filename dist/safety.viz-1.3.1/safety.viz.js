@@ -21996,6 +21996,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
 .safety-qt-explorer .qt-table th{border-bottom:2px solid #d8dee4;font-size:.75rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f;white-space:nowrap}
 .safety-qt-explorer .qt-table caption,.safety-qt-explorer .qt-ich caption{caption-side:top;text-align:left;font-weight:600;margin-bottom:.35rem}
 .safety-qt-explorer .qt-flag{color:#9a3412;font-weight:600}
+.safety-qt-explorer .qt-badge{position:absolute;top:.6rem;right:.6rem;z-index:3;font-size:.68rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#9a3412;background:#fff7ed;border:1px solid #fed7aa;border-radius:999px;padding:.15rem .55rem}
 .safety-qt-explorer .qt-empty{display:none}
 `;
   function applyQtStyles() {
@@ -22044,6 +22045,9 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       this.ichWrap = createElement("div", "qt-ich qt-empty");
       this.chartWrap.after(this.ichWrap);
       this.ichWrap.after(this.tableWrap);
+      this.badge = createElement("span", "qt-badge", "Experimental");
+      this.badge.title = "Experimental \u2014 exploratory tool, not validated for regulatory decisions";
+      this.chartWrap.appendChild(this.badge);
     }
     /**
      * Load data and render — an alias for setData keeping the two-step
