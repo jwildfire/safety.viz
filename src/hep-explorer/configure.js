@@ -22,6 +22,19 @@ export const DISPLAY_MODES = [
   { value: 'relative_baseline', label: 'Baseline adjusted (mDISH)' }
 ];
 
+/**
+ * Top-level view modes offered by the View control (HEP-COMP-006). `scatter` is
+ * the classic one-point-per-participant eDISH/mDISH scatter; `composite` is the
+ * baseline-referenced composite plot (Tesfaldet et al., Drug Safety 2024) for
+ * subjects with abnormal baseline liver tests — pretreatment and on-treatment
+ * eDISH panels, a four-panel ×Baseline shift plot, and a migration table.
+ * @type {Array<{value: string, label: string}>}
+ */
+export const VIEW_MODES = [
+  { value: 'scatter', label: 'eDISH / mDISH scatter' },
+  { value: 'composite', label: 'Composite plot (baseline-referenced)' }
+];
+
 /** Axis-type options for the Axis Type control (HEP-CTRL-006). */
 export const AXIS_TYPES = ['linear', 'log'];
 
@@ -55,6 +68,7 @@ export const MEASURE_KEYS = ['ALT', 'AST', 'TB', 'ALP'];
  * @property {string[]} [x_options=['ALT','AST','TB','ALP']] Measures offered by the X-axis Measure control (HEP-CTRL-001).
  * @property {string[]} [y_options=['TB']] Measures offered by the Y-axis Measure control; when only one option the control is dropped (HEP-CTRL-002).
  * @property {Object} [cuts] Per-measure Hy's-Law cutpoints keyed by measure then display mode; a `defaults` entry back-fills any measure without its own cuts (HEP-QUAD-001).
+ * @property {string} [view='scatter'] Initial view mode: `scatter` (eDISH/mDISH scatter) or `composite` (baseline-referenced composite plot for abnormal-baseline subjects) (HEP-COMP-006).
  * @property {number} [visit_window=30] Timing window (days): points whose peak-X and peak-Y days are within this many days render filled, else hollow (HEP-CTRL-008, HEP-DISPLAY-005).
  * @property {boolean} [r_ratio_filter=true] Whether to render the R-Ratio range filter control (HEP-CTRL-010).
  * @property {number[]} [r_ratio=[0,null]] Initial R-Ratio [min, max] range; a null max is resolved from the data on first render (HEP-CTRL-010).
@@ -92,6 +106,7 @@ export const DEFAULT_SETTINGS = {
     TB: 'Total Bilirubin',
     ALP: 'Alkaline phosphatase (ALP)'
   },
+  view: 'scatter',
   x_default: 'ALT',
   y_default: 'TB',
   x_options: ['ALT', 'AST', 'TB', 'ALP'],

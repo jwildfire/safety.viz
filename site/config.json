@@ -53,7 +53,7 @@
       "module": "hep-explorer",
       "title": "Hepatic Safety Explorer",
       "status": "available",
-      "blurb": "eDISH scatter of peak ALT vs peak total bilirubin (×ULN) with Hy's-Law quadrant cut-lines, a quadrant summary table, eDISH/mDISH display modes, R-Ratio and timing controls, and click-to-inspect participant visit paths.",
+      "blurb": "eDISH scatter of peak ALT vs peak total bilirubin (×ULN) with Hy's-Law quadrant cut-lines, a quadrant summary table, eDISH/mDISH display modes, R-Ratio and timing controls, and click-to-inspect participant visit paths — plus a baseline-referenced composite plot (Tesfaldet et al., Drug Safety 2024) for subjects with abnormal baseline liver tests, with pretreatment/on-treatment eDISH panels, a four-panel ×Baseline shift plot, and a migration table.",
       "hero": "HEP-SELECT-001-participant-detail.png",
       "matrix": "hep-explorer.md",
       "guide": "hep-explorer.md",

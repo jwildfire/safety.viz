@@ -1,6 +1,6 @@
 {
   "module": "hep-explorer",
-  "generatedAt": "2026-07-18T03:15:38.375Z",
+  "generatedAt": "2026-07-18T03:33:04.499Z",
   "environment": {
     "os": "linux 6.17.0-1020-azure",
     "node": "v22.23.1",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "29628486616",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29628486616"
+    "id": "29628999191",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29628999191"
   },
   "records": [
     {
@@ -131,6 +131,54 @@
       "requirementIds": ["HEP-CHART-004"],
       "issueRefs": [43],
       "screenshots": []
+    },
+    {
+      "test": "HEP-COMP-001/HEP-COMP-002/HEP-COMP-003: draws the eDISH panels, xBLN four-panel plot, and baseline-quadrant legend (#67)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HEP-COMP-001", "HEP-COMP-002", "HEP-COMP-003"],
+      "issueRefs": [67],
+      "screenshots": ["HEP-COMP-001-composite-plot.png"]
+    },
+    {
+      "test": "HEP-COMP-004/HEP-COMP-005: migration table counts and by-arm concern summary (#67)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HEP-COMP-004", "HEP-COMP-005"],
+      "issueRefs": [67],
+      "screenshots": ["HEP-COMP-004-migration-table.png"]
+    },
+    {
+      "test": "HEP-COMP-006: degrades gracefully when baseline or on-treatment values are absent (#67)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HEP-COMP-006"],
+      "issueRefs": [67],
+      "screenshots": []
+    },
+    {
+      "test": "HEP-COMP-006: opens on the composite view with a reduced control set (#67)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HEP-COMP-006"],
+      "issueRefs": [67],
+      "screenshots": []
+    },
+    {
+      "test": "HEP-COMP-006: the View control toggles between the composite and scatter views (#67)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HEP-COMP-006"],
+      "issueRefs": [67],
+      "screenshots": []
+    },
+    {
+      "test": "HEP-COMP-007: hovering and clicking points traces + multi-selects participants across all panels (#67)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HEP-COMP-007"],
+      "issueRefs": [67],
+      "screenshots": ["HEP-COMP-007-participant-trace.png"]
     },
     {
       "test": "HEP-CTRL-001/HEP-CTRL-002/HEP-QUAD-001/HEP-DISPLAY-001/HEP-CTRL-006/HEP-CTRL-007/HEP-CTRL-008/HEP-CTRL-009/HEP-CTRL-010/HEP-CTRL-011/HEP-CTRL-012: renders the full control panel (#43)",
@@ -408,6 +456,182 @@
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["HEP-DATA-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer composite — buildCompositeSubjects HEP-COMP-001: baseline ALT exactly 3xULN classifies as Normal & NN (S5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-COMP-001"],
+      "issueRefs": [],
+      "screenshots": ["HEP-COMP-001-composite-plot.png"]
+    },
+    {
+      "test": "hep-explorer composite — buildCompositeSubjects HEP-COMP-001/002: derives baseline & on-treatment-peak xULN and quadrants",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-COMP-001"],
+      "issueRefs": [],
+      "screenshots": ["HEP-COMP-001-composite-plot.png"]
+    },
+    {
+      "test": "hep-explorer composite — buildCompositeSubjects HEP-COMP-002: on-treatment BILI exactly 2xULN is NOT elevated (S4 diagonal)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-COMP-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer composite — buildCompositeSubjects HEP-COMP-002: peak is the ON-TREATMENT max, excluding the baseline record",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-COMP-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer composite — buildCompositeSubjects HEP-COMP-003: xBLN = peak on-treatment / the subject own baseline",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-COMP-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer composite — buildCompositeSubjects HEP-COMP-005: carries group/arm meta for the by-arm summary",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-COMP-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer composite — buildCompositeSubjects HEP-COMP-006: excludes subjects lacking an on-treatment ALT/BILI peak",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-COMP-006"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer composite — byArmSummary HEP-COMP-005: buckets migrations by concern color per arm",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-COMP-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer composite — byArmSummary HEP-COMP-005: with no arm column, summarizes all subjects as one row",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-COMP-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer composite — classifyComposite (strict thresholds) HEP-COMP-001: classifies the four quadrants by ALT>3 / BILI>2 xULN",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-COMP-001"],
+      "issueRefs": [],
+      "screenshots": ["HEP-COMP-001-composite-plot.png"]
+    },
+    {
+      "test": "hep-explorer composite — classifyComposite (strict thresholds) HEP-COMP-001: the threshold value itself is on the NORMAL side (strict >)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-COMP-001"],
+      "issueRefs": [],
+      "screenshots": ["HEP-COMP-001-composite-plot.png"]
+    },
+    {
+      "test": "hep-explorer composite — concernOf (4x4 matrix) HEP-COMP-004: diagonal is gray (no migration)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-COMP-004"],
+      "issueRefs": [],
+      "screenshots": ["HEP-COMP-004-migration-table.png"]
+    },
+    {
+      "test": "hep-explorer composite — concernOf (4x4 matrix) HEP-COMP-004: improvement toward Normal / partial resolution is green",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-COMP-004"],
+      "issueRefs": [],
+      "screenshots": ["HEP-COMP-004-migration-table.png"]
+    },
+    {
+      "test": "hep-explorer composite — concernOf (4x4 matrix) HEP-COMP-004: lateral single-analyte migrations are yellow",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-COMP-004"],
+      "issueRefs": [],
+      "screenshots": ["HEP-COMP-004-migration-table.png"]
+    },
+    {
+      "test": "hep-explorer composite — concernOf (4x4 matrix) HEP-COMP-004: the full matrix has 5 red, 2 yellow, 5 green, 4 gray",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-COMP-004"],
+      "issueRefs": [],
+      "screenshots": ["HEP-COMP-004-migration-table.png"]
+    },
+    {
+      "test": "hep-explorer composite — concernOf (4x4 matrix) HEP-COMP-004: worsening migrations are red",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-COMP-004"],
+      "issueRefs": [],
+      "screenshots": ["HEP-COMP-004-migration-table.png"]
+    },
+    {
+      "test": "hep-explorer composite — constants HEP-COMP-001: quadrant order and thresholds match the FDA reference",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-COMP-001"],
+      "issueRefs": [],
+      "screenshots": ["HEP-COMP-001-composite-plot.png"]
+    },
+    {
+      "test": "hep-explorer composite — migrationMatrix HEP-COMP-004: counts pretreatment x on-treatment migrations",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-COMP-004"],
+      "issueRefs": [],
+      "screenshots": ["HEP-COMP-004-migration-table.png"]
+    },
+    {
+      "test": "hep-explorer composite — migrationMatrix HEP-COMP-004: row totals, column totals, and grand total",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-COMP-004"],
+      "issueRefs": [],
+      "screenshots": ["HEP-COMP-004-migration-table.png"]
+    },
+    {
+      "test": "hep-explorer composite — peak is on-treatment only (FDA AVISITN>0) HEP-COMP-002: a duplicate day-0 record is not treated as on-treatment",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-COMP-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer composite — peak is on-treatment only (FDA AVISITN>0) HEP-COMP-002: a screening (negative study-day) record is excluded from the peak",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-COMP-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer composite — xBLN is an independent peak (varying ULN) HEP-COMP-003: peak ×ULN and peak ×BLN are independent maxima",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-COMP-003"],
       "issueRefs": [],
       "screenshots": []
     },

@@ -3,11 +3,11 @@
 safety.viz demos and evidence run on three example datasets vendored under
 [`site/data/`](../site/data):
 
-| File        | Shape                                            | Used by                                                                                                         |
-| ----------- | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
-| `adbds.csv` | One row per lab / vital-sign measurement (BDS)   | Histogram, Outlier Explorer, Paneled Outlier Explorer, Results Over Time, Shift Plot, Delta-Delta, Web Codebook |
-| `adae.csv`  | One row per adverse event                        | AE Explorer, AE Timelines                                                                                       |
-| `adeg.csv`  | One row per ECG interval measurement (QT/QTc/HR) | QT Safety Explorer                                                                                              |
+| File        | Shape                                            | Used by                                                                                                                       |
+| ----------- | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| `adbds.csv` | One row per lab / vital-sign measurement (BDS)   | Histogram, Outlier Explorer, Paneled Outlier Explorer, Results Over Time, Shift Plot, Delta-Delta, Hep Explorer, Web Codebook |
+| `adae.csv`  | One row per adverse event                        | AE Explorer, AE Timelines                                                                                                     |
+| `adeg.csv`  | One row per ECG interval measurement (QT/QTc/HR) | QT Safety Explorer                                                                                                            |
 
 Both are **generated**, not hand-maintained. The generator is
 [`scripts/build-demo-data.mjs`](../scripts/build-demo-data.mjs); rerun it to
@@ -86,6 +86,34 @@ Resulting sizes: `adbds.csv` ≈ 5.5 MB (≈ 56k rows, 254 participants, 28 meas
 `adae.csv` ≈ 0.1 MB (1,122 treatment-emergent events + 37 placeholder rows,
 254 participants, 23 body systems); `adeg.csv` ≈ 0.5 MB (5,361 rows, 254
 participants, 3 ECG parameters).
+
+## Synthetic composite-plot cohort (hep-explorer #67)
+
+The hep-explorer **composite plot** (Tesfaldet et al., _Drug Safety_ 2024;47:699–710)
+is designed for the population with **abnormal baseline liver tests** — a population
+the pharmaverseadam Pilot 01 data does not contain (its baseline liver labs are
+essentially normal). To make the composite view demonstrable, `site/data/adbds.csv`
+carries a small **synthetic chronic-liver-disease cohort** (64 subjects, `USUBJID`
+prefix `CLD-`, `SITE` `Hepatology Research Unit`, arms `CLD: Study Drug` / `CLD:
+Placebo`) appended by [`scripts/build-hep-composite-cohort.mjs`](../scripts/build-hep-composite-cohort.mjs).
+
+- The cohort is **fully synthetic** — not derived from any real subject — generated
+  deterministically (a fixed-seed PRNG) so re-runs reproduce byte-identical rows.
+  Baseline (`VISITNUM 0`) liver tests span the full pretreatment range: most
+  subjects start with elevated ALT/AST/ALP and many with elevated bilirubin, while a
+  subset begin in the Normal & Near-Normal quadrant (baseline bilirubin near 1×ULN)
+  so migrations _from_ normal are also exercised. A 12-week on-treatment course
+  drives migrations that cover every composite quadrant and level of DILI concern,
+  with the study arm skewed toward benefit vs. the placebo arm (mirroring the
+  paper's finding).
+- The generator is **idempotent**: it strips any previously injected `CLD-*` rows
+  before appending, so it can be re-run after `scripts/build-demo-data.mjs`
+  regenerates `adbds.csv` from pharmaverseadam. The two steps together (build the
+  pharmaverseadam BDS, then inject the composite cohort) reproduce the committed
+  `adbds.csv`.
+- The synthetic rows are clearly labeled and confined to the four liver analytes;
+  they add a realistic abnormal-baseline subgroup to the otherwise baseline-normal
+  demo population.
 
 ## License and attribution
 
