@@ -72,6 +72,12 @@
           },
           "description": "Map of the short measure key (ALT/AST/TB/ALP) to the full measure string in the data (HEP-DATA-002)."
         },
+        "view": {
+          "type": "string",
+          "enum": ["scatter", "composite"],
+          "default": "scatter",
+          "description": "Initial view mode: `scatter` (eDISH/mDISH one-point-per-participant scatter) or `composite` (baseline-referenced composite plot for subjects with abnormal baseline liver tests — pretreatment and on-treatment eDISH panels, a four-panel ×Baseline shift plot, and a migration table) (HEP-COMP-006)."
+        },
         "x_default": {
           "type": "string",
           "default": "ALT",

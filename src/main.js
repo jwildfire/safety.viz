@@ -2,7 +2,7 @@
 // land; shared Chart.js plugins will be registered here once one is shared by
 // more than one module. Modules: histogram (#2), shift-plot (#14),
 // delta-delta (#25), results-over-time (#27), outlier-explorer (#24),
-// ae-timelines (#26), hep-explorer (#43), ae-explorer (#60).
+// ae-timelines (#26), hep-explorer (#43), ae-explorer (#60), qt-explorer (#68).
 import histogram from './histogram.js';
 import shiftPlot from './shift-plot.js';
 import deltaDelta from './delta-delta.js';
@@ -11,6 +11,7 @@ import outlierExplorer from './outlier-explorer.js';
 import aeTimelines from './ae-timelines.js';
 import hepExplorer from './hep-explorer.js';
 import aeExplorer from './ae-explorer.js';
+import qtExplorer from './qt-explorer.js';
 
 export {
   histogram,
@@ -20,7 +21,8 @@ export {
   outlierExplorer,
   aeTimelines,
   hepExplorer,
-  aeExplorer
+  aeExplorer,
+  qtExplorer
 };
 export default {
   histogram,
@@ -30,5 +32,6 @@ export default {
   outlierExplorer,
   aeTimelines,
   hepExplorer,
-  aeExplorer
+  aeExplorer,
+  qtExplorer
 };

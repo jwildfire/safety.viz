@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/jwildfire/safety.viz/main/src/data/schema/qt-explorer.json",
+  "title": "safety.viz qt-explorer data contract",
+  "description": "Long-format ECG-interval data: one record per participant per ECG parameter (QTcF / QTcB / Heart Rate) per visit (QT-DATA-001). Column names are supplied by the settings mapping. The qt-explorer reads a heart-rate-corrected QTc value, its baseline, and its change-from-baseline (taken from the change column, or derived value − baseline) to drive three views: central-tendency change over time by arm (Δ / placebo-corrected ΔΔ) with a 90% CI and the ICH-E14 metric, an outlier scatter of change vs baseline with absolute (450/480/500 ms) and change (30/60 ms) cut-lines, and a categorical by-arm exceedance table. Missing / non-numeric results are removed with a reported count (QT-DATA-003).",
+  "type": "object",
+  "required": ["data", "settings"],
+  "properties": {
+    "data": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "object" },
+      "description": "d3.csv()-style records; every row carries the parameter, result, baseline, participant, arm, and visit columns named in settings, one row per participant per parameter per visit."
+    },
+    "settings": {
+      "type": "object",
+      "description": "Column mappings and rendering options; merged onto the module's DEFAULT_SETTINGS, so only overrides need to be supplied (QT-DATA-003).",
+      "required": ["measure_col", "value_col", "arm_col", "baseline_col"],
+      "properties": {
+        "id_col": {
+          "type": "string",
+          "default": "USUBJID",
+          "description": "Participant identifier column; one point per participant in the scatter and the exceedance denominators (QT-DATA-001)."
+        },
+        "measure_col": {
+          "type": "string",
+          "default": "TEST",
+          "description": "Column holding the ECG parameter name; required in data. Matched to the correction options (QTcF/QTcB/Heart Rate) (QT-DATA-002)."
+        },
+        "value_col": {
+          "type": "string",
+          "default": "STRESN",
+          "description": "Column holding the numeric analysis value; required in data. Non-numeric results are removed with a logged count (QT-DATA-003)."
+        },
+        "baseline_col": {
+          "type": "string",
+          "default": "BASE",
+          "description": "Column holding the participant's baseline value; required in data — the scatter's x-axis and the absolute-threshold diagonals are anchored to it (QT-OUT-001)."
+        },
+        "change_col": {
+          "type": ["string", "null"],
+          "default": "CHG",
+          "description": "Optional column holding the source change-from-baseline. When absent or blank for a row, change is derived as value − baseline (QT-DATA-004)."
+        },
+        "unit_col": {
+          "type": ["string", "null"],
+          "default": "STRESU",
+          "description": "Optional unit column, appended to the parameter label."
+        },
+        "arm_col": {
+          "type": "string",
+          "default": "ARM",
+          "description": "Treatment-arm column; required in data. Drives the per-arm central-tendency lines, point colors, ΔΔ placebo correction, and the exceedance table columns (QT-CT-001, QT-OUT-004, QT-CAT-001)."
+        },
+        "placebo_arm": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "The arm treated as placebo for the ΔΔ (placebo-corrected) central-tendency mode and the ICH-E14 metric. When null, the arm whose name matches /placebo/i is auto-detected (QT-CT-004)."
+        },
+        "visit_col": {
+          "type": "string",
+          "default": "VISIT",
+          "description": "Categorical visit column; the central-tendency x-axis and the outlier-scatter timepoint selector (QT-CT-001, QT-OUT-002)."
+        },
+        "visitn_col": {
+          "type": ["string", "null"],
+          "default": "VISITNUM",
+          "description": "Optional numeric visit column ordering the visits; falls back to first-seen order when absent."
+        },
+        "baseline_flag_col": {
+          "type": ["string", "null"],
+          "default": "ABLFL",
+          "description": "Optional 'Y'-flagged baseline-record column; when present the baseline visit is excluded from the post-baseline extremes and the central-tendency change series (QT-DATA-005)."
+        },
+        "measures": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": ["QTcF", "QTcB", "Heart Rate"],
+          "description": "The correction / parameter options offered by the Correction control, in order (QT-CTRL-002)."
+        },
+        "qtc_measures": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": ["QTcF", "QTcB"],
+          "description": "Which measures are QTc corrections; the outlier scatter's absolute-threshold diagonals and the categorical absolute rows apply only to these (Heart Rate has no QTc cut-lines) (QT-OUT-003)."
+        },
+        "start_measure": {
+          "type": ["string", "null"],
+          "default": "QTcF",
+          "description": "Correction selected on first render; falls back to the first available measure (QT-CTRL-002)."
+        },
+        "absolute_thresholds": {
+          "type": "array",
+          "items": { "type": "number" },
+          "default": [450, 480, 500],
+          "description": "Absolute QTc cut-lines (msec) for the outlier-scatter diagonals and the categorical absolute rows (QT-OUT-003, QT-CAT-002; workflow step 3a)."
+        },
+        "change_thresholds": {
+          "type": "array",
+          "items": { "type": "number" },
+          "default": [30, 60],
+          "description": "Change-from-baseline cut-lines (msec) for the outlier-scatter horizontals and the categorical change rows (QT-OUT-003, QT-CAT-003; workflow step 3b)."
+        },
+        "reference_threshold": {
+          "type": "number",
+          "default": 10,
+          "description": "Central-tendency reference line (msec): the ICH-E14 threshold of regulatory concern for the mean/ΔΔ change (QT-CT-003; workflow step 1a)."
+        },
+        "ci_level": {
+          "type": "number",
+          "default": 0.9,
+          "description": "Confidence level for the two-sided CI on the mean change and the mean difference; the ICH-E14 metric reads the upper bound of this interval (QT-CT-005)."
+        },
+        "filters": {
+          "$ref": "#/$defs/fieldList",
+          "description": "Optional filter columns rendered as controls (QT-CTRL-003)."
+        }
+      }
+    }
+  },
+  "$defs": {
+    "fieldList": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          { "type": "string" },
+          {
+            "type": "object",
+            "required": ["value_col"],
+            "properties": {
+              "value_col": { "type": "string" },
+              "label": { "type": "string" }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>safety.viz hep-explorer composite plot demo page</title>
+  </head>
+  <body>
+    <h1 id="hep-composite-heading">safety.viz hep explorer — composite plot</h1>
+    <p>
+      Playwright harness page for the hep-explorer COMPOSITE plot (#67). Loads the committed IIFE
+      bundle against a small crafted chronic-liver-disease cohort with ABNORMAL baseline liver
+      tests, engineered so every pretreatment quadrant and every level of DILI concern is populated
+      deterministically, and opens on the composite view.
+    </p>
+    <div id="container"></div>
+    <!-- Bundle path tracks the package.json version; bump them together. -->
+    <script src="/dist/safety.viz-1.3.1/safety.viz.js"></script>
+    <script>
+      // Crafted long-format data: 8 participants x 3 liver measures x 3 visits.
+      // Baseline (day 0) sets the pretreatment quadrant; the peak over the two
+      // on-treatment visits (day 28 / 56) sets the on-treatment quadrant. ULNs:
+      // ALT 40, TB 1.2 (so elevation is ALT > 120, TB > 2.4). The migrations:
+      //   CS-01  NN -> Hy's Law            (red)      Study Drug
+      //   CS-02  Cholestasis -> Cholestasis (gray)    Placebo
+      //   CS-03  Temple's -> Temple's       (gray)    Study Drug
+      //   CS-04  Hy's Law -> Normal & NN     (green)   Placebo
+      //   CS-05  Cholestasis -> Temple's     (yellow)  Study Drug
+      //   CS-06  Hy's Law -> Hy's Law        (gray)    Placebo
+      //   CS-07  NN -> Temple's Corollary    (red)     Study Drug
+      //   CS-08  Temple's -> Cholestasis     (yellow)  Placebo
+      const PARTICIPANTS = {
+        'CS-01': { ARM: 'Study Drug', SEX: 'F' },
+        'CS-02': { ARM: 'Placebo', SEX: 'M' },
+        'CS-03': { ARM: 'Study Drug', SEX: 'F' },
+        'CS-04': { ARM: 'Placebo', SEX: 'M' },
+        'CS-05': { ARM: 'Study Drug', SEX: 'F' },
+        'CS-06': { ARM: 'Placebo', SEX: 'M' },
+        'CS-07': { ARM: 'Study Drug', SEX: 'F' },
+        'CS-08': { ARM: 'Placebo', SEX: 'M' }
+      };
+      const VISITS = [
+        { VISIT: 'Baseline', VISITNUM: 0, DY: 0 },
+        { VISIT: 'Week 4', VISITNUM: 4, DY: 28 },
+        { VISIT: 'Week 8', VISITNUM: 8, DY: 56 }
+      ];
+      // [baseline, on-tx-1, on-tx-2]; peak on-treatment = max of the last two.
+      const MEASURES = {
+        'Alanine Aminotransferase': {
+          STRESU: 'U/L',
+          STNRLO: 6,
+          STNRHI: 40,
+          values: {
+            'CS-01': [60, 200, 140],
+            'CS-02': [80, 100, 90],
+            'CS-03': [160, 240, 200],
+            'CS-04': [160, 100, 80],
+            'CS-05': [80, 200, 160],
+            'CS-06': [200, 280, 240],
+            'CS-07': [60, 160, 120],
+            'CS-08': [160, 80, 72]
+          }
+        },
+        Bilirubin: {
+          STRESU: 'mg/dL',
+          STNRLO: 0.1,
+          STNRHI: 1.2,
+          values: {
+            'CS-01': [1.2, 3.6, 2.4],
+            'CS-02': [3.6, 4.8, 4.2],
+            'CS-03': [1.2, 1.8, 1.5],
+            'CS-04': [3.6, 2.4, 1.8],
+            'CS-05': [3.6, 1.8, 1.5],
+            'CS-06': [3.6, 4.8, 4.2],
+            'CS-07': [1.2, 1.8, 1.5],
+            'CS-08': [1.2, 3.6, 3.0]
+          }
+        },
+        'Alkaline Phosphatase': {
+          STRESU: 'U/L',
+          STNRLO: 40,
+          STNRHI: 120,
+          values: {
+            'CS-01': [180, 200, 190],
+            'CS-02': [220, 240, 230],
+            'CS-03': [160, 180, 170],
+            'CS-04': [200, 160, 150],
+            'CS-05': [180, 200, 190],
+            'CS-06': [240, 260, 250],
+            'CS-07': [150, 170, 160],
+            'CS-08': [200, 180, 170]
+          }
+        }
+      };
+
+      const data = [];
+      Object.entries(MEASURES).forEach(([TEST, meta]) => {
+        Object.entries(PARTICIPANTS).forEach(([USUBJID, demo]) => {
+          VISITS.forEach((visit, i) => {
+            data.push({
+              TEST,
+              STRESN: meta.values[USUBJID][i],
+              STRESU: meta.STRESU,
+              STNRLO: meta.STNRLO,
+              STNRHI: meta.STNRHI,
+              USUBJID,
+              VISIT: visit.VISIT,
+              VISITNUM: visit.VISITNUM,
+              DY: visit.DY,
+              ...demo
+            });
+          });
+        });
+      });
+
+      const instance = SafetyViz.hepExplorer('#container', {
+        view: 'composite',
+        studyday_col: 'DY',
+        visit_col: 'VISIT',
+        visitn_col: 'VISITNUM',
+        measure_values: {
+          ALT: 'Alanine Aminotransferase',
+          AST: 'Aspartate Aminotransferase',
+          TB: 'Bilirubin',
+          ALP: 'Alkaline Phosphatase'
+        },
+        filters: [{ value_col: 'SEX', label: 'Sex' }],
+        groups: [{ value_col: 'ARM', label: 'Treatment Group' }],
+        group_by: 'ARM'
+      });
+      window.__safetyHepExplorerInstance = instance;
+      instance.init(data);
+    </script>
+  </body>
+</html>

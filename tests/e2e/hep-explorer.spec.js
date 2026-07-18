@@ -223,7 +223,55 @@ test.describe('safety.viz hep-explorer module', () => {
     expect(headers.join(',')).toContain('Result');
     expect(headers.join(',')).toContain('ULN');
     await expect(page.locator('.sv-footnote')).toContainText('Participant SUBJ-001 selected.');
+
+    // The shared trace header and the sidebar Participants control mirror the
+    // selection in the scatter view too (HEP-SELECT-001, HEP-COMP-007).
+    await expect(page.locator('.hep-composite-header')).toHaveText(
+      'Participant SUBJ-001 selected.'
+    );
+    const control = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      return {
+        dropdownSelected: [...instance.compositeSelectEl.selectedOptions].map((o) => o.value),
+        clearEnabled: !instance.compositeClearBtn.disabled
+      };
+    });
+    expect(control.dropdownSelected).toEqual(['SUBJ-001']);
+    expect(control.clearEnabled).toBe(true);
     await captureEvidence(page, 'HEP-SELECT-001', 'participant-detail');
+
+    // Selecting several via the control highlights them across the scatter and
+    // closes the single-participant drill-down; the header counts them.
+    const multi = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      const select = instance.compositeSelectEl;
+      [...select.options].forEach((o, k) => (o.selected = k < 2));
+      select.dispatchEvent(new Event('change'));
+      return {
+        selected: instance.scatterSelectedIds.slice(),
+        selectedId: instance.state.selectedId,
+        detailHidden: instance.detailWrap.style.display === 'none',
+        header: instance.compositeHeaderEl.textContent
+      };
+    });
+    expect(multi.selected).toHaveLength(2);
+    expect(multi.selectedId).toBeNull();
+    expect(multi.detailHidden).toBe(true);
+    expect(multi.header).toBe('2 participants selected.');
+
+    // Narrowing the control back to one participant reopens the drill-down.
+    const single = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      const select = instance.compositeSelectEl;
+      [...select.options].forEach((o) => (o.selected = o.value === 'SUBJ-001'));
+      select.dispatchEvent(new Event('change'));
+      return {
+        selectedId: instance.state.selectedId,
+        detailVisible: instance.detailWrap.style.display !== 'none'
+      };
+    });
+    expect(single.selectedId).toBe('SUBJ-001');
+    expect(single.detailVisible).toBe(true);
   });
 
   test('HEP-SELECT-002: selecting a second participant without a background click destroys the prior detail chart (no Chart.js leak) (#43)', async ({
@@ -471,5 +519,288 @@ test.describe('safety.viz hep-explorer module', () => {
     expect(result.renderReturns).toBeUndefined();
     expect(result.chartCountBeforeDestroy).toBeGreaterThan(0);
     expect(result.containerText).toBe('');
+  });
+});
+
+// Composite plot (#67, HEP-COMP-*): the baseline-referenced composite view for
+// subjects with abnormal baseline liver tests (Tesfaldet et al., Drug Safety
+// 2024). Loads a dedicated fixture whose crafted chronic-liver cohort populates
+// every pretreatment quadrant and every level of DILI concern, and opens on the
+// composite view.
+test.describe('safety.viz hep-explorer composite plot', () => {
+  test.beforeEach(async ({ page }) => {
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') errors.push(msg.text());
+    });
+    page._hepErrors = errors;
+    await page.goto('/tests/e2e/fixtures/hep-explorer-composite.html');
+    await page.waitForFunction(
+      () =>
+        window.__safetyHepExplorerInstance &&
+        document.querySelectorAll('.hep-composite-panels canvas').length === 4
+    );
+  });
+
+  test.afterEach(async ({ page }) => {
+    expect(page._hepErrors).toEqual([]);
+  });
+
+  test('HEP-COMP-006: opens on the composite view with a reduced control set (#67)', async ({
+    page
+  }) => {
+    const view = await page.evaluate(() => window.__safetyHepExplorerInstance.state.view);
+    expect(view).toBe('composite');
+    // The View selector is its own section rendered as a visible option list,
+    // with the composite option active.
+    await expect(page.locator('.hep-view-option')).toHaveCount(2);
+    await expect(page.locator('.hep-view-option.is-active')).toHaveText(/Composite/);
+    const labels = await page.locator('.sv-control label').allTextContents();
+    expect(labels).toContain('Group');
+    // Scatter-only controls are hidden in the composite view.
+    expect(labels).not.toContain('X-axis Measure');
+    expect(labels).not.toContain('Display Type');
+    expect(labels).not.toContain('R Ratio min');
+  });
+
+  test('HEP-COMP-001/HEP-COMP-002/HEP-COMP-003: draws the eDISH panels, xBLN four-panel plot, and baseline-quadrant legend (#67)', async ({
+    page
+  }) => {
+    // Two eDISH scatters (pretreatment + on-treatment) + four xBLN panels.
+    await expect(page.locator('.hep-composite-edish canvas')).toHaveCount(2);
+    await expect(page.locator('.hep-composite-panels canvas')).toHaveCount(4);
+    const chartCount = await page.evaluate(() => window.__safetyHepExplorerInstance.charts.length);
+    expect(chartCount).toBe(6);
+    // Panels are labelled by on-treatment quadrant.
+    const panelTitles = await page
+      .locator('.hep-composite-panels .hep-composite-card h4')
+      .allTextContents();
+    expect(panelTitles.join(' ')).toContain('Cholestasis');
+    expect(panelTitles.join(' ')).toContain("Hy's Law");
+    expect(panelTitles.join(' ')).toContain('Normal & NN');
+    expect(panelTitles.join(' ')).toContain("Temple's Corollary");
+    // The baseline-quadrant legend names all four quadrants.
+    const legend = await page.locator('.hep-composite-legend').textContent();
+    expect(legend).toContain('Baseline quadrant');
+    await captureEvidence(page, 'HEP-COMP-001', 'composite-plot');
+  });
+
+  test('HEP-COMP-004/HEP-COMP-005: migration table counts and by-arm concern summary (#67)', async ({
+    page
+  }) => {
+    const tables = page.locator('.hep-composite .hep-migration table');
+    await expect(tables).toHaveCount(2);
+    // Migration table grand total (last cell of the last body row) = 8 subjects.
+    const grandTotal = await tables
+      .first()
+      .locator('tbody tr:last-child td:last-child')
+      .textContent();
+    expect(grandTotal.trim()).toBe('8');
+    // By-arm summary lists both arms.
+    const armSummary = await tables.nth(1).textContent();
+    expect(armSummary).toContain('Study Drug');
+    expect(armSummary).toContain('Placebo');
+    // Concern legend is present.
+    await expect(page.locator('.hep-concern-legend')).toBeVisible();
+    await captureEvidence(page, 'HEP-COMP-004', 'migration-table');
+  });
+
+  test('HEP-COMP-006: the View control toggles between the composite and scatter views (#67)', async ({
+    page
+  }) => {
+    // Click the scatter option in the View list: the single scatter canvas
+    // appears and the composite container is hidden.
+    await page.locator('.hep-view-option', { hasText: 'scatter' }).click();
+    await page.waitForFunction(() => window.__safetyHepExplorerInstance.chart !== null);
+    await expect(page.locator('canvas.sv-chart')).toBeVisible();
+    await expect(page.locator('.hep-view-option.is-active')).toHaveText(/scatter/);
+    const compositeHidden = await page.evaluate(
+      () => window.__safetyHepExplorerInstance.compositeWrap.style.display === 'none'
+    );
+    expect(compositeHidden).toBe(true);
+
+    // A participant selected in the scatter view carries into the composite
+    // view: switching back arrives with that participant already selected in
+    // the panels, dropdown, and header.
+    const selectedId = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      const id = instance.points[0].id;
+      instance.selectParticipant(id);
+      return id;
+    });
+    await page.locator('.hep-view-option', { hasText: 'Composite' }).click();
+    await page.waitForFunction(
+      () => window.__safetyHepExplorerInstance.compositeCharts.length === 6
+    );
+    const carried = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      return {
+        selected: instance.compositeSelectedIds.slice(),
+        dropdownSelected: [...instance.compositeSelectEl.selectedOptions].map((o) => o.value),
+        header: instance.compositeHeaderEl.textContent,
+        clearEnabled: !instance.compositeClearBtn.disabled
+      };
+    });
+    expect(carried.selected).toEqual([String(selectedId)]);
+    expect(carried.dropdownSelected).toEqual([String(selectedId)]);
+    expect(carried.header).toBe(`Participant ${selectedId} selected.`);
+    expect(carried.clearEnabled).toBe(true);
+
+    // A composite multi-selection carries back into the scatter view: the
+    // participants arrive highlighted with the control and shared header
+    // mirroring them, and the single-participant drill-down stays closed.
+    const compositeMulti = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      const chart = instance.compositeCharts[0];
+      const carriedId = String(instance.compositeSelectedIds[0]);
+      const addIndex = chart.$compositeSubjects.findIndex(
+        (subject) => String(subject.id) !== carriedId
+      );
+      chart.options.onClick({}, [{ index: addIndex }], chart);
+      return instance.compositeSelectedIds.slice();
+    });
+    expect(compositeMulti).toHaveLength(2);
+    await page.locator('.hep-view-option', { hasText: 'scatter' }).click();
+    await page.waitForFunction(() => window.__safetyHepExplorerInstance.chart !== null);
+    const carriedBack = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      return {
+        selected: instance.scatterSelectedIds.slice(),
+        selectedId: instance.state.selectedId,
+        dropdownSelected: [...instance.compositeSelectEl.selectedOptions].map((o) => o.value),
+        header: instance.compositeHeaderEl.textContent,
+        detailHidden: instance.detailWrap.style.display === 'none'
+      };
+    });
+    expect([...carriedBack.selected].sort()).toEqual([...compositeMulti].map(String).sort());
+    expect(carriedBack.selectedId).toBeNull();
+    expect([...carriedBack.dropdownSelected].sort()).toEqual(
+      [...compositeMulti].map(String).sort()
+    );
+    expect(carriedBack.header).toBe('2 participants selected.');
+    expect(carriedBack.detailHidden).toBe(true);
+  });
+
+  test('HEP-COMP-006: degrades gracefully when baseline or on-treatment values are absent (#67)', async ({
+    page
+  }) => {
+    // Rebind to baseline-only records: no on-treatment peak, so no subject
+    // qualifies and the composite shows an explanatory note instead of panels.
+    const note = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      const baselineOnly = instance.rawData.filter((row) => row.VISIT === 'Baseline');
+      instance.setData(baselineOnly);
+      return instance.compositeWrap.textContent;
+    });
+    expect(note).toContain('needs baseline and on-treatment ALT and total bilirubin');
+    await expect(page.locator('.hep-composite-panels canvas')).toHaveCount(0);
+  });
+
+  test('HEP-COMP-007: hovering and clicking points traces + multi-selects participants across all panels (#67)', async ({
+    page
+  }) => {
+    // The trace header starts on the idle hint, and the multi-select lists every
+    // shown participant.
+    await expect(page.locator('.hep-composite-header')).toHaveText(/Hover a point to trace/);
+    await expect(page.locator('.hep-composite-select select option')).toHaveCount(8);
+
+    // Hovering a point traces its participant (Chart.js passes the chart as the
+    // THIRD handler argument; the element carries no chart reference), without a
+    // sticky selection.
+    const hover = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      const chart = instance.compositeCharts[1]; // peak on-treatment eDISH
+      const id = chart.$compositeSubjects[0].id;
+      chart.options.onHover({ native: { target: { style: {} } } }, [{ index: 0 }], chart);
+      return {
+        id,
+        hoverId: instance.compositeHoverId,
+        selected: instance.compositeSelectedIds.slice(),
+        header: instance.compositeHeaderEl.textContent
+      };
+    });
+    expect(hover.hoverId).toBe(hover.id);
+    expect(hover.selected).toEqual([]); // hover does not stick
+    expect(hover.header).toContain(`Participant ${hover.id}`);
+
+    // Clicking two points multi-selects them; the header counts them and the
+    // dropdown mirrors the selection.
+    const clicked = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      const chart = instance.compositeCharts[0]; // pretreatment eDISH
+      chart.options.onHover({ native: { target: { style: {} } } }, [], chart); // clear hover
+      const idA = chart.$compositeSubjects[0].id;
+      const idB = chart.$compositeSubjects[1].id;
+      chart.options.onClick({}, [{ index: 0 }], chart);
+      chart.options.onClick({}, [{ index: 1 }], chart);
+      return {
+        idA,
+        idB,
+        selected: instance.compositeSelectedIds.slice(),
+        header: instance.compositeHeaderEl.textContent,
+        dropdownSelected: [...instance.compositeSelectEl.selectedOptions].map((o) => o.value)
+      };
+    });
+    expect(clicked.selected).toEqual([clicked.idA, clicked.idB]);
+    expect(clicked.header).toBe('2 participants selected.');
+    expect(clicked.dropdownSelected.sort()).toEqual([clicked.idA, clicked.idB].sort());
+    await expect(page.locator('.hep-composite-header.is-active')).toBeVisible();
+    await captureEvidence(page, 'HEP-COMP-007', 'participant-trace');
+
+    // Clicking a selected point again toggles it off, leaving the other selected.
+    const toggled = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      const chart = instance.compositeCharts[0];
+      chart.options.onClick({}, [{ index: 0 }], chart);
+      return {
+        selected: instance.compositeSelectedIds.slice(),
+        header: instance.compositeHeaderEl.textContent
+      };
+    });
+    expect(toggled.selected).toEqual([clicked.idB]);
+    expect(toggled.header).toBe(`Participant ${clicked.idB} selected.`);
+
+    // Editing the dropdown drives the selection too.
+    const viaDropdown = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      const select = instance.compositeSelectEl;
+      [...select.options].forEach((o, k) => (o.selected = k < 3));
+      select.dispatchEvent(new Event('change'));
+      return { selected: instance.compositeSelectedIds.slice() };
+    });
+    expect(viaDropdown.selected).toHaveLength(3);
+
+    // The control's Clear selection button (a real click) resets the whole
+    // selection, empties the dropdown, and disables itself.
+    await expect(page.locator('.hep-composite-select .hep-composite-clear')).toBeEnabled();
+    await page.click('.hep-composite-select .hep-composite-clear');
+    const clearedByButton = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      return {
+        selected: instance.compositeSelectedIds.slice(),
+        dropdownSelected: [...instance.compositeSelectEl.selectedOptions].map((o) => o.value),
+        disabled: instance.compositeClearBtn.disabled,
+        header: instance.compositeHeaderEl.textContent
+      };
+    });
+    expect(clearedByButton.selected).toEqual([]);
+    expect(clearedByButton.dropdownSelected).toEqual([]);
+    expect(clearedByButton.disabled).toBe(true);
+    expect(clearedByButton.header).toMatch(/Hover a point to trace/);
+
+    // Clicking empty plot space also clears the whole selection.
+    const cleared = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      const chart = instance.compositeCharts[0];
+      chart.options.onClick({}, [{ index: 0 }], chart); // re-select one
+      chart.options.onClick({}, [], chart); // empty-space click
+      return {
+        selected: instance.compositeSelectedIds.slice(),
+        header: instance.compositeHeaderEl.textContent
+      };
+    });
+    expect(cleared.selected).toEqual([]);
+    expect(cleared.header).toMatch(/Hover a point to trace/);
   });
 });

@@ -64,6 +64,12 @@
     })
     .then(function (text) {
       const instance = SafetyViz.hepExplorer('#container', {
+        // Open on the composite plot (#67): the demo dataset carries a synthetic
+        // chronic-liver-disease cohort (USUBJID CLD-*, injected by
+        // scripts/build-hep-composite-cohort.mjs) with abnormal baseline liver
+        // tests, so the baseline-referenced composite view is meaningful. Switch
+        // the View control to "eDISH / mDISH scatter" for the classic view.
+        view: 'composite',
         studyday_col: 'VISITNUM',
         visit_col: 'VISIT',
         visitn_col: 'VISITNUM',
@@ -80,7 +86,11 @@
         groups: [
           { value_col: 'ARM', label: 'Treatment Group' },
           { value_col: 'SEX', label: 'Sex' }
-        ]
+        ],
+        // Default the color-by / composite by-arm split to treatment group so the
+        // composite view opens on the paper's primary output — the by-arm
+        // concern-vs-benefit comparison.
+        group_by: 'ARM'
       });
       window.__safetyHepExplorerInstance = instance;
       instance.init(parseCsv(text));
