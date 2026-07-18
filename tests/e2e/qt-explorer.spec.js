@@ -17,6 +17,12 @@ async function selectByLabel(page, label, value) {
   await select.selectOption(value);
 }
 
+// The View selector is a list of always-visible option buttons (QT-CTRL-001),
+// not a dropdown — switch views by clicking the labeled option.
+async function selectView(page, label) {
+  await page.locator(`.qt-view-option:text-is("${label}")`).click();
+}
+
 test.describe('safety.viz qt-explorer module', () => {
   test.beforeEach(async ({ page }) => {
     const errors = [];
@@ -42,8 +48,14 @@ test.describe('safety.viz qt-explorer module', () => {
   }) => {
     const labels = await page.locator('.sv-control label').allTextContents();
     expect(labels).toEqual(
-      expect.arrayContaining(['View', 'Correction', 'Statistic', 'Display type', 'Sex', 'Race'])
+      expect.arrayContaining(['Correction', 'Statistic', 'Display type', 'Sex', 'Race'])
     );
+    // The View selector is its own section of always-visible option buttons
+    // with the active view highlighted.
+    const viewOptions = await page.locator('.qt-view-option').allTextContents();
+    expect(viewOptions).toEqual(['Central tendency', 'Outlier scatter', 'Categorical']);
+    await expect(page.locator('.qt-view-option.is-active')).toHaveText('Central tendency');
+    await expect(page.locator('.qt-view-option.is-active')).toHaveAttribute('aria-pressed', 'true');
     await expect(page.locator('.qt-legend')).toContainText('Treatments:');
     await captureEvidence(page, 'QT-CTRL-001', 'central-tendency-delta');
   });
@@ -76,7 +88,7 @@ test.describe('safety.viz qt-explorer module', () => {
   test('QT-OUT-002/QT-OUT-003/QT-OUT-004: the outlier scatter draws absolute diagonals, the zero line, and per-arm marks (#68)', async ({
     page
   }) => {
-    await selectByLabel(page, 'View', 'outlier');
+    await selectView(page, 'Outlier scatter');
     const thresholds = await page.evaluate(
       () => window.__safetyQtExplorerInstance.chart.$qtThresholds
     );
@@ -94,7 +106,7 @@ test.describe('safety.viz qt-explorer module', () => {
   test('QT-OUT-003: a specific visit adds the change-from-baseline lines (#68)', async ({
     page
   }) => {
-    await selectByLabel(page, 'View', 'outlier');
+    await selectView(page, 'Outlier scatter');
     await selectByLabel(page, 'Timepoint', 'Week 12');
     const thresholds = await page.evaluate(
       () => window.__safetyQtExplorerInstance.chart.$qtThresholds
@@ -106,7 +118,7 @@ test.describe('safety.viz qt-explorer module', () => {
   test('QT-CAT-001/QT-CAT-002/QT-CAT-003: the categorical view hides the chart and tabulates by-arm exceedance (#68)', async ({
     page
   }) => {
-    await selectByLabel(page, 'View', 'categorical');
+    await selectView(page, 'Categorical');
     await expect(page.locator('.sv-chart-wrap')).toHaveCSS('display', 'none');
     const header = await page.locator('.qt-table thead th').allTextContents();
     expect(header).toEqual(
@@ -142,7 +154,7 @@ test.describe('safety.viz qt-explorer module', () => {
     page
   }) => {
     await selectByLabel(page, 'Correction', 'Heart Rate');
-    await selectByLabel(page, 'View', 'outlier');
+    await selectView(page, 'Outlier scatter');
     await expect(page.locator('.qt-note')).toBeVisible();
     await expect(page.locator('.qt-note')).toContainText('QTc corrections');
     await expect(page.locator('.sv-chart-wrap')).toHaveCSS('display', 'none');

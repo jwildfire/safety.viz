@@ -21963,6 +21963,11 @@ var QT_STYLES = `
 .safety-qt-explorer .qt-table caption,.safety-qt-explorer .qt-ich caption{caption-side:top;text-align:left;font-weight:600;margin-bottom:.35rem}
 .safety-qt-explorer .qt-flag{color:#9a3412;font-weight:600}
 .safety-qt-explorer .qt-empty{display:none}
+.safety-qt-explorer .qt-view-list{display:flex;flex-direction:column;gap:.35rem}
+.safety-qt-explorer .qt-view-option{display:block;width:100%;text-align:left;padding:.45rem .55rem;border:1px solid #d8dee4;border-radius:8px;background:#fff;font:inherit;font-size:.85rem;line-height:1.3;color:#1f2933;cursor:pointer}
+.safety-qt-explorer .qt-view-option:hover{border-color:#b8c0cc;background:#f6f8fa}
+.safety-qt-explorer .qt-view-option.is-active{border-color:#0b62a4;background:#eaf2fb;color:#0b3d63;font-weight:600;box-shadow:inset 0 0 0 1px #0b62a4}
+.safety-qt-explorer .qt-view-option:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
 `;
 function applyQtStyles() {
   if (typeof document === "undefined" || document.getElementById(QT_STYLE_ID)) return;
@@ -22079,18 +22084,42 @@ var SafetyQtExplorer = class {
       if (!configured.has(col) || !present) delete this.state.filters[col];
     }
   }
+  /**
+   * Render the View selector into its own section as a visible list of options
+   * (QT-CTRL-001): one styled, clickable row per view with the active view
+   * highlighted, so all three views are always shown rather than hidden inside
+   * a dropdown (matching the hep-explorer view selector).
+   * @param {Function} addSection The shell's section builder.
+   * @private
+   */
+  buildViewControl(addSection) {
+    const section = addSection("View");
+    const list = createElement("div", "qt-view-list");
+    VIEWS.forEach((view) => {
+      const active = view.value === this.state.view;
+      const optionButton = createElement(
+        "button",
+        `qt-view-option${active ? " is-active" : ""}`,
+        view.label
+      );
+      optionButton.type = "button";
+      optionButton.setAttribute("aria-pressed", String(active));
+      optionButton.onclick = () => {
+        if (this.state.view === view.value) return;
+        this.state.view = view.value;
+        this.buildControls();
+        this.render();
+      };
+      list.append(optionButton);
+    });
+    section.append(list);
+  }
   /** Build the sidebar controls for the active view. @private */
   buildControls() {
     this.controls.innerHTML = "";
     const { addSection, addControl } = controlBuilders(this.controls);
+    this.buildViewControl(addSection);
     const section = addSection("Display");
-    const viewSelect = addControl("View", document.createElement("select"), section);
-    VIEWS.forEach((v) => option(viewSelect, v.value, v.label, v.value === this.state.view));
-    viewSelect.onchange = () => {
-      this.state.view = viewSelect.value;
-      this.buildControls();
-      this.render();
-    };
     const measureSelect = addControl("Correction", document.createElement("select"), section);
     this.availableMeasures.forEach((m) => option(measureSelect, m, m, m === this.state.measure));
     measureSelect.onchange = () => {
