@@ -1,6 +1,6 @@
 {
   "module": "hep-explorer",
-  "generatedAt": "2026-07-18T02:15:20.935Z",
+  "generatedAt": "2026-07-18T03:15:38.375Z",
   "environment": {
     "os": "linux 6.17.0-1020-azure",
     "node": "v22.23.1",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "29626699664",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29626699664"
+    "id": "29628486616",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29628486616"
   },
   "records": [
     {
