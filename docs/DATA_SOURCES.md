@@ -1,12 +1,13 @@
 # Demo data sources
 
-safety.viz demos and evidence run on two example datasets vendored under
+safety.viz demos and evidence run on three example datasets vendored under
 [`site/data/`](../site/data):
 
-| File        | Shape                                          | Used by                                                                                                         |
-| ----------- | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `adbds.csv` | One row per lab / vital-sign measurement (BDS) | Histogram, Outlier Explorer, Paneled Outlier Explorer, Results Over Time, Shift Plot, Delta-Delta, Web Codebook |
-| `adae.csv`  | One row per adverse event                      | AE Explorer, AE Timelines                                                                                       |
+| File        | Shape                                            | Used by                                                                                                         |
+| ----------- | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| `adbds.csv` | One row per lab / vital-sign measurement (BDS)   | Histogram, Outlier Explorer, Paneled Outlier Explorer, Results Over Time, Shift Plot, Delta-Delta, Web Codebook |
+| `adae.csv`  | One row per adverse event                        | AE Explorer, AE Timelines                                                                                       |
+| `adeg.csv`  | One row per ECG interval measurement (QT/QTc/HR) | QT Safety Explorer                                                                                              |
 
 Both are **generated**, not hand-maintained. The generator is
 [`scripts/build-demo-data.mjs`](../scripts/build-demo-data.mjs); rerun it to
@@ -25,12 +26,13 @@ Alzheimer's trial randomized to Placebo / Xanomeline Low Dose / Xanomeline High
 Dose, with real MedDRA-coded adverse events and reference-range–bearing labs and
 vital signs.
 
-The generator reads four published CSVs from the package's `inst/extdata/`:
+The generator reads five published CSVs from the package's `inst/extdata/`:
 
 - `adlb.csv` (ADaM lab chemistry + hematology) → BDS lab rows
 - `advs.csv` (ADaM vital signs) → BDS vital-sign rows
 - `adae.csv` (ADaM adverse events) → AE rows
 - `adsl.csv` (ADaM subject-level) → AE placeholder rows for AE-free participants
+- `adeg.csv` (ADaM ECG intervals) → QT/QTc/HR rows
 
 ### Transform summary
 
@@ -64,17 +66,33 @@ STRESN, STNRLO, STNRHI`).
   participants with events. AE Explorer counts them toward its group
   denominators (AE-DATA-001); AE Timelines keeps them in its participant
   total while dropping the blank-term record with a reported count.
+- **ECG (QT)** projects `adeg` to the QT measure contract
+  (`USUBJID, SITE, SITEID, SEX, RACE, AGE, ARM, VISIT, VISITNUM, PARAMCD, TEST,
+STRESU, STRESN, BASE, CHG, ABLFL`). Three parameters are kept for the QT Safety
+  Explorer's Phase-1 scope — **QTcF** (`QTCFR`, Fridericia), **QTcB** (`QTCBR`,
+  Bazett), and **Heart Rate** (`HR`) — with the source-standardized value
+  (`AVAL`), the source-derived baseline (`BASE`), and change-from-baseline
+  (`CHG`); no correction formula is recomputed. The pilot records each visit at
+  three postural timepoints plus a `DTYPE=AVERAGE` roll-up; the build keeps the
+  **supine reading** (`ATPT='AFTER LYING DOWN FOR 5 MINUTES'`, the resting
+  posture ICH-E14 analyses use), which — unlike the average roll-up — carries the
+  `BASE`/`CHG` the QT displays need. As with the BDS build, only analysis records
+  are kept (`DTYPE` blank, `ANL01FL='Y'` or the `ABLFL='Y'` baseline). The pilot
+  ADEG has **no PR/QRS/JT intervals and no moxifloxacin positive-control arm**, so
+  the demo covers QTc + HR only — expected for CDISC Pilot 01, and the QT
+  Explorer's Phase-2 items sit on a richer dataset.
 
 Resulting sizes: `adbds.csv` ≈ 5.5 MB (≈ 56k rows, 254 participants, 28 measures);
 `adae.csv` ≈ 0.1 MB (1,122 treatment-emergent events + 37 placeholder rows,
-254 participants, 23 body systems).
+254 participants, 23 body systems); `adeg.csv` ≈ 0.5 MB (5,361 rows, 254
+participants, 3 ECG parameters).
 
 ## License and attribution
 
 - **pharmaverseadam** is licensed **Apache-2.0**
   ([LICENSE](https://github.com/pharmaverse/pharmaverseadam/blob/main/LICENSE)).
   The CSVs under `site/data/` are a column-selected, row-filtered derivative of
-  its `adlb`/`advs`/`adae` datasets; this file provides the attribution.
+  its `adlb`/`advs`/`adae`/`adeg` datasets; this file provides the attribution.
 - The underlying study data is the **CDISC SDTM/ADaM Pilot 01** reference study,
   redistributed by pharmaverse; the same study is also mirrored under a permissive
   license by [PHUSE](https://github.com/phuse-org/phuse-scripts).
