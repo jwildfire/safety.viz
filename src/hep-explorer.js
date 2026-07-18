@@ -745,8 +745,10 @@ class SafetyHepExplorer {
     }
 
     if (composite) {
-      this.renderComposite();
-      if (previousSelectedId != null) this.dispatchSelection([]);
+      // A live scatter-view selection carries into the composite view (the
+      // clicked participant arrives already selected); renderComposite clears
+      // and notifies instead when the participant is not part of the cohort.
+      this.renderComposite(previousSelectedId);
       return;
     }
 
@@ -1094,9 +1096,13 @@ class SafetyHepExplorer {
    * migration table with concern coding, and the by-arm concern/benefit
    * summary. Degrades to an explanatory note when no participant in the current
    * selection has a usable baseline and on-treatment ALT and total bilirubin.
+   * @param {string|number} [carriedId] A live scatter-view selection to carry
+   *   into the composite view (HEP-SELECT-006): when the participant is part of
+   *   the composite cohort it arrives selected; otherwise the selection is
+   *   cleared and listeners notified.
    * @private
    */
-  renderComposite() {
+  renderComposite(carriedId) {
     const { subjects, excluded } = buildCompositeSubjects(this.cleanRows, this.settings);
     const shown = applyFilters(subjects, this.state.filters);
 
@@ -1136,6 +1142,7 @@ class SafetyHepExplorer {
         'The composite plot needs baseline and on-treatment ALT and total bilirubin for at ' +
         'least one participant. No participant in the current selection qualifies.';
       this.compositeWrap.append(note);
+      if (carriedId != null) this.dispatchSelection([]);
       return;
     }
 
@@ -1166,6 +1173,20 @@ class SafetyHepExplorer {
 
     this.compositeWrap.append(this.buildMigrationTable(shown));
     this.compositeWrap.append(this.buildByArmSummary(shown));
+
+    // Carry a live scatter-view selection into the freshly built composite
+    // view (HEP-SELECT-006): seed the multi-selection with the clicked
+    // participant so the panels, dropdown, header, and listeners all pick it
+    // up; a participant outside the cohort clears the selection instead.
+    if (carriedId != null) {
+      const key = String(carriedId);
+      if (shown.some((subject) => String(subject.id) === key)) {
+        this.compositeSelectedIds = [key];
+        this.afterCompositeSelectionChange();
+      } else {
+        this.dispatchSelection([]);
+      }
+    }
   }
 
   /**

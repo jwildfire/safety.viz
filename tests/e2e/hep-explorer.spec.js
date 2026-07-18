@@ -571,6 +571,33 @@ test.describe('safety.viz hep-explorer composite plot', () => {
       () => window.__safetyHepExplorerInstance.compositeWrap.style.display === 'none'
     );
     expect(compositeHidden).toBe(true);
+
+    // A participant selected in the scatter view carries into the composite
+    // view: switching back arrives with that participant already selected in
+    // the panels, dropdown, and header.
+    const selectedId = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      const id = instance.points[0].id;
+      instance.selectParticipant(id);
+      return id;
+    });
+    await page.locator('.hep-view-option', { hasText: 'Composite' }).click();
+    await page.waitForFunction(
+      () => window.__safetyHepExplorerInstance.compositeCharts.length === 6
+    );
+    const carried = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      return {
+        selected: instance.compositeSelectedIds.slice(),
+        dropdownSelected: [...instance.compositeSelectEl.selectedOptions].map((o) => o.value),
+        header: instance.compositeHeaderEl.textContent,
+        clearEnabled: !instance.compositeClearBtn.disabled
+      };
+    });
+    expect(carried.selected).toEqual([String(selectedId)]);
+    expect(carried.dropdownSelected).toEqual([String(selectedId)]);
+    expect(carried.header).toBe(`Participant ${selectedId} selected.`);
+    expect(carried.clearEnabled).toBe(true);
   });
 
   test('HEP-COMP-006: degrades gracefully when baseline or on-treatment values are absent (#67)', async ({
