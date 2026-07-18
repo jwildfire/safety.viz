@@ -15,14 +15,30 @@
     <header class="site-header">
       <a class="site-name" href="../index.html">
         safety.viz
-        <span class="site-version">v1.3.1</span>
+        <span class="site-version">v1.4.0</span>
       </a>
-      <nav class="site-nav">
-        <a href="../index.html">Gallery</a>
+      <nav class="site-nav" aria-label="Primary">
+        <div class="nav-group"><a href="../index.html">Gallery</a><button type="button" class="nav-disclosure" aria-expanded="false" aria-controls="gallery-menu" aria-label="Show charts"><span class="nav-caret" aria-hidden="true"></span></button><ul id="gallery-menu" class="nav-menu"><li><a href="../histogram/index.html">Safety Histogram</a></li><li><a href="../outlier-explorer/index.html">Safety Outlier Explorer</a></li><li><a href="../results-over-time/index.html">Safety Results Over Time</a></li><li><a href="../shift-plot/index.html">Safety Shift Plot</a></li><li><a href="../delta-delta/index.html">Safety Delta-Delta</a></li><li><a href="../hep-explorer/index.html">Hepatic Safety Explorer</a></li><li><a href="../ae-explorer/index.html">Adverse Event Explorer</a></li><li><a href="../ae-timelines/index.html">Adverse Event Timelines</a></li><li><a href="../qt-explorer/index.html">QT Safety Explorer</a></li></ul></div>
         <a href="../architecture.html">Architecture</a>
         <a href="../about.html">About</a>
-        <a href="https://github.com/jwildfire/safety.viz">GitHub</a>
-        <a href="https://jwildfire.github.io/obot.roadmap/">Roadmap</a>
+        <a
+          href="https://github.com/jwildfire/safety.viz"
+          aria-label="GitHub"
+          title="GitHub"
+          style="display: inline-flex; align-items: center"
+          ><svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor" aria-hidden="true">
+            <title>GitHub</title>
+            <path
+              d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"
+            /></svg
+        ></a>
+        <a
+          href="https://jwildfire.github.io/obot.roadmap/"
+          aria-label="obot roadmap"
+          title="obot roadmap"
+          style="font-size: 1.05rem; line-height: 1; display: inline-flex; align-items: center"
+          ><span aria-hidden="true">🍊😺</span></a
+        >
       </nav>
     </header>
     <main class="site-main"><h1><code>shift-plot</code> API reference</h1>
@@ -94,7 +110,7 @@ one via the factory instead.</p>
 <div class="table-scroll"><table class="api"><thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>data</code></td><td><code>array</code></td><td>yes</td><td>—</td><td>d3.csv()-style records; every row carries the measure, visit, and result columns named in settings.</td></tr><tr><td><code>settings</code></td><td><code>object</code></td><td>yes</td><td>—</td><td>Column mappings and rendering options; merged onto the module&#39;s DEFAULT_SETTINGS, so only overrides need to be supplied.</td></tr><tr><td><code>settings.measure_col</code></td><td><code>string</code></td><td>yes</td><td><code>TEST</code></td><td>Column holding the measure name; required in data.</td></tr><tr><td><code>settings.value_col</code></td><td><code>string</code></td><td>yes</td><td><code>STRESN</code></td><td>Column holding the numeric result; required in data.</td></tr><tr><td><code>settings.visit_col</code></td><td><code>string</code></td><td>yes</td><td><code>VISIT</code></td><td>Column holding the visit label; required in data. Its distinct values populate the baseline and comparison visit controls.</td></tr><tr><td><code>settings.visit_order_col</code></td><td><code>string</code></td><td>no</td><td><code>VISITNUM</code></td><td>Optional numeric column that orders the visits; when absent the visits sort alphanumerically (SSP-REG-013/014).</td></tr><tr><td><code>settings.id_col</code></td><td><code>string</code></td><td>no</td><td><code>USUBJID</code></td><td>Optional participant identifier column; drives the participant counts and the default listing&#39;s first column.</td></tr><tr><td><code>settings.unit_col</code></td><td><code>string</code></td><td>no</td><td><code>STRESU</code></td><td>Optional unit column, appended to measure labels.</td></tr><tr><td><code>settings.baseline_visits</code></td><td><code>array</code></td><td>no</td><td>—</td><td>Optional baseline visit(s) selected on first render; defaults to the first visit (SSP-CFG-004).</td></tr><tr><td><code>settings.comparison_visits</code></td><td><code>array</code></td><td>no</td><td>—</td><td>Optional comparison visit(s) selected on first render; defaults to every visit after the baseline (SSP-CFG-005).</td></tr><tr><td><code>settings.baseline_stat</code></td><td><code>string</code></td><td>no</td><td><code>mean</code></td><td>Summary statistic applied when a participant has several results across the baseline visit(s).</td></tr><tr><td><code>settings.comparison_stat</code></td><td><code>string</code></td><td>no</td><td><code>mean</code></td><td>Summary statistic applied when a participant has several results across the comparison visit(s).</td></tr><tr><td><code>settings.filters</code></td><td><code>array</code></td><td>no</td><td>—</td><td>Optional filter columns rendered as controls (SSP-CFG-006).</td></tr><tr><td><code>settings.details</code></td><td><code>array</code></td><td>no</td><td>—</td><td>Optional listing columns; defaults to participant ID, baseline, comparison, change, and percent change (SSP-REQ-005).</td></tr></tbody></table></div></div></div></main>
     <footer class="site-footer">
       <p>
-        safety.viz v1.3.1 — clinical safety graphics on one modern charting stack, migrated
+        safety.viz v1.4.0 — clinical safety graphics on one modern charting stack, migrated
         from the <a href="https://github.com/SafetyGraphics">safetyGraphics</a> ecosystem originally
         built by <a href="https://github.com/RhoInc">Rho, Inc.</a> (<a href="../about.html"
           >credits</a
@@ -109,7 +125,8 @@ one via the factory instead.</p>
     </footer>
     <script>
       // Mark the nav link whose resolved URL is this page; works at any mount
-      // depth (site root, /dev/, /pr/N/). Renderer sub-pages match nothing.
+      // depth (site root, /dev/, /pr/N/). Renderer sub-pages match a chart link
+      // inside the Gallery dropdown, highlighting the current chart.
       (function () {
         var here = location.pathname.replace(/\/$/, '/index.html');
         var links = document.querySelectorAll('.site-nav a');
@@ -117,11 +134,81 @@ one via the factory instead.</p>
           var href = links[i].getAttribute('href');
           if (!href || href.indexOf('http') === 0) continue;
           if (new URL(href, location.href).pathname === here) {
-            links[i].className = 'current';
+            links[i].classList.add('current');
             links[i].setAttribute('aria-current', 'page');
             break;
           }
         }
+      })();
+
+      // Gallery dropdown (#71): progressive enhancement over the hover/focus CSS.
+      // The disclosure button toggles aria-expanded (which drives the menu open
+      // via CSS), supports keyboard access (Enter/Space toggle, Arrow keys to
+      // enter and move through items, Escape to close), and closes on outside
+      // click or when focus leaves the group. With JS off, hover/focus still
+      // reveal the menu and the Gallery link still works.
+      (function () {
+        var group = document.querySelector('.site-nav .nav-group');
+        if (!group) return;
+        var button = group.querySelector('.nav-disclosure');
+        var menu = group.querySelector('.nav-menu');
+        if (!button || !menu) return;
+        var items = Array.prototype.slice.call(menu.querySelectorAll('a'));
+
+        var isOpen = function () {
+          return button.getAttribute('aria-expanded') === 'true';
+        };
+        var setOpen = function (open) {
+          button.setAttribute('aria-expanded', open ? 'true' : 'false');
+        };
+        var focusItem = function (index) {
+          if (!items.length) return;
+          setOpen(true);
+          items[(index + items.length) % items.length].focus();
+        };
+
+        button.addEventListener('click', function () {
+          setOpen(!isOpen());
+        });
+        button.addEventListener('keydown', function (event) {
+          if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            focusItem(0);
+          } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            focusItem(items.length - 1);
+          } else if (event.key === 'Escape') {
+            setOpen(false);
+          }
+        });
+        menu.addEventListener('keydown', function (event) {
+          var index = items.indexOf(document.activeElement);
+          if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            focusItem(index + 1);
+          } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            focusItem(index - 1);
+          } else if (event.key === 'Home') {
+            event.preventDefault();
+            focusItem(0);
+          } else if (event.key === 'End') {
+            event.preventDefault();
+            focusItem(items.length - 1);
+          } else if (event.key === 'Escape') {
+            event.preventDefault();
+            setOpen(false);
+            button.focus();
+          }
+        });
+
+        // Close when focus leaves the group or on an outside pointer press.
+        group.addEventListener('focusout', function (event) {
+          if (!group.contains(event.relatedTarget)) setOpen(false);
+        });
+        document.addEventListener('click', function (event) {
+          if (!group.contains(event.target)) setOpen(false);
+        });
       })();
     </script>
   </body>
