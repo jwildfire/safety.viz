@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="The story behind safety.viz: the R/Pharma 2026 agentic build, the safetyGraphics lineage, and credits for the original Rho, Inc. renderers." />
+    <title>About · safety.viz</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23271810'/%3E%3Crect x='2.5' y='8' width='3' height='5.5' fill='%23f97316'/%3E%3Crect x='6.5' y='3.5' width='3' height='10' fill='%23fb923c'/%3E%3Crect x='10.5' y='6' width='3' height='7.5' fill='%23f97316'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="site.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="site-name" href="index.html">
+        safety.viz
+        <span class="site-version">v1.3.1</span>
+      </a>
+      <nav class="site-nav">
+        <a href="index.html">Gallery</a>
+        <a href="architecture.html">Architecture</a>
+        <a href="about.html">About</a>
+        <a href="https://github.com/jwildfire/safety.viz">GitHub</a>
+        <a href="https://jwildfire.github.io/obot.roadmap/">Roadmap</a>
+      </nav>
+    </header>
+    <main class="site-main"><h1>About safety.viz</h1>
+<p class="tagline">An agentic rebuild of the safetyGraphics interactive renderers, documented in the open for R/Pharma 2026.</p>
+<h2 id="project">The project</h2>
+<p>safety.viz is one workstream of a larger experiment: modernizing the safetyGraphics clinical-safety graphics ecosystem with AI agents doing the engineering — requirements, tests, implementation, and this site — under human review, with every requirement, design decision, and release tracked in public. The build is the subject of a developer-diary keynote at R/Pharma 2026; the running story lives on the <a href="https://jwildfire.github.io/obot.roadmap/">obot roadmap</a>.</p>
+<p>The working method is deliberately conservative for safety software: each renderer starts from a reviewed requirement matrix in <a href="https://github.com/jwildfire/safety.agent">safety.agent</a>, extracted from the original renderer&#39;s documented behavior; development is red-green (a failing, requirement-keyed test first, then the minimal change); and a renderer only counts as migrated when its live demo, requirement-traced <a href="histogram/evidence.html">test-evidence report</a>, and generated API reference are all on this site. The R-side companion, <a href="https://github.com/jwildfire/gsm.safety">gsm.safety</a>, wraps the same committed bundle as <code>Widget_*</code> htmlwidgets, mirroring how <a href="https://github.com/Gilead-BioStats/gsm.kri">gsm.kri</a> consumes <a href="https://github.com/Gilead-BioStats/rbm-viz">gsm.viz</a> in the OpenRBQM ecosystem.</p>
+<p>The audience is anyone who reviews clinical-trial safety data — medical monitor, biostatistician, or data scientist. For each migrated renderer, the proof is on this site: a live demo against real example data, an audit-style test-evidence report, and a generated API reference.</p>
+<h2 id="lineage">Lineage</h2>
+<p>The charts themselves are not new — that is the point. Each renderer re-implements an interactive display designed, reviewed, and used in practice under the <a href="https://github.com/SafetyGraphics">safetyGraphics</a> project, the open-source framework for clinical-trial safety monitoring that grew out of the ASA Biopharm / DIA Safety Working Group&#39;s Interactive Safety Graphics task force. The original implementations were built by the open-source team at <a href="https://github.com/RhoInc">Rho, Inc.</a> on their <a href="https://github.com/RhoInc/Webcharts">Webcharts</a> D3 library. safety.viz ports that behavior onto maintained <a href="https://www.chartjs.org/">Chart.js</a>, preserving each chart&#39;s clinical intent while adding JSON-Schema data contracts and requirement-traced evidence.</p>
+<h2 id="credits">Original renderers</h2>
+<p>Full credit to the original authors — each safety.viz module traces to one of these open-source Rho, Inc. repositories:</p>
+<div class="table-scroll"><table class="renderer-credits"><thead><tr><th>Original renderer</th><th>In safety.viz</th><th>What it shows</th></tr></thead><tbody><tr><td><a href="https://github.com/RhoInc/safety-histogram"><code>safety-histogram</code></a></td><td><a href="histogram/index.html">Safety Histogram</a> <span class="badge badge-available">available</span></td><td>Distribution of a chosen lab or vital-sign measure with filters, grouping, normal-range overlay, and a linked participant listing.</td></tr>
+<tr><td><a href="https://github.com/RhoInc/safety-outlier-explorer"><code>safety-outlier-explorer</code></a></td><td><a href="outlier-explorer/index.html">Safety Outlier Explorer</a> <span class="badge badge-available">available</span></td><td>Participant-level results over time: one line per participant for the selected measure against a population normal-range band, with filters, x-axis and y-limit controls, color-by grouping, and click-to-select participant detail.</td></tr>
+<tr><td><a href="https://github.com/RhoInc/safety-results-over-time"><code>safety-results-over-time</code></a></td><td><a href="results-over-time/index.html">Safety Results Over Time</a> <span class="badge badge-available">available</span></td><td>Population-level distribution of a measure at each study visit as box-and-whisker marks, with grouping, an outlier overlay, and linear/log y-axis controls.</td></tr>
+<tr><td><a href="https://github.com/RhoInc/safety-shift-plot"><code>safety-shift-plot</code></a></td><td><a href="shift-plot/index.html">Safety Shift Plot</a> <span class="badge badge-available">available</span></td><td>Baseline versus comparison-visit values for a measure on a scatter with an identity line, measure and visit controls, filters, and a brush selection that opens a linked participant listing.</td></tr>
+<tr><td><a href="https://github.com/RhoInc/safety-delta-delta"><code>safety-delta-delta</code></a></td><td><a href="delta-delta/index.html">Safety Delta-Delta</a> <span class="badge badge-available">available</span></td><td>Paired change-from-baseline comparison of two measures on one scatter — quadrant reference lines, an optional regression line, measure and visit pickers, and a linked per-measure detail table with sparklines.</td></tr>
+<tr><td><a href="https://github.com/SafetyGraphics/hep-explorer"><code>hep-explorer</code></a></td><td><a href="hep-explorer/index.html">Hepatic Safety Explorer</a> <span class="badge badge-available">available</span></td><td>eDISH scatter of peak ALT vs peak total bilirubin (×ULN) with Hy&#39;s-Law quadrant cut-lines, a quadrant summary table, eDISH/mDISH display modes, R-Ratio and timing controls, and click-to-inspect participant visit paths.</td></tr>
+<tr><td><a href="https://github.com/RhoInc/paneled-outlier-explorer"><code>paneled-outlier-explorer</code></a></td><td>Paneled Outlier Explorer <span class="badge badge-planned">planned</span></td><td>Small-multiple outlier views across a panel of related measures.</td></tr>
+<tr><td><a href="https://github.com/RhoInc/aeexplorer"><code>aeexplorer</code></a></td><td><a href="ae-explorer/index.html">Adverse Event Explorer</a> <span class="badge badge-available">available</span></td><td>Hierarchical adverse-event incidence table — System Organ Class rows expandable to Preferred Terms — with per-arm rates, an inline rate dot plot, group-difference confidence intervals, prevalence/search/characteristic filters, and drill-down to the underlying records.</td></tr>
+<tr><td><a href="https://github.com/RhoInc/ae-timelines"><code>ae-timelines</code></a></td><td><a href="ae-timelines/index.html">Adverse Event Timelines</a> <span class="badge badge-available">available</span></td><td>Participant-level adverse-event timelines by severity and onset relative to study start, with serious-event marks and click-through participant detail.</td></tr>
+<tr><td><a href="https://github.com/RhoInc/web-codebook"><code>web-codebook</code></a></td><td>Web Codebook <span class="badge badge-planned">planned</span></td><td>Interactive data codebook: variable-level summaries, distributions, and filters for any dataset.</td></tr>
+<tr><td>—</td><td><a href="qt-explorer/index.html">QT Safety Explorer</a> <span class="badge badge-available">available</span></td><td>ECG QT/QTc safety review: per-arm central-tendency change over time (Δ / placebo-corrected ΔΔ) with a 90% CI band and the ICH-E14 metric, the flagship outlier scatter of change vs baseline with the 450/480/500 ms absolute diagonals and 30/60 ms change lines, and a by-arm categorical exceedance table — QTcF / QTcB corrections plus heart rate.</td></tr></tbody></table></div>
+<p>If you use these displays in your own work, please also cite the safetyGraphics project and the original repositories above.</p></main>
+    <footer class="site-footer">
+      <p>
+        safety.viz v1.3.1 — clinical safety graphics on one modern charting stack, migrated
+        from the <a href="https://github.com/SafetyGraphics">safetyGraphics</a> ecosystem originally
+        built by <a href="https://github.com/RhoInc">Rho, Inc.</a> (<a href="about.html"
+          >credits</a
+        >).
+      </p>
+      <p>
+        Built in the open for the R/Pharma 2026 keynote — follow the
+        <a href="https://jwildfire.github.io/obot.roadmap/">obot roadmap</a> ·
+        <a href="https://github.com/jwildfire/safety.viz">source on GitHub</a> ·
+        <a href="https://github.com/jwildfire/safety.viz/releases">releases</a>.
+      </p>
+    </footer>
+    <script>
+      // Mark the nav link whose resolved URL is this page; works at any mount
+      // depth (site root, /dev/, /pr/N/). Renderer sub-pages match nothing.
+      (function () {
+        var here = location.pathname.replace(/\/$/, '/index.html');
+        var links = document.querySelectorAll('.site-nav a');
+        for (var i = 0; i < links.length; i += 1) {
+          var href = links[i].getAttribute('href');
+          if (!href || href.indexOf('http') === 0) continue;
+          if (new URL(href, location.href).pathname === here) {
+            links[i].className = 'current';
+            links[i].setAttribute('aria-current', 'page');
+            break;
+          }
+        }
+      })();
+    </script>
+  </body>
+</html>
