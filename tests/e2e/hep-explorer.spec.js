@@ -662,11 +662,30 @@ test.describe('safety.viz hep-explorer composite plot', () => {
     });
     expect(viaDropdown.selected).toHaveLength(3);
 
-    // Clicking empty plot space clears the whole selection.
+    // The control's Clear selection button (a real click) resets the whole
+    // selection, empties the dropdown, and disables itself.
+    await expect(page.locator('.hep-composite-select .hep-composite-clear')).toBeEnabled();
+    await page.click('.hep-composite-select .hep-composite-clear');
+    const clearedByButton = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      return {
+        selected: instance.compositeSelectedIds.slice(),
+        dropdownSelected: [...instance.compositeSelectEl.selectedOptions].map((o) => o.value),
+        disabled: instance.compositeClearBtn.disabled,
+        header: instance.compositeHeaderEl.textContent
+      };
+    });
+    expect(clearedByButton.selected).toEqual([]);
+    expect(clearedByButton.dropdownSelected).toEqual([]);
+    expect(clearedByButton.disabled).toBe(true);
+    expect(clearedByButton.header).toMatch(/Hover a point to trace/);
+
+    // Clicking empty plot space also clears the whole selection.
     const cleared = await page.evaluate(() => {
       const instance = window.__safetyHepExplorerInstance;
       const chart = instance.compositeCharts[0];
-      chart.options.onClick({}, [], chart);
+      chart.options.onClick({}, [{ index: 0 }], chart); // re-select one
+      chart.options.onClick({}, [], chart); // empty-space click
       return {
         selected: instance.compositeSelectedIds.slice(),
         header: instance.compositeHeaderEl.textContent

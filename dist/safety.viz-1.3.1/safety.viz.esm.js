@@ -19193,6 +19193,7 @@ var SafetyHepExplorer = class {
     this.compositeHeaderEl = null;
     this.compositeSelectEl = null;
     this.compositeSelectSection = null;
+    this.compositeClearBtn = null;
     this.participantsSelected = [];
     this.state = {
       view: this.settings.view === "composite" ? "composite" : "scatter",
@@ -19273,6 +19274,8 @@ var SafetyHepExplorer = class {
 .safety-hep-explorer .hep-composite-header.is-active{color:#1f2933;font-weight:600;border-color:#b8c0cc;background:#eef2f6}
 .safety-hep-explorer .hep-composite-select select{padding:.25rem;font-size:.82rem}
 .safety-hep-explorer .hep-composite-select option{padding:.15rem .3rem}
+.safety-hep-explorer .hep-composite-clear{width:100%;margin-top:.35rem;padding:.25rem .45rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.78rem;cursor:pointer}
+.safety-hep-explorer .hep-composite-clear:disabled{color:#9aa5b1;cursor:default}
 .safety-hep-explorer .hep-composite-legend{display:flex;flex-wrap:wrap;gap:.35rem 1rem;font-size:.8rem;color:#52616f;margin:0 0 .75rem}
 .safety-hep-explorer .hep-composite-legend .hep-legend-item{display:inline-flex;align-items:center;gap:.3rem}
 .safety-hep-explorer .hep-composite-section-title{font-size:.9rem;margin:1rem 0 .5rem;color:#1f2933}
@@ -20014,6 +20017,7 @@ var SafetyHepExplorer = class {
     this.compositeSelectedIds = [];
     this.compositeHeaderEl = null;
     this.compositeSelectEl = null;
+    this.compositeClearBtn = null;
     this.mountCompositeSelect(shown);
     const totalParticipants = unique6(this.cleanRows.map((row) => row[this.settings.id_col])).length;
     const excludedNote = excluded ? `<span class="sv-warning">${excluded} participant${excluded > 1 ? "s" : ""} excluded (missing baseline or on-treatment ALT/total bilirubin).</span>` : "";
@@ -20361,8 +20365,10 @@ var SafetyHepExplorer = class {
   /**
    * Build the participant multi-select dropdown for the sidebar's Participants
    * section (HEP-COMP-007): one option per shown participant, its selected
-   * options mirroring the click-driven multi-selection. Editing it drives the
-   * highlight, and clicking points keeps it in sync.
+   * options mirroring the click-driven multi-selection, plus a Clear selection
+   * button (disabled while nothing is selected) that resets the whole
+   * selection. Editing the select drives the highlight, and clicking points
+   * keeps it in sync.
    * @param {Object[]} shown The shown composite subjects.
    * @private
    */
@@ -20375,11 +20381,18 @@ var SafetyHepExplorer = class {
     shown.forEach((subject) => option(select, String(subject.id), String(subject.id), false));
     select.onchange = () => {
       this.compositeSelectedIds = [...select.selectedOptions].map((opt) => opt.value);
-      this.refreshCompositeHighlight();
-      this.dispatchSelection([...this.compositeSelectedIds]);
+      this.afterCompositeSelectionChange();
     };
     this.compositeSelectEl = select;
     wrap.append(select);
+    const clear = document.createElement("button");
+    clear.type = "button";
+    clear.className = "hep-composite-clear";
+    clear.textContent = "Clear selection";
+    clear.disabled = !this.compositeSelectedIds.length;
+    clear.onclick = () => this.clearCompositeSelection();
+    this.compositeClearBtn = clear;
+    wrap.append(clear);
     return wrap;
   }
   /**
@@ -20415,9 +20428,10 @@ var SafetyHepExplorer = class {
     this.afterCompositeSelectionChange();
   }
   /**
-   * Sync the dropdown to the current multi-selection, restyle the panels +
-   * header, and dispatch the participantsSelected event so host apps stay in
-   * sync (HEP-COMP-007, HEP-API-003).
+   * Sync the dropdown and its Clear selection button to the current
+   * multi-selection, restyle the panels + header, and dispatch the
+   * participantsSelected event so host apps stay in sync (HEP-COMP-007,
+   * HEP-API-003).
    * @private
    */
   afterCompositeSelectionChange() {
@@ -20427,6 +20441,7 @@ var SafetyHepExplorer = class {
         opt.selected = set2.has(opt.value);
       });
     }
+    if (this.compositeClearBtn) this.compositeClearBtn.disabled = !this.compositeSelectedIds.length;
     this.refreshCompositeHighlight();
     this.dispatchSelection([...this.compositeSelectedIds]);
   }
