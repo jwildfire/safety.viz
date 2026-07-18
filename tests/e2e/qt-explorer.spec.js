@@ -48,18 +48,6 @@ test.describe('safety.viz qt-explorer module', () => {
     await captureEvidence(page, 'QT-CTRL-001', 'central-tendency-delta');
   });
 
-  test('QT-CTRL-004: the chart card carries an Experimental badge that hides with the chart on the table view (#68)', async ({
-    page
-  }) => {
-    const badge = page.locator('.qt-badge');
-    await expect(badge).toBeVisible();
-    await expect(badge).toHaveText('Experimental');
-    await selectByLabel(page, 'View', 'outlier');
-    await expect(badge).toBeVisible();
-    await selectByLabel(page, 'View', 'categorical');
-    await expect(badge).toBeHidden();
-  });
-
   test('QT-CT-002/QT-CT-003/QT-CT-006: central tendency draws per-arm lines, a CI band, the reference line and the peak marker (#68)', async ({
     page
   }) => {

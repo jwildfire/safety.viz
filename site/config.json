@@ -98,6 +98,7 @@
       "module": "qt-explorer",
       "title": "QT Safety Explorer",
       "status": "available",
+      "experimental": true,
       "blurb": "ECG QT/QTc safety review: per-arm central-tendency change over time (Δ / placebo-corrected ΔΔ) with a 90% CI band and the ICH-E14 metric, the flagship outlier scatter of change vs baseline with the 450/480/500 ms absolute diagonals and 30/60 ms change lines, and a by-arm categorical exceedance table — QTcF / QTcB corrections plus heart rate.",
       "hero": "QT-OUT-003-outlier-scatter-max.png",
       "matrix": "qt-explorer.md",

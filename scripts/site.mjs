@@ -149,7 +149,8 @@ for (const renderer of config.renderers.filter((entry) => entry.status === 'avai
     path.join(moduleDir, 'api.html'),
     `${renderer.title} API reference · safety.viz`,
     renderApiPage(JSON.parse(readFileSync(apiFile, 'utf8')), {
-      hasGuide: !!renderer.guide
+      hasGuide: !!renderer.guide,
+      experimental: !!renderer.experimental
     }),
     '../',
     `Generated API reference for the safety.viz ${module} module: factory, lifecycle ` +
