@@ -85,6 +85,11 @@ const SHELL_STYLES = `
 .sv-main-annotation:empty{display:none}
 .sv-info{text-decoration:none}
 .sv-hidden{display:none!important}
+.sv-view-list{display:flex;flex-direction:column;gap:.35rem}
+.sv-view-option{display:block;width:100%;text-align:left;padding:.45rem .55rem;border:1px solid #d8dee4;border-radius:8px;background:#fff;font:inherit;font-size:.85rem;line-height:1.3;color:#1f2933;cursor:pointer}
+.sv-view-option:hover{border-color:#b8c0cc;background:#f6f8fa}
+.sv-view-option.is-active{border-color:#0b62a4;background:#eaf2fb;color:#0b3d63;font-weight:600;box-shadow:inset 0 0 0 1px #0b62a4}
+.sv-view-option:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
 @media (max-width:900px){
 .sv-root{flex-direction:column}
 .sv-sidebar{position:static;flex:1 1 auto;width:100%;max-height:none}
@@ -214,4 +219,42 @@ export function controlBuilders(controls) {
       return input;
     }
   };
+}
+
+/**
+ * Render a view selector into its own sidebar section: a stacked list of
+ * always-visible option buttons, the active one highlighted, one row per view.
+ * Shared by every renderer with more than one top-level view (hep-explorer,
+ * qt-explorer) so the builder and its CSS live in one place (#76 / VIEW-1)
+ * rather than being duplicated per module. Preserves the a11y contract the
+ * consumers ship: real `<button type="button">`s, `aria-pressed` reflecting the
+ * active option, and the `:focus-visible` outline from the shared stylesheet.
+ * @param {Function} addSection The shell's section builder (from {@link controlBuilders}).
+ * @param {Object} config View-selector configuration.
+ * @param {Array<{value: string, label: string}>} config.options The selectable views, in display order.
+ * @param {string} config.active The value of the currently active view.
+ * @param {(value: string) => void} config.onChange Called with the chosen value when a non-active option is activated.
+ * @param {string} [config.title='View'] The section heading.
+ * @returns {HTMLElement} The created section element (with the option list appended).
+ */
+export function renderViewSelector(addSection, { options, active, onChange, title = 'View' }) {
+  const section = addSection(title);
+  const list = createElement('div', 'sv-view-list');
+  options.forEach(({ value, label }) => {
+    const isActive = value === active;
+    const optionButton = createElement(
+      'button',
+      `sv-view-option${isActive ? ' is-active' : ''}`,
+      label
+    );
+    optionButton.type = 'button';
+    optionButton.setAttribute('aria-pressed', String(isActive));
+    optionButton.onclick = () => {
+      if (value === active) return;
+      onChange(value);
+    };
+    list.append(optionButton);
+  });
+  section.append(list);
+  return section;
 }
