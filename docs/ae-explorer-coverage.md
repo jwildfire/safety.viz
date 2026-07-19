@@ -89,3 +89,7 @@ behavior) by judgment, since every source row is still typed `planned`.
   Data-section button rather than a bare link, with the original's
   major-minor-basis file naming; and search/prevalence inputs update per
   keystroke (AE-REG-013) rather than on blur.
+
+## View-selector rollout (VIEW-3, #76)
+
+One primary display — the SOC→PT incidence table. "Summarize by" is a statistic-basis picker that reshapes the same table, and the category drill-down is a master-detail listing restored via a "Return to the Summary View" button, not a mutually-exclusive view switch. Ruled **single-view** in the shared view-selector rollout ([#76](https://github.com/jwildfire/safety.viz/issues/76)) — no view control is added; see [view-selector-inventory.md](view-selector-inventory.md).

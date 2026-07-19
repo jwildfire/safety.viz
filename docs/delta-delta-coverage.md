@@ -87,3 +87,7 @@ SDD-API-001 in the module scheme above.
 SDD-REQ-001, and SDD-REQ-002 were dropped in the safety.agent matrix review as
 introductory/aggregate text or navigation artifacts, and are not counted in the
 48 rows.
+
+## View-selector rollout (VIEW-3, #76)
+
+One primary display — the paired change-from-baseline scatter. The per-measure table is a point-click drill-down beside the persistent chart, not a mutually-exclusive view switch. Ruled **single-view** in the shared view-selector rollout ([#76](https://github.com/jwildfire/safety.viz/issues/76)) — no view control is added; see [view-selector-inventory.md](view-selector-inventory.md).
