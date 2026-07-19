@@ -26,7 +26,13 @@ import {
   Legend
 } from 'chart.js';
 
-import { controlBuilders, createElement, option, renderShell } from './shell.js';
+import {
+  controlBuilders,
+  createElement,
+  option,
+  renderShell,
+  renderViewSelector
+} from './shell.js';
 import {
   GROUP_NONE,
   DISPLAY_MODES,
@@ -241,11 +247,6 @@ class SafetyHepExplorer {
 .safety-hep-explorer .hep-summary-table th,.safety-hep-explorer .hep-summary-table td{border-bottom:1px solid #e3e8ee;padding:.4rem .55rem;text-align:left}
 .safety-hep-explorer .hep-summary-table th{border-bottom:2px solid #d8dee4;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f}
 .safety-hep-explorer .hep-summary-table td.hep-num,.safety-hep-explorer .hep-summary-table th.hep-num{text-align:right;font-variant-numeric:tabular-nums}
-.safety-hep-explorer .hep-view-list{display:flex;flex-direction:column;gap:.35rem}
-.safety-hep-explorer .hep-view-option{display:block;width:100%;text-align:left;padding:.45rem .55rem;border:1px solid #d8dee4;border-radius:8px;background:#fff;font:inherit;font-size:.85rem;line-height:1.3;color:#1f2933;cursor:pointer}
-.safety-hep-explorer .hep-view-option:hover{border-color:#b8c0cc;background:#f6f8fa}
-.safety-hep-explorer .hep-view-option.is-active{border-color:#0b62a4;background:#eaf2fb;color:#0b3d63;font-weight:600;box-shadow:inset 0 0 0 1px #0b62a4}
-.safety-hep-explorer .hep-view-option:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
 .safety-hep-explorer .hep-composite{margin-top:.5rem}
 .safety-hep-explorer .hep-composite-header{font-size:.85rem;color:#52616f;background:#f6f8fa;border:1px solid #e3e8ee;border-radius:8px;padding:.4rem .6rem;margin:0 0 .6rem;min-height:1.2rem}
 .safety-hep-explorer .hep-composite-header.is-active{color:#1f2933;font-weight:600;border-color:#b8c0cc;background:#eef2f6}
@@ -422,32 +423,21 @@ class SafetyHepExplorer {
    * Render the View selector into its own section as a visible list of options
    * (HEP-COMP-006): one styled, clickable row per view mode with the active mode
    * highlighted, so both the eDISH/mDISH scatter and the composite plot are
-   * always shown rather than hidden inside a dropdown.
+   * always shown rather than hidden inside a dropdown. Delegates to the shared
+   * shell builder (#76 / VIEW-2) so the option list + CSS live in one place.
    * @param {Function} addSection The shell's section builder.
    * @private
    */
   buildViewControl(addSection) {
-    const section = addSection('View');
-    const list = createElement('div', 'hep-view-list');
-    VIEW_MODES.forEach((mode) => {
-      const active = mode.value === this.state.view;
-      const optionButton = createElement(
-        'button',
-        `hep-view-option${active ? ' is-active' : ''}`,
-        mode.label
-      );
-      optionButton.type = 'button';
-      optionButton.setAttribute('aria-pressed', String(active));
-      optionButton.onclick = () => {
-        const next = mode.value === 'composite' ? 'composite' : 'scatter';
-        if (this.state.view === next) return;
-        this.state.view = next;
+    renderViewSelector(addSection, {
+      options: VIEW_MODES,
+      active: this.state.view,
+      onChange: (value) => {
+        this.state.view = value;
         this.buildControls();
         this.render();
-      };
-      list.append(optionButton);
+      }
     });
-    section.append(list);
   }
 
   /**

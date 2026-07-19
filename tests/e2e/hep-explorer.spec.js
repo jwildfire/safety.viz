@@ -554,8 +554,8 @@ test.describe('safety.viz hep-explorer composite plot', () => {
     expect(view).toBe('composite');
     // The View selector is its own section rendered as a visible option list,
     // with the composite option active.
-    await expect(page.locator('.hep-view-option')).toHaveCount(2);
-    await expect(page.locator('.hep-view-option.is-active')).toHaveText(/Composite/);
+    await expect(page.locator('.sv-view-option')).toHaveCount(2);
+    await expect(page.locator('.sv-view-option.is-active')).toHaveText(/Composite/);
     const labels = await page.locator('.sv-control label').allTextContents();
     expect(labels).toContain('Group');
     // Scatter-only controls are hidden in the composite view.
@@ -611,10 +611,10 @@ test.describe('safety.viz hep-explorer composite plot', () => {
   }) => {
     // Click the scatter option in the View list: the single scatter canvas
     // appears and the composite container is hidden.
-    await page.locator('.hep-view-option', { hasText: 'scatter' }).click();
+    await page.locator('.sv-view-option', { hasText: 'scatter' }).click();
     await page.waitForFunction(() => window.__safetyHepExplorerInstance.chart !== null);
     await expect(page.locator('canvas.sv-chart')).toBeVisible();
-    await expect(page.locator('.hep-view-option.is-active')).toHaveText(/scatter/);
+    await expect(page.locator('.sv-view-option.is-active')).toHaveText(/scatter/);
     const compositeHidden = await page.evaluate(
       () => window.__safetyHepExplorerInstance.compositeWrap.style.display === 'none'
     );
@@ -629,7 +629,7 @@ test.describe('safety.viz hep-explorer composite plot', () => {
       instance.selectParticipant(id);
       return id;
     });
-    await page.locator('.hep-view-option', { hasText: 'Composite' }).click();
+    await page.locator('.sv-view-option', { hasText: 'Composite' }).click();
     await page.waitForFunction(
       () => window.__safetyHepExplorerInstance.compositeCharts.length === 6
     );
@@ -661,7 +661,7 @@ test.describe('safety.viz hep-explorer composite plot', () => {
       return instance.compositeSelectedIds.slice();
     });
     expect(compositeMulti).toHaveLength(2);
-    await page.locator('.hep-view-option', { hasText: 'scatter' }).click();
+    await page.locator('.sv-view-option', { hasText: 'scatter' }).click();
     await page.waitForFunction(() => window.__safetyHepExplorerInstance.chart !== null);
     const carriedBack = await page.evaluate(() => {
       const instance = window.__safetyHepExplorerInstance;
