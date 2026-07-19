@@ -1,13 +1,16 @@
 {
   "module": "hep-explorer",
-  "generatedAt": "2026-07-19T02:36:17.941Z",
+  "generatedAt": "2026-07-19T02:43:10.106Z",
   "environment": {
-    "os": "darwin 23.6.0",
-    "node": "v24.14.0",
+    "os": "linux 6.17.0-1020-azure",
+    "node": "v22.23.1",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": null,
+  "run": {
+    "id": "29670613309",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29670613309"
+  },
   "records": [
     {
       "test": "a chart link navigates straight to that renderer demo (#71)",
