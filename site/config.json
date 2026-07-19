@@ -2,7 +2,7 @@
   "siteTitle": "safety.viz",
   "repoUrl": "https://github.com/jwildfire/safety.viz",
   "hubUrl": "https://jwildfire.github.io/obot.roadmap/",
-  "matrixBaseUrl": "https://github.com/jwildfire/safety.agent/blob/main/docs/requirements",
+  "matrixBaseUrl": "https://github.com/jwildfire/obot.agent/blob/main/docs/requirements",
   "renderers": [
     {
       "module": "histogram",
