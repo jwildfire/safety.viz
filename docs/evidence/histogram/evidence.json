@@ -1,6 +1,6 @@
 {
   "module": "histogram",
-  "generatedAt": "2026-07-18T03:33:04.499Z",
+  "generatedAt": "2026-07-19T02:43:10.106Z",
   "environment": {
     "os": "linux 6.17.0-1020-azure",
     "node": "v22.23.1",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "29628999191",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29628999191"
+    "id": "29670613309",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29670613309"
   },
   "records": [
     {
@@ -970,6 +970,38 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [1],
+      "screenshots": []
+    },
+    {
+      "test": "shared view selector VIEW-SEL-001: renders one option button per view under a titled View section (#76)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["VIEW-SEL-001"],
+      "issueRefs": [76],
+      "screenshots": []
+    },
+    {
+      "test": "shared view selector VIEW-SEL-002: highlights only the active option via is-active + aria-pressed (#76)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["VIEW-SEL-002"],
+      "issueRefs": [76],
+      "screenshots": []
+    },
+    {
+      "test": "shared view selector VIEW-SEL-003: renders real, keyboard-operable button elements (#76)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["VIEW-SEL-003"],
+      "issueRefs": [76],
+      "screenshots": []
+    },
+    {
+      "test": "shared view selector VIEW-SEL-004: clicking a non-active option fires onChange with its value; the active option is a no-op (#76)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["VIEW-SEL-004"],
+      "issueRefs": [76],
       "screenshots": []
     },
     {

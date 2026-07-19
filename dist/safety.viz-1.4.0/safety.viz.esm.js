@@ -12389,6 +12389,11 @@ var SHELL_STYLES = `
 .sv-main-annotation:empty{display:none}
 .sv-info{text-decoration:none}
 .sv-hidden{display:none!important}
+.sv-view-list{display:flex;flex-direction:column;gap:.35rem}
+.sv-view-option{display:block;width:100%;text-align:left;padding:.45rem .55rem;border:1px solid #d8dee4;border-radius:8px;background:#fff;font:inherit;font-size:.85rem;line-height:1.3;color:#1f2933;cursor:pointer}
+.sv-view-option:hover{border-color:#b8c0cc;background:#f6f8fa}
+.sv-view-option.is-active{border-color:#0b62a4;background:#eaf2fb;color:#0b3d63;font-weight:600;box-shadow:inset 0 0 0 1px #0b62a4}
+.sv-view-option:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
 @media (max-width:900px){
 .sv-root{flex-direction:column}
 .sv-sidebar{position:static;flex:1 1 auto;width:100%;max-height:none}
@@ -12473,6 +12478,27 @@ function controlBuilders(controls) {
       return input;
     }
   };
+}
+function renderViewSelector(addSection, { options, active, onChange, title = "View" }) {
+  const section = addSection(title);
+  const list = createElement("div", "sv-view-list");
+  options.forEach(({ value, label }) => {
+    const isActive = value === active;
+    const optionButton = createElement(
+      "button",
+      `sv-view-option${isActive ? " is-active" : ""}`,
+      label
+    );
+    optionButton.type = "button";
+    optionButton.setAttribute("aria-pressed", String(isActive));
+    optionButton.onclick = () => {
+      if (value === active) return;
+      onChange(value);
+    };
+    list.append(optionButton);
+  });
+  section.append(list);
+  return section;
 }
 
 // src/histogram/configure.js
@@ -19268,11 +19294,6 @@ var SafetyHepExplorer = class {
 .safety-hep-explorer .hep-summary-table th,.safety-hep-explorer .hep-summary-table td{border-bottom:1px solid #e3e8ee;padding:.4rem .55rem;text-align:left}
 .safety-hep-explorer .hep-summary-table th{border-bottom:2px solid #d8dee4;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f}
 .safety-hep-explorer .hep-summary-table td.hep-num,.safety-hep-explorer .hep-summary-table th.hep-num{text-align:right;font-variant-numeric:tabular-nums}
-.safety-hep-explorer .hep-view-list{display:flex;flex-direction:column;gap:.35rem}
-.safety-hep-explorer .hep-view-option{display:block;width:100%;text-align:left;padding:.45rem .55rem;border:1px solid #d8dee4;border-radius:8px;background:#fff;font:inherit;font-size:.85rem;line-height:1.3;color:#1f2933;cursor:pointer}
-.safety-hep-explorer .hep-view-option:hover{border-color:#b8c0cc;background:#f6f8fa}
-.safety-hep-explorer .hep-view-option.is-active{border-color:#0b62a4;background:#eaf2fb;color:#0b3d63;font-weight:600;box-shadow:inset 0 0 0 1px #0b62a4}
-.safety-hep-explorer .hep-view-option:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
 .safety-hep-explorer .hep-composite{margin-top:.5rem}
 .safety-hep-explorer .hep-composite-header{font-size:.85rem;color:#52616f;background:#f6f8fa;border:1px solid #e3e8ee;border-radius:8px;padding:.4rem .6rem;margin:0 0 .6rem;min-height:1.2rem}
 .safety-hep-explorer .hep-composite-header.is-active{color:#1f2933;font-weight:600;border-color:#b8c0cc;background:#eef2f6}
@@ -19427,32 +19448,21 @@ var SafetyHepExplorer = class {
    * Render the View selector into its own section as a visible list of options
    * (HEP-COMP-006): one styled, clickable row per view mode with the active mode
    * highlighted, so both the eDISH/mDISH scatter and the composite plot are
-   * always shown rather than hidden inside a dropdown.
+   * always shown rather than hidden inside a dropdown. Delegates to the shared
+   * shell builder (#76 / VIEW-2) so the option list + CSS live in one place.
    * @param {Function} addSection The shell's section builder.
    * @private
    */
   buildViewControl(addSection) {
-    const section = addSection("View");
-    const list = createElement("div", "hep-view-list");
-    VIEW_MODES.forEach((mode) => {
-      const active = mode.value === this.state.view;
-      const optionButton = createElement(
-        "button",
-        `hep-view-option${active ? " is-active" : ""}`,
-        mode.label
-      );
-      optionButton.type = "button";
-      optionButton.setAttribute("aria-pressed", String(active));
-      optionButton.onclick = () => {
-        const next = mode.value === "composite" ? "composite" : "scatter";
-        if (this.state.view === next) return;
-        this.state.view = next;
+    renderViewSelector(addSection, {
+      options: VIEW_MODES,
+      active: this.state.view,
+      onChange: (value) => {
+        this.state.view = value;
         this.buildControls();
         this.render();
-      };
-      list.append(optionButton);
+      }
     });
-    section.append(list);
   }
   /**
    * Rebuild the settings/filters controls from data + state (HEP-CTRL-*). Only
@@ -23053,11 +23063,6 @@ var QT_STYLES = `
 .safety-qt-explorer .qt-table caption,.safety-qt-explorer .qt-ich caption{caption-side:top;text-align:left;font-weight:600;margin-bottom:.35rem}
 .safety-qt-explorer .qt-flag{color:#9a3412;font-weight:600}
 .safety-qt-explorer .qt-empty{display:none}
-.safety-qt-explorer .qt-view-list{display:flex;flex-direction:column;gap:.35rem}
-.safety-qt-explorer .qt-view-option{display:block;width:100%;text-align:left;padding:.45rem .55rem;border:1px solid #d8dee4;border-radius:8px;background:#fff;font:inherit;font-size:.85rem;line-height:1.3;color:#1f2933;cursor:pointer}
-.safety-qt-explorer .qt-view-option:hover{border-color:#b8c0cc;background:#f6f8fa}
-.safety-qt-explorer .qt-view-option.is-active{border-color:#0b62a4;background:#eaf2fb;color:#0b3d63;font-weight:600;box-shadow:inset 0 0 0 1px #0b62a4}
-.safety-qt-explorer .qt-view-option:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
 `;
 function applyQtStyles() {
   if (typeof document === "undefined" || document.getElementById(QT_STYLE_ID)) return;
@@ -23178,31 +23183,21 @@ var SafetyQtExplorer = class {
    * Render the View selector into its own section as a visible list of options
    * (QT-CTRL-001): one styled, clickable row per view with the active view
    * highlighted, so all three views are always shown rather than hidden inside
-   * a dropdown (matching the hep-explorer view selector).
+   * a dropdown. Delegates to the shared shell builder (#76 / VIEW-2) so the
+   * option list + CSS live in one place (matching the hep-explorer selector).
    * @param {Function} addSection The shell's section builder.
    * @private
    */
   buildViewControl(addSection) {
-    const section = addSection("View");
-    const list = createElement("div", "qt-view-list");
-    VIEWS.forEach((view) => {
-      const active = view.value === this.state.view;
-      const optionButton = createElement(
-        "button",
-        `qt-view-option${active ? " is-active" : ""}`,
-        view.label
-      );
-      optionButton.type = "button";
-      optionButton.setAttribute("aria-pressed", String(active));
-      optionButton.onclick = () => {
-        if (this.state.view === view.value) return;
-        this.state.view = view.value;
+    renderViewSelector(addSection, {
+      options: VIEWS,
+      active: this.state.view,
+      onChange: (value) => {
+        this.state.view = value;
         this.buildControls();
         this.render();
-      };
-      list.append(optionButton);
+      }
     });
-    section.append(list);
   }
   /** Build the sidebar controls for the active view. @private */
   buildControls() {

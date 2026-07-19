@@ -77,3 +77,7 @@ the histogram precedent).
     are enforced by `tests/e2e/site.spec.js`. **SSP-REG-015** ("fits on one
     page") — flagged vague in the AI review — is addressed by the fixed
     460px chart area and the responsive shell rather than a pixel assertion.
+
+## View-selector rollout (VIEW-3, #76)
+
+One primary display — the baseline-vs-comparison scatter. The linked listing is a brush-selection drill-down shown in addition to the chart, not a mutually-exclusive view switch. Ruled **single-view** in the shared view-selector rollout ([#76](https://github.com/jwildfire/safety.viz/issues/76)) — no view control is added; see [view-selector-inventory.md](view-selector-inventory.md).

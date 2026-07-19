@@ -77,3 +77,7 @@ matrix AI review). The original builds its y domain bottom-to-top, so its
 `earliest` and `alphabetical-descending` comparators read top-to-bottom as
 earliest-onset-first and alphabetically ascending; the reimplementation
 asserts those top-to-bottom orders directly.
+
+## View-selector rollout (VIEW-3, #76)
+
+One primary display — the participant timeline chart. Controls are Filters and a participant-ID sort order; the participant detail is a y-axis-click drill-down listing, not a view switch. Ruled **single-view** in the shared view-selector rollout ([#76](https://github.com/jwildfire/safety.viz/issues/76)) — no view control is added; see [view-selector-inventory.md](view-selector-inventory.md).

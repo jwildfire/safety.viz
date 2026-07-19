@@ -81,3 +81,7 @@ Playwright).
   warning, but group options are taken from settings as-is (missing-column
   dropping and duplicate-label de-duplication for the Group-by control are not
   implemented). A follow-up could extend the filter validation to groups.
+
+## View-selector rollout (VIEW-3, #76)
+
+One primary display — the per-visit box-and-whisker plot with an outlier overlay. "Scale" is an axis-type toggle and the Display checkboxes are non-exclusive overlay toggles on one chart, not a chooser between displays. Ruled **single-view** in the shared view-selector rollout ([#76](https://github.com/jwildfire/safety.viz/issues/76)) — no view control is added; see [view-selector-inventory.md](view-selector-inventory.md).

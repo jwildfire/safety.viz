@@ -20,7 +20,7 @@ async function selectByLabel(page, label, value) {
 // The View selector is a list of always-visible option buttons (QT-CTRL-001),
 // not a dropdown — switch views by clicking the labeled option.
 async function selectView(page, label) {
-  await page.locator(`.qt-view-option:text-is("${label}")`).click();
+  await page.locator(`.sv-view-option:text-is("${label}")`).click();
 }
 
 test.describe('safety.viz qt-explorer module', () => {
@@ -52,10 +52,10 @@ test.describe('safety.viz qt-explorer module', () => {
     );
     // The View selector is its own section of always-visible option buttons
     // with the active view highlighted.
-    const viewOptions = await page.locator('.qt-view-option').allTextContents();
+    const viewOptions = await page.locator('.sv-view-option').allTextContents();
     expect(viewOptions).toEqual(['Central tendency', 'Outlier scatter', 'Categorical']);
-    await expect(page.locator('.qt-view-option.is-active')).toHaveText('Central tendency');
-    await expect(page.locator('.qt-view-option.is-active')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('.sv-view-option.is-active')).toHaveText('Central tendency');
+    await expect(page.locator('.sv-view-option.is-active')).toHaveAttribute('aria-pressed', 'true');
     await expect(page.locator('.qt-legend')).toContainText('Treatments:');
     await captureEvidence(page, 'QT-CTRL-001', 'central-tendency-delta');
   });
