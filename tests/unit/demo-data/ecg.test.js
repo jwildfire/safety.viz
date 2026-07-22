@@ -2,11 +2,12 @@ import { describe, it, expect } from 'vitest';
 import { buildEcgRecords, correctQt, EG_TIMEPOINT } from '../../../scripts/demo-data-lib.mjs';
 
 // ECG demo-data derivation (#79). The pilot ADEG ships QTcF/QTcB pre-derived as
-// QTCFR/QTCBR, but those were rederived upstream from a corrupt `RR` column whose
-// values contradict the recorded heart rate — passing them through inflated QTcF by
-// ~80 ms and saturated every ICH E14 threshold in the demo. The build now derives the
-// corrections itself from QT and the sound `RRR` parameter, and refuses to build if
-// the RR source ever disagrees with HR again.
+// QTCFR/QTCBR, correctly computed (per admiral's ADEG template) from the collected `RR`
+// — but the CDISC Pilot 01 source collects RR and HR independently, so the two
+// contradict each other. Taking those parameters at face value inflated QTcF by ~80 ms
+// and saturated every ICH E14 threshold in the demo. The build now corrects against
+// `RRR` (RR rederived as 60000/HR), the more credible of the two inputs, and refuses to
+// build if the RR source ever disagrees with HR again. Routine dirty-data cleaning.
 
 // One supine analysis reading. RR defaults to 60000/HR, i.e. internally consistent.
 function reading({ id = '01-001', visit = 'Week 2', visitn = '2', paramcd, aval, ablfl = 'NA' }) {
@@ -115,13 +116,13 @@ describe('buildEcgRecords', () => {
   });
 
   it('refuses to build when the RR source contradicts the recorded heart rate (#79)', () => {
-    // Reproduces the upstream defect: RR says 113.6 bpm while HR says 72.
-    const corrupt = [
+    // Reproduces the source inconsistency: RR says 113.6 bpm while HR says 72.
+    const contradictory = [
       reading({ paramcd: 'QT', aval: 456, ablfl: 'Y' }),
       reading({ paramcd: 'RRR', aval: 528, ablfl: 'Y' }),
       reading({ paramcd: 'HR', aval: 72, ablfl: 'Y' })
     ];
-    expect(() => buildEcgRecords(corrupt)).toThrow(/disagrees with HR/);
+    expect(() => buildEcgRecords(contradictory)).toThrow(/disagrees with HR/);
   });
 
   it('drops non-analysis rows: the AVERAGE roll-up and non-supine postures (#79)', () => {

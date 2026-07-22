@@ -79,18 +79,37 @@ STRESU, STRESN, BASE, CHG, ABLFL`). Three parameters are kept for the QT Safety
   intervals and no moxifloxacin positive-control arm**, so the demo covers
   QTc + HR only — expected for CDISC Pilot 01, and the QT Explorer's Phase-2
   items sit on a richer dataset.
-- **QTc is derived here, not taken from the pilot (#79).** The pilot ships
-  pre-derived corrections as `QTCFR`/`QTCBR` ("Rederived"), but both were computed
-  upstream from the ADEG `RR` column, which is corrupt: its median of 528 ms
-  implies a heart rate of 113.6 bpm, contradicting the recorded `HR` (median
-  72 bpm). The pilot's `RRR` parameter is the sound one — it equals 60000/`HR`
-  exactly, for every record. The build therefore recomputes
-  `QTcF = QT / (RRR/1000)^(1/3)` and `QTcB = QT / (RRR/1000)^(1/2)`, and derives
-  `BASE`/`CHG` from each participant's own `ABLFL='Y'` reading (the source
-  `BASE`/`CHG` belong to the discarded values). Passing `QTCFR` through had
-  inflated QTcF by ~80 ms — median 561 vs 468 — which saturated every ICH E14
+- **QTc is derived here, not taken from the pilot — a data-cleaning step (#79).**
+  The pilot collects `RR` and `HR` as separate ECG measurements, and in this source
+  the two contradict each other. They should be one fact expressed two ways
+  (`RR` ms × `HR` bpm = 60000), but they were generated independently:
+  `corr(RR, 60000/HR) = 0.0095`, and only 0.8% of the 8,220 paired readings agree
+  within 5%. Collected `RR` has a median of 528 ms (implying 113.6 bpm) against a
+  recorded `HR` median of 72 bpm (implying 833 ms).
+
+  Nothing downstream is misbehaving. admiral's ADEG template deliberately derives
+  `QTCFR`/`QTCBR` from the collected `RR` (`rr_code = "RR"`), and pharmaverseadam
+  runs that template faithfully — "Rederived" in the parameter label means the QTc
+  was rederived, not that it came from the rederived RR. Both do exactly what they
+  document; they are propagating an inconsistency that is already in the source.
+
+  So the build chooses. `HR` is the more credible of the two contradictory inputs —
+  72 bpm suits this elderly Alzheimer's population where 114 bpm does not, and
+  correcting against the collected `RR` puts median QTcF at 561 ms, which is not a
+  plausible population value. The build therefore computes
+  `QTcF = QT / (RRR/1000)^(1/3)` and `QTcB = QT / (RRR/1000)^(1/2)` against `RRR`
+  (the pilot's RR rederived as 60000/`HR`, exact for every record), and derives
+  `BASE`/`CHG` from each participant's own `ABLFL='Y'` reading, since the source
+  `BASE`/`CHG` belong to the values we do not carry forward. Taking `QTCFR` at face
+  value had put QTcF ~80 ms high — median 561 vs 468 — saturating every ICH E14
   threshold in the demo. `assertRrSane()` in `scripts/demo-data-lib.mjs` fails the
   build if the RR source ever disagrees with `HR` by more than 1 bpm again.
+
+  This is a judgment between contradictory inputs, not the repair of a
+  known-broken one: in synthetic data neither is verifiably correct. Inconsistent
+  collected values are routine in real trials, and cleaning them at the point of
+  ingestion — explicitly, with a guard — is the normal handling.
+
 - **The pilot's QT is long regardless.** Even correctly derived, the CDISC Pilot 01
   ECG data is not a realistic thorough-QT population: the _measured_ QT has a
   median of 444 ms, so QTcF still centres near 468 ms and a majority of

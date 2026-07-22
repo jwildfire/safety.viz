@@ -3,7 +3,7 @@
 // Extracted so the derivations can be unit-tested without running the build (which
 // downloads ~200 MB of pharmaverseadam source). Mirrors the site-lib / evidence-lib
 // split. The ECG derivation lives here because it is the part with real arithmetic —
-// and the part that shipped wrong once (#79).
+// and the part where the source data needed cleaning (#79).
 
 // ---- value helpers --------------------------------------------------------
 // pharmaverseadam CSVs encode missing values as the literal string `NA` (R's
@@ -24,12 +24,28 @@ export const roundTo = (value, decimals) => Number(Number(value).toFixed(decimal
 // Pilot 01; those are Phase-2 items on a richer dataset.
 //
 // The QTc corrections are DERIVED here (#79) rather than taken from the pilot's
-// pre-derived QTCFR / QTCBR parameters. Those two were rederived upstream from the
-// ADEG `RR` column, which is corrupt: its median of 528 ms implies a heart rate of
-// 113.6 bpm, contradicting the recorded HR (median 72 bpm). The pilot's `RRR`
-// parameter is the sound one — it equals 60000/HR exactly, for every record — so we
-// recompute from QT and RRR. Passing QTCFR through inflated QTcF by ~80 ms (median
-// 561 vs 468), which saturated every ICH E14 threshold in the demo.
+// pre-derived QTCFR / QTCBR parameters. This is a data-cleaning step, not a bug fix:
+// the CDISC Pilot 01 ECG data is dirty in a way that is routine in real trials.
+//
+// The pilot collects RR and HR as separate measurements, and the two contradict each
+// other. They should be the same fact expressed two ways (RR ms x HR bpm = 60000), but
+// in this synthetic source they were generated independently: corr(RR, 60000/HR) =
+// 0.0095, and only 0.8% of 8,220 readings agree within 5%. Collected RR has a median of
+// 528 ms, implying 113.6 bpm; recorded HR has a median of 72 bpm, implying 833 ms.
+//
+// Nothing downstream is misbehaving. admiral's ADEG template deliberately derives
+// QTCFR/QTCBR from the collected `RR` (`rr_code = "RR"`), and pharmaverseadam runs that
+// template faithfully — "Rederived" in the parameter label means the QTc was rederived,
+// not that it came from the rederived RR. Both do exactly what they document; they are
+// simply propagating an inconsistency present in the source.
+//
+// So we choose. HR is the more credible of the two contradictory inputs — 72 bpm suits
+// this elderly Alzheimer's population where 114 bpm does not, and QT/RR-derived QTcF
+// lands at a median of 561 ms, which is not a plausible population value. We therefore
+// correct against `RRR` (the pilot's RR rederived as 60000/HR, exact for every record).
+// Taking QTCFR at face value put QTcF ~80 ms high (median 561 vs 468) and saturated
+// every ICH E14 threshold in the demo. Note this is a judgment between contradictory
+// inputs, not the repair of a known-broken one: in synthetic data neither is truth.
 export const EG_MEASURED = { qt: 'QT', rr: 'RRR', hr: 'HR' };
 
 export const EG_PARAMS = [
@@ -93,7 +109,7 @@ export const isEgAnalysisRecord = (rec) =>
 // Map one ADaM ADEG record to the QT measure contract. `value` is the analysis value —
 // the source AVAL for measured parameters, or a derived QTc for the corrections. BASE
 // and CHG are filled in by attachEgBaseline(); the source BASE/CHG cannot be reused
-// because they belong to the discarded QTCFR/QTCBR values (#79).
+// because they belong to the QTCFR/QTCBR values we do not carry forward (#79).
 export function mapEg(rec, param, value) {
   return {
     USUBJID: clean(rec.USUBJID),
@@ -116,9 +132,9 @@ export function mapEg(rec, param, value) {
 }
 
 // Guard (#79): the RR parameter we correct with must agree with the recorded heart
-// rate — RR(ms) × HR(bpm) = 60000. The pilot's `RR` column fails this by ~40 bpm,
-// which is exactly how the inflated QTCFR/QTCBR values were produced. Fail the build
-// rather than ship silently wrong QTc again.
+// rate — RR(ms) × HR(bpm) = 60000. The pilot's collected `RR` fails this by ~40 bpm,
+// which is exactly how the inflated QTCFR/QTCBR values arise. Fail the build rather
+// than silently ship QTc corrected against an RR the data itself contradicts.
 export function assertRrSane(rrByKey, hrByKey) {
   const deltas = [];
   for (const [key, rr] of rrByKey) {
@@ -131,7 +147,7 @@ export function assertRrSane(rrByKey, hrByKey) {
       `ECG guard: no ${EG_MEASURED.rr} readings could be paired with ${EG_MEASURED.hr}`
     );
   const worst = Math.max(...deltas);
-  // 1 bpm of slack absorbs the source's own rounding; the corrupt column is off by ~40.
+  // 1 bpm of slack absorbs the source's own rounding; the collected RR is off by ~40.
   if (worst > 1)
     throw new Error(
       `ECG guard: ${EG_MEASURED.rr} disagrees with ${EG_MEASURED.hr} by up to ` +
