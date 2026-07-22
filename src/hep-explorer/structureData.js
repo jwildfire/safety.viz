@@ -8,9 +8,13 @@
 // (mirrors the outlier-explorer's __oe_). Requirement groups: HEP-DATA-*
 // (cleaning/derivation), HEP-DISPLAY-* (standardization/peak), HEP-QUAD-*
 // (classification), HEP-SELECT-* (drill-down series).
+//
+// The numeric helpers (mean/median/quantile) moved to src/hep-core/stats.js in
+// safety.viz#91 and are re-exported below for compatibility.
 
 import { GROUP_NONE, MEASURE_KEYS } from './configure.js';
 import { QUADRANT_LABELS } from './getPlugins.js';
+import { mean, median, quantile } from '../hep-core/stats.js';
 
 export function unique(values) {
   return [
@@ -18,27 +22,15 @@ export function unique(values) {
   ];
 }
 
-export function mean(values) {
-  const nums = values.map(Number).filter(Number.isFinite);
-  if (!nums.length) return NaN;
-  return nums.reduce((sum, value) => sum + value, 0) / nums.length;
-}
-
-// Linear-interpolated quantile (R-7 / d3.quantile), matching the other modules.
-export function quantile(values, p) {
-  const nums = values.map(Number).filter(Number.isFinite);
-  if (!nums.length) return NaN;
-  const sorted = [...nums].sort((a, b) => a - b);
-  const idx = (sorted.length - 1) * p;
-  const lo = Math.floor(idx);
-  const hi = Math.ceil(idx);
-  if (lo === hi) return sorted[lo];
-  return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
-}
-
-export function median(values) {
-  return quantile(values, 0.5);
-}
+/**
+ * @deprecated Since safety.viz#91 — `mean`, `median` and `quantile` moved
+ * VERBATIM to `src/hep-core/stats.js`, where the migration Sankey
+ * (safety.viz#92) and the ALT waterfall (safety.viz#93) can reach them without
+ * the eDISH data pipeline; see obot.roadmap#43. This pure re-export keeps the
+ * original import path valid so the split touches no test file, and is removed
+ * by the follow-up `hep-core-cleanup` chunk.
+ */
+export { mean, median, quantile };
 
 /** The derived per-row column for the active display mode (HEP-DISPLAY-001). */
 function displayField(display) {

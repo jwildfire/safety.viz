@@ -62,6 +62,42 @@
           "default": "VISITNUM",
           "description": "Optional numeric visit column; orders visit-keyed series when present."
         },
+        "arm_col": {
+          "type": ["string", "null"],
+          "default": "ARM",
+          "description": "Treatment-arm column, structural for the migration view — it decides which side of the centre column a participant's flow leaves from. Auto-detected across ARM, ACTARM, TRT01A and TREATMENT when the named column is absent, and deliberately NOT in this contract's required list, so arm-less data still renders the scatter and composite views (HEP-ARM-001)."
+        },
+        "placebo_arm": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "Arm value plotted on the left (placebo) side of the migration Sankey; when null it is auto-detected by matching the arm values against /placebo|control/i (HEP-ARM-002)."
+        },
+        "active_arms": {
+          "type": ["array", "string", "null"],
+          "items": { "type": "string" },
+          "default": null,
+          "description": "Arm values plotted on the right (active) side; when null every non-placebo arm pools right and the pooled arms are named in the notes (HEP-ARM-003)."
+        },
+        "baseline_col": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "Optional baseline-flag column (e.g. ABLFL). When supplied, the flagged record is the baseline, outranking the day-0-else-earliest heuristic (HEP-CORE-003)."
+        },
+        "baseline_value": {
+          "type": "string",
+          "default": "Y",
+          "description": "The value of baseline_col that marks the baseline record (HEP-CORE-003)."
+        },
+        "jaundice_uln": {
+          "type": "number",
+          "default": 2,
+          "description": "New-onset-jaundice threshold on the total-bilirubin ×ULN scale: flagged when baseline is at or below it and the on-treatment maximum exceeds it. Defaults to the composite plot's bilirubin cutpoint so the flag and the quadrants stay mutually consistent (HEP-CORE-006)."
+        },
+        "hide_unchanged": {
+          "type": "boolean",
+          "default": false,
+          "description": "Migration view: suppress the diagonal (no-migration) ribbons; the hidden participant count stays in the notes and the cross tables (HEP-MIG-013)."
+        },
         "measure_values": {
           "type": "object",
           "default": {

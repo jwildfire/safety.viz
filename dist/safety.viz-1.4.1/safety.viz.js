@@ -12517,14 +12517,14 @@ var SafetyViz = (() => {
     const section = addSection(title);
     const list = createElement("div", "sv-view-list");
     options.forEach(({ value, label }) => {
-      const isActive = value === active;
+      const isActive3 = value === active;
       const optionButton = createElement(
         "button",
-        `sv-view-option${isActive ? " is-active" : ""}`,
+        `sv-view-option${isActive3 ? " is-active" : ""}`,
         label
       );
       optionButton.type = "button";
-      optionButton.setAttribute("aria-pressed", String(isActive));
+      optionButton.setAttribute("aria-pressed", String(isActive3));
       optionButton.onclick = () => {
         if (value === active) return;
         onChange(value);
@@ -15831,6 +15831,71 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     return { p0: base, p1: base + 1, p2: base + 2 };
   }
 
+  // src/box-whisker.js
+  function hexToRgba(hex2, alpha2) {
+    const value = hex2.replace("#", "");
+    const r = parseInt(value.slice(0, 2), 16);
+    const g = parseInt(value.slice(2, 4), 16);
+    const b = parseInt(value.slice(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha2})`;
+  }
+  function drawBoxWhisker(ctx, { scales, chartArea }, specs) {
+    const yOf = (value) => scales.y.getPixelForValue(value);
+    ctx.save();
+    for (const box of specs) {
+      const { stats, color: color2 } = box;
+      if (!stats || !stats.n) continue;
+      const centerX = scales.x.getPixelForValue(box.x);
+      const left = scales.x.getPixelForValue(box.x - box.halfWidth);
+      const right = scales.x.getPixelForValue(box.x + box.halfWidth);
+      const clamp = (y) => Math.max(chartArea.top, Math.min(chartArea.bottom, y));
+      ctx.fillStyle = hexToRgba(color2, 0.35);
+      ctx.strokeStyle = color2;
+      ctx.lineWidth = 1.5;
+      const top = clamp(yOf(stats.q75));
+      const bottom = clamp(yOf(stats.q25));
+      ctx.fillRect(left, top, right - left, bottom - top);
+      ctx.strokeRect(left, top, right - left, bottom - top);
+      ctx.beginPath();
+      ctx.moveTo(centerX, clamp(yOf(stats.q5)));
+      ctx.lineTo(centerX, bottom);
+      ctx.moveTo(centerX, top);
+      ctx.lineTo(centerX, clamp(yOf(stats.q95)));
+      ctx.moveTo(left, clamp(yOf(stats.q5)));
+      ctx.lineTo(right, clamp(yOf(stats.q5)));
+      ctx.moveTo(left, clamp(yOf(stats.q95)));
+      ctx.lineTo(right, clamp(yOf(stats.q95)));
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.lineWidth = 2;
+      ctx.moveTo(left, clamp(yOf(stats.median)));
+      ctx.lineTo(right, clamp(yOf(stats.median)));
+      ctx.stroke();
+      const meanY = clamp(yOf(stats.mean));
+      const radius = Math.min((right - left) / 6, 6);
+      ctx.beginPath();
+      ctx.fillStyle = "#eee";
+      ctx.arc(centerX, meanY, radius, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.fillStyle = color2;
+      ctx.arc(centerX, meanY, radius / 2, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+  function boxWhiskerPlugin(idPrefix, getSpecs) {
+    return {
+      id: `${idPrefix}-boxwhisker-${Math.random().toString(36).slice(2)}`,
+      afterDatasetsDraw(chart) {
+        const specs = getSpecs() || [];
+        if (!specs.length) return;
+        drawBoxWhisker(chart.ctx, chart, specs);
+      }
+    };
+  }
+
   // src/results-over-time/getPlugins.js
   var PALETTE = [
     "#2563eb",
@@ -15846,13 +15911,6 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
   ];
   function groupColors(groups) {
     return Object.fromEntries(groups.map((group, index) => [group, PALETTE[index % PALETTE.length]]));
-  }
-  function hexToRgba(hex2, alpha2) {
-    const value = hex2.replace("#", "");
-    const r = parseInt(value.slice(0, 2), 16);
-    const g = parseInt(value.slice(2, 4), 16);
-    const b = parseInt(value.slice(4, 6), 16);
-    return `rgba(${r}, ${g}, ${b}, ${alpha2})`;
   }
   function summaryTooltip(group, visit, stats, { p0, p1, p2 }) {
     return [
@@ -15872,59 +15930,11 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
   function outlierTooltip(row, settings, { p1 }) {
     return `${row[settings.id_col]}: ${formatFixed(row.__srot_value, p1)}`;
   }
-  function boxWhiskerPlugin(instance) {
-    return {
-      id: `srot-boxwhisker-${Math.random().toString(36).slice(2)}`,
-      afterDatasetsDraw(chart) {
-        const boxes = instance.state.boxplots ? instance.boxSpecs || [] : [];
-        if (!boxes.length) return;
-        const { ctx, scales, chartArea } = chart;
-        const yOf = (value) => scales.y.getPixelForValue(value);
-        ctx.save();
-        for (const box of boxes) {
-          const { stats, color: color2 } = box;
-          if (!stats || !stats.n) continue;
-          const centerX = scales.x.getPixelForValue(box.x);
-          const left = scales.x.getPixelForValue(box.x - box.halfWidth);
-          const right = scales.x.getPixelForValue(box.x + box.halfWidth);
-          const clamp = (y) => Math.max(chartArea.top, Math.min(chartArea.bottom, y));
-          ctx.fillStyle = hexToRgba(color2, 0.35);
-          ctx.strokeStyle = color2;
-          ctx.lineWidth = 1.5;
-          const top = clamp(yOf(stats.q75));
-          const bottom = clamp(yOf(stats.q25));
-          ctx.fillRect(left, top, right - left, bottom - top);
-          ctx.strokeRect(left, top, right - left, bottom - top);
-          ctx.beginPath();
-          ctx.moveTo(centerX, clamp(yOf(stats.q5)));
-          ctx.lineTo(centerX, bottom);
-          ctx.moveTo(centerX, top);
-          ctx.lineTo(centerX, clamp(yOf(stats.q95)));
-          ctx.moveTo(left, clamp(yOf(stats.q5)));
-          ctx.lineTo(right, clamp(yOf(stats.q5)));
-          ctx.moveTo(left, clamp(yOf(stats.q95)));
-          ctx.lineTo(right, clamp(yOf(stats.q95)));
-          ctx.stroke();
-          ctx.beginPath();
-          ctx.lineWidth = 2;
-          ctx.moveTo(left, clamp(yOf(stats.median)));
-          ctx.lineTo(right, clamp(yOf(stats.median)));
-          ctx.stroke();
-          const meanY = clamp(yOf(stats.mean));
-          const radius = Math.min((right - left) / 6, 6);
-          ctx.beginPath();
-          ctx.fillStyle = "#eee";
-          ctx.arc(centerX, meanY, radius, 0, 2 * Math.PI);
-          ctx.fill();
-          ctx.stroke();
-          ctx.beginPath();
-          ctx.fillStyle = color2;
-          ctx.arc(centerX, meanY, radius / 2, 0, 2 * Math.PI);
-          ctx.fill();
-        }
-        ctx.restore();
-      }
-    };
+  function boxWhiskerPlugin2(instance) {
+    return boxWhiskerPlugin(
+      "srot",
+      () => instance.state.boxplots ? instance.boxSpecs || [] : []
+    );
   }
 
   // src/results-over-time.js
@@ -16360,7 +16370,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
             }
           }
         },
-        plugins: [boxWhiskerPlugin(this)]
+        plugins: [boxWhiskerPlugin2(this)]
       });
       chart.$srotBoxes = this.boxSpecs;
       this.chart = chart;
@@ -18329,6 +18339,15 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     studyday_col: "DY",
     visit_col: "VISIT",
     visitn_col: "VISITNUM",
+    arm_col: "ARM",
+    placebo_arm: null,
+    active_arms: null,
+    baseline_col: null,
+    baseline_value: "Y",
+    // Defaults to BILI_ULN_CUT (2) from src/hep-core/quadrants.js so a new-onset
+    // jaundice flag and a Cholestasis/Hy's-Law classification can never disagree.
+    jaundice_uln: 2,
+    hide_unchanged: false,
     measure_values: {
       ALT: "Aminotransferase, alanine (ALT)",
       AST: "Aminotransferase, aspartate (AST)",
@@ -18398,6 +18417,11 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     synced.cuts = mergedCuts;
     synced.r_ratio = arrayify6(synced.r_ratio);
     if (synced.r_ratio.length < 2) synced.r_ratio = [0, null];
+    const activeArms = arrayify6(synced.active_arms).map(String);
+    synced.active_arms = activeArms.length ? activeArms : null;
+    synced.placebo_arm = synced.placebo_arm === void 0 || synced.placebo_arm === null || synced.placebo_arm === "" ? null : String(synced.placebo_arm);
+    synced.jaundice_uln = Number.isFinite(Number(synced.jaundice_uln)) ? Number(synced.jaundice_uln) : DEFAULT_SETTINGS7.jaundice_uln;
+    synced.hide_unchanged = Boolean(synced.hide_unchanged);
     return synced;
   }
   function cutFor(cuts, measureKey, display) {
@@ -18471,6 +18495,42 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
             type: ["string", "null"],
             default: "VISITNUM",
             description: "Optional numeric visit column; orders visit-keyed series when present."
+          },
+          arm_col: {
+            type: ["string", "null"],
+            default: "ARM",
+            description: "Treatment-arm column, structural for the migration view \u2014 it decides which side of the centre column a participant's flow leaves from. Auto-detected across ARM, ACTARM, TRT01A and TREATMENT when the named column is absent, and deliberately NOT in this contract's required list, so arm-less data still renders the scatter and composite views (HEP-ARM-001)."
+          },
+          placebo_arm: {
+            type: ["string", "null"],
+            default: null,
+            description: "Arm value plotted on the left (placebo) side of the migration Sankey; when null it is auto-detected by matching the arm values against /placebo|control/i (HEP-ARM-002)."
+          },
+          active_arms: {
+            type: ["array", "string", "null"],
+            items: { type: "string" },
+            default: null,
+            description: "Arm values plotted on the right (active) side; when null every non-placebo arm pools right and the pooled arms are named in the notes (HEP-ARM-003)."
+          },
+          baseline_col: {
+            type: ["string", "null"],
+            default: null,
+            description: "Optional baseline-flag column (e.g. ABLFL). When supplied, the flagged record is the baseline, outranking the day-0-else-earliest heuristic (HEP-CORE-003)."
+          },
+          baseline_value: {
+            type: "string",
+            default: "Y",
+            description: "The value of baseline_col that marks the baseline record (HEP-CORE-003)."
+          },
+          jaundice_uln: {
+            type: "number",
+            default: 2,
+            description: "New-onset-jaundice threshold on the total-bilirubin \xD7ULN scale: flagged when baseline is at or below it and the on-treatment maximum exceeds it. Defaults to the composite plot's bilirubin cutpoint so the flag and the quadrants stay mutually consistent (HEP-CORE-006)."
+          },
+          hide_unchanged: {
+            type: "boolean",
+            default: false,
+            description: "Migration view: suppress the diagonal (no-migration) ribbons; the hidden participant count stays in the notes and the cross tables (HEP-MIG-013)."
           },
           measure_values: {
             type: "object",
@@ -18570,6 +18630,66 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       }
     }
   };
+
+  // src/hep-core/arms.js
+  var ARM_COL_CANDIDATES = ["ARM", "ACTARM", "TRT01A", "TREATMENT"];
+  var PLACEBO_PATTERN = /placebo|control/i;
+  var PLACEBO_EXACT = ["placebo", "control"];
+  function armValue(subject, armCol) {
+    if (!subject) return "";
+    const value = armCol ? subject.raw && subject.raw[armCol] !== void 0 ? subject.raw[armCol] : subject[armCol] : subject.arm;
+    return value === void 0 || value === null ? "" : String(value);
+  }
+  function resolveArmCol(rows, settings) {
+    const named = settings ? settings.arm_col : null;
+    if (!named) return null;
+    const data = Array.isArray(rows) ? rows : [];
+    const present = (col) => data.some((row) => row && row[col] !== void 0);
+    if (present(named)) return named;
+    return ARM_COL_CANDIDATES.find(present) || null;
+  }
+  function distinctArms(subjects, armCol) {
+    const values = /* @__PURE__ */ new Set();
+    (subjects || []).forEach((subject) => {
+      const value = armValue(subject, armCol);
+      if (value !== "") values.add(value);
+    });
+    return [...values].sort((a, b) => a.localeCompare(b));
+  }
+  function resolvePlaceboArmDetail(arms, configured) {
+    const values = arms || [];
+    const candidates = values.filter((arm) => PLACEBO_PATTERN.test(arm));
+    if (configured && values.includes(String(configured))) {
+      return { arm: String(configured), ambiguous: false, candidates, source: "configured" };
+    }
+    const exact = values.filter((arm) => PLACEBO_EXACT.includes(String(arm).trim().toLowerCase()));
+    if (exact.length === 1) {
+      return { arm: exact[0], ambiguous: false, candidates, source: "exact" };
+    }
+    if (candidates.length === 1) {
+      return { arm: candidates[0], ambiguous: false, candidates, source: "pattern" };
+    }
+    if (candidates.length > 1) {
+      return { arm: null, ambiguous: true, candidates, source: "ambiguous" };
+    }
+    return { arm: null, ambiguous: false, candidates, source: "none" };
+  }
+  function resolveArmDesignation(arms, settings) {
+    const values = arms || [];
+    const detail = resolvePlaceboArmDetail(values, settings ? settings.placebo_arm : null);
+    const placeboArm = detail.arm;
+    const configuredActive = settings && settings.active_arms ? settings.active_arms : null;
+    const active = configuredActive ? new Set((Array.isArray(configuredActive) ? configuredActive : [configuredActive]).map(String)) : null;
+    const sides = new Map(
+      values.map((arm) => {
+        if (placeboArm !== null && arm === placeboArm) return [arm, "placebo"];
+        if (active) return [arm, active.has(arm) ? "active" : null];
+        return [arm, "active"];
+      })
+    );
+    const warning = detail.ambiguous ? `Placebo arm is ambiguous: ${detail.candidates.join(", ")} all look like control arms. Set the placebo_arm setting to pick one; until then no arm is designated placebo.` : null;
+    return { sides, placeboArm, ambiguous: detail.ambiguous, candidates: detail.candidates, warning };
+  }
 
   // src/hep-explorer/checkInputs.js
   var REQUIRED_COLUMN_SETTINGS7 = hep_explorer_default.properties.settings.required;
@@ -18779,12 +18899,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     };
   }
 
-  // src/hep-explorer/structureData.js
-  function unique6(values) {
-    return [
-      ...new Set(values.filter((value) => value !== void 0 && value !== null && value !== ""))
-    ];
-  }
+  // src/hep-core/stats.js
   function quantile4(values, p) {
     const nums = values.map(Number).filter(Number.isFinite);
     if (!nums.length) return NaN;
@@ -18797,6 +18912,13 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
   }
   function median2(values) {
     return quantile4(values, 0.5);
+  }
+
+  // src/hep-explorer/structureData.js
+  function unique6(values) {
+    return [
+      ...new Set(values.filter((value) => value !== void 0 && value !== null && value !== ""))
+    ];
   }
   function displayField(display) {
     return display === "relative_baseline" ? "__hep_relative_baseline" : "__hep_relative_uln";
@@ -19061,7 +19183,636 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     }).filter((row) => row.n > 0);
   }
 
-  // src/hep-explorer/composite.js
+  // src/hep-explorer/selection.js
+  var HIGHLIGHT = {
+    DIM_FILL: 0.15,
+    DIM_BORDER: 0.25,
+    RADIUS_BOOST: 2.5,
+    BORDER_WIDTH: 2.5
+  };
+  var TRACE_HEADER_HINT = "Hover a point to trace a participant across every panel; click to keep it selected.";
+  var UNBOUND = {
+    selectedIds: () => [],
+    changed: () => {
+    },
+    cleared: () => {
+    }
+  };
+  function createSelection(host) {
+    let view = UNBOUND;
+    function buildControl(shown) {
+      const wrap = createElement("div", "hep-composite-select sv-control");
+      wrap.append(createElement("label", null, "Selected participants"));
+      const select = document.createElement("select");
+      select.multiple = true;
+      select.size = Math.min(8, Math.max(3, shown.length));
+      shown.forEach((subject) => option(select, String(subject.id), String(subject.id), false));
+      select.onchange = () => api.set([...select.selectedOptions].map((opt) => opt.value));
+      host.compositeSelectEl = select;
+      wrap.append(select);
+      const clear = document.createElement("button");
+      clear.type = "button";
+      clear.className = "hep-composite-clear";
+      clear.textContent = "Clear selection";
+      clear.disabled = !view.selectedIds().length;
+      clear.onclick = () => api.clear();
+      host.compositeClearBtn = clear;
+      wrap.append(clear);
+      return wrap;
+    }
+    const api = {
+      /**
+       * Point the layer at the active view: the view supplies its sticky
+       * selection and the two gestures the shared control can produce. Called by
+       * the orchestrator's view dispatch, and by nothing else.
+       * @param {{selectedIds: Function, changed: Function, cleared: Function}} handlers
+       * @returns {void}
+       */
+      bind(handlers) {
+        view = { ...UNBOUND, ...handlers };
+      },
+      /**
+       * Mount the participant multi-select into the sidebar's Participants
+       * section (HEP-SELECT-001, HEP-COMP-007): the section is created by
+       * buildControls and filled here once the view's shown participants are
+       * known; with nothing shown the whole section is hidden.
+       * @param {?HTMLElement} section The sidebar's Participants section.
+       * @param {Object[]} shown The shown participants ({id} each).
+       * @returns {void}
+       */
+      mount(section, shown) {
+        if (!section) return;
+        [...section.querySelectorAll(".sv-control")].forEach((el) => el.remove());
+        section.style.display = shown.length ? "" : "none";
+        if (shown.length) section.append(buildControl(shown));
+      },
+      /**
+       * Mirror a view's sticky selection into the shared control: the dropdown's
+       * selected options and the Clear button's enabled state (HEP-SELECT-001,
+       * HEP-COMP-007).
+       * @param {Array<string|number>} ids The view's selected participant ids.
+       * @returns {void}
+       */
+      sync(ids) {
+        if (host.compositeSelectEl) {
+          const set2 = new Set(ids.map(String));
+          [...host.compositeSelectEl.options].forEach((opt) => {
+            opt.selected = set2.has(opt.value);
+          });
+        }
+        if (host.compositeClearBtn) host.compositeClearBtn.disabled = !ids.length;
+      },
+      /**
+       * Select participants programmatically — the path the shared dropdown takes,
+       * and the one a view uses to hand a selection over from a mark of its own (a
+       * Sankey ribbon or a cross-table cell, safety.viz#92). The bound view decides
+       * what the selection means.
+       * @param {Array<string|number>} ids The participant ids to select.
+       * @returns {void}
+       */
+      set(ids) {
+        view.changed([...ids].map(String));
+      },
+      /**
+       * Clear the whole selection — the shared Clear selection button's gesture,
+       * handed to the bound view (HEP-SELECT-007).
+       * @returns {void}
+       */
+      clear() {
+        view.cleared();
+      },
+      /**
+       * The selection to carry across a redraw or a view switch (HEP-SELECT-006):
+       * the last dispatched participantsSelected payload, read once per render
+       * before the preamble resets it.
+       * @returns {string[]} The carried participant ids.
+       */
+      carried() {
+        return host.participantsSelected.map(String);
+      },
+      /**
+       * The shared annotation text for a traced participant, identical in every
+       * view (HEP-SELECT-001, HEP-COMP-007): "Participant {id} selected." when it
+       * is the sticky selection, else "Participant {id}" for a transient hover.
+       * @param {string|number} id The participant identifier.
+       * @param {boolean} selected Whether the participant is in the sticky selection.
+       * @returns {string} The annotation text.
+       */
+      annotationText(id, selected) {
+        return `Participant ${id}${selected ? " selected." : ""}`;
+      },
+      /**
+       * Update the shared participant-trace header from a view's hover +
+       * selection: a hover names that participant (marked selected when it is also
+       * in the selection), a single selection reads "Participant X selected.",
+       * several are counted, and the idle hint returns when nothing is traced
+       * (HEP-SELECT-001, HEP-COMP-007).
+       * @param {string|number|null} hoverId The view's transient hovered id.
+       * @param {Array<string|number>} selected The view's sticky selected ids.
+       * @returns {void}
+       */
+      updateTraceHeader(hoverId, selected) {
+        if (!host.compositeHeaderEl) return;
+        let text;
+        let active = true;
+        if (hoverId != null) {
+          text = api.annotationText(hoverId, selected.includes(String(hoverId)));
+        } else if (selected.length === 1) {
+          text = api.annotationText(selected[0], true);
+        } else if (selected.length > 1) {
+          text = `${selected.length} participants selected.`;
+        } else {
+          text = TRACE_HEADER_HINT;
+          active = false;
+        }
+        host.compositeHeaderEl.textContent = text;
+        host.compositeHeaderEl.classList.toggle("is-active", active);
+      },
+      /**
+       * Dispatch the custom participantsSelected event on the shell root with the
+       * selected ids, and record them as the selection to carry (HEP-API-003,
+       * HEP-SELECT-006). The only writer of host.participantsSelected outside the
+       * orchestrator's render preamble.
+       * @param {Array<string|number>} ids The selected participant ids.
+       * @returns {void}
+       */
+      dispatch(ids) {
+        host.participantsSelected = ids;
+        if (host.root) {
+          host.root.dispatchEvent(
+            new CustomEvent("participantsSelected", { detail: { data: ids }, bubbles: true })
+          );
+        }
+      }
+    };
+    return api;
+  }
+
+  // src/hep-explorer/styles.js
+  var STYLE_ID = "safety-viz-hep-explorer-styles";
+  var MODULE_CSS = `
+.safety-hep-explorer .hep-quadrant-summary{margin-top:1rem}
+.safety-hep-explorer .hep-quadrant-summary table{width:100%;max-width:420px;border-collapse:collapse;font-size:.85rem;background:#fff}
+.safety-hep-explorer .hep-quadrant-summary th,.safety-hep-explorer .hep-quadrant-summary td{border-bottom:1px solid #e3e8ee;padding:.4rem .55rem;text-align:left}
+.safety-hep-explorer .hep-quadrant-summary th{border-bottom:2px solid #d8dee4;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f}
+.safety-hep-explorer .hep-quadrant-summary td.hep-num,.safety-hep-explorer .hep-quadrant-summary th.hep-num{text-align:right;font-variant-numeric:tabular-nums}
+.safety-hep-explorer .hep-detail{margin-top:1.25rem;border-top:2px solid #111827;padding-top:.75rem}
+.safety-hep-explorer .hep-detail-title{font-size:.95rem;margin:0 0 .5rem}
+.safety-hep-explorer .hep-detail-chart{height:220px;position:relative;border:1px solid #d8dee4;border-radius:10px;padding:.75rem;background:#fff}
+.safety-hep-explorer .hep-summary-table{width:100%;max-width:520px;border-collapse:collapse;font-size:.85rem;background:#fff;margin-top:.9rem}
+.safety-hep-explorer .hep-summary-table th,.safety-hep-explorer .hep-summary-table td{border-bottom:1px solid #e3e8ee;padding:.4rem .55rem;text-align:left}
+.safety-hep-explorer .hep-summary-table th{border-bottom:2px solid #d8dee4;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f}
+.safety-hep-explorer .hep-summary-table td.hep-num,.safety-hep-explorer .hep-summary-table th.hep-num{text-align:right;font-variant-numeric:tabular-nums}
+.safety-hep-explorer .hep-composite{margin-top:.5rem}
+.safety-hep-explorer .hep-composite-header{font-size:.85rem;color:#52616f;background:#f6f8fa;border:1px solid #e3e8ee;border-radius:8px;padding:.4rem .6rem;margin:0 0 .6rem;min-height:1.2rem}
+.safety-hep-explorer .hep-composite-header.is-active{color:#1f2933;font-weight:600;border-color:#b8c0cc;background:#eef2f6}
+.safety-hep-explorer .hep-composite-select select{padding:.25rem;font-size:.82rem}
+.safety-hep-explorer .hep-composite-select option{padding:.15rem .3rem}
+.safety-hep-explorer .hep-composite-clear{width:100%;margin-top:.35rem;padding:.25rem .45rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.78rem;cursor:pointer}
+.safety-hep-explorer .hep-composite-clear:disabled{color:#9aa5b1;cursor:default}
+.safety-hep-explorer .hep-composite-legend{display:flex;flex-wrap:wrap;gap:.35rem 1rem;font-size:.8rem;color:#52616f;margin:0 0 .75rem}
+.safety-hep-explorer .hep-composite-legend .hep-legend-item{display:inline-flex;align-items:center;gap:.3rem}
+.safety-hep-explorer .hep-composite-section-title{font-size:.9rem;margin:1rem 0 .5rem;color:#1f2933}
+.safety-hep-explorer .hep-composite-edish{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem}
+.safety-hep-explorer .hep-composite-panels{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;max-width:760px}
+.safety-hep-explorer .hep-composite-card{border:1px solid #d8dee4;border-radius:10px;padding:.6rem .7rem;background:#fff}
+.safety-hep-explorer .hep-composite-card h4{font-size:.82rem;margin:0 0 .4rem;color:#52616f;font-weight:600}
+.safety-hep-explorer .hep-composite-canvas{height:280px;position:relative}
+.safety-hep-explorer .hep-composite-panel-canvas{height:210px;position:relative}
+.safety-hep-explorer .hep-migration{margin-top:1.25rem}
+.safety-hep-explorer .hep-migration table{border-collapse:collapse;font-size:.82rem;background:#fff}
+.safety-hep-explorer .hep-migration th,.safety-hep-explorer .hep-migration td{border:1px solid #d8dee4;padding:.35rem .55rem;text-align:center}
+.safety-hep-explorer .hep-migration th{font-size:.72rem;text-transform:uppercase;letter-spacing:.02em;color:#52616f;font-weight:700}
+.safety-hep-explorer .hep-migration td.hep-rowhead{text-align:left;font-weight:600;color:#1f2933;white-space:nowrap}
+.safety-hep-explorer .hep-migration td.hep-total,.safety-hep-explorer .hep-migration th.hep-total{background:#f6f8fa;font-weight:700}
+.safety-hep-explorer .hep-migration caption{caption-side:top;text-align:left;font-size:.82rem;color:#52616f;margin-bottom:.35rem}
+.safety-hep-explorer .hep-concern-legend{display:flex;flex-wrap:wrap;gap:.35rem .9rem;font-size:.76rem;color:#52616f;margin:.5rem 0 0}
+.safety-hep-explorer .hep-concern-legend .hep-legend-item{display:inline-flex;align-items:center;gap:.3rem}
+.safety-hep-explorer .hep-concern-swatch{display:inline-block;width:.8rem;height:.8rem;border:1px solid #b8c0cc;border-radius:2px}`;
+  function applyModuleStyles() {
+    if (typeof document === "undefined" || document.getElementById(STYLE_ID)) return;
+    const style = document.createElement("style");
+    style.id = STYLE_ID;
+    style.textContent = MODULE_CSS;
+    document.head.append(style);
+  }
+
+  // src/hep-explorer/views/scatter.js
+  var BASE_POINT_COLOR = GROUP_COLORS2[0];
+  function addCutControl(host, addControl, parent, axisKey) {
+    const measureKey = host.state[axisKey];
+    const input = addControl(`${measureKey} Reference Line`, document.createElement("input"), parent);
+    input.type = "number";
+    input.step = "0.1";
+    input.min = "0";
+    const current = cutFor(host.state.cuts, measureKey, host.state.display);
+    input.value = Number.isFinite(current) ? current : "";
+    input.onchange = () => {
+      const value = Math.max(0, Number(input.value) || 0);
+      if (!host.state.cuts[measureKey]) host.state.cuts[measureKey] = {};
+      host.state.cuts[measureKey][host.state.display] = value;
+      input.value = value;
+      host.render();
+    };
+  }
+  function filteredPoints(host) {
+    const filtered = applyFilters6(host.allPoints, host.state.filters);
+    const { min, max } = host.effectiveRRatio();
+    return filtered.filter((point) => {
+      if (!Number.isFinite(point.rRatio)) return true;
+      return point.rRatio >= min && point.rRatio <= max;
+    });
+  }
+  function updateNotes(host) {
+    const totalParticipants = unique6(host.cleanRows.map((row) => row[host.settings.id_col])).length;
+    const shown = host.points.length;
+    const pct = totalParticipants ? (shown / totalParticipants * 100).toFixed(1) : "0.0";
+    const removedNote = host.removedRecords ? `<span class="sv-warning">${host.removedRecords} missing or non-numeric results removed.</span>` : "";
+    const dropReason = host.state.display === "relative_baseline" ? `missing ${host.state.measureX}/${host.state.measureY} peak or baseline` : `missing ${host.state.measureX}/${host.state.measureY} peak`;
+    const droppedNote = host.droppedParticipants ? `<span class="sv-warning">${host.droppedParticipants} participants dropped (${dropReason}).</span>` : "";
+    host.notes.innerHTML = `<span>${shown} of ${totalParticipants} participants shown (${pct}%).</span>` + removedNote + droppedNote;
+  }
+  function activeId(host) {
+    return host.state.hoverId != null ? host.state.hoverId : host.state.selectedId;
+  }
+  function anyActive(host) {
+    return host.state.hoverId != null || host.scatterSelectedIds.length > 0;
+  }
+  function isActive(host, point) {
+    if (!point) return false;
+    const id = String(point.id);
+    if (host.state.hoverId != null && String(host.state.hoverId) === id) return true;
+    return host.scatterSelectedIds.includes(id);
+  }
+  function isSelectedId(host, id) {
+    return host.state.selectedId != null && String(host.state.selectedId) === String(id);
+  }
+  function updateHeader(host) {
+    host.selection.updateTraceHeader(host.state.hoverId, host.scatterSelectedIds);
+  }
+  function setHover(host, id) {
+    const norm = id ?? null;
+    if (String(norm ?? "") === String(host.state.hoverId ?? "")) return;
+    host.state.hoverId = norm;
+    if (host.chart) host.chart.update("none");
+    const traced = activeId(host);
+    host.mainAnnotation.textContent = traced == null ? "" : host.selection.annotationText(traced, isSelectedId(host, traced));
+    updateHeader(host);
+  }
+  function colorFor2(host, point) {
+    if (host.groupValues.length && point.group != null) {
+      return host.colorScale.get(String(point.group)) || BASE_POINT_COLOR;
+    }
+    return BASE_POINT_COLOR;
+  }
+  function radiusFor(host, point) {
+    if (host.state.pointSize !== "rRatio") return 5;
+    const values = host.points.map((candidate) => candidate.rRatio).filter(Number.isFinite);
+    const rMax = values.length ? Math.max(...values) : 0;
+    if (!Number.isFinite(point.rRatio) || rMax <= 0) return 3;
+    return 3 + 7 * (point.rRatio / rMax);
+  }
+  function drawScatter(host) {
+    const points = host.points;
+    const data = points.map((point) => ({ x: point.x, y: point.y }));
+    const type = host.state.axisType === "log" ? "log" : "linear";
+    const xDomain = edishDomain(
+      points.map((point) => point.x),
+      host.state.xCut,
+      type
+    );
+    const yDomain = edishDomain(
+      points.map((point) => point.y),
+      host.state.yCut,
+      type
+    );
+    const traced = (point) => isActive(host, point);
+    const fill = (ctx) => {
+      const point = points[ctx.dataIndex];
+      if (!point) return "rgba(0,0,0,0)";
+      const active = traced(point);
+      if (!point.withinWindow && !active) return "rgba(0,0,0,0)";
+      const color2 = colorFor2(host, point);
+      const opacity = anyActive(host) ? active ? 1 : HIGHLIGHT.DIM_FILL : 0.75;
+      return hexToRgba3(color2, opacity);
+    };
+    const border = (ctx) => {
+      const point = points[ctx.dataIndex];
+      if (!point) return "rgba(0,0,0,0)";
+      if (traced(point)) return SELECTION_COLOR2;
+      const opacity = anyActive(host) ? HIGHLIGHT.DIM_BORDER : 0.9;
+      return hexToRgba3(colorFor2(host, point), opacity);
+    };
+    const chart = new Chart(host.canvas.getContext("2d"), {
+      type: "scatter",
+      data: {
+        datasets: [
+          {
+            label: "Participants",
+            data,
+            pointBackgroundColor: fill,
+            pointBorderColor: border,
+            pointBorderWidth: (ctx) => traced(points[ctx.dataIndex]) ? HIGHLIGHT.BORDER_WIDTH : 1.25,
+            pointRadius: (ctx) => radiusFor(host, points[ctx.dataIndex]) + (traced(points[ctx.dataIndex]) ? HIGHLIGHT.RADIUS_BOOST : 0),
+            pointHoverRadius: (ctx) => radiusFor(host, points[ctx.dataIndex]) + 2
+          },
+          {
+            type: "line",
+            label: "Visit path",
+            data: [],
+            showLine: true,
+            borderColor: hexToRgba3(SELECTION_COLOR2, 0.7),
+            borderWidth: 1.5,
+            pointRadius: 3,
+            pointHoverRadius: 4,
+            pointBackgroundColor: SELECTION_COLOR2,
+            pointBorderColor: SELECTION_COLOR2
+          }
+        ]
+      },
+      options: {
+        maintainAspectRatio: false,
+        responsive: true,
+        animation: false,
+        layout: { padding: 6 },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            // Exclude the visit-path overlay (dataset 1) so hovering the path
+            // line never pops an empty tooltip box; only the participant points
+            // (dataset 0) carry a tooltip (HEP-CHART-004, HEP-SELECT-003).
+            filter: (item) => item.datasetIndex === 0,
+            callbacks: {
+              title: () => "",
+              label: (ctx) => ctx.datasetIndex === 0 ? pointTooltip2(points[ctx.dataIndex], host.state, host.settings.measure_values) : ""
+            }
+          }
+        },
+        scales: buildScales5(host.state, xDomain, yDomain, host.settings.measure_values),
+        onHover: (event, active) => {
+          const target = event?.native?.target;
+          if (target) target.style.cursor = active.length ? "pointer" : "default";
+          const hit = active.find((element) => element.datasetIndex === 0);
+          setHover(host, hit ? points[hit.index].id : null);
+        },
+        onClick: (event, active) => {
+          const hit = active.find((element) => element.datasetIndex === 0);
+          if (hit) host.selectParticipant(points[hit.index].id);
+          else host.clearSelection();
+        }
+      },
+      plugins: [quadrantPlugin(host)]
+    });
+    host.chart = chart;
+    host.charts.push(chart);
+  }
+  function drawLegend(host) {
+    host.legendEl.innerHTML = "";
+    if (!host.groupValues.length) return;
+    const groupLabel = (host.settings.groups.find((spec) => spec.value_col === host.state.groupBy) || {}).label || host.state.groupBy;
+    host.legendEl.append(createElement("strong", null, `${groupLabel}:`));
+    host.groupValues.forEach((value) => {
+      const chip = createElement("span", "hep-legend-item");
+      chip.style.cssText = "display:inline-flex;align-items:center;gap:.3rem";
+      const swatch = createElement("span");
+      swatch.style.cssText = `display:inline-block;width:.75rem;height:.75rem;border-radius:2px;background:${host.colorScale.get(
+        String(value)
+      )}`;
+      chip.append(swatch, document.createTextNode(String(value)));
+      host.legendEl.append(chip);
+    });
+  }
+  function drawQuadrantSummary(host) {
+    host.quadrantWrap.innerHTML = "";
+    const table = createElement("table");
+    const thead = document.createElement("thead");
+    const headRow = document.createElement("tr");
+    headRow.append(createElement("th", null, "Quadrant"));
+    headRow.append(createElement("th", "hep-num", "#"));
+    headRow.append(createElement("th", "hep-num", "%"));
+    thead.append(headRow);
+    table.append(thead);
+    const tbody = document.createElement("tbody");
+    host.quadrants.labels.forEach((entry) => {
+      const tr = document.createElement("tr");
+      tr.append(createElement("td", null, entry.label));
+      tr.append(createElement("td", "hep-num", String(entry.count)));
+      tr.append(
+        createElement(
+          "td",
+          "hep-num",
+          `${Number.isFinite(entry.percent) ? entry.percent.toFixed(1) : "0.0"}%`
+        )
+      );
+      tbody.append(tr);
+    });
+    table.append(tbody);
+    host.quadrantWrap.append(table);
+  }
+  function restoreSelection(host, ids) {
+    const shownIds = new Set(host.points.map((point) => String(point.id)));
+    const survivors = ids.map(String).filter((id) => shownIds.has(id));
+    if (survivors.length === 1) {
+      host.selectParticipant(survivors[0]);
+      return;
+    }
+    host.scatterSelectedIds = survivors;
+    host.selection.sync(survivors);
+    if (host.chart) host.chart.update("none");
+    updateHeader(host);
+    host.selection.dispatch([...survivors]);
+  }
+  var scatterView = {
+    id: "scatter",
+    label: "eDISH scatter",
+    // The shell containers this view occupies: the single scatter canvas, the
+    // color-by legend, and the quadrant summary table (HEP-COMP-006).
+    slots: ["chart", "legend", "quadrantSummary"],
+    // The R-Ratio range filter narrows the plotted points, so it belongs to this
+    // view's pipeline (HEP-CTRL-010).
+    usesRRatioFilter: true,
+    /**
+     * The scatter's own Settings controls (HEP-CTRL-001, HEP-CTRL-002,
+     * HEP-QUAD-001, HEP-DISPLAY-001, HEP-CTRL-006, HEP-CTRL-007, HEP-CTRL-008),
+     * appended to the shared Settings section in the order the shell renders them.
+     */
+    contributeControls(host, { addControl, settingsParent }) {
+      const measureX = addControl("X-axis Measure", document.createElement("select"), settingsParent);
+      host.settings.x_options.forEach(
+        (key) => option(measureX, key, key, key === host.state.measureX)
+      );
+      measureX.onchange = () => {
+        host.state.measureX = measureX.value;
+        host.buildControls();
+        host.render();
+      };
+      if (host.settings.y_options.length > 1) {
+        const measureY = addControl(
+          "Y-axis Measure",
+          document.createElement("select"),
+          settingsParent
+        );
+        host.settings.y_options.forEach(
+          (key) => option(measureY, key, key, key === host.state.measureY)
+        );
+        measureY.onchange = () => {
+          host.state.measureY = measureY.value;
+          host.buildControls();
+          host.render();
+        };
+      }
+      addCutControl(host, addControl, settingsParent, "measureX");
+      addCutControl(host, addControl, settingsParent, "measureY");
+      const display = addControl("Display Type", document.createElement("select"), settingsParent);
+      DISPLAY_MODES.forEach(
+        (mode) => option(display, mode.value, mode.label, mode.value === host.state.display)
+      );
+      display.onchange = () => {
+        host.state.display = display.value;
+        host.buildControls();
+        host.render();
+      };
+      const axisType = addControl("Axis Type", document.createElement("select"), settingsParent);
+      AXIS_TYPES.forEach((type) => option(axisType, type, type, type === host.state.axisType));
+      axisType.onchange = () => {
+        host.state.axisType = axisType.value;
+        host.render();
+      };
+      const pointSize = addControl("Point Size", document.createElement("select"), settingsParent);
+      POINT_SIZE_OPTIONS.forEach(
+        (value) => option(pointSize, value, value, value === host.state.pointSize)
+      );
+      pointSize.onchange = () => {
+        host.state.pointSize = pointSize.value;
+        host.render();
+      };
+      const window2 = addControl(
+        "Highlight Points Based on Timing",
+        document.createElement("input"),
+        settingsParent
+      );
+      window2.type = "number";
+      window2.min = "0";
+      window2.step = "1";
+      window2.value = host.state.visitWindow;
+      window2.onchange = () => {
+        const value = Number(window2.value);
+        host.state.visitWindow = Number.isFinite(value) && value >= 0 ? value : 0;
+        window2.value = host.state.visitWindow;
+        host.render();
+      };
+    },
+    /**
+     * The R-Ratio range filter: min/max number inputs plus a Reset button that
+     * restores the initial range (HEP-CTRL-010).
+     */
+    contributeFilters(host, { addRow, addControl }, parent) {
+      const { max, dataMax } = host.effectiveRRatio();
+      const row = addRow(parent);
+      const min = addControl("R Ratio min", document.createElement("input"), row);
+      min.type = "number";
+      min.step = "0.1";
+      min.value = Number.isFinite(host.state.rRatio[0]) ? host.state.rRatio[0] : 0;
+      min.onchange = () => {
+        host.state.rRatio[0] = min.value === "" ? 0 : Number(min.value);
+        host.render();
+      };
+      const maxInput = addControl("R Ratio max", document.createElement("input"), row);
+      maxInput.type = "number";
+      maxInput.step = "0.1";
+      maxInput.value = formatNumber4(max) || dataMax;
+      maxInput.onchange = () => {
+        host.state.rRatio[1] = maxInput.value === "" ? null : Number(maxInput.value);
+        host.render();
+      };
+      const reset = addControl(" ", document.createElement("button"), parent);
+      reset.type = "button";
+      reset.textContent = "Reset R Ratio";
+      reset.style.cssText = "width:100%;padding:.3rem .45rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.8rem;cursor:pointer";
+      reset.onclick = () => {
+        host.state.rRatio = [...host.settings.r_ratio];
+        host.buildControls();
+        host.render();
+      };
+    },
+    /**
+     * Nothing view-local survives a redraw here: the orchestrator's render
+     * preamble already clears the hover, the sticky selection and the
+     * multi-highlight for every view.
+     */
+    teardown() {
+    },
+    /**
+     * Draw the scatter from the cleaned rows: build the per-participant points,
+     * apply the filters, refresh the notes, resolve the grouping colors, classify
+     * the quadrants, then draw the plot, the legend and the summary table, mount
+     * the Participants control, and restore any carried selection
+     * (HEP-SELECT-006).
+     */
+    render(host, { carriedIds = [] } = {}) {
+      const built = buildPoints(host.cleanRows, host.settings, host.state);
+      host.allPoints = built.points;
+      host.droppedParticipants = built.droppedParticipants;
+      host.points = filteredPoints(host);
+      updateNotes(host);
+      if (!host.points.length) {
+        host.mainAnnotation.textContent = "No participants to plot for the current selection.";
+        if (carriedIds.length) host.selection.dispatch([]);
+        return;
+      }
+      const grouped = host.state.groupBy && host.state.groupBy !== GROUP_NONE2;
+      host.groupValues = grouped ? unique6(host.points.map((point) => point.group)).filter((value) => value !== null && value !== void 0).map(String).sort() : [];
+      host.colorScale = groupColorScale2(host.groupValues);
+      host.quadrants = classifyQuadrants(host.points, host.state.xCut, host.state.yCut);
+      drawScatter(host);
+      drawLegend(host);
+      drawQuadrantSummary(host);
+      host.selection.mount(
+        host.compositeSelectSection,
+        unique6(host.points.map((point) => String(point.id))).map((id) => ({ id }))
+      );
+      if (carriedIds.length) restoreSelection(host, carriedIds);
+    },
+    /** The scatter's sticky selection: the Participants-control multi-highlight. */
+    selectedIds(host) {
+      return host.scatterSelectedIds;
+    },
+    /**
+     * Apply a Participants-control selection to the scatter view (HEP-SELECT-001,
+     * HEP-COMP-007): exactly one participant opens the full drill-down (the same
+     * path as clicking their point), none clears everything, and several highlight
+     * those participants across the scatter — dimming the rest and counting them
+     * in the header — while the single-participant drill-down closes.
+     */
+    onParticipantsChanged(host, ids) {
+      if (ids.length === 1) {
+        host.selectParticipant(ids[0]);
+        return;
+      }
+      if (!ids.length) {
+        host.clearSelection();
+        return;
+      }
+      host.closeDrillDown();
+      host.scatterSelectedIds = ids.map(String);
+      host.selection.sync(host.scatterSelectedIds);
+      if (host.chart) host.chart.update("none");
+      updateHeader(host);
+      host.selection.dispatch([...host.scatterSelectedIds]);
+    },
+    /** The Clear selection gesture: the module's public clearSelection. */
+    clearSelection(host) {
+      host.clearSelection();
+    },
+    /** Restyle the scatter to the current trace and refresh the header. */
+    highlight(host) {
+      if (host.chart) host.chart.update("none");
+      updateHeader(host);
+    }
+  };
+  var scatter_default = scatterView;
+
+  // src/hep-core/quadrants.js
   var COMPOSITE_QUADRANTS = ["Normal & NN", "Cholestasis", "Temple's Corollary", "Hy's Law"];
   var [NN, CH, TC, HL] = COMPOSITE_QUADRANTS;
   var ALT_ULN_CUT = 3;
@@ -19097,41 +19848,83 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     if (altElevated && biliElevated) return HL;
     return TC;
   }
+  var SEVERITY_TIERS = {
+    [HL]: 0,
+    [CH]: 1,
+    [TC]: 1,
+    [NN]: 2
+  };
+
+  // src/hep-core/subjects.js
+  var DEFAULT_BASELINE_TB_MAX = 1;
+  var DEFAULT_JAUNDICE_ULN = 2;
   function dayThenIndex2(a, b) {
     const da = Number.isFinite(a.__hep_day) ? a.__hep_day : Number.MAX_SAFE_INTEGER;
     const db = Number.isFinite(b.__hep_day) ? b.__hep_day : Number.MAX_SAFE_INTEGER;
     return da - db || a.__hep_index - b.__hep_index;
   }
-  function reduceMeasure(rows) {
-    if (!rows.length) return null;
-    const ordered = [...rows].sort(dayThenIndex2);
-    const baselineRow = ordered.find((row) => row.__hep_day === 0) || ordered[0];
+  function splitBaselineOnTreatment(rows, settings = {}) {
+    const records = rows || [];
+    if (!records.length) return { baselineRow: null, onTreatment: [] };
+    const ordered = [...records].sort(dayThenIndex2);
+    const flagged = settings.baseline_col ? ordered.find(
+      (row) => String(row[settings.baseline_col]) === String(settings.baseline_value ?? "Y")
+    ) : null;
+    const baselineRow = flagged || ordered.find((row) => row.__hep_day === 0) || ordered[0];
+    const hasDay = ordered.some((row) => Number.isFinite(row.__hep_day));
+    const baselineDay = baselineRow ? baselineRow.__hep_day : NaN;
+    const timed = hasDay && Number.isFinite(baselineDay);
+    const floor = timed ? Math.max(0, baselineDay) : NaN;
+    const onTreatment = ordered.filter((row) => {
+      if (row === baselineRow) return false;
+      if (!timed) return true;
+      return Number.isFinite(row.__hep_day) && row.__hep_day > floor;
+    });
+    return { baselineRow, onTreatment };
+  }
+  function reduceMeasure(rows, settings = {}) {
+    if (!rows || !rows.length) return null;
+    const { baselineRow, onTreatment } = splitBaselineOnTreatment(rows, settings);
     if (!baselineRow || !Number.isFinite(baselineRow.__hep_value) || !(baselineRow.__hep_value > 0) || !Number.isFinite(baselineRow.__hep_relative_uln)) {
       return null;
     }
-    const hasDay = rows.some((row) => Number.isFinite(row.__hep_day));
-    const isOnTreatment = (row) => hasDay ? Number.isFinite(row.__hep_day) && row.__hep_day > 0 : row !== baselineRow;
     let peakULN = NaN;
-    let peakBLN = NaN;
-    rows.forEach((row) => {
-      if (!isOnTreatment(row)) return;
+    let peakValue = NaN;
+    let peakDay = NaN;
+    onTreatment.forEach((row) => {
       if (Number.isFinite(row.__hep_relative_uln) && !(row.__hep_relative_uln <= peakULN)) {
         peakULN = row.__hep_relative_uln;
       }
-      if (Number.isFinite(row.__hep_relative_baseline) && !(row.__hep_relative_baseline <= peakBLN)) {
-        peakBLN = row.__hep_relative_baseline;
+      if (Number.isFinite(row.__hep_value) && !(row.__hep_value <= peakValue)) {
+        peakValue = row.__hep_value;
+        peakDay = row.__hep_day;
       }
     });
-    if (!Number.isFinite(peakULN) || !Number.isFinite(peakBLN)) return null;
-    return { baselineULN: baselineRow.__hep_relative_uln, peakULN, peakBLN };
+    if (!Number.isFinite(peakULN) || !Number.isFinite(peakValue)) return null;
+    const peakBLN = peakValue / baselineRow.__hep_value;
+    return {
+      baselineULN: baselineRow.__hep_relative_uln,
+      peakULN,
+      peakBLN,
+      baselineValue: baselineRow.__hep_value,
+      peakValue,
+      peakDay,
+      baselineDay: baselineRow.__hep_day,
+      uln: baselineRow.__hep_uln
+    };
   }
-  function buildCompositeSubjects(cleanRows, settings) {
+  function buildHepSubjects(cleanRows, settings) {
+    const rows = cleanRows || [];
+    const armCol = resolveArmCol(rows, settings);
     const metaCols = [
       ...settings.groups.map((group) => group.value_col),
-      ...settings.filters.map((filter) => filter.value_col)
-    ].filter((col) => col && col !== GROUP_NONE2);
+      ...settings.filters.map((filter) => filter.value_col),
+      armCol
+    ].filter((col, index, all) => col && col !== GROUP_NONE2 && all.indexOf(col) === index);
+    const jaundiceULN = Number.isFinite(Number(settings.jaundice_uln)) ? Number(settings.jaundice_uln) : DEFAULT_JAUNDICE_ULN;
+    const baselineTbMax = Number.isFinite(Number(settings.baseline_tb_max)) ? Number(settings.baseline_tb_max) : DEFAULT_BASELINE_TB_MAX;
     const byId = /* @__PURE__ */ new Map();
-    cleanRows.forEach((row) => {
+    rows.forEach((row) => {
       const id = row[settings.id_col];
       if (!byId.has(id)) byId.set(id, []);
       byId.get(id).push(row);
@@ -19139,8 +19932,8 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     const subjects = [];
     let excluded = 0;
     byId.forEach((participantRows, id) => {
-      const alt = reduceMeasure(resolveMeasureRows(participantRows, settings, "ALT"));
-      const bili = reduceMeasure(resolveMeasureRows(participantRows, settings, "TB"));
+      const alt = reduceMeasure(resolveMeasureRows(participantRows, settings, "ALT"), settings);
+      const bili = reduceMeasure(resolveMeasureRows(participantRows, settings, "TB"), settings);
       if (!alt || !bili) {
         excluded += 1;
         return;
@@ -19162,11 +19955,47 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
         peakBiliBLN: bili.peakBLN,
         pretreatQuadrant,
         onTreatQuadrant,
-        concern: concernOf(pretreatQuadrant, onTreatQuadrant)
+        concern: concernOf(pretreatQuadrant, onTreatQuadrant),
+        // Absolute units for the ALT waterfall (Fig 5), where ×ULN quadrants lose
+        // their meaning and the axis is the measure's own U/L.
+        baselineAlt: alt.baselineValue,
+        peakAlt: alt.peakValue,
+        peakAltDay: alt.peakDay,
+        altUln: alt.uln,
+        baselineBili: bili.baselineValue,
+        peakBili: bili.peakValue,
+        // Both jaundice clauses stay explicit even though, inside the waterfall's
+        // post-exclusion cohort, the first is implied — so the predicate stays
+        // correct when apply_tb_cohort is turned off (HEP-CORE-006).
+        baselineJaundice: bili.baselineULN > baselineTbMax,
+        newOnsetJaundice: bili.baselineULN <= jaundiceULN && bili.peakULN > jaundiceULN,
+        arm: armCol ? raw[armCol] : "",
+        side: null
       });
     });
-    return { subjects, excluded };
+    const arms = distinctArms(subjects);
+    const designation = resolveArmDesignation(arms, settings);
+    const sides = designation.sides;
+    subjects.forEach((subject) => {
+      subject.side = sides.get(subject.arm) ?? null;
+    });
+    return {
+      subjects,
+      excluded,
+      armCol,
+      arms,
+      sides,
+      placeboArm: designation.placeboArm,
+      // Surfaced by the arm-aware views as a .sv-warning: an ambiguous placebo
+      // designation must be reported, never guessed (HEP-ARM-002).
+      armWarning: designation.warning
+    };
   }
+  function buildCompositeSubjects(cleanRows, settings) {
+    return buildHepSubjects(cleanRows, settings);
+  }
+
+  // src/hep-core/migration.js
   function migrationMatrix(subjects) {
     const counts = {};
     const rowTotals = {};
@@ -19208,6 +20037,455 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     return [...buckets.values()].sort((a, b) => String(a.arm).localeCompare(String(b.arm)));
   }
 
+  // src/hep-explorer/views/composite.js
+  function buildLegend() {
+    const legend = createElement("div", "hep-composite-legend");
+    legend.append(createElement("strong", null, "Baseline quadrant:"));
+    COMPOSITE_QUADRANTS.forEach((quadrant) => {
+      const style = QUADRANT_STYLE[quadrant];
+      const item = createElement("span", "hep-legend-item");
+      const swatch = createElement("span");
+      swatch.style.cssText = `display:inline-block;width:.7rem;height:.7rem;border-radius:${style.pointStyle === "circle" ? "50%" : "2px"};background:${style.color}`;
+      item.append(swatch, document.createTextNode(quadrant));
+      legend.append(item);
+    });
+    return legend;
+  }
+  function edishScales(xValues, yValues) {
+    const xDomain = edishDomain(xValues, ALT_ULN_CUT, "log");
+    const yDomain = edishDomain(yValues, BILI_ULN_CUT, "log");
+    return {
+      x: {
+        type: "logarithmic",
+        min: xDomain[0],
+        max: xDomain[1],
+        title: { display: true, text: "ALT [\xD7ULN]" },
+        grid: { color: "rgba(148, 163, 184, 0.25)" }
+      },
+      y: {
+        type: "logarithmic",
+        min: yDomain[0],
+        max: yDomain[1],
+        title: { display: true, text: "Total Bilirubin [\xD7ULN]" },
+        grid: { color: "rgba(148, 163, 184, 0.25)" }
+      }
+    };
+  }
+  function blnDomain(values) {
+    const positives = [...values.filter(Number.isFinite), ...BLN_LINES].filter((v) => v > 0);
+    if (!positives.length) return [0.5, 5];
+    const min = Math.min(...positives, 0.5);
+    const max = Math.max(...positives);
+    return [min / 1.3, max * 1.3];
+  }
+  function tooltipLine(subject, which) {
+    if (!subject) return "";
+    if (which === "bln") {
+      return `${subject.id}: ALT ${formatNumber4(subject.peakAltBLN)}\xD7BLN, TB ${formatNumber4(subject.peakBiliBLN)}\xD7BLN (baseline ${subject.pretreatQuadrant})`;
+    }
+    const alt = which === "pretreat" ? subject.baselineAltULN : subject.peakAltULN;
+    const bili = which === "pretreat" ? subject.baselineBiliULN : subject.peakBiliULN;
+    return `${subject.id}: ALT ${formatNumber4(alt)}\xD7ULN, TB ${formatNumber4(bili)}\xD7ULN \u2014 ${subject.pretreatQuadrant} \u2192 ${subject.onTreatQuadrant}`;
+  }
+  function tooltipConfig(subjects, which) {
+    let itemCount = 0;
+    return {
+      filter: (item, index, items) => {
+        itemCount = items.length;
+        return items.length > 2 ? index === 0 : true;
+      },
+      callbacks: {
+        title: () => "",
+        label: (ctx) => itemCount > 2 ? `${itemCount} participants` : tooltipLine(subjects[ctx.dataIndex], which)
+      }
+    };
+  }
+  function anyActive2(host) {
+    return host.compositeHoverId != null || host.compositeSelectedIds.length > 0;
+  }
+  function isActive2(host, subject) {
+    if (!subject) return false;
+    const id = String(subject.id);
+    if (host.compositeHoverId != null && String(host.compositeHoverId) === id) return true;
+    return host.compositeSelectedIds.includes(id);
+  }
+  function datasetStyle(host, subjects, baseRadius) {
+    return {
+      pointStyle: subjects.map((subject) => QUADRANT_STYLE[subject.pretreatQuadrant].pointStyle),
+      pointBackgroundColor: (ctx) => {
+        const subject = subjects[ctx.dataIndex];
+        if (!subject) return "rgba(0, 0, 0, 0)";
+        const color2 = QUADRANT_STYLE[subject.pretreatQuadrant].color;
+        if (!anyActive2(host)) return hexToRgba3(color2, 0.8);
+        return hexToRgba3(color2, isActive2(host, subject) ? 1 : HIGHLIGHT.DIM_FILL);
+      },
+      pointBorderColor: (ctx) => {
+        const subject = subjects[ctx.dataIndex];
+        if (!subject) return "rgba(0, 0, 0, 0)";
+        const color2 = QUADRANT_STYLE[subject.pretreatQuadrant].color;
+        if (isActive2(host, subject)) return SELECTION_COLOR2;
+        return !anyActive2(host) ? color2 : hexToRgba3(color2, HIGHLIGHT.DIM_BORDER);
+      },
+      pointBorderWidth: (ctx) => isActive2(host, subjects[ctx.dataIndex]) ? HIGHLIGHT.BORDER_WIDTH : 1,
+      pointRadius: (ctx) => baseRadius + (isActive2(host, subjects[ctx.dataIndex]) ? HIGHLIGHT.RADIUS_BOOST : 0),
+      pointHoverRadius: baseRadius + 2
+    };
+  }
+  function refreshHighlight(host) {
+    host.compositeCharts.forEach((chart) => chart.update("none"));
+    host.selection.updateTraceHeader(host.compositeHoverId, host.compositeSelectedIds);
+  }
+  function afterSelectionChange(host) {
+    host.selection.sync(host.compositeSelectedIds);
+    refreshHighlight(host);
+    host.selection.dispatch([...host.compositeSelectedIds]);
+  }
+  function setHover2(host, id) {
+    const norm = id == null ? null : String(id);
+    if (String(norm ?? "") === String(host.compositeHoverId ?? "")) return;
+    host.compositeHoverId = norm;
+    refreshHighlight(host);
+  }
+  function toggleSelection(host, id) {
+    const key = String(id);
+    const index = host.compositeSelectedIds.indexOf(key);
+    if (index >= 0) host.compositeSelectedIds.splice(index, 1);
+    else host.compositeSelectedIds.push(key);
+    afterSelectionChange(host);
+  }
+  function clearSelection(host) {
+    if (!host.compositeSelectedIds.length) return;
+    host.compositeSelectedIds = [];
+    afterSelectionChange(host);
+  }
+  function interactionOptions(host) {
+    const idAt = (chart, element) => {
+      const subjects = chart && chart.$compositeSubjects;
+      const subject = subjects && element && subjects[element.index];
+      return subject ? subject.id : null;
+    };
+    return {
+      onHover: (event, active, chart) => {
+        const target = event?.native?.target;
+        if (target) target.style.cursor = active.length ? "pointer" : "default";
+        setHover2(host, active.length ? idAt(chart, active[0]) : null);
+      },
+      onClick: (event, active, chart) => {
+        if (!active.length) {
+          clearSelection(host);
+          return;
+        }
+        const id = idAt(chart, active[0]);
+        if (id != null) toggleSelection(host, id);
+      }
+    };
+  }
+  function registerChart(host, chart, subjects, canvas) {
+    chart.$compositeSubjects = subjects;
+    host.charts.push(chart);
+    host.compositeCharts.push(chart);
+    canvas.addEventListener("pointerleave", () => setHover2(host, null));
+  }
+  function buildEdishCard(host, title, subjects, which) {
+    const card = createElement("div", "hep-composite-card");
+    card.append(createElement("h4", null, title));
+    const wrap = createElement("div", "hep-composite-canvas");
+    const canvas = document.createElement("canvas");
+    wrap.append(canvas);
+    card.append(wrap);
+    const xKey = which === "pretreat" ? "baselineAltULN" : "peakAltULN";
+    const yKey = which === "pretreat" ? "baselineBiliULN" : "peakBiliULN";
+    const data = subjects.map((subject) => ({ x: subject[xKey], y: subject[yKey] }));
+    const chart = new Chart(canvas.getContext("2d"), {
+      type: "scatter",
+      data: {
+        datasets: [{ data, ...datasetStyle(host, subjects, 5) }]
+      },
+      options: {
+        maintainAspectRatio: false,
+        responsive: true,
+        animation: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: tooltipConfig(subjects, which)
+        },
+        scales: edishScales(
+          subjects.map((subject) => subject[xKey]),
+          subjects.map((subject) => subject[yKey])
+        ),
+        ...interactionOptions(host)
+      },
+      plugins: [
+        referenceLinePlugin({
+          vLines: [{ value: ALT_ULN_CUT, label: `${ALT_ULN_CUT}\xD7ULN` }],
+          hLines: [{ value: BILI_ULN_CUT, label: `${BILI_ULN_CUT}\xD7ULN` }]
+        })
+      ]
+    });
+    registerChart(host, chart, subjects, canvas);
+    return card;
+  }
+  function buildPanels(host, subjects) {
+    const grid = createElement("div", "hep-composite-panels");
+    const order = ["Cholestasis", "Hy's Law", "Normal & NN", "Temple's Corollary"];
+    const xDomain = blnDomain(subjects.map((subject) => subject.peakAltBLN));
+    const yDomain = blnDomain(subjects.map((subject) => subject.peakBiliBLN));
+    const refLines = BLN_LINES.map((value) => ({ value, label: `${value}\xD7` }));
+    order.forEach((quadrant) => {
+      const members = subjects.filter((subject) => subject.onTreatQuadrant === quadrant);
+      const card = createElement("div", "hep-composite-card");
+      card.append(createElement("h4", null, `${quadrant} (${members.length})`));
+      const wrap = createElement("div", "hep-composite-panel-canvas");
+      const canvas = document.createElement("canvas");
+      wrap.append(canvas);
+      card.append(wrap);
+      const data = members.map((subject) => ({ x: subject.peakAltBLN, y: subject.peakBiliBLN }));
+      const chart = new Chart(canvas.getContext("2d"), {
+        type: "scatter",
+        data: {
+          datasets: [{ data, ...datasetStyle(host, members, 4.5) }]
+        },
+        options: {
+          maintainAspectRatio: false,
+          responsive: true,
+          animation: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: tooltipConfig(members, "bln")
+          },
+          scales: {
+            x: {
+              type: "logarithmic",
+              min: xDomain[0],
+              max: xDomain[1],
+              title: { display: true, text: "ALT [\xD7Baseline]" },
+              grid: { color: "rgba(148, 163, 184, 0.2)" }
+            },
+            y: {
+              type: "logarithmic",
+              min: yDomain[0],
+              max: yDomain[1],
+              title: { display: true, text: "TB [\xD7Baseline]" },
+              grid: { color: "rgba(148, 163, 184, 0.2)" }
+            }
+          },
+          ...interactionOptions(host)
+        },
+        plugins: [referenceLinePlugin({ vLines: refLines, hLines: refLines })]
+      });
+      registerChart(host, chart, members, canvas);
+      grid.append(card);
+    });
+    return grid;
+  }
+  function buildConcernLegend() {
+    const legend = createElement("div", "hep-concern-legend");
+    const items = [
+      ["red", "Migration of concern"],
+      ["yellow", "Migration of potential concern"],
+      ["green", "Migration of no concern (potential benefit)"],
+      ["gray", "No migration"]
+    ];
+    items.forEach(([key, label]) => {
+      const item = createElement("span", "hep-legend-item");
+      const swatch = createElement("span", "hep-concern-swatch");
+      swatch.style.background = CONCERN_COLORS[key];
+      item.append(swatch, document.createTextNode(label));
+      legend.append(item);
+    });
+    return legend;
+  }
+  function buildMigrationTable(subjects) {
+    const wrap = createElement("div", "hep-migration");
+    const matrix = migrationMatrix(subjects);
+    const table = createElement("table");
+    table.append(
+      createElement(
+        "caption",
+        null,
+        "Migration table \u2014 pretreatment (rows) \xD7 on-treatment (columns) quadrant counts"
+      )
+    );
+    const thead = document.createElement("thead");
+    const headRow = document.createElement("tr");
+    headRow.append(createElement("th", null, "Baseline \u2193 / On-treatment \u2192"));
+    COMPOSITE_QUADRANTS.forEach((quadrant) => headRow.append(createElement("th", null, quadrant)));
+    headRow.append(createElement("th", "hep-total", "Total"));
+    thead.append(headRow);
+    table.append(thead);
+    const tbody = document.createElement("tbody");
+    COMPOSITE_QUADRANTS.forEach((pre) => {
+      const tr = document.createElement("tr");
+      tr.append(createElement("td", "hep-rowhead", pre));
+      COMPOSITE_QUADRANTS.forEach((post) => {
+        const td = createElement("td", null, String(matrix.counts[pre][post]));
+        td.style.background = CONCERN_COLORS[concernOf(pre, post)];
+        tr.append(td);
+      });
+      tr.append(createElement("td", "hep-total", String(matrix.rowTotals[pre])));
+      tbody.append(tr);
+    });
+    const totalRow = document.createElement("tr");
+    totalRow.append(createElement("td", "hep-rowhead hep-total", "Total"));
+    COMPOSITE_QUADRANTS.forEach(
+      (post) => totalRow.append(createElement("td", "hep-total", String(matrix.colTotals[post])))
+    );
+    totalRow.append(createElement("td", "hep-total", String(matrix.total)));
+    tbody.append(totalRow);
+    table.append(tbody);
+    wrap.append(table);
+    wrap.append(buildConcernLegend());
+    return wrap;
+  }
+  function buildByArmSummary(host, subjects) {
+    const armCol = host.state.groupBy && host.state.groupBy !== GROUP_NONE2 ? host.state.groupBy : null;
+    const armLabel = armCol ? (host.settings.groups.find((group) => group.value_col === armCol) || {}).label || armCol : null;
+    const rows = byArmSummary(subjects, armCol);
+    const wrap = createElement("div", "hep-migration");
+    const table = createElement("table");
+    table.append(
+      createElement(
+        "caption",
+        null,
+        armCol ? `Concern vs. benefit summary by ${armLabel}` : "Concern vs. benefit summary (all participants)"
+      )
+    );
+    const thead = document.createElement("thead");
+    const headRow = document.createElement("tr");
+    [
+      armCol ? armLabel : "Group",
+      "Concern",
+      "Potential concern",
+      "No concern / benefit",
+      "No migration",
+      "Total"
+    ].forEach((label) => headRow.append(createElement("th", null, label)));
+    thead.append(headRow);
+    table.append(thead);
+    const tbody = document.createElement("tbody");
+    const cell2 = (count, key) => {
+      const td = createElement("td", null, String(count));
+      td.style.background = CONCERN_COLORS[key];
+      return td;
+    };
+    rows.forEach((row) => {
+      const tr = document.createElement("tr");
+      tr.append(createElement("td", "hep-rowhead", String(row.arm)));
+      tr.append(cell2(row.red, "red"));
+      tr.append(cell2(row.yellow, "yellow"));
+      tr.append(cell2(row.green, "green"));
+      tr.append(cell2(row.gray, "gray"));
+      tr.append(createElement("td", "hep-total", String(row.total)));
+      tbody.append(tr);
+    });
+    table.append(tbody);
+    wrap.append(table);
+    return wrap;
+  }
+  var compositeView = {
+    id: "composite",
+    label: "Composite plot",
+    // The composite view owns the whole main column: its panels, tables and
+    // legends render into the composite container (HEP-COMP-006).
+    slots: ["composite"],
+    // The R-Ratio range filter is a scatter-pipeline control; the composite
+    // cohort is defined by baseline availability instead (HEP-COMP-006).
+    usesRRatioFilter: false,
+    /** The composite view adds no Settings controls; Group (shared) drives it. */
+    contributeControls() {
+    },
+    /** The composite view adds no Filters controls beyond the shared categorical ones. */
+    contributeFilters() {
+    },
+    /**
+     * Reset the participant cross-linking state for a fresh render
+     * (HEP-COMP-007); the charts register themselves as they are built.
+     */
+    teardown(host) {
+      host.compositeCharts = [];
+      host.compositeHoverId = null;
+      host.compositeSelectedIds = [];
+      host.compositeSelectEl = null;
+      host.compositeClearBtn = null;
+    },
+    /**
+     * Render the composite plot into the composite container (HEP-COMP-001..006):
+     * a baseline-quadrant legend, the pretreatment and peak on-treatment eDISH
+     * panels (each point colored/shaped by its baseline quadrant so migration is
+     * visible), the four-panel xBaseline shift plot (one panel per on-treatment
+     * quadrant, with 1x/3x/5x reference lines), the pretreatment x on-treatment
+     * migration table with concern coding, and the by-arm concern/benefit summary.
+     * Degrades to an explanatory note when no participant in the current selection
+     * has a usable baseline and on-treatment ALT and total bilirubin. A live
+     * selection carried in from another view (HEP-SELECT-006) arrives selected for
+     * the participants that are part of the composite cohort; when none survive
+     * the selection is cleared and listeners notified.
+     */
+    render(host, { carriedIds = [] } = {}) {
+      const { subjects, excluded } = buildCompositeSubjects(host.cleanRows, host.settings);
+      const shown = applyFilters6(subjects, host.state.filters);
+      host.compositeSubjectsShown = shown;
+      host.selection.mount(host.compositeSelectSection, shown);
+      const totalParticipants = unique6(host.cleanRows.map((row) => row[host.settings.id_col])).length;
+      const excludedNote = excluded ? `<span class="sv-warning">${excluded} participant${excluded > 1 ? "s" : ""} excluded (missing baseline or on-treatment ALT/total bilirubin).</span>` : "";
+      host.notes.innerHTML = `<span>${shown.length} of ${totalParticipants} participants shown in the composite plot.</span>` + excludedNote;
+      host.footnote.textContent = "Composite plot (Tesfaldet et al., Drug Safety 2024): symbol color and shape mark each participant\u2019s baseline (pretreatment) eDISH quadrant, carried through every panel so migration is visible. \xD7Baseline = peak on-treatment value \xF7 the participant\u2019s own baseline.";
+      if (!shown.length) {
+        const note = createElement("div", "sv-warning");
+        note.textContent = "The composite plot needs baseline and on-treatment ALT and total bilirubin for at least one participant. No participant in the current selection qualifies.";
+        host.compositeWrap.append(note);
+        if (carriedIds.length) host.selection.dispatch([]);
+        return;
+      }
+      host.compositeWrap.append(buildLegend());
+      host.compositeWrap.append(
+        createElement("h3", "hep-composite-section-title", "Baseline \u2192 on-treatment eDISH (\xD7ULN)")
+      );
+      const edishRow = createElement("div", "hep-composite-edish");
+      edishRow.append(buildEdishCard(host, "Pretreatment (baseline)", shown, "pretreat"));
+      edishRow.append(buildEdishCard(host, "Peak on-treatment", shown, "ontreat"));
+      host.compositeWrap.append(edishRow);
+      host.compositeWrap.append(
+        createElement(
+          "h3",
+          "hep-composite-section-title",
+          "Peak on-treatment relative to own baseline (\xD7Baseline)"
+        )
+      );
+      host.compositeWrap.append(buildPanels(host, shown));
+      host.compositeWrap.append(buildMigrationTable(shown));
+      host.compositeWrap.append(buildByArmSummary(host, shown));
+      if (carriedIds.length) {
+        const shownIds = new Set(shown.map((subject) => String(subject.id)));
+        const survivors = carriedIds.map(String).filter((id) => shownIds.has(id));
+        if (survivors.length) {
+          host.compositeSelectedIds = survivors;
+          afterSelectionChange(host);
+        } else {
+          host.selection.dispatch([]);
+        }
+      }
+    },
+    /** The composite view's sticky selection: the click-driven multi-selection. */
+    selectedIds(host) {
+      return host.compositeSelectedIds;
+    },
+    /** The shared Participants control set a new multi-selection (HEP-COMP-007). */
+    onParticipantsChanged(host, ids) {
+      host.compositeSelectedIds = ids;
+      afterSelectionChange(host);
+    },
+    /** The Clear selection gesture: drop the whole multi-selection. */
+    clearSelection(host) {
+      clearSelection(host);
+    },
+    /** Restyle every composite panel to the current trace and refresh the header. */
+    highlight(host) {
+      refreshHighlight(host);
+    }
+  };
+  var composite_default = compositeView;
+
   // src/hep-explorer.js
   Chart.register(
     ScatterController,
@@ -19219,12 +20497,10 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     plugin_tooltip,
     plugin_legend
   );
-  var BASE_POINT_COLOR = GROUP_COLORS2[0];
-  var COMPOSITE_HEADER_HINT = "Hover a point to trace a participant across every panel; click to keep it selected.";
-  var HIGHLIGHT_DIM_FILL = 0.15;
-  var HIGHLIGHT_DIM_BORDER = 0.25;
-  var HIGHLIGHT_RADIUS_BOOST = 2.5;
-  var HIGHLIGHT_BORDER_WIDTH = 2.5;
+  var VIEWS = {
+    scatter: scatter_default,
+    composite: composite_default
+  };
   var SafetyHepExplorer = class {
     constructor(element = "body", settings = {}) {
       this.element = typeof element === "string" ? document.querySelector(element) : element;
@@ -19246,6 +20522,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       this.page = 1;
       this.charts = [];
       this.chart = null;
+      this.selection = createSelection(this);
       this.compositeCharts = [];
       this.compositeSubjectsShown = [];
       this.compositeHoverId = null;
@@ -19276,6 +20553,30 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       this.renderShell();
     }
     /**
+     * The active view component — the module's ONLY view dispatch (HEP-COMP-006).
+     * Every other file resolves view-specific behaviour through the contract
+     * rather than by testing state.view.
+     * @private
+     */
+    activeView() {
+      return VIEWS[this.state.view] || VIEWS.scatter;
+    }
+    /**
+     * Point the shared Participants control at the active view (HEP-SELECT-001,
+     * HEP-COMP-007). The selection layer holds no view knowledge, so the view
+     * injects the three things the control needs: what its sticky selection is,
+     * what a selection change means, and what a clear means. This is the only
+     * place the two are wired together.
+     * @private
+     */
+    bindSelection(view) {
+      this.selection.bind({
+        selectedIds: () => view.selectedIds(this),
+        changed: (ids) => view.onParticipantsChanged(this, ids),
+        cleared: () => view.clearSelection(this)
+      });
+    }
+    /**
      * Build the static DOM shell the scatter, legend, quadrant summary,
      * participant-detail panels, and listing render into.
      * @private
@@ -19292,7 +20593,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       this.legendEl.style.cssText = "display:flex;flex-wrap:wrap;gap:.35rem .9rem;font-size:.8rem;color:#52616f;margin:0 0 .5rem";
       this.main.insertBefore(this.legendEl, this.chartWrap);
       this.compositeHeaderEl = createElement("div", "hep-composite-header");
-      this.compositeHeaderEl.textContent = COMPOSITE_HEADER_HINT;
+      this.compositeHeaderEl.textContent = TRACE_HEADER_HINT;
       this.main.insertBefore(this.compositeHeaderEl, this.legendEl);
       this.quadrantWrap = createElement("div", "hep-quadrant-summary");
       this.main.insertBefore(this.quadrantWrap, this.multiplesWrap);
@@ -19302,59 +20603,8 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       this.detailWrap = createElement("div", "hep-detail");
       this.detailWrap.style.display = "none";
       this.main.insertBefore(this.detailWrap, this.listingWrap);
-      this.applyModuleStyles();
+      applyModuleStyles();
       this.footnote.textContent = this.baseFootnote();
-    }
-    /**
-     * Inject the module-specific stylesheet (quadrant summary + detail panels)
-     * once per document; the shared shell stylesheet stays module-agnostic.
-     * @private
-     */
-    applyModuleStyles() {
-      const id = "safety-viz-hep-explorer-styles";
-      if (typeof document === "undefined" || document.getElementById(id)) return;
-      const style = document.createElement("style");
-      style.id = id;
-      style.textContent = `
-.safety-hep-explorer .hep-quadrant-summary{margin-top:1rem}
-.safety-hep-explorer .hep-quadrant-summary table{width:100%;max-width:420px;border-collapse:collapse;font-size:.85rem;background:#fff}
-.safety-hep-explorer .hep-quadrant-summary th,.safety-hep-explorer .hep-quadrant-summary td{border-bottom:1px solid #e3e8ee;padding:.4rem .55rem;text-align:left}
-.safety-hep-explorer .hep-quadrant-summary th{border-bottom:2px solid #d8dee4;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f}
-.safety-hep-explorer .hep-quadrant-summary td.hep-num,.safety-hep-explorer .hep-quadrant-summary th.hep-num{text-align:right;font-variant-numeric:tabular-nums}
-.safety-hep-explorer .hep-detail{margin-top:1.25rem;border-top:2px solid #111827;padding-top:.75rem}
-.safety-hep-explorer .hep-detail-title{font-size:.95rem;margin:0 0 .5rem}
-.safety-hep-explorer .hep-detail-chart{height:220px;position:relative;border:1px solid #d8dee4;border-radius:10px;padding:.75rem;background:#fff}
-.safety-hep-explorer .hep-summary-table{width:100%;max-width:520px;border-collapse:collapse;font-size:.85rem;background:#fff;margin-top:.9rem}
-.safety-hep-explorer .hep-summary-table th,.safety-hep-explorer .hep-summary-table td{border-bottom:1px solid #e3e8ee;padding:.4rem .55rem;text-align:left}
-.safety-hep-explorer .hep-summary-table th{border-bottom:2px solid #d8dee4;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f}
-.safety-hep-explorer .hep-summary-table td.hep-num,.safety-hep-explorer .hep-summary-table th.hep-num{text-align:right;font-variant-numeric:tabular-nums}
-.safety-hep-explorer .hep-composite{margin-top:.5rem}
-.safety-hep-explorer .hep-composite-header{font-size:.85rem;color:#52616f;background:#f6f8fa;border:1px solid #e3e8ee;border-radius:8px;padding:.4rem .6rem;margin:0 0 .6rem;min-height:1.2rem}
-.safety-hep-explorer .hep-composite-header.is-active{color:#1f2933;font-weight:600;border-color:#b8c0cc;background:#eef2f6}
-.safety-hep-explorer .hep-composite-select select{padding:.25rem;font-size:.82rem}
-.safety-hep-explorer .hep-composite-select option{padding:.15rem .3rem}
-.safety-hep-explorer .hep-composite-clear{width:100%;margin-top:.35rem;padding:.25rem .45rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.78rem;cursor:pointer}
-.safety-hep-explorer .hep-composite-clear:disabled{color:#9aa5b1;cursor:default}
-.safety-hep-explorer .hep-composite-legend{display:flex;flex-wrap:wrap;gap:.35rem 1rem;font-size:.8rem;color:#52616f;margin:0 0 .75rem}
-.safety-hep-explorer .hep-composite-legend .hep-legend-item{display:inline-flex;align-items:center;gap:.3rem}
-.safety-hep-explorer .hep-composite-section-title{font-size:.9rem;margin:1rem 0 .5rem;color:#1f2933}
-.safety-hep-explorer .hep-composite-edish{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem}
-.safety-hep-explorer .hep-composite-panels{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;max-width:760px}
-.safety-hep-explorer .hep-composite-card{border:1px solid #d8dee4;border-radius:10px;padding:.6rem .7rem;background:#fff}
-.safety-hep-explorer .hep-composite-card h4{font-size:.82rem;margin:0 0 .4rem;color:#52616f;font-weight:600}
-.safety-hep-explorer .hep-composite-canvas{height:280px;position:relative}
-.safety-hep-explorer .hep-composite-panel-canvas{height:210px;position:relative}
-.safety-hep-explorer .hep-migration{margin-top:1.25rem}
-.safety-hep-explorer .hep-migration table{border-collapse:collapse;font-size:.82rem;background:#fff}
-.safety-hep-explorer .hep-migration th,.safety-hep-explorer .hep-migration td{border:1px solid #d8dee4;padding:.35rem .55rem;text-align:center}
-.safety-hep-explorer .hep-migration th{font-size:.72rem;text-transform:uppercase;letter-spacing:.02em;color:#52616f;font-weight:700}
-.safety-hep-explorer .hep-migration td.hep-rowhead{text-align:left;font-weight:600;color:#1f2933;white-space:nowrap}
-.safety-hep-explorer .hep-migration td.hep-total,.safety-hep-explorer .hep-migration th.hep-total{background:#f6f8fa;font-weight:700}
-.safety-hep-explorer .hep-migration caption{caption-side:top;text-align:left;font-size:.82rem;color:#52616f;margin-bottom:.35rem}
-.safety-hep-explorer .hep-concern-legend{display:flex;flex-wrap:wrap;gap:.35rem .9rem;font-size:.76rem;color:#52616f;margin:.5rem 0 0}
-.safety-hep-explorer .hep-concern-legend .hep-legend-item{display:inline-flex;align-items:center;gap:.3rem}
-.safety-hep-explorer .hep-concern-swatch{display:inline-block;width:.8rem;height:.8rem;border:1px solid #b8c0cc;border-radius:2px}`;
-      document.head.append(style);
     }
     /**
      * The base footnote: usage hint plus the timing-window sentence explaining
@@ -19499,88 +20749,21 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       });
     }
     /**
-     * Rebuild the settings/filters controls from data + state (HEP-CTRL-*). Only
-     * controls with ≥2 meaningful options are rendered: the Y-measure picker is
-     * dropped when a single option, Group when only None, and the R-Ratio filter
-     * when r_ratio_filter is false.
+     * Rebuild the settings/filters controls from data + state (HEP-CTRL-*). The
+     * shared controls (View, Group, the categorical filters, Participants, Reset)
+     * are built here; the active view contributes the controls it alone drives.
+     * Only controls with ≥2 meaningful options are rendered: the Y-measure picker
+     * is dropped when a single option, Group when only None, and the R-Ratio
+     * filter when r_ratio_filter is false or the view does not use it.
      * @private
      */
     buildControls() {
       this.controls.innerHTML = "";
       const { addSection, addRow, addControl } = controlBuilders(this.controls);
-      const scatter = this.state.view !== "composite";
+      const view = this.activeView();
       this.buildViewControl(addSection);
       const settingsParent = addSection("Settings");
-      if (scatter) {
-        const measureX = addControl(
-          "X-axis Measure",
-          document.createElement("select"),
-          settingsParent
-        );
-        this.settings.x_options.forEach(
-          (key) => option(measureX, key, key, key === this.state.measureX)
-        );
-        measureX.onchange = () => {
-          this.state.measureX = measureX.value;
-          this.buildControls();
-          this.render();
-        };
-        if (this.settings.y_options.length > 1) {
-          const measureY = addControl(
-            "Y-axis Measure",
-            document.createElement("select"),
-            settingsParent
-          );
-          this.settings.y_options.forEach(
-            (key) => option(measureY, key, key, key === this.state.measureY)
-          );
-          measureY.onchange = () => {
-            this.state.measureY = measureY.value;
-            this.buildControls();
-            this.render();
-          };
-        }
-        this.addCutControl(addControl, settingsParent, "measureX");
-        this.addCutControl(addControl, settingsParent, "measureY");
-        const display = addControl("Display Type", document.createElement("select"), settingsParent);
-        DISPLAY_MODES.forEach(
-          (mode) => option(display, mode.value, mode.label, mode.value === this.state.display)
-        );
-        display.onchange = () => {
-          this.state.display = display.value;
-          this.buildControls();
-          this.render();
-        };
-        const axisType = addControl("Axis Type", document.createElement("select"), settingsParent);
-        AXIS_TYPES.forEach((type) => option(axisType, type, type, type === this.state.axisType));
-        axisType.onchange = () => {
-          this.state.axisType = axisType.value;
-          this.render();
-        };
-        const pointSize = addControl("Point Size", document.createElement("select"), settingsParent);
-        POINT_SIZE_OPTIONS.forEach(
-          (value) => option(pointSize, value, value, value === this.state.pointSize)
-        );
-        pointSize.onchange = () => {
-          this.state.pointSize = pointSize.value;
-          this.render();
-        };
-        const window2 = addControl(
-          "Highlight Points Based on Timing",
-          document.createElement("input"),
-          settingsParent
-        );
-        window2.type = "number";
-        window2.min = "0";
-        window2.step = "1";
-        window2.value = this.state.visitWindow;
-        window2.onchange = () => {
-          const value = Number(window2.value);
-          this.state.visitWindow = Number.isFinite(value) && value >= 0 ? value : 0;
-          window2.value = this.state.visitWindow;
-          this.render();
-        };
-      }
+      view.contributeControls(this, { addSection, addRow, addControl, settingsParent });
       if (this.settings.groups.length > 1) {
         const group = addControl("Group", document.createElement("select"), settingsParent);
         this.settings.groups.forEach(
@@ -19592,7 +20775,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
         };
       }
       const filterSpecs = this.activeFilterSpecs();
-      const showRRatio = this.settings.r_ratio_filter && scatter;
+      const showRRatio = this.settings.r_ratio_filter && view.usesRRatioFilter;
       if (filterSpecs.length || showRRatio) {
         const filterParent = addSection("Filters");
         filterSpecs.forEach((filter) => {
@@ -19611,7 +20794,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
             this.render();
           };
         });
-        if (showRRatio) this.addRRatioControl(addRow, addControl, filterParent);
+        if (showRRatio) view.contributeFilters(this, { addRow, addControl }, filterParent);
       }
       this.compositeSelectSection = addSection("Participants");
       const reset = addControl(" ", document.createElement("button"), this.controls);
@@ -19620,66 +20803,6 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       reset.className = "hep-reset";
       reset.style.cssText = "width:100%;margin-top:.75rem;padding:.35rem .45rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.82rem;cursor:pointer";
       reset.onclick = () => this.resetChart();
-    }
-    /**
-     * Add a reference-line (cutpoint) number input for one axis; edits write the
-     * per-measure, per-display cut into state.cuts and clamp it to ≥ 0 so it
-     * cannot fall below the axis minimum (HEP-QUAD-001).
-     * @private
-     */
-    addCutControl(addControl, parent, axisKey) {
-      const measureKey = this.state[axisKey];
-      const input = addControl(
-        `${measureKey} Reference Line`,
-        document.createElement("input"),
-        parent
-      );
-      input.type = "number";
-      input.step = "0.1";
-      input.min = "0";
-      const current = cutFor(this.state.cuts, measureKey, this.state.display);
-      input.value = Number.isFinite(current) ? current : "";
-      input.onchange = () => {
-        const value = Math.max(0, Number(input.value) || 0);
-        if (!this.state.cuts[measureKey]) this.state.cuts[measureKey] = {};
-        this.state.cuts[measureKey][this.state.display] = value;
-        input.value = value;
-        this.render();
-      };
-    }
-    /**
-     * Add the R-Ratio range filter: min/max number inputs plus a Reset button
-     * that restores the initial range (HEP-CTRL-010).
-     * @private
-     */
-    addRRatioControl(addRow, addControl, parent) {
-      const { max, dataMax } = this.effectiveRRatio();
-      const row = addRow(parent);
-      const min = addControl("R Ratio min", document.createElement("input"), row);
-      min.type = "number";
-      min.step = "0.1";
-      min.value = Number.isFinite(this.state.rRatio[0]) ? this.state.rRatio[0] : 0;
-      min.onchange = () => {
-        this.state.rRatio[0] = min.value === "" ? 0 : Number(min.value);
-        this.render();
-      };
-      const maxInput = addControl("R Ratio max", document.createElement("input"), row);
-      maxInput.type = "number";
-      maxInput.step = "0.1";
-      maxInput.value = formatNumber4(max) || dataMax;
-      maxInput.onchange = () => {
-        this.state.rRatio[1] = maxInput.value === "" ? null : Number(maxInput.value);
-        this.render();
-      };
-      const reset = addControl(" ", document.createElement("button"), parent);
-      reset.type = "button";
-      reset.textContent = "Reset R Ratio";
-      reset.style.cssText = "width:100%;padding:.3rem .45rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.8rem;cursor:pointer";
-      reset.onclick = () => {
-        this.state.rRatio = [...this.settings.r_ratio];
-        this.buildControls();
-        this.render();
-      };
     }
     /**
      * Reset the cutpoints, display mode, axis type, point size, filters, and
@@ -19699,41 +20822,41 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       this.render();
     }
     /**
-     * The shown scatter points after the categorical filters and the R-Ratio
-     * range (HEP-CTRL-010, HEP-CTRL-011). Points with an unknown (NA) R-Ratio are
-     * retained.
+     * Show the shell containers the active view occupies and hide the rest, per
+     * the view's declared slots (HEP-COMP-006).
      * @private
      */
-    filteredPoints() {
-      const filtered = applyFilters6(this.allPoints, this.state.filters);
-      const { min, max } = this.effectiveRRatio();
-      return filtered.filter((point) => {
-        if (!Number.isFinite(point.rRatio)) return true;
-        return point.rRatio >= min && point.rRatio <= max;
-      });
+    setViewVisibility(view) {
+      const slots = new Set(view.slots);
+      this.chartWrap.style.display = slots.has("chart") ? "" : "none";
+      this.legendEl.style.display = slots.has("legend") ? "flex" : "none";
+      this.quadrantWrap.style.display = slots.has("quadrantSummary") ? "" : "none";
+      this.compositeWrap.style.display = slots.has("composite") ? "" : "none";
     }
     /**
      * Redraw everything from the current data, settings, and control state:
      * destroys the live charts, clears the listing, legend, quadrant summary,
-     * and any selection, recomputes the per-participant points and quadrants,
-     * then draws the scatter, legend, and quadrant summary table (or an
-     * empty-data message). A live participant selection survives the redraw:
-     * when the participant is still shown, every coordinated panel — scatter
-     * highlight, visit path, lab-over-time chart, summary table, and listing —
-     * is re-rendered from the same selection in the active display units
-     * (HEP-SELECT-006); otherwise the selection is cleared and listeners are
-     * notified. Called automatically by the controls and the data/settings
-     * setters.
+     * and any selection, then hands off to the active view, which recomputes its
+     * own data and draws (the scatter, its legend and quadrant summary table, or
+     * the composite panels — or an empty-data message). A live participant
+     * selection survives the redraw: when the participant is still shown, every
+     * coordinated panel — scatter highlight, visit path, lab-over-time chart,
+     * summary table, and listing — is re-rendered from the same selection in the
+     * active display units (HEP-SELECT-006); otherwise the selection is cleared
+     * and listeners are notified. Called automatically by the controls and the
+     * data/settings setters.
      * @returns {void}
      */
     render() {
-      const carriedIds = this.participantsSelected.map(String);
+      const view = this.activeView();
+      this.bindSelection(view);
+      const carriedIds = this.selection.carried();
       this.destroyCharts();
       this.listingWrap.innerHTML = "";
       this.legendEl.innerHTML = "";
       this.quadrantWrap.innerHTML = "";
       this.compositeWrap.innerHTML = "";
-      this.mountCompositeSelect([]);
+      this.selection.mount(this.compositeSelectSection, []);
       this.detailWrap.innerHTML = "";
       this.detailWrap.style.display = "none";
       this.currentTableData = [];
@@ -19747,988 +20870,17 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       this.notes.innerHTML = "";
       this.mainAnnotation.textContent = "";
       this.footnote.textContent = this.baseFootnote();
-      if (this.compositeHeaderEl) {
-        this.compositeHeaderEl.textContent = COMPOSITE_HEADER_HINT;
-        this.compositeHeaderEl.classList.remove("is-active");
-      }
-      const composite = this.state.view === "composite";
-      this.setViewVisibility(composite);
+      this.selection.updateTraceHeader(null, []);
+      this.setViewVisibility(view);
       this.state.xCut = cutFor(this.state.cuts, this.state.measureX, this.state.display);
       this.state.yCut = cutFor(this.state.cuts, this.state.measureY, this.state.display);
       if (!this.cleanRows.length) {
         this.notes.innerHTML = "<span>No data selected. Provide records to draw the chart.</span>";
-        if (carriedIds.length) this.dispatchSelection([]);
+        if (carriedIds.length) this.selection.dispatch([]);
         return;
       }
-      if (composite) {
-        this.renderComposite(carriedIds);
-        return;
-      }
-      const built = buildPoints(this.cleanRows, this.settings, this.state);
-      this.allPoints = built.points;
-      this.droppedParticipants = built.droppedParticipants;
-      this.points = this.filteredPoints();
-      this.updateNotes();
-      if (!this.points.length) {
-        this.mainAnnotation.textContent = "No participants to plot for the current selection.";
-        if (carriedIds.length) this.dispatchSelection([]);
-        return;
-      }
-      const grouped = this.state.groupBy && this.state.groupBy !== GROUP_NONE2;
-      this.groupValues = grouped ? unique6(this.points.map((point) => point.group)).filter((value) => value !== null && value !== void 0).map(String).sort() : [];
-      this.colorScale = groupColorScale2(this.groupValues);
-      this.quadrants = classifyQuadrants(this.points, this.state.xCut, this.state.yCut);
-      this.drawScatter();
-      this.drawLegend();
-      this.drawQuadrantSummary();
-      this.mountCompositeSelect(
-        unique6(this.points.map((point) => String(point.id))).map((id) => ({ id }))
-      );
-      if (carriedIds.length) this.restoreSelection(carriedIds);
-    }
-    /**
-     * Re-apply the participant selection that was live before a redraw or a view
-     * switch. A single surviving participant reopens every coordinated panel —
-     * visit path, lab-over-time chart, measure summary table, and listing — in
-     * the active display units (HEP-SELECT-006); several survivors restore the
-     * multi-highlight and the Participants control without the single-participant
-     * drill-down; participants no longer shown (filtered out, or dropped by the
-     * mDISH view for lacking a baseline) fall out, and listeners always hear the
-     * surviving selection.
-     * @param {Array<string|number>} ids The previously selected participant ids.
-     * @private
-     */
-    restoreSelection(ids) {
-      const shownIds = new Set(this.points.map((point) => String(point.id)));
-      const survivors = ids.map(String).filter((id) => shownIds.has(id));
-      if (survivors.length === 1) {
-        this.selectParticipant(survivors[0]);
-        return;
-      }
-      this.scatterSelectedIds = survivors;
-      this.syncSelectControl(survivors);
-      if (this.chart) this.chart.update("none");
-      this.updateScatterHeader();
-      this.dispatchSelection([...survivors]);
-    }
-    /**
-     * Refresh the shown/total participant counts, the removed-record note, and
-     * the dropped-participant note (HEP-DATA-003, HEP-DISPLAY-004).
-     * @private
-     */
-    updateNotes() {
-      const totalParticipants = unique6(this.cleanRows.map((row) => row[this.settings.id_col])).length;
-      const shown = this.points.length;
-      const pct = totalParticipants ? (shown / totalParticipants * 100).toFixed(1) : "0.0";
-      const removedNote = this.removedRecords ? `<span class="sv-warning">${this.removedRecords} missing or non-numeric results removed.</span>` : "";
-      const dropReason = this.state.display === "relative_baseline" ? `missing ${this.state.measureX}/${this.state.measureY} peak or baseline` : `missing ${this.state.measureX}/${this.state.measureY} peak`;
-      const droppedNote = this.droppedParticipants ? `<span class="sv-warning">${this.droppedParticipants} participants dropped (${dropReason}).</span>` : "";
-      this.notes.innerHTML = `<span>${shown} of ${totalParticipants} participants shown (${pct}%).</span>` + removedNote + droppedNote;
-    }
-    /**
-     * The scatter participant being traced: the hovered participant takes priority
-     * over the clicked (sticky) selection, or null when neither is active — the
-     * same hover-over-select rule the composite view uses (HEP-SELECT-001).
-     * @private
-     */
-    scatterActiveId() {
-      return this.state.hoverId != null ? this.state.hoverId : this.state.selectedId;
-    }
-    /**
-     * Whether any scatter participant is currently traced — hovered, or in the
-     * control-driven multi-highlight (HEP-SELECT-001, HEP-COMP-007).
-     * @private
-     */
-    anyScatterActive() {
-      return this.state.hoverId != null || this.scatterSelectedIds.length > 0;
-    }
-    /**
-     * Whether a scatter point is currently traced: hovered, or one of the
-     * Participants-control multi-highlight (a click selection is always mirrored
-     * there) (HEP-SELECT-001).
-     * @private
-     */
-    isScatterActive(point) {
-      if (!point) return false;
-      const id = String(point.id);
-      if (this.state.hoverId != null && String(this.state.hoverId) === id) return true;
-      return this.scatterSelectedIds.includes(id);
-    }
-    /**
-     * Whether the given participant id is the sticky (clicked) selection.
-     * @private
-     */
-    isSelectedId(id) {
-      return this.state.selectedId != null && String(this.state.selectedId) === String(id);
-    }
-    /**
-     * The shared annotation text for a traced participant, identical in both views
-     * (HEP-SELECT-001, HEP-COMP-007): "Participant {id} selected." when it is the
-     * clicked selection, else "Participant {id}" for a transient hover.
-     * @private
-     */
-    participantAnnotationText(id, selected) {
-      return `Participant ${id}${selected ? " selected." : ""}`;
-    }
-    /**
-     * Set the transient hovered scatter participant and restyle the scatter +
-     * overlay annotation when it changes, without triggering the drill-down (which
-     * stays a click action). The overlay follows the hover, then reverts to the
-     * sticky selection when the pointer leaves (HEP-SELECT-001).
-     * @private
-     */
-    setScatterHover(id) {
-      const norm = id ?? null;
-      if (String(norm ?? "") === String(this.state.hoverId ?? "")) return;
-      this.state.hoverId = norm;
-      if (this.chart) this.chart.update("none");
-      const activeId = this.scatterActiveId();
-      this.mainAnnotation.textContent = activeId == null ? "" : this.participantAnnotationText(activeId, this.isSelectedId(activeId));
-      this.updateScatterHeader();
-    }
-    /**
-     * The palette color for a point given the active grouping (HEP-CTRL-009).
-     * @private
-     */
-    colorFor(point) {
-      if (this.groupValues.length && point.group != null) {
-        return this.colorScale.get(String(point.group)) || BASE_POINT_COLOR;
-      }
-      return BASE_POINT_COLOR;
-    }
-    /**
-     * The point radius for the active Point Size mode (HEP-CTRL-007): a uniform
-     * radius, or a radius scaled by the participant R-Ratio.
-     * @private
-     */
-    radiusFor(point) {
-      if (this.state.pointSize !== "rRatio") return 5;
-      const values = this.points.map((candidate) => candidate.rRatio).filter(Number.isFinite);
-      const rMax = values.length ? Math.max(...values) : 0;
-      if (!Number.isFinite(point.rRatio) || rMax <= 0) return 3;
-      return 3 + 7 * (point.rRatio / rMax);
-    }
-    /**
-     * Draw the Chart.js eDISH scatter: dataset 0 = participant points styled by
-     * group, timing, and selection; dataset 1 = the (initially empty) visit-path
-     * line overlay. The quadrant plugin draws the cut-lines and labels; clicking
-     * a point selects the participant, clicking empty space clears the selection.
-     * @private
-     */
-    drawScatter() {
-      const points = this.points;
-      const data = points.map((point) => ({ x: point.x, y: point.y }));
-      const type = this.state.axisType === "log" ? "log" : "linear";
-      const xDomain = edishDomain(
-        points.map((point) => point.x),
-        this.state.xCut,
-        type
-      );
-      const yDomain = edishDomain(
-        points.map((point) => point.y),
-        this.state.yCut,
-        type
-      );
-      const anyActive = () => this.anyScatterActive();
-      const isActive = (point) => this.isScatterActive(point);
-      const fill = (ctx) => {
-        const point = points[ctx.dataIndex];
-        if (!point) return "rgba(0,0,0,0)";
-        const active = isActive(point);
-        if (!point.withinWindow && !active) return "rgba(0,0,0,0)";
-        const color2 = this.colorFor(point);
-        const opacity = anyActive() ? active ? 1 : HIGHLIGHT_DIM_FILL : 0.75;
-        return hexToRgba3(color2, opacity);
-      };
-      const border = (ctx) => {
-        const point = points[ctx.dataIndex];
-        if (!point) return "rgba(0,0,0,0)";
-        if (isActive(point)) return SELECTION_COLOR2;
-        const opacity = anyActive() ? HIGHLIGHT_DIM_BORDER : 0.9;
-        return hexToRgba3(this.colorFor(point), opacity);
-      };
-      const chart = new Chart(this.canvas.getContext("2d"), {
-        type: "scatter",
-        data: {
-          datasets: [
-            {
-              label: "Participants",
-              data,
-              pointBackgroundColor: fill,
-              pointBorderColor: border,
-              pointBorderWidth: (ctx) => isActive(points[ctx.dataIndex]) ? HIGHLIGHT_BORDER_WIDTH : 1.25,
-              pointRadius: (ctx) => this.radiusFor(points[ctx.dataIndex]) + (isActive(points[ctx.dataIndex]) ? HIGHLIGHT_RADIUS_BOOST : 0),
-              pointHoverRadius: (ctx) => this.radiusFor(points[ctx.dataIndex]) + 2
-            },
-            {
-              type: "line",
-              label: "Visit path",
-              data: [],
-              showLine: true,
-              borderColor: hexToRgba3(SELECTION_COLOR2, 0.7),
-              borderWidth: 1.5,
-              pointRadius: 3,
-              pointHoverRadius: 4,
-              pointBackgroundColor: SELECTION_COLOR2,
-              pointBorderColor: SELECTION_COLOR2
-            }
-          ]
-        },
-        options: {
-          maintainAspectRatio: false,
-          responsive: true,
-          animation: false,
-          layout: { padding: 6 },
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              // Exclude the visit-path overlay (dataset 1) so hovering the path
-              // line never pops an empty tooltip box; only the participant points
-              // (dataset 0) carry a tooltip (HEP-CHART-004, HEP-SELECT-003).
-              filter: (item) => item.datasetIndex === 0,
-              callbacks: {
-                title: () => "",
-                label: (ctx) => ctx.datasetIndex === 0 ? pointTooltip2(points[ctx.dataIndex], this.state, this.settings.measure_values) : ""
-              }
-            }
-          },
-          scales: buildScales5(this.state, xDomain, yDomain, this.settings.measure_values),
-          onHover: (event, active) => {
-            const target = event?.native?.target;
-            if (target) target.style.cursor = active.length ? "pointer" : "default";
-            const hit = active.find((element) => element.datasetIndex === 0);
-            this.setScatterHover(hit ? points[hit.index].id : null);
-          },
-          onClick: (event, active) => {
-            const hit = active.find((element) => element.datasetIndex === 0);
-            if (hit) this.selectParticipant(points[hit.index].id);
-            else this.clearSelection();
-          }
-        },
-        plugins: [quadrantPlugin(this)]
-      });
-      this.chart = chart;
-      this.charts.push(chart);
-    }
-    /**
-     * Render the color-by legend for the active grouping (HEP-CTRL-009).
-     * @private
-     */
-    drawLegend() {
-      this.legendEl.innerHTML = "";
-      if (!this.groupValues.length) return;
-      const groupLabel = (this.settings.groups.find((spec) => spec.value_col === this.state.groupBy) || {}).label || this.state.groupBy;
-      this.legendEl.append(createElement("strong", null, `${groupLabel}:`));
-      this.groupValues.forEach((value) => {
-        const chip = createElement("span", "hep-legend-item");
-        chip.style.cssText = "display:inline-flex;align-items:center;gap:.3rem";
-        const swatch = createElement("span");
-        swatch.style.cssText = `display:inline-block;width:.75rem;height:.75rem;border-radius:2px;background:${this.colorScale.get(
-          String(value)
-        )}`;
-        chip.append(swatch, document.createTextNode(String(value)));
-        this.legendEl.append(chip);
-      });
-    }
-    /**
-     * Render the quadrant summary table (Quadrant | # | %) below the chart from
-     * the live classification (HEP-QUAD-005).
-     * @private
-     */
-    drawQuadrantSummary() {
-      this.quadrantWrap.innerHTML = "";
-      const table = createElement("table");
-      const thead = document.createElement("thead");
-      const headRow = document.createElement("tr");
-      headRow.append(createElement("th", null, "Quadrant"));
-      headRow.append(createElement("th", "hep-num", "#"));
-      headRow.append(createElement("th", "hep-num", "%"));
-      thead.append(headRow);
-      table.append(thead);
-      const tbody = document.createElement("tbody");
-      this.quadrants.labels.forEach((entry) => {
-        const tr = document.createElement("tr");
-        tr.append(createElement("td", null, entry.label));
-        tr.append(createElement("td", "hep-num", String(entry.count)));
-        tr.append(
-          createElement(
-            "td",
-            "hep-num",
-            `${Number.isFinite(entry.percent) ? entry.percent.toFixed(1) : "0.0"}%`
-          )
-        );
-        tbody.append(tr);
-      });
-      table.append(tbody);
-      this.quadrantWrap.append(table);
-    }
-    /**
-     * Show either the scatter chrome (single canvas, legend, quadrant summary) or
-     * the composite container, per the active view (HEP-COMP-006).
-     * @private
-     */
-    setViewVisibility(composite) {
-      this.chartWrap.style.display = composite ? "none" : "";
-      this.legendEl.style.display = composite ? "none" : "flex";
-      this.quadrantWrap.style.display = composite ? "none" : "";
-      this.compositeWrap.style.display = composite ? "" : "none";
-    }
-    /**
-     * Render the composite plot into the composite container (HEP-COMP-001..006):
-     * a baseline-quadrant legend, the pretreatment and peak on-treatment eDISH
-     * panels (each point colored/shaped by its baseline quadrant so migration is
-     * visible), the four-panel ×Baseline shift plot (one panel per on-treatment
-     * quadrant, with 1×/3×/5× reference lines), the pretreatment × on-treatment
-     * migration table with concern coding, and the by-arm concern/benefit
-     * summary. Degrades to an explanatory note when no participant in the current
-     * selection has a usable baseline and on-treatment ALT and total bilirubin.
-     * @param {Array<string|number>} [carriedIds] A live selection to carry into
-     *   the composite view (HEP-SELECT-006): the participants that are part of
-     *   the composite cohort arrive selected; when none survive the selection is
-     *   cleared and listeners notified.
-     * @private
-     */
-    renderComposite(carriedIds = []) {
-      const { subjects, excluded } = buildCompositeSubjects(this.cleanRows, this.settings);
-      const shown = applyFilters6(subjects, this.state.filters);
-      this.compositeCharts = [];
-      this.compositeSubjectsShown = shown;
-      this.compositeHoverId = null;
-      this.compositeSelectedIds = [];
-      this.compositeSelectEl = null;
-      this.compositeClearBtn = null;
-      this.mountCompositeSelect(shown);
-      const totalParticipants = unique6(this.cleanRows.map((row) => row[this.settings.id_col])).length;
-      const excludedNote = excluded ? `<span class="sv-warning">${excluded} participant${excluded > 1 ? "s" : ""} excluded (missing baseline or on-treatment ALT/total bilirubin).</span>` : "";
-      this.notes.innerHTML = `<span>${shown.length} of ${totalParticipants} participants shown in the composite plot.</span>` + excludedNote;
-      this.footnote.textContent = "Composite plot (Tesfaldet et al., Drug Safety 2024): symbol color and shape mark each participant\u2019s baseline (pretreatment) eDISH quadrant, carried through every panel so migration is visible. \xD7Baseline = peak on-treatment value \xF7 the participant\u2019s own baseline.";
-      if (!shown.length) {
-        const note = createElement("div", "sv-warning");
-        note.textContent = "The composite plot needs baseline and on-treatment ALT and total bilirubin for at least one participant. No participant in the current selection qualifies.";
-        this.compositeWrap.append(note);
-        if (carriedIds.length) this.dispatchSelection([]);
-        return;
-      }
-      this.compositeWrap.append(this.buildCompositeLegend());
-      this.compositeWrap.append(
-        createElement("h3", "hep-composite-section-title", "Baseline \u2192 on-treatment eDISH (\xD7ULN)")
-      );
-      const edishRow = createElement("div", "hep-composite-edish");
-      edishRow.append(this.buildEdishCard("Pretreatment (baseline)", shown, "pretreat"));
-      edishRow.append(this.buildEdishCard("Peak on-treatment", shown, "ontreat"));
-      this.compositeWrap.append(edishRow);
-      this.compositeWrap.append(
-        createElement(
-          "h3",
-          "hep-composite-section-title",
-          "Peak on-treatment relative to own baseline (\xD7Baseline)"
-        )
-      );
-      this.compositeWrap.append(this.buildCompositePanels(shown));
-      this.compositeWrap.append(this.buildMigrationTable(shown));
-      this.compositeWrap.append(this.buildByArmSummary(shown));
-      if (carriedIds.length) {
-        const shownIds = new Set(shown.map((subject) => String(subject.id)));
-        const survivors = carriedIds.map(String).filter((id) => shownIds.has(id));
-        if (survivors.length) {
-          this.compositeSelectedIds = survivors;
-          this.afterCompositeSelectionChange();
-        } else {
-          this.dispatchSelection([]);
-        }
-      }
-    }
-    /**
-     * The baseline-quadrant legend for the composite plot: the four quadrants,
-     * each with its coded color and symbol (HEP-COMP-001).
-     * @private
-     */
-    buildCompositeLegend() {
-      const legend = createElement("div", "hep-composite-legend");
-      legend.append(createElement("strong", null, "Baseline quadrant:"));
-      COMPOSITE_QUADRANTS.forEach((quadrant) => {
-        const style = QUADRANT_STYLE[quadrant];
-        const item = createElement("span", "hep-legend-item");
-        const swatch = createElement("span");
-        swatch.style.cssText = `display:inline-block;width:.7rem;height:.7rem;border-radius:${style.pointStyle === "circle" ? "50%" : "2px"};background:${style.color}`;
-        item.append(swatch, document.createTextNode(quadrant));
-        legend.append(item);
-      });
-      return legend;
-    }
-    /**
-     * Log-log Chart.js scale configs for the composite eDISH scatters, widened to
-     * keep the ALT 3×ULN / BILI 2×ULN cut-lines in view.
-     * @private
-     */
-    compositeEdishScales(xValues, yValues) {
-      const xDomain = edishDomain(xValues, ALT_ULN_CUT, "log");
-      const yDomain = edishDomain(yValues, BILI_ULN_CUT, "log");
-      return {
-        x: {
-          type: "logarithmic",
-          min: xDomain[0],
-          max: xDomain[1],
-          title: { display: true, text: "ALT [\xD7ULN]" },
-          grid: { color: "rgba(148, 163, 184, 0.25)" }
-        },
-        y: {
-          type: "logarithmic",
-          min: yDomain[0],
-          max: yDomain[1],
-          title: { display: true, text: "Total Bilirubin [\xD7ULN]" },
-          grid: { color: "rgba(148, 163, 184, 0.25)" }
-        }
-      };
-    }
-    /**
-     * Build one composite eDISH scatter card (pretreatment or peak on-treatment):
-     * peak/baseline ALT (x) vs total bilirubin (y) in ×ULN, each point colored and
-     * shaped by its baseline quadrant, with the ALT 3×ULN / BILI 2×ULN cut-lines
-     * (HEP-COMP-001, HEP-COMP-002).
-     * @private
-     */
-    buildEdishCard(title, subjects, which) {
-      const card = createElement("div", "hep-composite-card");
-      card.append(createElement("h4", null, title));
-      const wrap = createElement("div", "hep-composite-canvas");
-      const canvas = document.createElement("canvas");
-      wrap.append(canvas);
-      card.append(wrap);
-      const xKey = which === "pretreat" ? "baselineAltULN" : "peakAltULN";
-      const yKey = which === "pretreat" ? "baselineBiliULN" : "peakBiliULN";
-      const data = subjects.map((subject) => ({ x: subject[xKey], y: subject[yKey] }));
-      const chart = new Chart(canvas.getContext("2d"), {
-        type: "scatter",
-        data: {
-          datasets: [{ data, ...this.compositeDatasetStyle(subjects, 5) }]
-        },
-        options: {
-          maintainAspectRatio: false,
-          responsive: true,
-          animation: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: this.compositeTooltipConfig(subjects, which)
-          },
-          scales: this.compositeEdishScales(
-            subjects.map((subject) => subject[xKey]),
-            subjects.map((subject) => subject[yKey])
-          ),
-          ...this.compositeInteractionOptions()
-        },
-        plugins: [
-          referenceLinePlugin({
-            vLines: [{ value: ALT_ULN_CUT, label: `${ALT_ULN_CUT}\xD7ULN` }],
-            hLines: [{ value: BILI_ULN_CUT, label: `${BILI_ULN_CUT}\xD7ULN` }]
-          })
-        ]
-      });
-      this.registerCompositeChart(chart, subjects, canvas);
-      return card;
-    }
-    /**
-     * A log-log ×Baseline domain over a set of values, always including the
-     * 1×/3×/5× reference lines and padded so no point sits on the frame.
-     * @private
-     */
-    blnDomain(values) {
-      const positives = [...values.filter(Number.isFinite), ...BLN_LINES].filter((v) => v > 0);
-      if (!positives.length) return [0.5, 5];
-      const min = Math.min(...positives, 0.5);
-      const max = Math.max(...positives);
-      return [min / 1.3, max * 1.3];
-    }
-    /**
-     * Build the four-panel ×Baseline shift plot (HEP-COMP-003): one panel per
-     * on-treatment quadrant, arranged in the eDISH spatial layout (Cholestasis
-     * upper-left, Hy's Law upper-right, Normal & NN lower-left, Temple's Corollary
-     * lower-right, matching the paper's Figs 4–6). Each point is the participant's
-     * peak ALT vs total bilirubin as multiples of its own baseline, colored/shaped
-     * by baseline quadrant, over shared axes with 1×/3×/5× reference lines.
-     * @private
-     */
-    buildCompositePanels(subjects) {
-      const grid = createElement("div", "hep-composite-panels");
-      const order = ["Cholestasis", "Hy's Law", "Normal & NN", "Temple's Corollary"];
-      const xDomain = this.blnDomain(subjects.map((subject) => subject.peakAltBLN));
-      const yDomain = this.blnDomain(subjects.map((subject) => subject.peakBiliBLN));
-      const refLines = BLN_LINES.map((value) => ({ value, label: `${value}\xD7` }));
-      order.forEach((quadrant) => {
-        const members = subjects.filter((subject) => subject.onTreatQuadrant === quadrant);
-        const card = createElement("div", "hep-composite-card");
-        card.append(createElement("h4", null, `${quadrant} (${members.length})`));
-        const wrap = createElement("div", "hep-composite-panel-canvas");
-        const canvas = document.createElement("canvas");
-        wrap.append(canvas);
-        card.append(wrap);
-        const data = members.map((subject) => ({ x: subject.peakAltBLN, y: subject.peakBiliBLN }));
-        const chart = new Chart(canvas.getContext("2d"), {
-          type: "scatter",
-          data: {
-            datasets: [{ data, ...this.compositeDatasetStyle(members, 4.5) }]
-          },
-          options: {
-            maintainAspectRatio: false,
-            responsive: true,
-            animation: false,
-            plugins: {
-              legend: { display: false },
-              tooltip: this.compositeTooltipConfig(members, "bln")
-            },
-            scales: {
-              x: {
-                type: "logarithmic",
-                min: xDomain[0],
-                max: xDomain[1],
-                title: { display: true, text: "ALT [\xD7Baseline]" },
-                grid: { color: "rgba(148, 163, 184, 0.2)" }
-              },
-              y: {
-                type: "logarithmic",
-                min: yDomain[0],
-                max: yDomain[1],
-                title: { display: true, text: "TB [\xD7Baseline]" },
-                grid: { color: "rgba(148, 163, 184, 0.2)" }
-              }
-            },
-            ...this.compositeInteractionOptions()
-          },
-          plugins: [referenceLinePlugin({ vLines: refLines, hLines: refLines })]
-        });
-        this.registerCompositeChart(chart, members, canvas);
-        grid.append(card);
-      });
-      return grid;
-    }
-    /**
-     * Tooltip line for a composite point: the participant id, the panel-relevant
-     * standardized values, and the baseline → on-treatment migration.
-     * @private
-     */
-    compositeTooltip(subject, which) {
-      if (!subject) return "";
-      if (which === "bln") {
-        return `${subject.id}: ALT ${formatNumber4(subject.peakAltBLN)}\xD7BLN, TB ${formatNumber4(subject.peakBiliBLN)}\xD7BLN (baseline ${subject.pretreatQuadrant})`;
-      }
-      const alt = which === "pretreat" ? subject.baselineAltULN : subject.peakAltULN;
-      const bili = which === "pretreat" ? subject.baselineBiliULN : subject.peakBiliULN;
-      return `${subject.id}: ALT ${formatNumber4(alt)}\xD7ULN, TB ${formatNumber4(bili)}\xD7ULN \u2014 ${subject.pretreatQuadrant} \u2192 ${subject.onTreatQuadrant}`;
-    }
-    /**
-     * Tooltip config for a composite chart (HEP-COMP-007): when more than two
-     * points overlap under the cursor (dense panels), the tooltip collapses to a
-     * "N participants" count instead of stacking a line per participant, so the
-     * box stays small and does not cover the points beneath it. With one or two
-     * points it lists each participant's detail line.
-     * @param {Object[]} subjects The subjects backing this chart's single dataset.
-     * @param {string} which The panel kind ('pretreat' | 'ontreat' | 'bln').
-     * @private
-     */
-    compositeTooltipConfig(subjects, which) {
-      let itemCount = 0;
-      return {
-        filter: (item, index, items) => {
-          itemCount = items.length;
-          return items.length > 2 ? index === 0 : true;
-        },
-        callbacks: {
-          title: () => "",
-          label: (ctx) => itemCount > 2 ? `${itemCount} participants` : this.compositeTooltip(subjects[ctx.dataIndex], which)
-        }
-      };
-    }
-    /**
-     * Whether any participant is currently traced — hovered, or in the sticky
-     * multi-selection (HEP-COMP-007).
-     * @private
-     */
-    anyCompositeActive() {
-      return this.compositeHoverId != null || this.compositeSelectedIds.length > 0;
-    }
-    /**
-     * Whether a composite subject is currently traced: hovered, or one of the
-     * clicked multi-selection (HEP-COMP-007).
-     * @private
-     */
-    compositeIsActive(subject) {
-      if (!subject) return false;
-      const id = String(subject.id);
-      if (this.compositeHoverId != null && String(this.compositeHoverId) === id) return true;
-      return this.compositeSelectedIds.includes(id);
-    }
-    /**
-     * Scriptable point styling shared by every composite chart (HEP-COMP-007): each
-     * point keeps its baseline-quadrant color and shape; when a participant is
-     * traced, that participant's point(s) render full-opacity with a dark ring and
-     * a larger radius while every other point dims, so the traced participant
-     * stands out in each panel it appears in. With no trace active the styling is
-     * the module's default (0.8 opacity, quadrant-colored border).
-     * @param {Object[]} subjects The subjects backing this chart's single dataset.
-     * @param {number} baseRadius The unemphasized point radius.
-     * @private
-     */
-    compositeDatasetStyle(subjects, baseRadius) {
-      return {
-        pointStyle: subjects.map((subject) => QUADRANT_STYLE[subject.pretreatQuadrant].pointStyle),
-        pointBackgroundColor: (ctx) => {
-          const subject = subjects[ctx.dataIndex];
-          if (!subject) return "rgba(0, 0, 0, 0)";
-          const color2 = QUADRANT_STYLE[subject.pretreatQuadrant].color;
-          if (!this.anyCompositeActive()) return hexToRgba3(color2, 0.8);
-          return hexToRgba3(color2, this.compositeIsActive(subject) ? 1 : HIGHLIGHT_DIM_FILL);
-        },
-        pointBorderColor: (ctx) => {
-          const subject = subjects[ctx.dataIndex];
-          if (!subject) return "rgba(0, 0, 0, 0)";
-          const color2 = QUADRANT_STYLE[subject.pretreatQuadrant].color;
-          if (this.compositeIsActive(subject)) return SELECTION_COLOR2;
-          return !this.anyCompositeActive() ? color2 : hexToRgba3(color2, HIGHLIGHT_DIM_BORDER);
-        },
-        pointBorderWidth: (ctx) => this.compositeIsActive(subjects[ctx.dataIndex]) ? HIGHLIGHT_BORDER_WIDTH : 1,
-        pointRadius: (ctx) => baseRadius + (this.compositeIsActive(subjects[ctx.dataIndex]) ? HIGHLIGHT_RADIUS_BOOST : 0),
-        pointHoverRadius: baseRadius + 2
-      };
-    }
-    /**
-     * The hover/click handlers shared by every composite chart (HEP-COMP-007):
-     * hovering a point traces its participant everywhere; clicking a point toggles
-     * that participant in the multi-selection; clicking empty space clears the
-     * selection. Chart.js passes the chart as the THIRD handler argument (the
-     * active elements carry no chart reference), so the backing subjects are
-     * looked up from that chart.
-     * @private
-     */
-    compositeInteractionOptions() {
-      const idAt = (chart, element) => {
-        const subjects = chart && chart.$compositeSubjects;
-        const subject = subjects && element && subjects[element.index];
-        return subject ? subject.id : null;
-      };
-      return {
-        onHover: (event, active, chart) => {
-          const target = event?.native?.target;
-          if (target) target.style.cursor = active.length ? "pointer" : "default";
-          this.setCompositeHover(active.length ? idAt(chart, active[0]) : null);
-        },
-        onClick: (event, active, chart) => {
-          if (!active.length) {
-            this.clearCompositeSelection();
-            return;
-          }
-          const id = idAt(chart, active[0]);
-          if (id != null) this.toggleCompositeSelection(id);
-        }
-      };
-    }
-    /**
-     * Register a freshly built composite chart for teardown, resize, and
-     * cross-linking: it joins this.charts and this.compositeCharts, remembers its
-     * backing subjects for the interaction handlers, and clears the hover trace
-     * when the pointer leaves its canvas (HEP-COMP-007).
-     * @private
-     */
-    registerCompositeChart(chart, subjects, canvas) {
-      chart.$compositeSubjects = subjects;
-      this.charts.push(chart);
-      this.compositeCharts.push(chart);
-      canvas.addEventListener("pointerleave", () => this.setCompositeHover(null));
-    }
-    /**
-     * Mount the participant multi-select into the sidebar's Participants section
-     * (HEP-COMP-007): the section is created by buildControls (composite view
-     * only) and filled here once the shown subjects are known; with nothing shown
-     * the whole section is hidden.
-     * @param {Object[]} shown The shown composite subjects.
-     * @private
-     */
-    mountCompositeSelect(shown) {
-      const section = this.compositeSelectSection;
-      if (!section) return;
-      [...section.querySelectorAll(".sv-control")].forEach((el) => el.remove());
-      section.style.display = shown.length ? "" : "none";
-      if (shown.length) section.append(this.buildCompositeSelect(shown));
-    }
-    /**
-     * The active view's sticky participant selection: the composite
-     * multi-selection, or the scatter multi-highlight (HEP-SELECT-001,
-     * HEP-COMP-007).
-     * @private
-     */
-    activeSelectedIds() {
-      return this.state.view === "composite" ? this.compositeSelectedIds : this.scatterSelectedIds;
-    }
-    /**
-     * Build the participant multi-select dropdown for the sidebar's Participants
-     * section, shared by both views (HEP-SELECT-001, HEP-COMP-007): one option
-     * per shown participant, its selected options mirroring the view's sticky
-     * selection, plus a Clear selection button (disabled while nothing is
-     * selected) that resets the whole selection. Editing the select drives the
-     * highlight, and clicking points keeps it in sync.
-     * @param {Object[]} shown The shown participants ({id} each).
-     * @private
-     */
-    buildCompositeSelect(shown) {
-      const wrap = createElement("div", "hep-composite-select sv-control");
-      wrap.append(createElement("label", null, "Selected participants"));
-      const select = document.createElement("select");
-      select.multiple = true;
-      select.size = Math.min(8, Math.max(3, shown.length));
-      shown.forEach((subject) => option(select, String(subject.id), String(subject.id), false));
-      select.onchange = () => {
-        const ids = [...select.selectedOptions].map((opt) => opt.value);
-        if (this.state.view === "composite") {
-          this.compositeSelectedIds = ids;
-          this.afterCompositeSelectionChange();
-        } else {
-          this.applyScatterControlSelection(ids);
-        }
-      };
-      this.compositeSelectEl = select;
-      wrap.append(select);
-      const clear = document.createElement("button");
-      clear.type = "button";
-      clear.className = "hep-composite-clear";
-      clear.textContent = "Clear selection";
-      clear.disabled = !this.activeSelectedIds().length;
-      clear.onclick = () => this.state.view === "composite" ? this.clearCompositeSelection() : this.clearSelection();
-      this.compositeClearBtn = clear;
-      wrap.append(clear);
-      return wrap;
-    }
-    /**
-     * Mirror a view's sticky selection into the shared Participants control: the
-     * dropdown's selected options and the Clear button's enabled state
-     * (HEP-SELECT-001, HEP-COMP-007).
-     * @param {string[]} ids The view's selected participant ids.
-     * @private
-     */
-    syncSelectControl(ids) {
-      if (this.compositeSelectEl) {
-        const set2 = new Set(ids.map(String));
-        [...this.compositeSelectEl.options].forEach((opt) => {
-          opt.selected = set2.has(opt.value);
-        });
-      }
-      if (this.compositeClearBtn) this.compositeClearBtn.disabled = !ids.length;
-    }
-    /**
-     * Set the transient hovered participant and restyle the panels + header when it
-     * changes (HEP-COMP-007).
-     * @private
-     */
-    setCompositeHover(id) {
-      const norm = id == null ? null : String(id);
-      if (String(norm ?? "") === String(this.compositeHoverId ?? "")) return;
-      this.compositeHoverId = norm;
-      this.refreshCompositeHighlight();
-    }
-    /**
-     * Toggle a participant in the click-driven multi-selection (HEP-COMP-007).
-     * @private
-     */
-    toggleCompositeSelection(id) {
-      const key = String(id);
-      const index = this.compositeSelectedIds.indexOf(key);
-      if (index >= 0) this.compositeSelectedIds.splice(index, 1);
-      else this.compositeSelectedIds.push(key);
-      this.afterCompositeSelectionChange();
-    }
-    /**
-     * Clear the whole multi-selection (e.g. a click on empty plot space)
-     * (HEP-COMP-007).
-     * @private
-     */
-    clearCompositeSelection() {
-      if (!this.compositeSelectedIds.length) return;
-      this.compositeSelectedIds = [];
-      this.afterCompositeSelectionChange();
-    }
-    /**
-     * Sync the dropdown and its Clear selection button to the current
-     * multi-selection, restyle the panels + header, and dispatch the
-     * participantsSelected event so host apps stay in sync (HEP-COMP-007,
-     * HEP-API-003).
-     * @private
-     */
-    afterCompositeSelectionChange() {
-      this.syncSelectControl(this.compositeSelectedIds);
-      this.refreshCompositeHighlight();
-      this.dispatchSelection([...this.compositeSelectedIds]);
-    }
-    /**
-     * Restyle every composite chart to the current trace and refresh the header.
-     * Uses Chart.js's no-animation update so the highlight tracks the pointer
-     * without flicker (HEP-COMP-007).
-     * @private
-     */
-    refreshCompositeHighlight() {
-      this.compositeCharts.forEach((chart) => chart.update("none"));
-      this.updateCompositeHeader();
-    }
-    /**
-     * Update the shared participant-trace header from a view's hover + selection:
-     * a hover names that participant (marked selected when it is also in the
-     * selection), a single selection reads "Participant X selected.", several are
-     * counted, and the idle hint returns when nothing is traced (HEP-SELECT-001,
-     * HEP-COMP-007).
-     * @param {string|number|null} hoverId The view's transient hovered id.
-     * @param {string[]} selected The view's sticky selected ids.
-     * @private
-     */
-    updateTraceHeader(hoverId, selected) {
-      if (!this.compositeHeaderEl) return;
-      let text;
-      let active = true;
-      if (hoverId != null) {
-        text = this.participantAnnotationText(hoverId, selected.includes(String(hoverId)));
-      } else if (selected.length === 1) {
-        text = this.participantAnnotationText(selected[0], true);
-      } else if (selected.length > 1) {
-        text = `${selected.length} participants selected.`;
-      } else {
-        text = COMPOSITE_HEADER_HINT;
-        active = false;
-      }
-      this.compositeHeaderEl.textContent = text;
-      this.compositeHeaderEl.classList.toggle("is-active", active);
-    }
-    /**
-     * Refresh the shared trace header from the composite view's hover +
-     * multi-selection (HEP-COMP-007).
-     * @private
-     */
-    updateCompositeHeader() {
-      this.updateTraceHeader(this.compositeHoverId, this.compositeSelectedIds);
-    }
-    /**
-     * Refresh the shared trace header from the scatter view's hover +
-     * multi-highlight (HEP-SELECT-001).
-     * @private
-     */
-    updateScatterHeader() {
-      this.updateTraceHeader(this.state.hoverId, this.scatterSelectedIds);
-    }
-    /**
-     * Build the pretreatment × on-treatment migration table (HEP-COMP-004): counts
-     * with row/column totals, each interior cell shaded by its level of DILI
-     * concern (red/yellow/green/gray), plus the concern legend.
-     * @private
-     */
-    buildMigrationTable(subjects) {
-      const wrap = createElement("div", "hep-migration");
-      const matrix = migrationMatrix(subjects);
-      const table = createElement("table");
-      table.append(
-        createElement(
-          "caption",
-          null,
-          "Migration table \u2014 pretreatment (rows) \xD7 on-treatment (columns) quadrant counts"
-        )
-      );
-      const thead = document.createElement("thead");
-      const headRow = document.createElement("tr");
-      headRow.append(createElement("th", null, "Baseline \u2193 / On-treatment \u2192"));
-      COMPOSITE_QUADRANTS.forEach((quadrant) => headRow.append(createElement("th", null, quadrant)));
-      headRow.append(createElement("th", "hep-total", "Total"));
-      thead.append(headRow);
-      table.append(thead);
-      const tbody = document.createElement("tbody");
-      COMPOSITE_QUADRANTS.forEach((pre) => {
-        const tr = document.createElement("tr");
-        tr.append(createElement("td", "hep-rowhead", pre));
-        COMPOSITE_QUADRANTS.forEach((post) => {
-          const td = createElement("td", null, String(matrix.counts[pre][post]));
-          td.style.background = CONCERN_COLORS[concernOf(pre, post)];
-          tr.append(td);
-        });
-        tr.append(createElement("td", "hep-total", String(matrix.rowTotals[pre])));
-        tbody.append(tr);
-      });
-      const totalRow = document.createElement("tr");
-      totalRow.append(createElement("td", "hep-rowhead hep-total", "Total"));
-      COMPOSITE_QUADRANTS.forEach(
-        (post) => totalRow.append(createElement("td", "hep-total", String(matrix.colTotals[post])))
-      );
-      totalRow.append(createElement("td", "hep-total", String(matrix.total)));
-      tbody.append(totalRow);
-      table.append(tbody);
-      wrap.append(table);
-      wrap.append(this.buildConcernLegend());
-      return wrap;
-    }
-    /**
-     * The concern color legend for the migration table (HEP-COMP-004).
-     * @private
-     */
-    buildConcernLegend() {
-      const legend = createElement("div", "hep-concern-legend");
-      const items = [
-        ["red", "Migration of concern"],
-        ["yellow", "Migration of potential concern"],
-        ["green", "Migration of no concern (potential benefit)"],
-        ["gray", "No migration"]
-      ];
-      items.forEach(([key, label]) => {
-        const item = createElement("span", "hep-legend-item");
-        const swatch = createElement("span", "hep-concern-swatch");
-        swatch.style.background = CONCERN_COLORS[key];
-        item.append(swatch, document.createTextNode(label));
-        legend.append(item);
-      });
-      return legend;
-    }
-    /**
-     * Build the by-arm concern/benefit summary table (HEP-COMP-005): per value of
-     * the active Group column (or all participants when no grouping), the count of
-     * subjects whose migration is a concern (red), potential concern (yellow), no
-     * concern / benefit (green), or no migration (gray), with the arm total.
-     * @private
-     */
-    buildByArmSummary(subjects) {
-      const armCol = this.state.groupBy && this.state.groupBy !== GROUP_NONE2 ? this.state.groupBy : null;
-      const armLabel = armCol ? (this.settings.groups.find((group) => group.value_col === armCol) || {}).label || armCol : null;
-      const rows = byArmSummary(subjects, armCol);
-      const wrap = createElement("div", "hep-migration");
-      const table = createElement("table");
-      table.append(
-        createElement(
-          "caption",
-          null,
-          armCol ? `Concern vs. benefit summary by ${armLabel}` : "Concern vs. benefit summary (all participants)"
-        )
-      );
-      const thead = document.createElement("thead");
-      const headRow = document.createElement("tr");
-      [
-        armCol ? armLabel : "Group",
-        "Concern",
-        "Potential concern",
-        "No concern / benefit",
-        "No migration",
-        "Total"
-      ].forEach((label) => headRow.append(createElement("th", null, label)));
-      thead.append(headRow);
-      table.append(thead);
-      const tbody = document.createElement("tbody");
-      const cell2 = (count, key) => {
-        const td = createElement("td", null, String(count));
-        td.style.background = CONCERN_COLORS[key];
-        return td;
-      };
-      rows.forEach((row) => {
-        const tr = document.createElement("tr");
-        tr.append(createElement("td", "hep-rowhead", String(row.arm)));
-        tr.append(cell2(row.red, "red"));
-        tr.append(cell2(row.yellow, "yellow"));
-        tr.append(cell2(row.green, "green"));
-        tr.append(cell2(row.gray, "gray"));
-        tr.append(createElement("td", "hep-total", String(row.total)));
-        tbody.append(tr);
-      });
-      table.append(tbody);
-      wrap.append(table);
-      return wrap;
+      view.teardown(this);
+      view.render(this, { carriedIds });
     }
     /**
      * The selected participant's cleaned lab records, augmented with the derived
@@ -20754,7 +20906,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     selectParticipant(id) {
       this.state.selectedId = id;
       this.scatterSelectedIds = [String(id)];
-      this.syncSelectControl(this.scatterSelectedIds);
+      this.selection.sync(this.scatterSelectedIds);
       if (this.chart) {
         const path = visitPathSeries(this.cleanRows, id, this.settings, this.state);
         this.chart.data.datasets[1].data = path.map((entry) => ({ x: entry.x, y: entry.y }));
@@ -20766,11 +20918,11 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       this.page = 1;
       renderListing(this);
       this.drawDetail(id);
-      const annotation = this.participantAnnotationText(id, true);
+      const annotation = this.selection.annotationText(id, true);
       this.mainAnnotation.textContent = annotation;
       this.footnote.textContent = annotation;
-      this.updateScatterHeader();
-      this.dispatchSelection([id]);
+      this.selection.updateTraceHeader(this.state.hoverId, this.scatterSelectedIds);
+      this.selection.dispatch([id]);
     }
     /**
      * Close the single-participant drill-down: erase the visit-path overlay, tear
@@ -20808,35 +20960,9 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       if (this.state.selectedId == null && !this.scatterSelectedIds.length) return;
       this.scatterSelectedIds = [];
       this.closeDrillDown();
-      this.syncSelectControl([]);
-      this.updateScatterHeader();
-      this.dispatchSelection([]);
-    }
-    /**
-     * Apply a Participants-control selection to the scatter view (HEP-SELECT-001,
-     * HEP-COMP-007): exactly one participant opens the full drill-down (the same
-     * path as clicking their point), none clears everything, and several
-     * highlight those participants across the scatter — dimming the rest and
-     * counting them in the header — while the single-participant drill-down
-     * closes.
-     * @param {string[]} ids The participant ids selected in the control.
-     * @private
-     */
-    applyScatterControlSelection(ids) {
-      if (ids.length === 1) {
-        this.selectParticipant(ids[0]);
-        return;
-      }
-      if (!ids.length) {
-        this.clearSelection();
-        return;
-      }
-      this.closeDrillDown();
-      this.scatterSelectedIds = ids.map(String);
-      this.syncSelectControl(this.scatterSelectedIds);
-      if (this.chart) this.chart.update("none");
-      this.updateScatterHeader();
-      this.dispatchSelection([...this.scatterSelectedIds]);
+      this.selection.sync([]);
+      this.selection.updateTraceHeader(this.state.hoverId, this.scatterSelectedIds);
+      this.selection.dispatch([]);
     }
     /**
      * Draw the participant drill-down panels into the detail container: the
@@ -20931,19 +21057,6 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       });
       table.append(tbody);
       return table;
-    }
-    /**
-     * Dispatch the custom participantsSelected event on the shell root with the
-     * selected IDs (HEP-API-003).
-     * @private
-     */
-    dispatchSelection(ids) {
-      this.participantsSelected = ids;
-      if (this.root) {
-        this.root.dispatchEvent(
-          new CustomEvent("participantsSelected", { detail: { data: ids }, bubbles: true })
-        );
-      }
     }
     /**
      * Resize the live charts to their containers. For host layouts that change
@@ -22460,7 +22573,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
   }
 
   // src/qt-explorer/configure.js
-  var VIEWS = [
+  var VIEWS2 = [
     { value: "central", label: "Central tendency" },
     { value: "outlier", label: "Outlier scatter" },
     { value: "categorical", label: "Categorical" }
@@ -22551,13 +22664,13 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       ...new Set(values.filter((value) => value !== void 0 && value !== null && value !== ""))
     ];
   }
-  function mean6(values) {
+  function mean7(values) {
     if (!values.length) return Number.NaN;
     return values.reduce((sum, value) => sum + value, 0) / values.length;
   }
   function sd4(values) {
     if (values.length < 2) return Number.NaN;
-    const m = mean6(values);
+    const m = mean7(values);
     return Math.sqrt(
       values.reduce((sum, value) => sum + Math.pow(value - m, 2), 0) / (values.length - 1)
     );
@@ -22665,7 +22778,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       const values = (cells.get(visit) || /* @__PURE__ */ new Map()).get(arm) || [];
       if (!values.length) return null;
       const n = values.length;
-      const m = mean6(values);
+      const m = mean7(values);
       const s = sd4(values);
       const se = Number.isFinite(s) ? s / Math.sqrt(n) : Number.NaN;
       return { n, mean: m, median: median3(values), sd: s, se };
@@ -23224,7 +23337,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
      */
     buildViewControl(addSection) {
       renderViewSelector(addSection, {
-        options: VIEWS,
+        options: VIEWS2,
         active: this.state.view,
         onChange: (value) => {
           this.state.view = value;
