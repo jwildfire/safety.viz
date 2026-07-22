@@ -69,18 +69,35 @@ STRESN, STNRLO, STNRHI`).
 - **ECG (QT)** projects `adeg` to the QT measure contract
   (`USUBJID, SITE, SITEID, SEX, RACE, AGE, ARM, VISIT, VISITNUM, PARAMCD, TEST,
 STRESU, STRESN, BASE, CHG, ABLFL`). Three parameters are kept for the QT Safety
-  Explorer's Phase-1 scope — **QTcF** (`QTCFR`, Fridericia), **QTcB** (`QTCBR`,
-  Bazett), and **Heart Rate** (`HR`) — with the source-standardized value
-  (`AVAL`), the source-derived baseline (`BASE`), and change-from-baseline
-  (`CHG`); no correction formula is recomputed. The pilot records each visit at
-  three postural timepoints plus a `DTYPE=AVERAGE` roll-up; the build keeps the
-  **supine reading** (`ATPT='AFTER LYING DOWN FOR 5 MINUTES'`, the resting
-  posture ICH-E14 analyses use), which — unlike the average roll-up — carries the
-  `BASE`/`CHG` the QT displays need. As with the BDS build, only analysis records
-  are kept (`DTYPE` blank, `ANL01FL='Y'` or the `ABLFL='Y'` baseline). The pilot
-  ADEG has **no PR/QRS/JT intervals and no moxifloxacin positive-control arm**, so
-  the demo covers QTc + HR only — expected for CDISC Pilot 01, and the QT
-  Explorer's Phase-2 items sit on a richer dataset.
+  Explorer's Phase-1 scope — **QTcF** (`QTCF`, Fridericia), **QTcB** (`QTCB`,
+  Bazett), and **Heart Rate** (`HR`, the source `AVAL` as recorded). The pilot
+  records each visit at three postural timepoints plus a `DTYPE=AVERAGE` roll-up;
+  the build keeps the **supine reading**
+  (`ATPT='AFTER LYING DOWN FOR 5 MINUTES'`, the resting posture ICH-E14 analyses
+  use). As with the BDS build, only analysis records are kept (`DTYPE` blank,
+  `ANL01FL='Y'` or the `ABLFL='Y'` baseline). The pilot ADEG has **no PR/QRS/JT
+  intervals and no moxifloxacin positive-control arm**, so the demo covers
+  QTc + HR only — expected for CDISC Pilot 01, and the QT Explorer's Phase-2
+  items sit on a richer dataset.
+- **QTc is derived here, not taken from the pilot (#79).** The pilot ships
+  pre-derived corrections as `QTCFR`/`QTCBR` ("Rederived"), but both were computed
+  upstream from the ADEG `RR` column, which is corrupt: its median of 528 ms
+  implies a heart rate of 113.6 bpm, contradicting the recorded `HR` (median
+  72 bpm). The pilot's `RRR` parameter is the sound one — it equals 60000/`HR`
+  exactly, for every record. The build therefore recomputes
+  `QTcF = QT / (RRR/1000)^(1/3)` and `QTcB = QT / (RRR/1000)^(1/2)`, and derives
+  `BASE`/`CHG` from each participant's own `ABLFL='Y'` reading (the source
+  `BASE`/`CHG` belong to the discarded values). Passing `QTCFR` through had
+  inflated QTcF by ~80 ms — median 561 vs 468 — which saturated every ICH E14
+  threshold in the demo. `assertRrSane()` in `scripts/demo-data-lib.mjs` fails the
+  build if the RR source ever disagrees with `HR` by more than 1 bpm again.
+- **The pilot's QT is long regardless.** Even correctly derived, the CDISC Pilot 01
+  ECG data is not a realistic thorough-QT population: the *measured* QT has a
+  median of 444 ms, so QTcF still centres near 468 ms and a majority of
+  participants cross the 450/480/500 ms categories. That is a property of the
+  synthetic source, not of the derivation — the QT Explorer demo exercises every
+  view and threshold, but its crossing rates should not be read as clinically
+  typical.
 
 Resulting sizes: `adbds.csv` ≈ 5.5 MB (≈ 56k rows, 254 participants, 28 measures);
 `adae.csv` ≈ 0.1 MB (1,122 treatment-emergent events + 37 placeholder rows,
