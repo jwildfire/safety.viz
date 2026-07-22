@@ -3,6 +3,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import scatterView from '../../../src/hep-explorer/views/scatter.js';
+import migrationView from '../../../src/hep-explorer/views/migration.js';
 import compositeView from '../../../src/hep-explorer/views/composite.js';
 
 // Source-reading guards for the view split (obot.roadmap#43, safety.viz#91).
@@ -90,7 +91,7 @@ describe('hep-explorer view isolation', () => {
   });
 
   it('HEP-CORE-019: every view implements the same contract against the same shell (#91)', () => {
-    const views = { scatter: scatterView, composite: compositeView };
+    const views = { scatter: scatterView, migration: migrationView, composite: compositeView };
     expect(Object.keys(views).sort()).toEqual(
       viewFiles.map((file) => file.replace(/\.js$/, '')).sort()
     );

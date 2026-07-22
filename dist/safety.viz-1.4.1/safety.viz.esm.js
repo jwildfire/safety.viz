@@ -18290,6 +18290,7 @@ var DISPLAY_MODES = [
 ];
 var VIEW_MODES = [
   { value: "scatter", label: "eDISH / mDISH scatter" },
+  { value: "migration", label: "Migration (Sankey)" },
   { value: "composite", label: "Composite plot (baseline-referenced)" }
 ];
 var AXIS_TYPES = ["linear", "log"];
@@ -18395,6 +18396,66 @@ function cutFor(cuts, measureKey, display) {
   const fallback = cuts && cuts.defaults || {};
   const value = entry[display];
   return Number.isFinite(value) ? value : fallback[display];
+}
+
+// src/hep-core/arms.js
+var ARM_COL_CANDIDATES = ["ARM", "ACTARM", "TRT01A", "TREATMENT"];
+var PLACEBO_PATTERN = /placebo|control/i;
+var PLACEBO_EXACT = ["placebo", "control"];
+function armValue(subject, armCol) {
+  if (!subject) return "";
+  const value = armCol ? subject.raw && subject.raw[armCol] !== void 0 ? subject.raw[armCol] : subject[armCol] : subject.arm;
+  return value === void 0 || value === null ? "" : String(value);
+}
+function resolveArmCol(rows, settings) {
+  const named = settings ? settings.arm_col : null;
+  if (!named) return null;
+  const data = Array.isArray(rows) ? rows : [];
+  const present = (col) => data.some((row) => row && row[col] !== void 0);
+  if (present(named)) return named;
+  return ARM_COL_CANDIDATES.find(present) || null;
+}
+function distinctArms(subjects, armCol) {
+  const values = /* @__PURE__ */ new Set();
+  (subjects || []).forEach((subject) => {
+    const value = armValue(subject, armCol);
+    if (value !== "") values.add(value);
+  });
+  return [...values].sort((a, b) => a.localeCompare(b));
+}
+function resolvePlaceboArmDetail(arms, configured) {
+  const values = arms || [];
+  const candidates = values.filter((arm) => PLACEBO_PATTERN.test(arm));
+  if (configured && values.includes(String(configured))) {
+    return { arm: String(configured), ambiguous: false, candidates, source: "configured" };
+  }
+  const exact = values.filter((arm) => PLACEBO_EXACT.includes(String(arm).trim().toLowerCase()));
+  if (exact.length === 1) {
+    return { arm: exact[0], ambiguous: false, candidates, source: "exact" };
+  }
+  if (candidates.length === 1) {
+    return { arm: candidates[0], ambiguous: false, candidates, source: "pattern" };
+  }
+  if (candidates.length > 1) {
+    return { arm: null, ambiguous: true, candidates, source: "ambiguous" };
+  }
+  return { arm: null, ambiguous: false, candidates, source: "none" };
+}
+function resolveArmDesignation(arms, settings) {
+  const values = arms || [];
+  const detail = resolvePlaceboArmDetail(values, settings ? settings.placebo_arm : null);
+  const placeboArm = detail.arm;
+  const configuredActive = settings && settings.active_arms ? settings.active_arms : null;
+  const active = configuredActive ? new Set((Array.isArray(configuredActive) ? configuredActive : [configuredActive]).map(String)) : null;
+  const sides = new Map(
+    values.map((arm) => {
+      if (placeboArm !== null && arm === placeboArm) return [arm, "placebo"];
+      if (active) return [arm, active.has(arm) ? "active" : null];
+      return [arm, "active"];
+    })
+  );
+  const warning = detail.ambiguous ? `Placebo arm is ambiguous: ${detail.candidates.join(", ")} all look like control arms. Set the placebo_arm setting to pick one; until then no arm is designated placebo.` : null;
+  return { sides, placeboArm, ambiguous: detail.ambiguous, candidates: detail.candidates, warning };
 }
 
 // src/data/schema/hep-explorer.json
@@ -18510,9 +18571,9 @@ var hep_explorer_default = {
         },
         view: {
           type: "string",
-          enum: ["scatter", "composite"],
+          enum: ["scatter", "migration", "composite"],
           default: "scatter",
-          description: "Initial view mode: `scatter` (eDISH/mDISH one-point-per-participant scatter) or `composite` (baseline-referenced composite plot for subjects with abnormal baseline liver tests \u2014 pretreatment and on-treatment eDISH panels, a four-panel \xD7Baseline shift plot, and a migration table) (HEP-COMP-006)."
+          description: "Initial view mode: `scatter` (eDISH/mDISH one-point-per-participant scatter), `migration` (the bidirectional baseline \u2192 peak on-treatment Sankey mirrored about the baseline categorization, with one cross table per treatment arm \u2014 Amirzadegan et al., Drug Safety 2025, Fig 3; needs arm_col mapped), or `composite` (baseline-referenced composite plot for subjects with abnormal baseline liver tests \u2014 pretreatment and on-treatment eDISH panels, a four-panel \xD7Baseline shift plot, and a migration table) (HEP-COMP-006, HEP-MIG-001)."
         },
         x_default: {
           type: "string",
@@ -18596,66 +18657,6 @@ var hep_explorer_default = {
     }
   }
 };
-
-// src/hep-core/arms.js
-var ARM_COL_CANDIDATES = ["ARM", "ACTARM", "TRT01A", "TREATMENT"];
-var PLACEBO_PATTERN = /placebo|control/i;
-var PLACEBO_EXACT = ["placebo", "control"];
-function armValue(subject, armCol) {
-  if (!subject) return "";
-  const value = armCol ? subject.raw && subject.raw[armCol] !== void 0 ? subject.raw[armCol] : subject[armCol] : subject.arm;
-  return value === void 0 || value === null ? "" : String(value);
-}
-function resolveArmCol(rows, settings) {
-  const named = settings ? settings.arm_col : null;
-  if (!named) return null;
-  const data = Array.isArray(rows) ? rows : [];
-  const present = (col) => data.some((row) => row && row[col] !== void 0);
-  if (present(named)) return named;
-  return ARM_COL_CANDIDATES.find(present) || null;
-}
-function distinctArms(subjects, armCol) {
-  const values = /* @__PURE__ */ new Set();
-  (subjects || []).forEach((subject) => {
-    const value = armValue(subject, armCol);
-    if (value !== "") values.add(value);
-  });
-  return [...values].sort((a, b) => a.localeCompare(b));
-}
-function resolvePlaceboArmDetail(arms, configured) {
-  const values = arms || [];
-  const candidates = values.filter((arm) => PLACEBO_PATTERN.test(arm));
-  if (configured && values.includes(String(configured))) {
-    return { arm: String(configured), ambiguous: false, candidates, source: "configured" };
-  }
-  const exact = values.filter((arm) => PLACEBO_EXACT.includes(String(arm).trim().toLowerCase()));
-  if (exact.length === 1) {
-    return { arm: exact[0], ambiguous: false, candidates, source: "exact" };
-  }
-  if (candidates.length === 1) {
-    return { arm: candidates[0], ambiguous: false, candidates, source: "pattern" };
-  }
-  if (candidates.length > 1) {
-    return { arm: null, ambiguous: true, candidates, source: "ambiguous" };
-  }
-  return { arm: null, ambiguous: false, candidates, source: "none" };
-}
-function resolveArmDesignation(arms, settings) {
-  const values = arms || [];
-  const detail = resolvePlaceboArmDetail(values, settings ? settings.placebo_arm : null);
-  const placeboArm = detail.arm;
-  const configuredActive = settings && settings.active_arms ? settings.active_arms : null;
-  const active = configuredActive ? new Set((Array.isArray(configuredActive) ? configuredActive : [configuredActive]).map(String)) : null;
-  const sides = new Map(
-    values.map((arm) => {
-      if (placeboArm !== null && arm === placeboArm) return [arm, "placebo"];
-      if (active) return [arm, active.has(arm) ? "active" : null];
-      return [arm, "active"];
-    })
-  );
-  const warning = detail.ambiguous ? `Placebo arm is ambiguous: ${detail.candidates.join(", ")} all look like control arms. Set the placebo_arm setting to pick one; until then no arm is designated placebo.` : null;
-  return { sides, placeboArm, ambiguous: detail.ambiguous, candidates: detail.candidates, warning };
-}
 
 // src/hep-explorer/checkInputs.js
 var REQUIRED_COLUMN_SETTINGS7 = hep_explorer_default.properties.settings.required;
@@ -19354,7 +19355,41 @@ var MODULE_CSS = `
 .safety-hep-explorer .hep-migration caption{caption-side:top;text-align:left;font-size:.82rem;color:#52616f;margin-bottom:.35rem}
 .safety-hep-explorer .hep-concern-legend{display:flex;flex-wrap:wrap;gap:.35rem .9rem;font-size:.76rem;color:#52616f;margin:.5rem 0 0}
 .safety-hep-explorer .hep-concern-legend .hep-legend-item{display:inline-flex;align-items:center;gap:.3rem}
-.safety-hep-explorer .hep-concern-swatch{display:inline-block;width:.8rem;height:.8rem;border:1px solid #b8c0cc;border-radius:2px}`;
+.safety-hep-explorer .hep-concern-swatch{display:inline-block;width:.8rem;height:.8rem;border:1px solid #b8c0cc;border-radius:2px}
+.safety-hep-explorer .sv-view-option.is-disabled{opacity:.5;cursor:not-allowed;background:#f6f8fa}
+.safety-hep-explorer .hep-migration-view{margin-top:.5rem}
+.safety-hep-explorer .hep-sankey-wrap{position:relative;border:1px solid #d8dee4;border-radius:10px;padding:.6rem .7rem;background:#fff}
+.safety-hep-explorer .hep-sankey{display:block;width:100%;height:auto;overflow:visible}
+.safety-hep-explorer .hep-sankey-tier{fill:#f2f5f8}
+.safety-hep-explorer .hep-sankey-tier-label{font-size:11px;fill:#7b8794;font-weight:600}
+.safety-hep-explorer .hep-sankey-col-label{font-size:12px;fill:#52616f;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.safety-hep-explorer .hep-sankey-node{fill-opacity:.9;stroke:#fff;stroke-width:1}
+.safety-hep-explorer .hep-sankey-node.is-stub{fill-opacity:.45}
+.safety-hep-explorer .hep-sankey-node.is-active{stroke:#111827;stroke-width:1.5}
+.safety-hep-explorer .hep-sankey-node-label{font-size:11px;fill:#1f2933}
+.safety-hep-explorer .hep-sankey-node-label.is-centre{font-weight:600;stroke:#fff;stroke-width:3;paint-order:stroke}
+.safety-hep-explorer .hep-sankey-node-label.is-stub{fill:#9aa5b1}
+.safety-hep-explorer .hep-ribbon{cursor:pointer;transition:fill-opacity .12s ease}
+.safety-hep-explorer .hep-ribbon.is-dim{fill-opacity:.25;stroke-opacity:.3}
+.safety-hep-explorer .hep-ribbon.is-active{fill-opacity:1;stroke:#111827;stroke-width:1.5}
+.safety-hep-explorer .hep-ribbon.is-selected{stroke:#111827;stroke-width:2}
+.safety-hep-explorer .hep-ribbon:focus-visible{outline:2px solid #0b62a4;outline-offset:2px}
+.safety-hep-explorer .hep-tip{position:absolute;left:0;top:0;display:none;max-width:260px;white-space:pre-line;pointer-events:none;z-index:3;background:rgba(17,24,39,.94);color:#fff;font-size:.78rem;line-height:1.35;border-radius:6px;padding:.35rem .5rem}
+.safety-hep-explorer .hep-tip.is-visible{display:block}
+.safety-hep-explorer .hep-sankey-caution{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-top:.75rem;border:1px solid #f0b37e;border-radius:8px;background:#fff7ed;padding:.5rem .6rem;font-size:.82rem}
+.safety-hep-explorer .hep-step{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem}
+.safety-hep-explorer .hep-step-text{color:#1f2933}
+.safety-hep-explorer .hep-step-btn{padding:.3rem .6rem;border:1px solid #0b62a4;border-radius:6px;background:#eaf2fb;color:#0b3d63;font:inherit;font-size:.8rem;font-weight:600;cursor:pointer}
+.safety-hep-explorer .hep-step-btn:hover{background:#dbe9f8}
+.safety-hep-explorer .hep-step-btn:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
+.safety-hep-explorer .hep-xtab-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:1rem;margin-top:1rem}
+.safety-hep-explorer .hep-xtab{min-width:0;overflow-x:auto}
+.safety-hep-explorer .hep-xtab table{width:100%}
+.safety-hep-explorer .hep-xtab th,.safety-hep-explorer .hep-xtab td{padding:.3rem .4rem}
+.safety-hep-explorer .hep-xtab td.hep-xtab-cell.is-clickable{cursor:pointer}
+.safety-hep-explorer .hep-xtab td.hep-xtab-cell.is-clickable:hover{outline:2px solid #0b62a4;outline-offset:-2px}
+.safety-hep-explorer .hep-xtab td.hep-xtab-cell.is-selected{outline:2px solid #111827;outline-offset:-2px;font-weight:700}
+.safety-hep-explorer .hep-xtab td.hep-xtab-cell:focus-visible{outline:2px solid #0b62a4;outline-offset:-2px}`;
 function applyModuleStyles() {
   if (typeof document === "undefined" || document.getElementById(STYLE_ID)) return;
   const style = document.createElement("style");
@@ -19820,6 +19855,16 @@ var SEVERITY_TIERS = {
   [TC]: 1,
   [NN]: 2
 };
+var SEVERITY_ORDER = [HL, CH, TC, NN];
+function shiftDirection(pretreatQuadrant, onTreatQuadrant) {
+  const delta = SEVERITY_TIERS[pretreatQuadrant] - SEVERITY_TIERS[onTreatQuadrant];
+  if (delta > 0) return "up";
+  if (delta < 0) return "down";
+  return "lateral";
+}
+function ribbonColor(pretreatQuadrant, onTreatQuadrant) {
+  return CONCERN_COLORS[concernOf(pretreatQuadrant, onTreatQuadrant)];
+}
 
 // src/hep-core/subjects.js
 var DEFAULT_BASELINE_TB_MAX = 1;
@@ -19962,6 +20007,11 @@ function buildCompositeSubjects(cleanRows, settings) {
 }
 
 // src/hep-core/migration.js
+var SIDES = ["placebo", "active"];
+function sideOf(subject, sides) {
+  if (sides && typeof sides.get === "function") return sides.get(subject.arm) ?? null;
+  return subject.side ?? null;
+}
 function migrationMatrix(subjects) {
   const counts = {};
   const rowTotals = {};
@@ -19987,6 +20037,41 @@ function migrationMatrix(subjects) {
   });
   return { counts, rowTotals, colTotals, total };
 }
+function migrationMatrixBySide(subjects, sides) {
+  const buckets = new Map(SIDES.map((side) => [side, []]));
+  (subjects || []).forEach((subject) => {
+    const side = sideOf(subject, sides);
+    if (buckets.has(side)) buckets.get(side).push(subject);
+  });
+  return new Map([...buckets].map(([side, list]) => [side, migrationMatrix(list)]));
+}
+function migrationCells(subjects, sides) {
+  const staged = /* @__PURE__ */ new Map();
+  (subjects || []).forEach((subject) => {
+    const side = sideOf(subject, sides);
+    if (!SIDES.includes(side)) return;
+    const key = `${side}|${subject.pretreatQuadrant}|${subject.onTreatQuadrant}`;
+    if (!staged.has(key)) staged.set(key, []);
+    staged.get(key).push(subject.id);
+  });
+  const cells = /* @__PURE__ */ new Map();
+  SIDES.forEach(
+    (side) => SEVERITY_ORDER.forEach(
+      (pre) => SEVERITY_ORDER.forEach((post) => {
+        const key = `${side}|${pre}|${post}`;
+        const ids = staged.get(key);
+        if (!ids || !ids.length) return;
+        cells.set(key, {
+          side,
+          pre,
+          post,
+          ids: [...ids].sort((a, b) => String(a).localeCompare(String(b)))
+        });
+      })
+    )
+  );
+  return cells;
+}
 function byArmSummary(subjects, armCol) {
   const buckets = /* @__PURE__ */ new Map();
   const bucketFor = (arm) => {
@@ -20002,6 +20087,826 @@ function byArmSummary(subjects, armCol) {
   });
   return [...buckets.values()].sort((a, b) => String(a.arm).localeCompare(String(b.arm)));
 }
+
+// src/hep-explorer/sankeyLayout.js
+var SANKEY_WIDTH = 980;
+var SANKEY_HEIGHT = 540;
+var NODE_W = 18;
+var PAD = 12;
+var TIER_GAP = 26;
+var SUB_GAP = 8;
+var SIDES2 = ["placebo", "active"];
+var COLUMN_OF_SIDE = { placebo: "left", active: "right" };
+var COLUMN_SIDES = { left: ["placebo"], centre: SIDES2, right: ["active"] };
+function gapAfter(index) {
+  const quadrant = SEVERITY_ORDER[index];
+  const next = SEVERITY_ORDER[index + 1];
+  if (next === void 0) return 0;
+  return SEVERITY_TIERS[next] === SEVERITY_TIERS[quadrant] ? SUB_GAP : TIER_GAP;
+}
+var GAP_TOTAL = SEVERITY_ORDER.reduce((total, _, index) => total + gapAfter(index), 0);
+function sankeyColumns(width = SANKEY_WIDTH) {
+  const centreX0 = Math.round(width / 2 - NODE_W / 2);
+  return {
+    left: [0, NODE_W],
+    centre: [centreX0, centreX0 + NODE_W],
+    right: [width - NODE_W, width]
+  };
+}
+function zeroed() {
+  const tally = {};
+  SEVERITY_ORDER.forEach((quadrant) => {
+    tally[quadrant] = 0;
+  });
+  return tally;
+}
+function emptyTally() {
+  return {
+    centre: { placebo: zeroed(), active: zeroed() },
+    outer: { placebo: zeroed(), active: zeroed() }
+  };
+}
+function normalizeCells(cells) {
+  const list = cells instanceof Map ? [...cells.values()] : Array.isArray(cells) ? cells : cells && typeof cells === "object" ? Object.values(cells) : [];
+  const normalized = [];
+  list.forEach((cell2) => {
+    if (!cell2 || !SIDES2.includes(cell2.side)) return;
+    if (!SEVERITY_ORDER.includes(cell2.pre) || !SEVERITY_ORDER.includes(cell2.post)) return;
+    const ids = Array.isArray(cell2.ids) ? cell2.ids : [];
+    const count = Number.isFinite(cell2.count) ? cell2.count : ids.length;
+    if (!(count > 0)) return;
+    normalized.push({
+      key: `${cell2.side}|${cell2.pre}|${cell2.post}`,
+      side: cell2.side,
+      pre: cell2.pre,
+      post: cell2.post,
+      count,
+      ids
+    });
+  });
+  return normalized;
+}
+function deriveCounts(cellList) {
+  const tally = emptyTally();
+  cellList.forEach((cell2) => {
+    tally.centre[cell2.side][cell2.pre] += cell2.count;
+    tally.outer[cell2.side][cell2.post] += cell2.count;
+  });
+  return tally;
+}
+function normalizeCounts(counts) {
+  const tally = emptyTally();
+  const centre = counts.centre || counts.center || {};
+  const outer = counts.outer || counts.side || {};
+  SIDES2.forEach((side) => {
+    SEVERITY_ORDER.forEach((quadrant) => {
+      tally.centre[side][quadrant] = Number(centre[side]?.[quadrant]) || 0;
+      tally.outer[side][quadrant] = Number(outer[side]?.[quadrant]) || 0;
+    });
+  });
+  return tally;
+}
+function faceCount(tally, column, side, quadrant) {
+  if (!COLUMN_SIDES[column].includes(side)) return 0;
+  return column === "centre" ? tally.centre[side][quadrant] : tally.outer[side][quadrant];
+}
+function buildNodes(tally, columns, unit) {
+  const nodes = [];
+  const tops = /* @__PURE__ */ new Map();
+  Object.keys(columns).forEach((column) => {
+    const [x0, x1] = columns[column];
+    let cursor = PAD;
+    SEVERITY_ORDER.forEach((quadrant, index) => {
+      const sides = COLUMN_SIDES[column];
+      const counts = {
+        placebo: faceCount(tally, column, "placebo", quadrant),
+        active: faceCount(tally, column, "active", quadrant)
+      };
+      const count = Math.max(...sides.map((side) => counts[side]));
+      const height = count * unit;
+      const y0 = Math.round(cursor);
+      const y1 = Math.max(Math.round(cursor + height), y0 + 1);
+      const faces = {};
+      sides.forEach((side) => {
+        const faceHeight = counts[side] * unit;
+        const top = cursor + (height - faceHeight) / 2;
+        faces[side] = {
+          side,
+          // The centre column emits from the face pointing at that arm's
+          // column; a flanking column emits from the face pointing inward.
+          x: column === "centre" ? side === "placebo" ? x0 : x1 : column === "left" ? x1 : x0,
+          y0: Math.round(top),
+          y1: Math.round(top + faceHeight),
+          count: counts[side]
+        };
+        tops.set(`${column}|${quadrant}|${side}`, top);
+      });
+      nodes.push({
+        id: `${column}|${quadrant}`,
+        column,
+        quadrant,
+        tier: SEVERITY_TIERS[quadrant],
+        x0,
+        x1,
+        y0,
+        y1,
+        height: y1 - y0,
+        count,
+        counts,
+        faces,
+        stub: height < 1
+      });
+      cursor += height + gapAfter(index);
+    });
+  });
+  return { nodes, tops };
+}
+function ribbonPath(xCentre, a0, a1, xOuter, b0, b1, straight) {
+  const k = Math.trunc((xOuter - xCentre) * 0.5);
+  const c0 = xCentre + k;
+  const c1 = xOuter - k;
+  if (straight) {
+    return `M ${xCentre},${a0} L ${xOuter},${b0} L ${xOuter},${b1} L ${xCentre},${a1} Z`;
+  }
+  return `M ${xCentre},${a0} C ${c0},${a0} ${c1},${b0} ${xOuter},${b0} L ${xOuter},${b1} C ${c1},${b1} ${c0},${a1} ${xCentre},${a1} Z`;
+}
+function layoutSankey({
+  counts = null,
+  cells = null,
+  width = SANKEY_WIDTH,
+  height = SANKEY_HEIGHT,
+  hideDiagonal = false
+} = {}) {
+  const cellList = normalizeCells(cells);
+  const byKey = new Map(cellList.map((cell2) => [cell2.key, cell2]));
+  const tally = counts ? normalizeCounts(counts) : deriveCounts(cellList);
+  const columns = sankeyColumns(width);
+  const centreTotal = SEVERITY_ORDER.reduce(
+    (total, quadrant) => total + Math.max(tally.centre.placebo[quadrant], tally.centre.active[quadrant]),
+    0
+  );
+  const sideTotal = Math.max(
+    ...SIDES2.map(
+      (side) => SEVERITY_ORDER.reduce((total, quadrant) => total + tally.outer[side][quadrant], 0)
+    )
+  );
+  const usable = Math.max(0, height - 2 * PAD - GAP_TOTAL);
+  const denominator = Math.max(centreTotal, sideTotal);
+  const unit = denominator > 0 ? usable / denominator : 0;
+  const { nodes, tops } = buildNodes(tally, columns, unit);
+  const nodeById = new Map(nodes.map((node) => [node.id, node]));
+  const cursors = new Map(tops);
+  const ribbons = [];
+  SIDES2.forEach((side) => {
+    const outerColumn = COLUMN_OF_SIDE[side];
+    SEVERITY_ORDER.forEach((pre) => {
+      SEVERITY_ORDER.forEach((post) => {
+        const cell2 = byKey.get(`${side}|${pre}|${post}`);
+        if (!cell2) return;
+        const centreKey = `centre|${pre}|${side}`;
+        const outerKey = `${outerColumn}|${post}|${side}`;
+        const span = cell2.count * unit;
+        const centreTop = cursors.get(centreKey);
+        const outerTop = cursors.get(outerKey);
+        cursors.set(centreKey, centreTop + span);
+        cursors.set(outerKey, outerTop + span);
+        const centreNode = nodeById.get(`centre|${pre}`);
+        const outerNode = nodeById.get(`${outerColumn}|${post}`);
+        const xCentre = centreNode.faces[side].x;
+        const xOuter = outerNode.faces[side].x;
+        const a0 = Math.round(centreTop);
+        const a1 = Math.max(Math.round(centreTop + span), a0 + 1);
+        const b0 = Math.round(outerTop);
+        const b1 = Math.max(Math.round(outerTop + span), b0 + 1);
+        const diagonal = pre === post;
+        if (hideDiagonal && diagonal) return;
+        ribbons.push({
+          key: cell2.key,
+          side,
+          pre,
+          post,
+          count: cell2.count,
+          ids: cell2.ids,
+          diagonal,
+          concern: concernOf(pre, post),
+          direction: shiftDirection(pre, post),
+          color: ribbonColor(pre, post),
+          centreNode: centreNode.id,
+          outerNode: outerNode.id,
+          centre: { x: xCentre, y0: a0, y1: a1 },
+          outer: { x: xOuter, y0: b0, y1: b1 },
+          // Both edges are count x unit, but each rounds against its own face's
+          // cursor, so they can differ by a pixel. `thickness` reports the
+          // on-treatment edge; a conservation check must use the anchor
+          // belonging to the face under test.
+          thickness: b1 - b0,
+          // The control point's x doubles as the horizontal centre of the
+          // ribbon, so a pointer test can click the flow without re-deriving
+          // the curve.
+          centroid: {
+            x: xCentre + Math.trunc((xOuter - xCentre) * 0.5),
+            y: Math.round((a0 + a1 + b0 + b1) / 4)
+          },
+          d: ribbonPath(xCentre, a0, a1, xOuter, b0, b1, diagonal)
+        });
+      });
+    });
+  });
+  ribbons.sort((a, b) => b.count - a.count);
+  return { nodes, ribbons, scale: unit };
+}
+
+// src/hep-explorer/views/migration.js
+var SVG_NS2 = "http://www.w3.org/2000/svg";
+var SIDES3 = ["placebo", "active"];
+var SIDE_LABEL = { placebo: "placebo", active: "active drug" };
+var SIDE_TITLE = { placebo: "Placebo", active: "Active drug" };
+var CONCERN_PHRASE = {
+  red: "unfavourable",
+  yellow: "lateral (single-analyte)",
+  green: "favourable",
+  gray: "no migration"
+};
+var TIER_LABELS = ["Both elevated", "Single-analyte elevation", "Neither elevated"];
+var MARGIN = { left: 132, right: 44, top: 46, bottom: 16 };
+var OUTER_WIDTH = MARGIN.left + SANKEY_WIDTH + MARGIN.right;
+var OUTER_HEIGHT = MARGIN.top + SANKEY_HEIGHT + MARGIN.bottom;
+function svgEl2(tag, attrs = {}) {
+  const el = document.createElementNS(SVG_NS2, tag);
+  Object.entries(attrs).forEach(([key, value]) => {
+    if (value !== null && value !== void 0) el.setAttribute(key, String(value));
+  });
+  return el;
+}
+function participantCount(count) {
+  return `${count} participant${count === 1 ? "" : "s"}`;
+}
+function designationFor(host, arms) {
+  const activeArms = host.state.activeArms;
+  return resolveArmDesignation(arms, { ...host.settings, active_arms: activeArms });
+}
+function buildCohort(host) {
+  const built = buildHepSubjects(host.cleanRows, host.settings);
+  const shown = applyFilters6(built.subjects, host.state.filters);
+  const designation = designationFor(host, built.arms);
+  const sides = designation.sides;
+  const plotted = shown.filter((subject) => SIDES3.includes(sides.get(subject.arm)));
+  const cells = migrationCells(plotted, sides);
+  return {
+    arms: built.arms,
+    armCol: built.armCol,
+    excludedNoData: built.excluded,
+    designation,
+    sides,
+    shown,
+    plotted,
+    armExcluded: shown.length - plotted.length,
+    cells,
+    matrices: migrationMatrixBySide(plotted, sides)
+  };
+}
+function shiftSummary(cells) {
+  const summary = {
+    placebo: { up: 0, down: 0, lateral: 0, diagonal: 0, total: 0 },
+    active: { up: 0, down: 0, lateral: 0, diagonal: 0, total: 0 }
+  };
+  cells.forEach((cell2) => {
+    const bucket = summary[cell2.side];
+    if (!bucket) return;
+    const count = cell2.ids.length;
+    const concern = concernOf(cell2.pre, cell2.post);
+    if (concern === "red") bucket.up += count;
+    else if (concern === "green") bucket.down += count;
+    else bucket.lateral += count;
+    if (cell2.pre === cell2.post) bucket.diagonal += count;
+    bucket.total += count;
+  });
+  return summary;
+}
+function sankeyLabel(summary) {
+  const arm = (side) => `${SIDE_TITLE[side]}: ${summary[side].up} unfavourable and ${summary[side].down} favourable shifts among ${participantCount(summary[side].total)}`;
+  return `Baseline to peak on-treatment migration Sankey. Baseline categorization in the centre, placebo flows left, active drug flows right. ${arm("placebo")}. ${arm("active")}.`;
+}
+function ribbonLabel(ribbon) {
+  const verb = ribbon.pre === ribbon.post ? "remained in" : "shifted from";
+  const where = ribbon.pre === ribbon.post ? `${ribbon.pre}` : `${ribbon.pre} to ${ribbon.post}`;
+  return `${participantCount(ribbon.count)} ${verb} ${where} on ${SIDE_LABEL[ribbon.side]} \u2014 ${CONCERN_PHRASE[ribbon.concern]}`;
+}
+function ribbonTip(ribbon) {
+  return `${SIDE_TITLE[ribbon.side]} \xB7 ${participantCount(ribbon.count)}
+${ribbon.pre} \u2192 ${ribbon.post}
+${CONCERN_PHRASE[ribbon.concern]}`;
+}
+function showTip(host, event, text) {
+  const tip = host.migrationTipEl;
+  if (!tip) return;
+  tip.textContent = text;
+  tip.classList.add("is-visible");
+  const bounds = host.migrationWrap.getBoundingClientRect();
+  const x = (event.clientX ?? bounds.left) - bounds.left;
+  const y = (event.clientY ?? bounds.top) - bounds.top;
+  tip.style.left = `${Math.max(0, Math.min(x + 14, bounds.width - 40))}px`;
+  tip.style.top = `${Math.max(0, y + 14)}px`;
+}
+function hideTip(host) {
+  if (host.migrationTipEl) host.migrationTipEl.classList.remove("is-visible");
+}
+function refreshHighlight(host) {
+  const svg = host.migrationSvgEl;
+  if (svg) {
+    const activeKey = host.migrationHoverKey || host.migrationSelectedKey;
+    const nodes = /* @__PURE__ */ new Set();
+    svg.querySelectorAll(".hep-ribbon").forEach((path) => {
+      const isActive3 = path.dataset.key === activeKey;
+      const isSelected = path.dataset.key === host.migrationSelectedKey;
+      path.classList.toggle("is-active", isActive3);
+      path.classList.toggle("is-selected", isSelected);
+      path.classList.toggle("is-dim", Boolean(activeKey) && !isActive3);
+      if (isActive3) {
+        nodes.add(path.dataset.centreNode);
+        nodes.add(path.dataset.outerNode);
+      }
+    });
+    svg.querySelectorAll(".hep-sankey-node").forEach((rect) => {
+      rect.classList.toggle("is-active", nodes.has(rect.dataset.node));
+    });
+  }
+  if (host.migrationWrap) {
+    host.migrationWrap.querySelectorAll(".hep-xtab-cell").forEach((cell2) => {
+      cell2.classList.toggle("is-selected", cell2.dataset.key === host.migrationSelectedKey);
+    });
+  }
+  host.selection.updateTraceHeader(null, host.migrationSelectedIds);
+}
+function renderFootnote(host) {
+  const footnote = host.footnote;
+  footnote.textContent = "";
+  const cell2 = host.migrationSelectedKey ? host.migrationCellIndex.get(host.migrationSelectedKey) : null;
+  if (!cell2) {
+    footnote.textContent = "Migration plot (Amirzadegan et al., Drug Safety 2025, Fig 3): baseline eDISH categorization in the centre, peak on-treatment shifts running left for placebo and right for active drug. Ribbon thickness is participant count on one shared scale; upward shifts are unfavourable (pink) and downward shifts favourable (green). Select a ribbon or a cross-table cell to carry those participants into the composite plot.";
+    return;
+  }
+  const count = cell2.ids.length;
+  const block = createElement("div", "hep-step");
+  const move = cell2.pre === cell2.post ? `remained in ${cell2.pre}` : `shifted ${cell2.pre} \u2192 ${cell2.post}`;
+  block.append(
+    createElement(
+      "strong",
+      "hep-step-text",
+      `${participantCount(count)} ${move} on ${SIDE_LABEL[cell2.side]}.`
+    )
+  );
+  const button = createElement(
+    "button",
+    "hep-step-btn",
+    `Review these ${count} in the composite plot`
+  );
+  button.type = "button";
+  button.onclick = () => host.switchView("composite");
+  block.append(button);
+  footnote.append(block);
+}
+function selectCell(host, key) {
+  const cell2 = host.migrationCellIndex.get(key);
+  if (!cell2) return;
+  host.migrationSelectedKey = key;
+  host.migrationSelectedIds = cell2.ids.map(String);
+  host.selection.sync(host.migrationSelectedIds);
+  refreshHighlight(host);
+  renderFootnote(host);
+  host.selection.dispatch([...host.migrationSelectedIds]);
+}
+function setSelection(host, ids) {
+  host.migrationSelectedIds = ids.map(String);
+  const key = host.migrationSelectedKey;
+  const cell2 = key ? host.migrationCellIndex.get(key) : null;
+  if (!cell2 || cell2.ids.length !== host.migrationSelectedIds.length || cell2.ids.some((id, index) => String(id) !== host.migrationSelectedIds[index])) {
+    host.migrationSelectedKey = null;
+  }
+  host.selection.sync(host.migrationSelectedIds);
+  refreshHighlight(host);
+  renderFootnote(host);
+  host.selection.dispatch([...host.migrationSelectedIds]);
+}
+function clearSelection(host) {
+  if (!host.migrationSelectedIds.length && !host.migrationSelectedKey) return;
+  host.migrationSelectedKey = null;
+  host.migrationSelectedIds = [];
+  host.selection.sync([]);
+  refreshHighlight(host);
+  renderFootnote(host);
+  host.selection.dispatch([]);
+}
+function paintTiers(group, nodes) {
+  const bands = /* @__PURE__ */ new Map();
+  nodes.forEach((node) => {
+    const band = bands.get(node.tier) || { y0: Infinity, y1: -Infinity };
+    band.y0 = Math.min(band.y0, node.y0);
+    band.y1 = Math.max(band.y1, node.y1);
+    bands.set(node.tier, band);
+  });
+  [...bands.keys()].sort((a, b) => a - b).forEach((tier) => {
+    const band = bands.get(tier);
+    group.append(
+      svgEl2("rect", {
+        class: "hep-sankey-tier",
+        "data-tier": tier,
+        x: 0,
+        y: band.y0 - 6,
+        width: SANKEY_WIDTH,
+        height: band.y1 - band.y0 + 12,
+        rx: 6
+      })
+    );
+    const label = svgEl2("text", {
+      class: "hep-sankey-tier-label",
+      "data-tier": tier,
+      x: -10,
+      y: (band.y0 + band.y1) / 2,
+      "text-anchor": "end",
+      "dominant-baseline": "middle"
+    });
+    label.textContent = TIER_LABELS[tier] || `Tier ${tier}`;
+    group.append(label);
+  });
+}
+function paintNodes(group, nodes) {
+  const columns = sankeyColumns();
+  nodes.forEach((node) => {
+    const style = QUADRANT_STYLE[node.quadrant];
+    group.append(
+      svgEl2("rect", {
+        class: `hep-sankey-node${node.stub ? " is-stub" : ""}`,
+        "data-node": node.id,
+        "data-column": node.column,
+        "data-quadrant": node.quadrant,
+        "data-count": node.count,
+        "data-placebo": node.counts.placebo,
+        "data-active": node.counts.active,
+        x: node.x0,
+        y: node.y0,
+        width: node.x1 - node.x0,
+        height: node.height,
+        fill: style.color,
+        rx: 2
+      })
+    );
+    const centred = node.column === "centre";
+    const counts = centred ? `${node.counts.placebo} / ${node.counts.active}` : String(node.count);
+    const text = svgEl2("text", {
+      class: `hep-sankey-node-label${node.stub ? " is-stub" : ""}${centred ? " is-centre" : ""}`,
+      "data-node": node.id,
+      x: centred ? (columns.centre[0] + columns.centre[1]) / 2 : node.column === "left" ? node.x1 + 8 : node.x0 - 8,
+      y: (node.y0 + node.y1) / 2,
+      "text-anchor": centred ? "middle" : node.column === "left" ? "start" : "end",
+      "dominant-baseline": "middle"
+    });
+    text.textContent = `${node.quadrant} ${counts}`;
+    group.append(text);
+  });
+}
+function paintRibbons(host, group, ribbons) {
+  ribbons.forEach((ribbon) => {
+    const path = svgEl2("path", {
+      class: `hep-ribbon is-${ribbon.direction}`,
+      d: ribbon.d,
+      "data-key": ribbon.key,
+      "data-side": ribbon.side,
+      "data-pre": ribbon.pre,
+      "data-post": ribbon.post,
+      "data-count": ribbon.count,
+      "data-concern": ribbon.concern,
+      "data-direction": ribbon.direction,
+      "data-centre-node": ribbon.centreNode,
+      "data-outer-node": ribbon.outerNode,
+      "data-centroid-x": ribbon.centroid.x,
+      "data-centroid-y": ribbon.centroid.y,
+      fill: hexToRgba3(ribbon.color, 0.55),
+      stroke: hexToRgba3(ribbon.color, 0.9),
+      "stroke-width": 1,
+      tabindex: 0,
+      role: "button",
+      "aria-label": ribbonLabel(ribbon)
+    });
+    const tip = ribbonTip(ribbon);
+    path.addEventListener("pointerenter", (event) => {
+      host.migrationHoverKey = ribbon.key;
+      refreshHighlight(host);
+      showTip(host, event, tip);
+    });
+    path.addEventListener("pointermove", (event) => showTip(host, event, tip));
+    path.addEventListener("pointerleave", () => {
+      host.migrationHoverKey = null;
+      refreshHighlight(host);
+      hideTip(host);
+    });
+    path.addEventListener("click", () => selectCell(host, ribbon.key));
+    path.addEventListener("focus", () => {
+      host.migrationHoverKey = ribbon.key;
+      refreshHighlight(host);
+    });
+    path.addEventListener("blur", () => {
+      host.migrationHoverKey = null;
+      refreshHighlight(host);
+    });
+    path.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " " && event.key !== "Spacebar") return;
+      event.preventDefault();
+      selectCell(host, ribbon.key);
+    });
+    group.append(path);
+  });
+}
+function buildSankey(host, layout, summary) {
+  const svg = svgEl2("svg", {
+    class: "hep-sankey",
+    viewBox: `0 0 ${OUTER_WIDTH} ${OUTER_HEIGHT}`,
+    preserveAspectRatio: "xMidYMid meet",
+    width: "100%",
+    role: "img",
+    "aria-label": sankeyLabel(summary)
+  });
+  const group = svgEl2("g", {
+    class: "hep-sankey-plot",
+    transform: `translate(${MARGIN.left}, ${MARGIN.top})`
+  });
+  const headers = [
+    ["placebo", 0, "start", `${SIDE_TITLE.placebo} \u2014 peak on-treatment`],
+    ["centre", SANKEY_WIDTH / 2, "middle", "Baseline categorization"],
+    ["active", SANKEY_WIDTH, "end", `${SIDE_TITLE.active} \u2014 peak on-treatment`]
+  ];
+  headers.forEach(([key, x, anchor, label]) => {
+    const text = svgEl2("text", {
+      class: "hep-sankey-col-label",
+      "data-column": key,
+      x,
+      y: -22,
+      "text-anchor": anchor
+    });
+    text.textContent = label;
+    group.append(text);
+  });
+  paintTiers(group, layout.nodes);
+  paintRibbons(host, group, layout.ribbons);
+  paintNodes(group, layout.nodes);
+  svg.append(group);
+  return svg;
+}
+function buildConcernLegend() {
+  const legend = createElement("div", "hep-concern-legend");
+  [
+    ["red", "Unfavourable shift (potential DILI)"],
+    ["yellow", "Lateral single-analyte shift"],
+    ["green", "Favourable shift (potential benefit)"],
+    ["gray", "No migration"]
+  ].forEach(([key, label]) => {
+    const item = createElement("span", "hep-legend-item");
+    const swatch = createElement("span", "hep-concern-swatch");
+    swatch.style.background = CONCERN_COLORS[key];
+    item.append(swatch, document.createTextNode(label));
+    legend.append(item);
+  });
+  return legend;
+}
+function buildCrossTable(host, side, matrix) {
+  const wrap = createElement("div", "hep-migration hep-xtab");
+  const table = createElement("table");
+  table.dataset.side = side;
+  table.append(
+    createElement(
+      "caption",
+      null,
+      `${SIDE_TITLE[side]} \u2014 baseline (rows) \xD7 peak on-treatment (columns), most severe first`
+    )
+  );
+  const thead = document.createElement("thead");
+  const headRow = document.createElement("tr");
+  headRow.append(createElement("th", null, "Baseline \u2193 / On-treatment \u2192"));
+  SEVERITY_ORDER.forEach((quadrant) => headRow.append(createElement("th", null, quadrant)));
+  headRow.append(createElement("th", "hep-total", "Total"));
+  thead.append(headRow);
+  table.append(thead);
+  const tbody = document.createElement("tbody");
+  SEVERITY_ORDER.forEach((pre) => {
+    const tr = document.createElement("tr");
+    tr.append(createElement("td", "hep-rowhead", pre));
+    SEVERITY_ORDER.forEach((post) => {
+      const count = matrix.counts[pre][post];
+      const key = `${side}|${pre}|${post}`;
+      const td = createElement("td", "hep-xtab-cell", String(count));
+      td.style.background = CONCERN_COLORS[concernOf(pre, post)];
+      td.dataset.key = key;
+      td.dataset.side = side;
+      td.dataset.pre = pre;
+      td.dataset.post = post;
+      td.dataset.count = String(count);
+      if (count > 0) {
+        td.classList.add("is-clickable");
+        td.tabIndex = 0;
+        td.setAttribute("role", "button");
+        td.setAttribute(
+          "aria-label",
+          `${participantCount(count)}, ${pre} to ${post}, ${SIDE_LABEL[side]}`
+        );
+        td.onclick = () => selectCell(host, key);
+        td.onkeydown = (event) => {
+          if (event.key !== "Enter" && event.key !== " " && event.key !== "Spacebar") return;
+          event.preventDefault();
+          selectCell(host, key);
+        };
+      }
+      tr.append(td);
+    });
+    tr.append(createElement("td", "hep-total", String(matrix.rowTotals[pre])));
+    tbody.append(tr);
+  });
+  const totalRow = document.createElement("tr");
+  totalRow.append(createElement("td", "hep-rowhead hep-total", "Total"));
+  SEVERITY_ORDER.forEach(
+    (post) => totalRow.append(createElement("td", "hep-total", String(matrix.colTotals[post])))
+  );
+  totalRow.append(createElement("td", "hep-total", String(matrix.total)));
+  tbody.append(totalRow);
+  table.append(tbody);
+  wrap.append(table);
+  return wrap;
+}
+function buildHyLawCaution(host, cells) {
+  const stuck = SIDES3.map((side) => cells.get(`${side}|Hy's Law|Hy's Law`)).filter(Boolean);
+  if (!stuck.length) return null;
+  const ids = stuck.flatMap((cell2) => cell2.ids.map(String));
+  const note = createElement("div", "hep-sankey-caution sv-warning");
+  note.append(
+    createElement(
+      "span",
+      "hep-caution-text",
+      `\u26A0 ${participantCount(ids.length)} remained in Hy's Law throughout. A shift view cannot detect worsening within a category \u2014 review them individually.`
+    )
+  );
+  const button = createElement("button", "hep-step-btn", `Review these ${ids.length}`);
+  button.type = "button";
+  button.onclick = () => {
+    if (stuck.length === 1) selectCell(host, `${stuck[0].side}|Hy's Law|Hy's Law`);
+    else setSelection(host, ids);
+  };
+  note.append(button);
+  return note;
+}
+function renderNotes(host, cohort, summary) {
+  const total = unique6(host.cleanRows.map((row) => row[host.settings.id_col])).length;
+  const parts = [
+    `<span>${cohort.plotted.length} of ${total} participants shown in the migration plot.</span>`
+  ];
+  if (cohort.excludedNoData)
+    parts.push(
+      `<span class="sv-warning">${cohort.excludedNoData} participant${cohort.excludedNoData > 1 ? "s" : ""} excluded (missing baseline or on-treatment ALT/total bilirubin).</span>`
+    );
+  if (cohort.armExcluded)
+    parts.push(
+      `<span class="sv-warning">${cohort.armExcluded} participant${cohort.armExcluded > 1 ? "s" : ""} excluded: arm not designated placebo or active.</span>`
+    );
+  if (host.state.hideUnchanged) {
+    const hidden = summary.placebo.diagonal + summary.active.diagonal;
+    parts.push(`<span>Hide unchanged is on: ${hidden} no-migration participants hidden.</span>`);
+  }
+  if (cohort.designation.warning)
+    parts.push(`<span class="sv-warning">${cohort.designation.warning}</span>`);
+  if (cohort.designation.placeboArm && !host.state.activeArms) {
+    const pooled = cohort.arms.filter((arm) => arm !== cohort.designation.placeboArm);
+    if (pooled.length > 1)
+      parts.push(
+        `<span class="sv-warning">Active side pools ${pooled.join(", ")}; use the Active arm control to compare one at a time.</span>`
+      );
+  }
+  const sidesPresent = SIDES3.filter((side) => summary[side].total > 0);
+  if (sidesPresent.length < 2)
+    parts.push(
+      '<span class="sv-warning">Only one treatment side is designated, so the plot is one-directional. Map arm_col and set placebo_arm / active_arms to compare arms.</span>'
+    );
+  host.notes.innerHTML = parts.join("");
+}
+function contributeControls(host, { addControl, settingsParent }) {
+  const hide = addControl("Hide unchanged", document.createElement("input"), settingsParent);
+  hide.type = "checkbox";
+  hide.className = "hep-hide-unchanged";
+  hide.checked = Boolean(host.state.hideUnchanged);
+  hide.onchange = () => {
+    host.state.hideUnchanged = hide.checked;
+    host.render();
+  };
+  const arms = buildHepSubjects(host.cleanRows, host.settings).arms;
+  const placeboArm = designationFor(host, arms).placeboArm;
+  const candidates = arms.filter((arm) => arm !== placeboArm);
+  if (candidates.length > 1) {
+    const select = addControl("Active arm", document.createElement("select"), settingsParent);
+    select.className = "hep-active-arm";
+    const current = host.state.activeArms;
+    const options = [["__all__", "All non-placebo arms"], ...candidates.map((arm) => [arm, arm])];
+    options.forEach(([value, label]) => {
+      const opt = document.createElement("option");
+      opt.value = value;
+      opt.textContent = label;
+      opt.selected = value === "__all__" ? !current : Boolean(current) && current[0] === value;
+      select.append(opt);
+    });
+    select.onchange = () => {
+      host.state.activeArms = select.value === "__all__" ? null : [select.value];
+      host.render();
+    };
+  }
+}
+var migrationView = {
+  id: "migration",
+  label: "Migration (Sankey)",
+  // The migration view owns the whole main column: the svg, the per-arm cross
+  // tables, the caution note and the hand-off all render into its container.
+  slots: ["migration"],
+  // The R-Ratio range filter is a scatter-pipeline control; this cohort is
+  // defined by baseline availability and arm designation instead.
+  usesRRatioFilter: false,
+  contributeControls,
+  /** The migration view adds no Filters controls beyond the shared categorical ones. */
+  contributeFilters() {
+  },
+  /** Reset the view-local hover/selection state before a fresh render. */
+  teardown(host) {
+    host.migrationSelectedIds = [];
+    host.migrationSelectedKey = null;
+    host.migrationHoverKey = null;
+    host.migrationCellIndex = /* @__PURE__ */ new Map();
+    host.migrationSvgEl = null;
+    host.migrationTipEl = null;
+  },
+  /**
+   * Render the migration view (HEP-MIG-*, HEP-XTAB-*, HEP-STEP-*): the mirrored
+   * Sankey, one cross table per designated arm, the Hy's-Law self-flow caution,
+   * and the notes reporting every participant the plot could not show. A live
+   * selection carried in from another view (HEP-SELECT-006) arrives selected
+   * for the participants that are part of this cohort; when none survive, the
+   * selection is cleared and listeners are notified.
+   */
+  render(host, { carriedIds = [] } = {}) {
+    const cohort = buildCohort(host);
+    host.migrationCellIndex = cohort.cells;
+    host.migrationShown = cohort.plotted;
+    const summary = shiftSummary(cohort.cells);
+    host.selection.mount(host.compositeSelectSection, cohort.plotted);
+    renderNotes(host, cohort, summary);
+    renderFootnote(host);
+    if (!cohort.plotted.length) {
+      const note = createElement("div", "sv-warning");
+      note.textContent = "The migration plot needs participants in an arm designated placebo or active, each with baseline and on-treatment ALT and total bilirubin. No participant in the current selection qualifies.";
+      host.migrationWrap.append(note);
+      if (carriedIds.length) host.selection.dispatch([]);
+      return;
+    }
+    const layout = layoutSankey({
+      cells: cohort.cells,
+      hideDiagonal: Boolean(host.state.hideUnchanged)
+    });
+    const plot = createElement("div", "hep-sankey-wrap");
+    const svg = buildSankey(host, layout, summary);
+    host.migrationSvgEl = svg;
+    plot.append(svg);
+    host.migrationTipEl = createElement("div", "hep-tip");
+    plot.append(host.migrationTipEl);
+    host.migrationWrap.append(plot);
+    const caution = buildHyLawCaution(host, cohort.cells);
+    if (caution) host.migrationWrap.append(caution);
+    const tables = createElement("div", "hep-xtab-grid");
+    SIDES3.forEach((side) => tables.append(buildCrossTable(host, side, cohort.matrices.get(side))));
+    host.migrationWrap.append(tables);
+    host.migrationWrap.append(buildConcernLegend());
+    host.root.$hepSankey = {
+      nodes: layout.nodes,
+      ribbons: layout.ribbons.map((ribbon) => ({ ...ribbon })),
+      scale: layout.scale
+    };
+    if (carriedIds.length) {
+      const shownIds = new Set(cohort.plotted.map((subject) => String(subject.id)));
+      const survivors = carriedIds.map(String).filter((id) => shownIds.has(id));
+      if (survivors.length) setSelection(host, survivors);
+      else host.selection.dispatch([]);
+    }
+  },
+  /** The migration view's sticky selection: the selected flow's participants. */
+  selectedIds(host) {
+    return host.migrationSelectedIds;
+  },
+  /** The shared Participants control set a new multi-selection. */
+  onParticipantsChanged(host, ids) {
+    setSelection(host, ids);
+  },
+  /** The Clear selection gesture: drop the whole selection. */
+  clearSelection(host) {
+    clearSelection(host);
+  },
+  /** Restyle the diagram and the cross tables to the current hover/selection. */
+  highlight(host) {
+    refreshHighlight(host);
+  }
+};
+var migration_default = migrationView;
 
 // src/hep-explorer/views/composite.js
 function buildLegend() {
@@ -20097,20 +21002,20 @@ function datasetStyle(host, subjects, baseRadius) {
     pointHoverRadius: baseRadius + 2
   };
 }
-function refreshHighlight(host) {
+function refreshHighlight2(host) {
   host.compositeCharts.forEach((chart) => chart.update("none"));
   host.selection.updateTraceHeader(host.compositeHoverId, host.compositeSelectedIds);
 }
 function afterSelectionChange(host) {
   host.selection.sync(host.compositeSelectedIds);
-  refreshHighlight(host);
+  refreshHighlight2(host);
   host.selection.dispatch([...host.compositeSelectedIds]);
 }
 function setHover2(host, id) {
   const norm = id == null ? null : String(id);
   if (String(norm ?? "") === String(host.compositeHoverId ?? "")) return;
   host.compositeHoverId = norm;
-  refreshHighlight(host);
+  refreshHighlight2(host);
 }
 function toggleSelection(host, id) {
   const key = String(id);
@@ -20119,7 +21024,7 @@ function toggleSelection(host, id) {
   else host.compositeSelectedIds.push(key);
   afterSelectionChange(host);
 }
-function clearSelection(host) {
+function clearSelection2(host) {
   if (!host.compositeSelectedIds.length) return;
   host.compositeSelectedIds = [];
   afterSelectionChange(host);
@@ -20138,7 +21043,7 @@ function interactionOptions(host) {
     },
     onClick: (event, active, chart) => {
       if (!active.length) {
-        clearSelection(host);
+        clearSelection2(host);
         return;
       }
       const id = idAt(chart, active[0]);
@@ -20244,7 +21149,7 @@ function buildPanels(host, subjects) {
   });
   return grid;
 }
-function buildConcernLegend() {
+function buildConcernLegend2() {
   const legend = createElement("div", "hep-concern-legend");
   const items = [
     ["red", "Migration of concern"],
@@ -20300,7 +21205,7 @@ function buildMigrationTable(subjects) {
   tbody.append(totalRow);
   table.append(tbody);
   wrap.append(table);
-  wrap.append(buildConcernLegend());
+  wrap.append(buildConcernLegend2());
   return wrap;
 }
 function buildByArmSummary(host, subjects) {
@@ -20443,11 +21348,11 @@ var compositeView = {
   },
   /** The Clear selection gesture: drop the whole multi-selection. */
   clearSelection(host) {
-    clearSelection(host);
+    clearSelection2(host);
   },
   /** Restyle every composite panel to the current trace and refresh the header. */
   highlight(host) {
-    refreshHighlight(host);
+    refreshHighlight2(host);
   }
 };
 var composite_default = compositeView;
@@ -20465,8 +21370,12 @@ Chart.register(
 );
 var VIEWS = {
   scatter: scatter_default,
+  migration: migration_default,
   composite: composite_default
 };
+function resolveViewId(value) {
+  return Object.prototype.hasOwnProperty.call(VIEWS, value) ? value : "scatter";
+}
 var SafetyHepExplorer = class {
   constructor(element = "body", settings = {}) {
     this.element = typeof element === "string" ? document.querySelector(element) : element;
@@ -20498,9 +21407,16 @@ var SafetyHepExplorer = class {
     this.compositeSelectSection = null;
     this.compositeClearBtn = null;
     this.scatterSelectedIds = [];
+    this.migrationSelectedIds = [];
+    this.migrationSelectedKey = null;
+    this.migrationHoverKey = null;
+    this.migrationCellIndex = /* @__PURE__ */ new Map();
+    this.migrationShown = [];
+    this.migrationSvgEl = null;
+    this.migrationTipEl = null;
     this.participantsSelected = [];
     this.state = {
-      view: this.settings.view === "composite" ? "composite" : "scatter",
+      view: resolveViewId(this.settings.view),
       measureX: this.settings.x_default,
       measureY: this.settings.y_default,
       display: "relative_uln",
@@ -20511,6 +21427,10 @@ var SafetyHepExplorer = class {
       filters: {},
       rRatio: [...this.settings.r_ratio],
       cuts: JSON.parse(JSON.stringify(this.settings.cuts)),
+      // Migration-view controls (HEP-MIG-013, HEP-ARM-003): suppress the
+      // no-migration diagonal, and narrow the right-hand side to one active arm.
+      hideUnchanged: this.settings.hide_unchanged,
+      activeArms: this.settings.active_arms,
       selectedId: null,
       hoverId: null,
       xCut: null,
@@ -20563,6 +21483,9 @@ var SafetyHepExplorer = class {
     this.main.insertBefore(this.compositeHeaderEl, this.legendEl);
     this.quadrantWrap = createElement("div", "hep-quadrant-summary");
     this.main.insertBefore(this.quadrantWrap, this.multiplesWrap);
+    this.migrationWrap = createElement("div", "hep-migration-view");
+    this.migrationWrap.style.display = "none";
+    this.main.insertBefore(this.migrationWrap, this.multiplesWrap);
     this.compositeWrap = createElement("div", "hep-composite");
     this.compositeWrap.style.display = "none";
     this.main.insertBefore(this.compositeWrap, this.multiplesWrap);
@@ -20615,8 +21538,9 @@ var SafetyHepExplorer = class {
    */
   setSettings(settings) {
     this.settings = syncSettings7({ ...this.settings, ...settings });
-    if ("view" in settings)
-      this.state.view = this.settings.view === "composite" ? "composite" : "scatter";
+    if ("view" in settings) this.state.view = resolveViewId(this.settings.view);
+    if ("hide_unchanged" in settings) this.state.hideUnchanged = this.settings.hide_unchanged;
+    if ("active_arms" in settings) this.state.activeArms = this.settings.active_arms;
     if ("x_default" in settings) this.state.measureX = this.settings.x_default;
     if ("y_default" in settings) this.state.measureY = this.settings.y_default;
     if ("visit_window" in settings) this.state.visitWindow = this.settings.visit_window;
@@ -20704,15 +21628,18 @@ var SafetyHepExplorer = class {
    * @private
    */
   buildViewControl(addSection) {
-    renderViewSelector(addSection, {
+    const section = renderViewSelector(addSection, {
       options: VIEW_MODES,
       active: this.state.view,
-      onChange: (value) => {
-        this.state.view = value;
-        this.buildControls();
-        this.render();
-      }
+      onChange: (value) => this.switchView(value)
     });
+    if (resolveArmCol(this.cleanRows, this.settings)) return;
+    const options = [...section.querySelectorAll(".sv-view-option")];
+    const migration = options[VIEW_MODES.findIndex((mode) => mode.value === "migration")];
+    if (!migration) return;
+    migration.disabled = true;
+    migration.classList.add("is-disabled");
+    migration.title = "The migration Sankey needs a treatment-arm column. Map arm_col (or add ARM, ACTARM, TRT01A or TREATMENT to the data) to enable it.";
   }
   /**
    * Rebuild the settings/filters controls from data + state (HEP-CTRL-*). The
@@ -20784,6 +21711,8 @@ var SafetyHepExplorer = class {
     this.state.visitWindow = this.settings.visit_window;
     this.state.filters = {};
     this.state.rRatio = [...this.settings.r_ratio];
+    this.state.hideUnchanged = this.settings.hide_unchanged;
+    this.state.activeArms = this.settings.active_arms;
     this.buildControls();
     this.render();
   }
@@ -20797,7 +21726,25 @@ var SafetyHepExplorer = class {
     this.chartWrap.style.display = slots.has("chart") ? "" : "none";
     this.legendEl.style.display = slots.has("legend") ? "flex" : "none";
     this.quadrantWrap.style.display = slots.has("quadrantSummary") ? "" : "none";
+    this.migrationWrap.style.display = slots.has("migration") ? "" : "none";
     this.compositeWrap.style.display = slots.has("composite") ? "" : "none";
+  }
+  /**
+   * Switch to another registered view and redraw (HEP-STEP-003). The migration
+   * view's "review these in the composite plot" hand-off calls this rather than
+   * writing state.view itself: the module's only view dispatch lives in this
+   * file, and the existing carriedIds mechanism then restores exactly the
+   * selected participants, highlighted, in the composite panels.
+   * @param {string} view The view id to switch to.
+   * @returns {void}
+   * @private
+   */
+  switchView(view) {
+    const next = resolveViewId(view);
+    if (next === this.state.view) return;
+    this.state.view = next;
+    this.buildControls();
+    this.render();
   }
   /**
    * Redraw everything from the current data, settings, and control state:
@@ -20821,6 +21768,8 @@ var SafetyHepExplorer = class {
     this.listingWrap.innerHTML = "";
     this.legendEl.innerHTML = "";
     this.quadrantWrap.innerHTML = "";
+    this.migrationWrap.innerHTML = "";
+    if (this.root) this.root.$hepSankey = null;
     this.compositeWrap.innerHTML = "";
     this.selection.mount(this.compositeSelectSection, []);
     this.detailWrap.innerHTML = "";
@@ -21583,7 +22532,7 @@ function summaryCsv(majors, groups) {
 }
 
 // src/ae-explorer.js
-var SVG_NS2 = "http://www.w3.org/2000/svg";
+var SVG_NS3 = "http://www.w3.org/2000/svg";
 var NO_MATCH_MESSAGE = "Error: No AEs found for the current filters. Update the filters to see results.";
 var SUMMARY_FOOTNOTE = "Click a category to view the underlying records. Hover a rate for counts.";
 var FILTER_TYPE_NOTES = {
@@ -22104,12 +23053,12 @@ var AEExplorer = class {
    */
   buildAxis(scale, format) {
     const { width } = this.settings.plot_settings;
-    const svg = document.createElementNS(SVG_NS2, "svg");
+    const svg = document.createElementNS(SVG_NS3, "svg");
     svg.setAttribute("width", width);
     svg.setAttribute("height", 18);
     svg.setAttribute("class", "ae-axis");
     const [d0, d1] = scale.domain;
-    const line = document.createElementNS(SVG_NS2, "line");
+    const line = document.createElementNS(SVG_NS3, "line");
     line.setAttribute("x1", scale.x(d0));
     line.setAttribute("x2", scale.x(d1));
     line.setAttribute("y1", 4);
@@ -22118,7 +23067,7 @@ var AEExplorer = class {
     svg.append(line);
     const anchors = ["start", "middle", "end"];
     [d0, (d0 + d1) / 2, d1].forEach((value, index) => {
-      const text = document.createElementNS(SVG_NS2, "text");
+      const text = document.createElementNS(SVG_NS3, "text");
       text.setAttribute("x", scale.x(value));
       text.setAttribute("y", 15);
       text.setAttribute("text-anchor", anchors[index]);
@@ -22211,19 +23160,19 @@ var AEExplorer = class {
    */
   buildDotPlot(item, color2, percentScale) {
     const { height, width, radius } = this.settings.plot_settings;
-    const svg = document.createElementNS(SVG_NS2, "svg");
+    const svg = document.createElementNS(SVG_NS3, "svg");
     svg.setAttribute("width", width);
     svg.setAttribute("height", height);
     svg.setAttribute("class", "ae-plot");
     this.groups.forEach((group) => {
       const cell2 = item.cells[group];
-      const circle = document.createElementNS(SVG_NS2, "circle");
+      const circle = document.createElementNS(SVG_NS3, "circle");
       circle.setAttribute("cx", percentScale.x(cell2.per));
       circle.setAttribute("cy", height / 2);
       circle.setAttribute("r", Math.max(2, radius - 2));
       circle.setAttribute("fill", color2(group));
       circle.setAttribute("fill-opacity", "0.85");
-      const title = document.createElementNS(SVG_NS2, "title");
+      const title = document.createElementNS(SVG_NS3, "title");
       title.textContent = dotTitle(group, cell2);
       circle.append(title);
       svg.append(circle);
@@ -22240,7 +23189,7 @@ var AEExplorer = class {
    */
   buildDiffPlot(item, color2, diffScale) {
     const { height, width, radius } = this.settings.plot_settings;
-    const svg = document.createElementNS(SVG_NS2, "svg");
+    const svg = document.createElementNS(SVG_NS3, "svg");
     svg.setAttribute("width", width);
     svg.setAttribute("height", height);
     svg.setAttribute("class", "ae-plot");
@@ -22249,7 +23198,7 @@ var AEExplorer = class {
     const diffs = addDifferences(item.cells, this.groups);
     const hideCi = this.groups.length > 2;
     diffs.forEach((diff) => {
-      const line = document.createElementNS(SVG_NS2, "line");
+      const line = document.createElementNS(SVG_NS3, "line");
       line.setAttribute("x1", diffScale.x(diff.lower));
       line.setAttribute("x2", diffScale.x(diff.upper));
       line.setAttribute("y1", mid);
@@ -22258,7 +23207,7 @@ var AEExplorer = class {
       line.setAttribute("class", hideCi ? "ae-ci ae-ci-hidden" : "ae-ci");
       svg.append(line);
       const x = diffScale.x(diff.diff);
-      const diamond = document.createElementNS(SVG_NS2, "path");
+      const diamond = document.createElementNS(SVG_NS3, "path");
       diamond.setAttribute(
         "d",
         `M ${x} ${mid - half} L ${x + half} ${mid} L ${x} ${mid + half} L ${x - half} ${mid} Z`
@@ -22268,7 +23217,7 @@ var AEExplorer = class {
       diamond.setAttribute("stroke", color2(higher));
       diamond.setAttribute("fill-opacity", diff.sig ? "1" : "0.1");
       diamond.setAttribute("class", "ae-diamond");
-      const title = document.createElementNS(SVG_NS2, "title");
+      const title = document.createElementNS(SVG_NS3, "title");
       title.textContent = diffTitle(diff, item.cells);
       diamond.append(title);
       svg.append(diamond);

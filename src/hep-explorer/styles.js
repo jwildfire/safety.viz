@@ -10,7 +10,8 @@
 // The shared shell stylesheet (src/shell.js) stays module-agnostic; this is the
 // hep-explorer's own, injected once per document.
 //
-// Requirement groups: HEP-QUAD-005, HEP-SELECT-002, HEP-SELECT-005, HEP-COMP-*.
+// Requirement groups: HEP-QUAD-005, HEP-SELECT-002, HEP-SELECT-005, HEP-COMP-*,
+// HEP-MIG-*, HEP-XTAB-*, HEP-STEP-*, HEP-ACC-*.
 
 const STYLE_ID = 'safety-viz-hep-explorer-styles';
 
@@ -52,7 +53,41 @@ const MODULE_CSS = `
 .safety-hep-explorer .hep-migration caption{caption-side:top;text-align:left;font-size:.82rem;color:#52616f;margin-bottom:.35rem}
 .safety-hep-explorer .hep-concern-legend{display:flex;flex-wrap:wrap;gap:.35rem .9rem;font-size:.76rem;color:#52616f;margin:.5rem 0 0}
 .safety-hep-explorer .hep-concern-legend .hep-legend-item{display:inline-flex;align-items:center;gap:.3rem}
-.safety-hep-explorer .hep-concern-swatch{display:inline-block;width:.8rem;height:.8rem;border:1px solid #b8c0cc;border-radius:2px}`;
+.safety-hep-explorer .hep-concern-swatch{display:inline-block;width:.8rem;height:.8rem;border:1px solid #b8c0cc;border-radius:2px}
+.safety-hep-explorer .sv-view-option.is-disabled{opacity:.5;cursor:not-allowed;background:#f6f8fa}
+.safety-hep-explorer .hep-migration-view{margin-top:.5rem}
+.safety-hep-explorer .hep-sankey-wrap{position:relative;border:1px solid #d8dee4;border-radius:10px;padding:.6rem .7rem;background:#fff}
+.safety-hep-explorer .hep-sankey{display:block;width:100%;height:auto;overflow:visible}
+.safety-hep-explorer .hep-sankey-tier{fill:#f2f5f8}
+.safety-hep-explorer .hep-sankey-tier-label{font-size:11px;fill:#7b8794;font-weight:600}
+.safety-hep-explorer .hep-sankey-col-label{font-size:12px;fill:#52616f;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.safety-hep-explorer .hep-sankey-node{fill-opacity:.9;stroke:#fff;stroke-width:1}
+.safety-hep-explorer .hep-sankey-node.is-stub{fill-opacity:.45}
+.safety-hep-explorer .hep-sankey-node.is-active{stroke:#111827;stroke-width:1.5}
+.safety-hep-explorer .hep-sankey-node-label{font-size:11px;fill:#1f2933}
+.safety-hep-explorer .hep-sankey-node-label.is-centre{font-weight:600;stroke:#fff;stroke-width:3;paint-order:stroke}
+.safety-hep-explorer .hep-sankey-node-label.is-stub{fill:#9aa5b1}
+.safety-hep-explorer .hep-ribbon{cursor:pointer;transition:fill-opacity .12s ease}
+.safety-hep-explorer .hep-ribbon.is-dim{fill-opacity:.25;stroke-opacity:.3}
+.safety-hep-explorer .hep-ribbon.is-active{fill-opacity:1;stroke:#111827;stroke-width:1.5}
+.safety-hep-explorer .hep-ribbon.is-selected{stroke:#111827;stroke-width:2}
+.safety-hep-explorer .hep-ribbon:focus-visible{outline:2px solid #0b62a4;outline-offset:2px}
+.safety-hep-explorer .hep-tip{position:absolute;left:0;top:0;display:none;max-width:260px;white-space:pre-line;pointer-events:none;z-index:3;background:rgba(17,24,39,.94);color:#fff;font-size:.78rem;line-height:1.35;border-radius:6px;padding:.35rem .5rem}
+.safety-hep-explorer .hep-tip.is-visible{display:block}
+.safety-hep-explorer .hep-sankey-caution{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-top:.75rem;border:1px solid #f0b37e;border-radius:8px;background:#fff7ed;padding:.5rem .6rem;font-size:.82rem}
+.safety-hep-explorer .hep-step{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem}
+.safety-hep-explorer .hep-step-text{color:#1f2933}
+.safety-hep-explorer .hep-step-btn{padding:.3rem .6rem;border:1px solid #0b62a4;border-radius:6px;background:#eaf2fb;color:#0b3d63;font:inherit;font-size:.8rem;font-weight:600;cursor:pointer}
+.safety-hep-explorer .hep-step-btn:hover{background:#dbe9f8}
+.safety-hep-explorer .hep-step-btn:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
+.safety-hep-explorer .hep-xtab-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:1rem;margin-top:1rem}
+.safety-hep-explorer .hep-xtab{min-width:0;overflow-x:auto}
+.safety-hep-explorer .hep-xtab table{width:100%}
+.safety-hep-explorer .hep-xtab th,.safety-hep-explorer .hep-xtab td{padding:.3rem .4rem}
+.safety-hep-explorer .hep-xtab td.hep-xtab-cell.is-clickable{cursor:pointer}
+.safety-hep-explorer .hep-xtab td.hep-xtab-cell.is-clickable:hover{outline:2px solid #0b62a4;outline-offset:-2px}
+.safety-hep-explorer .hep-xtab td.hep-xtab-cell.is-selected{outline:2px solid #111827;outline-offset:-2px;font-weight:700}
+.safety-hep-explorer .hep-xtab td.hep-xtab-cell:focus-visible{outline:2px solid #0b62a4;outline-offset:-2px}`;
 
 /**
  * Inject the module-specific stylesheet once per document; a second explorer on

@@ -39,23 +39,42 @@ pending; each row lists the module IDs its test covers.
 | HEP-COMP-006                                 | —                  | #67   | the View control toggles between the composite and scatter views                                             |
 | HEP-COMP-006                                 | —                  | #67   | degrades gracefully when baseline or on-treatment values are absent                                          |
 | HEP-COMP-007                                 | —                  | #67   | hovering and clicking a point traces the participant across all panels                                       |
+| HEP-MIG-001, HEP-MIG-014                     | —                  | #92   | the migration view renders BOTH an svg diagram and cross tables in the main column                           |
+| HEP-MIG-002/003/010/015                      | —                  | #92   | geometry is stashed on the root, placebo runs left, active runs right, Hy's Law on top                       |
+| HEP-ACC-001/002/003                          | —                  | #92   | ribbons are named, focusable buttons activated by Enter and Space                                            |
+| HEP-STEP-001/002/003                         | —                  | #92   | a ribbon click carries its participants into the composite plot                                              |
+| HEP-MIG-007                                  | —                  | #92   | clicking the centroid computed from $hepSankey selects that flow, so geometry and pointer agree              |
+| HEP-XTAB-001/002/004/005                     | —                  | #92   | per-arm cross tables agree with the ribbons and select the same participants                                 |
+| HEP-STEP-005                                 | —                  | #92   | the Hy's Law self-flow raises the caution the paper acknowledges                                             |
+| HEP-MIG-013                                  | —                  | #92   | the Hide unchanged control drops the diagonal ribbons and reports the hidden count                           |
+| HEP-STEP-004                                 | —                  | #92   | a selection made in any view survives a switch to either other view                                          |
+| HEP-ARM-004/005, HEP-DATA-012                | —                  | #92   | the notes account for every participant the diagram cannot show                                              |
+| HEP-ARM-005                                  | —                  | #92   | the Migration option is disabled with an explanation when no arm column is mapped                            |
+| HEP-MIG-017                                  | —                  | #92   | hovering a ribbon highlights it with both endpoint nodes and opens an HTML tooltip                           |
+| HEP-ARM-007                                  | —                  | #92   | arm designation scopes the migration cohort only, not the scatter or composite views                         |
 
 ## Unit evidence (Vitest — `tests/unit/hep-explorer/`)
 
-| Requirement ID                                                                             | Source matrix rows | Issue | Test file               |
-| ------------------------------------------------------------------------------------------ | ------------------ | ----- | ----------------------- |
-| HEP-CTRL-001/002/006/007/008/009/010/011 (defaults, control specs)                         | —                  | #43   | `configure.test.js`     |
-| HEP-QUAD-001, HEP-DATA-001/002, HEP-DISPLAY-001, HEP-SELECT-006 (cuts back-fill, mappings) | —                  | #43   | `configure.test.js`     |
-| HEP-DATA-005 (schema required columns)                                                     | —                  | #43   | `checkInputs.test.js`   |
-| HEP-DATA-002/003/004 (measure resolution, cleaning)                                        | —                  | #43   | `structureData.test.js` |
-| HEP-DISPLAY-001/002/003/004/006 (×ULN, ×Baseline, peaks, R-Ratio)                          | —                  | #43   | `structureData.test.js` |
-| HEP-CHART-001, HEP-CTRL-008/009/011 (points, timing, group, filters)                       | —                  | #43   | `structureData.test.js` |
-| HEP-QUAD-004 (quadrant classification counts/percents)                                     | —                  | #43   | `structureData.test.js` |
-| HEP-SELECT-002/003/005 (drill-down series)                                                 | —                  | #43   | `structureData.test.js` |
-| HEP-CHART-002/003/004, HEP-CTRL-006, HEP-DISPLAY-001 (domains, log, labels)                | —                  | #43   | `getScales.test.js`     |
-| HEP-CHART-004, HEP-CTRL-009, HEP-QUAD-002, HEP-SELECT-001 (tooltip, palette, plugin)       | —                  | #43   | `getPlugins.test.js`    |
-| HEP-API-001 (module export)                                                                | —                  | #43   | `export.test.js`        |
-| HEP-COMP-001/002/003/004/005/006 (classification, migration, concern matrix, by-arm)       | —                  | #67   | `composite.test.js`     |
+| Requirement ID                                                                             | Source matrix rows | Issue | Test file                |
+| ------------------------------------------------------------------------------------------ | ------------------ | ----- | ------------------------ |
+| HEP-CTRL-001/002/006/007/008/009/010/011 (defaults, control specs)                         | —                  | #43   | `configure.test.js`      |
+| HEP-QUAD-001, HEP-DATA-001/002, HEP-DISPLAY-001, HEP-SELECT-006 (cuts back-fill, mappings) | —                  | #43   | `configure.test.js`      |
+| HEP-DATA-005 (schema required columns)                                                     | —                  | #43   | `checkInputs.test.js`    |
+| HEP-DATA-002/003/004 (measure resolution, cleaning)                                        | —                  | #43   | `structureData.test.js`  |
+| HEP-DISPLAY-001/002/003/004/006 (×ULN, ×Baseline, peaks, R-Ratio)                          | —                  | #43   | `structureData.test.js`  |
+| HEP-CHART-001, HEP-CTRL-008/009/011 (points, timing, group, filters)                       | —                  | #43   | `structureData.test.js`  |
+| HEP-QUAD-004 (quadrant classification counts/percents)                                     | —                  | #43   | `structureData.test.js`  |
+| HEP-SELECT-002/003/005 (drill-down series)                                                 | —                  | #43   | `structureData.test.js`  |
+| HEP-CHART-002/003/004, HEP-CTRL-006, HEP-DISPLAY-001 (domains, log, labels)                | —                  | #43   | `getScales.test.js`      |
+| HEP-CHART-004, HEP-CTRL-009, HEP-QUAD-002, HEP-SELECT-001 (tooltip, palette, plugin)       | —                  | #43   | `getPlugins.test.js`     |
+| HEP-API-001 (module export)                                                                | —                  | #43   | `export.test.js`         |
+| HEP-COMP-001/002/003/004/005/006 (classification, migration, concern matrix, by-arm)       | —                  | #67   | `composite.test.js`      |
+| HEP-MIG-001..009, HEP-MIG-012/013/016 (Sankey geometry: stacking, shared scale, paths)     | —                  | #92   | `sankeyLayout.test.js`   |
+| HEP-MIG-004/008/010/011/013/014/015 (painting, labels, hover, tooltip, geometry stash)     | —                  | #92   | `migration-view.test.js` |
+| HEP-XTAB-001..006 (per-arm cross tables, shading, ribbon/cell parity, composite untouched) | —                  | #92   | `migration-view.test.js` |
+| HEP-STEP-001/002/003/005 (selection, hand-off footnote, Hy's-Law caution)                  | —                  | #92   | `migration-view.test.js` |
+| HEP-ARM-003/004/005/006, HEP-DATA-012 (arm scoping, degradation, exclusion notes)          | —                  | #92   | `migration-view.test.js` |
+| HEP-ACC-001/002/003 (ribbon role/name/keys, svg role and summary)                          | —                  | #92   | `migration-view.test.js` |
 
 ## Source-matrix routing status
 
@@ -80,7 +99,13 @@ repo), so routing is against the port spec's scope rather than matrix rows.
   baseline quadrant, the four-panel ×Baseline shift plot, the migration table
   with concern coding, the by-arm concern-vs-benefit summary, and the
   participant cross-linking that traces a hovered/clicked participant across
-  every panel with an id header (HEP-COMP-001..007).
+  every panel with an id header (HEP-COMP-001..007), and the **migration
+  (Sankey) view** — Figure 3 of Amirzadegan et al., Drug Safety 2025 — with its
+  mirrored three-column diagram (HEP-MIG-001..016), per-arm cross tables
+  (HEP-XTAB-001..006), the two-step hand-off into the composite plot
+  (HEP-STEP-001..005), arm designation and its exclusion notes
+  (HEP-ARM-001..006, HEP-DATA-012), and keyboard/screen-reader access to every
+  ribbon (HEP-ACC-001..003).
 
 - **Deferred (follow-ups, not part of the coordinated-views claim):**
   draggable cut-lines (v1 uses the reference-line number inputs), the study-day
