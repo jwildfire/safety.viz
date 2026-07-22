@@ -212,6 +212,12 @@ For a rapid triage of which cases merit referral to a hepatic board, the manual'
 - **AST corroboration and per-measure detail** → the same drill-down, with its Measure / N / Min / Median / Max summary table and linked record listing; direct/indirect bilirubin and other analytes appear here when present in the data.
 - **Population and subgroup context** → the Group color-by control with its legend, plus the categorical data filters.
 
+## Is this the right graphic for your trial?
+
+The eDISH scatter above assumes participants enter the study with roughly normal liver tests, because its ×ULN quadrants only carry meaning under that assumption. When the population was deliberately enrolled with abnormal baselines, a different graphic applies — the **composite plot** view on this page for participants who are abnormal in both ALT and bilirubin, and the separate [Hepatic ALT Waterfall](../hep-waterfall/guide.html) for participants with elevated baseline ALT but **normal** baseline bilirubin, which plots absolute U/L rather than a ratio and excludes exactly the baseline-jaundiced participants the composite view requires.
+
+Which one to reach for is decided by the population's baseline profile, not by preference. [Choosing a hepatic DILI graphic](https://github.com/jwildfire/safety.viz/blob/dev/docs/guides/hepatic-dili-tools.md) lays that out as a single decision table, following Table 1 of Amirzadegan et al., _Drug Safety_ 2025;48(5):443–453.
+
 ## What is not yet on this page
 
 A few steps in the source workflow depend on capabilities planned for a later safety.viz release, so no control corresponds to them today:

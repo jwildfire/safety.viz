@@ -17,6 +17,16 @@ import { fileURLToPath } from 'node:url';
 // These IDs sit in their own HWF-COHORT-* area: they evidence properties of the
 // DEMO DATA, not of the renderer, and must not be confused with the HWF-DATA-*
 // requirements the module's own tests satisfy.
+//
+// Filed under tests/unit/hep-waterfall/ deliberately. scripts/evidence-lib.mjs
+// routes test files to modules by directory name (tests/unit/<module>/**), and
+// anything under a directory that is NOT a registered renderer module is treated
+// as shared scaffold and DUPLICATED into every module's evidence.json — which is
+// what a tests/unit/demo-data/ home would have done with these eleven records,
+// stamping the ALT waterfall's demo cohort onto all ten renderers. Same
+// reasoning, and same fix, as the tests/unit/box-whisker/ case in safety.viz#94.
+// This directory is only valid once hep-waterfall is registered in
+// site/config.json.
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const dataPath = path.join(rootDir, 'site', 'data', 'adbds-abnbl.csv');

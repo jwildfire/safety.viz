@@ -1017,7 +1017,7 @@ var _textX = (align, left, right, rtl) => {
 function _getStartAndCountOfVisiblePoints(meta, points, animationsDisabled) {
   const pointCount = points.length;
   let start = 0;
-  let count = pointCount;
+  let count2 = pointCount;
   if (meta._sorted) {
     const { iScale, vScale, _parsed } = meta;
     const spanGaps = meta.dataset ? meta.dataset.options ? meta.dataset.options.spanGaps : null : null;
@@ -1047,14 +1047,14 @@ function _getStartAndCountOfVisiblePoints(meta, points, animationsDisabled) {
         const distanceToDefinedHi = _parsed.slice(end - 1).findIndex((point) => !isNullOrUndef(point[vScale.axis]));
         end += Math.max(0, distanceToDefinedHi);
       }
-      count = _limitValue(end, start, pointCount) - start;
+      count2 = _limitValue(end, start, pointCount) - start;
     } else {
-      count = pointCount - start;
+      count2 = pointCount - start;
     }
   }
   return {
     start,
-    count
+    count: count2
   };
 }
 function _scaleRangesChanged(meta) {
@@ -2649,35 +2649,35 @@ function propertyFn(property) {
     normalize: (x) => x
   };
 }
-function normalizeSegment({ start, end, count, loop, style }) {
+function normalizeSegment({ start, end, count: count2, loop, style }) {
   return {
-    start: start % count,
-    end: end % count,
-    loop: loop && (end - start + 1) % count === 0,
+    start: start % count2,
+    end: end % count2,
+    loop: loop && (end - start + 1) % count2 === 0,
     style
   };
 }
 function getSegment(segment, points, bounds) {
   const { property, start: startBound, end: endBound } = bounds;
   const { between, normalize } = propertyFn(property);
-  const count = points.length;
+  const count2 = points.length;
   let { start, end, loop } = segment;
   let i, ilen;
   if (loop) {
-    start += count;
-    end += count;
-    for (i = 0, ilen = count; i < ilen; ++i) {
-      if (!between(normalize(points[start % count][property]), startBound, endBound)) {
+    start += count2;
+    end += count2;
+    for (i = 0, ilen = count2; i < ilen; ++i) {
+      if (!between(normalize(points[start % count2][property]), startBound, endBound)) {
         break;
       }
       start--;
       end--;
     }
-    start %= count;
-    end %= count;
+    start %= count2;
+    end %= count2;
   }
   if (end < start) {
-    end += count;
+    end += count2;
   }
   return {
     start,
@@ -2693,7 +2693,7 @@ function _boundSegment(segment, points, bounds) {
     ];
   }
   const { property, start: startBound, end: endBound } = bounds;
-  const count = points.length;
+  const count2 = points.length;
   const { compare, between, normalize } = propertyFn(property);
   const { start, end, loop, style } = getSegment(segment, points, bounds);
   const result = [];
@@ -2705,7 +2705,7 @@ function _boundSegment(segment, points, bounds) {
   const shouldStart = () => inside || startIsBefore();
   const shouldStop = () => !inside || endIsBefore();
   for (let i = start, prev = start; i <= end; ++i) {
-    point = points[i % count];
+    point = points[i % count2];
     if (point.skip) {
       continue;
     }
@@ -2722,7 +2722,7 @@ function _boundSegment(segment, points, bounds) {
         start: subStart,
         end: i,
         loop,
-        count,
+        count: count2,
         style
       }));
       subStart = null;
@@ -2735,7 +2735,7 @@ function _boundSegment(segment, points, bounds) {
       start: subStart,
       end,
       loop,
-      count,
+      count: count2,
       style
     }));
   }
@@ -2752,44 +2752,44 @@ function _boundSegments(line, bounds) {
   }
   return result;
 }
-function findStartAndEnd(points, count, loop, spanGaps) {
+function findStartAndEnd(points, count2, loop, spanGaps) {
   let start = 0;
-  let end = count - 1;
+  let end = count2 - 1;
   if (loop && !spanGaps) {
-    while (start < count && !points[start].skip) {
+    while (start < count2 && !points[start].skip) {
       start++;
     }
   }
-  while (start < count && points[start].skip) {
+  while (start < count2 && points[start].skip) {
     start++;
   }
-  start %= count;
+  start %= count2;
   if (loop) {
     end += start;
   }
-  while (end > start && points[end % count].skip) {
+  while (end > start && points[end % count2].skip) {
     end--;
   }
-  end %= count;
+  end %= count2;
   return {
     start,
     end
   };
 }
 function solidSegments(points, start, max, loop) {
-  const count = points.length;
+  const count2 = points.length;
   const result = [];
   let last = start;
   let prev = points[start];
   let end;
   for (end = start + 1; end <= max; ++end) {
-    const cur = points[end % count];
+    const cur = points[end % count2];
     if (cur.skip || cur.stop) {
       if (!prev.skip) {
         loop = false;
         result.push({
-          start: start % count,
-          end: (end - 1) % count,
+          start: start % count2,
+          end: (end - 1) % count2,
           loop
         });
         start = last = cur.stop ? end : null;
@@ -2804,8 +2804,8 @@ function solidSegments(points, start, max, loop) {
   }
   if (last !== null) {
     result.push({
-      start: start % count,
-      end: last % count,
+      start: start % count2,
+      end: last % count2,
       loop
     });
   }
@@ -2814,12 +2814,12 @@ function solidSegments(points, start, max, loop) {
 function _computeSegments(line, segmentOptions) {
   const points = line.points;
   const spanGaps = line.options.spanGaps;
-  const count = points.length;
-  if (!count) {
+  const count2 = points.length;
+  if (!count2) {
     return [];
   }
   const loop = !!line._loop;
-  const { start, end } = findStartAndEnd(points, count, loop, spanGaps);
+  const { start, end } = findStartAndEnd(points, count2, loop, spanGaps);
   if (spanGaps === true) {
     return splitByStyles(line, [
       {
@@ -2829,8 +2829,8 @@ function _computeSegments(line, segmentOptions) {
       }
     ], points, segmentOptions);
   }
-  const max = end < start ? end + count : end;
-  const completeLoop = !!line._fullLoop && start === 0 && end === count - 1;
+  const max = end < start ? end + count2 : end;
+  const completeLoop = !!line._fullLoop && start === 0 && end === count2 - 1;
   return splitByStyles(line, solidSegments(points, start, max, completeLoop), points, segmentOptions);
 }
 function splitByStyles(line, segments, points, segmentOptions) {
@@ -2843,7 +2843,7 @@ function doSplitByStyles(line, segments, points, segmentOptions) {
   const chartContext = line._chart.getContext();
   const baseStyle = readStyle(line.options);
   const { _datasetIndex: datasetIndex, options: { spanGaps } } = line;
-  const count = points.length;
+  const count2 = points.length;
   const result = [];
   let prevStyle = baseStyle;
   let start = segments[0].start;
@@ -2853,36 +2853,36 @@ function doSplitByStyles(line, segments, points, segmentOptions) {
     if (s === e) {
       return;
     }
-    s += count;
-    while (points[s % count].skip) {
+    s += count2;
+    while (points[s % count2].skip) {
       s -= dir;
     }
-    while (points[e % count].skip) {
+    while (points[e % count2].skip) {
       e += dir;
     }
-    if (s % count !== e % count) {
+    if (s % count2 !== e % count2) {
       result.push({
-        start: s % count,
-        end: e % count,
+        start: s % count2,
+        end: e % count2,
         loop: l,
         style: st
       });
       prevStyle = st;
-      start = e % count;
+      start = e % count2;
     }
   }
   for (const segment of segments) {
     start = spanGaps ? start : segment.start;
-    let prev = points[start % count];
+    let prev = points[start % count2];
     let style;
     for (i = start + 1; i <= segment.end; i++) {
-      const pt = points[i % count];
+      const pt = points[i % count2];
       style = readStyle(segmentOptions.setContext(createContext(chartContext, {
         type: "segment",
         p0: prev,
         p1: pt,
-        p0DataIndex: (i - 1) % count,
-        p1DataIndex: i % count,
+        p0DataIndex: (i - 1) % count2,
+        p1DataIndex: i % count2,
         datasetIndex
       })));
       if (styleChanged(style, prevStyle)) {
@@ -3653,11 +3653,11 @@ var DatasetController = class {
     this._parsing = this.options.parsing;
     this._cachedDataOpts = {};
   }
-  parse(start, count) {
+  parse(start, count2) {
     const { _cachedMeta: meta, _data: data } = this;
     const { iScale, _stacked } = meta;
     const iAxis = iScale.axis;
-    let sorted = start === 0 && count === data.length ? true : meta._sorted;
+    let sorted = start === 0 && count2 === data.length ? true : meta._sorted;
     let prev = start > 0 && meta._parsed[start - 1];
     let i, cur, parsed;
     if (this._parsing === false) {
@@ -3666,14 +3666,14 @@ var DatasetController = class {
       parsed = data;
     } else {
       if (isArray(data[start])) {
-        parsed = this.parseArrayData(meta, data, start, count);
+        parsed = this.parseArrayData(meta, data, start, count2);
       } else if (isObject(data[start])) {
-        parsed = this.parseObjectData(meta, data, start, count);
+        parsed = this.parseObjectData(meta, data, start, count2);
       } else {
-        parsed = this.parsePrimitiveData(meta, data, start, count);
+        parsed = this.parsePrimitiveData(meta, data, start, count2);
       }
       const isNotInOrderComparedToPrev = () => cur[iAxis] === null || prev && cur[iAxis] < prev[iAxis];
-      for (i = 0; i < count; ++i) {
+      for (i = 0; i < count2; ++i) {
         meta._parsed[i + start] = cur = parsed[i];
         if (sorted) {
           if (isNotInOrderComparedToPrev()) {
@@ -3688,15 +3688,15 @@ var DatasetController = class {
       updateStacks(this, parsed);
     }
   }
-  parsePrimitiveData(meta, data, start, count) {
+  parsePrimitiveData(meta, data, start, count2) {
     const { iScale, vScale } = meta;
     const iAxis = iScale.axis;
     const vAxis = vScale.axis;
     const labels = iScale.getLabels();
     const singleScale = iScale === vScale;
-    const parsed = new Array(count);
+    const parsed = new Array(count2);
     let i, ilen, index;
-    for (i = 0, ilen = count; i < ilen; ++i) {
+    for (i = 0, ilen = count2; i < ilen; ++i) {
       index = i + start;
       parsed[i] = {
         [iAxis]: singleScale || iScale.parse(labels[index], index),
@@ -3705,11 +3705,11 @@ var DatasetController = class {
     }
     return parsed;
   }
-  parseArrayData(meta, data, start, count) {
+  parseArrayData(meta, data, start, count2) {
     const { xScale, yScale } = meta;
-    const parsed = new Array(count);
+    const parsed = new Array(count2);
     let i, ilen, index, item;
-    for (i = 0, ilen = count; i < ilen; ++i) {
+    for (i = 0, ilen = count2; i < ilen; ++i) {
       index = i + start;
       item = data[index];
       parsed[i] = {
@@ -3719,12 +3719,12 @@ var DatasetController = class {
     }
     return parsed;
   }
-  parseObjectData(meta, data, start, count) {
+  parseObjectData(meta, data, start, count2) {
     const { xScale, yScale } = meta;
     const { xAxisKey = "x", yAxisKey = "y" } = this._parsing;
-    const parsed = new Array(count);
+    const parsed = new Array(count2);
     let i, ilen, index, item;
-    for (i = 0, ilen = count; i < ilen; ++i) {
+    for (i = 0, ilen = count2; i < ilen; ++i) {
       index = i + start;
       item = data[index];
       parsed[i] = {
@@ -3841,13 +3841,13 @@ var DatasetController = class {
     const area = chart.chartArea;
     const active = [];
     const start = this._drawStart || 0;
-    const count = this._drawCount || elements.length - start;
+    const count2 = this._drawCount || elements.length - start;
     const drawActiveElementsOnTop = this.options.drawActiveElementsOnTop;
     let i;
     if (meta.dataset) {
-      meta.dataset.draw(ctx, area, start, count);
+      meta.dataset.draw(ctx, area, start, count2);
     }
-    for (i = start; i < start + count; ++i) {
+    for (i = start; i < start + count2; ++i) {
       const element = elements[i];
       if (element.hidden) {
         continue;
@@ -4007,9 +4007,9 @@ var DatasetController = class {
     this._syncList = [];
     const numMeta = elements.length;
     const numData = data.length;
-    const count = Math.min(numData, numMeta);
-    if (count) {
-      this.parse(0, count);
+    const count2 = Math.min(numData, numMeta);
+    if (count2) {
+      this.parse(0, count2);
     }
     if (numData > numMeta) {
       this._insertElements(numMeta, numData - numMeta, resetNewElements);
@@ -4017,15 +4017,15 @@ var DatasetController = class {
       this._removeElements(numData, numMeta - numData);
     }
   }
-  _insertElements(start, count, resetNewElements = true) {
+  _insertElements(start, count2, resetNewElements = true) {
     const meta = this._cachedMeta;
     const data = meta.data;
-    const end = start + count;
+    const end = start + count2;
     let i;
     const move = (arr) => {
-      arr.length += count;
+      arr.length += count2;
       for (i = arr.length - 1; i >= end; i--) {
-        arr[i] = arr[i - count];
+        arr[i] = arr[i - count2];
       }
     };
     move(data);
@@ -4035,22 +4035,22 @@ var DatasetController = class {
     if (this._parsing) {
       move(meta._parsed);
     }
-    this.parse(start, count);
+    this.parse(start, count2);
     if (resetNewElements) {
-      this.updateElements(data, start, count, "reset");
+      this.updateElements(data, start, count2, "reset");
     }
   }
-  updateElements(element, start, count, mode) {
+  updateElements(element, start, count2, mode) {
   }
-  _removeElements(start, count) {
+  _removeElements(start, count2) {
     const meta = this._cachedMeta;
     if (this._parsing) {
-      const removed = meta._parsed.splice(start, count);
+      const removed = meta._parsed.splice(start, count2);
       if (meta._stacked) {
         clearStacks(meta, removed);
       }
     }
-    meta.data.splice(start, count);
+    meta.data.splice(start, count2);
   }
   _sync(args) {
     if (this._parsing) {
@@ -4065,11 +4065,11 @@ var DatasetController = class {
     ]);
   }
   _onDataPush() {
-    const count = arguments.length;
+    const count2 = arguments.length;
     this._sync([
       "_insertElements",
-      this.getDataset().data.length - count,
-      count
+      this.getDataset().data.length - count2,
+      count2
     ]);
   }
   _onDataPop() {
@@ -4086,12 +4086,12 @@ var DatasetController = class {
       1
     ]);
   }
-  _onDataSplice(start, count) {
-    if (count) {
+  _onDataSplice(start, count2) {
+    if (count2) {
       this._sync([
         "_removeElements",
         start,
-        count
+        count2
       ]);
     }
     const newCount = arguments.length - 2;
@@ -4212,14 +4212,14 @@ function parseValue(entry, item, vScale, i) {
   }
   return item;
 }
-function parseArrayOrPrimitive(meta, data, start, count) {
+function parseArrayOrPrimitive(meta, data, start, count2) {
   const iScale = meta.iScale;
   const vScale = meta.vScale;
   const labels = iScale.getLabels();
   const singleScale = iScale === vScale;
   const parsed = [];
   let i, ilen, item, entry;
-  for (i = start, ilen = start + count; i < ilen; ++i) {
+  for (i = start, ilen = start + count2; i < ilen; ++i) {
     entry = data[i];
     item = {};
     item[iScale.axis] = singleScale || iScale.parse(labels[i], i);
@@ -4347,20 +4347,20 @@ var BarController = class extends DatasetController {
       }
     }
   };
-  parsePrimitiveData(meta, data, start, count) {
-    return parseArrayOrPrimitive(meta, data, start, count);
+  parsePrimitiveData(meta, data, start, count2) {
+    return parseArrayOrPrimitive(meta, data, start, count2);
   }
-  parseArrayData(meta, data, start, count) {
-    return parseArrayOrPrimitive(meta, data, start, count);
+  parseArrayData(meta, data, start, count2) {
+    return parseArrayOrPrimitive(meta, data, start, count2);
   }
-  parseObjectData(meta, data, start, count) {
+  parseObjectData(meta, data, start, count2) {
     const { iScale, vScale } = meta;
     const { xAxisKey = "x", yAxisKey = "y" } = this._parsing;
     const iAxisKey = iScale.axis === "x" ? xAxisKey : yAxisKey;
     const vAxisKey = vScale.axis === "x" ? xAxisKey : yAxisKey;
     const parsed = [];
     let i, ilen, item, obj;
-    for (i = start, ilen = start + count; i < ilen; ++i) {
+    for (i = start, ilen = start + count2; i < ilen; ++i) {
       obj = data[i];
       item = {};
       item[iScale.axis] = iScale.parse(resolveObjectKey(obj, iAxisKey), i);
@@ -4400,14 +4400,14 @@ var BarController = class extends DatasetController {
     const meta = this._cachedMeta;
     this.updateElements(meta.data, 0, meta.data.length, mode);
   }
-  updateElements(bars, start, count, mode) {
+  updateElements(bars, start, count2, mode) {
     const reset = mode === "reset";
     const { index, _cachedMeta: { vScale } } = this;
     const base = vScale.getBasePixel();
     const horizontal = vScale.isHorizontal();
     const ruler = this._getRuler();
     const { sharedOptions, includeOptions } = this._getSharedOptions(start, mode);
-    for (let i = start; i < start + count; i++) {
+    for (let i = start; i < start + count2; i++) {
       const parsed = this.getParsed(i);
       const vpixels = reset || isNullOrUndef(parsed[vScale.axis]) ? {
         base,
@@ -4632,12 +4632,12 @@ var LineController = class extends DatasetController {
     const meta = this._cachedMeta;
     const { dataset: line, data: points = [], _dataset } = meta;
     const animationsDisabled = this.chart._animationsDisabled;
-    let { start, count } = _getStartAndCountOfVisiblePoints(meta, points, animationsDisabled);
+    let { start, count: count2 } = _getStartAndCountOfVisiblePoints(meta, points, animationsDisabled);
     this._drawStart = start;
-    this._drawCount = count;
+    this._drawCount = count2;
     if (_scaleRangesChanged(meta)) {
       start = 0;
-      count = points.length;
+      count2 = points.length;
     }
     line._chart = this.chart;
     line._datasetIndex = this.index;
@@ -4652,9 +4652,9 @@ var LineController = class extends DatasetController {
       animated: !animationsDisabled,
       options
     }, mode);
-    this.updateElements(points, start, count, mode);
+    this.updateElements(points, start, count2, mode);
   }
-  updateElements(points, start, count, mode) {
+  updateElements(points, start, count2, mode) {
     const reset = mode === "reset";
     const { iScale, vScale, _stacked, _dataset } = this._cachedMeta;
     const { sharedOptions, includeOptions } = this._getSharedOptions(start, mode);
@@ -4663,7 +4663,7 @@ var LineController = class extends DatasetController {
     const { spanGaps, segment } = this.options;
     const maxGapLength = isNumber(spanGaps) ? spanGaps : Number.POSITIVE_INFINITY;
     const directUpdate = this.chart._animationsDisabled || reset || mode === "none";
-    const end = start + count;
+    const end = start + count2;
     const pointsCount = points.length;
     let prevParsed = start > 0 && this.getParsed(start - 1);
     for (let i = 0; i < pointsCount; ++i) {
@@ -4747,12 +4747,12 @@ var ScatterController = class extends DatasetController {
     const meta = this._cachedMeta;
     const { data: points = [] } = meta;
     const animationsDisabled = this.chart._animationsDisabled;
-    let { start, count } = _getStartAndCountOfVisiblePoints(meta, points, animationsDisabled);
+    let { start, count: count2 } = _getStartAndCountOfVisiblePoints(meta, points, animationsDisabled);
     this._drawStart = start;
-    this._drawCount = count;
+    this._drawCount = count2;
     if (_scaleRangesChanged(meta)) {
       start = 0;
-      count = points.length;
+      count2 = points.length;
     }
     if (this.options.showLine) {
       if (!this.datasetElementType) {
@@ -4773,7 +4773,7 @@ var ScatterController = class extends DatasetController {
       delete meta.dataset;
       this.datasetElementType = false;
     }
-    this.updateElements(points, start, count, mode);
+    this.updateElements(points, start, count2, mode);
   }
   addElements() {
     const { showLine } = this.options;
@@ -4782,7 +4782,7 @@ var ScatterController = class extends DatasetController {
     }
     super.addElements();
   }
-  updateElements(points, start, count, mode) {
+  updateElements(points, start, count2, mode) {
     const reset = mode === "reset";
     const { iScale, vScale, _stacked, _dataset } = this._cachedMeta;
     const firstOpts = this.resolveDataElementOptions(start, mode);
@@ -4794,7 +4794,7 @@ var ScatterController = class extends DatasetController {
     const maxGapLength = isNumber(spanGaps) ? spanGaps : Number.POSITIVE_INFINITY;
     const directUpdate = this.chart._animationsDisabled || reset || mode === "none";
     let prevParsed = start > 0 && this.getParsed(start - 1);
-    for (let i = start; i < start + count; ++i) {
+    for (let i = start; i < start + count2; ++i) {
       const point = points[i];
       const parsed = this.getParsed(i);
       const properties = directUpdate ? point : {};
@@ -5833,22 +5833,22 @@ function getMajorIndices(ticks) {
   return result;
 }
 function skipMajors(ticks, newTicks, majorIndices, spacing) {
-  let count = 0;
+  let count2 = 0;
   let next = majorIndices[0];
   let i;
   spacing = Math.ceil(spacing);
   for (i = 0; i < ticks.length; i++) {
     if (i === next) {
       newTicks.push(ticks[i]);
-      count++;
-      next = majorIndices[count * spacing];
+      count2++;
+      next = majorIndices[count2 * spacing];
     }
   }
 }
 function skip(ticks, newTicks, spacing, majorStart, majorEnd) {
   const start = valueOrDefault(majorStart, 0);
   const end = Math.min(valueOrDefault(majorEnd, ticks.length), ticks.length);
-  let count = 0;
+  let count2 = 0;
   let length, i, next;
   spacing = Math.ceil(spacing);
   if (majorEnd) {
@@ -5857,14 +5857,14 @@ function skip(ticks, newTicks, spacing, majorStart, majorEnd) {
   }
   next = start;
   while (next < 0) {
-    count++;
-    next = Math.round(start + count * spacing);
+    count2++;
+    next = Math.round(start + count2 * spacing);
   }
   for (i = Math.max(start, 0); i < end; i++) {
     if (i === next) {
       newTicks.push(ticks[i]);
-      count++;
-      next = Math.round(start + count * spacing);
+      count2++;
+      next = Math.round(start + count2 * spacing);
     }
   }
 }
@@ -8198,8 +8198,8 @@ var Chart = class {
   _updateHiddenIndices() {
     const { _hiddenIndices } = this;
     const changes = this._getUniformDataChanges() || [];
-    for (const { method, start, count } of changes) {
-      const move = method === "_removeElements" ? -count : count;
+    for (const { method, start, count: count2 } of changes) {
+      const move = method === "_removeElements" ? -count2 : count2;
       moveNumericKeys(_hiddenIndices, start, move);
     }
   }
@@ -8699,27 +8699,27 @@ function getLineMethod(options) {
   return lineTo;
 }
 function pathVars(points, segment, params = {}) {
-  const count = points.length;
-  const { start: paramsStart = 0, end: paramsEnd = count - 1 } = params;
+  const count2 = points.length;
+  const { start: paramsStart = 0, end: paramsEnd = count2 - 1 } = params;
   const { start: segmentStart, end: segmentEnd } = segment;
   const start = Math.max(paramsStart, segmentStart);
   const end = Math.min(paramsEnd, segmentEnd);
   const outside = paramsStart < segmentStart && paramsEnd < segmentStart || paramsStart > segmentEnd && paramsEnd > segmentEnd;
   return {
-    count,
+    count: count2,
     start,
     loop: segment.loop,
-    ilen: end < start && !outside ? count + end - start : end - start
+    ilen: end < start && !outside ? count2 + end - start : end - start
   };
 }
 function pathSegment(ctx, line, segment, params) {
   const { points, options } = line;
-  const { count, start, loop, ilen } = pathVars(points, segment, params);
+  const { count: count2, start, loop, ilen } = pathVars(points, segment, params);
   const lineMethod = getLineMethod(options);
   let { move = true, reverse } = params || {};
   let i, point, prev;
   for (i = 0; i <= ilen; ++i) {
-    point = points[(start + (reverse ? ilen - i : i)) % count];
+    point = points[(start + (reverse ? ilen - i : i)) % count2];
     if (point.skip) {
       continue;
     } else if (move) {
@@ -8731,19 +8731,19 @@ function pathSegment(ctx, line, segment, params) {
     prev = point;
   }
   if (loop) {
-    point = points[(start + (reverse ? ilen : 0)) % count];
+    point = points[(start + (reverse ? ilen : 0)) % count2];
     lineMethod(ctx, prev, point, reverse, options.stepped);
   }
   return !!loop;
 }
 function fastPathSegment(ctx, line, segment, params) {
   const points = line.points;
-  const { count, start, ilen } = pathVars(points, segment, params);
+  const { count: count2, start, ilen } = pathVars(points, segment, params);
   const { move = true, reverse } = params || {};
   let avgX = 0;
   let countX = 0;
   let i, point, prevX, minY, maxY, lastY;
-  const pointIndex = (index) => (start + (reverse ? ilen - index : index)) % count;
+  const pointIndex = (index) => (start + (reverse ? ilen - index : index)) % count2;
   const drawX = () => {
     if (minY !== maxY) {
       ctx.lineTo(avgX, maxY);
@@ -8796,18 +8796,18 @@ function _getInterpolationMethod(options) {
   }
   return _pointInLine;
 }
-function strokePathWithCache(ctx, line, start, count) {
+function strokePathWithCache(ctx, line, start, count2) {
   let path = line._path;
   if (!path) {
     path = line._path = new Path2D();
-    if (line.path(path, start, count)) {
+    if (line.path(path, start, count2)) {
       path.closePath();
     }
   }
   setStyle(ctx, line.options);
   ctx.stroke(path);
 }
-function strokePathDirect(ctx, line, start, count) {
+function strokePathDirect(ctx, line, start, count2) {
   const { segments, options } = line;
   const segmentMethod = _getSegmentMethod(line);
   for (const segment of segments) {
@@ -8815,7 +8815,7 @@ function strokePathDirect(ctx, line, start, count) {
     ctx.beginPath();
     if (segmentMethod(ctx, line, segment, {
       start,
-      end: start + count - 1
+      end: start + count2 - 1
     })) {
       ctx.closePath();
     }
@@ -8823,11 +8823,11 @@ function strokePathDirect(ctx, line, start, count) {
   }
 }
 var usePath2D = typeof Path2D === "function";
-function draw(ctx, line, start, count) {
+function draw(ctx, line, start, count2) {
   if (usePath2D && !line.options.segment) {
-    strokePathWithCache(ctx, line, start, count);
+    strokePathWithCache(ctx, line, start, count2);
   } else {
-    strokePathDirect(ctx, line, start, count);
+    strokePathDirect(ctx, line, start, count2);
   }
 }
 var LineElement = class extends Element {
@@ -8898,8 +8898,8 @@ var LineElement = class extends Element {
   last() {
     const segments = this.segments;
     const points = this.points;
-    const count = segments.length;
-    return count && points[segments[count - 1].end];
+    const count2 = segments.length;
+    return count2 && points[segments[count2 - 1].end];
   }
   interpolate(point, property) {
     const options = this.options;
@@ -8935,26 +8935,26 @@ var LineElement = class extends Element {
     const segmentMethod = _getSegmentMethod(this);
     return segmentMethod(ctx, this, segment, params);
   }
-  path(ctx, start, count) {
+  path(ctx, start, count2) {
     const segments = this.segments;
     const segmentMethod = _getSegmentMethod(this);
     let loop = this._loop;
     start = start || 0;
-    count = count || this.points.length - start;
+    count2 = count2 || this.points.length - start;
     for (const segment of segments) {
       loop &= segmentMethod(ctx, this, segment, {
         start,
-        end: start + count - 1
+        end: start + count2 - 1
       });
     }
     return !!loop;
   }
-  draw(ctx, chartArea, start, count) {
+  draw(ctx, chartArea, start, count2) {
     const options = this.options || {};
     const points = this.points || [];
     if (points.length && options.borderWidth) {
       ctx.save();
-      draw(ctx, this, start, count);
+      draw(ctx, this, start, count2);
       ctx.restore();
     }
     if (this.animated) {
@@ -9292,19 +9292,19 @@ var Legend = class extends Element {
   }
   buildLabels() {
     const labelOpts = this.options.labels || {};
-    let legendItems = callback(labelOpts.generateLabels, [
+    let legendItems2 = callback(labelOpts.generateLabels, [
       this.chart
     ], this) || [];
     if (labelOpts.filter) {
-      legendItems = legendItems.filter((item) => labelOpts.filter(item, this.chart.data));
+      legendItems2 = legendItems2.filter((item) => labelOpts.filter(item, this.chart.data));
     }
     if (labelOpts.sort) {
-      legendItems = legendItems.sort((a, b) => labelOpts.sort(a, b, this.chart.data));
+      legendItems2 = legendItems2.sort((a, b) => labelOpts.sort(a, b, this.chart.data));
     }
     if (this.options.reverse) {
-      legendItems.reverse();
+      legendItems2.reverse();
     }
-    this.legendItems = legendItems;
+    this.legendItems = legendItems2;
   }
   fit() {
     const { options, ctx } = this;
@@ -9790,17 +9790,17 @@ var positioners = {
     let i, len;
     let xSet = /* @__PURE__ */ new Set();
     let y = 0;
-    let count = 0;
+    let count2 = 0;
     for (i = 0, len = items.length; i < len; ++i) {
       const el = items[i].element;
       if (el && el.hasValue()) {
         const pos = el.tooltipPosition();
         xSet.add(pos.x);
         y += pos.y;
-        ++count;
+        ++count2;
       }
     }
-    if (count === 0 || xSet.size === 0) {
+    if (count2 === 0 || xSet.size === 0) {
       return false;
     }
     const xAverage = [
@@ -9808,7 +9808,7 @@ var positioners = {
     ].reduce((a, b) => a + b) / xSet.size;
     return {
       x: xAverage,
-      y: y / count
+      y: y / count2
     };
   },
   nearest(items, eventPosition) {
@@ -9886,7 +9886,7 @@ function getTooltipSize(tooltip, options) {
   const padding = toPadding(options.padding);
   let height = padding.height;
   let width = 0;
-  let combinedBodyLength = body.reduce((count, bodyItem) => count + bodyItem.before.length + bodyItem.lines.length + bodyItem.after.length, 0);
+  let combinedBodyLength = body.reduce((count2, bodyItem) => count2 + bodyItem.before.length + bodyItem.lines.length + bodyItem.after.length, 0);
   combinedBodyLength += tooltip.beforeBody.length + tooltip.afterBody.length;
   if (titleLineCount) {
     height += titleLineCount * titleFont.lineHeight + (titleLineCount - 1) * options.titleSpacing + options.titleMarginBottom;
@@ -10887,13 +10887,13 @@ var CategoryScale = class extends Scale {
 function generateTicks$1(generationOptions, dataRange) {
   const ticks = [];
   const MIN_SPACING = 1e-14;
-  const { bounds, step, min, max, precision: precision2, count, maxTicks, maxDigits, includeBounds } = generationOptions;
+  const { bounds, step, min, max, precision: precision2, count: count2, maxTicks, maxDigits, includeBounds } = generationOptions;
   const unit = step || 1;
   const maxSpaces = maxTicks - 1;
   const { min: rmin, max: rmax } = dataRange;
   const minDefined = !isNullOrUndef(min);
   const maxDefined = !isNullOrUndef(max);
-  const countDefined = !isNullOrUndef(count);
+  const countDefined = !isNullOrUndef(count2);
   const minSpacing = (rmax - rmin) / (maxDigits + 1);
   let spacing = niceNum((rmax - rmin) / maxSpaces / unit) * unit;
   let factor, niceMin, niceMax, numSpaces;
@@ -10930,7 +10930,7 @@ function generateTicks$1(generationOptions, dataRange) {
   } else if (countDefined) {
     niceMin = minDefined ? min : niceMin;
     niceMax = maxDefined ? max : niceMax;
-    numSpaces = count - 1;
+    numSpaces = count2 - 1;
     spacing = (niceMax - niceMin) / numSpaces;
   } else {
     numSpaces = (niceMax - niceMin) / spacing;
@@ -12091,7 +12091,7 @@ var TimeScale = class extends Scale {
     const hasWeekday = isNumber(weekday) || weekday === true;
     const ticks = {};
     let first = min;
-    let time, count;
+    let time, count2;
     if (hasWeekday) {
       first = +adapter.startOf(first, "isoWeek", weekday);
     }
@@ -12100,10 +12100,10 @@ var TimeScale = class extends Scale {
       throw new Error(min + " and " + max + " are too far apart with stepSize of " + stepSize + " " + minor);
     }
     const timestamps = options.ticks.source === "data" && this.getDataTimestamps();
-    for (time = first, count = 0; time < max; time = +adapter.add(time, stepSize, minor), count++) {
+    for (time = first, count2 = 0; time < max; time = +adapter.add(time, stepSize, minor), count2++) {
       addTick(ticks, time, timestamps);
     }
-    if (time === max || options.bounds === "ticks" || count === 1) {
+    if (time === max || options.bounds === "ticks" || count2 === 1) {
       addTick(ticks, time, timestamps);
     }
     return Object.keys(ticks).sort(sorter).map((x) => +x);
@@ -12745,8 +12745,8 @@ function shimazakiShinomotoBins(values, span) {
     const counts = new Array(binCount).fill(0);
     const countWidth = (hi - lo) / binCount;
     for (const value of values) counts[binIndex(value, lo, countWidth, binCount)] += 1;
-    const meanCount = counts.reduce((sum, count) => sum + count, 0) / binCount;
-    const residual = counts.reduce((sum, count) => sum + Math.pow(count - meanCount, 2), 0) / candidate;
+    const meanCount = counts.reduce((sum, count2) => sum + count2, 0) / binCount;
+    const residual = counts.reduce((sum, count2) => sum + Math.pow(count2 - meanCount, 2), 0) / candidate;
     const cost = (2 * meanCount - residual) / Math.pow(binWidth, 2);
     if (cost < bestCost) {
       bestCost = cost;
@@ -12881,9 +12881,9 @@ function statisticalAnnotation(label, pValue, testName, url) {
 function binDescription(bin, measure, digits) {
   return `${bin.records.length} records with ${measure} values >= ${formatNumber2(bin.lower, digits)} and <= ${formatNumber2(bin.upper, digits)}`;
 }
-function selectionColors(baseColor, count, selectedIndex) {
+function selectionColors(baseColor, count2, selectedIndex) {
   const faded = baseColor.replace(/,\s*[\d.]+\)$/, ", 0.15)");
-  return Array.from({ length: count }, (_, index) => index === selectedIndex ? baseColor : faded);
+  return Array.from({ length: count2 }, (_, index) => index === selectedIndex ? baseColor : faded);
 }
 function normalRangePlugin(instance) {
   return {
@@ -14067,9 +14067,9 @@ function tooltipLines(pair, idCol) {
     `Percent Change: ${pair.__ssp_pchg}`
   ];
 }
-function pointColors(count, selected, base = POINT_COLOR, faded = POINT_FADED) {
+function pointColors(count2, selected, base = POINT_COLOR, faded = POINT_FADED) {
   if (!selected || !selected.size) return base;
-  return Array.from({ length: count }, (_, index) => selected.has(index) ? base : faded);
+  return Array.from({ length: count2 }, (_, index) => selected.has(index) ? base : faded);
 }
 
 // src/shift-plot.js
@@ -14994,13 +14994,13 @@ function regressionLinePlugin(instance) {
     }
   };
 }
-function selectionBorders(count, selectedIndex) {
+function selectionBorders(count2, selectedIndex) {
   return {
     colors: Array.from(
-      { length: count },
+      { length: count2 },
       (_, index) => index === selectedIndex ? "#111827" : "rgba(37, 99, 235, 0.9)"
     ),
-    widths: Array.from({ length: count }, (_, index) => index === selectedIndex ? 3 : 0.5)
+    widths: Array.from({ length: count2 }, (_, index) => index === selectedIndex ? 3 : 0.5)
   };
 }
 
@@ -18599,6 +18599,8 @@ var hep_explorer_default = {
 
 // src/hep-core/arms.js
 var ARM_COL_CANDIDATES = ["ARM", "ACTARM", "TRT01A", "TREATMENT"];
+var ARM_SIDE_COLORS = { placebo: "#1f78b4", active: "#b5651d" };
+var JAUNDICE_COLOR = "#2e8b3d";
 var PLACEBO_PATTERN = /placebo|control/i;
 var PLACEBO_EXACT = ["placebo", "control"];
 function armValue(subject, armCol) {
@@ -18866,6 +18868,11 @@ function quadrantPlugin(instance) {
 }
 
 // src/hep-core/stats.js
+function mean6(values) {
+  const nums = values.map(Number).filter(Number.isFinite);
+  if (!nums.length) return NaN;
+  return nums.reduce((sum, value) => sum + value, 0) / nums.length;
+}
 function quantile4(values, p) {
   const nums = values.map(Number).filter(Number.isFinite);
   if (!nums.length) return NaN;
@@ -18878,6 +18885,20 @@ function quantile4(values, p) {
 }
 function median2(values) {
   return quantile4(values, 0.5);
+}
+function boxStats(values) {
+  const sorted = (values || []).map(Number).filter(Number.isFinite).sort((a, b) => a - b);
+  return {
+    n: sorted.length,
+    min: sorted.length ? sorted[0] : NaN,
+    q5: quantile4(sorted, 0.05),
+    q25: quantile4(sorted, 0.25),
+    median: quantile4(sorted, 0.5),
+    q75: quantile4(sorted, 0.75),
+    q95: quantile4(sorted, 0.95),
+    max: sorted.length ? sorted[sorted.length - 1] : NaN,
+    mean: mean6(sorted)
+  };
 }
 
 // src/hep-explorer/structureData.js
@@ -19069,12 +19090,12 @@ function classifyQuadrants(points, xCut, yCut) {
   });
   const total = points.length;
   const labels = QUADRANT_LABELS.map((entry) => {
-    const count = counts[entry.position];
+    const count2 = counts[entry.position];
     return {
       position: entry.position,
       label: entry.label,
-      count,
-      percent: total ? count / total * 100 : 0
+      count: count2,
+      percent: total ? count2 / total * 100 : 0
     };
   });
   return { counts, labels };
@@ -20329,8 +20350,8 @@ function buildByArmSummary(host, subjects) {
   thead.append(headRow);
   table.append(thead);
   const tbody = document.createElement("tbody");
-  const cell2 = (count, key) => {
-    const td = createElement("td", null, String(count));
+  const cell2 = (count2, key) => {
+    const td = createElement("td", null, String(count2));
     td.style.background = CONCERN_COLORS[key];
     return td;
   };
@@ -21395,9 +21416,9 @@ function groupCounts(populationRows, eventRows, settings, groups) {
     nEvents: eventRows.filter((row) => String(row[settings.group_col] ?? "") === key).length
   }));
 }
-function cell(rows, settings, count, summarizeBy) {
+function cell(rows, settings, count2, summarizeBy) {
   const n = summarizeBy === "event" ? rows.length : unique7(rows.map((row) => row[settings.id_col])).length;
-  const tot = summarizeBy === "event" ? count.nEvents : count.n;
+  const tot = summarizeBy === "event" ? count2.nEvents : count2.n;
   return { n, tot, per: rate(n, tot) };
 }
 function groupBy(rows, col) {
@@ -21419,7 +21440,7 @@ function cellsFor(rows, settings, groups, counts, summarizeBy) {
 }
 function totalFor(rows, settings, counts, summarizeBy) {
   const total = {
-    n: summarizeBy === "event" ? counts.reduce((sum, count) => sum + count.nEvents, 0) : counts.reduce((sum, count) => sum + count.n, 0)
+    n: summarizeBy === "event" ? counts.reduce((sum, count2) => sum + count2.nEvents, 0) : counts.reduce((sum, count2) => sum + count2.n, 0)
   };
   return cell(rows, settings, { n: total.n, nEvents: total.n }, summarizeBy);
 }
@@ -21501,20 +21522,20 @@ function searchCategories(majors, term) {
   const minorKeys = /* @__PURE__ */ new Set();
   const lowered = String(term || "").toLowerCase();
   if (!lowered) return { count: 0, majorKeys, minorKeys };
-  let count = 0;
+  let count2 = 0;
   majors.forEach((major) => {
     if (major.key.toLowerCase().includes(lowered)) {
       majorKeys.add(major.key);
-      count += 1;
+      count2 += 1;
     }
     major.minors.forEach((minor) => {
       if (minor.key.toLowerCase().includes(lowered)) {
         minorKeys.add(`${major.key}||${minor.key}`);
-        count += 1;
+        count2 += 1;
       }
     });
   });
-  return { count, majorKeys, minorKeys };
+  return { count: count2, majorKeys, minorKeys };
 }
 
 // src/ae-explorer/getScales.js
@@ -22068,7 +22089,7 @@ var AEExplorer = class {
       th.append(this.buildAxis(diffScale, (value) => `${Math.round(value)}`));
       return th;
     };
-    const totalN = () => counts.reduce((sum, count) => sum + count.n, 0);
+    const totalN = () => counts.reduce((sum, count2) => sum + count2.n, 0);
     if (plan.groupCols && groups.length >= 2) {
       const top = document.createElement("tr");
       const bottom = document.createElement("tr");
@@ -22162,9 +22183,9 @@ var AEExplorer = class {
         const cell2 = item.cells[group];
         const td = createElement("td", "ae-value", formatPercent2(cell2.per));
         td.title = cellTitle(cell2);
-        const count = createElement("span", "ae-cell-count", `(${cellTitle(cell2)})`);
-        count.dataset.group = group;
-        td.append(count);
+        const count2 = createElement("span", "ae-cell-count", `(${cellTitle(cell2)})`);
+        count2.dataset.group = group;
+        td.append(count2);
         tr.append(td);
       });
     }
@@ -23808,6 +23829,1253 @@ function qtExplorer(element = "body", settings = {}) {
   return new SafetyQtExplorer(element, settings);
 }
 
+// src/data/schema/hep-waterfall.json
+var hep_waterfall_default = {
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "https://raw.githubusercontent.com/jwildfire/safety.viz/main/src/data/schema/hep-waterfall.json",
+  title: "safety.viz hep-waterfall data contract",
+  description: "Long-format liver-chemistry data: one record per participant per measure per visit (HWF-DATA-001), the same record contract the hep-explorer reads, plus a required treatment-arm column. The hep-waterfall draws the modified waterfall of Amirzadegan et al., Drug Safety 2025;48(5):443-453, Figure 5, for trials enrolling participants with elevated baseline ALT but NORMAL baseline bilirubin: one floating bar per participant spanning their baseline value to their maximum on-treatment value in the data's absolute units, participants ranked by baseline with placebo ascending left-to-right and active descending right-to-centre so the highest baselines of the two arms meet at the seam, a black line tracing the baselines, blue/bronze arm colours with a green override for new-onset jaundice, and a box-and-whisker summary flanking each arm. Participants whose baseline total bilirubin exceeds baseline_tb_max are excluded by the paper's Table 1 rule, and participants whose arm is designated neither placebo nor active are excluded; both counts are reported separately (HWF-DATA-003, HWF-DATA-005).",
+  type: "object",
+  required: ["data", "settings"],
+  properties: {
+    data: {
+      type: "array",
+      minItems: 1,
+      items: { type: "object" },
+      description: "d3.csv()-style records; every row carries the participant, measure, result, reference-range and treatment-arm columns named in settings, one row per participant per measure per visit. Both ALT (or the configured measure) and total bilirubin must be present for a participant to be plotted: the measure supplies the bar, the bilirubin the cohort rule and the jaundice flag."
+    },
+    settings: {
+      type: "object",
+      description: "Column mappings and rendering options; merged onto the module's DEFAULT_SETTINGS, so only overrides need to be supplied. The lab-mapping block is identical to the hep-explorer contract so one settings list can drive both.",
+      required: ["id_col", "measure_col", "value_col", "normal_col_high", "arm_col"],
+      properties: {
+        id_col: {
+          type: "string",
+          default: "USUBJID",
+          description: "Participant identifier column; required in data \u2014 one bar per participant, and the tie-break that makes the ordering reproducible (HWF-DATA-001, HWF-ORDER-004)."
+        },
+        measure_col: {
+          type: "string",
+          default: "TEST",
+          description: "Column holding the measure name; required in data. Rows are matched to the ALT/AST/TB/ALP keys via measure_values."
+        },
+        value_col: {
+          type: "string",
+          default: "STRESN",
+          description: "Column holding the numeric result; required in data. The bars, the baseline trace and both axes are in these units \u2014 absolute, never a multiple of the reference range or of baseline (HWF-AXIS-001)."
+        },
+        unit_col: {
+          type: ["string", "null"],
+          default: "STRESU",
+          description: "Unit column. The modal unit of the plotted measure titles both axes, falling back to U/L; a cohort carrying more than one unit for that measure is a warning, not a chart (HWF-DATA-006, HWF-DATA-007)."
+        },
+        normal_col_high: {
+          type: "string",
+          default: "STNRHI",
+          description: "Upper-limit-of-normal column; required in data. It draws the reference-range band on the absolute axis and standardizes total bilirubin for the cohort rule and the jaundice flag (HWF-AXIS-004, HWF-DATA-003, HWF-DATA-004)."
+        },
+        normal_col_low: {
+          type: ["string", "null"],
+          default: "STNRLO",
+          description: "Optional lower-limit-of-normal column, carried into the linked participant listing."
+        },
+        studyday_col: {
+          type: ["string", "null"],
+          default: "DY",
+          description: "Study-day column; separates the baseline record from the on-treatment records and dates the maximum shown in the tooltip (HWF-DATA-002)."
+        },
+        visit_col: {
+          type: ["string", "null"],
+          default: "VISIT",
+          description: "Optional categorical visit column, shown in the linked participant listing."
+        },
+        visitn_col: {
+          type: ["string", "null"],
+          default: "VISITNUM",
+          description: "Optional numeric visit column ordering the visits."
+        },
+        measure_values: {
+          type: "object",
+          default: {
+            ALT: "Aminotransferase, alanine (ALT)",
+            AST: "Aminotransferase, aspartate (AST)",
+            TB: "Total Bilirubin",
+            ALP: "Alkaline phosphatase (ALP)"
+          },
+          description: "Map of the short measure key (ALT/AST/TB/ALP) to the full measure string in the data; the controls present the short keys but resolve rows via these strings."
+        },
+        measure: {
+          type: "string",
+          default: "ALT",
+          description: "The plotted analyte. The paper plots ALT; AST, ALP and TB are available (HWF-CFG-002)."
+        },
+        arm_col: {
+          type: "string",
+          default: "ARM",
+          description: "Treatment-arm column; required in data. The arm decides which half of the waterfall a participant's bar sits in and which colour it takes, so a waterfall without it has no seam and no comparison (HWF-DATA-005, HWF-COLOR-001)."
+        },
+        placebo_arm: {
+          type: ["string", "null"],
+          default: null,
+          description: "Arm plotted blue on the left half; when null it is auto-detected by matching the arm values against /placebo|control/i, an exact match beating a substring one (HWF-CFG-003)."
+        },
+        active_arms: {
+          type: ["array", "null"],
+          items: { type: "string" },
+          default: null,
+          description: "Arms plotted bronze on the right half; when null every non-placebo arm pools right. Arms named by neither setting are excluded with a counted note (HWF-CFG-003, HWF-DATA-005)."
+        },
+        baseline_col: {
+          type: ["string", "null"],
+          default: null,
+          description: "Optional baseline-flag column (e.g. ABLFL). When supplied, the flagged record is the baseline, outranking the day-0-else-earliest heuristic."
+        },
+        baseline_value: {
+          type: "string",
+          default: "Y",
+          description: "The value of baseline_col that marks the baseline record."
+        },
+        jaundice_uln: {
+          type: "number",
+          default: 2,
+          description: "New-onset-jaundice threshold on the total-bilirubin xULN scale: flagged when the baseline is at or below it and the maximum on-treatment value exceeds it. Defaults to the composite plot's bilirubin cutpoint so the flag and the Hy's-Law quadrants stay mutually consistent (HWF-DATA-004)."
+        },
+        baseline_tb_max: {
+          type: "number",
+          default: 1,
+          description: "The paper's Table-1 cohort rule: participants whose baseline total bilirubin exceeds this many xULN are excluded, because the waterfall serves the abnormal-ALT / NORMAL-bilirubin population. Separate from jaundice_uln, which is an event threshold (HWF-DATA-003)."
+        },
+        apply_tb_cohort: {
+          type: "boolean",
+          default: true,
+          description: "Whether to apply the Table-1 baseline-bilirubin exclusion. Turning it off admits baseline-jaundiced participants for exploratory use and says so in the notes (HWF-DATA-003)."
+        },
+        uln_display: {
+          type: "string",
+          enum: ["band", "per_subject", "none"],
+          default: "band",
+          description: "How the reference range is drawn on the absolute axis. Because the upper limit of normal genuinely varies across a real cohort, a single line would be undefined: 'band' shades min-to-max and collapses to a line when the cohort shares one limit, 'per_subject' traces each participant's own limit, 'none' draws nothing (HWF-AXIS-004)."
+        },
+        summary: {
+          type: "string",
+          enum: ["baseline_peak", "peak"],
+          default: "baseline_peak",
+          description: "What the flanking box-and-whisker panels show: 'baseline_peak' gives a baseline box and a maximum-on-treatment box per arm, so the panel summarizes the same shift the bars show per participant; 'peak' gives the single-box reading (HWF-BOX-003)."
+        },
+        filters: {
+          $ref: "#/$defs/fieldList",
+          description: "Optional filter columns rendered as controls; an active filter restricts the plotted cohort and the counts in the notes (HWF-CTRL-003)."
+        },
+        details: {
+          $ref: "#/$defs/fieldList",
+          description: "Columns for the linked participant listing opened by clicking a bar; when null, defaults derive from the measure/day/value mappings (HWF-SELECT-002)."
+        },
+        page_size: {
+          type: "number",
+          default: 10,
+          description: "Rows per page in the linked participant listing."
+        }
+      }
+    }
+  },
+  $defs: {
+    fieldList: {
+      type: "array",
+      items: {
+        anyOf: [
+          { type: "string" },
+          {
+            type: "object",
+            required: ["value_col"],
+            properties: {
+              value_col: { type: "string" },
+              label: { type: "string" }
+            }
+          }
+        ]
+      }
+    }
+  }
+};
+
+// src/hep-waterfall/checkInputs.js
+var REQUIRED_COLUMN_SETTINGS10 = hep_waterfall_default.properties.settings.required;
+function checkInputs10(data, settings) {
+  const rows = Array.isArray(data) ? data : [];
+  const missing = REQUIRED_COLUMN_SETTINGS10.map((key) => settings[key]).filter(
+    (col) => !rows.some((row) => row[col] !== void 0)
+  );
+  if (missing.length) {
+    throw new Error(`Required variable(s) missing: ${missing.join(", ")}`);
+  }
+}
+
+// src/hep-waterfall/configure.js
+var MEASURE_KEYS2 = ["ALT", "AST", "TB", "ALP"];
+var ULN_DISPLAYS = ["band", "per_subject", "none"];
+var SUMMARY_MODES = ["baseline_peak", "peak"];
+var DEFAULT_SETTINGS10 = {
+  id_col: "USUBJID",
+  measure_col: "TEST",
+  value_col: "STRESN",
+  unit_col: "STRESU",
+  normal_col_high: "STNRHI",
+  normal_col_low: "STNRLO",
+  studyday_col: "DY",
+  visit_col: "VISIT",
+  visitn_col: "VISITNUM",
+  measure_values: {
+    ALT: "Aminotransferase, alanine (ALT)",
+    AST: "Aminotransferase, aspartate (AST)",
+    TB: "Total Bilirubin",
+    ALP: "Alkaline phosphatase (ALP)"
+  },
+  measure: "ALT",
+  arm_col: "ARM",
+  placebo_arm: null,
+  active_arms: null,
+  baseline_col: null,
+  baseline_value: "Y",
+  jaundice_uln: 2,
+  baseline_tb_max: 1,
+  apply_tb_cohort: true,
+  uln_display: "band",
+  summary: "baseline_peak",
+  filters: [],
+  details: null,
+  page_size: 10,
+  width: "100%",
+  height: 480
+};
+function arrayify8(value) {
+  if (value === void 0 || value === null || value === "") return [];
+  return Array.isArray(value) ? value : [value];
+}
+function fieldSpec8(value, fallbackLabel) {
+  if (typeof value === "string") return { value_col: value, label: fallbackLabel || value };
+  return { ...value, value_col: value.value_col, label: value.label || value.value_col };
+}
+function numberOr(value, key) {
+  const parsed = Number(value);
+  return value !== "" && value !== null && value !== void 0 && Number.isFinite(parsed) ? parsed : DEFAULT_SETTINGS10[key];
+}
+function enumOr(value, allowed, key) {
+  return allowed.includes(value) ? value : DEFAULT_SETTINGS10[key];
+}
+function syncSettings10(settings = {}) {
+  const synced = { ...DEFAULT_SETTINGS10, ...settings };
+  synced.filters = arrayify8(synced.filters).map((value) => fieldSpec8(value)).filter((spec) => spec.value_col);
+  synced.details = arrayify8(synced.details).map((value) => fieldSpec8(value)).filter((spec) => spec.value_col);
+  synced.measure_values = {
+    ...DEFAULT_SETTINGS10.measure_values,
+    ...settings.measure_values || {}
+  };
+  synced.measure = synced.measure ? String(synced.measure) : DEFAULT_SETTINGS10.measure;
+  const activeArms = arrayify8(synced.active_arms).map(String);
+  synced.active_arms = activeArms.length ? activeArms : null;
+  synced.placebo_arm = synced.placebo_arm === void 0 || synced.placebo_arm === null || synced.placebo_arm === "" ? null : String(synced.placebo_arm);
+  synced.jaundice_uln = numberOr(synced.jaundice_uln, "jaundice_uln");
+  synced.baseline_tb_max = numberOr(synced.baseline_tb_max, "baseline_tb_max");
+  synced.apply_tb_cohort = synced.apply_tb_cohort === void 0 ? DEFAULT_SETTINGS10.apply_tb_cohort : Boolean(synced.apply_tb_cohort);
+  synced.uln_display = enumOr(synced.uln_display, ULN_DISPLAYS, "uln_display");
+  synced.summary = enumOr(synced.summary, SUMMARY_MODES, "summary");
+  synced.page_size = numberOr(synced.page_size, "page_size");
+  return synced;
+}
+
+// src/hep-waterfall/getScales.js
+var DEFAULT_UNIT = "U/L";
+function formatNumber6(value, digits = 1) {
+  if (!Number.isFinite(value)) return "";
+  return Number(value.toFixed(digits)).toString();
+}
+function resolveUnit(cleanRows, settings, measure) {
+  const empty = { unit: DEFAULT_UNIT, units: [], mixed: false };
+  if (!settings || !settings.unit_col) return empty;
+  const rows = resolveMeasureRows(cleanRows || [], settings, measure);
+  const counts = /* @__PURE__ */ new Map();
+  rows.forEach((row) => {
+    const value = row[settings.unit_col];
+    if (value === void 0 || value === null || String(value).trim() === "") return;
+    const unit2 = String(value).trim();
+    counts.set(unit2, (counts.get(unit2) || 0) + 1);
+  });
+  if (!counts.size) return empty;
+  const units = [...counts.keys()];
+  const unit = units.reduce((best, value) => counts.get(value) > counts.get(best) ? value : best);
+  return { unit, units, mixed: units.length > 1 };
+}
+function waterfallDomain(values, extras = []) {
+  const nums = [...values || [], ...extras || []].map(Number).filter(Number.isFinite);
+  if (!nums.length) return [0, 1];
+  const min = Math.min(...nums);
+  const max = Math.max(...nums);
+  const span = max - min;
+  const pad = span > 0 ? span * 0.06 : Math.max(Math.abs(max) * 0.1, 1);
+  return [Math.max(0, min - pad), max + pad];
+}
+function mirroredScales(domain, title) {
+  const [min, max] = domain;
+  const axis = (position) => ({
+    type: "linear",
+    position,
+    min,
+    max,
+    title: { display: true, text: title }
+  });
+  return {
+    y: { ...axis("left"), grid: { color: "rgba(148, 163, 184, 0.25)" } },
+    y1: { ...axis("right"), display: true, grid: { drawOnChartArea: false } }
+  };
+}
+function axisTitle(measure, unit) {
+  return `${measure} (${unit || DEFAULT_UNIT})`;
+}
+function categoryScale(measure, { placeboLabel = "Placebo", activeLabel = "Active" } = {}) {
+  return {
+    type: "category",
+    offset: false,
+    ticks: { display: false },
+    grid: { display: false },
+    title: {
+      display: true,
+      text: `Participants ranked by baseline ${measure} \u2014 ${placeboLabel} ascending \u25C0 | \u25B6 ${activeLabel} descending`
+    }
+  };
+}
+function flankScales(domain, boxes = 2) {
+  const [min, max] = domain;
+  return {
+    x: {
+      type: "linear",
+      display: false,
+      min: -0.5,
+      max: Math.max(boxes - 0.5, 0.5),
+      grid: { display: false }
+    },
+    y: { type: "linear", display: false, min, max, grid: { display: false } }
+  };
+}
+
+// src/hep-waterfall/getPlugins.js
+var TRACE_COLOR = "#111827";
+var DIVIDER_COLOR = "#475569";
+var ULN_COLOR = "#94a3b8";
+var JAUNDICE_PRECEDENCE = "Green takes precedence over the arm colour: a participant who developed new-onset jaundice is green in either arm.";
+function barColor(subject) {
+  if (!subject) return ARM_SIDE_COLORS.placebo;
+  if (subject.newOnsetJaundice) return JAUNDICE_COLOR;
+  return ARM_SIDE_COLORS[subject.side] || DIVIDER_COLOR;
+}
+function barColors(subjects) {
+  return (subjects || []).map(barColor);
+}
+function legendItems({
+  placeboLabel = "Placebo",
+  activeLabel = "Active",
+  jaundiceCount = 0
+} = {}) {
+  return [
+    { color: ARM_SIDE_COLORS.placebo, label: placeboLabel },
+    { color: ARM_SIDE_COLORS.active, label: activeLabel },
+    {
+      color: JAUNDICE_COLOR,
+      label: `Developed new-onset jaundice (either arm, n=${jaundiceCount})`
+    }
+  ];
+}
+function ulnRange(subjects) {
+  const values = [
+    ...new Set(
+      (subjects || []).map((subject) => Number(subject && subject.uln)).filter(Number.isFinite)
+    )
+  ].sort((a, b) => a - b);
+  if (!values.length) return { min: NaN, max: NaN, single: false, values };
+  return { min: values[0], max: values[values.length - 1], single: values.length === 1, values };
+}
+function ulnLabel(range, unit) {
+  if (!range || !Number.isFinite(range.min)) return "";
+  if (range.single || range.min === range.max) {
+    return `ULN (${formatNumber6(range.min)} ${unit})`;
+  }
+  return `ULN range (${formatNumber6(range.min)}\u2013${formatNumber6(range.max)} ${unit})`;
+}
+function halfSlot(chart, count2) {
+  const { left, right } = chart.chartArea;
+  if (count2 > 1) {
+    return Math.abs(chart.scales.x.getPixelForValue(1) - chart.scales.x.getPixelForValue(0)) / 2;
+  }
+  return (right - left) / 2;
+}
+function armDividerPlugin(instance) {
+  return {
+    id: "hwf-arm-divider",
+    afterDatasetsDraw(chart) {
+      const waterfall = instance.waterfall;
+      if (!waterfall || !waterfall.ordered.length) return;
+      const { placebo, active, placeboLabel, activeLabel } = waterfall;
+      const { top, bottom, left, right } = chart.chartArea;
+      const ctx = chart.ctx;
+      ctx.save();
+      ctx.font = "600 11px system-ui, -apple-system, sans-serif";
+      ctx.textBaseline = "top";
+      ctx.textAlign = "center";
+      if (placebo.length && active.length) {
+        const seam = (chart.scales.x.getPixelForValue(placebo.length - 1) + chart.scales.x.getPixelForValue(placebo.length)) / 2;
+        ctx.strokeStyle = DIVIDER_COLOR;
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 3]);
+        ctx.beginPath();
+        ctx.moveTo(seam, top);
+        ctx.lineTo(seam, bottom);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = DIVIDER_COLOR;
+        ctx.fillText(`${placeboLabel} (n=${placebo.length})`, (left + seam) / 2, top + 4);
+        ctx.fillText(`${activeLabel} (n=${active.length})`, (seam + right) / 2, top + 4);
+      } else {
+        const only = placebo.length ? `${placeboLabel} (n=${placebo.length})` : `${activeLabel} (n=${active.length})`;
+        ctx.fillStyle = DIVIDER_COLOR;
+        ctx.fillText(only, (left + right) / 2, top + 4);
+      }
+      ctx.restore();
+    }
+  };
+}
+function ulnBandPlugin(instance) {
+  return {
+    id: "hwf-uln-band",
+    beforeDatasetsDraw(chart) {
+      const waterfall = instance.waterfall;
+      const mode = instance.state ? instance.state.ulnDisplay : "band";
+      if (!waterfall || mode === "none") return;
+      const range = waterfall.uln;
+      if (!range || !Number.isFinite(range.min) || !Number.isFinite(range.max)) return;
+      const { top, bottom, left, right } = chart.chartArea;
+      const ctx = chart.ctx;
+      const yOf = (value) => chart.scales.y.getPixelForValue(value);
+      const clamp = (y) => Math.max(top, Math.min(bottom, y));
+      ctx.save();
+      ctx.strokeStyle = ULN_COLOR;
+      ctx.fillStyle = ULN_COLOR;
+      ctx.lineWidth = 1;
+      if (mode === "per_subject") {
+        const half = halfSlot(chart, waterfall.ordered.length);
+        ctx.setLineDash([3, 2]);
+        ctx.beginPath();
+        waterfall.ordered.forEach((subject, index) => {
+          if (!Number.isFinite(subject.uln)) return;
+          const x = chart.scales.x.getPixelForValue(index);
+          const y = clamp(yOf(subject.uln));
+          ctx.moveTo(x - half, y);
+          ctx.lineTo(x + half, y);
+        });
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.restore();
+        return;
+      }
+      const label = ulnLabel(range, waterfall.unit);
+      if (range.single || range.min === range.max) {
+        const y = clamp(yOf(range.min));
+        ctx.setLineDash([6, 4]);
+        ctx.beginPath();
+        ctx.moveTo(left, y);
+        ctx.lineTo(right, y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      } else {
+        const upper = clamp(yOf(range.max));
+        const lower = clamp(yOf(range.min));
+        ctx.fillStyle = "rgba(148, 163, 184, 0.22)";
+        ctx.fillRect(left, upper, right - left, lower - upper);
+      }
+      ctx.fillStyle = DIVIDER_COLOR;
+      ctx.font = "11px system-ui, -apple-system, sans-serif";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "bottom";
+      ctx.fillText(label, left + 4, clamp(yOf(range.max)) - 2);
+      ctx.restore();
+    }
+  };
+}
+function signed(value) {
+  if (!Number.isFinite(value)) return "";
+  return `${value > 0 ? "+" : ""}${formatNumber6(value)}`;
+}
+function waterfallTooltip(subject, { measure = "ALT", unit = "U/L" } = {}) {
+  if (!subject) return [];
+  const day = Number.isFinite(subject.peakDay) ? ` (day ${subject.peakDay})` : "";
+  const fold = subject.baseline > 0 ? ` (${formatNumber6(subject.peak / subject.baseline, 2)}\xD7baseline)` : "";
+  const lines = [
+    String(subject.id),
+    `Arm: ${subject.arm || "(not reported)"}`,
+    `Baseline ${measure}: ${formatNumber6(subject.baseline)} ${unit}`,
+    `Maximum on-treatment ${measure}: ${formatNumber6(subject.peak)} ${unit}${day}`,
+    `Change: ${signed(subject.peak - subject.baseline)} ${unit}${fold}`
+  ];
+  if (Number.isFinite(subject.peakBiliULN)) {
+    lines.push(`Peak total bilirubin: ${formatNumber6(subject.peakBiliULN, 2)}\xD7ULN`);
+  }
+  if (subject.newOnsetJaundice) lines.push("Developed new-onset jaundice");
+  return lines;
+}
+
+// src/hep-waterfall/structureData.js
+function prepareData(rawData, settings) {
+  const { rows, removed } = cleanData6(Array.isArray(rawData) ? rawData : [], settings);
+  deriveBaseline(rows, settings);
+  assignSequence2(rows, settings);
+  return { rows, removed };
+}
+function measureReduction(cleanRows, settings) {
+  const byId = /* @__PURE__ */ new Map();
+  cleanRows.forEach((row) => {
+    const id = row[settings.id_col];
+    if (!byId.has(id)) byId.set(id, []);
+    byId.get(id).push(row);
+  });
+  const reduced = /* @__PURE__ */ new Map();
+  byId.forEach((rows, id) => {
+    const reduction = reduceMeasure(resolveMeasureRows(rows, settings, settings.measure), settings);
+    if (reduction) reduced.set(id, reduction);
+  });
+  return reduced;
+}
+function count(n, noun) {
+  return `${n} ${noun}${n === 1 ? "" : "s"}`;
+}
+function orderWaterfall(subjects) {
+  const byId = (a, b) => String(a.id).localeCompare(String(b.id));
+  const placebo = (subjects || []).filter((subject) => subject.side === "placebo").sort((a, b) => a.baseline - b.baseline || byId(a, b));
+  const active = (subjects || []).filter((subject) => subject.side === "active").sort((a, b) => b.baseline - a.baseline || byId(a, b));
+  return [...placebo, ...active];
+}
+function applyFilters8(subjects, filters) {
+  const active = Object.entries(filters || {}).filter(
+    ([, value]) => value !== null && value !== ""
+  );
+  if (!active.length) return [...subjects || []];
+  return (subjects || []).filter(
+    (subject) => active.every(([col, value]) => String(subject.raw ? subject.raw[col] : "") === String(value))
+  );
+}
+function buildWaterfall(cleanRows, settings, { removed = 0, filters = {} } = {}) {
+  const rows = cleanRows || [];
+  const built = buildHepSubjects(rows, { ...settings, groups: [] });
+  const reduction = measureReduction(rows, settings);
+  const excluded = { arm: 0, bilirubin: 0, measurement: built.excluded };
+  const eligible = [];
+  built.subjects.forEach((subject) => {
+    if (!subject.side) {
+      excluded.arm += 1;
+      return;
+    }
+    if (settings.apply_tb_cohort && subject.baselineJaundice) {
+      excluded.bilirubin += 1;
+      return;
+    }
+    const plotted = reduction.get(subject.id);
+    if (!plotted || !Number.isFinite(plotted.baselineValue) || !Number.isFinite(plotted.peakValue)) {
+      excluded.measurement += 1;
+      return;
+    }
+    eligible.push({
+      ...subject,
+      baseline: plotted.baselineValue,
+      peak: plotted.peakValue,
+      peakDay: plotted.peakDay,
+      baselineDay: plotted.baselineDay,
+      uln: plotted.uln,
+      change: plotted.peakValue - plotted.baselineValue,
+      foldChange: plotted.peakBLN
+    });
+  });
+  const shown = applyFilters8(eligible, filters);
+  const ordered = orderWaterfall(shown);
+  const placebo = ordered.filter((subject) => subject.side === "placebo");
+  const active = ordered.filter((subject) => subject.side === "active");
+  const placeboLabel = built.placeboArm || "Placebo";
+  const activeArms = [...new Set(active.map((subject) => subject.arm).filter(Boolean))];
+  const activeLabel = activeArms.length ? activeArms.join(", ") : "Active";
+  const notes = [];
+  notes.push({
+    tone: "note",
+    text: `${count(ordered.length, "participant")} plotted (${placeboLabel} n=${placebo.length}, ${activeLabel} n=${active.length}).`
+  });
+  if (excluded.bilirubin) {
+    notes.push({
+      tone: "note",
+      text: `${count(excluded.bilirubin, "participant")} excluded: abnormal baseline bilirubin (paper Table 1).`
+    });
+  }
+  if (!settings.apply_tb_cohort) {
+    notes.push({
+      tone: "warning",
+      text: "The paper's Table-1 baseline-bilirubin exclusion is off: baseline-jaundiced participants are plotted."
+    });
+  }
+  if (excluded.arm) {
+    notes.push({
+      tone: "note",
+      text: `${count(excluded.arm, "participant")} excluded: arm not designated placebo or active.`
+    });
+  }
+  if (excluded.measurement) {
+    notes.push({
+      tone: "note",
+      text: `${count(excluded.measurement, "participant")} excluded: no usable baseline or on-treatment measurement.`
+    });
+  }
+  if (removed) {
+    notes.push({
+      tone: "note",
+      text: `${count(removed, "record")} removed: missing result or missing/non-positive reference range.`
+    });
+  }
+  if (built.armWarning) notes.push({ tone: "warning", text: built.armWarning });
+  return {
+    subjects: ordered,
+    ordered,
+    placebo,
+    active,
+    eligible,
+    excluded,
+    notes,
+    placeboLabel,
+    activeLabel,
+    arms: built.arms,
+    sides: built.sides,
+    placeboArm: built.placeboArm,
+    armCol: built.armCol,
+    armWarning: built.armWarning,
+    jaundiceCount: ordered.filter((subject) => subject.newOnsetJaundice).length
+  };
+}
+function waterfallDatasets(ordered, { measure = "ALT" } = {}) {
+  const subjects = ordered || [];
+  return [
+    {
+      type: "bar",
+      order: 2,
+      yAxisID: "y",
+      label: `Maximum on-treatment ${measure}`,
+      data: subjects.map((subject) => [subject.baseline, subject.peak]),
+      backgroundColor: barColors(subjects),
+      borderColor: barColors(subjects),
+      borderWidth: subjects.map(() => 0),
+      barPercentage: 1,
+      categoryPercentage: 1
+    },
+    {
+      type: "line",
+      order: 1,
+      yAxisID: "y",
+      label: `Baseline ${measure}`,
+      data: subjects.map((subject) => subject.baseline),
+      borderColor: TRACE_COLOR,
+      backgroundColor: TRACE_COLOR,
+      borderWidth: 1.5,
+      pointRadius: 0,
+      pointHitRadius: 0,
+      tension: 0,
+      fill: false
+    }
+  ];
+}
+function boxSpecs(subjects, { summary = "baseline_peak", color: color2, halfWidth = 0.3 } = {}) {
+  const rows = subjects || [];
+  const peak = {
+    label: "Peak",
+    stats: boxStats(rows.map((subject) => subject.peak)),
+    color: color2,
+    halfWidth
+  };
+  if (summary === "peak") return [{ ...peak, x: 0 }];
+  return [
+    {
+      label: "Baseline",
+      stats: boxStats(rows.map((subject) => subject.baseline)),
+      color: color2,
+      halfWidth,
+      x: 0
+    },
+    { ...peak, x: 1 }
+  ];
+}
+
+// src/hep-waterfall.js
+Chart.register(
+  BarController,
+  BarElement,
+  LineController,
+  LineElement,
+  PointElement,
+  CategoryScale,
+  LinearScale,
+  plugin_tooltip,
+  plugin_legend
+);
+var STYLE_ID2 = "safety-viz-hep-waterfall-styles";
+var STYLES = `
+.safety-hep-waterfall .hwf-layout{display:grid;grid-template-columns:110px 1fr 110px;gap:.5rem;height:100%;align-items:stretch}
+.safety-hep-waterfall .hwf-panel{position:relative;min-width:0}
+.safety-hep-waterfall .hwf-legend{display:flex;flex-wrap:wrap;align-items:center;gap:.35rem .9rem;font-size:.8rem;color:#52616f;margin:0 0 .5rem}
+.safety-hep-waterfall .hwf-legend-item{display:inline-flex;align-items:center;gap:.3rem}
+.safety-hep-waterfall .hwf-legend-swatch{display:inline-block;width:.75rem;height:.75rem;border-radius:2px}
+.safety-hep-waterfall .hwf-legend-note{color:#52616f;font-style:italic}
+.safety-hep-waterfall .hwf-reset{width:100%;margin-top:.75rem;padding:.35rem .45rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.82rem;cursor:pointer}
+.safety-hep-waterfall .hwf-reset:hover{border-color:#8f9aa8;background:#f6f8fa}
+@media (max-width:700px){.safety-hep-waterfall .hwf-layout{grid-template-columns:70px 1fr 70px}}
+`;
+function applyWaterfallStyles() {
+  if (typeof document === "undefined" || document.getElementById(STYLE_ID2)) return;
+  const style = document.createElement("style");
+  style.id = STYLE_ID2;
+  style.textContent = STYLES;
+  document.head.append(style);
+}
+var SafetyHepWaterfall = class {
+  constructor(element = "body", settings = {}) {
+    this.element = typeof element === "string" ? document.querySelector(element) : element;
+    if (!this.element) throw new Error(`Safety Hep Waterfall target not found: ${element}`);
+    this.settings = syncSettings10(settings);
+    this.rawData = [];
+    this.cleanRows = [];
+    this.removedRecords = 0;
+    this.charts = [];
+    this.flankCharts = [];
+    this.chart = null;
+    this.waterfall = null;
+    this.boxSpecs = { left: [], right: [] };
+    this.currentTableData = [];
+    this.listingSearch = "";
+    this.listingSort = null;
+    this.page = 1;
+    this.state = this.seedState();
+    this.renderShellDom();
+  }
+  /**
+   * The control state derived from the settings — the single place the sidebar
+   * controls, setSettings and the Reset button all read their starting values
+   * from (HWF-CTRL-004).
+   * @private
+   */
+  seedState() {
+    const active = this.settings.active_arms;
+    return {
+      measure: this.settings.measure,
+      jaundiceUln: this.settings.jaundice_uln,
+      applyTbCohort: this.settings.apply_tb_cohort,
+      ulnDisplay: this.settings.uln_display,
+      summary: this.settings.summary,
+      placeboArm: this.settings.placebo_arm,
+      activeArm: active && active.length === 1 ? active[0] : "",
+      filters: {},
+      selectedIds: []
+    };
+  }
+  /**
+   * The settings the render actually runs on: the configured settings with the
+   * live control values merged over them, so structureData and getScales never
+   * have to know that a control exists.
+   * @private
+   */
+  effectiveSettings() {
+    return {
+      ...this.settings,
+      measure: this.state.measure,
+      jaundice_uln: this.state.jaundiceUln,
+      apply_tb_cohort: this.state.applyTbCohort,
+      uln_display: this.state.ulnDisplay,
+      summary: this.state.summary,
+      placebo_arm: this.state.placeboArm,
+      active_arms: this.state.activeArm ? [this.state.activeArm] : null
+    };
+  }
+  /**
+   * Build the shell and the three-canvas grid the paper's flanking panels need:
+   * a placebo summary, the waterfall, an active summary (HWF-BOX-001).
+   * @private
+   */
+  renderShellDom() {
+    Object.assign(
+      this,
+      renderShell(this.element, {
+        moduleClass: "safety-hep-waterfall",
+        onToggle: () => this.resize()
+      })
+    );
+    applyWaterfallStyles();
+    this.legendEl = createElement("div", "hwf-legend");
+    this.main.insertBefore(this.legendEl, this.chartWrap);
+    const layout = createElement("div", "hwf-layout");
+    const leftPanel = createElement("div", "hwf-panel");
+    this.boxCanvasLeft = createElement("canvas", "hwf-box-left");
+    leftPanel.append(this.boxCanvasLeft);
+    const mainPanel = createElement("div", "hwf-panel hwf-main-panel");
+    this.canvas.remove();
+    mainPanel.append(this.canvas);
+    const rightPanel = createElement("div", "hwf-panel");
+    this.boxCanvasRight = createElement("canvas", "hwf-box-right");
+    rightPanel.append(this.boxCanvasRight);
+    layout.append(leftPanel, mainPanel, rightPanel);
+    this.chartWrap.insertBefore(layout, this.mainAnnotation);
+  }
+  /**
+   * Load data and render — an alias for setData keeping the two-step
+   * create-then-init call shape (HWF-API-002).
+   * @param {Object[]} data Long-format liver-chemistry records matching the hep-waterfall data contract.
+   * @returns {SafetyHepWaterfall} The instance, for chaining.
+   */
+  init(data) {
+    return this.setData(data);
+  }
+  /**
+   * Replace the bound data and re-render: validate against the settings mapping
+   * (throwing, and rendering the message into the target, when a required
+   * column is missing), clean, rebuild the controls, and draw.
+   * @param {Object[]} data Long-format liver-chemistry records matching the hep-waterfall data contract.
+   * @returns {SafetyHepWaterfall} The instance, for chaining.
+   */
+  setData(data) {
+    this.rawData = Array.isArray(data) ? data : [];
+    this.validateAndCleanData();
+    this.buildControls();
+    this.render();
+    return this;
+  }
+  /**
+   * Merge setting overrides, re-normalize them (same rules as the factory),
+   * re-seed every control from the merged settings, rebuild the controls, and
+   * re-render.
+   * @param {HepWaterfallSettings} settings Setting overrides to merge.
+   * @returns {SafetyHepWaterfall} The instance, for chaining.
+   */
+  setSettings(settings) {
+    this.settings = syncSettings10({ ...this.settings, ...settings });
+    this.state = this.seedState();
+    if (this.rawData.length) this.validateAndCleanData();
+    this.buildControls();
+    this.render();
+    return this;
+  }
+  /**
+   * Validate the raw data, drop unusable records, derive the baseline columns,
+   * and fill in the listing columns when none were supplied.
+   * @private
+   */
+  validateAndCleanData() {
+    try {
+      checkInputs10(this.rawData, this.settings);
+    } catch (error) {
+      this.destroyCharts();
+      this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+      throw error;
+    }
+    const { rows, removed } = prepareData(this.rawData, this.settings);
+    this.cleanRows = rows;
+    this.removedRecords = removed;
+    if (removed) {
+      console.warn(
+        `${removed} missing or non-numeric result${removed > 1 ? "s have" : " has"} been removed.`
+      );
+    }
+    if (!this.settings.details.length) {
+      this.settings.details = [
+        { value_col: this.settings.id_col, label: "Participant" },
+        { value_col: this.settings.measure_col, label: "Measure" },
+        { value_col: "__hwf_dayLabel", label: "Study Day" },
+        { value_col: this.settings.value_col, label: "Result" },
+        { value_col: this.settings.normal_col_high, label: "ULN" }
+      ];
+    }
+  }
+  /**
+   * The distinct arm values present in the cleaned data.
+   * @private
+   */
+  armValues() {
+    const armCol = this.waterfall && this.waterfall.armCol || this.settings.arm_col;
+    return unique6(this.cleanRows.map((row) => row[armCol])).map(String).sort();
+  }
+  /**
+   * Rebuild the sidebar controls (HWF-CTRL-001..004): the display settings, the
+   * arm mapping, the configured filters, and Reset.
+   * @private
+   */
+  buildControls() {
+    this.controls.innerHTML = "";
+    const { addSection, addControl } = controlBuilders(this.controls);
+    const display = addSection("Display");
+    const measure = addControl("Measure", document.createElement("select"), display);
+    const measureKeys = unique6([...Object.keys(this.settings.measure_values), ...MEASURE_KEYS2]);
+    measureKeys.forEach((key) => option(measure, key, key, key === this.state.measure));
+    measure.onchange = () => {
+      this.state.measure = measure.value;
+      this.render();
+    };
+    const jaundice = addControl(
+      "Jaundice threshold (\xD7ULN)",
+      document.createElement("input"),
+      display
+    );
+    jaundice.type = "number";
+    jaundice.min = "0";
+    jaundice.step = "0.1";
+    jaundice.value = String(this.state.jaundiceUln);
+    jaundice.onchange = () => {
+      const value = Number(jaundice.value);
+      this.state.jaundiceUln = Number.isFinite(value) ? value : this.settings.jaundice_uln;
+      jaundice.value = String(this.state.jaundiceUln);
+      this.render();
+    };
+    const cohortWrap = createElement("div", "sv-control sv-control-inline");
+    const cohort = document.createElement("input");
+    cohort.type = "checkbox";
+    cohort.id = "hwf-cohort";
+    cohort.checked = this.state.applyTbCohort;
+    cohort.onchange = () => {
+      this.state.applyTbCohort = cohort.checked;
+      this.render();
+    };
+    const cohortLabel = createElement(
+      "label",
+      null,
+      `Exclude baseline bilirubin > ${formatNumber6(this.settings.baseline_tb_max, 2)}\xD7ULN`
+    );
+    cohortLabel.htmlFor = cohort.id;
+    cohortWrap.append(cohort, cohortLabel);
+    display.append(cohortWrap);
+    const uln = addControl("Reference range", document.createElement("select"), display);
+    const ulnLabels = {
+      band: "Band (cohort range)",
+      per_subject: "Per participant",
+      none: "Hidden"
+    };
+    ULN_DISPLAYS.forEach(
+      (value) => option(uln, value, ulnLabels[value], value === this.state.ulnDisplay)
+    );
+    uln.onchange = () => {
+      this.state.ulnDisplay = uln.value;
+      this.render();
+    };
+    const summary = addControl("Arm summary", document.createElement("select"), display);
+    const summaryLabels = { baseline_peak: "Baseline and peak", peak: "Peak only" };
+    SUMMARY_MODES.forEach(
+      (value) => option(summary, value, summaryLabels[value], value === this.state.summary)
+    );
+    summary.onchange = () => {
+      this.state.summary = summary.value;
+      this.render();
+    };
+    const arms = this.armValues();
+    const armSection = addSection("Arms");
+    const placebo = addControl("Placebo arm", document.createElement("select"), armSection);
+    option(placebo, "", "Auto-detect", !this.state.placeboArm);
+    arms.forEach((arm) => option(placebo, arm, arm, arm === this.state.placeboArm));
+    placebo.onchange = () => {
+      this.state.placeboArm = placebo.value || null;
+      this.buildControls();
+      this.render();
+    };
+    const active = addControl("Active arm", document.createElement("select"), armSection);
+    option(active, "", "All non-placebo arms", !this.state.activeArm);
+    arms.forEach((arm) => option(active, arm, arm, arm === this.state.activeArm));
+    active.onchange = () => {
+      this.state.activeArm = active.value;
+      this.buildControls();
+      this.render();
+    };
+    const filterSpecs = this.settings.filters.filter(
+      (filter) => this.cleanRows.some((row) => row[filter.value_col] !== void 0)
+    );
+    if (filterSpecs.length) {
+      const filterSection = addSection("Filters");
+      filterSpecs.forEach((filter) => {
+        const select = addControl(filter.label, document.createElement("select"), filterSection);
+        option(select, "", "All", !this.state.filters[filter.value_col]);
+        unique6(this.cleanRows.map((row) => row[filter.value_col])).map(String).sort().forEach(
+          (value) => option(select, value, value, this.state.filters[filter.value_col] === value)
+        );
+        select.onchange = () => {
+          if (select.value) this.state.filters[filter.value_col] = select.value;
+          else delete this.state.filters[filter.value_col];
+          this.render();
+        };
+      });
+    }
+    const reset = createElement("button", "hwf-reset", "Reset chart");
+    reset.type = "button";
+    reset.onclick = () => {
+      this.state = this.seedState();
+      this.buildControls();
+      this.render();
+    };
+    this.controls.append(reset);
+  }
+  /**
+   * Render the notes line from the cohort's staged notes.
+   * @private
+   */
+  renderNotes(notes) {
+    this.notes.innerHTML = "";
+    notes.forEach(
+      (note) => this.notes.append(
+        createElement("span", note.tone === "warning" ? "sv-warning" : null, note.text)
+      )
+    );
+  }
+  /**
+   * Draw the colour legend, including the jaundice precedence rule.
+   * @private
+   */
+  drawLegend() {
+    this.legendEl.innerHTML = "";
+    legendItems({
+      placeboLabel: this.waterfall.placeboLabel,
+      activeLabel: this.waterfall.activeLabel,
+      jaundiceCount: this.waterfall.jaundiceCount
+    }).forEach((item) => {
+      const chip = createElement("span", "hwf-legend-item");
+      const swatch = createElement("span", "hwf-legend-swatch");
+      swatch.style.background = item.color;
+      chip.append(swatch, document.createTextNode(item.label));
+      this.legendEl.append(chip);
+    });
+    this.legendEl.append(createElement("span", "hwf-legend-note", JAUNDICE_PRECEDENCE));
+  }
+  /**
+   * Redraw everything from the current data, settings, and control state: the
+   * cohort and its notes, the floating bars and baseline trace, the mirrored
+   * axes, the arm divider and reference range, and the two flanking summary
+   * panels. Called automatically by the controls and the data/settings setters.
+   * @returns {void}
+   */
+  render() {
+    this.destroyCharts();
+    this.legendEl.innerHTML = "";
+    this.listingWrap.innerHTML = "";
+    this.currentTableData = [];
+    this.listingSearch = "";
+    this.listingSort = null;
+    this.page = 1;
+    this.state.selectedIds = [];
+    this.mainAnnotation.textContent = "";
+    this.chartWrap.style.display = "";
+    this.footnote.textContent = "";
+    if (!this.cleanRows.length) {
+      this.waterfall = null;
+      this.renderNotes([
+        { tone: "note", text: "No data selected. Provide records to draw the chart." }
+      ]);
+      this.chartWrap.style.display = "none";
+      return;
+    }
+    const settings = this.effectiveSettings();
+    const waterfall = buildWaterfall(this.cleanRows, settings, {
+      removed: this.removedRecords,
+      filters: this.state.filters
+    });
+    const unit = resolveUnit(this.cleanRows, settings, settings.measure);
+    waterfall.unit = unit.unit;
+    waterfall.uln = ulnRange(waterfall.ordered);
+    this.waterfall = waterfall;
+    const notes = [...waterfall.notes];
+    if (unit.mixed) {
+      notes.push({
+        tone: "warning",
+        text: `${settings.measure} carries more than one unit in this data (${unit.units.join(", ")}). The chart is suppressed: an absolute axis cannot mix units.`
+      });
+    }
+    if (!unit.mixed && !waterfall.ordered.length) {
+      notes.push({
+        tone: "warning",
+        text: "No participants meet the cohort rules for this chart."
+      });
+    }
+    this.renderNotes(notes);
+    if (unit.mixed || !waterfall.ordered.length) {
+      this.chartWrap.style.display = "none";
+      return;
+    }
+    const domain = waterfallDomain(
+      waterfall.ordered.flatMap((subject) => [subject.baseline, subject.peak]),
+      this.state.ulnDisplay === "none" ? [] : waterfall.uln.values
+    );
+    this.domain = domain;
+    this.drawMainChart(waterfall, domain, unit.unit);
+    this.drawFlankCharts(waterfall, domain);
+    this.drawLegend();
+    this.footnote.textContent = `Each bar spans one participant's baseline ${settings.measure} to their maximum on-treatment ${settings.measure} in ${unit.unit}; the black line traces the baselines. Click a bar for that participant's records. Exploratory tool \u2014 confirm signals with a full case review.`;
+  }
+  /**
+   * Build the waterfall chart itself.
+   * @private
+   */
+  drawMainChart(waterfall, domain, unit) {
+    const settings = this.effectiveSettings();
+    const title = axisTitle(settings.measure, unit);
+    const { y, y1 } = mirroredScales(domain, title);
+    this.chart = new Chart(this.canvas.getContext("2d"), {
+      type: "bar",
+      data: {
+        labels: waterfall.ordered.map((subject) => String(subject.id)),
+        datasets: waterfallDatasets(waterfall.ordered, { measure: settings.measure })
+      },
+      options: {
+        maintainAspectRatio: false,
+        responsive: true,
+        animation: false,
+        onClick: (event, elements) => {
+          if (!elements || !elements.length) return;
+          const subject = waterfall.ordered[elements[0].index];
+          if (subject) this.selectParticipant(subject.id);
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              title: () => "",
+              label: (ctx) => waterfallTooltip(waterfall.ordered[ctx.dataIndex], {
+                measure: settings.measure,
+                unit
+              })
+            }
+          }
+        },
+        scales: {
+          x: categoryScale(settings.measure, {
+            placeboLabel: waterfall.placeboLabel,
+            activeLabel: waterfall.activeLabel
+          }),
+          y,
+          y1
+        }
+      },
+      plugins: [ulnBandPlugin(this), armDividerPlugin(this)]
+    });
+    this.charts.push(this.chart);
+  }
+  /**
+   * Build the two flanking summary panels (HWF-BOX-001/002): minimal charts
+   * whose only marks come from the shared box-and-whisker plugin, with their
+   * value axis pinned to the main chart's domain so all three panels are
+   * vertically registered.
+   * @private
+   */
+  drawFlankCharts(waterfall, domain) {
+    const summary = this.state.summary;
+    this.boxSpecs = {
+      left: boxSpecs(waterfall.placebo, { summary, color: ARM_SIDE_COLORS.placebo }),
+      right: boxSpecs(waterfall.active, { summary, color: ARM_SIDE_COLORS.active })
+    };
+    this.flankCharts = [
+      ["left", this.boxCanvasLeft, waterfall.placeboLabel],
+      ["right", this.boxCanvasRight, waterfall.activeLabel]
+    ].map(([side, canvas, label]) => {
+      const chart = new Chart(canvas.getContext("2d"), {
+        type: "line",
+        data: { datasets: [{ data: [] }] },
+        options: {
+          maintainAspectRatio: false,
+          responsive: true,
+          animation: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { enabled: false },
+            title: { display: true, text: label, font: { size: 11 } }
+          },
+          scales: flankScales(domain, this.boxSpecs[side].length)
+        },
+        plugins: [boxWhiskerPlugin(`hwf-${side}`, () => this.boxSpecs[side])]
+      });
+      this.charts.push(chart);
+      return chart;
+    });
+  }
+  /**
+   * The selected participant's records, with the listing's derived columns.
+   * @private
+   */
+  participantRecords(id) {
+    return this.cleanRows.filter((row) => String(row[this.settings.id_col]) === String(id)).map((row) => ({
+      ...row,
+      __hwf_dayLabel: Number.isFinite(row.__hep_day) ? row.__hep_day : ""
+    }));
+  }
+  /**
+   * Select (or, when already selected, deselect) a participant: highlight their
+   * bar, open the linked listing of their records, and dispatch the
+   * participantsSelected event (HWF-SELECT-002, HWF-SELECT-003).
+   * @param {string|number} id The participant identifier.
+   * @returns {void}
+   */
+  selectParticipant(id) {
+    const key = String(id);
+    const selected = this.state.selectedIds.includes(key) ? [] : [key];
+    this.state.selectedIds = selected;
+    if (this.chart && this.waterfall) {
+      const dataset = this.chart.data.datasets[0];
+      dataset.borderColor = this.waterfall.ordered.map(
+        (subject) => selected.includes(String(subject.id)) ? TRACE_COLOR : barColor(subject)
+      );
+      dataset.borderWidth = this.waterfall.ordered.map(
+        (subject) => selected.includes(String(subject.id)) ? 2 : 0
+      );
+      this.chart.update();
+    }
+    if (selected.length) {
+      this.currentTableData = this.participantRecords(key);
+      this.listingSearch = "";
+      this.listingSort = null;
+      this.page = 1;
+      renderListing(this);
+      this.mainAnnotation.textContent = key;
+    } else {
+      this.currentTableData = [];
+      this.listingWrap.innerHTML = "";
+      this.mainAnnotation.textContent = "";
+    }
+    if (this.root) {
+      this.root.dispatchEvent(
+        new CustomEvent("participantsSelected", { detail: { data: selected }, bubbles: true })
+      );
+    }
+  }
+  /**
+   * Resize every live chart — the waterfall and both flanking panels — to their
+   * containers. For host layouts that change the container size without a
+   * window resize, e.g. the R htmlwidget bindings.
+   * @returns {void}
+   */
+  resize() {
+    this.charts.forEach((chart) => chart.resize());
+  }
+  /**
+   * Destroy the live Chart.js instances without touching the shell.
+   * @private
+   */
+  destroyCharts() {
+    this.charts.forEach((chart) => chart.destroy());
+    this.charts = [];
+    this.flankCharts = [];
+    this.chart = null;
+  }
+  /**
+   * Tear the waterfall down: destroy every chart and empty the target element.
+   * The instance cannot be reused afterwards — create a new one via the factory.
+   * @returns {void}
+   */
+  destroy() {
+    this.destroyCharts();
+    this.element.innerHTML = "";
+  }
+};
+function hepWaterfall(element = "body", settings = {}) {
+  return new SafetyHepWaterfall(element, settings);
+}
+
 // src/main.js
 var main_default = {
   histogram,
@@ -23818,7 +25086,8 @@ var main_default = {
   aeTimelines,
   hepExplorer,
   aeExplorer,
-  qtExplorer
+  qtExplorer,
+  hepWaterfall
 };
 export {
   aeExplorer,
@@ -23826,6 +25095,7 @@ export {
   main_default as default,
   deltaDelta,
   hepExplorer,
+  hepWaterfall,
   histogram,
   outlierExplorer,
   qtExplorer,

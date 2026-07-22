@@ -221,9 +221,13 @@ churn their evidence baselines for a figure none of them draws.
   ```
 
   The invariants above are asserted against the committed CSV by
-  [`tests/unit/demo-data/abnbl.test.js`](../tests/unit/demo-data/abnbl.test.js), so
-  a regeneration that loses the signal fails the suite rather than quietly
-  degrading the demo.
+  [`tests/unit/hep-waterfall/abnbl.test.js`](../tests/unit/hep-waterfall/abnbl.test.js)
+  (`HWF-COHORT-001`…`011`), so a regeneration that loses the signal fails the
+  suite rather than quietly degrading the demo. The tests live under the
+  module's own directory rather than a `demo-data/` one deliberately: the
+  evidence pipeline routes `tests/unit/<module>/**` to that module and treats
+  everything else as shared scaffold, so a `demo-data/` directory would have
+  copied these eleven cohort records into **every** renderer's evidence page.
 
 ## License and attribution
 

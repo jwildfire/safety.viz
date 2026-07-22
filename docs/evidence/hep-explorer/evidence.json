@@ -1,16 +1,13 @@
 {
   "module": "hep-explorer",
-  "generatedAt": "2026-07-22T02:43:43.459Z",
+  "generatedAt": "2026-07-22T22:22:43.949Z",
   "environment": {
-    "os": "linux 6.17.0-1020-azure",
-    "node": "v22.23.1",
+    "os": "darwin 23.6.0",
+    "node": "v24.14.0",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": {
-    "id": "29886544593",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29886544593"
-  },
+  "run": null,
   "records": [
     {
       "test": "a chart link navigates straight to that renderer demo (#71)",
@@ -46,6 +43,14 @@
     },
     {
       "test": "built hep-explorer demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built hep-waterfall demo mounts the shared shell with no console errors (#7) (#17)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": [],
@@ -332,6 +337,54 @@
       "screenshots": []
     },
     {
+      "test": "box-whisker shared drawing module HEP-CORE-010: boxWhiskerPlugin draws nothing when getSpecs yields no specs (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-010"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "box-whisker shared drawing module HEP-CORE-010: boxWhiskerPlugin stamps the id prefix and draws the staged specs on afterDatasetsDraw (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-010"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "box-whisker shared drawing module HEP-CORE-010: drawBoxWhisker renders identical geometry to the pre-promotion plugin (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-010"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "box-whisker shared drawing module HEP-CORE-010: drawBoxWhisker skips specs with missing or empty stats (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-010"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "box-whisker shared drawing module HEP-CORE-010: each boxWhiskerPlugin instance gets a unique id (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-010"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "box-whisker shared drawing module HEP-CORE-010: hexToRgba converts hex colors at the given alpha exactly as before (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-010"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
       "test": "buildApiModel API-XFORM-010: assembles the artifact with module, factory, methods, settings, data contract, and missing docs (#6)",
       "suite": "unit",
       "status": "pass",
@@ -505,6 +558,502 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core arms — distinctArms HEP-ARM-001: reads the arm from the retained meta when a column is named (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-ARM-001"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core arms — distinctArms HEP-ARM-001: unique, sorted arm values, dropping blanks (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-ARM-001"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core arms — palettes HEP-ARM-003: arm sides carry fixed semantic colours, jaundice overrides them (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-ARM-003"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core arms — resolveArmCol HEP-ARM-001: falls back to the known arm columns when arm_col is absent (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-ARM-001"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core arms — resolveArmCol HEP-ARM-001: returns null when no arm column can be found (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-ARM-001"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core arms — resolveArmCol HEP-ARM-001: uses arm_col when that column is present in the data (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-ARM-001"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core arms — resolveArmSides HEP-ARM-002: an ambiguous placebo designation yields no placebo side and a warning (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-ARM-002"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core arms — resolveArmSides HEP-ARM-002: the demo dataset sides the REAL placebo arm as placebo (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-ARM-002"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core arms — resolveArmSides HEP-ARM-002: with no settings, placebo is detected and the rest pool active (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-ARM-002"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core arms — resolveArmSides HEP-ARM-003: a single active arm may be supplied as a bare string (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-ARM-003"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core arms — resolveArmSides HEP-ARM-003: explicit settings override detection and scope the active side (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-ARM-003"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core arms — resolveArmSides HEP-ARM-004: an unknown arm value has no side (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-ARM-004"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core arms — resolveArmSides HEP-ARM-005: with no placebo resolvable, every arm degrades to one side (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-ARM-005"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core arms — resolvePlaceboArm HEP-ARM-002: an exact placebo arm beats a substring match on the demo data (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-ARM-002"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core arms — resolvePlaceboArm HEP-ARM-002: auto-detects the placebo arm by name when none is configured (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-ARM-002"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core arms — resolvePlaceboArm HEP-ARM-002: several pattern matches with no exact winner are reported, not guessed (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-ARM-002"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core arms — resolvePlaceboArm HEP-ARM-003: an explicit placebo_arm absent from the data falls back to detection (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-ARM-003"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core arms — resolvePlaceboArm HEP-ARM-003: an explicit placebo_arm present in the data wins (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-ARM-003"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core migration — migrationCells HEP-CORE-007: cell counts equal the per-side cross-table counts (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-007"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core migration — migrationCells HEP-CORE-007: cell order and ids are deterministic, not input-order dependent (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-007"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core migration — migrationCells HEP-CORE-007: falls back to each subject own side when no map is supplied (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-007"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core migration — migrationCells HEP-CORE-007: keyed side|pretreatment|on-treatment with the participant ids (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-007"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core migration — migrationCells HEP-CORE-007: only non-empty cells of designated sides are emitted (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-007"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core migration — migrationMatrixBySide HEP-CORE-007: an undesignated arm is excluded from both sides (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-007"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core migration — migrationMatrixBySide HEP-CORE-007: both sides are present even when one is empty (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-007"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core migration — migrationMatrixBySide HEP-CORE-007: each side is exactly migrationMatrix over that side alone (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-007"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core migration — migrationMatrixBySide HEP-CORE-007: one cross table per designated side (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-007"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core quadrants — ribbonColor HEP-CORE-008: an unknown pair falls back to the neutral gray fill (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-008"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core quadrants — ribbonColor HEP-CORE-008: every ribbon fill is the concern colour, for all sixteen pairs (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-008"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core quadrants — ribbonColor HEP-CORE-008: fill is NOT a function of the vertical travel (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-008"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core quadrants — severity tiers HEP-CORE-008: SEVERITY_ORDER stacks the same four quadrants top-down by tier (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-008"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core quadrants — severity tiers HEP-CORE-008: three tiers with Hy's Law on top and Normal & NN at the bottom (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-008"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core quadrants — shiftDirection HEP-CORE-008: a rise in tier is 'up' and a fall is 'down' (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-008"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core quadrants — shiftDirection HEP-CORE-008: an unknown quadrant degrades to 'lateral' rather than throwing (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-008"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core quadrants — shiftDirection HEP-CORE-008: same-tier and self flows are 'lateral' (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-008"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core quadrants — the 16-cell correspondence (HEP-MIG-009 invariant) HEP-CORE-008: red is up, green is down, yellow and gray are lateral (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-MIG-009", "HEP-CORE-008"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core stats — boxStats HEP-CORE-009: ignores non-numeric values and survives an empty sample (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-009"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core stats — boxStats HEP-CORE-009: returns the box-and-whisker shape with R-7 quantiles (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-009"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core subjects — buildHepSubjects HEP-ARM-002: an ambiguous placebo designation is surfaced as a warning (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-ARM-002"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core subjects — buildHepSubjects HEP-CORE-001: every field the composite view consumes is still present (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-001"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core subjects — buildHepSubjects HEP-CORE-001: one record per participant carrying ×ULN and absolute units (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-001"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core subjects — buildHepSubjects HEP-CORE-002: ×Baseline always agrees with the reduction that produced it (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-002"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core subjects — buildHepSubjects HEP-CORE-002: the absolute peak falls below baseline when it should (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-002"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core subjects — buildHepSubjects HEP-CORE-003: buildHepSubjects honours the explicit baseline flag (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-003"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core subjects — buildHepSubjects HEP-CORE-005: the arm column is retained without being a group or a filter (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-005"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core subjects — buildHepSubjects HEP-CORE-006: new-onset jaundice needs a normal baseline and an elevated peak (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-006"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core subjects — buildHepSubjects HEP-CORE-006: the jaundice threshold is settable (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-006"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core subjects — buildHepSubjects HEP-CORE-007: each participant carries the resolved placebo/active side (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-007"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core subjects — reduceMeasure HEP-CORE-002: a participant whose baseline is their highest value peaks below it (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-002"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core subjects — reduceMeasure HEP-CORE-002: null when no usable baseline or no on-treatment record survives (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-002"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core subjects — reduceMeasure HEP-CORE-004: the absolute maximum is independent of the ×ULN maximum (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-004"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core subjects — splitBaselineOnTreatment HEP-CORE-002: a PRE-DOSE screening record is never on-treatment, even with a negative-day baseline (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-002"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core subjects — splitBaselineOnTreatment HEP-CORE-002: records at or before the baseline day are not on-treatment (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-002"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core subjects — splitBaselineOnTreatment HEP-CORE-002: the on-treatment set excludes the baseline record by identity (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-002"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core subjects — splitBaselineOnTreatment HEP-CORE-003: an explicit baseline flag outranks the day-0 heuristic (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-003"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core subjects — splitBaselineOnTreatment HEP-CORE-003: with no usable study day, every non-baseline record is on-treatment (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-003"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core subjects — splitBaselineOnTreatment HEP-CORE-003: without a flag, day 0 wins, else the earliest record (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-003"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core subjects — the demo-dataset composite population HEP-ARM-002: the real Placebo arm — not the synthetic CLD cohort — is the comparator (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-ARM-002"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core subjects — the demo-dataset composite population HEP-CORE-002: pins the composite subject and excluded counts (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-002"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core subjects — the demo-dataset composite population HEP-CORE-002: the two participants the baseline fix drops are named (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-002"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer checkInputs — the view-aware arm guard HEP-ARM-005: reports a usable arm column without touching the global contract (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-ARM-005"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer checkInputs — the view-aware arm guard HEP-ARM-005: reports an unmapped arm column as a message, never a throw (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-ARM-005"],
+      "issueRefs": [91],
       "screenshots": []
     },
     {
@@ -948,6 +1497,54 @@
       "screenshots": []
     },
     {
+      "test": "hep-explorer selection layer HEP-CORE-011: mount fills the Participants section with one option per shown participant and hides it when none are shown (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-011"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer selection layer HEP-CORE-012: sync mirrors a selection into the dropdown and the Clear button (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-012"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer selection layer HEP-CORE-013: the control routes changes and clears to whichever view is bound, with no view-conditional logic of its own (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-013"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer selection layer HEP-CORE-014: dispatch fires participantsSelected on the shell root and carried() replays it across a redraw (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-014"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer selection layer HEP-CORE-015: the trace header names a hover, one selection, several selections, and the idle hint (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-015"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer selection layer HEP-CORE-016: the selection layer carries no view-conditional logic and no view import (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-016"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
       "test": "hep-explorer structureData HEP-API: unique, mean, quantile, and median match hand computations (port)",
       "suite": "unit",
       "status": "pass",
@@ -1145,6 +1742,30 @@
       "status": "pass",
       "requirementIds": ["HEP-SELECT-005"],
       "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer view isolation HEP-CORE-017: no file under views/ imports another file in views/ (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-017"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer view isolation HEP-CORE-018: only the orchestrator branches on state.view (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-018"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer view isolation HEP-CORE-019: every view implements the same contract against the same shell (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-019"],
+      "issueRefs": [91],
       "screenshots": []
     },
     {
@@ -1385,6 +2006,38 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time delegation to the shared module HEP-CORE-010: the results-over-time plugin draws identical geometry through the delegation (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-010"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time delegation to the shared module HEP-CORE-010: the results-over-time plugin keeps its srot id prefix (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-010"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time delegation to the shared module HEP-CORE-010: the results-over-time plugin reads boxSpecs live, not at construction time (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-010"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time delegation to the shared module HEP-CORE-010: the results-over-time plugin still gates on state.boxplots and staged specs (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-010"],
+      "issueRefs": [91],
       "screenshots": []
     },
     {
