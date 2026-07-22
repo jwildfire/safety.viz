@@ -1,7 +1,7 @@
 # safety.viz
 
 **safety.viz is a charting library for monitoring clinical trial safety.**
-Point any of its six interactive charts at your study data and review it in
+Point any of its nine interactive charts at your study data and review it in
 the browser: filter, group, zoom, and click through from a pattern on the
 screen to the participant records behind it. It's an
 [agent-assisted update](https://jwildfire.github.io/keynote/) of the
@@ -19,6 +19,9 @@ screen to the participant records behind it. It's an
 | **[Safety Shift Plot](https://jwildfire.github.io/safety.viz/shift-plot/index.html)**               | Baseline vs. comparison-visit values on a scatter — who moved, and which direction                                                          |
 | **[Safety Delta-Delta](https://jwildfire.github.io/safety.viz/delta-delta/index.html)**             | Paired change-from-baseline for two measures on one scatter (e.g. ALT change vs. AST change)                                                |
 | **[Adverse Event Timelines](https://jwildfire.github.io/safety.viz/ae-timelines/index.html)**       | Each participant's AEs as timelines colored by severity, serious events marked, with click-through detail                                   |
+| **[Adverse Event Explorer](https://jwildfire.github.io/safety.viz/ae-explorer/index.html)**         | AE prevalence by system organ class and preferred term, with per-arm rates, between-arm differences, and participant drill-down             |
+| **[Hepatic Safety Explorer](https://jwildfire.github.io/safety.viz/hep-explorer/index.html)**       | eDISH scatter of peak liver measures with Hy's Law quadrants, plus a baseline-referenced composite view for abnormal-baseline populations   |
+| **[QT Safety Explorer](https://jwildfire.github.io/safety.viz/qt-explorer/index.html)**             | QT/QTc central tendency against the ICH E14 threshold, an outlier scatter, and categorical crossing counts                                  |
 
 Every chart has a live demo against real example data, a generated API
 reference documenting every setting, and its own test-evidence report — all
@@ -29,7 +32,7 @@ linked from its page on the site.
 Vendor the committed bundle — no build step, no npm install:
 
 ```html
-<script src="dist/safety.viz-1.3.1/safety.viz.js"></script>
+<script src="dist/safety.viz-1.4.1/safety.viz.js"></script>
 <script>
   SafetyViz.histogram('#container', {
     value_col: 'STRESN',
@@ -42,7 +45,7 @@ Vendor the committed bundle — no build step, no npm install:
 An ESM build is committed alongside:
 
 ```js
-import { histogram } from './dist/safety.viz-1.3.1/safety.viz.esm.js';
+import { histogram } from './dist/safety.viz-1.4.1/safety.viz.esm.js';
 histogram('#container', settings).init(rows);
 ```
 
@@ -59,8 +62,36 @@ generated API reference — e.g. the
 each chart's site page links its own.
 
 **Using R?** [gsm.safety](https://github.com/jwildfire/gsm.safety) wraps this
-same bundle as `Widget_*` htmlwidgets — the histogram widget is next on its
-roadmap.
+same bundle as `Widget_*` htmlwidgets — one per chart.
+
+## Example data
+
+The demos and evidence reports run on
+[pharmaverseadam](https://github.com/pharmaverse/pharmaverseadam), the
+pharmaverse consortium's ADaM test data derived from the CDISC SDTM/ADaM
+Pilot 01 study (Apache-2.0), vendored as CSVs under
+[`site/data/`](site/data/) by
+[`scripts/build-demo-data.mjs`](scripts/build-demo-data.mjs).
+
+**One cleaning step is applied, to the ECG data.** Like plenty of real trial
+data, the pilot is internally inconsistent here: it collects RR interval and
+heart rate as separate measurements, and the two contradict each other — they
+were generated independently, so only 0.8% of readings agree. Its pre-derived
+QTc parameters are corrected against that collected RR, which puts them about
+80 ms high. The build therefore derives QTcF and QTcB itself, correcting
+against the RR implied by the recorded heart rate — the more credible of the
+two inputs — and fails if the RR source ever contradicts heart rate again. To
+be clear about where the fault lies: the packages that produced the data
+behave exactly as documented; the inconsistency is in the source, and this is
+routine cleaning rather than a defect report.
+
+Two additions are also made for coverage: placeholder rows for participants
+with no adverse events, so AE denominators cover the whole safety population,
+and a small synthetic chronic-liver-disease cohort, without which the
+hep-explorer composite plot has no abnormal-baseline population to draw.
+Everything else ships as sourced. Full provenance, including what the cleaning
+does and does not fix, is in
+[`docs/DATA_SOURCES.md`](docs/DATA_SOURCES.md).
 
 ## Quality and evidence
 
@@ -88,7 +119,7 @@ reference, and evidence reports.
 
 ```
 src/
-├── main.js               # public module collection (the six renderers)
+├── main.js               # public module collection (the nine renderers)
 ├── {chart}.js            # one entry per renderer, plus a {chart}/ dir of parts
 └── data/schema/          # JSON Schema data contracts, one per chart
 site/                     # documentation-site sources (gallery, demos, shell)

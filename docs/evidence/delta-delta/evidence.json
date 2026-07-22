@@ -1,6 +1,6 @@
 {
   "module": "delta-delta",
-  "generatedAt": "2026-07-19T02:43:10.106Z",
+  "generatedAt": "2026-07-22T02:43:43.459Z",
   "environment": {
     "os": "linux 6.17.0-1020-azure",
     "node": "v22.23.1",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "29670613309",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29670613309"
+    "id": "29886544593",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29886544593"
   },
   "records": [
     {
@@ -290,6 +290,86 @@
       "status": "pass",
       "requirementIds": ["API-XFORM-011"],
       "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "buildEcgRecords anchors BASE and CHG on each participant baseline record (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "buildEcgRecords derives QTcF and QTcB from QT and RRR rather than the pilot parameters (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "buildEcgRecords drops non-analysis rows: the AVERAGE roll-up and non-supine postures (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "buildEcgRecords keeps each participant on its own baseline (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "buildEcgRecords passes heart rate through as recorded (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "buildEcgRecords refuses to build when the RR source contradicts the recorded heart rate (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "buildEcgRecords throws when a source parameter the derivation needs is absent (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "correctQt applies Bazett — QT divided by the square root of RR in seconds (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "correctQt applies Fridericia — QT divided by the cube root of RR in seconds (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "correctQt corrects upward above 60 bpm and downward below it (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
       "screenshots": []
     },
     {

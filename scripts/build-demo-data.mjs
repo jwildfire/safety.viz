@@ -34,6 +34,9 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { pipeline } from 'node:stream/promises';
 import { Readable } from 'node:stream';
+// Value helpers and the ECG derivation live in demo-data-lib.mjs so they can be
+// unit-tested without running this script (which downloads ~200 MB of source).
+import { buildEcgRecords, clean, isBlank, isNum, num } from './demo-data-lib.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(__dirname, '..');
@@ -41,25 +44,6 @@ const REPO_ROOT = join(__dirname, '..');
 const PHARMAVERSEADAM_BASE =
   'https://raw.githubusercontent.com/pharmaverse/pharmaverseadam/main/inst/extdata';
 const SOURCE_FILES = ['adlb.csv', 'advs.csv', 'adae.csv', 'adsl.csv', 'adeg.csv'];
-
-// ECG measure panel for the QT Safety Explorer demo. The pilot ADEG carries eight
-// PARAMCDs; the demo keeps the two fixed heart-rate corrections in scope for Phase 1
-// (QTcF / QTcB) plus heart rate, which the QT workflow reads alongside QTc (an
-// increase to ≥100 bpm or ≥25% can itself drive an apparent QTc change). QT-RR is out
-// of scope, and the pilot has no PR/QRS intervals and no moxifloxacin positive-control
-// arm — expected for CDISC Pilot 01; those are Phase-2 items on a richer dataset.
-// Maps source PARAMCD → display name + unit.
-const EG_PARAMS = [
-  { paramcd: 'QTCFR', test: 'QTcF', unit: 'msec' },
-  { paramcd: 'QTCBR', test: 'QTcB', unit: 'msec' },
-  { paramcd: 'HR', test: 'Heart Rate', unit: 'beats/min' }
-];
-const EG_PARAM_BY_CODE = new Map(EG_PARAMS.map((p) => [p.paramcd, p]));
-// The pilot records each visit at three postural timepoints (supine, standing 1 min,
-// standing 3 min) plus a DTYPE=AVERAGE roll-up. Keep the supine reading — the resting
-// posture ICH-E14 analyses use — which carries the source-derived BASE and CHG the QT
-// displays need (the AVERAGE roll-up rows do not).
-const EG_TIMEPOINT = 'AFTER LYING DOWN FOR 5 MINUTES';
 
 // Curated measure panel for the demo BDS. The full pilot carries 55 measures
 // (incl. sparse cell-morphology / qualitative-urinalysis labs); the demo keeps a
@@ -171,14 +155,6 @@ function toCsv(columns, records) {
   for (const rec of records) lines.push(columns.map((col) => csvField(rec[col])).join(','));
   return lines.join('\n') + '\n';
 }
-
-// ---- value helpers --------------------------------------------------------
-// pharmaverseadam CSVs encode missing values as the literal string `NA` (R's
-// write.csv convention). Treat that — and empty — as blank everywhere.
-const isBlank = (v) => v == null || v === '' || v === 'NA';
-const isNum = (v) => !isBlank(v) && Number.isFinite(Number(v));
-const clean = (v) => (isBlank(v) ? '' : v); // string field → '' when missing
-const num = (v) => (isNum(v) ? v : ''); // numeric field → '' when missing
 
 // Vitals carry the measure name in PARAM with a trailing unit, e.g.
 // "Diastolic Blood Pressure (mmHg)"; split it into a clean name + unit.
@@ -335,72 +311,13 @@ function buildAe(adaeText, adslText) {
   return { columns, records: [...records, ...placeholders], placeholders: placeholders.length };
 }
 
-// Map one ADaM ADEG record to the QT measure contract. Keeps the source-standardized
-// analysis value (AVAL), the source-derived baseline (BASE) and change-from-baseline
-// (CHG) — no correction formula is recomputed here; QTcF/QTcB arrive pre-derived from
-// the pilot. One row per participant × visit × ECG parameter (supine timepoint).
-function mapEg(rec, param) {
-  return {
-    USUBJID: clean(rec.USUBJID),
-    SITE: isBlank(rec.SITEID) ? '' : `Clinical Site ${rec.SITEID}`,
-    SITEID: clean(rec.SITEID),
-    SEX: clean(rec.SEX),
-    RACE: clean(rec.RACE),
-    AGE: num(rec.AGE),
-    ARM: clean(rec.TRTA) || clean(rec.ARM),
-    VISIT: clean(rec.AVISIT) || clean(rec.VISIT),
-    VISITNUM: clean(rec.AVISITN) || clean(rec.VISITNUM),
-    PARAMCD: param.paramcd,
-    TEST: param.test,
-    STRESU: param.unit,
-    STRESN: rec.AVAL,
-    BASE: num(rec.BASE),
-    CHG: num(rec.CHG),
-    ABLFL: clean(rec.ABLFL)
-  };
-}
-
-// Keep one analysis reading per participant × visit × parameter: the supine timepoint,
-// a source reading (not the DTYPE=AVERAGE roll-up, which lacks BASE/CHG), and either the
-// primary-analysis record (ANL01FL='Y') or the baseline record (ABLFL='Y' — baseline
-// carries ABLFL, not ANL01FL, and anchors every change-from-baseline display). Mirrors
-// the BDS build's isAnalysisMeasure, restricted to the supine posture.
-const isEgAnalysisRecord = (rec) =>
-  isBlank(rec.DTYPE) &&
-  clean(rec.ATPT) === EG_TIMEPOINT &&
-  isNum(rec.AVAL) &&
-  (rec.ANL01FL === 'Y' || rec.ABLFL === 'Y');
-
+// The ECG file: QTcF / QTcB derived from the measured QT and RR (#79), plus heart
+// rate as recorded. See demo-data-lib.mjs for the derivation and its guard.
 function buildEg(adegText) {
-  const columns = [
-    'USUBJID',
-    'SITE',
-    'SITEID',
-    'SEX',
-    'RACE',
-    'AGE',
-    'ARM',
-    'VISIT',
-    'VISITNUM',
-    'PARAMCD',
-    'TEST',
-    'STRESU',
-    'STRESN',
-    'BASE',
-    'CHG',
-    'ABLFL'
-  ];
-  const records = toRecords(adegText)
-    .filter((r) => isEgAnalysisRecord(r) && EG_PARAM_BY_CODE.has(clean(r.PARAMCD)))
-    .map((r) => mapEg(r, EG_PARAM_BY_CODE.get(clean(r.PARAMCD))));
-
-  // Guard: every curated parameter should be present in the source.
-  const found = new Set(records.map((r) => r.PARAMCD));
-  const missing = EG_PARAMS.filter((p) => !found.has(p.paramcd)).map((p) => p.paramcd);
-  if (missing.length)
-    console.warn(`  WARNING: curated ECG parameters not found in source: ${missing.join(', ')}`);
-
-  return { columns, records };
+  return buildEcgRecords(toRecords(adegText), {
+    log: (msg) => console.log(msg),
+    warn: (msg) => console.warn(msg)
+  });
 }
 
 // ---- main -----------------------------------------------------------------
