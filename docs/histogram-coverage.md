@@ -86,3 +86,7 @@ lifecycle API instead — SH-API-001 in the module scheme.
 **SH-REG-024 note:** the row's inputs-update behavior is evidenced by
 SH-CTRL-008; its info-icon clause (an ⓘ link to the algorithm's description)
 is not ported.
+
+## View-selector rollout (VIEW-3, #76)
+
+One representation — a histogram. The "All Measures" overview is a small-multiples data-scope mode and the bar-click listing is a supplementary drill-down; neither is a mutually-exclusive primary-display switch, so promoting would require inventing a new toggle (out of scope). Ruled **single-view** in the shared view-selector rollout ([#76](https://github.com/jwildfire/safety.viz/issues/76)) — no view control is added; see [view-selector-inventory.md](view-selector-inventory.md).

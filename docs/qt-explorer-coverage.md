@@ -78,3 +78,7 @@ rows.
   moxifloxacin positive-control arm — none present in the CDISC Pilot ADEG. The
   ΔΔ CI is a large-sample normal approximation for exploratory screening, not the
   regulatory ANCOVA/MMRM least-squares-means bound.
+
+## View-selector rollout (VIEW-2, #76)
+
+The View selector (QT-CTRL-001) is now the shared shell builder [`renderViewSelector`](../src/shell.js) — the module-scoped `qt-view-*` CSS + builder were removed with no visual or behavioral change (option class names moved to the neutral `sv-view-*` namespace). See [view-selector-inventory.md](view-selector-inventory.md).

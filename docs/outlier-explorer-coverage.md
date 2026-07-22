@@ -102,3 +102,7 @@ exotic, legacy, or data-unsupported rows honestly.
   invalid-measure and missing-unit console warnings are implemented in
   `validateAndCleanData` / `measureLabel` but not asserted by an automated row
   here.
+
+## View-selector rollout (VIEW-3, #76)
+
+One primary display — the line chart. Every control reshapes that chart; the participant listing is a point-click drill-down, not a view switch. Ruled **single-view** in the shared view-selector rollout ([#76](https://github.com/jwildfire/safety.viz/issues/76)) — no view control is added; see [view-selector-inventory.md](view-selector-inventory.md).

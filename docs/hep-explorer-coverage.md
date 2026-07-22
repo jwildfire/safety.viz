@@ -90,3 +90,7 @@ repo), so routing is against the port spec's scope rather than matrix rows.
   the exposure (EX domain) track and P_ALT hepatocyte estimate, CSV downloads
   of dropped rows/participants, population-profile links, and imputation of
   below-LLOQ values (v1 drops non-numeric results like the other modules).
+
+## View-selector rollout (VIEW-2, #76)
+
+The View selector (HEP-COMP-006) is now the shared shell builder [`renderViewSelector`](../src/shell.js) — the module-scoped `hep-view-*` CSS + builder were removed with no visual or behavioral change (option class names moved to the neutral `sv-view-*` namespace). See [view-selector-inventory.md](view-selector-inventory.md).
