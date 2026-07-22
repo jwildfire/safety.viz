@@ -92,7 +92,7 @@ STRESU, STRESN, BASE, CHG, ABLFL`). Three parameters are kept for the QT Safety
   threshold in the demo. `assertRrSane()` in `scripts/demo-data-lib.mjs` fails the
   build if the RR source ever disagrees with `HR` by more than 1 bpm again.
 - **The pilot's QT is long regardless.** Even correctly derived, the CDISC Pilot 01
-  ECG data is not a realistic thorough-QT population: the *measured* QT has a
+  ECG data is not a realistic thorough-QT population: the _measured_ QT has a
   median of 444 ms, so QTcF still centres near 468 ms and a majority of
   participants cross the 450/480/500 ms categories. That is a property of the
   synthetic source, not of the derivation — the QT Explorer demo exercises every
