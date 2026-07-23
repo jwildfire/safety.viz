@@ -65,7 +65,7 @@
         "arm_col": {
           "type": ["string", "null"],
           "default": "ARM",
-          "description": "Treatment-arm column, structural for the migration view — it decides which side of the centre column a participant's flow leaves from. Auto-detected across ARM, ACTARM, TRT01A and TREATMENT when the named column is absent, and deliberately NOT in this contract's required list, so arm-less data still renders the scatter and composite views (HEP-ARM-001)."
+          "description": "Treatment-arm column, structural for the migration view — it decides which side of the centre column a participant's flow leaves from. Auto-detected across ARM, ACTARM, TRT01A, TREATMENT and TRTA when the named column is absent, and deliberately NOT in this contract's required list, so arm-less data still renders the scatter and composite views (HEP-ARM-001)."
         },
         "placebo_arm": {
           "type": ["string", "null"],
