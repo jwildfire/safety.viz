@@ -1,13 +1,16 @@
 {
   "module": "participant-profile",
-  "generatedAt": "2026-07-23T05:27:49.883Z",
+  "generatedAt": "2026-07-23T05:40:41.867Z",
   "environment": {
-    "os": "darwin 23.6.0",
-    "node": "v24.14.0",
+    "os": "linux 6.17.0-1020-azure",
+    "node": "v22.23.1",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": null,
+  "run": {
+    "id": "29982771416",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29982771416"
+  },
   "records": [
     {
       "test": "a chart link navigates straight to that renderer demo (#71)",
@@ -159,7 +162,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-ACC-001"],
       "issueRefs": [98],
-      "screenshots": []
+      "screenshots": ["PPRF-ACC-001-keyboard-stepper.png"]
     },
     {
       "test": "PPRF-EVT-001/PPRF-CORE-002: the standalone demo wires the profile to a chart via participantsSelected — chart click renders the neighbouring profile, background click clears it (#98)",
@@ -175,7 +178,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-GATE-001"],
       "issueRefs": [98],
-      "screenshots": []
+      "screenshots": ["PPRF-GATE-001-done-gate-demo.png"]
     },
     {
       "test": "PPRF-HEP-001/PPRF-CORE-001: scatter click opens the docked profile below the chart — header, spaghetti, and measure table replace the legacy detail panel (#98)",
@@ -487,7 +490,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-ACC-001"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-ACC-001-keyboard-stepper.png"]
     },
     {
       "test": "control accessible names + focus keys (PPRF-8, PPRF-ACC-001) names both selects for assistive tech — the visual labels are unassociated siblings",
@@ -495,7 +498,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-ACC-001"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-ACC-001-keyboard-stepper.png"]
     },
     {
       "test": "correctQt applies Bazett — QT divided by the square root of RR in seconds (#79)",
@@ -527,7 +530,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-SPAG-002", "PPRF-ACC-001"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-ACC-001-keyboard-stepper.png"]
     },
     {
       "test": "cut lines on keyboard focus (PPRF-3/8, PPRF-SPAG-002, PPRF-ACC-001) the rendered canvas is focusable with a text alternative (PPRF-8)",
@@ -535,7 +538,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-SPAG-002", "PPRF-ACC-001"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-ACC-001-keyboard-stepper.png"]
     },
     {
       "test": "cutLinePlugin (PPRF-3, PPRF-SPAG-001) draws nothing when no dataset is active",
@@ -751,7 +754,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-ACC-001"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-ACC-001-keyboard-stepper.png"]
     },
     {
       "test": "keyboard operation survives re-renders (PPRF-8, PPRF-ACC-001) keeps focus on the ▶ button across activations, falling back to the strip at the cohort end",
@@ -759,7 +762,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-ACC-001"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-ACC-001-keyboard-stepper.png"]
     },
     {
       "test": "keyboard operation survives re-renders (PPRF-8, PPRF-ACC-001) keeps focus on the Standardization select across the display re-render",
@@ -767,7 +770,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-ACC-001"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-ACC-001-keyboard-stepper.png"]
     },
     {
       "test": "keyboard operation survives re-renders (PPRF-8, PPRF-ACC-001) keeps focus on the stepper control across a step so arrows keep working",
@@ -775,7 +778,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-ACC-001"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-ACC-001-keyboard-stepper.png"]
     },
     {
       "test": "keyboard operation survives re-renders (PPRF-8, PPRF-ACC-001) labels the profile block as a named region",
@@ -783,7 +786,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-ACC-001"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-ACC-001-keyboard-stepper.png"]
     },
     {
       "test": "keyboard operation survives re-renders (PPRF-8, PPRF-ACC-001) re-shows of the same cohort keep the stepper position (PPRF-5)",
@@ -791,7 +794,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-ACC-001"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-ACC-001-keyboard-stepper.png"]
     },
     {
       "test": "labControl (PPRF-3, PPRF-SPAG-002) reflects a subset and reports selection changes",
@@ -2039,7 +2042,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-ACC-001"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-ACC-001-keyboard-stepper.png"]
     },
     {
       "test": "spark-toggle accessible state (PPRF-8, PPRF-ACC-001) flips the accessible name with the expanded state and links the inset via aria-controls",
@@ -2047,7 +2050,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-ACC-001"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-ACC-001-keyboard-stepper.png"]
     },
     {
       "test": "sparkDomain (PPRF-4, PPRF-TBL-002) pads the union of participant values and the population extent ×0.99/×1.01",
