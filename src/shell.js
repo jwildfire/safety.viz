@@ -85,6 +85,7 @@ const SHELL_STYLES = `
 .sv-warning{color:#9a3412}
 .sv-chart-wrap{height:460px;position:relative;border:1px solid #d8dee4;border-radius:10px;padding:1rem;background:#fff}
 .sv-footnote{margin:.6rem 0 0;font-size:.85rem;color:#52616f}
+.sv-profile:empty{display:none}
 .sv-multiples{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;margin-top:1.25rem}
 .sv-multiples:empty{display:none}
 .sv-multiple{border:1px solid #d8dee4;border-radius:10px;padding:.75rem .85rem;background:#fff}
@@ -148,6 +149,7 @@ export function applyShellStyles() {
  * @property {HTMLCanvasElement} canvas Main chart canvas.
  * @property {HTMLElement} mainAnnotation Overlay annotation inside the chart card.
  * @property {HTMLElement} footnote Hover/selection footnote below the chart.
+ * @property {HTMLElement} profileWrap Participant-profile dock slot below the chart card (#98, PPRF-1); hidden while empty.
  * @property {HTMLElement} multiplesWrap Small-multiples grid.
  * @property {HTMLElement} listingWrap Linked participant listing container.
  */
@@ -192,10 +194,11 @@ export function renderShell(element, { moduleClass = '', onToggle } = {}) {
   const canvas = createElement('canvas', 'sv-chart');
   const mainAnnotation = createElement('div', 'sv-main-annotation');
   const footnote = createElement('div', 'sv-footnote');
+  const profileWrap = createElement('div', 'sv-profile');
   const multiplesWrap = createElement('div', 'sv-multiples');
   const listingWrap = createElement('div', 'sv-listing');
   chartWrap.append(canvas, mainAnnotation);
-  main.append(notes, chartWrap, footnote, multiplesWrap, listingWrap);
+  main.append(notes, chartWrap, footnote, profileWrap, multiplesWrap, listingWrap);
 
   root.append(sidebar, main);
   element.append(root);
@@ -211,6 +214,7 @@ export function renderShell(element, { moduleClass = '', onToggle } = {}) {
     canvas,
     mainAnnotation,
     footnote,
+    profileWrap,
     multiplesWrap,
     listingWrap
   };

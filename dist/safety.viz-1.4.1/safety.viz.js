@@ -28,6 +28,7 @@ var SafetyViz = (() => {
     hepWaterfall: () => hepWaterfall,
     histogram: () => histogram,
     outlierExplorer: () => outlierExplorer,
+    participantProfile: () => participantProfile,
     qtExplorer: () => qtExplorer,
     resultsOverTime: () => resultsOverTime,
     shiftPlot: () => shiftPlot
@@ -12410,6 +12411,7 @@ var SafetyViz = (() => {
 .sv-warning{color:#9a3412}
 .sv-chart-wrap{height:460px;position:relative;border:1px solid #d8dee4;border-radius:10px;padding:1rem;background:#fff}
 .sv-footnote{margin:.6rem 0 0;font-size:.85rem;color:#52616f}
+.sv-profile:empty{display:none}
 .sv-multiples{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;margin-top:1.25rem}
 .sv-multiples:empty{display:none}
 .sv-multiple{border:1px solid #d8dee4;border-radius:10px;padding:.75rem .85rem;background:#fff}
@@ -12482,10 +12484,11 @@ var SafetyViz = (() => {
     const canvas = createElement("canvas", "sv-chart");
     const mainAnnotation = createElement("div", "sv-main-annotation");
     const footnote = createElement("div", "sv-footnote");
+    const profileWrap = createElement("div", "sv-profile");
     const multiplesWrap = createElement("div", "sv-multiples");
     const listingWrap = createElement("div", "sv-listing");
     chartWrap.append(canvas, mainAnnotation);
-    main.append(notes, chartWrap, footnote, multiplesWrap, listingWrap);
+    main.append(notes, chartWrap, footnote, profileWrap, multiplesWrap, listingWrap);
     root.append(sidebar, main);
     element.append(root);
     applyShellStyles();
@@ -12500,6 +12503,7 @@ var SafetyViz = (() => {
       canvas,
       mainAnnotation,
       footnote,
+      profileWrap,
       multiplesWrap,
       listingWrap
     };
@@ -26080,6 +26084,1274 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     return new SafetyHepWaterfall(element, settings);
   }
 
+  // src/participant-profile/configure.js
+  function arrayify9(value) {
+    if (value === void 0 || value === null || value === "") return [];
+    return Array.isArray(value) ? value : [value];
+  }
+  function fieldSpec9(value, fallbackLabel) {
+    if (typeof value === "string") return { value_col: value, label: fallbackLabel || value };
+    return { ...value, value_col: value.value_col, label: value.label || value.value_col };
+  }
+  var MEASURE_COLORS = [
+    "#e41a1c",
+    "#377eb8",
+    "#4daf4a",
+    "#984ea3",
+    "#ff7f00",
+    "#a65628",
+    "#f781bf",
+    "#00838f"
+  ];
+  var DEFAULT_SETTINGS11 = {
+    id_col: "USUBJID",
+    measure_col: "TEST",
+    value_col: "STRESN",
+    unit_col: "STRESU",
+    normal_col_high: "STNRHI",
+    normal_col_low: "STNRLO",
+    studyday_col: "DY",
+    visit_col: "VISIT",
+    visitn_col: "VISITNUM",
+    baseline_col: null,
+    baseline_value: "Y",
+    details: [],
+    measure_values: {
+      ALT: "Aminotransferase, alanine (ALT)",
+      AST: "Aminotransferase, aspartate (AST)",
+      TB: "Total Bilirubin",
+      ALP: "Alkaline phosphatase (ALP)"
+    },
+    cuts: {
+      TB: { relative_uln: 2, relative_baseline: 4.8 },
+      ALP: { relative_uln: 1, relative_baseline: 3.8 },
+      defaults: { relative_uln: 3, relative_baseline: 3.8 }
+    },
+    display: "relative_uln",
+    display_options: [
+      { value: "relative_uln", label: "ULN adjusted" },
+      { value: "relative_baseline", label: "Baseline adjusted" }
+    ],
+    measureBounds: [0.01, 0.99],
+    participantProfileURL: null,
+    p_alt_col: null,
+    listing: false,
+    listing_cols: null,
+    listing_page_size: 10,
+    listen_to: null,
+    on_clear: null,
+    on_step: null,
+    filters: [],
+    groups: [],
+    width: "100%",
+    height: 300
+  };
+  function syncSettings11(settings = {}) {
+    const synced = { ...DEFAULT_SETTINGS11, ...settings };
+    synced.details = arrayify9(synced.details).map((value) => fieldSpec9(value)).filter((d) => d.value_col);
+    synced.filters = arrayify9(synced.filters).map((value) => fieldSpec9(value)).filter((d) => d.value_col);
+    synced.groups = arrayify9(synced.groups).map((value) => fieldSpec9(value)).filter((d) => d.value_col);
+    synced.listing_cols = synced.listing_cols === void 0 || synced.listing_cols === null ? null : arrayify9(synced.listing_cols).map((value) => fieldSpec9(value)).filter((d) => d.value_col);
+    synced.measure_values = {
+      ...DEFAULT_SETTINGS11.measure_values,
+      ...settings.measure_values || {}
+    };
+    const cutKeys = /* @__PURE__ */ new Set([
+      ...Object.keys(DEFAULT_SETTINGS11.cuts),
+      ...Object.keys(settings.cuts || {})
+    ]);
+    const mergedCuts = {};
+    cutKeys.forEach((key) => {
+      mergedCuts[key] = {
+        ...DEFAULT_SETTINGS11.cuts[key] || {},
+        ...(settings.cuts || {})[key] || {}
+      };
+    });
+    synced.cuts = mergedCuts;
+    const bounds = arrayify9(synced.measureBounds).map(Number).filter(Number.isFinite);
+    synced.measureBounds = bounds.length === 2 ? bounds : [...DEFAULT_SETTINGS11.measureBounds];
+    return synced;
+  }
+  function templateProfileURL(url, id) {
+    if (url === void 0 || url === null || url === "") return null;
+    return String(url).replace(/\{id\}/g, encodeURIComponent(String(id)));
+  }
+  function measureColorScale(keys) {
+    const scale = /* @__PURE__ */ new Map();
+    keys.forEach((key, index) => {
+      scale.set(key, MEASURE_COLORS[index % MEASURE_COLORS.length]);
+    });
+    return scale;
+  }
+
+  // src/participant-profile/checkInputs.js
+  var REQUIRED_COLUMN_SETTINGS11 = ["id_col", "measure_col", "value_col", "normal_col_high"];
+  function checkInputs11(data, settings) {
+    const rows = Array.isArray(data) ? data : [];
+    const missing = REQUIRED_COLUMN_SETTINGS11.map((key) => settings[key]).filter(
+      (col) => !rows.some((row) => row[col] !== void 0)
+    );
+    if (missing.length) {
+      throw new Error(`Required variable(s) missing: ${missing.join(", ")}`);
+    }
+  }
+
+  // src/participant-profile/structureData.js
+  function yLabelFor(display) {
+    return display === "relative_baseline" ? "Standardized Result [xBaseline]" : "Standardized Result [xULN]";
+  }
+  function keyResolver(settings) {
+    const byValue = /* @__PURE__ */ new Map();
+    Object.entries(settings.measure_values || {}).forEach(([shortKey, testValue]) => {
+      byValue.set(testValue, shortKey);
+    });
+    return (measureValue) => {
+      const shortKey = byValue.get(measureValue);
+      return shortKey ? { key: shortKey, isKey: true } : { key: measureValue, isKey: false };
+    };
+  }
+  function orderedMeasures(participantRows, settings) {
+    const resolve2 = keyResolver(settings);
+    const byMeasure = /* @__PURE__ */ new Map();
+    participantRows.forEach((row) => {
+      const value = row[settings.measure_col];
+      if (!byMeasure.has(value)) byMeasure.set(value, []);
+      byMeasure.get(value).push(row);
+    });
+    const keyOrder = Object.keys(settings.measure_values || {});
+    const entries = [...byMeasure.entries()].map(([value, rows]) => {
+      const { key, isKey } = resolve2(value);
+      return { key, label: value, isKey, rows };
+    });
+    return entries.sort((a, b) => {
+      if (a.isKey !== b.isKey) return a.isKey ? -1 : 1;
+      if (a.isKey) return keyOrder.indexOf(a.key) - keyOrder.indexOf(b.key);
+      return 0;
+    });
+  }
+  function populationExtent(cleanRows, measureValue, settings) {
+    const values = cleanRows.filter((row) => row[settings.measure_col] === measureValue).map((row) => row.__hep_value).filter(Number.isFinite);
+    const [lo, hi] = settings.measureBounds;
+    return [quantile4(values, lo), quantile4(values, hi)];
+  }
+  function buildProfileModel(cleanRows, id, settings, state) {
+    const display = state && state.display === "relative_baseline" ? "relative_baseline" : "relative_uln";
+    const field = displayField(display);
+    const participantRows = cleanRows.filter((row) => row[settings.id_col] === id);
+    const first = participantRows[0] || {};
+    const measures = orderedMeasures(participantRows, settings);
+    const colors2 = measureColorScale(measures.map((measure) => measure.key));
+    const details = (settings.details || []).map((spec) => ({
+      label: spec.label,
+      value: first[spec.value_col]
+    }));
+    let pAlt = null;
+    if (settings.p_alt_col) {
+      const raw = first[settings.p_alt_col];
+      pAlt = raw === void 0 || raw === null || raw === "" ? null : raw;
+    }
+    const participant = {
+      id,
+      details,
+      rRatio: computeRRatio(participantRows, settings),
+      pAlt
+    };
+    const series = measures.map((measure) => {
+      const points = measure.rows.filter((row) => Number.isFinite(row[field])).sort(dayThenIndex).map((row) => ({ day: row.__hep_day, value: row[field] }));
+      return {
+        key: measure.key,
+        label: measure.label,
+        isKey: measure.isKey,
+        color: colors2.get(measure.key),
+        cut: cutFor(settings.cuts, measure.key, display),
+        points
+      };
+    });
+    const measureModels = measures.map((measure) => {
+      const values = measure.rows.map((row) => row.__hep_value).filter(Number.isFinite);
+      const spark = measure.rows.slice().sort(dayThenIndex).map((row) => {
+        const lln = settings.normal_col_low != null ? Number(row[settings.normal_col_low]) : NaN;
+        const uln = Number(row[settings.normal_col_high]);
+        const value = row.__hep_value;
+        const outlierLow = Number.isFinite(lln) && value < lln;
+        const outlierHigh = Number.isFinite(uln) && value > uln;
+        return { day: row.__hep_day, value, lln, uln, outlier: outlierLow || outlierHigh };
+      });
+      return {
+        key: measure.key,
+        label: measure.label,
+        isKey: measure.isKey,
+        color: colors2.get(measure.key),
+        n: values.length,
+        min: values.length ? Math.min(...values) : NaN,
+        median: values.length ? median2(values) : NaN,
+        max: values.length ? Math.max(...values) : NaN,
+        populationExtent: populationExtent(cleanRows, measure.label, settings),
+        spark
+      };
+    });
+    return {
+      participant,
+      spaghetti: { series, yLabel: yLabelFor(display), display },
+      measures: measureModels
+    };
+  }
+  function fallbackSeverity(participantRows, settings) {
+    const keyOrder = Object.keys(settings.measure_values || {});
+    let max = 0;
+    keyOrder.forEach((key) => {
+      const testValue = settings.measure_values[key];
+      const values = participantRows.filter((row) => row[settings.measure_col] === testValue).map((row) => row.__hep_relative_uln).filter(Number.isFinite);
+      if (!values.length) return;
+      const cut = cutFor(settings.cuts, key, "relative_uln");
+      const score = Math.max(...values) / (Number.isFinite(cut) && cut > 0 ? cut : 1);
+      if (score > max) max = score;
+    });
+    return max;
+  }
+  function rankParticipants(cleanRows, ids, settings) {
+    const wanted = new Set(ids.map(String));
+    const { subjects } = buildHepSubjects(cleanRows, settings);
+    const subjectById = /* @__PURE__ */ new Map();
+    subjects.forEach((subject) => {
+      if (wanted.has(String(subject.id))) subjectById.set(String(subject.id), subject);
+    });
+    const rowsById = /* @__PURE__ */ new Map();
+    cleanRows.forEach((row) => {
+      const rid = String(row[settings.id_col]);
+      if (!wanted.has(rid)) return;
+      if (!rowsById.has(rid)) rowsById.set(rid, []);
+      rowsById.get(rid).push(row);
+    });
+    const scored = ids.map((id) => {
+      const sid = String(id);
+      const subject = subjectById.get(sid);
+      if (subject) {
+        const quadrantRank = SEVERITY_ORDER.indexOf(subject.onTreatQuadrant);
+        return {
+          id,
+          group: 0,
+          primary: quadrantRank < 0 ? SEVERITY_ORDER.length : quadrantRank,
+          secondary: Number.isFinite(subject.peakAltULN) ? subject.peakAltULN : -Infinity
+        };
+      }
+      return {
+        id,
+        group: 1,
+        primary: 0,
+        secondary: fallbackSeverity(rowsById.get(sid) || [], settings)
+      };
+    });
+    scored.sort((a, b) => {
+      if (a.group !== b.group) return a.group - b.group;
+      if (a.group === 0) {
+        if (a.primary !== b.primary) return a.primary - b.primary;
+        if (a.secondary !== b.secondary) return b.secondary - a.secondary;
+      } else if (a.secondary !== b.secondary) {
+        return b.secondary - a.secondary;
+      }
+      return String(a.id).localeCompare(String(b.id));
+    });
+    return scored.map((entry) => entry.id);
+  }
+
+  // src/participant-profile/header.js
+  function format2(value) {
+    return Number.isFinite(value) ? value.toFixed(2) : "";
+  }
+  function appendDetail(list, label, value, className) {
+    const li = createElement("li", className || null);
+    li.append(createElement("div", "sv-profile-detail-label", label));
+    const valueEl = createElement("div", "sv-profile-detail-value", value);
+    li.append(valueEl);
+    list.append(li);
+    return valueEl;
+  }
+  function renderHeader(participant, settings, { onClear } = {}) {
+    const header = createElement("div", "sv-profile-header");
+    const titleRow = createElement("div", "sv-profile-titlerow");
+    titleRow.append(createElement("h3", "sv-profile-id", `Participant ${participant.id}`));
+    const url = templateProfileURL(settings.participantProfileURL, participant.id);
+    if (url) {
+      const link = createElement("a", "sv-profile-link", "Full Participant Profile");
+      link.setAttribute("href", url);
+      link.setAttribute("target", "_blank");
+      link.setAttribute("rel", "noopener");
+      titleRow.append(link);
+    }
+    const clear = createElement("button", "sv-profile-clear", "Clear");
+    clear.type = "button";
+    clear.onclick = () => {
+      if (onClear) onClear();
+    };
+    titleRow.append(clear);
+    header.append(titleRow);
+    const list = createElement("ul", "sv-profile-details");
+    (participant.details || []).forEach((detail) => {
+      const value = detail.value === void 0 || detail.value === null ? "" : String(detail.value);
+      appendDetail(list, detail.label, value);
+    });
+    appendDetail(list, "R Ratio", format2(participant.rRatio));
+    const footnote = createElement("p", "sv-profile-footnote", "");
+    if (participant.pAlt !== void 0 && participant.pAlt !== null && participant.pAlt !== "") {
+      const isNote = typeof participant.pAlt === "object";
+      const text = isNote ? String(participant.pAlt.text_value) : String(participant.pAlt);
+      const valueEl = appendDetail(list, "P_ALT", text, "sv-profile-palt");
+      if (isNote && participant.pAlt.note) {
+        valueEl.setAttribute("role", "button");
+        valueEl.setAttribute("tabindex", "0");
+        const show = () => {
+          footnote.textContent = participant.pAlt.note;
+        };
+        valueEl.onclick = show;
+        valueEl.onkeydown = (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            show();
+          }
+        };
+      }
+    }
+    header.append(list, footnote);
+    return header;
+  }
+
+  // src/participant-profile/spaghetti.js
+  Chart.register(LineController, LineElement, PointElement, LinearScale, plugin_tooltip);
+  var FOOTNOTE = "Points are filled for values above the current reference value. Mouseover a line to see the reference line for that lab.";
+  function visibleSeries(series, state = {}) {
+    if (state.labs) {
+      const wanted = new Set(state.labs);
+      return series.filter((entry) => wanted.has(entry.key));
+    }
+    if (state.showExtras) return series.slice();
+    return series.filter((entry) => entry.isKey);
+  }
+  function spaghettiDatasets(series) {
+    return series.map((entry) => {
+      const points = entry.points;
+      const cut = entry.cut;
+      const color2 = entry.color;
+      return {
+        label: entry.key,
+        data: points.map((point) => ({ x: point.day, y: point.value })),
+        borderColor: color2,
+        backgroundColor: color2,
+        pointBorderColor: color2,
+        pointBackgroundColor: (ctx) => {
+          const point = points[ctx.dataIndex];
+          return point && Number.isFinite(cut) && point.value >= cut ? color2 : "#fff";
+        },
+        showLine: true,
+        spanGaps: true,
+        borderWidth: 1.5,
+        pointRadius: 3,
+        pointHoverRadius: 5,
+        svCut: cut,
+        svKey: entry.key
+      };
+    });
+  }
+  function cutLinePlugin() {
+    return {
+      id: "sv-profile-cut-line",
+      afterDatasetsDraw(chart) {
+        const active = chart.getActiveElements ? chart.getActiveElements() : [];
+        if (!active || !active.length) return;
+        const dataset = chart.data.datasets[active[0].datasetIndex];
+        if (!dataset || !Number.isFinite(dataset.svCut)) return;
+        const y = chart.scales.y.getPixelForValue(dataset.svCut);
+        const { left, right } = chart.chartArea;
+        const color2 = dataset.borderColor;
+        const ctx = chart.ctx;
+        ctx.save();
+        ctx.strokeStyle = color2;
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath();
+        ctx.moveTo(left, y);
+        ctx.lineTo(right, y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = color2;
+        ctx.textAlign = "right";
+        ctx.textBaseline = "bottom";
+        ctx.fillText(dataset.svCut.toFixed(1), right, y - 2);
+        ctx.restore();
+      }
+    };
+  }
+  function renderSpaghetti(host, model, state = {}) {
+    const card = createElement("div", "sv-profile-spaghetti-card");
+    const canvas = createElement("canvas", "sv-profile-spaghetti-canvas");
+    card.append(canvas);
+    host.append(card);
+    const series = visibleSeries(model.series, state);
+    const datasets = spaghettiDatasets(series);
+    const chart = new Chart(canvas.getContext("2d"), {
+      type: "line",
+      data: { datasets },
+      options: {
+        maintainAspectRatio: false,
+        responsive: true,
+        animation: false,
+        parsing: false,
+        interaction: { mode: "dataset", intersect: false },
+        plugins: {
+          legend: { display: true, position: "bottom" },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y} @ day ${ctx.parsed.x}`
+            }
+          }
+        },
+        scales: {
+          x: { type: "linear", title: { display: true, text: "Study Day" } },
+          y: { type: "linear", title: { display: true, text: model.yLabel } }
+        }
+      },
+      plugins: [cutLinePlugin()]
+    });
+    host.append(createElement("p", "sv-profile-spaghetti-footnote", FOOTNOTE));
+    return chart;
+  }
+
+  // src/participant-profile/controls.js
+  function displayControl(settings, state, onChange) {
+    const select = document.createElement("select");
+    select.className = "sv-profile-display";
+    (settings.display_options || []).forEach(
+      (opt) => option(select, opt.value, opt.label, opt.value === state.display)
+    );
+    select.onchange = () => onChange(select.value);
+    return select;
+  }
+  function labControl(keys, state, onChange) {
+    const select = document.createElement("select");
+    select.className = "sv-profile-labs";
+    select.multiple = true;
+    select.size = Math.min(6, Math.max(2, keys.length));
+    const active = state.labs ? new Set(state.labs) : null;
+    keys.forEach((key) => option(select, key, key, active ? active.has(key) : true));
+    select.onchange = () => onChange([...select.selectedOptions].map((opt) => opt.value));
+    return select;
+  }
+  function extrasControl(count2, state, onChange) {
+    const wrap = createElement("label", "sv-profile-extras");
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = Boolean(state.showExtras);
+    checkbox.onchange = () => onChange(checkbox.checked);
+    wrap.append(
+      checkbox,
+      document.createTextNode(`Show ${count2} additional measure${count2 === 1 ? "" : "s"}:`)
+    );
+    return wrap;
+  }
+
+  // src/participant-profile/sparkline.js
+  var SPARK_WIDTH = 100;
+  var SPARK_HEIGHT = 25;
+  var SPARK_OFFSET = 4;
+  var SVG_NS4 = "http://www.w3.org/2000/svg";
+  function svgElement(tag, attrs) {
+    const element = document.createElementNS(SVG_NS4, tag);
+    Object.entries(attrs).forEach(([name, value]) => element.setAttribute(name, String(value)));
+    return element;
+  }
+  function sparkDomain(measure) {
+    const pool = measure.spark.map((point) => point.value).concat(measure.populationExtent || []).filter(Number.isFinite);
+    if (!pool.length) return [0, 1];
+    return [Math.min(...pool) * 0.99, Math.max(...pool) * 1.01];
+  }
+  function linear2([d0, d1], [r0, r1]) {
+    if (d1 === d0) return () => (r0 + r1) / 2;
+    return (value) => r0 + (value - d0) / (d1 - d0) * (r1 - r0);
+  }
+  function pointsAttr(coords) {
+    return coords.map(([px, py]) => `${px},${py}`).join(" ");
+  }
+  function sparklineSVG(measure) {
+    const svg = svgElement("svg", {
+      class: "sv-spark",
+      width: SPARK_WIDTH,
+      height: SPARK_HEIGHT,
+      "aria-hidden": "true"
+    });
+    const spark = measure.spark || [];
+    const days = spark.map((point) => point.day).filter(Number.isFinite);
+    if (!days.length) return svg;
+    const x = linear2(
+      [Math.min(...days), Math.max(...days)],
+      [SPARK_OFFSET, SPARK_WIDTH - SPARK_OFFSET]
+    );
+    const y = linear2(sparkDomain(measure), [SPARK_HEIGHT - SPARK_OFFSET, SPARK_OFFSET]);
+    const upper = spark.filter((point) => Number.isFinite(point.uln)).map((point) => [x(point.day), y(point.uln)]);
+    const lower = spark.filter((point) => Number.isFinite(point.lln)).map((point) => [x(point.day), y(point.lln)]).reverse();
+    const band = upper.concat(lower);
+    if (band.length) {
+      svg.append(
+        svgElement("polygon", {
+          class: "sv-spark-band",
+          points: pointsAttr(band),
+          fill: "#eee",
+          stroke: "none"
+        })
+      );
+    }
+    (measure.populationExtent || []).filter(Number.isFinite).forEach((value) => {
+      svg.append(
+        svgElement("line", {
+          class: "sv-spark-guide",
+          x1: 0,
+          x2: SPARK_WIDTH,
+          y1: y(value),
+          y2: y(value),
+          stroke: "#ccc",
+          "stroke-dasharray": "2 2"
+        })
+      );
+    });
+    const valuePoints = spark.filter((point) => Number.isFinite(point.value)).map((point) => [x(point.day), y(point.value)]);
+    if (valuePoints.length) {
+      svg.append(
+        svgElement("polyline", {
+          class: "sv-spark-line",
+          points: pointsAttr(valuePoints),
+          fill: "none",
+          stroke: measure.color,
+          "stroke-width": 1
+        })
+      );
+    }
+    spark.filter((point) => point.outlier && Number.isFinite(point.value)).forEach((point) => {
+      svg.append(
+        svgElement("circle", {
+          class: "sv-spark-outlier",
+          cx: x(point.day),
+          cy: y(point.value),
+          r: 2,
+          stroke: measure.color,
+          fill: measure.color
+        })
+      );
+    });
+    return svg;
+  }
+
+  // src/participant-profile/inset.js
+  Chart.register(LineController, LineElement, PointElement, LinearScale, plugin_tooltip);
+  function insetYDomain(measure) {
+    const pool = measure.spark.flatMap((point) => [point.value, point.lln, point.uln]).concat(measure.populationExtent || []).filter(Number.isFinite);
+    if (!pool.length) return [0, 1];
+    return [Math.min(...pool) * 0.99, Math.max(...pool) * 1.01];
+  }
+  function bandGuidePlugin(measure) {
+    return {
+      id: "sv-profile-inset-band",
+      beforeDatasetsDraw(chart) {
+        const { x, y } = chart.scales;
+        const { left, right } = chart.chartArea;
+        const ctx = chart.ctx;
+        const upper = measure.spark.filter((point) => Number.isFinite(point.uln)).map((point) => [x.getPixelForValue(point.day), y.getPixelForValue(point.uln)]);
+        const lower = measure.spark.filter((point) => Number.isFinite(point.lln)).map((point) => [x.getPixelForValue(point.day), y.getPixelForValue(point.lln)]).reverse();
+        const band = upper.concat(lower);
+        if (band.length) {
+          ctx.save();
+          ctx.fillStyle = "#eee";
+          ctx.beginPath();
+          band.forEach(([px, py], index) => {
+            if (index === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          });
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+        }
+        const guides = (measure.populationExtent || []).filter(Number.isFinite);
+        if (guides.length) {
+          ctx.save();
+          ctx.strokeStyle = "#ccc";
+          ctx.setLineDash([2, 2]);
+          guides.forEach((value) => {
+            const py = y.getPixelForValue(value);
+            ctx.beginPath();
+            ctx.moveTo(left, py);
+            ctx.lineTo(right, py);
+            ctx.stroke();
+          });
+          ctx.setLineDash([]);
+          ctx.restore();
+        }
+      }
+    };
+  }
+  function renderInset(host, measure) {
+    const card = createElement("div", "sv-profile-inset-card");
+    const canvas = createElement("canvas", "sv-profile-inset-canvas");
+    card.append(canvas);
+    host.append(card);
+    const points = measure.spark.filter((point) => Number.isFinite(point.value));
+    const color2 = measure.color;
+    const [yMin, yMax] = insetYDomain(measure);
+    return new Chart(canvas.getContext("2d"), {
+      type: "line",
+      data: {
+        datasets: [
+          {
+            label: measure.label,
+            data: points.map((point) => ({ x: point.day, y: point.value })),
+            borderColor: color2,
+            backgroundColor: color2,
+            pointBorderColor: color2,
+            pointBackgroundColor: (ctx) => {
+              const point = points[ctx.dataIndex];
+              return point && point.outlier ? color2 : "#fff";
+            },
+            showLine: true,
+            spanGaps: true,
+            borderWidth: 1.5,
+            pointRadius: 4,
+            pointHoverRadius: 6
+          }
+        ]
+      },
+      options: {
+        maintainAspectRatio: false,
+        responsive: true,
+        animation: false,
+        parsing: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => `${measure.label}: ${ctx.parsed.y} @ day ${ctx.parsed.x}`
+            }
+          }
+        },
+        scales: {
+          x: { type: "linear", title: { display: true, text: "Study Day" } },
+          y: {
+            type: "linear",
+            min: yMin,
+            max: yMax,
+            title: { display: true, text: measure.label }
+          }
+        }
+      },
+      plugins: [bandGuidePlugin(measure)]
+    });
+  }
+
+  // src/participant-profile/measureTable.js
+  var COLUMNS = ["Measure", "N", "Min", "Median", "Max", "Spark"];
+  function formatSummary(value) {
+    return Number.isFinite(value) ? value.toFixed(2) : "";
+  }
+  function listingColumns(settings) {
+    return [
+      [settings.measure_col, "Measure"],
+      [settings.visit_col, "Visit"],
+      [settings.studyday_col, "Study Day"],
+      [settings.value_col, "Value"],
+      [settings.unit_col, "Unit"]
+    ].filter(([col]) => col !== void 0 && col !== null && col !== "").map(([value_col, label]) => ({ value_col, label }));
+  }
+  function renderMeasureTable(host, measures, settings, state = {}, handlers = {}) {
+    const wrap = createElement("div", "sv-profile-measure-wrap");
+    const open = /* @__PURE__ */ new Map();
+    const table = createElement("table", "sv-profile-measure-table");
+    table.setAttribute("aria-label", "Measure summary");
+    const thead = createElement("thead");
+    const headRow = createElement("tr");
+    COLUMNS.forEach((label) => headRow.append(createElement("th", null, label)));
+    thead.append(headRow);
+    const tbody = createElement("tbody");
+    table.append(thead, tbody);
+    function collapse(key) {
+      const entry = open.get(key);
+      if (!entry) return;
+      entry.chart.destroy();
+      entry.insetRow.remove();
+      entry.button.setAttribute("aria-expanded", "false");
+      entry.button.textContent = "\u25BD";
+      if (entry.svg) entry.svg.style.display = "";
+      open.delete(key);
+    }
+    function expand(measure, row, button, svg) {
+      const insetRow = createElement("tr", "sv-profile-inset-row");
+      const cell2 = createElement("td", "sv-profile-inset-cell");
+      cell2.setAttribute("colspan", String(COLUMNS.length));
+      insetRow.append(cell2);
+      row.after(insetRow);
+      const chart = renderInset(cell2, measure);
+      button.setAttribute("aria-expanded", "true");
+      button.textContent = "\u25B3 Minimize Chart";
+      if (svg) svg.style.display = "none";
+      open.set(measure.key, { measure, insetRow, chart, button, svg });
+    }
+    measures.forEach((measure) => {
+      const row = createElement(
+        "tr",
+        measure.isKey ? "sv-profile-measure-row" : "sv-profile-measure-row sv-profile-extra-row"
+      );
+      row.dataset.key = measure.key;
+      if (!measure.isKey && !state.showExtras) row.style.display = "none";
+      row.append(createElement("td", "sv-profile-measure-name", measure.label));
+      row.append(createElement("td", null, String(measure.n)));
+      row.append(createElement("td", null, formatSummary(measure.min)));
+      row.append(createElement("td", null, formatSummary(measure.median)));
+      row.append(createElement("td", null, formatSummary(measure.max)));
+      const sparkCell = createElement("td", "sv-profile-spark");
+      const button = createElement("button", "sv-profile-spark-toggle", "\u25BD");
+      button.type = "button";
+      button.setAttribute("aria-expanded", "false");
+      button.setAttribute("aria-label", `Expand ${measure.label} chart`);
+      const svg = sparklineSVG(measure);
+      button.onclick = () => {
+        if (open.has(measure.key)) collapse(measure.key);
+        else expand(measure, row, button, svg);
+      };
+      sparkCell.append(button, svg);
+      row.append(sparkCell);
+      tbody.append(row);
+    });
+    const extras = measures.filter((measure) => !measure.isKey);
+    if (extras.length) {
+      const toggle = extrasControl(extras.length, state, (showExtras) => {
+        [...tbody.querySelectorAll("tr.sv-profile-extra-row")].forEach((row) => {
+          row.style.display = showExtras ? "" : "none";
+        });
+        if (!showExtras) extras.forEach((measure) => collapse(measure.key));
+        if (handlers.onToggleExtras) handlers.onToggleExtras(showExtras);
+      });
+      wrap.append(toggle);
+    }
+    wrap.append(table);
+    host.append(wrap);
+    function collapseAll() {
+      [...open.keys()].forEach((key) => collapse(key));
+    }
+    return {
+      element: wrap,
+      open,
+      collapse,
+      collapseAll,
+      destroy: collapseAll
+    };
+  }
+  function renderRecordListing(host, rows, settings) {
+    const cols = settings.listing_cols && settings.listing_cols.length ? settings.listing_cols : listingColumns(settings);
+    const section = createElement("div", "sv-profile-listing");
+    section.append(createElement("h4", "sv-profile-listing-title", "Records"));
+    const listingWrap = createElement("div", "sv-listing");
+    section.append(listingWrap);
+    host.append(section);
+    const adapter = {
+      settings: { details: cols, page_size: settings.listing_page_size || 10 },
+      currentTableData: rows,
+      listingWrap,
+      listingSearch: "",
+      listingSort: null,
+      page: 1
+    };
+    renderListing(adapter);
+    return adapter;
+  }
+
+  // src/participant-profile/stepper.js
+  function renderStepper(ids, index, { onStep } = {}) {
+    const strip = createElement("div", "sv-profile-stepper");
+    strip.setAttribute("role", "group");
+    strip.setAttribute("aria-label", "Selected participants");
+    strip.tabIndex = 0;
+    const step = (delta) => {
+      const target = index + delta;
+      if (target < 0 || target >= ids.length) return;
+      if (onStep) onStep(target);
+    };
+    const prev = createElement("button", "sv-profile-step sv-profile-step-prev", "\u25C0");
+    prev.type = "button";
+    prev.setAttribute("aria-label", "Previous participant");
+    prev.disabled = index === 0;
+    prev.onclick = () => step(-1);
+    const count2 = createElement(
+      "span",
+      "sv-profile-step-count",
+      `${index + 1} of ${ids.length} \xB7 ${ids[index]}`
+    );
+    count2.setAttribute("aria-live", "polite");
+    const next = createElement("button", "sv-profile-step sv-profile-step-next", "\u25B6");
+    next.type = "button";
+    next.setAttribute("aria-label", "Next participant");
+    next.disabled = index === ids.length - 1;
+    next.onclick = () => step(1);
+    strip.onkeydown = (event) => {
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        step(-1);
+      } else if (event.key === "ArrowRight") {
+        event.preventDefault();
+        step(1);
+      }
+    };
+    strip.append(prev, count2, next);
+    return strip;
+  }
+
+  // src/participant-profile/styles.js
+  var STYLE_ID3 = "safety-viz-participant-profile-styles";
+  var MODULE_CSS2 = `
+.sv-profile-root{margin-top:.5rem}
+.sv-profile-header{border-top:2px solid #111827;border-bottom:2px solid #111827;padding:.4rem .2rem;margin:0 0 .75rem}
+.sv-profile-titlerow{display:flex;align-items:baseline;flex-wrap:wrap;gap:.75rem}
+.sv-profile-id{font-size:1rem;font-weight:700;margin:0}
+.sv-profile-link{font-size:.8rem;text-decoration:none;color:#0b62a4}
+.sv-profile-link:hover{text-decoration:underline}
+.sv-profile-clear{margin-left:auto;padding:.25rem .6rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;color:#1f2933;font:inherit;font-size:.8rem;cursor:pointer}
+.sv-profile-clear:hover{border-color:#8a94a6;background:#f6f8fa}
+.sv-profile-clear:focus-visible,.sv-profile-palt .sv-profile-detail-value:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
+.sv-profile-details{list-style:none;display:flex;flex-wrap:wrap;gap:.25rem 1.5rem;padding:0;margin:.5rem 0 0}
+.sv-profile-details li{text-align:center}
+.sv-profile-detail-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f}
+.sv-profile-detail-value{font-size:.9rem;font-variant-numeric:tabular-nums}
+.sv-profile-palt .sv-profile-detail-value{border-bottom:1px dotted #999;cursor:pointer}
+.sv-profile-footnote{margin:.4rem 0 0;font-size:.75rem;color:#52616f;min-height:1rem}
+.sv-profile-controls{display:flex;flex-wrap:wrap;align-items:flex-end;gap:.75rem 1rem;margin:0 0 .75rem}
+.sv-profile-controls .sv-profile-field{display:flex;flex-direction:column;gap:.2rem;font-size:.78rem}
+.sv-profile-controls label{font-weight:600;color:#52616f}
+.sv-profile-controls select{padding:.3rem .4rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.82rem}
+.sv-profile-controls select:focus-visible,.sv-profile-extras input:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
+.sv-profile-spaghetti-card{height:300px;position:relative;border:1px solid #d8dee4;border-radius:10px;padding:.75rem;background:#fff}
+.sv-profile-spaghetti-footnote{margin:.5rem 0 0;font-size:.72rem;color:#52616f}
+.sv-profile-extras{display:inline-flex;align-items:center;gap:.4rem;font-size:.8rem;margin:.75rem 0 .25rem}
+.sv-profile-extras input{accent-color:#0b62a4}
+.sv-profile-measure-wrap{margin:.75rem 0 0}
+.sv-profile-measure-table{width:100%;border-collapse:collapse;font-size:.82rem}
+.sv-profile-measure-table th{text-align:left;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f;padding:.3rem .5rem;border-bottom:2px solid #111827}
+.sv-profile-measure-table td{padding:.3rem .5rem;font-variant-numeric:tabular-nums}
+.sv-profile-measure-row td{border-bottom:.5px solid #111827}
+.sv-profile-inset-row td{border-bottom:.5px solid #111827;background:none}
+.sv-profile-spark{white-space:nowrap}
+.sv-profile-spark svg{vertical-align:middle}
+.sv-profile-spark-toggle{border:none;background:none;color:#999;cursor:pointer;font:inherit;font-size:.8rem;padding:.1rem .3rem;vertical-align:middle}
+.sv-profile-spark-toggle:hover{color:#1f2933}
+.sv-profile-spark-toggle:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
+.sv-profile-inset-card{height:200px;position:relative;padding:.5rem 0}
+.sv-profile-listing{margin:1rem 0 0}
+.sv-profile-listing-title{margin:0 0 .4rem;font-size:.85rem}
+.sv-profile-stepper{display:flex;align-items:center;gap:.6rem;margin:0 0 .5rem;font-size:.85rem}
+.sv-profile-step{padding:.2rem .55rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;color:#1f2933;font:inherit;font-size:.8rem;cursor:pointer}
+.sv-profile-step:hover:not(:disabled){border-color:#8a94a6;background:#f6f8fa}
+.sv-profile-step:disabled{opacity:.45;cursor:default}
+.sv-profile-step:focus-visible,.sv-profile-stepper:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
+.sv-profile-step-count{font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:no-preference){.sv-profile-root{scroll-behavior:smooth}}`;
+  function applyProfileStyles() {
+    if (typeof document === "undefined" || document.getElementById(STYLE_ID3)) return;
+    const style = document.createElement("style");
+    style.id = STYLE_ID3;
+    style.textContent = MODULE_CSS2;
+    document.head.append(style);
+  }
+
+  // src/participant-profile.js
+  Chart.register(LineController, LineElement, PointElement, LinearScale, plugin_tooltip, plugin_legend);
+  function resolveListenTarget(listenTo) {
+    if (!listenTo) return document;
+    if (typeof listenTo === "string") return document.querySelector(listenTo) || document;
+    return listenTo;
+  }
+  function listenTargetLabel(listenTo, target) {
+    if (typeof listenTo === "string") return listenTo;
+    if (!listenTo || target === document) return "document";
+    if (listenTo.id) return `#${listenTo.id}`;
+    return (listenTo.tagName || "element").toLowerCase();
+  }
+  var SafetyParticipantProfile = class {
+    constructor(element = "body", settings = {}, { mode = "standalone" } = {}) {
+      this.mode = mode;
+      this.element = typeof element === "string" ? document.querySelector(element) : element;
+      if (!this.element) throw new Error(`Safety Participant Profile target not found: ${element}`);
+      this.settings = syncSettings11(settings);
+      this.rawData = [];
+      this.cleanRows = [];
+      this.removedRecords = 0;
+      this.model = null;
+      this.spaghettiChart = null;
+      this.spaghettiHost = null;
+      this.tableController = null;
+      this.listenTarget = null;
+      this.listenHandler = null;
+      this.state = {
+        display: this.settings.display,
+        showExtras: false,
+        labs: null,
+        ids: [],
+        index: 0
+      };
+      applyProfileStyles();
+      if (this.mode === "standalone") {
+        this.renderChrome();
+        this.listen();
+        this.setIdle();
+      } else {
+        this.profileHost = this.element;
+      }
+    }
+    /**
+     * Build the standalone shell chrome: the shared sidebar/main layout with the
+     * chart card hidden (the profile block owns the main column via the
+     * profileWrap slot — the per-view slot-visibility precedent from
+     * hep-explorer).
+     * @private
+     */
+    renderChrome() {
+      Object.assign(
+        this,
+        renderShell(this.element, {
+          moduleClass: "safety-participant-profile",
+          onToggle: () => this.resize()
+        })
+      );
+      this.chartWrap.style.display = "none";
+      this.profileHost = this.profileWrap;
+    }
+    /**
+     * Install the standalone `participantsSelected` listener on the configured
+     * target (PPRF-6). The handler reads `event.detail?.data ?? []`, coerces the
+     * ids to strings, and shows the selection — or clears to idle when it is
+     * empty. The docked mount installs no listener.
+     * @private
+     */
+    listen() {
+      this.listenTarget = resolveListenTarget(this.settings.listen_to);
+      this.listenLabel = listenTargetLabel(this.settings.listen_to, this.listenTarget);
+      this.listenHandler = (event) => {
+        const data = event && event.detail ? event.detail.data : null;
+        const ids = (Array.isArray(data) ? data : []).map(String);
+        if (ids.length) this.show(ids);
+        else this.clear();
+      };
+      this.listenTarget.addEventListener("participantsSelected", this.listenHandler);
+    }
+    /**
+     * Show the standalone idle note: waiting for a selection on the listen
+     * target.
+     * @private
+     */
+    setIdle() {
+      if (this.notes)
+        this.notes.textContent = `Waiting for selection \u2014 listening on ${this.listenLabel}.`;
+    }
+    /**
+     * Load data and render: an alias for setData that keeps the two-step
+     * create-then-init call shape working.
+     * @param {Object[]} data Long-format lab records matching the profile data contract.
+     * @returns {SafetyParticipantProfile} The instance, for chaining.
+     */
+    init(data) {
+      this.setData(data);
+      return this;
+    }
+    /**
+     * Replace the bound data and re-render (standalone ingest path). The data is
+     * validated against the settings mapping (throwing, and rendering the message
+     * into the target element, when required columns are missing), then cleaned
+     * and baseline-derived through the shared hep-core reducers.
+     * @param {Object[]} data Long-format lab records matching the profile data contract.
+     * @returns {SafetyParticipantProfile} The instance, for chaining.
+     */
+    setData(data) {
+      this.rawData = Array.isArray(data) ? data : [];
+      this.validateAndCleanData();
+      this.render();
+      return this;
+    }
+    /**
+     * Merge setting overrides onto the current settings, adopt a provided display
+     * mode into the live state, re-clean any bound data, and re-render.
+     * @param {Object} settings Setting overrides to merge.
+     * @returns {SafetyParticipantProfile} The instance, for chaining.
+     */
+    setSettings(settings) {
+      if ("display" in settings) this.state.display = settings.display;
+      this.settings = syncSettings11({ ...this.settings, ...settings });
+      if (this.mode === "standalone" && this.rawData.length) this.validateAndCleanData();
+      this.render();
+      return this;
+    }
+    /**
+     * Validate and clean the raw data (standalone only): checkInputs guards the
+     * long-lab contract, cleanData derives the __hep_* columns, deriveBaseline
+     * fills the ×Baseline field.
+     * @private
+     */
+    validateAndCleanData() {
+      try {
+        checkInputs11(this.rawData, this.settings);
+      } catch (error) {
+        this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+        throw error;
+      }
+      const { rows, removed } = cleanData6(this.rawData, this.settings);
+      deriveBaseline(rows, this.settings);
+      this.cleanRows = rows;
+      this.removedRecords = removed;
+      if (removed)
+        console.warn(
+          `${removed} missing or non-numeric result${removed > 1 ? "s have" : " has"} been removed.`
+        );
+    }
+    /**
+     * Programmatic selection: the same path the participantsSelected listener
+     * takes (PPRF-6). A non-empty list ranks and shows the cohort; an empty list
+     * clears.
+     * @param {Array<string|number>} ids The selected participant ids.
+     * @returns {SafetyParticipantProfile} The instance, for chaining.
+     */
+    setSelected(ids) {
+      const list = (Array.isArray(ids) ? ids : []).map(String);
+      if (list.length) this.show(list);
+      else this.clear();
+      return this;
+    }
+    /**
+     * Show a selection: rank the ids worst-first (PPRF-5) and render the profile
+     * for the first. The docked mount passes the host's pre-cleaned rows, which
+     * are consumed verbatim — no checkInputs, no cleanData (PPRF-1).
+     * @param {Array<string|number>} ids The selected participant ids.
+     * @param {Object[]} [cleanRows] Pre-cleaned rows carrying the __hep_* columns (dock contract).
+     * @returns {SafetyParticipantProfile} The instance, for chaining.
+     */
+    show(ids, cleanRows) {
+      if (cleanRows !== void 0) this.cleanRows = Array.isArray(cleanRows) ? cleanRows : [];
+      const list = (Array.isArray(ids) ? ids : []).map(String);
+      if (!list.length) return this.clear();
+      this.state.ids = rankParticipants(this.cleanRows, list, this.settings);
+      this.state.index = 0;
+      this.renderProfile();
+      return this;
+    }
+    /**
+     * Clear the profile block: destroy the live charts, empty the slot (the
+     * shell's `.sv-profile:empty` rule hides it), and return the standalone
+     * mount to its idle note.
+     * @returns {SafetyParticipantProfile} The instance, for chaining.
+     */
+    clear() {
+      this.destroyContent();
+      this.state.ids = [];
+      this.state.index = 0;
+      this.profileHost.innerHTML = "";
+      if (this.mode === "standalone") {
+        if (this.controls) this.controls.innerHTML = "";
+        this.setIdle();
+      }
+      return this;
+    }
+    /**
+     * The Clear affordance (PPRF-2/6): docked, the host owns the selection, so
+     * Clear delegates to on_clear (falling back to a local clear when the host
+     * wired none); standalone, the module clears its own block and then notifies
+     * on_clear so a host can sync.
+     * @private
+     */
+    handleClear() {
+      if (this.mode === "dock") {
+        if (this.settings.on_clear) this.settings.on_clear();
+        else this.clear();
+        return;
+      }
+      this.clear();
+      if (this.settings.on_clear) this.settings.on_clear();
+    }
+    /**
+     * Step the cohort to another index (PPRF-5): re-render the full profile for
+     * the target participant and report the id through on_step so the host keeps
+     * its chart highlight in sync — the module itself dispatches nothing.
+     * @param {number} index The clamped target index.
+     * @private
+     */
+    step(index) {
+      if (index < 0 || index >= this.state.ids.length) return;
+      this.state.index = index;
+      this.renderProfile();
+      if (this.settings.on_step) this.settings.on_step(this.state.ids[index]);
+    }
+    /**
+     * Re-render from the current state: the profile when a selection is live,
+     * the idle/empty state otherwise.
+     * @returns {SafetyParticipantProfile} The instance, for chaining.
+     */
+    render() {
+      if (this.state.ids.length) this.renderProfile();
+      else this.clear();
+      return this;
+    }
+    /**
+     * Render the full profile block for the current participant: stepper (N > 1),
+     * header, controls, spaghetti card, measure table, and the optional record
+     * listing (PPRF-2/3/4/5).
+     * @private
+     */
+    renderProfile() {
+      this.destroyContent();
+      this.profileHost.innerHTML = "";
+      const id = this.state.ids[this.state.index];
+      const model = buildProfileModel(this.cleanRows, id, this.settings, this.state);
+      this.model = model;
+      const root = createElement("div", "sv-profile-root");
+      this.profileHost.append(root);
+      if (this.state.ids.length > 1) {
+        root.append(
+          renderStepper(this.state.ids, this.state.index, { onStep: (index) => this.step(index) })
+        );
+      }
+      root.append(
+        renderHeader(model.participant, this.settings, { onClear: () => this.handleClear() })
+      );
+      const keys = model.spaghetti.series.map((entry) => entry.key);
+      if (this.mode === "dock") root.append(this.buildInlineControls(keys));
+      else this.buildSidebarControls(keys);
+      this.spaghettiHost = createElement("div", "sv-profile-spaghetti");
+      root.append(this.spaghettiHost);
+      this.drawSpaghetti();
+      this.tableController = renderMeasureTable(root, model.measures, this.settings, this.state, {
+        onToggleExtras: (showExtras) => {
+          this.state.showExtras = showExtras;
+          this.drawSpaghetti();
+        }
+      });
+      if (this.settings.listing) {
+        const participantRows = this.cleanRows.filter(
+          (row) => String(row[this.settings.id_col]) === String(id)
+        );
+        renderRecordListing(root, participantRows, this.settings);
+      }
+      if (this.mode === "standalone" && this.notes) {
+        const n = this.state.ids.length;
+        this.notes.textContent = n > 1 ? `Profiling ${n} selected participants.` : `Profiling participant ${id}.`;
+      }
+    }
+    /**
+     * (Re)draw the spaghetti card from the current model and control state,
+     * destroying any previous chart first.
+     * @private
+     */
+    drawSpaghetti() {
+      if (this.spaghettiChart) this.spaghettiChart.destroy();
+      this.spaghettiChart = null;
+      if (!this.spaghettiHost || !this.model) return;
+      this.spaghettiHost.innerHTML = "";
+      this.spaghettiChart = renderSpaghetti(this.spaghettiHost, this.model.spaghetti, this.state);
+    }
+    /**
+     * Build the standalone sidebar controls (house convention): Display and Labs
+     * sections through the shared control builders.
+     * @param {string[]} keys The measure keys of the current profile.
+     * @private
+     */
+    buildSidebarControls(keys) {
+      this.controls.innerHTML = "";
+      const { addSection, addControl } = controlBuilders(this.controls);
+      const displayParent = addSection("Display");
+      addControl(
+        "Standardization",
+        displayControl(this.settings, this.state, (value) => this.onDisplayChange(value)),
+        displayParent
+      );
+      const labParent = addSection("Labs");
+      addControl(
+        "Measures",
+        labControl(keys, this.state, (labs) => this.onLabsChange(labs)),
+        labParent
+      );
+    }
+    /**
+     * Build the dock's compact inline controls strip: the same builders as the
+     * sidebar, placed inside the block (section 6 of the module spec).
+     * @param {string[]} keys The measure keys of the current profile.
+     * @returns {HTMLElement} The controls strip.
+     * @private
+     */
+    buildInlineControls(keys) {
+      const strip = createElement("div", "sv-profile-controls");
+      const displayField2 = createElement("div", "sv-profile-field");
+      displayField2.append(
+        createElement("label", null, "Standardization"),
+        displayControl(this.settings, this.state, (value) => this.onDisplayChange(value))
+      );
+      const labField = createElement("div", "sv-profile-field");
+      labField.append(
+        createElement("label", null, "Measures"),
+        labControl(keys, this.state, (labs) => this.onLabsChange(labs))
+      );
+      strip.append(displayField2, labField);
+      return strip;
+    }
+    /**
+     * Display-toggle change (PPRF-3): switch the standardization field and
+     * rebuild the profile (series values, cuts, and y-label all change).
+     * @param {string} value The chosen display mode.
+     * @private
+     */
+    onDisplayChange(value) {
+      this.state.display = value;
+      this.renderProfile();
+    }
+    /**
+     * Lab-subsetter change (PPRF-3): filter the spaghetti datasets to the
+     * selected measure keys.
+     * @param {string[]} labs The selected measure keys.
+     * @private
+     */
+    onLabsChange(labs) {
+      this.state.labs = labs;
+      this.drawSpaghetti();
+    }
+    /**
+     * Resize the live charts to their containers — the spaghetti card and any
+     * open measure-table insets. For host layouts that change the container size
+     * without a window resize (e.g. the R htmlwidget bindings).
+     * @returns {void}
+     */
+    resize() {
+      if (this.spaghettiChart) this.spaghettiChart.resize();
+      if (this.tableController) this.tableController.open.forEach((entry) => entry.chart.resize());
+    }
+    /**
+     * Destroy the live Chart.js instances (spaghetti + open insets) without
+     * touching the block's DOM.
+     * @private
+     */
+    destroyContent() {
+      if (this.spaghettiChart) this.spaghettiChart.destroy();
+      this.spaghettiChart = null;
+      this.spaghettiHost = null;
+      if (this.tableController) this.tableController.destroy();
+      this.tableController = null;
+    }
+    /**
+     * Tear the profile down: destroy the charts, remove the standalone event
+     * listener, and empty the mount element. The instance cannot be reused
+     * afterwards — create a new one via the factory instead.
+     * @returns {void}
+     */
+    destroy() {
+      this.destroyContent();
+      if (this.listenTarget && this.listenHandler)
+        this.listenTarget.removeEventListener("participantsSelected", this.listenHandler);
+      this.listenTarget = null;
+      this.listenHandler = null;
+      this.element.innerHTML = "";
+    }
+  };
+  function participantProfile(element = "body", data = null, settings = {}) {
+    const instance = new SafetyParticipantProfile(element, settings);
+    if (data) instance.setData(data);
+    return instance;
+  }
+
   // src/main.js
   var main_default = {
     histogram,
@@ -26091,7 +27363,8 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     hepExplorer,
     aeExplorer,
     qtExplorer,
-    hepWaterfall
+    hepWaterfall,
+    participantProfile
   };
   return __toCommonJS(main_exports);
 })();

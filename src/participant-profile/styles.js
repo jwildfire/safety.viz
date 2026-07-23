@@ -45,7 +45,14 @@ const MODULE_CSS = `
 .sv-profile-spark-toggle:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
 .sv-profile-inset-card{height:200px;position:relative;padding:.5rem 0}
 .sv-profile-listing{margin:1rem 0 0}
-.sv-profile-listing-title{margin:0 0 .4rem;font-size:.85rem}`;
+.sv-profile-listing-title{margin:0 0 .4rem;font-size:.85rem}
+.sv-profile-stepper{display:flex;align-items:center;gap:.6rem;margin:0 0 .5rem;font-size:.85rem}
+.sv-profile-step{padding:.2rem .55rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;color:#1f2933;font:inherit;font-size:.8rem;cursor:pointer}
+.sv-profile-step:hover:not(:disabled){border-color:#8a94a6;background:#f6f8fa}
+.sv-profile-step:disabled{opacity:.45;cursor:default}
+.sv-profile-step:focus-visible,.sv-profile-stepper:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
+.sv-profile-step-count{font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:no-preference){.sv-profile-root{scroll-behavior:smooth}}`;
 
 /**
  * Inject the module-specific stylesheet once per document; a second profile on
