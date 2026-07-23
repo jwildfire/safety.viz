@@ -40,6 +40,6 @@
     "SSP-CFG-005": "an object that defines the comparison (or post-baseline) value",
     "SSP-CFG-006": "an array of filter variables and associated metadata",
     "SSP-API-001": "A factory to create a custom [webChart chart](https://github.com/RhoInc/Webcharts/wiki/Chart) object.",
-    "SSP-API-003": "The custom `participantsSelected` event is dispatched to the overall chart wrapper (`chart.wrap`) whenever the details for a given participant are viewed (or cleared) by brushing the chart. The event has a custom `data` property holding an array with the selected ID when a new participant is selected (`[\"123-456-7\"]`) or an empty array when participant details are cleared."
+    "SSP-API-003": "The custom `participantsSelected` event is dispatched on the shell root (bubbling, so wrapper/element-level listeners keep working) whenever the details for one or more participants are viewed (or cleared) by brushing the chart. The event has a custom `data` property holding an array of the selected IDs (`[\"123-456-7\"]`) or an empty array when participant details are cleared."
   }
 }

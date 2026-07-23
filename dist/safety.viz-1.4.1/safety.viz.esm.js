@@ -13740,7 +13740,14 @@ var DEFAULT_SETTINGS2 = {
   start_value: null,
   width: "100%",
   height: 460,
-  page_size: 10
+  page_size: 10,
+  normal_col_low: "STNRLO",
+  normal_col_high: "STNRHI",
+  studyday_col: null,
+  measure_values: null,
+  profile: true,
+  profile_details: null,
+  participantProfileURL: null
 };
 function arrayify2(value) {
   if (value === null || value === void 0 || value === "") return [];
@@ -13767,6 +13774,8 @@ function syncSettings2(settings) {
       { value_col: "__ssp_pchg", label: "Percent Change" }
     ];
   }
+  synced.profile = Boolean(synced.profile);
+  synced.profile_details = synced.profile_details === void 0 || synced.profile_details === null ? null : arrayify2(synced.profile_details).map((value) => fieldSpec2(value)).filter((detail) => detail.value_col);
   return synced;
 }
 
@@ -14087,940 +14096,8 @@ function pointColors(count2, selected, base = POINT_COLOR, faded = POINT_FADED) 
   return Array.from({ length: count2 }, (_, index) => selected.has(index) ? base : faded);
 }
 
-// src/shift-plot.js
-Chart.register(ScatterController, PointElement, LinearScale, plugin_tooltip, plugin_legend);
-var INITIAL_FOOTNOTE = "Click and drag across the points to list the selected participants.";
-var SafetyShiftPlot = class {
-  constructor(element = "body", settings = {}) {
-    this.element = typeof element === "string" ? document.querySelector(element) : element;
-    if (!this.element) throw new Error(`Safety Shift Plot target not found: ${element}`);
-    this.settings = syncSettings2(settings);
-    this.rawData = [];
-    this.cleanData = [];
-    this.chartPairs = [];
-    this.currentTableData = [];
-    this.listingSearch = "";
-    this.listingSort = null;
-    this.page = 1;
-    this.brushing = false;
-    this.chart = null;
-    this.state = {
-      measure: this.settings.start_value,
-      baselineVisits: this.settings.baseline_visits,
-      comparisonVisits: this.settings.comparison_visits,
-      baselineStat: this.settings.baseline_stat,
-      comparisonStat: this.settings.comparison_stat,
-      filters: {},
-      domain: null
-    };
-    this.renderShell();
-  }
-  /**
-   * Build the static DOM shell the scatter and listing render into.
-   * @private
-   */
-  renderShell() {
-    Object.assign(
-      this,
-      renderShell(this.element, {
-        moduleClass: "safety-shift-plot",
-        onToggle: () => this.resize()
-      })
-    );
-    this.footnote.textContent = INITIAL_FOOTNOTE;
-  }
-  /**
-   * Load data and render: an alias for setData that keeps the pilot's
-   * two-step create-then-init call shape working (SSP-DATA-003).
-   * @param {Object[]} data Long-format result records matching the shift-plot data contract.
-   * @returns {SafetyShiftPlot} The instance, for chaining.
-   */
-  init(data) {
-    this.setData(data);
-    return this;
-  }
-  /**
-   * Replace the bound data and re-render. The data is validated against the
-   * settings mapping (throwing, and rendering the message into the target
-   * element, when required columns are missing), rows with missing or
-   * non-numeric results are removed with a console warning, and the controls
-   * are rebuilt from the new data's measures and visits.
-   * @param {Object[]} data Long-format result records matching the shift-plot data contract.
-   * @returns {SafetyShiftPlot} The instance, for chaining.
-   */
-  setData(data) {
-    this.rawData = Array.isArray(data) ? data : [];
-    this.validateAndCleanData();
-    this.buildControls();
-    this.render();
-    return this;
-  }
-  /**
-   * Merge setting overrides onto the current settings, re-normalize them (same
-   * rules as the factory), rebuild the controls, and re-render.
-   * @param {ShiftPlotSettings} settings Setting overrides to merge.
-   * @returns {SafetyShiftPlot} The instance, for chaining.
-   */
-  setSettings(settings) {
-    this.settings = syncSettings2({ ...this.settings, ...settings });
-    this.state.baselineStat = this.settings.baseline_stat;
-    this.state.comparisonStat = this.settings.comparison_stat;
-    if (settings.baseline_visits !== void 0)
-      this.state.baselineVisits = this.settings.baseline_visits;
-    if (settings.comparison_visits !== void 0)
-      this.state.comparisonVisits = this.settings.comparison_visits;
-    this.resolveVisits();
-    this.buildControls();
-    this.render();
-    return this;
-  }
-  /**
-   * Validate the raw data against the settings mapping and drop unusable rows,
-   * then resolve the default measure and visit selections.
-   * @private
-   */
-  validateAndCleanData() {
-    try {
-      checkInputs2(this.rawData, this.settings);
-    } catch (error) {
-      this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
-      throw error;
-    }
-    const { rows, removed } = cleanData2(this.rawData, this.settings);
-    this.cleanData = rows;
-    this.removedRecords = removed;
-    if (removed) console.warn(`${removed} missing or non-numeric results have been removed.`);
-    const measures = this.measures();
-    if (this.state.measure && !measures.includes(this.state.measure)) {
-      console.warn(
-        `The initial measure [${this.state.measure}] does not exist. Defaulting to the first measure.`
-      );
-    }
-    this.state.measure = measures.includes(this.state.measure) ? this.state.measure : measures[0];
-    this.resolveVisits();
-  }
-  /**
-   * Sorted distinct measure labels present in the cleaned data.
-   * @private
-   */
-  measures() {
-    return unique2(this.cleanData.map((row) => measureLabel2(row, this.settings))).sort();
-  }
-  /**
-   * Ordered distinct visit labels present in the cleaned data.
-   * @private
-   */
-  visits() {
-    return listVisits(this.cleanData, this.settings);
-  }
-  /**
-   * Resolve the baseline/comparison visit selections against the current data:
-   * an unset baseline defaults to the first visit, an unset comparison to
-   * every visit after the baseline, and selections naming absent visits are
-   * dropped (SSP-CFG-004/005).
-   * @private
-   */
-  resolveVisits() {
-    const visits = this.visits();
-    let baseline = (this.state.baselineVisits || []).filter((visit) => visits.includes(visit));
-    if (!baseline.length) baseline = visits.length ? [visits[0]] : [];
-    let comparison = (this.state.comparisonVisits || []).filter((visit) => visits.includes(visit));
-    if (!comparison.length) comparison = visits.filter((visit) => !baseline.includes(visit));
-    this.state.baselineVisits = baseline;
-    this.state.comparisonVisits = comparison;
-  }
-  /**
-   * Rebuild the measure, baseline/comparison visit, and filter controls from
-   * data + state.
-   * @private
-   */
-  buildControls() {
-    this.controls.innerHTML = "";
-    const { addSection, addControl } = controlBuilders(this.controls);
-    const visits = this.visits();
-    const measure = addControl("Measure", document.createElement("select"));
-    this.measures().forEach((value) => option(measure, value, value, value === this.state.measure));
-    measure.onchange = () => {
-      this.state.measure = measure.value;
-      this.render();
-    };
-    const visitSection = addSection("Visits");
-    const baseline = addControl(
-      "Baseline visit(s)",
-      document.createElement("select"),
-      visitSection
-    );
-    baseline.multiple = true;
-    baseline.size = Math.min(Math.max(visits.length, 2), 6);
-    visits.forEach(
-      (visit) => option(baseline, visit, visit, this.state.baselineVisits.includes(visit))
-    );
-    baseline.onchange = () => {
-      this.state.baselineVisits = Array.from(baseline.selectedOptions).map((opt) => opt.value);
-      this.render();
-    };
-    const comparison = addControl(
-      "Comparison visit(s)",
-      document.createElement("select"),
-      visitSection
-    );
-    comparison.multiple = true;
-    comparison.size = Math.min(Math.max(visits.length, 2), 6);
-    visits.forEach(
-      (visit) => option(comparison, visit, visit, this.state.comparisonVisits.includes(visit))
-    );
-    comparison.onchange = () => {
-      this.state.comparisonVisits = Array.from(comparison.selectedOptions).map((opt) => opt.value);
-      this.render();
-    };
-    const filterSpecs = this.settings.filters.filter((filter) => {
-      const exists = this.cleanData.some((row) => row[filter.value_col] !== void 0);
-      if (!exists)
-        console.warn(
-          `The [ ${filter.label} ] filter has been removed because the variable does not exist.`
-        );
-      return exists;
-    });
-    if (filterSpecs.length) {
-      const filterParent = addSection("Filters");
-      filterSpecs.forEach((filter) => {
-        const select = addControl(filter.label, document.createElement("select"), filterParent);
-        option(select, "__all__", "All", !this.state.filters[filter.value_col]);
-        unique2(this.cleanData.map((row) => row[filter.value_col])).sort().forEach(
-          (value) => option(select, value, value, this.state.filters[filter.value_col] === value)
-        );
-        select.onchange = () => {
-          this.state.filters[filter.value_col] = select.value === "__all__" ? null : select.value;
-          this.render();
-        };
-      });
-    }
-  }
-  /**
-   * Cleaned rows for the selected measure.
-   * @private
-   */
-  currentMeasureData() {
-    return this.cleanData.filter((row) => measureLabel2(row, this.settings) === this.state.measure);
-  }
-  /**
-   * Cleaned rows for the selected measure after the active filters.
-   * @private
-   */
-  currentFilteredData() {
-    return applyFilters2(this.currentMeasureData(), this.state.filters);
-  }
-  /**
-   * The baseline/comparison pairs for the current measure, visits, and filters.
-   * @private
-   */
-  computePairs() {
-    return computeShiftPairs({
-      rows: this.currentFilteredData(),
-      measure: this.state.measure,
-      baselineVisits: this.state.baselineVisits,
-      comparisonVisits: this.state.comparisonVisits,
-      baselineStat: this.state.baselineStat,
-      comparisonStat: this.state.comparisonStat,
-      settings: this.settings
-    });
-  }
-  /**
-   * Redraw everything from the current data, settings, and control state:
-   * destroys the live chart, clears the listing and any brush selection, then
-   * draws the scatter, the identity line, and the participant-count notes.
-   * Called automatically by the controls and the data/settings setters; call
-   * it directly only after mutating state by hand.
-   * @returns {void}
-   */
-  render() {
-    this.destroyChart();
-    this.listingWrap.innerHTML = "";
-    this.currentTableData = [];
-    this.listingSearch = "";
-    this.listingSort = null;
-    this.page = 1;
-    this.footnote.textContent = INITIAL_FOOTNOTE;
-    this.notes.innerHTML = "";
-    this.chartPairs = this.computePairs();
-    this.state.domain = computeDomain(this.chartPairs);
-    this.updateNotes();
-    if (!this.chartPairs.length) {
-      this.footnote.textContent = "No participant has both a baseline and a comparison value for the current selection.";
-      return;
-    }
-    this.drawChart();
-  }
-  /**
-   * Draw the Chart.js scatter with tooltips, the identity line, and the brush
-   * selection.
-   * @private
-   */
-  drawChart() {
-    const chart = new Chart(this.canvas.getContext("2d"), {
-      type: "scatter",
-      data: {
-        datasets: [
-          {
-            label: this.state.measure,
-            data: this.chartPairs.map((pair) => ({ x: pair.x, y: pair.y })),
-            backgroundColor: COLORS.point,
-            borderColor: COLORS.border,
-            borderWidth: 1,
-            pointRadius: 4,
-            pointHoverRadius: 6
-          }
-        ]
-      },
-      options: {
-        maintainAspectRatio: false,
-        responsive: true,
-        animation: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: (ctx) => tooltipLines(this.chartPairs[ctx.dataIndex], this.settings.id_col)
-            }
-          }
-        },
-        scales: buildScales2(this.state.domain, this.state.measure)
-      },
-      plugins: [identityLinePlugin(this), brushBoxPlugin()]
-    });
-    this.chart = chart;
-    this.attachBrush(chart);
-  }
-  /**
-   * Wire the click-drag brush on the chart canvas: dragging paints the gray
-   * selection rectangle; releasing selects the enclosed points (or clears the
-   * selection when the drag is an empty click) (SSP-REQ-003, SSP-REG-004/012).
-   * @private
-   */
-  attachBrush(chart) {
-    const canvas = chart.canvas;
-    const clamp = (value, lo, hi) => Math.max(lo, Math.min(hi, value));
-    const position = (event) => {
-      const rect = canvas.getBoundingClientRect();
-      const area = chart.chartArea;
-      return {
-        x: clamp(event.clientX - rect.left, area.left, area.right),
-        y: clamp(event.clientY - rect.top, area.top, area.bottom)
-      };
-    };
-    let start = null;
-    const onDown = (event) => {
-      start = position(event);
-      this.brushing = true;
-    };
-    const onMove = (event) => {
-      if (!this.brushing || !start) return;
-      const point = position(event);
-      chart.$sspBrush = {
-        left: Math.min(start.x, point.x),
-        right: Math.max(start.x, point.x),
-        top: Math.min(start.y, point.y),
-        bottom: Math.max(start.y, point.y)
-      };
-      chart.draw();
-    };
-    const onUp = (event) => {
-      if (!this.brushing || !start) return;
-      this.brushing = false;
-      const point = position(event);
-      const rect = {
-        left: Math.min(start.x, point.x),
-        right: Math.max(start.x, point.x),
-        top: Math.min(start.y, point.y),
-        bottom: Math.max(start.y, point.y)
-      };
-      start = null;
-      if (rect.right - rect.left < 3 && rect.bottom - rect.top < 3) {
-        this.clearSelection();
-        return;
-      }
-      this.selectInPixelRect(rect);
-    };
-    canvas.addEventListener("mousedown", onDown);
-    canvas.addEventListener("mousemove", onMove);
-    window.addEventListener("mouseup", onUp);
-    chart.$sspBrushCleanup = () => {
-      canvas.removeEventListener("mousedown", onDown);
-      canvas.removeEventListener("mousemove", onMove);
-      window.removeEventListener("mouseup", onUp);
-    };
-  }
-  /**
-   * Select every point whose pixel position falls inside a rectangle, opening
-   * the listing (or clearing when the rectangle catches nothing).
-   * @param {{left:number,right:number,top:number,bottom:number}} rect Pixel rectangle.
-   * @returns {void}
-   */
-  selectInPixelRect(rect) {
-    if (!this.chart) return;
-    const meta = this.chart.getDatasetMeta(0);
-    const selected = /* @__PURE__ */ new Set();
-    meta.data.forEach((element, index) => {
-      if (element.x >= rect.left && element.x <= rect.right && element.y >= rect.top && element.y <= rect.bottom)
-        selected.add(index);
-    });
-    if (!selected.size) {
-      this.clearSelection();
-      return;
-    }
-    this.showSelection(selected, rect);
-  }
-  /**
-   * Select points inside a data-space rectangle. The programmatic entry point
-   * the R widget bindings and tests use in place of a mouse drag.
-   * @param {number} x0 One baseline-axis bound of the rectangle.
-   * @param {number} x1 The other baseline-axis bound.
-   * @param {number} y0 One comparison-axis bound of the rectangle.
-   * @param {number} y1 The other comparison-axis bound.
-   * @returns {void}
-   */
-  brushValues(x0, x1, y0, y1) {
-    if (!this.chart) return;
-    const { scales } = this.chart;
-    this.selectInPixelRect({
-      left: scales.x.getPixelForValue(Math.min(x0, x1)),
-      right: scales.x.getPixelForValue(Math.max(x0, x1)),
-      top: scales.y.getPixelForValue(Math.max(y0, y1)),
-      bottom: scales.y.getPixelForValue(Math.min(y0, y1))
-    });
-  }
-  /**
-   * Record the selection, de-emphasize the unselected points, draw the gray
-   * box, and open the listing (SSP-REQ-003/006/007, SSP-REG-004).
-   * @private
-   */
-  showSelection(selected, rect) {
-    const dataset = this.chart.data.datasets[0];
-    dataset.backgroundColor = pointColors(this.chartPairs.length, selected, COLORS.point);
-    dataset.borderColor = pointColors(this.chartPairs.length, selected, COLORS.border);
-    this.chart.$sspBrush = rect;
-    this.chart.$sspSelected = selected;
-    this.chart.update("none");
-    this.currentTableData = [...selected].map((index) => this.chartPairs[index]);
-    this.listingSearch = "";
-    this.listingSort = null;
-    this.page = 1;
-    renderListing(this);
-    this.footnote.textContent = `Selected ${this.currentTableData.length} participant(s).`;
-    this.dispatchSelected(this.currentTableData.map((pair) => pair[this.settings.id_col]));
-  }
-  /**
-   * Clear the brush selection: restore uniform point colors, hide the gray box
-   * and the listing, and dispatch an empty participantsSelected event
-   * (SSP-REG-011).
-   * @returns {void}
-   */
-  clearSelection() {
-    if (this.chart) {
-      const dataset = this.chart.data.datasets[0];
-      dataset.backgroundColor = COLORS.point;
-      dataset.borderColor = COLORS.border;
-      this.chart.$sspBrush = null;
-      this.chart.$sspSelected = null;
-      this.chart.update("none");
-    }
-    this.currentTableData = [];
-    this.listingWrap.innerHTML = "";
-    this.footnote.textContent = INITIAL_FOOTNOTE;
-    this.dispatchSelected([]);
-  }
-  /**
-   * Dispatch the participantsSelected event on the target element with the
-   * selected IDs (SSP-API-003).
-   * @private
-   */
-  dispatchSelected(ids) {
-    this.element.dispatchEvent(
-      new CustomEvent("participantsSelected", { detail: { data: ids }, bubbles: true })
-    );
-  }
-  /**
-   * Refresh the shown/total participant counts and the removed-record note
-   * (SSP-COUNT-001, SSP-REG-005/020).
-   * @private
-   */
-  updateNotes() {
-    const totalParticipants = unique2(this.cleanData.map((row) => row[this.settings.id_col])).length;
-    const shownParticipants = this.chartPairs.length;
-    const pct = totalParticipants ? (shownParticipants / totalParticipants * 100).toFixed(1) : "0.0";
-    const removedNote = this.removedRecords ? `<span class="sv-warning">${this.removedRecords} missing or non-numeric results removed.</span>` : "";
-    this.notes.innerHTML = `<span>${shownParticipants} of ${totalParticipants} participants shown (${pct}%).</span>${removedNote}`;
-  }
-  /**
-   * Resize the live chart to its container. For host layouts that change the
-   * container size without a window resize — e.g. the R htmlwidget bindings.
-   * @returns {void}
-   */
-  resize() {
-    if (this.chart) this.chart.resize();
-  }
-  /**
-   * Destroy the live Chart.js instance and detach its brush listeners without
-   * touching the shell.
-   * @private
-   */
-  destroyChart() {
-    if (this.chart) {
-      if (this.chart.$sspBrushCleanup) this.chart.$sspBrushCleanup();
-      this.chart.destroy();
-      this.chart = null;
-    }
-  }
-  /**
-   * Tear the shift plot down: destroy the Chart.js instance and empty the
-   * target element. The instance cannot be reused afterwards — create a new
-   * one via the factory instead.
-   * @returns {void}
-   */
-  destroy() {
-    this.destroyChart();
-    this.element.innerHTML = "";
-  }
-};
-function shiftPlot(element = "body", settings = {}) {
-  return new SafetyShiftPlot(element, settings);
-}
-
-// src/delta-delta/configure.js
-var DEFAULT_SETTINGS3 = {
-  measure_col: "TEST",
-  value_col: "STRESN",
-  id_col: "USUBJID",
-  visit_col: "VISIT",
-  visitn_col: "VISITNUM",
-  measure_x: null,
-  measure_y: null,
-  baseline_visits: [],
-  comparison_visits: [],
-  add_regression_line: true,
-  filters: [],
-  details: null,
-  width: "100%",
-  height: 460,
-  unit_col: "STRESU",
-  normal_col_low: "STNRLO",
-  normal_col_high: "STNRHI",
-  studyday_col: null,
-  measure_values: null,
-  profile: true,
-  profile_details: null,
-  participantProfileURL: null
-};
-function arrayify3(value) {
-  if (value === void 0 || value === null) return [];
-  return Array.isArray(value) ? value : [value];
-}
-function fieldSpec3(value, fallbackLabel) {
-  if (typeof value === "string") return { value_col: value, label: fallbackLabel || value };
-  return { value_col: value.value_col, label: value.label || value.value_col };
-}
-function syncSettings3(settings) {
-  const synced = { ...DEFAULT_SETTINGS3, ...settings };
-  synced.filters = arrayify3(synced.filters).map((filter) => fieldSpec3(filter)).filter((filter) => filter.value_col);
-  synced.baseline_visits = arrayify3(synced.baseline_visits);
-  synced.comparison_visits = arrayify3(synced.comparison_visits);
-  const suppliedDetails = arrayify3(synced.details).map((detail) => fieldSpec3(detail)).filter((detail) => detail.value_col);
-  const defaultDetails = [
-    { value_col: synced.id_col, label: "Participant ID" },
-    ...synced.filters.filter((filter) => filter.value_col !== synced.id_col)
-  ];
-  const merged = [...defaultDetails];
-  suppliedDetails.forEach((detail) => {
-    if (!merged.some((existing) => existing.value_col === detail.value_col)) merged.push(detail);
-  });
-  synced.details = merged;
-  synced.profile = Boolean(synced.profile);
-  synced.profile_details = synced.profile_details === void 0 || synced.profile_details === null ? null : arrayify3(synced.profile_details).map((detail) => fieldSpec3(detail)).filter((detail) => detail.value_col);
-  return synced;
-}
-
-// src/data/schema/delta-delta.json
-var delta_delta_default = {
-  $schema: "https://json-schema.org/draft/2020-12/schema",
-  $id: "https://raw.githubusercontent.com/jwildfire/safety.viz/main/src/data/schema/delta-delta.json",
-  title: "safety.viz delta-delta data contract",
-  description: "Long-format results data: one record per measurement at a visit (SDD-DATA-001). Column names are supplied by the settings mapping; each participant needs at least a baseline and a comparison visit for the two selected measures so change-from-baseline can be computed. The renderer removes missing/non-numeric results with a reported count (SDD-REG-008) and plots one point per participant (change in measure X vs change in measure Y).",
-  type: "object",
-  required: ["data", "settings"],
-  properties: {
-    data: {
-      type: "array",
-      minItems: 1,
-      items: { type: "object" },
-      description: "d3.csv()-style records; every row carries the measure, result, participant, and visit columns named in settings."
-    },
-    settings: {
-      type: "object",
-      description: "Column mappings and rendering options; merged onto the module's DEFAULT_SETTINGS, so only overrides need to be supplied.",
-      required: ["measure_col", "value_col", "id_col", "visit_col"],
-      properties: {
-        measure_col: {
-          type: "string",
-          default: "TEST",
-          description: "Column holding the measure name; required in data (SDD-CFG-004)."
-        },
-        value_col: {
-          type: "string",
-          default: "STRESN",
-          description: "Column holding the numeric result; required in data. Non-numeric results are removed with a logged count (SDD-CFG-005, SDD-REG-008)."
-        },
-        id_col: {
-          type: "string",
-          default: "USUBJID",
-          description: "Participant identifier column; one plotted point per participant (SDD-CFG-006)."
-        },
-        visit_col: {
-          type: "string",
-          default: "VISIT",
-          description: "Categorical visit column; drives the baseline/comparison visit selectors (SDD-CFG-007)."
-        },
-        visitn_col: {
-          type: "string",
-          default: "VISITNUM",
-          description: "Optional numeric visit column; orders the visit selectors and the sparkline (SDD-CFG-008)."
-        },
-        measure_x: {
-          type: ["string", "null"],
-          default: null,
-          description: "Measure plotted on the x-axis; defaults to the first measure in the data (SDD-CFG-009, SDD-CFG-010)."
-        },
-        measure_y: {
-          type: ["string", "null"],
-          default: null,
-          description: "Measure plotted on the y-axis; defaults to the second measure in the data (SDD-CFG-011)."
-        },
-        baseline_visits: {
-          type: "array",
-          items: { type: "string" },
-          default: [],
-          description: "Baseline visit(s); multiple visits are averaged. Defaults to the first visit (SDD-CFG-012)."
-        },
-        comparison_visits: {
-          type: "array",
-          items: { type: "string" },
-          default: [],
-          description: "Comparison visit(s); multiple visits are averaged. Defaults to the last visit (SDD-CFG-013)."
-        },
-        add_regression_line: {
-          type: "boolean",
-          default: true,
-          description: "Draw a simple linear regression line with an equation and R\xB2 note (SDD-REG-026)."
-        },
-        filters: {
-          $ref: "#/$defs/fieldList",
-          description: "Optional filter columns rendered as controls (SDD-CFG-014)."
-        },
-        details: {
-          $ref: "#/$defs/fieldList",
-          description: "Optional participant-detail columns shown above the linked measure table; defaults derive from id_col and the filters (SDD-CFG-015)."
-        }
-      }
-    }
-  },
-  $defs: {
-    fieldList: {
-      type: "array",
-      items: {
-        anyOf: [
-          { type: "string" },
-          {
-            type: "object",
-            required: ["value_col"],
-            properties: {
-              value_col: { type: "string" },
-              label: { type: "string" }
-            }
-          }
-        ]
-      }
-    }
-  }
-};
-
-// src/delta-delta/checkInputs.js
-var REQUIRED_COLUMN_SETTINGS3 = delta_delta_default.properties.settings.required;
-function checkInputs3(data, settings) {
-  const rows = Array.isArray(data) ? data : [];
-  const missing = REQUIRED_COLUMN_SETTINGS3.map((key) => settings[key]).filter(
-    (col) => !rows.some((row) => row[col] !== void 0)
-  );
-  if (missing.length) {
-    throw new Error(`Required variable(s) missing: ${missing.join(", ")}`);
-  }
-}
-
-// src/delta-delta/structureData.js
-var BASELINE_COLOR = "#2563eb";
-var COMPARISON_COLOR = "#ea580c";
-var OTHER_COLOR = "#9ca3af";
-function unique3(values) {
-  return [
-    ...new Set(values.filter((value) => value !== void 0 && value !== null && value !== ""))
-  ];
-}
-function mean3(values) {
-  const nums = values.map(Number).filter(Number.isFinite);
-  if (!nums.length) return NaN;
-  return nums.reduce((sum, value) => sum + value, 0) / nums.length;
-}
-function getMeasures(rows, settings) {
-  return unique3(rows.map((row) => row[settings.measure_col])).sort();
-}
-function getVisits(rows, settings) {
-  const hasVisitN = settings.visitn_col && rows.some((row) => row[settings.visitn_col] !== void 0);
-  if (!hasVisitN) return unique3(rows.map((row) => row[settings.visit_col])).sort();
-  const order = /* @__PURE__ */ new Map();
-  rows.forEach((row) => {
-    const visit = row[settings.visit_col];
-    if (visit !== void 0 && visit !== null && visit !== "" && !order.has(visit))
-      order.set(visit, Number(row[settings.visitn_col]));
-  });
-  return [...order.keys()].sort((a, b) => {
-    const diff = order.get(a) - order.get(b);
-    if (diff) return diff;
-    return a < b ? -1 : a > b ? 1 : 0;
-  });
-}
-function visitMean(records, visits, settings) {
-  const set2 = new Set(visits);
-  const matched = records.filter((row) => set2.has(row[settings.visit_col]));
-  return mean3(matched.map((row) => row.__dd_value));
-}
-function measureDetails(participantRows, settings, state) {
-  const { measureX, measureY, baseline, comparison } = state;
-  const baselineSet = new Set(baseline);
-  const comparisonSet = new Set(comparison);
-  const byMeasure = /* @__PURE__ */ new Map();
-  participantRows.forEach((row) => {
-    const key = row[settings.measure_col];
-    if (!byMeasure.has(key)) byMeasure.set(key, []);
-    byMeasure.get(key).push(row);
-  });
-  const details = [...byMeasure.entries()].map(([key, rawRecords]) => {
-    const records = [...rawRecords].sort((a, b) => Number(a[settings.visitn_col] ?? 0) - Number(b[settings.visitn_col] ?? 0)).map((row) => {
-      const isBaseline = baselineSet.has(row[settings.visit_col]);
-      const isComparison = comparisonSet.has(row[settings.visit_col]);
-      return {
-        ...row,
-        baseline: isBaseline,
-        comparison: isComparison,
-        color: isBaseline ? BASELINE_COLOR : isComparison ? COMPARISON_COLOR : OTHER_COLOR
-      };
-    });
-    const baselineValue = visitMean(rawRecords, baseline, settings);
-    const comparisonValue = visitMean(rawRecords, comparison, settings);
-    return {
-      key,
-      records,
-      baselineValue,
-      comparisonValue,
-      delta: comparisonValue - baselineValue,
-      axisFlag: key === measureX ? "X" : key === measureY ? "Y" : ""
-    };
-  });
-  return details.sort((a, b) => {
-    const rank = (detail) => detail.axisFlag === "X" ? 0 : detail.axisFlag === "Y" ? 1 : 2;
-    const diff = rank(a) - rank(b);
-    if (diff) return diff;
-    return a.key < b.key ? -1 : a.key > b.key ? 1 : 0;
-  });
-}
-function buildParticipants(rows, settings, state) {
-  const metaCols = unique3([
-    ...settings.filters.map((filter) => filter.value_col),
-    ...settings.details.map((detail) => detail.value_col),
-    settings.id_col
-  ]);
-  const byId = /* @__PURE__ */ new Map();
-  rows.forEach((row) => {
-    const id = row[settings.id_col];
-    if (!byId.has(id)) byId.set(id, []);
-    byId.get(id).push(row);
-  });
-  return [...byId.entries()].map(([id, participantRows]) => {
-    const details = measureDetails(participantRows, settings, state);
-    const xDetail = details.find((detail) => detail.key === state.measureX);
-    const yDetail = details.find((detail) => detail.key === state.measureY);
-    const meta = {};
-    metaCols.forEach((col) => {
-      meta[col] = participantRows[0][col] === void 0 ? "" : String(participantRows[0][col]);
-    });
-    return {
-      id,
-      measures: details,
-      delta_x: xDetail ? xDetail.delta : NaN,
-      delta_y: yDetail ? yDetail.delta : NaN,
-      meta
-    };
-  });
-}
-function plottablePoints(participants) {
-  return participants.filter(
-    (participant) => Number.isFinite(participant.delta_x) && Number.isFinite(participant.delta_y)
-  );
-}
-function applyFilters3(participants, filters) {
-  return participants.filter(
-    (participant) => Object.entries(filters).every(
-      ([key, value]) => !value || String(participant.meta[key]) === String(value)
-    )
-  );
-}
-
-// src/delta-delta/getScales.js
-function formatNumber3(value, digits = 2) {
-  if (!Number.isFinite(value)) return "";
-  return Number(value.toFixed(digits)).toString();
-}
-function formatDelta(value) {
-  if (!Number.isFinite(value)) return "NA";
-  const fixed = value.toFixed(2);
-  return value >= 0 ? `+${fixed}` : fixed;
-}
-function axisLabel(measure) {
-  return `Change in ${measure ?? ""}`;
-}
-function deltaDomain(values, pad = 0.08) {
-  const nums = values.filter(Number.isFinite);
-  if (!nums.length) return [-1, 1];
-  let lo = Math.min(0, ...nums);
-  let hi = Math.max(0, ...nums);
-  if (lo === hi) {
-    lo -= 1;
-    hi += 1;
-  }
-  const margin = (hi - lo) * pad;
-  return [lo - margin, hi + margin];
-}
-function buildScales3(measureX, measureY, xDomain, yDomain) {
-  return {
-    x: {
-      type: "linear",
-      min: xDomain[0],
-      max: xDomain[1],
-      title: { display: true, text: axisLabel(measureX) },
-      grid: { color: "rgba(148, 163, 184, 0.25)" }
-    },
-    y: {
-      type: "linear",
-      min: yDomain[0],
-      max: yDomain[1],
-      title: { display: true, text: axisLabel(measureY) },
-      grid: { color: "rgba(148, 163, 184, 0.25)" }
-    }
-  };
-}
-
-// src/delta-delta/getPlugins.js
-function linearRegression(pairs) {
-  const points = pairs.filter(([x, y]) => Number.isFinite(x) && Number.isFinite(y));
-  const n = points.length;
-  if (n < 2) return null;
-  const sumX = points.reduce((sum, [x]) => sum + x, 0);
-  const sumY = points.reduce((sum, [, y]) => sum + y, 0);
-  const meanX = sumX / n;
-  const meanY = sumY / n;
-  let sxx = 0;
-  let sxy = 0;
-  let syy = 0;
-  for (const [x, y] of points) {
-    sxx += (x - meanX) ** 2;
-    sxy += (x - meanX) * (y - meanY);
-    syy += (y - meanY) ** 2;
-  }
-  if (sxx === 0) return null;
-  const slope = sxy / sxx;
-  const intercept = meanY - slope * meanX;
-  const r2 = syy === 0 ? 1 : sxy * sxy / (sxx * syy);
-  const sign2 = intercept >= 0 ? "+" : "-";
-  return {
-    slope,
-    intercept,
-    r2,
-    predict: (x) => slope * x + intercept,
-    string: `y = ${formatNumber3(slope)}x ${sign2} ${formatNumber3(Math.abs(intercept))}`
-  };
-}
-function participantCountText(shown, total) {
-  const pct = total ? (shown / total * 100).toFixed(1) : "0.0";
-  const unit = total === 1 ? "participant" : "participants";
-  return `${shown} of ${total} ${unit} shown (${pct}%).`;
-}
-function quadrantLinesPlugin() {
-  return {
-    id: "delta-delta-quadrants",
-    beforeDatasetsDraw(chart) {
-      const { ctx, chartArea, scales } = chart;
-      if (!scales.x || !scales.y) return;
-      const x0 = scales.x.getPixelForValue(0);
-      const y0 = scales.y.getPixelForValue(0);
-      ctx.save();
-      ctx.strokeStyle = "rgba(100, 116, 139, 0.7)";
-      ctx.lineWidth = 1;
-      ctx.setLineDash([4, 4]);
-      if (x0 >= chartArea.left && x0 <= chartArea.right) {
-        ctx.beginPath();
-        ctx.moveTo(x0, chartArea.top);
-        ctx.lineTo(x0, chartArea.bottom);
-        ctx.stroke();
-      }
-      if (y0 >= chartArea.top && y0 <= chartArea.bottom) {
-        ctx.beginPath();
-        ctx.moveTo(chartArea.left, y0);
-        ctx.lineTo(chartArea.right, y0);
-        ctx.stroke();
-      }
-      ctx.restore();
-    }
-  };
-}
-function regressionLinePlugin(instance) {
-  return {
-    id: `delta-delta-regression-${Math.random().toString(36).slice(2)}`,
-    afterDatasetsDraw(chart) {
-      if (!instance.state.addRegressionLine || !instance.regression) return;
-      const { ctx, chartArea, scales } = chart;
-      const [xMin, xMax] = [scales.x.min, scales.x.max];
-      const left = {
-        x: scales.x.getPixelForValue(xMin),
-        y: scales.y.getPixelForValue(instance.regression.predict(xMin))
-      };
-      const right = {
-        x: scales.x.getPixelForValue(xMax),
-        y: scales.y.getPixelForValue(instance.regression.predict(xMax))
-      };
-      ctx.save();
-      ctx.beginPath();
-      ctx.rect(chartArea.left, chartArea.top, chartArea.width, chartArea.height);
-      ctx.clip();
-      ctx.strokeStyle = "#111827";
-      ctx.lineWidth = 1.5;
-      ctx.setLineDash([3, 5]);
-      ctx.beginPath();
-      ctx.moveTo(left.x, left.y);
-      ctx.lineTo(right.x, right.y);
-      ctx.stroke();
-      ctx.restore();
-    }
-  };
-}
-function selectionBorders(count2, selectedIndex) {
-  return {
-    colors: Array.from(
-      { length: count2 },
-      (_, index) => index === selectedIndex ? "#111827" : "rgba(37, 99, 235, 0.9)"
-    ),
-    widths: Array.from({ length: count2 }, (_, index) => index === selectedIndex ? 3 : 0.5)
-  };
-}
-
 // src/hep-core/stats.js
-function mean4(values) {
+function mean3(values) {
   const nums = values.map(Number).filter(Number.isFinite);
   if (!nums.length) return NaN;
   return nums.reduce((sum, value) => sum + value, 0) / nums.length;
@@ -15049,7 +14126,7 @@ function boxStats(values) {
     q75: quantile2(sorted, 0.75),
     q95: quantile2(sorted, 0.95),
     max: sorted.length ? sorted[sorted.length - 1] : NaN,
-    mean: mean4(sorted)
+    mean: mean3(sorted)
   };
 }
 
@@ -15156,11 +14233,11 @@ function computeRRatio(participantRows, settings) {
 }
 
 // src/participant-profile/configure.js
-function arrayify4(value) {
+function arrayify3(value) {
   if (value === void 0 || value === null || value === "") return [];
   return Array.isArray(value) ? value : [value];
 }
-function fieldSpec4(value, fallbackLabel) {
+function fieldSpec3(value, fallbackLabel) {
   if (typeof value === "string") return { value_col: value, label: fallbackLabel || value };
   return { ...value, value_col: value.value_col, label: value.label || value.value_col };
 }
@@ -15174,7 +14251,7 @@ var MEASURE_COLORS = [
   "#f781bf",
   "#00838f"
 ];
-var DEFAULT_SETTINGS4 = {
+var DEFAULT_SETTINGS3 = {
   id_col: "USUBJID",
   measure_col: "TEST",
   value_col: "STRESN",
@@ -15218,30 +14295,30 @@ var DEFAULT_SETTINGS4 = {
   width: "100%",
   height: 300
 };
-function syncSettings4(settings = {}) {
-  const synced = { ...DEFAULT_SETTINGS4, ...settings };
-  synced.details = arrayify4(synced.details).map((value) => fieldSpec4(value)).filter((d) => d.value_col);
-  synced.filters = arrayify4(synced.filters).map((value) => fieldSpec4(value)).filter((d) => d.value_col);
-  synced.groups = arrayify4(synced.groups).map((value) => fieldSpec4(value)).filter((d) => d.value_col);
-  synced.listing_cols = synced.listing_cols === void 0 || synced.listing_cols === null ? null : arrayify4(synced.listing_cols).map((value) => fieldSpec4(value)).filter((d) => d.value_col);
+function syncSettings3(settings = {}) {
+  const synced = { ...DEFAULT_SETTINGS3, ...settings };
+  synced.details = arrayify3(synced.details).map((value) => fieldSpec3(value)).filter((d) => d.value_col);
+  synced.filters = arrayify3(synced.filters).map((value) => fieldSpec3(value)).filter((d) => d.value_col);
+  synced.groups = arrayify3(synced.groups).map((value) => fieldSpec3(value)).filter((d) => d.value_col);
+  synced.listing_cols = synced.listing_cols === void 0 || synced.listing_cols === null ? null : arrayify3(synced.listing_cols).map((value) => fieldSpec3(value)).filter((d) => d.value_col);
   synced.measure_values = {
-    ...DEFAULT_SETTINGS4.measure_values,
+    ...DEFAULT_SETTINGS3.measure_values,
     ...settings.measure_values || {}
   };
   const cutKeys = /* @__PURE__ */ new Set([
-    ...Object.keys(DEFAULT_SETTINGS4.cuts),
+    ...Object.keys(DEFAULT_SETTINGS3.cuts),
     ...Object.keys(settings.cuts || {})
   ]);
   const mergedCuts = {};
   cutKeys.forEach((key) => {
     mergedCuts[key] = {
-      ...DEFAULT_SETTINGS4.cuts[key] || {},
+      ...DEFAULT_SETTINGS3.cuts[key] || {},
       ...(settings.cuts || {})[key] || {}
     };
   });
   synced.cuts = mergedCuts;
-  const bounds = arrayify4(synced.measureBounds).map(Number).filter(Number.isFinite);
-  synced.measureBounds = bounds.length === 2 ? bounds : [...DEFAULT_SETTINGS4.measureBounds];
+  const bounds = arrayify3(synced.measureBounds).map(Number).filter(Number.isFinite);
+  synced.measureBounds = bounds.length === 2 ? bounds : [...DEFAULT_SETTINGS3.measureBounds];
   synced.axis_type = synced.axis_type === "log" ? "log" : "linear";
   return synced;
 }
@@ -15258,10 +14335,10 @@ function measureColorScale(keys) {
 }
 
 // src/participant-profile/checkInputs.js
-var REQUIRED_COLUMN_SETTINGS4 = ["id_col", "measure_col", "value_col", "normal_col_high"];
-function checkInputs4(data, settings) {
+var REQUIRED_COLUMN_SETTINGS3 = ["id_col", "measure_col", "value_col", "normal_col_high"];
+function checkInputs3(data, settings) {
   const rows = Array.isArray(data) ? data : [];
-  const missing = REQUIRED_COLUMN_SETTINGS4.map((key) => settings[key]).filter(
+  const missing = REQUIRED_COLUMN_SETTINGS3.map((key) => settings[key]).filter(
     (col) => !rows.some((row) => row[col] !== void 0)
   );
   if (missing.length) {
@@ -15282,7 +14359,7 @@ var VIEW_MODES = [
 ];
 var AXIS_TYPES = ["linear", "log"];
 var POINT_SIZE_OPTIONS = ["Uniform", "rRatio"];
-var DEFAULT_SETTINGS5 = {
+var DEFAULT_SETTINGS4 = {
   id_col: "USUBJID",
   measure_col: "TEST",
   value_col: "STRESN",
@@ -15334,56 +14411,56 @@ var DEFAULT_SETTINGS5 = {
   width: "100%",
   height: 460
 };
-function arrayify5(value) {
+function arrayify4(value) {
   if (value === void 0 || value === null || value === "") return [];
   return Array.isArray(value) ? value : [value];
 }
-function fieldSpec5(value, fallbackLabel) {
+function fieldSpec4(value, fallbackLabel) {
   if (typeof value === "string") return { value_col: value, label: fallbackLabel || value };
   return { ...value, value_col: value.value_col, label: value.label || value.value_col };
 }
-function syncSettings5(settings) {
-  const synced = { ...DEFAULT_SETTINGS5, ...settings };
-  synced.filters = arrayify5(synced.filters).map((value) => fieldSpec5(value)).filter((d) => d.value_col);
+function syncSettings4(settings) {
+  const synced = { ...DEFAULT_SETTINGS4, ...settings };
+  synced.filters = arrayify4(synced.filters).map((value) => fieldSpec4(value)).filter((d) => d.value_col);
   const defaultGroup = { value_col: GROUP_NONE, label: "None" };
   synced.groups = [
     defaultGroup,
-    ...arrayify5(synced.groups).map((value) => fieldSpec5(value)).filter((d) => d.value_col)
+    ...arrayify4(synced.groups).map((value) => fieldSpec4(value)).filter((d) => d.value_col)
   ];
   if (synced.group_by && !synced.groups.some((group) => group.value_col === synced.group_by)) {
     synced.groups.push({ value_col: synced.group_by, label: synced.group_by });
   }
   synced.group_by = synced.groups.some((group) => group.value_col === synced.group_by) ? synced.group_by : synced.groups[0].value_col;
-  synced.details = arrayify5(synced.details).map((value) => fieldSpec5(value)).filter((d) => d.value_col);
-  synced.x_options = arrayify5(synced.x_options);
-  synced.y_options = arrayify5(synced.y_options);
+  synced.details = arrayify4(synced.details).map((value) => fieldSpec4(value)).filter((d) => d.value_col);
+  synced.x_options = arrayify4(synced.x_options);
+  synced.y_options = arrayify4(synced.y_options);
   synced.measure_values = {
-    ...DEFAULT_SETTINGS5.measure_values,
+    ...DEFAULT_SETTINGS4.measure_values,
     ...settings.measure_values || {}
   };
   const cutKeys = /* @__PURE__ */ new Set([
-    ...Object.keys(DEFAULT_SETTINGS5.cuts),
+    ...Object.keys(DEFAULT_SETTINGS4.cuts),
     ...Object.keys(settings.cuts || {})
   ]);
   const mergedCuts = {};
   cutKeys.forEach((key) => {
     mergedCuts[key] = {
-      ...DEFAULT_SETTINGS5.cuts[key] || {},
+      ...DEFAULT_SETTINGS4.cuts[key] || {},
       ...(settings.cuts || {})[key] || {}
     };
   });
   synced.cuts = mergedCuts;
-  synced.r_ratio = arrayify5(synced.r_ratio);
+  synced.r_ratio = arrayify4(synced.r_ratio);
   if (synced.r_ratio.length < 2) synced.r_ratio = [0, null];
-  const activeArms = arrayify5(synced.active_arms).map(String);
+  const activeArms = arrayify4(synced.active_arms).map(String);
   synced.active_arms = activeArms.length ? activeArms : null;
   synced.placebo_arm = synced.placebo_arm === void 0 || synced.placebo_arm === null || synced.placebo_arm === "" ? null : String(synced.placebo_arm);
-  synced.jaundice_uln = Number.isFinite(Number(synced.jaundice_uln)) ? Number(synced.jaundice_uln) : DEFAULT_SETTINGS5.jaundice_uln;
+  synced.jaundice_uln = Number.isFinite(Number(synced.jaundice_uln)) ? Number(synced.jaundice_uln) : DEFAULT_SETTINGS4.jaundice_uln;
   synced.hide_unchanged = Boolean(synced.hide_unchanged);
   synced.profile = Boolean(synced.profile);
-  synced.profile_details = synced.profile_details === void 0 || synced.profile_details === null ? null : arrayify5(synced.profile_details).map((value) => fieldSpec5(value)).filter((d) => d.value_col);
-  const bounds = arrayify5(synced.measureBounds).map(Number).filter(Number.isFinite);
-  synced.measureBounds = bounds.length === 2 ? bounds : [...DEFAULT_SETTINGS5.measureBounds];
+  synced.profile_details = synced.profile_details === void 0 || synced.profile_details === null ? null : arrayify4(synced.profile_details).map((value) => fieldSpec4(value)).filter((d) => d.value_col);
+  const bounds = arrayify4(synced.measureBounds).map(Number).filter(Number.isFinite);
+  synced.measureBounds = bounds.length === 2 ? bounds : [...DEFAULT_SETTINGS4.measureBounds];
   return synced;
 }
 
@@ -16545,7 +15622,7 @@ var SafetyParticipantProfile = class {
     this.mode = mode;
     this.element = typeof element === "string" ? document.querySelector(element) : element;
     if (!this.element) throw new Error(`Safety Participant Profile target not found: ${element}`);
-    this.settings = syncSettings4(settings);
+    this.settings = syncSettings3(settings);
     this.rawData = [];
     this.cleanRows = [];
     this.removedRecords = 0;
@@ -16651,7 +15728,7 @@ var SafetyParticipantProfile = class {
    */
   applySettings(settings) {
     if ("display" in settings) this.state.display = settings.display;
-    this.settings = syncSettings4({ ...this.settings, ...settings });
+    this.settings = syncSettings3({ ...this.settings, ...settings });
     return this;
   }
   /**
@@ -16674,7 +15751,7 @@ var SafetyParticipantProfile = class {
    */
   validateAndCleanData() {
     try {
-      checkInputs4(this.rawData, this.settings);
+      checkInputs3(this.rawData, this.settings);
     } catch (error) {
       this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
       throw error;
@@ -17032,13 +16109,1018 @@ function resetProfileDock(host) {
   if (host.profile) host.profile.clear();
 }
 
+// src/shift-plot.js
+Chart.register(ScatterController, PointElement, LinearScale, plugin_tooltip, plugin_legend);
+var INITIAL_FOOTNOTE = "Click and drag across the points to list the selected participants.";
+var SafetyShiftPlot = class {
+  constructor(element = "body", settings = {}) {
+    this.element = typeof element === "string" ? document.querySelector(element) : element;
+    if (!this.element) throw new Error(`Safety Shift Plot target not found: ${element}`);
+    this.settings = syncSettings2(settings);
+    this.rawData = [];
+    this.cleanData = [];
+    this.chartPairs = [];
+    this.currentTableData = [];
+    this.listingSearch = "";
+    this.listingSort = null;
+    this.page = 1;
+    this.brushing = false;
+    this.chart = null;
+    this.profile = null;
+    this.profileFeed = null;
+    this.profileKey = null;
+    this.profileRows = [];
+    this.state = {
+      measure: this.settings.start_value,
+      baselineVisits: this.settings.baseline_visits,
+      comparisonVisits: this.settings.comparison_visits,
+      baselineStat: this.settings.baseline_stat,
+      comparisonStat: this.settings.comparison_stat,
+      filters: {},
+      domain: null
+    };
+    this.renderShell();
+    mountProfileDock(this, () => this.profileSettings());
+  }
+  /**
+   * The settings handed to the docked participant-profile module (#99,
+   * PPRF-SSP-002): the long-lab column mappings pass through — visitn_col maps
+   * from the host's visit_order_col — with the profile fed from the retained
+   * rawData (NOT the pair-per-participant chartPairs); `details` come from
+   * profile_details (the host `details` configure the linked listing — pair
+   * columns, not demographics); and the two outbound callbacks wire Clear to
+   * the host's own clear path and stepper navigation to a transient border
+   * emphasis (no dispatch).
+   * @private
+   */
+  profileSettings() {
+    const settings = this.settings;
+    const profileSettings = {
+      id_col: settings.id_col,
+      measure_col: settings.measure_col,
+      value_col: settings.value_col,
+      unit_col: settings.unit_col,
+      normal_col_high: settings.normal_col_high,
+      normal_col_low: settings.normal_col_low,
+      studyday_col: settings.studyday_col,
+      visit_col: settings.visit_col,
+      visitn_col: settings.visit_order_col,
+      details: settings.profile_details && settings.profile_details.length ? settings.profile_details : [],
+      participantProfileURL: settings.participantProfileURL ?? null,
+      on_clear: () => this.clearSelection(),
+      on_step: (id) => this.emphasizeParticipant(id)
+    };
+    if (settings.measure_values) profileSettings.measure_values = settings.measure_values;
+    return profileSettings;
+  }
+  /**
+   * Transient chart emphasis for the profile stepper (PPRF-SSP-001, PPRF-11):
+   * border-highlight the stepped participant's point without touching the
+   * brush selection ($sspSelected stays) and without dispatching — the host
+   * selection still belongs to the brush gesture. Each step recomputes the
+   * emphasis, and clearSelection restores the uniform border.
+   * @private
+   */
+  emphasizeParticipant(id) {
+    if (!this.chart) return;
+    const index = this.chartPairs.findIndex(
+      (pair) => String(pair[this.settings.id_col]) === String(id)
+    );
+    const dataset = this.chart.data.datasets[0];
+    dataset.borderWidth = index < 0 ? 1 : this.chartPairs.map((pair, pairIndex) => pairIndex === index ? 3 : 1);
+    this.chart.update("none");
+  }
+  /**
+   * Build the static DOM shell the scatter and listing render into.
+   * @private
+   */
+  renderShell() {
+    Object.assign(
+      this,
+      renderShell(this.element, {
+        moduleClass: "safety-shift-plot",
+        onToggle: () => this.resize()
+      })
+    );
+    this.footnote.textContent = INITIAL_FOOTNOTE;
+  }
+  /**
+   * Load data and render: an alias for setData that keeps the pilot's
+   * two-step create-then-init call shape working (SSP-DATA-003).
+   * @param {Object[]} data Long-format result records matching the shift-plot data contract.
+   * @returns {SafetyShiftPlot} The instance, for chaining.
+   */
+  init(data) {
+    this.setData(data);
+    return this;
+  }
+  /**
+   * Replace the bound data and re-render. The data is validated against the
+   * settings mapping (throwing, and rendering the message into the target
+   * element, when required columns are missing), rows with missing or
+   * non-numeric results are removed with a console warning, and the controls
+   * are rebuilt from the new data's measures and visits.
+   * @param {Object[]} data Long-format result records matching the shift-plot data contract.
+   * @returns {SafetyShiftPlot} The instance, for chaining.
+   */
+  setData(data) {
+    this.rawData = Array.isArray(data) ? data : [];
+    this.validateAndCleanData();
+    this.buildProfileRows();
+    this.buildControls();
+    this.render();
+    return this;
+  }
+  /**
+   * Derive the docked profile's pre-cleaned rows ONCE per data/settings change
+   * (#99, PPRF-SSP-002) — never per gesture, and from the retained rawData
+   * rather than the pair-per-participant chartPairs (the profile narrates the
+   * full series, not the baseline/comparison collapse).
+   * @private
+   */
+  buildProfileRows() {
+    this.profileRows = this.settings.profile ? buildProfileRows(this.rawData, this.profileSettings()) : [];
+  }
+  /**
+   * Merge setting overrides onto the current settings, re-normalize them (same
+   * rules as the factory), rebuild the controls, and re-render.
+   * @param {ShiftPlotSettings} settings Setting overrides to merge.
+   * @returns {SafetyShiftPlot} The instance, for chaining.
+   */
+  setSettings(settings) {
+    this.settings = syncSettings2({ ...this.settings, ...settings });
+    this.state.baselineStat = this.settings.baseline_stat;
+    this.state.comparisonStat = this.settings.comparison_stat;
+    if (settings.baseline_visits !== void 0)
+      this.state.baselineVisits = this.settings.baseline_visits;
+    if (settings.comparison_visits !== void 0)
+      this.state.comparisonVisits = this.settings.comparison_visits;
+    this.resolveVisits();
+    this.buildProfileRows();
+    syncProfileDock(this, () => this.profileSettings());
+    this.buildControls();
+    this.render();
+    return this;
+  }
+  /**
+   * Validate the raw data against the settings mapping and drop unusable rows,
+   * then resolve the default measure and visit selections.
+   * @private
+   */
+  validateAndCleanData() {
+    try {
+      checkInputs2(this.rawData, this.settings);
+    } catch (error) {
+      this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+      throw error;
+    }
+    const { rows, removed } = cleanData2(this.rawData, this.settings);
+    this.cleanData = rows;
+    this.removedRecords = removed;
+    if (removed) console.warn(`${removed} missing or non-numeric results have been removed.`);
+    const measures = this.measures();
+    if (this.state.measure && !measures.includes(this.state.measure)) {
+      console.warn(
+        `The initial measure [${this.state.measure}] does not exist. Defaulting to the first measure.`
+      );
+    }
+    this.state.measure = measures.includes(this.state.measure) ? this.state.measure : measures[0];
+    this.resolveVisits();
+  }
+  /**
+   * Sorted distinct measure labels present in the cleaned data.
+   * @private
+   */
+  measures() {
+    return unique2(this.cleanData.map((row) => measureLabel2(row, this.settings))).sort();
+  }
+  /**
+   * Ordered distinct visit labels present in the cleaned data.
+   * @private
+   */
+  visits() {
+    return listVisits(this.cleanData, this.settings);
+  }
+  /**
+   * Resolve the baseline/comparison visit selections against the current data:
+   * an unset baseline defaults to the first visit, an unset comparison to
+   * every visit after the baseline, and selections naming absent visits are
+   * dropped (SSP-CFG-004/005).
+   * @private
+   */
+  resolveVisits() {
+    const visits = this.visits();
+    let baseline = (this.state.baselineVisits || []).filter((visit) => visits.includes(visit));
+    if (!baseline.length) baseline = visits.length ? [visits[0]] : [];
+    let comparison = (this.state.comparisonVisits || []).filter((visit) => visits.includes(visit));
+    if (!comparison.length) comparison = visits.filter((visit) => !baseline.includes(visit));
+    this.state.baselineVisits = baseline;
+    this.state.comparisonVisits = comparison;
+  }
+  /**
+   * Rebuild the measure, baseline/comparison visit, and filter controls from
+   * data + state.
+   * @private
+   */
+  buildControls() {
+    this.controls.innerHTML = "";
+    const { addSection, addControl } = controlBuilders(this.controls);
+    const visits = this.visits();
+    const measure = addControl("Measure", document.createElement("select"));
+    this.measures().forEach((value) => option(measure, value, value, value === this.state.measure));
+    measure.onchange = () => {
+      this.state.measure = measure.value;
+      this.render();
+    };
+    const visitSection = addSection("Visits");
+    const baseline = addControl(
+      "Baseline visit(s)",
+      document.createElement("select"),
+      visitSection
+    );
+    baseline.multiple = true;
+    baseline.size = Math.min(Math.max(visits.length, 2), 6);
+    visits.forEach(
+      (visit) => option(baseline, visit, visit, this.state.baselineVisits.includes(visit))
+    );
+    baseline.onchange = () => {
+      this.state.baselineVisits = Array.from(baseline.selectedOptions).map((opt) => opt.value);
+      this.render();
+    };
+    const comparison = addControl(
+      "Comparison visit(s)",
+      document.createElement("select"),
+      visitSection
+    );
+    comparison.multiple = true;
+    comparison.size = Math.min(Math.max(visits.length, 2), 6);
+    visits.forEach(
+      (visit) => option(comparison, visit, visit, this.state.comparisonVisits.includes(visit))
+    );
+    comparison.onchange = () => {
+      this.state.comparisonVisits = Array.from(comparison.selectedOptions).map((opt) => opt.value);
+      this.render();
+    };
+    const filterSpecs = this.settings.filters.filter((filter) => {
+      const exists = this.cleanData.some((row) => row[filter.value_col] !== void 0);
+      if (!exists)
+        console.warn(
+          `The [ ${filter.label} ] filter has been removed because the variable does not exist.`
+        );
+      return exists;
+    });
+    if (filterSpecs.length) {
+      const filterParent = addSection("Filters");
+      filterSpecs.forEach((filter) => {
+        const select = addControl(filter.label, document.createElement("select"), filterParent);
+        option(select, "__all__", "All", !this.state.filters[filter.value_col]);
+        unique2(this.cleanData.map((row) => row[filter.value_col])).sort().forEach(
+          (value) => option(select, value, value, this.state.filters[filter.value_col] === value)
+        );
+        select.onchange = () => {
+          this.state.filters[filter.value_col] = select.value === "__all__" ? null : select.value;
+          this.render();
+        };
+      });
+    }
+  }
+  /**
+   * Cleaned rows for the selected measure.
+   * @private
+   */
+  currentMeasureData() {
+    return this.cleanData.filter((row) => measureLabel2(row, this.settings) === this.state.measure);
+  }
+  /**
+   * Cleaned rows for the selected measure after the active filters.
+   * @private
+   */
+  currentFilteredData() {
+    return applyFilters2(this.currentMeasureData(), this.state.filters);
+  }
+  /**
+   * The baseline/comparison pairs for the current measure, visits, and filters.
+   * @private
+   */
+  computePairs() {
+    return computeShiftPairs({
+      rows: this.currentFilteredData(),
+      measure: this.state.measure,
+      baselineVisits: this.state.baselineVisits,
+      comparisonVisits: this.state.comparisonVisits,
+      baselineStat: this.state.baselineStat,
+      comparisonStat: this.state.comparisonStat,
+      settings: this.settings
+    });
+  }
+  /**
+   * Redraw everything from the current data, settings, and control state:
+   * destroys the live chart, clears the listing and any brush selection, then
+   * draws the scatter, the identity line, and the participant-count notes.
+   * Called automatically by the controls and the data/settings setters; call
+   * it directly only after mutating state by hand.
+   * @returns {void}
+   */
+  render() {
+    this.destroyChart();
+    this.listingWrap.innerHTML = "";
+    this.currentTableData = [];
+    this.listingSearch = "";
+    this.listingSort = null;
+    this.page = 1;
+    this.footnote.textContent = INITIAL_FOOTNOTE;
+    resetProfileDock(this);
+    this.notes.innerHTML = "";
+    this.chartPairs = this.computePairs();
+    this.state.domain = computeDomain(this.chartPairs);
+    this.updateNotes();
+    if (!this.chartPairs.length) {
+      this.footnote.textContent = "No participant has both a baseline and a comparison value for the current selection.";
+      return;
+    }
+    this.drawChart();
+  }
+  /**
+   * Draw the Chart.js scatter with tooltips, the identity line, and the brush
+   * selection.
+   * @private
+   */
+  drawChart() {
+    const chart = new Chart(this.canvas.getContext("2d"), {
+      type: "scatter",
+      data: {
+        datasets: [
+          {
+            label: this.state.measure,
+            data: this.chartPairs.map((pair) => ({ x: pair.x, y: pair.y })),
+            backgroundColor: COLORS.point,
+            borderColor: COLORS.border,
+            borderWidth: 1,
+            pointRadius: 4,
+            pointHoverRadius: 6
+          }
+        ]
+      },
+      options: {
+        maintainAspectRatio: false,
+        responsive: true,
+        animation: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => tooltipLines(this.chartPairs[ctx.dataIndex], this.settings.id_col)
+            }
+          }
+        },
+        scales: buildScales2(this.state.domain, this.state.measure)
+      },
+      plugins: [identityLinePlugin(this), brushBoxPlugin()]
+    });
+    this.chart = chart;
+    this.attachBrush(chart);
+  }
+  /**
+   * Wire the click-drag brush on the chart canvas: dragging paints the gray
+   * selection rectangle; releasing selects the enclosed points (or clears the
+   * selection when the drag is an empty click) (SSP-REQ-003, SSP-REG-004/012).
+   * @private
+   */
+  attachBrush(chart) {
+    const canvas = chart.canvas;
+    const clamp = (value, lo, hi) => Math.max(lo, Math.min(hi, value));
+    const position = (event) => {
+      const rect = canvas.getBoundingClientRect();
+      const area = chart.chartArea;
+      return {
+        x: clamp(event.clientX - rect.left, area.left, area.right),
+        y: clamp(event.clientY - rect.top, area.top, area.bottom)
+      };
+    };
+    let start = null;
+    const onDown = (event) => {
+      start = position(event);
+      this.brushing = true;
+    };
+    const onMove = (event) => {
+      if (!this.brushing || !start) return;
+      const point = position(event);
+      chart.$sspBrush = {
+        left: Math.min(start.x, point.x),
+        right: Math.max(start.x, point.x),
+        top: Math.min(start.y, point.y),
+        bottom: Math.max(start.y, point.y)
+      };
+      chart.draw();
+    };
+    const onUp = (event) => {
+      if (!this.brushing || !start) return;
+      this.brushing = false;
+      const point = position(event);
+      const rect = {
+        left: Math.min(start.x, point.x),
+        right: Math.max(start.x, point.x),
+        top: Math.min(start.y, point.y),
+        bottom: Math.max(start.y, point.y)
+      };
+      start = null;
+      if (rect.right - rect.left < 3 && rect.bottom - rect.top < 3) {
+        this.clearSelection();
+        return;
+      }
+      this.selectInPixelRect(rect);
+    };
+    canvas.addEventListener("mousedown", onDown);
+    canvas.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+    chart.$sspBrushCleanup = () => {
+      canvas.removeEventListener("mousedown", onDown);
+      canvas.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+  }
+  /**
+   * Select every point whose pixel position falls inside a rectangle, opening
+   * the listing (or clearing when the rectangle catches nothing).
+   * @param {{left:number,right:number,top:number,bottom:number}} rect Pixel rectangle.
+   * @returns {void}
+   */
+  selectInPixelRect(rect) {
+    if (!this.chart) return;
+    const meta = this.chart.getDatasetMeta(0);
+    const selected = /* @__PURE__ */ new Set();
+    meta.data.forEach((element, index) => {
+      if (element.x >= rect.left && element.x <= rect.right && element.y >= rect.top && element.y <= rect.bottom)
+        selected.add(index);
+    });
+    if (!selected.size) {
+      this.clearSelection();
+      return;
+    }
+    this.showSelection(selected, rect);
+  }
+  /**
+   * Select points inside a data-space rectangle. The programmatic entry point
+   * the R widget bindings and tests use in place of a mouse drag.
+   * @param {number} x0 One baseline-axis bound of the rectangle.
+   * @param {number} x1 The other baseline-axis bound.
+   * @param {number} y0 One comparison-axis bound of the rectangle.
+   * @param {number} y1 The other comparison-axis bound.
+   * @returns {void}
+   */
+  brushValues(x0, x1, y0, y1) {
+    if (!this.chart) return;
+    const { scales } = this.chart;
+    this.selectInPixelRect({
+      left: scales.x.getPixelForValue(Math.min(x0, x1)),
+      right: scales.x.getPixelForValue(Math.max(x0, x1)),
+      top: scales.y.getPixelForValue(Math.max(y0, y1)),
+      bottom: scales.y.getPixelForValue(Math.min(y0, y1))
+    });
+  }
+  /**
+   * Record the selection, de-emphasize the unselected points, draw the gray
+   * box, and open the listing (SSP-REQ-003/006/007, SSP-REG-004).
+   * @private
+   */
+  showSelection(selected, rect) {
+    const dataset = this.chart.data.datasets[0];
+    dataset.backgroundColor = pointColors(this.chartPairs.length, selected, COLORS.point);
+    dataset.borderColor = pointColors(this.chartPairs.length, selected, COLORS.border);
+    dataset.borderWidth = 1;
+    this.chart.$sspBrush = rect;
+    this.chart.$sspSelected = selected;
+    this.chart.update("none");
+    this.currentTableData = [...selected].map((index) => this.chartPairs[index]);
+    this.listingSearch = "";
+    this.listingSort = null;
+    this.page = 1;
+    renderListing(this);
+    this.footnote.textContent = `Selected ${this.currentTableData.length} participant(s).`;
+    this.dispatchSelected(this.currentTableData.map((pair) => pair[this.settings.id_col]));
+  }
+  /**
+   * Clear the brush selection: restore uniform point colors, hide the gray box
+   * and the listing, and dispatch an empty participantsSelected event
+   * (SSP-REG-011).
+   * @returns {void}
+   */
+  clearSelection() {
+    if (this.chart) {
+      const dataset = this.chart.data.datasets[0];
+      dataset.backgroundColor = COLORS.point;
+      dataset.borderColor = COLORS.border;
+      dataset.borderWidth = 1;
+      this.chart.$sspBrush = null;
+      this.chart.$sspSelected = null;
+      this.chart.update("none");
+    }
+    this.currentTableData = [];
+    this.listingWrap.innerHTML = "";
+    this.footnote.textContent = INITIAL_FOOTNOTE;
+    this.dispatchSelected([]);
+  }
+  /**
+   * Dispatch the participantsSelected event on the shell root with the
+   * selected IDs (SSP-API-003, PPRF-SSP-004). The target moved from the host
+   * element to the shell root in the dock adoption (#99) so root-level
+   * listeners — the docked profile's feed — hear every dispatch; the event
+   * still bubbles, so element-level listeners keep working.
+   * @private
+   */
+  dispatchSelected(ids) {
+    this.root.dispatchEvent(
+      new CustomEvent("participantsSelected", { detail: { data: ids }, bubbles: true })
+    );
+  }
+  /**
+   * Refresh the shown/total participant counts and the removed-record note
+   * (SSP-COUNT-001, SSP-REG-005/020).
+   * @private
+   */
+  updateNotes() {
+    const totalParticipants = unique2(this.cleanData.map((row) => row[this.settings.id_col])).length;
+    const shownParticipants = this.chartPairs.length;
+    const pct = totalParticipants ? (shownParticipants / totalParticipants * 100).toFixed(1) : "0.0";
+    const removedNote = this.removedRecords ? `<span class="sv-warning">${this.removedRecords} missing or non-numeric results removed.</span>` : "";
+    this.notes.innerHTML = `<span>${shownParticipants} of ${totalParticipants} participants shown (${pct}%).</span>${removedNote}`;
+  }
+  /**
+   * Resize the live chart to its container. For host layouts that change the
+   * container size without a window resize — e.g. the R htmlwidget bindings.
+   * @returns {void}
+   */
+  resize() {
+    if (this.chart) this.chart.resize();
+  }
+  /**
+   * Destroy the live Chart.js instance and detach its brush listeners without
+   * touching the shell.
+   * @private
+   */
+  destroyChart() {
+    if (this.chart) {
+      if (this.chart.$sspBrushCleanup) this.chart.$sspBrushCleanup();
+      this.chart.destroy();
+      this.chart = null;
+    }
+  }
+  /**
+   * Tear the shift plot down: destroy the Chart.js instance and empty the
+   * target element. The instance cannot be reused afterwards — create a new
+   * one via the factory instead.
+   * @returns {void}
+   */
+  destroy() {
+    unmountProfileDock(this);
+    this.destroyChart();
+    this.element.innerHTML = "";
+  }
+};
+function shiftPlot(element = "body", settings = {}) {
+  return new SafetyShiftPlot(element, settings);
+}
+
+// src/delta-delta/configure.js
+var DEFAULT_SETTINGS5 = {
+  measure_col: "TEST",
+  value_col: "STRESN",
+  id_col: "USUBJID",
+  visit_col: "VISIT",
+  visitn_col: "VISITNUM",
+  measure_x: null,
+  measure_y: null,
+  baseline_visits: [],
+  comparison_visits: [],
+  add_regression_line: true,
+  filters: [],
+  details: null,
+  width: "100%",
+  height: 460,
+  unit_col: "STRESU",
+  normal_col_low: "STNRLO",
+  normal_col_high: "STNRHI",
+  studyday_col: null,
+  measure_values: null,
+  profile: true,
+  profile_details: null,
+  participantProfileURL: null
+};
+function arrayify5(value) {
+  if (value === void 0 || value === null) return [];
+  return Array.isArray(value) ? value : [value];
+}
+function fieldSpec5(value, fallbackLabel) {
+  if (typeof value === "string") return { value_col: value, label: fallbackLabel || value };
+  return { value_col: value.value_col, label: value.label || value.value_col };
+}
+function syncSettings5(settings) {
+  const synced = { ...DEFAULT_SETTINGS5, ...settings };
+  synced.filters = arrayify5(synced.filters).map((filter) => fieldSpec5(filter)).filter((filter) => filter.value_col);
+  synced.baseline_visits = arrayify5(synced.baseline_visits);
+  synced.comparison_visits = arrayify5(synced.comparison_visits);
+  const suppliedDetails = arrayify5(synced.details).map((detail) => fieldSpec5(detail)).filter((detail) => detail.value_col);
+  const defaultDetails = [
+    { value_col: synced.id_col, label: "Participant ID" },
+    ...synced.filters.filter((filter) => filter.value_col !== synced.id_col)
+  ];
+  const merged = [...defaultDetails];
+  suppliedDetails.forEach((detail) => {
+    if (!merged.some((existing) => existing.value_col === detail.value_col)) merged.push(detail);
+  });
+  synced.details = merged;
+  synced.profile = Boolean(synced.profile);
+  synced.profile_details = synced.profile_details === void 0 || synced.profile_details === null ? null : arrayify5(synced.profile_details).map((detail) => fieldSpec5(detail)).filter((detail) => detail.value_col);
+  return synced;
+}
+
+// src/data/schema/delta-delta.json
+var delta_delta_default = {
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "https://raw.githubusercontent.com/jwildfire/safety.viz/main/src/data/schema/delta-delta.json",
+  title: "safety.viz delta-delta data contract",
+  description: "Long-format results data: one record per measurement at a visit (SDD-DATA-001). Column names are supplied by the settings mapping; each participant needs at least a baseline and a comparison visit for the two selected measures so change-from-baseline can be computed. The renderer removes missing/non-numeric results with a reported count (SDD-REG-008) and plots one point per participant (change in measure X vs change in measure Y).",
+  type: "object",
+  required: ["data", "settings"],
+  properties: {
+    data: {
+      type: "array",
+      minItems: 1,
+      items: { type: "object" },
+      description: "d3.csv()-style records; every row carries the measure, result, participant, and visit columns named in settings."
+    },
+    settings: {
+      type: "object",
+      description: "Column mappings and rendering options; merged onto the module's DEFAULT_SETTINGS, so only overrides need to be supplied.",
+      required: ["measure_col", "value_col", "id_col", "visit_col"],
+      properties: {
+        measure_col: {
+          type: "string",
+          default: "TEST",
+          description: "Column holding the measure name; required in data (SDD-CFG-004)."
+        },
+        value_col: {
+          type: "string",
+          default: "STRESN",
+          description: "Column holding the numeric result; required in data. Non-numeric results are removed with a logged count (SDD-CFG-005, SDD-REG-008)."
+        },
+        id_col: {
+          type: "string",
+          default: "USUBJID",
+          description: "Participant identifier column; one plotted point per participant (SDD-CFG-006)."
+        },
+        visit_col: {
+          type: "string",
+          default: "VISIT",
+          description: "Categorical visit column; drives the baseline/comparison visit selectors (SDD-CFG-007)."
+        },
+        visitn_col: {
+          type: "string",
+          default: "VISITNUM",
+          description: "Optional numeric visit column; orders the visit selectors and the sparkline (SDD-CFG-008)."
+        },
+        measure_x: {
+          type: ["string", "null"],
+          default: null,
+          description: "Measure plotted on the x-axis; defaults to the first measure in the data (SDD-CFG-009, SDD-CFG-010)."
+        },
+        measure_y: {
+          type: ["string", "null"],
+          default: null,
+          description: "Measure plotted on the y-axis; defaults to the second measure in the data (SDD-CFG-011)."
+        },
+        baseline_visits: {
+          type: "array",
+          items: { type: "string" },
+          default: [],
+          description: "Baseline visit(s); multiple visits are averaged. Defaults to the first visit (SDD-CFG-012)."
+        },
+        comparison_visits: {
+          type: "array",
+          items: { type: "string" },
+          default: [],
+          description: "Comparison visit(s); multiple visits are averaged. Defaults to the last visit (SDD-CFG-013)."
+        },
+        add_regression_line: {
+          type: "boolean",
+          default: true,
+          description: "Draw a simple linear regression line with an equation and R\xB2 note (SDD-REG-026)."
+        },
+        filters: {
+          $ref: "#/$defs/fieldList",
+          description: "Optional filter columns rendered as controls (SDD-CFG-014)."
+        },
+        details: {
+          $ref: "#/$defs/fieldList",
+          description: "Optional participant-detail columns shown above the linked measure table; defaults derive from id_col and the filters (SDD-CFG-015)."
+        }
+      }
+    }
+  },
+  $defs: {
+    fieldList: {
+      type: "array",
+      items: {
+        anyOf: [
+          { type: "string" },
+          {
+            type: "object",
+            required: ["value_col"],
+            properties: {
+              value_col: { type: "string" },
+              label: { type: "string" }
+            }
+          }
+        ]
+      }
+    }
+  }
+};
+
+// src/delta-delta/checkInputs.js
+var REQUIRED_COLUMN_SETTINGS4 = delta_delta_default.properties.settings.required;
+function checkInputs4(data, settings) {
+  const rows = Array.isArray(data) ? data : [];
+  const missing = REQUIRED_COLUMN_SETTINGS4.map((key) => settings[key]).filter(
+    (col) => !rows.some((row) => row[col] !== void 0)
+  );
+  if (missing.length) {
+    throw new Error(`Required variable(s) missing: ${missing.join(", ")}`);
+  }
+}
+
+// src/delta-delta/structureData.js
+var BASELINE_COLOR = "#2563eb";
+var COMPARISON_COLOR = "#ea580c";
+var OTHER_COLOR = "#9ca3af";
+function unique3(values) {
+  return [
+    ...new Set(values.filter((value) => value !== void 0 && value !== null && value !== ""))
+  ];
+}
+function mean4(values) {
+  const nums = values.map(Number).filter(Number.isFinite);
+  if (!nums.length) return NaN;
+  return nums.reduce((sum, value) => sum + value, 0) / nums.length;
+}
+function getMeasures(rows, settings) {
+  return unique3(rows.map((row) => row[settings.measure_col])).sort();
+}
+function getVisits(rows, settings) {
+  const hasVisitN = settings.visitn_col && rows.some((row) => row[settings.visitn_col] !== void 0);
+  if (!hasVisitN) return unique3(rows.map((row) => row[settings.visit_col])).sort();
+  const order = /* @__PURE__ */ new Map();
+  rows.forEach((row) => {
+    const visit = row[settings.visit_col];
+    if (visit !== void 0 && visit !== null && visit !== "" && !order.has(visit))
+      order.set(visit, Number(row[settings.visitn_col]));
+  });
+  return [...order.keys()].sort((a, b) => {
+    const diff = order.get(a) - order.get(b);
+    if (diff) return diff;
+    return a < b ? -1 : a > b ? 1 : 0;
+  });
+}
+function visitMean(records, visits, settings) {
+  const set2 = new Set(visits);
+  const matched = records.filter((row) => set2.has(row[settings.visit_col]));
+  return mean4(matched.map((row) => row.__dd_value));
+}
+function measureDetails(participantRows, settings, state) {
+  const { measureX, measureY, baseline, comparison } = state;
+  const baselineSet = new Set(baseline);
+  const comparisonSet = new Set(comparison);
+  const byMeasure = /* @__PURE__ */ new Map();
+  participantRows.forEach((row) => {
+    const key = row[settings.measure_col];
+    if (!byMeasure.has(key)) byMeasure.set(key, []);
+    byMeasure.get(key).push(row);
+  });
+  const details = [...byMeasure.entries()].map(([key, rawRecords]) => {
+    const records = [...rawRecords].sort((a, b) => Number(a[settings.visitn_col] ?? 0) - Number(b[settings.visitn_col] ?? 0)).map((row) => {
+      const isBaseline = baselineSet.has(row[settings.visit_col]);
+      const isComparison = comparisonSet.has(row[settings.visit_col]);
+      return {
+        ...row,
+        baseline: isBaseline,
+        comparison: isComparison,
+        color: isBaseline ? BASELINE_COLOR : isComparison ? COMPARISON_COLOR : OTHER_COLOR
+      };
+    });
+    const baselineValue = visitMean(rawRecords, baseline, settings);
+    const comparisonValue = visitMean(rawRecords, comparison, settings);
+    return {
+      key,
+      records,
+      baselineValue,
+      comparisonValue,
+      delta: comparisonValue - baselineValue,
+      axisFlag: key === measureX ? "X" : key === measureY ? "Y" : ""
+    };
+  });
+  return details.sort((a, b) => {
+    const rank = (detail) => detail.axisFlag === "X" ? 0 : detail.axisFlag === "Y" ? 1 : 2;
+    const diff = rank(a) - rank(b);
+    if (diff) return diff;
+    return a.key < b.key ? -1 : a.key > b.key ? 1 : 0;
+  });
+}
+function buildParticipants(rows, settings, state) {
+  const metaCols = unique3([
+    ...settings.filters.map((filter) => filter.value_col),
+    ...settings.details.map((detail) => detail.value_col),
+    settings.id_col
+  ]);
+  const byId = /* @__PURE__ */ new Map();
+  rows.forEach((row) => {
+    const id = row[settings.id_col];
+    if (!byId.has(id)) byId.set(id, []);
+    byId.get(id).push(row);
+  });
+  return [...byId.entries()].map(([id, participantRows]) => {
+    const details = measureDetails(participantRows, settings, state);
+    const xDetail = details.find((detail) => detail.key === state.measureX);
+    const yDetail = details.find((detail) => detail.key === state.measureY);
+    const meta = {};
+    metaCols.forEach((col) => {
+      meta[col] = participantRows[0][col] === void 0 ? "" : String(participantRows[0][col]);
+    });
+    return {
+      id,
+      measures: details,
+      delta_x: xDetail ? xDetail.delta : NaN,
+      delta_y: yDetail ? yDetail.delta : NaN,
+      meta
+    };
+  });
+}
+function plottablePoints(participants) {
+  return participants.filter(
+    (participant) => Number.isFinite(participant.delta_x) && Number.isFinite(participant.delta_y)
+  );
+}
+function applyFilters3(participants, filters) {
+  return participants.filter(
+    (participant) => Object.entries(filters).every(
+      ([key, value]) => !value || String(participant.meta[key]) === String(value)
+    )
+  );
+}
+
+// src/delta-delta/getScales.js
+function formatNumber3(value, digits = 2) {
+  if (!Number.isFinite(value)) return "";
+  return Number(value.toFixed(digits)).toString();
+}
+function formatDelta(value) {
+  if (!Number.isFinite(value)) return "NA";
+  const fixed = value.toFixed(2);
+  return value >= 0 ? `+${fixed}` : fixed;
+}
+function axisLabel(measure) {
+  return `Change in ${measure ?? ""}`;
+}
+function deltaDomain(values, pad = 0.08) {
+  const nums = values.filter(Number.isFinite);
+  if (!nums.length) return [-1, 1];
+  let lo = Math.min(0, ...nums);
+  let hi = Math.max(0, ...nums);
+  if (lo === hi) {
+    lo -= 1;
+    hi += 1;
+  }
+  const margin = (hi - lo) * pad;
+  return [lo - margin, hi + margin];
+}
+function buildScales3(measureX, measureY, xDomain, yDomain) {
+  return {
+    x: {
+      type: "linear",
+      min: xDomain[0],
+      max: xDomain[1],
+      title: { display: true, text: axisLabel(measureX) },
+      grid: { color: "rgba(148, 163, 184, 0.25)" }
+    },
+    y: {
+      type: "linear",
+      min: yDomain[0],
+      max: yDomain[1],
+      title: { display: true, text: axisLabel(measureY) },
+      grid: { color: "rgba(148, 163, 184, 0.25)" }
+    }
+  };
+}
+
+// src/delta-delta/getPlugins.js
+function linearRegression(pairs) {
+  const points = pairs.filter(([x, y]) => Number.isFinite(x) && Number.isFinite(y));
+  const n = points.length;
+  if (n < 2) return null;
+  const sumX = points.reduce((sum, [x]) => sum + x, 0);
+  const sumY = points.reduce((sum, [, y]) => sum + y, 0);
+  const meanX = sumX / n;
+  const meanY = sumY / n;
+  let sxx = 0;
+  let sxy = 0;
+  let syy = 0;
+  for (const [x, y] of points) {
+    sxx += (x - meanX) ** 2;
+    sxy += (x - meanX) * (y - meanY);
+    syy += (y - meanY) ** 2;
+  }
+  if (sxx === 0) return null;
+  const slope = sxy / sxx;
+  const intercept = meanY - slope * meanX;
+  const r2 = syy === 0 ? 1 : sxy * sxy / (sxx * syy);
+  const sign2 = intercept >= 0 ? "+" : "-";
+  return {
+    slope,
+    intercept,
+    r2,
+    predict: (x) => slope * x + intercept,
+    string: `y = ${formatNumber3(slope)}x ${sign2} ${formatNumber3(Math.abs(intercept))}`
+  };
+}
+function participantCountText(shown, total) {
+  const pct = total ? (shown / total * 100).toFixed(1) : "0.0";
+  const unit = total === 1 ? "participant" : "participants";
+  return `${shown} of ${total} ${unit} shown (${pct}%).`;
+}
+function quadrantLinesPlugin() {
+  return {
+    id: "delta-delta-quadrants",
+    beforeDatasetsDraw(chart) {
+      const { ctx, chartArea, scales } = chart;
+      if (!scales.x || !scales.y) return;
+      const x0 = scales.x.getPixelForValue(0);
+      const y0 = scales.y.getPixelForValue(0);
+      ctx.save();
+      ctx.strokeStyle = "rgba(100, 116, 139, 0.7)";
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      if (x0 >= chartArea.left && x0 <= chartArea.right) {
+        ctx.beginPath();
+        ctx.moveTo(x0, chartArea.top);
+        ctx.lineTo(x0, chartArea.bottom);
+        ctx.stroke();
+      }
+      if (y0 >= chartArea.top && y0 <= chartArea.bottom) {
+        ctx.beginPath();
+        ctx.moveTo(chartArea.left, y0);
+        ctx.lineTo(chartArea.right, y0);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+  };
+}
+function regressionLinePlugin(instance) {
+  return {
+    id: `delta-delta-regression-${Math.random().toString(36).slice(2)}`,
+    afterDatasetsDraw(chart) {
+      if (!instance.state.addRegressionLine || !instance.regression) return;
+      const { ctx, chartArea, scales } = chart;
+      const [xMin, xMax] = [scales.x.min, scales.x.max];
+      const left = {
+        x: scales.x.getPixelForValue(xMin),
+        y: scales.y.getPixelForValue(instance.regression.predict(xMin))
+      };
+      const right = {
+        x: scales.x.getPixelForValue(xMax),
+        y: scales.y.getPixelForValue(instance.regression.predict(xMax))
+      };
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(chartArea.left, chartArea.top, chartArea.width, chartArea.height);
+      ctx.clip();
+      ctx.strokeStyle = "#111827";
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([3, 5]);
+      ctx.beginPath();
+      ctx.moveTo(left.x, left.y);
+      ctx.lineTo(right.x, right.y);
+      ctx.stroke();
+      ctx.restore();
+    }
+  };
+}
+function selectionBorders(count2, selectedIndex) {
+  return {
+    colors: Array.from(
+      { length: count2 },
+      (_, index) => index === selectedIndex ? "#111827" : "rgba(37, 99, 235, 0.9)"
+    ),
+    widths: Array.from({ length: count2 }, (_, index) => index === selectedIndex ? 3 : 0.5)
+  };
+}
+
 // src/delta-delta.js
 Chart.register(ScatterController, PointElement, LinearScale, plugin_tooltip);
 var SafetyDeltaDelta = class {
   constructor(element = "body", settings = {}) {
     this.element = typeof element === "string" ? document.querySelector(element) : element;
     if (!this.element) throw new Error(`Safety Delta-Delta target not found: ${element}`);
-    this.settings = syncSettings3(settings);
+    this.settings = syncSettings5(settings);
     this.rawData = [];
     this.cleanRows = [];
     this.removedRecords = 0;
@@ -17173,12 +17255,12 @@ var SafetyDeltaDelta = class {
   setSettings(settings) {
     if ("measure_x" in settings) this.state.measureX = settings.measure_x;
     if ("measure_y" in settings) this.state.measureY = settings.measure_y;
-    if ("baseline_visits" in settings) this.state.baseline = arrayify3(settings.baseline_visits);
+    if ("baseline_visits" in settings) this.state.baseline = arrayify5(settings.baseline_visits);
     if ("comparison_visits" in settings)
-      this.state.comparison = arrayify3(settings.comparison_visits);
+      this.state.comparison = arrayify5(settings.comparison_visits);
     if ("add_regression_line" in settings)
       this.state.addRegressionLine = settings.add_regression_line;
-    this.settings = syncSettings3({ ...this.settings, ...settings });
+    this.settings = syncSettings5({ ...this.settings, ...settings });
     if (this.rawData.length) this.validateAndCleanData();
     this.buildProfileRows();
     syncProfileDock(this, () => this.profileSettings());
@@ -17194,7 +17276,7 @@ var SafetyDeltaDelta = class {
    */
   validateAndCleanData() {
     try {
-      checkInputs3(this.rawData, this.settings);
+      checkInputs4(this.rawData, this.settings);
     } catch (error) {
       this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
       throw error;
@@ -22946,7 +23028,7 @@ var SafetyHepExplorer = class {
   constructor(element = "body", settings = {}) {
     this.element = typeof element === "string" ? document.querySelector(element) : element;
     if (!this.element) throw new Error(`Safety Hep Explorer target not found: ${element}`);
-    this.settings = syncSettings5(settings);
+    this.settings = syncSettings4(settings);
     this.rawData = [];
     this.cleanRows = [];
     this.removedRecords = 0;
@@ -23218,7 +23300,7 @@ var SafetyHepExplorer = class {
    * @returns {SafetyHepExplorer} The instance, for chaining.
    */
   setSettings(settings) {
-    this.settings = syncSettings5({ ...this.settings, ...settings });
+    this.settings = syncSettings4({ ...this.settings, ...settings });
     if ("view" in settings) this.state.view = resolveViewId(this.settings.view);
     if ("hide_unchanged" in settings) this.state.hideUnchanged = this.settings.hide_unchanged;
     if ("active_arms" in settings) this.state.activeArms = this.settings.active_arms;

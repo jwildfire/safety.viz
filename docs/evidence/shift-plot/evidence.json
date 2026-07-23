@@ -1,16 +1,13 @@
 {
   "module": "shift-plot",
-  "generatedAt": "2026-07-23T05:40:41.867Z",
+  "generatedAt": "2026-07-23T06:29:27.072Z",
   "environment": {
-    "os": "linux 6.17.0-1020-azure",
-    "node": "v22.23.1",
+    "os": "darwin 23.6.0",
+    "node": "v24.14.0",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": {
-    "id": "29982771416",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29982771416"
-  },
+  "run": null,
   "records": [
     {
       "test": "a chart link navigates straight to that renderer demo (#71)",
@@ -157,6 +154,30 @@
       "screenshots": []
     },
     {
+      "test": "PPRF-SSP-001: a multi-participant brush collapses the dock to a worst-first stepper whose steps emphasize the chart (#99)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-001"],
+      "issueRefs": [99],
+      "screenshots": []
+    },
+    {
+      "test": "PPRF-SSP-002: a single-point brush shows the full docked profile with no stepper, beside the linked listing (#99)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-002"],
+      "issueRefs": [99],
+      "screenshots": []
+    },
+    {
+      "test": "PPRF-SSP-003: clearing the selection and control-driven redraws empty the dock (#99)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-003"],
+      "issueRefs": [99],
+      "screenshots": []
+    },
+    {
       "test": "SSP-API-001: lifecycle API supports init, setData, setSettings, render, resize, and destroy (#14)",
       "suite": "browser",
       "status": "pass",
@@ -165,11 +186,11 @@
       "screenshots": []
     },
     {
-      "test": "SSP-API-003: brushing dispatches participantsSelected with the selected ids (#14)",
+      "test": "SSP-API-003/PPRF-SSP-004: brushing dispatches participantsSelected on the shell root, bubbling to the element (#14, #99)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["SSP-API-003"],
-      "issueRefs": [14],
+      "requirementIds": ["SSP-API-003", "PPRF-SSP-004"],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -789,6 +810,22 @@
       "screenshots": []
     },
     {
+      "test": "shift-plot cohort stepper (PPRF-SSP-001, PPRF-11) PPRF-SSP-001: a multi-participant brush collapses the dock to a worst-first stepper",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "shift-plot cohort stepper (PPRF-SSP-001, PPRF-11) PPRF-SSP-001: stepping emphasizes the stepped point on the chart without re-dispatching",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
       "test": "shift-plot configure SSP-API: the module collection exposes the shift-plot factory (#14)",
       "suite": "unit",
       "status": "pass",
@@ -826,6 +863,118 @@
       "status": "pass",
       "requirementIds": ["SSP-REQ-005"],
       "issueRefs": [14],
+      "screenshots": []
+    },
+    {
+      "test": "shift-plot dispatch target (PPRF-SSP-004, SSP-API-003) PPRF-SSP-004: is idempotent under repeated identical dispatches",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-004", "SSP-API-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "shift-plot dispatch target (PPRF-SSP-004, SSP-API-003) PPRF-SSP-004: the dispatch still bubbles to element-level listeners (backward compatibility)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-004", "SSP-API-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "shift-plot dispatch target (PPRF-SSP-004, SSP-API-003) PPRF-SSP-004: the dispatch travels via the shell root (the house participantsSelected contract)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-004", "SSP-API-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "shift-plot dock clear paths (PPRF-SSP-003, PPRF-11) PPRF-SSP-002: setSettings({profile: false}) unmounts a live dock; re-enabling remounts it",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-003", "PPRF-SSP-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "shift-plot dock clear paths (PPRF-SSP-003, PPRF-11) PPRF-SSP-003: a control-driven render resets the selection AND the dock (render preamble)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "shift-plot dock clear paths (PPRF-SSP-003, PPRF-11) PPRF-SSP-003: clearing the selection (the tiny-click path) empties the dock and the emphasis",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "shift-plot dock clear paths (PPRF-SSP-003, PPRF-11) PPRF-SSP-003: destroy tears the dock down with the instance",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "shift-plot dock clear paths (PPRF-SSP-003, PPRF-11) PPRF-SSP-003: the dock Clear affordance routes through the host clear path",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "shift-plot participant-profile adoption (PPRF-SSP-002) PPRF-SSP-002: a single-point brush shows the full profile with no stepper AND keeps the listing",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "shift-plot participant-profile adoption (PPRF-SSP-002) PPRF-SSP-002: derives the dock feed rows ONCE per setData from rawData through the hep-core cleaners",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "shift-plot participant-profile adoption (PPRF-SSP-002) PPRF-SSP-002: host listing columns are NOT the dock header details (profile_details defaults empty)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "shift-plot participant-profile adoption (PPRF-SSP-002) PPRF-SSP-002: mounts the dock by default (config-on) into the shell profile slot",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "shift-plot participant-profile adoption (PPRF-SSP-002) PPRF-SSP-002: passes the host lab mappings through, mapping visitn_col from visit_order_col",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "shift-plot participant-profile adoption (PPRF-SSP-002) PPRF-SSP-002: profile: false leaves the slot empty and mounts no dock",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-002"],
+      "issueRefs": [],
       "screenshots": []
     },
     {
