@@ -1,6 +1,6 @@
 {
   "module": "delta-delta",
-  "generatedAt": "2026-07-23T02:21:40.462Z",
+  "generatedAt": "2026-07-23T03:26:20.888Z",
   "environment": {
     "os": "linux 6.17.0-1020-azure",
     "node": "v22.23.1",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "29974167237",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29974167237"
+    "id": "29976966936",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29976966936"
   },
   "records": [
     {
