@@ -1,16 +1,13 @@
 {
   "module": "hep-explorer",
-  "generatedAt": "2026-07-23T03:26:20.888Z",
+  "generatedAt": "2026-07-23T04:47:04.598Z",
   "environment": {
-    "os": "linux 6.17.0-1020-azure",
-    "node": "v22.23.1",
+    "os": "darwin 23.6.0",
+    "node": "v24.14.0",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": {
-    "id": "29976966936",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29976966936"
-  },
+  "run": null,
   "records": [
     {
       "test": "a chart link navigates straight to that renderer demo (#71)",
@@ -70,6 +67,14 @@
     },
     {
       "test": "built outlier-explorer demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built participant-profile demo mounts the shared shell with no console errors (#7) (#17)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": [],
@@ -350,7 +355,7 @@
       "screenshots": ["HEP-QUAD-002-quadrant-summary.png"]
     },
     {
-      "test": "HEP-SELECT-001/HEP-SELECT-002/HEP-SELECT-003/HEP-SELECT-005/HEP-SELECT-006: clicking a point draws the visit path, detail panels, and linked listing (#43)",
+      "test": "HEP-SELECT-001/HEP-SELECT-002/HEP-SELECT-003/HEP-SELECT-005/HEP-SELECT-006: clicking a point draws the visit path, docked profile, and linked listing (#43, #98)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": [
@@ -360,15 +365,15 @@
         "HEP-SELECT-005",
         "HEP-SELECT-006"
       ],
-      "issueRefs": [43],
+      "issueRefs": [],
       "screenshots": ["HEP-SELECT-001-participant-detail.png"]
     },
     {
-      "test": "HEP-SELECT-002: selecting a second participant without a background click destroys the prior detail chart (no Chart.js leak) (#43)",
+      "test": "HEP-SELECT-002: selecting a second participant without a background click re-renders the dock without leaking Chart.js instances (#43, #98)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["HEP-SELECT-002"],
-      "issueRefs": [43],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -380,11 +385,11 @@
       "screenshots": []
     },
     {
-      "test": "HEP-SELECT-007: clicking the background clears the selection, detail panels, and listing (#43)",
+      "test": "HEP-SELECT-007: clicking the background clears the selection, docked profile, and listing (#43, #98)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["HEP-SELECT-007"],
-      "issueRefs": [43],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -993,6 +998,30 @@
       "status": "pass",
       "requirementIds": ["HEP-MIG-009", "HEP-CORE-008"],
       "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core rows — the moved row-level reducers (#98, PPRF-1) rows.js exports exactly the documented reducer surface",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core rows — the moved row-level reducers (#98, PPRF-1) the hep-explorer configure shim re-exports cutFor and MEASURE_KEYS, identity-equal",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core rows — the moved row-level reducers (#98, PPRF-1) the hep-explorer structureData shim re-exports the moved reducers, identity-equal",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -1892,6 +1921,78 @@
       "screenshots": []
     },
     {
+      "test": "hep-explorer participant-profile adoption (PPRF-7, PPRF-HEP-001) a control-driven redraw re-feeds the dock with fresh rows (the guard resets per render)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HEP-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer participant-profile adoption (PPRF-7, PPRF-HEP-001) a multi-participant dispatch collapses the dock to the worst-first stepper (PPRF-5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HEP-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer participant-profile adoption (PPRF-7, PPRF-HEP-001) an empty dispatch hides the dock; the dock Clear routes through the host clear path (PPRF-2/6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HEP-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer participant-profile adoption (PPRF-7, PPRF-HEP-001) deletes the bespoke drill-down: no drawDetail/buildSummaryTable, no .hep-detail DOM",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HEP-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer participant-profile adoption (PPRF-7, PPRF-HEP-001) destroy tears the dock down with the rest of the instance",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HEP-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer participant-profile adoption (PPRF-7, PPRF-HEP-001) is idempotent under repeated identical dispatches: the profile DOM is not rebuilt",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HEP-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer participant-profile adoption (PPRF-7, PPRF-HEP-001) mounts the dock by default and a scatter click renders the full profile in the shell slot",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HEP-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer participant-profile adoption (PPRF-7, PPRF-HEP-001) profile: false restores the pre-#98 behaviour — no dock, slot stays empty",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HEP-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer participant-profile adoption (PPRF-7, PPRF-HEP-001) stepping reports through on_step: transient chart emphasis via the view highlight contract",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HEP-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
       "test": "hep-explorer selection layer HEP-CORE-011: mount fills the Participants section with one option per shown participant and hides it when none are shown (#91)",
       "suite": "unit",
       "status": "pass",
@@ -2341,6 +2442,30 @@
     },
     {
       "test": "renderGuidePage: composition renders the title, non-diagnostic caution, and the guide tab",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell profile slot (PPRF-1) exposes a profileWrap slot with the sv-profile class inside the main column",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell profile slot (PPRF-1) hides the slot while it is empty via the shared stylesheet",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell profile slot (PPRF-1) places the slot between the small-multiples grid and the listing",
       "suite": "unit",
       "status": "pass",
       "requirementIds": [],

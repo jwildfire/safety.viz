@@ -55,7 +55,7 @@ function build(settings = {}) {
   return instance;
 }
 
-describe('hep-explorer participant-profile adoption (PPRF-7)', () => {
+describe('hep-explorer participant-profile adoption (PPRF-7, PPRF-HEP-001)', () => {
   it('deletes the bespoke drill-down: no drawDetail/buildSummaryTable, no .hep-detail DOM', () => {
     const instance = build();
     expect(instance.drawDetail).toBeUndefined();

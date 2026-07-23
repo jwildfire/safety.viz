@@ -1,3 +1,4 @@
+import { execSync } from 'node:child_process';
 import { test, expect } from '@playwright/test';
 import { captureEvidence } from './evidence.js';
 
@@ -250,5 +251,63 @@ test.describe('participant-profile dock: hep-explorer composite and migration vi
     // A one-participant cohort is a full profile, not a stepper.
     await expect(page.locator('.sv-profile .sv-profile-stepper')).toHaveCount(0);
     await captureEvidence(page, 'PPRF-HEP-004', 'migration-handoff-dock');
+  });
+});
+
+// ── standalone linked-charts demo (PPRF-6) ──────────────────────────────────
+// The library's first linked-charts demo page: hep-explorer with its built-in
+// dock off, and the standalone module mounted beside it, connected only by the
+// public participantsSelected event. Runs against the BUILT demo page, so the
+// wiring proven here is exactly what the docs site ships.
+test.describe('participant-profile standalone: built linked-charts demo page', () => {
+  test.beforeAll(() => {
+    execSync('npm run site', { stdio: 'inherit', cwd: new URL('../..', import.meta.url) });
+  });
+
+  test('PPRF-EVT-001/PPRF-CORE-002: the standalone demo wires the profile to a chart via participantsSelected — chart click renders the neighbouring profile, background click clears it (#98)', async ({
+    page
+  }) => {
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') errors.push(msg.text());
+    });
+
+    await page.goto('/_site/participant-profile/index.html');
+    await page.waitForFunction(
+      () =>
+        window.__safetyHepExplorerInstance &&
+        window.__safetyHepExplorerInstance.chart &&
+        window.__safetyParticipantProfileInstance
+    );
+
+    // Two independent mounts: the chart's own dock is off (profile: false), and
+    // the standalone module idles until a selection arrives on the chart root.
+    await expect(page.locator('#linked-chart .sv-profile')).toBeEmpty();
+    const profile = page.locator('#linked-profile');
+    await expect(profile.locator('.sv-notes')).toContainText('Waiting for selection');
+
+    // Click a scatter point → the chart dispatches participantsSelected on its
+    // root → the neighbouring profile renders that participant from its OWN
+    // ingest of the same CSV.
+    const id = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      instance.chart.options.onClick({}, [{ datasetIndex: 0, index: 0 }]);
+      return String(instance.points[0].id);
+    });
+    await expect(profile.locator('.sv-profile-id')).toHaveText(`Participant ${id}`);
+    await expect(profile.locator('.sv-profile-spaghetti canvas')).toBeVisible();
+    await expect(profile.locator('.sv-profile-measure-table')).toBeVisible();
+    await captureEvidence(page, 'PPRF-EVT-001', 'linked-charts-demo');
+
+    // Background click clears the chart's selection → dispatch([]) → the
+    // standalone profile returns to its idle note (PPRF-6).
+    await page.evaluate(() => {
+      window.__safetyHepExplorerInstance.chart.options.onClick({}, []);
+    });
+    await expect(profile.locator('.sv-profile-id')).toHaveCount(0);
+    await expect(profile.locator('.sv-notes')).toContainText('Waiting for selection');
+
+    expect(errors).toEqual([]);
   });
 });

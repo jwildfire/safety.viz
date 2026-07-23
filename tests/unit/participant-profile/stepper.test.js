@@ -22,7 +22,7 @@ function buttons(strip) {
   return { prev, next };
 }
 
-describe('renderStepper (PPRF-5)', () => {
+describe('renderStepper (PPRF-5, PPRF-STEP-001)', () => {
   it('shows the k-of-N count with the current id, aria-live polite', () => {
     const { strip } = mount(1);
     const count = strip.querySelector('.sv-profile-step-count');

@@ -78,7 +78,7 @@ beforeEach(() => {
   document.body.innerHTML = '<div id="host"></div>';
 });
 
-describe('visibleSeries — extras and lab subsetting (PPRF-3)', () => {
+describe('visibleSeries — extras and lab subsetting (PPRF-3, PPRF-SPAG-001)', () => {
   it('shows key measures only by default', () => {
     expect(visibleSeries(series, {}).map((entry) => entry.key)).toEqual(['ALT', 'TB']);
   });
@@ -101,7 +101,7 @@ describe('visibleSeries — extras and lab subsetting (PPRF-3)', () => {
   });
 });
 
-describe('spaghettiDatasets (PPRF-3)', () => {
+describe('spaghettiDatasets (PPRF-3, PPRF-SPAG-001)', () => {
   it('builds one line dataset per series with day x-values', () => {
     const datasets = spaghettiDatasets(series.slice(0, 2));
     expect(datasets).toHaveLength(2);
@@ -129,7 +129,7 @@ describe('spaghettiDatasets (PPRF-3)', () => {
   });
 });
 
-describe('cutLinePlugin (PPRF-3)', () => {
+describe('cutLinePlugin (PPRF-3, PPRF-SPAG-001)', () => {
   function fakeChart(active) {
     const calls = [];
     const ctx = new Proxy(
@@ -169,7 +169,7 @@ describe('cutLinePlugin (PPRF-3)', () => {
   });
 });
 
-describe('renderSpaghetti (PPRF-3)', () => {
+describe('renderSpaghetti (PPRF-3, PPRF-SPAG-001)', () => {
   const model = { series, yLabel: 'Standardized Result [xULN]', display: 'relative_uln' };
 
   it('mounts a line chart of the visible series with the display y-label', () => {

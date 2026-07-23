@@ -7,7 +7,7 @@ import { makeRows } from './fixture.js';
 const settings = syncSettings({});
 const rows = deriveBaseline(cleanData(makeRows(), settings).rows, settings);
 
-describe('rankParticipants — worst-first cohort ordering (PPRF-5)', () => {
+describe('rankParticipants — worst-first cohort ordering (PPRF-5, PPRF-STEP-002)', () => {
   it("orders by on-treatment quadrant severity: Hy's Law > Temple's Corollary > Normal", () => {
     // P1 Hy's Law, P2 Temple's Corollary, P3 Normal & NN (via buildHepSubjects).
     expect(rankParticipants(rows, ['P3', 'P2', 'P1'], settings)).toEqual(['P1', 'P2', 'P3']);

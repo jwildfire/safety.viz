@@ -7,7 +7,7 @@ import {
 } from '../../../src/participant-profile/controls.js';
 import { DEFAULT_SETTINGS } from '../../../src/participant-profile/configure.js';
 
-describe('displayControl (PPRF-3)', () => {
+describe('displayControl (PPRF-3, PPRF-SPAG-002)', () => {
   it('offers the display_options and reports the chosen value', () => {
     const onChange = vi.fn();
     const select = displayControl(DEFAULT_SETTINGS, { display: 'relative_uln' }, onChange);
@@ -26,7 +26,7 @@ describe('displayControl (PPRF-3)', () => {
   });
 });
 
-describe('labControl (PPRF-3)', () => {
+describe('labControl (PPRF-3, PPRF-SPAG-002)', () => {
   it('selects every lab when the state carries no subset', () => {
     const select = labControl(['ALT', 'AST', 'TB'], { labs: null }, () => {});
     expect(select.multiple).toBe(true);
@@ -43,7 +43,7 @@ describe('labControl (PPRF-3)', () => {
   });
 });
 
-describe('extrasControl (PPRF-3/4)', () => {
+describe('extrasControl (PPRF-3/4, PPRF-TBL-004)', () => {
   it("uses the original's copy, singular and plural", () => {
     expect(extrasControl(1, {}, () => {}).textContent).toContain('Show 1 additional measure:');
     expect(extrasControl(3, {}, () => {}).textContent).toContain('Show 3 additional measures:');

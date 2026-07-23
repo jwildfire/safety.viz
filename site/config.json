@@ -77,6 +77,21 @@
       "related": ["hep-explorer"]
     },
     {
+      "module": "participant-profile",
+      "title": "Participant Profile",
+      "status": "available",
+      "experimental": true,
+      "blurb": "The standardized-lab participant drill-down as a chart-agnostic module: a demographics header with R Ratio and a templated record link-out, a labs-over-time spaghetti with reference cut-lines, and a per-measure summary table with sparklines that expand to an inset chart — stepping worst-first through a multi-participant cohort, docked below the Hepatic Safety Explorer or mounted standalone against any chart that dispatches participantsSelected.",
+      "hero": "PPRF-HEP-001-scatter-dock.png",
+      "heroAsset": "participant-profile-hero.png",
+      "matrix": "participant-profile.md",
+      "guide": "participant-profile.md",
+      "guideTagline": "How to read the participant profile — header, labs-over-time spaghetti, and measure table — and how to wire it to your own chart through the participantsSelected event.",
+      "guideCaution": "The profile summarizes one participant's lab course to support review; it does not adjudicate causality or diagnose drug-induced liver injury.",
+      "data": "adbds.csv",
+      "related": ["hep-explorer"]
+    },
+    {
       "module": "paneled-outlier-explorer",
       "title": "Paneled Outlier Explorer",
       "status": "planned",

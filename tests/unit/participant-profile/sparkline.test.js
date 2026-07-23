@@ -52,7 +52,7 @@ function points(attr) {
     .map((pair) => pair.split(',').map(Number));
 }
 
-describe('sparkDomain (PPRF-4)', () => {
+describe('sparkDomain (PPRF-4, PPRF-TBL-002)', () => {
   it('pads the union of participant values and the population extent ×0.99/×1.01', () => {
     expect(sparkDomain(measure)).toEqual([yMin, yMax]);
   });
@@ -63,7 +63,7 @@ describe('sparkDomain (PPRF-4)', () => {
   });
 });
 
-describe('sparklineSVG (PPRF-4)', () => {
+describe('sparklineSVG (PPRF-4, PPRF-TBL-002)', () => {
   it('builds a 100×25 svg with band, guides, line, and outliers — no listeners', () => {
     const svg = sparklineSVG(measure);
     expect(svg.tagName.toLowerCase()).toBe('svg');

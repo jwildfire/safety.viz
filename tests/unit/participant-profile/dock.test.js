@@ -87,7 +87,7 @@ function container() {
   return document.querySelector('#dockhost');
 }
 
-describe('profileDock (PPRF-1)', () => {
+describe('profileDock (PPRF-1, PPRF-CORE-005)', () => {
   it('show renders the profile from pre-cleaned rows without re-ingesting', () => {
     const dock = profileDock(container(), {});
     dock.show(['P1'], cleanFixture());

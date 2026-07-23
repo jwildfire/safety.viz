@@ -5,7 +5,7 @@ import { makeRows } from './fixture.js';
 
 const settings = syncSettings({});
 
-describe('checkInputs — standalone long-lab contract (PPRF-1)', () => {
+describe('checkInputs — standalone long-lab contract (PPRF-1, PPRF-CORE-002)', () => {
   it('accepts data carrying every required mapped column', () => {
     expect(() => checkInputs(makeRows(), settings)).not.toThrow();
   });

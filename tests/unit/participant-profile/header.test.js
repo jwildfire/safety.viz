@@ -13,7 +13,7 @@ const participant = (overrides = {}) => ({
   ...overrides
 });
 
-describe('renderHeader (PPRF-2)', () => {
+describe('renderHeader (PPRF-2, PPRF-HDR-001)', () => {
   it('renders the participant id and a label/value entry per detail', () => {
     const header = renderHeader(participant(), {});
     expect(header.querySelector('.sv-profile-id').textContent).toContain('P1');

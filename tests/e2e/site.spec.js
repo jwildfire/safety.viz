@@ -36,7 +36,9 @@ test.describe('docs site', () => {
       });
 
       await page.goto(`/_site/${renderer.module}/index.html`);
-      await expect(page.locator('#container .sv-sidebar .sv-controls')).toBeVisible();
+      // .first(): a linked-charts demo (participant-profile, #98) mounts two
+      // shells on one page — the host chart's sidebar is the first.
+      await expect(page.locator('#container .sv-sidebar .sv-controls').first()).toBeVisible();
       // Any visible chart canvas counts: the histogram opens on the
       // all-measures overview (#39), which hides the main-chart canvas in
       // favor of the per-measure panels. Table-first renderers (ae-explorer,

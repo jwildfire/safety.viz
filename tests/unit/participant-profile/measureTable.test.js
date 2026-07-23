@@ -98,7 +98,7 @@ function host() {
   return document.querySelector('#host');
 }
 
-describe('formatSummary (PPRF-4)', () => {
+describe('formatSummary (PPRF-4, PPRF-TBL-001)', () => {
   it('formats to two decimals (parity 0.2f), blank when not finite', () => {
     expect(formatSummary(1.234)).toBe('1.23');
     expect(formatSummary(35)).toBe('35.00');
@@ -107,7 +107,7 @@ describe('formatSummary (PPRF-4)', () => {
   });
 });
 
-describe('renderMeasureTable (PPRF-4)', () => {
+describe('renderMeasureTable (PPRF-4, PPRF-TBL-001)', () => {
   it('renders one row per measure in model (key-first) order with summary columns', () => {
     renderMeasureTable(host(), [alt, tb, creat], settings, {});
     const headers = [...host().querySelectorAll('thead th')].map((th) => th.textContent);
@@ -180,7 +180,7 @@ describe('renderMeasureTable (PPRF-4)', () => {
   });
 });
 
-describe('record listing (PPRF-4, optional)', () => {
+describe('record listing (PPRF-4, PPRF-TBL-005, optional)', () => {
   const rows = [
     { TEST: 'Total Bilirubin', VISIT: 'Baseline', DY: 0, STRESN: 0.8, STRESU: 'mg/dL' },
     { TEST: 'Total Bilirubin', VISIT: 'Day 30', DY: 30, STRESN: 2.6, STRESU: 'mg/dL' },
@@ -219,7 +219,7 @@ describe('record listing (PPRF-4, optional)', () => {
   });
 });
 
-describe('listing settings (configure)', () => {
+describe('listing settings (configure, PPRF-TBL-005)', () => {
   it('defaults the listing off with derived columns and page size 10', () => {
     const synced = syncSettings({});
     expect(synced.listing).toBe(false);

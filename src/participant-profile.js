@@ -133,6 +133,7 @@ class SafetyParticipantProfile {
   listen() {
     this.listenTarget = resolveListenTarget(this.settings.listen_to);
     this.listenLabel = listenTargetLabel(this.settings.listen_to, this.listenTarget);
+    /** @private */
     this.listenHandler = (event) => {
       const data = event && event.detail ? event.detail.data : null;
       const ids = (Array.isArray(data) ? data : []).map(String);

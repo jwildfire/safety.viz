@@ -1,5 +1,5 @@
 {
-  "module": "results-over-time",
+  "module": "participant-profile",
   "generatedAt": "2026-07-23T04:47:04.598Z",
   "environment": {
     "os": "darwin 23.6.0",
@@ -154,123 +154,75 @@
       "screenshots": []
     },
     {
-      "test": "SROT-API: lifecycle API supports init, setData, setSettings, render, resize, and destroy (#27)",
+      "test": "PPRF-EVT-001/PPRF-CORE-002: the standalone demo wires the profile to a chart via participantsSelected — chart click renders the neighbouring profile, background click clears it (#98)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [27],
+      "requirementIds": ["PPRF-EVT-001", "PPRF-CORE-002"],
+      "issueRefs": [98],
+      "screenshots": ["PPRF-EVT-001-linked-charts-demo.png"]
+    },
+    {
+      "test": "PPRF-HEP-001/PPRF-CORE-001: scatter click opens the docked profile below the chart — header, spaghetti, and measure table replace the legacy detail panel (#98)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PPRF-HEP-001", "PPRF-CORE-001"],
+      "issueRefs": [98],
+      "screenshots": ["PPRF-HEP-001-scatter-dock.png"]
+    },
+    {
+      "test": "PPRF-HEP-002/PPRF-STEP-001: composite multi-select collapses the dock to a stepper, stepping renders each profile and keeps the chart highlight in sync, Clear hides the dock (#98)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PPRF-HEP-002", "PPRF-STEP-001"],
+      "issueRefs": [98],
+      "screenshots": ["PPRF-STEP-001-composite-stepper.png"]
+    },
+    {
+      "test": "PPRF-HEP-003: composite single focus (point click or selector) opens the full profile, not the stepper (#98)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PPRF-HEP-003"],
+      "issueRefs": [98],
       "screenshots": []
     },
     {
-      "test": "SROT-DATA-002: missing and non-numeric results are dropped with a reported count and visible note (#27)",
+      "test": "PPRF-HEP-004: the migration ribbon hand-off arrives in the composite view with the dock opened on the carried cohort (#98)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["SROT-DATA-002"],
-      "issueRefs": [27],
-      "screenshots": ["SROT-DATA-002-invalid-data-note.png"]
+      "requirementIds": ["PPRF-HEP-004"],
+      "issueRefs": [98],
+      "screenshots": ["PPRF-HEP-004-migration-handoff-dock.png"]
     },
     {
-      "test": "SROT-FUNC-001/SROT-FUNC-002: renders measure, group, filter, y-axis, scale, and display controls (#27)",
+      "test": "PPRF-HEP-005: background click clears the selection and hides the dock (#98)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["SROT-FUNC-001", "SROT-FUNC-002"],
-      "issueRefs": [27],
-      "screenshots": ["SROT-FUNC-001-control-panel.png"]
-    },
-    {
-      "test": "SROT-FUNC-003: participant note updates when a filter is applied (#27)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SROT-FUNC-003"],
-      "issueRefs": [27],
-      "screenshots": ["SROT-FUNC-003-participant-count.png"]
-    },
-    {
-      "test": "SROT-FUNC-004/SROT-REG-016/SROT-REG-017: y-limit inputs redraw and invert a crossed pair (#27)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SROT-FUNC-004", "SROT-REG-016", "SROT-REG-017"],
-      "issueRefs": [27],
-      "screenshots": ["SROT-FUNC-004-y-limits.png"]
-    },
-    {
-      "test": "SROT-FUNC-005/SROT-REG-020: Reset Limits restores the data extent (#27)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SROT-FUNC-005", "SROT-REG-020"],
-      "issueRefs": [27],
+      "requirementIds": ["PPRF-HEP-005"],
+      "issueRefs": [98],
       "screenshots": []
     },
     {
-      "test": "SROT-FUNC-006/SROT-REG-004/SROT-REG-005: the Visits without data control adds empty timepoints (#27)",
-      "suite": "browser",
+      "test": "bandGuidePlugin (PPRF-4, PPRF-TBL-003) draws dashed guides across the chart area at the population extent",
+      "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SROT-FUNC-006", "SROT-REG-004", "SROT-REG-005"],
-      "issueRefs": [27],
-      "screenshots": ["SROT-FUNC-006-visits-without-data.png"]
-    },
-    {
-      "test": "SROT-FUNC-007/SROT-REG-006/SROT-REG-007: the Unscheduled visits control shows unscheduled timepoints (#27)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SROT-FUNC-007", "SROT-REG-006", "SROT-REG-007"],
-      "issueRefs": [27],
-      "screenshots": ["SROT-FUNC-007-unscheduled-visits.png"]
-    },
-    {
-      "test": "SROT-FUNC-008: box-and-whisker marks render and toggle off with the Box plots control (#27)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SROT-FUNC-008"],
-      "issueRefs": [27],
-      "screenshots": ["SROT-FUNC-008-box-plots.png"]
-    },
-    {
-      "test": "SROT-REG-002/SROT-REG-003: grouping draws side-by-side boxes with a group-ordered legend (#27)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SROT-REG-002", "SROT-REG-003"],
-      "issueRefs": [27],
-      "screenshots": ["SROT-REG-002-grouped-box-plots.png"]
-    },
-    {
-      "test": "SROT-REG-010/SROT-REG-012: the outlier overlay shows and hides with the Outliers control (#27)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SROT-REG-010", "SROT-REG-012"],
-      "issueRefs": [27],
-      "screenshots": ["SROT-REG-010-outliers.png"]
-    },
-    {
-      "test": "SROT-REG-011: outlier points carry a larger hover radius than their resting radius (#27)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SROT-REG-011"],
-      "issueRefs": [27],
+      "requirementIds": ["PPRF-TBL-003"],
+      "issueRefs": [],
       "screenshots": []
     },
     {
-      "test": "SROT-REG-014/SROT-REG-015: hovering a box exposes the summary statistics tooltip (#27)",
-      "suite": "browser",
+      "test": "bandGuidePlugin (PPRF-4, PPRF-TBL-003) draws no band when no normal-range limit is finite",
+      "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SROT-REG-014", "SROT-REG-015"],
-      "issueRefs": [27],
+      "requirementIds": ["PPRF-TBL-003"],
+      "issueRefs": [],
       "screenshots": []
     },
     {
-      "test": "SROT-REG-018: the Scale control switches the y-axis between linear and log (#27)",
-      "suite": "browser",
+      "test": "bandGuidePlugin (PPRF-4, PPRF-TBL-003) draws the LLN–ULN band in chart space (beforeDatasetsDraw)",
+      "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SROT-REG-018"],
-      "issueRefs": [27],
-      "screenshots": ["SROT-REG-018-log-scale.png"]
-    },
-    {
-      "test": "SROT-REG-023/SROT-REG-024: start_value selects the initial measure and falls back when absent (#27)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SROT-REG-023", "SROT-REG-024"],
-      "issueRefs": [27],
+      "requirementIds": ["PPRF-TBL-003"],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -346,6 +298,158 @@
       "screenshots": []
     },
     {
+      "test": "buildProfileModel — measure table model (PPRF-4, PPRF-TBL-001) assigns each measure a color from the module palette",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "buildProfileModel — measure table model (PPRF-4, PPRF-TBL-001) carries lln/uln and flags outliers on each spark point",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "buildProfileModel — measure table model (PPRF-4, PPRF-TBL-001) computes the population extent over ALL participants at measureBounds",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "buildProfileModel — measure table model (PPRF-4, PPRF-TBL-001) narrower measureBounds move the extent inside the population range",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "buildProfileModel — measure table model (PPRF-4, PPRF-TBL-001) orders rows key-first in measure_values order, extras after",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "buildProfileModel — measure table model (PPRF-4, PPRF-TBL-001) reads the full TEST string as the label for key measures",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "buildProfileModel — measure table model (PPRF-4, PPRF-TBL-001) summarizes N/min/median/max from the raw values",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "buildProfileModel — participant header fields (PPRF-2, PPRF-HDR-001) computes the R Ratio (peak ALT xULN / peak ALP xULN) on the ULN scale",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HDR-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "buildProfileModel — participant header fields (PPRF-2, PPRF-HDR-001) leaves the R Ratio NaN when ALP is missing",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HDR-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "buildProfileModel — participant header fields (PPRF-2, PPRF-HDR-001) passes P_ALT through from p_alt_col where a value exists, never computing it",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HDR-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "buildProfileModel — participant header fields (PPRF-2, PPRF-HDR-001) resolves details from the settings specs against the participant rows",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HDR-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "buildProfileModel — spaghetti series (PPRF-3, PPRF-SPAG-001) builds one series per key measure present, day-ordered, in display units",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "buildProfileModel — spaghetti series (PPRF-3, PPRF-SPAG-001) includes non-key measures as extra (isKey false) series",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "buildProfileModel — spaghetti series (PPRF-3, PPRF-SPAG-001) labels the y axis for the active display mode",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "buildProfileModel — spaghetti series (PPRF-3, PPRF-SPAG-001) resolves per-measure cuts, falling back to the defaults entry (PPRF-3)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "buildProfileModel — spaghetti series (PPRF-3, PPRF-SPAG-001) switches the series field with the display state (xBaseline)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "checkInputs — standalone long-lab contract (PPRF-1, PPRF-CORE-002) accepts data carrying every required mapped column",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "checkInputs — standalone long-lab contract (PPRF-1, PPRF-CORE-002) names every missing required variable in one error",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "checkInputs — standalone long-lab contract (PPRF-1, PPRF-CORE-002) treats empty data as missing every required variable",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
       "test": "correctQt applies Bazett — QT divided by the square root of RR in seconds (#79)",
       "suite": "unit",
       "status": "pass",
@@ -367,6 +471,30 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "cutLinePlugin (PPRF-3, PPRF-SPAG-001) draws nothing when no dataset is active",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "cutLinePlugin (PPRF-3, PPRF-SPAG-001) draws the hovered dataset dashed cut line with a right-aligned 0.1f label",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "displayControl (PPRF-3, PPRF-SPAG-002) offers the display_options and reports the chosen value",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-002"],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -450,6 +578,30 @@
       "screenshots": []
     },
     {
+      "test": "extrasControl (PPRF-3/4, PPRF-TBL-004) reports toggle changes and reflects the current state",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "extrasControl (PPRF-3/4, PPRF-TBL-004) uses the original's copy, singular and plural",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "formatSummary (PPRF-4, PPRF-TBL-001) formats to two decimals (parity 0.2f), blank when not finite",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
       "test": "histogram API documentation completeness API-COMPLETE-001: the documented settings are exactly the DEFAULT_SETTINGS keys (#6)",
       "suite": "unit",
       "status": "pass",
@@ -495,6 +647,54 @@
       "status": "pass",
       "requirementIds": ["API-COMPLETE-006"],
       "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "insetYDomain (PPRF-4, PPRF-TBL-003) pads the union of values, population extent, and normal-range limits",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "insetYDomain (PPRF-4, PPRF-TBL-003) survives missing normal-range limits",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "labControl (PPRF-3, PPRF-SPAG-002) reflects a subset and reports selection changes",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "labControl (PPRF-3, PPRF-SPAG-002) selects every lab when the state carries no subset",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "listing settings (configure, PPRF-TBL-005) defaults the listing off with derived columns and page size 10",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "listing settings (configure, PPRF-TBL-005) normalizes listing_cols to field specs",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-005"],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -610,6 +810,318 @@
       "screenshots": []
     },
     {
+      "test": "measure color palette (PPRF-3, PPRF-SPAG-003) assigns stable palette colors in key order, cycling when exhausted",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "measure-table inset lifecycle (PPRF-4, PPRF-TBL-003) collapsing destroys the chart and removes the row",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "measure-table inset lifecycle (PPRF-4, PPRF-TBL-003) destroy() tears every open inset down (re-render leaks none)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "measure-table inset lifecycle (PPRF-4, PPRF-TBL-003) expanding a spark inserts a full-width row under it hosting the inset",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "measure-table inset lifecycle (PPRF-4, PPRF-TBL-003) supports a second expand while one is open",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "participant-profile DEFAULT_SETTINGS (PPRF-1/2/3/4, PPRF-CORE-003) carries the house long-lab column defaults",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "participant-profile DEFAULT_SETTINGS (PPRF-1/2/3/4, PPRF-CORE-003) defaults measureBounds to the 1st/99th percentiles (PPRF-4)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "participant-profile DEFAULT_SETTINGS (PPRF-1/2/3/4, PPRF-CORE-003) defaults the display to relative_uln with the two toggle options (PPRF-3)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "participant-profile DEFAULT_SETTINGS (PPRF-1/2/3/4, PPRF-CORE-003) defaults the header/link/event settings off (PPRF-2/5/6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "participant-profile module export (PPRF-CORE-001) (#98) PPRF-1: the public collection exposes the participantProfile factory",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-001"],
+      "issueRefs": [98],
+      "screenshots": []
+    },
+    {
+      "test": "participant-profile syncSettings (PPRF-1, PPRF-CORE-003) coerces measureBounds back to a two-quantile array",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "participant-profile syncSettings (PPRF-1, PPRF-CORE-003) deep-merges a partial cuts override, back-filling the untouched measures",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "participant-profile syncSettings (PPRF-1, PPRF-CORE-003) deep-merges a partial measure_values override, keeping the other keys",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "participant-profile syncSettings (PPRF-1, PPRF-CORE-003) normalizes details to {value_col, label} specs from strings and objects (PPRF-2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "participant-profile syncSettings (PPRF-1, PPRF-CORE-003) normalizes filters and groups to empty arrays so hep-core reducers can run",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "participantsSelected listener (PPRF-6, PPRF-EVT-001) clears to idle on an empty selection payload",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-EVT-001"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-EVT-001-linked-charts-demo.png"]
+    },
+    {
+      "test": "participantsSelected listener (PPRF-6, PPRF-EVT-001) destroy removes the listener",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-EVT-001"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-EVT-001-linked-charts-demo.png"]
+    },
+    {
+      "test": "participantsSelected listener (PPRF-6, PPRF-EVT-001) listens on a custom listen_to element instead of document",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-EVT-001"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-EVT-001-linked-charts-demo.png"]
+    },
+    {
+      "test": "participantsSelected listener (PPRF-6, PPRF-EVT-001) listens on document by default and renders the selection",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-EVT-001"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-EVT-001-linked-charts-demo.png"]
+    },
+    {
+      "test": "participantsSelected listener (PPRF-6, PPRF-EVT-001) resolves a listen_to selector string",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-EVT-001"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-EVT-001-linked-charts-demo.png"]
+    },
+    {
+      "test": "profileDock (PPRF-1, PPRF-CORE-005) clear empties the container so the :empty slot hides",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "profileDock (PPRF-1, PPRF-CORE-005) docked Clear invokes on_clear and leaves clearing to the host (PPRF-6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "profileDock (PPRF-1, PPRF-CORE-005) installs no event listener — participantsSelected on document is ignored",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "profileDock (PPRF-1, PPRF-CORE-005) resize reaches the live charts; destroy tears them down and empties the container",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "profileDock (PPRF-1, PPRF-CORE-005) show renders the profile from pre-cleaned rows without re-ingesting",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "profileDock (PPRF-1, PPRF-CORE-005) shows the worst-first stepper for N > 1 (PPRF-5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "profileDock (PPRF-1, PPRF-CORE-005) stepping re-renders the profile and calls on_step with the id",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "programmatic selection and callbacks (PPRF-5/6, PPRF-EVT-002) never dispatches participantsSelected (or any selection event)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-EVT-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "programmatic selection and callbacks (PPRF-5/6, PPRF-EVT-002) setSelected takes the same path as the event listener",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-EVT-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "programmatic selection and callbacks (PPRF-5/6, PPRF-EVT-002) standalone Clear clears the block locally and invokes on_clear",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-EVT-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "programmatic selection and callbacks (PPRF-5/6, PPRF-EVT-002) stepping renders the next participant and calls on_step (PPRF-5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-EVT-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "rankParticipants — worst-first cohort ordering (PPRF-5, PPRF-STEP-002) breaks a quadrant tie by peak ALT xULN, descending",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-STEP-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "rankParticipants — worst-first cohort ordering (PPRF-5, PPRF-STEP-002) breaks remaining ties by id ascending, deterministically",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-STEP-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "rankParticipants — worst-first cohort ordering (PPRF-5, PPRF-STEP-002) falls back to peak severity for ids the reduction excludes, after ranked ids",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-STEP-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "rankParticipants — worst-first cohort ordering (PPRF-5, PPRF-STEP-002) orders by on-treatment quadrant severity: Hy's Law > Temple's Corollary > Normal",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-STEP-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "rankParticipants — worst-first cohort ordering (PPRF-5, PPRF-STEP-002) returns ids untouched by rank when the list has one entry",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-STEP-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "record listing (PPRF-4, PPRF-TBL-005, optional) derives default listing columns from the lab mapping, skipping absent columns",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "record listing (PPRF-4, PPRF-TBL-005, optional) honors a listing_cols override",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "record listing (PPRF-4, PPRF-TBL-005, optional) renders the participant records through the shared listing renderer",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
       "test": "renderGuidePage: composition renders a sticky TOC sidebar whose links anchor to the heading ids",
       "suite": "unit",
       "status": "pass",
@@ -630,6 +1142,126 @@
       "suite": "unit",
       "status": "pass",
       "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderHeader (PPRF-2, PPRF-HDR-001) invokes the Clear handler from a real button, dispatching no selection event (PPRF-6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HDR-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderHeader (PPRF-2, PPRF-HDR-001) renders P_ALT only when the pass-through yields a value",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HDR-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderHeader (PPRF-2, PPRF-HDR-001) renders the participant id and a label/value entry per detail",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HDR-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderHeader (PPRF-2, PPRF-HDR-001) shows the computed R Ratio to two decimals, blank when not computable",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HDR-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderHeader (PPRF-2, PPRF-HDR-001) supports the original's {text_value, note} P_ALT shape with click-to-footnote",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HDR-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderHeader (PPRF-2, PPRF-HDR-001) templates the link-out href by {id}, and omits the link without a URL (closes #53)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HDR-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderInset (PPRF-4, PPRF-TBL-003) fills outlier points and hollows the rest",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderInset (PPRF-4, PPRF-TBL-003) installs the band/guide plugin",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderInset (PPRF-4, PPRF-TBL-003) mounts a line chart of absolute values by study day",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderMeasureTable (PPRF-4, PPRF-TBL-001) collapses an open extra-row inset when extras are hidden again",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderMeasureTable (PPRF-4, PPRF-TBL-001) hides extra measures by default behind the parity toggle copy",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderMeasureTable (PPRF-4, PPRF-TBL-001) puts a keyboard-operable toggle and a sparkline in every spark cell",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderMeasureTable (PPRF-4, PPRF-TBL-001) renders one row per measure in model (key-first) order with summary columns",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderMeasureTable (PPRF-4, PPRF-TBL-001) reveals and re-hides extra rows through the toggle, reporting the change",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderMeasureTable (PPRF-4, PPRF-TBL-001) shows extras from the start when the state says so, and omits the toggle without extras",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-001"],
       "issueRefs": [],
       "screenshots": []
     },
@@ -656,6 +1288,70 @@
       "requirementIds": [],
       "issueRefs": [],
       "screenshots": []
+    },
+    {
+      "test": "renderSpaghetti (PPRF-3, PPRF-SPAG-001) mounts a line chart of the visible series with the display y-label",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderSpaghetti (PPRF-3, PPRF-SPAG-001) re-renders extras when the state shows them",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderSpaghetti (PPRF-3, PPRF-SPAG-001) shows the original's filled-points footnote copy",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderStepper (PPRF-5, PPRF-STEP-001) clamps at the ends: buttons disabled, no onStep past the cohort",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-STEP-001"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-STEP-001-composite-stepper.png"]
+    },
+    {
+      "test": "renderStepper (PPRF-5, PPRF-STEP-001) renders real labelled buttons in a labelled group",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-STEP-001"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-STEP-001-composite-stepper.png"]
+    },
+    {
+      "test": "renderStepper (PPRF-5, PPRF-STEP-001) shows the k-of-N count with the current id, aria-live polite",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-STEP-001"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-STEP-001-composite-stepper.png"]
+    },
+    {
+      "test": "renderStepper (PPRF-5, PPRF-STEP-001) steps forward and back through onStep with the target index",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-STEP-001"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-STEP-001-composite-stepper.png"]
+    },
+    {
+      "test": "renderStepper (PPRF-5, PPRF-STEP-001) supports ArrowLeft / ArrowRight on the focusable strip (PPRF-8)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-STEP-001"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-STEP-001-composite-stepper.png"]
     },
     {
       "test": "requirements-lib: freshness guard (#63) flags added and removed requirement IDs",
@@ -711,270 +1407,6 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [63],
-      "screenshots": []
-    },
-    {
-      "test": "results-over-time checkInputs SROT-DATA-001: passes when the required measure, result, and visit columns are present (#27)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SROT-DATA-001"],
-      "issueRefs": [27],
-      "screenshots": []
-    },
-    {
-      "test": "results-over-time checkInputs SROT-DATA-001: throws naming every missing required column (#27)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SROT-DATA-001"],
-      "issueRefs": [27],
-      "screenshots": []
-    },
-    {
-      "test": "results-over-time checkInputs SROT-DATA-002: an empty dataset reports all required columns missing (#27)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SROT-DATA-002"],
-      "issueRefs": [27],
-      "screenshots": ["SROT-DATA-002-invalid-data-note.png"]
-    },
-    {
-      "test": "results-over-time configure every DEFAULT_SETTINGS key is a documented default (#27)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [27],
-      "screenshots": []
-    },
-    {
-      "test": "results-over-time configure SROT-CFG-004/005/006/007/009: default column mappings match the original renderer (#27)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SROT-CFG-004"],
-      "issueRefs": [27],
-      "screenshots": []
-    },
-    {
-      "test": "results-over-time configure SROT-CFG-012: filters normalize to { value_col, label } specs and drop blanks (#27)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SROT-CFG-012"],
-      "issueRefs": [27],
-      "screenshots": []
-    },
-    {
-      "test": "results-over-time configure SROT-CFG-013/014: groups always offer a leading None and group_by falls back to it (#27)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SROT-CFG-013"],
-      "issueRefs": [27],
-      "screenshots": []
-    },
-    {
-      "test": "results-over-time configure SROT-CFG-014: an explicit group_by is honored and its column is offered (#27)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SROT-CFG-014"],
-      "issueRefs": [27],
-      "screenshots": []
-    },
-    {
-      "test": "results-over-time configure SROT-CFG-015/DATA-003: box/outlier/visit toggles default to the original renderer values (#27)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SROT-CFG-015"],
-      "issueRefs": [27],
-      "screenshots": []
-    },
-    {
-      "test": "results-over-time configure SROT-CFG-017/018/019: unscheduled-visit detection defaults are preserved (#27)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SROT-CFG-017"],
-      "issueRefs": [27],
-      "screenshots": []
-    },
-    {
-      "test": "results-over-time configure SROT-REG-018: Y_SCALES enumerates the linear and log axis options (#27)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SROT-REG-018"],
-      "issueRefs": [27],
-      "screenshots": ["SROT-REG-018-log-scale.png"]
-    },
-    {
-      "test": "results-over-time export SROT-API: main.js exports the resultsOverTime factory (#27)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [27],
-      "screenshots": []
-    },
-    {
-      "test": "results-over-time getPlugins SROT-REG-003: groupColors assigns a stable color per group in order (#27)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SROT-REG-003"],
-      "issueRefs": [27],
-      "screenshots": []
-    },
-    {
-      "test": "results-over-time getPlugins SROT-REG-011: outlierTooltip names the participant and its value (#27)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SROT-REG-011"],
-      "issueRefs": [27],
-      "screenshots": []
-    },
-    {
-      "test": "results-over-time getPlugins SROT-REG-014/015: summaryTooltip lists every statistic at the required precision (#27)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SROT-REG-014"],
-      "issueRefs": [27],
-      "screenshots": []
-    },
-    {
-      "test": "results-over-time getScales formatFixed keeps trailing zeros and reports NA for non-finite input (#27)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [27],
-      "screenshots": []
-    },
-    {
-      "test": "results-over-time getScales SROT-REG-015: statPrecisions gives min/max the base, quantiles +1, and StDev +2 (#27)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SROT-REG-015"],
-      "issueRefs": [27],
-      "screenshots": []
-    },
-    {
-      "test": "results-over-time getScales SROT-REG-015: yPrecision follows the original log10-range rule (#27)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SROT-REG-015"],
-      "issueRefs": [27],
-      "screenshots": []
-    },
-    {
-      "test": "results-over-time getScales SROT-REG-016/020: resolveYDomain uses the data extent unless a limit overrides it (#27)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SROT-REG-016"],
-      "issueRefs": [27],
-      "screenshots": []
-    },
-    {
-      "test": "results-over-time getScales SROT-REG-017: normalizeDomain swaps a crossed lower/upper pair in place (#27)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SROT-REG-017"],
-      "issueRefs": [27],
-      "screenshots": []
-    },
-    {
-      "test": "results-over-time structureData quantile follows the R-7 / d3.quantile rule (#27)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [27],
-      "screenshots": []
-    },
-    {
-      "test": "results-over-time structureData sd is the sample (n-1) standard deviation (#27)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [27],
-      "screenshots": []
-    },
-    {
-      "test": "results-over-time structureData SROT-CFG-005: computeVisitOrder falls back to alphanumeric order without an order column (#27)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SROT-CFG-005"],
-      "issueRefs": [27],
-      "screenshots": []
-    },
-    {
-      "test": "results-over-time structureData SROT-CFG-005/006: computeVisitOrder sorts by the numeric order column when present (#27)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SROT-CFG-005"],
-      "issueRefs": [27],
-      "screenshots": []
-    },
-    {
-      "test": "results-over-time structureData SROT-CFG-017/018: parseUnscheduledPattern reads the /.../flags string form (#27)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SROT-CFG-017"],
-      "issueRefs": [27],
-      "screenshots": []
-    },
-    {
-      "test": "results-over-time structureData SROT-CFG-019: isUnscheduledVisit lets an explicit values list take precedence over the pattern (#27)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SROT-CFG-019"],
-      "issueRefs": [27],
-      "screenshots": []
-    },
-    {
-      "test": "results-over-time structureData SROT-DATA-002: cleanData drops missing and non-numeric results with a reported count (#27)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SROT-DATA-002"],
-      "issueRefs": [27],
-      "screenshots": ["SROT-DATA-002-invalid-data-note.png"]
-    },
-    {
-      "test": "results-over-time structureData SROT-REG-002/010: flagOutliers recomputes each row group when the grouping changes between renders (#27)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SROT-REG-002"],
-      "issueRefs": [27],
-      "screenshots": ["SROT-REG-002-grouped-box-plots.png"]
-    },
-    {
-      "test": "results-over-time structureData SROT-REG-010/012: flagOutliers marks values outside the 5th/95th percentiles only when enabled (#27)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SROT-REG-010"],
-      "issueRefs": [27],
-      "screenshots": ["SROT-REG-010-outliers.png"]
-    },
-    {
-      "test": "results-over-time structureData SROT-REG-014/015: summarize returns the tooltip statistics for a sorted sample (#27)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SROT-REG-014"],
-      "issueRefs": [27],
-      "screenshots": []
-    },
-    {
-      "test": "results-over-time structureData SROT-REG-021: measureLabel appends the unit when present (#27)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SROT-REG-021"],
-      "issueRefs": [27],
-      "screenshots": []
-    },
-    {
-      "test": "results-over-time structureData summarizeVisitGroups nests statistics by visit then group (#27)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [27],
-      "screenshots": []
-    },
-    {
-      "test": "results-over-time structureData unique keeps distinct, non-empty values in first-seen order (#27)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [27],
       "screenshots": []
     },
     {
@@ -1426,6 +1858,126 @@
       "screenshots": []
     },
     {
+      "test": "spaghettiDatasets (PPRF-3, PPRF-SPAG-001) builds one line dataset per series with day x-values",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "spaghettiDatasets (PPRF-3, PPRF-SPAG-001) carries the cut on the dataset for the cut-line plugin",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "spaghettiDatasets (PPRF-3, PPRF-SPAG-001) fills points at or above the cut and hollows points below it",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "sparkDomain (PPRF-4, PPRF-TBL-002) pads the union of participant values and the population extent ×0.99/×1.01",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "sparkDomain (PPRF-4, PPRF-TBL-002) unions participant outliers beyond the population extent",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "sparklineSVG (PPRF-4, PPRF-TBL-002) builds a 100×25 svg with band, guides, line, and outliers — no listeners",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "sparklineSVG (PPRF-4, PPRF-TBL-002) centers a single-day series instead of dividing by zero",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "sparklineSVG (PPRF-4, PPRF-TBL-002) draws dashed full-width guide lines at the population-extent values",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "sparklineSVG (PPRF-4, PPRF-TBL-002) draws the LLN–ULN normal-range band polygon (ULN forward, LLN reversed)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "sparklineSVG (PPRF-4, PPRF-TBL-002) draws the value path in the measure color over the day-ordered points",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "sparklineSVG (PPRF-4, PPRF-TBL-002) marks outliers with filled r=2 circles in the measure color",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "standalone chrome (PPRF-1, PPRF-CORE-004) mounts the shell with the chart card hidden and an idle note",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "templateProfileURL (PPRF-2, PPRF-HDR-002, closes #53) passes a token-less URL through unchanged (original static-URL back-compat)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HDR-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "templateProfileURL (PPRF-2, PPRF-HDR-002, closes #53) replaces every literal {id} token with the encoded id",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HDR-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "templateProfileURL (PPRF-2, PPRF-HDR-002, closes #53) returns null for a missing URL",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HDR-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
       "test": "transformDoclets: factory API-XFORM-004: maps the documented module.exports doclet to the factory, named for its source file (#6)",
       "suite": "unit",
       "status": "pass",
@@ -1543,6 +2095,30 @@
       "status": "pass",
       "requirementIds": ["API-SCHEMA-006"],
       "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "visibleSeries — extras and lab subsetting (PPRF-3, PPRF-SPAG-001) filters datasets through the lab subsetter",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "visibleSeries — extras and lab subsetting (PPRF-3, PPRF-SPAG-001) includes non-key measures behind the extras toggle",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "visibleSeries — extras and lab subsetting (PPRF-3, PPRF-SPAG-001) shows key measures only by default",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-001"],
+      "issueRefs": [],
       "screenshots": []
     }
   ]

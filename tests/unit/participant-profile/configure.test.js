@@ -7,7 +7,7 @@ import {
   templateProfileURL
 } from '../../../src/participant-profile/configure.js';
 
-describe('participant-profile DEFAULT_SETTINGS (PPRF-1/2/3/4)', () => {
+describe('participant-profile DEFAULT_SETTINGS (PPRF-1/2/3/4, PPRF-CORE-003)', () => {
   it('carries the house long-lab column defaults', () => {
     expect(DEFAULT_SETTINGS.id_col).toBe('USUBJID');
     expect(DEFAULT_SETTINGS.measure_col).toBe('TEST');
@@ -44,7 +44,7 @@ describe('participant-profile DEFAULT_SETTINGS (PPRF-1/2/3/4)', () => {
   });
 });
 
-describe('participant-profile syncSettings (PPRF-1)', () => {
+describe('participant-profile syncSettings (PPRF-1, PPRF-CORE-003)', () => {
   it('deep-merges a partial cuts override, back-filling the untouched measures', () => {
     const synced = syncSettings({ cuts: { TB: { relative_uln: 5 } } });
     expect(synced.cuts.TB.relative_uln).toBe(5);
@@ -83,7 +83,7 @@ describe('participant-profile syncSettings (PPRF-1)', () => {
   });
 });
 
-describe('templateProfileURL (PPRF-2, closes #53)', () => {
+describe('templateProfileURL (PPRF-2, PPRF-HDR-002, closes #53)', () => {
   it('replaces every literal {id} token with the encoded id', () => {
     expect(templateProfileURL('https://x.test/{id}/profile?p={id}', 'P 1')).toBe(
       'https://x.test/P%201/profile?p=P%201'
@@ -100,7 +100,7 @@ describe('templateProfileURL (PPRF-2, closes #53)', () => {
   });
 });
 
-describe('measure color palette (PPRF-3)', () => {
+describe('measure color palette (PPRF-3, PPRF-SPAG-003)', () => {
   it('assigns stable palette colors in key order, cycling when exhausted', () => {
     const scale = measureColorScale(['ALT', 'AST', 'TB']);
     expect(scale.get('ALT')).toBe(MEASURE_COLORS[0]);

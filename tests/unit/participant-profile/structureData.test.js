@@ -17,7 +17,7 @@ function model(id, overrides = {}, state = {}) {
   return buildProfileModel(rows, id, settings, { display: 'relative_uln', ...state });
 }
 
-describe('buildProfileModel — participant header fields (PPRF-2)', () => {
+describe('buildProfileModel — participant header fields (PPRF-2, PPRF-HDR-001)', () => {
   it('resolves details from the settings specs against the participant rows', () => {
     const { participant } = model('P1');
     expect(participant.id).toBe('P1');
@@ -43,7 +43,7 @@ describe('buildProfileModel — participant header fields (PPRF-2)', () => {
   });
 });
 
-describe('buildProfileModel — spaghetti series (PPRF-3)', () => {
+describe('buildProfileModel — spaghetti series (PPRF-3, PPRF-SPAG-001)', () => {
   it('builds one series per key measure present, day-ordered, in display units', () => {
     const { spaghetti } = model('P1');
     const alt = spaghetti.series.find((entry) => entry.key === 'ALT');
@@ -79,7 +79,7 @@ describe('buildProfileModel — spaghetti series (PPRF-3)', () => {
   });
 });
 
-describe('buildProfileModel — measure table model (PPRF-4)', () => {
+describe('buildProfileModel — measure table model (PPRF-4, PPRF-TBL-001)', () => {
   it('orders rows key-first in measure_values order, extras after', () => {
     const { measures } = model('P1');
     expect(measures.map((entry) => entry.key)).toEqual(['ALT', 'AST', 'TB', 'ALP', CREAT_TEST]);

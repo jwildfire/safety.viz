@@ -66,7 +66,7 @@ function headerId() {
   return el ? el.textContent : null;
 }
 
-describe('standalone chrome (PPRF-1)', () => {
+describe('standalone chrome (PPRF-1, PPRF-CORE-004)', () => {
   it('mounts the shell with the chart card hidden and an idle note', () => {
     mount();
     expect(document.querySelector('#host .safety-participant-profile')).not.toBeNull();
@@ -79,7 +79,7 @@ describe('standalone chrome (PPRF-1)', () => {
   });
 });
 
-describe('participantsSelected listener (PPRF-6)', () => {
+describe('participantsSelected listener (PPRF-6, PPRF-EVT-001)', () => {
   it('listens on document by default and renders the selection', () => {
     mount();
     fire(document, ['P1']);
@@ -121,7 +121,7 @@ describe('participantsSelected listener (PPRF-6)', () => {
   });
 });
 
-describe('programmatic selection and callbacks (PPRF-5/6)', () => {
+describe('programmatic selection and callbacks (PPRF-5/6, PPRF-EVT-002)', () => {
   it('setSelected takes the same path as the event listener', () => {
     const instance = mount();
     instance.setSelected(['P1', 'P6']);

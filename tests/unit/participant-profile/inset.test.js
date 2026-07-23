@@ -84,7 +84,7 @@ function host() {
   return document.querySelector('#host');
 }
 
-describe('insetYDomain (PPRF-4)', () => {
+describe('insetYDomain (PPRF-4, PPRF-TBL-003)', () => {
   it('pads the union of values, population extent, and normal-range limits', () => {
     // Pool: values 35/160/80 ∪ extent [20, 200] ∪ lln 5 / uln 40 → [5, 200].
     expect(insetYDomain(alt)).toEqual([5 * 0.99, 200 * 1.01]);
@@ -99,7 +99,7 @@ describe('insetYDomain (PPRF-4)', () => {
   });
 });
 
-describe('bandGuidePlugin (PPRF-4)', () => {
+describe('bandGuidePlugin (PPRF-4, PPRF-TBL-003)', () => {
   function fakeChart() {
     const calls = [];
     const ctx = new Proxy(
@@ -161,7 +161,7 @@ describe('bandGuidePlugin (PPRF-4)', () => {
   });
 });
 
-describe('renderInset (PPRF-4)', () => {
+describe('renderInset (PPRF-4, PPRF-TBL-003)', () => {
   it('mounts a line chart of absolute values by study day', () => {
     const chart = renderInset(host(), alt);
     expect(built).toHaveLength(1);
@@ -195,7 +195,7 @@ describe('renderInset (PPRF-4)', () => {
   });
 });
 
-describe('measure-table inset lifecycle (PPRF-4)', () => {
+describe('measure-table inset lifecycle (PPRF-4, PPRF-TBL-003)', () => {
   function toggleFor(key) {
     return host().querySelector(`tr[data-key="${key}"] .sv-profile-spark-toggle`);
   }
