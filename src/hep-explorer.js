@@ -48,6 +48,7 @@ import {
   renderViewSelector
 } from './shell.js';
 import { VIEW_MODES, syncSettings, cutFor } from './hep-explorer/configure.js';
+import { resolveArmCol } from './hep-core/arms.js';
 import { checkInputs } from './hep-explorer/checkInputs.js';
 import {
   assignSequence,
@@ -64,6 +65,7 @@ import { groupColorScale } from './hep-explorer/getPlugins.js';
 import { TRACE_HEADER_HINT, createSelection } from './hep-explorer/selection.js';
 import { applyModuleStyles } from './hep-explorer/styles.js';
 import scatterView from './hep-explorer/views/scatter.js';
+import migrationView from './hep-explorer/views/migration.js';
 import compositeView from './hep-explorer/views/composite.js';
 import { renderListing } from './histogram/listing.js';
 
@@ -84,8 +86,21 @@ Chart.register(
 // nothing in the shared selection layer — may branch on which view is active.
 const VIEWS = {
   scatter: scatterView,
+  migration: migrationView,
   composite: compositeView
 };
+
+/**
+ * Resolve a `view` setting to a registered view id, falling back to the scatter
+ * (HEP-COMP-006, HEP-MIG-001). One helper rather than a chain of equality tests
+ * so registering a view is a single edit to VIEWS + VIEW_MODES.
+ * @param {?string} value The requested view id.
+ * @returns {string} A registered view id.
+ * @private
+ */
+function resolveViewId(value) {
+  return Object.prototype.hasOwnProperty.call(VIEWS, value) ? value : 'scatter';
+}
 
 /**
  * Interactive hepatic safety explorer: a Chart.js eDISH scatter of peak
@@ -141,9 +156,21 @@ class SafetyHepExplorer {
     // Scatter-view multi-highlight driven by the shared Participants control
     // (clicks stay single-select there): the highlighted participant ids.
     this.scatterSelectedIds = [];
+    // Migration-view (Sankey) state (HEP-MIG-*, HEP-STEP-*): the selected
+    // flow's participants, the `${side}|${pre}|${post}` key of that flow (the
+    // one both a ribbon click and a cross-table cell click set), the transient
+    // hovered flow, the per-cell participant index, the cohort the plot shows,
+    // and the live svg + tooltip nodes.
+    this.migrationSelectedIds = [];
+    this.migrationSelectedKey = null;
+    this.migrationHoverKey = null;
+    this.migrationCellIndex = new Map();
+    this.migrationShown = [];
+    this.migrationSvgEl = null;
+    this.migrationTipEl = null;
     this.participantsSelected = [];
     this.state = {
-      view: this.settings.view === 'composite' ? 'composite' : 'scatter',
+      view: resolveViewId(this.settings.view),
       measureX: this.settings.x_default,
       measureY: this.settings.y_default,
       display: 'relative_uln',
@@ -154,6 +181,10 @@ class SafetyHepExplorer {
       filters: {},
       rRatio: [...this.settings.r_ratio],
       cuts: JSON.parse(JSON.stringify(this.settings.cuts)),
+      // Migration-view controls (HEP-MIG-013, HEP-ARM-003): suppress the
+      // no-migration diagonal, and narrow the right-hand side to one active arm.
+      hideUnchanged: this.settings.hide_unchanged,
+      activeArms: this.settings.active_arms,
       selectedId: null,
       hoverId: null,
       xCut: null,
@@ -216,6 +247,13 @@ class SafetyHepExplorer {
     // Quadrant summary table sits directly below the chart footnote.
     this.quadrantWrap = createElement('div', 'hep-quadrant-summary');
     this.main.insertBefore(this.quadrantWrap, this.multiplesWrap);
+
+    // Migration (Sankey) container: the mirrored baseline → on-treatment
+    // diagram, the per-arm cross tables and the two-step hand-off, hidden until
+    // the migration view is selected (HEP-MIG-*, HEP-XTAB-*).
+    this.migrationWrap = createElement('div', 'hep-migration-view');
+    this.migrationWrap.style.display = 'none';
+    this.main.insertBefore(this.migrationWrap, this.multiplesWrap);
 
     // Composite plot container (pretreatment/on-treatment eDISH panels, the
     // four-panel ×Baseline shift plot, and the migration table), hidden until
@@ -284,8 +322,9 @@ class SafetyHepExplorer {
    */
   setSettings(settings) {
     this.settings = syncSettings({ ...this.settings, ...settings });
-    if ('view' in settings)
-      this.state.view = this.settings.view === 'composite' ? 'composite' : 'scatter';
+    if ('view' in settings) this.state.view = resolveViewId(this.settings.view);
+    if ('hide_unchanged' in settings) this.state.hideUnchanged = this.settings.hide_unchanged;
+    if ('active_arms' in settings) this.state.activeArms = this.settings.active_arms;
     if ('x_default' in settings) this.state.measureX = this.settings.x_default;
     if ('y_default' in settings) this.state.measureY = this.settings.y_default;
     if ('visit_window' in settings) this.state.visitWindow = this.settings.visit_window;
@@ -387,15 +426,26 @@ class SafetyHepExplorer {
    * @private
    */
   buildViewControl(addSection) {
-    renderViewSelector(addSection, {
+    const section = renderViewSelector(addSection, {
       options: VIEW_MODES,
       active: this.state.view,
-      onChange: (value) => {
-        this.state.view = value;
-        this.buildControls();
-        this.render();
-      }
+      onChange: (value) => this.switchView(value)
     });
+
+    // The migration Sankey is meaningless without a treatment arm to mirror
+    // about, so when arm_col resolves to nothing the option is DISABLED with an
+    // explanatory tooltip rather than left clickable into an empty diagram
+    // (HEP-ARM-005). The shared selector builder stays view-agnostic; the
+    // module that knows what a view needs applies the state.
+    if (resolveArmCol(this.cleanRows, this.settings)) return;
+    const options = [...section.querySelectorAll('.sv-view-option')];
+    const migration = options[VIEW_MODES.findIndex((mode) => mode.value === 'migration')];
+    if (!migration) return;
+    migration.disabled = true;
+    migration.classList.add('is-disabled');
+    migration.title =
+      'The migration Sankey needs a treatment-arm column. Map arm_col (or add ARM, ACTARM, ' +
+      'TRT01A or TREATMENT to the data) to enable it.';
   }
 
   /**
@@ -491,6 +541,8 @@ class SafetyHepExplorer {
     this.state.visitWindow = this.settings.visit_window;
     this.state.filters = {};
     this.state.rRatio = [...this.settings.r_ratio];
+    this.state.hideUnchanged = this.settings.hide_unchanged;
+    this.state.activeArms = this.settings.active_arms;
     this.buildControls();
     this.render();
   }
@@ -507,7 +559,26 @@ class SafetyHepExplorer {
     // restore 'flex' rather than '' for the views that show it.
     this.legendEl.style.display = slots.has('legend') ? 'flex' : 'none';
     this.quadrantWrap.style.display = slots.has('quadrantSummary') ? '' : 'none';
+    this.migrationWrap.style.display = slots.has('migration') ? '' : 'none';
     this.compositeWrap.style.display = slots.has('composite') ? '' : 'none';
+  }
+
+  /**
+   * Switch to another registered view and redraw (HEP-STEP-003). The migration
+   * view's "review these in the composite plot" hand-off calls this rather than
+   * writing state.view itself: the module's only view dispatch lives in this
+   * file, and the existing carriedIds mechanism then restores exactly the
+   * selected participants, highlighted, in the composite panels.
+   * @param {string} view The view id to switch to.
+   * @returns {void}
+   * @private
+   */
+  switchView(view) {
+    const next = resolveViewId(view);
+    if (next === this.state.view) return;
+    this.state.view = next;
+    this.buildControls();
+    this.render();
   }
 
   /**
@@ -537,6 +608,10 @@ class SafetyHepExplorer {
     this.listingWrap.innerHTML = '';
     this.legendEl.innerHTML = '';
     this.quadrantWrap.innerHTML = '';
+    this.migrationWrap.innerHTML = '';
+    // Drop the previous Sankey geometry so a stale $hepSankey can never be read
+    // after a view switch or a filter change (HEP-MIG-015).
+    if (this.root) this.root.$hepSankey = null;
     this.compositeWrap.innerHTML = '';
     // Empty (and hide) the sidebar's Participants section; each view re-mounts
     // it with the freshly shown participants (HEP-COMP-007).

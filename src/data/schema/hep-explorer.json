@@ -110,9 +110,9 @@
         },
         "view": {
           "type": "string",
-          "enum": ["scatter", "composite"],
+          "enum": ["scatter", "migration", "composite"],
           "default": "scatter",
-          "description": "Initial view mode: `scatter` (eDISH/mDISH one-point-per-participant scatter) or `composite` (baseline-referenced composite plot for subjects with abnormal baseline liver tests — pretreatment and on-treatment eDISH panels, a four-panel ×Baseline shift plot, and a migration table) (HEP-COMP-006)."
+          "description": "Initial view mode: `scatter` (eDISH/mDISH one-point-per-participant scatter), `migration` (the bidirectional baseline → peak on-treatment Sankey mirrored about the baseline categorization, with one cross table per treatment arm — Amirzadegan et al., Drug Safety 2025, Fig 3; needs arm_col mapped), or `composite` (baseline-referenced composite plot for subjects with abnormal baseline liver tests — pretreatment and on-treatment eDISH panels, a four-panel ×Baseline shift plot, and a migration table) (HEP-COMP-006, HEP-MIG-001)."
         },
         "x_default": {
           "type": "string",
