@@ -1,13 +1,16 @@
 {
   "module": "shift-plot",
-  "generatedAt": "2026-07-23T00:02:59.915Z",
+  "generatedAt": "2026-07-23T00:54:15.384Z",
   "environment": {
-    "os": "darwin 23.6.0",
-    "node": "v24.14.0",
+    "os": "linux 6.17.0-1020-azure",
+    "node": "v22.23.1",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": null,
+  "run": {
+    "id": "29970341683",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29970341683"
+  },
   "records": [
     {
       "test": "a chart link navigates straight to that renderer demo (#71)",

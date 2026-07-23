@@ -1,13 +1,16 @@
 {
   "module": "hep-explorer",
-  "generatedAt": "2026-07-23T00:02:59.915Z",
+  "generatedAt": "2026-07-23T00:54:15.384Z",
   "environment": {
-    "os": "darwin 23.6.0",
-    "node": "v24.14.0",
+    "os": "linux 6.17.0-1020-azure",
+    "node": "v22.23.1",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": null,
+  "run": {
+    "id": "29970341683",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29970341683"
+  },
   "records": [
     {
       "test": "a chart link navigates straight to that renderer demo (#71)",
@@ -119,7 +122,7 @@
       "status": "pass",
       "requirementIds": ["HEP-ACC-001", "HEP-ACC-002", "HEP-ACC-003"],
       "issueRefs": [92],
-      "screenshots": []
+      "screenshots": ["HEP-ACC-001-migration-ribbon-selected.png"]
     },
     {
       "test": "HEP-API-001: lifecycle API supports init, setData, setSettings, render, resize, and destroy (#43)",
@@ -288,7 +291,7 @@
       "status": "pass",
       "requirementIds": ["HEP-MIG-001", "HEP-MIG-014"],
       "issueRefs": [92],
-      "screenshots": []
+      "screenshots": ["HEP-MIG-001-migration-sankey.png"]
     },
     {
       "test": "HEP-MIG-002/HEP-MIG-003/HEP-MIG-010/HEP-MIG-015: geometry is stashed on the root, placebo runs left, active runs right, Hy's Law on top (#92)",
@@ -320,7 +323,7 @@
       "status": "pass",
       "requirementIds": ["HEP-MIG-017"],
       "issueRefs": [92],
-      "screenshots": []
+      "screenshots": ["HEP-MIG-017-migration-ribbon-tooltip.png"]
     },
     {
       "test": "HEP-QUAD-001/HEP-QUAD-004: changing the x-axis reference line reclassifies the quadrants (#43)",
@@ -382,7 +385,7 @@
       "status": "pass",
       "requirementIds": ["HEP-STEP-001", "HEP-STEP-002", "HEP-STEP-003"],
       "issueRefs": [92],
-      "screenshots": []
+      "screenshots": ["HEP-STEP-002-migration-handoff.png"]
     },
     {
       "test": "HEP-STEP-004: a selection made in any view survives a switch to either other view (#92)",
@@ -398,7 +401,7 @@
       "status": "pass",
       "requirementIds": ["HEP-STEP-005"],
       "issueRefs": [92],
-      "screenshots": []
+      "screenshots": ["HEP-STEP-005-migration-hys-law-caution.png"]
     },
     {
       "test": "HEP-XTAB-001/HEP-XTAB-002/HEP-XTAB-004/HEP-XTAB-005: per-arm cross tables agree with the ribbons and select the same participants (#92)",
@@ -406,7 +409,7 @@
       "status": "pass",
       "requirementIds": ["HEP-XTAB-001", "HEP-XTAB-002", "HEP-XTAB-004", "HEP-XTAB-005"],
       "issueRefs": [92],
-      "screenshots": []
+      "screenshots": ["HEP-XTAB-001-migration-cross-tables.png"]
     },
     {
       "test": "is keyboard operable: ArrowDown opens and focuses, Escape closes (#71)",
@@ -1598,7 +1601,7 @@
       "status": "pass",
       "requirementIds": ["HEP-ACC-001"],
       "issueRefs": [92],
-      "screenshots": []
+      "screenshots": ["HEP-ACC-001-migration-ribbon-selected.png"]
     },
     {
       "test": "hep-explorer migration view — accessibility HEP-ACC-002: Enter and Space activate a focused ribbon, selecting what a click selects (#92)",
@@ -1678,7 +1681,7 @@
       "status": "pass",
       "requirementIds": ["HEP-XTAB-001"],
       "issueRefs": [92],
-      "screenshots": []
+      "screenshots": ["HEP-XTAB-001-migration-cross-tables.png"]
     },
     {
       "test": "hep-explorer migration view — cross tables HEP-XTAB-002: each cross table carries row totals, column totals and a grand total (#92)",
@@ -1742,7 +1745,7 @@
       "status": "pass",
       "requirementIds": ["HEP-STEP-002"],
       "issueRefs": [92],
-      "screenshots": []
+      "screenshots": ["HEP-STEP-002-migration-handoff.png"]
     },
     {
       "test": "hep-explorer migration view — selection and the two-step hand-off HEP-STEP-003: the review control hands the flow to the composite view (#92)",
@@ -1758,7 +1761,7 @@
       "status": "pass",
       "requirementIds": ["HEP-STEP-005"],
       "issueRefs": [92],
-      "screenshots": []
+      "screenshots": ["HEP-STEP-005-migration-hys-law-caution.png"]
     },
     {
       "test": "hep-explorer migration view — the diagram HEP-MIG-004: Cholestasis and Temple’s Corollary sit under one shared tier label (#92)",
@@ -2382,7 +2385,7 @@
       "status": "pass",
       "requirementIds": ["HEP-MIG-001"],
       "issueRefs": [92],
-      "screenshots": []
+      "screenshots": ["HEP-MIG-001-migration-sankey.png"]
     },
     {
       "test": "sankeyLayout — degenerate input HEP-MIG-005: an empty cohort still lays out the full four-row grid as stubs (#92)",
@@ -2406,7 +2409,7 @@
       "status": "pass",
       "requirementIds": ["HEP-MIG-001"],
       "issueRefs": [92],
-      "screenshots": []
+      "screenshots": ["HEP-MIG-001-migration-sankey.png"]
     },
     {
       "test": "sankeyLayout — fixed coordinate system HEP-MIG-002: placebo ribbons run left of the centre spine and active ribbons run right (#92)",

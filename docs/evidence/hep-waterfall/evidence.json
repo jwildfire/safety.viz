@@ -1,13 +1,16 @@
 {
   "module": "hep-waterfall",
-  "generatedAt": "2026-07-23T00:02:59.915Z",
+  "generatedAt": "2026-07-23T00:54:15.384Z",
   "environment": {
-    "os": "darwin 23.6.0",
-    "node": "v24.14.0",
+    "os": "linux 6.17.0-1020-azure",
+    "node": "v22.23.1",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": null,
+  "run": {
+    "id": "29970341683",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29970341683"
+  },
   "records": [
     {
       "test": "a chart link navigates straight to that renderer demo (#71)",
@@ -135,7 +138,7 @@
         "HWF-ORDER-003"
       ],
       "issueRefs": [93],
-      "screenshots": []
+      "screenshots": ["HWF-BAR-001-waterfall-default.png"]
     },
     {
       "test": "HWF-BOX-001/HWF-BOX-002/HWF-BOX-003: a summary panel flanks each arm, pinned to the main chart domain (#93)",
@@ -143,7 +146,7 @@
       "status": "pass",
       "requirementIds": ["HWF-BOX-001", "HWF-BOX-002", "HWF-BOX-003"],
       "issueRefs": [93],
-      "screenshots": []
+      "screenshots": ["HWF-BOX-001-flanking-summary-panels.png"]
     },
     {
       "test": "HWF-COLOR-001/HWF-COLOR-002/HWF-COLOR-004: blue placebo, bronze active, green for new-onset jaundice in either arm, with the precedence stated (#93)",
@@ -151,7 +154,7 @@
       "status": "pass",
       "requirementIds": ["HWF-COLOR-001", "HWF-COLOR-002", "HWF-COLOR-004"],
       "issueRefs": [93],
-      "screenshots": []
+      "screenshots": ["HWF-COLOR-002-jaundice-precedence.png"]
     },
     {
       "test": "HWF-COLOR-003: the arm divider splits the plot at the seam and captions each half with its arm and n (#93)",
@@ -167,7 +170,7 @@
       "status": "pass",
       "requirementIds": ["HWF-CTRL-001"],
       "issueRefs": [93],
-      "screenshots": []
+      "screenshots": ["HWF-CTRL-001-control-panel.png"]
     },
     {
       "test": "HWF-CTRL-001: the jaundice threshold reclassifies which bars are green (#93)",
@@ -175,7 +178,7 @@
       "status": "pass",
       "requirementIds": ["HWF-CTRL-001"],
       "issueRefs": [93],
-      "screenshots": []
+      "screenshots": ["HWF-CTRL-001-control-panel.png"]
     },
     {
       "test": "HWF-CTRL-001/HWF-CTRL-002: the control panel exposes the display settings and the arm mapping (#93)",
@@ -183,7 +186,7 @@
       "status": "pass",
       "requirementIds": ["HWF-CTRL-001", "HWF-CTRL-002"],
       "issueRefs": [93],
-      "screenshots": []
+      "screenshots": ["HWF-CTRL-001-control-panel.png"]
     },
     {
       "test": "HWF-CTRL-003: a filter restricts the plotted cohort and the counts follow it (#93)",
@@ -207,7 +210,7 @@
       "status": "pass",
       "requirementIds": ["HWF-DATA-003"],
       "issueRefs": [93],
-      "screenshots": []
+      "screenshots": ["HWF-DATA-003-cohort-exclusion-notes.png"]
     },
     {
       "test": "HWF-DATA-003/HWF-DATA-005/HWF-DATA-008: both cohort exclusions and the dropped records are reported separately in the notes (#93)",
@@ -215,7 +218,7 @@
       "status": "pass",
       "requirementIds": ["HWF-DATA-003", "HWF-DATA-005", "HWF-DATA-008"],
       "issueRefs": [93],
-      "screenshots": []
+      "screenshots": ["HWF-DATA-003-cohort-exclusion-notes.png"]
     },
     {
       "test": "HWF-DATA-007: two units for the plotted measure suppress the chart with a warning naming them (#93)",
@@ -223,7 +226,7 @@
       "status": "pass",
       "requirementIds": ["HWF-DATA-007"],
       "issueRefs": [93],
-      "screenshots": []
+      "screenshots": ["HWF-DATA-007-mixed-unit-warning.png"]
     },
     {
       "test": "HWF-SELECT-001: the bar tooltip names the participant, arm, both values, the change and the jaundice status (#93)",
@@ -239,7 +242,7 @@
       "status": "pass",
       "requirementIds": ["HWF-SELECT-002", "HWF-SELECT-003"],
       "issueRefs": [93],
-      "screenshots": []
+      "screenshots": ["HWF-SELECT-002-participant-selection.png"]
     },
     {
       "test": "is keyboard operable: ArrowDown opens and focuses, Escape closes (#71)",
@@ -599,7 +602,7 @@
       "status": "pass",
       "requirementIds": ["HWF-CTRL-001"],
       "issueRefs": [93],
-      "screenshots": []
+      "screenshots": ["HWF-CTRL-001-control-panel.png"]
     },
     {
       "test": "hep-waterfall controls HWF-CTRL-002: the arm mapping control lists every arm value present in the data (#93)",
@@ -639,7 +642,7 @@
       "status": "pass",
       "requirementIds": ["HWF-COLOR-002"],
       "issueRefs": [93],
-      "screenshots": []
+      "screenshots": ["HWF-COLOR-002-jaundice-precedence.png"]
     },
     {
       "test": "hep-waterfall getPlugins colour HWF-COLOR-004: the legend states that jaundice outranks the arm colour (#93)",
@@ -767,7 +770,7 @@
       "status": "pass",
       "requirementIds": ["HWF-DATA-007"],
       "issueRefs": [93],
-      "screenshots": []
+      "screenshots": ["HWF-DATA-007-mixed-unit-warning.png"]
     },
     {
       "test": "hep-waterfall getScales.waterfallDomain HWF-AXIS-001: an empty or non-finite sample still yields a usable domain (#93)",
@@ -799,7 +802,7 @@
       "status": "pass",
       "requirementIds": ["HWF-BOX-001"],
       "issueRefs": [93],
-      "screenshots": []
+      "screenshots": ["HWF-BOX-001-flanking-summary-panels.png"]
     },
     {
       "test": "hep-waterfall layout and panels HWF-DATA-003/005/008: both exclusions and the dropped records are reported in the notes (#93)",
@@ -807,7 +810,7 @@
       "status": "pass",
       "requirementIds": ["HWF-DATA-003"],
       "issueRefs": [93],
-      "screenshots": []
+      "screenshots": ["HWF-DATA-003-cohort-exclusion-notes.png"]
     },
     {
       "test": "hep-waterfall layout and panels HWF-DATA-007: mixed units for the plotted measure suppress the chart with a warning (#93)",
@@ -815,7 +818,7 @@
       "status": "pass",
       "requirementIds": ["HWF-DATA-007"],
       "issueRefs": [93],
-      "screenshots": []
+      "screenshots": ["HWF-DATA-007-mixed-unit-warning.png"]
     },
     {
       "test": "hep-waterfall lifecycle HWF-API-002: init, setData and setSettings re-render and return the instance (#93)",
@@ -847,7 +850,7 @@
       "status": "pass",
       "requirementIds": ["HWF-SELECT-002"],
       "issueRefs": [93],
-      "screenshots": []
+      "screenshots": ["HWF-SELECT-002-participant-selection.png"]
     },
     {
       "test": "hep-waterfall selection HWF-SELECT-003: selection dispatches participantsSelected with the ids (#93)",
@@ -911,7 +914,7 @@
       "status": "pass",
       "requirementIds": ["HWF-DATA-003"],
       "issueRefs": [93],
-      "screenshots": []
+      "screenshots": ["HWF-DATA-003-cohort-exclusion-notes.png"]
     },
     {
       "test": "hep-waterfall structureData.buildWaterfall HWF-DATA-004: new-onset jaundice needs a normal baseline AND an on-treatment exceedance (#93)",
@@ -975,7 +978,7 @@
       "status": "pass",
       "requirementIds": ["HWF-BAR-001"],
       "issueRefs": [93],
-      "screenshots": []
+      "screenshots": ["HWF-BAR-001-waterfall-default.png"]
     },
     {
       "test": "hep-waterfall structureData.waterfallDatasets HWF-BAR-002: bars point up on a rise and down on a fall (#93)",
