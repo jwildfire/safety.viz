@@ -5,7 +5,10 @@ import * as subjects from '../../../src/hep-core/subjects.js';
 import * as arms from '../../../src/hep-core/arms.js';
 import * as migration from '../../../src/hep-core/migration.js';
 import * as stats from '../../../src/hep-core/stats.js';
+import * as rows from '../../../src/hep-core/rows.js';
 import * as shim from '../../../src/hep-explorer/composite.js';
+import * as structureDataShim from '../../../src/hep-explorer/structureData.js';
+import * as configureShim from '../../../src/hep-explorer/configure.js';
 
 // Surface guards for the hep-core split (obot.roadmap#43, safety.viz#91). The
 // behaviour of every hep-core function is pinned by the per-module suites under
@@ -24,7 +27,27 @@ import * as shim from '../../../src/hep-explorer/composite.js';
 // evidence.json. Routing through hep-explorer (the module that owns the split)
 // confines the evidence delta to docs/evidence/hep-explorer/ alone.
 
-const MODULES = { quadrants, subjects, arms, migration, stats };
+const MODULES = { quadrants, subjects, arms, migration, stats, rows };
+
+// The row-level reducers moved VERBATIM out of src/hep-explorer/structureData.js
+// (and cutFor / MEASURE_KEYS out of configure.js) for the participant-profile
+// module (#98, PPRF-1): the module consumes them from hep-core directly, and the
+// hep-explorer files keep re-export shims so no existing caller churns.
+const ROWS_EXPORTS = [
+  'MEASURE_KEYS',
+  'assignSequence',
+  'cleanData',
+  'computeRRatio',
+  'cutFor',
+  'dayThenIndex',
+  'deriveBaseline',
+  'displayField',
+  'hasStudyDay',
+  'measureSummary',
+  'participantMeasureSeries',
+  'participantPeak',
+  'resolveMeasureRows'
+];
 
 // The shim's documented re-export list, verbatim from src/hep-explorer/composite.js.
 const SHIM_EXPORTS = {
@@ -65,6 +88,35 @@ describe('hep-core index — the barrel re-exports the whole domain layer', () =
         seen.set(key, name);
       });
     });
+  });
+});
+
+describe('hep-core rows — the moved row-level reducers (#98, PPRF-1)', () => {
+  it('rows.js exports exactly the documented reducer surface', () => {
+    expect(Object.keys(rows).sort()).toEqual(ROWS_EXPORTS);
+  });
+
+  it('the hep-explorer structureData shim re-exports the moved reducers, identity-equal', () => {
+    [
+      'cleanData',
+      'assignSequence',
+      'hasStudyDay',
+      'deriveBaseline',
+      'resolveMeasureRows',
+      'participantPeak',
+      'computeRRatio',
+      'participantMeasureSeries',
+      'measureSummary'
+    ].forEach((key) => {
+      expect(structureDataShim[key], `structureData.${key} diverged from rows.${key}`).toBe(
+        rows[key]
+      );
+    });
+  });
+
+  it('the hep-explorer configure shim re-exports cutFor and MEASURE_KEYS, identity-equal', () => {
+    expect(configureShim.cutFor).toBe(rows.cutFor);
+    expect(configureShim.MEASURE_KEYS).toBe(rows.MEASURE_KEYS);
   });
 });
 

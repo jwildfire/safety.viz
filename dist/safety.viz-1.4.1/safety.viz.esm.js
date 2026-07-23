@@ -18294,6 +18294,166 @@ function aeTimelines(element = "body", settings = {}) {
   return new AETimelines(element, settings);
 }
 
+// src/hep-core/stats.js
+function mean6(values) {
+  const nums = values.map(Number).filter(Number.isFinite);
+  if (!nums.length) return NaN;
+  return nums.reduce((sum, value) => sum + value, 0) / nums.length;
+}
+function quantile4(values, p) {
+  const nums = values.map(Number).filter(Number.isFinite);
+  if (!nums.length) return NaN;
+  const sorted = [...nums].sort((a, b) => a - b);
+  const idx = (sorted.length - 1) * p;
+  const lo = Math.floor(idx);
+  const hi = Math.ceil(idx);
+  if (lo === hi) return sorted[lo];
+  return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
+}
+function median2(values) {
+  return quantile4(values, 0.5);
+}
+function boxStats(values) {
+  const sorted = (values || []).map(Number).filter(Number.isFinite).sort((a, b) => a - b);
+  return {
+    n: sorted.length,
+    min: sorted.length ? sorted[0] : NaN,
+    q5: quantile4(sorted, 0.05),
+    q25: quantile4(sorted, 0.25),
+    median: quantile4(sorted, 0.5),
+    q75: quantile4(sorted, 0.75),
+    q95: quantile4(sorted, 0.95),
+    max: sorted.length ? sorted[sorted.length - 1] : NaN,
+    mean: mean6(sorted)
+  };
+}
+
+// src/hep-core/rows.js
+var MEASURE_KEYS = ["ALT", "AST", "TB", "ALP"];
+function cutFor(cuts, measureKey, display) {
+  const entry = cuts && cuts[measureKey] || cuts && cuts.defaults || {};
+  const fallback = cuts && cuts.defaults || {};
+  const value = entry[display];
+  return Number.isFinite(value) ? value : fallback[display];
+}
+function displayField(display) {
+  return display === "relative_baseline" ? "__hep_relative_baseline" : "__hep_relative_uln";
+}
+function dayThenIndex(a, b) {
+  const da = Number.isFinite(a.__hep_day) ? a.__hep_day : Number.MAX_SAFE_INTEGER;
+  const db = Number.isFinite(b.__hep_day) ? b.__hep_day : Number.MAX_SAFE_INTEGER;
+  return da - db || a.__hep_index - b.__hep_index;
+}
+function resolveMeasureRows(rows, settings, key) {
+  const testName = settings.measure_values ? settings.measure_values[key] : key;
+  return rows.filter((row) => row[settings.measure_col] === testName);
+}
+function cleanData6(rawData, settings) {
+  let removed = 0;
+  const rows = rawData.map((row, index) => {
+    const value = Number(row[settings.value_col]);
+    const uln = Number(row[settings.normal_col_high]);
+    const day = settings.studyday_col && row[settings.studyday_col] !== "" && row[settings.studyday_col] !== void 0 ? Number(row[settings.studyday_col]) : NaN;
+    return {
+      ...row,
+      __hep_index: index,
+      __hep_seq: NaN,
+      __hep_value: value,
+      __hep_uln: uln,
+      __hep_day: day,
+      __hep_relative_uln: value / uln,
+      __hep_relative_baseline: NaN,
+      __hep_baseline: NaN
+    };
+  }).filter((row) => {
+    const keep = row[settings.value_col] !== "" && row[settings.value_col] !== void 0 && Number.isFinite(row.__hep_value) && Number.isFinite(row.__hep_uln) && row.__hep_uln > 0;
+    if (!keep) removed += 1;
+    return keep;
+  });
+  return { rows, removed };
+}
+function assignSequence2(rows, settings) {
+  const counts = /* @__PURE__ */ new Map();
+  rows.forEach((row) => {
+    const key = `${row[settings.id_col]}\0${row[settings.measure_col]}`;
+    const next = (counts.get(key) || 0) + 1;
+    counts.set(key, next);
+    row.__hep_seq = next;
+  });
+  return rows;
+}
+function hasStudyDay(rows) {
+  return rows.some((row) => Number.isFinite(row.__hep_day));
+}
+function deriveBaseline(rows, settings) {
+  const groups = /* @__PURE__ */ new Map();
+  rows.forEach((row) => {
+    const key = `${row[settings.id_col]}\0${row[settings.measure_col]}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(row);
+  });
+  groups.forEach((records) => {
+    const ordered = [...records].sort(dayThenIndex);
+    const zero = ordered.find((row) => row.__hep_day === 0);
+    const baselineRow = zero || ordered[0];
+    const baselineValue = baselineRow ? baselineRow.__hep_value : NaN;
+    records.forEach((row) => {
+      row.__hep_baseline = baselineValue;
+      row.__hep_relative_baseline = Number.isFinite(baselineValue) && baselineValue !== 0 ? row.__hep_value / baselineValue : NaN;
+    });
+  });
+  return rows;
+}
+function participantPeak(rows, key, display) {
+  const field = displayField(display);
+  let best = null;
+  rows.forEach((row) => {
+    const value = row[field];
+    if (!Number.isFinite(value)) return;
+    if (!best || value > best.value) {
+      best = { key, value, day: row.__hep_day, raw: row };
+    }
+  });
+  return best;
+}
+function computeRRatio(participantRows, settings) {
+  const altPeak = participantPeak(
+    resolveMeasureRows(participantRows, settings, "ALT"),
+    "ALT",
+    "relative_uln"
+  );
+  const alpPeak = participantPeak(
+    resolveMeasureRows(participantRows, settings, "ALP"),
+    "ALP",
+    "relative_uln"
+  );
+  if (!altPeak || !alpPeak || !(alpPeak.value > 0)) return NaN;
+  return altPeak.value / alpPeak.value;
+}
+function participantMeasureSeries(cleanRows, id, settings, state) {
+  const field = displayField(state.display);
+  const participantRows = cleanRows.filter((row) => row[settings.id_col] === id);
+  return MEASURE_KEYS.map((key) => {
+    const rows = resolveMeasureRows(participantRows, settings, key);
+    const points = rows.filter((row) => Number.isFinite(row[field])).sort(dayThenIndex).map((row) => ({ day: row.__hep_day, value: row[field], raw: row }));
+    return { key, label: key, points };
+  }).filter((series) => series.points.length > 0);
+}
+function measureSummary(cleanRows, id, settings) {
+  const participantRows = cleanRows.filter((row) => row[settings.id_col] === id);
+  return MEASURE_KEYS.map((key) => {
+    const values = resolveMeasureRows(participantRows, settings, key).map((row) => row.__hep_value).filter(Number.isFinite);
+    return {
+      key,
+      label: key,
+      n: values.length,
+      min: values.length ? Math.min(...values) : NaN,
+      median: values.length ? median2(values) : NaN,
+      max: values.length ? Math.max(...values) : NaN
+    };
+  }).filter((row) => row.n > 0);
+}
+
 // src/hep-explorer/configure.js
 var GROUP_NONE2 = "hep_none";
 var DISPLAY_MODES = [
@@ -18307,7 +18467,6 @@ var VIEW_MODES = [
 ];
 var AXIS_TYPES = ["linear", "log"];
 var POINT_SIZE_OPTIONS = ["Uniform", "rRatio"];
-var MEASURE_KEYS = ["ALT", "AST", "TB", "ALP"];
 var DEFAULT_SETTINGS7 = {
   id_col: "USUBJID",
   measure_col: "TEST",
@@ -18402,12 +18561,6 @@ function syncSettings7(settings) {
   synced.jaundice_uln = Number.isFinite(Number(synced.jaundice_uln)) ? Number(synced.jaundice_uln) : DEFAULT_SETTINGS7.jaundice_uln;
   synced.hide_unchanged = Boolean(synced.hide_unchanged);
   return synced;
-}
-function cutFor(cuts, measureKey, display) {
-  const entry = cuts && cuts[measureKey] || cuts && cuts.defaults || {};
-  const fallback = cuts && cuts.defaults || {};
-  const value = entry[display];
-  return Number.isFinite(value) ? value : fallback[display];
 }
 
 // src/hep-core/arms.js
@@ -18880,94 +19033,11 @@ function quadrantPlugin(instance) {
   };
 }
 
-// src/hep-core/stats.js
-function mean6(values) {
-  const nums = values.map(Number).filter(Number.isFinite);
-  if (!nums.length) return NaN;
-  return nums.reduce((sum, value) => sum + value, 0) / nums.length;
-}
-function quantile4(values, p) {
-  const nums = values.map(Number).filter(Number.isFinite);
-  if (!nums.length) return NaN;
-  const sorted = [...nums].sort((a, b) => a - b);
-  const idx = (sorted.length - 1) * p;
-  const lo = Math.floor(idx);
-  const hi = Math.ceil(idx);
-  if (lo === hi) return sorted[lo];
-  return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
-}
-function median2(values) {
-  return quantile4(values, 0.5);
-}
-function boxStats(values) {
-  const sorted = (values || []).map(Number).filter(Number.isFinite).sort((a, b) => a - b);
-  return {
-    n: sorted.length,
-    min: sorted.length ? sorted[0] : NaN,
-    q5: quantile4(sorted, 0.05),
-    q25: quantile4(sorted, 0.25),
-    median: quantile4(sorted, 0.5),
-    q75: quantile4(sorted, 0.75),
-    q95: quantile4(sorted, 0.95),
-    max: sorted.length ? sorted[sorted.length - 1] : NaN,
-    mean: mean6(sorted)
-  };
-}
-
 // src/hep-explorer/structureData.js
 function unique6(values) {
   return [
     ...new Set(values.filter((value) => value !== void 0 && value !== null && value !== ""))
   ];
-}
-function displayField(display) {
-  return display === "relative_baseline" ? "__hep_relative_baseline" : "__hep_relative_uln";
-}
-function dayThenIndex(a, b) {
-  const da = Number.isFinite(a.__hep_day) ? a.__hep_day : Number.MAX_SAFE_INTEGER;
-  const db = Number.isFinite(b.__hep_day) ? b.__hep_day : Number.MAX_SAFE_INTEGER;
-  return da - db || a.__hep_index - b.__hep_index;
-}
-function resolveMeasureRows(rows, settings, key) {
-  const testName = settings.measure_values ? settings.measure_values[key] : key;
-  return rows.filter((row) => row[settings.measure_col] === testName);
-}
-function cleanData6(rawData, settings) {
-  let removed = 0;
-  const rows = rawData.map((row, index) => {
-    const value = Number(row[settings.value_col]);
-    const uln = Number(row[settings.normal_col_high]);
-    const day = settings.studyday_col && row[settings.studyday_col] !== "" && row[settings.studyday_col] !== void 0 ? Number(row[settings.studyday_col]) : NaN;
-    return {
-      ...row,
-      __hep_index: index,
-      __hep_seq: NaN,
-      __hep_value: value,
-      __hep_uln: uln,
-      __hep_day: day,
-      __hep_relative_uln: value / uln,
-      __hep_relative_baseline: NaN,
-      __hep_baseline: NaN
-    };
-  }).filter((row) => {
-    const keep = row[settings.value_col] !== "" && row[settings.value_col] !== void 0 && Number.isFinite(row.__hep_value) && Number.isFinite(row.__hep_uln) && row.__hep_uln > 0;
-    if (!keep) removed += 1;
-    return keep;
-  });
-  return { rows, removed };
-}
-function assignSequence2(rows, settings) {
-  const counts = /* @__PURE__ */ new Map();
-  rows.forEach((row) => {
-    const key = `${row[settings.id_col]}\0${row[settings.measure_col]}`;
-    const next = (counts.get(key) || 0) + 1;
-    counts.set(key, next);
-    row.__hep_seq = next;
-  });
-  return rows;
-}
-function hasStudyDay(rows) {
-  return rows.some((row) => Number.isFinite(row.__hep_day));
 }
 function maxRRatio(cleanRows, settings) {
   const byId = /* @__PURE__ */ new Map();
@@ -18982,51 +19052,6 @@ function maxRRatio(cleanRows, settings) {
     if (Number.isFinite(ratio) && ratio > max) max = ratio;
   });
   return max;
-}
-function deriveBaseline(rows, settings) {
-  const groups = /* @__PURE__ */ new Map();
-  rows.forEach((row) => {
-    const key = `${row[settings.id_col]}\0${row[settings.measure_col]}`;
-    if (!groups.has(key)) groups.set(key, []);
-    groups.get(key).push(row);
-  });
-  groups.forEach((records) => {
-    const ordered = [...records].sort(dayThenIndex);
-    const zero = ordered.find((row) => row.__hep_day === 0);
-    const baselineRow = zero || ordered[0];
-    const baselineValue = baselineRow ? baselineRow.__hep_value : NaN;
-    records.forEach((row) => {
-      row.__hep_baseline = baselineValue;
-      row.__hep_relative_baseline = Number.isFinite(baselineValue) && baselineValue !== 0 ? row.__hep_value / baselineValue : NaN;
-    });
-  });
-  return rows;
-}
-function participantPeak(rows, key, display) {
-  const field = displayField(display);
-  let best = null;
-  rows.forEach((row) => {
-    const value = row[field];
-    if (!Number.isFinite(value)) return;
-    if (!best || value > best.value) {
-      best = { key, value, day: row.__hep_day, raw: row };
-    }
-  });
-  return best;
-}
-function computeRRatio(participantRows, settings) {
-  const altPeak = participantPeak(
-    resolveMeasureRows(participantRows, settings, "ALT"),
-    "ALT",
-    "relative_uln"
-  );
-  const alpPeak = participantPeak(
-    resolveMeasureRows(participantRows, settings, "ALP"),
-    "ALP",
-    "relative_uln"
-  );
-  if (!altPeak || !alpPeak || !(alpPeak.value > 0)) return NaN;
-  return altPeak.value / alpPeak.value;
 }
 function buildPoints(cleanRows, settings, state) {
   const { measureX, measureY, display, visitWindow, groupBy: groupBy2 } = state;
@@ -19158,29 +19183,6 @@ function visitPathSeries(cleanRows, id, settings, state) {
     visit: entry.visit,
     label: entry.visit ? String(entry.visit) : Number.isFinite(entry.day) ? `Day ${entry.day}` : `#${Number.isFinite(entry.seq) ? entry.seq : entry.order}`
   }));
-}
-function participantMeasureSeries(cleanRows, id, settings, state) {
-  const field = displayField(state.display);
-  const participantRows = cleanRows.filter((row) => row[settings.id_col] === id);
-  return MEASURE_KEYS.map((key) => {
-    const rows = resolveMeasureRows(participantRows, settings, key);
-    const points = rows.filter((row) => Number.isFinite(row[field])).sort(dayThenIndex).map((row) => ({ day: row.__hep_day, value: row[field], raw: row }));
-    return { key, label: key, points };
-  }).filter((series) => series.points.length > 0);
-}
-function measureSummary(cleanRows, id, settings) {
-  const participantRows = cleanRows.filter((row) => row[settings.id_col] === id);
-  return MEASURE_KEYS.map((key) => {
-    const values = resolveMeasureRows(participantRows, settings, key).map((row) => row.__hep_value).filter(Number.isFinite);
-    return {
-      key,
-      label: key,
-      n: values.length,
-      min: values.length ? Math.min(...values) : NaN,
-      median: values.length ? median2(values) : NaN,
-      max: values.length ? Math.max(...values) : NaN
-    };
-  }).filter((row) => row.n > 0);
 }
 
 // src/hep-explorer/selection.js

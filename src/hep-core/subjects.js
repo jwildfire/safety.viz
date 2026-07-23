@@ -29,7 +29,7 @@
 // Requirement groups: HEP-COMP-*, HEP-CORE-*.
 
 import { GROUP_NONE } from '../hep-explorer/configure.js';
-import { resolveMeasureRows } from '../hep-explorer/structureData.js';
+import { resolveMeasureRows } from './rows.js';
 import { distinctArms, resolveArmCol, resolveArmDesignation } from './arms.js';
 import { classifyComposite, concernOf } from './quadrants.js';
 

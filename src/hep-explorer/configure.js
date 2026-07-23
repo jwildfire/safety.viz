@@ -49,8 +49,12 @@ export const AXIS_TYPES = ['linear', 'log'];
 /** Point-size options for the Point Size control: uniform radius or rRatio-scaled (HEP-CTRL-007). */
 export const POINT_SIZE_OPTIONS = ['Uniform', 'rRatio'];
 
-/** The four liver measures the explorer standardizes and can plot (HEP-DISPLAY-003). */
-export const MEASURE_KEYS = ['ALT', 'AST', 'TB', 'ALP'];
+// The four liver measures (MEASURE_KEYS) and the Hy's-Law cutpoint resolver
+// (cutFor) moved VERBATIM to src/hep-core/rows.js in safety.viz#98 so the
+// participant-profile module (PPRF-1) consumes them without importing this
+// renderer file. Re-exported here so every existing hep-explorer caller keeps
+// its original import path, identity-equal to the hep-core binding.
+export { MEASURE_KEYS, cutFor } from '../hep-core/rows.js';
 
 /**
  * Rendering and data-mapping settings for the hep-explorer module. Every key
@@ -247,19 +251,4 @@ export function syncSettings(settings) {
   synced.hide_unchanged = Boolean(synced.hide_unchanged);
 
   return synced;
-}
-
-/**
- * Resolve the active Hy's-Law cutpoint for a measure + display mode, falling
- * back to the `defaults` entry for measures without their own cuts (HEP-QUAD-001).
- * @param {Object} cuts The normalized cuts object.
- * @param {string} measureKey The short measure key (ALT/AST/TB/ALP/rRatio).
- * @param {string} display The active display mode ('relative_uln'|'relative_baseline').
- * @returns {number} The cutpoint value.
- */
-export function cutFor(cuts, measureKey, display) {
-  const entry = (cuts && cuts[measureKey]) || (cuts && cuts.defaults) || {};
-  const fallback = (cuts && cuts.defaults) || {};
-  const value = entry[display];
-  return Number.isFinite(value) ? value : fallback[display];
 }
