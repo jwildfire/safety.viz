@@ -18,6 +18,7 @@ vi.mock('chart.js', () => {
       built.push(this);
     }
     update() {}
+    draw() {}
     resize() {}
     destroy() {
       this.destroyed = true;
@@ -31,6 +32,7 @@ vi.mock('chart.js', () => {
     LineElement: stub(),
     PointElement: stub(),
     LinearScale: stub(),
+    LogarithmicScale: stub(),
     Tooltip: stub(),
     Legend: stub()
   };

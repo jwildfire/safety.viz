@@ -21,6 +21,7 @@ vi.mock('chart.js', () => {
       Chart.built.push(this);
     }
     update() {}
+    draw() {}
     resize() {}
     destroy() {
       this.destroyed = true;
@@ -144,5 +145,51 @@ describe('hep-explorer participant-profile adoption (PPRF-7, PPRF-HEP-001)', () 
     instance.selectParticipant('P1');
     instance.destroy();
     expect(document.querySelector('#host').textContent.trim()).toBe('');
+  });
+});
+
+describe('dock coordination follows live control state (PPRF-7, PPRF-HEP-001)', () => {
+  it('user-edited reference cuts reach the dock on the control-driven redraw', () => {
+    const instance = build();
+    instance.selectParticipant('P1');
+    // The scatter cut inputs write state.cuts and call render() — the dock's
+    // spaghetti must draw/fill against the SAME edited cut, not the
+    // construction-time settings value.
+    instance.state.cuts.ALT = { ...(instance.state.cuts.ALT || {}), relative_uln: 5 };
+    instance.render();
+    expect(instance.profile.settings.cuts.ALT.relative_uln).toBe(5);
+    const altSeries = instance.profile.model.spaghetti.series.find((entry) => entry.key === 'ALT');
+    expect(altSeries.cut).toBe(5);
+  });
+
+  it('the Axis-type control reaches the dock spaghetti (drawDetail log-axis parity)', () => {
+    const instance = build();
+    instance.selectParticipant('P1');
+    expect(instance.profile.model.spaghetti.axisType).toBe('linear');
+    instance.state.axisType = 'log';
+    instance.render();
+    expect(instance.profile.settings.axis_type).toBe('log');
+    expect(instance.profile.model.spaghetti.axisType).toBe('log');
+  });
+
+  it('passes the caller measureBounds, p_alt_col and participantProfileURL knobs through', () => {
+    const instance = build({
+      measureBounds: [0.05, 0.95],
+      p_alt_col: 'P_ALT',
+      participantProfileURL: 'https://x.test/{id}'
+    });
+    instance.selectParticipant('P1');
+    expect(instance.profile.settings.measureBounds).toEqual([0.05, 0.95]);
+    expect(instance.profile.settings.p_alt_col).toBe('P_ALT');
+    expect(instance.profile.settings.participantProfileURL).toBe('https://x.test/{id}');
+  });
+
+  it('profile_details overrides the shared details knob for the dock header (PPRF-2)', () => {
+    const instance = build({
+      details: ['VISIT'],
+      profile_details: [{ value_col: 'SEX', label: 'Sex' }]
+    });
+    instance.selectParticipant('P1');
+    expect(instance.profile.settings.details).toEqual([{ value_col: 'SEX', label: 'Sex' }]);
   });
 });

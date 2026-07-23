@@ -18,9 +18,46 @@ import { renderInset } from './inset.js';
 
 const COLUMNS = ['Measure', 'N', 'Min', 'Median', 'Max', 'Spark'];
 
+// Unique-id sequence for the inset rows so the spark toggles can reference
+// them via aria-controls even with two mounts on one page (PPRF-8).
+let insetUid = 0;
+
 /** Format a summary statistic to two decimals, '' when not finite (parity: d3.format('0.2f')). */
 export function formatSummary(value) {
   return Number.isFinite(value) ? value.toFixed(2) : '';
+}
+
+/** An ordinal percentile label for a quantile: 0.01 → "1st", 0.99 → "99th". */
+export function percentileLabel(quantile) {
+  const n = Math.round(quantile * 100);
+  const mod100 = n % 100;
+  const mod10 = n % 10;
+  const suffix =
+    mod10 === 1 && mod100 !== 11
+      ? 'st'
+      : mod10 === 2 && mod100 !== 12
+        ? 'nd'
+        : mod10 === 3 && mod100 !== 13
+          ? 'rd'
+          : 'th';
+  return `${n}${suffix}`;
+}
+
+/**
+ * The measure-table footnote copy (parity: the original's addFootnote): the
+ * only in-UI explanation of the sparkline y-domain guides and the expand
+ * affordance (PPRF-4).
+ * @param {Object} settings Normalized settings ({ measureBounds }).
+ * @returns {string} The footnote text.
+ */
+export function tableFootnote(settings) {
+  const [lo, hi] = settings.measureBounds || [0.01, 0.99];
+  return (
+    `The y-axis for each chart is set to the ${percentileLabel(lo)} and ` +
+    `${percentileLabel(hi)} percentiles of the entire population's results for that measure. ` +
+    'Values outside the normal range are plotted as individual points. ' +
+    'Click a sparkline to view a more detailed version of the chart.'
+  );
 }
 
 /**
@@ -74,6 +111,8 @@ export function renderMeasureTable(host, measures, settings, state = {}, handler
     entry.chart.destroy();
     entry.insetRow.remove();
     entry.button.setAttribute('aria-expanded', 'false');
+    entry.button.setAttribute('aria-label', `Expand ${entry.measure.label} chart`);
+    entry.button.removeAttribute('aria-controls');
     entry.button.textContent = '▽';
     if (entry.svg) entry.svg.style.display = '';
     open.delete(key);
@@ -81,12 +120,17 @@ export function renderMeasureTable(host, measures, settings, state = {}, handler
 
   function expand(measure, row, button, svg) {
     const insetRow = createElement('tr', 'sv-profile-inset-row');
+    insetRow.id = `sv-profile-inset-${(insetUid += 1)}`;
     const cell = createElement('td', 'sv-profile-inset-cell');
     cell.setAttribute('colspan', String(COLUMNS.length));
     insetRow.append(cell);
     row.after(insetRow); // parity insertAfter
     const chart = renderInset(cell, measure);
     button.setAttribute('aria-expanded', 'true');
+    // The accessible name follows the expanded state (PPRF-8) and the button
+    // points at the inset row it controls.
+    button.setAttribute('aria-label', `Collapse ${measure.label} chart`);
+    button.setAttribute('aria-controls', insetRow.id);
     button.textContent = '△ Minimize Chart';
     if (svg) svg.style.display = 'none';
     open.set(measure.key, { measure, insetRow, chart, button, svg });
@@ -111,6 +155,7 @@ export function renderMeasureTable(host, measures, settings, state = {}, handler
     button.type = 'button';
     button.setAttribute('aria-expanded', 'false');
     button.setAttribute('aria-label', `Expand ${measure.label} chart`);
+    button.setAttribute('data-sv-focus', `spark-${measure.key}`);
     const svg = sparklineSVG(measure);
     button.onclick = () => {
       if (open.has(measure.key)) collapse(measure.key);
@@ -135,6 +180,9 @@ export function renderMeasureTable(host, measures, settings, state = {}, handler
   }
 
   wrap.append(table);
+  // The percentile-guides + expand-affordance footnote (parity: the
+  // original's measureTable/addFootnote.js).
+  wrap.append(createElement('p', 'sv-profile-table-footnote', tableFootnote(settings)));
   host.append(wrap);
 
   function collapseAll() {

@@ -133,7 +133,15 @@ export function buildProfileModel(cleanRows, id, settings, state) {
     const points = measure.rows
       .filter((row) => Number.isFinite(row[field]))
       .sort(dayThenIndex)
-      .map((row) => ({ day: row.__hep_day, value: row[field] }));
+      .map((row) => ({
+        day: row.__hep_day,
+        value: row[field],
+        // Tooltip context (parity: the original spaghetti addPointTitles):
+        // the raw result alongside the adjusted value, plus the visit fields.
+        raw: row.__hep_value,
+        visit: settings.visit_col != null ? row[settings.visit_col] : undefined,
+        visitn: settings.visitn_col != null ? row[settings.visitn_col] : undefined
+      }));
     return {
       key: measure.key,
       label: measure.label,
@@ -155,7 +163,15 @@ export function buildProfileModel(cleanRows, id, settings, state) {
         const value = row.__hep_value;
         const outlierLow = Number.isFinite(lln) && value < lln;
         const outlierHigh = Number.isFinite(uln) && value > uln;
-        return { day: row.__hep_day, value, lln, uln, outlier: outlierLow || outlierHigh };
+        return {
+          day: row.__hep_day,
+          value,
+          lln,
+          uln,
+          outlier: outlierLow || outlierHigh,
+          visit: settings.visit_col != null ? row[settings.visit_col] : undefined,
+          visitn: settings.visitn_col != null ? row[settings.visitn_col] : undefined
+        };
       });
     return {
       key: measure.key,
@@ -173,7 +189,14 @@ export function buildProfileModel(cleanRows, id, settings, state) {
 
   return {
     participant,
-    spaghetti: { series, yLabel: yLabelFor(display), display },
+    spaghetti: {
+      series,
+      yLabel: yLabelFor(display),
+      display,
+      // Follow the host's y-axis scale (PPRF-3/7 — the deleted drawDetail
+      // honored the hep-explorer Axis-type control).
+      axisType: settings.axis_type === 'log' ? 'log' : 'linear'
+    },
     measures: measureModels
   };
 }

@@ -18,6 +18,7 @@ vi.mock('chart.js', () => {
       built.push(this);
     }
     update() {}
+    draw() {}
     resize() {}
     destroy() {
       this.destroyed = true;
@@ -31,6 +32,7 @@ vi.mock('chart.js', () => {
     LineElement: stub(),
     PointElement: stub(),
     LinearScale: stub(),
+    LogarithmicScale: stub(),
     Tooltip: stub(),
     Legend: stub()
   };
@@ -98,6 +100,16 @@ describe('visibleSeries — extras and lab subsetting (PPRF-3, PPRF-SPAG-001)', 
         (entry) => entry.key
       )
     ).toEqual(['ALT', 'Creatinine']);
+  });
+
+  it('keeps the extras toggle live under a lab subset: hidden extras never draw', () => {
+    // A stale subset naming an extra measure does not resurrect it while the
+    // extras toggle is off — the chart always agrees with the Measures control.
+    expect(
+      visibleSeries(series, { showExtras: false, labs: ['ALT', 'Creatinine'] }).map(
+        (entry) => entry.key
+      )
+    ).toEqual(['ALT']);
   });
 });
 
@@ -200,5 +212,114 @@ describe('renderSpaghetti (PPRF-3, PPRF-SPAG-001)', () => {
       'TB',
       'Creatinine'
     ]);
+  });
+});
+
+describe('spaghetti y-domain includes the reference cuts (PPRF-3, PPRF-SPAG-002)', () => {
+  const model = { series, yLabel: 'Standardized Result [xULN]', display: 'relative_uln' };
+
+  it("pins the linear axis to 0 and suggests the visible series' max cut (parity onDraw [0, max(values, cuts)])", () => {
+    const chart = renderSpaghetti(document.querySelector('#host'), model, {});
+    expect(chart.options.scales.y.type).toBe('linear');
+    expect(chart.options.scales.y.min).toBe(0);
+    // Visible key measures carry cuts 3 (ALT) and 2 (TB) — the cut line can
+    // never autoscale off-plot.
+    expect(chart.options.scales.y.suggestedMax).toBe(3);
+  });
+
+  it('follows a log axis type without pinning the minimum to 0 (PPRF-7 drawDetail parity)', () => {
+    const chart = renderSpaghetti(
+      document.querySelector('#host'),
+      { ...model, axisType: 'log' },
+      {}
+    );
+    expect(chart.options.scales.y.type).toBe('logarithmic');
+    expect(chart.options.scales.y.min).toBeUndefined();
+    expect(chart.options.scales.y.suggestedMax).toBe(3);
+  });
+});
+
+describe('cut lines on keyboard focus (PPRF-3/8, PPRF-SPAG-002, PPRF-ACC-001)', () => {
+  function fakeChart(active, { showCuts = false } = {}) {
+    const calls = [];
+    const ctx = new Proxy(
+      {},
+      {
+        get(target, prop) {
+          if (prop === 'calls') return calls;
+          return (...args) => calls.push([prop, ...args]);
+        },
+        set() {
+          return true;
+        }
+      }
+    );
+    return {
+      $svShowCuts: showCuts,
+      getActiveElements: () => active,
+      data: { datasets: spaghettiDatasets(series) },
+      scales: { y: { getPixelForValue: (value) => 200 - value * 10 } },
+      chartArea: { left: 10, right: 310, top: 0, bottom: 200 },
+      ctx,
+      calls
+    };
+  }
+
+  it('draws EVERY visible cut line while the canvas holds focus, hover aside', () => {
+    const chart = fakeChart([], { showCuts: true });
+    cutLinePlugin().afterDatasetsDraw(chart);
+    const labels = chart.calls
+      .filter(([name]) => name === 'fillText')
+      .map(([, text]) => text)
+      .sort();
+    expect(labels).toEqual(['2.0', '3.0', '3.0']);
+  });
+
+  it('the rendered canvas is focusable with a text alternative (PPRF-8)', () => {
+    const host = document.querySelector('#host');
+    renderSpaghetti(host, { series, yLabel: 'Standardized Result [xULN]' }, {});
+    const canvas = host.querySelector('canvas');
+    expect(canvas.tabIndex).toBe(0);
+    expect(canvas.getAttribute('role')).toBe('img');
+    expect(canvas.getAttribute('aria-label')).toContain('ALT');
+    expect(canvas.getAttribute('aria-label')).toContain('TB');
+  });
+});
+
+describe('tooltip visit context and raw/adjusted pairing (PPRF-3, PPRF-SPAG-001)', () => {
+  const richSeries = [
+    {
+      key: 'ALT',
+      label: 'Aminotransferase, alanine (ALT)',
+      isKey: true,
+      color: '#1f78b4',
+      cut: 3,
+      points: [{ day: 30, value: 4, raw: 160, visit: 'Week 4', visitn: 4 }]
+    }
+  ];
+
+  it('carries the point models on the dataset and formats title/label from them', () => {
+    const chart = renderSpaghetti(
+      document.querySelector('#host'),
+      { series: richSeries, yLabel: 'Standardized Result [xULN]' },
+      {}
+    );
+    const [dataset] = chart.data.datasets;
+    expect(dataset.svPoints).toHaveLength(1);
+    const { title, label } = chart.options.plugins.tooltip.callbacks;
+    const item = { dataset, dataIndex: 0, parsed: { x: 30, y: 4 } };
+    expect(title([item])).toEqual(['Study day: 30', 'Visit: Week 4 (4)']);
+    expect(label(item)).toEqual(['Raw ALT: 160.00', 'Adjusted ALT: 4.00']);
+  });
+
+  it('falls back to the adjusted value alone when the point carries no raw/visit fields', () => {
+    const chart = renderSpaghetti(
+      document.querySelector('#host'),
+      { series, yLabel: 'Standardized Result [xULN]' },
+      {}
+    );
+    const [dataset] = chart.data.datasets;
+    const { label } = chart.options.plugins.tooltip.callbacks;
+    expect(label({ dataset, dataIndex: 1, parsed: { x: 30, y: 4 } })).toBe('ALT: 4.00');
   });
 });

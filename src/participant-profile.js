@@ -17,6 +17,7 @@ import {
   LineElement,
   PointElement,
   LinearScale,
+  LogarithmicScale,
   Tooltip,
   Legend
 } from 'chart.js';
@@ -33,7 +34,15 @@ import { renderStepper } from './participant-profile/stepper.js';
 import { displayControl, labControl } from './participant-profile/controls.js';
 import { applyProfileStyles } from './participant-profile/styles.js';
 
-Chart.register(LineController, LineElement, PointElement, LinearScale, Tooltip, Legend);
+Chart.register(
+  LineController,
+  LineElement,
+  PointElement,
+  LinearScale,
+  LogarithmicScale,
+  Tooltip,
+  Legend
+);
 
 /**
  * Resolve the standalone event target (PPRF-6): an Element passes through, a
@@ -87,6 +96,7 @@ class SafetyParticipantProfile {
     this.tableController = null;
     this.listenTarget = null;
     this.listenHandler = null;
+    this.liveRegion = null;
     this.state = {
       display: this.settings.display,
       showExtras: false,
@@ -180,14 +190,27 @@ class SafetyParticipantProfile {
   }
 
   /**
+   * Merge setting overrides onto the current settings without re-rendering:
+   * the merge half of setSettings, also used by a docked host to refresh
+   * live pass-through settings (cuts, axis type, display) before its own
+   * selection re-dispatch re-renders the block (PPRF-7).
+   * @param {Object} settings Setting overrides to merge.
+   * @returns {SafetyParticipantProfile} The instance, for chaining.
+   */
+  applySettings(settings) {
+    if ('display' in settings) this.state.display = settings.display;
+    this.settings = syncSettings({ ...this.settings, ...settings });
+    return this;
+  }
+
+  /**
    * Merge setting overrides onto the current settings, adopt a provided display
    * mode into the live state, re-clean any bound data, and re-render.
    * @param {Object} settings Setting overrides to merge.
    * @returns {SafetyParticipantProfile} The instance, for chaining.
    */
   setSettings(settings) {
-    if ('display' in settings) this.state.display = settings.display;
-    this.settings = syncSettings({ ...this.settings, ...settings });
+    this.applySettings(settings);
     if (this.mode === 'standalone' && this.rawData.length) this.validateAndCleanData();
     this.render();
     return this;
@@ -242,8 +265,14 @@ class SafetyParticipantProfile {
     if (cleanRows !== undefined) this.cleanRows = Array.isArray(cleanRows) ? cleanRows : [];
     const list = (Array.isArray(ids) ? ids : []).map(String);
     if (!list.length) return this.clear();
-    this.state.ids = rankParticipants(this.cleanRows, list, this.settings);
-    this.state.index = 0;
+    const ranked = rankParticipants(this.cleanRows, list, this.settings);
+    // Re-shows of the SAME cohort (host control redraws re-dispatch the carried
+    // selection) keep the stepper position instead of snapping back to 1 of N.
+    const sameCohort =
+      ranked.length === this.state.ids.length &&
+      ranked.every((id, index) => String(id) === String(this.state.ids[index]));
+    this.state.ids = ranked;
+    this.state.index = sameCohort ? Math.min(this.state.index, ranked.length - 1) : 0;
     this.renderProfile();
     return this;
   }
@@ -259,6 +288,7 @@ class SafetyParticipantProfile {
     this.state.ids = [];
     this.state.index = 0;
     this.profileHost.innerHTML = '';
+    this.liveRegion = null;
     if (this.mode === 'standalone') {
       if (this.controls) this.controls.innerHTML = '';
       this.setIdle();
@@ -311,17 +341,38 @@ class SafetyParticipantProfile {
   /**
    * Render the full profile block for the current participant: stepper (N > 1),
    * header, controls, spaghetti card, measure table, and the optional record
-   * listing (PPRF-2/3/4/5).
+   * listing (PPRF-2/3/4/5). The rebuild is keyboard-safe (PPRF-8): the focused
+   * control's data-sv-focus key is captured first and focus is restored onto
+   * its recreated counterpart, and a persistent aria-live region (never torn
+   * down between renders) announces the current participant.
    * @private
    */
   renderProfile() {
+    const activeEl = typeof document !== 'undefined' ? document.activeElement : null;
+    const ownsFocus =
+      activeEl &&
+      (this.profileHost.contains(activeEl) || (this.controls && this.controls.contains(activeEl)));
+    const focusKey = ownsFocus ? activeEl.getAttribute('data-sv-focus') : null;
+
     this.destroyContent();
-    this.profileHost.innerHTML = '';
+    if (!this.liveRegion || this.liveRegion.parentElement !== this.profileHost) {
+      this.profileHost.innerHTML = '';
+      this.liveRegion = createElement('div', 'sv-profile-live');
+      this.liveRegion.setAttribute('aria-live', 'polite');
+      this.profileHost.append(this.liveRegion);
+    } else {
+      [...this.profileHost.children].forEach((child) => {
+        if (child !== this.liveRegion) child.remove();
+      });
+    }
+
     const id = this.state.ids[this.state.index];
     const model = buildProfileModel(this.cleanRows, id, this.settings, this.state);
     this.model = model;
 
     const root = createElement('div', 'sv-profile-root');
+    root.setAttribute('role', 'region');
+    root.setAttribute('aria-label', `Participant ${id} profile`);
     this.profileHost.append(root);
 
     if (this.state.ids.length > 1) {
@@ -334,7 +385,12 @@ class SafetyParticipantProfile {
       renderHeader(model.participant, this.settings, { onClear: () => this.handleClear() })
     );
 
-    const keys = model.spaghetti.series.map((entry) => entry.key);
+    // The Measures control lists only the AVAILABLE measures — extras join the
+    // list when the extras toggle reveals them — so its selection state always
+    // matches what the spaghetti draws (PPRF-3).
+    const keys = model.spaghetti.series
+      .filter((entry) => this.state.showExtras || entry.isKey)
+      .map((entry) => entry.key);
     if (this.mode === 'dock') root.append(this.buildInlineControls(keys));
     else this.buildSidebarControls(keys);
 
@@ -343,9 +399,12 @@ class SafetyParticipantProfile {
     this.drawSpaghetti();
 
     this.tableController = renderMeasureTable(root, model.measures, this.settings, this.state, {
+      // The extras toggle changes both the table AND the control surface
+      // (Measures options, spaghetti series), so it re-renders the block;
+      // focus restoration keeps the checkbox focused (PPRF-8).
       onToggleExtras: (showExtras) => {
         this.state.showExtras = showExtras;
-        this.drawSpaghetti();
+        this.renderProfile();
       }
     });
 
@@ -361,6 +420,29 @@ class SafetyParticipantProfile {
       this.notes.textContent =
         n > 1 ? `Profiling ${n} selected participants.` : `Profiling participant ${id}.`;
     }
+
+    const n = this.state.ids.length;
+    this.liveRegion.textContent =
+      n > 1 ? `Participant ${id}, ${this.state.index + 1} of ${n}` : `Participant ${id}`;
+    this.restoreFocus(focusKey);
+  }
+
+  /**
+   * Restore keyboard focus after a rebuild (PPRF-8): find the recreated
+   * control carrying the captured data-sv-focus key and focus it; when a
+   * stepper button came back disabled (the cohort end was reached), focus the
+   * stepper strip instead so arrow-key navigation keeps working.
+   * @param {?string} focusKey The captured data-sv-focus key, or null.
+   * @private
+   */
+  restoreFocus(focusKey) {
+    if (!focusKey) return;
+    const find = (key) =>
+      this.profileHost.querySelector(`[data-sv-focus="${key}"]`) ||
+      (this.controls ? this.controls.querySelector(`[data-sv-focus="${key}"]`) : null);
+    let target = find(focusKey);
+    if (target && target.disabled) target = find('stepper') || target;
+    if (target && !target.disabled && typeof target.focus === 'function') target.focus();
   }
 
   /**

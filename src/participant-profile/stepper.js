@@ -22,6 +22,7 @@ export function renderStepper(ids, index, { onStep } = {}) {
   const strip = createElement('div', 'sv-profile-stepper');
   strip.setAttribute('role', 'group');
   strip.setAttribute('aria-label', 'Selected participants');
+  strip.setAttribute('data-sv-focus', 'stepper');
   strip.tabIndex = 0;
 
   const step = (delta) => {
@@ -33,6 +34,7 @@ export function renderStepper(ids, index, { onStep } = {}) {
   const prev = createElement('button', 'sv-profile-step sv-profile-step-prev', '◀');
   prev.type = 'button';
   prev.setAttribute('aria-label', 'Previous participant');
+  prev.setAttribute('data-sv-focus', 'step-prev');
   prev.disabled = index === 0;
   prev.onclick = () => step(-1);
 
@@ -46,6 +48,7 @@ export function renderStepper(ids, index, { onStep } = {}) {
   const next = createElement('button', 'sv-profile-step sv-profile-step-next', '▶');
   next.type = 'button';
   next.setAttribute('aria-label', 'Next participant');
+  next.setAttribute('data-sv-focus', 'step-next');
   next.disabled = index === ids.length - 1;
   next.onclick = () => step(1);
 

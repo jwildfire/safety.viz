@@ -83,7 +83,7 @@ describe('participant-profile syncSettings (PPRF-1, PPRF-CORE-003)', () => {
   });
 });
 
-describe('templateProfileURL (PPRF-2, PPRF-HDR-002, closes #53)', () => {
+describe('templateProfileURL (PPRF-2, PPRF-HDR-003, closes #53)', () => {
   it('replaces every literal {id} token with the encoded id', () => {
     expect(templateProfileURL('https://x.test/{id}/profile?p={id}', 'P 1')).toBe(
       'https://x.test/P%201/profile?p=P%201'

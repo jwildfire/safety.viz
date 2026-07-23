@@ -18,6 +18,11 @@ import { createElement, option } from '../shell.js';
 export function displayControl(settings, state, onChange) {
   const select = document.createElement('select');
   select.className = 'sv-profile-display';
+  // Accessible name + focus-restoration key (PPRF-8): the visual labels are
+  // unassociated siblings in both mounts, and re-renders restore focus by the
+  // data-sv-focus key.
+  select.setAttribute('aria-label', 'Standardization');
+  select.setAttribute('data-sv-focus', 'display');
   (settings.display_options || []).forEach((opt) =>
     option(select, opt.value, opt.label, opt.value === state.display)
   );
@@ -36,6 +41,8 @@ export function displayControl(settings, state, onChange) {
 export function labControl(keys, state, onChange) {
   const select = document.createElement('select');
   select.className = 'sv-profile-labs';
+  select.setAttribute('aria-label', 'Measures');
+  select.setAttribute('data-sv-focus', 'labs');
   select.multiple = true;
   select.size = Math.min(6, Math.max(2, keys.length));
   const active = state.labs ? new Set(state.labs) : null;
@@ -57,6 +64,7 @@ export function extrasControl(count, state, onChange) {
   const wrap = createElement('label', 'sv-profile-extras');
   const checkbox = document.createElement('input');
   checkbox.type = 'checkbox';
+  checkbox.setAttribute('data-sv-focus', 'extras');
   checkbox.checked = Boolean(state.showExtras);
   checkbox.onchange = () => onChange(checkbox.checked);
   wrap.append(

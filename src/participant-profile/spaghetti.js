@@ -7,11 +7,19 @@
 // renderer's spaghettiPlot/* (onPreprocess, onResize fill-opacity, drawCutLine).
 // Direct lift of the drawDetail line-chart idiom from src/hep-explorer.js.
 
-import { Chart, LineController, LineElement, PointElement, LinearScale, Tooltip } from 'chart.js';
+import {
+  Chart,
+  LineController,
+  LineElement,
+  PointElement,
+  LinearScale,
+  LogarithmicScale,
+  Tooltip
+} from 'chart.js';
 
 import { createElement } from '../shell.js';
 
-Chart.register(LineController, LineElement, PointElement, LinearScale, Tooltip);
+Chart.register(LineController, LineElement, PointElement, LinearScale, LogarithmicScale, Tooltip);
 
 const FOOTNOTE =
   'Points are filled for values above the current reference value. ' +
@@ -26,12 +34,13 @@ const FOOTNOTE =
  * @returns {Object[]} The visible series, in the original order.
  */
 export function visibleSeries(series, state = {}) {
-  if (state.labs) {
-    const wanted = new Set(state.labs);
-    return series.filter((entry) => wanted.has(entry.key));
-  }
-  if (state.showExtras) return series.slice();
-  return series.filter((entry) => entry.isKey);
+  // The lab subset filters WITHIN the extras-aware base, so the extras toggle
+  // stays live after a subset is chosen and the chart always agrees with the
+  // Measures control (which lists only the available measures).
+  const base = state.showExtras ? series.slice() : series.filter((entry) => entry.isKey);
+  if (!state.labs) return base;
+  const wanted = new Set(state.labs);
+  return base.filter((entry) => wanted.has(entry.key));
 }
 
 /**
@@ -63,43 +72,65 @@ export function spaghettiDatasets(series) {
       pointRadius: 3,
       pointHoverRadius: 5,
       svCut: cut,
-      svKey: entry.key
+      svKey: entry.key,
+      // The full point models (raw value, visit fields) for the tooltip
+      // callbacks (parity: the original's addPointTitles).
+      svPoints: points
     };
   });
 }
 
 /**
- * Chart.js plugin drawing the hovered/focused dataset's dashed reference cut
- * line and its right-aligned 0.1f label, keyed off the active tooltip/hover
- * element (PPRF-3, parity: drawCutLine). Nothing is drawn when no element is
- * active.
+ * Draw one dataset's dashed reference cut line and its right-aligned 0.1f
+ * label, clipped to the chart area so a cut outside the visible domain can
+ * never paint over the legend or axes.
+ * @param {Object} chart The Chart.js instance.
+ * @param {Object} dataset The dataset carrying svCut.
+ * @private
+ */
+function drawCutLine(chart, dataset) {
+  if (!dataset || !Number.isFinite(dataset.svCut)) return;
+  const y = chart.scales.y.getPixelForValue(dataset.svCut);
+  const { left, right, top, bottom } = chart.chartArea;
+  const color = dataset.borderColor;
+  const ctx = chart.ctx;
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(left, top, right - left, bottom - top);
+  ctx.clip();
+  ctx.strokeStyle = color;
+  ctx.setLineDash([3, 3]);
+  ctx.beginPath();
+  ctx.moveTo(left, y);
+  ctx.lineTo(right, y);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = color;
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'bottom';
+  ctx.fillText(dataset.svCut.toFixed(1), right, y - 2);
+  ctx.restore();
+}
+
+/**
+ * Chart.js plugin drawing the reference cut lines (PPRF-3, parity:
+ * drawCutLine): the hovered dataset's cut on pointer hover, or EVERY visible
+ * dataset's cut while the canvas holds keyboard focus (`chart.$svShowCuts`,
+ * set by renderSpaghetti's focus/blur wiring — the "focus" half of the
+ * hover/focus requirement). Nothing is drawn otherwise.
  * @returns {Object} The Chart.js plugin.
  */
 export function cutLinePlugin() {
   return {
     id: 'sv-profile-cut-line',
     afterDatasetsDraw(chart) {
+      if (chart.$svShowCuts) {
+        chart.data.datasets.forEach((dataset) => drawCutLine(chart, dataset));
+        return;
+      }
       const active = chart.getActiveElements ? chart.getActiveElements() : [];
       if (!active || !active.length) return;
-      const dataset = chart.data.datasets[active[0].datasetIndex];
-      if (!dataset || !Number.isFinite(dataset.svCut)) return;
-      const y = chart.scales.y.getPixelForValue(dataset.svCut);
-      const { left, right } = chart.chartArea;
-      const color = dataset.borderColor;
-      const ctx = chart.ctx;
-      ctx.save();
-      ctx.strokeStyle = color;
-      ctx.setLineDash([3, 3]);
-      ctx.beginPath();
-      ctx.moveTo(left, y);
-      ctx.lineTo(right, y);
-      ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.fillStyle = color;
-      ctx.textAlign = 'right';
-      ctx.textBaseline = 'bottom';
-      ctx.fillText(dataset.svCut.toFixed(1), right, y - 2);
-      ctx.restore();
+      drawCutLine(chart, chart.data.datasets[active[0].datasetIndex]);
     }
   };
 }
@@ -122,6 +153,26 @@ export function renderSpaghetti(host, model, state = {}) {
   const series = visibleSeries(model.series, state);
   const datasets = spaghettiDatasets(series);
 
+  // Text alternative + keyboard path for the canvas (PPRF-8): the chart is
+  // named for assistive tech, and focusing it draws every visible measure's
+  // reference cut line — the keyboard half of PPRF-3's hover/focus cut.
+  canvas.setAttribute('role', 'img');
+  canvas.setAttribute(
+    'aria-label',
+    `Labs over time: ${series.map((entry) => entry.key).join(', ') || 'no measures'} (${model.yLabel})`
+  );
+  canvas.tabIndex = 0;
+
+  // The original spaghetti fixed its y-domain to [0, max(values, cuts)] so the
+  // reference cut lines are always on-plot; suggestedMax reproduces the cut
+  // half (data autoscaling covers the values) and linear scales pin min to 0.
+  const cuts = datasets.map((dataset) => dataset.svCut).filter(Number.isFinite);
+  const suggestedMax = cuts.length ? Math.max(...cuts) : undefined;
+  const yScale =
+    model.axisType === 'log'
+      ? { type: 'logarithmic', suggestedMax, title: { display: true, text: model.yLabel } }
+      : { type: 'linear', min: 0, suggestedMax, title: { display: true, text: model.yLabel } };
+
   const chart = new Chart(canvas.getContext('2d'), {
     type: 'line',
     data: { datasets },
@@ -135,16 +186,51 @@ export function renderSpaghetti(host, model, state = {}) {
         legend: { display: true, position: 'bottom' },
         tooltip: {
           callbacks: {
-            label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y} @ day ${ctx.parsed.x}`
+            // Visit context in the title, raw + adjusted pairing in the body
+            // (parity: the original's addPointTitles).
+            title: (items) => {
+              if (!items.length) return '';
+              const item = items[0];
+              const point = (item.dataset.svPoints || [])[item.dataIndex];
+              if (!point) return `Study day: ${item.parsed.x}`;
+              const lines = [`Study day: ${point.day}`];
+              if (point.visit !== undefined && point.visit !== null && point.visit !== '') {
+                const n =
+                  point.visitn !== undefined && point.visitn !== null && point.visitn !== ''
+                    ? ` (${point.visitn})`
+                    : '';
+                lines.push(`Visit: ${point.visit}${n}`);
+              }
+              return lines;
+            },
+            label: (ctx) => {
+              const point = (ctx.dataset.svPoints || [])[ctx.dataIndex];
+              const key = ctx.dataset.label;
+              if (!point || !Number.isFinite(point.raw))
+                return `${key}: ${Number(ctx.parsed.y).toFixed(2)}`;
+              return [
+                `Raw ${key}: ${point.raw.toFixed(2)}`,
+                `Adjusted ${key}: ${Number(ctx.parsed.y).toFixed(2)}`
+              ];
+            }
           }
         }
       },
       scales: {
         x: { type: 'linear', title: { display: true, text: 'Study Day' } },
-        y: { type: 'linear', title: { display: true, text: model.yLabel } }
+        y: yScale
       }
     },
     plugins: [cutLinePlugin()]
+  });
+
+  canvas.addEventListener('focus', () => {
+    chart.$svShowCuts = true;
+    chart.draw();
+  });
+  canvas.addEventListener('blur', () => {
+    chart.$svShowCuts = false;
+    chart.draw();
   });
 
   host.append(createElement('p', 'sv-profile-spaghetti-footnote', FOOTNOTE));

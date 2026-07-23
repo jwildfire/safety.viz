@@ -18484,6 +18484,10 @@ var DEFAULT_SETTINGS7 = {
   },
   visit_window: 30,
   profile: true,
+  profile_details: null,
+  participantProfileURL: null,
+  p_alt_col: null,
+  measureBounds: [0.01, 0.99],
   r_ratio_filter: true,
   r_ratio: [0, null],
   filters: [],
@@ -18541,6 +18545,9 @@ function syncSettings7(settings) {
   synced.jaundice_uln = Number.isFinite(Number(synced.jaundice_uln)) ? Number(synced.jaundice_uln) : DEFAULT_SETTINGS7.jaundice_uln;
   synced.hide_unchanged = Boolean(synced.hide_unchanged);
   synced.profile = Boolean(synced.profile);
+  synced.profile_details = synced.profile_details === void 0 || synced.profile_details === null ? null : arrayify6(synced.profile_details).map((value) => fieldSpec6(value)).filter((d) => d.value_col);
+  const bounds = arrayify6(synced.measureBounds).map(Number).filter(Number.isFinite);
+  synced.measureBounds = bounds.length === 2 ? bounds : [...DEFAULT_SETTINGS7.measureBounds];
   return synced;
 }
 
@@ -19214,6 +19221,7 @@ var DEFAULT_SETTINGS8 = {
     { value: "relative_uln", label: "ULN adjusted" },
     { value: "relative_baseline", label: "Baseline adjusted" }
   ],
+  axis_type: "linear",
   measureBounds: [0.01, 0.99],
   participantProfileURL: null,
   p_alt_col: null,
@@ -19252,6 +19260,7 @@ function syncSettings8(settings = {}) {
   synced.cuts = mergedCuts;
   const bounds = arrayify7(synced.measureBounds).map(Number).filter(Number.isFinite);
   synced.measureBounds = bounds.length === 2 ? bounds : [...DEFAULT_SETTINGS8.measureBounds];
+  synced.axis_type = synced.axis_type === "log" ? "log" : "linear";
   return synced;
 }
 function templateProfileURL(url, id) {
@@ -19532,7 +19541,15 @@ function buildProfileModel(cleanRows, id, settings, state) {
     pAlt
   };
   const series = measures.map((measure) => {
-    const points = measure.rows.filter((row) => Number.isFinite(row[field])).sort(dayThenIndex).map((row) => ({ day: row.__hep_day, value: row[field] }));
+    const points = measure.rows.filter((row) => Number.isFinite(row[field])).sort(dayThenIndex).map((row) => ({
+      day: row.__hep_day,
+      value: row[field],
+      // Tooltip context (parity: the original spaghetti addPointTitles):
+      // the raw result alongside the adjusted value, plus the visit fields.
+      raw: row.__hep_value,
+      visit: settings.visit_col != null ? row[settings.visit_col] : void 0,
+      visitn: settings.visitn_col != null ? row[settings.visitn_col] : void 0
+    }));
     return {
       key: measure.key,
       label: measure.label,
@@ -19550,7 +19567,15 @@ function buildProfileModel(cleanRows, id, settings, state) {
       const value = row.__hep_value;
       const outlierLow = Number.isFinite(lln) && value < lln;
       const outlierHigh = Number.isFinite(uln) && value > uln;
-      return { day: row.__hep_day, value, lln, uln, outlier: outlierLow || outlierHigh };
+      return {
+        day: row.__hep_day,
+        value,
+        lln,
+        uln,
+        outlier: outlierLow || outlierHigh,
+        visit: settings.visit_col != null ? row[settings.visit_col] : void 0,
+        visitn: settings.visitn_col != null ? row[settings.visitn_col] : void 0
+      };
     });
     return {
       key: measure.key,
@@ -19567,7 +19592,14 @@ function buildProfileModel(cleanRows, id, settings, state) {
   });
   return {
     participant,
-    spaghetti: { series, yLabel: yLabelFor(display), display },
+    spaghetti: {
+      series,
+      yLabel: yLabelFor(display),
+      display,
+      // Follow the host's y-axis scale (PPRF-3/7 — the deleted drawDetail
+      // honored the hep-explorer Axis-type control).
+      axisType: settings.axis_type === "log" ? "log" : "linear"
+    },
     measures: measureModels
   };
 }
@@ -19656,6 +19688,7 @@ function renderHeader(participant, settings, { onClear } = {}) {
   }
   const clear = createElement("button", "sv-profile-clear", "Clear");
   clear.type = "button";
+  clear.setAttribute("data-sv-focus", "clear");
   clear.onclick = () => {
     if (onClear) onClear();
   };
@@ -19692,15 +19725,13 @@ function renderHeader(participant, settings, { onClear } = {}) {
 }
 
 // src/participant-profile/spaghetti.js
-Chart.register(LineController, LineElement, PointElement, LinearScale, plugin_tooltip);
+Chart.register(LineController, LineElement, PointElement, LinearScale, LogarithmicScale, plugin_tooltip);
 var FOOTNOTE = "Points are filled for values above the current reference value. Mouseover a line to see the reference line for that lab.";
 function visibleSeries(series, state = {}) {
-  if (state.labs) {
-    const wanted = new Set(state.labs);
-    return series.filter((entry) => wanted.has(entry.key));
-  }
-  if (state.showExtras) return series.slice();
-  return series.filter((entry) => entry.isKey);
+  const base = state.showExtras ? series.slice() : series.filter((entry) => entry.isKey);
+  if (!state.labs) return base;
+  const wanted = new Set(state.labs);
+  return base.filter((entry) => wanted.has(entry.key));
 }
 function spaghettiDatasets(series) {
   return series.map((entry) => {
@@ -19723,35 +19754,47 @@ function spaghettiDatasets(series) {
       pointRadius: 3,
       pointHoverRadius: 5,
       svCut: cut,
-      svKey: entry.key
+      svKey: entry.key,
+      // The full point models (raw value, visit fields) for the tooltip
+      // callbacks (parity: the original's addPointTitles).
+      svPoints: points
     };
   });
+}
+function drawCutLine(chart, dataset) {
+  if (!dataset || !Number.isFinite(dataset.svCut)) return;
+  const y = chart.scales.y.getPixelForValue(dataset.svCut);
+  const { left, right, top, bottom } = chart.chartArea;
+  const color2 = dataset.borderColor;
+  const ctx = chart.ctx;
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(left, top, right - left, bottom - top);
+  ctx.clip();
+  ctx.strokeStyle = color2;
+  ctx.setLineDash([3, 3]);
+  ctx.beginPath();
+  ctx.moveTo(left, y);
+  ctx.lineTo(right, y);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = color2;
+  ctx.textAlign = "right";
+  ctx.textBaseline = "bottom";
+  ctx.fillText(dataset.svCut.toFixed(1), right, y - 2);
+  ctx.restore();
 }
 function cutLinePlugin() {
   return {
     id: "sv-profile-cut-line",
     afterDatasetsDraw(chart) {
+      if (chart.$svShowCuts) {
+        chart.data.datasets.forEach((dataset) => drawCutLine(chart, dataset));
+        return;
+      }
       const active = chart.getActiveElements ? chart.getActiveElements() : [];
       if (!active || !active.length) return;
-      const dataset = chart.data.datasets[active[0].datasetIndex];
-      if (!dataset || !Number.isFinite(dataset.svCut)) return;
-      const y = chart.scales.y.getPixelForValue(dataset.svCut);
-      const { left, right } = chart.chartArea;
-      const color2 = dataset.borderColor;
-      const ctx = chart.ctx;
-      ctx.save();
-      ctx.strokeStyle = color2;
-      ctx.setLineDash([3, 3]);
-      ctx.beginPath();
-      ctx.moveTo(left, y);
-      ctx.lineTo(right, y);
-      ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.fillStyle = color2;
-      ctx.textAlign = "right";
-      ctx.textBaseline = "bottom";
-      ctx.fillText(dataset.svCut.toFixed(1), right, y - 2);
-      ctx.restore();
+      drawCutLine(chart, chart.data.datasets[active[0].datasetIndex]);
     }
   };
 }
@@ -19762,6 +19805,15 @@ function renderSpaghetti(host, model, state = {}) {
   host.append(card);
   const series = visibleSeries(model.series, state);
   const datasets = spaghettiDatasets(series);
+  canvas.setAttribute("role", "img");
+  canvas.setAttribute(
+    "aria-label",
+    `Labs over time: ${series.map((entry) => entry.key).join(", ") || "no measures"} (${model.yLabel})`
+  );
+  canvas.tabIndex = 0;
+  const cuts = datasets.map((dataset) => dataset.svCut).filter(Number.isFinite);
+  const suggestedMax = cuts.length ? Math.max(...cuts) : void 0;
+  const yScale = model.axisType === "log" ? { type: "logarithmic", suggestedMax, title: { display: true, text: model.yLabel } } : { type: "linear", min: 0, suggestedMax, title: { display: true, text: model.yLabel } };
   const chart = new Chart(canvas.getContext("2d"), {
     type: "line",
     data: { datasets },
@@ -19775,16 +19827,47 @@ function renderSpaghetti(host, model, state = {}) {
         legend: { display: true, position: "bottom" },
         tooltip: {
           callbacks: {
-            label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y} @ day ${ctx.parsed.x}`
+            // Visit context in the title, raw + adjusted pairing in the body
+            // (parity: the original's addPointTitles).
+            title: (items) => {
+              if (!items.length) return "";
+              const item = items[0];
+              const point = (item.dataset.svPoints || [])[item.dataIndex];
+              if (!point) return `Study day: ${item.parsed.x}`;
+              const lines = [`Study day: ${point.day}`];
+              if (point.visit !== void 0 && point.visit !== null && point.visit !== "") {
+                const n = point.visitn !== void 0 && point.visitn !== null && point.visitn !== "" ? ` (${point.visitn})` : "";
+                lines.push(`Visit: ${point.visit}${n}`);
+              }
+              return lines;
+            },
+            label: (ctx) => {
+              const point = (ctx.dataset.svPoints || [])[ctx.dataIndex];
+              const key = ctx.dataset.label;
+              if (!point || !Number.isFinite(point.raw))
+                return `${key}: ${Number(ctx.parsed.y).toFixed(2)}`;
+              return [
+                `Raw ${key}: ${point.raw.toFixed(2)}`,
+                `Adjusted ${key}: ${Number(ctx.parsed.y).toFixed(2)}`
+              ];
+            }
           }
         }
       },
       scales: {
         x: { type: "linear", title: { display: true, text: "Study Day" } },
-        y: { type: "linear", title: { display: true, text: model.yLabel } }
+        y: yScale
       }
     },
     plugins: [cutLinePlugin()]
+  });
+  canvas.addEventListener("focus", () => {
+    chart.$svShowCuts = true;
+    chart.draw();
+  });
+  canvas.addEventListener("blur", () => {
+    chart.$svShowCuts = false;
+    chart.draw();
   });
   host.append(createElement("p", "sv-profile-spaghetti-footnote", FOOTNOTE));
   return chart;
@@ -19794,6 +19877,8 @@ function renderSpaghetti(host, model, state = {}) {
 function displayControl(settings, state, onChange) {
   const select = document.createElement("select");
   select.className = "sv-profile-display";
+  select.setAttribute("aria-label", "Standardization");
+  select.setAttribute("data-sv-focus", "display");
   (settings.display_options || []).forEach(
     (opt) => option(select, opt.value, opt.label, opt.value === state.display)
   );
@@ -19803,6 +19888,8 @@ function displayControl(settings, state, onChange) {
 function labControl(keys, state, onChange) {
   const select = document.createElement("select");
   select.className = "sv-profile-labs";
+  select.setAttribute("aria-label", "Measures");
+  select.setAttribute("data-sv-focus", "labs");
   select.multiple = true;
   select.size = Math.min(6, Math.max(2, keys.length));
   const active = state.labs ? new Set(state.labs) : null;
@@ -19814,6 +19901,7 @@ function extrasControl(count2, state, onChange) {
   const wrap = createElement("label", "sv-profile-extras");
   const checkbox = document.createElement("input");
   checkbox.type = "checkbox";
+  checkbox.setAttribute("data-sv-focus", "extras");
   checkbox.checked = Boolean(state.showExtras);
   checkbox.onchange = () => onChange(checkbox.checked);
   wrap.append(
@@ -19963,6 +20051,8 @@ function bandGuidePlugin(measure) {
 function renderInset(host, measure) {
   const card = createElement("div", "sv-profile-inset-card");
   const canvas = createElement("canvas", "sv-profile-inset-canvas");
+  canvas.setAttribute("role", "img");
+  canvas.setAttribute("aria-label", `${measure.label} over time`);
   card.append(canvas);
   host.append(card);
   const points = measure.spark.filter((point) => Number.isFinite(point.value));
@@ -19999,7 +20089,20 @@ function renderInset(host, measure) {
         legend: { display: false },
         tooltip: {
           callbacks: {
-            label: (ctx) => `${measure.label}: ${ctx.parsed.y} @ day ${ctx.parsed.x}`
+            // Visit context in the title (parity: the original lineChart's
+            // addPointTitles: study day, visit, visit number, value).
+            title: (items) => {
+              if (!items.length) return "";
+              const point = points[items[0].dataIndex];
+              if (!point) return `Study day: ${items[0].parsed.x}`;
+              const lines = [`Study day: ${point.day}`];
+              if (point.visit !== void 0 && point.visit !== null && point.visit !== "") {
+                const n = point.visitn !== void 0 && point.visitn !== null && point.visitn !== "" ? ` (${point.visitn})` : "";
+                lines.push(`Visit: ${point.visit}${n}`);
+              }
+              return lines;
+            },
+            label: (ctx) => `${measure.label}: ${ctx.parsed.y}`
           }
         }
       },
@@ -20019,8 +20122,20 @@ function renderInset(host, measure) {
 
 // src/participant-profile/measureTable.js
 var COLUMNS = ["Measure", "N", "Min", "Median", "Max", "Spark"];
+var insetUid = 0;
 function formatSummary(value) {
   return Number.isFinite(value) ? value.toFixed(2) : "";
+}
+function percentileLabel(quantile6) {
+  const n = Math.round(quantile6 * 100);
+  const mod100 = n % 100;
+  const mod10 = n % 10;
+  const suffix = mod10 === 1 && mod100 !== 11 ? "st" : mod10 === 2 && mod100 !== 12 ? "nd" : mod10 === 3 && mod100 !== 13 ? "rd" : "th";
+  return `${n}${suffix}`;
+}
+function tableFootnote(settings) {
+  const [lo, hi] = settings.measureBounds || [0.01, 0.99];
+  return `The y-axis for each chart is set to the ${percentileLabel(lo)} and ${percentileLabel(hi)} percentiles of the entire population's results for that measure. Values outside the normal range are plotted as individual points. Click a sparkline to view a more detailed version of the chart.`;
 }
 function listingColumns(settings) {
   return [
@@ -20048,18 +20163,23 @@ function renderMeasureTable(host, measures, settings, state = {}, handlers = {})
     entry.chart.destroy();
     entry.insetRow.remove();
     entry.button.setAttribute("aria-expanded", "false");
+    entry.button.setAttribute("aria-label", `Expand ${entry.measure.label} chart`);
+    entry.button.removeAttribute("aria-controls");
     entry.button.textContent = "\u25BD";
     if (entry.svg) entry.svg.style.display = "";
     open.delete(key);
   }
   function expand(measure, row, button, svg) {
     const insetRow = createElement("tr", "sv-profile-inset-row");
+    insetRow.id = `sv-profile-inset-${insetUid += 1}`;
     const cell2 = createElement("td", "sv-profile-inset-cell");
     cell2.setAttribute("colspan", String(COLUMNS.length));
     insetRow.append(cell2);
     row.after(insetRow);
     const chart = renderInset(cell2, measure);
     button.setAttribute("aria-expanded", "true");
+    button.setAttribute("aria-label", `Collapse ${measure.label} chart`);
+    button.setAttribute("aria-controls", insetRow.id);
     button.textContent = "\u25B3 Minimize Chart";
     if (svg) svg.style.display = "none";
     open.set(measure.key, { measure, insetRow, chart, button, svg });
@@ -20081,6 +20201,7 @@ function renderMeasureTable(host, measures, settings, state = {}, handlers = {})
     button.type = "button";
     button.setAttribute("aria-expanded", "false");
     button.setAttribute("aria-label", `Expand ${measure.label} chart`);
+    button.setAttribute("data-sv-focus", `spark-${measure.key}`);
     const svg = sparklineSVG(measure);
     button.onclick = () => {
       if (open.has(measure.key)) collapse(measure.key);
@@ -20102,6 +20223,7 @@ function renderMeasureTable(host, measures, settings, state = {}, handlers = {})
     wrap.append(toggle);
   }
   wrap.append(table);
+  wrap.append(createElement("p", "sv-profile-table-footnote", tableFootnote(settings)));
   host.append(wrap);
   function collapseAll() {
     [...open.keys()].forEach((key) => collapse(key));
@@ -20138,6 +20260,7 @@ function renderStepper(ids, index, { onStep } = {}) {
   const strip = createElement("div", "sv-profile-stepper");
   strip.setAttribute("role", "group");
   strip.setAttribute("aria-label", "Selected participants");
+  strip.setAttribute("data-sv-focus", "stepper");
   strip.tabIndex = 0;
   const step = (delta) => {
     const target = index + delta;
@@ -20147,6 +20270,7 @@ function renderStepper(ids, index, { onStep } = {}) {
   const prev = createElement("button", "sv-profile-step sv-profile-step-prev", "\u25C0");
   prev.type = "button";
   prev.setAttribute("aria-label", "Previous participant");
+  prev.setAttribute("data-sv-focus", "step-prev");
   prev.disabled = index === 0;
   prev.onclick = () => step(-1);
   const count2 = createElement(
@@ -20158,6 +20282,7 @@ function renderStepper(ids, index, { onStep } = {}) {
   const next = createElement("button", "sv-profile-step sv-profile-step-next", "\u25B6");
   next.type = "button";
   next.setAttribute("aria-label", "Next participant");
+  next.setAttribute("data-sv-focus", "step-next");
   next.disabled = index === ids.length - 1;
   next.onclick = () => step(1);
   strip.onkeydown = (event) => {
@@ -20177,6 +20302,9 @@ function renderStepper(ids, index, { onStep } = {}) {
 var STYLE_ID = "safety-viz-participant-profile-styles";
 var MODULE_CSS = `
 .sv-profile-root{margin-top:.5rem}
+.sv-profile-live{position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.sv-profile-table-footnote{margin:.5rem 0 0;font-size:.72rem;color:#52616f}
+.sv-profile-spaghetti-canvas:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
 .sv-profile-header{border-top:2px solid #111827;border-bottom:2px solid #111827;padding:.4rem .2rem;margin:0 0 .75rem}
 .sv-profile-titlerow{display:flex;align-items:baseline;flex-wrap:wrap;gap:.75rem}
 .sv-profile-id{font-size:1rem;font-weight:700;margin:0}
@@ -20230,7 +20358,15 @@ function applyProfileStyles() {
 }
 
 // src/participant-profile.js
-Chart.register(LineController, LineElement, PointElement, LinearScale, plugin_tooltip, plugin_legend);
+Chart.register(
+  LineController,
+  LineElement,
+  PointElement,
+  LinearScale,
+  LogarithmicScale,
+  plugin_tooltip,
+  plugin_legend
+);
 function resolveListenTarget(listenTo) {
   if (!listenTo) return document;
   if (typeof listenTo === "string") return document.querySelector(listenTo) || document;
@@ -20257,6 +20393,7 @@ var SafetyParticipantProfile = class {
     this.tableController = null;
     this.listenTarget = null;
     this.listenHandler = null;
+    this.liveRegion = null;
     this.state = {
       display: this.settings.display,
       showExtras: false,
@@ -20343,14 +20480,26 @@ var SafetyParticipantProfile = class {
     return this;
   }
   /**
+   * Merge setting overrides onto the current settings without re-rendering:
+   * the merge half of setSettings, also used by a docked host to refresh
+   * live pass-through settings (cuts, axis type, display) before its own
+   * selection re-dispatch re-renders the block (PPRF-7).
+   * @param {Object} settings Setting overrides to merge.
+   * @returns {SafetyParticipantProfile} The instance, for chaining.
+   */
+  applySettings(settings) {
+    if ("display" in settings) this.state.display = settings.display;
+    this.settings = syncSettings8({ ...this.settings, ...settings });
+    return this;
+  }
+  /**
    * Merge setting overrides onto the current settings, adopt a provided display
    * mode into the live state, re-clean any bound data, and re-render.
    * @param {Object} settings Setting overrides to merge.
    * @returns {SafetyParticipantProfile} The instance, for chaining.
    */
   setSettings(settings) {
-    if ("display" in settings) this.state.display = settings.display;
-    this.settings = syncSettings8({ ...this.settings, ...settings });
+    this.applySettings(settings);
     if (this.mode === "standalone" && this.rawData.length) this.validateAndCleanData();
     this.render();
     return this;
@@ -20402,8 +20551,10 @@ var SafetyParticipantProfile = class {
     if (cleanRows !== void 0) this.cleanRows = Array.isArray(cleanRows) ? cleanRows : [];
     const list = (Array.isArray(ids) ? ids : []).map(String);
     if (!list.length) return this.clear();
-    this.state.ids = rankParticipants(this.cleanRows, list, this.settings);
-    this.state.index = 0;
+    const ranked = rankParticipants(this.cleanRows, list, this.settings);
+    const sameCohort = ranked.length === this.state.ids.length && ranked.every((id, index) => String(id) === String(this.state.ids[index]));
+    this.state.ids = ranked;
+    this.state.index = sameCohort ? Math.min(this.state.index, ranked.length - 1) : 0;
     this.renderProfile();
     return this;
   }
@@ -20418,6 +20569,7 @@ var SafetyParticipantProfile = class {
     this.state.ids = [];
     this.state.index = 0;
     this.profileHost.innerHTML = "";
+    this.liveRegion = null;
     if (this.mode === "standalone") {
       if (this.controls) this.controls.innerHTML = "";
       this.setIdle();
@@ -20466,16 +20618,33 @@ var SafetyParticipantProfile = class {
   /**
    * Render the full profile block for the current participant: stepper (N > 1),
    * header, controls, spaghetti card, measure table, and the optional record
-   * listing (PPRF-2/3/4/5).
+   * listing (PPRF-2/3/4/5). The rebuild is keyboard-safe (PPRF-8): the focused
+   * control's data-sv-focus key is captured first and focus is restored onto
+   * its recreated counterpart, and a persistent aria-live region (never torn
+   * down between renders) announces the current participant.
    * @private
    */
   renderProfile() {
+    const activeEl = typeof document !== "undefined" ? document.activeElement : null;
+    const ownsFocus = activeEl && (this.profileHost.contains(activeEl) || this.controls && this.controls.contains(activeEl));
+    const focusKey = ownsFocus ? activeEl.getAttribute("data-sv-focus") : null;
     this.destroyContent();
-    this.profileHost.innerHTML = "";
+    if (!this.liveRegion || this.liveRegion.parentElement !== this.profileHost) {
+      this.profileHost.innerHTML = "";
+      this.liveRegion = createElement("div", "sv-profile-live");
+      this.liveRegion.setAttribute("aria-live", "polite");
+      this.profileHost.append(this.liveRegion);
+    } else {
+      [...this.profileHost.children].forEach((child) => {
+        if (child !== this.liveRegion) child.remove();
+      });
+    }
     const id = this.state.ids[this.state.index];
     const model = buildProfileModel(this.cleanRows, id, this.settings, this.state);
     this.model = model;
     const root = createElement("div", "sv-profile-root");
+    root.setAttribute("role", "region");
+    root.setAttribute("aria-label", `Participant ${id} profile`);
     this.profileHost.append(root);
     if (this.state.ids.length > 1) {
       root.append(
@@ -20485,16 +20654,19 @@ var SafetyParticipantProfile = class {
     root.append(
       renderHeader(model.participant, this.settings, { onClear: () => this.handleClear() })
     );
-    const keys = model.spaghetti.series.map((entry) => entry.key);
+    const keys = model.spaghetti.series.filter((entry) => this.state.showExtras || entry.isKey).map((entry) => entry.key);
     if (this.mode === "dock") root.append(this.buildInlineControls(keys));
     else this.buildSidebarControls(keys);
     this.spaghettiHost = createElement("div", "sv-profile-spaghetti");
     root.append(this.spaghettiHost);
     this.drawSpaghetti();
     this.tableController = renderMeasureTable(root, model.measures, this.settings, this.state, {
+      // The extras toggle changes both the table AND the control surface
+      // (Measures options, spaghetti series), so it re-renders the block;
+      // focus restoration keeps the checkbox focused (PPRF-8).
       onToggleExtras: (showExtras) => {
         this.state.showExtras = showExtras;
-        this.drawSpaghetti();
+        this.renderProfile();
       }
     });
     if (this.settings.listing) {
@@ -20504,9 +20676,27 @@ var SafetyParticipantProfile = class {
       renderRecordListing(root, participantRows, this.settings);
     }
     if (this.mode === "standalone" && this.notes) {
-      const n = this.state.ids.length;
-      this.notes.textContent = n > 1 ? `Profiling ${n} selected participants.` : `Profiling participant ${id}.`;
+      const n2 = this.state.ids.length;
+      this.notes.textContent = n2 > 1 ? `Profiling ${n2} selected participants.` : `Profiling participant ${id}.`;
     }
+    const n = this.state.ids.length;
+    this.liveRegion.textContent = n > 1 ? `Participant ${id}, ${this.state.index + 1} of ${n}` : `Participant ${id}`;
+    this.restoreFocus(focusKey);
+  }
+  /**
+   * Restore keyboard focus after a rebuild (PPRF-8): find the recreated
+   * control carrying the captured data-sv-focus key and focus it; when a
+   * stepper button came back disabled (the cohort end was reached), focus the
+   * stepper strip instead so arrow-key navigation keeps working.
+   * @param {?string} focusKey The captured data-sv-focus key, or null.
+   * @private
+   */
+  restoreFocus(focusKey) {
+    if (!focusKey) return;
+    const find = (key) => this.profileHost.querySelector(`[data-sv-focus="${key}"]`) || (this.controls ? this.controls.querySelector(`[data-sv-focus="${key}"]`) : null);
+    let target = find(focusKey);
+    if (target && target.disabled) target = find("stepper") || target;
+    if (target && !target.disabled && typeof target.focus === "function") target.focus();
   }
   /**
    * (Re)draw the spaghetti card from the current model and control state,
@@ -22808,9 +22998,15 @@ var SafetyHepExplorer = class {
       baseline_col: settings.baseline_col,
       baseline_value: settings.baseline_value,
       measure_values: settings.measure_values,
-      cuts: settings.cuts,
-      details: this.profileDetails || [],
+      // LIVE control state, not the construction-time settings: user-edited
+      // reference lines and the Axis-type control reach the dock so the
+      // coordinated panels always agree on the active cuts and scale (PPRF-7).
+      cuts: this.state.cuts,
+      axis_type: this.state.axisType === "log" ? "log" : "linear",
+      details: settings.profile_details && settings.profile_details.length ? settings.profile_details : this.profileDetails || [],
       participantProfileURL: settings.participantProfileURL ?? null,
+      p_alt_col: settings.p_alt_col ?? null,
+      measureBounds: settings.measureBounds,
       display: this.state.display,
       on_clear: () => this.selection.clear(),
       on_step: (id) => this.emphasizeParticipant(id)
@@ -22874,6 +23070,7 @@ var SafetyHepExplorer = class {
       return;
     }
     this.profileKey = null;
+    this.profile.cleanRows = this.cleanRows;
     this.profile.setSettings(this.profileSettings());
   }
   /**
@@ -23167,6 +23364,7 @@ var SafetyHepExplorer = class {
     if (this.root) this.root.$hepSankey = null;
     this.compositeWrap.innerHTML = "";
     this.selection.mount(this.compositeSelectSection, []);
+    if (this.profile) this.profile.applySettings(this.profileSettings());
     this.profileKey = null;
     this.currentTableData = [];
     this.listingSearch = "";

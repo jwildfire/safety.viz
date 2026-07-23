@@ -61,6 +61,7 @@ export const MEASURE_COLORS = [
  * @property {Object} [cuts] Per-measure reference cutpoints keyed by measure then display mode; a `defaults` entry back-fills any measure without its own cuts (PPRF-3).
  * @property {string} [display='relative_uln'] Initial display mode: `relative_uln` (×ULN) or `relative_baseline` (×Baseline) (PPRF-3).
  * @property {Array<{value: string, label: string}>} [display_options] Display-toggle labels (PPRF-3).
+ * @property {string} [axis_type='linear'] Spaghetti y-axis scale: `linear` or `log`; a docked host passes its live axis-type state through so the drill-down follows the chart (PPRF-3/7).
  * @property {number[]} [measureBounds=[0.01, 0.99]] Population-extent quantiles for the sparkline / inset guides (PPRF-4).
  * @property {?string} [participantProfileURL=null] Optional link-out URL, templated by every literal `{id}` token (PPRF-2, closes #53).
  * @property {?string} [p_alt_col=null] Optional column carrying a pre-computed P_ALT; passed through where present, never computed client-side (PPRF-2).
@@ -112,6 +113,7 @@ export const DEFAULT_SETTINGS = {
     { value: 'relative_uln', label: 'ULN adjusted' },
     { value: 'relative_baseline', label: 'Baseline adjusted' }
   ],
+  axis_type: 'linear',
   measureBounds: [0.01, 0.99],
   participantProfileURL: null,
   p_alt_col: null,
@@ -175,6 +177,8 @@ export function syncSettings(settings = {}) {
 
   const bounds = arrayify(synced.measureBounds).map(Number).filter(Number.isFinite);
   synced.measureBounds = bounds.length === 2 ? bounds : [...DEFAULT_SETTINGS.measureBounds];
+
+  synced.axis_type = synced.axis_type === 'log' ? 'log' : 'linear';
 
   return synced;
 }

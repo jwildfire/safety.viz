@@ -1,6 +1,6 @@
 {
   "module": "hep-explorer",
-  "generatedAt": "2026-07-23T04:47:04.598Z",
+  "generatedAt": "2026-07-23T05:27:49.883Z",
   "environment": {
     "os": "darwin 23.6.0",
     "node": "v24.14.0",
@@ -598,6 +598,38 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "dock coordination follows live control state (PPRF-7, PPRF-HEP-001) passes the caller measureBounds, p_alt_col and participantProfileURL knobs through",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HEP-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "dock coordination follows live control state (PPRF-7, PPRF-HEP-001) profile_details overrides the shared details knob for the dock header (PPRF-2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HEP-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "dock coordination follows live control state (PPRF-7, PPRF-HEP-001) the Axis-type control reaches the dock spaghetti (drawDetail log-axis parity)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HEP-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "dock coordination follows live control state (PPRF-7, PPRF-HEP-001) user-edited reference cuts reach the dock on the control-driven redraw",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HEP-001"],
+      "issueRefs": [],
       "screenshots": []
     },
     {

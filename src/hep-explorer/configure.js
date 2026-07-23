@@ -90,6 +90,10 @@ export { MEASURE_KEYS, cutFor } from '../hep-core/rows.js';
  * @property {string} [view='scatter'] Initial view mode: `scatter` (eDISH/mDISH scatter), `migration` (the bidirectional baseline → on-treatment Sankey with per-arm cross tables), or `composite` (baseline-referenced composite plot for abnormal-baseline subjects) (HEP-COMP-006, HEP-MIG-001).
  * @property {number} [visit_window=30] Timing window (days): points whose peak-X and peak-Y days are within this many days render filled, else hollow (HEP-CTRL-008, HEP-DISPLAY-005).
  * @property {boolean} [profile=true] Dock the shared participant-profile module (header, labs-over-time spaghetti, measure table) in the shell's profile slot, driven by every selection path via the participantsSelected event; false restores the pre-#98 behaviour of no drill-down block (#98, PPRF-7).
+ * @property {?Array<string|Object>} [profile_details=null] Demographic columns for the docked profile's header, as names or { value_col, label } specs; null falls back to the caller's own `details` value. Use this when `details` is configured for the linked listing rather than demographics (#98, PPRF-2).
+ * @property {?string} [participantProfileURL=null] Optional link-out URL for the docked profile's header, templated by every literal `{id}` token (#98, PPRF-2, closes #53).
+ * @property {?string} [p_alt_col=null] Optional column carrying a pre-computed P_ALT shown in the docked profile's header; passed through where present, never computed client-side (#98, PPRF-2).
+ * @property {number[]} [measureBounds=[0.01, 0.99]] Population-extent quantiles for the docked profile's sparkline / inset guides (#98, PPRF-4; parity with the original renderer's measureBounds).
  * @property {boolean} [r_ratio_filter=true] Whether to render the R-Ratio range filter control (HEP-CTRL-010).
  * @property {number[]} [r_ratio=[0,null]] Initial R-Ratio [min, max] range; a null max is resolved from the data on first render (HEP-CTRL-010).
  * @property {Array<string|Object>} [filters=[]] Filter controls: column names or { value_col, label } specs. Filters whose column is absent from the data are dropped with a console warning (HEP-CTRL-011).
@@ -148,6 +152,10 @@ export const DEFAULT_SETTINGS = {
   },
   visit_window: 30,
   profile: true,
+  profile_details: null,
+  participantProfileURL: null,
+  p_alt_col: null,
+  measureBounds: [0.01, 0.99],
   r_ratio_filter: true,
   r_ratio: [0, null],
   filters: [],
@@ -252,6 +260,18 @@ export function syncSettings(settings) {
     : DEFAULT_SETTINGS.jaundice_uln;
   synced.hide_unchanged = Boolean(synced.hide_unchanged);
   synced.profile = Boolean(synced.profile);
+
+  // Docked-profile pass-throughs (#98): profile_details normalizes to a spec
+  // array only when provided (null keeps the details fallback), and
+  // measureBounds is coerced back to a two-quantile array.
+  synced.profile_details =
+    synced.profile_details === undefined || synced.profile_details === null
+      ? null
+      : arrayify(synced.profile_details)
+          .map((value) => fieldSpec(value))
+          .filter((d) => d.value_col);
+  const bounds = arrayify(synced.measureBounds).map(Number).filter(Number.isFinite);
+  synced.measureBounds = bounds.length === 2 ? bounds : [...DEFAULT_SETTINGS.measureBounds];
 
   return synced;
 }

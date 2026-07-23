@@ -43,6 +43,31 @@ describe('labControl (PPRF-3, PPRF-SPAG-002)', () => {
   });
 });
 
+describe('control accessible names + focus keys (PPRF-8, PPRF-ACC-001)', () => {
+  it('names both selects for assistive tech — the visual labels are unassociated siblings', () => {
+    const display = displayControl(DEFAULT_SETTINGS, { display: 'relative_uln' }, () => {});
+    expect(display.getAttribute('aria-label')).toBe('Standardization');
+    const labs = labControl(['ALT'], { labs: null }, () => {});
+    expect(labs.getAttribute('aria-label')).toBe('Measures');
+  });
+
+  it('carries data-sv-focus keys so re-renders can restore keyboard focus', () => {
+    expect(
+      displayControl(DEFAULT_SETTINGS, { display: 'relative_uln' }, () => {}).getAttribute(
+        'data-sv-focus'
+      )
+    ).toBe('display');
+    expect(labControl(['ALT'], { labs: null }, () => {}).getAttribute('data-sv-focus')).toBe(
+      'labs'
+    );
+    expect(
+      extrasControl(1, {}, () => {})
+        .querySelector('input')
+        .getAttribute('data-sv-focus')
+    ).toBe('extras');
+  });
+});
+
 describe('extrasControl (PPRF-3/4, PPRF-TBL-004)', () => {
   it("uses the original's copy, singular and plural", () => {
     expect(extrasControl(1, {}, () => {}).textContent).toContain('Show 1 additional measure:');

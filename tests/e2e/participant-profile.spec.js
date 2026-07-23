@@ -129,7 +129,7 @@ test.describe('participant-profile dock: hep-explorer composite and migration vi
     expect(page._profileErrors).toEqual([]);
   });
 
-  test('PPRF-HEP-002/PPRF-STEP-001: composite multi-select collapses the dock to a stepper, stepping renders each profile and keeps the chart highlight in sync, Clear hides the dock (#98)', async ({
+  test('PPRF-HEP-002/PPRF-STEP-001/PPRF-HDR-002: composite multi-select collapses the dock to a stepper, stepping renders each profile and keeps the chart highlight in sync, Clear hides the dock (#98)', async ({
     page
   }) => {
     const events = [];
@@ -217,6 +217,69 @@ test.describe('participant-profile dock: hep-explorer composite and migration vi
       `Participant ${viaSelector}`
     );
     await expect(page.locator('.sv-profile .sv-profile-stepper')).toHaveCount(0);
+  });
+
+  test('PPRF-ACC-001: the stepper, controls and spaghetti canvas are keyboard-operable across re-renders — repeated arrow presses step with no re-tabbing (#98)', async ({
+    page
+  }) => {
+    // Multi-select two composite points → the stepper appears.
+    await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      const chart = instance.compositeCharts[0];
+      chart.options.onClick({}, [{ index: 0 }], chart);
+      chart.options.onClick({}, [{ index: 1 }], chart);
+    });
+    const count = page.locator('.sv-profile .sv-profile-step-count');
+    await expect(count).toHaveText(/^1 of 2 · /);
+
+    // Focus the stepper strip and step by keyboard TWICE in a row: the block
+    // re-renders on every step, so this only works when focus is restored onto
+    // the recreated strip (the PPRF-8 promise a keyboard user relies on).
+    await page.locator('.sv-profile .sv-profile-stepper').focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(count).toHaveText(/^2 of 2 · /);
+    await expect(page.locator('.sv-profile .sv-profile-stepper')).toBeFocused();
+    await page.keyboard.press('ArrowLeft');
+    await expect(count).toHaveText(/^1 of 2 · /);
+    await expect(page.locator('.sv-profile .sv-profile-stepper')).toBeFocused();
+
+    // Activating ▶ by keyboard keeps keyboard control inside the stepper even
+    // when the recreated button comes back disabled at the cohort end.
+    await page.locator('.sv-profile .sv-profile-step-next').focus();
+    await page.keyboard.press('Enter');
+    await expect(count).toHaveText(/^2 of 2 · /);
+    await expect(page.locator('.sv-profile .sv-profile-stepper')).toBeFocused();
+
+    // The Standardization select survives the display re-render with focus.
+    const display = page.locator('.sv-profile .sv-profile-display');
+    await display.focus();
+    await display.selectOption('relative_baseline');
+    await expect(page.locator('.sv-profile .sv-profile-display')).toBeFocused();
+    await expect(page.locator('.sv-profile .sv-profile-display')).toHaveValue('relative_baseline');
+
+    // Labeled regions and canvas text alternatives (PPRF-8), and ONE
+    // persistent polite live region announcing the current participant.
+    await expect(page.locator('.sv-profile .sv-profile-root')).toHaveAttribute('role', 'region');
+    const canvas = page.locator('.sv-profile .sv-profile-spaghetti-canvas');
+    await expect(canvas).toHaveAttribute('role', 'img');
+    await expect(canvas).toHaveAttribute('aria-label', /Labs over time/);
+    await expect(page.locator('.sv-profile .sv-profile-live')).toHaveAttribute(
+      'aria-live',
+      'polite'
+    );
+    await expect(page.locator('.sv-profile .sv-profile-live')).toHaveCount(1);
+
+    // The spaghetti canvas is focusable: focusing it shows the reference cut
+    // lines (the keyboard half of PPRF-3's hover/focus cut affordance).
+    await canvas.focus();
+    await expect(canvas).toBeFocused();
+    const showsCuts = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      return instance.profile.spaghettiChart.$svShowCuts === true;
+    });
+    expect(showsCuts).toBe(true);
+
+    await captureEvidence(page, 'PPRF-ACC-001', 'keyboard-stepper');
   });
 
   test('PPRF-HEP-004: the migration ribbon hand-off arrives in the composite view with the dock opened on the carried cohort (#98)', async ({
@@ -309,5 +372,28 @@ test.describe('participant-profile standalone: built linked-charts demo page', (
     await expect(profile.locator('.sv-notes')).toContainText('Waiting for selection');
 
     expect(errors).toEqual([]);
+  });
+
+  test('PPRF-GATE-001: the built site ships the full done-gate — gallery card, live demo, guide, API reference and evidence page (#98)', async ({
+    page
+  }) => {
+    // Gallery card for the module, linking into its section.
+    await page.goto('/_site/index.html');
+    const card = page.locator('.card', { hasText: 'Participant Profile' });
+    await expect(card.first()).toBeVisible();
+
+    // Guide, API reference, and evidence pages are all built and titled.
+    await page.goto('/_site/participant-profile/guide.html');
+    await expect(page.locator('body')).toContainText('Participant Profile');
+    await page.goto('/_site/participant-profile/api.html');
+    await expect(page.locator('body')).toContainText('participantProfile');
+    await page.goto('/_site/participant-profile/evidence.html');
+    await expect(page.locator('body')).toContainText('Participant Profile');
+
+    // The live demo page mounts (asserted in depth by the linked-charts test
+    // above); here it must at least load without a 404.
+    const response = await page.goto('/_site/participant-profile/index.html');
+    expect(response.ok()).toBe(true);
+    await captureEvidence(page, 'PPRF-GATE-001', 'done-gate-demo');
   });
 });

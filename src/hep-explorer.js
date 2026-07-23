@@ -306,9 +306,18 @@ class SafetyHepExplorer {
       baseline_col: settings.baseline_col,
       baseline_value: settings.baseline_value,
       measure_values: settings.measure_values,
-      cuts: settings.cuts,
-      details: this.profileDetails || [],
+      // LIVE control state, not the construction-time settings: user-edited
+      // reference lines and the Axis-type control reach the dock so the
+      // coordinated panels always agree on the active cuts and scale (PPRF-7).
+      cuts: this.state.cuts,
+      axis_type: this.state.axisType === 'log' ? 'log' : 'linear',
+      details:
+        settings.profile_details && settings.profile_details.length
+          ? settings.profile_details
+          : this.profileDetails || [],
       participantProfileURL: settings.participantProfileURL ?? null,
+      p_alt_col: settings.p_alt_col ?? null,
+      measureBounds: settings.measureBounds,
       display: this.state.display,
       on_clear: () => this.selection.clear(),
       on_step: (id) => this.emphasizeParticipant(id)
@@ -335,7 +344,7 @@ class SafetyHepExplorer {
     this.profileFeed = (event) => {
       const data = event && event.detail ? event.detail.data : null;
       const ids = (Array.isArray(data) ? data : []).map(String);
-      const key = ids.join(' ');
+      const key = ids.join('\u0000');
       // Idempotency guard: control redraws re-dispatch the carried selection;
       // identical back-to-back payloads must not thrash the profile DOM.
       if (key === this.profileKey) return;
@@ -384,6 +393,9 @@ class SafetyHepExplorer {
       return;
     }
     this.profileKey = null;
+    // Hand the dock the CURRENT retained rows before its settings-driven
+    // re-render, so the transient render never uses a stale row set.
+    this.profile.cleanRows = this.cleanRows;
     this.profile.setSettings(this.profileSettings());
   }
 
@@ -748,7 +760,11 @@ class SafetyHepExplorer {
     this.selection.mount(this.compositeSelectSection, []);
     // Re-arm the docked profile's idempotency guard: the carried selection is
     // re-dispatched below (or by the view), and the dock must rebuild from the
-    // fresh rows/units rather than no-op (#98, PPRF-7).
+    // fresh rows/units rather than no-op (#98, PPRF-7). The dock's pass-through
+    // settings refresh FIRST (merge only, no render) so control-driven redraws
+    // — edited reference lines, the Axis-type toggle, display changes — reach
+    // the re-shown profile.
+    if (this.profile) this.profile.applySettings(this.profileSettings());
     this.profileKey = null;
     this.currentTableData = [];
     this.listingSearch = '';

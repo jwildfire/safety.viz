@@ -13,6 +13,7 @@ vi.mock('chart.js', () => {
       built.push(this);
     }
     update() {}
+    draw() {}
     resize() {}
     destroy() {
       this.destroyed = true;
@@ -26,13 +27,20 @@ vi.mock('chart.js', () => {
     LineElement: stub(),
     PointElement: stub(),
     LinearScale: stub(),
+    LogarithmicScale: stub(),
     Tooltip: stub(),
     Legend: stub()
   };
 });
 
-const { formatSummary, listingColumns, renderMeasureTable, renderRecordListing } =
-  await import('../../../src/participant-profile/measureTable.js');
+const {
+  formatSummary,
+  listingColumns,
+  percentileLabel,
+  renderMeasureTable,
+  renderRecordListing,
+  tableFootnote
+} = await import('../../../src/participant-profile/measureTable.js');
 const { syncSettings } = await import('../../../src/participant-profile/configure.js');
 
 function makeMeasure(overrides) {
@@ -177,6 +185,60 @@ describe('renderMeasureTable (PPRF-4, PPRF-TBL-001)', () => {
     document.body.innerHTML = '<div id="host"></div>';
     renderMeasureTable(host(), [alt, tb], settings, {});
     expect(host().querySelector('.sv-profile-extras')).toBeNull();
+  });
+
+  it("renders the original's percentile footnote below the table (parity addFootnote)", () => {
+    renderMeasureTable(host(), [alt, tb], settings, {});
+    const footnote = host().querySelector('.sv-profile-table-footnote');
+    expect(footnote).not.toBeNull();
+    expect(footnote.textContent).toContain(
+      "The y-axis for each chart is set to the 1st and 99th percentiles of the entire population's results for that measure."
+    );
+    expect(footnote.textContent).toContain(
+      'Click a sparkline to view a more detailed version of the chart.'
+    );
+  });
+});
+
+describe('footnote helpers (PPRF-4, PPRF-TBL-001)', () => {
+  it('labels quantiles as ordinal percentiles', () => {
+    expect(percentileLabel(0.01)).toBe('1st');
+    expect(percentileLabel(0.02)).toBe('2nd');
+    expect(percentileLabel(0.03)).toBe('3rd');
+    expect(percentileLabel(0.11)).toBe('11th');
+    expect(percentileLabel(0.99)).toBe('99th');
+  });
+
+  it('reflects configured measureBounds in the footnote copy', () => {
+    expect(tableFootnote({ measureBounds: [0.05, 0.95] })).toContain('5th and 95th percentiles');
+  });
+});
+
+describe('spark-toggle accessible state (PPRF-8, PPRF-ACC-001)', () => {
+  it('flips the accessible name with the expanded state and links the inset via aria-controls', () => {
+    renderMeasureTable(host(), [alt], settings, {});
+    const button = host().querySelector('.sv-profile-spark-toggle');
+    expect(button.getAttribute('aria-label')).toBe('Expand Aminotransferase, alanine (ALT) chart');
+    button.click();
+    expect(button.getAttribute('aria-expanded')).toBe('true');
+    expect(button.getAttribute('aria-label')).toBe(
+      'Collapse Aminotransferase, alanine (ALT) chart'
+    );
+    const insetRow = host().querySelector('.sv-profile-inset-row');
+    expect(insetRow.id).toBeTruthy();
+    expect(button.getAttribute('aria-controls')).toBe(insetRow.id);
+    button.click();
+    expect(button.getAttribute('aria-expanded')).toBe('false');
+    expect(button.getAttribute('aria-label')).toBe('Expand Aminotransferase, alanine (ALT) chart');
+    expect(button.getAttribute('aria-controls')).toBeNull();
+  });
+
+  it('carries a per-measure data-sv-focus key for focus restoration', () => {
+    renderMeasureTable(host(), [alt, tb], settings, {});
+    const keys = [...host().querySelectorAll('.sv-profile-spark-toggle')].map((button) =>
+      button.getAttribute('data-sv-focus')
+    );
+    expect(keys).toEqual(['spark-ALT', 'spark-TB']);
   });
 });
 

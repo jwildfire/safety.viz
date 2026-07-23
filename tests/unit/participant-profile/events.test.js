@@ -21,6 +21,7 @@ vi.mock('chart.js', () => {
       built.push(this);
     }
     update() {}
+    draw() {}
     resize() {
       this.resized += 1;
     }
@@ -36,6 +37,7 @@ vi.mock('chart.js', () => {
     LineElement: stub(),
     PointElement: stub(),
     LinearScale: stub(),
+    LogarithmicScale: stub(),
     Tooltip: stub(),
     Legend: stub()
   };
@@ -164,5 +166,82 @@ describe('programmatic selection and callbacks (PPRF-5/6, PPRF-EVT-002)', () => 
       ([event]) => event && event.type === 'participantsSelected'
     );
     expect(selectionEvents).toHaveLength(0);
+  });
+});
+
+describe('keyboard operation survives re-renders (PPRF-8, PPRF-ACC-001)', () => {
+  it('keeps focus on the stepper control across a step so arrows keep working', () => {
+    const instance = mount();
+    instance.setSelected(['P1', 'P3', 'P6']);
+    const strip = document.querySelector('.sv-profile-stepper');
+    strip.focus();
+    expect(document.activeElement).toBe(strip);
+    strip.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    // The block re-rendered (new strip node) but keyboard control stays on it.
+    const nextStrip = document.querySelector('.sv-profile-stepper');
+    expect(nextStrip).not.toBe(strip);
+    expect(document.activeElement).toBe(nextStrip);
+    // A second arrow press works with no re-tabbing — the PPRF-8 promise.
+    nextStrip.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    expect(document.querySelector('.sv-profile-step-count').textContent).toMatch(/^3 of 3/);
+    expect(document.activeElement).toBe(document.querySelector('.sv-profile-stepper'));
+  });
+
+  it('keeps focus on the ▶ button across activations, falling back to the strip at the cohort end', () => {
+    const instance = mount();
+    instance.setSelected(['P1', 'P6']);
+    const next = document.querySelector('.sv-profile-step-next');
+    next.focus();
+    next.click();
+    // The recreated ▶ is disabled at 2 of 2, so focus lands on the strip —
+    // never on <body>.
+    expect(document.activeElement).toBe(document.querySelector('.sv-profile-stepper'));
+  });
+
+  it('keeps focus on the Standardization select across the display re-render', () => {
+    const instance = mount();
+    instance.setSelected(['P1']);
+    const select = document.querySelector('.sv-profile-display');
+    select.focus();
+    select.value = 'relative_baseline';
+    select.dispatchEvent(new Event('change'));
+    const recreated = document.querySelector('.sv-profile-display');
+    expect(recreated).not.toBe(select);
+    expect(recreated.value).toBe('relative_baseline');
+    expect(document.activeElement).toBe(recreated);
+  });
+
+  it('announces steps through ONE persistent aria-live region, not a recreated one', () => {
+    const instance = mount();
+    instance.setSelected(['P1', 'P6']);
+    const live = document.querySelector('#host .sv-profile .sv-profile-live');
+    expect(live).not.toBeNull();
+    expect(live.getAttribute('aria-live')).toBe('polite');
+    expect(live.textContent).toBe('Participant P6, 1 of 2');
+    document.querySelector('.sv-profile-step-next').click();
+    // Same node across the rebuild — screen readers track it reliably.
+    expect(document.querySelector('#host .sv-profile .sv-profile-live')).toBe(live);
+    expect(live.textContent).toBe('Participant P1, 2 of 2');
+  });
+
+  it('labels the profile block as a named region', () => {
+    const instance = mount();
+    instance.setSelected(['P1']);
+    const root = document.querySelector('.sv-profile-root');
+    expect(root.getAttribute('role')).toBe('region');
+    expect(root.getAttribute('aria-label')).toBe('Participant P1 profile');
+  });
+
+  it('re-shows of the same cohort keep the stepper position (PPRF-5)', () => {
+    const instance = mount();
+    instance.setSelected(['P1', 'P6']);
+    document.querySelector('.sv-profile-step-next').click();
+    expect(document.querySelector('.sv-profile-step-count').textContent).toBe('2 of 2 · P1');
+    // A host control redraw re-dispatches the identical cohort.
+    instance.setSelected(['P1', 'P6']);
+    expect(document.querySelector('.sv-profile-step-count').textContent).toBe('2 of 2 · P1');
+    // A DIFFERENT cohort resets to the worst participant.
+    instance.setSelected(['P1', 'P3', 'P6']);
+    expect(document.querySelector('.sv-profile-step-count').textContent).toMatch(/^1 of 3/);
   });
 });

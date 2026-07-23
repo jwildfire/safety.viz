@@ -100,6 +100,9 @@ export function bandGuidePlugin(measure) {
 export function renderInset(host, measure) {
   const card = createElement('div', 'sv-profile-inset-card');
   const canvas = createElement('canvas', 'sv-profile-inset-canvas');
+  // Text alternative for the inset canvas (PPRF-8).
+  canvas.setAttribute('role', 'img');
+  canvas.setAttribute('aria-label', `${measure.label} over time`);
   card.append(canvas);
   host.append(card);
 
@@ -138,7 +141,23 @@ export function renderInset(host, measure) {
         legend: { display: false },
         tooltip: {
           callbacks: {
-            label: (ctx) => `${measure.label}: ${ctx.parsed.y} @ day ${ctx.parsed.x}`
+            // Visit context in the title (parity: the original lineChart's
+            // addPointTitles: study day, visit, visit number, value).
+            title: (items) => {
+              if (!items.length) return '';
+              const point = points[items[0].dataIndex];
+              if (!point) return `Study day: ${items[0].parsed.x}`;
+              const lines = [`Study day: ${point.day}`];
+              if (point.visit !== undefined && point.visit !== null && point.visit !== '') {
+                const n =
+                  point.visitn !== undefined && point.visitn !== null && point.visitn !== ''
+                    ? ` (${point.visitn})`
+                    : '';
+                lines.push(`Visit: ${point.visit}${n}`);
+              }
+              return lines;
+            },
+            label: (ctx) => `${measure.label}: ${ctx.parsed.y}`
           }
         }
       },

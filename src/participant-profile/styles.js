@@ -9,6 +9,9 @@ const STYLE_ID = 'safety-viz-participant-profile-styles';
 
 const MODULE_CSS = `
 .sv-profile-root{margin-top:.5rem}
+.sv-profile-live{position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.sv-profile-table-footnote{margin:.5rem 0 0;font-size:.72rem;color:#52616f}
+.sv-profile-spaghetti-canvas:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
 .sv-profile-header{border-top:2px solid #111827;border-bottom:2px solid #111827;padding:.4rem .2rem;margin:0 0 .75rem}
 .sv-profile-titlerow{display:flex;align-items:baseline;flex-wrap:wrap;gap:.75rem}
 .sv-profile-id{font-size:1rem;font-weight:700;margin:0}

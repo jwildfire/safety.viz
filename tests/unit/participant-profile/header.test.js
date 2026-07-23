@@ -64,7 +64,7 @@ describe('renderHeader (PPRF-2, PPRF-HDR-001)', () => {
     );
   });
 
-  it('templates the link-out href by {id}, and omits the link without a URL (closes #53)', () => {
+  it('templates the link-out href by {id}, and omits the link without a URL (PPRF-HDR-003, closes #53)', () => {
     const linked = renderHeader(participant(), {
       participantProfileURL: 'https://x.test/{id}/profile'
     });
@@ -75,7 +75,7 @@ describe('renderHeader (PPRF-2, PPRF-HDR-001)', () => {
     expect(bare.querySelector('a.sv-profile-link')).toBeNull();
   });
 
-  it('invokes the Clear handler from a real button, dispatching no selection event (PPRF-6)', () => {
+  it('invokes the Clear handler from a real button, dispatching no selection event (PPRF-6, PPRF-HDR-002)', () => {
     const onClear = vi.fn();
     const dispatched = vi.spyOn(document, 'dispatchEvent');
     const header = renderHeader(participant(), {}, { onClear });

@@ -56,6 +56,7 @@ export function renderHeader(participant, settings, { onClear } = {}) {
 
   const clear = createElement('button', 'sv-profile-clear', 'Clear');
   clear.type = 'button';
+  clear.setAttribute('data-sv-focus', 'clear');
   clear.onclick = () => {
     if (onClear) onClear();
   };

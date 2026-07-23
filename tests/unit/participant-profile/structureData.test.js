@@ -70,6 +70,17 @@ describe('buildProfileModel — spaghetti series (PPRF-3, PPRF-SPAG-001)', () =>
     expect(model('P1').spaghetti.yLabel).toBe('Standardized Result [xULN]');
   });
 
+  it('carries raw value and visit context on every point for the tooltips (parity addPointTitles)', () => {
+    const { spaghetti } = model('P1');
+    const alt = spaghetti.series.find((entry) => entry.key === 'ALT');
+    expect(alt.points[1]).toMatchObject({ day: 30, raw: 160, visit: 'Day 30', visitn: 2 });
+  });
+
+  it('defaults the spaghetti axis type to linear and follows an axis_type override', () => {
+    expect(model('P1').spaghetti.axisType).toBe('linear');
+    expect(model('P1', { axis_type: 'log' }).spaghetti.axisType).toBe('log');
+  });
+
   it('resolves per-measure cuts, falling back to the defaults entry (PPRF-3)', () => {
     const { spaghetti } = model('P1');
     const cutOf = (key) => spaghetti.series.find((entry) => entry.key === key).cut;
