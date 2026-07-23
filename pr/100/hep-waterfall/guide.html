@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="When to reach for the ALT waterfall instead of eDISH, how to read the baseline trace and the bar directions, and why the axis is absolute U/L." />
+    <title>Hepatic ALT Waterfall clinical guide · safety.viz</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23271810'/%3E%3Crect x='2.5' y='8' width='3' height='5.5' fill='%23f97316'/%3E%3Crect x='6.5' y='3.5' width='3' height='10' fill='%23fb923c'/%3E%3Crect x='10.5' y='6' width='3' height='7.5' fill='%23f97316'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="../site.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="site-name" href="../index.html">
+        safety.viz
+        <span class="site-version">v1.4.1</span>
+      </a>
+      <nav class="site-nav" aria-label="Primary">
+        <div class="nav-group"><a href="../index.html">Gallery</a><button type="button" class="nav-disclosure" aria-expanded="false" aria-controls="gallery-menu" aria-label="Show charts"><span class="nav-caret" aria-hidden="true"></span></button><ul id="gallery-menu" class="nav-menu"><li><a href="../histogram/index.html">Safety Histogram</a></li><li><a href="../outlier-explorer/index.html">Safety Outlier Explorer</a></li><li><a href="../results-over-time/index.html">Safety Results Over Time</a></li><li><a href="../shift-plot/index.html">Safety Shift Plot</a></li><li><a href="../delta-delta/index.html">Safety Delta-Delta</a></li><li><a href="../hep-explorer/index.html">Hepatic Safety Explorer</a></li><li><a href="../hep-waterfall/index.html">Hepatic ALT Waterfall</a></li><li><a href="../ae-explorer/index.html">Adverse Event Explorer</a></li><li><a href="../ae-timelines/index.html">Adverse Event Timelines</a></li><li><a href="../qt-explorer/index.html">QT Safety Explorer</a></li></ul></div>
+        <a href="../architecture.html">Architecture</a>
+        <a href="../about.html">About</a>
+        <a
+          href="https://github.com/jwildfire/safety.viz"
+          aria-label="GitHub"
+          title="GitHub"
+          style="display: inline-flex; align-items: center"
+          ><svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor" aria-hidden="true">
+            <title>GitHub</title>
+            <path
+              d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"
+            /></svg
+        ></a>
+        <a
+          href="https://jwildfire.github.io/obot.roadmap/"
+          aria-label="obot roadmap"
+          title="obot roadmap"
+          style="font-size: 1.05rem; line-height: 1; display: inline-flex; align-items: center"
+          ><span aria-hidden="true">🍊😺</span></a
+        >
+      </nav>
+    </header>
+    <main class="site-main"><h1>Hepatic ALT Waterfall: clinical guide <span class="site-badge site-badge-prototype">Prototype</span></h1>
+<p class="tagline">When to reach for the ALT waterfall instead of eDISH, how to read the baseline trace and the bar directions, and why the axis is absolute U/L.</p>
+<nav class="page-tabs"><a href="index.html">Live demo</a><a class="current" aria-current="page" href="guide.html">Clinical guide</a><a href="evidence.html">Test evidence</a><a href="api.html">API reference</a></nav>
+<p class="guide-caution"><strong>Exploratory review aid, not a validated diagnostic tool.</strong> Bars flag participants for review, they do not diagnose drug-induced liver injury; and the maximum on-treatment value can hide a rise that follows a larger decline.</p>
+<div class="guide-layout"><nav class="guide-toc" aria-label="On this page"><h2>On this page</h2><ul><li><a href="#when-to-use-this-chart-and-when-not-to">When to use this chart — and when not to</a></li><li><a href="#how-to-read-it">How to read it</a><ul><li><a href="#the-black-line-is-everyone-s-baseline">The black line is everyone&#39;s baseline</a></li><li><a href="#the-bars-are-what-happened-on-treatment">The bars are what happened on treatment</a></li><li><a href="#the-bars-colours">The bars&#39; colours</a></li><li><a href="#why-the-axis-is-absolute-u-l-not-uln-or-baseline">Why the axis is absolute U/L, not ×ULN or ×baseline</a></li><li><a href="#the-flanking-summary-panels">The flanking summary panels</a></li></ul></li><li><a href="#working-the-chart">Working the chart</a></li><li><a href="#what-this-chart-cannot-tell-you">What this chart cannot tell you</a></li><li><a href="#about-the-demo-data-on-this-page">About the demo data on this page</a></li></ul></nav><div class="guide-body"><p>&gt; <strong>Prototype.</strong> This chart is a prototype shipping alongside the v1.5 release for evaluation. It is fully tested and documented, but its settings and behaviour may change before it is finalized — pin a version if you depend on the exact API.</p>
+<h2 id="when-to-use-this-chart-and-when-not-to">When to use this chart — and when not to</h2>
+<p>The Hepatic ALT Waterfall is an interactive version of the <strong>modified waterfall plot</strong> published as Figure 5 of Amirzadegan et al., &quot;Emerging Tools to Support DILI Assessment in Clinical Trials with Abnormal Baseline Serum Liver Tests or Pre-existing Liver Diseases&quot; (_Drug Safety_ 2025;48(5):443–453). It exists for one specific problem: <strong>a trial that deliberately enrols participants whose liver tests are already abnormal at baseline.</strong></p>
+<p>The classic eDISH plot places each participant at their peak ALT and peak total bilirubin, both expressed as multiples of the laboratory&#39;s upper limit of normal (×ULN). That works when everybody starts near normal, because then a peak of 4×ULN means the same thing for every participant. It stops working when baselines are abnormal. A participant who enters the study at 3×ULN and never moves lands in the same quadrant as one who climbed from 0.6×ULN to 3×ULN — the first has no drug effect at all, the second has a fivefold rise. In an abnormal-baseline population the eDISH quadrants fill up with participants who were already there on day one, and the drug signal is buried inside them.</p>
+<p>The paper&#39;s Table 1 answers this by assigning different graphics to different baseline profiles. This chart is the one assigned to:</p>
+<p>&gt; <strong>elevated baseline ALT, with normal baseline bilirubin.</strong></p>
+<p><strong>Use it when</strong> your population was enrolled with raised transaminases — NASH/MASH, chronic viral hepatitis, alcohol-related liver disease, oncology populations with hepatic involvement — but bilirubin was required to be normal at entry, and you want to know whether the drug arm pushes ALT up more than placebo does, or brings it down.</p>
+<p><strong>Do not use it when</strong> participants are jaundiced at baseline. Baseline bilirubin above the upper limit of normal is an _exclusion_ here, applied by default and reported in the notes above the chart: those participants belong on the <strong>composite plot</strong> in the <a href="../hep-explorer/guide.html">Hepatic Safety Explorer</a>, which references everything to each participant&#39;s own baseline. Do not use it as a substitute for eDISH in a baseline-normal trial either — there the ×ULN quadrants are exactly the right frame, and this chart just makes the same data harder to read. The companion note, <a href="https://github.com/jwildfire/safety.viz/blob/dev/docs/guides/hepatic-dili-tools.md">Choosing a hepatic DILI graphic</a>, lays the choice out as a single decision table.</p>
+<h2 id="how-to-read-it">How to read it</h2>
+<h3 id="the-black-line-is-everyone-s-baseline">The black line is everyone&#39;s baseline</h3>
+<p>Each participant occupies one slot on the horizontal axis, and the participants are <strong>ranked by their baseline value</strong>: the placebo arm runs left to right in ascending order, then the active arm continues right-to-left in descending order, so the two arms&#39; highest baselines meet at the seam in the middle. The continuous black line traces those baselines across the ordering, which is why it forms a single &quot;mountain&quot; that rises to a peak at the arm divider and falls away again.</p>
+<p>That shape is not decoration. It is what lets you read the rest of the chart. Because the line is monotone within each arm, a participant&#39;s position on the axis tells you how sick their liver already was before the first dose — far left and far right are the mildest baselines, the centre is the most abnormal. A bar&#39;s meaning therefore depends on where it sits, and the chart puts that context in front of you without a second display.</p>
+<h3 id="the-bars-are-what-happened-on-treatment">The bars are what happened on treatment</h3>
+<p>One vertical bar per participant spans from <strong>their own baseline</strong> to <strong>their maximum on-treatment value</strong>. So:</p>
+<ul><li>a bar pointing <strong>up</strong> means the participant&#39;s worst on-treatment value was higher than their baseline — a rise, and the taller the bar the larger it was;</li><li>a bar pointing <strong>down</strong> means their worst on-treatment value was still _below_ where they started — the liver test improved on treatment.</li></ul>
+<p>The downward bars are half the point of the figure. In the paper&#39;s Study 2 the active arm produced many more of them than placebo did, which is a therapeutic-benefit signal you cannot see at all on an eDISH plot: eDISH plots peaks, and a peak below baseline is invisible there.</p>
+<p>The &quot;maximum on-treatment&quot; value deliberately <strong>excludes the baseline record itself</strong> — by record identity, not merely by study day. That sounds pedantic and is not: when a participant has no scheduled day-0 draw and their baseline resolves to an early unscheduled visit, a naive &quot;day &gt; 0&quot; rule counts that record as on-treatment, their maximum can then never fall below their own baseline, and every downward bar for those participants silently disappears.</p>
+<h3 id="the-bars-colours">The bars&#39; colours</h3>
+<div class="table-scroll"><table class="guide-table"><thead><tr><th>Colour</th><th>Meaning</th></tr></thead><tbody><tr><td><strong>Blue</strong> (<code>#1f78b4</code>)</td><td>Placebo arm</td></tr><tr><td><strong>Bronze</strong> (<code>#b5651d</code>)</td><td>Active treatment arm</td></tr><tr><td><strong>Green</strong> (<code>#2e8b3d</code>)</td><td>Developed <strong>new-onset jaundice</strong>, either arm</td></tr></tbody></table></div>
+<p>Green <strong>overrides</strong> the arm colour, exactly as the paper&#39;s caption describes, and the legend says so out loud. If you do not know that green wins, you will miscount each arm — a jaundiced active-arm participant is drawn green, not bronze. New-onset jaundice means the participant&#39;s baseline total bilirubin was at or below the threshold (2×ULN by default, the Hy&#39;s-Law bilirubin cut) and their on-treatment maximum crossed it. Those bars are the ones to open first: a substantial ALT rise plus new jaundice in a participant who was not jaundiced at entry is the pattern that may represent drug-induced liver injury, and the whole chart exists to let you find them and prioritise them for in-depth review.</p>
+<h3 id="why-the-axis-is-absolute-u-l-not-uln-or-baseline">Why the axis is absolute U/L, not ×ULN or ×baseline</h3>
+<p>Both vertical axes — the chart is scaled identically on the left and the right, so you can read a bar against whichever edge is nearer — are in the measure&#39;s <strong>own reporting units</strong>, U/L for ALT. Neither ratio scale would work here:</p>
+<ul><li><strong>×ULN</strong> is what eDISH uses, and it is precisely the scale that fails in this population, for the reason in the first section.</li><li><strong>×baseline</strong> (the mDISH / composite scale) fixes the &quot;already abnormal&quot; problem but destroys the severity ranking. A participant who goes from 20 to 100 U/L has quintupled and is still barely abnormal; one who goes from 300 to 700 U/L has barely more than doubled and is in serious territory. On a ×baseline axis the first bar towers over the second, which is backwards.</li></ul>
+<p>Absolute units keep every participant on one severity scale, which is what makes a tall bar near the centre — a large rise on top of an already-high baseline — read as the alarming thing it is.</p>
+<p>The <strong>reference range</strong> is drawn as a grey line when every participant shares one upper limit of normal, and as a shaded band labelled with its span when the limit varies across the cohort (it genuinely does vary in real studies, which is why a single line would be a fiction). The <strong>Reference range</strong> control switches this to a per-participant dash or turns it off.</p>
+<h3 id="the-flanking-summary-panels">The flanking summary panels</h3>
+<p>A box-and-whisker panel sits on each side of the waterfall — placebo on the left, active on the right — sharing the main chart&#39;s vertical scale, so the boxes line up with the bars and can be read straight across. By default each panel carries <strong>two</strong> boxes, the arm&#39;s distribution of baseline values and its distribution of maximum on-treatment values, so the panel summarises the _shift_ the bars show one participant at a time. Boxes show the quartiles with the median rule, whiskers to the 5th and 95th percentiles, and a mean marker. The <strong>Arm summary</strong> control reduces each panel to the single on-treatment box if you prefer the plainer reading.</p>
+<h2 id="working-the-chart">Working the chart</h2>
+<ol><li><strong>Check the notes line first.</strong> It reports how many participants are plotted per arm, how many were excluded for abnormal baseline bilirubin (the Table-1 rule), how many were excluded because their arm was designated neither placebo nor active, and how many records were dropped for a missing reference range. If the excluded counts are large, that is information about your population, not a defect — and it may tell you that you are looking at the wrong graphic.</li><li><strong>Confirm the arm mapping.</strong> The <strong>Placebo arm</strong> and <strong>Active arm</strong> controls list every arm value in the data. Auto-detection matches values that name themselves placebo or control; it is a convenience, not a contract. A trial with several dose levels can isolate one of them here.</li><li><strong>Read the two arms&#39; downward bars against each other.</strong> More bronze than blue below the line is the improvement signal.</li><li><strong>Read the tall upward bars, then the green ones.</strong> Hover for the participant&#39;s identifier, arm, baseline, maximum on-treatment value with the study day it occurred, the change in both absolute and ×baseline terms, their peak total bilirubin in ×ULN, and their jaundice status.</li><li><strong>Click a bar</strong> to select that participant and open a listing of their own records, and to emit a <code>participantsSelected</code> event that a host application can use to open its own case review. Click it again to clear.</li><li><strong>Vary the thresholds</strong> if your protocol uses different ones. <strong>Jaundice threshold</strong> moves the bilirubin cut that decides which bars are green; the <strong>Exclude baseline bilirubin</strong> checkbox turns the Table-1 cohort rule off for exploratory use, and says loudly in the notes that it is off.</li></ol>
+<h2 id="what-this-chart-cannot-tell-you">What this chart cannot tell you</h2>
+<p><strong>The maximum can hide a rise.</strong> This is the paper&#39;s own acknowledged limitation, and it is worth stating plainly: because the bar is drawn to the _maximum_ on-treatment value, a participant whose ALT falls a long way and then climbs back — 300 → 60 → 250 U/L — has a maximum below their baseline and draws a bar pointing <strong>down</strong>. The trajectory contains a fourfold rise from the nadir, and the chart does not show it. Screening on the change from baseline alone will miss that case. The mitigation is in the chart: click the bar to see the participant&#39;s records, and treat a large downward bar in an actively-dosed participant as something to look at rather than something to skip.</p>
+<p><strong>A bar is not a diagnosis.</strong> Drug-induced liver injury is a diagnosis of exclusion. A green bar flags a participant for review; confirming a drug cause requires the full workup — timing, dechallenge, alkaline phosphatase and the R-Ratio, competing diagnoses, serology — described in the <a href="../hep-explorer/guide.html">Hepatic Safety Explorer guide</a>.</p>
+<p><strong>One value per participant, per arm side.</strong> The chart summarises each participant with two numbers. It says nothing about when the rise happened, how fast it climbed, whether it resolved on continued dosing, or whether alkaline phosphatase moved with it. Those are eDISH-explorer and lab-over-time questions.</p>
+<h2 id="about-the-demo-data-on-this-page">About the demo data on this page</h2>
+<p><strong>The demo cohort is synthetic.</strong> Every other renderer on this site demonstrates against an extract of the CDISC Pilot 01 study, and this one cannot: that study is an Alzheimer&#39;s trial whose participants have essentially normal baseline liver tests, so the population this chart serves is _empty_ in it. Measured directly: after the paper&#39;s baseline-bilirubin exclusion, <strong>zero</strong> of its 234 surviving participants reach a baseline ALT of 3×ULN; the whole file contains <strong>two</strong> new-onset-jaundice participants; and its baseline values are flat and discontinuous, so the unimodal baseline &quot;mountain&quot; cannot form at all.</p>
+<p>The demo therefore runs on <code>adbds-abnbl.csv</code>, a fully synthetic 80-participant cohort (identifiers prefixed <code>ABL-</code>, site <code>Hepatology ABN-BL Unit (synthetic)</code>) generated deterministically for this figure and documented in <a href="https://github.com/jwildfire/safety.viz/blob/dev/docs/DATA_SOURCES.md">DATA_SOURCES.md</a>. It is not derived from any real subject, and its numbers carry no clinical meaning whatsoever. Read the shapes, the controls and the notes; do not read the values.</p></div></div></main>
+    <footer class="site-footer">
+      <p>
+        safety.viz v1.4.1 — clinical safety graphics on one modern charting stack, migrated
+        from the <a href="https://github.com/SafetyGraphics">safetyGraphics</a> ecosystem originally
+        built by <a href="https://github.com/RhoInc">Rho, Inc.</a> (<a href="../about.html"
+          >credits</a
+        >).
+      </p>
+      <p>
+        Built in the open for the R/Pharma 2026 keynote — follow the
+        <a href="https://jwildfire.github.io/obot.roadmap/">obot roadmap</a> ·
+        <a href="https://github.com/jwildfire/safety.viz">source on GitHub</a> ·
+        <a href="https://github.com/jwildfire/safety.viz/releases">releases</a>.
+      </p>
+    </footer>
+    <script>
+      // Mark the nav link whose resolved URL is this page; works at any mount
+      // depth (site root, /dev/, /pr/N/). Renderer sub-pages match a chart link
+      // inside the Gallery dropdown, highlighting the current chart.
+      (function () {
+        var here = location.pathname.replace(/\/$/, '/index.html');
+        var links = document.querySelectorAll('.site-nav a');
+        for (var i = 0; i < links.length; i += 1) {
+          var href = links[i].getAttribute('href');
+          if (!href || href.indexOf('http') === 0) continue;
+          if (new URL(href, location.href).pathname === here) {
+            links[i].classList.add('current');
+            links[i].setAttribute('aria-current', 'page');
+            break;
+          }
+        }
+      })();
+
+      // Gallery dropdown (#71): progressive enhancement over the hover/focus CSS.
+      // The disclosure button toggles aria-expanded (which drives the menu open
+      // via CSS), supports keyboard access (Enter/Space toggle, Arrow keys to
+      // enter and move through items, Escape to close), and closes on outside
+      // click or when focus leaves the group. With JS off, hover/focus still
+      // reveal the menu and the Gallery link still works.
+      (function () {
+        var group = document.querySelector('.site-nav .nav-group');
+        if (!group) return;
+        var button = group.querySelector('.nav-disclosure');
+        var menu = group.querySelector('.nav-menu');
+        if (!button || !menu) return;
+        var items = Array.prototype.slice.call(menu.querySelectorAll('a'));
+
+        var isOpen = function () {
+          return button.getAttribute('aria-expanded') === 'true';
+        };
+        var setOpen = function (open) {
+          button.setAttribute('aria-expanded', open ? 'true' : 'false');
+        };
+        var focusItem = function (index) {
+          if (!items.length) return;
+          setOpen(true);
+          items[(index + items.length) % items.length].focus();
+        };
+
+        button.addEventListener('click', function () {
+          setOpen(!isOpen());
+        });
+        button.addEventListener('keydown', function (event) {
+          if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            focusItem(0);
+          } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            focusItem(items.length - 1);
+          } else if (event.key === 'Escape') {
+            setOpen(false);
+          }
+        });
+        menu.addEventListener('keydown', function (event) {
+          var index = items.indexOf(document.activeElement);
+          if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            focusItem(index + 1);
+          } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            focusItem(index - 1);
+          } else if (event.key === 'Home') {
+            event.preventDefault();
+            focusItem(0);
+          } else if (event.key === 'End') {
+            event.preventDefault();
+            focusItem(items.length - 1);
+          } else if (event.key === 'Escape') {
+            event.preventDefault();
+            setOpen(false);
+            button.focus();
+          }
+        });
+
+        // Close when focus leaves the group or on an outside pointer press.
+        group.addEventListener('focusout', function (event) {
+          if (!group.contains(event.relatedTarget)) setOpen(false);
+        });
+        document.addEventListener('click', function (event) {
+          if (!group.contains(event.target)) setOpen(false);
+        });
+      })();
+    </script>
+  </body>
+</html>
