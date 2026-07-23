@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { renderGallery } from '../../../scripts/site-lib.mjs';
+import { renderGallery, experimentalBadge } from '../../../scripts/site-lib.mjs';
 
 // Gallery generator (#7): the homepage lists every renderer from
 // site/config.json as a card with a status badge; available renderers link to
@@ -35,6 +35,24 @@ describe('site generator: gallery', () => {
     for (const renderer of config.renderers.filter((r) => r.status !== 'available')) {
       expect(html).toContain(`/${renderer.matrix}"`);
     }
+  });
+
+  it('gallery marks a prototype renderer with a Prototype badge on its card (#97)', () => {
+    const withPrototype = JSON.parse(JSON.stringify(config));
+    withPrototype.renderers[0].prototype = true;
+    const protoHtml = renderGallery(withPrototype);
+    expect(protoHtml).toContain('site-badge-prototype');
+    expect(protoHtml).toContain('>Prototype<');
+  });
+
+  it('experimentalBadge renders Prototype for a prototype, Experimental for experimental, nothing otherwise (#97)', () => {
+    expect(experimentalBadge({ prototype: true })).toContain('>Prototype<');
+    expect(experimentalBadge({ prototype: true })).toContain('site-badge-prototype');
+    expect(experimentalBadge({ experimental: true })).toContain('>Experimental<');
+    // Prototype wins when both are set; a plain renderer gets no badge.
+    expect(experimentalBadge({ prototype: true, experimental: true })).toContain('>Prototype<');
+    expect(experimentalBadge({})).toBe('');
+    expect(experimentalBadge(null)).toBe('');
   });
 
   it('gallery prefers a dedicated hero asset over the evidence baseline when configured (#21)', () => {

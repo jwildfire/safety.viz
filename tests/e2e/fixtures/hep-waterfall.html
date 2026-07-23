@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>safety.viz hep-waterfall demo page</title>
+  </head>
+  <body>
+    <h1 id="hep-waterfall-heading">safety.viz hep waterfall demo</h1>
+    <p>
+      Demo and Playwright harness page for the hep-waterfall module (#93) — the modified ALT
+      waterfall of Amirzadegan et al., Drug Safety 2025;48(5):443-453, Figure 5. Loads the committed
+      IIFE bundle against a small crafted cohort engineered so every case the figure exists to show
+      is present exactly once and can be asserted by value: a bar that drops below the baseline
+      trace in each arm, a bar that rises above it, a new-onset-jaundice bar in each arm (so the
+      green-over-arm precedence is provable rather than assumed), a participant excluded by the
+      paper's Table-1 baseline-bilirubin rule, a participant excluded because their arm is
+      designated neither placebo nor active, and two records dropped for a missing reference range.
+    </p>
+    <div id="container"></div>
+    <!-- Bundle path tracks the package.json version; bump them together. -->
+    <script src="/dist/safety.viz-1.4.1/safety.viz.js"></script>
+    <script>
+      // Crafted long-format data: 9 participants x 2 liver measures x 4 visits
+      // (one day-0 baseline + three on-treatment), plus two invalid ALT rows so
+      // the dropped-record note is exercised.
+      //
+      // ALT carries a SINGLE cohort-wide upper limit of normal (40 U/L) in a
+      // single unit, so the reference-range overlay is a well-defined line
+      // rather than a band and the absolute U/L axis means one thing.
+      //
+      // With the default cohort rules (baseline TB <= 1xULN plotted, new-onset
+      // jaundice at TB > 2xULN) and active_arms = ['Study Drug'], the cohort
+      // resolves to seven plotted participants in this order — placebo
+      // ascending by baseline, then active descending, so the two arms' highest
+      // baselines meet at the seam:
+      //
+      //   idx arm      id     baseline  peak   bar   colour
+      //    0  Placebo  P-01      50       46   down  blue
+      //    1  Placebo  P-02      80      130   up    GREEN (new-onset jaundice)
+      //    2  Placebo  P-03     120      110   down  blue
+      //    3  Active   A-04     200      190   down  bronze
+      //    4  Active   A-03     140      130   down  bronze
+      //    5  Active   A-02     100      320   up    GREEN (new-onset jaundice)
+      //    6  Active   A-01      60       52   down  bronze
+      //
+      // and two participants are excluded, one per rule:
+      //   X-01  Study Drug, baseline TB 1.8 mg/dL = 1.5xULN  -> Table-1 rule
+      //   U-01  Open-label Extension                          -> arm undesignated
+      //
+      // Note P-01 and A-01: their highest recorded ALT IS their baseline, so
+      // their bars can only point down if the on-treatment maximum excludes the
+      // baseline record by identity rather than by study day (HWF-DATA-002).
+      const PARTICIPANTS = {
+        'P-01': { ARM: 'Placebo', SEX: 'F', RACE: 'WHITE' },
+        'P-02': { ARM: 'Placebo', SEX: 'M', RACE: 'BLACK OR AFRICAN AMERICAN' },
+        'P-03': { ARM: 'Placebo', SEX: 'F', RACE: 'ASIAN' },
+        'A-01': { ARM: 'Study Drug', SEX: 'M', RACE: 'WHITE' },
+        'A-02': { ARM: 'Study Drug', SEX: 'F', RACE: 'WHITE' },
+        'A-03': { ARM: 'Study Drug', SEX: 'M', RACE: 'ASIAN' },
+        'A-04': { ARM: 'Study Drug', SEX: 'F', RACE: 'BLACK OR AFRICAN AMERICAN' },
+        'X-01': { ARM: 'Study Drug', SEX: 'M', RACE: 'WHITE' },
+        'U-01': { ARM: 'Open-label Extension', SEX: 'F', RACE: 'WHITE' }
+      };
+      const VISITS = [
+        { VISIT: 'Baseline', VISITNUM: 0, DY: 0 },
+        { VISIT: 'Week 4', VISITNUM: 1, DY: 28 },
+        { VISIT: 'Week 8', VISITNUM: 2, DY: 56 },
+        { VISIT: 'Week 12', VISITNUM: 3, DY: 84 }
+      ];
+      // TEST strings match the default settings.measure_values mapping.
+      const MEASURES = {
+        'Aminotransferase, alanine (ALT)': {
+          STRESU: 'U/L',
+          STNRLO: 6,
+          STNRHI: 40,
+          values: {
+            'P-01': [50, 44, 46, 42],
+            'P-02': [80, 110, 130, 120],
+            'P-03': [120, 110, 105, 100],
+            'A-01': [60, 52, 48, 50],
+            'A-02': [100, 180, 320, 260],
+            'A-03': [140, 130, 120, 125],
+            'A-04': [200, 190, 170, 160],
+            'X-01': [90, 120, 150, 140],
+            'U-01': [70, 80, 90, 85]
+          }
+        },
+        'Total Bilirubin': {
+          STRESU: 'mg/dL',
+          STNRLO: 0.1,
+          STNRHI: 1.2,
+          values: {
+            'P-01': [0.6, 0.7, 0.8, 0.7],
+            'P-02': [0.6, 1.8, 2.6, 2.2],
+            'P-03': [0.7, 0.9, 1.0, 0.9],
+            'A-01': [0.6, 0.6, 0.7, 0.6],
+            'A-02': [0.6, 1.9, 3.6, 3.0],
+            'A-03': [0.7, 0.8, 0.9, 0.8],
+            'A-04': [0.8, 0.9, 1.0, 0.9],
+            'X-01': [1.8, 2.0, 2.4, 2.2],
+            'U-01': [0.6, 0.7, 0.7, 0.6]
+          }
+        }
+      };
+
+      const data = [];
+      Object.entries(MEASURES).forEach(([TEST, meta]) => {
+        Object.entries(PARTICIPANTS).forEach(([USUBJID, demo]) => {
+          VISITS.forEach((visit, i) => {
+            data.push({
+              TEST,
+              STRESN: meta.values[USUBJID][i],
+              STRESU: meta.STRESU,
+              STNRLO: meta.STNRLO,
+              STNRHI: meta.STNRHI,
+              USUBJID,
+              VISIT: visit.VISIT,
+              VISITNUM: visit.VISITNUM,
+              DY: visit.DY,
+              ...demo
+            });
+          });
+        });
+      });
+      // Two ALT results with no usable reference range at an extra visit —
+      // dropped by the cleaning step, with the count reported in the notes
+      // rather than dropped silently (HWF-DATA-008).
+      ['P-01', 'A-01'].forEach((USUBJID) => {
+        data.push({
+          TEST: 'Aminotransferase, alanine (ALT)',
+          STRESN: 44,
+          STRESU: 'U/L',
+          STNRLO: 6,
+          STNRHI: '',
+          USUBJID,
+          VISIT: 'Week 16',
+          VISITNUM: 4,
+          DY: 112,
+          ...PARTICIPANTS[USUBJID]
+        });
+      });
+      window.__hwfData = data;
+
+      // A second copy in which one participant's ALT is reported in IU/L: an
+      // absolute axis cannot reconcile two units, so the module must warn and
+      // suppress the chart rather than plot them together (HWF-DATA-007). Fed
+      // to setData() by the mixed-unit test.
+      window.__hwfMixedUnitData = data.map((row) =>
+        row.USUBJID === 'A-02' && row.TEST === 'Aminotransferase, alanine (ALT)'
+          ? { ...row, STRESU: 'IU/L' }
+          : { ...row }
+      );
+
+      const instance = SafetyViz.hepWaterfall('#container', {
+        studyday_col: 'DY',
+        // 'Study Drug' is named explicitly so the third arm resolves to NO
+        // side and exercises the counted arm exclusion.
+        arm_col: 'ARM',
+        active_arms: ['Study Drug'],
+        filters: [
+          { value_col: 'SEX', label: 'Sex' },
+          { value_col: 'RACE', label: 'Race' }
+        ]
+      });
+      window.__safetyHepWaterfallInstance = instance;
+      instance.init(data);
+    </script>
+  </body>
+</html>

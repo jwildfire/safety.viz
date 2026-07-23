@@ -649,7 +649,8 @@ export function renderGallery(config) {
       `<a class="card-thumb" href="${base}/index.html">` +
       `<img src="${hero}" alt="${escapeHtml(renderer.title)} preview" loading="lazy">` +
       `</a><div class="card-body">` +
-      `<h3><a href="${base}/index.html">${escapeHtml(renderer.title)}</a></h3>` +
+      `<h3><a href="${base}/index.html">${escapeHtml(renderer.title)}</a>` +
+      `${experimentalBadge(renderer)}</h3>` +
       `<p>${escapeHtml(renderer.blurb)}</p>` +
       `<p class="card-links"><a href="${base}/index.html">Demo</a> · ` +
       `<a href="${base}/evidence.html">Evidence</a> · ` +
@@ -906,7 +907,10 @@ function methodSection(method) {
 // _api/<module>.json artifact (scripts/api/build-api-data.mjs, #6) — a
 // module-anatomy overview, then factory, methods, settings, and the
 // schema-derived data contract, with a sticky sidebar table of contents.
-export function renderApiPage(model, { hasGuide = false, experimental = false } = {}) {
+export function renderApiPage(
+  model,
+  { hasGuide = false, experimental = false, prototype = false } = {}
+) {
   const toc =
     `<nav class="api-toc" aria-label="On this page"><h2>On this page</h2><ul>` +
     `<li><a href="#overview">Overview</a></li>` +
@@ -976,7 +980,7 @@ export function renderApiPage(model, { hasGuide = false, experimental = false } 
 
   const html = [];
   html.push(
-    `<h1><code>${escapeHtml(model.module)}</code> API reference${experimentalBadge({ experimental })}</h1>`
+    `<h1><code>${escapeHtml(model.module)}</code> API reference${experimentalBadge({ experimental, prototype })}</h1>`
   );
   html.push(
     `<p class="tagline">Generated from the module&#39;s JSDoc and JSON-Schema data contract` +
@@ -992,9 +996,14 @@ export function renderApiPage(model, { hasGuide = false, experimental = false } 
 // real example data (the renderer's `data` config key, defaulting to the
 // shared ADBDS extract, #26). The .demo-page wrapper widens the layout
 // (site.css) so the control sidebar and chart get full room.
-// A small "Experimental" pill for the page title when the config marks a
-// renderer experimental — an exploratory, not-yet-stable renderer.
+// A small status pill for a page title / gallery card: "Prototype" when the
+// config marks a renderer a prototype (a new chart still under evaluation, e.g.
+// the hep-waterfall shipped alongside v1.5), else "Experimental" for an
+// exploratory, not-yet-stable renderer. Prototype takes precedence.
 export function experimentalBadge(renderer) {
+  if (renderer && renderer.prototype) {
+    return ` <span class="site-badge site-badge-prototype">Prototype</span>`;
+  }
   return renderer && renderer.experimental ? ` <span class="site-badge">Experimental</span>` : '';
 }
 

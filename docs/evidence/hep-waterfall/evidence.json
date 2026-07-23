@@ -1,0 +1,1824 @@
+{
+  "module": "hep-waterfall",
+  "generatedAt": "2026-07-23T02:21:40.462Z",
+  "environment": {
+    "os": "linux 6.17.0-1020-azure",
+    "node": "v22.23.1",
+    "playwright": "1.61.1",
+    "chromium": "149.0.7827.55"
+  },
+  "run": {
+    "id": "29974167237",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29974167237"
+  },
+  "records": [
+    {
+      "test": "a chart link navigates straight to that renderer demo (#71)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71],
+      "screenshots": []
+    },
+    {
+      "test": "built ae-explorer demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built ae-timelines demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built delta-delta demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built hep-explorer demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built hep-waterfall demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built histogram demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built outlier-explorer demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built qt-explorer demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built results-over-time demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built shift-plot demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "demo page loads with no console errors (#1)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [1],
+      "screenshots": []
+    },
+    {
+      "test": "gallery shows one card per available renderer (#7)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "HWF-AXIS-002/HWF-AXIS-003/HWF-AXIS-004: mirrored absolute-unit axes and a single-value reference line (#93)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HWF-AXIS-002", "HWF-AXIS-003", "HWF-AXIS-004"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "HWF-BAR-001/HWF-BAR-002/HWF-BAR-003/HWF-BAR-004/HWF-ORDER-001/HWF-ORDER-002/HWF-ORDER-003: one floating bar per participant from baseline to on-treatment maximum, under a continuous baseline trace (#93)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [
+        "HWF-BAR-001",
+        "HWF-BAR-002",
+        "HWF-BAR-003",
+        "HWF-BAR-004",
+        "HWF-ORDER-001",
+        "HWF-ORDER-002",
+        "HWF-ORDER-003"
+      ],
+      "issueRefs": [93],
+      "screenshots": ["HWF-BAR-001-waterfall-default.png"]
+    },
+    {
+      "test": "HWF-BOX-001/HWF-BOX-002/HWF-BOX-003: a summary panel flanks each arm, pinned to the main chart domain (#93)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HWF-BOX-001", "HWF-BOX-002", "HWF-BOX-003"],
+      "issueRefs": [93],
+      "screenshots": ["HWF-BOX-001-flanking-summary-panels.png"]
+    },
+    {
+      "test": "HWF-CFG-001: the chart carries a prototype banner naming the v1.5 evaluation (#97)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HWF-CFG-001"],
+      "issueRefs": [97],
+      "screenshots": []
+    },
+    {
+      "test": "HWF-COLOR-001/HWF-COLOR-002/HWF-COLOR-004: blue placebo, bronze active, green for new-onset jaundice in either arm, with the precedence stated (#93)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HWF-COLOR-001", "HWF-COLOR-002", "HWF-COLOR-004"],
+      "issueRefs": [93],
+      "screenshots": ["HWF-COLOR-002-jaundice-precedence.png"]
+    },
+    {
+      "test": "HWF-COLOR-003: the arm divider splits the plot at the seam and captions each half with its arm and n (#93)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HWF-COLOR-003"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "HWF-CTRL-001: changing the plotted measure redraws in that measure and its own units (#93)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HWF-CTRL-001"],
+      "issueRefs": [93],
+      "screenshots": ["HWF-CTRL-001-control-panel.png"]
+    },
+    {
+      "test": "HWF-CTRL-001: the jaundice threshold reclassifies which bars are green (#93)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HWF-CTRL-001"],
+      "issueRefs": [93],
+      "screenshots": ["HWF-CTRL-001-control-panel.png"]
+    },
+    {
+      "test": "HWF-CTRL-001/HWF-CTRL-002: the control panel exposes the display settings and the arm mapping (#93)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HWF-CTRL-001", "HWF-CTRL-002"],
+      "issueRefs": [93],
+      "screenshots": ["HWF-CTRL-001-control-panel.png"]
+    },
+    {
+      "test": "HWF-CTRL-003: a filter restricts the plotted cohort and the counts follow it (#93)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HWF-CTRL-003"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "HWF-CTRL-004: reset restores every control-derived setting and redraws the full cohort (#93)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HWF-CTRL-004"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "HWF-DATA-003: turning the Table-1 cohort rule off admits the excluded participants and says so (#93)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HWF-DATA-003"],
+      "issueRefs": [93],
+      "screenshots": ["HWF-DATA-003-cohort-exclusion-notes.png"]
+    },
+    {
+      "test": "HWF-DATA-003/HWF-DATA-005/HWF-DATA-008: both cohort exclusions and the dropped records are reported separately in the notes (#93)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HWF-DATA-003", "HWF-DATA-005", "HWF-DATA-008"],
+      "issueRefs": [93],
+      "screenshots": ["HWF-DATA-003-cohort-exclusion-notes.png"]
+    },
+    {
+      "test": "HWF-DATA-007: two units for the plotted measure suppress the chart with a warning naming them (#93)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HWF-DATA-007"],
+      "issueRefs": [93],
+      "screenshots": ["HWF-DATA-007-mixed-unit-warning.png"]
+    },
+    {
+      "test": "HWF-SELECT-001: the bar tooltip names the participant, arm, both values, the change and the jaundice status (#93)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HWF-SELECT-001"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "HWF-SELECT-002/HWF-SELECT-003: clicking a bar highlights the participant, opens the listing, and dispatches participantsSelected (#93)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HWF-SELECT-002", "HWF-SELECT-003"],
+      "issueRefs": [93],
+      "screenshots": ["HWF-SELECT-002-participant-selection.png"]
+    },
+    {
+      "test": "is keyboard operable: ArrowDown opens and focuses, Escape closes (#71)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71],
+      "screenshots": []
+    },
+    {
+      "test": "lists one chart link per available renderer, closed by default (#71)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71],
+      "screenshots": []
+    },
+    {
+      "test": "marks the current chart inside the dropdown on a renderer sub-page (#71)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71],
+      "screenshots": []
+    },
+    {
+      "test": "opens on hover and the top link still points at the gallery index (#71)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71],
+      "screenshots": []
+    },
+    {
+      "test": "abnormal-baseline hepatic demo cohort HWF-COHORT-001: every ABL- participant has a day-0 baseline for all four analytes (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-COHORT-001"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "abnormal-baseline hepatic demo cohort HWF-COHORT-002: the file carries the shared measure contract and is labelled synthetic (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-COHORT-002"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "abnormal-baseline hepatic demo cohort HWF-COHORT-003: exactly two arms, one placebo and one active, of 40 participants each (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-COHORT-003"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "abnormal-baseline hepatic demo cohort HWF-COHORT-004: ALT carries a single cohort-wide upper limit of normal and a single unit (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-COHORT-004"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "abnormal-baseline hepatic demo cohort HWF-COHORT-005: the plotted sub-population clears the baseline-bilirubin rule with margin (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-COHORT-005"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "abnormal-baseline hepatic demo cohort HWF-COHORT-006: an excluded sub-population gives the Table-1 exclusion something to report (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-COHORT-006"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "abnormal-baseline hepatic demo cohort HWF-COHORT-007: exactly six active and one placebo participant develop new-onset jaundice (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-COHORT-007"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "abnormal-baseline hepatic demo cohort HWF-COHORT-008: the active arm is skewed toward ALT decreases and the placebo arm is not (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-COHORT-008"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "abnormal-baseline hepatic demo cohort HWF-COHORT-009: a declining participant declines at every on-treatment visit (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-COHORT-009"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "abnormal-baseline hepatic demo cohort HWF-COHORT-010: baseline ALT spans 1-8xULN smoothly across the plotted cohort (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-COHORT-010"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "abnormal-baseline hepatic demo cohort HWF-COHORT-011: eight active participants carry a peak ALT of 3-6x their own baseline (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-COHORT-011"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "buildApiModel API-XFORM-010: assembles the artifact with module, factory, methods, settings, data contract, and missing docs (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-010"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "buildApiModel API-XFORM-011: flags DEFAULT_SETTINGS keys absent from the settings typedef (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-011"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "buildEcgRecords anchors BASE and CHG on each participant baseline record (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "buildEcgRecords derives QTcF and QTcB from QT and RRR rather than the pilot parameters (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "buildEcgRecords drops non-analysis rows: the AVERAGE roll-up and non-supine postures (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "buildEcgRecords keeps each participant on its own baseline (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "buildEcgRecords passes heart rate through as recorded (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "buildEcgRecords refuses to build when the RR source contradicts the recorded heart rate (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "buildEcgRecords throws when a source parameter the derivation needs is absent (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "correctQt applies Bazett — QT divided by the square root of RR in seconds (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "correctQt applies Fridericia — QT divided by the cube root of RR in seconds (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "correctQt corrects upward above 60 bpm and downward below it (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer buildEvidenceSets splits records per module and duplicates shared scaffold records (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer buildRun builds GitHub Actions run provenance from the environment (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer compareEvidence flags status drift and test-set changes, ignoring screenshots (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer compareEvidence ignores provenance so --check never drifts on generatedAt/environment/run (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer moduleForFile routes test files to renderer modules by path (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer normalizePlaywright walks nested suites into browser-suite records (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer normalizeVitest maps assertion results to unit-suite records (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer parseTestName extracts requirement IDs and issue refs (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer parseTestName recognizes every renderer requirement-ID prefix, not just SH (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer provenance lives in dedicated top-level keys; the records array stays timestamp-free (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall checkInputs HWF-DATA-001: names every missing required variable in one error (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-DATA-001"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall checkInputs HWF-DATA-005: the arm column is required, so arms are never silently pooled (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-DATA-005"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall configure.syncSettings HWF-CFG-001: fills every default and normalizes field lists (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-CFG-001"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall configure.syncSettings HWF-CFG-002: measure, thresholds and the cohort toggle are coerced (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-CFG-002"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall configure.syncSettings HWF-CFG-003: placebo_arm and active_arms normalize to a resolved side map (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-CFG-003"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall configure.syncSettings HWF-CFG-004: uln_display accepts band, per_subject and none (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-CFG-004"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall configure.syncSettings HWF-CFG-005: summary accepts baseline_peak and peak (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-CFG-005"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall controls HWF-CTRL-001: the panel exposes measure, jaundice threshold, cohort toggle, ULN display and summary (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-CTRL-001"],
+      "issueRefs": [93],
+      "screenshots": ["HWF-CTRL-001-control-panel.png"]
+    },
+    {
+      "test": "hep-waterfall controls HWF-CTRL-002: the arm mapping control lists every arm value present in the data (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-CTRL-002"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall controls HWF-CTRL-003: configured filters restrict the cohort and update the counts (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-CTRL-003"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall controls HWF-CTRL-004: reset restores every setting-derived control and re-renders (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-CTRL-004"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getPlugins colour HWF-COLOR-001: placebo bars are blue and active bars are bronze (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-COLOR-001"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getPlugins colour HWF-COLOR-002: new-onset jaundice is green in EITHER arm (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-COLOR-002"],
+      "issueRefs": [93],
+      "screenshots": ["HWF-COLOR-002-jaundice-precedence.png"]
+    },
+    {
+      "test": "hep-waterfall getPlugins colour HWF-COLOR-004: the legend states that jaundice outranks the arm colour (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-COLOR-004"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getPlugins.armDividerPlugin HWF-COLOR-003: a one-sided cohort draws no rule but still labels its arm (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-COLOR-003"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getPlugins.armDividerPlugin HWF-COLOR-003: a vertical rule marks the seam and each half is labelled with its n (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-COLOR-003"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getPlugins.ulnBandPlugin HWF-AXIS-004: a varying reference range renders as a band labelled with its range (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-AXIS-004"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getPlugins.ulnBandPlugin HWF-AXIS-004: an unusable reference range draws nothing rather than a phantom line (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-AXIS-004"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getPlugins.ulnBandPlugin HWF-AXIS-004: one cohort-wide reference range renders as a single labelled line (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-AXIS-004"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getPlugins.ulnBandPlugin HWF-AXIS-004: per_subject traces each participant reference range and none draws nothing (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-AXIS-004"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getPlugins.waterfallTooltip HWF-SELECT-001: a decline reads as a signed fall and no jaundice line (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-SELECT-001"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getPlugins.waterfallTooltip HWF-SELECT-001: the tooltip names the participant, arm, both values and the change (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-SELECT-001"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getScales.formatNumber HWF-AXIS-003: values format without spurious precision (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-AXIS-003"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getScales.mirroredScales HWF-AXIS-002: the right axis takes its min and max from the same domain call (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-AXIS-002"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getScales.mirroredScales HWF-AXIS-003: both axis titles name the measure and its unit (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-AXIS-003"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getScales.mirroredScales HWF-BOX-002: the flanking panels share the main chart vertical domain (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-BOX-002"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getScales.resolveUnit HWF-DATA-006: an unmapped or empty unit column falls back to U/L (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-DATA-006"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getScales.resolveUnit HWF-DATA-006: the axis unit is the modal unit of the plotted measure (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-DATA-006"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getScales.resolveUnit HWF-DATA-007: mixed units across participants are reported as mixed (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-DATA-007"],
+      "issueRefs": [93],
+      "screenshots": ["HWF-DATA-007-mixed-unit-warning.png"]
+    },
+    {
+      "test": "hep-waterfall getScales.waterfallDomain HWF-AXIS-001: an empty or non-finite sample still yields a usable domain (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-AXIS-001"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getScales.waterfallDomain HWF-AXIS-001: the domain is in the absolute measurement units (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-AXIS-001"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getScales.waterfallDomain HWF-AXIS-001: the reference range is kept inside the domain (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-AXIS-001"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall layout and panels HWF-BOX-001: a summary panel flanks each side, placebo left and active right (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-BOX-001"],
+      "issueRefs": [93],
+      "screenshots": ["HWF-BOX-001-flanking-summary-panels.png"]
+    },
+    {
+      "test": "hep-waterfall layout and panels HWF-DATA-003/005/008: both exclusions and the dropped records are reported in the notes (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-DATA-003"],
+      "issueRefs": [93],
+      "screenshots": ["HWF-DATA-003-cohort-exclusion-notes.png"]
+    },
+    {
+      "test": "hep-waterfall layout and panels HWF-DATA-007: mixed units for the plotted measure suppress the chart with a warning (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-DATA-007"],
+      "issueRefs": [93],
+      "screenshots": ["HWF-DATA-007-mixed-unit-warning.png"]
+    },
+    {
+      "test": "hep-waterfall lifecycle HWF-API-002: init, setData and setSettings re-render and return the instance (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-API-002"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall lifecycle HWF-API-003: resize re-measures every chart and destroy tears them all down (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-API-003"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall module export HWF-API-001: the public collection exposes the hepWaterfall factory (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-API-001"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall selection HWF-SELECT-002: clicking a bar highlights the participant and opens the listing (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-SELECT-002"],
+      "issueRefs": [93],
+      "screenshots": ["HWF-SELECT-002-participant-selection.png"]
+    },
+    {
+      "test": "hep-waterfall selection HWF-SELECT-003: selection dispatches participantsSelected with the ids (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-SELECT-003"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall structureData.applyFilters HWF-CTRL-003: an active filter restricts the plotted cohort (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-CTRL-003"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall structureData.boxSpecs HWF-BOX-003: baseline_peak stages a baseline box and a peak box per arm (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-BOX-003"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall structureData.boxSpecs HWF-BOX-004: box statistics are the shared R-7 interpolated quantiles (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-BOX-004"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall structureData.buildWaterfall HWF-DATA-001: every plotted participant carries a baseline and an on-treatment maximum in absolute units (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-DATA-001"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall structureData.buildWaterfall HWF-DATA-001: the reduction is the shared hep-core one, so ALT matches buildHepSubjects (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-DATA-001"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall structureData.buildWaterfall HWF-DATA-002: the on-treatment maximum excludes the baseline record BY IDENTITY (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-DATA-002"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall structureData.buildWaterfall HWF-DATA-003: baseline-bilirubin exclusions are counted and reported separately (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-DATA-003"],
+      "issueRefs": [93],
+      "screenshots": ["HWF-DATA-003-cohort-exclusion-notes.png"]
+    },
+    {
+      "test": "hep-waterfall structureData.buildWaterfall HWF-DATA-004: new-onset jaundice needs a normal baseline AND an on-treatment exceedance (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-DATA-004"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall structureData.buildWaterfall HWF-DATA-005: undesignated arms are excluded and counted apart from the bilirubin rule (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-DATA-005"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall structureData.buildWaterfall HWF-DATA-008: records dropped for a missing reference range are reported, not dropped silently (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-DATA-008"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall structureData.orderWaterfall HWF-ORDER-001: placebo participants run left to right by ascending baseline (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-ORDER-001"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall structureData.orderWaterfall HWF-ORDER-002: active participants follow by descending baseline, meeting at the seam (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-ORDER-002"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall structureData.orderWaterfall HWF-ORDER-003: the baseline trace is unimodal with its mode at the arm boundary (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-ORDER-003"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall structureData.orderWaterfall HWF-ORDER-004: ties break on participant id, so repeated renders order identically (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-ORDER-004"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall structureData.waterfallDatasets HWF-BAR-001: one floating bar per participant, spanning baseline to on-treatment maximum (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-BAR-001"],
+      "issueRefs": [93],
+      "screenshots": ["HWF-BAR-001-waterfall-default.png"]
+    },
+    {
+      "test": "hep-waterfall structureData.waterfallDatasets HWF-BAR-002: bars point up on a rise and down on a fall (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-BAR-002"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall structureData.waterfallDatasets HWF-BAR-003: one continuous black line traces every participant baseline (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-BAR-003"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall structureData.waterfallDatasets HWF-BAR-004: the trace is drawn above the bars (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-BAR-004"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-001: the documented settings are exactly the DEFAULT_SETTINGS keys (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-001"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-002: every setting row has a type, default, and description (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-002"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-003: the factory is documented with params and a return value (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-003"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-004: every lifecycle method is documented with a description and return value (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-004"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-005: no missing-documentation entries remain across the public surface (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-005"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-006: the data contract derives from the schema and its settings map onto real setting names (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-006"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: existing blocks are unchanged renders a numbered list as an ordered list",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: existing blocks are unchanged still renders headings, bullets, and paragraphs",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: heading ids and the guide TOC adds no heading ids by default (coverage docs stay unchanged)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: heading ids and the guide TOC adds slug ids to headings when opted in",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: heading ids and the guide TOC disambiguates repeated headings",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: heading ids and the guide TOC extractHeadings ids match the ids mdBlock emits",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: heading ids and the guide TOC slugify lowercases and collapses non-alphanumerics",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: image figures accepts a single-quoted caption (Prettier normalizes titles to single quotes)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: image figures falls back to the alt text when no caption title is given",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: image figures renders a standalone image line as a captioned figure",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: image figures treats a mid-paragraph image inline, not as a broken link",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: pipe tables applies column alignment from the delimiter row",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: pipe tables does not mistake a bare horizontal rule for a table delimiter",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: pipe tables renders a GFM pipe table inside a scroll wrapper with header and body",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderGuidePage: composition renders a sticky TOC sidebar whose links anchor to the heading ids",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderGuidePage: composition renders authored figures from the guide markdown",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderGuidePage: composition renders the title, non-diagnostic caution, and the guide tab",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "requirements-lib: freshness guard (#63) flags added and removed requirement IDs",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "requirements-lib: freshness guard (#63) flags changed requirement text",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "requirements-lib: freshness guard (#63) reports fresh when the committed set matches a fresh extraction",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "requirements-lib: matrix parsing (#63) ignores the header, separator, and non-requirement content",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "requirements-lib: matrix parsing (#63) keeps an escaped pipe inside a requirement cell as a single row",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "requirements-lib: matrix parsing (#63) maps each requirement ID to its reviewed text",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "requirements-lib: requirement set (#63) wraps the parsed map with module + matrix provenance",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "safety.viz scaffold SH-API-001: the collection exposes the histogram module factory (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-API-001"],
+      "issueRefs": [2],
+      "screenshots": []
+    },
+    {
+      "test": "safety.viz scaffold src/main.js exports the public module collection (#1)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [1],
+      "screenshots": []
+    },
+    {
+      "test": "shared view selector VIEW-SEL-001: renders one option button per view under a titled View section (#76)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["VIEW-SEL-001"],
+      "issueRefs": [76],
+      "screenshots": []
+    },
+    {
+      "test": "shared view selector VIEW-SEL-002: highlights only the active option via is-active + aria-pressed (#76)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["VIEW-SEL-002"],
+      "issueRefs": [76],
+      "screenshots": []
+    },
+    {
+      "test": "shared view selector VIEW-SEL-003: renders real, keyboard-operable button elements (#76)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["VIEW-SEL-003"],
+      "issueRefs": [76],
+      "screenshots": []
+    },
+    {
+      "test": "shared view selector VIEW-SEL-004: clicking a non-active option fires onChange with its value; the active option is a no-op (#76)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["VIEW-SEL-004"],
+      "issueRefs": [76],
+      "screenshots": []
+    },
+    {
+      "test": "shell: prototypeBanner renders a labelled note element with the default v1.5 copy (#97)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [97],
+      "screenshots": []
+    },
+    {
+      "test": "shell: prototypeBanner uses a caller-supplied note verbatim when given (#97)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [97],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: about page (#21) carries the OpenRBQM mirror and audience framing moved off the homepage (#29)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 29],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: about page (#21) credits the safetyGraphics project and every original RhoInc renderer (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: about page (#21) describes each original renderer alongside its credit link (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: about page (#21) tells the keynote / developer-diary story and links the roadmap hub (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page opens with a module-anatomy overview linking the architecture page (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders a sidebar table of contents linking every section and method (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders each lifecycle method with signature, params, and returns (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders the factory signature and parameters (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders the schema-derived data contract (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders the settings table with type, default, and description (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: architecture page (#21) explains the shared shell and module anatomy (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: architecture page (#21) names the committed bundle for the running version (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: architecture page (#21) walks the pipeline from data contract to R htmlwidget (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: coverage parsing parses the browser and unit tables plus the routing-status tail (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page carries the routing-status sections onto the page (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page falls back to requirement-ID matching when a browser row wording drifts from the spec name (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page joins browser rows to their evidence record with status chip and screenshot (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page links source matrix rows to the safety.agent matrix (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page matches unit rows to records through expanded requirement IDs (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page rewrites repo-relative coverage links to repository URLs (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page surfaces failing records with a fail status chip (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence report provenance (#21) degrades gracefully when provenance fields are absent (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence report provenance (#21) links result chips to the CI run when a run is recorded (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence report provenance (#21) presents a captioned visual-evidence gallery of the committed screenshots (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence report provenance (#21) renders generation date, environment, and CI run when evidence.json carries them (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence report provenance (#21) summarizes scope and results in a fact panel (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery experimentalBadge renders Prototype for a prototype, Experimental for experimental, nothing otherwise (#97)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [97],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery compresses the migration queue to a one-line strip after the cards (#29)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [29],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery leads with the two-sentence intro linking the keynote and safetyGraphics (#29)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [29],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery links available renderers to demo, evidence, and API pages with a hero thumbnail (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery lists every renderer: available as cards, queued in the status strip (#7) (#29)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 29],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery marks a prototype renderer with a Prototype badge on its card (#97)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [97],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery prefers a dedicated hero asset over the evidence baseline when configured (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery nav dropdown (#71) applies the mount-depth root prefix to every internal link (#71)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71, 71],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery nav dropdown (#71) lists one link per available renderer, data-driven from config (#71)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71, 71],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery nav dropdown (#71) renders a disclosure control wired to the chart menu (#71)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71, 71],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery nav dropdown (#71) shell substitutes the {{galleryNav}} token from the passed renderers (#71)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71, 71],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery queued renderers link their requirement matrices, not site pages (#7) (#29)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 29],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: requirement text (#63) degrades to IDs-only when no requirements map is supplied",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: requirement text (#63) escapes HTML in requirement text",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: requirement text (#63) renders the reviewed requirement text for a row’s source-matrix IDs",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: requirement text (#63) shows no requirement text for IDs the matrix does not enumerate",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: requirement-ID expansion expands double-dot ranges and slash shorthand into full IDs (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: shell tokens (#21) falls back to an empty description when none is given (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: shell tokens (#21) replaces version and description tokens across the shell (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site validation: evidence screenshots flags screenshots referenced in evidence.json but missing from the evidence set (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site validation: internal links flags internal links and asset references that do not resolve (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site validation: internal links passes a site whose internal links all resolve, ignoring external and fragment links (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: factory API-XFORM-004: maps the documented module.exports doclet to the factory, named for its source file (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-004"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: factory API-XFORM-005: ignores the spurious undocumented global doclet jsdoc emits for the default export (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-005"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: methods table API-XFORM-001: extracts documented instance methods in source order with signature, params, and returns (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-001"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: methods table API-XFORM-002: brackets optional params in signatures and carries their defaults (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-002"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: methods table API-XFORM-003: excludes private and undocumented methods from the table (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-003"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: missing-doc detection API-XFORM-008: flags undocumented public methods and settings properties without descriptions (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-008"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: missing-doc detection API-XFORM-009: flags a missing factory when no documented default export exists (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-009"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: settings table API-XFORM-006: extracts settings rows from the typedef properties with display-ready types and defaults (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-006"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: settings table API-XFORM-007: normalizes non-string defaults (booleans, numbers, null) to display strings (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-007"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-001: carries the schema title and description onto the contract (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-001"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-002: flattens top-level and nested settings properties into dotted field rows (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-002"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-003: derives required flags from each level’s required array (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-003"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-004: carries types, defaults, and descriptions through from the schema (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-004"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-005: resolves local $defs references to their concrete type (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-005"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-006: every contract field carries a non-empty description (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-006"],
+      "issueRefs": [6],
+      "screenshots": []
+    }
+  ]
+}

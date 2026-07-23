@@ -23,15 +23,23 @@ export const DISPLAY_MODES = [
 ];
 
 /**
- * Top-level view modes offered by the View control (HEP-COMP-006). `scatter` is
- * the classic one-point-per-participant eDISH/mDISH scatter; `composite` is the
- * baseline-referenced composite plot (Tesfaldet et al., Drug Safety 2024) for
- * subjects with abnormal baseline liver tests — pretreatment and on-treatment
- * eDISH panels, a four-panel ×Baseline shift plot, and a migration table.
+ * Top-level view modes offered by the View control (HEP-COMP-006, HEP-MIG-001).
+ * `scatter` is the classic one-point-per-participant eDISH/mDISH scatter;
+ * `migration` is the bidirectional baseline → peak on-treatment Sankey with its
+ * per-arm cross tables (Amirzadegan et al., Drug Safety 2025, Fig 3);
+ * `composite` is the baseline-referenced composite plot (Tesfaldet et al., Drug
+ * Safety 2024, and the same paper's Fig 4) for subjects with abnormal baseline
+ * liver tests — pretreatment and on-treatment eDISH panels, a four-panel
+ * ×Baseline shift plot, and a migration table.
+ *
+ * The order is the paper's own, and it is also the direction of the two-step
+ * hand-off: the Sankey categorizes and compares arms, then carries a selected
+ * flow into the composite plot for individual case review (HEP-STEP-003).
  * @type {Array<{value: string, label: string}>}
  */
 export const VIEW_MODES = [
   { value: 'scatter', label: 'eDISH / mDISH scatter' },
+  { value: 'migration', label: 'Migration (Sankey)' },
   { value: 'composite', label: 'Composite plot (baseline-referenced)' }
 ];
 
@@ -62,13 +70,20 @@ export const MEASURE_KEYS = ['ALT', 'AST', 'TB', 'ALP'];
  * @property {?string} [studyday_col='DY'] Optional study-day column; drives the day_diff timing test and the visit-path ordering. When absent, a per-participant per-measure input-order sequence is derived (HEP-SELECT-004, HEP-DATA-004).
  * @property {?string} [visit_col='VISIT'] Optional categorical visit column; labels the visit-path overlay and pairs the X/Y trajectory points (HEP-SELECT-003).
  * @property {?string} [visitn_col='VISITNUM'] Optional numeric visit column; orders visit-keyed series when present.
+ * @property {?string} [arm_col='ARM'] Treatment-arm column, structural for the migration view — it decides which side of the centre column a participant's flow leaves from. Auto-detected across ARM, ACTARM, TRT01A and TREATMENT when the named column is absent; deliberately not a globally required column, so arm-less data still renders the scatter and composite views (HEP-ARM-001).
+ * @property {?string} [placebo_arm=null] Arm value plotted on the left (placebo) side of the migration Sankey; when null it is auto-detected by matching the arm values against /placebo|control/i (HEP-ARM-002).
+ * @property {?Array<string>} [active_arms=null] Arm values plotted on the right (active) side; when null every non-placebo arm pools right and the pooled arms are named in the notes (HEP-ARM-003).
+ * @property {?string} [baseline_col=null] Optional baseline-flag column (e.g. ABLFL). When supplied, the flagged record is the baseline, outranking the day-0-else-earliest heuristic (HEP-CORE-003).
+ * @property {string} [baseline_value='Y'] The value of baseline_col that marks the baseline record (HEP-CORE-003).
+ * @property {number} [jaundice_uln=2] New-onset-jaundice threshold on the total-bilirubin ×ULN scale: flagged when baseline is at or below it and the on-treatment maximum exceeds it. Defaults to the composite plot's bilirubin cutpoint so the flag and the quadrants stay mutually consistent (HEP-CORE-006).
+ * @property {boolean} [hide_unchanged=false] Migration view: suppress the diagonal (no-migration) ribbons; the hidden participant count stays in the notes and the cross tables (HEP-MIG-013).
  * @property {Object} [measure_values] Map of the short measure key (ALT/AST/TB/ALP) to the full TEST string in the data; controls present the short keys but resolve rows via these strings (HEP-DATA-002).
  * @property {string} [x_default='ALT'] Measure plotted on the x-axis on first render (HEP-CTRL-001).
  * @property {string} [y_default='TB'] Measure plotted on the y-axis on first render (HEP-CTRL-002).
  * @property {string[]} [x_options=['ALT','AST','TB','ALP']] Measures offered by the X-axis Measure control (HEP-CTRL-001).
  * @property {string[]} [y_options=['TB']] Measures offered by the Y-axis Measure control; when only one option the control is dropped (HEP-CTRL-002).
  * @property {Object} [cuts] Per-measure Hy's-Law cutpoints keyed by measure then display mode; a `defaults` entry back-fills any measure without its own cuts (HEP-QUAD-001).
- * @property {string} [view='scatter'] Initial view mode: `scatter` (eDISH/mDISH scatter) or `composite` (baseline-referenced composite plot for abnormal-baseline subjects) (HEP-COMP-006).
+ * @property {string} [view='scatter'] Initial view mode: `scatter` (eDISH/mDISH scatter), `migration` (the bidirectional baseline → on-treatment Sankey with per-arm cross tables), or `composite` (baseline-referenced composite plot for abnormal-baseline subjects) (HEP-COMP-006, HEP-MIG-001).
  * @property {number} [visit_window=30] Timing window (days): points whose peak-X and peak-Y days are within this many days render filled, else hollow (HEP-CTRL-008, HEP-DISPLAY-005).
  * @property {boolean} [r_ratio_filter=true] Whether to render the R-Ratio range filter control (HEP-CTRL-010).
  * @property {number[]} [r_ratio=[0,null]] Initial R-Ratio [min, max] range; a null max is resolved from the data on first render (HEP-CTRL-010).
@@ -100,6 +115,15 @@ export const DEFAULT_SETTINGS = {
   studyday_col: 'DY',
   visit_col: 'VISIT',
   visitn_col: 'VISITNUM',
+  arm_col: 'ARM',
+  placebo_arm: null,
+  active_arms: null,
+  baseline_col: null,
+  baseline_value: 'Y',
+  // Defaults to BILI_ULN_CUT (2) from src/hep-core/quadrants.js so a new-onset
+  // jaundice flag and a Cholestasis/Hy's-Law classification can never disagree.
+  jaundice_uln: 2,
+  hide_unchanged: false,
   measure_values: {
     ALT: 'Aminotransferase, alanine (ALT)',
     AST: 'Aminotransferase, aspartate (AST)',
@@ -205,6 +229,22 @@ export function syncSettings(settings) {
 
   synced.r_ratio = arrayify(synced.r_ratio);
   if (synced.r_ratio.length < 2) synced.r_ratio = [0, null];
+
+  // Arm designation (HEP-ARM-003): a single active arm may be given as a bare
+  // string; an empty list means "not designated" and falls back to null, i.e.
+  // every non-placebo arm pools onto the active side, rather than leaving the
+  // active side silently empty.
+  const activeArms = arrayify(synced.active_arms).map(String);
+  synced.active_arms = activeArms.length ? activeArms : null;
+  synced.placebo_arm =
+    synced.placebo_arm === undefined || synced.placebo_arm === null || synced.placebo_arm === ''
+      ? null
+      : String(synced.placebo_arm);
+
+  synced.jaundice_uln = Number.isFinite(Number(synced.jaundice_uln))
+    ? Number(synced.jaundice_uln)
+    : DEFAULT_SETTINGS.jaundice_uln;
+  synced.hide_unchanged = Boolean(synced.hide_unchanged);
 
   return synced;
 }

@@ -212,6 +212,32 @@ For a rapid triage of which cases merit referral to a hepatic board, the manual'
 - **AST corroboration and per-measure detail** → the same drill-down, with its Measure / N / Min / Median / Max summary table and linked record listing; direct/indirect bilirubin and other analytes appear here when present in the data.
 - **Population and subgroup context** → the Group color-by control with its legend, plus the categorical data filters.
 
+## The Migration (Sankey) view — comparing arms before reviewing cases
+
+> **Prototype.** The Migration (Sankey) view is a prototype shipping alongside the v1.5 release for evaluation; its behaviour and settings may change before it is finalized. The scatter and composite views are stable. The view carries a prototype banner in the app to make this clear.
+
+The View control offers a third top-level view, **Migration (Sankey)**, which reproduces Figure 3 of Amirzadegan et al., _"Emerging Tools to Support DILI Assessment in Clinical Trials with Abnormal Baseline Serum Liver Tests or Pre-existing Liver Diseases"_, Drug Safety 2025;48(5):443–453. It answers a different question from the scatter: not _who_ is in the Hy's-Law quadrant, but _how the two arms moved_ between baseline and peak on-treatment.
+
+**How to read it.** The centre column is every participant's **baseline** eDISH categorization. Placebo-arm flows run **left** from the centre; active-drug flows run **right**. Ribbon thickness is participant count, on a **single shared scale** across both arms and all three columns — so a thicker ribbon always means more participants, wherever it is drawn. Nodes stack by severity with **Hy's Law at the top** and Normal & NN at the bottom, so an unfavourable shift reads as **upward** travel and is painted pink; a favourable shift travels downward and is painted green.
+
+**Colour comes from the medicine, not the geometry.** A ribbon's fill is derived from the FDA concern matrix (`concernOf(baseline, on-treatment)`), never from the sign of its vertical travel. Cholestasis and Temple's Corollary therefore share **one severity tier**, drawn as adjacent sub-nodes under a single _Single-analyte elevation_ label: the concern matrix deliberately declines to rank them against each other, and stacking them apart would draw a neutral shift as an upward one.
+
+**Cutpoints are fixed here.** The migration view classifies with the FDA constants **ALT > 3× ULN** and **TB > 2× ULN** — the same thresholds as the composite plot, and faithful to the paper. The scatter view's user-adjustable Reference Line inputs do not apply to it.
+
+**Arms are structural.** The diagram needs a treatment-arm column (`arm_col`, auto-detected across `ARM`, `ACTARM`, `TRT01A`, `TREATMENT`), one arm designated placebo (`placebo_arm`, else auto-detected against `/placebo|control/i`) and one or more designated active (`active_arms`, else every non-placebo arm pools right). Participants in an arm designated **neither** are excluded and counted in the notes rather than silently pooled, and with no arm column at all the Migration option is disabled with an explanation instead of rendering an empty diagram.
+
+**Cross tables.** Below the diagram, one cross table per arm gives the paper's printed counts: rows = baseline quadrant, columns = peak on-treatment quadrant, both in severity order so they read the same direction as the plot, with row/column/grand totals and every cell shaded by level of concern. Cell counts and ribbon counts are the same numbers from the same index, and clicking either selects the same participants.
+
+**The two-step hand-off.** The paper frames "Sankey then composite" as a deliberate two-step replacement for the single eDISH plot: the Sankey delivers _visualise shift between arms_ and _categorise by severity_, but not _identify individual participants for case review_. So selecting a ribbon (click, Enter or Space — every ribbon is a focusable button with a spoken name) states the shift in the footnote and offers **Review these N in the composite plot**, which switches to the composite view with exactly those participants restored and highlighted in every panel.
+
+**One caution the paper asks for.** A grey **Hy's Law → Hy's Law** band looks reassuring, but it is precisely where the paper's acknowledged limitation lives: a shift view cannot detect worsening _within_ a category, and this is the most severe one. When that cell is non-empty the view says so and offers to select those participants for individual review.
+
+## Is this the right graphic for your trial?
+
+The eDISH scatter above assumes participants enter the study with roughly normal liver tests, because its ×ULN quadrants only carry meaning under that assumption. When the population was deliberately enrolled with abnormal baselines, a different graphic applies — the **composite plot** view on this page for participants who are abnormal in both ALT and bilirubin, and the separate [Hepatic ALT Waterfall](../hep-waterfall/guide.html) for participants with elevated baseline ALT but **normal** baseline bilirubin, which plots absolute U/L rather than a ratio and excludes exactly the baseline-jaundiced participants the composite view requires.
+
+Which one to reach for is decided by the population's baseline profile, not by preference. [Choosing a hepatic DILI graphic](https://github.com/jwildfire/safety.viz/blob/dev/docs/guides/hepatic-dili-tools.md) lays that out as a single decision table, following Table 1 of Amirzadegan et al., _Drug Safety_ 2025;48(5):443–453.
+
 ## What is not yet on this page
 
 A few steps in the source workflow depend on capabilities planned for a later safety.viz release, so no control corresponds to them today:
@@ -230,6 +256,7 @@ Open the [live demo](index.html) and work a few of the steps against real data.
 - Nudge the X (ALT) Reference Line upward toward an oncology-adjusted value and watch the per-quadrant percentages update as points are reclassified.
 - Set an R-Ratio range filter to isolate the hepatocellular cases (`R > 5`) from mixed and cholestatic ones.
 - Click a point in the possible Hy's-Law quadrant to open its lab trajectory, then check whether the transaminase and bilirubin peaks fall within a few weeks of each other and whether ALP stayed below `2x` ULN.
+- Switch the View control to **Migration (Sankey)**. The demo designates the synthetic chronic-liver-disease cohort's arms (`CLD: Placebo` versus `CLD: Study Drug`), so the pilot participants fall out with a counted exclusion note — read the pink ribbons on each side, then click one and take **Review these N in the composite plot** to see the same participants as individual cases.
 
 ## Source and attribution
 

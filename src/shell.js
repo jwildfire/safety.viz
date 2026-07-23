@@ -19,6 +19,29 @@ export function createElement(tag, className, text) {
 }
 
 /**
+ * Build the standard "prototype" banner (HEP-MIG / HWF prototype marking): a
+ * self-contained notice a chart prepends to its own output so the not-yet-stable
+ * status travels with the chart everywhere it renders — the demo, the deployed
+ * site, and any downstream embed (e.g. a gsm.safety htmlwidget) — not just the
+ * gallery pages. The default copy names the target release and warns that
+ * behaviour and API may change.
+ * @param {string} [note] Optional trailing sentence appended after the label.
+ * @returns {HTMLElement} A `.sv-prototype` banner element.
+ */
+export function prototypeBanner(note) {
+  const banner = createElement('div', 'sv-prototype');
+  banner.setAttribute('role', 'note');
+  const tag = createElement('span', 'sv-prototype-tag', 'Prototype');
+  banner.append(tag);
+  const text =
+    note ||
+    'This chart is a prototype under evaluation for the v1.5 release — its behaviour and ' +
+      'settings may change before it is finalized.';
+  banner.append(createElement('span', 'sv-prototype-text', text));
+  return banner;
+}
+
+/**
  * Append an option to a select.
  * @param {HTMLSelectElement} select Select to append to.
  * @param {string} value Option value.
@@ -90,6 +113,9 @@ const SHELL_STYLES = `
 .sv-view-option:hover{border-color:#b8c0cc;background:#f6f8fa}
 .sv-view-option.is-active{border-color:#0b62a4;background:#eaf2fb;color:#0b3d63;font-weight:600;box-shadow:inset 0 0 0 1px #0b62a4}
 .sv-view-option:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
+.sv-prototype{display:flex;align-items:baseline;gap:.5rem;margin:0 0 .6rem;padding:.4rem .6rem;border:1px solid #e6c98a;border-left:4px solid #d99a2b;border-radius:6px;background:#fdf6e6;color:#6b4e12;font-size:.8rem;line-height:1.35}
+.sv-prototype-tag{flex:0 0 auto;text-transform:uppercase;letter-spacing:.05em;font-weight:700;font-size:.68rem;padding:.08rem .4rem;border-radius:999px;background:#d99a2b;color:#fff}
+.sv-prototype-text{flex:1 1 auto}
 @media (max-width:900px){
 .sv-root{flex-direction:column}
 .sv-sidebar{position:static;flex:1 1 auto;width:100%;max-height:none}
