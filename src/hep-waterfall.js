@@ -45,7 +45,7 @@ import {
   Legend
 } from 'chart.js';
 
-import { controlBuilders, createElement, option, renderShell } from './shell.js';
+import { controlBuilders, createElement, option, prototypeBanner, renderShell } from './shell.js';
 import { boxWhiskerPlugin } from './box-whisker.js';
 import { ARM_SIDE_COLORS } from './hep-core/arms.js';
 import { checkInputs } from './hep-waterfall/checkInputs.js';
@@ -201,6 +201,10 @@ class SafetyHepWaterfall {
       })
     );
     applyWaterfallStyles();
+    // Prototype marking: a notice at the top of the chart so the not-yet-stable
+    // status travels with the widget wherever it renders, not only on the
+    // gallery pages (which also carry the config's prototype badge).
+    this.main.insertBefore(prototypeBanner(), this.main.firstChild);
     this.legendEl = createElement('div', 'hwf-legend');
     this.main.insertBefore(this.legendEl, this.chartWrap);
 

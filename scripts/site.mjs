@@ -153,7 +153,8 @@ for (const renderer of config.renderers.filter((entry) => entry.status === 'avai
     `${renderer.title} API reference · safety.viz`,
     renderApiPage(JSON.parse(readFileSync(apiFile, 'utf8')), {
       hasGuide: !!renderer.guide,
-      experimental: !!renderer.experimental
+      experimental: !!renderer.experimental,
+      prototype: !!renderer.prototype
     }),
     '../',
     `Generated API reference for the safety.viz ${module} module: factory, lifecycle ` +

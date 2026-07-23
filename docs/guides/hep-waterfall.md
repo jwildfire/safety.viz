@@ -1,3 +1,5 @@
+> **Prototype.** This chart is a prototype shipping alongside the v1.5 release for evaluation. It is fully tested and documented, but its settings and behaviour may change before it is finalized — pin a version if you depend on the exact API.
+
 ## When to use this chart — and when not to
 
 The Hepatic ALT Waterfall is an interactive version of the **modified waterfall plot** published as Figure 5 of Amirzadegan et al., "Emerging Tools to Support DILI Assessment in Clinical Trials with Abnormal Baseline Serum Liver Tests or Pre-existing Liver Diseases" (_Drug Safety_ 2025;48(5):443–453). It exists for one specific problem: **a trial that deliberately enrols participants whose liver tests are already abnormal at baseline.**

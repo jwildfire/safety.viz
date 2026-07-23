@@ -214,6 +214,8 @@ For a rapid triage of which cases merit referral to a hepatic board, the manual'
 
 ## The Migration (Sankey) view — comparing arms before reviewing cases
 
+> **Prototype.** The Migration (Sankey) view is a prototype shipping alongside the v1.5 release for evaluation; its behaviour and settings may change before it is finalized. The scatter and composite views are stable. The view carries a prototype banner in the app to make this clear.
+
 The View control offers a third top-level view, **Migration (Sankey)**, which reproduces Figure 3 of Amirzadegan et al., _"Emerging Tools to Support DILI Assessment in Clinical Trials with Abnormal Baseline Serum Liver Tests or Pre-existing Liver Diseases"_, Drug Safety 2025;48(5):443–453. It answers a different question from the scatter: not _who_ is in the Hy's-Law quadrant, but _how the two arms moved_ between baseline and peak on-treatment.
 
 **How to read it.** The centre column is every participant's **baseline** eDISH categorization. Placebo-arm flows run **left** from the centre; active-drug flows run **right**. Ribbon thickness is participant count, on a **single shared scale** across both arms and all three columns — so a thicker ribbon always means more participants, wherever it is drawn. Nodes stack by severity with **Hy's Law at the top** and Normal & NN at the bottom, so an unfavourable shift reads as **upward** travel and is painted pink; a favourable shift travels downward and is painted green.

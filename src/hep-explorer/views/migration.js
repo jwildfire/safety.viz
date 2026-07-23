@@ -35,7 +35,7 @@
 // Requirement groups: HEP-MIG-001..016, HEP-XTAB-001..006, HEP-STEP-001..005,
 // HEP-ARM-004..008, HEP-ACC-001..003, HEP-DATA-012.
 
-import { createElement } from '../../shell.js';
+import { createElement, prototypeBanner } from '../../shell.js';
 import {
   CONCERN_COLORS,
   QUADRANT_STYLE,
@@ -853,6 +853,16 @@ const migrationView = {
    * selection is cleared and listeners are notified.
    */
   render(host, { carriedIds = [] } = {}) {
+    // Prototype marking (Fig 3): the migration view is the module's only
+    // not-yet-stable view, so the notice is scoped to this view rather than the
+    // whole hep-explorer card, which stays a stable renderer.
+    host.migrationWrap.append(
+      prototypeBanner(
+        'The Migration (Sankey) view is a prototype under evaluation for the v1.5 release — ' +
+          'its behaviour and settings may change before it is finalized.'
+      )
+    );
+
     const cohort = buildCohort(host);
     host.migrationCellIndex = cohort.cells;
     host.migrationShown = cohort.plotted;

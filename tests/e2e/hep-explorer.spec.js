@@ -876,7 +876,23 @@ test.describe('safety.viz hep-explorer migration Sankey', () => {
     );
     // The scatter canvas and the composite panels are both put away.
     await expect(page.locator('.hep-composite-panels canvas')).toHaveCount(0);
+    // Prototype marking (#97): the migration view carries a prototype banner,
+    // scoped to this view — the scatter and composite views do not.
+    await expect(page.locator('.hep-migration-view .sv-prototype')).toHaveCount(1);
+    await expect(page.locator('.hep-migration-view .sv-prototype')).toContainText('prototype');
     await captureEvidence(page, 'HEP-MIG-001', 'migration-sankey');
+  });
+
+  test('HEP-MIG-001: the prototype banner is scoped to the migration view, not the stable scatter/composite views (#97)', async ({
+    page
+  }) => {
+    await expect(page.locator('.sv-main .sv-prototype')).toHaveCount(1);
+    await page.locator('.sv-view-option', { hasText: 'eDISH' }).click();
+    await expect(page.locator('.sv-main .sv-prototype')).toHaveCount(0);
+    await page.locator('.sv-view-option', { hasText: 'Composite' }).click();
+    await expect(page.locator('.sv-main .sv-prototype')).toHaveCount(0);
+    await page.locator('.sv-view-option', { hasText: 'Migration' }).click();
+    await expect(page.locator('.sv-main .sv-prototype')).toHaveCount(1);
   });
 
   test("HEP-MIG-002/HEP-MIG-003/HEP-MIG-010/HEP-MIG-015: geometry is stashed on the root, placebo runs left, active runs right, Hy's Law on top (#92)", async ({
