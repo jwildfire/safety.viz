@@ -149,8 +149,8 @@ export function applyShellStyles() {
  * @property {HTMLCanvasElement} canvas Main chart canvas.
  * @property {HTMLElement} mainAnnotation Overlay annotation inside the chart card.
  * @property {HTMLElement} footnote Hover/selection footnote below the chart.
- * @property {HTMLElement} profileWrap Participant-profile dock slot below the chart card (#98, PPRF-1); hidden while empty.
  * @property {HTMLElement} multiplesWrap Small-multiples grid.
+ * @property {HTMLElement} profileWrap Participant-profile dock slot below the chart card and small multiples, above the shared listing (#98, PPRF-1); hidden while empty.
  * @property {HTMLElement} listingWrap Linked participant listing container.
  */
 
@@ -198,7 +198,7 @@ export function renderShell(element, { moduleClass = '', onToggle } = {}) {
   const multiplesWrap = createElement('div', 'sv-multiples');
   const listingWrap = createElement('div', 'sv-listing');
   chartWrap.append(canvas, mainAnnotation);
-  main.append(notes, chartWrap, footnote, profileWrap, multiplesWrap, listingWrap);
+  main.append(notes, chartWrap, footnote, multiplesWrap, profileWrap, listingWrap);
 
   root.append(sidebar, main);
   element.append(root);
@@ -214,8 +214,8 @@ export function renderShell(element, { moduleClass = '', onToggle } = {}) {
     canvas,
     mainAnnotation,
     footnote,
-    profileWrap,
     multiplesWrap,
+    profileWrap,
     listingWrap
   };
 }

@@ -1,7 +1,9 @@
 // The injected stylesheet for the hep-explorer module (obot.roadmap#43,
-// safety.viz#91): the quadrant summary table, the participant drill-down
-// panels, the shared participant-trace header and Participants control, and the
-// composite plot's cards, migration table and concern legend. Moved VERBATIM
+// safety.viz#91): the quadrant summary table, the shared participant-trace
+// header and Participants control, and the composite plot's cards, migration
+// table and concern legend. The participant drill-down panels moved to the
+// shared participant-profile module (#98, PPRF-7), which ships its own
+// sv-profile-* stylesheet. Moved VERBATIM
 // out of src/hep-explorer.js so the entry file is left as the orchestrator and
 // the module's rules have one obvious home — the migration Sankey (Amirzadegan
 // 2025 Fig 3, safety.viz#92) adds its own rules here rather than to a growing
@@ -21,13 +23,6 @@ const MODULE_CSS = `
 .safety-hep-explorer .hep-quadrant-summary th,.safety-hep-explorer .hep-quadrant-summary td{border-bottom:1px solid #e3e8ee;padding:.4rem .55rem;text-align:left}
 .safety-hep-explorer .hep-quadrant-summary th{border-bottom:2px solid #d8dee4;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f}
 .safety-hep-explorer .hep-quadrant-summary td.hep-num,.safety-hep-explorer .hep-quadrant-summary th.hep-num{text-align:right;font-variant-numeric:tabular-nums}
-.safety-hep-explorer .hep-detail{margin-top:1.25rem;border-top:2px solid #111827;padding-top:.75rem}
-.safety-hep-explorer .hep-detail-title{font-size:.95rem;margin:0 0 .5rem}
-.safety-hep-explorer .hep-detail-chart{height:220px;position:relative;border:1px solid #d8dee4;border-radius:10px;padding:.75rem;background:#fff}
-.safety-hep-explorer .hep-summary-table{width:100%;max-width:520px;border-collapse:collapse;font-size:.85rem;background:#fff;margin-top:.9rem}
-.safety-hep-explorer .hep-summary-table th,.safety-hep-explorer .hep-summary-table td{border-bottom:1px solid #e3e8ee;padding:.4rem .55rem;text-align:left}
-.safety-hep-explorer .hep-summary-table th{border-bottom:2px solid #d8dee4;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f}
-.safety-hep-explorer .hep-summary-table td.hep-num,.safety-hep-explorer .hep-summary-table th.hep-num{text-align:right;font-variant-numeric:tabular-nums}
 .safety-hep-explorer .hep-composite{margin-top:.5rem}
 .safety-hep-explorer .hep-composite-header{font-size:.85rem;color:#52616f;background:#f6f8fa;border:1px solid #e3e8ee;border-radius:8px;padding:.4rem .6rem;margin:0 0 .6rem;min-height:1.2rem}
 .safety-hep-explorer .hep-composite-header.is-active{color:#1f2933;font-weight:600;border-color:#b8c0cc;background:#eef2f6}

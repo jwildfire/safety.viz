@@ -89,6 +89,7 @@ export { MEASURE_KEYS, cutFor } from '../hep-core/rows.js';
  * @property {Object} [cuts] Per-measure Hy's-Law cutpoints keyed by measure then display mode; a `defaults` entry back-fills any measure without its own cuts (HEP-QUAD-001).
  * @property {string} [view='scatter'] Initial view mode: `scatter` (eDISH/mDISH scatter), `migration` (the bidirectional baseline → on-treatment Sankey with per-arm cross tables), or `composite` (baseline-referenced composite plot for abnormal-baseline subjects) (HEP-COMP-006, HEP-MIG-001).
  * @property {number} [visit_window=30] Timing window (days): points whose peak-X and peak-Y days are within this many days render filled, else hollow (HEP-CTRL-008, HEP-DISPLAY-005).
+ * @property {boolean} [profile=true] Dock the shared participant-profile module (header, labs-over-time spaghetti, measure table) in the shell's profile slot, driven by every selection path via the participantsSelected event; false restores the pre-#98 behaviour of no drill-down block (#98, PPRF-7).
  * @property {boolean} [r_ratio_filter=true] Whether to render the R-Ratio range filter control (HEP-CTRL-010).
  * @property {number[]} [r_ratio=[0,null]] Initial R-Ratio [min, max] range; a null max is resolved from the data on first render (HEP-CTRL-010).
  * @property {Array<string|Object>} [filters=[]] Filter controls: column names or { value_col, label } specs. Filters whose column is absent from the data are dropped with a console warning (HEP-CTRL-011).
@@ -146,6 +147,7 @@ export const DEFAULT_SETTINGS = {
     defaults: { relative_uln: 3, relative_baseline: 3.8 }
   },
   visit_window: 30,
+  profile: true,
   r_ratio_filter: true,
   r_ratio: [0, null],
   filters: [],
@@ -249,6 +251,7 @@ export function syncSettings(settings) {
     ? Number(synced.jaundice_uln)
     : DEFAULT_SETTINGS.jaundice_uln;
   synced.hide_unchanged = Boolean(synced.hide_unchanged);
+  synced.profile = Boolean(synced.profile);
 
   return synced;
 }
