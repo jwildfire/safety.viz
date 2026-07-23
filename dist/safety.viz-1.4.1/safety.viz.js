@@ -18446,7 +18446,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
   }
 
   // src/hep-core/arms.js
-  var ARM_COL_CANDIDATES = ["ARM", "ACTARM", "TRT01A", "TREATMENT"];
+  var ARM_COL_CANDIDATES = ["ARM", "ACTARM", "TRT01A", "TREATMENT", "TRTA"];
   var ARM_SIDE_COLORS = { placebo: "#1f78b4", active: "#b5651d" };
   var JAUNDICE_COLOR = "#2e8b3d";
   var PLACEBO_PATTERN = /placebo|control/i;
@@ -18575,7 +18575,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
           arm_col: {
             type: ["string", "null"],
             default: "ARM",
-            description: "Treatment-arm column, structural for the migration view \u2014 it decides which side of the centre column a participant's flow leaves from. Auto-detected across ARM, ACTARM, TRT01A and TREATMENT when the named column is absent, and deliberately NOT in this contract's required list, so arm-less data still renders the scatter and composite views (HEP-ARM-001)."
+            description: "Treatment-arm column, structural for the migration view \u2014 it decides which side of the centre column a participant's flow leaves from. Auto-detected across ARM, ACTARM, TRT01A, TREATMENT and TRTA when the named column is absent, and deliberately NOT in this contract's required list, so arm-less data still renders the scatter and composite views (HEP-ARM-001)."
           },
           placebo_arm: {
             type: ["string", "null"],
@@ -21712,7 +21712,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       if (!migration) return;
       migration.disabled = true;
       migration.classList.add("is-disabled");
-      migration.title = "The migration Sankey needs a treatment-arm column. Map arm_col (or add ARM, ACTARM, TRT01A or TREATMENT to the data) to enable it.";
+      migration.title = "The migration Sankey needs a treatment-arm column. Map arm_col (or add ARM, ACTARM, TRT01A, TREATMENT or TRTA to the data) to enable it.";
     }
     /**
      * Rebuild the settings/filters controls from data + state (HEP-CTRL-*). The

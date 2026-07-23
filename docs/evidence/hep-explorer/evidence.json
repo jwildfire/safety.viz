@@ -1,16 +1,13 @@
 {
   "module": "hep-explorer",
-  "generatedAt": "2026-07-23T02:21:40.462Z",
+  "generatedAt": "2026-07-23T03:15:54.274Z",
   "environment": {
-    "os": "linux 6.17.0-1020-azure",
-    "node": "v22.23.1",
+    "os": "darwin 23.6.0",
+    "node": "v24.14.0",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": {
-    "id": "29974167237",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29974167237"
-  },
+  "run": null,
   "records": [
     {
       "test": "a chart link navigates straight to that renderer demo (#71)",
@@ -716,6 +713,14 @@
       "screenshots": []
     },
     {
+      "test": "hep-core arms — resolveArmCol HEP-ARM-001: TRTA is a last-resort candidate — every pre-existing column still wins (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-ARM-001"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
       "test": "hep-core arms — resolveArmCol HEP-ARM-001: uses arm_col when that column is present in the data (#91)",
       "suite": "unit",
       "status": "pass",
@@ -816,6 +821,30 @@
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["HEP-ARM-003"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core index — the barrel re-exports the whole domain layer every named export of every hep-core module is on the barrel, identity-equal (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core index — the barrel re-exports the whole domain layer no two hep-core modules export the same name, so the barrel cannot shadow (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core index — the barrel re-exports the whole domain layer the barrel adds nothing of its own — its surface is exactly the union of the five modules (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
       "issueRefs": [91],
       "screenshots": []
     },
@@ -1148,6 +1177,14 @@
       "screenshots": []
     },
     {
+      "test": "hep-core subjects — the demo-dataset composite population HEP-CORE-002: the identity rule targets exactly the 24 no-day-0 participants, none CLD- (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-002"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
       "test": "hep-core subjects — the demo-dataset composite population HEP-CORE-002: the two participants the baseline fix drops are named (#91)",
       "suite": "unit",
       "status": "pass",
@@ -1377,6 +1414,30 @@
       "status": "pass",
       "requirementIds": ["HEP-COMP-003"],
       "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer composite shim — deprecated path stays bound to hep-core buildCompositeSubjects is a distinct deprecated alias delegating to buildHepSubjects (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer composite shim — deprecated path stays bound to hep-core every shim export is the hep-core binding itself, not a copy (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer composite shim — deprecated path stays bound to hep-core the shim re-exports exactly its documented twelve names, nothing more (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [91],
       "screenshots": []
     },
     {
