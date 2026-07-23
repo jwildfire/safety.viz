@@ -445,7 +445,7 @@ class SafetyHepExplorer {
     migration.classList.add('is-disabled');
     migration.title =
       'The migration Sankey needs a treatment-arm column. Map arm_col (or add ARM, ACTARM, ' +
-      'TRT01A or TREATMENT to the data) to enable it.';
+      'TRT01A, TREATMENT or TRTA to the data) to enable it.';
   }
 
   /**

@@ -30,10 +30,20 @@ describe('hep-core arms — resolveArmCol', () => {
   });
 
   it('HEP-ARM-001: falls back to the known arm columns when arm_col is absent (#91)', () => {
-    expect(ARM_COL_CANDIDATES).toEqual(['ARM', 'ACTARM', 'TRT01A', 'TREATMENT']);
+    expect(ARM_COL_CANDIDATES).toEqual(['ARM', 'ACTARM', 'TRT01A', 'TREATMENT', 'TRTA']);
     expect(resolveArmCol(rows, syncSettings({}))).toBe('ACTARM');
     expect(resolveArmCol([{ TRT01A: 'Drug' }], syncSettings({}))).toBe('TRT01A');
     expect(resolveArmCol([{ TREATMENT: 'Drug' }], syncSettings({}))).toBe('TREATMENT');
+    expect(resolveArmCol([{ TRTA: 'Drug' }], syncSettings({}))).toBe('TRTA');
+  });
+
+  it('HEP-ARM-001: TRTA is a last-resort candidate — every pre-existing column still wins (#91)', () => {
+    // Strictly additive: data that resolved to a column before TRTA joined the
+    // list must resolve to the SAME column, so TRTA sits at the end.
+    expect(resolveArmCol([{ TRTA: 'Drug', TREATMENT: 'Drug' }], syncSettings({}))).toBe(
+      'TREATMENT'
+    );
+    expect(resolveArmCol([{ TRTA: 'Drug', TRT01A: 'Drug' }], syncSettings({}))).toBe('TRT01A');
   });
 
   it('HEP-ARM-001: returns null when no arm column can be found (#91)', () => {
