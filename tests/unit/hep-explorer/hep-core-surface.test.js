@@ -17,10 +17,12 @@ import * as shim from '../../../src/hep-explorer/composite.js';
 // drift onto a divergent copy. These are properties of the module graph, so they
 // are asserted against the module namespaces, not against behaviour.
 //
-// NOTE: tests/unit/hep-core/ is deliberately OUTSIDE the evidence universe —
-// hep-core is not a renderer module (absent from site/config.json), so
-// moduleForFile routes this file to null and the committed evidence baselines
-// stay byte-identical (#91's evidence-neutrality promise).
+// NOTE: this file lives under tests/unit/hep-explorer/ deliberately — hep-core
+// is not a renderer module (absent from site/config.json), so a
+// tests/unit/hep-core/ path would route to null and, per the shared-scaffold
+// rule in scripts/evidence-lib.mjs, be duplicated into EVERY module's
+// evidence.json. Routing through hep-explorer (the module that owns the split)
+// confines the evidence delta to docs/evidence/hep-explorer/ alone.
 
 const MODULES = { quadrants, subjects, arms, migration, stats };
 
