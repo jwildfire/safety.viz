@@ -52,6 +52,13 @@ import {
   pointTooltip
 } from './outlier-explorer/getPlugins.js';
 import { renderListing } from './histogram/listing.js';
+import {
+  buildProfileRows,
+  mountProfileDock,
+  resetProfileDock,
+  syncProfileDock,
+  unmountProfileDock
+} from './profile-host.js';
 
 Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip);
 
@@ -77,6 +84,15 @@ class SafetyOutlierExplorer {
     this.page = 1;
     this.charts = [];
     this.participantsSelected = [];
+    // The docked participant-profile module (#99, PPRF-OE-001): the shared
+    // drill-down rendered into the shell's profile slot and fed by the
+    // point-click selection through dispatchSelection's participantsSelected
+    // event on the shell root. profileRows is the ONE per-setData profile
+    // ingest (hep-core cleaned rows); profileKey is the idempotency guard.
+    this.profile = null;
+    this.profileFeed = null;
+    this.profileKey = null;
+    this.profileRows = [];
     this.state = {
       measure: this.settings.start_value,
       filters: {},
@@ -93,6 +109,43 @@ class SafetyOutlierExplorer {
     };
     this.initFilterState();
     this.renderShell();
+    mountProfileDock(this, () => this.profileSettings());
+  }
+
+  /**
+   * The settings handed to the docked participant-profile module (#99,
+   * PPRF-OE-001): the shared long-lab column mappings pass through verbatim;
+   * `details` come from profile_details (the host `details` configure the
+   * linked listing — per-row fields, not demographics); and the two outbound
+   * callbacks wire Clear to the host's own clear path and stepper navigation
+   * to a visual-only re-highlight (no dispatch).
+   * @private
+   */
+  profileSettings() {
+    const settings = this.settings;
+    const profileSettings = {
+      id_col: settings.id_col,
+      measure_col: settings.measure_col,
+      value_col: settings.value_col,
+      unit_col: settings.unit_col,
+      normal_col_high: settings.normal_col_high,
+      normal_col_low: settings.normal_col_low,
+      studyday_col: settings.studyday_col,
+      visit_col: settings.visit_col,
+      visitn_col: settings.visitn_col,
+      details:
+        settings.profile_details && settings.profile_details.length ? settings.profile_details : [],
+      participantProfileURL: settings.participantProfileURL ?? null,
+      on_clear: () => this.clearSelection(),
+      on_step: (id) => {
+        this.state.selectedId = String(id);
+        this.applySelection();
+      }
+    };
+    // Only forward a caller-supplied key-measure map — null keeps the profile
+    // module's own ALT/AST/TB/ALP defaults.
+    if (settings.measure_values) profileSettings.measure_values = settings.measure_values;
+    return profileSettings;
   }
 
   /**
@@ -152,9 +205,21 @@ class SafetyOutlierExplorer {
   setData(data) {
     this.rawData = Array.isArray(data) ? data : [];
     this.validateAndCleanData();
+    this.buildProfileRows();
     this.buildControls();
     this.render();
     return this;
+  }
+
+  /**
+   * Derive the docked profile's pre-cleaned rows ONCE per data/settings change
+   * (#99, PPRF-OE-001) — never per gesture.
+   * @private
+   */
+  buildProfileRows() {
+    this.profileRows = this.settings.profile
+      ? buildProfileRows(this.rawData, this.profileSettings())
+      : [];
   }
 
   /**
@@ -169,6 +234,8 @@ class SafetyOutlierExplorer {
     this.state.groupBy = this.settings.group_by;
     this.initFilterState();
     if (this.rawData.length) this.validateAndCleanData();
+    this.buildProfileRows();
+    syncProfileDock(this, () => this.profileSettings());
     this.buildControls();
     this.render();
     return this;
@@ -417,6 +484,9 @@ class SafetyOutlierExplorer {
     this.page = 1;
     this.state.selectedId = null;
     this.participantsSelected = [];
+    // The selection resets silently on every render, so the dock must empty in
+    // the same preamble (#99, PPRF-OE-003).
+    resetProfileDock(this);
     this.notes.innerHTML = '';
     this.footnote.textContent =
       'Hover a point for details; click a point to highlight a participant.';
@@ -740,6 +810,7 @@ class SafetyOutlierExplorer {
    * @returns {void}
    */
   destroy() {
+    unmountProfileDock(this);
     this.destroyCharts();
     this.element.innerHTML = '';
   }

@@ -12,7 +12,8 @@ async function selectPoint(page, index) {
     const instance = window.__safetyDeltaDeltaInstance;
     instance.chart.options.onClick({}, [{ index: i }]);
   }, index);
-  await expect(page.locator('.sdd-measure-table')).toBeVisible();
+  // The docked participant profile is the detail view (#99, PPRF-DD-002).
+  await expect(page.locator('.sv-profile .sv-profile-root')).toBeVisible();
 }
 
 test.describe('safety.viz delta-delta module', () => {
@@ -155,54 +156,36 @@ test.describe('safety.viz delta-delta module', () => {
     expect(tip.afterLabel).toContain('Change in Bilirubin: -0.30');
   });
 
-  test('SDD-FUNC-006/SDD-REG-011/SDD-REG-016/SDD-REG-018/SDD-REG-019/SDD-REG-020/SDD-REG-024: clicking a point opens the linked measure table (#25)', async ({
+  test('PPRF-DD-001/PPRF-DD-002/PPRF-DD-004: clicking a point dispatches the selection and opens the docked profile — the bespoke measure table is gone (#99)', async ({
     page
   }) => {
-    await selectPoint(page, 0);
-    // Detail header carries the participant ID (SDD-REG-016).
-    await expect(page.locator('.sdd-detail-header')).toContainText('SUBJ-01');
-    // Headers: Measure + Change over Time (SDD-REG-018).
-    const headers = await page.locator('.sdd-measure-table th').allTextContents();
-    expect(headers).toContain('Measure');
-    expect(headers).toContain('Change over Time');
-    // One row per measure collected for the participant (SDD-REG-019).
-    await expect(page.locator('.sdd-measure-table tbody tr')).toHaveCount(3);
-    // Each row has a sparkline (SDD-REG-020).
-    await expect(page.locator('.sdd-measure-table tbody tr svg.sdd-sparkline')).toHaveCount(3);
-    // Color-key footnote (SDD-REG-024).
-    await expect(page.locator('.sdd-table-footnote')).toContainText(
-      'baseline visits are filled blue'
-    );
-    await captureEvidence(page, 'SDD-FUNC-006', 'measure-table');
-  });
-
-  test('SDD-REG-021/SDD-REG-022/SDD-REG-025: change values are signed and colored, with axis tags (#25)', async ({
-    page
-  }) => {
-    await selectPoint(page, 0);
-    const rows = await page.evaluate(() => {
-      const trs = [...document.querySelectorAll('.sdd-measure-table tbody tr')];
-      return trs.map((tr) => {
-        const name = tr.querySelector('.sdd-measure-name').textContent;
-        const tag = tr.querySelector('.sdd-axis-tag')?.textContent ?? '';
-        const deltaCell = tr.querySelector('.sdd-delta');
-        return { name, tag, text: deltaCell.textContent, color: getComputedStyle(deltaCell).color };
-      });
+    // The house dispatch lands on the shell root (#88 SELN-4 gap closed).
+    await page.evaluate(() => {
+      window.__sddHeard = [];
+      const instance = window.__safetyDeltaDeltaInstance;
+      instance.root.addEventListener('participantsSelected', (event) =>
+        window.__sddHeard.push(event.detail.data)
+      );
     });
-    // Albumin: X-axis tag, −3.00, red.
-    expect(rows[0].tag).toBe('X-axis');
-    expect(rows[0].text).toBe('-3.00');
-    expect(rows[0].color).toBe('rgb(220, 38, 38)');
-    // Bilirubin: Y-axis tag, −0.30, red.
-    expect(rows[1].tag).toBe('Y-axis');
-    expect(rows[1].color).toBe('rgb(220, 38, 38)');
-    // Calcium: no axis tag, +0.20, green.
-    expect(rows[2].tag).toBe('');
-    expect(rows[2].text).toBe('+0.20');
-    expect(rows[2].color).toBe('rgb(22, 163, 74)');
+    await selectPoint(page, 0);
+    expect(await page.evaluate(() => window.__sddHeard)).toEqual([['SUBJ-01']]);
+
+    // Full docked profile: header id + demographic details (host details minus
+    // the id), spaghetti, and one measure row per key measure (PPRF-12: the
+    // profile is the participant's full story, not the delta re-encoded).
+    await expect(page.locator('.sv-profile .sv-profile-id')).toHaveText('Participant SUBJ-01');
+    await expect(page.locator('.sv-profile .sv-profile-header')).toContainText('North');
+    await expect(page.locator('.sv-profile .sv-profile-spaghetti canvas')).toBeVisible();
+    await expect(page.locator('.sv-profile .sv-profile-measure-row')).toHaveCount(3);
+    // No stepper for a single-select gesture.
+    await expect(page.locator('.sv-profile .sv-profile-step-count')).toHaveCount(0);
+    // The bespoke measure table is removed in the adopting change (PPRF-12).
+    await expect(page.locator('.sdd-measure-table')).toHaveCount(0);
+    await expect(page.locator('.sdd-detail-header')).toHaveCount(0);
+    await captureEvidence(page, 'PPRF-DD-002', 'docked-profile');
   });
 
-  test('SDD-REG-012/SDD-REG-013: the clicked point is highlighted and clicking another redraws the table (#25)', async ({
+  test('SDD-REG-012/SDD-REG-013/PPRF-DD-002: the clicked point is highlighted and clicking another re-renders the docked profile (#25, #99)', async ({
     page
   }) => {
     await selectPoint(page, 0);
@@ -215,7 +198,7 @@ test.describe('safety.viz delta-delta module', () => {
     await captureEvidence(page, 'SDD-REG-012', 'point-selected');
 
     await selectPoint(page, 1);
-    await expect(page.locator('.sdd-detail-header')).toContainText('SUBJ-02');
+    await expect(page.locator('.sv-profile .sv-profile-id')).toHaveText('Participant SUBJ-02');
     const second = await page.evaluate(() => {
       const dataset = window.__safetyDeltaDeltaInstance.chart.data.datasets[0];
       return { w0: dataset.pointBorderWidth[0], w1: dataset.pointBorderWidth[1] };
@@ -224,13 +207,47 @@ test.describe('safety.viz delta-delta module', () => {
     expect(second.w1).toBe(3);
   });
 
-  test('SDD-REG-014: changing a control removes the detail table (#25)', async ({ page }) => {
+  test('PPRF-DD-003: an empty-canvas click clears the highlight and empties the dock (#99)', async ({
+    page
+  }) => {
+    await selectPoint(page, 0);
+    await page.evaluate(() => {
+      window.__safetyDeltaDeltaInstance.chart.options.onClick({}, []);
+    });
+    await expect(page.locator('.sv-profile > *')).toHaveCount(0);
+    const state = await page.evaluate(() => {
+      const instance = window.__safetyDeltaDeltaInstance;
+      return {
+        selectedId: instance.state.selectedId,
+        width: instance.chart.data.datasets[0].pointBorderWidth[0],
+        annotation: instance.mainAnnotation.textContent
+      };
+    });
+    expect(state.selectedId).toBeNull();
+    expect(state.width).toBe(0.5);
+    expect(state.annotation).toBe('Click a point to see details.');
+  });
+
+  test('PPRF-DD-003: the dock Clear affordance routes through the host clear path (#99)', async ({
+    page
+  }) => {
+    await selectPoint(page, 0);
+    await page.locator('.sv-profile .sv-profile-clear').click();
+    await expect(page.locator('.sv-profile > *')).toHaveCount(0);
+    expect(
+      await page.evaluate(() => window.__safetyDeltaDeltaInstance.state.selectedId)
+    ).toBeNull();
+  });
+
+  test('PPRF-DD-003: changing a control clears the selection and the docked profile (#99)', async ({
+    page
+  }) => {
     await selectPoint(page, 0);
     await page
       .locator('.sv-control', { hasText: 'X Measure' })
       .locator('select')
       .selectOption('Calcium');
-    await expect(page.locator('.sdd-measure-table')).toHaveCount(0);
+    await expect(page.locator('.sv-profile > *')).toHaveCount(0);
   });
 
   test('SDD-REG-026: the regression line toggles with an equation and R² note (#25)', async ({

@@ -23,7 +23,7 @@
 // PAINTING ONLY. Every coordinate comes from ../sankeyLayout.js, which is pure,
 // DOM-free and unit-tested; this file turns numbers into SVG, tables, notes and
 // events. Rendering is hand-rolled inline SVG via document.createElementNS —
-// the established house idiom (src/ae-explorer.js, src/delta-delta/listing.js)
+// the established house idiom (src/ae-explorer.js, src/ae-timelines.js)
 // — so ribbons are real focusable DOM nodes with data attributes rather than
 // canvas pixels, and no charting dependency is added.
 //
@@ -95,8 +95,8 @@ const OUTER_WIDTH = MARGIN.left + SANKEY_WIDTH + MARGIN.right;
 const OUTER_HEIGHT = MARGIN.top + SANKEY_HEIGHT + MARGIN.bottom;
 
 /**
- * Create an SVG element with attributes; the same two-line helper
- * src/delta-delta/listing.js uses, kept local so views stay siblings.
+ * Create an SVG element with attributes; the house two-line helper (as in
+ * src/ae-explorer.js), kept local so views stay siblings.
  * @private
  */
 function svgEl(tag, attrs = {}) {

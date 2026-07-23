@@ -14637,7 +14637,15 @@ var SafetyViz = (() => {
     filters: [],
     details: null,
     width: "100%",
-    height: 460
+    height: 460,
+    unit_col: "STRESU",
+    normal_col_low: "STNRLO",
+    normal_col_high: "STNRHI",
+    studyday_col: null,
+    measure_values: null,
+    profile: true,
+    profile_details: null,
+    participantProfileURL: null
   };
   function arrayify3(value) {
     if (value === void 0 || value === null) return [];
@@ -14662,6 +14670,8 @@ var SafetyViz = (() => {
       if (!merged.some((existing) => existing.value_col === detail.value_col)) merged.push(detail);
     });
     synced.details = merged;
+    synced.profile = Boolean(synced.profile);
+    synced.profile_details = synced.profile_details === void 0 || synced.profile_details === null ? null : arrayify3(synced.profile_details).map((detail) => fieldSpec3(detail)).filter((detail) => detail.value_col);
     return synced;
   }
 
@@ -14899,10 +14909,6 @@ var SafetyViz = (() => {
   }
 
   // src/delta-delta/getScales.js
-  var POSITIVE_COLOR = "#16a34a";
-  var NEGATIVE_COLOR = "#dc2626";
-  var ZERO_COLOR = "#6b7280";
-  var NA_COLOR = "#9ca3af";
   function formatNumber3(value, digits = 2) {
     if (!Number.isFinite(value)) return "";
     return Number(value.toFixed(digits)).toString();
@@ -14911,12 +14917,6 @@ var SafetyViz = (() => {
     if (!Number.isFinite(value)) return "NA";
     const fixed = value.toFixed(2);
     return value >= 0 ? `+${fixed}` : fixed;
-  }
-  function deltaColor(value) {
-    if (!Number.isFinite(value)) return NA_COLOR;
-    if (value > 0) return POSITIVE_COLOR;
-    if (value < 0) return NEGATIVE_COLOR;
-    return ZERO_COLOR;
   }
   function axisLabel(measure) {
     return `Change in ${measure ?? ""}`;
@@ -15055,3291 +15055,13 @@ var SafetyViz = (() => {
     };
   }
 
-  // src/delta-delta/listing.js
-  var SVG_NS = "http://www.w3.org/2000/svg";
-  var LISTING_STYLE_ID = "safety-viz-delta-delta-styles";
-  var LISTING_STYLES = `
-.safety-delta-delta .sdd-detail-header{display:flex;flex-wrap:wrap;gap:.35rem 1.5rem;margin:0 0 .75rem;padding:0 0 .6rem;border-bottom:2px solid #111827}
-.safety-delta-delta .sdd-detail-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f}
-.safety-delta-delta .sdd-detail-value{font-size:.95rem;font-weight:600}
-.safety-delta-delta .sdd-measure-table{width:100%;border-collapse:collapse;font-size:.85rem;background:#fff}
-.safety-delta-delta .sdd-measure-table th,.safety-delta-delta .sdd-measure-table td{border-bottom:1px solid #e3e8ee;padding:.4rem .55rem;text-align:left;vertical-align:middle}
-.safety-delta-delta .sdd-measure-table th{border-bottom:2px solid #d8dee4;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f}
-.safety-delta-delta .sdd-measure-table td.sdd-delta{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-.safety-delta-delta .sdd-axis-tag{display:inline-block;margin-right:.4rem;padding:.05rem .35rem;border-radius:4px;background:#dbeafe;color:#1d4ed8;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
-.safety-delta-delta .sdd-spark-cell{width:120px}
-.safety-delta-delta .sdd-table-footnote{margin:.6rem 0 0;font-size:.75rem;color:#52616f;line-height:1.4}`;
-  function applyListingStyles() {
-    if (typeof document === "undefined" || document.getElementById(LISTING_STYLE_ID)) return;
-    const style = document.createElement("style");
-    style.id = LISTING_STYLE_ID;
-    style.textContent = LISTING_STYLES;
-    document.head.append(style);
-  }
-  function svgEl(tag, attrs) {
-    const el = document.createElementNS(SVG_NS, tag);
-    Object.entries(attrs).forEach(([key, value]) => el.setAttribute(key, String(value)));
-    return el;
-  }
-  function sparkline(records, settings) {
-    const width = 110;
-    const height = 26;
-    const pad = 4;
-    const svg = svgEl("svg", { width, height, class: "sdd-sparkline" });
-    if (!records.length) return svg;
-    const xs = records.map((row) => Number(row[settings.visitn_col] ?? 0));
-    const ys = records.map((row) => row.__dd_value);
-    const xMin = Math.min(...xs);
-    const xMax = Math.max(...xs);
-    const yMin = Math.min(...ys);
-    const yMax = Math.max(...ys);
-    const scaleX = (x) => xMax === xMin ? width / 2 : pad + (x - xMin) / (xMax - xMin) * (width - 2 * pad);
-    const scaleY = (y) => yMax === yMin ? height / 2 : height - pad - (y - yMin) / (yMax - yMin) * (height - 2 * pad);
-    const points = records.map((row) => ({
-      cx: scaleX(Number(row[settings.visitn_col] ?? 0)),
-      cy: scaleY(row.__dd_value),
-      color: row.color
-    }));
-    if (points.length > 1) {
-      svg.append(
-        svgEl("polyline", {
-          points: points.map((p) => `${p.cx},${p.cy}`).join(" "),
-          fill: "none",
-          stroke: OTHER_COLOR,
-          "stroke-width": 1
-        })
-      );
-    }
-    points.forEach((p) => {
-      svg.append(
-        svgEl("circle", {
-          cx: p.cx,
-          cy: p.cy,
-          r: 2.5,
-          stroke: p.color,
-          "stroke-width": 1,
-          fill: p.color === OTHER_COLOR ? "transparent" : p.color
-        })
-      );
-    });
-    return svg;
-  }
-  function detailHeader(participant, settings) {
-    const header = createElement("div", "sdd-detail-header");
-    settings.details.forEach((detail) => {
-      const item = createElement("div", "sdd-detail");
-      item.append(
-        createElement("div", "sdd-detail-label", detail.label),
-        createElement("div", "sdd-detail-value", participant.meta[detail.value_col] ?? "")
-      );
-      header.append(item);
-    });
-    return header;
-  }
-  function drawMeasureTable(instance, participant) {
-    const settings = instance.settings;
-    applyListingStyles();
-    instance.listingWrap.innerHTML = "";
-    instance.listingWrap.append(detailHeader(participant, settings));
-    const table = createElement("table", "sdd-measure-table");
-    const thead = document.createElement("thead");
-    const headRow = document.createElement("tr");
-    ["Measure", "", "Change over Time"].forEach(
-      (label) => headRow.append(createElement("th", null, label))
-    );
-    thead.append(headRow);
-    table.append(thead);
-    const tbody = document.createElement("tbody");
-    participant.measures.forEach((measure) => {
-      const tr = document.createElement("tr");
-      const measureCell = createElement("td", "sdd-measure-name");
-      if (measure.axisFlag) {
-        measureCell.append(createElement("span", "sdd-axis-tag", `${measure.axisFlag}-axis`));
-      }
-      measureCell.append(document.createTextNode(measure.key));
-      tr.append(measureCell);
-      const sparkCell = createElement("td", "sdd-spark-cell");
-      sparkCell.append(sparkline(measure.records, settings));
-      tr.append(sparkCell);
-      const deltaCell = createElement("td", "sdd-delta", formatDelta(measure.delta));
-      deltaCell.style.color = deltaColor(measure.delta);
-      deltaCell.style.fontWeight = "600";
-      tr.append(deltaCell);
-      tbody.append(tr);
-    });
-    table.append(tbody);
-    instance.listingWrap.append(table);
-    const footnote = createElement(
-      "p",
-      "sdd-table-footnote",
-      "One row per measure collected for the selected participant. In each sparkline, baseline visits are filled blue, comparison visits filled orange, and other visits empty gray. Change-over-time values are green when above 0, red when below 0, and gray when 0 or missing (NA)."
-    );
-    instance.listingWrap.append(footnote);
-  }
-
-  // src/delta-delta.js
-  Chart.register(ScatterController, PointElement, LinearScale, plugin_tooltip);
-  var SafetyDeltaDelta = class {
-    constructor(element = "body", settings = {}) {
-      this.element = typeof element === "string" ? document.querySelector(element) : element;
-      if (!this.element) throw new Error(`Safety Delta-Delta target not found: ${element}`);
-      this.settings = syncSettings3(settings);
-      this.rawData = [];
-      this.cleanRows = [];
-      this.removedRecords = 0;
-      this.measures = [];
-      this.visits = [];
-      this.participants = [];
-      this.filteredParticipants = [];
-      this.points = [];
-      this.regression = null;
-      this.charts = [];
-      this.chart = null;
-      this.state = {
-        measureX: this.settings.measure_x,
-        measureY: this.settings.measure_y,
-        baseline: [...this.settings.baseline_visits],
-        comparison: [...this.settings.comparison_visits],
-        filters: {},
-        addRegressionLine: this.settings.add_regression_line,
-        selectedId: null
-      };
-      this.renderShell();
-    }
-    /**
-     * Build the static DOM shell the chart and measure table render into.
-     * @private
-     */
-    renderShell() {
-      Object.assign(
-        this,
-        renderShell(this.element, {
-          moduleClass: "safety-delta-delta",
-          onToggle: () => this.resize()
-        })
-      );
-      this.footnote.textContent = "Click a point to see details.";
-    }
-    /**
-     * Load data and render: an alias for setData that keeps the two-step
-     * create-then-init call shape working.
-     * @param {Object[]} data Long-format result records matching the delta-delta data contract.
-     * @returns {SafetyDeltaDelta} The instance, for chaining.
-     */
-    init(data) {
-      this.setData(data);
-      return this;
-    }
-    /**
-     * Replace the bound data and re-render. The data is validated against the
-     * settings mapping (throwing, and rendering the message into the target
-     * element, when required columns are missing), rows with missing or
-     * non-numeric results are removed with a console warning, and the controls
-     * are rebuilt from the new data's measures and visits.
-     * @param {Object[]} data Long-format result records matching the delta-delta data contract.
-     * @returns {SafetyDeltaDelta} The instance, for chaining.
-     */
-    setData(data) {
-      this.rawData = Array.isArray(data) ? data : [];
-      this.validateAndCleanData();
-      this.buildControls();
-      this.render();
-      return this;
-    }
-    /**
-     * Merge setting overrides onto the current settings, adopt any provided
-     * measure/visit/regression selections into the control state, re-normalize
-     * the settings, rebuild the controls, and re-render.
-     * @param {DeltaDeltaSettings} settings Setting overrides to merge.
-     * @returns {SafetyDeltaDelta} The instance, for chaining.
-     */
-    setSettings(settings) {
-      if ("measure_x" in settings) this.state.measureX = settings.measure_x;
-      if ("measure_y" in settings) this.state.measureY = settings.measure_y;
-      if ("baseline_visits" in settings) this.state.baseline = arrayify3(settings.baseline_visits);
-      if ("comparison_visits" in settings)
-        this.state.comparison = arrayify3(settings.comparison_visits);
-      if ("add_regression_line" in settings)
-        this.state.addRegressionLine = settings.add_regression_line;
-      this.settings = syncSettings3({ ...this.settings, ...settings });
-      if (this.rawData.length) this.validateAndCleanData();
-      this.buildControls();
-      this.render();
-      return this;
-    }
-    /**
-     * Validate the raw data against the settings mapping, drop unusable rows,
-     * and refresh the measure/visit lists and their data-driven default
-     * selections.
-     * @private
-     */
-    validateAndCleanData() {
-      try {
-        checkInputs3(this.rawData, this.settings);
-      } catch (error) {
-        this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
-        throw error;
-      }
-      let removed = 0;
-      const rows = this.rawData.map((row, index) => ({
-        ...row,
-        __dd_index: index,
-        __dd_value: Number(row[this.settings.value_col])
-      })).filter((row) => {
-        const keep = row[this.settings.value_col] !== "" && Number.isFinite(row.__dd_value);
-        if (!keep) removed += 1;
-        return keep;
-      });
-      this.cleanRows = rows;
-      this.removedRecords = removed;
-      if (removed)
-        console.warn(
-          `${removed} missing or non-numeric result${removed > 1 ? "s have" : " has"} been removed.`
-        );
-      this.measures = getMeasures(this.cleanRows, this.settings);
-      this.visits = getVisits(this.cleanRows, this.settings);
-      this.resolveStateDefaults();
-    }
-    /**
-     * Fill measure and visit selections from the data when they are unset or no
-     * longer valid: x → first measure, y → second measure, baseline → first
-     * visit, comparison → last visit (SDD-FUNC-001, SDD-FUNC-002).
-     * @private
-     */
-    resolveStateDefaults() {
-      const measures = this.measures;
-      const visits = this.visits;
-      if (!measures.includes(this.state.measureX)) this.state.measureX = measures[0] ?? null;
-      if (!measures.includes(this.state.measureY))
-        this.state.measureY = measures[1] ?? measures[0] ?? null;
-      const validBaseline = this.state.baseline.filter((visit) => visits.includes(visit));
-      this.state.baseline = validBaseline.length ? validBaseline : visits.length ? [visits[0]] : [];
-      const validComparison = this.state.comparison.filter((visit) => visits.includes(visit));
-      this.state.comparison = validComparison.length ? validComparison : visits.length ? [visits[visits.length - 1]] : [];
-    }
-    /**
-     * Rebuild the visit/measure/filter/display controls from data + state.
-     * @private
-     */
-    buildControls() {
-      this.controls.innerHTML = "";
-      const { addSection, addControl } = controlBuilders(this.controls);
-      const visitParent = addSection("Visits");
-      const baseline = addControl("Baseline visit(s)", document.createElement("select"), visitParent);
-      baseline.multiple = true;
-      baseline.size = Math.min(6, Math.max(3, this.visits.length));
-      this.visits.forEach(
-        (visit) => option(baseline, visit, visit, this.state.baseline.includes(visit))
-      );
-      baseline.onchange = () => {
-        this.state.baseline = [...baseline.selectedOptions].map((opt) => opt.value);
-        this.render();
-      };
-      const comparison = addControl(
-        "Comparison visit(s)",
-        document.createElement("select"),
-        visitParent
-      );
-      comparison.multiple = true;
-      comparison.size = Math.min(6, Math.max(3, this.visits.length));
-      this.visits.forEach(
-        (visit) => option(comparison, visit, visit, this.state.comparison.includes(visit))
-      );
-      comparison.onchange = () => {
-        this.state.comparison = [...comparison.selectedOptions].map((opt) => opt.value);
-        this.render();
-      };
-      const measureParent = addSection("Measures");
-      const measureX = addControl("X Measure", document.createElement("select"), measureParent);
-      this.measures.forEach(
-        (measure) => option(measureX, measure, measure, measure === this.state.measureX)
-      );
-      measureX.onchange = () => {
-        this.state.measureX = measureX.value;
-        this.render();
-      };
-      const measureY = addControl("Y Measure", document.createElement("select"), measureParent);
-      this.measures.forEach(
-        (measure) => option(measureY, measure, measure, measure === this.state.measureY)
-      );
-      measureY.onchange = () => {
-        this.state.measureY = measureY.value;
-        this.render();
-      };
-      const filterSpecs = this.settings.filters.filter((filter) => {
-        const exists = this.cleanRows.some((row) => row[filter.value_col] !== void 0);
-        if (!exists)
-          console.warn(
-            `The [ ${filter.label} ] filter has been removed because the variable does not exist.`
-          );
-        return exists;
-      });
-      if (filterSpecs.length) {
-        const filterParent = addSection("Filters");
-        filterSpecs.forEach((filter) => {
-          const select = addControl(filter.label, document.createElement("select"), filterParent);
-          option(select, "__all__", "All", !this.state.filters[filter.value_col]);
-          unique3(this.cleanRows.map((row) => row[filter.value_col])).sort().forEach(
-            (value) => option(select, value, value, this.state.filters[filter.value_col] === value)
-          );
-          select.onchange = () => {
-            this.state.filters[filter.value_col] = select.value === "__all__" ? null : select.value;
-            this.render();
-          };
-        });
-      }
-      const displayParent = addSection("Display");
-      const regression = document.createElement("input");
-      regression.type = "checkbox";
-      regression.checked = this.state.addRegressionLine;
-      regression.onchange = () => {
-        this.state.addRegressionLine = regression.checked;
-        this.render();
-      };
-      const inline = createElement("div", "sv-control-inline");
-      inline.append(regression, document.createTextNode("Show"));
-      addControl("Regression Line", inline, displayParent);
-    }
-    /**
-     * Cleaned rows for the current selection after the active filters, flattened
-     * to one plottable point per participant.
-     * @private
-     */
-    currentPoints() {
-      this.participants = buildParticipants(this.cleanRows, this.settings, this.state);
-      this.filteredParticipants = applyFilters3(this.participants, this.state.filters);
-      return plottablePoints(this.filteredParticipants);
-    }
-    /**
-     * Redraw everything from the current data, settings, and control state:
-     * destroys the live chart, clears the measure table and any point selection,
-     * recomputes the per-participant points, and draws the scatter plus the
-     * participant-count and regression notes. Called automatically by the
-     * controls and the data/settings setters.
-     * @returns {void}
-     */
-    render() {
-      this.destroyCharts();
-      this.listingWrap.innerHTML = "";
-      this.multiplesWrap.innerHTML = "";
-      this.state.selectedId = null;
-      this.regression = null;
-      this.footnote.textContent = "";
-      this.mainAnnotation.textContent = "Click a point to see details.";
-      this.points = this.currentPoints();
-      this.updateNotes();
-      if (!this.points.length) {
-        this.mainAnnotation.textContent = "No participants to plot for the current selection.";
-        return;
-      }
-      if (this.state.addRegressionLine) {
-        this.regression = linearRegression(this.points.map((p) => [p.delta_x, p.delta_y]));
-        if (this.regression)
-          this.footnote.textContent = `Dashed line: simple linear regression (${this.regression.string}), R\xB2 = ${formatNumber3(this.regression.r2)}.`;
-      }
-      this.drawScatter();
-    }
-    /**
-     * Refresh the shown/total participant counts and the removed-record note.
-     * @private
-     */
-    updateNotes() {
-      const total = unique3(this.cleanRows.map((row) => row[this.settings.id_col])).length;
-      const removedNote = this.removedRecords ? `<span class="sv-warning">${this.removedRecords} missing or non-numeric results removed.</span>` : "";
-      this.notes.innerHTML = `<span>${participantCountText(this.points.length, total)}</span>${removedNote}`;
-    }
-    /**
-     * Draw the Chart.js scatter with quadrant lines, tooltips, point selection,
-     * and the optional regression line.
-     * @private
-     */
-    drawScatter() {
-      const points = this.points;
-      const data = points.map((point) => ({ x: point.delta_x, y: point.delta_y }));
-      const xDomain = deltaDomain(points.map((point) => point.delta_x));
-      const yDomain = deltaDomain(points.map((point) => point.delta_y));
-      const borders = selectionBorders(points.length, -1);
-      const chart = new Chart(this.canvas.getContext("2d"), {
-        type: "scatter",
-        data: {
-          datasets: [
-            {
-              label: "Participants",
-              data,
-              pointBackgroundColor: "rgba(37, 99, 235, 0.75)",
-              pointBorderColor: borders.colors,
-              pointBorderWidth: borders.widths,
-              pointRadius: 5,
-              pointHoverRadius: 7
-            }
-          ]
-        },
-        options: {
-          maintainAspectRatio: false,
-          responsive: true,
-          layout: { padding: 6 },
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                title: () => "",
-                label: (ctx) => `Participant: ${points[ctx.dataIndex].id}`,
-                afterLabel: (ctx) => {
-                  const point = points[ctx.dataIndex];
-                  return `Change in ${this.state.measureX}: ${formatDelta(point.delta_x)}
-Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
-                }
-              }
-            }
-          },
-          scales: buildScales3(this.state.measureX, this.state.measureY, xDomain, yDomain),
-          onHover: (event, active) => {
-            const target = event?.native?.target;
-            if (target) target.style.cursor = active.length ? "pointer" : "default";
-          },
-          onClick: (event, active) => {
-            if (active.length) this.selectPoint(active[0].index);
-          }
-        },
-        plugins: [quadrantLinesPlugin(), regressionLinePlugin(this)]
-      });
-      chart.$ddPoints = points;
-      this.chart = chart;
-      this.charts.push(chart);
-    }
-    /**
-     * Select a scatter point: highlight it, open the linked measure table, and
-     * note the participant (SDD-FUNC-006, SDD-REG-012/013).
-     * @private
-     */
-    selectPoint(index) {
-      const point = this.points[index];
-      if (!point) return;
-      this.state.selectedId = point.id;
-      const borders = selectionBorders(this.points.length, index);
-      const dataset = this.chart.data.datasets[0];
-      dataset.pointBorderColor = borders.colors;
-      dataset.pointBorderWidth = borders.widths;
-      this.chart.$ddSelectedIndex = index;
-      this.chart.update();
-      this.mainAnnotation.textContent = `Participant ${point.id} selected.`;
-      drawMeasureTable(this, point);
-    }
-    /**
-     * Resize the live chart to its container. For host layouts that change the
-     * container size without a window resize — e.g. the R htmlwidget bindings.
-     * @returns {void}
-     */
-    resize() {
-      this.charts.forEach((chart) => chart.resize());
-    }
-    /**
-     * Destroy the live Chart.js instance without touching the shell.
-     * @private
-     */
-    destroyCharts() {
-      this.charts.forEach((chart) => chart.destroy());
-      this.charts = [];
-      this.chart = null;
-    }
-    /**
-     * Tear the delta-delta plot down: destroy the Chart.js instance and empty
-     * the target element. The instance cannot be reused afterwards — create a
-     * new one via the factory instead.
-     * @returns {void}
-     */
-    destroy() {
-      this.destroyCharts();
-      this.element.innerHTML = "";
-    }
-  };
-  function deltaDelta(element = "body", settings = {}) {
-    return new SafetyDeltaDelta(element, settings);
-  }
-
-  // src/results-over-time/configure.js
-  var DEFAULT_SETTINGS4 = {
-    id_col: "USUBJID",
-    measure_col: "TEST",
-    value_col: "STRESN",
-    unit_col: "STRESU",
-    time_col: "VISIT",
-    time_order_col: "VISITNUM",
-    time_label: "Visit",
-    filters: [],
-    groups: [],
-    start_value: null,
-    group_by: "srot_none",
-    boxplots: true,
-    outliers: true,
-    visits_without_data: false,
-    unscheduled_visits: false,
-    unscheduled_visit_pattern: "/unscheduled|early termination/i",
-    unscheduled_visit_values: null,
-    y_scale: "linear",
-    width: "100%",
-    height: 460
-  };
-  var Y_SCALES = ["linear", "log"];
-  function arrayify4(value) {
-    if (!value) return [];
-    return Array.isArray(value) ? value : [value];
-  }
-  function fieldSpec4(value, fallbackLabel) {
-    if (typeof value === "string") return { value_col: value, label: fallbackLabel || value };
-    return { value_col: value.value_col, label: value.label || value.value_col };
-  }
-  function syncSettings4(settings) {
-    const synced = { ...DEFAULT_SETTINGS4, ...settings };
-    synced.filters = arrayify4(synced.filters).map((value) => fieldSpec4(value)).filter((spec) => spec.value_col);
-    const defaultGroup = { value_col: "srot_none", label: "None" };
-    synced.groups = [
-      defaultGroup,
-      ...arrayify4(synced.groups).map((value) => fieldSpec4(value)).filter((spec) => spec.value_col)
-    ];
-    if (synced.group_by && !synced.groups.some((group) => group.value_col === synced.group_by)) {
-      synced.groups.push({ value_col: synced.group_by, label: synced.group_by });
-    }
-    synced.group_by = synced.groups.some((group) => group.value_col === synced.group_by) ? synced.group_by : synced.groups[0].value_col;
-    synced.y_scale = Y_SCALES.includes(synced.y_scale) ? synced.y_scale : "linear";
-    return synced;
-  }
-
-  // src/data/schema/results-over-time.json
-  var results_over_time_default = {
-    $schema: "https://json-schema.org/draft/2020-12/schema",
-    $id: "https://raw.githubusercontent.com/jwildfire/safety.viz/main/src/data/schema/results-over-time.json",
-    title: "safety.viz results-over-time data contract",
-    description: "Long-format results data with a visit dimension: one record per participant per visit per measure (SROT-DATA-001/002). Column names are supplied by the settings mapping; the renderer removes missing/non-numeric results with a reported count and degrades gracefully when optional columns are absent.",
-    type: "object",
-    required: ["data", "settings"],
-    properties: {
-      data: {
-        type: "array",
-        minItems: 1,
-        items: { type: "object" },
-        description: "d3.csv()-style records; every row carries the measure, result, and visit columns named in settings."
-      },
-      settings: {
-        type: "object",
-        description: "Column mappings and rendering options; merged onto the module's DEFAULT_SETTINGS, so only overrides need to be supplied.",
-        required: ["measure_col", "value_col", "time_col"],
-        properties: {
-          measure_col: {
-            type: "string",
-            default: "TEST",
-            description: "Column holding the measure name; required in data."
-          },
-          value_col: {
-            type: "string",
-            default: "STRESN",
-            description: "Column holding the numeric result; required in data."
-          },
-          time_col: {
-            type: "string",
-            default: "VISIT",
-            description: "Column holding the visit name; required in data. Distinct visits become the x-axis categories."
-          },
-          time_order_col: {
-            type: "string",
-            default: "VISITNUM",
-            description: "Optional numeric column ordering the visits; falls back to alphanumeric order when absent."
-          },
-          id_col: {
-            type: "string",
-            default: "USUBJID",
-            description: "Optional participant identifier column driving the participant counts."
-          },
-          unit_col: {
-            type: "string",
-            default: "STRESU",
-            description: "Optional unit column, appended to measure labels and the y-axis title."
-          },
-          filters: {
-            $ref: "#/$defs/fieldList",
-            description: "Optional filter columns rendered as controls."
-          },
-          groups: {
-            $ref: "#/$defs/fieldList",
-            description: "Optional group-by columns that split each visit into side-by-side box plots."
-          }
-        }
-      }
-    },
-    $defs: {
-      fieldList: {
-        type: "array",
-        items: {
-          anyOf: [
-            { type: "string" },
-            {
-              type: "object",
-              required: ["value_col"],
-              properties: {
-                value_col: { type: "string" },
-                label: { type: "string" }
-              }
-            }
-          ]
-        }
-      }
-    }
-  };
-
-  // src/results-over-time/checkInputs.js
-  var REQUIRED_COLUMN_SETTINGS4 = results_over_time_default.properties.settings.required;
-  function checkInputs4(data, settings) {
-    const rows = Array.isArray(data) ? data : [];
-    const missing = REQUIRED_COLUMN_SETTINGS4.map((key) => settings[key]).filter(
-      (col) => !rows.some((row) => row[col] !== void 0)
-    );
-    if (missing.length) {
-      throw new Error(`Required variable(s) missing: ${missing.join(", ")}`);
-    }
-  }
-
-  // src/results-over-time/structureData.js
-  function unique4(values) {
-    return [
-      ...new Set(values.filter((value) => value !== void 0 && value !== null && value !== ""))
-    ];
-  }
-  function quantile2(values, p) {
-    if (!values.length) return NaN;
-    const sorted = [...values].sort((a, b) => a - b);
-    const idx = (sorted.length - 1) * p;
-    const lo = Math.floor(idx);
-    const hi = Math.ceil(idx);
-    if (lo === hi) return sorted[lo];
-    return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
-  }
-  function mean4(values) {
-    return values.reduce((sum, value) => sum + value, 0) / values.length;
-  }
-  function sd2(values) {
-    if (values.length < 2) return Number.NaN;
-    const m = mean4(values);
-    return Math.sqrt(
-      values.reduce((sum, value) => sum + Math.pow(value - m, 2), 0) / (values.length - 1)
-    );
-  }
-  function cleanData3(rawData, settings) {
-    let removed = 0;
-    const rows = rawData.map((row, index) => ({
-      ...row,
-      __srot_index: index,
-      __srot_value: Number(row[settings.value_col])
-    })).filter((row) => {
-      const keep = row[settings.value_col] !== "" && Number.isFinite(row.__srot_value);
-      if (!keep) removed += 1;
-      return keep;
-    });
-    return { rows, removed };
-  }
-  function measureLabel3(row, settings) {
-    const measure = row[settings.measure_col];
-    const unit = settings.unit_col ? row[settings.unit_col] : null;
-    return unit ? `${measure} (${unit})` : measure;
-  }
-  function applyFilters4(rows, filters) {
-    return rows.filter(
-      (row) => Object.entries(filters).every(([key, value]) => !value || String(row[key]) === String(value))
-    );
-  }
-  function computeVisitOrder(rows, settings) {
-    const timeCol = settings.time_col;
-    const orderCol = settings.time_order_col;
-    const hasOrder = orderCol && rows.some((row) => row[orderCol] !== void 0 && row[orderCol] !== "");
-    if (hasOrder) {
-      const keyed = unique4(rows.map((row) => `${row[orderCol]}|${row[timeCol]}`));
-      return keyed.sort((a, b) => {
-        const diff = Number(a.split("|")[0]) - Number(b.split("|")[0]);
-        return diff || a.localeCompare(b);
-      }).map((entry) => entry.split("|").slice(1).join("|"));
-    }
-    return unique4(rows.map((row) => row[timeCol])).sort();
-  }
-  function summarize(values) {
-    const sorted = [...values].sort((a, b) => a - b);
-    return {
-      n: sorted.length,
-      min: sorted[0],
-      q5: quantile2(sorted, 0.05),
-      q25: quantile2(sorted, 0.25),
-      median: quantile2(sorted, 0.5),
-      q75: quantile2(sorted, 0.75),
-      q95: quantile2(sorted, 0.95),
-      max: sorted[sorted.length - 1],
-      mean: mean4(sorted),
-      deviation: sd2(sorted),
-      values: sorted
-    };
-  }
-  function groupKey(row, groupCol) {
-    if (!groupCol || groupCol === "srot_none") return "All";
-    return String(row[groupCol]);
-  }
-  function summarizeVisitGroups(rows, { timeCol, valueCol, groupCol }) {
-    const nested = {};
-    const buckets = /* @__PURE__ */ new Map();
-    for (const row of rows) {
-      const visit = row[timeCol];
-      const group = groupKey(row, groupCol);
-      const key = `${visit}\0${group}`;
-      if (!buckets.has(key)) buckets.set(key, { visit, group, values: [] });
-      buckets.get(key).values.push(Number(row[valueCol]));
-    }
-    for (const { visit, group, values } of buckets.values()) {
-      if (!nested[visit]) nested[visit] = {};
-      nested[visit][group] = summarize(values);
-    }
-    return nested;
-  }
-  function flagOutliers(rows, statsByVisitGroup, settings, groupCol) {
-    for (const row of rows) {
-      const visit = row[settings.time_col];
-      const group = groupKey(row, groupCol);
-      row.__srot_group = group;
-      const stats = (statsByVisitGroup[visit] || {})[group];
-      row.__srot_outlier = settings.outliers && stats ? row.__srot_value < stats.q5 || row.__srot_value > stats.q95 : false;
-    }
-    return rows;
-  }
-  function parseUnscheduledPattern(pattern) {
-    const match = /^\/(.*)\/([a-z]*)$/i.exec(String(pattern));
-    return match ? new RegExp(match[1], match[2]) : new RegExp(String(pattern));
-  }
-  function isUnscheduledVisit(visit, settings) {
-    if (Array.isArray(settings.unscheduled_visit_values)) {
-      return settings.unscheduled_visit_values.map(String).includes(String(visit));
-    }
-    if (settings.unscheduled_visit_pattern) {
-      return parseUnscheduledPattern(settings.unscheduled_visit_pattern).test(String(visit));
-    }
-    return false;
-  }
-
-  // src/results-over-time/getScales.js
-  function formatFixed(value, digits) {
-    if (!Number.isFinite(value)) return "NA";
-    return value.toFixed(Math.max(0, Math.min(20, digits)));
-  }
-  function normalizeDomain2(state) {
-    if (Number.isFinite(state.lower) && Number.isFinite(state.upper) && state.lower >= state.upper) {
-      const tmp = state.lower;
-      state.lower = state.upper;
-      state.upper = tmp;
-    }
-  }
-  function resolveYDomain(values, lower, upper) {
-    const extent = [Math.min(...values), Math.max(...values)];
-    return [lower == null ? extent[0] : lower, upper == null ? extent[1] : upper];
-  }
-  function yPrecision(domain) {
-    const range = domain[1] - domain[0];
-    const log10range = Math.log10(range);
-    const roundedLog10range = Math.round(log10range);
-    const precision1 = -1 * (roundedLog10range - 1);
-    const precision2 = log10range > 0.5 ? 0 : Math.max(0, precision1);
-    return { precision: precision2, range, log10range };
-  }
-  function statPrecisions(basePrecision) {
-    const base = Math.max(0, basePrecision);
-    return { p0: base, p1: base + 1, p2: base + 2 };
-  }
-
-  // src/box-whisker.js
-  function hexToRgba(hex2, alpha2) {
-    const value = hex2.replace("#", "");
-    const r = parseInt(value.slice(0, 2), 16);
-    const g = parseInt(value.slice(2, 4), 16);
-    const b = parseInt(value.slice(4, 6), 16);
-    return `rgba(${r}, ${g}, ${b}, ${alpha2})`;
-  }
-  function drawBoxWhisker(ctx, { scales, chartArea }, specs) {
-    const yOf = (value) => scales.y.getPixelForValue(value);
-    ctx.save();
-    for (const box of specs) {
-      const { stats, color: color2 } = box;
-      if (!stats || !stats.n) continue;
-      const centerX = scales.x.getPixelForValue(box.x);
-      const left = scales.x.getPixelForValue(box.x - box.halfWidth);
-      const right = scales.x.getPixelForValue(box.x + box.halfWidth);
-      const clamp = (y) => Math.max(chartArea.top, Math.min(chartArea.bottom, y));
-      ctx.fillStyle = hexToRgba(color2, 0.35);
-      ctx.strokeStyle = color2;
-      ctx.lineWidth = 1.5;
-      const top = clamp(yOf(stats.q75));
-      const bottom = clamp(yOf(stats.q25));
-      ctx.fillRect(left, top, right - left, bottom - top);
-      ctx.strokeRect(left, top, right - left, bottom - top);
-      ctx.beginPath();
-      ctx.moveTo(centerX, clamp(yOf(stats.q5)));
-      ctx.lineTo(centerX, bottom);
-      ctx.moveTo(centerX, top);
-      ctx.lineTo(centerX, clamp(yOf(stats.q95)));
-      ctx.moveTo(left, clamp(yOf(stats.q5)));
-      ctx.lineTo(right, clamp(yOf(stats.q5)));
-      ctx.moveTo(left, clamp(yOf(stats.q95)));
-      ctx.lineTo(right, clamp(yOf(stats.q95)));
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.lineWidth = 2;
-      ctx.moveTo(left, clamp(yOf(stats.median)));
-      ctx.lineTo(right, clamp(yOf(stats.median)));
-      ctx.stroke();
-      const meanY = clamp(yOf(stats.mean));
-      const radius = Math.min((right - left) / 6, 6);
-      ctx.beginPath();
-      ctx.fillStyle = "#eee";
-      ctx.arc(centerX, meanY, radius, 0, 2 * Math.PI);
-      ctx.fill();
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.fillStyle = color2;
-      ctx.arc(centerX, meanY, radius / 2, 0, 2 * Math.PI);
-      ctx.fill();
-    }
-    ctx.restore();
-  }
-  function boxWhiskerPlugin(idPrefix, getSpecs) {
-    return {
-      id: `${idPrefix}-boxwhisker-${Math.random().toString(36).slice(2)}`,
-      afterDatasetsDraw(chart) {
-        const specs = getSpecs() || [];
-        if (!specs.length) return;
-        drawBoxWhisker(chart.ctx, chart, specs);
-      }
-    };
-  }
-
-  // src/results-over-time/getPlugins.js
-  var PALETTE = [
-    "#2563eb",
-    "#059669",
-    "#d97706",
-    "#9333ea",
-    "#dc2626",
-    "#0891b2",
-    "#65a30d",
-    "#db2777",
-    "#4b5563",
-    "#ca8a04"
-  ];
-  function groupColors(groups) {
-    return Object.fromEntries(groups.map((group, index) => [group, PALETTE[index % PALETTE.length]]));
-  }
-  function summaryTooltip(group, visit, stats, { p0, p1, p2 }) {
-    return [
-      `${group} at ${visit}:`,
-      `N = ${stats.n}`,
-      `Min = ${formatFixed(stats.min, p0)}`,
-      `5th % = ${formatFixed(stats.q5, p1)}`,
-      `Q1 = ${formatFixed(stats.q25, p1)}`,
-      `Median = ${formatFixed(stats.median, p1)}`,
-      `Q3 = ${formatFixed(stats.q75, p1)}`,
-      `95th % = ${formatFixed(stats.q95, p1)}`,
-      `Max = ${formatFixed(stats.max, p0)}`,
-      `Mean = ${formatFixed(stats.mean, p1)}`,
-      `StDev = ${formatFixed(stats.deviation, p2)}`
-    ].join("\n");
-  }
-  function outlierTooltip(row, settings, { p1 }) {
-    return `${row[settings.id_col]}: ${formatFixed(row.__srot_value, p1)}`;
-  }
-  function boxWhiskerPlugin2(instance) {
-    return boxWhiskerPlugin(
-      "srot",
-      () => instance.state.boxplots ? instance.boxSpecs || [] : []
-    );
-  }
-
-  // src/results-over-time.js
-  Chart.register(
-    ScatterController,
-    PointElement,
-    LineElement,
-    LinearScale,
-    LogarithmicScale,
-    plugin_tooltip,
-    plugin_legend
-  );
-  var BAND = 0.8;
-  var SafetyResultsOverTime = class {
-    constructor(element = "body", settings = {}) {
-      this.element = typeof element === "string" ? document.querySelector(element) : element;
-      if (!this.element) throw new Error(`Safety Results Over Time target not found: ${element}`);
-      this.settings = syncSettings4(settings);
-      this.rawData = [];
-      this.cleanData = [];
-      this.filteredData = [];
-      this.charts = [];
-      this.boxSpecs = [];
-      this.state = {
-        measure: this.settings.start_value,
-        filters: {},
-        groupBy: this.settings.group_by,
-        lower: null,
-        upper: null,
-        yScale: this.settings.y_scale,
-        boxplots: this.settings.boxplots,
-        outliers: this.settings.outliers,
-        visitsWithoutData: this.settings.visits_without_data,
-        unscheduledVisits: this.settings.unscheduled_visits
-      };
-      this.renderShell();
-    }
-    /**
-     * Build the static DOM shell the chart renders into.
-     * @private
-     */
-    renderShell() {
-      Object.assign(
-        this,
-        renderShell(this.element, {
-          moduleClass: "safety-results-over-time",
-          onToggle: () => this.resize()
-        })
-      );
-      this.footnote.textContent = "Hover over a box or outlier point for details.";
-    }
-    /**
-     * Load data and render: an alias for setData that keeps the two-step
-     * create-then-init call shape working.
-     * @param {Object[]} data Long-format result records matching the results-over-time data contract.
-     * @returns {SafetyResultsOverTime} The instance, for chaining.
-     */
-    init(data) {
-      this.setData(data);
-      return this;
-    }
-    /**
-     * Replace the bound data and re-render. The data is validated against the
-     * settings mapping (throwing, and rendering the message into the target
-     * element, when required columns are missing), rows with missing or
-     * non-numeric results are removed with a console warning, and the controls
-     * are rebuilt from the new data's measures and filter values.
-     * @param {Object[]} data Long-format result records matching the results-over-time data contract.
-     * @returns {SafetyResultsOverTime} The instance, for chaining.
-     */
-    setData(data) {
-      this.rawData = Array.isArray(data) ? data : [];
-      this.validateAndCleanData();
-      this.buildControls();
-      this.render();
-      return this;
-    }
-    /**
-     * Merge setting overrides onto the current settings, re-normalize them (same
-     * rules as the factory), rebuild the controls, and re-render.
-     * @param {ResultsOverTimeSettings} settings Setting overrides to merge.
-     * @returns {SafetyResultsOverTime} The instance, for chaining.
-     */
-    setSettings(settings) {
-      this.settings = syncSettings4({ ...this.settings, ...settings });
-      this.state.groupBy = this.settings.group_by;
-      this.state.yScale = this.settings.y_scale;
-      this.state.boxplots = this.settings.boxplots;
-      this.state.outliers = this.settings.outliers;
-      this.state.visitsWithoutData = this.settings.visits_without_data;
-      this.state.unscheduledVisits = this.settings.unscheduled_visits;
-      if (settings.start_value !== void 0) this.state.measure = this.settings.start_value;
-      this.validateAndCleanData();
-      this.buildControls();
-      this.render();
-      return this;
-    }
-    /**
-     * Validate the raw data against the settings mapping, drop unusable rows,
-     * and cache the study-wide visit order.
-     * @private
-     */
-    validateAndCleanData() {
-      try {
-        checkInputs4(this.rawData, this.settings);
-      } catch (error) {
-        this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
-        throw error;
-      }
-      const { rows, removed } = cleanData3(this.rawData, this.settings);
-      this.cleanData = rows;
-      this.removedRecords = removed;
-      if (removed) console.warn(`${removed} missing or non-numeric results have been removed.`);
-      this.allVisits = computeVisitOrder(this.cleanData, this.settings);
-      const measures = this.measures();
-      if (this.state.measure && !measures.includes(this.state.measure)) {
-        console.warn(
-          `The initial measure [${this.state.measure}] does not exist. Defaulting to the first measure.`
-        );
-      }
-      this.state.measure = measures.includes(this.state.measure) ? this.state.measure : measures[0];
-    }
-    /**
-     * Sorted distinct measure labels present in the cleaned data.
-     * @private
-     */
-    measures() {
-      return unique4(this.cleanData.map((row) => measureLabel3(row, this.settings))).sort();
-    }
-    /**
-     * Cleaned rows for the selected measure.
-     * @private
-     */
-    currentMeasureData() {
-      return this.cleanData.filter((row) => measureLabel3(row, this.settings) === this.state.measure);
-    }
-    /**
-     * The active grouping column, or null when grouping is disabled.
-     * @private
-     */
-    groupingColumn() {
-      return this.state.groupBy && this.state.groupBy !== "srot_none" ? this.state.groupBy : null;
-    }
-    /**
-     * Rebuild the measure/group/filter/limit/scale/display controls from data
-     * and state.
-     * @private
-     */
-    buildControls() {
-      this.controls.innerHTML = "";
-      const { addSection, addRow, addControl } = controlBuilders(this.controls);
-      const measure = addControl("Measure", document.createElement("select"));
-      this.measures().forEach((value) => option(measure, value, value, value === this.state.measure));
-      measure.onchange = () => {
-        this.state.measure = measure.value;
-        this.resetLimits(false);
-        this.render();
-      };
-      const group = addControl("Group by", document.createElement("select"));
-      this.settings.groups.forEach(
-        (spec) => option(group, spec.value_col, spec.label, spec.value_col === this.state.groupBy)
-      );
-      group.onchange = () => {
-        this.state.groupBy = group.value;
-        this.render();
-      };
-      const filterSpecs = this.settings.filters.filter((filter) => {
-        const exists = this.cleanData.some((row) => row[filter.value_col] !== void 0);
-        if (!exists)
-          console.warn(
-            `The [ ${filter.label} ] filter has been removed because the variable does not exist.`
-          );
-        return exists;
-      });
-      const filterParent = filterSpecs.length ? addSection("Filters") : this.controls;
-      filterSpecs.forEach((filter) => {
-        const select = addControl(filter.label, document.createElement("select"), filterParent);
-        option(select, "__all__", "All", !this.state.filters[filter.value_col]);
-        unique4(this.cleanData.map((row) => row[filter.value_col])).sort().forEach(
-          (value) => option(select, value, value, this.state.filters[filter.value_col] === value)
-        );
-        select.onchange = () => {
-          this.state.filters[filter.value_col] = select.value === "__all__" ? null : select.value;
-          this.render();
-        };
-      });
-      const yParent = addSection("Y-axis Limits");
-      const yRow = addRow(yParent);
-      this.lowerInput = addControl("Lower", document.createElement("input"), yRow);
-      this.lowerInput.type = "number";
-      this.lowerInput.step = "any";
-      this.lowerInput.value = this.state.lower == null ? "" : this.state.lower;
-      this.lowerInput.onchange = () => this.onLimitChange();
-      this.upperInput = addControl("Upper", document.createElement("input"), yRow);
-      this.upperInput.type = "number";
-      this.upperInput.step = "any";
-      this.upperInput.value = this.state.upper == null ? "" : this.state.upper;
-      this.upperInput.onchange = () => this.onLimitChange();
-      const reset = createElement("button", "sv-reset-limits", "Reset Limits");
-      reset.type = "button";
-      reset.onclick = () => this.resetLimits(true);
-      const resetWrap = createElement("div", "sv-control");
-      resetWrap.append(reset);
-      yParent.append(resetWrap);
-      const scale = addControl("Scale", document.createElement("select"), yParent);
-      Y_SCALES.forEach((value) => option(scale, value, value, value === this.state.yScale));
-      scale.onchange = () => {
-        this.state.yScale = scale.value;
-        this.render();
-      };
-      const displayParent = addSection("Display");
-      this.addToggle(displayParent, addControl, "Box plots", "boxplots");
-      this.addToggle(displayParent, addControl, "Outliers", "outliers");
-      this.addToggle(displayParent, addControl, "Visits without data", "visitsWithoutData");
-      this.addToggle(displayParent, addControl, "Unscheduled visits", "unscheduledVisits");
-    }
-    /**
-     * Add a labeled checkbox bound to a boolean state key.
-     * @private
-     */
-    addToggle(parent, addControl, label, stateKey) {
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.checked = this.state[stateKey];
-      checkbox.onchange = () => {
-        this.state[stateKey] = checkbox.checked;
-        this.render();
-      };
-      const inline = createElement("div", "sv-control-inline");
-      inline.append(checkbox, document.createTextNode("Show"));
-      addControl(label, inline, parent);
-    }
-    /**
-     * Apply an edited y-limit: read the inputs, swap a crossed pair, reflect the
-     * normalized values back into the inputs, and re-render (SROT-REG-016/017).
-     * @private
-     */
-    onLimitChange() {
-      this.state.lower = this.lowerInput.value === "" ? null : Number(this.lowerInput.value);
-      this.state.upper = this.upperInput.value === "" ? null : Number(this.upperInput.value);
-      normalizeDomain2(this.state);
-      this.lowerInput.value = this.state.lower == null ? "" : this.state.lower;
-      this.upperInput.value = this.state.upper == null ? "" : this.state.upper;
-      this.render();
-    }
-    /**
-     * Clear the y-limit overrides back to the data extent (SROT-FUNC-005 /
-     * SROT-REG-020); optionally sync the inputs and re-render.
-     * @private
-     */
-    resetLimits(rerender) {
-      this.state.lower = null;
-      this.state.upper = null;
-      if (this.lowerInput) this.lowerInput.value = "";
-      if (this.upperInput) this.upperInput.value = "";
-      if (rerender) this.render();
-    }
-    /**
-     * The visits to display, in order: the study-wide visit order restricted to
-     * visits with data (unless "visits without data" is on) and to scheduled
-     * visits (unless "unscheduled visits" is on).
-     * @private
-     */
-    displayVisits(rowsWithData) {
-      const withData = new Set(rowsWithData.map((row) => row[this.settings.time_col]));
-      return this.allVisits.filter((visit) => {
-        if (!this.state.unscheduledVisits && isUnscheduledVisit(visit, this.settings)) return false;
-        if (!this.state.visitsWithoutData && !withData.has(visit)) return false;
-        return true;
-      });
-    }
-    /**
-     * Redraw everything from the current data, settings, and control state:
-     * destroys the live chart, recomputes the per-visit-group statistics and box
-     * specs, and draws the box-and-whisker plot with its outlier overlay.
-     * @returns {void}
-     */
-    render() {
-      this.destroyCharts();
-      this.notes.innerHTML = "";
-      this.footnote.textContent = "Hover over a box or outlier point for details.";
-      this.boxSpecs = [];
-      this.currentVisits = [];
-      this.currentGroups = [];
-      const measureData = this.currentMeasureData();
-      let filtered = applyFilters4(measureData, this.state.filters);
-      let nonPositive = 0;
-      if (this.state.yScale === "log") {
-        const positive = filtered.filter((row) => row.__srot_value > 0);
-        nonPositive = filtered.length - positive.length;
-        filtered = positive;
-      }
-      this.filteredData = filtered;
-      if (!filtered.length) {
-        this.footnote.textContent = "No records match the current filters.";
-        this.updateNotes(measureData, filtered, nonPositive);
-        return;
-      }
-      const grouping = this.groupingColumn();
-      const stats = summarizeVisitGroups(filtered, {
-        timeCol: this.settings.time_col,
-        valueCol: "__srot_value",
-        groupCol: grouping
-      });
-      flagOutliers(filtered, stats, { ...this.settings, outliers: this.state.outliers }, grouping);
-      const visits = this.displayVisits(filtered);
-      if (!visits.length) {
-        this.footnote.textContent = "No visits to display for the current settings.";
-        this.updateNotes(measureData, filtered, nonPositive);
-        return;
-      }
-      const groups = grouping ? unique4(filtered.map((row) => String(row[grouping]))).sort() : ["All"];
-      const colors2 = groupColors(groups);
-      const domain = this.resolveDomain(measureData);
-      const precisions = statPrecisions(yPrecision(domain).precision);
-      this.currentVisits = visits;
-      this.currentGroups = groups;
-      this.drawChart({ visits, groups, colors: colors2, stats, domain, precisions, grouping });
-      this.updateNotes(measureData, filtered, nonPositive);
-    }
-    /**
-     * The y-domain for the current render: the measure's data extent (positive
-     * only on a log scale) with either user limit applied.
-     * @private
-     */
-    resolveDomain(measureData) {
-      const values = measureData.map((row) => row.__srot_value).filter((value) => this.state.yScale !== "log" || value > 0);
-      const domain = resolveYDomain(values, this.state.lower, this.state.upper);
-      if (this.state.yScale === "log" && domain[0] <= 0) {
-        domain[0] = Math.min(...values.filter((value) => value > 0));
-      }
-      return domain;
-    }
-    /**
-     * Build the per-group datasets (invisible box anchors for tooltips + visible
-     * outlier points) and box specs, then create the Chart.js chart.
-     * @private
-     */
-    drawChart({ visits, groups, colors: colors2, stats, domain, precisions, grouping }) {
-      const layout = { slot: BAND / groups.length };
-      const offsetFor = (groupIndex) => -BAND / 2 + layout.slot * (groupIndex + 0.5);
-      const halfWidth = layout.slot * 0.4;
-      const visitIndex = new Map(visits.map((visit, index) => [visit, index]));
-      const datasets = groups.map((group, groupIndex) => {
-        const color2 = colors2[group];
-        const offset = offsetFor(groupIndex);
-        const points = [];
-        visits.forEach((visit, index) => {
-          const groupStats = (stats[visit] || {})[group];
-          const x = index + offset;
-          if (this.state.boxplots && groupStats && groupStats.n) {
-            this.boxSpecs.push({ x, halfWidth, stats: groupStats, color: color2, group, visit });
-            points.push({ x, y: groupStats.median, __box: { group, visit, stats: groupStats } });
-          }
-        });
-        this.filteredData.filter(
-          (row) => row.__srot_outlier && (grouping ? String(row[grouping]) === group : true) && visitIndex.has(row[this.settings.time_col])
-        ).forEach((row) => {
-          points.push({
-            x: visitIndex.get(row[this.settings.time_col]) + offset,
-            y: row.__srot_value,
-            __outlier: row
-          });
-        });
-        return {
-          label: grouping ? group : "All results",
-          data: points,
-          backgroundColor: color2,
-          borderColor: color2,
-          pointBackgroundColor: color2,
-          pointBorderColor: color2,
-          pointRadius: (ctx) => ctx.raw && ctx.raw.__outlier ? 3 : 0,
-          pointHoverRadius: (ctx) => ctx.raw && ctx.raw.__outlier ? 5 : 0,
-          pointHitRadius: (ctx) => ctx.raw && ctx.raw.__outlier ? 4 : 14,
-          showLine: false
-        };
-      });
-      const yTitle = this.state.measure;
-      const chart = new Chart(this.canvas.getContext("2d"), {
-        type: "scatter",
-        data: { datasets },
-        options: {
-          maintainAspectRatio: false,
-          responsive: true,
-          interaction: { mode: "nearest", intersect: true },
-          plugins: {
-            legend: { display: Boolean(grouping), position: "top" },
-            tooltip: {
-              callbacks: {
-                title: () => "",
-                label: (ctx) => {
-                  const raw = ctx.raw || {};
-                  if (raw.__box) {
-                    return summaryTooltip(
-                      raw.__box.group,
-                      raw.__box.visit,
-                      raw.__box.stats,
-                      precisions
-                    ).split("\n");
-                  }
-                  if (raw.__outlier) {
-                    return `Outlier \u2014 ${outlierTooltip(raw.__outlier, this.settings, precisions)}`;
-                  }
-                  return "";
-                }
-              }
-            }
-          },
-          scales: {
-            x: {
-              type: "linear",
-              min: -0.5,
-              max: visits.length - 0.5,
-              offset: false,
-              grid: { display: false },
-              title: { display: true, text: this.settings.time_label },
-              ticks: {
-                stepSize: 1,
-                autoSkip: false,
-                maxRotation: 45,
-                minRotation: 0,
-                callback: (value) => Number.isInteger(value) ? visits[value] ?? "" : ""
-              },
-              afterBuildTicks: (axis) => {
-                axis.ticks = visits.map((_, index) => ({ value: index }));
-              }
-            },
-            y: {
-              type: this.state.yScale === "log" ? "logarithmic" : "linear",
-              min: domain[0],
-              max: domain[1],
-              title: { display: true, text: yTitle }
-            }
-          }
-        },
-        plugins: [boxWhiskerPlugin2(this)]
-      });
-      chart.$srotBoxes = this.boxSpecs;
-      this.chart = chart;
-      this.charts.push(chart);
-    }
-    /**
-     * Refresh the shown/total participant counts and the removed-record notes.
-     * @private
-     */
-    updateNotes(measureData, filtered, nonPositive) {
-      const totalParticipants = unique4(measureData.map((row) => row[this.settings.id_col])).length;
-      const shownParticipants = unique4(filtered.map((row) => row[this.settings.id_col])).length;
-      const pct = totalParticipants ? (shownParticipants / totalParticipants * 100).toFixed(1) : "0.0";
-      const removedNote = this.removedRecords ? `<span class="sv-warning">${this.removedRecords} missing or non-numeric results removed.</span>` : "";
-      const nonPositiveNote = nonPositive ? `<span class="sv-warning">${nonPositive} nonpositive result${nonPositive > 1 ? "s" : ""} removed for the log scale.</span>` : "";
-      this.notes.innerHTML = `<span>${shownParticipants} of ${totalParticipants} participants shown (${pct}%).</span>${removedNote}${nonPositiveNote}`;
-    }
-    /**
-     * Resize the live chart to its container. For host layouts that change the
-     * container size without a window resize — e.g. the R htmlwidget bindings.
-     * @returns {void}
-     */
-    resize() {
-      this.charts.forEach((chart) => chart.resize());
-    }
-    /**
-     * Destroy the live Chart.js instances without touching the shell.
-     * @private
-     */
-    destroyCharts() {
-      this.charts.forEach((chart) => chart.destroy());
-      this.charts = [];
-      this.chart = null;
-    }
-    /**
-     * Tear the chart down: destroy the Chart.js instance and empty the target
-     * element. The instance cannot be reused afterwards — create a new one via
-     * the factory instead.
-     * @returns {void}
-     */
-    destroy() {
-      this.destroyCharts();
-      this.element.innerHTML = "";
-    }
-  };
-  function resultsOverTime(element = "body", settings = {}) {
-    return new SafetyResultsOverTime(element, settings);
-  }
-
-  // src/outlier-explorer/configure.js
-  var OE_SEQ = "__oe_seq";
-  var GROUP_NONE = "oe_none";
-  var NORMAL_RANGE_METHODS = ["None", "LLN-ULN", "Standard Deviation", "Quantiles"];
-  var DEFAULT_SETTINGS5 = {
-    measure_col: "TEST",
-    value_col: "STRESN",
-    id_col: "USUBJID",
-    unit_col: "STRESU",
-    normal_col_low: "STNRLO",
-    normal_col_high: "STNRHI",
-    normal_range_method: "LLN-ULN",
-    normal_range_sd: 1.96,
-    normal_range_quantile_low: 0.05,
-    normal_range_quantile_high: 0.95,
-    time_cols: [],
-    start_value: null,
-    filters: [],
-    groups: [],
-    group_by: GROUP_NONE,
-    details: null,
-    tooltip_cols: [],
-    line_attributes: { color: "#5b6b7b", width: 1, opacity: 0.28 },
-    point_attributes: { color: "#1f78b4", radius: 3, opacity: 0.5 },
-    width: "100%",
-    height: 460,
-    page_size: 10
-  };
-  function arrayify5(value) {
-    if (value === void 0 || value === null || value === "") return [];
-    return Array.isArray(value) ? value : [value];
-  }
-  function fieldSpec5(value, fallbackLabel) {
-    if (typeof value === "string") return { value_col: value, label: fallbackLabel || value };
-    return { ...value, value_col: value.value_col, label: value.label || value.value_col };
-  }
-  function timeSpec(value) {
-    const base = typeof value === "string" ? { value_col: value } : { ...value };
-    const type = base.type === "ordinal" ? "ordinal" : "linear";
-    return {
-      value_col: base.value_col,
-      label: base.label || base.value_col,
-      type,
-      order_col: base.order_col || base.value_col
-    };
-  }
-  function syncSettings5(settings) {
-    const synced = { ...DEFAULT_SETTINGS5, ...settings };
-    synced.filters = arrayify5(synced.filters).map((value) => fieldSpec5(value)).filter((d) => d.value_col);
-    const defaultGroup = { value_col: GROUP_NONE, label: "None" };
-    synced.groups = [
-      defaultGroup,
-      ...arrayify5(synced.groups).map((value) => fieldSpec5(value)).filter((d) => d.value_col)
-    ];
-    if (synced.group_by && !synced.groups.some((group) => group.value_col === synced.group_by)) {
-      synced.groups.push({ value_col: synced.group_by, label: synced.group_by });
-    }
-    synced.group_by = synced.groups.some((group) => group.value_col === synced.group_by) ? synced.group_by : synced.groups[0].value_col;
-    synced.time_cols = arrayify5(synced.time_cols).map(timeSpec).filter((d) => d.value_col);
-    if (!synced.time_cols.length) {
-      synced.time_cols = [
-        { value_col: OE_SEQ, label: "Measurement", type: "linear", order_col: OE_SEQ }
-      ];
-    }
-    synced.tooltip_cols = arrayify5(synced.tooltip_cols).map((value) => fieldSpec5(value)).filter((d) => d.value_col);
-    synced.details = arrayify5(synced.details).map((value) => fieldSpec5(value)).filter((d) => d.value_col);
-    if (!synced.details.length) {
-      synced.details = [
-        { value_col: "__oe_timeLabel", label: "Time" },
-        { value_col: synced.id_col, label: "Participant ID" },
-        { value_col: synced.value_col, label: "Result" },
-        { value_col: synced.normal_col_low, label: "Lower Limit of Normal" },
-        { value_col: synced.normal_col_high, label: "Upper Limit of Normal" },
-        { value_col: synced.unit_col, label: "Unit" }
-      ].filter((d) => d.value_col);
-    }
-    synced.line_attributes = {
-      ...DEFAULT_SETTINGS5.line_attributes,
-      ...settings.line_attributes || {}
-    };
-    synced.point_attributes = {
-      ...DEFAULT_SETTINGS5.point_attributes,
-      ...settings.point_attributes || {}
-    };
-    return synced;
-  }
-
-  // src/data/schema/outlier-explorer.json
-  var outlier_explorer_default = {
-    $schema: "https://json-schema.org/draft/2020-12/schema",
-    $id: "https://raw.githubusercontent.com/jwildfire/safety.viz/main/src/data/schema/outlier-explorer.json",
-    title: "safety.viz outlier-explorer data contract",
-    description: "Long-format results data: one record per participant per time point per measure (SOE-DATA-001). Column names are supplied by the settings mapping; the outlier-explorer removes missing/non-numeric results with a reported count (SOE-REG-037) and derives a per-participant measurement sequence when the data carries no visit/study-day column.",
-    type: "object",
-    required: ["data", "settings"],
-    properties: {
-      data: {
-        type: "array",
-        minItems: 1,
-        items: { type: "object" },
-        description: "d3.csv()-style records; every row carries the measure and result columns named in settings, one row per participant per time point per measure."
-      },
-      settings: {
-        type: "object",
-        description: "Column mappings and rendering options; merged onto the module's DEFAULT_SETTINGS, so only overrides need to be supplied (SOE-DATA-003).",
-        required: ["measure_col", "value_col"],
-        properties: {
-          measure_col: {
-            type: "string",
-            default: "TEST",
-            description: "Column holding the measure name; required in data."
-          },
-          value_col: {
-            type: "string",
-            default: "STRESN",
-            description: "Column holding the numeric result; required in data."
-          },
-          id_col: {
-            type: "string",
-            default: "USUBJID",
-            description: "Participant identifier column; drives the one-line-per-participant series and counts."
-          },
-          unit_col: {
-            type: "string",
-            default: "STRESU",
-            description: "Optional unit column, appended to measure labels."
-          },
-          normal_col_low: {
-            type: "string",
-            default: "STNRLO",
-            description: "Optional lower limit of normal; feeds the LLN-ULN normal-range band."
-          },
-          normal_col_high: {
-            type: "string",
-            default: "STNRHI",
-            description: "Optional upper limit of normal; feeds the LLN-ULN normal-range band."
-          },
-          normal_range_method: {
-            type: "string",
-            default: "LLN-ULN",
-            description: "Normal-range method: None, LLN-ULN, Standard Deviation, or Quantiles (SOE-FUNC-007)."
-          },
-          time_cols: {
-            $ref: "#/$defs/fieldList",
-            description: "Optional time-axis options ({ value_col, label, type, order_col }); when omitted a derived Measurement sequence is used (SOE-FUNC-004)."
-          },
-          filters: {
-            $ref: "#/$defs/fieldList",
-            description: "Optional filter columns rendered as controls (SOE-CFG-004)."
-          },
-          groups: {
-            $ref: "#/$defs/fieldList",
-            description: "Optional color-by columns for grouping the marks (SOE-REG-048)."
-          },
-          details: {
-            $ref: "#/$defs/fieldList",
-            description: "Optional listing columns; defaults derive from the other mappings (SOE-CFG-005)."
-          },
-          tooltip_cols: {
-            $ref: "#/$defs/fieldList",
-            description: "Optional extra columns appended to the point tooltip (SOE-CFG-006)."
-          }
-        }
-      }
-    },
-    $defs: {
-      fieldList: {
-        type: "array",
-        items: {
-          anyOf: [
-            { type: "string" },
-            {
-              type: "object",
-              required: ["value_col"],
-              properties: {
-                value_col: { type: "string" },
-                label: { type: "string" }
-              }
-            }
-          ]
-        }
-      }
-    }
-  };
-
-  // src/outlier-explorer/checkInputs.js
-  var REQUIRED_COLUMN_SETTINGS5 = outlier_explorer_default.properties.settings.required;
-  function checkInputs5(data, settings) {
-    const rows = Array.isArray(data) ? data : [];
-    const missing = REQUIRED_COLUMN_SETTINGS5.map((key) => settings[key]).filter(
-      (col) => !rows.some((row) => row[col] !== void 0)
-    );
-    if (missing.length) {
-      throw new Error(`Required variable(s) missing: ${missing.join(", ")}`);
-    }
-  }
-
-  // src/outlier-explorer/structureData.js
-  function unique5(values) {
-    return [
-      ...new Set(values.filter((value) => value !== void 0 && value !== null && value !== ""))
-    ];
-  }
-  function mean5(values) {
-    return values.reduce((sum, value) => sum + value, 0) / values.length;
-  }
-  function sd3(values) {
-    if (values.length < 2) return 0;
-    const m = mean5(values);
-    return Math.sqrt(
-      values.reduce((sum, value) => sum + Math.pow(value - m, 2), 0) / (values.length - 1)
-    );
-  }
-  function quantile3(values, p) {
-    if (!values.length) return NaN;
-    const sorted = [...values].sort((a, b) => a - b);
-    const idx = (sorted.length - 1) * p;
-    const lo = Math.floor(idx);
-    const hi = Math.ceil(idx);
-    if (lo === hi) return sorted[lo];
-    return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
-  }
-  function median(values) {
-    return quantile3(values, 0.5);
-  }
-  function cleanData4(rawData, settings) {
-    let removed = 0;
-    const rows = rawData.map((row, index) => ({
-      ...row,
-      __oe_index: index,
-      __oe_value: Number(row[settings.value_col])
-    })).filter((row) => {
-      const keep = row[settings.value_col] !== "" && Number.isFinite(row.__oe_value);
-      if (!keep) removed += 1;
-      return keep;
-    });
-    return { rows, removed };
-  }
-  function measureLabel4(row, settings) {
-    const measure = row[settings.measure_col];
-    const unit = settings.unit_col ? row[settings.unit_col] : null;
-    return unit ? `${measure} (${unit})` : measure;
-  }
-  function applyFilters5(rows, filters) {
-    return rows.filter(
-      (row) => Object.entries(filters).every(([key, value]) => !value || String(row[key]) === String(value))
-    );
-  }
-  function assignSequence(rows, idCol) {
-    const counts = /* @__PURE__ */ new Map();
-    rows.forEach((row) => {
-      const id = row[idCol];
-      const next = (counts.get(id) || 0) + 1;
-      counts.set(id, next);
-      row[OE_SEQ] = next;
-    });
-    return rows;
-  }
-  function timeValue(row, timeCol) {
-    if (timeCol.value_col === OE_SEQ) return row[OE_SEQ];
-    const raw = row[timeCol.value_col];
-    return timeCol.type === "ordinal" ? raw : Number(raw);
-  }
-  function timeOrder(row, timeCol) {
-    if (timeCol.value_col === OE_SEQ) return row[OE_SEQ];
-    return Number(row[timeCol.order_col]);
-  }
-  function timeLabel(row, timeCol) {
-    if (timeCol.value_col === OE_SEQ) return `#${row[OE_SEQ]}`;
-    return String(row[timeCol.value_col]);
-  }
-  function orderedCategories(rows, timeCol) {
-    const seen = /* @__PURE__ */ new Map();
-    rows.forEach((row) => {
-      const label = String(row[timeCol.value_col]);
-      if (!seen.has(label)) seen.set(label, timeOrder(row, timeCol));
-    });
-    return [...seen.entries()].sort((a, b) => a[1] - b[1]).map(([label]) => label);
-  }
-  function buildSeries(rows, settings, timeCol, groupBy2) {
-    const byId = /* @__PURE__ */ new Map();
-    rows.forEach((row) => {
-      const id = row[settings.id_col];
-      if (!byId.has(id)) byId.set(id, []);
-      byId.get(id).push(row);
-    });
-    const series = [];
-    byId.forEach((records, id) => {
-      const points = records.map((row) => ({
-        x: timeValue(row, timeCol),
-        y: row.__oe_value,
-        order: timeOrder(row, timeCol),
-        label: timeLabel(row, timeCol),
-        raw: row
-      })).sort((a, b) => a.order - b.order);
-      const group = groupBy2 && groupBy2 !== OE_SEQ ? records[0][groupBy2] : null;
-      series.push({ id, group, points });
-    });
-    return series.sort(
-      (a, b) => String(a.id).localeCompare(String(b.id), void 0, { numeric: true })
-    );
-  }
-  function computeNormalRange(rows, settings) {
-    const method = settings.normal_range_method;
-    if (method === "None" || !rows.length) return null;
-    const results = rows.map((row) => row.__oe_value);
-    if (method === "Standard Deviation") {
-      const m = mean5(results);
-      const s = sd3(results);
-      return { low: m - settings.normal_range_sd * s, high: m + settings.normal_range_sd * s };
-    }
-    if (method === "Quantiles") {
-      return {
-        low: quantile3(results, settings.normal_range_quantile_low),
-        high: quantile3(results, settings.normal_range_quantile_high)
-      };
-    }
-    const lows = rows.map((row) => Number(row[settings.normal_col_low])).filter(Number.isFinite);
-    const highs = rows.map((row) => Number(row[settings.normal_col_high])).filter(Number.isFinite);
-    if (!lows.length || !highs.length) return null;
-    return { low: median(lows), high: median(highs) };
-  }
-  function countInliers(rows, normalRange) {
-    if (!normalRange) return null;
-    return rows.filter(
-      (row) => row.__oe_value >= normalRange.low && row.__oe_value <= normalRange.high
-    ).length;
-  }
-
-  // src/outlier-explorer/getScales.js
-  function defaultYDomain(values) {
-    if (!values.length) return [0, 1];
-    const min = Math.min(...values);
-    const max = Math.max(...values);
-    const pad = (max - min || Math.abs(max) || 1) * 0.04;
-    return [min - pad, max + pad];
-  }
-  function resolveYDomain2(values, lower, upper) {
-    const domain = defaultYDomain(values);
-    return [lower == null ? domain[0] : lower, upper == null ? domain[1] : upper];
-  }
-  function normalizeYDomain(state) {
-    if (Number.isFinite(state.lower) && Number.isFinite(state.upper) && state.lower >= state.upper) {
-      const tmp = state.lower;
-      state.lower = state.upper;
-      state.upper = tmp;
-    }
-  }
-  function axisStep(range) {
-    if (!(range > 0)) return 1;
-    const raw = range / 15;
-    return Math.pow(10, Math.floor(Math.log10(raw)));
-  }
-  function buildXScale(timeCol, categories) {
-    if (timeCol.type === "ordinal") {
-      return {
-        type: "category",
-        labels: categories,
-        offset: true,
-        title: { display: true, text: timeCol.label },
-        ticks: { maxRotation: 45, minRotation: 45, autoSkip: true }
-      };
-    }
-    return {
-      type: "linear",
-      title: { display: true, text: timeCol.label },
-      ticks: { maxRotation: 0, minRotation: 0 }
-    };
-  }
-  function buildYScale(domain, label) {
-    return {
-      type: "linear",
-      min: domain[0],
-      max: domain[1],
-      title: { display: true, text: label },
-      grid: { drawOnChartArea: true }
-    };
-  }
-
-  // src/outlier-explorer/getPlugins.js
-  var GROUP_COLORS = [
-    "#1f78b4",
-    "#e31a1c",
-    "#33a02c",
-    "#ff7f00",
-    "#6a3d9a",
-    "#b15928",
-    "#00838f",
-    "#c2185b"
-  ];
-  var SELECTION_COLOR = "#111827";
-  function hexToRgba2(hex2, opacity) {
-    const clean = hex2.replace("#", "");
-    const r = parseInt(clean.slice(0, 2), 16);
-    const g = parseInt(clean.slice(2, 4), 16);
-    const b = parseInt(clean.slice(4, 6), 16);
-    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
-  }
-  function groupColorScale(groupValues) {
-    const scale = /* @__PURE__ */ new Map();
-    groupValues.forEach((value, index) => {
-      scale.set(String(value), GROUP_COLORS[index % GROUP_COLORS.length]);
-    });
-    return scale;
-  }
-  function pointTooltip(point, settings, measureText) {
-    const lines = [
-      String(point.raw[settings.id_col]),
-      `${measureText}: ${point.y}`,
-      `Time: ${point.label}`
-    ];
-    settings.tooltip_cols.forEach((col) => {
-      const value = point.raw[col.value_col];
-      if (value !== void 0 && value !== null && value !== "") {
-        lines.push(`${col.label}: ${value}`);
-      }
-    });
-    return lines;
-  }
-  function normalRangePlugin2(instance) {
-    return {
-      id: `oe-normal-range-${Math.random().toString(36).slice(2)}`,
-      beforeDatasetsDraw(chart) {
-        chart.$oeNormalRangeOverlay = null;
-        const range = instance.state.normalRange;
-        if (!range) return;
-        const { ctx, chartArea, scales } = chart;
-        const yHigh = scales.y.getPixelForValue(range.high);
-        const yLow = scales.y.getPixelForValue(range.low);
-        const top = Math.max(chartArea.top, Math.min(yHigh, yLow));
-        const bottom = Math.min(chartArea.bottom, Math.max(yHigh, yLow));
-        const height = Math.max(0, bottom - top);
-        chart.$oeNormalRangeOverlay = {
-          low: range.low,
-          high: range.high,
-          top,
-          bottom,
-          height,
-          left: chartArea.left,
-          right: chartArea.right
-        };
-        if (!height) return;
-        ctx.save();
-        ctx.fillStyle = "rgba(46, 125, 50, 0.12)";
-        ctx.fillRect(chartArea.left, top, chartArea.right - chartArea.left, height);
-        ctx.strokeStyle = "rgba(46, 125, 50, 0.55)";
-        ctx.setLineDash([4, 3]);
-        ctx.beginPath();
-        ctx.moveTo(chartArea.left, top);
-        ctx.lineTo(chartArea.right, top);
-        ctx.moveTo(chartArea.left, bottom);
-        ctx.lineTo(chartArea.right, bottom);
-        ctx.stroke();
-        ctx.restore();
-      }
-    };
-  }
-
-  // src/outlier-explorer.js
-  Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, plugin_tooltip);
-  var SafetyOutlierExplorer = class {
-    constructor(element = "body", settings = {}) {
-      this.element = typeof element === "string" ? document.querySelector(element) : element;
-      if (!this.element) throw new Error(`Safety Outlier Explorer target not found: ${element}`);
-      this.settings = syncSettings5(settings);
-      this.rawData = [];
-      this.cleanData = [];
-      this.filteredData = [];
-      this.currentTableData = [];
-      this.listingSearch = "";
-      this.listingSort = null;
-      this.page = 1;
-      this.charts = [];
-      this.participantsSelected = [];
-      this.state = {
-        measure: this.settings.start_value,
-        filters: {},
-        timeIndex: 0,
-        groupBy: this.settings.group_by,
-        lower: null,
-        upper: null,
-        normalMethod: this.settings.normal_range_method,
-        normalSd: this.settings.normal_range_sd,
-        quantileLow: this.settings.normal_range_quantile_low,
-        quantileHigh: this.settings.normal_range_quantile_high,
-        normalRange: null,
-        selectedId: null
-      };
-      this.initFilterState();
-      this.renderShell();
-    }
-    /**
-     * Initialize the active filter values from any filter `start` settings
-     * (SOE-REG-051/053).
-     * @private
-     */
-    initFilterState() {
-      this.state.filters = {};
-      this.settings.filters.forEach((filter) => {
-        if (filter.start !== void 0 && filter.start !== null && filter.start !== "") {
-          this.state.filters[filter.value_col] = String(filter.start);
-        }
-      });
-    }
-    /**
-     * Build the static DOM shell the chart, legend, and listing render into.
-     * @private
-     */
-    renderShell() {
-      Object.assign(
-        this,
-        renderShell(this.element, {
-          moduleClass: "safety-outlier-explorer",
-          onToggle: () => this.resize()
-        })
-      );
-      this.legendEl = createElement("div", "oe-legend");
-      this.legendEl.style.cssText = "display:flex;flex-wrap:wrap;gap:.35rem .9rem;font-size:.8rem;color:#52616f;margin:0 0 .5rem";
-      this.main.insertBefore(this.legendEl, this.chartWrap);
-      this.footnote.textContent = "Hover a point for details; click a point to highlight a participant.";
-    }
-    /**
-     * Load data and render: an alias for setData that keeps the pilot's
-     * two-step create-then-init call shape working (SOE-API-001).
-     * @param {Object[]} data Long-format result records matching the outlier-explorer data contract.
-     * @returns {SafetyOutlierExplorer} The instance, for chaining.
-     */
-    init(data) {
-      this.setData(data);
-      return this;
-    }
-    /**
-     * Replace the bound data and re-render. The data is validated against the
-     * settings mapping (throwing, and rendering the message into the target
-     * element, when required columns are missing), rows with missing or
-     * non-numeric results are removed with a console warning, and the controls
-     * are rebuilt from the new data's measures and filter values.
-     * @param {Object[]} data Long-format result records matching the outlier-explorer data contract.
-     * @returns {SafetyOutlierExplorer} The instance, for chaining.
-     */
-    setData(data) {
-      this.rawData = Array.isArray(data) ? data : [];
-      this.validateAndCleanData();
-      this.buildControls();
-      this.render();
-      return this;
-    }
-    /**
-     * Merge setting overrides onto the current settings, re-normalize them (same
-     * rules as the factory), rebuild the controls, and re-render.
-     * @param {OutlierExplorerSettings} settings Setting overrides to merge.
-     * @returns {SafetyOutlierExplorer} The instance, for chaining.
-     */
-    setSettings(settings) {
-      this.settings = syncSettings5({ ...this.settings, ...settings });
-      this.state.normalMethod = this.settings.normal_range_method;
-      this.state.groupBy = this.settings.group_by;
-      this.initFilterState();
-      if (this.rawData.length) this.validateAndCleanData();
-      this.buildControls();
-      this.render();
-      return this;
-    }
-    /**
-     * Validate the raw data against the settings mapping and drop unusable rows.
-     * @private
-     */
-    validateAndCleanData() {
-      try {
-        checkInputs5(this.rawData, this.settings);
-      } catch (error) {
-        this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
-        throw error;
-      }
-      const { rows, removed } = cleanData4(this.rawData, this.settings);
-      this.cleanData = rows;
-      this.removedRecords = removed;
-      if (removed) console.warn(`${removed} missing or non-numeric results have been removed.`);
-      const measures = this.measures();
-      if (this.state.measure && !measures.includes(this.state.measure)) {
-        console.warn(
-          `The initial measure [${this.state.measure}] does not exist. Defaulting to the first measure.`
-        );
-      }
-      this.state.measure = measures.includes(this.state.measure) ? this.state.measure : measures[0];
-    }
-    /**
-     * Sorted distinct measure labels present in the cleaned data.
-     * @private
-     */
-    measures() {
-      return unique5(this.cleanData.map((row) => measureLabel4(row, this.settings))).sort();
-    }
-    /**
-     * The active time-axis column spec.
-     * @private
-     */
-    activeTimeCol() {
-      return this.settings.time_cols[this.state.timeIndex] || this.settings.time_cols[0];
-    }
-    /**
-     * Cleaned rows for the selected measure, tagged with the derived measurement
-     * sequence.
-     * @private
-     */
-    currentMeasureData() {
-      const rows = this.cleanData.filter(
-        (row) => measureLabel4(row, this.settings) === this.state.measure
-      );
-      return assignSequence(rows, this.settings.id_col);
-    }
-    /**
-     * Cleaned rows for the selected measure after the active filters.
-     * @private
-     */
-    currentFilteredData() {
-      return applyFilters5(this.currentMeasureData(), this.state.filters);
-    }
-    /**
-     * Rebuild the measure / filter / x-axis / y-limit / normal-range / group
-     * controls from data + state.
-     * @private
-     */
-    buildControls() {
-      this.controls.innerHTML = "";
-      const { addSection, addRow, addControl } = controlBuilders(this.controls);
-      const measure = addControl("Measure", document.createElement("select"));
-      this.measures().forEach((value) => option(measure, value, value, value === this.state.measure));
-      measure.onchange = () => {
-        this.state.measure = measure.value;
-        this.resetDomain();
-        this.render();
-      };
-      const filterSpecs = this.settings.filters.filter((filter) => {
-        const exists = this.cleanData.some((row) => row[filter.value_col] !== void 0);
-        if (!exists)
-          console.warn(
-            `The [ ${filter.label} ] filter has been removed because the variable does not exist.`
-          );
-        return exists;
-      });
-      const filterParent = filterSpecs.length ? addSection("Filters") : this.controls;
-      filterSpecs.forEach((filter) => {
-        const select = addControl(filter.label, document.createElement("select"), filterParent);
-        const hasStart = filter.start !== void 0 && filter.start !== null && filter.start !== "";
-        if (!hasStart) option(select, "__all__", "All", !this.state.filters[filter.value_col]);
-        unique5(this.cleanData.map((row) => row[filter.value_col])).sort().forEach(
-          (value) => option(
-            select,
-            value,
-            value,
-            String(this.state.filters[filter.value_col]) === String(value)
-          )
-        );
-        select.onchange = () => {
-          this.state.filters[filter.value_col] = select.value === "__all__" ? null : select.value;
-          this.render();
-        };
-      });
-      if (this.settings.time_cols.length > 1) {
-        const xParent = addSection("X-axis");
-        const xAxis = addControl("Plot by", document.createElement("select"), xParent);
-        this.settings.time_cols.forEach(
-          (spec, index) => option(xAxis, String(index), spec.label, index === this.state.timeIndex)
-        );
-        xAxis.onchange = () => {
-          this.state.timeIndex = Number(xAxis.value);
-          this.render();
-        };
-      }
-      const yParent = addSection("Y-axis Limits");
-      const yRow = addRow(yParent);
-      const step = this.currentStep();
-      const lower = addControl("Lower", document.createElement("input"), yRow);
-      lower.type = "number";
-      lower.step = String(step);
-      lower.value = this.state.lower == null ? "" : this.state.lower;
-      lower.onchange = () => {
-        this.state.lower = lower.value === "" ? null : Number(lower.value);
-        normalizeYDomain(this.state);
-        this.render();
-      };
-      const upper = addControl("Upper", document.createElement("input"), yRow);
-      upper.type = "number";
-      upper.step = String(step);
-      upper.value = this.state.upper == null ? "" : this.state.upper;
-      upper.onchange = () => {
-        this.state.upper = upper.value === "" ? null : Number(upper.value);
-        normalizeYDomain(this.state);
-        this.render();
-      };
-      const reset = addControl("\xA0", document.createElement("button"), yParent);
-      reset.type = "button";
-      reset.textContent = "Reset Limits";
-      reset.className = "oe-reset";
-      reset.style.cssText = "width:100%;padding:.35rem .45rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.82rem;cursor:pointer";
-      reset.onclick = () => {
-        this.resetDomain();
-        this.buildControls();
-        this.render();
-      };
-      const nrParent = addSection("Normal Range");
-      const method = addControl("Method", document.createElement("select"), nrParent);
-      NORMAL_RANGE_METHODS.forEach(
-        (value) => option(method, value, value, value === this.state.normalMethod)
-      );
-      method.onchange = () => {
-        this.state.normalMethod = method.value;
-        this.buildControls();
-        this.render();
-      };
-      if (this.state.normalMethod === "Standard Deviation") {
-        const sd5 = addControl("# Std. Dev.", document.createElement("input"), nrParent);
-        sd5.type = "number";
-        sd5.step = "any";
-        sd5.min = "0";
-        sd5.value = this.state.normalSd;
-        sd5.onchange = () => {
-          this.state.normalSd = Number(sd5.value) || 0;
-          this.render();
-        };
-      } else if (this.state.normalMethod === "Quantiles") {
-        const qRow = addRow(nrParent);
-        const low = addControl("Lower", document.createElement("input"), qRow);
-        low.type = "number";
-        low.step = "any";
-        low.value = this.state.quantileLow;
-        low.onchange = () => {
-          this.state.quantileLow = Number(low.value) || 0;
-          this.render();
-        };
-        const high = addControl("Upper", document.createElement("input"), qRow);
-        high.type = "number";
-        high.step = "any";
-        high.value = this.state.quantileHigh;
-        high.onchange = () => {
-          this.state.quantileHigh = Number(high.value) || 0;
-          this.render();
-        };
-      }
-      this.groupControls = addSection("Grouping");
-      const group = addControl("Group by", document.createElement("select"), this.groupControls);
-      this.settings.groups.forEach(
-        (spec) => option(group, spec.value_col, spec.label, spec.value_col === this.state.groupBy)
-      );
-      this.groupControls.style.display = this.settings.groups.length <= 1 ? "none" : "";
-      group.onchange = () => {
-        this.state.groupBy = group.value;
-        this.render();
-      };
-    }
-    /**
-     * The current y-axis stepper increment, ~1/15 of the default measure range
-     * (SOE-REG-033).
-     * @private
-     */
-    currentStep() {
-      if (!this.cleanData.length || !this.state.measure) return 1;
-      const values = this.currentMeasureData().map((row) => row.__oe_value);
-      if (!values.length) return 1;
-      const domain = defaultYDomain(values);
-      return axisStep(domain[1] - domain[0]);
-    }
-    /**
-     * Clear the y-axis limit overrides when the measure changes or on Reset.
-     * @private
-     */
-    resetDomain() {
-      this.state.lower = null;
-      this.state.upper = null;
-    }
-    /**
-     * Redraw everything from the current data, settings, and control state:
-     * destroys the live chart, clears the listing and any selection, then draws
-     * the population lines, the normal-range band, the legend, and the counts.
-     * Called automatically by the controls and the data/settings setters.
-     * @returns {void}
-     */
-    render() {
-      this.destroyCharts();
-      this.listingWrap.innerHTML = "";
-      this.legendEl.innerHTML = "";
-      this.currentTableData = [];
-      this.listingSearch = "";
-      this.listingSort = null;
-      this.page = 1;
-      this.state.selectedId = null;
-      this.participantsSelected = [];
-      this.notes.innerHTML = "";
-      this.footnote.textContent = "Hover a point for details; click a point to highlight a participant.";
-      this.filteredData = this.currentFilteredData();
-      if (!this.filteredData.length) {
-        this.updateNotes();
-        this.notes.innerHTML = "<span>No records match the current filters.</span>" + this.notes.innerHTML;
-        return;
-      }
-      this.drawChart();
-      this.drawLegend();
-      this.updateNotes();
-    }
-    /**
-     * Draw the main Chart.js line chart: one population line dataset (null-gap
-     * separated per participant) plus an empty selection-overlay dataset, with
-     * the normal-range band plugin, tooltips, and click-to-select.
-     * @private
-     */
-    drawChart() {
-      const timeCol = this.activeTimeCol();
-      this.filteredData.forEach((row) => {
-        row.__oe_timeLabel = timeLabel(row, timeCol);
-      });
-      this.state.normalRange = computeNormalRange(this.filteredData, {
-        ...this.settings,
-        normal_range_method: this.state.normalMethod,
-        normal_range_sd: this.state.normalSd,
-        normal_range_quantile_low: this.state.quantileLow,
-        normal_range_quantile_high: this.state.quantileHigh
-      });
-      const values = this.filteredData.map((row) => row.__oe_value);
-      const domain = resolveYDomain2(values, this.state.lower, this.state.upper);
-      const categories = timeCol.type === "ordinal" ? orderedCategories(this.currentMeasureData(), timeCol) : [];
-      this.series = buildSeries(this.filteredData, this.settings, timeCol, this.state.groupBy);
-      const grouped = this.state.groupBy && this.state.groupBy !== GROUP_NONE;
-      this.groupValues = grouped ? unique5(this.filteredData.map((row) => row[this.state.groupBy])).sort() : [];
-      this.colorScale = groupColorScale(this.groupValues);
-      const lineAttr = this.settings.line_attributes;
-      const pointAttr = this.settings.point_attributes;
-      const data = [];
-      const pointMeta = [];
-      this.series.forEach((series) => {
-        series.points.forEach((point) => {
-          data.push({ x: point.x, y: point.y });
-          pointMeta.push({ id: series.id, group: series.group, point });
-        });
-        const last = series.points[series.points.length - 1];
-        data.push({ x: last ? last.x : null, y: null });
-        pointMeta.push(null);
-      });
-      this.pointMeta = pointMeta;
-      this.overlayMeta = [];
-      const isSelected = (meta) => this.state.selectedId != null && String(meta.id) === String(this.state.selectedId);
-      const baseColor = (meta) => grouped ? this.colorScale.get(String(meta.group)) || pointAttr.color : null;
-      const chart = new Chart(this.canvas.getContext("2d"), {
-        type: "line",
-        data: {
-          labels: categories.length ? categories : void 0,
-          datasets: [
-            {
-              label: "Participants",
-              data,
-              spanGaps: false,
-              showLine: true,
-              borderWidth: lineAttr.width,
-              pointRadius: (ctx) => this.pointMeta[ctx.dataIndex] ? pointAttr.radius : 0,
-              pointHoverRadius: (ctx) => this.pointMeta[ctx.dataIndex] ? pointAttr.radius + 2 : 0,
-              pointBackgroundColor: (ctx) => {
-                const meta = this.pointMeta[ctx.dataIndex];
-                if (!meta || isSelected(meta)) return "rgba(0,0,0,0)";
-                const color2 = baseColor(meta) || pointAttr.color;
-                const opacity = this.state.selectedId != null ? pointAttr.opacity * 0.3 : pointAttr.opacity;
-                return hexToRgba2(color2, opacity);
-              },
-              pointBorderColor: (ctx) => {
-                const meta = this.pointMeta[ctx.dataIndex];
-                if (!meta || isSelected(meta)) return "rgba(0,0,0,0)";
-                const color2 = baseColor(meta) || pointAttr.color;
-                const opacity = this.state.selectedId != null ? 0.25 : 0.85;
-                return hexToRgba2(color2, opacity);
-              },
-              segment: {
-                borderColor: (ctx) => {
-                  const meta = this.pointMeta[ctx.p0DataIndex];
-                  const metaEnd = this.pointMeta[ctx.p1DataIndex];
-                  if (!meta || !metaEnd || String(meta.id) !== String(metaEnd.id))
-                    return "rgba(0,0,0,0)";
-                  if (isSelected(meta)) return "rgba(0,0,0,0)";
-                  const color2 = baseColor(meta) || lineAttr.color;
-                  const opacity = this.state.selectedId != null ? lineAttr.opacity * 0.4 : lineAttr.opacity;
-                  return hexToRgba2(color2, opacity);
-                }
-              }
-            },
-            {
-              label: "Selected",
-              data: [],
-              spanGaps: false,
-              showLine: true,
-              borderColor: SELECTION_COLOR,
-              borderWidth: lineAttr.width + 1.5,
-              pointRadius: pointAttr.radius + 1.5,
-              pointHoverRadius: pointAttr.radius + 3,
-              pointBackgroundColor: SELECTION_COLOR,
-              pointBorderColor: SELECTION_COLOR
-            }
-          ]
-        },
-        options: {
-          maintainAspectRatio: false,
-          responsive: true,
-          animation: false,
-          parsing: true,
-          interaction: { mode: "nearest", intersect: true },
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                title: () => "",
-                label: (ctx) => {
-                  const meta = ctx.datasetIndex === 0 ? this.pointMeta[ctx.dataIndex] : this.overlayMeta[ctx.dataIndex];
-                  return meta ? pointTooltip(meta.point, this.settings, this.state.measure) : "";
-                }
-              }
-            }
-          },
-          scales: {
-            x: buildXScale(timeCol, categories),
-            y: buildYScale(domain, this.state.measure)
-          },
-          onClick: (event, elements) => {
-            if (!elements.length) {
-              this.clearSelection();
-              return;
-            }
-            const el = elements[0];
-            const meta = el.datasetIndex === 0 ? this.pointMeta[el.index] : this.overlayMeta[el.index];
-            if (meta) this.selectParticipant(meta.id);
-          }
-        },
-        plugins: [normalRangePlugin2(this)]
-      });
-      this.chart = chart;
-      this.charts.push(chart);
-    }
-    /**
-     * Render the color-by legend for the active grouping (SOE-REG-049).
-     * @private
-     */
-    drawLegend() {
-      this.legendEl.innerHTML = "";
-      if (!this.groupValues || !this.groupValues.length) return;
-      const groupLabel = (this.settings.groups.find((spec) => spec.value_col === this.state.groupBy) || {}).label || this.state.groupBy;
-      this.legendEl.append(createElement("strong", null, `${groupLabel}:`));
-      this.groupValues.forEach((value) => {
-        const chip = createElement("span", "oe-legend-item");
-        chip.style.cssText = "display:inline-flex;align-items:center;gap:.3rem";
-        const swatch = createElement("span");
-        swatch.style.cssText = `display:inline-block;width:.75rem;height:.75rem;border-radius:2px;background:${this.colorScale.get(
-          String(value)
-        )}`;
-        chip.append(swatch, document.createTextNode(String(value)));
-        this.legendEl.append(chip);
-      });
-    }
-    /**
-     * Highlight one participant: draw the bold selection overlay, open the
-     * linked listing, and dispatch the participantsSelected event (SOE-FUNC-010,
-     * SOE-REG-013/014/016, SOE-API-003).
-     * @param {string} id Participant identifier.
-     * @returns {void}
-     */
-    selectParticipant(id) {
-      this.state.selectedId = id;
-      this.applySelection();
-      const records = this.filteredData.filter(
-        (row) => String(row[this.settings.id_col]) === String(id)
-      );
-      this.currentTableData = records;
-      this.listingSearch = "";
-      this.listingSort = null;
-      this.page = 1;
-      this.footnote.textContent = `Selected participant ${id}: ${records.length} record${records.length === 1 ? "" : "s"}.`;
-      renderListing(this);
-      this.dispatchSelection([id]);
-    }
-    /**
-     * Clear any participant selection and the linked listing (SOE-FUNC-010
-     * click-outside behavior).
-     * @returns {void}
-     */
-    clearSelection() {
-      if (this.state.selectedId == null) return;
-      this.state.selectedId = null;
-      this.applySelection();
-      this.currentTableData = [];
-      this.listingWrap.innerHTML = "";
-      this.footnote.textContent = "Hover a point for details; click a point to highlight a participant.";
-      this.dispatchSelection([]);
-    }
-    /**
-     * Update the selection overlay dataset and re-emphasize the base marks.
-     * @private
-     */
-    applySelection() {
-      if (!this.chart) return;
-      const overlay = this.chart.data.datasets[1];
-      if (this.state.selectedId == null) {
-        overlay.data = [];
-        this.overlayMeta = [];
-      } else {
-        const series = this.series.find(
-          (candidate) => String(candidate.id) === String(this.state.selectedId)
-        );
-        overlay.data = series ? series.points.map((point) => ({ x: point.x, y: point.y })) : [];
-        this.overlayMeta = series ? series.points.map((point) => ({ id: series.id, group: series.group, point })) : [];
-      }
-      this.chart.update();
-    }
-    /**
-     * Dispatch the custom participantsSelected event on the shell root with the
-     * selected IDs (SOE-API-003).
-     * @private
-     */
-    dispatchSelection(ids) {
-      this.participantsSelected = ids;
-      if (this.root) {
-        this.root.dispatchEvent(
-          new CustomEvent("participantsSelected", { detail: { data: ids }, bubbles: true })
-        );
-      }
-    }
-    /**
-     * Refresh the shown/total participant counts, inlier count, and
-     * removed-record note (SOE-FUNC-003, SOE-REG-001/037).
-     * @private
-     */
-    updateNotes() {
-      const totalParticipants = unique5(
-        this.currentMeasureData().map((row) => row[this.settings.id_col])
-      ).length;
-      const shownParticipants = unique5(
-        this.filteredData.map((row) => row[this.settings.id_col])
-      ).length;
-      const pct = totalParticipants ? (shownParticipants / totalParticipants * 100).toFixed(1) : "0.0";
-      const inliers = countInliers(this.filteredData, this.state.normalRange);
-      const inlierNote = inliers == null ? "" : `<span>Inliers: ${inliers} of ${this.filteredData.length} observations.</span>`;
-      const removedNote = this.removedRecords ? `<span class="sv-warning">${this.removedRecords} missing or non-numeric results removed.</span>` : "";
-      this.notes.innerHTML = `<span>${shownParticipants} of ${totalParticipants} participants shown (${pct}%).</span>` + inlierNote + removedNote;
-    }
-    /**
-     * Resize the live chart to its container. For host layouts that change the
-     * container size without a window resize — e.g. the R htmlwidget bindings.
-     * @returns {void}
-     */
-    resize() {
-      this.charts.forEach((chart) => chart.resize());
-    }
-    /**
-     * Destroy the live Chart.js instance without touching the shell.
-     * @private
-     */
-    destroyCharts() {
-      this.charts.forEach((chart) => chart.destroy());
-      this.charts = [];
-      this.chart = null;
-    }
-    /**
-     * Tear the outlier explorer down: destroy the Chart.js instance and empty
-     * the target element. The instance cannot be reused afterwards — create a
-     * new one via the factory instead.
-     * @returns {void}
-     */
-    destroy() {
-      this.destroyCharts();
-      this.element.innerHTML = "";
-    }
-  };
-  function outlierExplorer(element = "body", settings = {}) {
-    return new SafetyOutlierExplorer(element, settings);
-  }
-
-  // src/ae-timelines/configure.js
-  var DEFAULT_SETTINGS6 = {
-    id_col: "USUBJID",
-    seq_col: "AESEQ",
-    stdy_col: "ASTDY",
-    endy_col: "AENDY",
-    term_col: "AETERM",
-    color: {
-      value_col: "AESEV",
-      label: "Severity/Intensity",
-      values: ["MILD", "MODERATE", "SEVERE"],
-      colors: [
-        "#66bd63",
-        // mild
-        "#fdae61",
-        // moderate
-        "#d73027",
-        // severe
-        "#377eb8",
-        "#984ea3",
-        "#ff7f00",
-        "#a65628",
-        "#f781bf"
-      ]
-    },
-    highlight: {
-      value_col: "AESER",
-      label: "Serious Event",
-      value: "Y",
-      detail_col: null,
-      attributes: { stroke: "black", "stroke-width": 2 }
-    },
-    filters: null,
-    details: null,
-    sort_participants: "earliest",
-    row_height: 15,
-    page_size: 10
-  };
-  var SORT_OPTIONS = ["earliest", "alphabetical-descending"];
-  function syncSettings6(settings) {
-    const synced = { ...DEFAULT_SETTINGS6, ...settings };
-    synced.color = { ...DEFAULT_SETTINGS6.color, ...settings.color || {} };
-    synced.highlight = settings.highlight === null ? null : {
-      ...DEFAULT_SETTINGS6.highlight,
-      ...settings.highlight || {},
-      attributes: {
-        ...DEFAULT_SETTINGS6.highlight.attributes,
-        ...(settings.highlight || {}).attributes || {}
-      }
-    };
-    const customFilters = arrayify(synced.filters).map((value) => fieldSpec(value)).filter((filter) => filter.value_col);
-    synced.filters = customFilters.length ? customFilters : [
-      ...synced.highlight ? [{ value_col: synced.highlight.value_col, label: synced.highlight.label }] : [],
-      { value_col: synced.color.value_col, label: synced.color.label },
-      { value_col: synced.id_col, label: "Participant Identifier" }
-    ];
-    const defaultDetails = [
-      { value_col: synced.seq_col, label: "Sequence Number" },
-      { value_col: synced.stdy_col, label: "Start Day" },
-      { value_col: synced.endy_col, label: "Stop Day" },
-      { value_col: synced.term_col, label: "Reported Term" },
-      { value_col: synced.color.value_col, label: synced.color.label },
-      ...synced.highlight ? [{ value_col: synced.highlight.value_col, label: synced.highlight.label }] : [],
-      ...synced.highlight && synced.highlight.detail_col ? [
-        {
-          value_col: synced.highlight.detail_col,
-          label: `${synced.highlight.label} Details`
-        }
-      ] : [],
-      ...synced.filters.filter((filter) => filter.value_col !== synced.id_col)
-    ];
-    const details = [...defaultDetails, ...arrayify(synced.details).map((value) => fieldSpec(value))];
-    const seen = /* @__PURE__ */ new Set();
-    synced.details = details.filter((column) => {
-      if (!column.value_col || seen.has(column.value_col)) return false;
-      seen.add(column.value_col);
-      return true;
-    });
-    if (!SORT_OPTIONS.includes(synced.sort_participants)) {
-      synced.sort_participants = DEFAULT_SETTINGS6.sort_participants;
-    }
-    return synced;
-  }
-
-  // src/data/schema/ae-timelines.json
-  var ae_timelines_default = {
-    $schema: "https://json-schema.org/draft/2020-12/schema",
-    $id: "https://raw.githubusercontent.com/jwildfire/safety.viz/main/src/data/schema/ae-timelines.json",
-    title: "safety.viz ae-timelines data contract",
-    description: "Adverse-event data: one record per adverse event, with placeholder rows (blank term and start day) keeping AE-free participants in the population denominator (AET-DATA-001). Column names default to the ADaM ADAE standard and are supplied by the settings mapping; records with blank reported terms or non-integer start days are removed with reported counts, and a coloring variable \u2014 severity by default \u2014 is required but remappable (AET-DATA-003).",
-    type: "object",
-    required: ["data", "settings"],
-    properties: {
-      data: {
-        type: "array",
-        minItems: 1,
-        items: { type: "object" },
-        description: "d3.csv()-style records; every row carries the participant, sequence, study-day, term, and coloring columns named in settings."
-      },
-      settings: {
-        type: "object",
-        description: "Column mappings and rendering options; merged onto the module's DEFAULT_SETTINGS, so only overrides need to be supplied.",
-        required: ["id_col", "seq_col", "stdy_col", "endy_col", "term_col", "color"],
-        properties: {
-          id_col: {
-            type: "string",
-            default: "USUBJID",
-            description: "Participant identifier column; required in data. Drives the timeline rows, the participant counts, and the detail-view click-through."
-          },
-          seq_col: {
-            type: "string",
-            default: "AESEQ",
-            description: "Adverse-event sequence number column; required in data. Blank in placeholder rows for participants without adverse events."
-          },
-          stdy_col: {
-            type: "string",
-            default: "ASTDY",
-            description: "Study day of adverse-event onset; required in data. Records with non-integer values are removed with a reported count."
-          },
-          endy_col: {
-            type: "string",
-            default: "AENDY",
-            description: "Study day of adverse-event resolution; required in data. Events with unusable stop days render as zero-length events at the start day."
-          },
-          term_col: {
-            type: "string",
-            default: "AETERM",
-            description: "Verbatim adverse-event term column; required in data (AET-CFG-004). Records with blank terms are removed with a reported count."
-          },
-          color: {
-            type: "object",
-            required: ["value_col"],
-            description: "Event color stratification: the variable, its label, its expected levels, and their colors (AET-CFG-005). A coloring variable is required but does not have to be severity (AET-DATA-003).",
-            properties: {
-              value_col: {
-                type: "string",
-                default: "AESEV",
-                description: "Color stratification variable name, usually event severity (AET-CFG-006); required in data. Blank values normalize to N/A."
-              },
-              label: { type: "string", default: "Severity/Intensity" },
-              values: {
-                type: "array",
-                items: { type: "string" },
-                description: "Expected levels in legend order; unexpected levels found in the data append alphabetically, with N/A last."
-              },
-              colors: {
-                type: "array",
-                items: { type: "string" },
-                description: "Colors assigned by domain position; N/A always renders gray."
-              }
-            }
-          },
-          highlight: {
-            type: ["object", "null"],
-            description: "What events to mark distinctly and how \u2014 serious events by default (AET-CFG-007). Pass null to disable highlighting.",
-            properties: {
-              value_col: { type: "string", default: "AESER" },
-              label: { type: "string", default: "Serious Event" },
-              value: {
-                type: "string",
-                default: "Y",
-                description: "Value of highlight.value_col that identifies events to highlight (AET-CFG-008)."
-              },
-              detail_col: {
-                type: ["string", "null"],
-                default: null,
-                description: "Optional column with highlight detail text for tooltips and the detail listing (AET-CFG-009)."
-              },
-              attributes: {
-                type: "object",
-                description: "Mark style for highlighted events (AET-CFG-010): stroke (color) and stroke-width map onto the highlight outline and overlay line."
-              }
-            }
-          },
-          filters: {
-            $ref: "#/$defs/fieldList",
-            description: "Filter columns rendered as controls (AET-CFG-011); defaults to serious event, severity, and participant identifier."
-          },
-          details: {
-            $ref: "#/$defs/fieldList",
-            description: "Columns for the participant detail listing (AET-CFG-012); custom columns append to the defaults."
-          },
-          sort_participants: {
-            type: "string",
-            enum: ["earliest", "alphabetical-descending"],
-            default: "earliest",
-            description: "Initial participant sort: by earliest adverse-event onset, or alphabetically."
-          }
-        }
-      }
-    },
-    $defs: {
-      fieldList: {
-        type: ["array", "null"],
-        items: {
-          anyOf: [
-            { type: "string" },
-            {
-              type: "object",
-              required: ["value_col"],
-              properties: {
-                value_col: { type: "string" },
-                label: { type: "string" }
-              }
-            }
-          ]
-        }
-      }
-    }
-  };
-
-  // src/ae-timelines/checkInputs.js
-  var REQUIRED_COLUMN_SETTINGS6 = ae_timelines_default.properties.settings.required.filter(
-    (key) => key !== "color"
-  );
-  function checkInputs6(data, settings) {
-    const rows = Array.isArray(data) ? data : [];
-    const columns = [
-      ...REQUIRED_COLUMN_SETTINGS6.map((key) => settings[key]),
-      settings.color.value_col
-    ];
-    const missing = columns.filter((col) => !rows.some((row) => row[col] !== void 0));
-    if (missing.length) {
-      throw new Error(`Required variable(s) missing: ${missing.join(", ")}`);
-    }
-  }
-
-  // src/ae-timelines/structureData.js
-  var HAS_CONTENT = /[^\s*$]/;
-  var INTEGER_DAY = /^-?\d+$/;
-  var NA_COLOR2 = "#999999";
-  function populationCount(rawData, settings) {
-    return unique(rawData.map((row) => row[settings.id_col])).length;
-  }
-  function cleanData5(rawData, settings) {
-    let removedTerm = 0;
-    let removedDay = 0;
-    const rows = rawData.filter((row) => {
-      const keep = HAS_CONTENT.test(row[settings.term_col]);
-      if (!keep) removedTerm += 1;
-      return keep;
-    }).filter((row) => {
-      const keep = INTEGER_DAY.test(row[settings.stdy_col]);
-      if (!keep) removedDay += 1;
-      return keep;
-    }).map((row) => ({
-      ...row,
-      [settings.color.value_col]: HAS_CONTENT.test(row[settings.color.value_col]) ? row[settings.color.value_col] : "N/A",
-      __aet_stdy: Number(row[settings.stdy_col]),
-      __aet_endy: INTEGER_DAY.test(row[settings.endy_col]) ? Number(row[settings.endy_col]) : null
-    }));
-    return { rows, removedTerm, removedDay };
-  }
-  function colorDomain(rows, colorSettings) {
-    const extras = unique(rows.map((row) => row[colorSettings.value_col])).filter((value) => !colorSettings.values.includes(value)).sort((a, b) => {
-      if (a === "N/A") return 1;
-      if (b === "N/A") return -1;
-      return a.toLowerCase() < b.toLowerCase() ? -1 : 1;
-    });
-    return [...colorSettings.values, ...extras];
-  }
-  function colorFor(value, domain, colors2) {
-    if (value === "N/A") return NA_COLOR2;
-    return colors2[domain.indexOf(value) % colors2.length];
-  }
-  function sortSubjects(rows, settings, order) {
-    const ids = unique(rows.map((row) => row[settings.id_col]));
-    if (order === "alphabetical-descending") {
-      return ids.sort((a, b) => String(a).localeCompare(String(b)));
-    }
-    const firstDay = /* @__PURE__ */ new Map();
-    rows.forEach((row) => {
-      const id = row[settings.id_col];
-      if (!firstDay.has(id) || row.__aet_stdy < firstDay.get(id)) {
-        firstDay.set(id, row.__aet_stdy);
-      }
-    });
-    return ids.sort(
-      (a, b) => firstDay.get(a) - firstDay.get(b) || String(a).localeCompare(String(b))
-    );
-  }
-  function buildTimelineRows(rows, settings) {
-    return rows.map((row) => ({
-      subject: row[settings.id_col],
-      seq: row[settings.seq_col],
-      start: row.__aet_stdy,
-      end: row.__aet_endy === null ? row.__aet_stdy : row.__aet_endy,
-      term: row[settings.term_col],
-      color: row[settings.color.value_col],
-      serious: Boolean(
-        settings.highlight && row[settings.highlight.value_col] === settings.highlight.value
-      ),
-      record: row
-    }));
-  }
-
-  // src/ae-timelines/getScales.js
-  function dayDomain(events) {
-    if (!events.length) return [0, 1];
-    let min = Infinity;
-    let max = -Infinity;
-    events.forEach((event) => {
-      if (event.start < min) min = event.start;
-      if (event.start > max) max = event.start;
-      if (event.end > max) max = event.end;
-    });
-    return [min, max];
-  }
-  function buildScales4({ domain, subjects }) {
-    const [min, max] = domain;
-    return {
-      x: {
-        type: "linear",
-        position: "bottom",
-        min,
-        max,
-        title: { display: true, text: "Study Day" }
-      },
-      x2: {
-        type: "linear",
-        position: "top",
-        min,
-        max,
-        grid: { drawOnChartArea: false }
-      },
-      y: {
-        type: "category",
-        labels: subjects,
-        ticks: { autoSkip: false },
-        grid: { display: true }
-      }
-    };
-  }
-
-  // src/ae-timelines/getPlugins.js
-  function withAlpha(hex2, alpha2) {
-    const value = parseInt(hex2.slice(1), 16);
-    const r = value >> 16 & 255;
-    const g = value >> 8 & 255;
-    const b = value & 255;
-    return `rgba(${r}, ${g}, ${b}, ${alpha2})`;
-  }
-  function buildDatasets(events, domain, settings) {
-    const datasets = domain.map((level) => {
-      const color2 = colorFor(level, domain, settings.color.colors);
-      return {
-        label: level,
-        data: events.filter((event) => event.color === level).map((event) => ({ x: [event.start, event.end], y: event.subject, __aet: event })),
-        backgroundColor: withAlpha(color2, 0.5),
-        borderColor: color2,
-        borderWidth: 1,
-        borderSkipped: false,
-        barThickness: 8,
-        grouped: false,
-        xAxisID: "x"
-      };
-    });
-    if (settings.highlight) {
-      datasets.push({
-        label: settings.highlight.label,
-        data: [],
-        backgroundColor: "rgba(0, 0, 0, 0)",
-        borderColor: settings.highlight.attributes.stroke,
-        borderWidth: Number(settings.highlight.attributes["stroke-width"]) || 2,
-        grouped: false,
-        xAxisID: "x"
-      });
-    }
-    return datasets;
-  }
-  function tooltipLines2(event, settings) {
-    const lines = [
-      `Reported Term: ${event.record[settings.term_col]}`,
-      `Start Day: ${event.record[settings.stdy_col]}`,
-      `Stop Day: ${event.record[settings.endy_col] ?? ""}`
-    ];
-    if (event.serious && settings.highlight) {
-      const detailCol = settings.highlight.detail_col || settings.highlight.value_col;
-      lines.push(`${settings.highlight.label}: ${event.record[detailCol]}`);
-    }
-    return lines;
-  }
-  function timelineMarksPlugin(settings) {
-    const highlight = settings.highlight;
-    const stroke = highlight ? highlight.attributes.stroke : "black";
-    const strokeWidth = highlight ? Number(highlight.attributes["stroke-width"]) || 2 : 2;
-    return {
-      id: "aetTimelineMarks",
-      afterDatasetsDraw(chart) {
-        const { ctx } = chart;
-        const marks = [];
-        chart.data.datasets.forEach((dataset, datasetIndex) => {
-          const meta = chart.getDatasetMeta(datasetIndex);
-          if (meta.hidden) return;
-          dataset.data.forEach((point, index) => {
-            const event = point.__aet;
-            const element = meta.data[index];
-            if (!event || !element) return;
-            const x0 = chart.scales.x.getPixelForValue(event.start);
-            const x1 = chart.scales.x.getPixelForValue(event.end);
-            const y = element.y;
-            ctx.save();
-            ctx.beginPath();
-            ctx.arc(x0, y, 4, 0, Math.PI * 2);
-            ctx.fillStyle = dataset.backgroundColor;
-            ctx.strokeStyle = dataset.borderColor;
-            ctx.lineWidth = 1;
-            ctx.fill();
-            ctx.stroke();
-            if (event.serious) {
-              ctx.strokeStyle = stroke;
-              ctx.lineWidth = strokeWidth;
-              ctx.beginPath();
-              ctx.arc(x0, y, 6, 0, Math.PI * 2);
-              ctx.stroke();
-              if (x1 > x0) {
-                ctx.beginPath();
-                ctx.moveTo(x0, y);
-                ctx.lineTo(x1, y);
-                ctx.stroke();
-              }
-            }
-            ctx.restore();
-            marks.push({
-              subject: event.subject,
-              start: event.start,
-              end: event.end,
-              serious: event.serious,
-              x0,
-              x1,
-              y,
-              circleX: x0
-            });
-          });
-        });
-        chart.$aetMarks = marks;
-      }
-    };
-  }
-
-  // src/ae-timelines.js
-  Chart.register(BarController, BarElement, CategoryScale, LinearScale, plugin_tooltip, plugin_legend);
-  var TIMELINE_FOOTNOTE = "Hover over an adverse event for details. Click a participant ID to view participant details.";
-  var AETimelines = class {
-    constructor(element = "body", settings = {}) {
-      this.element = typeof element === "string" ? document.querySelector(element) : element;
-      if (!this.element) throw new Error(`AE Timelines target not found: ${element}`);
-      this.settings = syncSettings6(settings);
-      this.rawData = [];
-      this.cleanRows = [];
-      this.filteredData = [];
-      this.currentTableData = [];
-      this.listingSearch = "";
-      this.listingSort = null;
-      this.page = 1;
-      this.charts = [];
-      this.chart = null;
-      this.detailChart = null;
-      this.selectedParticipant = null;
-      this.participantsSelected = [];
-      this.state = {
-        filters: {},
-        sort: this.settings.sort_participants
-      };
-      this.renderShell();
-    }
-    /**
-     * Build the static DOM shell the charts and listing render into, plus the
-     * hidden participant detail view (back button, title, detail chart).
-     * @private
-     */
-    renderShell() {
-      Object.assign(
-        this,
-        renderShell(this.element, {
-          moduleClass: "safety-ae-timelines",
-          onToggle: () => this.resize()
-        })
-      );
-      this.footnote.textContent = TIMELINE_FOOTNOTE;
-      this.detailWrap = createElement("div", "sv-detail sv-hidden");
-      const header = createElement("div", "sv-listing-actions");
-      this.backButton = createElement("button", null, "\u2190 Back");
-      this.backButton.type = "button";
-      this.backButton.onclick = () => this.backToTimelines();
-      this.detailTitle = createElement("strong");
-      header.append(this.backButton, this.detailTitle);
-      this.detailChartWrap = createElement("div", "sv-chart-wrap");
-      this.detailCanvas = document.createElement("canvas");
-      this.detailChartWrap.append(this.detailCanvas);
-      this.detailWrap.append(header, this.detailChartWrap);
-      this.main.insertBefore(this.detailWrap, this.footnote);
-      this.canvas.addEventListener("click", (event) => this.handleAxisClick(event));
-      this.canvas.addEventListener("mousemove", (event) => {
-        this.canvas.style.cursor = this.participantAt(event) === null ? "" : "pointer";
-      });
-    }
-    /**
-     * Load data and render: an alias for setData that keeps the original
-     * renderer's create-then-init call shape working (AET-DATA-004).
-     * @param {Object[]} data Adverse-event records matching the ae-timelines data contract.
-     * @returns {AETimelines} The instance, for chaining.
-     */
-    init(data) {
-      this.setData(data);
-      return this;
-    }
-    /**
-     * Replace the bound data and re-render. The data is validated against the
-     * settings mapping (throwing, and rendering the message into the target
-     * element, when required columns are missing); records with blank terms
-     * or non-integer start days are removed with console warnings while
-     * AE-free placeholder rows still count toward the population; and the
-     * filter controls are rebuilt from the new data's values.
-     * @param {Object[]} data Adverse-event records matching the ae-timelines data contract.
-     * @returns {AETimelines} The instance, for chaining.
-     */
-    setData(data) {
-      this.rawData = Array.isArray(data) ? data : [];
-      this.validateAndCleanData();
-      this.buildControls();
-      this.render();
-      return this;
-    }
-    /**
-     * Merge setting overrides onto the current settings, re-normalize them
-     * (same rules as the factory), rebuild the controls, and re-render.
-     * @param {AETimelinesSettings} settings Setting overrides to merge.
-     * @returns {AETimelines} The instance, for chaining.
-     */
-    setSettings(settings) {
-      this.settings = syncSettings6({ ...this.settings, ...settings });
-      this.state.sort = this.settings.sort_participants;
-      this.validateAndCleanData();
-      this.buildControls();
-      this.render();
-      return this;
-    }
-    /**
-     * Validate the raw data against the settings mapping and drop unusable
-     * records, reporting the removal counts the way the original does.
-     * @private
-     */
-    validateAndCleanData() {
-      try {
-        checkInputs6(this.rawData, this.settings);
-      } catch (error) {
-        this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
-        throw error;
-      }
-      this.population = populationCount(this.rawData, this.settings);
-      const { rows, removedTerm, removedDay } = cleanData5(this.rawData, this.settings);
-      this.cleanRows = rows;
-      this.removedTerm = removedTerm;
-      this.removedDay = removedDay;
-      if (removedTerm)
-        console.warn(`${removedTerm} records without [ ${this.settings.term_col} ] removed.`);
-      if (removedDay)
-        console.warn(`${removedDay} records without [ ${this.settings.stdy_col} ] removed.`);
-    }
-    /**
-     * Rebuild the filter and sort controls from the data and control state.
-     * @private
-     */
-    buildControls() {
-      this.controls.innerHTML = "";
-      const { addSection, addControl } = controlBuilders(this.controls);
-      const domain = colorDomain(this.cleanRows, this.settings.color);
-      const filterSpecs = this.settings.filters.filter((filter) => {
-        const values = unique(this.cleanRows.map((row) => row[filter.value_col]));
-        if (!values.length) {
-          console.warn(
-            `The [ ${filter.value_col} ] filter was removed because the variable does not exist.`
-          );
-          return false;
-        }
-        if (values.length < 2) {
-          console.warn(
-            `The [ ${filter.value_col} ] filter was removed because the variable has only one level.`
-          );
-          return false;
-        }
-        return true;
-      });
-      const filterParent = filterSpecs.length ? addSection("Filters") : this.controls;
-      filterSpecs.forEach((filter) => {
-        const select = addControl(filter.label, document.createElement("select"), filterParent);
-        option(select, "__all__", "All", !this.state.filters[filter.value_col]);
-        const values = unique(this.cleanRows.map((row) => row[filter.value_col]));
-        const ordered = filter.value_col === this.settings.color.value_col ? domain.filter((value) => values.includes(value)) : values.sort();
-        ordered.forEach(
-          (value) => option(select, value, value, this.state.filters[filter.value_col] === value)
-        );
-        select.onchange = () => {
-          this.state.filters[filter.value_col] = select.value === "__all__" ? null : select.value;
-          this.render();
-        };
-      });
-      const sortParent = addSection("Sorting");
-      const sort = addControl("Sort Participant IDs", document.createElement("select"), sortParent);
-      SORT_OPTIONS.forEach((value) => option(sort, value, value, value === this.state.sort));
-      sort.onchange = () => {
-        this.state.sort = sort.value;
-        this.render();
-      };
-    }
-    /**
-     * Cleaned records after the active filters.
-     * @private
-     */
-    currentFilteredData() {
-      return applyFilters(this.cleanRows, this.state.filters);
-    }
-    /**
-     * Redraw everything from the current data, settings, and control state:
-     * closes any open participant detail view, destroys the live charts, and
-     * draws the timeline chart and the participant-count note. Called
-     * automatically by the controls and the data/settings setters; call it
-     * directly only after mutating state by hand.
-     * @returns {void}
-     */
-    render() {
-      this.closeDetail(true);
-      this.destroyCharts();
-      this.listingWrap.innerHTML = "";
-      this.currentTableData = [];
-      this.listingSearch = "";
-      this.listingSort = null;
-      this.page = 1;
-      this.footnote.textContent = TIMELINE_FOOTNOTE;
-      this.filteredData = this.currentFilteredData();
-      this.updateNotes();
-      if (!this.filteredData.length) {
-        this.footnote.textContent = "No adverse events match the current filters.";
-        return;
-      }
-      const events = buildTimelineRows(this.filteredData, this.settings);
-      this.currentDomain = dayDomain(events);
-      const subjects = sortSubjects(this.filteredData, this.settings, this.state.sort);
-      this.chartWrap.style.height = `${Math.max(240, subjects.length * this.settings.row_height + 120)}px`;
-      this.chart = this.drawTimeline(this.canvas, events, this.currentDomain, subjects);
-    }
-    /**
-     * Refresh the italicized shown/total participant annotation
-     * (AET-FUNC-007, AET-REG-013) and the removed-record warnings.
-     * @private
-     */
-    updateNotes() {
-      const shown = unique(this.filteredData.map((row) => row[this.settings.id_col])).length;
-      const pct = this.population ? (shown / this.population * 100).toFixed(1) : "0.0";
-      const warnings = [
-        this.removedTerm ? `${this.removedTerm} records without [ ${this.settings.term_col} ] removed.` : "",
-        this.removedDay ? `${this.removedDay} records without [ ${this.settings.stdy_col} ] removed.` : ""
-      ].filter(Boolean).join(" ");
-      this.notes.innerHTML = `<em>${shown} of ${this.population} participant ID(s) shown (${pct}%)</em>` + (warnings ? `<span class="sv-warning">${warnings}</span>` : "");
-    }
-    /**
-     * Draw one timeline chart — the main participant chart or the detail
-     * per-event chart — with the shared datasets, scales, marks, and tooltips.
-     * @private
-     */
-    drawTimeline(canvas, events, domain, labels) {
-      const datasets = buildDatasets(events, colorDomain(this.cleanRows, this.settings.color), {
-        ...this.settings
-      });
-      const chart = new Chart(canvas.getContext("2d"), {
-        type: "bar",
-        data: { labels, datasets },
-        options: {
-          indexAxis: "y",
-          maintainAspectRatio: false,
-          responsive: true,
-          animation: false,
-          plugins: {
-            legend: { position: "top" },
-            tooltip: {
-              callbacks: {
-                title: (items) => items.length ? String(items[0].raw.y) : "",
-                label: (ctx) => tooltipLines2(ctx.raw.__aet, this.settings)
-              }
-            }
-          },
-          scales: buildScales4({ domain, subjects: labels })
-        },
-        plugins: [timelineMarksPlugin(this.settings)]
-      });
-      chart.$aetEvents = events;
-      this.charts.push(chart);
-      return chart;
-    }
-    /**
-     * The participant label at a canvas mouse event, or null when the event
-     * is outside the y-axis label region.
-     * @private
-     */
-    participantAt(event) {
-      const chart = this.chart;
-      if (!chart || this.selectedParticipant) return null;
-      const { left, top, bottom } = chart.chartArea;
-      if (event.offsetX >= left || event.offsetY < top || event.offsetY > bottom) return null;
-      const index = Math.round(chart.scales.y.getValueForPixel(event.offsetY));
-      const labels = chart.scales.y.getLabels();
-      return index >= 0 && index < labels.length ? labels[index] : null;
-    }
-    /**
-     * Open the participant detail view when a y-axis label is clicked
-     * (AET-FUNC-009).
-     * @private
-     */
-    handleAxisClick(event) {
-      const participant = this.participantAt(event);
-      if (participant !== null) this.showParticipantDetail(participant);
-    }
-    /**
-     * Open the detail view for one participant: their per-event timeline on
-     * the main chart's study-day domain (one row per sequence number), the
-     * raw-record listing with search/sort/CSV export, and the Back button —
-     * hiding the timelines and controls, and dispatching the
-     * participantsSelected event with the selected ID.
-     * @param {string} participant Participant ID to detail.
-     * @returns {void}
-     */
-    showParticipantDetail(participant) {
-      this.selectedParticipant = participant;
-      this.sidebar.classList.add("sv-hidden");
-      this.chartWrap.classList.add("sv-hidden");
-      this.notes.classList.add("sv-hidden");
-      this.detailWrap.classList.remove("sv-hidden");
-      this.detailTitle.textContent = `Participant: ${participant}`;
-      const rows = this.cleanRows.filter((row) => row[this.settings.id_col] === participant).sort((a, b) => Number(a[this.settings.seq_col]) - Number(b[this.settings.seq_col]));
-      const events = buildTimelineRows(rows, this.settings).map((event) => ({
-        ...event,
-        subject: String(event.seq)
-      }));
-      const seqs = events.map((event) => event.subject);
-      this.detailChartWrap.style.height = `${Math.max(200, seqs.length * this.settings.row_height * 2 + 120)}px`;
-      if (this.detailChart) {
-        this.charts = this.charts.filter((chart) => chart !== this.detailChart);
-        this.detailChart.destroy();
-      }
-      this.detailChart = this.drawTimeline(this.detailCanvas, events, this.currentDomain, seqs);
-      this.currentTableData = rows;
-      this.listingSearch = "";
-      this.listingSort = null;
-      this.page = 1;
-      renderListing(this);
-      this.footnote.textContent = "Click Back to return to the adverse event timelines.";
-      this.dispatchParticipantsSelected([participant]);
-    }
-    /**
-     * Close the detail view without re-rendering.
-     * @private
-     */
-    closeDetail(silent) {
-      if (!this.selectedParticipant) return;
-      this.selectedParticipant = null;
-      if (this.detailChart) {
-        this.charts = this.charts.filter((chart) => chart !== this.detailChart);
-        this.detailChart.destroy();
-        this.detailChart = null;
-      }
-      this.detailWrap.classList.add("sv-hidden");
-      this.sidebar.classList.remove("sv-hidden");
-      this.chartWrap.classList.remove("sv-hidden");
-      this.notes.classList.remove("sv-hidden");
-      this.listingWrap.innerHTML = "";
-      this.currentTableData = [];
-      this.footnote.textContent = TIMELINE_FOOTNOTE;
-      if (!silent) this.dispatchParticipantsSelected([]);
-    }
-    /**
-     * Return from the participant detail view to the timelines (AET-FUNC-010):
-     * clears the selection, dispatches participantsSelected with an empty
-     * array, and re-renders the timeline chart.
-     * @returns {void}
-     */
-    backToTimelines() {
-      this.closeDetail(false);
-      this.render();
-    }
-    /**
-     * Track and dispatch the participantsSelected DOM CustomEvent on the
-     * container element (AET-API-003): detail.data holds the selected ID
-     * (["SUBJ-01"]) or an empty array when the selection clears.
-     * @private
-     */
-    dispatchParticipantsSelected(ids) {
-      this.participantsSelected = ids;
-      this.element.dispatchEvent(
-        new CustomEvent("participantsSelected", { detail: { data: ids }, bubbles: true })
-      );
-    }
-    /**
-     * Resize every live chart (the timeline and any open detail chart) to its
-     * container. For host layouts that change the container size without a
-     * window resize — e.g. the R htmlwidget bindings.
-     * @returns {void}
-     */
-    resize() {
-      this.charts.forEach((chart) => chart.resize());
-    }
-    /**
-     * Destroy the live Chart.js instances without touching the shell.
-     * @private
-     */
-    destroyCharts() {
-      this.charts.forEach((chart) => chart.destroy());
-      this.charts = [];
-      this.chart = null;
-      this.detailChart = null;
-    }
-    /**
-     * Tear the timelines down: destroy every Chart.js instance and empty the
-     * target element. The instance cannot be reused afterwards — create a new
-     * one via the factory instead.
-     * @returns {void}
-     */
-    destroy() {
-      this.destroyCharts();
-      this.element.innerHTML = "";
-    }
-  };
-  function aeTimelines(element = "body", settings = {}) {
-    return new AETimelines(element, settings);
-  }
-
   // src/hep-core/stats.js
-  function mean6(values) {
+  function mean4(values) {
     const nums = values.map(Number).filter(Number.isFinite);
     if (!nums.length) return NaN;
     return nums.reduce((sum, value) => sum + value, 0) / nums.length;
   }
-  function quantile4(values, p) {
+  function quantile2(values, p) {
     const nums = values.map(Number).filter(Number.isFinite);
     if (!nums.length) return NaN;
     const sorted = [...nums].sort((a, b) => a - b);
@@ -18349,21 +15071,21 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     if (lo === hi) return sorted[lo];
     return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
   }
-  function median2(values) {
-    return quantile4(values, 0.5);
+  function median(values) {
+    return quantile2(values, 0.5);
   }
   function boxStats(values) {
     const sorted = (values || []).map(Number).filter(Number.isFinite).sort((a, b) => a - b);
     return {
       n: sorted.length,
       min: sorted.length ? sorted[0] : NaN,
-      q5: quantile4(sorted, 0.05),
-      q25: quantile4(sorted, 0.25),
-      median: quantile4(sorted, 0.5),
-      q75: quantile4(sorted, 0.75),
-      q95: quantile4(sorted, 0.95),
+      q5: quantile2(sorted, 0.05),
+      q25: quantile2(sorted, 0.25),
+      median: quantile2(sorted, 0.5),
+      q75: quantile2(sorted, 0.75),
+      q95: quantile2(sorted, 0.95),
       max: sorted.length ? sorted[sorted.length - 1] : NaN,
-      mean: mean6(sorted)
+      mean: mean4(sorted)
     };
   }
 
@@ -18386,7 +15108,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     const testName = settings.measure_values ? settings.measure_values[key] : key;
     return rows.filter((row) => row[settings.measure_col] === testName);
   }
-  function cleanData6(rawData, settings) {
+  function cleanData3(rawData, settings) {
     let removed = 0;
     const rows = rawData.map((row, index) => {
       const value = Number(row[settings.value_col]);
@@ -18410,7 +15132,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     });
     return { rows, removed };
   }
-  function assignSequence2(rows, settings) {
+  function assignSequence(rows, settings) {
     const counts = /* @__PURE__ */ new Map();
     rows.forEach((row) => {
       const key = `${row[settings.id_col]}\0${row[settings.measure_col]}`;
@@ -18469,8 +15191,122 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     return altPeak.value / alpPeak.value;
   }
 
+  // src/participant-profile/configure.js
+  function arrayify4(value) {
+    if (value === void 0 || value === null || value === "") return [];
+    return Array.isArray(value) ? value : [value];
+  }
+  function fieldSpec4(value, fallbackLabel) {
+    if (typeof value === "string") return { value_col: value, label: fallbackLabel || value };
+    return { ...value, value_col: value.value_col, label: value.label || value.value_col };
+  }
+  var MEASURE_COLORS = [
+    "#e41a1c",
+    "#377eb8",
+    "#4daf4a",
+    "#984ea3",
+    "#ff7f00",
+    "#a65628",
+    "#f781bf",
+    "#00838f"
+  ];
+  var DEFAULT_SETTINGS4 = {
+    id_col: "USUBJID",
+    measure_col: "TEST",
+    value_col: "STRESN",
+    unit_col: "STRESU",
+    normal_col_high: "STNRHI",
+    normal_col_low: "STNRLO",
+    studyday_col: "DY",
+    visit_col: "VISIT",
+    visitn_col: "VISITNUM",
+    baseline_col: null,
+    baseline_value: "Y",
+    details: [],
+    measure_values: {
+      ALT: "Aminotransferase, alanine (ALT)",
+      AST: "Aminotransferase, aspartate (AST)",
+      TB: "Total Bilirubin",
+      ALP: "Alkaline phosphatase (ALP)"
+    },
+    cuts: {
+      TB: { relative_uln: 2, relative_baseline: 4.8 },
+      ALP: { relative_uln: 1, relative_baseline: 3.8 },
+      defaults: { relative_uln: 3, relative_baseline: 3.8 }
+    },
+    display: "relative_uln",
+    display_options: [
+      { value: "relative_uln", label: "ULN adjusted" },
+      { value: "relative_baseline", label: "Baseline adjusted" }
+    ],
+    axis_type: "linear",
+    measureBounds: [0.01, 0.99],
+    participantProfileURL: null,
+    p_alt_col: null,
+    listing: false,
+    listing_cols: null,
+    listing_page_size: 10,
+    listen_to: null,
+    on_clear: null,
+    on_step: null,
+    filters: [],
+    groups: [],
+    width: "100%",
+    height: 300
+  };
+  function syncSettings4(settings = {}) {
+    const synced = { ...DEFAULT_SETTINGS4, ...settings };
+    synced.details = arrayify4(synced.details).map((value) => fieldSpec4(value)).filter((d) => d.value_col);
+    synced.filters = arrayify4(synced.filters).map((value) => fieldSpec4(value)).filter((d) => d.value_col);
+    synced.groups = arrayify4(synced.groups).map((value) => fieldSpec4(value)).filter((d) => d.value_col);
+    synced.listing_cols = synced.listing_cols === void 0 || synced.listing_cols === null ? null : arrayify4(synced.listing_cols).map((value) => fieldSpec4(value)).filter((d) => d.value_col);
+    synced.measure_values = {
+      ...DEFAULT_SETTINGS4.measure_values,
+      ...settings.measure_values || {}
+    };
+    const cutKeys = /* @__PURE__ */ new Set([
+      ...Object.keys(DEFAULT_SETTINGS4.cuts),
+      ...Object.keys(settings.cuts || {})
+    ]);
+    const mergedCuts = {};
+    cutKeys.forEach((key) => {
+      mergedCuts[key] = {
+        ...DEFAULT_SETTINGS4.cuts[key] || {},
+        ...(settings.cuts || {})[key] || {}
+      };
+    });
+    synced.cuts = mergedCuts;
+    const bounds = arrayify4(synced.measureBounds).map(Number).filter(Number.isFinite);
+    synced.measureBounds = bounds.length === 2 ? bounds : [...DEFAULT_SETTINGS4.measureBounds];
+    synced.axis_type = synced.axis_type === "log" ? "log" : "linear";
+    return synced;
+  }
+  function templateProfileURL(url, id) {
+    if (url === void 0 || url === null || url === "") return null;
+    return String(url).replace(/\{id\}/g, encodeURIComponent(String(id)));
+  }
+  function measureColorScale(keys) {
+    const scale = /* @__PURE__ */ new Map();
+    keys.forEach((key, index) => {
+      scale.set(key, MEASURE_COLORS[index % MEASURE_COLORS.length]);
+    });
+    return scale;
+  }
+
+  // src/participant-profile/checkInputs.js
+  var REQUIRED_COLUMN_SETTINGS4 = ["id_col", "measure_col", "value_col", "normal_col_high"];
+  function checkInputs4(data, settings) {
+    const rows = Array.isArray(data) ? data : [];
+    const missing = REQUIRED_COLUMN_SETTINGS4.map((key) => settings[key]).filter(
+      (col) => !rows.some((row) => row[col] !== void 0)
+    );
+    if (missing.length) {
+      throw new Error(`Required variable(s) missing: ${missing.join(", ")}`);
+    }
+  }
+
   // src/hep-explorer/configure.js
-  var GROUP_NONE2 = "hep_none";
+  var GROUP_NONE = "hep_none";
   var DISPLAY_MODES = [
     { value: "relative_uln", label: "Upper limit of normal adjusted (eDISH)" },
     { value: "relative_baseline", label: "Baseline adjusted (mDISH)" }
@@ -18482,7 +15318,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
   ];
   var AXIS_TYPES = ["linear", "log"];
   var POINT_SIZE_OPTIONS = ["Uniform", "rRatio"];
-  var DEFAULT_SETTINGS7 = {
+  var DEFAULT_SETTINGS5 = {
     id_col: "USUBJID",
     measure_col: "TEST",
     value_col: "STRESN",
@@ -18528,62 +15364,62 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     r_ratio: [0, null],
     filters: [],
     groups: [],
-    group_by: GROUP_NONE2,
+    group_by: GROUP_NONE,
     details: null,
     page_size: 10,
     width: "100%",
     height: 460
   };
-  function arrayify6(value) {
+  function arrayify5(value) {
     if (value === void 0 || value === null || value === "") return [];
     return Array.isArray(value) ? value : [value];
   }
-  function fieldSpec6(value, fallbackLabel) {
+  function fieldSpec5(value, fallbackLabel) {
     if (typeof value === "string") return { value_col: value, label: fallbackLabel || value };
     return { ...value, value_col: value.value_col, label: value.label || value.value_col };
   }
-  function syncSettings7(settings) {
-    const synced = { ...DEFAULT_SETTINGS7, ...settings };
-    synced.filters = arrayify6(synced.filters).map((value) => fieldSpec6(value)).filter((d) => d.value_col);
-    const defaultGroup = { value_col: GROUP_NONE2, label: "None" };
+  function syncSettings5(settings) {
+    const synced = { ...DEFAULT_SETTINGS5, ...settings };
+    synced.filters = arrayify5(synced.filters).map((value) => fieldSpec5(value)).filter((d) => d.value_col);
+    const defaultGroup = { value_col: GROUP_NONE, label: "None" };
     synced.groups = [
       defaultGroup,
-      ...arrayify6(synced.groups).map((value) => fieldSpec6(value)).filter((d) => d.value_col)
+      ...arrayify5(synced.groups).map((value) => fieldSpec5(value)).filter((d) => d.value_col)
     ];
     if (synced.group_by && !synced.groups.some((group) => group.value_col === synced.group_by)) {
       synced.groups.push({ value_col: synced.group_by, label: synced.group_by });
     }
     synced.group_by = synced.groups.some((group) => group.value_col === synced.group_by) ? synced.group_by : synced.groups[0].value_col;
-    synced.details = arrayify6(synced.details).map((value) => fieldSpec6(value)).filter((d) => d.value_col);
-    synced.x_options = arrayify6(synced.x_options);
-    synced.y_options = arrayify6(synced.y_options);
+    synced.details = arrayify5(synced.details).map((value) => fieldSpec5(value)).filter((d) => d.value_col);
+    synced.x_options = arrayify5(synced.x_options);
+    synced.y_options = arrayify5(synced.y_options);
     synced.measure_values = {
-      ...DEFAULT_SETTINGS7.measure_values,
+      ...DEFAULT_SETTINGS5.measure_values,
       ...settings.measure_values || {}
     };
     const cutKeys = /* @__PURE__ */ new Set([
-      ...Object.keys(DEFAULT_SETTINGS7.cuts),
+      ...Object.keys(DEFAULT_SETTINGS5.cuts),
       ...Object.keys(settings.cuts || {})
     ]);
     const mergedCuts = {};
     cutKeys.forEach((key) => {
       mergedCuts[key] = {
-        ...DEFAULT_SETTINGS7.cuts[key] || {},
+        ...DEFAULT_SETTINGS5.cuts[key] || {},
         ...(settings.cuts || {})[key] || {}
       };
     });
     synced.cuts = mergedCuts;
-    synced.r_ratio = arrayify6(synced.r_ratio);
+    synced.r_ratio = arrayify5(synced.r_ratio);
     if (synced.r_ratio.length < 2) synced.r_ratio = [0, null];
-    const activeArms = arrayify6(synced.active_arms).map(String);
+    const activeArms = arrayify5(synced.active_arms).map(String);
     synced.active_arms = activeArms.length ? activeArms : null;
     synced.placebo_arm = synced.placebo_arm === void 0 || synced.placebo_arm === null || synced.placebo_arm === "" ? null : String(synced.placebo_arm);
-    synced.jaundice_uln = Number.isFinite(Number(synced.jaundice_uln)) ? Number(synced.jaundice_uln) : DEFAULT_SETTINGS7.jaundice_uln;
+    synced.jaundice_uln = Number.isFinite(Number(synced.jaundice_uln)) ? Number(synced.jaundice_uln) : DEFAULT_SETTINGS5.jaundice_uln;
     synced.hide_unchanged = Boolean(synced.hide_unchanged);
     synced.profile = Boolean(synced.profile);
-    synced.profile_details = synced.profile_details === void 0 || synced.profile_details === null ? null : arrayify6(synced.profile_details).map((value) => fieldSpec6(value)).filter((d) => d.value_col);
-    const bounds = arrayify6(synced.measureBounds).map(Number).filter(Number.isFinite);
-    synced.measureBounds = bounds.length === 2 ? bounds : [...DEFAULT_SETTINGS7.measureBounds];
+    synced.profile_details = synced.profile_details === void 0 || synced.profile_details === null ? null : arrayify5(synced.profile_details).map((value) => fieldSpec5(value)).filter((d) => d.value_col);
+    const bounds = arrayify5(synced.measureBounds).map(Number).filter(Number.isFinite);
+    synced.measureBounds = bounds.length === 2 ? bounds : [...DEFAULT_SETTINGS5.measureBounds];
     return synced;
   }
 
@@ -18647,680 +15483,6 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     );
     const warning = detail.ambiguous ? `Placebo arm is ambiguous: ${detail.candidates.join(", ")} all look like control arms. Set the placebo_arm setting to pick one; until then no arm is designated placebo.` : null;
     return { sides, placeboArm, ambiguous: detail.ambiguous, candidates: detail.candidates, warning };
-  }
-
-  // src/data/schema/hep-explorer.json
-  var hep_explorer_default = {
-    $schema: "https://json-schema.org/draft/2020-12/schema",
-    $id: "https://raw.githubusercontent.com/jwildfire/safety.viz/main/src/data/schema/hep-explorer.json",
-    title: "safety.viz hep-explorer data contract",
-    description: "Long-format liver-lab data: one record per participant per measure per visit/day (HEP-DATA-001). Column names are supplied by the settings mapping; the hep-explorer standardizes each value to \xD7ULN and \xD7Baseline, reduces to one point per participant (peak X measure vs peak Y measure), and removes missing/non-numeric results with a reported count (HEP-DATA-003). The four liver measures (ALT/AST/TB/ALP) are matched from the measure column via measure_values.",
-    type: "object",
-    required: ["data", "settings"],
-    properties: {
-      data: {
-        type: "array",
-        minItems: 1,
-        items: { type: "object" },
-        description: "d3.csv()-style records; every row carries the measure, result, participant, and ULN columns named in settings, one row per participant per measure per visit/day."
-      },
-      settings: {
-        type: "object",
-        description: "Column mappings and rendering options; merged onto the module's DEFAULT_SETTINGS, so only overrides need to be supplied (HEP-DATA-003).",
-        required: ["id_col", "measure_col", "value_col", "normal_col_high"],
-        properties: {
-          id_col: {
-            type: "string",
-            default: "USUBJID",
-            description: "Participant identifier column; one plotted point per participant (HEP-DATA-001)."
-          },
-          measure_col: {
-            type: "string",
-            default: "TEST",
-            description: "Column holding the measure name; required in data. Matched to the ALT/AST/TB/ALP keys via measure_values (HEP-DATA-002)."
-          },
-          value_col: {
-            type: "string",
-            default: "STRESN",
-            description: "Column holding the numeric result; required in data. Non-numeric results are removed with a logged count (HEP-DATA-003)."
-          },
-          unit_col: {
-            type: "string",
-            default: "STRESU",
-            description: "Optional unit column, appended to measure labels and shown in the linked listing."
-          },
-          normal_col_high: {
-            type: "string",
-            default: "STNRHI",
-            description: "Upper limit of normal (ULN); required in data \u2014 the \xD7ULN standardization divides each value by it (HEP-DISPLAY-002)."
-          },
-          normal_col_low: {
-            type: ["string", "null"],
-            default: "STNRLO",
-            description: "Optional lower limit of normal, carried into the linked listing."
-          },
-          studyday_col: {
-            type: ["string", "null"],
-            default: "DY",
-            description: "Optional study-day column; drives the timing test and visit-path ordering. When absent, a per-participant per-measure input-order sequence is derived (HEP-DATA-004, HEP-SELECT-004)."
-          },
-          visit_col: {
-            type: ["string", "null"],
-            default: "VISIT",
-            description: "Optional categorical visit column; labels the visit-path overlay and pairs the X/Y trajectory points (HEP-SELECT-003)."
-          },
-          visitn_col: {
-            type: ["string", "null"],
-            default: "VISITNUM",
-            description: "Optional numeric visit column; orders visit-keyed series when present."
-          },
-          arm_col: {
-            type: ["string", "null"],
-            default: "ARM",
-            description: "Treatment-arm column, structural for the migration view \u2014 it decides which side of the centre column a participant's flow leaves from. Auto-detected across ARM, ACTARM, TRT01A, TREATMENT and TRTA when the named column is absent, and deliberately NOT in this contract's required list, so arm-less data still renders the scatter and composite views (HEP-ARM-001)."
-          },
-          placebo_arm: {
-            type: ["string", "null"],
-            default: null,
-            description: "Arm value plotted on the left (placebo) side of the migration Sankey; when null it is auto-detected by matching the arm values against /placebo|control/i (HEP-ARM-002)."
-          },
-          active_arms: {
-            type: ["array", "string", "null"],
-            items: { type: "string" },
-            default: null,
-            description: "Arm values plotted on the right (active) side; when null every non-placebo arm pools right and the pooled arms are named in the notes (HEP-ARM-003)."
-          },
-          baseline_col: {
-            type: ["string", "null"],
-            default: null,
-            description: "Optional baseline-flag column (e.g. ABLFL). When supplied, the flagged record is the baseline, outranking the day-0-else-earliest heuristic (HEP-CORE-003)."
-          },
-          baseline_value: {
-            type: "string",
-            default: "Y",
-            description: "The value of baseline_col that marks the baseline record (HEP-CORE-003)."
-          },
-          jaundice_uln: {
-            type: "number",
-            default: 2,
-            description: "New-onset-jaundice threshold on the total-bilirubin \xD7ULN scale: flagged when baseline is at or below it and the on-treatment maximum exceeds it. Defaults to the composite plot's bilirubin cutpoint so the flag and the quadrants stay mutually consistent (HEP-CORE-006)."
-          },
-          hide_unchanged: {
-            type: "boolean",
-            default: false,
-            description: "Migration view: suppress the diagonal (no-migration) ribbons; the hidden participant count stays in the notes and the cross tables (HEP-MIG-013)."
-          },
-          measure_values: {
-            type: "object",
-            default: {
-              ALT: "Aminotransferase, alanine (ALT)",
-              AST: "Aminotransferase, aspartate (AST)",
-              TB: "Total Bilirubin",
-              ALP: "Alkaline phosphatase (ALP)"
-            },
-            description: "Map of the short measure key (ALT/AST/TB/ALP) to the full measure string in the data (HEP-DATA-002)."
-          },
-          view: {
-            type: "string",
-            enum: ["scatter", "migration", "composite"],
-            default: "scatter",
-            description: "Initial view mode: `scatter` (eDISH/mDISH one-point-per-participant scatter), `migration` (the bidirectional baseline \u2192 peak on-treatment Sankey mirrored about the baseline categorization, with one cross table per treatment arm \u2014 Amirzadegan et al., Drug Safety 2025, Fig 3; needs arm_col mapped), or `composite` (baseline-referenced composite plot for subjects with abnormal baseline liver tests \u2014 pretreatment and on-treatment eDISH panels, a four-panel \xD7Baseline shift plot, and a migration table) (HEP-COMP-006, HEP-MIG-001)."
-          },
-          x_default: {
-            type: "string",
-            default: "ALT",
-            description: "Measure plotted on the x-axis on first render (HEP-CTRL-001)."
-          },
-          y_default: {
-            type: "string",
-            default: "TB",
-            description: "Measure plotted on the y-axis on first render (HEP-CTRL-002)."
-          },
-          x_options: {
-            type: "array",
-            items: { type: "string" },
-            default: ["ALT", "AST", "TB", "ALP"],
-            description: "Measures offered by the X-axis Measure control (HEP-CTRL-001)."
-          },
-          y_options: {
-            type: "array",
-            items: { type: "string" },
-            default: ["TB"],
-            description: "Measures offered by the Y-axis Measure control; a single option drops the control (HEP-CTRL-002)."
-          },
-          cuts: {
-            type: "object",
-            default: {
-              TB: { relative_uln: 2, relative_baseline: 4.8 },
-              ALP: { relative_uln: 1, relative_baseline: 3.8 },
-              rRatio: { relative_uln: 5, relative_baseline: 5 },
-              defaults: { relative_uln: 3, relative_baseline: 3.8 }
-            },
-            description: "Per-measure Hy's-Law cutpoints keyed by measure then display mode; a `defaults` entry back-fills any measure without its own cuts (HEP-QUAD-001)."
-          },
-          visit_window: {
-            type: "number",
-            default: 30,
-            description: "Timing window (days): points whose peak-X and peak-Y days are within this many days render filled, else hollow (HEP-CTRL-008, HEP-DISPLAY-005)."
-          },
-          r_ratio_filter: {
-            type: "boolean",
-            default: true,
-            description: "Whether to render the R-Ratio range filter control (HEP-CTRL-010)."
-          },
-          r_ratio: {
-            type: "array",
-            items: { type: ["number", "null"] },
-            default: [0, null],
-            description: "Initial R-Ratio [min, max]; a null max is resolved from the data on first render (HEP-CTRL-010)."
-          },
-          filters: {
-            $ref: "#/$defs/fieldList",
-            description: "Optional filter columns rendered as controls (HEP-CTRL-011)."
-          },
-          groups: {
-            $ref: "#/$defs/fieldList",
-            description: "Optional color-by columns for grouping the points (HEP-CTRL-009)."
-          },
-          details: {
-            $ref: "#/$defs/fieldList",
-            description: "Optional listing columns; defaults derive from the measure/day/value mappings (HEP-SELECT-006)."
-          }
-        }
-      }
-    },
-    $defs: {
-      fieldList: {
-        type: "array",
-        items: {
-          anyOf: [
-            { type: "string" },
-            {
-              type: "object",
-              required: ["value_col"],
-              properties: {
-                value_col: { type: "string" },
-                label: { type: "string" }
-              }
-            }
-          ]
-        }
-      }
-    }
-  };
-
-  // src/hep-explorer/checkInputs.js
-  var REQUIRED_COLUMN_SETTINGS7 = hep_explorer_default.properties.settings.required;
-  function checkInputs7(data, settings) {
-    const rows = Array.isArray(data) ? data : [];
-    const missing = REQUIRED_COLUMN_SETTINGS7.map((key) => settings[key]).filter(
-      (col) => !rows.some((row) => row[col] !== void 0)
-    );
-    if (missing.length) {
-      throw new Error(`Required variable(s) missing: ${missing.join(", ")}`);
-    }
-  }
-
-  // src/hep-explorer/getScales.js
-  function formatNumber4(value, digits = 2) {
-    if (!Number.isFinite(value)) return "";
-    return Number(value.toFixed(digits)).toString();
-  }
-  function axisSuffix(display) {
-    return display === "relative_baseline" ? " [\xD7Baseline]" : " [\xD7ULN]";
-  }
-  function measureLabel5(measureKey, measureValues) {
-    if (measureValues && measureValues[measureKey]) return measureValues[measureKey];
-    return measureKey ?? "";
-  }
-  function axisLabel2(measureKey, display, measureValues) {
-    return `${measureLabel5(measureKey, measureValues)}${axisSuffix(display)}`;
-  }
-  function edishDomain(values, cut, type = "linear") {
-    const nums = values.filter(Number.isFinite);
-    const all = Number.isFinite(cut) ? [...nums, cut] : nums;
-    if (!all.length) return type === "log" ? [0.1, 1] : [0, 1];
-    const max = Math.max(...all);
-    if (type === "log") {
-      const positives = all.filter((value) => value > 0);
-      const min = positives.length ? Math.min(...positives) : 0.1;
-      return [min / 1.5, max * 1.5];
-    }
-    return [0, max * 1.05 || 1];
-  }
-  function buildScales5(state, xDomain, yDomain, measureValues) {
-    const type = state.axisType === "log" ? "logarithmic" : "linear";
-    const axis = (domain, label) => {
-      const min = type === "logarithmic" && !(domain[0] > 0) ? void 0 : domain[0];
-      return {
-        type,
-        min,
-        max: domain[1],
-        title: { display: true, text: label },
-        grid: { color: "rgba(148, 163, 184, 0.25)" }
-      };
-    };
-    return {
-      x: axis(xDomain, axisLabel2(state.measureX, state.display, measureValues)),
-      y: axis(yDomain, axisLabel2(state.measureY, state.display, measureValues))
-    };
-  }
-
-  // src/hep-explorer/getPlugins.js
-  var GROUP_COLORS2 = [
-    "#1f78b4",
-    "#e31a1c",
-    "#33a02c",
-    "#ff7f00",
-    "#6a3d9a",
-    "#b15928",
-    "#00838f",
-    "#c2185b"
-  ];
-  var SELECTION_COLOR2 = "#111827";
-  var QUADRANT_LABELS = [
-    { position: "upper-right", label: "Possible Hy's Law Range", xCat: "High", yCat: "High" },
-    { position: "upper-left", label: "Hyperbilirubinemia", xCat: "Normal", yCat: "High" },
-    { position: "lower-right", label: "Temple's Corollary", xCat: "High", yCat: "Normal" },
-    { position: "lower-left", label: "Normal Range", xCat: "Normal", yCat: "Normal" }
-  ];
-  function hexToRgba3(hex2, opacity) {
-    const clean = hex2.replace("#", "");
-    const r = parseInt(clean.slice(0, 2), 16);
-    const g = parseInt(clean.slice(2, 4), 16);
-    const b = parseInt(clean.slice(4, 6), 16);
-    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
-  }
-  function groupColorScale2(groupValues) {
-    const scale = /* @__PURE__ */ new Map();
-    groupValues.forEach((value, index) => {
-      scale.set(String(value), GROUP_COLORS2[index % GROUP_COLORS2.length]);
-    });
-    return scale;
-  }
-  function dayText(day) {
-    return Number.isFinite(day) ? String(day) : "NA";
-  }
-  function pointTooltip2(point, state, measureValues) {
-    const lines = [
-      `Participant: ${point.id}`,
-      `R Ratio: ${Number.isFinite(point.rRatio) ? formatNumber4(point.rRatio) : "NA"}`,
-      `${measureLabel5(state.measureX, measureValues)}: ${formatNumber4(point.x)} @ day ${dayText(
-        point.days_x
-      )}`,
-      `${measureLabel5(state.measureY, measureValues)}: ${formatNumber4(point.y)} @ day ${dayText(
-        point.days_y
-      )}`
-    ];
-    if (Number.isFinite(point.day_diff)) {
-      lines.push(`${formatNumber4(point.day_diff)} days apart`);
-    }
-    return lines;
-  }
-  function referenceLinePlugin({ vLines = [], hLines = [] } = {}) {
-    return {
-      id: `hep-reflines-${Math.random().toString(36).slice(2)}`,
-      beforeDatasetsDraw(chart) {
-        const { ctx, chartArea, scales } = chart;
-        if (!scales.x || !scales.y) return;
-        ctx.save();
-        ctx.strokeStyle = "rgba(100, 116, 139, 0.65)";
-        ctx.fillStyle = "rgba(51, 65, 85, 0.85)";
-        ctx.lineWidth = 1;
-        ctx.setLineDash([4, 4]);
-        ctx.font = "10px system-ui, sans-serif";
-        vLines.forEach(({ value, label }) => {
-          const px = scales.x.getPixelForValue(value);
-          if (!(px >= chartArea.left && px <= chartArea.right)) return;
-          ctx.beginPath();
-          ctx.moveTo(px, chartArea.top);
-          ctx.lineTo(px, chartArea.bottom);
-          ctx.stroke();
-          if (label) {
-            ctx.textAlign = "left";
-            ctx.textBaseline = "bottom";
-            ctx.fillText(label, px + 2, chartArea.bottom - 2);
-          }
-        });
-        hLines.forEach(({ value, label }) => {
-          const py = scales.y.getPixelForValue(value);
-          if (!(py >= chartArea.top && py <= chartArea.bottom)) return;
-          ctx.beginPath();
-          ctx.moveTo(chartArea.left, py);
-          ctx.lineTo(chartArea.right, py);
-          ctx.stroke();
-          if (label) {
-            ctx.textAlign = "left";
-            ctx.textBaseline = "bottom";
-            ctx.fillText(label, chartArea.left + 2, py - 2);
-          }
-        });
-        ctx.restore();
-      }
-    };
-  }
-  function quadrantPlugin(instance) {
-    return {
-      id: `hep-quadrants-${Math.random().toString(36).slice(2)}`,
-      beforeDatasetsDraw(chart) {
-        chart.$hepQuadrants = null;
-        const state = instance.state || {};
-        const { xCut, yCut } = state;
-        if (!Number.isFinite(xCut) || !Number.isFinite(yCut)) return;
-        const { ctx, chartArea, scales } = chart;
-        if (!scales.x || !scales.y) return;
-        const xPixel = scales.x.getPixelForValue(xCut);
-        const yPixel = scales.y.getPixelForValue(yCut);
-        const quadrants = instance.quadrants || { labels: [] };
-        const counts = {};
-        const percents = {};
-        quadrants.labels.forEach((entry) => {
-          counts[entry.position] = entry.count;
-          percents[entry.position] = entry.percent;
-        });
-        chart.$hepQuadrants = { xCut, yCut, xPixel, yPixel, counts, percents };
-        ctx.save();
-        ctx.strokeStyle = "rgba(100, 116, 139, 0.7)";
-        ctx.lineWidth = 1;
-        ctx.setLineDash([4, 4]);
-        if (xPixel >= chartArea.left && xPixel <= chartArea.right) {
-          ctx.beginPath();
-          ctx.moveTo(xPixel, chartArea.top);
-          ctx.lineTo(xPixel, chartArea.bottom);
-          ctx.stroke();
-        }
-        if (yPixel >= chartArea.top && yPixel <= chartArea.bottom) {
-          ctx.beginPath();
-          ctx.moveTo(chartArea.left, yPixel);
-          ctx.lineTo(chartArea.right, yPixel);
-          ctx.stroke();
-        }
-        ctx.setLineDash([]);
-        ctx.fillStyle = "rgba(51, 65, 85, 0.9)";
-        ctx.font = "11px system-ui, sans-serif";
-        ctx.textBaseline = "middle";
-        const anchors = {
-          "upper-left": { x: chartArea.left + 6, y: chartArea.top + 12, align: "left" },
-          "upper-right": { x: chartArea.right - 6, y: chartArea.top + 12, align: "right" },
-          "lower-left": { x: chartArea.left + 6, y: chartArea.bottom - 12, align: "left" },
-          "lower-right": { x: chartArea.right - 6, y: chartArea.bottom - 12, align: "right" }
-        };
-        quadrants.labels.forEach((entry) => {
-          const anchor = anchors[entry.position];
-          if (!anchor) return;
-          ctx.textAlign = anchor.align;
-          const percent = Number.isFinite(entry.percent) ? entry.percent.toFixed(1) : "0.0";
-          ctx.fillText(`${entry.label} (${percent}%)`, anchor.x, anchor.y);
-        });
-        ctx.restore();
-      }
-    };
-  }
-
-  // src/hep-explorer/structureData.js
-  function unique6(values) {
-    return [
-      ...new Set(values.filter((value) => value !== void 0 && value !== null && value !== ""))
-    ];
-  }
-  function maxRRatio(cleanRows, settings) {
-    const byId = /* @__PURE__ */ new Map();
-    cleanRows.forEach((row) => {
-      const id = row[settings.id_col];
-      if (!byId.has(id)) byId.set(id, []);
-      byId.get(id).push(row);
-    });
-    let max = 0;
-    byId.forEach((participantRows) => {
-      const ratio = computeRRatio(participantRows, settings);
-      if (Number.isFinite(ratio) && ratio > max) max = ratio;
-    });
-    return max;
-  }
-  function buildPoints(cleanRows, settings, state) {
-    const { measureX, measureY, display, visitWindow, groupBy: groupBy2 } = state;
-    const timed = hasStudyDay(cleanRows);
-    const metaCols = unique6([
-      settings.id_col,
-      ...settings.filters.map((filter) => filter.value_col),
-      ...settings.groups.map((group) => group.value_col)
-    ]).filter((col) => col && col !== GROUP_NONE2);
-    const byId = /* @__PURE__ */ new Map();
-    cleanRows.forEach((row) => {
-      const id = row[settings.id_col];
-      if (!byId.has(id)) byId.set(id, []);
-      byId.get(id).push(row);
-    });
-    const points = [];
-    let droppedParticipants = 0;
-    byId.forEach((participantRows, id) => {
-      const peakX = participantPeak(
-        resolveMeasureRows(participantRows, settings, measureX),
-        measureX,
-        display
-      );
-      const peakY = participantPeak(
-        resolveMeasureRows(participantRows, settings, measureY),
-        measureY,
-        display
-      );
-      if (!peakX || !peakY || !(peakX.value > 0) || !(peakY.value > 0)) {
-        droppedParticipants += 1;
-        return;
-      }
-      const daysX = peakX.day;
-      const daysY = peakY.day;
-      const dayDiff = Number.isFinite(daysX) && Number.isFinite(daysY) ? Math.abs(daysX - daysY) : NaN;
-      const withinWindow = Number.isFinite(dayDiff) ? dayDiff <= visitWindow : !timed;
-      const groupValue = groupBy2 && groupBy2 !== GROUP_NONE2 ? participantRows[0][groupBy2] : null;
-      const meta = {};
-      metaCols.forEach((col) => {
-        meta[col] = participantRows[0][col] === void 0 ? "" : String(participantRows[0][col]);
-      });
-      points.push({
-        id,
-        x: peakX.value,
-        y: peakY.value,
-        days_x: daysX,
-        days_y: daysY,
-        day_diff: dayDiff,
-        withinWindow,
-        rRatio: computeRRatio(participantRows, settings),
-        group: groupValue === null || groupValue === void 0 ? null : String(groupValue),
-        raw: meta
-      });
-    });
-    return { points, droppedParticipants };
-  }
-  function applyFilters6(points, filters) {
-    return points.filter(
-      (point) => Object.entries(filters).every(
-        ([key, value]) => !value || String(point.raw[key]) === String(value)
-      )
-    );
-  }
-  function classifyQuadrants(points, xCut, yCut) {
-    const counts = {};
-    QUADRANT_LABELS.forEach((entry) => {
-      counts[entry.position] = 0;
-    });
-    points.forEach((point) => {
-      const xCat = point.x >= xCut ? "High" : "Normal";
-      const yCat = point.y >= yCut ? "High" : "Normal";
-      const quadrant = QUADRANT_LABELS.find((entry) => entry.xCat === xCat && entry.yCat === yCat);
-      if (quadrant) counts[quadrant.position] += 1;
-    });
-    const total = points.length;
-    const labels = QUADRANT_LABELS.map((entry) => {
-      const count2 = counts[entry.position];
-      return {
-        position: entry.position,
-        label: entry.label,
-        count: count2,
-        percent: total ? count2 / total * 100 : 0
-      };
-    });
-    return { counts, labels };
-  }
-  function visitPathSeries(cleanRows, id, settings, state) {
-    const { measureX, measureY, display } = state;
-    const field = displayField(display);
-    const participantRows = cleanRows.filter((row) => row[settings.id_col] === id);
-    const xRows = resolveMeasureRows(participantRows, settings, measureX);
-    const yRows = resolveMeasureRows(participantRows, settings, measureY);
-    const keyOf = (row) => {
-      if (settings.visit_col && row[settings.visit_col] !== void 0 && row[settings.visit_col] !== "") {
-        return `v:${row[settings.visit_col]}`;
-      }
-      if (Number.isFinite(row.__hep_day)) return `d:${row.__hep_day}`;
-      return `s:${Number.isFinite(row.__hep_seq) ? row.__hep_seq : row.__hep_index}`;
-    };
-    const entries = /* @__PURE__ */ new Map();
-    const ingest = (rows, axis) => {
-      rows.forEach((row) => {
-        const key = keyOf(row);
-        if (!entries.has(key)) {
-          entries.set(key, { x: NaN, y: NaN, day: NaN, seq: NaN, visit: null, order: Infinity });
-        }
-        const entry = entries.get(key);
-        entry[axis] = row[field];
-        if (Number.isFinite(row.__hep_day)) entry.day = row.__hep_day;
-        if (Number.isFinite(row.__hep_seq)) {
-          entry.seq = Number.isFinite(entry.seq) ? Math.min(entry.seq, row.__hep_seq) : row.__hep_seq;
-        }
-        if (settings.visit_col && row[settings.visit_col] !== void 0) {
-          entry.visit = row[settings.visit_col];
-        }
-        entry.order = Math.min(entry.order, row.__hep_index);
-      });
-    };
-    ingest(xRows, "x");
-    ingest(yRows, "y");
-    return [...entries.values()].filter((entry) => Number.isFinite(entry.x) && Number.isFinite(entry.y)).sort((a, b) => {
-      const da = Number.isFinite(a.day) ? a.day : Number.MAX_SAFE_INTEGER;
-      const db = Number.isFinite(b.day) ? b.day : Number.MAX_SAFE_INTEGER;
-      return da - db || a.order - b.order;
-    }).map((entry) => ({
-      x: entry.x,
-      y: entry.y,
-      day: entry.day,
-      visit: entry.visit,
-      label: entry.visit ? String(entry.visit) : Number.isFinite(entry.day) ? `Day ${entry.day}` : `#${Number.isFinite(entry.seq) ? entry.seq : entry.order}`
-    }));
-  }
-
-  // src/participant-profile/configure.js
-  function arrayify7(value) {
-    if (value === void 0 || value === null || value === "") return [];
-    return Array.isArray(value) ? value : [value];
-  }
-  function fieldSpec7(value, fallbackLabel) {
-    if (typeof value === "string") return { value_col: value, label: fallbackLabel || value };
-    return { ...value, value_col: value.value_col, label: value.label || value.value_col };
-  }
-  var MEASURE_COLORS = [
-    "#e41a1c",
-    "#377eb8",
-    "#4daf4a",
-    "#984ea3",
-    "#ff7f00",
-    "#a65628",
-    "#f781bf",
-    "#00838f"
-  ];
-  var DEFAULT_SETTINGS8 = {
-    id_col: "USUBJID",
-    measure_col: "TEST",
-    value_col: "STRESN",
-    unit_col: "STRESU",
-    normal_col_high: "STNRHI",
-    normal_col_low: "STNRLO",
-    studyday_col: "DY",
-    visit_col: "VISIT",
-    visitn_col: "VISITNUM",
-    baseline_col: null,
-    baseline_value: "Y",
-    details: [],
-    measure_values: {
-      ALT: "Aminotransferase, alanine (ALT)",
-      AST: "Aminotransferase, aspartate (AST)",
-      TB: "Total Bilirubin",
-      ALP: "Alkaline phosphatase (ALP)"
-    },
-    cuts: {
-      TB: { relative_uln: 2, relative_baseline: 4.8 },
-      ALP: { relative_uln: 1, relative_baseline: 3.8 },
-      defaults: { relative_uln: 3, relative_baseline: 3.8 }
-    },
-    display: "relative_uln",
-    display_options: [
-      { value: "relative_uln", label: "ULN adjusted" },
-      { value: "relative_baseline", label: "Baseline adjusted" }
-    ],
-    axis_type: "linear",
-    measureBounds: [0.01, 0.99],
-    participantProfileURL: null,
-    p_alt_col: null,
-    listing: false,
-    listing_cols: null,
-    listing_page_size: 10,
-    listen_to: null,
-    on_clear: null,
-    on_step: null,
-    filters: [],
-    groups: [],
-    width: "100%",
-    height: 300
-  };
-  function syncSettings8(settings = {}) {
-    const synced = { ...DEFAULT_SETTINGS8, ...settings };
-    synced.details = arrayify7(synced.details).map((value) => fieldSpec7(value)).filter((d) => d.value_col);
-    synced.filters = arrayify7(synced.filters).map((value) => fieldSpec7(value)).filter((d) => d.value_col);
-    synced.groups = arrayify7(synced.groups).map((value) => fieldSpec7(value)).filter((d) => d.value_col);
-    synced.listing_cols = synced.listing_cols === void 0 || synced.listing_cols === null ? null : arrayify7(synced.listing_cols).map((value) => fieldSpec7(value)).filter((d) => d.value_col);
-    synced.measure_values = {
-      ...DEFAULT_SETTINGS8.measure_values,
-      ...settings.measure_values || {}
-    };
-    const cutKeys = /* @__PURE__ */ new Set([
-      ...Object.keys(DEFAULT_SETTINGS8.cuts),
-      ...Object.keys(settings.cuts || {})
-    ]);
-    const mergedCuts = {};
-    cutKeys.forEach((key) => {
-      mergedCuts[key] = {
-        ...DEFAULT_SETTINGS8.cuts[key] || {},
-        ...(settings.cuts || {})[key] || {}
-      };
-    });
-    synced.cuts = mergedCuts;
-    const bounds = arrayify7(synced.measureBounds).map(Number).filter(Number.isFinite);
-    synced.measureBounds = bounds.length === 2 ? bounds : [...DEFAULT_SETTINGS8.measureBounds];
-    synced.axis_type = synced.axis_type === "log" ? "log" : "linear";
-    return synced;
-  }
-  function templateProfileURL(url, id) {
-    if (url === void 0 || url === null || url === "") return null;
-    return String(url).replace(/\{id\}/g, encodeURIComponent(String(id)));
-  }
-  function measureColorScale(keys) {
-    const scale = /* @__PURE__ */ new Map();
-    keys.forEach((key, index) => {
-      scale.set(key, MEASURE_COLORS[index % MEASURE_COLORS.length]);
-    });
-    return scale;
-  }
-
-  // src/participant-profile/checkInputs.js
-  var REQUIRED_COLUMN_SETTINGS8 = ["id_col", "measure_col", "value_col", "normal_col_high"];
-  function checkInputs8(data, settings) {
-    const rows = Array.isArray(data) ? data : [];
-    const missing = REQUIRED_COLUMN_SETTINGS8.map((key) => settings[key]).filter(
-      (col) => !rows.some((row) => row[col] !== void 0)
-    );
-    if (missing.length) {
-      throw new Error(`Required variable(s) missing: ${missing.join(", ")}`);
-    }
   }
 
   // src/hep-core/quadrants.js
@@ -19441,7 +15603,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       ...settings.groups.map((group) => group.value_col),
       ...settings.filters.map((filter) => filter.value_col),
       armCol
-    ].filter((col, index, all) => col && col !== GROUP_NONE2 && all.indexOf(col) === index);
+    ].filter((col, index, all) => col && col !== GROUP_NONE && all.indexOf(col) === index);
     const jaundiceULN = Number.isFinite(Number(settings.jaundice_uln)) ? Number(settings.jaundice_uln) : DEFAULT_JAUNDICE_ULN;
     const baselineTbMax = Number.isFinite(Number(settings.baseline_tb_max)) ? Number(settings.baseline_tb_max) : DEFAULT_BASELINE_TB_MAX;
     const byId = /* @__PURE__ */ new Map();
@@ -19552,7 +15714,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
   function populationExtent(cleanRows, measureValue, settings) {
     const values = cleanRows.filter((row) => row[settings.measure_col] === measureValue).map((row) => row.__hep_value).filter(Number.isFinite);
     const [lo, hi] = settings.measureBounds;
-    return [quantile4(values, lo), quantile4(values, hi)];
+    return [quantile2(values, lo), quantile2(values, hi)];
   }
   function buildProfileModel(cleanRows, id, settings, state) {
     const display = state && state.display === "relative_baseline" ? "relative_baseline" : "relative_uln";
@@ -19620,7 +15782,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
         color: colors2.get(measure.key),
         n: values.length,
         min: values.length ? Math.min(...values) : NaN,
-        median: values.length ? median2(values) : NaN,
+        median: values.length ? median(values) : NaN,
         max: values.length ? Math.max(...values) : NaN,
         populationExtent: populationExtent(cleanRows, measure.label, settings),
         spark
@@ -19951,9 +16113,9 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
   var SPARK_WIDTH = 100;
   var SPARK_HEIGHT = 25;
   var SPARK_OFFSET = 4;
-  var SVG_NS2 = "http://www.w3.org/2000/svg";
+  var SVG_NS = "http://www.w3.org/2000/svg";
   function svgElement(tag, attrs) {
-    const element = document.createElementNS(SVG_NS2, tag);
+    const element = document.createElementNS(SVG_NS, tag);
     Object.entries(attrs).forEach(([name, value]) => element.setAttribute(name, String(value)));
     return element;
   }
@@ -20419,7 +16581,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       this.mode = mode;
       this.element = typeof element === "string" ? document.querySelector(element) : element;
       if (!this.element) throw new Error(`Safety Participant Profile target not found: ${element}`);
-      this.settings = syncSettings8(settings);
+      this.settings = syncSettings4(settings);
       this.rawData = [];
       this.cleanRows = [];
       this.removedRecords = 0;
@@ -20525,7 +16687,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
      */
     applySettings(settings) {
       if ("display" in settings) this.state.display = settings.display;
-      this.settings = syncSettings8({ ...this.settings, ...settings });
+      this.settings = syncSettings4({ ...this.settings, ...settings });
       return this;
     }
     /**
@@ -20548,12 +16710,12 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
      */
     validateAndCleanData() {
       try {
-        checkInputs8(this.rawData, this.settings);
+        checkInputs4(this.rawData, this.settings);
       } catch (error) {
         this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
         throw error;
       }
-      const { rows, removed } = cleanData6(this.rawData, this.settings);
+      const { rows, removed } = cleanData3(this.rawData, this.settings);
       deriveBaseline(rows, this.settings);
       this.cleanRows = rows;
       this.removedRecords = removed;
@@ -20854,6 +17016,3935 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
   }
   function profileDock(container, settings = {}) {
     return new SafetyParticipantProfile(container, settings, { mode: "dock" });
+  }
+
+  // src/profile-host.js
+  function buildProfileRows(rawData, mapping) {
+    const { rows } = cleanData3(Array.isArray(rawData) ? rawData : [], mapping);
+    assignSequence(rows, mapping);
+    deriveBaseline(rows, mapping);
+    return rows;
+  }
+  function mountProfileDock(host, settingsFn) {
+    if (!host.settings.profile || host.profile) return;
+    host.profile = profileDock(host.profileWrap, settingsFn());
+    host.profileFeed = (event) => {
+      const data = event && event.detail ? event.detail.data : null;
+      const ids = (Array.isArray(data) ? data : []).map(String);
+      const key = ids.join("\0");
+      if (key === host.profileKey) return;
+      host.profileKey = key;
+      if (!ids.length) {
+        host.profile.clear();
+        return;
+      }
+      host.profile.show(ids, host.profileRows);
+    };
+    host.root.addEventListener("participantsSelected", host.profileFeed);
+  }
+  function unmountProfileDock(host) {
+    if (!host.profile) return;
+    host.root.removeEventListener("participantsSelected", host.profileFeed);
+    host.profileFeed = null;
+    host.profile.destroy();
+    host.profile = null;
+    host.profileKey = null;
+  }
+  function syncProfileDock(host, settingsFn) {
+    if (!host.settings.profile) {
+      unmountProfileDock(host);
+      return;
+    }
+    if (!host.profile) {
+      mountProfileDock(host, settingsFn);
+      return;
+    }
+    host.profileKey = null;
+    host.profile.cleanRows = host.profileRows;
+    host.profile.setSettings(settingsFn());
+  }
+  function resetProfileDock(host) {
+    host.profileKey = null;
+    if (host.profile) host.profile.clear();
+  }
+
+  // src/delta-delta.js
+  Chart.register(ScatterController, PointElement, LinearScale, plugin_tooltip);
+  var SafetyDeltaDelta = class {
+    constructor(element = "body", settings = {}) {
+      this.element = typeof element === "string" ? document.querySelector(element) : element;
+      if (!this.element) throw new Error(`Safety Delta-Delta target not found: ${element}`);
+      this.settings = syncSettings3(settings);
+      this.rawData = [];
+      this.cleanRows = [];
+      this.removedRecords = 0;
+      this.measures = [];
+      this.visits = [];
+      this.participants = [];
+      this.filteredParticipants = [];
+      this.points = [];
+      this.regression = null;
+      this.charts = [];
+      this.chart = null;
+      this.participantsSelected = [];
+      this.profile = null;
+      this.profileFeed = null;
+      this.profileKey = null;
+      this.profileRows = [];
+      this.state = {
+        measureX: this.settings.measure_x,
+        measureY: this.settings.measure_y,
+        baseline: [...this.settings.baseline_visits],
+        comparison: [...this.settings.comparison_visits],
+        filters: {},
+        addRegressionLine: this.settings.add_regression_line,
+        selectedId: null
+      };
+      this.renderShell();
+      mountProfileDock(this, () => this.profileSettings());
+    }
+    /**
+     * The settings handed to the docked participant-profile module (#99,
+     * PPRF-DD-002): the shared long-lab column mappings pass through verbatim;
+     * `details` come from profile_details, falling back to the host `details`
+     * minus the participant id (the profile header already shows it); and the
+     * two outbound callbacks wire Clear to the host's own clear path and
+     * stepper navigation to transient border emphasis (no dispatch).
+     * @private
+     */
+    profileSettings() {
+      const settings = this.settings;
+      const profileSettings = {
+        id_col: settings.id_col,
+        measure_col: settings.measure_col,
+        value_col: settings.value_col,
+        unit_col: settings.unit_col,
+        normal_col_high: settings.normal_col_high,
+        normal_col_low: settings.normal_col_low,
+        studyday_col: settings.studyday_col,
+        visit_col: settings.visit_col,
+        visitn_col: settings.visitn_col,
+        details: settings.profile_details && settings.profile_details.length ? settings.profile_details : (settings.details || []).filter((detail) => detail.value_col !== settings.id_col),
+        participantProfileURL: settings.participantProfileURL ?? null,
+        on_clear: () => this.clearSelection(),
+        on_step: (id) => this.emphasizeParticipant(id)
+      };
+      if (settings.measure_values) profileSettings.measure_values = settings.measure_values;
+      return profileSettings;
+    }
+    /**
+     * Transient chart emphasis for the profile stepper (PPRF-11): border-
+     * highlight the stepped participant's point without touching the selection
+     * state and without dispatching — the host selection still belongs to the
+     * click gesture.
+     * @private
+     */
+    emphasizeParticipant(id) {
+      if (!this.chart) return;
+      const index = this.points.findIndex((point) => String(point.id) === String(id));
+      const borders = selectionBorders(this.points.length, index);
+      const dataset = this.chart.data.datasets[0];
+      dataset.pointBorderColor = borders.colors;
+      dataset.pointBorderWidth = borders.widths;
+      this.chart.update();
+    }
+    /**
+     * Build the static DOM shell the chart and measure table render into.
+     * @private
+     */
+    renderShell() {
+      Object.assign(
+        this,
+        renderShell(this.element, {
+          moduleClass: "safety-delta-delta",
+          onToggle: () => this.resize()
+        })
+      );
+      this.footnote.textContent = "Click a point to see details.";
+    }
+    /**
+     * Load data and render: an alias for setData that keeps the two-step
+     * create-then-init call shape working.
+     * @param {Object[]} data Long-format result records matching the delta-delta data contract.
+     * @returns {SafetyDeltaDelta} The instance, for chaining.
+     */
+    init(data) {
+      this.setData(data);
+      return this;
+    }
+    /**
+     * Replace the bound data and re-render. The data is validated against the
+     * settings mapping (throwing, and rendering the message into the target
+     * element, when required columns are missing), rows with missing or
+     * non-numeric results are removed with a console warning, and the controls
+     * are rebuilt from the new data's measures and visits.
+     * @param {Object[]} data Long-format result records matching the delta-delta data contract.
+     * @returns {SafetyDeltaDelta} The instance, for chaining.
+     */
+    setData(data) {
+      this.rawData = Array.isArray(data) ? data : [];
+      this.validateAndCleanData();
+      this.buildProfileRows();
+      this.buildControls();
+      this.render();
+      return this;
+    }
+    /**
+     * Derive the docked profile's pre-cleaned rows ONCE per data/settings change
+     * (#99, PPRF-DD-002) — never per gesture. The underlying rows are standard
+     * long labs: the baseline-vs-comparison delta is NOT re-encoded — the
+     * profile shows the full series, which is the supersession story (PPRF-12).
+     * @private
+     */
+    buildProfileRows() {
+      this.profileRows = this.settings.profile ? buildProfileRows(this.rawData, this.profileSettings()) : [];
+    }
+    /**
+     * Merge setting overrides onto the current settings, adopt any provided
+     * measure/visit/regression selections into the control state, re-normalize
+     * the settings, rebuild the controls, and re-render.
+     * @param {DeltaDeltaSettings} settings Setting overrides to merge.
+     * @returns {SafetyDeltaDelta} The instance, for chaining.
+     */
+    setSettings(settings) {
+      if ("measure_x" in settings) this.state.measureX = settings.measure_x;
+      if ("measure_y" in settings) this.state.measureY = settings.measure_y;
+      if ("baseline_visits" in settings) this.state.baseline = arrayify3(settings.baseline_visits);
+      if ("comparison_visits" in settings)
+        this.state.comparison = arrayify3(settings.comparison_visits);
+      if ("add_regression_line" in settings)
+        this.state.addRegressionLine = settings.add_regression_line;
+      this.settings = syncSettings3({ ...this.settings, ...settings });
+      if (this.rawData.length) this.validateAndCleanData();
+      this.buildProfileRows();
+      syncProfileDock(this, () => this.profileSettings());
+      this.buildControls();
+      this.render();
+      return this;
+    }
+    /**
+     * Validate the raw data against the settings mapping, drop unusable rows,
+     * and refresh the measure/visit lists and their data-driven default
+     * selections.
+     * @private
+     */
+    validateAndCleanData() {
+      try {
+        checkInputs3(this.rawData, this.settings);
+      } catch (error) {
+        this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+        throw error;
+      }
+      let removed = 0;
+      const rows = this.rawData.map((row, index) => ({
+        ...row,
+        __dd_index: index,
+        __dd_value: Number(row[this.settings.value_col])
+      })).filter((row) => {
+        const keep = row[this.settings.value_col] !== "" && Number.isFinite(row.__dd_value);
+        if (!keep) removed += 1;
+        return keep;
+      });
+      this.cleanRows = rows;
+      this.removedRecords = removed;
+      if (removed)
+        console.warn(
+          `${removed} missing or non-numeric result${removed > 1 ? "s have" : " has"} been removed.`
+        );
+      this.measures = getMeasures(this.cleanRows, this.settings);
+      this.visits = getVisits(this.cleanRows, this.settings);
+      this.resolveStateDefaults();
+    }
+    /**
+     * Fill measure and visit selections from the data when they are unset or no
+     * longer valid: x → first measure, y → second measure, baseline → first
+     * visit, comparison → last visit (SDD-FUNC-001, SDD-FUNC-002).
+     * @private
+     */
+    resolveStateDefaults() {
+      const measures = this.measures;
+      const visits = this.visits;
+      if (!measures.includes(this.state.measureX)) this.state.measureX = measures[0] ?? null;
+      if (!measures.includes(this.state.measureY))
+        this.state.measureY = measures[1] ?? measures[0] ?? null;
+      const validBaseline = this.state.baseline.filter((visit) => visits.includes(visit));
+      this.state.baseline = validBaseline.length ? validBaseline : visits.length ? [visits[0]] : [];
+      const validComparison = this.state.comparison.filter((visit) => visits.includes(visit));
+      this.state.comparison = validComparison.length ? validComparison : visits.length ? [visits[visits.length - 1]] : [];
+    }
+    /**
+     * Rebuild the visit/measure/filter/display controls from data + state.
+     * @private
+     */
+    buildControls() {
+      this.controls.innerHTML = "";
+      const { addSection, addControl } = controlBuilders(this.controls);
+      const visitParent = addSection("Visits");
+      const baseline = addControl("Baseline visit(s)", document.createElement("select"), visitParent);
+      baseline.multiple = true;
+      baseline.size = Math.min(6, Math.max(3, this.visits.length));
+      this.visits.forEach(
+        (visit) => option(baseline, visit, visit, this.state.baseline.includes(visit))
+      );
+      baseline.onchange = () => {
+        this.state.baseline = [...baseline.selectedOptions].map((opt) => opt.value);
+        this.render();
+      };
+      const comparison = addControl(
+        "Comparison visit(s)",
+        document.createElement("select"),
+        visitParent
+      );
+      comparison.multiple = true;
+      comparison.size = Math.min(6, Math.max(3, this.visits.length));
+      this.visits.forEach(
+        (visit) => option(comparison, visit, visit, this.state.comparison.includes(visit))
+      );
+      comparison.onchange = () => {
+        this.state.comparison = [...comparison.selectedOptions].map((opt) => opt.value);
+        this.render();
+      };
+      const measureParent = addSection("Measures");
+      const measureX = addControl("X Measure", document.createElement("select"), measureParent);
+      this.measures.forEach(
+        (measure) => option(measureX, measure, measure, measure === this.state.measureX)
+      );
+      measureX.onchange = () => {
+        this.state.measureX = measureX.value;
+        this.render();
+      };
+      const measureY = addControl("Y Measure", document.createElement("select"), measureParent);
+      this.measures.forEach(
+        (measure) => option(measureY, measure, measure, measure === this.state.measureY)
+      );
+      measureY.onchange = () => {
+        this.state.measureY = measureY.value;
+        this.render();
+      };
+      const filterSpecs = this.settings.filters.filter((filter) => {
+        const exists = this.cleanRows.some((row) => row[filter.value_col] !== void 0);
+        if (!exists)
+          console.warn(
+            `The [ ${filter.label} ] filter has been removed because the variable does not exist.`
+          );
+        return exists;
+      });
+      if (filterSpecs.length) {
+        const filterParent = addSection("Filters");
+        filterSpecs.forEach((filter) => {
+          const select = addControl(filter.label, document.createElement("select"), filterParent);
+          option(select, "__all__", "All", !this.state.filters[filter.value_col]);
+          unique3(this.cleanRows.map((row) => row[filter.value_col])).sort().forEach(
+            (value) => option(select, value, value, this.state.filters[filter.value_col] === value)
+          );
+          select.onchange = () => {
+            this.state.filters[filter.value_col] = select.value === "__all__" ? null : select.value;
+            this.render();
+          };
+        });
+      }
+      const displayParent = addSection("Display");
+      const regression = document.createElement("input");
+      regression.type = "checkbox";
+      regression.checked = this.state.addRegressionLine;
+      regression.onchange = () => {
+        this.state.addRegressionLine = regression.checked;
+        this.render();
+      };
+      const inline = createElement("div", "sv-control-inline");
+      inline.append(regression, document.createTextNode("Show"));
+      addControl("Regression Line", inline, displayParent);
+    }
+    /**
+     * Cleaned rows for the current selection after the active filters, flattened
+     * to one plottable point per participant.
+     * @private
+     */
+    currentPoints() {
+      this.participants = buildParticipants(this.cleanRows, this.settings, this.state);
+      this.filteredParticipants = applyFilters3(this.participants, this.state.filters);
+      return plottablePoints(this.filteredParticipants);
+    }
+    /**
+     * Redraw everything from the current data, settings, and control state:
+     * destroys the live chart, clears any point selection and the docked
+     * profile, recomputes the per-participant points, and draws the scatter
+     * plus the participant-count and regression notes. Called automatically by
+     * the controls and the data/settings setters.
+     * @returns {void}
+     */
+    render() {
+      this.destroyCharts();
+      this.listingWrap.innerHTML = "";
+      this.multiplesWrap.innerHTML = "";
+      this.state.selectedId = null;
+      this.participantsSelected = [];
+      resetProfileDock(this);
+      this.regression = null;
+      this.footnote.textContent = "";
+      this.mainAnnotation.textContent = "Click a point to see details.";
+      this.points = this.currentPoints();
+      this.updateNotes();
+      if (!this.points.length) {
+        this.mainAnnotation.textContent = "No participants to plot for the current selection.";
+        return;
+      }
+      if (this.state.addRegressionLine) {
+        this.regression = linearRegression(this.points.map((p) => [p.delta_x, p.delta_y]));
+        if (this.regression)
+          this.footnote.textContent = `Dashed line: simple linear regression (${this.regression.string}), R\xB2 = ${formatNumber3(this.regression.r2)}.`;
+      }
+      this.drawScatter();
+    }
+    /**
+     * Refresh the shown/total participant counts and the removed-record note.
+     * @private
+     */
+    updateNotes() {
+      const total = unique3(this.cleanRows.map((row) => row[this.settings.id_col])).length;
+      const removedNote = this.removedRecords ? `<span class="sv-warning">${this.removedRecords} missing or non-numeric results removed.</span>` : "";
+      this.notes.innerHTML = `<span>${participantCountText(this.points.length, total)}</span>${removedNote}`;
+    }
+    /**
+     * Draw the Chart.js scatter with quadrant lines, tooltips, point selection,
+     * and the optional regression line.
+     * @private
+     */
+    drawScatter() {
+      const points = this.points;
+      const data = points.map((point) => ({ x: point.delta_x, y: point.delta_y }));
+      const xDomain = deltaDomain(points.map((point) => point.delta_x));
+      const yDomain = deltaDomain(points.map((point) => point.delta_y));
+      const borders = selectionBorders(points.length, -1);
+      const chart = new Chart(this.canvas.getContext("2d"), {
+        type: "scatter",
+        data: {
+          datasets: [
+            {
+              label: "Participants",
+              data,
+              pointBackgroundColor: "rgba(37, 99, 235, 0.75)",
+              pointBorderColor: borders.colors,
+              pointBorderWidth: borders.widths,
+              pointRadius: 5,
+              pointHoverRadius: 7
+            }
+          ]
+        },
+        options: {
+          maintainAspectRatio: false,
+          responsive: true,
+          layout: { padding: 6 },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                title: () => "",
+                label: (ctx) => `Participant: ${points[ctx.dataIndex].id}`,
+                afterLabel: (ctx) => {
+                  const point = points[ctx.dataIndex];
+                  return `Change in ${this.state.measureX}: ${formatDelta(point.delta_x)}
+Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
+                }
+              }
+            }
+          },
+          scales: buildScales3(this.state.measureX, this.state.measureY, xDomain, yDomain),
+          onHover: (event, active) => {
+            const target = event?.native?.target;
+            if (target) target.style.cursor = active.length ? "pointer" : "default";
+          },
+          onClick: (event, active) => {
+            if (active.length) this.selectPoint(active[0].index);
+            else this.clearSelection();
+          }
+        },
+        plugins: [quadrantLinesPlugin(), regressionLinePlugin(this)]
+      });
+      chart.$ddPoints = points;
+      this.chart = chart;
+      this.charts.push(chart);
+    }
+    /**
+     * Select a scatter point: highlight it, note the participant, and dispatch
+     * the selection on the shell root — the docked participant profile is the
+     * detail view (SDD-REG-012/013 retargeted; #99, PPRF-DD-001/002).
+     * @private
+     */
+    selectPoint(index) {
+      const point = this.points[index];
+      if (!point) return;
+      this.state.selectedId = point.id;
+      const borders = selectionBorders(this.points.length, index);
+      const dataset = this.chart.data.datasets[0];
+      dataset.pointBorderColor = borders.colors;
+      dataset.pointBorderWidth = borders.widths;
+      this.chart.$ddSelectedIndex = index;
+      this.chart.update();
+      this.mainAnnotation.textContent = `Participant ${point.id} selected.`;
+      this.dispatchSelection([point.id]);
+    }
+    /**
+     * Clear the point selection (#99, PPRF-DD-003): restore the borders, reset
+     * the annotation, and dispatch the empty selection so the docked profile
+     * empties. Reached from an empty-canvas click and the dock's Clear
+     * affordance.
+     * @returns {void}
+     */
+    clearSelection() {
+      this.state.selectedId = null;
+      if (this.chart) {
+        const borders = selectionBorders(this.points.length, -1);
+        const dataset = this.chart.data.datasets[0];
+        dataset.pointBorderColor = borders.colors;
+        dataset.pointBorderWidth = borders.widths;
+        this.chart.$ddSelectedIndex = null;
+        this.chart.update();
+      }
+      this.mainAnnotation.textContent = "Click a point to see details.";
+      this.listingWrap.innerHTML = "";
+      this.dispatchSelection([]);
+    }
+    /**
+     * Dispatch the custom participantsSelected event on the shell root with the
+     * selected IDs — the house selection payload, closing this renderer's
+     * dispatch gap (#88 SELN-4; #99, PPRF-DD-001).
+     * @private
+     */
+    dispatchSelection(ids) {
+      this.participantsSelected = ids;
+      if (this.root) {
+        this.root.dispatchEvent(
+          new CustomEvent("participantsSelected", { detail: { data: ids }, bubbles: true })
+        );
+      }
+    }
+    /**
+     * Resize the live chart to its container. For host layouts that change the
+     * container size without a window resize — e.g. the R htmlwidget bindings.
+     * @returns {void}
+     */
+    resize() {
+      this.charts.forEach((chart) => chart.resize());
+    }
+    /**
+     * Destroy the live Chart.js instance without touching the shell.
+     * @private
+     */
+    destroyCharts() {
+      this.charts.forEach((chart) => chart.destroy());
+      this.charts = [];
+      this.chart = null;
+    }
+    /**
+     * Tear the delta-delta plot down: destroy the Chart.js instance and empty
+     * the target element. The instance cannot be reused afterwards — create a
+     * new one via the factory instead.
+     * @returns {void}
+     */
+    destroy() {
+      unmountProfileDock(this);
+      this.destroyCharts();
+      this.element.innerHTML = "";
+    }
+  };
+  function deltaDelta(element = "body", settings = {}) {
+    return new SafetyDeltaDelta(element, settings);
+  }
+
+  // src/results-over-time/configure.js
+  var DEFAULT_SETTINGS6 = {
+    id_col: "USUBJID",
+    measure_col: "TEST",
+    value_col: "STRESN",
+    unit_col: "STRESU",
+    time_col: "VISIT",
+    time_order_col: "VISITNUM",
+    time_label: "Visit",
+    filters: [],
+    groups: [],
+    start_value: null,
+    group_by: "srot_none",
+    boxplots: true,
+    outliers: true,
+    visits_without_data: false,
+    unscheduled_visits: false,
+    unscheduled_visit_pattern: "/unscheduled|early termination/i",
+    unscheduled_visit_values: null,
+    y_scale: "linear",
+    width: "100%",
+    height: 460
+  };
+  var Y_SCALES = ["linear", "log"];
+  function arrayify6(value) {
+    if (!value) return [];
+    return Array.isArray(value) ? value : [value];
+  }
+  function fieldSpec6(value, fallbackLabel) {
+    if (typeof value === "string") return { value_col: value, label: fallbackLabel || value };
+    return { value_col: value.value_col, label: value.label || value.value_col };
+  }
+  function syncSettings6(settings) {
+    const synced = { ...DEFAULT_SETTINGS6, ...settings };
+    synced.filters = arrayify6(synced.filters).map((value) => fieldSpec6(value)).filter((spec) => spec.value_col);
+    const defaultGroup = { value_col: "srot_none", label: "None" };
+    synced.groups = [
+      defaultGroup,
+      ...arrayify6(synced.groups).map((value) => fieldSpec6(value)).filter((spec) => spec.value_col)
+    ];
+    if (synced.group_by && !synced.groups.some((group) => group.value_col === synced.group_by)) {
+      synced.groups.push({ value_col: synced.group_by, label: synced.group_by });
+    }
+    synced.group_by = synced.groups.some((group) => group.value_col === synced.group_by) ? synced.group_by : synced.groups[0].value_col;
+    synced.y_scale = Y_SCALES.includes(synced.y_scale) ? synced.y_scale : "linear";
+    return synced;
+  }
+
+  // src/data/schema/results-over-time.json
+  var results_over_time_default = {
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    $id: "https://raw.githubusercontent.com/jwildfire/safety.viz/main/src/data/schema/results-over-time.json",
+    title: "safety.viz results-over-time data contract",
+    description: "Long-format results data with a visit dimension: one record per participant per visit per measure (SROT-DATA-001/002). Column names are supplied by the settings mapping; the renderer removes missing/non-numeric results with a reported count and degrades gracefully when optional columns are absent.",
+    type: "object",
+    required: ["data", "settings"],
+    properties: {
+      data: {
+        type: "array",
+        minItems: 1,
+        items: { type: "object" },
+        description: "d3.csv()-style records; every row carries the measure, result, and visit columns named in settings."
+      },
+      settings: {
+        type: "object",
+        description: "Column mappings and rendering options; merged onto the module's DEFAULT_SETTINGS, so only overrides need to be supplied.",
+        required: ["measure_col", "value_col", "time_col"],
+        properties: {
+          measure_col: {
+            type: "string",
+            default: "TEST",
+            description: "Column holding the measure name; required in data."
+          },
+          value_col: {
+            type: "string",
+            default: "STRESN",
+            description: "Column holding the numeric result; required in data."
+          },
+          time_col: {
+            type: "string",
+            default: "VISIT",
+            description: "Column holding the visit name; required in data. Distinct visits become the x-axis categories."
+          },
+          time_order_col: {
+            type: "string",
+            default: "VISITNUM",
+            description: "Optional numeric column ordering the visits; falls back to alphanumeric order when absent."
+          },
+          id_col: {
+            type: "string",
+            default: "USUBJID",
+            description: "Optional participant identifier column driving the participant counts."
+          },
+          unit_col: {
+            type: "string",
+            default: "STRESU",
+            description: "Optional unit column, appended to measure labels and the y-axis title."
+          },
+          filters: {
+            $ref: "#/$defs/fieldList",
+            description: "Optional filter columns rendered as controls."
+          },
+          groups: {
+            $ref: "#/$defs/fieldList",
+            description: "Optional group-by columns that split each visit into side-by-side box plots."
+          }
+        }
+      }
+    },
+    $defs: {
+      fieldList: {
+        type: "array",
+        items: {
+          anyOf: [
+            { type: "string" },
+            {
+              type: "object",
+              required: ["value_col"],
+              properties: {
+                value_col: { type: "string" },
+                label: { type: "string" }
+              }
+            }
+          ]
+        }
+      }
+    }
+  };
+
+  // src/results-over-time/checkInputs.js
+  var REQUIRED_COLUMN_SETTINGS5 = results_over_time_default.properties.settings.required;
+  function checkInputs5(data, settings) {
+    const rows = Array.isArray(data) ? data : [];
+    const missing = REQUIRED_COLUMN_SETTINGS5.map((key) => settings[key]).filter(
+      (col) => !rows.some((row) => row[col] !== void 0)
+    );
+    if (missing.length) {
+      throw new Error(`Required variable(s) missing: ${missing.join(", ")}`);
+    }
+  }
+
+  // src/results-over-time/structureData.js
+  function unique4(values) {
+    return [
+      ...new Set(values.filter((value) => value !== void 0 && value !== null && value !== ""))
+    ];
+  }
+  function quantile3(values, p) {
+    if (!values.length) return NaN;
+    const sorted = [...values].sort((a, b) => a - b);
+    const idx = (sorted.length - 1) * p;
+    const lo = Math.floor(idx);
+    const hi = Math.ceil(idx);
+    if (lo === hi) return sorted[lo];
+    return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
+  }
+  function mean5(values) {
+    return values.reduce((sum, value) => sum + value, 0) / values.length;
+  }
+  function sd2(values) {
+    if (values.length < 2) return Number.NaN;
+    const m = mean5(values);
+    return Math.sqrt(
+      values.reduce((sum, value) => sum + Math.pow(value - m, 2), 0) / (values.length - 1)
+    );
+  }
+  function cleanData4(rawData, settings) {
+    let removed = 0;
+    const rows = rawData.map((row, index) => ({
+      ...row,
+      __srot_index: index,
+      __srot_value: Number(row[settings.value_col])
+    })).filter((row) => {
+      const keep = row[settings.value_col] !== "" && Number.isFinite(row.__srot_value);
+      if (!keep) removed += 1;
+      return keep;
+    });
+    return { rows, removed };
+  }
+  function measureLabel3(row, settings) {
+    const measure = row[settings.measure_col];
+    const unit = settings.unit_col ? row[settings.unit_col] : null;
+    return unit ? `${measure} (${unit})` : measure;
+  }
+  function applyFilters4(rows, filters) {
+    return rows.filter(
+      (row) => Object.entries(filters).every(([key, value]) => !value || String(row[key]) === String(value))
+    );
+  }
+  function computeVisitOrder(rows, settings) {
+    const timeCol = settings.time_col;
+    const orderCol = settings.time_order_col;
+    const hasOrder = orderCol && rows.some((row) => row[orderCol] !== void 0 && row[orderCol] !== "");
+    if (hasOrder) {
+      const keyed = unique4(rows.map((row) => `${row[orderCol]}|${row[timeCol]}`));
+      return keyed.sort((a, b) => {
+        const diff = Number(a.split("|")[0]) - Number(b.split("|")[0]);
+        return diff || a.localeCompare(b);
+      }).map((entry) => entry.split("|").slice(1).join("|"));
+    }
+    return unique4(rows.map((row) => row[timeCol])).sort();
+  }
+  function summarize(values) {
+    const sorted = [...values].sort((a, b) => a - b);
+    return {
+      n: sorted.length,
+      min: sorted[0],
+      q5: quantile3(sorted, 0.05),
+      q25: quantile3(sorted, 0.25),
+      median: quantile3(sorted, 0.5),
+      q75: quantile3(sorted, 0.75),
+      q95: quantile3(sorted, 0.95),
+      max: sorted[sorted.length - 1],
+      mean: mean5(sorted),
+      deviation: sd2(sorted),
+      values: sorted
+    };
+  }
+  function groupKey(row, groupCol) {
+    if (!groupCol || groupCol === "srot_none") return "All";
+    return String(row[groupCol]);
+  }
+  function summarizeVisitGroups(rows, { timeCol, valueCol, groupCol }) {
+    const nested = {};
+    const buckets = /* @__PURE__ */ new Map();
+    for (const row of rows) {
+      const visit = row[timeCol];
+      const group = groupKey(row, groupCol);
+      const key = `${visit}\0${group}`;
+      if (!buckets.has(key)) buckets.set(key, { visit, group, values: [] });
+      buckets.get(key).values.push(Number(row[valueCol]));
+    }
+    for (const { visit, group, values } of buckets.values()) {
+      if (!nested[visit]) nested[visit] = {};
+      nested[visit][group] = summarize(values);
+    }
+    return nested;
+  }
+  function flagOutliers(rows, statsByVisitGroup, settings, groupCol) {
+    for (const row of rows) {
+      const visit = row[settings.time_col];
+      const group = groupKey(row, groupCol);
+      row.__srot_group = group;
+      const stats = (statsByVisitGroup[visit] || {})[group];
+      row.__srot_outlier = settings.outliers && stats ? row.__srot_value < stats.q5 || row.__srot_value > stats.q95 : false;
+    }
+    return rows;
+  }
+  function parseUnscheduledPattern(pattern) {
+    const match = /^\/(.*)\/([a-z]*)$/i.exec(String(pattern));
+    return match ? new RegExp(match[1], match[2]) : new RegExp(String(pattern));
+  }
+  function isUnscheduledVisit(visit, settings) {
+    if (Array.isArray(settings.unscheduled_visit_values)) {
+      return settings.unscheduled_visit_values.map(String).includes(String(visit));
+    }
+    if (settings.unscheduled_visit_pattern) {
+      return parseUnscheduledPattern(settings.unscheduled_visit_pattern).test(String(visit));
+    }
+    return false;
+  }
+
+  // src/results-over-time/getScales.js
+  function formatFixed(value, digits) {
+    if (!Number.isFinite(value)) return "NA";
+    return value.toFixed(Math.max(0, Math.min(20, digits)));
+  }
+  function normalizeDomain2(state) {
+    if (Number.isFinite(state.lower) && Number.isFinite(state.upper) && state.lower >= state.upper) {
+      const tmp = state.lower;
+      state.lower = state.upper;
+      state.upper = tmp;
+    }
+  }
+  function resolveYDomain(values, lower, upper) {
+    const extent = [Math.min(...values), Math.max(...values)];
+    return [lower == null ? extent[0] : lower, upper == null ? extent[1] : upper];
+  }
+  function yPrecision(domain) {
+    const range = domain[1] - domain[0];
+    const log10range = Math.log10(range);
+    const roundedLog10range = Math.round(log10range);
+    const precision1 = -1 * (roundedLog10range - 1);
+    const precision2 = log10range > 0.5 ? 0 : Math.max(0, precision1);
+    return { precision: precision2, range, log10range };
+  }
+  function statPrecisions(basePrecision) {
+    const base = Math.max(0, basePrecision);
+    return { p0: base, p1: base + 1, p2: base + 2 };
+  }
+
+  // src/box-whisker.js
+  function hexToRgba(hex2, alpha2) {
+    const value = hex2.replace("#", "");
+    const r = parseInt(value.slice(0, 2), 16);
+    const g = parseInt(value.slice(2, 4), 16);
+    const b = parseInt(value.slice(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha2})`;
+  }
+  function drawBoxWhisker(ctx, { scales, chartArea }, specs) {
+    const yOf = (value) => scales.y.getPixelForValue(value);
+    ctx.save();
+    for (const box of specs) {
+      const { stats, color: color2 } = box;
+      if (!stats || !stats.n) continue;
+      const centerX = scales.x.getPixelForValue(box.x);
+      const left = scales.x.getPixelForValue(box.x - box.halfWidth);
+      const right = scales.x.getPixelForValue(box.x + box.halfWidth);
+      const clamp = (y) => Math.max(chartArea.top, Math.min(chartArea.bottom, y));
+      ctx.fillStyle = hexToRgba(color2, 0.35);
+      ctx.strokeStyle = color2;
+      ctx.lineWidth = 1.5;
+      const top = clamp(yOf(stats.q75));
+      const bottom = clamp(yOf(stats.q25));
+      ctx.fillRect(left, top, right - left, bottom - top);
+      ctx.strokeRect(left, top, right - left, bottom - top);
+      ctx.beginPath();
+      ctx.moveTo(centerX, clamp(yOf(stats.q5)));
+      ctx.lineTo(centerX, bottom);
+      ctx.moveTo(centerX, top);
+      ctx.lineTo(centerX, clamp(yOf(stats.q95)));
+      ctx.moveTo(left, clamp(yOf(stats.q5)));
+      ctx.lineTo(right, clamp(yOf(stats.q5)));
+      ctx.moveTo(left, clamp(yOf(stats.q95)));
+      ctx.lineTo(right, clamp(yOf(stats.q95)));
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.lineWidth = 2;
+      ctx.moveTo(left, clamp(yOf(stats.median)));
+      ctx.lineTo(right, clamp(yOf(stats.median)));
+      ctx.stroke();
+      const meanY = clamp(yOf(stats.mean));
+      const radius = Math.min((right - left) / 6, 6);
+      ctx.beginPath();
+      ctx.fillStyle = "#eee";
+      ctx.arc(centerX, meanY, radius, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.fillStyle = color2;
+      ctx.arc(centerX, meanY, radius / 2, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+  function boxWhiskerPlugin(idPrefix, getSpecs) {
+    return {
+      id: `${idPrefix}-boxwhisker-${Math.random().toString(36).slice(2)}`,
+      afterDatasetsDraw(chart) {
+        const specs = getSpecs() || [];
+        if (!specs.length) return;
+        drawBoxWhisker(chart.ctx, chart, specs);
+      }
+    };
+  }
+
+  // src/results-over-time/getPlugins.js
+  var PALETTE = [
+    "#2563eb",
+    "#059669",
+    "#d97706",
+    "#9333ea",
+    "#dc2626",
+    "#0891b2",
+    "#65a30d",
+    "#db2777",
+    "#4b5563",
+    "#ca8a04"
+  ];
+  function groupColors(groups) {
+    return Object.fromEntries(groups.map((group, index) => [group, PALETTE[index % PALETTE.length]]));
+  }
+  function summaryTooltip(group, visit, stats, { p0, p1, p2 }) {
+    return [
+      `${group} at ${visit}:`,
+      `N = ${stats.n}`,
+      `Min = ${formatFixed(stats.min, p0)}`,
+      `5th % = ${formatFixed(stats.q5, p1)}`,
+      `Q1 = ${formatFixed(stats.q25, p1)}`,
+      `Median = ${formatFixed(stats.median, p1)}`,
+      `Q3 = ${formatFixed(stats.q75, p1)}`,
+      `95th % = ${formatFixed(stats.q95, p1)}`,
+      `Max = ${formatFixed(stats.max, p0)}`,
+      `Mean = ${formatFixed(stats.mean, p1)}`,
+      `StDev = ${formatFixed(stats.deviation, p2)}`
+    ].join("\n");
+  }
+  function outlierTooltip(row, settings, { p1 }) {
+    return `${row[settings.id_col]}: ${formatFixed(row.__srot_value, p1)}`;
+  }
+  function boxWhiskerPlugin2(instance) {
+    return boxWhiskerPlugin(
+      "srot",
+      () => instance.state.boxplots ? instance.boxSpecs || [] : []
+    );
+  }
+
+  // src/results-over-time.js
+  Chart.register(
+    ScatterController,
+    PointElement,
+    LineElement,
+    LinearScale,
+    LogarithmicScale,
+    plugin_tooltip,
+    plugin_legend
+  );
+  var BAND = 0.8;
+  var SafetyResultsOverTime = class {
+    constructor(element = "body", settings = {}) {
+      this.element = typeof element === "string" ? document.querySelector(element) : element;
+      if (!this.element) throw new Error(`Safety Results Over Time target not found: ${element}`);
+      this.settings = syncSettings6(settings);
+      this.rawData = [];
+      this.cleanData = [];
+      this.filteredData = [];
+      this.charts = [];
+      this.boxSpecs = [];
+      this.state = {
+        measure: this.settings.start_value,
+        filters: {},
+        groupBy: this.settings.group_by,
+        lower: null,
+        upper: null,
+        yScale: this.settings.y_scale,
+        boxplots: this.settings.boxplots,
+        outliers: this.settings.outliers,
+        visitsWithoutData: this.settings.visits_without_data,
+        unscheduledVisits: this.settings.unscheduled_visits
+      };
+      this.renderShell();
+    }
+    /**
+     * Build the static DOM shell the chart renders into.
+     * @private
+     */
+    renderShell() {
+      Object.assign(
+        this,
+        renderShell(this.element, {
+          moduleClass: "safety-results-over-time",
+          onToggle: () => this.resize()
+        })
+      );
+      this.footnote.textContent = "Hover over a box or outlier point for details.";
+    }
+    /**
+     * Load data and render: an alias for setData that keeps the two-step
+     * create-then-init call shape working.
+     * @param {Object[]} data Long-format result records matching the results-over-time data contract.
+     * @returns {SafetyResultsOverTime} The instance, for chaining.
+     */
+    init(data) {
+      this.setData(data);
+      return this;
+    }
+    /**
+     * Replace the bound data and re-render. The data is validated against the
+     * settings mapping (throwing, and rendering the message into the target
+     * element, when required columns are missing), rows with missing or
+     * non-numeric results are removed with a console warning, and the controls
+     * are rebuilt from the new data's measures and filter values.
+     * @param {Object[]} data Long-format result records matching the results-over-time data contract.
+     * @returns {SafetyResultsOverTime} The instance, for chaining.
+     */
+    setData(data) {
+      this.rawData = Array.isArray(data) ? data : [];
+      this.validateAndCleanData();
+      this.buildControls();
+      this.render();
+      return this;
+    }
+    /**
+     * Merge setting overrides onto the current settings, re-normalize them (same
+     * rules as the factory), rebuild the controls, and re-render.
+     * @param {ResultsOverTimeSettings} settings Setting overrides to merge.
+     * @returns {SafetyResultsOverTime} The instance, for chaining.
+     */
+    setSettings(settings) {
+      this.settings = syncSettings6({ ...this.settings, ...settings });
+      this.state.groupBy = this.settings.group_by;
+      this.state.yScale = this.settings.y_scale;
+      this.state.boxplots = this.settings.boxplots;
+      this.state.outliers = this.settings.outliers;
+      this.state.visitsWithoutData = this.settings.visits_without_data;
+      this.state.unscheduledVisits = this.settings.unscheduled_visits;
+      if (settings.start_value !== void 0) this.state.measure = this.settings.start_value;
+      this.validateAndCleanData();
+      this.buildControls();
+      this.render();
+      return this;
+    }
+    /**
+     * Validate the raw data against the settings mapping, drop unusable rows,
+     * and cache the study-wide visit order.
+     * @private
+     */
+    validateAndCleanData() {
+      try {
+        checkInputs5(this.rawData, this.settings);
+      } catch (error) {
+        this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+        throw error;
+      }
+      const { rows, removed } = cleanData4(this.rawData, this.settings);
+      this.cleanData = rows;
+      this.removedRecords = removed;
+      if (removed) console.warn(`${removed} missing or non-numeric results have been removed.`);
+      this.allVisits = computeVisitOrder(this.cleanData, this.settings);
+      const measures = this.measures();
+      if (this.state.measure && !measures.includes(this.state.measure)) {
+        console.warn(
+          `The initial measure [${this.state.measure}] does not exist. Defaulting to the first measure.`
+        );
+      }
+      this.state.measure = measures.includes(this.state.measure) ? this.state.measure : measures[0];
+    }
+    /**
+     * Sorted distinct measure labels present in the cleaned data.
+     * @private
+     */
+    measures() {
+      return unique4(this.cleanData.map((row) => measureLabel3(row, this.settings))).sort();
+    }
+    /**
+     * Cleaned rows for the selected measure.
+     * @private
+     */
+    currentMeasureData() {
+      return this.cleanData.filter((row) => measureLabel3(row, this.settings) === this.state.measure);
+    }
+    /**
+     * The active grouping column, or null when grouping is disabled.
+     * @private
+     */
+    groupingColumn() {
+      return this.state.groupBy && this.state.groupBy !== "srot_none" ? this.state.groupBy : null;
+    }
+    /**
+     * Rebuild the measure/group/filter/limit/scale/display controls from data
+     * and state.
+     * @private
+     */
+    buildControls() {
+      this.controls.innerHTML = "";
+      const { addSection, addRow, addControl } = controlBuilders(this.controls);
+      const measure = addControl("Measure", document.createElement("select"));
+      this.measures().forEach((value) => option(measure, value, value, value === this.state.measure));
+      measure.onchange = () => {
+        this.state.measure = measure.value;
+        this.resetLimits(false);
+        this.render();
+      };
+      const group = addControl("Group by", document.createElement("select"));
+      this.settings.groups.forEach(
+        (spec) => option(group, spec.value_col, spec.label, spec.value_col === this.state.groupBy)
+      );
+      group.onchange = () => {
+        this.state.groupBy = group.value;
+        this.render();
+      };
+      const filterSpecs = this.settings.filters.filter((filter) => {
+        const exists = this.cleanData.some((row) => row[filter.value_col] !== void 0);
+        if (!exists)
+          console.warn(
+            `The [ ${filter.label} ] filter has been removed because the variable does not exist.`
+          );
+        return exists;
+      });
+      const filterParent = filterSpecs.length ? addSection("Filters") : this.controls;
+      filterSpecs.forEach((filter) => {
+        const select = addControl(filter.label, document.createElement("select"), filterParent);
+        option(select, "__all__", "All", !this.state.filters[filter.value_col]);
+        unique4(this.cleanData.map((row) => row[filter.value_col])).sort().forEach(
+          (value) => option(select, value, value, this.state.filters[filter.value_col] === value)
+        );
+        select.onchange = () => {
+          this.state.filters[filter.value_col] = select.value === "__all__" ? null : select.value;
+          this.render();
+        };
+      });
+      const yParent = addSection("Y-axis Limits");
+      const yRow = addRow(yParent);
+      this.lowerInput = addControl("Lower", document.createElement("input"), yRow);
+      this.lowerInput.type = "number";
+      this.lowerInput.step = "any";
+      this.lowerInput.value = this.state.lower == null ? "" : this.state.lower;
+      this.lowerInput.onchange = () => this.onLimitChange();
+      this.upperInput = addControl("Upper", document.createElement("input"), yRow);
+      this.upperInput.type = "number";
+      this.upperInput.step = "any";
+      this.upperInput.value = this.state.upper == null ? "" : this.state.upper;
+      this.upperInput.onchange = () => this.onLimitChange();
+      const reset = createElement("button", "sv-reset-limits", "Reset Limits");
+      reset.type = "button";
+      reset.onclick = () => this.resetLimits(true);
+      const resetWrap = createElement("div", "sv-control");
+      resetWrap.append(reset);
+      yParent.append(resetWrap);
+      const scale = addControl("Scale", document.createElement("select"), yParent);
+      Y_SCALES.forEach((value) => option(scale, value, value, value === this.state.yScale));
+      scale.onchange = () => {
+        this.state.yScale = scale.value;
+        this.render();
+      };
+      const displayParent = addSection("Display");
+      this.addToggle(displayParent, addControl, "Box plots", "boxplots");
+      this.addToggle(displayParent, addControl, "Outliers", "outliers");
+      this.addToggle(displayParent, addControl, "Visits without data", "visitsWithoutData");
+      this.addToggle(displayParent, addControl, "Unscheduled visits", "unscheduledVisits");
+    }
+    /**
+     * Add a labeled checkbox bound to a boolean state key.
+     * @private
+     */
+    addToggle(parent, addControl, label, stateKey) {
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = this.state[stateKey];
+      checkbox.onchange = () => {
+        this.state[stateKey] = checkbox.checked;
+        this.render();
+      };
+      const inline = createElement("div", "sv-control-inline");
+      inline.append(checkbox, document.createTextNode("Show"));
+      addControl(label, inline, parent);
+    }
+    /**
+     * Apply an edited y-limit: read the inputs, swap a crossed pair, reflect the
+     * normalized values back into the inputs, and re-render (SROT-REG-016/017).
+     * @private
+     */
+    onLimitChange() {
+      this.state.lower = this.lowerInput.value === "" ? null : Number(this.lowerInput.value);
+      this.state.upper = this.upperInput.value === "" ? null : Number(this.upperInput.value);
+      normalizeDomain2(this.state);
+      this.lowerInput.value = this.state.lower == null ? "" : this.state.lower;
+      this.upperInput.value = this.state.upper == null ? "" : this.state.upper;
+      this.render();
+    }
+    /**
+     * Clear the y-limit overrides back to the data extent (SROT-FUNC-005 /
+     * SROT-REG-020); optionally sync the inputs and re-render.
+     * @private
+     */
+    resetLimits(rerender) {
+      this.state.lower = null;
+      this.state.upper = null;
+      if (this.lowerInput) this.lowerInput.value = "";
+      if (this.upperInput) this.upperInput.value = "";
+      if (rerender) this.render();
+    }
+    /**
+     * The visits to display, in order: the study-wide visit order restricted to
+     * visits with data (unless "visits without data" is on) and to scheduled
+     * visits (unless "unscheduled visits" is on).
+     * @private
+     */
+    displayVisits(rowsWithData) {
+      const withData = new Set(rowsWithData.map((row) => row[this.settings.time_col]));
+      return this.allVisits.filter((visit) => {
+        if (!this.state.unscheduledVisits && isUnscheduledVisit(visit, this.settings)) return false;
+        if (!this.state.visitsWithoutData && !withData.has(visit)) return false;
+        return true;
+      });
+    }
+    /**
+     * Redraw everything from the current data, settings, and control state:
+     * destroys the live chart, recomputes the per-visit-group statistics and box
+     * specs, and draws the box-and-whisker plot with its outlier overlay.
+     * @returns {void}
+     */
+    render() {
+      this.destroyCharts();
+      this.notes.innerHTML = "";
+      this.footnote.textContent = "Hover over a box or outlier point for details.";
+      this.boxSpecs = [];
+      this.currentVisits = [];
+      this.currentGroups = [];
+      const measureData = this.currentMeasureData();
+      let filtered = applyFilters4(measureData, this.state.filters);
+      let nonPositive = 0;
+      if (this.state.yScale === "log") {
+        const positive = filtered.filter((row) => row.__srot_value > 0);
+        nonPositive = filtered.length - positive.length;
+        filtered = positive;
+      }
+      this.filteredData = filtered;
+      if (!filtered.length) {
+        this.footnote.textContent = "No records match the current filters.";
+        this.updateNotes(measureData, filtered, nonPositive);
+        return;
+      }
+      const grouping = this.groupingColumn();
+      const stats = summarizeVisitGroups(filtered, {
+        timeCol: this.settings.time_col,
+        valueCol: "__srot_value",
+        groupCol: grouping
+      });
+      flagOutliers(filtered, stats, { ...this.settings, outliers: this.state.outliers }, grouping);
+      const visits = this.displayVisits(filtered);
+      if (!visits.length) {
+        this.footnote.textContent = "No visits to display for the current settings.";
+        this.updateNotes(measureData, filtered, nonPositive);
+        return;
+      }
+      const groups = grouping ? unique4(filtered.map((row) => String(row[grouping]))).sort() : ["All"];
+      const colors2 = groupColors(groups);
+      const domain = this.resolveDomain(measureData);
+      const precisions = statPrecisions(yPrecision(domain).precision);
+      this.currentVisits = visits;
+      this.currentGroups = groups;
+      this.drawChart({ visits, groups, colors: colors2, stats, domain, precisions, grouping });
+      this.updateNotes(measureData, filtered, nonPositive);
+    }
+    /**
+     * The y-domain for the current render: the measure's data extent (positive
+     * only on a log scale) with either user limit applied.
+     * @private
+     */
+    resolveDomain(measureData) {
+      const values = measureData.map((row) => row.__srot_value).filter((value) => this.state.yScale !== "log" || value > 0);
+      const domain = resolveYDomain(values, this.state.lower, this.state.upper);
+      if (this.state.yScale === "log" && domain[0] <= 0) {
+        domain[0] = Math.min(...values.filter((value) => value > 0));
+      }
+      return domain;
+    }
+    /**
+     * Build the per-group datasets (invisible box anchors for tooltips + visible
+     * outlier points) and box specs, then create the Chart.js chart.
+     * @private
+     */
+    drawChart({ visits, groups, colors: colors2, stats, domain, precisions, grouping }) {
+      const layout = { slot: BAND / groups.length };
+      const offsetFor = (groupIndex) => -BAND / 2 + layout.slot * (groupIndex + 0.5);
+      const halfWidth = layout.slot * 0.4;
+      const visitIndex = new Map(visits.map((visit, index) => [visit, index]));
+      const datasets = groups.map((group, groupIndex) => {
+        const color2 = colors2[group];
+        const offset = offsetFor(groupIndex);
+        const points = [];
+        visits.forEach((visit, index) => {
+          const groupStats = (stats[visit] || {})[group];
+          const x = index + offset;
+          if (this.state.boxplots && groupStats && groupStats.n) {
+            this.boxSpecs.push({ x, halfWidth, stats: groupStats, color: color2, group, visit });
+            points.push({ x, y: groupStats.median, __box: { group, visit, stats: groupStats } });
+          }
+        });
+        this.filteredData.filter(
+          (row) => row.__srot_outlier && (grouping ? String(row[grouping]) === group : true) && visitIndex.has(row[this.settings.time_col])
+        ).forEach((row) => {
+          points.push({
+            x: visitIndex.get(row[this.settings.time_col]) + offset,
+            y: row.__srot_value,
+            __outlier: row
+          });
+        });
+        return {
+          label: grouping ? group : "All results",
+          data: points,
+          backgroundColor: color2,
+          borderColor: color2,
+          pointBackgroundColor: color2,
+          pointBorderColor: color2,
+          pointRadius: (ctx) => ctx.raw && ctx.raw.__outlier ? 3 : 0,
+          pointHoverRadius: (ctx) => ctx.raw && ctx.raw.__outlier ? 5 : 0,
+          pointHitRadius: (ctx) => ctx.raw && ctx.raw.__outlier ? 4 : 14,
+          showLine: false
+        };
+      });
+      const yTitle = this.state.measure;
+      const chart = new Chart(this.canvas.getContext("2d"), {
+        type: "scatter",
+        data: { datasets },
+        options: {
+          maintainAspectRatio: false,
+          responsive: true,
+          interaction: { mode: "nearest", intersect: true },
+          plugins: {
+            legend: { display: Boolean(grouping), position: "top" },
+            tooltip: {
+              callbacks: {
+                title: () => "",
+                label: (ctx) => {
+                  const raw = ctx.raw || {};
+                  if (raw.__box) {
+                    return summaryTooltip(
+                      raw.__box.group,
+                      raw.__box.visit,
+                      raw.__box.stats,
+                      precisions
+                    ).split("\n");
+                  }
+                  if (raw.__outlier) {
+                    return `Outlier \u2014 ${outlierTooltip(raw.__outlier, this.settings, precisions)}`;
+                  }
+                  return "";
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              type: "linear",
+              min: -0.5,
+              max: visits.length - 0.5,
+              offset: false,
+              grid: { display: false },
+              title: { display: true, text: this.settings.time_label },
+              ticks: {
+                stepSize: 1,
+                autoSkip: false,
+                maxRotation: 45,
+                minRotation: 0,
+                callback: (value) => Number.isInteger(value) ? visits[value] ?? "" : ""
+              },
+              afterBuildTicks: (axis) => {
+                axis.ticks = visits.map((_, index) => ({ value: index }));
+              }
+            },
+            y: {
+              type: this.state.yScale === "log" ? "logarithmic" : "linear",
+              min: domain[0],
+              max: domain[1],
+              title: { display: true, text: yTitle }
+            }
+          }
+        },
+        plugins: [boxWhiskerPlugin2(this)]
+      });
+      chart.$srotBoxes = this.boxSpecs;
+      this.chart = chart;
+      this.charts.push(chart);
+    }
+    /**
+     * Refresh the shown/total participant counts and the removed-record notes.
+     * @private
+     */
+    updateNotes(measureData, filtered, nonPositive) {
+      const totalParticipants = unique4(measureData.map((row) => row[this.settings.id_col])).length;
+      const shownParticipants = unique4(filtered.map((row) => row[this.settings.id_col])).length;
+      const pct = totalParticipants ? (shownParticipants / totalParticipants * 100).toFixed(1) : "0.0";
+      const removedNote = this.removedRecords ? `<span class="sv-warning">${this.removedRecords} missing or non-numeric results removed.</span>` : "";
+      const nonPositiveNote = nonPositive ? `<span class="sv-warning">${nonPositive} nonpositive result${nonPositive > 1 ? "s" : ""} removed for the log scale.</span>` : "";
+      this.notes.innerHTML = `<span>${shownParticipants} of ${totalParticipants} participants shown (${pct}%).</span>${removedNote}${nonPositiveNote}`;
+    }
+    /**
+     * Resize the live chart to its container. For host layouts that change the
+     * container size without a window resize — e.g. the R htmlwidget bindings.
+     * @returns {void}
+     */
+    resize() {
+      this.charts.forEach((chart) => chart.resize());
+    }
+    /**
+     * Destroy the live Chart.js instances without touching the shell.
+     * @private
+     */
+    destroyCharts() {
+      this.charts.forEach((chart) => chart.destroy());
+      this.charts = [];
+      this.chart = null;
+    }
+    /**
+     * Tear the chart down: destroy the Chart.js instance and empty the target
+     * element. The instance cannot be reused afterwards — create a new one via
+     * the factory instead.
+     * @returns {void}
+     */
+    destroy() {
+      this.destroyCharts();
+      this.element.innerHTML = "";
+    }
+  };
+  function resultsOverTime(element = "body", settings = {}) {
+    return new SafetyResultsOverTime(element, settings);
+  }
+
+  // src/outlier-explorer/configure.js
+  var OE_SEQ = "__oe_seq";
+  var GROUP_NONE2 = "oe_none";
+  var NORMAL_RANGE_METHODS = ["None", "LLN-ULN", "Standard Deviation", "Quantiles"];
+  var DEFAULT_SETTINGS7 = {
+    measure_col: "TEST",
+    value_col: "STRESN",
+    id_col: "USUBJID",
+    unit_col: "STRESU",
+    normal_col_low: "STNRLO",
+    normal_col_high: "STNRHI",
+    normal_range_method: "LLN-ULN",
+    normal_range_sd: 1.96,
+    normal_range_quantile_low: 0.05,
+    normal_range_quantile_high: 0.95,
+    time_cols: [],
+    start_value: null,
+    filters: [],
+    groups: [],
+    group_by: GROUP_NONE2,
+    details: null,
+    tooltip_cols: [],
+    line_attributes: { color: "#5b6b7b", width: 1, opacity: 0.28 },
+    point_attributes: { color: "#1f78b4", radius: 3, opacity: 0.5 },
+    width: "100%",
+    height: 460,
+    page_size: 10,
+    studyday_col: null,
+    visit_col: null,
+    visitn_col: null,
+    measure_values: null,
+    profile: true,
+    profile_details: null,
+    participantProfileURL: null
+  };
+  function arrayify7(value) {
+    if (value === void 0 || value === null || value === "") return [];
+    return Array.isArray(value) ? value : [value];
+  }
+  function fieldSpec7(value, fallbackLabel) {
+    if (typeof value === "string") return { value_col: value, label: fallbackLabel || value };
+    return { ...value, value_col: value.value_col, label: value.label || value.value_col };
+  }
+  function timeSpec(value) {
+    const base = typeof value === "string" ? { value_col: value } : { ...value };
+    const type = base.type === "ordinal" ? "ordinal" : "linear";
+    return {
+      value_col: base.value_col,
+      label: base.label || base.value_col,
+      type,
+      order_col: base.order_col || base.value_col
+    };
+  }
+  function syncSettings7(settings) {
+    const synced = { ...DEFAULT_SETTINGS7, ...settings };
+    synced.filters = arrayify7(synced.filters).map((value) => fieldSpec7(value)).filter((d) => d.value_col);
+    const defaultGroup = { value_col: GROUP_NONE2, label: "None" };
+    synced.groups = [
+      defaultGroup,
+      ...arrayify7(synced.groups).map((value) => fieldSpec7(value)).filter((d) => d.value_col)
+    ];
+    if (synced.group_by && !synced.groups.some((group) => group.value_col === synced.group_by)) {
+      synced.groups.push({ value_col: synced.group_by, label: synced.group_by });
+    }
+    synced.group_by = synced.groups.some((group) => group.value_col === synced.group_by) ? synced.group_by : synced.groups[0].value_col;
+    synced.time_cols = arrayify7(synced.time_cols).map(timeSpec).filter((d) => d.value_col);
+    if (!synced.time_cols.length) {
+      synced.time_cols = [
+        { value_col: OE_SEQ, label: "Measurement", type: "linear", order_col: OE_SEQ }
+      ];
+    }
+    synced.tooltip_cols = arrayify7(synced.tooltip_cols).map((value) => fieldSpec7(value)).filter((d) => d.value_col);
+    synced.details = arrayify7(synced.details).map((value) => fieldSpec7(value)).filter((d) => d.value_col);
+    if (!synced.details.length) {
+      synced.details = [
+        { value_col: "__oe_timeLabel", label: "Time" },
+        { value_col: synced.id_col, label: "Participant ID" },
+        { value_col: synced.value_col, label: "Result" },
+        { value_col: synced.normal_col_low, label: "Lower Limit of Normal" },
+        { value_col: synced.normal_col_high, label: "Upper Limit of Normal" },
+        { value_col: synced.unit_col, label: "Unit" }
+      ].filter((d) => d.value_col);
+    }
+    synced.profile = Boolean(synced.profile);
+    synced.profile_details = synced.profile_details === void 0 || synced.profile_details === null ? null : arrayify7(synced.profile_details).map((value) => fieldSpec7(value)).filter((d) => d.value_col);
+    synced.line_attributes = {
+      ...DEFAULT_SETTINGS7.line_attributes,
+      ...settings.line_attributes || {}
+    };
+    synced.point_attributes = {
+      ...DEFAULT_SETTINGS7.point_attributes,
+      ...settings.point_attributes || {}
+    };
+    return synced;
+  }
+
+  // src/data/schema/outlier-explorer.json
+  var outlier_explorer_default = {
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    $id: "https://raw.githubusercontent.com/jwildfire/safety.viz/main/src/data/schema/outlier-explorer.json",
+    title: "safety.viz outlier-explorer data contract",
+    description: "Long-format results data: one record per participant per time point per measure (SOE-DATA-001). Column names are supplied by the settings mapping; the outlier-explorer removes missing/non-numeric results with a reported count (SOE-REG-037) and derives a per-participant measurement sequence when the data carries no visit/study-day column.",
+    type: "object",
+    required: ["data", "settings"],
+    properties: {
+      data: {
+        type: "array",
+        minItems: 1,
+        items: { type: "object" },
+        description: "d3.csv()-style records; every row carries the measure and result columns named in settings, one row per participant per time point per measure."
+      },
+      settings: {
+        type: "object",
+        description: "Column mappings and rendering options; merged onto the module's DEFAULT_SETTINGS, so only overrides need to be supplied (SOE-DATA-003).",
+        required: ["measure_col", "value_col"],
+        properties: {
+          measure_col: {
+            type: "string",
+            default: "TEST",
+            description: "Column holding the measure name; required in data."
+          },
+          value_col: {
+            type: "string",
+            default: "STRESN",
+            description: "Column holding the numeric result; required in data."
+          },
+          id_col: {
+            type: "string",
+            default: "USUBJID",
+            description: "Participant identifier column; drives the one-line-per-participant series and counts."
+          },
+          unit_col: {
+            type: "string",
+            default: "STRESU",
+            description: "Optional unit column, appended to measure labels."
+          },
+          normal_col_low: {
+            type: "string",
+            default: "STNRLO",
+            description: "Optional lower limit of normal; feeds the LLN-ULN normal-range band."
+          },
+          normal_col_high: {
+            type: "string",
+            default: "STNRHI",
+            description: "Optional upper limit of normal; feeds the LLN-ULN normal-range band."
+          },
+          normal_range_method: {
+            type: "string",
+            default: "LLN-ULN",
+            description: "Normal-range method: None, LLN-ULN, Standard Deviation, or Quantiles (SOE-FUNC-007)."
+          },
+          time_cols: {
+            $ref: "#/$defs/fieldList",
+            description: "Optional time-axis options ({ value_col, label, type, order_col }); when omitted a derived Measurement sequence is used (SOE-FUNC-004)."
+          },
+          filters: {
+            $ref: "#/$defs/fieldList",
+            description: "Optional filter columns rendered as controls (SOE-CFG-004)."
+          },
+          groups: {
+            $ref: "#/$defs/fieldList",
+            description: "Optional color-by columns for grouping the marks (SOE-REG-048)."
+          },
+          details: {
+            $ref: "#/$defs/fieldList",
+            description: "Optional listing columns; defaults derive from the other mappings (SOE-CFG-005)."
+          },
+          tooltip_cols: {
+            $ref: "#/$defs/fieldList",
+            description: "Optional extra columns appended to the point tooltip (SOE-CFG-006)."
+          }
+        }
+      }
+    },
+    $defs: {
+      fieldList: {
+        type: "array",
+        items: {
+          anyOf: [
+            { type: "string" },
+            {
+              type: "object",
+              required: ["value_col"],
+              properties: {
+                value_col: { type: "string" },
+                label: { type: "string" }
+              }
+            }
+          ]
+        }
+      }
+    }
+  };
+
+  // src/outlier-explorer/checkInputs.js
+  var REQUIRED_COLUMN_SETTINGS6 = outlier_explorer_default.properties.settings.required;
+  function checkInputs6(data, settings) {
+    const rows = Array.isArray(data) ? data : [];
+    const missing = REQUIRED_COLUMN_SETTINGS6.map((key) => settings[key]).filter(
+      (col) => !rows.some((row) => row[col] !== void 0)
+    );
+    if (missing.length) {
+      throw new Error(`Required variable(s) missing: ${missing.join(", ")}`);
+    }
+  }
+
+  // src/outlier-explorer/structureData.js
+  function unique5(values) {
+    return [
+      ...new Set(values.filter((value) => value !== void 0 && value !== null && value !== ""))
+    ];
+  }
+  function mean6(values) {
+    return values.reduce((sum, value) => sum + value, 0) / values.length;
+  }
+  function sd3(values) {
+    if (values.length < 2) return 0;
+    const m = mean6(values);
+    return Math.sqrt(
+      values.reduce((sum, value) => sum + Math.pow(value - m, 2), 0) / (values.length - 1)
+    );
+  }
+  function quantile4(values, p) {
+    if (!values.length) return NaN;
+    const sorted = [...values].sort((a, b) => a - b);
+    const idx = (sorted.length - 1) * p;
+    const lo = Math.floor(idx);
+    const hi = Math.ceil(idx);
+    if (lo === hi) return sorted[lo];
+    return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
+  }
+  function median2(values) {
+    return quantile4(values, 0.5);
+  }
+  function cleanData5(rawData, settings) {
+    let removed = 0;
+    const rows = rawData.map((row, index) => ({
+      ...row,
+      __oe_index: index,
+      __oe_value: Number(row[settings.value_col])
+    })).filter((row) => {
+      const keep = row[settings.value_col] !== "" && Number.isFinite(row.__oe_value);
+      if (!keep) removed += 1;
+      return keep;
+    });
+    return { rows, removed };
+  }
+  function measureLabel4(row, settings) {
+    const measure = row[settings.measure_col];
+    const unit = settings.unit_col ? row[settings.unit_col] : null;
+    return unit ? `${measure} (${unit})` : measure;
+  }
+  function applyFilters5(rows, filters) {
+    return rows.filter(
+      (row) => Object.entries(filters).every(([key, value]) => !value || String(row[key]) === String(value))
+    );
+  }
+  function assignSequence2(rows, idCol) {
+    const counts = /* @__PURE__ */ new Map();
+    rows.forEach((row) => {
+      const id = row[idCol];
+      const next = (counts.get(id) || 0) + 1;
+      counts.set(id, next);
+      row[OE_SEQ] = next;
+    });
+    return rows;
+  }
+  function timeValue(row, timeCol) {
+    if (timeCol.value_col === OE_SEQ) return row[OE_SEQ];
+    const raw = row[timeCol.value_col];
+    return timeCol.type === "ordinal" ? raw : Number(raw);
+  }
+  function timeOrder(row, timeCol) {
+    if (timeCol.value_col === OE_SEQ) return row[OE_SEQ];
+    return Number(row[timeCol.order_col]);
+  }
+  function timeLabel(row, timeCol) {
+    if (timeCol.value_col === OE_SEQ) return `#${row[OE_SEQ]}`;
+    return String(row[timeCol.value_col]);
+  }
+  function orderedCategories(rows, timeCol) {
+    const seen = /* @__PURE__ */ new Map();
+    rows.forEach((row) => {
+      const label = String(row[timeCol.value_col]);
+      if (!seen.has(label)) seen.set(label, timeOrder(row, timeCol));
+    });
+    return [...seen.entries()].sort((a, b) => a[1] - b[1]).map(([label]) => label);
+  }
+  function buildSeries(rows, settings, timeCol, groupBy2) {
+    const byId = /* @__PURE__ */ new Map();
+    rows.forEach((row) => {
+      const id = row[settings.id_col];
+      if (!byId.has(id)) byId.set(id, []);
+      byId.get(id).push(row);
+    });
+    const series = [];
+    byId.forEach((records, id) => {
+      const points = records.map((row) => ({
+        x: timeValue(row, timeCol),
+        y: row.__oe_value,
+        order: timeOrder(row, timeCol),
+        label: timeLabel(row, timeCol),
+        raw: row
+      })).sort((a, b) => a.order - b.order);
+      const group = groupBy2 && groupBy2 !== OE_SEQ ? records[0][groupBy2] : null;
+      series.push({ id, group, points });
+    });
+    return series.sort(
+      (a, b) => String(a.id).localeCompare(String(b.id), void 0, { numeric: true })
+    );
+  }
+  function computeNormalRange(rows, settings) {
+    const method = settings.normal_range_method;
+    if (method === "None" || !rows.length) return null;
+    const results = rows.map((row) => row.__oe_value);
+    if (method === "Standard Deviation") {
+      const m = mean6(results);
+      const s = sd3(results);
+      return { low: m - settings.normal_range_sd * s, high: m + settings.normal_range_sd * s };
+    }
+    if (method === "Quantiles") {
+      return {
+        low: quantile4(results, settings.normal_range_quantile_low),
+        high: quantile4(results, settings.normal_range_quantile_high)
+      };
+    }
+    const lows = rows.map((row) => Number(row[settings.normal_col_low])).filter(Number.isFinite);
+    const highs = rows.map((row) => Number(row[settings.normal_col_high])).filter(Number.isFinite);
+    if (!lows.length || !highs.length) return null;
+    return { low: median2(lows), high: median2(highs) };
+  }
+  function countInliers(rows, normalRange) {
+    if (!normalRange) return null;
+    return rows.filter(
+      (row) => row.__oe_value >= normalRange.low && row.__oe_value <= normalRange.high
+    ).length;
+  }
+
+  // src/outlier-explorer/getScales.js
+  function defaultYDomain(values) {
+    if (!values.length) return [0, 1];
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const pad = (max - min || Math.abs(max) || 1) * 0.04;
+    return [min - pad, max + pad];
+  }
+  function resolveYDomain2(values, lower, upper) {
+    const domain = defaultYDomain(values);
+    return [lower == null ? domain[0] : lower, upper == null ? domain[1] : upper];
+  }
+  function normalizeYDomain(state) {
+    if (Number.isFinite(state.lower) && Number.isFinite(state.upper) && state.lower >= state.upper) {
+      const tmp = state.lower;
+      state.lower = state.upper;
+      state.upper = tmp;
+    }
+  }
+  function axisStep(range) {
+    if (!(range > 0)) return 1;
+    const raw = range / 15;
+    return Math.pow(10, Math.floor(Math.log10(raw)));
+  }
+  function buildXScale(timeCol, categories) {
+    if (timeCol.type === "ordinal") {
+      return {
+        type: "category",
+        labels: categories,
+        offset: true,
+        title: { display: true, text: timeCol.label },
+        ticks: { maxRotation: 45, minRotation: 45, autoSkip: true }
+      };
+    }
+    return {
+      type: "linear",
+      title: { display: true, text: timeCol.label },
+      ticks: { maxRotation: 0, minRotation: 0 }
+    };
+  }
+  function buildYScale(domain, label) {
+    return {
+      type: "linear",
+      min: domain[0],
+      max: domain[1],
+      title: { display: true, text: label },
+      grid: { drawOnChartArea: true }
+    };
+  }
+
+  // src/outlier-explorer/getPlugins.js
+  var GROUP_COLORS = [
+    "#1f78b4",
+    "#e31a1c",
+    "#33a02c",
+    "#ff7f00",
+    "#6a3d9a",
+    "#b15928",
+    "#00838f",
+    "#c2185b"
+  ];
+  var SELECTION_COLOR = "#111827";
+  function hexToRgba2(hex2, opacity) {
+    const clean = hex2.replace("#", "");
+    const r = parseInt(clean.slice(0, 2), 16);
+    const g = parseInt(clean.slice(2, 4), 16);
+    const b = parseInt(clean.slice(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  }
+  function groupColorScale(groupValues) {
+    const scale = /* @__PURE__ */ new Map();
+    groupValues.forEach((value, index) => {
+      scale.set(String(value), GROUP_COLORS[index % GROUP_COLORS.length]);
+    });
+    return scale;
+  }
+  function pointTooltip(point, settings, measureText) {
+    const lines = [
+      String(point.raw[settings.id_col]),
+      `${measureText}: ${point.y}`,
+      `Time: ${point.label}`
+    ];
+    settings.tooltip_cols.forEach((col) => {
+      const value = point.raw[col.value_col];
+      if (value !== void 0 && value !== null && value !== "") {
+        lines.push(`${col.label}: ${value}`);
+      }
+    });
+    return lines;
+  }
+  function normalRangePlugin2(instance) {
+    return {
+      id: `oe-normal-range-${Math.random().toString(36).slice(2)}`,
+      beforeDatasetsDraw(chart) {
+        chart.$oeNormalRangeOverlay = null;
+        const range = instance.state.normalRange;
+        if (!range) return;
+        const { ctx, chartArea, scales } = chart;
+        const yHigh = scales.y.getPixelForValue(range.high);
+        const yLow = scales.y.getPixelForValue(range.low);
+        const top = Math.max(chartArea.top, Math.min(yHigh, yLow));
+        const bottom = Math.min(chartArea.bottom, Math.max(yHigh, yLow));
+        const height = Math.max(0, bottom - top);
+        chart.$oeNormalRangeOverlay = {
+          low: range.low,
+          high: range.high,
+          top,
+          bottom,
+          height,
+          left: chartArea.left,
+          right: chartArea.right
+        };
+        if (!height) return;
+        ctx.save();
+        ctx.fillStyle = "rgba(46, 125, 50, 0.12)";
+        ctx.fillRect(chartArea.left, top, chartArea.right - chartArea.left, height);
+        ctx.strokeStyle = "rgba(46, 125, 50, 0.55)";
+        ctx.setLineDash([4, 3]);
+        ctx.beginPath();
+        ctx.moveTo(chartArea.left, top);
+        ctx.lineTo(chartArea.right, top);
+        ctx.moveTo(chartArea.left, bottom);
+        ctx.lineTo(chartArea.right, bottom);
+        ctx.stroke();
+        ctx.restore();
+      }
+    };
+  }
+
+  // src/outlier-explorer.js
+  Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, plugin_tooltip);
+  var SafetyOutlierExplorer = class {
+    constructor(element = "body", settings = {}) {
+      this.element = typeof element === "string" ? document.querySelector(element) : element;
+      if (!this.element) throw new Error(`Safety Outlier Explorer target not found: ${element}`);
+      this.settings = syncSettings7(settings);
+      this.rawData = [];
+      this.cleanData = [];
+      this.filteredData = [];
+      this.currentTableData = [];
+      this.listingSearch = "";
+      this.listingSort = null;
+      this.page = 1;
+      this.charts = [];
+      this.participantsSelected = [];
+      this.profile = null;
+      this.profileFeed = null;
+      this.profileKey = null;
+      this.profileRows = [];
+      this.state = {
+        measure: this.settings.start_value,
+        filters: {},
+        timeIndex: 0,
+        groupBy: this.settings.group_by,
+        lower: null,
+        upper: null,
+        normalMethod: this.settings.normal_range_method,
+        normalSd: this.settings.normal_range_sd,
+        quantileLow: this.settings.normal_range_quantile_low,
+        quantileHigh: this.settings.normal_range_quantile_high,
+        normalRange: null,
+        selectedId: null
+      };
+      this.initFilterState();
+      this.renderShell();
+      mountProfileDock(this, () => this.profileSettings());
+    }
+    /**
+     * The settings handed to the docked participant-profile module (#99,
+     * PPRF-OE-001): the shared long-lab column mappings pass through verbatim;
+     * `details` come from profile_details (the host `details` configure the
+     * linked listing — per-row fields, not demographics); and the two outbound
+     * callbacks wire Clear to the host's own clear path and stepper navigation
+     * to a visual-only re-highlight (no dispatch).
+     * @private
+     */
+    profileSettings() {
+      const settings = this.settings;
+      const profileSettings = {
+        id_col: settings.id_col,
+        measure_col: settings.measure_col,
+        value_col: settings.value_col,
+        unit_col: settings.unit_col,
+        normal_col_high: settings.normal_col_high,
+        normal_col_low: settings.normal_col_low,
+        studyday_col: settings.studyday_col,
+        visit_col: settings.visit_col,
+        visitn_col: settings.visitn_col,
+        details: settings.profile_details && settings.profile_details.length ? settings.profile_details : [],
+        participantProfileURL: settings.participantProfileURL ?? null,
+        on_clear: () => this.clearSelection(),
+        on_step: (id) => {
+          this.state.selectedId = String(id);
+          this.applySelection();
+        }
+      };
+      if (settings.measure_values) profileSettings.measure_values = settings.measure_values;
+      return profileSettings;
+    }
+    /**
+     * Initialize the active filter values from any filter `start` settings
+     * (SOE-REG-051/053).
+     * @private
+     */
+    initFilterState() {
+      this.state.filters = {};
+      this.settings.filters.forEach((filter) => {
+        if (filter.start !== void 0 && filter.start !== null && filter.start !== "") {
+          this.state.filters[filter.value_col] = String(filter.start);
+        }
+      });
+    }
+    /**
+     * Build the static DOM shell the chart, legend, and listing render into.
+     * @private
+     */
+    renderShell() {
+      Object.assign(
+        this,
+        renderShell(this.element, {
+          moduleClass: "safety-outlier-explorer",
+          onToggle: () => this.resize()
+        })
+      );
+      this.legendEl = createElement("div", "oe-legend");
+      this.legendEl.style.cssText = "display:flex;flex-wrap:wrap;gap:.35rem .9rem;font-size:.8rem;color:#52616f;margin:0 0 .5rem";
+      this.main.insertBefore(this.legendEl, this.chartWrap);
+      this.footnote.textContent = "Hover a point for details; click a point to highlight a participant.";
+    }
+    /**
+     * Load data and render: an alias for setData that keeps the pilot's
+     * two-step create-then-init call shape working (SOE-API-001).
+     * @param {Object[]} data Long-format result records matching the outlier-explorer data contract.
+     * @returns {SafetyOutlierExplorer} The instance, for chaining.
+     */
+    init(data) {
+      this.setData(data);
+      return this;
+    }
+    /**
+     * Replace the bound data and re-render. The data is validated against the
+     * settings mapping (throwing, and rendering the message into the target
+     * element, when required columns are missing), rows with missing or
+     * non-numeric results are removed with a console warning, and the controls
+     * are rebuilt from the new data's measures and filter values.
+     * @param {Object[]} data Long-format result records matching the outlier-explorer data contract.
+     * @returns {SafetyOutlierExplorer} The instance, for chaining.
+     */
+    setData(data) {
+      this.rawData = Array.isArray(data) ? data : [];
+      this.validateAndCleanData();
+      this.buildProfileRows();
+      this.buildControls();
+      this.render();
+      return this;
+    }
+    /**
+     * Derive the docked profile's pre-cleaned rows ONCE per data/settings change
+     * (#99, PPRF-OE-001) — never per gesture.
+     * @private
+     */
+    buildProfileRows() {
+      this.profileRows = this.settings.profile ? buildProfileRows(this.rawData, this.profileSettings()) : [];
+    }
+    /**
+     * Merge setting overrides onto the current settings, re-normalize them (same
+     * rules as the factory), rebuild the controls, and re-render.
+     * @param {OutlierExplorerSettings} settings Setting overrides to merge.
+     * @returns {SafetyOutlierExplorer} The instance, for chaining.
+     */
+    setSettings(settings) {
+      this.settings = syncSettings7({ ...this.settings, ...settings });
+      this.state.normalMethod = this.settings.normal_range_method;
+      this.state.groupBy = this.settings.group_by;
+      this.initFilterState();
+      if (this.rawData.length) this.validateAndCleanData();
+      this.buildProfileRows();
+      syncProfileDock(this, () => this.profileSettings());
+      this.buildControls();
+      this.render();
+      return this;
+    }
+    /**
+     * Validate the raw data against the settings mapping and drop unusable rows.
+     * @private
+     */
+    validateAndCleanData() {
+      try {
+        checkInputs6(this.rawData, this.settings);
+      } catch (error) {
+        this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+        throw error;
+      }
+      const { rows, removed } = cleanData5(this.rawData, this.settings);
+      this.cleanData = rows;
+      this.removedRecords = removed;
+      if (removed) console.warn(`${removed} missing or non-numeric results have been removed.`);
+      const measures = this.measures();
+      if (this.state.measure && !measures.includes(this.state.measure)) {
+        console.warn(
+          `The initial measure [${this.state.measure}] does not exist. Defaulting to the first measure.`
+        );
+      }
+      this.state.measure = measures.includes(this.state.measure) ? this.state.measure : measures[0];
+    }
+    /**
+     * Sorted distinct measure labels present in the cleaned data.
+     * @private
+     */
+    measures() {
+      return unique5(this.cleanData.map((row) => measureLabel4(row, this.settings))).sort();
+    }
+    /**
+     * The active time-axis column spec.
+     * @private
+     */
+    activeTimeCol() {
+      return this.settings.time_cols[this.state.timeIndex] || this.settings.time_cols[0];
+    }
+    /**
+     * Cleaned rows for the selected measure, tagged with the derived measurement
+     * sequence.
+     * @private
+     */
+    currentMeasureData() {
+      const rows = this.cleanData.filter(
+        (row) => measureLabel4(row, this.settings) === this.state.measure
+      );
+      return assignSequence2(rows, this.settings.id_col);
+    }
+    /**
+     * Cleaned rows for the selected measure after the active filters.
+     * @private
+     */
+    currentFilteredData() {
+      return applyFilters5(this.currentMeasureData(), this.state.filters);
+    }
+    /**
+     * Rebuild the measure / filter / x-axis / y-limit / normal-range / group
+     * controls from data + state.
+     * @private
+     */
+    buildControls() {
+      this.controls.innerHTML = "";
+      const { addSection, addRow, addControl } = controlBuilders(this.controls);
+      const measure = addControl("Measure", document.createElement("select"));
+      this.measures().forEach((value) => option(measure, value, value, value === this.state.measure));
+      measure.onchange = () => {
+        this.state.measure = measure.value;
+        this.resetDomain();
+        this.render();
+      };
+      const filterSpecs = this.settings.filters.filter((filter) => {
+        const exists = this.cleanData.some((row) => row[filter.value_col] !== void 0);
+        if (!exists)
+          console.warn(
+            `The [ ${filter.label} ] filter has been removed because the variable does not exist.`
+          );
+        return exists;
+      });
+      const filterParent = filterSpecs.length ? addSection("Filters") : this.controls;
+      filterSpecs.forEach((filter) => {
+        const select = addControl(filter.label, document.createElement("select"), filterParent);
+        const hasStart = filter.start !== void 0 && filter.start !== null && filter.start !== "";
+        if (!hasStart) option(select, "__all__", "All", !this.state.filters[filter.value_col]);
+        unique5(this.cleanData.map((row) => row[filter.value_col])).sort().forEach(
+          (value) => option(
+            select,
+            value,
+            value,
+            String(this.state.filters[filter.value_col]) === String(value)
+          )
+        );
+        select.onchange = () => {
+          this.state.filters[filter.value_col] = select.value === "__all__" ? null : select.value;
+          this.render();
+        };
+      });
+      if (this.settings.time_cols.length > 1) {
+        const xParent = addSection("X-axis");
+        const xAxis = addControl("Plot by", document.createElement("select"), xParent);
+        this.settings.time_cols.forEach(
+          (spec, index) => option(xAxis, String(index), spec.label, index === this.state.timeIndex)
+        );
+        xAxis.onchange = () => {
+          this.state.timeIndex = Number(xAxis.value);
+          this.render();
+        };
+      }
+      const yParent = addSection("Y-axis Limits");
+      const yRow = addRow(yParent);
+      const step = this.currentStep();
+      const lower = addControl("Lower", document.createElement("input"), yRow);
+      lower.type = "number";
+      lower.step = String(step);
+      lower.value = this.state.lower == null ? "" : this.state.lower;
+      lower.onchange = () => {
+        this.state.lower = lower.value === "" ? null : Number(lower.value);
+        normalizeYDomain(this.state);
+        this.render();
+      };
+      const upper = addControl("Upper", document.createElement("input"), yRow);
+      upper.type = "number";
+      upper.step = String(step);
+      upper.value = this.state.upper == null ? "" : this.state.upper;
+      upper.onchange = () => {
+        this.state.upper = upper.value === "" ? null : Number(upper.value);
+        normalizeYDomain(this.state);
+        this.render();
+      };
+      const reset = addControl("\xA0", document.createElement("button"), yParent);
+      reset.type = "button";
+      reset.textContent = "Reset Limits";
+      reset.className = "oe-reset";
+      reset.style.cssText = "width:100%;padding:.35rem .45rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.82rem;cursor:pointer";
+      reset.onclick = () => {
+        this.resetDomain();
+        this.buildControls();
+        this.render();
+      };
+      const nrParent = addSection("Normal Range");
+      const method = addControl("Method", document.createElement("select"), nrParent);
+      NORMAL_RANGE_METHODS.forEach(
+        (value) => option(method, value, value, value === this.state.normalMethod)
+      );
+      method.onchange = () => {
+        this.state.normalMethod = method.value;
+        this.buildControls();
+        this.render();
+      };
+      if (this.state.normalMethod === "Standard Deviation") {
+        const sd5 = addControl("# Std. Dev.", document.createElement("input"), nrParent);
+        sd5.type = "number";
+        sd5.step = "any";
+        sd5.min = "0";
+        sd5.value = this.state.normalSd;
+        sd5.onchange = () => {
+          this.state.normalSd = Number(sd5.value) || 0;
+          this.render();
+        };
+      } else if (this.state.normalMethod === "Quantiles") {
+        const qRow = addRow(nrParent);
+        const low = addControl("Lower", document.createElement("input"), qRow);
+        low.type = "number";
+        low.step = "any";
+        low.value = this.state.quantileLow;
+        low.onchange = () => {
+          this.state.quantileLow = Number(low.value) || 0;
+          this.render();
+        };
+        const high = addControl("Upper", document.createElement("input"), qRow);
+        high.type = "number";
+        high.step = "any";
+        high.value = this.state.quantileHigh;
+        high.onchange = () => {
+          this.state.quantileHigh = Number(high.value) || 0;
+          this.render();
+        };
+      }
+      this.groupControls = addSection("Grouping");
+      const group = addControl("Group by", document.createElement("select"), this.groupControls);
+      this.settings.groups.forEach(
+        (spec) => option(group, spec.value_col, spec.label, spec.value_col === this.state.groupBy)
+      );
+      this.groupControls.style.display = this.settings.groups.length <= 1 ? "none" : "";
+      group.onchange = () => {
+        this.state.groupBy = group.value;
+        this.render();
+      };
+    }
+    /**
+     * The current y-axis stepper increment, ~1/15 of the default measure range
+     * (SOE-REG-033).
+     * @private
+     */
+    currentStep() {
+      if (!this.cleanData.length || !this.state.measure) return 1;
+      const values = this.currentMeasureData().map((row) => row.__oe_value);
+      if (!values.length) return 1;
+      const domain = defaultYDomain(values);
+      return axisStep(domain[1] - domain[0]);
+    }
+    /**
+     * Clear the y-axis limit overrides when the measure changes or on Reset.
+     * @private
+     */
+    resetDomain() {
+      this.state.lower = null;
+      this.state.upper = null;
+    }
+    /**
+     * Redraw everything from the current data, settings, and control state:
+     * destroys the live chart, clears the listing and any selection, then draws
+     * the population lines, the normal-range band, the legend, and the counts.
+     * Called automatically by the controls and the data/settings setters.
+     * @returns {void}
+     */
+    render() {
+      this.destroyCharts();
+      this.listingWrap.innerHTML = "";
+      this.legendEl.innerHTML = "";
+      this.currentTableData = [];
+      this.listingSearch = "";
+      this.listingSort = null;
+      this.page = 1;
+      this.state.selectedId = null;
+      this.participantsSelected = [];
+      resetProfileDock(this);
+      this.notes.innerHTML = "";
+      this.footnote.textContent = "Hover a point for details; click a point to highlight a participant.";
+      this.filteredData = this.currentFilteredData();
+      if (!this.filteredData.length) {
+        this.updateNotes();
+        this.notes.innerHTML = "<span>No records match the current filters.</span>" + this.notes.innerHTML;
+        return;
+      }
+      this.drawChart();
+      this.drawLegend();
+      this.updateNotes();
+    }
+    /**
+     * Draw the main Chart.js line chart: one population line dataset (null-gap
+     * separated per participant) plus an empty selection-overlay dataset, with
+     * the normal-range band plugin, tooltips, and click-to-select.
+     * @private
+     */
+    drawChart() {
+      const timeCol = this.activeTimeCol();
+      this.filteredData.forEach((row) => {
+        row.__oe_timeLabel = timeLabel(row, timeCol);
+      });
+      this.state.normalRange = computeNormalRange(this.filteredData, {
+        ...this.settings,
+        normal_range_method: this.state.normalMethod,
+        normal_range_sd: this.state.normalSd,
+        normal_range_quantile_low: this.state.quantileLow,
+        normal_range_quantile_high: this.state.quantileHigh
+      });
+      const values = this.filteredData.map((row) => row.__oe_value);
+      const domain = resolveYDomain2(values, this.state.lower, this.state.upper);
+      const categories = timeCol.type === "ordinal" ? orderedCategories(this.currentMeasureData(), timeCol) : [];
+      this.series = buildSeries(this.filteredData, this.settings, timeCol, this.state.groupBy);
+      const grouped = this.state.groupBy && this.state.groupBy !== GROUP_NONE2;
+      this.groupValues = grouped ? unique5(this.filteredData.map((row) => row[this.state.groupBy])).sort() : [];
+      this.colorScale = groupColorScale(this.groupValues);
+      const lineAttr = this.settings.line_attributes;
+      const pointAttr = this.settings.point_attributes;
+      const data = [];
+      const pointMeta = [];
+      this.series.forEach((series) => {
+        series.points.forEach((point) => {
+          data.push({ x: point.x, y: point.y });
+          pointMeta.push({ id: series.id, group: series.group, point });
+        });
+        const last = series.points[series.points.length - 1];
+        data.push({ x: last ? last.x : null, y: null });
+        pointMeta.push(null);
+      });
+      this.pointMeta = pointMeta;
+      this.overlayMeta = [];
+      const isSelected = (meta) => this.state.selectedId != null && String(meta.id) === String(this.state.selectedId);
+      const baseColor = (meta) => grouped ? this.colorScale.get(String(meta.group)) || pointAttr.color : null;
+      const chart = new Chart(this.canvas.getContext("2d"), {
+        type: "line",
+        data: {
+          labels: categories.length ? categories : void 0,
+          datasets: [
+            {
+              label: "Participants",
+              data,
+              spanGaps: false,
+              showLine: true,
+              borderWidth: lineAttr.width,
+              pointRadius: (ctx) => this.pointMeta[ctx.dataIndex] ? pointAttr.radius : 0,
+              pointHoverRadius: (ctx) => this.pointMeta[ctx.dataIndex] ? pointAttr.radius + 2 : 0,
+              pointBackgroundColor: (ctx) => {
+                const meta = this.pointMeta[ctx.dataIndex];
+                if (!meta || isSelected(meta)) return "rgba(0,0,0,0)";
+                const color2 = baseColor(meta) || pointAttr.color;
+                const opacity = this.state.selectedId != null ? pointAttr.opacity * 0.3 : pointAttr.opacity;
+                return hexToRgba2(color2, opacity);
+              },
+              pointBorderColor: (ctx) => {
+                const meta = this.pointMeta[ctx.dataIndex];
+                if (!meta || isSelected(meta)) return "rgba(0,0,0,0)";
+                const color2 = baseColor(meta) || pointAttr.color;
+                const opacity = this.state.selectedId != null ? 0.25 : 0.85;
+                return hexToRgba2(color2, opacity);
+              },
+              segment: {
+                borderColor: (ctx) => {
+                  const meta = this.pointMeta[ctx.p0DataIndex];
+                  const metaEnd = this.pointMeta[ctx.p1DataIndex];
+                  if (!meta || !metaEnd || String(meta.id) !== String(metaEnd.id))
+                    return "rgba(0,0,0,0)";
+                  if (isSelected(meta)) return "rgba(0,0,0,0)";
+                  const color2 = baseColor(meta) || lineAttr.color;
+                  const opacity = this.state.selectedId != null ? lineAttr.opacity * 0.4 : lineAttr.opacity;
+                  return hexToRgba2(color2, opacity);
+                }
+              }
+            },
+            {
+              label: "Selected",
+              data: [],
+              spanGaps: false,
+              showLine: true,
+              borderColor: SELECTION_COLOR,
+              borderWidth: lineAttr.width + 1.5,
+              pointRadius: pointAttr.radius + 1.5,
+              pointHoverRadius: pointAttr.radius + 3,
+              pointBackgroundColor: SELECTION_COLOR,
+              pointBorderColor: SELECTION_COLOR
+            }
+          ]
+        },
+        options: {
+          maintainAspectRatio: false,
+          responsive: true,
+          animation: false,
+          parsing: true,
+          interaction: { mode: "nearest", intersect: true },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                title: () => "",
+                label: (ctx) => {
+                  const meta = ctx.datasetIndex === 0 ? this.pointMeta[ctx.dataIndex] : this.overlayMeta[ctx.dataIndex];
+                  return meta ? pointTooltip(meta.point, this.settings, this.state.measure) : "";
+                }
+              }
+            }
+          },
+          scales: {
+            x: buildXScale(timeCol, categories),
+            y: buildYScale(domain, this.state.measure)
+          },
+          onClick: (event, elements) => {
+            if (!elements.length) {
+              this.clearSelection();
+              return;
+            }
+            const el = elements[0];
+            const meta = el.datasetIndex === 0 ? this.pointMeta[el.index] : this.overlayMeta[el.index];
+            if (meta) this.selectParticipant(meta.id);
+          }
+        },
+        plugins: [normalRangePlugin2(this)]
+      });
+      this.chart = chart;
+      this.charts.push(chart);
+    }
+    /**
+     * Render the color-by legend for the active grouping (SOE-REG-049).
+     * @private
+     */
+    drawLegend() {
+      this.legendEl.innerHTML = "";
+      if (!this.groupValues || !this.groupValues.length) return;
+      const groupLabel = (this.settings.groups.find((spec) => spec.value_col === this.state.groupBy) || {}).label || this.state.groupBy;
+      this.legendEl.append(createElement("strong", null, `${groupLabel}:`));
+      this.groupValues.forEach((value) => {
+        const chip = createElement("span", "oe-legend-item");
+        chip.style.cssText = "display:inline-flex;align-items:center;gap:.3rem";
+        const swatch = createElement("span");
+        swatch.style.cssText = `display:inline-block;width:.75rem;height:.75rem;border-radius:2px;background:${this.colorScale.get(
+          String(value)
+        )}`;
+        chip.append(swatch, document.createTextNode(String(value)));
+        this.legendEl.append(chip);
+      });
+    }
+    /**
+     * Highlight one participant: draw the bold selection overlay, open the
+     * linked listing, and dispatch the participantsSelected event (SOE-FUNC-010,
+     * SOE-REG-013/014/016, SOE-API-003).
+     * @param {string} id Participant identifier.
+     * @returns {void}
+     */
+    selectParticipant(id) {
+      this.state.selectedId = id;
+      this.applySelection();
+      const records = this.filteredData.filter(
+        (row) => String(row[this.settings.id_col]) === String(id)
+      );
+      this.currentTableData = records;
+      this.listingSearch = "";
+      this.listingSort = null;
+      this.page = 1;
+      this.footnote.textContent = `Selected participant ${id}: ${records.length} record${records.length === 1 ? "" : "s"}.`;
+      renderListing(this);
+      this.dispatchSelection([id]);
+    }
+    /**
+     * Clear any participant selection and the linked listing (SOE-FUNC-010
+     * click-outside behavior).
+     * @returns {void}
+     */
+    clearSelection() {
+      if (this.state.selectedId == null) return;
+      this.state.selectedId = null;
+      this.applySelection();
+      this.currentTableData = [];
+      this.listingWrap.innerHTML = "";
+      this.footnote.textContent = "Hover a point for details; click a point to highlight a participant.";
+      this.dispatchSelection([]);
+    }
+    /**
+     * Update the selection overlay dataset and re-emphasize the base marks.
+     * @private
+     */
+    applySelection() {
+      if (!this.chart) return;
+      const overlay = this.chart.data.datasets[1];
+      if (this.state.selectedId == null) {
+        overlay.data = [];
+        this.overlayMeta = [];
+      } else {
+        const series = this.series.find(
+          (candidate) => String(candidate.id) === String(this.state.selectedId)
+        );
+        overlay.data = series ? series.points.map((point) => ({ x: point.x, y: point.y })) : [];
+        this.overlayMeta = series ? series.points.map((point) => ({ id: series.id, group: series.group, point })) : [];
+      }
+      this.chart.update();
+    }
+    /**
+     * Dispatch the custom participantsSelected event on the shell root with the
+     * selected IDs (SOE-API-003).
+     * @private
+     */
+    dispatchSelection(ids) {
+      this.participantsSelected = ids;
+      if (this.root) {
+        this.root.dispatchEvent(
+          new CustomEvent("participantsSelected", { detail: { data: ids }, bubbles: true })
+        );
+      }
+    }
+    /**
+     * Refresh the shown/total participant counts, inlier count, and
+     * removed-record note (SOE-FUNC-003, SOE-REG-001/037).
+     * @private
+     */
+    updateNotes() {
+      const totalParticipants = unique5(
+        this.currentMeasureData().map((row) => row[this.settings.id_col])
+      ).length;
+      const shownParticipants = unique5(
+        this.filteredData.map((row) => row[this.settings.id_col])
+      ).length;
+      const pct = totalParticipants ? (shownParticipants / totalParticipants * 100).toFixed(1) : "0.0";
+      const inliers = countInliers(this.filteredData, this.state.normalRange);
+      const inlierNote = inliers == null ? "" : `<span>Inliers: ${inliers} of ${this.filteredData.length} observations.</span>`;
+      const removedNote = this.removedRecords ? `<span class="sv-warning">${this.removedRecords} missing or non-numeric results removed.</span>` : "";
+      this.notes.innerHTML = `<span>${shownParticipants} of ${totalParticipants} participants shown (${pct}%).</span>` + inlierNote + removedNote;
+    }
+    /**
+     * Resize the live chart to its container. For host layouts that change the
+     * container size without a window resize — e.g. the R htmlwidget bindings.
+     * @returns {void}
+     */
+    resize() {
+      this.charts.forEach((chart) => chart.resize());
+    }
+    /**
+     * Destroy the live Chart.js instance without touching the shell.
+     * @private
+     */
+    destroyCharts() {
+      this.charts.forEach((chart) => chart.destroy());
+      this.charts = [];
+      this.chart = null;
+    }
+    /**
+     * Tear the outlier explorer down: destroy the Chart.js instance and empty
+     * the target element. The instance cannot be reused afterwards — create a
+     * new one via the factory instead.
+     * @returns {void}
+     */
+    destroy() {
+      unmountProfileDock(this);
+      this.destroyCharts();
+      this.element.innerHTML = "";
+    }
+  };
+  function outlierExplorer(element = "body", settings = {}) {
+    return new SafetyOutlierExplorer(element, settings);
+  }
+
+  // src/ae-timelines/configure.js
+  var DEFAULT_SETTINGS8 = {
+    id_col: "USUBJID",
+    seq_col: "AESEQ",
+    stdy_col: "ASTDY",
+    endy_col: "AENDY",
+    term_col: "AETERM",
+    color: {
+      value_col: "AESEV",
+      label: "Severity/Intensity",
+      values: ["MILD", "MODERATE", "SEVERE"],
+      colors: [
+        "#66bd63",
+        // mild
+        "#fdae61",
+        // moderate
+        "#d73027",
+        // severe
+        "#377eb8",
+        "#984ea3",
+        "#ff7f00",
+        "#a65628",
+        "#f781bf"
+      ]
+    },
+    highlight: {
+      value_col: "AESER",
+      label: "Serious Event",
+      value: "Y",
+      detail_col: null,
+      attributes: { stroke: "black", "stroke-width": 2 }
+    },
+    filters: null,
+    details: null,
+    sort_participants: "earliest",
+    row_height: 15,
+    page_size: 10
+  };
+  var SORT_OPTIONS = ["earliest", "alphabetical-descending"];
+  function syncSettings8(settings) {
+    const synced = { ...DEFAULT_SETTINGS8, ...settings };
+    synced.color = { ...DEFAULT_SETTINGS8.color, ...settings.color || {} };
+    synced.highlight = settings.highlight === null ? null : {
+      ...DEFAULT_SETTINGS8.highlight,
+      ...settings.highlight || {},
+      attributes: {
+        ...DEFAULT_SETTINGS8.highlight.attributes,
+        ...(settings.highlight || {}).attributes || {}
+      }
+    };
+    const customFilters = arrayify(synced.filters).map((value) => fieldSpec(value)).filter((filter) => filter.value_col);
+    synced.filters = customFilters.length ? customFilters : [
+      ...synced.highlight ? [{ value_col: synced.highlight.value_col, label: synced.highlight.label }] : [],
+      { value_col: synced.color.value_col, label: synced.color.label },
+      { value_col: synced.id_col, label: "Participant Identifier" }
+    ];
+    const defaultDetails = [
+      { value_col: synced.seq_col, label: "Sequence Number" },
+      { value_col: synced.stdy_col, label: "Start Day" },
+      { value_col: synced.endy_col, label: "Stop Day" },
+      { value_col: synced.term_col, label: "Reported Term" },
+      { value_col: synced.color.value_col, label: synced.color.label },
+      ...synced.highlight ? [{ value_col: synced.highlight.value_col, label: synced.highlight.label }] : [],
+      ...synced.highlight && synced.highlight.detail_col ? [
+        {
+          value_col: synced.highlight.detail_col,
+          label: `${synced.highlight.label} Details`
+        }
+      ] : [],
+      ...synced.filters.filter((filter) => filter.value_col !== synced.id_col)
+    ];
+    const details = [...defaultDetails, ...arrayify(synced.details).map((value) => fieldSpec(value))];
+    const seen = /* @__PURE__ */ new Set();
+    synced.details = details.filter((column) => {
+      if (!column.value_col || seen.has(column.value_col)) return false;
+      seen.add(column.value_col);
+      return true;
+    });
+    if (!SORT_OPTIONS.includes(synced.sort_participants)) {
+      synced.sort_participants = DEFAULT_SETTINGS8.sort_participants;
+    }
+    return synced;
+  }
+
+  // src/data/schema/ae-timelines.json
+  var ae_timelines_default = {
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    $id: "https://raw.githubusercontent.com/jwildfire/safety.viz/main/src/data/schema/ae-timelines.json",
+    title: "safety.viz ae-timelines data contract",
+    description: "Adverse-event data: one record per adverse event, with placeholder rows (blank term and start day) keeping AE-free participants in the population denominator (AET-DATA-001). Column names default to the ADaM ADAE standard and are supplied by the settings mapping; records with blank reported terms or non-integer start days are removed with reported counts, and a coloring variable \u2014 severity by default \u2014 is required but remappable (AET-DATA-003).",
+    type: "object",
+    required: ["data", "settings"],
+    properties: {
+      data: {
+        type: "array",
+        minItems: 1,
+        items: { type: "object" },
+        description: "d3.csv()-style records; every row carries the participant, sequence, study-day, term, and coloring columns named in settings."
+      },
+      settings: {
+        type: "object",
+        description: "Column mappings and rendering options; merged onto the module's DEFAULT_SETTINGS, so only overrides need to be supplied.",
+        required: ["id_col", "seq_col", "stdy_col", "endy_col", "term_col", "color"],
+        properties: {
+          id_col: {
+            type: "string",
+            default: "USUBJID",
+            description: "Participant identifier column; required in data. Drives the timeline rows, the participant counts, and the detail-view click-through."
+          },
+          seq_col: {
+            type: "string",
+            default: "AESEQ",
+            description: "Adverse-event sequence number column; required in data. Blank in placeholder rows for participants without adverse events."
+          },
+          stdy_col: {
+            type: "string",
+            default: "ASTDY",
+            description: "Study day of adverse-event onset; required in data. Records with non-integer values are removed with a reported count."
+          },
+          endy_col: {
+            type: "string",
+            default: "AENDY",
+            description: "Study day of adverse-event resolution; required in data. Events with unusable stop days render as zero-length events at the start day."
+          },
+          term_col: {
+            type: "string",
+            default: "AETERM",
+            description: "Verbatim adverse-event term column; required in data (AET-CFG-004). Records with blank terms are removed with a reported count."
+          },
+          color: {
+            type: "object",
+            required: ["value_col"],
+            description: "Event color stratification: the variable, its label, its expected levels, and their colors (AET-CFG-005). A coloring variable is required but does not have to be severity (AET-DATA-003).",
+            properties: {
+              value_col: {
+                type: "string",
+                default: "AESEV",
+                description: "Color stratification variable name, usually event severity (AET-CFG-006); required in data. Blank values normalize to N/A."
+              },
+              label: { type: "string", default: "Severity/Intensity" },
+              values: {
+                type: "array",
+                items: { type: "string" },
+                description: "Expected levels in legend order; unexpected levels found in the data append alphabetically, with N/A last."
+              },
+              colors: {
+                type: "array",
+                items: { type: "string" },
+                description: "Colors assigned by domain position; N/A always renders gray."
+              }
+            }
+          },
+          highlight: {
+            type: ["object", "null"],
+            description: "What events to mark distinctly and how \u2014 serious events by default (AET-CFG-007). Pass null to disable highlighting.",
+            properties: {
+              value_col: { type: "string", default: "AESER" },
+              label: { type: "string", default: "Serious Event" },
+              value: {
+                type: "string",
+                default: "Y",
+                description: "Value of highlight.value_col that identifies events to highlight (AET-CFG-008)."
+              },
+              detail_col: {
+                type: ["string", "null"],
+                default: null,
+                description: "Optional column with highlight detail text for tooltips and the detail listing (AET-CFG-009)."
+              },
+              attributes: {
+                type: "object",
+                description: "Mark style for highlighted events (AET-CFG-010): stroke (color) and stroke-width map onto the highlight outline and overlay line."
+              }
+            }
+          },
+          filters: {
+            $ref: "#/$defs/fieldList",
+            description: "Filter columns rendered as controls (AET-CFG-011); defaults to serious event, severity, and participant identifier."
+          },
+          details: {
+            $ref: "#/$defs/fieldList",
+            description: "Columns for the participant detail listing (AET-CFG-012); custom columns append to the defaults."
+          },
+          sort_participants: {
+            type: "string",
+            enum: ["earliest", "alphabetical-descending"],
+            default: "earliest",
+            description: "Initial participant sort: by earliest adverse-event onset, or alphabetically."
+          }
+        }
+      }
+    },
+    $defs: {
+      fieldList: {
+        type: ["array", "null"],
+        items: {
+          anyOf: [
+            { type: "string" },
+            {
+              type: "object",
+              required: ["value_col"],
+              properties: {
+                value_col: { type: "string" },
+                label: { type: "string" }
+              }
+            }
+          ]
+        }
+      }
+    }
+  };
+
+  // src/ae-timelines/checkInputs.js
+  var REQUIRED_COLUMN_SETTINGS7 = ae_timelines_default.properties.settings.required.filter(
+    (key) => key !== "color"
+  );
+  function checkInputs7(data, settings) {
+    const rows = Array.isArray(data) ? data : [];
+    const columns = [
+      ...REQUIRED_COLUMN_SETTINGS7.map((key) => settings[key]),
+      settings.color.value_col
+    ];
+    const missing = columns.filter((col) => !rows.some((row) => row[col] !== void 0));
+    if (missing.length) {
+      throw new Error(`Required variable(s) missing: ${missing.join(", ")}`);
+    }
+  }
+
+  // src/ae-timelines/structureData.js
+  var HAS_CONTENT = /[^\s*$]/;
+  var INTEGER_DAY = /^-?\d+$/;
+  var NA_COLOR = "#999999";
+  function populationCount(rawData, settings) {
+    return unique(rawData.map((row) => row[settings.id_col])).length;
+  }
+  function cleanData6(rawData, settings) {
+    let removedTerm = 0;
+    let removedDay = 0;
+    const rows = rawData.filter((row) => {
+      const keep = HAS_CONTENT.test(row[settings.term_col]);
+      if (!keep) removedTerm += 1;
+      return keep;
+    }).filter((row) => {
+      const keep = INTEGER_DAY.test(row[settings.stdy_col]);
+      if (!keep) removedDay += 1;
+      return keep;
+    }).map((row) => ({
+      ...row,
+      [settings.color.value_col]: HAS_CONTENT.test(row[settings.color.value_col]) ? row[settings.color.value_col] : "N/A",
+      __aet_stdy: Number(row[settings.stdy_col]),
+      __aet_endy: INTEGER_DAY.test(row[settings.endy_col]) ? Number(row[settings.endy_col]) : null
+    }));
+    return { rows, removedTerm, removedDay };
+  }
+  function colorDomain(rows, colorSettings) {
+    const extras = unique(rows.map((row) => row[colorSettings.value_col])).filter((value) => !colorSettings.values.includes(value)).sort((a, b) => {
+      if (a === "N/A") return 1;
+      if (b === "N/A") return -1;
+      return a.toLowerCase() < b.toLowerCase() ? -1 : 1;
+    });
+    return [...colorSettings.values, ...extras];
+  }
+  function colorFor(value, domain, colors2) {
+    if (value === "N/A") return NA_COLOR;
+    return colors2[domain.indexOf(value) % colors2.length];
+  }
+  function sortSubjects(rows, settings, order) {
+    const ids = unique(rows.map((row) => row[settings.id_col]));
+    if (order === "alphabetical-descending") {
+      return ids.sort((a, b) => String(a).localeCompare(String(b)));
+    }
+    const firstDay = /* @__PURE__ */ new Map();
+    rows.forEach((row) => {
+      const id = row[settings.id_col];
+      if (!firstDay.has(id) || row.__aet_stdy < firstDay.get(id)) {
+        firstDay.set(id, row.__aet_stdy);
+      }
+    });
+    return ids.sort(
+      (a, b) => firstDay.get(a) - firstDay.get(b) || String(a).localeCompare(String(b))
+    );
+  }
+  function buildTimelineRows(rows, settings) {
+    return rows.map((row) => ({
+      subject: row[settings.id_col],
+      seq: row[settings.seq_col],
+      start: row.__aet_stdy,
+      end: row.__aet_endy === null ? row.__aet_stdy : row.__aet_endy,
+      term: row[settings.term_col],
+      color: row[settings.color.value_col],
+      serious: Boolean(
+        settings.highlight && row[settings.highlight.value_col] === settings.highlight.value
+      ),
+      record: row
+    }));
+  }
+
+  // src/ae-timelines/getScales.js
+  function dayDomain(events) {
+    if (!events.length) return [0, 1];
+    let min = Infinity;
+    let max = -Infinity;
+    events.forEach((event) => {
+      if (event.start < min) min = event.start;
+      if (event.start > max) max = event.start;
+      if (event.end > max) max = event.end;
+    });
+    return [min, max];
+  }
+  function buildScales4({ domain, subjects }) {
+    const [min, max] = domain;
+    return {
+      x: {
+        type: "linear",
+        position: "bottom",
+        min,
+        max,
+        title: { display: true, text: "Study Day" }
+      },
+      x2: {
+        type: "linear",
+        position: "top",
+        min,
+        max,
+        grid: { drawOnChartArea: false }
+      },
+      y: {
+        type: "category",
+        labels: subjects,
+        ticks: { autoSkip: false },
+        grid: { display: true }
+      }
+    };
+  }
+
+  // src/ae-timelines/getPlugins.js
+  function withAlpha(hex2, alpha2) {
+    const value = parseInt(hex2.slice(1), 16);
+    const r = value >> 16 & 255;
+    const g = value >> 8 & 255;
+    const b = value & 255;
+    return `rgba(${r}, ${g}, ${b}, ${alpha2})`;
+  }
+  function buildDatasets(events, domain, settings) {
+    const datasets = domain.map((level) => {
+      const color2 = colorFor(level, domain, settings.color.colors);
+      return {
+        label: level,
+        data: events.filter((event) => event.color === level).map((event) => ({ x: [event.start, event.end], y: event.subject, __aet: event })),
+        backgroundColor: withAlpha(color2, 0.5),
+        borderColor: color2,
+        borderWidth: 1,
+        borderSkipped: false,
+        barThickness: 8,
+        grouped: false,
+        xAxisID: "x"
+      };
+    });
+    if (settings.highlight) {
+      datasets.push({
+        label: settings.highlight.label,
+        data: [],
+        backgroundColor: "rgba(0, 0, 0, 0)",
+        borderColor: settings.highlight.attributes.stroke,
+        borderWidth: Number(settings.highlight.attributes["stroke-width"]) || 2,
+        grouped: false,
+        xAxisID: "x"
+      });
+    }
+    return datasets;
+  }
+  function tooltipLines2(event, settings) {
+    const lines = [
+      `Reported Term: ${event.record[settings.term_col]}`,
+      `Start Day: ${event.record[settings.stdy_col]}`,
+      `Stop Day: ${event.record[settings.endy_col] ?? ""}`
+    ];
+    if (event.serious && settings.highlight) {
+      const detailCol = settings.highlight.detail_col || settings.highlight.value_col;
+      lines.push(`${settings.highlight.label}: ${event.record[detailCol]}`);
+    }
+    return lines;
+  }
+  function timelineMarksPlugin(settings) {
+    const highlight = settings.highlight;
+    const stroke = highlight ? highlight.attributes.stroke : "black";
+    const strokeWidth = highlight ? Number(highlight.attributes["stroke-width"]) || 2 : 2;
+    return {
+      id: "aetTimelineMarks",
+      afterDatasetsDraw(chart) {
+        const { ctx } = chart;
+        const marks = [];
+        chart.data.datasets.forEach((dataset, datasetIndex) => {
+          const meta = chart.getDatasetMeta(datasetIndex);
+          if (meta.hidden) return;
+          dataset.data.forEach((point, index) => {
+            const event = point.__aet;
+            const element = meta.data[index];
+            if (!event || !element) return;
+            const x0 = chart.scales.x.getPixelForValue(event.start);
+            const x1 = chart.scales.x.getPixelForValue(event.end);
+            const y = element.y;
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(x0, y, 4, 0, Math.PI * 2);
+            ctx.fillStyle = dataset.backgroundColor;
+            ctx.strokeStyle = dataset.borderColor;
+            ctx.lineWidth = 1;
+            ctx.fill();
+            ctx.stroke();
+            if (event.serious) {
+              ctx.strokeStyle = stroke;
+              ctx.lineWidth = strokeWidth;
+              ctx.beginPath();
+              ctx.arc(x0, y, 6, 0, Math.PI * 2);
+              ctx.stroke();
+              if (x1 > x0) {
+                ctx.beginPath();
+                ctx.moveTo(x0, y);
+                ctx.lineTo(x1, y);
+                ctx.stroke();
+              }
+            }
+            ctx.restore();
+            marks.push({
+              subject: event.subject,
+              start: event.start,
+              end: event.end,
+              serious: event.serious,
+              x0,
+              x1,
+              y,
+              circleX: x0
+            });
+          });
+        });
+        chart.$aetMarks = marks;
+      }
+    };
+  }
+
+  // src/ae-timelines.js
+  Chart.register(BarController, BarElement, CategoryScale, LinearScale, plugin_tooltip, plugin_legend);
+  var TIMELINE_FOOTNOTE = "Hover over an adverse event for details. Click a participant ID to view participant details.";
+  var AETimelines = class {
+    constructor(element = "body", settings = {}) {
+      this.element = typeof element === "string" ? document.querySelector(element) : element;
+      if (!this.element) throw new Error(`AE Timelines target not found: ${element}`);
+      this.settings = syncSettings8(settings);
+      this.rawData = [];
+      this.cleanRows = [];
+      this.filteredData = [];
+      this.currentTableData = [];
+      this.listingSearch = "";
+      this.listingSort = null;
+      this.page = 1;
+      this.charts = [];
+      this.chart = null;
+      this.detailChart = null;
+      this.selectedParticipant = null;
+      this.participantsSelected = [];
+      this.state = {
+        filters: {},
+        sort: this.settings.sort_participants
+      };
+      this.renderShell();
+    }
+    /**
+     * Build the static DOM shell the charts and listing render into, plus the
+     * hidden participant detail view (back button, title, detail chart).
+     * @private
+     */
+    renderShell() {
+      Object.assign(
+        this,
+        renderShell(this.element, {
+          moduleClass: "safety-ae-timelines",
+          onToggle: () => this.resize()
+        })
+      );
+      this.footnote.textContent = TIMELINE_FOOTNOTE;
+      this.detailWrap = createElement("div", "sv-detail sv-hidden");
+      const header = createElement("div", "sv-listing-actions");
+      this.backButton = createElement("button", null, "\u2190 Back");
+      this.backButton.type = "button";
+      this.backButton.onclick = () => this.backToTimelines();
+      this.detailTitle = createElement("strong");
+      header.append(this.backButton, this.detailTitle);
+      this.detailChartWrap = createElement("div", "sv-chart-wrap");
+      this.detailCanvas = document.createElement("canvas");
+      this.detailChartWrap.append(this.detailCanvas);
+      this.detailWrap.append(header, this.detailChartWrap);
+      this.main.insertBefore(this.detailWrap, this.footnote);
+      this.canvas.addEventListener("click", (event) => this.handleAxisClick(event));
+      this.canvas.addEventListener("mousemove", (event) => {
+        this.canvas.style.cursor = this.participantAt(event) === null ? "" : "pointer";
+      });
+    }
+    /**
+     * Load data and render: an alias for setData that keeps the original
+     * renderer's create-then-init call shape working (AET-DATA-004).
+     * @param {Object[]} data Adverse-event records matching the ae-timelines data contract.
+     * @returns {AETimelines} The instance, for chaining.
+     */
+    init(data) {
+      this.setData(data);
+      return this;
+    }
+    /**
+     * Replace the bound data and re-render. The data is validated against the
+     * settings mapping (throwing, and rendering the message into the target
+     * element, when required columns are missing); records with blank terms
+     * or non-integer start days are removed with console warnings while
+     * AE-free placeholder rows still count toward the population; and the
+     * filter controls are rebuilt from the new data's values.
+     * @param {Object[]} data Adverse-event records matching the ae-timelines data contract.
+     * @returns {AETimelines} The instance, for chaining.
+     */
+    setData(data) {
+      this.rawData = Array.isArray(data) ? data : [];
+      this.validateAndCleanData();
+      this.buildControls();
+      this.render();
+      return this;
+    }
+    /**
+     * Merge setting overrides onto the current settings, re-normalize them
+     * (same rules as the factory), rebuild the controls, and re-render.
+     * @param {AETimelinesSettings} settings Setting overrides to merge.
+     * @returns {AETimelines} The instance, for chaining.
+     */
+    setSettings(settings) {
+      this.settings = syncSettings8({ ...this.settings, ...settings });
+      this.state.sort = this.settings.sort_participants;
+      this.validateAndCleanData();
+      this.buildControls();
+      this.render();
+      return this;
+    }
+    /**
+     * Validate the raw data against the settings mapping and drop unusable
+     * records, reporting the removal counts the way the original does.
+     * @private
+     */
+    validateAndCleanData() {
+      try {
+        checkInputs7(this.rawData, this.settings);
+      } catch (error) {
+        this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+        throw error;
+      }
+      this.population = populationCount(this.rawData, this.settings);
+      const { rows, removedTerm, removedDay } = cleanData6(this.rawData, this.settings);
+      this.cleanRows = rows;
+      this.removedTerm = removedTerm;
+      this.removedDay = removedDay;
+      if (removedTerm)
+        console.warn(`${removedTerm} records without [ ${this.settings.term_col} ] removed.`);
+      if (removedDay)
+        console.warn(`${removedDay} records without [ ${this.settings.stdy_col} ] removed.`);
+    }
+    /**
+     * Rebuild the filter and sort controls from the data and control state.
+     * @private
+     */
+    buildControls() {
+      this.controls.innerHTML = "";
+      const { addSection, addControl } = controlBuilders(this.controls);
+      const domain = colorDomain(this.cleanRows, this.settings.color);
+      const filterSpecs = this.settings.filters.filter((filter) => {
+        const values = unique(this.cleanRows.map((row) => row[filter.value_col]));
+        if (!values.length) {
+          console.warn(
+            `The [ ${filter.value_col} ] filter was removed because the variable does not exist.`
+          );
+          return false;
+        }
+        if (values.length < 2) {
+          console.warn(
+            `The [ ${filter.value_col} ] filter was removed because the variable has only one level.`
+          );
+          return false;
+        }
+        return true;
+      });
+      const filterParent = filterSpecs.length ? addSection("Filters") : this.controls;
+      filterSpecs.forEach((filter) => {
+        const select = addControl(filter.label, document.createElement("select"), filterParent);
+        option(select, "__all__", "All", !this.state.filters[filter.value_col]);
+        const values = unique(this.cleanRows.map((row) => row[filter.value_col]));
+        const ordered = filter.value_col === this.settings.color.value_col ? domain.filter((value) => values.includes(value)) : values.sort();
+        ordered.forEach(
+          (value) => option(select, value, value, this.state.filters[filter.value_col] === value)
+        );
+        select.onchange = () => {
+          this.state.filters[filter.value_col] = select.value === "__all__" ? null : select.value;
+          this.render();
+        };
+      });
+      const sortParent = addSection("Sorting");
+      const sort = addControl("Sort Participant IDs", document.createElement("select"), sortParent);
+      SORT_OPTIONS.forEach((value) => option(sort, value, value, value === this.state.sort));
+      sort.onchange = () => {
+        this.state.sort = sort.value;
+        this.render();
+      };
+    }
+    /**
+     * Cleaned records after the active filters.
+     * @private
+     */
+    currentFilteredData() {
+      return applyFilters(this.cleanRows, this.state.filters);
+    }
+    /**
+     * Redraw everything from the current data, settings, and control state:
+     * closes any open participant detail view, destroys the live charts, and
+     * draws the timeline chart and the participant-count note. Called
+     * automatically by the controls and the data/settings setters; call it
+     * directly only after mutating state by hand.
+     * @returns {void}
+     */
+    render() {
+      this.closeDetail(true);
+      this.destroyCharts();
+      this.listingWrap.innerHTML = "";
+      this.currentTableData = [];
+      this.listingSearch = "";
+      this.listingSort = null;
+      this.page = 1;
+      this.footnote.textContent = TIMELINE_FOOTNOTE;
+      this.filteredData = this.currentFilteredData();
+      this.updateNotes();
+      if (!this.filteredData.length) {
+        this.footnote.textContent = "No adverse events match the current filters.";
+        return;
+      }
+      const events = buildTimelineRows(this.filteredData, this.settings);
+      this.currentDomain = dayDomain(events);
+      const subjects = sortSubjects(this.filteredData, this.settings, this.state.sort);
+      this.chartWrap.style.height = `${Math.max(240, subjects.length * this.settings.row_height + 120)}px`;
+      this.chart = this.drawTimeline(this.canvas, events, this.currentDomain, subjects);
+    }
+    /**
+     * Refresh the italicized shown/total participant annotation
+     * (AET-FUNC-007, AET-REG-013) and the removed-record warnings.
+     * @private
+     */
+    updateNotes() {
+      const shown = unique(this.filteredData.map((row) => row[this.settings.id_col])).length;
+      const pct = this.population ? (shown / this.population * 100).toFixed(1) : "0.0";
+      const warnings = [
+        this.removedTerm ? `${this.removedTerm} records without [ ${this.settings.term_col} ] removed.` : "",
+        this.removedDay ? `${this.removedDay} records without [ ${this.settings.stdy_col} ] removed.` : ""
+      ].filter(Boolean).join(" ");
+      this.notes.innerHTML = `<em>${shown} of ${this.population} participant ID(s) shown (${pct}%)</em>` + (warnings ? `<span class="sv-warning">${warnings}</span>` : "");
+    }
+    /**
+     * Draw one timeline chart — the main participant chart or the detail
+     * per-event chart — with the shared datasets, scales, marks, and tooltips.
+     * @private
+     */
+    drawTimeline(canvas, events, domain, labels) {
+      const datasets = buildDatasets(events, colorDomain(this.cleanRows, this.settings.color), {
+        ...this.settings
+      });
+      const chart = new Chart(canvas.getContext("2d"), {
+        type: "bar",
+        data: { labels, datasets },
+        options: {
+          indexAxis: "y",
+          maintainAspectRatio: false,
+          responsive: true,
+          animation: false,
+          plugins: {
+            legend: { position: "top" },
+            tooltip: {
+              callbacks: {
+                title: (items) => items.length ? String(items[0].raw.y) : "",
+                label: (ctx) => tooltipLines2(ctx.raw.__aet, this.settings)
+              }
+            }
+          },
+          scales: buildScales4({ domain, subjects: labels })
+        },
+        plugins: [timelineMarksPlugin(this.settings)]
+      });
+      chart.$aetEvents = events;
+      this.charts.push(chart);
+      return chart;
+    }
+    /**
+     * The participant label at a canvas mouse event, or null when the event
+     * is outside the y-axis label region.
+     * @private
+     */
+    participantAt(event) {
+      const chart = this.chart;
+      if (!chart || this.selectedParticipant) return null;
+      const { left, top, bottom } = chart.chartArea;
+      if (event.offsetX >= left || event.offsetY < top || event.offsetY > bottom) return null;
+      const index = Math.round(chart.scales.y.getValueForPixel(event.offsetY));
+      const labels = chart.scales.y.getLabels();
+      return index >= 0 && index < labels.length ? labels[index] : null;
+    }
+    /**
+     * Open the participant detail view when a y-axis label is clicked
+     * (AET-FUNC-009).
+     * @private
+     */
+    handleAxisClick(event) {
+      const participant = this.participantAt(event);
+      if (participant !== null) this.showParticipantDetail(participant);
+    }
+    /**
+     * Open the detail view for one participant: their per-event timeline on
+     * the main chart's study-day domain (one row per sequence number), the
+     * raw-record listing with search/sort/CSV export, and the Back button —
+     * hiding the timelines and controls, and dispatching the
+     * participantsSelected event with the selected ID.
+     * @param {string} participant Participant ID to detail.
+     * @returns {void}
+     */
+    showParticipantDetail(participant) {
+      this.selectedParticipant = participant;
+      this.sidebar.classList.add("sv-hidden");
+      this.chartWrap.classList.add("sv-hidden");
+      this.notes.classList.add("sv-hidden");
+      this.detailWrap.classList.remove("sv-hidden");
+      this.detailTitle.textContent = `Participant: ${participant}`;
+      const rows = this.cleanRows.filter((row) => row[this.settings.id_col] === participant).sort((a, b) => Number(a[this.settings.seq_col]) - Number(b[this.settings.seq_col]));
+      const events = buildTimelineRows(rows, this.settings).map((event) => ({
+        ...event,
+        subject: String(event.seq)
+      }));
+      const seqs = events.map((event) => event.subject);
+      this.detailChartWrap.style.height = `${Math.max(200, seqs.length * this.settings.row_height * 2 + 120)}px`;
+      if (this.detailChart) {
+        this.charts = this.charts.filter((chart) => chart !== this.detailChart);
+        this.detailChart.destroy();
+      }
+      this.detailChart = this.drawTimeline(this.detailCanvas, events, this.currentDomain, seqs);
+      this.currentTableData = rows;
+      this.listingSearch = "";
+      this.listingSort = null;
+      this.page = 1;
+      renderListing(this);
+      this.footnote.textContent = "Click Back to return to the adverse event timelines.";
+      this.dispatchParticipantsSelected([participant]);
+    }
+    /**
+     * Close the detail view without re-rendering.
+     * @private
+     */
+    closeDetail(silent) {
+      if (!this.selectedParticipant) return;
+      this.selectedParticipant = null;
+      if (this.detailChart) {
+        this.charts = this.charts.filter((chart) => chart !== this.detailChart);
+        this.detailChart.destroy();
+        this.detailChart = null;
+      }
+      this.detailWrap.classList.add("sv-hidden");
+      this.sidebar.classList.remove("sv-hidden");
+      this.chartWrap.classList.remove("sv-hidden");
+      this.notes.classList.remove("sv-hidden");
+      this.listingWrap.innerHTML = "";
+      this.currentTableData = [];
+      this.footnote.textContent = TIMELINE_FOOTNOTE;
+      if (!silent) this.dispatchParticipantsSelected([]);
+    }
+    /**
+     * Return from the participant detail view to the timelines (AET-FUNC-010):
+     * clears the selection, dispatches participantsSelected with an empty
+     * array, and re-renders the timeline chart.
+     * @returns {void}
+     */
+    backToTimelines() {
+      this.closeDetail(false);
+      this.render();
+    }
+    /**
+     * Track and dispatch the participantsSelected DOM CustomEvent on the
+     * container element (AET-API-003): detail.data holds the selected ID
+     * (["SUBJ-01"]) or an empty array when the selection clears.
+     * @private
+     */
+    dispatchParticipantsSelected(ids) {
+      this.participantsSelected = ids;
+      this.element.dispatchEvent(
+        new CustomEvent("participantsSelected", { detail: { data: ids }, bubbles: true })
+      );
+    }
+    /**
+     * Resize every live chart (the timeline and any open detail chart) to its
+     * container. For host layouts that change the container size without a
+     * window resize — e.g. the R htmlwidget bindings.
+     * @returns {void}
+     */
+    resize() {
+      this.charts.forEach((chart) => chart.resize());
+    }
+    /**
+     * Destroy the live Chart.js instances without touching the shell.
+     * @private
+     */
+    destroyCharts() {
+      this.charts.forEach((chart) => chart.destroy());
+      this.charts = [];
+      this.chart = null;
+      this.detailChart = null;
+    }
+    /**
+     * Tear the timelines down: destroy every Chart.js instance and empty the
+     * target element. The instance cannot be reused afterwards — create a new
+     * one via the factory instead.
+     * @returns {void}
+     */
+    destroy() {
+      this.destroyCharts();
+      this.element.innerHTML = "";
+    }
+  };
+  function aeTimelines(element = "body", settings = {}) {
+    return new AETimelines(element, settings);
+  }
+
+  // src/data/schema/hep-explorer.json
+  var hep_explorer_default = {
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    $id: "https://raw.githubusercontent.com/jwildfire/safety.viz/main/src/data/schema/hep-explorer.json",
+    title: "safety.viz hep-explorer data contract",
+    description: "Long-format liver-lab data: one record per participant per measure per visit/day (HEP-DATA-001). Column names are supplied by the settings mapping; the hep-explorer standardizes each value to \xD7ULN and \xD7Baseline, reduces to one point per participant (peak X measure vs peak Y measure), and removes missing/non-numeric results with a reported count (HEP-DATA-003). The four liver measures (ALT/AST/TB/ALP) are matched from the measure column via measure_values.",
+    type: "object",
+    required: ["data", "settings"],
+    properties: {
+      data: {
+        type: "array",
+        minItems: 1,
+        items: { type: "object" },
+        description: "d3.csv()-style records; every row carries the measure, result, participant, and ULN columns named in settings, one row per participant per measure per visit/day."
+      },
+      settings: {
+        type: "object",
+        description: "Column mappings and rendering options; merged onto the module's DEFAULT_SETTINGS, so only overrides need to be supplied (HEP-DATA-003).",
+        required: ["id_col", "measure_col", "value_col", "normal_col_high"],
+        properties: {
+          id_col: {
+            type: "string",
+            default: "USUBJID",
+            description: "Participant identifier column; one plotted point per participant (HEP-DATA-001)."
+          },
+          measure_col: {
+            type: "string",
+            default: "TEST",
+            description: "Column holding the measure name; required in data. Matched to the ALT/AST/TB/ALP keys via measure_values (HEP-DATA-002)."
+          },
+          value_col: {
+            type: "string",
+            default: "STRESN",
+            description: "Column holding the numeric result; required in data. Non-numeric results are removed with a logged count (HEP-DATA-003)."
+          },
+          unit_col: {
+            type: "string",
+            default: "STRESU",
+            description: "Optional unit column, appended to measure labels and shown in the linked listing."
+          },
+          normal_col_high: {
+            type: "string",
+            default: "STNRHI",
+            description: "Upper limit of normal (ULN); required in data \u2014 the \xD7ULN standardization divides each value by it (HEP-DISPLAY-002)."
+          },
+          normal_col_low: {
+            type: ["string", "null"],
+            default: "STNRLO",
+            description: "Optional lower limit of normal, carried into the linked listing."
+          },
+          studyday_col: {
+            type: ["string", "null"],
+            default: "DY",
+            description: "Optional study-day column; drives the timing test and visit-path ordering. When absent, a per-participant per-measure input-order sequence is derived (HEP-DATA-004, HEP-SELECT-004)."
+          },
+          visit_col: {
+            type: ["string", "null"],
+            default: "VISIT",
+            description: "Optional categorical visit column; labels the visit-path overlay and pairs the X/Y trajectory points (HEP-SELECT-003)."
+          },
+          visitn_col: {
+            type: ["string", "null"],
+            default: "VISITNUM",
+            description: "Optional numeric visit column; orders visit-keyed series when present."
+          },
+          arm_col: {
+            type: ["string", "null"],
+            default: "ARM",
+            description: "Treatment-arm column, structural for the migration view \u2014 it decides which side of the centre column a participant's flow leaves from. Auto-detected across ARM, ACTARM, TRT01A, TREATMENT and TRTA when the named column is absent, and deliberately NOT in this contract's required list, so arm-less data still renders the scatter and composite views (HEP-ARM-001)."
+          },
+          placebo_arm: {
+            type: ["string", "null"],
+            default: null,
+            description: "Arm value plotted on the left (placebo) side of the migration Sankey; when null it is auto-detected by matching the arm values against /placebo|control/i (HEP-ARM-002)."
+          },
+          active_arms: {
+            type: ["array", "string", "null"],
+            items: { type: "string" },
+            default: null,
+            description: "Arm values plotted on the right (active) side; when null every non-placebo arm pools right and the pooled arms are named in the notes (HEP-ARM-003)."
+          },
+          baseline_col: {
+            type: ["string", "null"],
+            default: null,
+            description: "Optional baseline-flag column (e.g. ABLFL). When supplied, the flagged record is the baseline, outranking the day-0-else-earliest heuristic (HEP-CORE-003)."
+          },
+          baseline_value: {
+            type: "string",
+            default: "Y",
+            description: "The value of baseline_col that marks the baseline record (HEP-CORE-003)."
+          },
+          jaundice_uln: {
+            type: "number",
+            default: 2,
+            description: "New-onset-jaundice threshold on the total-bilirubin \xD7ULN scale: flagged when baseline is at or below it and the on-treatment maximum exceeds it. Defaults to the composite plot's bilirubin cutpoint so the flag and the quadrants stay mutually consistent (HEP-CORE-006)."
+          },
+          hide_unchanged: {
+            type: "boolean",
+            default: false,
+            description: "Migration view: suppress the diagonal (no-migration) ribbons; the hidden participant count stays in the notes and the cross tables (HEP-MIG-013)."
+          },
+          measure_values: {
+            type: "object",
+            default: {
+              ALT: "Aminotransferase, alanine (ALT)",
+              AST: "Aminotransferase, aspartate (AST)",
+              TB: "Total Bilirubin",
+              ALP: "Alkaline phosphatase (ALP)"
+            },
+            description: "Map of the short measure key (ALT/AST/TB/ALP) to the full measure string in the data (HEP-DATA-002)."
+          },
+          view: {
+            type: "string",
+            enum: ["scatter", "migration", "composite"],
+            default: "scatter",
+            description: "Initial view mode: `scatter` (eDISH/mDISH one-point-per-participant scatter), `migration` (the bidirectional baseline \u2192 peak on-treatment Sankey mirrored about the baseline categorization, with one cross table per treatment arm \u2014 Amirzadegan et al., Drug Safety 2025, Fig 3; needs arm_col mapped), or `composite` (baseline-referenced composite plot for subjects with abnormal baseline liver tests \u2014 pretreatment and on-treatment eDISH panels, a four-panel \xD7Baseline shift plot, and a migration table) (HEP-COMP-006, HEP-MIG-001)."
+          },
+          x_default: {
+            type: "string",
+            default: "ALT",
+            description: "Measure plotted on the x-axis on first render (HEP-CTRL-001)."
+          },
+          y_default: {
+            type: "string",
+            default: "TB",
+            description: "Measure plotted on the y-axis on first render (HEP-CTRL-002)."
+          },
+          x_options: {
+            type: "array",
+            items: { type: "string" },
+            default: ["ALT", "AST", "TB", "ALP"],
+            description: "Measures offered by the X-axis Measure control (HEP-CTRL-001)."
+          },
+          y_options: {
+            type: "array",
+            items: { type: "string" },
+            default: ["TB"],
+            description: "Measures offered by the Y-axis Measure control; a single option drops the control (HEP-CTRL-002)."
+          },
+          cuts: {
+            type: "object",
+            default: {
+              TB: { relative_uln: 2, relative_baseline: 4.8 },
+              ALP: { relative_uln: 1, relative_baseline: 3.8 },
+              rRatio: { relative_uln: 5, relative_baseline: 5 },
+              defaults: { relative_uln: 3, relative_baseline: 3.8 }
+            },
+            description: "Per-measure Hy's-Law cutpoints keyed by measure then display mode; a `defaults` entry back-fills any measure without its own cuts (HEP-QUAD-001)."
+          },
+          visit_window: {
+            type: "number",
+            default: 30,
+            description: "Timing window (days): points whose peak-X and peak-Y days are within this many days render filled, else hollow (HEP-CTRL-008, HEP-DISPLAY-005)."
+          },
+          r_ratio_filter: {
+            type: "boolean",
+            default: true,
+            description: "Whether to render the R-Ratio range filter control (HEP-CTRL-010)."
+          },
+          r_ratio: {
+            type: "array",
+            items: { type: ["number", "null"] },
+            default: [0, null],
+            description: "Initial R-Ratio [min, max]; a null max is resolved from the data on first render (HEP-CTRL-010)."
+          },
+          filters: {
+            $ref: "#/$defs/fieldList",
+            description: "Optional filter columns rendered as controls (HEP-CTRL-011)."
+          },
+          groups: {
+            $ref: "#/$defs/fieldList",
+            description: "Optional color-by columns for grouping the points (HEP-CTRL-009)."
+          },
+          details: {
+            $ref: "#/$defs/fieldList",
+            description: "Optional listing columns; defaults derive from the measure/day/value mappings (HEP-SELECT-006)."
+          }
+        }
+      }
+    },
+    $defs: {
+      fieldList: {
+        type: "array",
+        items: {
+          anyOf: [
+            { type: "string" },
+            {
+              type: "object",
+              required: ["value_col"],
+              properties: {
+                value_col: { type: "string" },
+                label: { type: "string" }
+              }
+            }
+          ]
+        }
+      }
+    }
+  };
+
+  // src/hep-explorer/checkInputs.js
+  var REQUIRED_COLUMN_SETTINGS8 = hep_explorer_default.properties.settings.required;
+  function checkInputs8(data, settings) {
+    const rows = Array.isArray(data) ? data : [];
+    const missing = REQUIRED_COLUMN_SETTINGS8.map((key) => settings[key]).filter(
+      (col) => !rows.some((row) => row[col] !== void 0)
+    );
+    if (missing.length) {
+      throw new Error(`Required variable(s) missing: ${missing.join(", ")}`);
+    }
+  }
+
+  // src/hep-explorer/getScales.js
+  function formatNumber4(value, digits = 2) {
+    if (!Number.isFinite(value)) return "";
+    return Number(value.toFixed(digits)).toString();
+  }
+  function axisSuffix(display) {
+    return display === "relative_baseline" ? " [\xD7Baseline]" : " [\xD7ULN]";
+  }
+  function measureLabel5(measureKey, measureValues) {
+    if (measureValues && measureValues[measureKey]) return measureValues[measureKey];
+    return measureKey ?? "";
+  }
+  function axisLabel2(measureKey, display, measureValues) {
+    return `${measureLabel5(measureKey, measureValues)}${axisSuffix(display)}`;
+  }
+  function edishDomain(values, cut, type = "linear") {
+    const nums = values.filter(Number.isFinite);
+    const all = Number.isFinite(cut) ? [...nums, cut] : nums;
+    if (!all.length) return type === "log" ? [0.1, 1] : [0, 1];
+    const max = Math.max(...all);
+    if (type === "log") {
+      const positives = all.filter((value) => value > 0);
+      const min = positives.length ? Math.min(...positives) : 0.1;
+      return [min / 1.5, max * 1.5];
+    }
+    return [0, max * 1.05 || 1];
+  }
+  function buildScales5(state, xDomain, yDomain, measureValues) {
+    const type = state.axisType === "log" ? "logarithmic" : "linear";
+    const axis = (domain, label) => {
+      const min = type === "logarithmic" && !(domain[0] > 0) ? void 0 : domain[0];
+      return {
+        type,
+        min,
+        max: domain[1],
+        title: { display: true, text: label },
+        grid: { color: "rgba(148, 163, 184, 0.25)" }
+      };
+    };
+    return {
+      x: axis(xDomain, axisLabel2(state.measureX, state.display, measureValues)),
+      y: axis(yDomain, axisLabel2(state.measureY, state.display, measureValues))
+    };
+  }
+
+  // src/hep-explorer/getPlugins.js
+  var GROUP_COLORS2 = [
+    "#1f78b4",
+    "#e31a1c",
+    "#33a02c",
+    "#ff7f00",
+    "#6a3d9a",
+    "#b15928",
+    "#00838f",
+    "#c2185b"
+  ];
+  var SELECTION_COLOR2 = "#111827";
+  var QUADRANT_LABELS = [
+    { position: "upper-right", label: "Possible Hy's Law Range", xCat: "High", yCat: "High" },
+    { position: "upper-left", label: "Hyperbilirubinemia", xCat: "Normal", yCat: "High" },
+    { position: "lower-right", label: "Temple's Corollary", xCat: "High", yCat: "Normal" },
+    { position: "lower-left", label: "Normal Range", xCat: "Normal", yCat: "Normal" }
+  ];
+  function hexToRgba3(hex2, opacity) {
+    const clean = hex2.replace("#", "");
+    const r = parseInt(clean.slice(0, 2), 16);
+    const g = parseInt(clean.slice(2, 4), 16);
+    const b = parseInt(clean.slice(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  }
+  function groupColorScale2(groupValues) {
+    const scale = /* @__PURE__ */ new Map();
+    groupValues.forEach((value, index) => {
+      scale.set(String(value), GROUP_COLORS2[index % GROUP_COLORS2.length]);
+    });
+    return scale;
+  }
+  function dayText(day) {
+    return Number.isFinite(day) ? String(day) : "NA";
+  }
+  function pointTooltip2(point, state, measureValues) {
+    const lines = [
+      `Participant: ${point.id}`,
+      `R Ratio: ${Number.isFinite(point.rRatio) ? formatNumber4(point.rRatio) : "NA"}`,
+      `${measureLabel5(state.measureX, measureValues)}: ${formatNumber4(point.x)} @ day ${dayText(
+        point.days_x
+      )}`,
+      `${measureLabel5(state.measureY, measureValues)}: ${formatNumber4(point.y)} @ day ${dayText(
+        point.days_y
+      )}`
+    ];
+    if (Number.isFinite(point.day_diff)) {
+      lines.push(`${formatNumber4(point.day_diff)} days apart`);
+    }
+    return lines;
+  }
+  function referenceLinePlugin({ vLines = [], hLines = [] } = {}) {
+    return {
+      id: `hep-reflines-${Math.random().toString(36).slice(2)}`,
+      beforeDatasetsDraw(chart) {
+        const { ctx, chartArea, scales } = chart;
+        if (!scales.x || !scales.y) return;
+        ctx.save();
+        ctx.strokeStyle = "rgba(100, 116, 139, 0.65)";
+        ctx.fillStyle = "rgba(51, 65, 85, 0.85)";
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        ctx.font = "10px system-ui, sans-serif";
+        vLines.forEach(({ value, label }) => {
+          const px = scales.x.getPixelForValue(value);
+          if (!(px >= chartArea.left && px <= chartArea.right)) return;
+          ctx.beginPath();
+          ctx.moveTo(px, chartArea.top);
+          ctx.lineTo(px, chartArea.bottom);
+          ctx.stroke();
+          if (label) {
+            ctx.textAlign = "left";
+            ctx.textBaseline = "bottom";
+            ctx.fillText(label, px + 2, chartArea.bottom - 2);
+          }
+        });
+        hLines.forEach(({ value, label }) => {
+          const py = scales.y.getPixelForValue(value);
+          if (!(py >= chartArea.top && py <= chartArea.bottom)) return;
+          ctx.beginPath();
+          ctx.moveTo(chartArea.left, py);
+          ctx.lineTo(chartArea.right, py);
+          ctx.stroke();
+          if (label) {
+            ctx.textAlign = "left";
+            ctx.textBaseline = "bottom";
+            ctx.fillText(label, chartArea.left + 2, py - 2);
+          }
+        });
+        ctx.restore();
+      }
+    };
+  }
+  function quadrantPlugin(instance) {
+    return {
+      id: `hep-quadrants-${Math.random().toString(36).slice(2)}`,
+      beforeDatasetsDraw(chart) {
+        chart.$hepQuadrants = null;
+        const state = instance.state || {};
+        const { xCut, yCut } = state;
+        if (!Number.isFinite(xCut) || !Number.isFinite(yCut)) return;
+        const { ctx, chartArea, scales } = chart;
+        if (!scales.x || !scales.y) return;
+        const xPixel = scales.x.getPixelForValue(xCut);
+        const yPixel = scales.y.getPixelForValue(yCut);
+        const quadrants = instance.quadrants || { labels: [] };
+        const counts = {};
+        const percents = {};
+        quadrants.labels.forEach((entry) => {
+          counts[entry.position] = entry.count;
+          percents[entry.position] = entry.percent;
+        });
+        chart.$hepQuadrants = { xCut, yCut, xPixel, yPixel, counts, percents };
+        ctx.save();
+        ctx.strokeStyle = "rgba(100, 116, 139, 0.7)";
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        if (xPixel >= chartArea.left && xPixel <= chartArea.right) {
+          ctx.beginPath();
+          ctx.moveTo(xPixel, chartArea.top);
+          ctx.lineTo(xPixel, chartArea.bottom);
+          ctx.stroke();
+        }
+        if (yPixel >= chartArea.top && yPixel <= chartArea.bottom) {
+          ctx.beginPath();
+          ctx.moveTo(chartArea.left, yPixel);
+          ctx.lineTo(chartArea.right, yPixel);
+          ctx.stroke();
+        }
+        ctx.setLineDash([]);
+        ctx.fillStyle = "rgba(51, 65, 85, 0.9)";
+        ctx.font = "11px system-ui, sans-serif";
+        ctx.textBaseline = "middle";
+        const anchors = {
+          "upper-left": { x: chartArea.left + 6, y: chartArea.top + 12, align: "left" },
+          "upper-right": { x: chartArea.right - 6, y: chartArea.top + 12, align: "right" },
+          "lower-left": { x: chartArea.left + 6, y: chartArea.bottom - 12, align: "left" },
+          "lower-right": { x: chartArea.right - 6, y: chartArea.bottom - 12, align: "right" }
+        };
+        quadrants.labels.forEach((entry) => {
+          const anchor = anchors[entry.position];
+          if (!anchor) return;
+          ctx.textAlign = anchor.align;
+          const percent = Number.isFinite(entry.percent) ? entry.percent.toFixed(1) : "0.0";
+          ctx.fillText(`${entry.label} (${percent}%)`, anchor.x, anchor.y);
+        });
+        ctx.restore();
+      }
+    };
+  }
+
+  // src/hep-explorer/structureData.js
+  function unique6(values) {
+    return [
+      ...new Set(values.filter((value) => value !== void 0 && value !== null && value !== ""))
+    ];
+  }
+  function maxRRatio(cleanRows, settings) {
+    const byId = /* @__PURE__ */ new Map();
+    cleanRows.forEach((row) => {
+      const id = row[settings.id_col];
+      if (!byId.has(id)) byId.set(id, []);
+      byId.get(id).push(row);
+    });
+    let max = 0;
+    byId.forEach((participantRows) => {
+      const ratio = computeRRatio(participantRows, settings);
+      if (Number.isFinite(ratio) && ratio > max) max = ratio;
+    });
+    return max;
+  }
+  function buildPoints(cleanRows, settings, state) {
+    const { measureX, measureY, display, visitWindow, groupBy: groupBy2 } = state;
+    const timed = hasStudyDay(cleanRows);
+    const metaCols = unique6([
+      settings.id_col,
+      ...settings.filters.map((filter) => filter.value_col),
+      ...settings.groups.map((group) => group.value_col)
+    ]).filter((col) => col && col !== GROUP_NONE);
+    const byId = /* @__PURE__ */ new Map();
+    cleanRows.forEach((row) => {
+      const id = row[settings.id_col];
+      if (!byId.has(id)) byId.set(id, []);
+      byId.get(id).push(row);
+    });
+    const points = [];
+    let droppedParticipants = 0;
+    byId.forEach((participantRows, id) => {
+      const peakX = participantPeak(
+        resolveMeasureRows(participantRows, settings, measureX),
+        measureX,
+        display
+      );
+      const peakY = participantPeak(
+        resolveMeasureRows(participantRows, settings, measureY),
+        measureY,
+        display
+      );
+      if (!peakX || !peakY || !(peakX.value > 0) || !(peakY.value > 0)) {
+        droppedParticipants += 1;
+        return;
+      }
+      const daysX = peakX.day;
+      const daysY = peakY.day;
+      const dayDiff = Number.isFinite(daysX) && Number.isFinite(daysY) ? Math.abs(daysX - daysY) : NaN;
+      const withinWindow = Number.isFinite(dayDiff) ? dayDiff <= visitWindow : !timed;
+      const groupValue = groupBy2 && groupBy2 !== GROUP_NONE ? participantRows[0][groupBy2] : null;
+      const meta = {};
+      metaCols.forEach((col) => {
+        meta[col] = participantRows[0][col] === void 0 ? "" : String(participantRows[0][col]);
+      });
+      points.push({
+        id,
+        x: peakX.value,
+        y: peakY.value,
+        days_x: daysX,
+        days_y: daysY,
+        day_diff: dayDiff,
+        withinWindow,
+        rRatio: computeRRatio(participantRows, settings),
+        group: groupValue === null || groupValue === void 0 ? null : String(groupValue),
+        raw: meta
+      });
+    });
+    return { points, droppedParticipants };
+  }
+  function applyFilters6(points, filters) {
+    return points.filter(
+      (point) => Object.entries(filters).every(
+        ([key, value]) => !value || String(point.raw[key]) === String(value)
+      )
+    );
+  }
+  function classifyQuadrants(points, xCut, yCut) {
+    const counts = {};
+    QUADRANT_LABELS.forEach((entry) => {
+      counts[entry.position] = 0;
+    });
+    points.forEach((point) => {
+      const xCat = point.x >= xCut ? "High" : "Normal";
+      const yCat = point.y >= yCut ? "High" : "Normal";
+      const quadrant = QUADRANT_LABELS.find((entry) => entry.xCat === xCat && entry.yCat === yCat);
+      if (quadrant) counts[quadrant.position] += 1;
+    });
+    const total = points.length;
+    const labels = QUADRANT_LABELS.map((entry) => {
+      const count2 = counts[entry.position];
+      return {
+        position: entry.position,
+        label: entry.label,
+        count: count2,
+        percent: total ? count2 / total * 100 : 0
+      };
+    });
+    return { counts, labels };
+  }
+  function visitPathSeries(cleanRows, id, settings, state) {
+    const { measureX, measureY, display } = state;
+    const field = displayField(display);
+    const participantRows = cleanRows.filter((row) => row[settings.id_col] === id);
+    const xRows = resolveMeasureRows(participantRows, settings, measureX);
+    const yRows = resolveMeasureRows(participantRows, settings, measureY);
+    const keyOf = (row) => {
+      if (settings.visit_col && row[settings.visit_col] !== void 0 && row[settings.visit_col] !== "") {
+        return `v:${row[settings.visit_col]}`;
+      }
+      if (Number.isFinite(row.__hep_day)) return `d:${row.__hep_day}`;
+      return `s:${Number.isFinite(row.__hep_seq) ? row.__hep_seq : row.__hep_index}`;
+    };
+    const entries = /* @__PURE__ */ new Map();
+    const ingest = (rows, axis) => {
+      rows.forEach((row) => {
+        const key = keyOf(row);
+        if (!entries.has(key)) {
+          entries.set(key, { x: NaN, y: NaN, day: NaN, seq: NaN, visit: null, order: Infinity });
+        }
+        const entry = entries.get(key);
+        entry[axis] = row[field];
+        if (Number.isFinite(row.__hep_day)) entry.day = row.__hep_day;
+        if (Number.isFinite(row.__hep_seq)) {
+          entry.seq = Number.isFinite(entry.seq) ? Math.min(entry.seq, row.__hep_seq) : row.__hep_seq;
+        }
+        if (settings.visit_col && row[settings.visit_col] !== void 0) {
+          entry.visit = row[settings.visit_col];
+        }
+        entry.order = Math.min(entry.order, row.__hep_index);
+      });
+    };
+    ingest(xRows, "x");
+    ingest(yRows, "y");
+    return [...entries.values()].filter((entry) => Number.isFinite(entry.x) && Number.isFinite(entry.y)).sort((a, b) => {
+      const da = Number.isFinite(a.day) ? a.day : Number.MAX_SAFE_INTEGER;
+      const db = Number.isFinite(b.day) ? b.day : Number.MAX_SAFE_INTEGER;
+      return da - db || a.order - b.order;
+    }).map((entry) => ({
+      x: entry.x,
+      y: entry.y,
+      day: entry.day,
+      visit: entry.visit,
+      label: entry.visit ? String(entry.visit) : Number.isFinite(entry.day) ? `Day ${entry.day}` : `#${Number.isFinite(entry.seq) ? entry.seq : entry.order}`
+    }));
   }
 
   // src/hep-explorer/selection.js
@@ -21460,7 +21551,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
         if (carriedIds.length) host.selection.dispatch([]);
         return;
       }
-      const grouped = host.state.groupBy && host.state.groupBy !== GROUP_NONE2;
+      const grouped = host.state.groupBy && host.state.groupBy !== GROUP_NONE;
       host.groupValues = grouped ? unique6(host.points.map((point) => point.group)).filter((value) => value !== null && value !== void 0).map(String).sort() : [];
       host.colorScale = groupColorScale2(host.groupValues);
       host.quadrants = classifyQuadrants(host.points, host.state.xCut, host.state.yCut);
@@ -21823,7 +21914,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
   }
 
   // src/hep-explorer/views/migration.js
-  var SVG_NS3 = "http://www.w3.org/2000/svg";
+  var SVG_NS2 = "http://www.w3.org/2000/svg";
   var SIDES3 = ["placebo", "active"];
   var SIDE_LABEL = { placebo: "placebo", active: "active drug" };
   var SIDE_TITLE = { placebo: "Placebo", active: "Active drug" };
@@ -21837,8 +21928,8 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
   var MARGIN = { left: 132, right: 44, top: 46, bottom: 16 };
   var OUTER_WIDTH = MARGIN.left + SANKEY_WIDTH + MARGIN.right;
   var OUTER_HEIGHT = MARGIN.top + SANKEY_HEIGHT + MARGIN.bottom;
-  function svgEl2(tag, attrs = {}) {
-    const el = document.createElementNS(SVG_NS3, tag);
+  function svgEl(tag, attrs = {}) {
+    const el = document.createElementNS(SVG_NS2, tag);
     Object.entries(attrs).forEach(([key, value]) => {
       if (value !== null && value !== void 0) el.setAttribute(key, String(value));
     });
@@ -22014,7 +22105,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     [...bands.keys()].sort((a, b) => a - b).forEach((tier) => {
       const band = bands.get(tier);
       group.append(
-        svgEl2("rect", {
+        svgEl("rect", {
           class: "hep-sankey-tier",
           "data-tier": tier,
           x: 0,
@@ -22024,7 +22115,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
           rx: 6
         })
       );
-      const label = svgEl2("text", {
+      const label = svgEl("text", {
         class: "hep-sankey-tier-label",
         "data-tier": tier,
         x: -10,
@@ -22041,7 +22132,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     nodes.forEach((node) => {
       const style = QUADRANT_STYLE[node.quadrant];
       group.append(
-        svgEl2("rect", {
+        svgEl("rect", {
           class: `hep-sankey-node${node.stub ? " is-stub" : ""}`,
           "data-node": node.id,
           "data-column": node.column,
@@ -22059,7 +22150,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       );
       const centred = node.column === "centre";
       const counts = centred ? `${node.counts.placebo} / ${node.counts.active}` : String(node.count);
-      const text = svgEl2("text", {
+      const text = svgEl("text", {
         class: `hep-sankey-node-label${node.stub ? " is-stub" : ""}${centred ? " is-centre" : ""}`,
         "data-node": node.id,
         x: centred ? (columns.centre[0] + columns.centre[1]) / 2 : node.column === "left" ? node.x1 + 8 : node.x0 - 8,
@@ -22073,7 +22164,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
   }
   function paintRibbons(host, group, ribbons) {
     ribbons.forEach((ribbon) => {
-      const path = svgEl2("path", {
+      const path = svgEl("path", {
         class: `hep-ribbon is-${ribbon.direction}`,
         d: ribbon.d,
         "data-key": ribbon.key,
@@ -22124,7 +22215,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     });
   }
   function buildSankey(host, layout, summary) {
-    const svg = svgEl2("svg", {
+    const svg = svgEl("svg", {
       class: "hep-sankey",
       viewBox: `0 0 ${OUTER_WIDTH} ${OUTER_HEIGHT}`,
       preserveAspectRatio: "xMidYMid meet",
@@ -22132,7 +22223,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       role: "img",
       "aria-label": sankeyLabel(summary)
     });
-    const group = svgEl2("g", {
+    const group = svgEl("g", {
       class: "hep-sankey-plot",
       transform: `translate(${MARGIN.left}, ${MARGIN.top})`
     });
@@ -22142,7 +22233,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       ["active", SANKEY_WIDTH, "end", `${SIDE_TITLE.active} \u2014 peak on-treatment`]
     ];
     headers.forEach(([key, x, anchor, label]) => {
-      const text = svgEl2("text", {
+      const text = svgEl("text", {
         class: "hep-sankey-col-label",
         "data-column": key,
         x,
@@ -22720,7 +22811,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     return wrap;
   }
   function buildByArmSummary(host, subjects) {
-    const armCol = host.state.groupBy && host.state.groupBy !== GROUP_NONE2 ? host.state.groupBy : null;
+    const armCol = host.state.groupBy && host.state.groupBy !== GROUP_NONE ? host.state.groupBy : null;
     const armLabel = armCol ? (host.settings.groups.find((group) => group.value_col === armCol) || {}).label || armCol : null;
     const rows = byArmSummary(subjects, armCol);
     const wrap = createElement("div", "hep-migration");
@@ -22891,7 +22982,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     constructor(element = "body", settings = {}) {
       this.element = typeof element === "string" ? document.querySelector(element) : element;
       if (!this.element) throw new Error(`Safety Hep Explorer target not found: ${element}`);
-      this.settings = syncSettings7(settings);
+      this.settings = syncSettings5(settings);
       this.rawData = [];
       this.cleanRows = [];
       this.removedRecords = 0;
@@ -23163,7 +23254,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
      * @returns {SafetyHepExplorer} The instance, for chaining.
      */
     setSettings(settings) {
-      this.settings = syncSettings7({ ...this.settings, ...settings });
+      this.settings = syncSettings5({ ...this.settings, ...settings });
       if ("view" in settings) this.state.view = resolveViewId(this.settings.view);
       if ("hide_unchanged" in settings) this.state.hideUnchanged = this.settings.hide_unchanged;
       if ("active_arms" in settings) this.state.activeArms = this.settings.active_arms;
@@ -23189,14 +23280,14 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
      */
     validateAndCleanData() {
       try {
-        checkInputs7(this.rawData, this.settings);
+        checkInputs8(this.rawData, this.settings);
       } catch (error) {
         this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
         throw error;
       }
-      const { rows, removed } = cleanData6(this.rawData, this.settings);
+      const { rows, removed } = cleanData3(this.rawData, this.settings);
       deriveBaseline(rows, this.settings);
-      assignSequence2(rows, this.settings);
+      assignSequence(rows, this.settings);
       this.cleanRows = rows;
       this.removedRecords = removed;
       this.rRatioMax = maxRRatio(rows, this.settings);
@@ -24060,7 +24151,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
   }
 
   // src/ae-explorer.js
-  var SVG_NS4 = "http://www.w3.org/2000/svg";
+  var SVG_NS3 = "http://www.w3.org/2000/svg";
   var NO_MATCH_MESSAGE = "Error: No AEs found for the current filters. Update the filters to see results.";
   var SUMMARY_FOOTNOTE = "Click a category to view the underlying records. Hover a rate for counts.";
   var FILTER_TYPE_NOTES = {
@@ -24581,12 +24672,12 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
      */
     buildAxis(scale, format) {
       const { width } = this.settings.plot_settings;
-      const svg = document.createElementNS(SVG_NS4, "svg");
+      const svg = document.createElementNS(SVG_NS3, "svg");
       svg.setAttribute("width", width);
       svg.setAttribute("height", 18);
       svg.setAttribute("class", "ae-axis");
       const [d0, d1] = scale.domain;
-      const line = document.createElementNS(SVG_NS4, "line");
+      const line = document.createElementNS(SVG_NS3, "line");
       line.setAttribute("x1", scale.x(d0));
       line.setAttribute("x2", scale.x(d1));
       line.setAttribute("y1", 4);
@@ -24595,7 +24686,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       svg.append(line);
       const anchors = ["start", "middle", "end"];
       [d0, (d0 + d1) / 2, d1].forEach((value, index) => {
-        const text = document.createElementNS(SVG_NS4, "text");
+        const text = document.createElementNS(SVG_NS3, "text");
         text.setAttribute("x", scale.x(value));
         text.setAttribute("y", 15);
         text.setAttribute("text-anchor", anchors[index]);
@@ -24688,19 +24779,19 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
      */
     buildDotPlot(item, color2, percentScale) {
       const { height, width, radius } = this.settings.plot_settings;
-      const svg = document.createElementNS(SVG_NS4, "svg");
+      const svg = document.createElementNS(SVG_NS3, "svg");
       svg.setAttribute("width", width);
       svg.setAttribute("height", height);
       svg.setAttribute("class", "ae-plot");
       this.groups.forEach((group) => {
         const cell2 = item.cells[group];
-        const circle = document.createElementNS(SVG_NS4, "circle");
+        const circle = document.createElementNS(SVG_NS3, "circle");
         circle.setAttribute("cx", percentScale.x(cell2.per));
         circle.setAttribute("cy", height / 2);
         circle.setAttribute("r", Math.max(2, radius - 2));
         circle.setAttribute("fill", color2(group));
         circle.setAttribute("fill-opacity", "0.85");
-        const title = document.createElementNS(SVG_NS4, "title");
+        const title = document.createElementNS(SVG_NS3, "title");
         title.textContent = dotTitle(group, cell2);
         circle.append(title);
         svg.append(circle);
@@ -24717,7 +24808,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
      */
     buildDiffPlot(item, color2, diffScale) {
       const { height, width, radius } = this.settings.plot_settings;
-      const svg = document.createElementNS(SVG_NS4, "svg");
+      const svg = document.createElementNS(SVG_NS3, "svg");
       svg.setAttribute("width", width);
       svg.setAttribute("height", height);
       svg.setAttribute("class", "ae-plot");
@@ -24726,7 +24817,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       const diffs = addDifferences(item.cells, this.groups);
       const hideCi = this.groups.length > 2;
       diffs.forEach((diff) => {
-        const line = document.createElementNS(SVG_NS4, "line");
+        const line = document.createElementNS(SVG_NS3, "line");
         line.setAttribute("x1", diffScale.x(diff.lower));
         line.setAttribute("x2", diffScale.x(diff.upper));
         line.setAttribute("y1", mid);
@@ -24735,7 +24826,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
         line.setAttribute("class", hideCi ? "ae-ci ae-ci-hidden" : "ae-ci");
         svg.append(line);
         const x = diffScale.x(diff.diff);
-        const diamond = document.createElementNS(SVG_NS4, "path");
+        const diamond = document.createElementNS(SVG_NS3, "path");
         diamond.setAttribute(
           "d",
           `M ${x} ${mid - half} L ${x + half} ${mid} L ${x} ${mid + half} L ${x - half} ${mid} Z`
@@ -24745,7 +24836,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
         diamond.setAttribute("stroke", color2(higher));
         diamond.setAttribute("fill-opacity", diff.sig ? "1" : "0.1");
         diamond.setAttribute("class", "ae-diamond");
-        const title = document.createElementNS(SVG_NS4, "title");
+        const title = document.createElementNS(SVG_NS3, "title");
         title.textContent = diffTitle(diff, item.cells);
         diamond.append(title);
         svg.append(diamond);
@@ -26779,9 +26870,9 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
 
   // src/hep-waterfall/structureData.js
   function prepareData(rawData, settings) {
-    const { rows, removed } = cleanData6(Array.isArray(rawData) ? rawData : [], settings);
+    const { rows, removed } = cleanData3(Array.isArray(rawData) ? rawData : [], settings);
     deriveBaseline(rows, settings);
-    assignSequence2(rows, settings);
+    assignSequence(rows, settings);
     return { rows, removed };
   }
   function measureReduction(cleanRows, settings) {

@@ -17,21 +17,24 @@ matching its behavior, under
 
 ## Browser evidence (Playwright — `tests/e2e/outlier-explorer.spec.js`)
 
-| Requirement ID | Source matrix rows                                                                                        | Issue | Test                                                                           |
-| -------------- | --------------------------------------------------------------------------------------------------------- | ----- | ------------------------------------------------------------------------------ |
-| SOE-CTRL-001   | SOE-FUNC-001, SOE-FUNC-002, SOE-FUNC-004, SOE-FUNC-005, SOE-FUNC-006, SOE-FUNC-007                        | #24   | renders the full control panel                                                 |
-| SOE-COUNT-003  | SOE-FUNC-003, SOE-REG-001, SOE-REG-002                                                                    | #24   | participant note reports N and % and updates on filter                         |
-| SOE-DATA-037   | SOE-REG-037, SOE-REG-038                                                                                  | #24   | missing and non-numeric results are dropped with a reported count and note     |
-| SOE-SELECT-010 | SOE-FUNC-010, SOE-FUNC-012, SOE-FUNC-013, SOE-REG-013, SOE-REG-014, SOE-REG-016, SOE-REG-022, SOE-REG-023 | #24   | clicking a point highlights the participant and opens a linked listing         |
-| SOE-SELECT-020 | SOE-FUNC-010, SOE-REG-020                                                                                 | #24   | clicking the background clears the selection and listing                       |
-| SOE-NORM-007   | SOE-FUNC-007, SOE-REG-025, SOE-REG-026, SOE-REG-027                                                       | #24   | normal-range methods drive the band and conditional inputs                     |
-| SOE-YAXIS-005  | SOE-FUNC-005, SOE-FUNC-006, SOE-REG-004, SOE-REG-005, SOE-REG-006                                         | #24   | y-axis limits redraw, normalize, and reset                                     |
-| SOE-GROUP-049  | SOE-REG-048, SOE-REG-049, SOE-REG-050                                                                     | #24   | grouping colors the marks and renders a legend                                 |
-| SOE-XAXIS-004  | SOE-FUNC-004, SOE-REG-003                                                                                 | #24   | the x-axis toggle switches between the visit and study-day axes                |
-| SOE-TIP-011    | SOE-REG-011                                                                                               | #24   | point tooltips list participant, result, and time                              |
-| SOE-EVENT-003  | SOE-API-003                                                                                               | #24   | participantsSelected fires on select and clear                                 |
-| SOE-FILT-051   | SOE-REG-051, SOE-REG-052, SOE-REG-053                                                                     | #24   | a filter with a start value initializes filtered and offers no All option      |
-| SOE-API-001    | — (see legacy-API note)                                                                                   | #24   | lifecycle API supports init, setData, setSettings, render, resize, and destroy |
+| Requirement ID           | Source matrix rows                                                                                        | Issue | Test                                                                           |
+| ------------------------ | --------------------------------------------------------------------------------------------------------- | ----- | ------------------------------------------------------------------------------ |
+| SOE-CTRL-001             | SOE-FUNC-001, SOE-FUNC-002, SOE-FUNC-004, SOE-FUNC-005, SOE-FUNC-006, SOE-FUNC-007                        | #24   | renders the full control panel                                                 |
+| SOE-COUNT-003            | SOE-FUNC-003, SOE-REG-001, SOE-REG-002                                                                    | #24   | participant note reports N and % and updates on filter                         |
+| SOE-DATA-037             | SOE-REG-037, SOE-REG-038                                                                                  | #24   | missing and non-numeric results are dropped with a reported count and note     |
+| SOE-SELECT-010           | SOE-FUNC-010, SOE-FUNC-012, SOE-FUNC-013, SOE-REG-013, SOE-REG-014, SOE-REG-016, SOE-REG-022, SOE-REG-023 | #24   | clicking a point highlights the participant and opens a linked listing         |
+| SOE-SELECT-020           | SOE-FUNC-010, SOE-REG-020                                                                                 | #24   | clicking the background clears the selection and listing                       |
+| SOE-NORM-007             | SOE-FUNC-007, SOE-REG-025, SOE-REG-026, SOE-REG-027                                                       | #24   | normal-range methods drive the band and conditional inputs                     |
+| SOE-YAXIS-005            | SOE-FUNC-005, SOE-FUNC-006, SOE-REG-004, SOE-REG-005, SOE-REG-006                                         | #24   | y-axis limits redraw, normalize, and reset                                     |
+| SOE-GROUP-049            | SOE-REG-048, SOE-REG-049, SOE-REG-050                                                                     | #24   | grouping colors the marks and renders a legend                                 |
+| SOE-XAXIS-004            | SOE-FUNC-004, SOE-REG-003                                                                                 | #24   | the x-axis toggle switches between the visit and study-day axes                |
+| SOE-TIP-011              | SOE-REG-011                                                                                               | #24   | point tooltips list participant, result, and time                              |
+| SOE-EVENT-003            | SOE-API-003                                                                                               | #24   | participantsSelected fires on select and clear                                 |
+| SOE-FILT-051             | SOE-REG-051, SOE-REG-052, SOE-REG-053                                                                     | #24   | a filter with a start value initializes filtered and offers no All option      |
+| SOE-API-001              | — (see legacy-API note)                                                                                   | #24   | lifecycle API supports init, setData, setSettings, render, resize, and destroy |
+| PPRF-OE-001/PPRF-OE-002  | PPRF-OE-001, PPRF-OE-002 (participant-profile matrix)                                                     | #99   | clicking a point opens the docked profile ALONGSIDE the linked listing         |
+| PPRF-OE-003              | PPRF-OE-003 (participant-profile matrix)                                                                  | #99   | background click and control changes empty the dock                            |
+| PPRF-OE-002 (dock Clear) | PPRF-OE-002 (participant-profile matrix)                                                                  | #99   | the dock Clear affordance routes through the host clear path                   |
 
 ## Unit evidence (Vitest — `tests/unit/outlier-explorer/`)
 
@@ -102,6 +105,16 @@ exotic, legacy, or data-unsupported rows honestly.
   invalid-measure and missing-unit console warnings are implemented in
   `validateAndCleanData` / `measureLabel` but not asserted by an automated row
   here.
+
+## Docked participant profile (#99, PPRF-OE)
+
+The shared participant-profile module docks below the chart (config-on,
+`profile: true`) and is fed by the renderer's existing point-click selection
+via the `participantsSelected` dispatch on the shell root (SOE-API-003) — the
+dock SUPPLEMENTS the linked listing (records vs story), replacing nothing.
+Adoption rows are PPRF-OE-001..003 in the
+[participant-profile matrix](https://github.com/jwildfire/obot.agent/blob/main/docs/requirements/participant-profile.md);
+unit evidence lives in `tests/unit/outlier-explorer/profile-adoption.test.js`.
 
 ## View-selector rollout (VIEW-3, #76)
 

@@ -1,16 +1,13 @@
 {
   "module": "delta-delta",
-  "generatedAt": "2026-07-23T05:40:41.867Z",
+  "generatedAt": "2026-07-23T06:16:28.952Z",
   "environment": {
-    "os": "linux 6.17.0-1020-azure",
-    "node": "v22.23.1",
+    "os": "darwin 23.6.0",
+    "node": "v24.14.0",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": {
-    "id": "29982771416",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29982771416"
-  },
+  "run": null,
   "records": [
     {
       "test": "a chart link navigates straight to that renderer demo (#71)",
@@ -157,6 +154,38 @@
       "screenshots": []
     },
     {
+      "test": "PPRF-DD-001/PPRF-DD-002/PPRF-DD-004: clicking a point dispatches the selection and opens the docked profile — the bespoke measure table is gone (#99)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PPRF-DD-001", "PPRF-DD-002", "PPRF-DD-004"],
+      "issueRefs": [99],
+      "screenshots": []
+    },
+    {
+      "test": "PPRF-DD-003: an empty-canvas click clears the highlight and empties the dock (#99)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PPRF-DD-003"],
+      "issueRefs": [99],
+      "screenshots": []
+    },
+    {
+      "test": "PPRF-DD-003: changing a control clears the selection and the docked profile (#99)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PPRF-DD-003"],
+      "issueRefs": [99],
+      "screenshots": []
+    },
+    {
+      "test": "PPRF-DD-003: the dock Clear affordance routes through the host clear path (#99)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PPRF-DD-003"],
+      "issueRefs": [99],
+      "screenshots": []
+    },
+    {
       "test": "SDD-API-001: lifecycle API supports init, setData, setSettings, render, resize, and destroy (#25)",
       "suite": "browser",
       "status": "pass",
@@ -195,22 +224,6 @@
       "requirementIds": ["SDD-FUNC-005"],
       "issueRefs": [25],
       "screenshots": []
-    },
-    {
-      "test": "SDD-FUNC-006/SDD-REG-011/SDD-REG-016/SDD-REG-018/SDD-REG-019/SDD-REG-020/SDD-REG-024: clicking a point opens the linked measure table (#25)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": [
-        "SDD-FUNC-006",
-        "SDD-REG-011",
-        "SDD-REG-016",
-        "SDD-REG-018",
-        "SDD-REG-019",
-        "SDD-REG-020",
-        "SDD-REG-024"
-      ],
-      "issueRefs": [25],
-      "screenshots": ["SDD-FUNC-006-measure-table.png"]
     },
     {
       "test": "SDD-REG-001: changing the Y measure changes the plotted distribution (#25)",
@@ -261,28 +274,12 @@
       "screenshots": []
     },
     {
-      "test": "SDD-REG-012/SDD-REG-013: the clicked point is highlighted and clicking another redraws the table (#25)",
+      "test": "SDD-REG-012/SDD-REG-013/PPRF-DD-002: the clicked point is highlighted and clicking another re-renders the docked profile (#25, #99)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["SDD-REG-012", "SDD-REG-013"],
-      "issueRefs": [25],
+      "requirementIds": ["SDD-REG-012", "SDD-REG-013", "PPRF-DD-002"],
+      "issueRefs": [],
       "screenshots": ["SDD-REG-012-point-selected.png"]
-    },
-    {
-      "test": "SDD-REG-014: changing a control removes the detail table (#25)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SDD-REG-014"],
-      "issueRefs": [25],
-      "screenshots": []
-    },
-    {
-      "test": "SDD-REG-021/SDD-REG-022/SDD-REG-025: change values are signed and colored, with axis tags (#25)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SDD-REG-021", "SDD-REG-022", "SDD-REG-025"],
-      "issueRefs": [25],
-      "screenshots": []
     },
     {
       "test": "SDD-REG-026: the regression line toggles with an equation and R² note (#25)",
@@ -389,6 +386,22 @@
       "screenshots": []
     },
     {
+      "test": "delta-delta bespoke measure table removal (PPRF-DD-004, PPRF-12) PPRF-DD-004: the bespoke measure table is gone — the docked profile is the sole detail",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-DD-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "delta-delta bespoke measure table removal (PPRF-DD-004, PPRF-12) PPRF-DD-004: the listing module no longer ships",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-DD-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
       "test": "delta-delta checkInputs SDD-DATA-001: valid long-format data with the required columns passes (#25)",
       "suite": "unit",
       "status": "pass",
@@ -466,6 +479,54 @@
       "status": "pass",
       "requirementIds": ["SDD-CFG-015"],
       "issueRefs": [25],
+      "screenshots": []
+    },
+    {
+      "test": "delta-delta dock adoption (PPRF-DD-002, PPRF-11) PPRF-DD-001: profile: false still dispatches (the event contract is independent of the dock)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-DD-002", "PPRF-DD-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "delta-delta dock adoption (PPRF-DD-002, PPRF-11) PPRF-DD-002: a point click opens the docked full profile with the point highlighted",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-DD-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "delta-delta dock adoption (PPRF-DD-002, PPRF-11) PPRF-DD-002: clicking a different point re-renders the dock for the new participant (SDD-REG-013 retargeted)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-DD-002", "SDD-REG-013"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "delta-delta dock adoption (PPRF-DD-002, PPRF-11) PPRF-DD-002: dock header details default to the host details minus the participant id",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-DD-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "delta-delta dock adoption (PPRF-DD-002, PPRF-11) PPRF-DD-003: a control-driven render resets the dock (render preamble)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-DD-002", "PPRF-DD-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "delta-delta dock adoption (PPRF-DD-002, PPRF-11) PPRF-DD-003: the dock Clear affordance routes through the host clear path",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-DD-002", "PPRF-DD-003"],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -562,6 +623,30 @@
       "status": "pass",
       "requirementIds": ["SDD-REG-022"],
       "issueRefs": [25],
+      "screenshots": []
+    },
+    {
+      "test": "delta-delta participantsSelected dispatch (PPRF-DD-001) PPRF-DD-001: a point click dispatches the house payload on the shell root",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-DD-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "delta-delta participantsSelected dispatch (PPRF-DD-001) PPRF-DD-001: the event bubbles (element-level listeners still hear it)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-DD-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "delta-delta participantsSelected dispatch (PPRF-DD-001) PPRF-DD-003: an empty-canvas click is a clear gesture — state, borders, annotation, dispatch",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-DD-001", "PPRF-DD-003"],
+      "issueRefs": [],
       "screenshots": []
     },
     {

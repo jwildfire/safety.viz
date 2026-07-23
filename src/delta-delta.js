@@ -26,7 +26,13 @@ import {
   regressionLinePlugin,
   selectionBorders
 } from './delta-delta/getPlugins.js';
-import { drawMeasureTable } from './delta-delta/listing.js';
+import {
+  buildProfileRows,
+  mountProfileDock,
+  resetProfileDock,
+  syncProfileDock,
+  unmountProfileDock
+} from './profile-host.js';
 
 Chart.register(ScatterController, PointElement, LinearScale, Tooltip);
 
@@ -34,10 +40,10 @@ Chart.register(ScatterController, PointElement, LinearScale, Tooltip);
  * Interactive safety delta-delta plot: a Chart.js scatter of the change in one
  * measure against the change in another, one point per participant, with
  * X/Y measure pickers, baseline/comparison visit multi-selects, configurable
- * filters, quadrant reference lines, an optional regression line, and a linked
- * per-measure detail table. Construct via the deltaDelta() factory rather than
- * directly; the constructor renders the control shell immediately and waits
- * for data.
+ * filters, quadrant reference lines, an optional regression line, and the
+ * docked participant profile opened by clicking a point (#99, PPRF-DD).
+ * Construct via the deltaDelta() factory rather than directly; the
+ * constructor renders the control shell immediately and waits for data.
  */
 class SafetyDeltaDelta {
   constructor(element = 'body', settings = {}) {
@@ -55,6 +61,18 @@ class SafetyDeltaDelta {
     this.regression = null;
     this.charts = [];
     this.chart = null;
+    this.participantsSelected = [];
+    // The docked participant-profile module (#99, PPRF-DD-002): the shared
+    // drill-down rendered into the shell's profile slot, fed by the
+    // point-click selection through dispatchSelection's participantsSelected
+    // event on the shell root. It SUPERSEDES the renderer's bespoke
+    // per-measure detail table, removed in the adopting change (PPRF-12,
+    // PPRF-DD-004). profileRows is the ONE per-setData profile ingest;
+    // profileKey is the idempotency guard.
+    this.profile = null;
+    this.profileFeed = null;
+    this.profileKey = null;
+    this.profileRows = [];
     this.state = {
       measureX: this.settings.measure_x,
       measureY: this.settings.measure_y,
@@ -65,6 +83,59 @@ class SafetyDeltaDelta {
       selectedId: null
     };
     this.renderShell();
+    mountProfileDock(this, () => this.profileSettings());
+  }
+
+  /**
+   * The settings handed to the docked participant-profile module (#99,
+   * PPRF-DD-002): the shared long-lab column mappings pass through verbatim;
+   * `details` come from profile_details, falling back to the host `details`
+   * minus the participant id (the profile header already shows it); and the
+   * two outbound callbacks wire Clear to the host's own clear path and
+   * stepper navigation to transient border emphasis (no dispatch).
+   * @private
+   */
+  profileSettings() {
+    const settings = this.settings;
+    const profileSettings = {
+      id_col: settings.id_col,
+      measure_col: settings.measure_col,
+      value_col: settings.value_col,
+      unit_col: settings.unit_col,
+      normal_col_high: settings.normal_col_high,
+      normal_col_low: settings.normal_col_low,
+      studyday_col: settings.studyday_col,
+      visit_col: settings.visit_col,
+      visitn_col: settings.visitn_col,
+      details:
+        settings.profile_details && settings.profile_details.length
+          ? settings.profile_details
+          : (settings.details || []).filter((detail) => detail.value_col !== settings.id_col),
+      participantProfileURL: settings.participantProfileURL ?? null,
+      on_clear: () => this.clearSelection(),
+      on_step: (id) => this.emphasizeParticipant(id)
+    };
+    // Only forward a caller-supplied key-measure map — null keeps the profile
+    // module's own ALT/AST/TB/ALP defaults.
+    if (settings.measure_values) profileSettings.measure_values = settings.measure_values;
+    return profileSettings;
+  }
+
+  /**
+   * Transient chart emphasis for the profile stepper (PPRF-11): border-
+   * highlight the stepped participant's point without touching the selection
+   * state and without dispatching — the host selection still belongs to the
+   * click gesture.
+   * @private
+   */
+  emphasizeParticipant(id) {
+    if (!this.chart) return;
+    const index = this.points.findIndex((point) => String(point.id) === String(id));
+    const borders = selectionBorders(this.points.length, index);
+    const dataset = this.chart.data.datasets[0];
+    dataset.pointBorderColor = borders.colors;
+    dataset.pointBorderWidth = borders.widths;
+    this.chart.update();
   }
 
   /**
@@ -105,9 +176,23 @@ class SafetyDeltaDelta {
   setData(data) {
     this.rawData = Array.isArray(data) ? data : [];
     this.validateAndCleanData();
+    this.buildProfileRows();
     this.buildControls();
     this.render();
     return this;
+  }
+
+  /**
+   * Derive the docked profile's pre-cleaned rows ONCE per data/settings change
+   * (#99, PPRF-DD-002) — never per gesture. The underlying rows are standard
+   * long labs: the baseline-vs-comparison delta is NOT re-encoded — the
+   * profile shows the full series, which is the supersession story (PPRF-12).
+   * @private
+   */
+  buildProfileRows() {
+    this.profileRows = this.settings.profile
+      ? buildProfileRows(this.rawData, this.profileSettings())
+      : [];
   }
 
   /**
@@ -127,6 +212,8 @@ class SafetyDeltaDelta {
       this.state.addRegressionLine = settings.add_regression_line;
     this.settings = syncSettings({ ...this.settings, ...settings });
     if (this.rawData.length) this.validateAndCleanData();
+    this.buildProfileRows();
+    syncProfileDock(this, () => this.profileSettings());
     this.buildControls();
     this.render();
     return this;
@@ -295,10 +382,10 @@ class SafetyDeltaDelta {
 
   /**
    * Redraw everything from the current data, settings, and control state:
-   * destroys the live chart, clears the measure table and any point selection,
-   * recomputes the per-participant points, and draws the scatter plus the
-   * participant-count and regression notes. Called automatically by the
-   * controls and the data/settings setters.
+   * destroys the live chart, clears any point selection and the docked
+   * profile, recomputes the per-participant points, and draws the scatter
+   * plus the participant-count and regression notes. Called automatically by
+   * the controls and the data/settings setters.
    * @returns {void}
    */
   render() {
@@ -306,6 +393,10 @@ class SafetyDeltaDelta {
     this.listingWrap.innerHTML = '';
     this.multiplesWrap.innerHTML = '';
     this.state.selectedId = null;
+    this.participantsSelected = [];
+    // The selection resets silently on every render, so the dock must empty in
+    // the same preamble (#99, PPRF-DD-003).
+    resetProfileDock(this);
     this.regression = null;
     this.footnote.textContent = '';
     this.mainAnnotation.textContent = 'Click a point to see details.';
@@ -394,7 +485,9 @@ class SafetyDeltaDelta {
           if (target) target.style.cursor = active.length ? 'pointer' : 'default';
         },
         onClick: (event, active) => {
+          // An empty-canvas click is a clear gesture (#99, PPRF-DD-003).
           if (active.length) this.selectPoint(active[0].index);
+          else this.clearSelection();
         }
       },
       plugins: [quadrantLinesPlugin(), regressionLinePlugin(this)]
@@ -405,8 +498,9 @@ class SafetyDeltaDelta {
   }
 
   /**
-   * Select a scatter point: highlight it, open the linked measure table, and
-   * note the participant (SDD-FUNC-006, SDD-REG-012/013).
+   * Select a scatter point: highlight it, note the participant, and dispatch
+   * the selection on the shell root — the docked participant profile is the
+   * detail view (SDD-REG-012/013 retargeted; #99, PPRF-DD-001/002).
    * @private
    */
   selectPoint(index) {
@@ -420,7 +514,44 @@ class SafetyDeltaDelta {
     this.chart.$ddSelectedIndex = index;
     this.chart.update();
     this.mainAnnotation.textContent = `Participant ${point.id} selected.`;
-    drawMeasureTable(this, point);
+    this.dispatchSelection([point.id]);
+  }
+
+  /**
+   * Clear the point selection (#99, PPRF-DD-003): restore the borders, reset
+   * the annotation, and dispatch the empty selection so the docked profile
+   * empties. Reached from an empty-canvas click and the dock's Clear
+   * affordance.
+   * @returns {void}
+   */
+  clearSelection() {
+    this.state.selectedId = null;
+    if (this.chart) {
+      const borders = selectionBorders(this.points.length, -1);
+      const dataset = this.chart.data.datasets[0];
+      dataset.pointBorderColor = borders.colors;
+      dataset.pointBorderWidth = borders.widths;
+      this.chart.$ddSelectedIndex = null;
+      this.chart.update();
+    }
+    this.mainAnnotation.textContent = 'Click a point to see details.';
+    this.listingWrap.innerHTML = '';
+    this.dispatchSelection([]);
+  }
+
+  /**
+   * Dispatch the custom participantsSelected event on the shell root with the
+   * selected IDs — the house selection payload, closing this renderer's
+   * dispatch gap (#88 SELN-4; #99, PPRF-DD-001).
+   * @private
+   */
+  dispatchSelection(ids) {
+    this.participantsSelected = ids;
+    if (this.root) {
+      this.root.dispatchEvent(
+        new CustomEvent('participantsSelected', { detail: { data: ids }, bubbles: true })
+      );
+    }
   }
 
   /**
@@ -449,6 +580,7 @@ class SafetyDeltaDelta {
    * @returns {void}
    */
   destroy() {
+    unmountProfileDock(this);
     this.destroyCharts();
     this.element.innerHTML = '';
   }
