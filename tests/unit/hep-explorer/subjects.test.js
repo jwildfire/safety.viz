@@ -411,6 +411,36 @@ describe('hep-core subjects — the demo-dataset composite population', () => {
     expect(demoIds.has('01-708-1236')).toBe(false);
   });
 
+  it('HEP-CORE-002: the identity rule targets exactly the 24 no-day-0 participants, none CLD- (#91)', () => {
+    // The identity exclusion can only change a participant with no day-0 record —
+    // one whose baseline resolves to a fallback visit and, under the old day > 0
+    // rule, counted its own baseline as on-treatment. .hep-core-split-proof.md
+    // enumerates these 24; this pins the rule-target population so a regression in
+    // baseline resolution (a re-appearing day > 0 test) is caught here rather than
+    // in an evidence-baseline diff.
+    const prepared = deriveBaseline(cleanData(demoRows, DEMO_SETTINGS).rows, DEMO_SETTINGS);
+    const byId = new Map();
+    prepared.forEach((r) => {
+      const id = r[DEMO_SETTINGS.id_col];
+      if (!byId.has(id)) byId.set(id, []);
+      byId.get(id).push(r);
+    });
+    const noDay0 = [];
+    byId.forEach((rows, id) => {
+      const alt = resolveMeasureRows(rows, DEMO_SETTINGS, 'ALT');
+      const tb = resolveMeasureRows(rows, DEMO_SETTINGS, 'TB');
+      const altNo = alt.length && !alt.some((r) => r.__hep_day === 0);
+      const tbNo = tb.length && !tb.some((r) => r.__hep_day === 0);
+      if (altNo || tbNo) noDay0.push(id);
+    });
+    expect(byId.size).toBe(318);
+    expect(noDay0).toHaveLength(24);
+    expect(noDay0.some((id) => id.startsWith('CLD-'))).toBe(false);
+    // The two the fix fully drops are a subset of the rule-target population.
+    expect(noDay0).toContain('01-703-1197');
+    expect(noDay0).toContain('01-708-1236');
+  });
+
   it('HEP-ARM-002: the real Placebo arm — not the synthetic CLD cohort — is the comparator (#91)', () => {
     expect(demo.arms).toEqual([
       'CLD: Placebo',
