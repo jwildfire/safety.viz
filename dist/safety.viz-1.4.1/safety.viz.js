@@ -26042,7 +26042,11 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
      *
      * - `normal_col_high` points at the synthesized `__qt_profile_uln` (= 1)
      *   column, so the ×ULN standardization is a no-op and the spaghetti plots
-     *   OBSERVED milliseconds (nothing drops on the ULN>0 guard).
+     *   OBSERVED milliseconds (nothing drops on the ULN>0 guard). KNOWN
+     *   module-surface side effects (routed to #98, documented in
+     *   docs/qt-explorer-coverage.md): the measure table's sparkline/inset treat
+     *   the unit ULN as a real normal-range limit, and the spaghetti's axis
+     *   label/accessible name stay "Standardized Result [xULN]".
      * - `measure_values` is the identity map over the host's `measures`, making
      *   the ECG parameters the profile's KEY measures.
      * - `cuts` carry the FIRST absolute threshold (450 ms by default) per QTc

@@ -79,7 +79,27 @@ View coverage and mapping caveats:
 - **The host's `baseline_col` ('BASE') is a VALUE column**, not the profile's
   baseline FLAG contract, so the profile receives `baseline_col: null` and its
   `deriveBaseline` earliest-visit rule resolves the baseline record (VISITNUM
-  orders the day axis; ADEG-style data carries no DY).
+  orders the day axis; ADEG-style data carries no DY — the profile's "Study
+  Day" axis titles and tooltips therefore show visit numbers, not days).
+- **Module-surface (#98): the synthesized unit ULN poisons the measure table's
+  normal-range semantics.** The sparkline/inset outlier flags compare each
+  observed value against `__qt_profile_uln = 1`, so every ECG value renders as
+  a filled out-of-range point, the inset y-domain unions the ULN into its pool
+  (band edge at y≈1 under a ~460 ms series), and the table footnote's
+  "outside the normal range" wording misstates the clinical semantics. The fix
+  is a module "no normal range" mode for hosts without real LLN/ULN columns —
+  routed to #98's surface per this issue's out-of-scope rule; not adopter-fixable
+  (the hep-core cleaner's ULN>0 guard drops rows without a positive finite ULN).
+- **Module-surface (#98): the docked spaghetti's y-axis title and canvas
+  accessible name read "Standardized Result [xULN]"** while plotting observed
+  milliseconds — the module hard-codes the label per display mode and offers no
+  override, so the host's `display_options` relabel ("Observed (ms)") reaches
+  the toggle but not the axis. Same root cause: the tooltip shows identical
+  "Raw"/"Adjusted" values (ULN = 1). Fix (derive the label from the active
+  `display_options` entry) routed to #98's surface.
+- **The "Observed (ms)" toggle label covers the Heart Rate series too**, which
+  plots bpm on the same axis — a knowingly mixed-unit axis in the default
+  interval-measure mapping.
 - **Header surface note (#98):** the profile header always renders its R Ratio
   field; with no ALT/ALP measures present it computes NaN and displays an
   empty value (never the string "NaN") — acceptable for now, tracked as a
