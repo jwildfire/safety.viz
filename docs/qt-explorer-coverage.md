@@ -22,31 +22,68 @@ its test covers.
 
 ## Browser evidence (Playwright — `tests/e2e/qt-explorer.spec.js`)
 
-| Requirement ID                        | Source matrix rows | Issue | Test                                                                                    |
-| ------------------------------------- | ------------------ | ----- | --------------------------------------------------------------------------------------- |
-| QT-CTRL-001, QT-CTRL-002, QT-CTRL-003 | —                  | #68   | renders the view, correction, statistic, display, and filter controls                   |
-| QT-CT-002, QT-CT-003, QT-CT-006       | —                  | #68   | central tendency draws per-arm lines, a CI band, the reference line and the peak marker |
-| QT-CT-004, QT-CT-005                  | —                  | #68   | ΔΔ drops placebo and reports the ICH-E14 metric above the reference                     |
-| QT-OUT-002, QT-OUT-003, QT-OUT-004    | —                  | #68   | the outlier scatter draws absolute diagonals, the zero line, and per-arm marks          |
-| QT-OUT-003                            | —                  | #68   | a specific visit adds the change-from-baseline lines                                    |
-| QT-CAT-001, QT-CAT-002, QT-CAT-003    | —                  | #68   | the categorical view hides the chart and tabulates by-arm exceedance                    |
-| QT-CT-007                             | —                  | #68   | heart rate is offered in central tendency without the QTc reference line                |
-| QT-OUT-007                            | —                  | #68   | heart rate shows a QTc-only note in the outlier view                                    |
-| QT-DATA-003                           | —                  | #68   | the removed-count path drops missing and non-numeric results                            |
+| Requirement ID                        | Source matrix rows                                    | Issue | Test                                                                                               |
+| ------------------------------------- | ----------------------------------------------------- | ----- | -------------------------------------------------------------------------------------------------- |
+| QT-CTRL-001, QT-CTRL-002, QT-CTRL-003 | —                                                     | #68   | renders the view, correction, statistic, display, and filter controls                              |
+| QT-CT-002, QT-CT-003, QT-CT-006       | —                                                     | #68   | central tendency draws per-arm lines, a CI band, the reference line and the peak marker            |
+| QT-CT-004, QT-CT-005                  | —                                                     | #68   | ΔΔ drops placebo and reports the ICH-E14 metric above the reference                                |
+| QT-OUT-002, QT-OUT-003, QT-OUT-004    | —                                                     | #68   | the outlier scatter draws absolute diagonals, the zero line, and per-arm marks                     |
+| QT-OUT-003                            | —                                                     | #68   | a specific visit adds the change-from-baseline lines                                               |
+| QT-CAT-001, QT-CAT-002, QT-CAT-003    | —                                                     | #68   | the categorical view hides the chart and tabulates by-arm exceedance                               |
+| QT-CT-007                             | —                                                     | #68   | heart rate is offered in central tendency without the QTc reference line                           |
+| QT-OUT-007                            | —                                                     | #68   | heart rate shows a QTc-only note in the outlier view                                               |
+| QT-DATA-003                           | —                                                     | #68   | the removed-count path drops missing and non-numeric results                                       |
+| PPRF-QT-001, PPRF-QT-002              | PPRF-QT-001, PPRF-QT-002 (participant-profile matrix) | #99   | clicking an outlier-scatter point opens the docked profile in observed ms with the 450 cut on QTcF |
+| PPRF-QT-003, PPRF-QT-004              | PPRF-QT-003, PPRF-QT-004 (participant-profile matrix) | #99   | empty clicks and view switches clear the dock, which idles on non-scatter views                    |
 
 ## Unit evidence (Vitest — `tests/unit/qt-explorer/`)
 
-| Requirement ID                                                            | Source matrix rows | Issue | Test file               |
-| ------------------------------------------------------------------------- | ------------------ | ----- | ----------------------- |
-| QT-CFG-001..007 (settings normalization, z table, placebo resolution)     | —                  | #68   | `configure.test.js`     |
-| QT-DATA-005 (schema required columns)                                     | —                  | #68   | `checkInputs.test.js`   |
-| QT-DATA-003/004/006, QT-STAT-001/002 (cleaning, change derivation, stats) | —                  | #68   | `structureData.test.js` |
-| QT-CT-001/002/004/005/006 (central-tendency series, ΔΔ, ICH-E14, peaks)   | —                  | #68   | `structureData.test.js` |
-| QT-OUT-001/002 (subject points, max post-baseline vs visit)               | —                  | #68   | `structureData.test.js` |
-| QT-CAT-001/002/003 (by-arm exceedance counts and percents)                | —                  | #68   | `structureData.test.js` |
-| QT-SCL-001..008 (correction suffix, axis titles, domains, arm marks)      | —                  | #68   | `getScales.test.js`     |
-| QT-PLG-001/002/003 (color scale, rgba, scatter tooltip)                   | —                  | #68   | `getPlugins.test.js`    |
-| QT-API-001 (module export)                                                | —                  | #68   | `export.test.js`        |
+| Requirement ID                                                            | Source matrix rows                            | Issue | Test file                  |
+| ------------------------------------------------------------------------- | --------------------------------------------- | ----- | -------------------------- |
+| QT-CFG-001..007 (settings normalization, z table, placebo resolution)     | —                                             | #68   | `configure.test.js`        |
+| QT-DATA-005 (schema required columns)                                     | —                                             | #68   | `checkInputs.test.js`      |
+| QT-DATA-003/004/006, QT-STAT-001/002 (cleaning, change derivation, stats) | —                                             | #68   | `structureData.test.js`    |
+| QT-CT-001/002/004/005/006 (central-tendency series, ΔΔ, ICH-E14, peaks)   | —                                             | #68   | `structureData.test.js`    |
+| QT-OUT-001/002 (subject points, max post-baseline vs visit)               | —                                             | #68   | `structureData.test.js`    |
+| QT-CAT-001/002/003 (by-arm exceedance counts and percents)                | —                                             | #68   | `structureData.test.js`    |
+| QT-SCL-001..008 (correction suffix, axis titles, domains, arm marks)      | —                                             | #68   | `getScales.test.js`        |
+| QT-PLG-001/002/003 (color scale, rgba, scatter tooltip)                   | —                                             | #68   | `getPlugins.test.js`       |
+| QT-API-001 (module export)                                                | —                                             | #68   | `export.test.js`           |
+| PPRF-QT-001..004 (dock adoption, interval-measure mapping, clear paths)   | PPRF-QT-001..004 (participant-profile matrix) | #99   | `profile-adoption.test.js` |
+
+## Docked participant profile (#99, PPRF-QT)
+
+The shared participant-profile module docks below the chart (config-on,
+`profile: true`), fed by a NEW outlier-scatter point-click selection
+(`state.selectedId`, single-select only) via the house `participantsSelected`
+dispatch on the shell root. The profile's long-lab contract is mapped for
+interval (ECG) measures: the feed rows synthesize a unit ULN
+(`__qt_profile_uln = 1`) so the spaghetti plots **observed milliseconds**; the
+identity `measure_values` map over the host's `measures` makes the ECG
+parameters the KEY measures; and per-QTc `cuts` carry the FIRST absolute
+threshold (450 ms by default) while the NaN `defaults` entry leaves Heart Rate
+cut-free. Adoption rows are PPRF-QT-001..004 in the
+[participant-profile matrix](https://github.com/jwildfire/obot.agent/blob/main/docs/requirements/participant-profile.md);
+unit evidence lives in `tests/unit/qt-explorer/profile-adoption.test.js`.
+
+View coverage and mapping caveats:
+
+- **Only the outlier scatter carries participant marks.** The central-tendency
+  and categorical views aggregate by arm, so they offer no selection gesture;
+  the dock stays mounted and idles there, and every view switch clears the
+  selection and the dock in the render preamble (PPRF-QT-003).
+- **The 30/60 ms change-from-baseline thresholds are not representable in the
+  dock** — the profile draws one cut per measure per display mode, and the
+  change thresholds apply to Δ, not the observed series. They stay on the
+  scatter and the categorical table.
+- **The host's `baseline_col` ('BASE') is a VALUE column**, not the profile's
+  baseline FLAG contract, so the profile receives `baseline_col: null` and its
+  `deriveBaseline` earliest-visit rule resolves the baseline record (VISITNUM
+  orders the day axis; ADEG-style data carries no DY).
+- **Header surface note (#98):** the profile header always renders its R Ratio
+  field; with no ALT/ALP measures present it computes NaN and displays an
+  empty value (never the string "NaN") — acceptable for now, tracked as a
+  module-surface refinement if it should be omitted entirely.
 
 ## Source-matrix routing status
 

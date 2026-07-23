@@ -62,6 +62,9 @@ export const TIMEPOINT_MAX = '__qt_max';
  * @property {number} [reference_threshold=10] Central-tendency reference line (msec): the ICH-E14 threshold of concern (QT-CT-003).
  * @property {number} [ci_level=0.9] Confidence level for the CI on the mean change and the mean difference; the ICH-E14 metric reads its upper bound (QT-CT-005).
  * @property {Array<string|Object>} [filters=[]] Filter controls: column names or { value_col, label } specs (QT-CTRL-003).
+ * @property {boolean} [profile=true] Dock the shared participant-profile module in the shell's profile slot, fed by the outlier-scatter point click via the participantsSelected event; the ECG parameters render as key measures in observed milliseconds with the first absolute threshold as the QTc cut (#99, PPRF-QT-001/002).
+ * @property {?Array<string|Object>} [profile_details=null] Demographic columns for the docked profile's header, as names or { value_col, label } specs; null shows none (#99, PPRF-QT-001).
+ * @property {?string} [participantProfileURL=null] Optional link-out URL for the docked profile's header, templated by every literal `{id}` token (#99, PPRF-QT-001).
  * @property {string} [width='100%'] Widget width, carried over for the R widget bindings.
  * @property {number} [height=460] Chart-area height in pixels, carried over for the R widget bindings.
  */
@@ -94,6 +97,9 @@ export const DEFAULT_SETTINGS = {
   reference_threshold: 10,
   ci_level: 0.9,
   filters: [],
+  profile: true,
+  profile_details: null,
+  participantProfileURL: null,
   width: '100%',
   height: 460
 };
@@ -150,6 +156,17 @@ export function syncSettings(settings) {
   if (!Number.isFinite(synced.ci_level) || synced.ci_level <= 0 || synced.ci_level >= 1) {
     synced.ci_level = DEFAULT_SETTINGS.ci_level;
   }
+
+  // Docked-profile pass-throughs (#99): profile is a plain boolean and
+  // profile_details normalizes to a spec array only when provided (null keeps
+  // the "no header demographics" default).
+  synced.profile = Boolean(synced.profile);
+  synced.profile_details =
+    synced.profile_details === undefined || synced.profile_details === null
+      ? null
+      : arrayify(synced.profile_details)
+          .map((value) => fieldSpec(value))
+          .filter((d) => d.value_col);
 
   return synced;
 }

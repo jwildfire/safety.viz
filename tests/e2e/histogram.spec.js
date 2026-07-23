@@ -459,6 +459,79 @@ test.describe('safety.viz histogram module', () => {
     expect(result.containerText).toBe('');
   });
 
+  test('PPRF-SH-001/PPRF-SH-002: clicking a listing row focuses the participant into the docked profile (#99)', async ({
+    page
+  }) => {
+    await selectFirstPopulatedCanvasBar(page);
+    const firstRow = page.locator('.sv-listing tbody tr').first();
+    // Rows are keyboard-focusable buttons (opt-in affordance, PPRF-ACC-001 bar).
+    await expect(firstRow).toHaveAttribute('role', 'button');
+    await expect(firstRow).toHaveAttribute('tabindex', '0');
+    const participantId = (await firstRow.locator('td').first().textContent()).trim();
+    await firstRow.click();
+    // Full docked profile: header id + configured profile_details.
+    await expect(page.locator('.sv-profile .sv-profile-id')).toHaveText(
+      `Participant ${participantId}`
+    );
+    await expect(page.locator('.sv-profile .sv-profile-header')).toContainText('Sex');
+    // Single-select gesture: never a stepper.
+    await expect(page.locator('.sv-profile .sv-profile-step-count')).toHaveCount(0);
+    // The fixture's measures are non-key labs — they sit behind the module's
+    // "show N additional measures" toggle (the module-default key-measure map
+    // matches no fixture TEST value).
+    await expect(page.locator('.sv-profile .sv-profile-extras')).toContainText(
+      /Show \d+ additional measure/
+    );
+    await page.locator('.sv-profile .sv-profile-extras input').check();
+    await expect(page.locator('.sv-profile .sv-profile-spaghetti canvas')).toBeVisible();
+    // The linked listing STAYS beside the dock (PPRF-11: records vs story),
+    // with the focused participant's rows highlighted.
+    await expect(page.locator('.sv-listing table')).toBeVisible();
+    const highlighted = page.locator('.sv-listing tr.sv-listing-row-selected');
+    await expect(highlighted.first()).toBeVisible();
+    for (const text of await highlighted.locator('td:first-child').allTextContents()) {
+      expect(text.trim()).toBe(participantId);
+    }
+    await captureEvidence(page, 'PPRF-SH-002', 'docked-profile-from-listing-row');
+  });
+
+  test('PPRF-SH-003: the dock Clear affordance un-highlights the row and keeps the listing (#99)', async ({
+    page
+  }) => {
+    await selectFirstPopulatedCanvasBar(page);
+    await page.locator('.sv-listing tbody tr').first().click();
+    await expect(page.locator('.sv-profile .sv-profile-id')).toBeVisible();
+    await page.locator('.sv-profile .sv-profile-clear').click();
+    // Dock empties and the shell's :empty rule hides the slot.
+    await expect(page.locator('.sv-profile > *')).toHaveCount(0);
+    await expect(page.locator('.sv-profile')).toBeHidden();
+    // The listing stays — Clear clears the focus, not the records.
+    await expect(page.locator('.sv-listing table')).toBeVisible();
+    await expect(page.locator('.sv-listing tr.sv-listing-row-selected')).toHaveCount(0);
+    const selectedId = await page.evaluate(() => window.__safetyHistogramInstance.state.selectedId);
+    expect(selectedId).toBeNull();
+  });
+
+  test('PPRF-SH-003: a new bin click and control changes empty the dock (#99)', async ({
+    page
+  }) => {
+    await selectFirstPopulatedCanvasBar(page);
+    await page.locator('.sv-listing tbody tr').first().click();
+    await expect(page.locator('.sv-profile .sv-profile-id')).toBeVisible();
+    // A new bin click replaces the listing → the focused participant clears.
+    await selectFirstPopulatedCanvasBar(page);
+    await expect(page.locator('.sv-profile > *')).toHaveCount(0);
+    // Re-focus, then drive a control change: the render preamble resets the
+    // selection AND the dock.
+    await page.locator('.sv-listing tbody tr').first().click();
+    await expect(page.locator('.sv-profile .sv-profile-id')).toBeVisible();
+    await page
+      .locator('.sv-controls .sv-control', { has: page.locator('label:text-is("Sex")') })
+      .locator('select')
+      .selectOption('F');
+    await expect(page.locator('.sv-profile > *')).toHaveCount(0);
+  });
+
   test.describe('all-measures overview (#39)', () => {
     const measureSelect = (page) =>
       page.locator('.sv-control', { hasText: 'Measure' }).locator('select');

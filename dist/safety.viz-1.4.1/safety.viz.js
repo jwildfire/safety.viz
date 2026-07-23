@@ -12424,6 +12424,10 @@ var SafetyViz = (() => {
 .sv-listing th,.sv-listing td{border-bottom:1px solid #e3e8ee;padding:.45rem .55rem;text-align:left;vertical-align:top}
 .sv-listing th{border-bottom:2px solid #d8dee4;cursor:pointer;font-size:.75rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f;white-space:nowrap}
 .sv-listing tbody tr:hover{background:#f6f8fa}
+.sv-listing tbody tr.sv-listing-rowlink{cursor:pointer}
+.sv-listing tbody tr.sv-listing-rowlink:focus-visible{outline:2px solid #0b62a4;outline-offset:-2px}
+.sv-listing tbody tr.sv-listing-row-selected{background:#e8f0fe}
+.sv-listing tbody tr.sv-listing-row-selected:hover{background:#dce8fc}
 .sv-listing-actions{display:flex;align-items:center;justify-content:space-between;gap:.75rem;margin:.5rem 0;font-size:.85rem;flex-wrap:wrap}
 .sv-listing-tools{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
 .sv-listing-search{padding:.35rem .45rem;border:1px solid #b8c0cc;border-radius:6px;font:inherit;font-size:.85rem}
@@ -12571,6 +12575,13 @@ var SafetyViz = (() => {
     test_normality: false,
     group_by: "sh_none",
     compare_distributions: false,
+    studyday_col: null,
+    visit_col: null,
+    visitn_col: null,
+    measure_values: null,
+    profile: true,
+    profile_details: null,
+    participantProfileURL: null,
     width: "100%",
     height: 460,
     page_size: 10
@@ -12617,6 +12628,8 @@ var SafetyViz = (() => {
     }
     if (settings.displayNormalRange !== void 0)
       synced.display_normal_range = settings.displayNormalRange;
+    synced.profile = Boolean(synced.profile);
+    synced.profile_details = synced.profile_details === void 0 || synced.profile_details === null ? null : arrayify(synced.profile_details).map((value) => fieldSpec(value)).filter((d) => d.value_col);
     return synced;
   }
 
@@ -13082,8 +13095,27 @@ var SafetyViz = (() => {
     thead.append(headRow);
     table.append(thead);
     const tbody = document.createElement("tbody");
+    const interactive = typeof instance.onListingRowClick === "function";
+    const idCol = instance.settings.id_col;
     visible.forEach((row) => {
       const tr = document.createElement("tr");
+      if (interactive) {
+        const id = row[idCol];
+        tr.classList.add("sv-listing-rowlink");
+        tr.tabIndex = 0;
+        tr.setAttribute("role", "button");
+        tr.setAttribute("aria-label", `Focus participant ${id == null ? "" : id}`.trim());
+        const activate = () => instance.onListingRowClick(row);
+        tr.onclick = activate;
+        tr.onkeydown = (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            activate();
+          }
+        };
+        if (instance.listingSelectedId != null && String(id) === String(instance.listingSelectedId))
+          tr.classList.add("sv-listing-row-selected");
+      }
       cols.forEach(
         (col) => tr.append(createElement("td", null, row[col.value_col] == null ? "" : row[col.value_col]))
       );
@@ -13093,1047 +13125,8 @@ var SafetyViz = (() => {
     instance.listingWrap.append(actions, table);
   }
 
-  // src/histogram.js
-  Chart.register(BarController, BarElement, CategoryScale, LinearScale, plugin_tooltip, plugin_legend);
-  var OVERVIEW = "sh_overview";
-  var SafetyHistogram = class {
-    constructor(element = "body", settings = {}) {
-      this.element = typeof element === "string" ? document.querySelector(element) : element;
-      if (!this.element) throw new Error(`Safety Histogram target not found: ${element}`);
-      this.settings = syncSettings(settings);
-      this.rawData = [];
-      this.cleanData = [];
-      this.filteredData = [];
-      this.currentTableData = [];
-      this.listingSearch = "";
-      this.listingSort = null;
-      this.page = 1;
-      this.charts = [];
-      this.state = {
-        measure: this.settings.start_value,
-        filters: {},
-        groupBy: this.settings.group_by,
-        lower: null,
-        upper: null,
-        algorithm: this.settings.bin_algorithm,
-        quantity: null,
-        width: null,
-        displayNormalRange: this.settings.display_normal_range,
-        normalRange: null,
-        annotateBoundaries: this.settings.annotate_bin_boundaries
-      };
-      this.renderShell();
-    }
-    /**
-     * Build the static DOM shell the charts and listing render into.
-     * @private
-     */
-    renderShell() {
-      Object.assign(
-        this,
-        renderShell(this.element, {
-          moduleClass: "safety-histogram",
-          onToggle: () => this.resize()
-        })
-      );
-      this.footnote.textContent = "Hover over or click a bar for details.";
-    }
-    /**
-     * Load data and render: an alias for setData that keeps the pilot's
-     * two-step create-then-init call shape working (SH-API-001).
-     * @param {Object[]} data Long-format result records matching the histogram data contract.
-     * @returns {SafetyHistogram} The instance, for chaining.
-     */
-    init(data) {
-      this.setData(data);
-      return this;
-    }
-    /**
-     * Replace the bound data and re-render. The data is validated against the
-     * settings mapping (throwing, and rendering the message into the target
-     * element, when required columns are missing), rows with missing or
-     * non-numeric results are removed with a console warning, and the
-     * controls are rebuilt from the new data's measures and filter values.
-     * @param {Object[]} data Long-format result records matching the histogram data contract.
-     * @returns {SafetyHistogram} The instance, for chaining.
-     */
-    setData(data) {
-      this.rawData = Array.isArray(data) ? data : [];
-      this.validateAndCleanData();
-      this.buildControls();
-      this.render();
-      return this;
-    }
-    /**
-     * Merge setting overrides onto the current settings, re-normalize them
-     * (same rules as the factory), rebuild the controls, and re-render.
-     * @param {HistogramSettings} settings Setting overrides to merge.
-     * @returns {SafetyHistogram} The instance, for chaining.
-     */
-    setSettings(settings) {
-      this.settings = syncSettings({ ...this.settings, ...settings });
-      this.buildControls();
-      this.render();
-      return this;
-    }
-    /**
-     * Validate the raw data against the settings mapping and drop unusable rows.
-     * @private
-     */
-    validateAndCleanData() {
-      try {
-        checkInputs(this.rawData, this.settings);
-      } catch (error) {
-        this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
-        throw error;
-      }
-      const { rows, removed } = cleanData(this.rawData, this.settings);
-      this.cleanData = rows;
-      this.removedRecords = removed;
-      if (removed) console.warn(`${removed} missing or non-numeric results have been removed.`);
-      const measures = this.measures();
-      if (this.state.measure != null && !measures.includes(this.state.measure)) {
-        console.warn(
-          `The initial measure [${this.state.measure}] does not exist. Defaulting to the all-measures overview.`
-        );
-        this.state.measure = null;
-      }
-    }
-    /**
-     * Whether the all-measures overview is active (no measure selected, #39).
-     * @private
-     */
-    isOverview() {
-      return this.state.measure == null;
-    }
-    /**
-     * Switch between the overview and a single-measure view: sets the measure
-     * (null for the overview), clears the x-axis overrides, and rebuilds the
-     * controls so the Measure dropdown and section visibility stay in sync.
-     * Used by the Measure control and the overview panels (#39).
-     * @private
-     */
-    selectMeasure(measure) {
-      this.state.measure = measure;
-      this.resetDomain();
-      this.buildControls();
-      this.render();
-    }
-    /**
-     * Sorted distinct measure labels present in the cleaned data.
-     * @private
-     */
-    measures() {
-      return unique(this.cleanData.map((row) => measureLabel(row, this.settings))).sort();
-    }
-    /**
-     * Rebuild the measure/filter/bin/normal-range/group controls from data + state.
-     * @private
-     */
-    buildControls() {
-      this.controls.innerHTML = "";
-      const { addSection, addRow, addControl } = controlBuilders(this.controls);
-      const measure = addControl("Measure", document.createElement("select"));
-      option(measure, OVERVIEW, "All Measures", this.isOverview());
-      this.measures().forEach((value) => option(measure, value, value, value === this.state.measure));
-      measure.onchange = () => {
-        this.selectMeasure(measure.value === OVERVIEW ? null : measure.value);
-      };
-      const filterSpecs = this.settings.filters.filter((filter) => {
-        const exists = this.cleanData.some((row) => row[filter.value_col] !== void 0);
-        if (!exists)
-          console.warn(
-            `The [ ${filter.label} ] filter has been removed because the variable does not exist.`
-          );
-        return exists;
-      });
-      const filterParent = filterSpecs.length ? addSection("Filters") : this.controls;
-      filterSpecs.forEach((filter) => {
-        const select = addControl(filter.label, document.createElement("select"), filterParent);
-        option(select, "__all__", "All", !this.state.filters[filter.value_col]);
-        unique(this.cleanData.map((row) => row[filter.value_col])).sort().forEach(
-          (value) => option(select, value, value, this.state.filters[filter.value_col] === value)
-        );
-        select.onchange = () => {
-          this.state.filters[filter.value_col] = select.value === "__all__" ? null : select.value;
-          this.render();
-        };
-      });
-      const xAxisParent = addSection("X-axis Limits");
-      this.xAxisSection = xAxisParent;
-      const xAxisRow = addRow(xAxisParent);
-      const lower = addControl("Lower", document.createElement("input"), xAxisRow);
-      lower.type = "number";
-      lower.step = "any";
-      lower.value = this.state.lower == null ? "" : this.state.lower;
-      lower.onchange = () => {
-        this.state.lower = lower.value === "" ? null : Number(lower.value);
-        normalizeDomain(this.state);
-        this.render();
-      };
-      const upper = addControl("Upper", document.createElement("input"), xAxisRow);
-      upper.type = "number";
-      upper.step = "any";
-      upper.value = this.state.upper == null ? "" : this.state.upper;
-      upper.onchange = () => {
-        this.state.upper = upper.value === "" ? null : Number(upper.value);
-        normalizeDomain(this.state);
-        this.render();
-      };
-      const binParent = addSection("Bins");
-      this.binSection = binParent;
-      const algorithm = addControl("Algorithm", document.createElement("select"), binParent);
-      ALGORITHMS.forEach((value) => option(algorithm, value, value, value === this.state.algorithm));
-      algorithm.onchange = () => {
-        this.state.algorithm = algorithm.value;
-        this.render();
-      };
-      const binRow = addRow(binParent);
-      const quantity = addControl("Quantity", document.createElement("input"), binRow);
-      quantity.type = "number";
-      quantity.min = "1";
-      quantity.step = "1";
-      quantity.value = this.state.quantity || "";
-      quantity.onchange = () => {
-        this.state.quantity = Math.max(1, Math.round(Number(quantity.value) || 1));
-        this.state.algorithm = "Custom";
-        this.buildControls();
-        this.render();
-      };
-      this.binQuantityInput = quantity;
-      const width = addControl("Width", document.createElement("input"), binRow);
-      width.type = "number";
-      width.disabled = true;
-      width.value = this.state.width || "";
-      this.binWidthInput = width;
-      const displayParent = addSection("Display");
-      this.displaySection = displayParent;
-      this.normalRangeControl = null;
-      if (this.settings.normal_range) {
-        const nr = document.createElement("input");
-        nr.type = "checkbox";
-        nr.checked = this.state.displayNormalRange;
-        nr.onchange = () => {
-          this.state.displayNormalRange = nr.checked;
-          this.render();
-        };
-        const inline = createElement("div", "sv-control-inline");
-        inline.append(nr, document.createTextNode("Show"));
-        addControl("Normal Range", inline, displayParent);
-        this.normalRangeControl = inline.closest(".sv-control");
-      }
-      const ticks = document.createElement("select");
-      option(ticks, "linear", "linear", !this.state.annotateBoundaries);
-      option(ticks, "boundaries", "bin boundaries", this.state.annotateBoundaries);
-      ticks.onchange = () => {
-        this.state.annotateBoundaries = ticks.value === "boundaries";
-        this.render();
-      };
-      addControl("X-axis Ticks", ticks, displayParent);
-      this.groupControls = addSection("Grouping");
-      const group = addControl(
-        "Group charts by",
-        document.createElement("select"),
-        this.groupControls
-      );
-      this.settings.groups.forEach(
-        (spec) => option(group, spec.value_col, spec.label, spec.value_col === this.state.groupBy)
-      );
-      this.groupControls.style.display = this.settings.groups.length <= 1 ? "none" : "";
-      group.onchange = () => {
-        this.state.groupBy = group.value;
-        this.render();
-      };
-      [this.xAxisSection, this.binSection, this.displaySection, this.groupControls].forEach(
-        (section) => section.classList.toggle("sv-hidden", this.isOverview())
-      );
-      this.updateNormalRangeControl();
-    }
-    /**
-     * Hides the normal-range control for measures without normal data (SH-FUNC-004C).
-     * @private
-     */
-    updateNormalRangeControl() {
-      if (!this.normalRangeControl) return;
-      const available = measureHasNormalRange(this.currentMeasureData(), this.settings);
-      this.normalRangeControl.classList.toggle("sv-hidden", !available);
-    }
-    /**
-     * Clear the x-axis limit overrides when the measure changes.
-     * @private
-     */
-    resetDomain() {
-      this.state.lower = null;
-      this.state.upper = null;
-    }
-    /**
-     * Cleaned rows for the selected measure — or every measure while the
-     * overview is active, so the filters and participant notes span the whole
-     * dataset (#39).
-     * @private
-     */
-    currentMeasureData() {
-      if (this.isOverview()) return this.cleanData;
-      return this.cleanData.filter((row) => measureLabel(row, this.settings) === this.state.measure);
-    }
-    /**
-     * Cleaned rows for the selected measure after the active filters.
-     * @private
-     */
-    currentFilteredData() {
-      return applyFilters(this.currentMeasureData(), this.state.filters);
-    }
-    /**
-     * Redraw everything from the current data, settings, and control state:
-     * destroys the live charts, clears the listing and any bar selection,
-     * then draws the main chart, the grouped small multiples, and the
-     * participant-count notes. Called automatically by the controls and the
-     * data/settings setters; call it directly only after mutating state by
-     * hand.
-     * @returns {void}
-     */
-    render() {
-      this.destroyCharts();
-      this.chart = null;
-      this.listingWrap.innerHTML = "";
-      this.currentTableData = [];
-      this.listingSearch = "";
-      this.listingSort = null;
-      this.page = 1;
-      this.footnote.textContent = "Hover over or click a bar for details.";
-      this.mainAnnotation.innerHTML = "";
-      this.notes.innerHTML = "";
-      this.multiplesWrap.innerHTML = "";
-      this.chartWrap.classList.toggle("sv-hidden", this.isOverview());
-      this.filteredData = this.currentFilteredData();
-      if (!this.filteredData.length) {
-        this.footnote.textContent = "No records match the current filters.";
-        return;
-      }
-      if (this.isOverview()) {
-        this.footnote.textContent = "Click a chart to view that measure.";
-        this.drawOverview();
-        this.updateNotes();
-        return;
-      }
-      this.binInputs = this.computeBinInputs();
-      this.drawMainChart();
-      this.drawMultiples();
-      this.updateNotes();
-    }
-    /**
-     * Compute the shared bin parameters for the current render, following the
-     * original renderer's onPreprocess pipeline (#19): the domain and bin
-     * count/width anchor to the full result set of the selected measure —
-     * not the filtered subset — so filters and group multiples reuse the same
-     * bin boundaries and only the bar heights change. When the x-axis limits
-     * are user-modified, the parameters recompute from the measure results
-     * inside that domain (the original's "custom" domain state).
-     * @private
-     */
-    computeBinInputs() {
-      const measureValues = this.currentMeasureData().map((row) => row.__sh_value);
-      const domain = resolveDomain(measureValues, this.state.lower, this.state.upper);
-      const binValues = measureValues.filter((value) => domain[0] <= value && value <= domain[1]);
-      const binResult = calculateBins(
-        binValues,
-        this.state.algorithm,
-        this.state.quantity,
-        this.state.width,
-        domain
-      );
-      return {
-        domain,
-        quantity: binResult.quantity,
-        width: binResult.width,
-        bins: binResult.bins,
-        digits: displayDigits(binResult.width, measureValues)
-      };
-    }
-    /**
-     * Refresh the shown/total participant counts and removed-record note.
-     * @private
-     */
-    updateNotes() {
-      const totalParticipants = unique(
-        this.currentMeasureData().map((row) => row[this.settings.id_col])
-      ).length;
-      const shownParticipants = unique(
-        this.filteredData.map((row) => row[this.settings.id_col])
-      ).length;
-      const pct = totalParticipants ? (shownParticipants / totalParticipants * 100).toFixed(1) : "0.0";
-      const removedNote = this.removedRecords ? `<span class="sv-warning">${this.removedRecords} missing or non-numeric results removed.</span>` : "";
-      this.notes.innerHTML = `<span>${shownParticipants} of ${totalParticipants} participants shown (${pct}%).</span>${removedNote}`;
-    }
-    /**
-     * Assign a set of rows into the shared bins computed by computeBinInputs.
-     * Every chart of a render — the main chart and each group multiple — uses
-     * the same bin boundaries; only the per-bin record sets differ (#19).
-     * @private
-     */
-    chartInputs(rows) {
-      const { domain, digits, quantity, width } = this.binInputs;
-      const bins = this.binInputs.bins.map((bin) => ({ ...bin, records: [] }));
-      rows.forEach((row) => {
-        if (row.__sh_value < domain[0] || row.__sh_value > domain[1]) return;
-        bins[binIndex(row.__sh_value, domain[0], width, bins.length)].records.push(row);
-      });
-      return { bins, domain, digits, quantity, width };
-    }
-    /**
-     * Draw the main Chart.js bar chart with tooltips, selection, and normal range.
-     * @private
-     */
-    drawMainChart() {
-      const inputs = this.chartInputs(this.filteredData);
-      this.state.quantity = inputs.quantity;
-      this.state.width = Number(inputs.width.toPrecision(4));
-      if (this.binQuantityInput) this.binQuantityInput.value = this.state.quantity;
-      if (this.binWidthInput) this.binWidthInput.value = this.state.width;
-      const first = this.filteredData[0];
-      this.state.normalRange = this.settings.normal_col_low && this.settings.normal_col_high ? {
-        low: Number(first[this.settings.normal_col_low]),
-        high: Number(first[this.settings.normal_col_high])
-      } : null;
-      const labels = buildTickLabels(inputs.bins, inputs.digits, this.state.annotateBoundaries);
-      const data = inputs.bins.map((bin) => bin.records.length);
-      const chart = new Chart(this.canvas.getContext("2d"), {
-        type: "bar",
-        data: {
-          labels,
-          datasets: [
-            {
-              label: "# of Observations",
-              data,
-              backgroundColor: "rgba(37, 99, 235, .72)",
-              borderColor: "rgba(37, 99, 235, 1)",
-              borderWidth: 1
-            }
-          ]
-        },
-        options: {
-          maintainAspectRatio: false,
-          responsive: true,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                afterLabel: (ctx) => binDescription(inputs.bins[ctx.dataIndex], this.state.measure, inputs.digits)
-              }
-            }
-          },
-          scales: buildScales(),
-          onHover: (event, active) => {
-            if (active.length) this.describeBin(inputs.bins[active[0].index], inputs.digits, false);
-          },
-          onClick: (event, active) => {
-            if (active.length) {
-              const bin = inputs.bins[active[0].index];
-              this.showListing(bin.records, bin, inputs.digits);
-              this.highlightSelection(chart, active[0].index);
-            }
-          }
-        },
-        plugins: [normalRangePlugin(this)]
-      });
-      chart.$shBins = inputs.bins;
-      this.chart = chart;
-      this.charts.push(chart);
-      this.drawMainAnnotation(this.filteredData);
-    }
-    /**
-     * De-emphasizes the bars outside the linked listing (SH-FUNC-011);
-     * render() rebuilds the charts, which clears the selection.
-     * @private
-     */
-    highlightSelection(chart, index) {
-      if (!chart || index == null) return;
-      const dataset = chart.data.datasets[0];
-      if (typeof dataset.backgroundColor === "string") chart.$shBaseColor = dataset.backgroundColor;
-      dataset.backgroundColor = selectionColors(chart.$shBaseColor, chart.data.labels.length, index);
-      chart.$shSelectedBin = index;
-      chart.update();
-    }
-    /**
-     * Annotate the main chart with the normality screen when enabled.
-     * @private
-     */
-    drawMainAnnotation(rows) {
-      this.mainAnnotation.innerHTML = "";
-      if (!this.settings.test_normality) return;
-      const pValue = approximateNormalityP(rows.map((row) => row.__sh_value));
-      this.mainAnnotation.append(
-        statisticalAnnotation(
-          "Normality",
-          pValue,
-          "Approximate Jarque-Bera normality screen",
-          "https://en.wikipedia.org/wiki/Jarque%E2%80%93Bera_test"
-        )
-      );
-    }
-    /**
-     * Draw one small-multiple panel per group value when grouping is active.
-     * @private
-     */
-    drawMultiples() {
-      this.multiplesWrap.innerHTML = "";
-      if (!this.state.groupBy || this.state.groupBy === "sh_none") return;
-      const groups = unique(this.filteredData.map((row) => row[this.state.groupBy])).sort();
-      groups.forEach((groupValue) => {
-        const rows = this.filteredData.filter(
-          (row) => String(row[this.state.groupBy]) === String(groupValue)
-        );
-        const panel = createElement("div", "sv-multiple");
-        panel.append(createElement("h3", null, `${groupValue} (${rows.length} records)`));
-        if (this.settings.compare_distributions) {
-          const groupedValues = Object.fromEntries(
-            groups.map((value) => [
-              value,
-              this.filteredData.filter((row) => String(row[this.state.groupBy]) === String(value)).map((row) => row.__sh_value)
-            ])
-          );
-          panel.append(
-            statisticalAnnotation(
-              "Group comparison",
-              approximateGroupP(groupedValues),
-              "Approximate one-way ANOVA screen",
-              "https://en.wikipedia.org/wiki/One-way_analysis_of_variance"
-            )
-          );
-        }
-        const canvasWrap = createElement("div", "sv-multiple-canvas");
-        const canvas = document.createElement("canvas");
-        canvasWrap.append(canvas);
-        panel.append(canvasWrap);
-        this.multiplesWrap.append(panel);
-        const inputs = this.chartInputs(rows);
-        const chart = new Chart(canvas.getContext("2d"), {
-          type: "bar",
-          data: {
-            labels: buildTickLabels(inputs.bins, inputs.digits, false),
-            datasets: [
-              {
-                data: inputs.bins.map((bin) => bin.records.length),
-                backgroundColor: "rgba(5, 150, 105, .65)"
-              }
-            ]
-          },
-          options: {
-            maintainAspectRatio: false,
-            responsive: true,
-            plugins: { legend: { display: false } },
-            scales: {
-              y: { beginAtZero: true, ticks: { precision: 0 } },
-              x: { ticks: { display: false } }
-            },
-            onClick: (event, active) => {
-              if (active.length) {
-                const bin = inputs.bins[active[0].index];
-                this.showListing(bin.records, bin, inputs.digits);
-                this.highlightSelection(chart, active[0].index);
-              }
-            }
-          }
-        });
-        chart.$shBins = inputs.bins;
-        this.charts.push(chart);
-      });
-    }
-    /**
-     * Draw the all-measures overview: one small-multiple histogram per
-     * measure, in Measure-control order, each independently binned over the
-     * measure's full value range with the configured bin algorithm so filters
-     * only change the bar heights. Clicking a panel (or pressing Enter/Space
-     * on it) opens that measure in the single-measure view (SH-OVW-002/003).
-     * @private
-     */
-    drawOverview() {
-      this.multiplesWrap.innerHTML = "";
-      this.measures().forEach((measureValue) => {
-        const measureRows = this.cleanData.filter(
-          (row) => measureLabel(row, this.settings) === measureValue
-        );
-        const rows = applyFilters(measureRows, this.state.filters);
-        const values = measureRows.map((row) => row.__sh_value);
-        const domain = resolveDomain(values, null, null);
-        const binResult = calculateBins(values, this.settings.bin_algorithm, null, null, domain);
-        const digits = displayDigits(binResult.width, values);
-        const bins = binResult.bins.map((bin) => ({ ...bin, records: [] }));
-        rows.forEach((row) => {
-          if (row.__sh_value < domain[0] || row.__sh_value > domain[1]) return;
-          bins[binIndex(row.__sh_value, domain[0], binResult.width, bins.length)].records.push(row);
-        });
-        const panel = createElement("div", "sv-multiple sv-overview-panel");
-        panel.setAttribute("role", "button");
-        panel.tabIndex = 0;
-        panel.setAttribute("aria-label", `View ${measureValue}`);
-        const open = () => this.selectMeasure(measureValue);
-        panel.onclick = open;
-        panel.onkeydown = (event) => {
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            open();
-          }
-        };
-        panel.append(createElement("h3", null, `${measureValue} (${rows.length} results)`));
-        const canvasWrap = createElement("div", "sv-multiple-canvas");
-        const canvas = document.createElement("canvas");
-        canvasWrap.append(canvas);
-        panel.append(canvasWrap);
-        this.multiplesWrap.append(panel);
-        const chart = new Chart(canvas.getContext("2d"), {
-          type: "bar",
-          data: {
-            labels: buildTickLabels(bins, digits, false),
-            datasets: [
-              {
-                data: bins.map((bin) => bin.records.length),
-                backgroundColor: "rgba(37, 99, 235, .72)"
-              }
-            ]
-          },
-          options: {
-            maintainAspectRatio: false,
-            responsive: true,
-            events: [],
-            plugins: { legend: { display: false }, tooltip: { enabled: false } },
-            scales: {
-              y: { beginAtZero: true, ticks: { precision: 0 } },
-              x: { ticks: { display: false } }
-            }
-          }
-        });
-        chart.$shBins = bins;
-        this.charts.push(chart);
-      });
-    }
-    /**
-     * Describe a hovered or selected bin in the footnote.
-     * @private
-     */
-    describeBin(bin, digits, clicked) {
-      this.footnote.textContent = `${clicked ? "Selected" : "Hover"}: ${binDescription(bin, this.state.measure, digits)}.`;
-    }
-    /**
-     * Show the participant listing for a clicked bin's records.
-     * @private
-     */
-    showListing(records, bin, digits) {
-      this.currentTableData = records;
-      this.listingSearch = "";
-      this.listingSort = null;
-      this.page = 1;
-      this.describeBin(bin, digits, true);
-      renderListing(this);
-    }
-    /**
-     * Resize every live chart (the main chart and any small multiples) to its
-     * container. For host layouts that change the container size without a
-     * window resize — e.g. the R htmlwidget bindings.
-     * @returns {void}
-     */
-    resize() {
-      this.charts.forEach((chart) => chart.resize());
-    }
-    /**
-     * Destroy the live Chart.js instances without touching the shell.
-     * @private
-     */
-    destroyCharts() {
-      this.charts.forEach((chart) => chart.destroy());
-      this.charts = [];
-    }
-    /**
-     * Tear the histogram down: destroy every Chart.js instance and empty the
-     * target element. The instance cannot be reused afterwards — create a new
-     * one via the factory instead.
-     * @returns {void}
-     */
-    destroy() {
-      this.destroyCharts();
-      this.element.innerHTML = "";
-    }
-  };
-  function histogram(element = "body", settings = {}) {
-    return new SafetyHistogram(element, settings);
-  }
-
-  // src/shift-plot/configure.js
-  var STATS = ["mean", "min", "max", "first"];
-  var DEFAULT_SETTINGS2 = {
-    measure_col: "TEST",
-    value_col: "STRESN",
-    visit_col: "VISIT",
-    visit_order_col: "VISITNUM",
-    id_col: "USUBJID",
-    unit_col: "STRESU",
-    baseline_visits: null,
-    comparison_visits: null,
-    baseline_stat: "mean",
-    comparison_stat: "mean",
-    filters: [],
-    details: null,
-    start_value: null,
-    width: "100%",
-    height: 460,
-    page_size: 10,
-    normal_col_low: "STNRLO",
-    normal_col_high: "STNRHI",
-    studyday_col: null,
-    measure_values: null,
-    profile: true,
-    profile_details: null,
-    participantProfileURL: null
-  };
-  function arrayify2(value) {
-    if (value === null || value === void 0 || value === "") return [];
-    return Array.isArray(value) ? value : [value];
-  }
-  function fieldSpec2(value, fallbackLabel) {
-    if (typeof value === "string") return { value_col: value, label: fallbackLabel || value };
-    return { value_col: value.value_col, label: value.label || value.value_col };
-  }
-  function syncSettings2(settings) {
-    const synced = { ...DEFAULT_SETTINGS2, ...settings };
-    synced.filters = arrayify2(synced.filters).map((filter) => fieldSpec2(filter)).filter((filter) => filter.value_col);
-    synced.baseline_visits = synced.baseline_visits == null ? null : arrayify2(synced.baseline_visits);
-    synced.comparison_visits = synced.comparison_visits == null ? null : arrayify2(synced.comparison_visits);
-    synced.baseline_stat = STATS.includes(synced.baseline_stat) ? synced.baseline_stat : "mean";
-    synced.comparison_stat = STATS.includes(synced.comparison_stat) ? synced.comparison_stat : "mean";
-    synced.details = arrayify2(synced.details).map((detail) => fieldSpec2(detail)).filter((detail) => detail.value_col);
-    if (!synced.details.length) {
-      synced.details = [
-        { value_col: synced.id_col, label: "Participant ID" },
-        { value_col: "__ssp_baseline", label: "Baseline" },
-        { value_col: "__ssp_comparison", label: "Comparison" },
-        { value_col: "__ssp_chg", label: "Change" },
-        { value_col: "__ssp_pchg", label: "Percent Change" }
-      ];
-    }
-    synced.profile = Boolean(synced.profile);
-    synced.profile_details = synced.profile_details === void 0 || synced.profile_details === null ? null : arrayify2(synced.profile_details).map((value) => fieldSpec2(value)).filter((detail) => detail.value_col);
-    return synced;
-  }
-
-  // src/data/schema/shift-plot.json
-  var shift_plot_default = {
-    $schema: "https://json-schema.org/draft/2020-12/schema",
-    $id: "https://raw.githubusercontent.com/jwildfire/safety.viz/main/src/data/schema/shift-plot.json",
-    title: "safety.viz shift-plot data contract",
-    description: "Long-format results data: one record per participant per visit per measure (SSP-DATA-001). Column names are supplied by the settings mapping; the shift plot pairs each participant's baseline-visit value against their comparison-visit value for the selected measure, removes missing/non-numeric results with a reported count (SSP-REG-020), and degrades gracefully when optional columns are absent (SSP-DATA-003).",
-    type: "object",
-    required: ["data", "settings"],
-    properties: {
-      data: {
-        type: "array",
-        minItems: 1,
-        items: { type: "object" },
-        description: "d3.csv()-style records; every row carries the measure, visit, and result columns named in settings."
-      },
-      settings: {
-        type: "object",
-        description: "Column mappings and rendering options; merged onto the module's DEFAULT_SETTINGS, so only overrides need to be supplied.",
-        required: ["measure_col", "value_col", "visit_col"],
-        properties: {
-          measure_col: {
-            type: "string",
-            default: "TEST",
-            description: "Column holding the measure name; required in data."
-          },
-          value_col: {
-            type: "string",
-            default: "STRESN",
-            description: "Column holding the numeric result; required in data."
-          },
-          visit_col: {
-            type: "string",
-            default: "VISIT",
-            description: "Column holding the visit label; required in data. Its distinct values populate the baseline and comparison visit controls."
-          },
-          visit_order_col: {
-            type: "string",
-            default: "VISITNUM",
-            description: "Optional numeric column that orders the visits; when absent the visits sort alphanumerically (SSP-REG-013/014)."
-          },
-          id_col: {
-            type: "string",
-            default: "USUBJID",
-            description: "Optional participant identifier column; drives the participant counts and the default listing's first column."
-          },
-          unit_col: {
-            type: "string",
-            default: "STRESU",
-            description: "Optional unit column, appended to measure labels."
-          },
-          baseline_visits: {
-            $ref: "#/$defs/visitList",
-            description: "Optional baseline visit(s) selected on first render; defaults to the first visit (SSP-CFG-004)."
-          },
-          comparison_visits: {
-            $ref: "#/$defs/visitList",
-            description: "Optional comparison visit(s) selected on first render; defaults to every visit after the baseline (SSP-CFG-005)."
-          },
-          baseline_stat: {
-            type: "string",
-            enum: ["mean", "min", "max", "first"],
-            default: "mean",
-            description: "Summary statistic applied when a participant has several results across the baseline visit(s)."
-          },
-          comparison_stat: {
-            type: "string",
-            enum: ["mean", "min", "max", "first"],
-            default: "mean",
-            description: "Summary statistic applied when a participant has several results across the comparison visit(s)."
-          },
-          filters: {
-            $ref: "#/$defs/fieldList",
-            description: "Optional filter columns rendered as controls (SSP-CFG-006)."
-          },
-          details: {
-            $ref: "#/$defs/fieldList",
-            description: "Optional listing columns; defaults to participant ID, baseline, comparison, change, and percent change (SSP-REQ-005)."
-          }
-        }
-      }
-    },
-    $defs: {
-      visitList: {
-        type: "array",
-        items: { type: "string" }
-      },
-      fieldList: {
-        type: "array",
-        items: {
-          anyOf: [
-            { type: "string" },
-            {
-              type: "object",
-              required: ["value_col"],
-              properties: {
-                value_col: { type: "string" },
-                label: { type: "string" }
-              }
-            }
-          ]
-        }
-      }
-    }
-  };
-
-  // src/shift-plot/checkInputs.js
-  var REQUIRED_COLUMN_SETTINGS2 = shift_plot_default.properties.settings.required;
-  function checkInputs2(data, settings) {
-    const rows = Array.isArray(data) ? data : [];
-    const missing = REQUIRED_COLUMN_SETTINGS2.map((key) => settings[key]).filter(
-      (col) => !rows.some((row) => row[col] !== void 0)
-    );
-    if (missing.length) {
-      throw new Error(`Required variable(s) missing: ${missing.join(", ")}`);
-    }
-  }
-
-  // src/shift-plot/structureData.js
-  function unique2(values) {
-    return [
-      ...new Set(values.filter((value) => value !== void 0 && value !== null && value !== ""))
-    ];
-  }
-  function mean2(values) {
-    return values.reduce((sum, value) => sum + value, 0) / values.length;
-  }
-  function applyStat(values, stat) {
-    if (!values.length) return NaN;
-    if (values.length === 1) return values[0];
-    if (stat === "min") return Math.min(...values);
-    if (stat === "max") return Math.max(...values);
-    if (stat === "first") return values[0];
-    return mean2(values);
-  }
-  function roundValue(value, digits = 2) {
-    if (!Number.isFinite(value)) return "";
-    return Number(value.toFixed(digits));
-  }
-  function formatPercent(value) {
-    if (!Number.isFinite(value)) return "";
-    return `${value.toFixed(1)}%`;
-  }
-  function cleanData2(rawData, settings) {
-    let removed = 0;
-    const rows = rawData.map((row, index) => ({
-      ...row,
-      __ssp_index: index,
-      __ssp_value: Number(row[settings.value_col])
-    })).filter((row) => {
-      const keep = row[settings.value_col] !== "" && Number.isFinite(row.__ssp_value);
-      if (!keep) removed += 1;
-      return keep;
-    });
-    return { rows, removed };
-  }
-  function measureLabel2(row, settings) {
-    return row[settings.measure_col];
-  }
-  function listVisits(rows, settings) {
-    const orderCol = settings.visit_order_col;
-    const hasOrder = orderCol && rows.some((row) => row[orderCol] !== void 0);
-    const labels = unique2(rows.map((row) => row[settings.visit_col]));
-    if (!hasOrder) {
-      return labels.sort((a, b) => String(a).localeCompare(String(b), void 0, { numeric: true }));
-    }
-    const orderOf = /* @__PURE__ */ new Map();
-    rows.forEach((row) => {
-      const label = row[settings.visit_col];
-      if (label !== void 0 && label !== null && label !== "" && !orderOf.has(label)) {
-        orderOf.set(label, Number(row[orderCol]));
-      }
-    });
-    return labels.sort((a, b) => {
-      const diff = orderOf.get(a) - orderOf.get(b);
-      return diff || String(a).localeCompare(String(b), void 0, { numeric: true });
-    });
-  }
-  function applyFilters2(rows, filters) {
-    return rows.filter(
-      (row) => Object.entries(filters).every(([key, value]) => !value || String(row[key]) === String(value))
-    );
-  }
-  function computeShiftPairs({
-    rows,
-    measure,
-    baselineVisits,
-    comparisonVisits,
-    baselineStat,
-    comparisonStat,
-    settings
-  }) {
-    const baseline = new Set(baselineVisits || []);
-    const comparison = new Set(comparisonVisits || []);
-    const idCol = settings.id_col;
-    const visitCol = settings.visit_col;
-    const participants = /* @__PURE__ */ new Map();
-    rows.forEach((row) => {
-      if (measureLabel2(row, settings) !== measure) return;
-      const id = row[idCol];
-      if (!participants.has(id)) participants.set(id, { firstRow: row, byVisit: /* @__PURE__ */ new Map() });
-      const byVisit = participants.get(id).byVisit;
-      const visit = row[visitCol];
-      if (!byVisit.has(visit)) byVisit.set(visit, row.__ssp_value);
-    });
-    const pairs = [];
-    participants.forEach(({ firstRow, byVisit }, id) => {
-      const baselineValues = [];
-      const comparisonValues = [];
-      byVisit.forEach((value, visit) => {
-        if (baseline.has(visit)) baselineValues.push(value);
-        if (comparison.has(visit)) comparisonValues.push(value);
-      });
-      if (!baselineValues.length || !comparisonValues.length) return;
-      const shiftx = applyStat(baselineValues, baselineStat);
-      const shifty = applyStat(comparisonValues, comparisonStat);
-      if (!Number.isFinite(shiftx) || !Number.isFinite(shifty)) return;
-      const chg = shifty - shiftx;
-      const pchg = shiftx === 0 ? NaN : chg / shiftx * 100;
-      pairs.push({
-        ...firstRow,
-        [idCol]: id,
-        x: shiftx,
-        y: shifty,
-        __ssp_baseline: roundValue(shiftx),
-        __ssp_comparison: roundValue(shifty),
-        __ssp_chg: roundValue(chg),
-        __ssp_pchg: formatPercent(pchg)
-      });
-    });
-    return pairs;
-  }
-  function computeDomain(pairs) {
-    if (!pairs.length) return [0, 1];
-    const values = pairs.flatMap((pair) => [pair.x, pair.y]);
-    const min = Math.min(...values);
-    const max = Math.max(...values);
-    const pad = (max - min) * 0.05 || 1;
-    return [min - pad, max + pad];
-  }
-
-  // src/shift-plot/getScales.js
-  function buildScales2(domain, measure) {
-    const suffix = measure ? ` \u2014 ${measure}` : "";
-    return {
-      x: {
-        type: "linear",
-        min: domain[0],
-        max: domain[1],
-        title: { display: true, text: `Baseline Value${suffix}` },
-        ticks: { maxRotation: 0 }
-      },
-      y: {
-        type: "linear",
-        min: domain[0],
-        max: domain[1],
-        title: { display: true, text: `Comparison Value${suffix}` }
-      }
-    };
-  }
-
-  // src/shift-plot/getPlugins.js
-  var POINT_COLOR = "rgba(37, 99, 235, 0.78)";
-  var POINT_BORDER = "rgba(37, 99, 235, 1)";
-  var POINT_FADED = "rgba(37, 99, 235, 0.14)";
-  var COLORS = { point: POINT_COLOR, border: POINT_BORDER, faded: POINT_FADED };
-  function identityLinePlugin(instance) {
-    return {
-      id: `ssp-identity-${Math.random().toString(36).slice(2)}`,
-      afterDatasetsDraw(chart) {
-        const domain = instance.state.domain;
-        if (!domain) return;
-        const { ctx, scales } = chart;
-        ctx.save();
-        ctx.beginPath();
-        ctx.moveTo(scales.x.getPixelForValue(domain[0]), scales.y.getPixelForValue(domain[0]));
-        ctx.lineTo(scales.x.getPixelForValue(domain[1]), scales.y.getPixelForValue(domain[1]));
-        ctx.strokeStyle = "rgba(31, 41, 51, 0.55)";
-        ctx.lineWidth = 1;
-        ctx.setLineDash([6, 4]);
-        ctx.stroke();
-        ctx.restore();
-      }
-    };
-  }
-  function brushBoxPlugin() {
-    return {
-      id: `ssp-brush-${Math.random().toString(36).slice(2)}`,
-      afterDatasetsDraw(chart) {
-        const brush = chart.$sspBrush;
-        if (!brush) return;
-        const { ctx } = chart;
-        const width = brush.right - brush.left;
-        const height = brush.bottom - brush.top;
-        ctx.save();
-        ctx.fillStyle = "rgba(120, 120, 120, 0.18)";
-        ctx.strokeStyle = "rgba(90, 90, 90, 0.65)";
-        ctx.lineWidth = 1;
-        ctx.fillRect(brush.left, brush.top, width, height);
-        ctx.strokeRect(brush.left, brush.top, width, height);
-        ctx.restore();
-      }
-    };
-  }
-  function tooltipLines(pair, idCol) {
-    return [
-      `Subject ID: ${pair[idCol]}`,
-      `Baseline: ${pair.__ssp_baseline}`,
-      `Comparison: ${pair.__ssp_comparison}`,
-      `Change: ${pair.__ssp_chg}`,
-      `Percent Change: ${pair.__ssp_pchg}`
-    ];
-  }
-  function pointColors(count2, selected, base = POINT_COLOR, faded = POINT_FADED) {
-    if (!selected || !selected.size) return base;
-    return Array.from({ length: count2 }, (_, index) => selected.has(index) ? base : faded);
-  }
-
   // src/hep-core/stats.js
-  function mean3(values) {
+  function mean2(values) {
     const nums = values.map(Number).filter(Number.isFinite);
     if (!nums.length) return NaN;
     return nums.reduce((sum, value) => sum + value, 0) / nums.length;
@@ -14162,7 +13155,7 @@ var SafetyViz = (() => {
       q75: quantile2(sorted, 0.75),
       q95: quantile2(sorted, 0.95),
       max: sorted.length ? sorted[sorted.length - 1] : NaN,
-      mean: mean3(sorted)
+      mean: mean2(sorted)
     };
   }
 
@@ -14185,7 +13178,7 @@ var SafetyViz = (() => {
     const testName = settings.measure_values ? settings.measure_values[key] : key;
     return rows.filter((row) => row[settings.measure_col] === testName);
   }
-  function cleanData3(rawData, settings) {
+  function cleanData2(rawData, settings) {
     let removed = 0;
     const rows = rawData.map((row, index) => {
       const value = Number(row[settings.value_col]);
@@ -14269,11 +13262,11 @@ var SafetyViz = (() => {
   }
 
   // src/participant-profile/configure.js
-  function arrayify3(value) {
+  function arrayify2(value) {
     if (value === void 0 || value === null || value === "") return [];
     return Array.isArray(value) ? value : [value];
   }
-  function fieldSpec3(value, fallbackLabel) {
+  function fieldSpec2(value, fallbackLabel) {
     if (typeof value === "string") return { value_col: value, label: fallbackLabel || value };
     return { ...value, value_col: value.value_col, label: value.label || value.value_col };
   }
@@ -14287,7 +13280,7 @@ var SafetyViz = (() => {
     "#f781bf",
     "#00838f"
   ];
-  var DEFAULT_SETTINGS3 = {
+  var DEFAULT_SETTINGS2 = {
     id_col: "USUBJID",
     measure_col: "TEST",
     value_col: "STRESN",
@@ -14331,30 +13324,30 @@ var SafetyViz = (() => {
     width: "100%",
     height: 300
   };
-  function syncSettings3(settings = {}) {
-    const synced = { ...DEFAULT_SETTINGS3, ...settings };
-    synced.details = arrayify3(synced.details).map((value) => fieldSpec3(value)).filter((d) => d.value_col);
-    synced.filters = arrayify3(synced.filters).map((value) => fieldSpec3(value)).filter((d) => d.value_col);
-    synced.groups = arrayify3(synced.groups).map((value) => fieldSpec3(value)).filter((d) => d.value_col);
-    synced.listing_cols = synced.listing_cols === void 0 || synced.listing_cols === null ? null : arrayify3(synced.listing_cols).map((value) => fieldSpec3(value)).filter((d) => d.value_col);
+  function syncSettings2(settings = {}) {
+    const synced = { ...DEFAULT_SETTINGS2, ...settings };
+    synced.details = arrayify2(synced.details).map((value) => fieldSpec2(value)).filter((d) => d.value_col);
+    synced.filters = arrayify2(synced.filters).map((value) => fieldSpec2(value)).filter((d) => d.value_col);
+    synced.groups = arrayify2(synced.groups).map((value) => fieldSpec2(value)).filter((d) => d.value_col);
+    synced.listing_cols = synced.listing_cols === void 0 || synced.listing_cols === null ? null : arrayify2(synced.listing_cols).map((value) => fieldSpec2(value)).filter((d) => d.value_col);
     synced.measure_values = {
-      ...DEFAULT_SETTINGS3.measure_values,
+      ...DEFAULT_SETTINGS2.measure_values,
       ...settings.measure_values || {}
     };
     const cutKeys = /* @__PURE__ */ new Set([
-      ...Object.keys(DEFAULT_SETTINGS3.cuts),
+      ...Object.keys(DEFAULT_SETTINGS2.cuts),
       ...Object.keys(settings.cuts || {})
     ]);
     const mergedCuts = {};
     cutKeys.forEach((key) => {
       mergedCuts[key] = {
-        ...DEFAULT_SETTINGS3.cuts[key] || {},
+        ...DEFAULT_SETTINGS2.cuts[key] || {},
         ...(settings.cuts || {})[key] || {}
       };
     });
     synced.cuts = mergedCuts;
-    const bounds = arrayify3(synced.measureBounds).map(Number).filter(Number.isFinite);
-    synced.measureBounds = bounds.length === 2 ? bounds : [...DEFAULT_SETTINGS3.measureBounds];
+    const bounds = arrayify2(synced.measureBounds).map(Number).filter(Number.isFinite);
+    synced.measureBounds = bounds.length === 2 ? bounds : [...DEFAULT_SETTINGS2.measureBounds];
     synced.axis_type = synced.axis_type === "log" ? "log" : "linear";
     return synced;
   }
@@ -14371,10 +13364,10 @@ var SafetyViz = (() => {
   }
 
   // src/participant-profile/checkInputs.js
-  var REQUIRED_COLUMN_SETTINGS3 = ["id_col", "measure_col", "value_col", "normal_col_high"];
-  function checkInputs3(data, settings) {
+  var REQUIRED_COLUMN_SETTINGS2 = ["id_col", "measure_col", "value_col", "normal_col_high"];
+  function checkInputs2(data, settings) {
     const rows = Array.isArray(data) ? data : [];
-    const missing = REQUIRED_COLUMN_SETTINGS3.map((key) => settings[key]).filter(
+    const missing = REQUIRED_COLUMN_SETTINGS2.map((key) => settings[key]).filter(
       (col) => !rows.some((row) => row[col] !== void 0)
     );
     if (missing.length) {
@@ -14395,7 +13388,7 @@ var SafetyViz = (() => {
   ];
   var AXIS_TYPES = ["linear", "log"];
   var POINT_SIZE_OPTIONS = ["Uniform", "rRatio"];
-  var DEFAULT_SETTINGS4 = {
+  var DEFAULT_SETTINGS3 = {
     id_col: "USUBJID",
     measure_col: "TEST",
     value_col: "STRESN",
@@ -14447,56 +13440,56 @@ var SafetyViz = (() => {
     width: "100%",
     height: 460
   };
-  function arrayify4(value) {
+  function arrayify3(value) {
     if (value === void 0 || value === null || value === "") return [];
     return Array.isArray(value) ? value : [value];
   }
-  function fieldSpec4(value, fallbackLabel) {
+  function fieldSpec3(value, fallbackLabel) {
     if (typeof value === "string") return { value_col: value, label: fallbackLabel || value };
     return { ...value, value_col: value.value_col, label: value.label || value.value_col };
   }
-  function syncSettings4(settings) {
-    const synced = { ...DEFAULT_SETTINGS4, ...settings };
-    synced.filters = arrayify4(synced.filters).map((value) => fieldSpec4(value)).filter((d) => d.value_col);
+  function syncSettings3(settings) {
+    const synced = { ...DEFAULT_SETTINGS3, ...settings };
+    synced.filters = arrayify3(synced.filters).map((value) => fieldSpec3(value)).filter((d) => d.value_col);
     const defaultGroup = { value_col: GROUP_NONE, label: "None" };
     synced.groups = [
       defaultGroup,
-      ...arrayify4(synced.groups).map((value) => fieldSpec4(value)).filter((d) => d.value_col)
+      ...arrayify3(synced.groups).map((value) => fieldSpec3(value)).filter((d) => d.value_col)
     ];
     if (synced.group_by && !synced.groups.some((group) => group.value_col === synced.group_by)) {
       synced.groups.push({ value_col: synced.group_by, label: synced.group_by });
     }
     synced.group_by = synced.groups.some((group) => group.value_col === synced.group_by) ? synced.group_by : synced.groups[0].value_col;
-    synced.details = arrayify4(synced.details).map((value) => fieldSpec4(value)).filter((d) => d.value_col);
-    synced.x_options = arrayify4(synced.x_options);
-    synced.y_options = arrayify4(synced.y_options);
+    synced.details = arrayify3(synced.details).map((value) => fieldSpec3(value)).filter((d) => d.value_col);
+    synced.x_options = arrayify3(synced.x_options);
+    synced.y_options = arrayify3(synced.y_options);
     synced.measure_values = {
-      ...DEFAULT_SETTINGS4.measure_values,
+      ...DEFAULT_SETTINGS3.measure_values,
       ...settings.measure_values || {}
     };
     const cutKeys = /* @__PURE__ */ new Set([
-      ...Object.keys(DEFAULT_SETTINGS4.cuts),
+      ...Object.keys(DEFAULT_SETTINGS3.cuts),
       ...Object.keys(settings.cuts || {})
     ]);
     const mergedCuts = {};
     cutKeys.forEach((key) => {
       mergedCuts[key] = {
-        ...DEFAULT_SETTINGS4.cuts[key] || {},
+        ...DEFAULT_SETTINGS3.cuts[key] || {},
         ...(settings.cuts || {})[key] || {}
       };
     });
     synced.cuts = mergedCuts;
-    synced.r_ratio = arrayify4(synced.r_ratio);
+    synced.r_ratio = arrayify3(synced.r_ratio);
     if (synced.r_ratio.length < 2) synced.r_ratio = [0, null];
-    const activeArms = arrayify4(synced.active_arms).map(String);
+    const activeArms = arrayify3(synced.active_arms).map(String);
     synced.active_arms = activeArms.length ? activeArms : null;
     synced.placebo_arm = synced.placebo_arm === void 0 || synced.placebo_arm === null || synced.placebo_arm === "" ? null : String(synced.placebo_arm);
-    synced.jaundice_uln = Number.isFinite(Number(synced.jaundice_uln)) ? Number(synced.jaundice_uln) : DEFAULT_SETTINGS4.jaundice_uln;
+    synced.jaundice_uln = Number.isFinite(Number(synced.jaundice_uln)) ? Number(synced.jaundice_uln) : DEFAULT_SETTINGS3.jaundice_uln;
     synced.hide_unchanged = Boolean(synced.hide_unchanged);
     synced.profile = Boolean(synced.profile);
-    synced.profile_details = synced.profile_details === void 0 || synced.profile_details === null ? null : arrayify4(synced.profile_details).map((value) => fieldSpec4(value)).filter((d) => d.value_col);
-    const bounds = arrayify4(synced.measureBounds).map(Number).filter(Number.isFinite);
-    synced.measureBounds = bounds.length === 2 ? bounds : [...DEFAULT_SETTINGS4.measureBounds];
+    synced.profile_details = synced.profile_details === void 0 || synced.profile_details === null ? null : arrayify3(synced.profile_details).map((value) => fieldSpec3(value)).filter((d) => d.value_col);
+    const bounds = arrayify3(synced.measureBounds).map(Number).filter(Number.isFinite);
+    synced.measureBounds = bounds.length === 2 ? bounds : [...DEFAULT_SETTINGS3.measureBounds];
     return synced;
   }
 
@@ -15658,7 +14651,7 @@ var SafetyViz = (() => {
       this.mode = mode;
       this.element = typeof element === "string" ? document.querySelector(element) : element;
       if (!this.element) throw new Error(`Safety Participant Profile target not found: ${element}`);
-      this.settings = syncSettings3(settings);
+      this.settings = syncSettings2(settings);
       this.rawData = [];
       this.cleanRows = [];
       this.removedRecords = 0;
@@ -15764,7 +14757,7 @@ var SafetyViz = (() => {
      */
     applySettings(settings) {
       if ("display" in settings) this.state.display = settings.display;
-      this.settings = syncSettings3({ ...this.settings, ...settings });
+      this.settings = syncSettings2({ ...this.settings, ...settings });
       return this;
     }
     /**
@@ -15787,12 +14780,12 @@ var SafetyViz = (() => {
      */
     validateAndCleanData() {
       try {
-        checkInputs3(this.rawData, this.settings);
+        checkInputs2(this.rawData, this.settings);
       } catch (error) {
         this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
         throw error;
       }
-      const { rows, removed } = cleanData3(this.rawData, this.settings);
+      const { rows, removed } = cleanData2(this.rawData, this.settings);
       deriveBaseline(rows, this.settings);
       this.cleanRows = rows;
       this.removedRecords = removed;
@@ -16097,7 +15090,7 @@ var SafetyViz = (() => {
 
   // src/profile-host.js
   function buildProfileRows(rawData, mapping) {
-    const { rows } = cleanData3(Array.isArray(rawData) ? rawData : [], mapping);
+    const { rows } = cleanData2(Array.isArray(rawData) ? rawData : [], mapping);
     assignSequence(rows, mapping);
     deriveBaseline(rows, mapping);
     return rows;
@@ -16145,6 +15138,1165 @@ var SafetyViz = (() => {
     if (host.profile) host.profile.clear();
   }
 
+  // src/histogram.js
+  Chart.register(BarController, BarElement, CategoryScale, LinearScale, plugin_tooltip, plugin_legend);
+  var OVERVIEW = "sh_overview";
+  var SafetyHistogram = class {
+    constructor(element = "body", settings = {}) {
+      this.element = typeof element === "string" ? document.querySelector(element) : element;
+      if (!this.element) throw new Error(`Safety Histogram target not found: ${element}`);
+      this.settings = syncSettings(settings);
+      this.rawData = [];
+      this.cleanData = [];
+      this.filteredData = [];
+      this.currentTableData = [];
+      this.listingSearch = "";
+      this.listingSort = null;
+      this.page = 1;
+      this.charts = [];
+      this.participantsSelected = [];
+      this.profile = null;
+      this.profileFeed = null;
+      this.profileKey = null;
+      this.profileRows = [];
+      this.listingSelectedId = null;
+      this.state = {
+        measure: this.settings.start_value,
+        filters: {},
+        groupBy: this.settings.group_by,
+        lower: null,
+        upper: null,
+        algorithm: this.settings.bin_algorithm,
+        quantity: null,
+        width: null,
+        displayNormalRange: this.settings.display_normal_range,
+        normalRange: null,
+        annotateBoundaries: this.settings.annotate_bin_boundaries,
+        selectedId: null
+      };
+      this.renderShell();
+      this.onListingRowClick = (row) => this.selectParticipant(row[this.settings.id_col]);
+      mountProfileDock(this, () => this.profileSettings());
+    }
+    /**
+     * The settings handed to the docked participant-profile module (#99,
+     * PPRF-SH-001): the shared long-lab column mappings pass through verbatim;
+     * `details` come from profile_details (the host `details` configure the
+     * linked listing — per-row fields, not demographics); and the two outbound
+     * callbacks wire Clear to the host's own clear path (falling back to a bare
+     * empty dispatch when the dock was fed by an external cohort the host never
+     * selected, so Clear always clears — PPRF-11) and stepper navigation to the
+     * listing row highlight (no dispatch, selection state untouched).
+     * @private
+     */
+    profileSettings() {
+      const settings = this.settings;
+      const profileSettings = {
+        id_col: settings.id_col,
+        measure_col: settings.measure_col,
+        value_col: settings.value_col,
+        unit_col: settings.unit_col,
+        normal_col_high: settings.normal_col_high,
+        normal_col_low: settings.normal_col_low,
+        studyday_col: settings.studyday_col,
+        visit_col: settings.visit_col,
+        visitn_col: settings.visitn_col,
+        details: settings.profile_details && settings.profile_details.length ? settings.profile_details : [],
+        participantProfileURL: settings.participantProfileURL ?? null,
+        on_clear: () => {
+          if (this.state.selectedId != null) {
+            this.clearSelection();
+          } else {
+            this.focusListingRow(null);
+            this.dispatchSelection([]);
+          }
+        },
+        on_step: (id) => this.focusListingRow(id)
+      };
+      if (settings.measure_values) profileSettings.measure_values = settings.measure_values;
+      return profileSettings;
+    }
+    /**
+     * Build the static DOM shell the charts and listing render into.
+     * @private
+     */
+    renderShell() {
+      Object.assign(
+        this,
+        renderShell(this.element, {
+          moduleClass: "safety-histogram",
+          onToggle: () => this.resize()
+        })
+      );
+      this.footnote.textContent = "Hover over or click a bar for details.";
+    }
+    /**
+     * Load data and render: an alias for setData that keeps the pilot's
+     * two-step create-then-init call shape working (SH-API-001).
+     * @param {Object[]} data Long-format result records matching the histogram data contract.
+     * @returns {SafetyHistogram} The instance, for chaining.
+     */
+    init(data) {
+      this.setData(data);
+      return this;
+    }
+    /**
+     * Replace the bound data and re-render. The data is validated against the
+     * settings mapping (throwing, and rendering the message into the target
+     * element, when required columns are missing), rows with missing or
+     * non-numeric results are removed with a console warning, and the
+     * controls are rebuilt from the new data's measures and filter values.
+     * @param {Object[]} data Long-format result records matching the histogram data contract.
+     * @returns {SafetyHistogram} The instance, for chaining.
+     */
+    setData(data) {
+      this.rawData = Array.isArray(data) ? data : [];
+      this.validateAndCleanData();
+      this.buildProfileRows();
+      this.buildControls();
+      this.render();
+      return this;
+    }
+    /**
+     * Derive the docked profile's pre-cleaned rows ONCE per data/settings change
+     * (#99, PPRF-SH-001) — never per gesture.
+     * @private
+     */
+    buildProfileRows() {
+      this.profileRows = this.settings.profile ? buildProfileRows(this.rawData, this.profileSettings()) : [];
+    }
+    /**
+     * Merge setting overrides onto the current settings, re-normalize them
+     * (same rules as the factory), rebuild the controls, and re-render.
+     * @param {HistogramSettings} settings Setting overrides to merge.
+     * @returns {SafetyHistogram} The instance, for chaining.
+     */
+    setSettings(settings) {
+      this.settings = syncSettings({ ...this.settings, ...settings });
+      if (this.rawData.length) this.validateAndCleanData();
+      this.buildProfileRows();
+      syncProfileDock(this, () => this.profileSettings());
+      this.buildControls();
+      this.render();
+      return this;
+    }
+    /**
+     * Validate the raw data against the settings mapping and drop unusable rows.
+     * @private
+     */
+    validateAndCleanData() {
+      try {
+        checkInputs(this.rawData, this.settings);
+      } catch (error) {
+        this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+        throw error;
+      }
+      const { rows, removed } = cleanData(this.rawData, this.settings);
+      this.cleanData = rows;
+      this.removedRecords = removed;
+      if (removed) console.warn(`${removed} missing or non-numeric results have been removed.`);
+      const measures = this.measures();
+      if (this.state.measure != null && !measures.includes(this.state.measure)) {
+        console.warn(
+          `The initial measure [${this.state.measure}] does not exist. Defaulting to the all-measures overview.`
+        );
+        this.state.measure = null;
+      }
+    }
+    /**
+     * Whether the all-measures overview is active (no measure selected, #39).
+     * @private
+     */
+    isOverview() {
+      return this.state.measure == null;
+    }
+    /**
+     * Switch between the overview and a single-measure view: sets the measure
+     * (null for the overview), clears the x-axis overrides, and rebuilds the
+     * controls so the Measure dropdown and section visibility stay in sync.
+     * Used by the Measure control and the overview panels (#39).
+     * @private
+     */
+    selectMeasure(measure) {
+      this.state.measure = measure;
+      this.resetDomain();
+      this.buildControls();
+      this.render();
+    }
+    /**
+     * Sorted distinct measure labels present in the cleaned data.
+     * @private
+     */
+    measures() {
+      return unique(this.cleanData.map((row) => measureLabel(row, this.settings))).sort();
+    }
+    /**
+     * Rebuild the measure/filter/bin/normal-range/group controls from data + state.
+     * @private
+     */
+    buildControls() {
+      this.controls.innerHTML = "";
+      const { addSection, addRow, addControl } = controlBuilders(this.controls);
+      const measure = addControl("Measure", document.createElement("select"));
+      option(measure, OVERVIEW, "All Measures", this.isOverview());
+      this.measures().forEach((value) => option(measure, value, value, value === this.state.measure));
+      measure.onchange = () => {
+        this.selectMeasure(measure.value === OVERVIEW ? null : measure.value);
+      };
+      const filterSpecs = this.settings.filters.filter((filter) => {
+        const exists = this.cleanData.some((row) => row[filter.value_col] !== void 0);
+        if (!exists)
+          console.warn(
+            `The [ ${filter.label} ] filter has been removed because the variable does not exist.`
+          );
+        return exists;
+      });
+      const filterParent = filterSpecs.length ? addSection("Filters") : this.controls;
+      filterSpecs.forEach((filter) => {
+        const select = addControl(filter.label, document.createElement("select"), filterParent);
+        option(select, "__all__", "All", !this.state.filters[filter.value_col]);
+        unique(this.cleanData.map((row) => row[filter.value_col])).sort().forEach(
+          (value) => option(select, value, value, this.state.filters[filter.value_col] === value)
+        );
+        select.onchange = () => {
+          this.state.filters[filter.value_col] = select.value === "__all__" ? null : select.value;
+          this.render();
+        };
+      });
+      const xAxisParent = addSection("X-axis Limits");
+      this.xAxisSection = xAxisParent;
+      const xAxisRow = addRow(xAxisParent);
+      const lower = addControl("Lower", document.createElement("input"), xAxisRow);
+      lower.type = "number";
+      lower.step = "any";
+      lower.value = this.state.lower == null ? "" : this.state.lower;
+      lower.onchange = () => {
+        this.state.lower = lower.value === "" ? null : Number(lower.value);
+        normalizeDomain(this.state);
+        this.render();
+      };
+      const upper = addControl("Upper", document.createElement("input"), xAxisRow);
+      upper.type = "number";
+      upper.step = "any";
+      upper.value = this.state.upper == null ? "" : this.state.upper;
+      upper.onchange = () => {
+        this.state.upper = upper.value === "" ? null : Number(upper.value);
+        normalizeDomain(this.state);
+        this.render();
+      };
+      const binParent = addSection("Bins");
+      this.binSection = binParent;
+      const algorithm = addControl("Algorithm", document.createElement("select"), binParent);
+      ALGORITHMS.forEach((value) => option(algorithm, value, value, value === this.state.algorithm));
+      algorithm.onchange = () => {
+        this.state.algorithm = algorithm.value;
+        this.render();
+      };
+      const binRow = addRow(binParent);
+      const quantity = addControl("Quantity", document.createElement("input"), binRow);
+      quantity.type = "number";
+      quantity.min = "1";
+      quantity.step = "1";
+      quantity.value = this.state.quantity || "";
+      quantity.onchange = () => {
+        this.state.quantity = Math.max(1, Math.round(Number(quantity.value) || 1));
+        this.state.algorithm = "Custom";
+        this.buildControls();
+        this.render();
+      };
+      this.binQuantityInput = quantity;
+      const width = addControl("Width", document.createElement("input"), binRow);
+      width.type = "number";
+      width.disabled = true;
+      width.value = this.state.width || "";
+      this.binWidthInput = width;
+      const displayParent = addSection("Display");
+      this.displaySection = displayParent;
+      this.normalRangeControl = null;
+      if (this.settings.normal_range) {
+        const nr = document.createElement("input");
+        nr.type = "checkbox";
+        nr.checked = this.state.displayNormalRange;
+        nr.onchange = () => {
+          this.state.displayNormalRange = nr.checked;
+          this.render();
+        };
+        const inline = createElement("div", "sv-control-inline");
+        inline.append(nr, document.createTextNode("Show"));
+        addControl("Normal Range", inline, displayParent);
+        this.normalRangeControl = inline.closest(".sv-control");
+      }
+      const ticks = document.createElement("select");
+      option(ticks, "linear", "linear", !this.state.annotateBoundaries);
+      option(ticks, "boundaries", "bin boundaries", this.state.annotateBoundaries);
+      ticks.onchange = () => {
+        this.state.annotateBoundaries = ticks.value === "boundaries";
+        this.render();
+      };
+      addControl("X-axis Ticks", ticks, displayParent);
+      this.groupControls = addSection("Grouping");
+      const group = addControl(
+        "Group charts by",
+        document.createElement("select"),
+        this.groupControls
+      );
+      this.settings.groups.forEach(
+        (spec) => option(group, spec.value_col, spec.label, spec.value_col === this.state.groupBy)
+      );
+      this.groupControls.style.display = this.settings.groups.length <= 1 ? "none" : "";
+      group.onchange = () => {
+        this.state.groupBy = group.value;
+        this.render();
+      };
+      [this.xAxisSection, this.binSection, this.displaySection, this.groupControls].forEach(
+        (section) => section.classList.toggle("sv-hidden", this.isOverview())
+      );
+      this.updateNormalRangeControl();
+    }
+    /**
+     * Hides the normal-range control for measures without normal data (SH-FUNC-004C).
+     * @private
+     */
+    updateNormalRangeControl() {
+      if (!this.normalRangeControl) return;
+      const available = measureHasNormalRange(this.currentMeasureData(), this.settings);
+      this.normalRangeControl.classList.toggle("sv-hidden", !available);
+    }
+    /**
+     * Clear the x-axis limit overrides when the measure changes.
+     * @private
+     */
+    resetDomain() {
+      this.state.lower = null;
+      this.state.upper = null;
+    }
+    /**
+     * Cleaned rows for the selected measure — or every measure while the
+     * overview is active, so the filters and participant notes span the whole
+     * dataset (#39).
+     * @private
+     */
+    currentMeasureData() {
+      if (this.isOverview()) return this.cleanData;
+      return this.cleanData.filter((row) => measureLabel(row, this.settings) === this.state.measure);
+    }
+    /**
+     * Cleaned rows for the selected measure after the active filters.
+     * @private
+     */
+    currentFilteredData() {
+      return applyFilters(this.currentMeasureData(), this.state.filters);
+    }
+    /**
+     * Redraw everything from the current data, settings, and control state:
+     * destroys the live charts, clears the listing and any bar selection,
+     * then draws the main chart, the grouped small multiples, and the
+     * participant-count notes. Called automatically by the controls and the
+     * data/settings setters; call it directly only after mutating state by
+     * hand.
+     * @returns {void}
+     */
+    render() {
+      this.destroyCharts();
+      this.chart = null;
+      this.listingWrap.innerHTML = "";
+      this.currentTableData = [];
+      this.listingSearch = "";
+      this.listingSort = null;
+      this.page = 1;
+      this.state.selectedId = null;
+      this.listingSelectedId = null;
+      this.participantsSelected = [];
+      resetProfileDock(this);
+      this.footnote.textContent = "Hover over or click a bar for details.";
+      this.mainAnnotation.innerHTML = "";
+      this.notes.innerHTML = "";
+      this.multiplesWrap.innerHTML = "";
+      this.chartWrap.classList.toggle("sv-hidden", this.isOverview());
+      this.filteredData = this.currentFilteredData();
+      if (!this.filteredData.length) {
+        this.footnote.textContent = "No records match the current filters.";
+        return;
+      }
+      if (this.isOverview()) {
+        this.footnote.textContent = "Click a chart to view that measure.";
+        this.drawOverview();
+        this.updateNotes();
+        return;
+      }
+      this.binInputs = this.computeBinInputs();
+      this.drawMainChart();
+      this.drawMultiples();
+      this.updateNotes();
+    }
+    /**
+     * Compute the shared bin parameters for the current render, following the
+     * original renderer's onPreprocess pipeline (#19): the domain and bin
+     * count/width anchor to the full result set of the selected measure —
+     * not the filtered subset — so filters and group multiples reuse the same
+     * bin boundaries and only the bar heights change. When the x-axis limits
+     * are user-modified, the parameters recompute from the measure results
+     * inside that domain (the original's "custom" domain state).
+     * @private
+     */
+    computeBinInputs() {
+      const measureValues = this.currentMeasureData().map((row) => row.__sh_value);
+      const domain = resolveDomain(measureValues, this.state.lower, this.state.upper);
+      const binValues = measureValues.filter((value) => domain[0] <= value && value <= domain[1]);
+      const binResult = calculateBins(
+        binValues,
+        this.state.algorithm,
+        this.state.quantity,
+        this.state.width,
+        domain
+      );
+      return {
+        domain,
+        quantity: binResult.quantity,
+        width: binResult.width,
+        bins: binResult.bins,
+        digits: displayDigits(binResult.width, measureValues)
+      };
+    }
+    /**
+     * Refresh the shown/total participant counts and removed-record note.
+     * @private
+     */
+    updateNotes() {
+      const totalParticipants = unique(
+        this.currentMeasureData().map((row) => row[this.settings.id_col])
+      ).length;
+      const shownParticipants = unique(
+        this.filteredData.map((row) => row[this.settings.id_col])
+      ).length;
+      const pct = totalParticipants ? (shownParticipants / totalParticipants * 100).toFixed(1) : "0.0";
+      const removedNote = this.removedRecords ? `<span class="sv-warning">${this.removedRecords} missing or non-numeric results removed.</span>` : "";
+      this.notes.innerHTML = `<span>${shownParticipants} of ${totalParticipants} participants shown (${pct}%).</span>${removedNote}`;
+    }
+    /**
+     * Assign a set of rows into the shared bins computed by computeBinInputs.
+     * Every chart of a render — the main chart and each group multiple — uses
+     * the same bin boundaries; only the per-bin record sets differ (#19).
+     * @private
+     */
+    chartInputs(rows) {
+      const { domain, digits, quantity, width } = this.binInputs;
+      const bins = this.binInputs.bins.map((bin) => ({ ...bin, records: [] }));
+      rows.forEach((row) => {
+        if (row.__sh_value < domain[0] || row.__sh_value > domain[1]) return;
+        bins[binIndex(row.__sh_value, domain[0], width, bins.length)].records.push(row);
+      });
+      return { bins, domain, digits, quantity, width };
+    }
+    /**
+     * Draw the main Chart.js bar chart with tooltips, selection, and normal range.
+     * @private
+     */
+    drawMainChart() {
+      const inputs = this.chartInputs(this.filteredData);
+      this.state.quantity = inputs.quantity;
+      this.state.width = Number(inputs.width.toPrecision(4));
+      if (this.binQuantityInput) this.binQuantityInput.value = this.state.quantity;
+      if (this.binWidthInput) this.binWidthInput.value = this.state.width;
+      const first = this.filteredData[0];
+      this.state.normalRange = this.settings.normal_col_low && this.settings.normal_col_high ? {
+        low: Number(first[this.settings.normal_col_low]),
+        high: Number(first[this.settings.normal_col_high])
+      } : null;
+      const labels = buildTickLabels(inputs.bins, inputs.digits, this.state.annotateBoundaries);
+      const data = inputs.bins.map((bin) => bin.records.length);
+      const chart = new Chart(this.canvas.getContext("2d"), {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [
+            {
+              label: "# of Observations",
+              data,
+              backgroundColor: "rgba(37, 99, 235, .72)",
+              borderColor: "rgba(37, 99, 235, 1)",
+              borderWidth: 1
+            }
+          ]
+        },
+        options: {
+          maintainAspectRatio: false,
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                afterLabel: (ctx) => binDescription(inputs.bins[ctx.dataIndex], this.state.measure, inputs.digits)
+              }
+            }
+          },
+          scales: buildScales(),
+          onHover: (event, active) => {
+            if (active.length) this.describeBin(inputs.bins[active[0].index], inputs.digits, false);
+          },
+          onClick: (event, active) => {
+            if (active.length) {
+              const bin = inputs.bins[active[0].index];
+              this.showListing(bin.records, bin, inputs.digits);
+              this.highlightSelection(chart, active[0].index);
+            }
+          }
+        },
+        plugins: [normalRangePlugin(this)]
+      });
+      chart.$shBins = inputs.bins;
+      this.chart = chart;
+      this.charts.push(chart);
+      this.drawMainAnnotation(this.filteredData);
+    }
+    /**
+     * De-emphasizes the bars outside the linked listing (SH-FUNC-011);
+     * render() rebuilds the charts, which clears the selection.
+     * @private
+     */
+    highlightSelection(chart, index) {
+      if (!chart || index == null) return;
+      const dataset = chart.data.datasets[0];
+      if (typeof dataset.backgroundColor === "string") chart.$shBaseColor = dataset.backgroundColor;
+      dataset.backgroundColor = selectionColors(chart.$shBaseColor, chart.data.labels.length, index);
+      chart.$shSelectedBin = index;
+      chart.update();
+    }
+    /**
+     * Annotate the main chart with the normality screen when enabled.
+     * @private
+     */
+    drawMainAnnotation(rows) {
+      this.mainAnnotation.innerHTML = "";
+      if (!this.settings.test_normality) return;
+      const pValue = approximateNormalityP(rows.map((row) => row.__sh_value));
+      this.mainAnnotation.append(
+        statisticalAnnotation(
+          "Normality",
+          pValue,
+          "Approximate Jarque-Bera normality screen",
+          "https://en.wikipedia.org/wiki/Jarque%E2%80%93Bera_test"
+        )
+      );
+    }
+    /**
+     * Draw one small-multiple panel per group value when grouping is active.
+     * @private
+     */
+    drawMultiples() {
+      this.multiplesWrap.innerHTML = "";
+      if (!this.state.groupBy || this.state.groupBy === "sh_none") return;
+      const groups = unique(this.filteredData.map((row) => row[this.state.groupBy])).sort();
+      groups.forEach((groupValue) => {
+        const rows = this.filteredData.filter(
+          (row) => String(row[this.state.groupBy]) === String(groupValue)
+        );
+        const panel = createElement("div", "sv-multiple");
+        panel.append(createElement("h3", null, `${groupValue} (${rows.length} records)`));
+        if (this.settings.compare_distributions) {
+          const groupedValues = Object.fromEntries(
+            groups.map((value) => [
+              value,
+              this.filteredData.filter((row) => String(row[this.state.groupBy]) === String(value)).map((row) => row.__sh_value)
+            ])
+          );
+          panel.append(
+            statisticalAnnotation(
+              "Group comparison",
+              approximateGroupP(groupedValues),
+              "Approximate one-way ANOVA screen",
+              "https://en.wikipedia.org/wiki/One-way_analysis_of_variance"
+            )
+          );
+        }
+        const canvasWrap = createElement("div", "sv-multiple-canvas");
+        const canvas = document.createElement("canvas");
+        canvasWrap.append(canvas);
+        panel.append(canvasWrap);
+        this.multiplesWrap.append(panel);
+        const inputs = this.chartInputs(rows);
+        const chart = new Chart(canvas.getContext("2d"), {
+          type: "bar",
+          data: {
+            labels: buildTickLabels(inputs.bins, inputs.digits, false),
+            datasets: [
+              {
+                data: inputs.bins.map((bin) => bin.records.length),
+                backgroundColor: "rgba(5, 150, 105, .65)"
+              }
+            ]
+          },
+          options: {
+            maintainAspectRatio: false,
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { beginAtZero: true, ticks: { precision: 0 } },
+              x: { ticks: { display: false } }
+            },
+            onClick: (event, active) => {
+              if (active.length) {
+                const bin = inputs.bins[active[0].index];
+                this.showListing(bin.records, bin, inputs.digits);
+                this.highlightSelection(chart, active[0].index);
+              }
+            }
+          }
+        });
+        chart.$shBins = inputs.bins;
+        this.charts.push(chart);
+      });
+    }
+    /**
+     * Draw the all-measures overview: one small-multiple histogram per
+     * measure, in Measure-control order, each independently binned over the
+     * measure's full value range with the configured bin algorithm so filters
+     * only change the bar heights. Clicking a panel (or pressing Enter/Space
+     * on it) opens that measure in the single-measure view (SH-OVW-002/003).
+     * @private
+     */
+    drawOverview() {
+      this.multiplesWrap.innerHTML = "";
+      this.measures().forEach((measureValue) => {
+        const measureRows = this.cleanData.filter(
+          (row) => measureLabel(row, this.settings) === measureValue
+        );
+        const rows = applyFilters(measureRows, this.state.filters);
+        const values = measureRows.map((row) => row.__sh_value);
+        const domain = resolveDomain(values, null, null);
+        const binResult = calculateBins(values, this.settings.bin_algorithm, null, null, domain);
+        const digits = displayDigits(binResult.width, values);
+        const bins = binResult.bins.map((bin) => ({ ...bin, records: [] }));
+        rows.forEach((row) => {
+          if (row.__sh_value < domain[0] || row.__sh_value > domain[1]) return;
+          bins[binIndex(row.__sh_value, domain[0], binResult.width, bins.length)].records.push(row);
+        });
+        const panel = createElement("div", "sv-multiple sv-overview-panel");
+        panel.setAttribute("role", "button");
+        panel.tabIndex = 0;
+        panel.setAttribute("aria-label", `View ${measureValue}`);
+        const open = () => this.selectMeasure(measureValue);
+        panel.onclick = open;
+        panel.onkeydown = (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            open();
+          }
+        };
+        panel.append(createElement("h3", null, `${measureValue} (${rows.length} results)`));
+        const canvasWrap = createElement("div", "sv-multiple-canvas");
+        const canvas = document.createElement("canvas");
+        canvasWrap.append(canvas);
+        panel.append(canvasWrap);
+        this.multiplesWrap.append(panel);
+        const chart = new Chart(canvas.getContext("2d"), {
+          type: "bar",
+          data: {
+            labels: buildTickLabels(bins, digits, false),
+            datasets: [
+              {
+                data: bins.map((bin) => bin.records.length),
+                backgroundColor: "rgba(37, 99, 235, .72)"
+              }
+            ]
+          },
+          options: {
+            maintainAspectRatio: false,
+            responsive: true,
+            events: [],
+            plugins: { legend: { display: false }, tooltip: { enabled: false } },
+            scales: {
+              y: { beginAtZero: true, ticks: { precision: 0 } },
+              x: { ticks: { display: false } }
+            }
+          }
+        });
+        chart.$shBins = bins;
+        this.charts.push(chart);
+      });
+    }
+    /**
+     * Describe a hovered or selected bin in the footnote.
+     * @private
+     */
+    describeBin(bin, digits, clicked) {
+      this.footnote.textContent = `${clicked ? "Selected" : "Hover"}: ${binDescription(bin, this.state.measure, digits)}.`;
+    }
+    /**
+     * Show the participant listing for a clicked bin's records.
+     * @private
+     */
+    showListing(records, bin, digits) {
+      if (this.state.selectedId != null) {
+        this.state.selectedId = null;
+        this.listingSelectedId = null;
+        this.dispatchSelection([]);
+      }
+      this.currentTableData = records;
+      this.listingSearch = "";
+      this.listingSort = null;
+      this.page = 1;
+      this.describeBin(bin, digits, true);
+      renderListing(this);
+    }
+    /**
+     * Focus one participant from the linked listing (#99, PPRF-SH-002): set the
+     * new host selection state, highlight the participant's listing rows, and
+     * dispatch the house participantsSelected event on the shell root — which
+     * feeds the docked profile. The listing itself stays (PPRF-11: records vs
+     * story).
+     * @param {string} id Participant identifier.
+     * @returns {void}
+     */
+    selectParticipant(id) {
+      this.state.selectedId = id == null ? null : String(id);
+      this.focusListingRow(this.state.selectedId);
+      this.dispatchSelection(this.state.selectedId == null ? [] : [this.state.selectedId]);
+    }
+    /**
+     * Clear the focused participant (#99, PPRF-SH-003): un-highlight the listing
+     * rows and dispatch the empty selection so the dock empties. The listing is
+     * retained — Clear clears the focus, not the records.
+     * @returns {void}
+     */
+    clearSelection() {
+      if (this.state.selectedId == null) return;
+      this.state.selectedId = null;
+      this.focusListingRow(null);
+      this.dispatchSelection([]);
+    }
+    /**
+     * Move the listing row highlight WITHOUT touching the host selection state —
+     * the transient sync the profile stepper drives (PPRF-11): the highlight
+     * tracks the stepped participant while the selection still belongs to the
+     * feeding gesture. Re-renders the listing only when one is on screen.
+     * @param {?string} id Participant identifier, or null to un-highlight.
+     * @private
+     */
+    focusListingRow(id) {
+      this.listingSelectedId = id == null ? null : String(id);
+      if (this.currentTableData.length) renderListing(this);
+    }
+    /**
+     * Dispatch the custom participantsSelected event on the shell root with the
+     * selected IDs (the house selection contract, #99 PPRF-SH-002).
+     * @private
+     */
+    dispatchSelection(ids) {
+      this.participantsSelected = ids;
+      if (this.root) {
+        this.root.dispatchEvent(
+          new CustomEvent("participantsSelected", { detail: { data: ids }, bubbles: true })
+        );
+      }
+    }
+    /**
+     * Resize every live chart (the main chart and any small multiples) to its
+     * container. For host layouts that change the container size without a
+     * window resize — e.g. the R htmlwidget bindings.
+     * @returns {void}
+     */
+    resize() {
+      this.charts.forEach((chart) => chart.resize());
+    }
+    /**
+     * Destroy the live Chart.js instances without touching the shell.
+     * @private
+     */
+    destroyCharts() {
+      this.charts.forEach((chart) => chart.destroy());
+      this.charts = [];
+    }
+    /**
+     * Tear the histogram down: destroy every Chart.js instance and empty the
+     * target element. The instance cannot be reused afterwards — create a new
+     * one via the factory instead.
+     * @returns {void}
+     */
+    destroy() {
+      unmountProfileDock(this);
+      this.destroyCharts();
+      this.element.innerHTML = "";
+    }
+  };
+  function histogram(element = "body", settings = {}) {
+    return new SafetyHistogram(element, settings);
+  }
+
+  // src/shift-plot/configure.js
+  var STATS = ["mean", "min", "max", "first"];
+  var DEFAULT_SETTINGS4 = {
+    measure_col: "TEST",
+    value_col: "STRESN",
+    visit_col: "VISIT",
+    visit_order_col: "VISITNUM",
+    id_col: "USUBJID",
+    unit_col: "STRESU",
+    baseline_visits: null,
+    comparison_visits: null,
+    baseline_stat: "mean",
+    comparison_stat: "mean",
+    filters: [],
+    details: null,
+    start_value: null,
+    width: "100%",
+    height: 460,
+    page_size: 10,
+    normal_col_low: "STNRLO",
+    normal_col_high: "STNRHI",
+    studyday_col: null,
+    measure_values: null,
+    profile: true,
+    profile_details: null,
+    participantProfileURL: null
+  };
+  function arrayify4(value) {
+    if (value === null || value === void 0 || value === "") return [];
+    return Array.isArray(value) ? value : [value];
+  }
+  function fieldSpec4(value, fallbackLabel) {
+    if (typeof value === "string") return { value_col: value, label: fallbackLabel || value };
+    return { value_col: value.value_col, label: value.label || value.value_col };
+  }
+  function syncSettings4(settings) {
+    const synced = { ...DEFAULT_SETTINGS4, ...settings };
+    synced.filters = arrayify4(synced.filters).map((filter) => fieldSpec4(filter)).filter((filter) => filter.value_col);
+    synced.baseline_visits = synced.baseline_visits == null ? null : arrayify4(synced.baseline_visits);
+    synced.comparison_visits = synced.comparison_visits == null ? null : arrayify4(synced.comparison_visits);
+    synced.baseline_stat = STATS.includes(synced.baseline_stat) ? synced.baseline_stat : "mean";
+    synced.comparison_stat = STATS.includes(synced.comparison_stat) ? synced.comparison_stat : "mean";
+    synced.details = arrayify4(synced.details).map((detail) => fieldSpec4(detail)).filter((detail) => detail.value_col);
+    if (!synced.details.length) {
+      synced.details = [
+        { value_col: synced.id_col, label: "Participant ID" },
+        { value_col: "__ssp_baseline", label: "Baseline" },
+        { value_col: "__ssp_comparison", label: "Comparison" },
+        { value_col: "__ssp_chg", label: "Change" },
+        { value_col: "__ssp_pchg", label: "Percent Change" }
+      ];
+    }
+    synced.profile = Boolean(synced.profile);
+    synced.profile_details = synced.profile_details === void 0 || synced.profile_details === null ? null : arrayify4(synced.profile_details).map((value) => fieldSpec4(value)).filter((detail) => detail.value_col);
+    return synced;
+  }
+
+  // src/data/schema/shift-plot.json
+  var shift_plot_default = {
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    $id: "https://raw.githubusercontent.com/jwildfire/safety.viz/main/src/data/schema/shift-plot.json",
+    title: "safety.viz shift-plot data contract",
+    description: "Long-format results data: one record per participant per visit per measure (SSP-DATA-001). Column names are supplied by the settings mapping; the shift plot pairs each participant's baseline-visit value against their comparison-visit value for the selected measure, removes missing/non-numeric results with a reported count (SSP-REG-020), and degrades gracefully when optional columns are absent (SSP-DATA-003).",
+    type: "object",
+    required: ["data", "settings"],
+    properties: {
+      data: {
+        type: "array",
+        minItems: 1,
+        items: { type: "object" },
+        description: "d3.csv()-style records; every row carries the measure, visit, and result columns named in settings."
+      },
+      settings: {
+        type: "object",
+        description: "Column mappings and rendering options; merged onto the module's DEFAULT_SETTINGS, so only overrides need to be supplied.",
+        required: ["measure_col", "value_col", "visit_col"],
+        properties: {
+          measure_col: {
+            type: "string",
+            default: "TEST",
+            description: "Column holding the measure name; required in data."
+          },
+          value_col: {
+            type: "string",
+            default: "STRESN",
+            description: "Column holding the numeric result; required in data."
+          },
+          visit_col: {
+            type: "string",
+            default: "VISIT",
+            description: "Column holding the visit label; required in data. Its distinct values populate the baseline and comparison visit controls."
+          },
+          visit_order_col: {
+            type: "string",
+            default: "VISITNUM",
+            description: "Optional numeric column that orders the visits; when absent the visits sort alphanumerically (SSP-REG-013/014)."
+          },
+          id_col: {
+            type: "string",
+            default: "USUBJID",
+            description: "Optional participant identifier column; drives the participant counts and the default listing's first column."
+          },
+          unit_col: {
+            type: "string",
+            default: "STRESU",
+            description: "Optional unit column, appended to measure labels."
+          },
+          baseline_visits: {
+            $ref: "#/$defs/visitList",
+            description: "Optional baseline visit(s) selected on first render; defaults to the first visit (SSP-CFG-004)."
+          },
+          comparison_visits: {
+            $ref: "#/$defs/visitList",
+            description: "Optional comparison visit(s) selected on first render; defaults to every visit after the baseline (SSP-CFG-005)."
+          },
+          baseline_stat: {
+            type: "string",
+            enum: ["mean", "min", "max", "first"],
+            default: "mean",
+            description: "Summary statistic applied when a participant has several results across the baseline visit(s)."
+          },
+          comparison_stat: {
+            type: "string",
+            enum: ["mean", "min", "max", "first"],
+            default: "mean",
+            description: "Summary statistic applied when a participant has several results across the comparison visit(s)."
+          },
+          filters: {
+            $ref: "#/$defs/fieldList",
+            description: "Optional filter columns rendered as controls (SSP-CFG-006)."
+          },
+          details: {
+            $ref: "#/$defs/fieldList",
+            description: "Optional listing columns; defaults to participant ID, baseline, comparison, change, and percent change (SSP-REQ-005)."
+          }
+        }
+      }
+    },
+    $defs: {
+      visitList: {
+        type: "array",
+        items: { type: "string" }
+      },
+      fieldList: {
+        type: "array",
+        items: {
+          anyOf: [
+            { type: "string" },
+            {
+              type: "object",
+              required: ["value_col"],
+              properties: {
+                value_col: { type: "string" },
+                label: { type: "string" }
+              }
+            }
+          ]
+        }
+      }
+    }
+  };
+
+  // src/shift-plot/checkInputs.js
+  var REQUIRED_COLUMN_SETTINGS3 = shift_plot_default.properties.settings.required;
+  function checkInputs3(data, settings) {
+    const rows = Array.isArray(data) ? data : [];
+    const missing = REQUIRED_COLUMN_SETTINGS3.map((key) => settings[key]).filter(
+      (col) => !rows.some((row) => row[col] !== void 0)
+    );
+    if (missing.length) {
+      throw new Error(`Required variable(s) missing: ${missing.join(", ")}`);
+    }
+  }
+
+  // src/shift-plot/structureData.js
+  function unique2(values) {
+    return [
+      ...new Set(values.filter((value) => value !== void 0 && value !== null && value !== ""))
+    ];
+  }
+  function mean3(values) {
+    return values.reduce((sum, value) => sum + value, 0) / values.length;
+  }
+  function applyStat(values, stat) {
+    if (!values.length) return NaN;
+    if (values.length === 1) return values[0];
+    if (stat === "min") return Math.min(...values);
+    if (stat === "max") return Math.max(...values);
+    if (stat === "first") return values[0];
+    return mean3(values);
+  }
+  function roundValue(value, digits = 2) {
+    if (!Number.isFinite(value)) return "";
+    return Number(value.toFixed(digits));
+  }
+  function formatPercent(value) {
+    if (!Number.isFinite(value)) return "";
+    return `${value.toFixed(1)}%`;
+  }
+  function cleanData3(rawData, settings) {
+    let removed = 0;
+    const rows = rawData.map((row, index) => ({
+      ...row,
+      __ssp_index: index,
+      __ssp_value: Number(row[settings.value_col])
+    })).filter((row) => {
+      const keep = row[settings.value_col] !== "" && Number.isFinite(row.__ssp_value);
+      if (!keep) removed += 1;
+      return keep;
+    });
+    return { rows, removed };
+  }
+  function measureLabel2(row, settings) {
+    return row[settings.measure_col];
+  }
+  function listVisits(rows, settings) {
+    const orderCol = settings.visit_order_col;
+    const hasOrder = orderCol && rows.some((row) => row[orderCol] !== void 0);
+    const labels = unique2(rows.map((row) => row[settings.visit_col]));
+    if (!hasOrder) {
+      return labels.sort((a, b) => String(a).localeCompare(String(b), void 0, { numeric: true }));
+    }
+    const orderOf = /* @__PURE__ */ new Map();
+    rows.forEach((row) => {
+      const label = row[settings.visit_col];
+      if (label !== void 0 && label !== null && label !== "" && !orderOf.has(label)) {
+        orderOf.set(label, Number(row[orderCol]));
+      }
+    });
+    return labels.sort((a, b) => {
+      const diff = orderOf.get(a) - orderOf.get(b);
+      return diff || String(a).localeCompare(String(b), void 0, { numeric: true });
+    });
+  }
+  function applyFilters2(rows, filters) {
+    return rows.filter(
+      (row) => Object.entries(filters).every(([key, value]) => !value || String(row[key]) === String(value))
+    );
+  }
+  function computeShiftPairs({
+    rows,
+    measure,
+    baselineVisits,
+    comparisonVisits,
+    baselineStat,
+    comparisonStat,
+    settings
+  }) {
+    const baseline = new Set(baselineVisits || []);
+    const comparison = new Set(comparisonVisits || []);
+    const idCol = settings.id_col;
+    const visitCol = settings.visit_col;
+    const participants = /* @__PURE__ */ new Map();
+    rows.forEach((row) => {
+      if (measureLabel2(row, settings) !== measure) return;
+      const id = row[idCol];
+      if (!participants.has(id)) participants.set(id, { firstRow: row, byVisit: /* @__PURE__ */ new Map() });
+      const byVisit = participants.get(id).byVisit;
+      const visit = row[visitCol];
+      if (!byVisit.has(visit)) byVisit.set(visit, row.__ssp_value);
+    });
+    const pairs = [];
+    participants.forEach(({ firstRow, byVisit }, id) => {
+      const baselineValues = [];
+      const comparisonValues = [];
+      byVisit.forEach((value, visit) => {
+        if (baseline.has(visit)) baselineValues.push(value);
+        if (comparison.has(visit)) comparisonValues.push(value);
+      });
+      if (!baselineValues.length || !comparisonValues.length) return;
+      const shiftx = applyStat(baselineValues, baselineStat);
+      const shifty = applyStat(comparisonValues, comparisonStat);
+      if (!Number.isFinite(shiftx) || !Number.isFinite(shifty)) return;
+      const chg = shifty - shiftx;
+      const pchg = shiftx === 0 ? NaN : chg / shiftx * 100;
+      pairs.push({
+        ...firstRow,
+        [idCol]: id,
+        x: shiftx,
+        y: shifty,
+        __ssp_baseline: roundValue(shiftx),
+        __ssp_comparison: roundValue(shifty),
+        __ssp_chg: roundValue(chg),
+        __ssp_pchg: formatPercent(pchg)
+      });
+    });
+    return pairs;
+  }
+  function computeDomain(pairs) {
+    if (!pairs.length) return [0, 1];
+    const values = pairs.flatMap((pair) => [pair.x, pair.y]);
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const pad = (max - min) * 0.05 || 1;
+    return [min - pad, max + pad];
+  }
+
+  // src/shift-plot/getScales.js
+  function buildScales2(domain, measure) {
+    const suffix = measure ? ` \u2014 ${measure}` : "";
+    return {
+      x: {
+        type: "linear",
+        min: domain[0],
+        max: domain[1],
+        title: { display: true, text: `Baseline Value${suffix}` },
+        ticks: { maxRotation: 0 }
+      },
+      y: {
+        type: "linear",
+        min: domain[0],
+        max: domain[1],
+        title: { display: true, text: `Comparison Value${suffix}` }
+      }
+    };
+  }
+
+  // src/shift-plot/getPlugins.js
+  var POINT_COLOR = "rgba(37, 99, 235, 0.78)";
+  var POINT_BORDER = "rgba(37, 99, 235, 1)";
+  var POINT_FADED = "rgba(37, 99, 235, 0.14)";
+  var COLORS = { point: POINT_COLOR, border: POINT_BORDER, faded: POINT_FADED };
+  function identityLinePlugin(instance) {
+    return {
+      id: `ssp-identity-${Math.random().toString(36).slice(2)}`,
+      afterDatasetsDraw(chart) {
+        const domain = instance.state.domain;
+        if (!domain) return;
+        const { ctx, scales } = chart;
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(scales.x.getPixelForValue(domain[0]), scales.y.getPixelForValue(domain[0]));
+        ctx.lineTo(scales.x.getPixelForValue(domain[1]), scales.y.getPixelForValue(domain[1]));
+        ctx.strokeStyle = "rgba(31, 41, 51, 0.55)";
+        ctx.lineWidth = 1;
+        ctx.setLineDash([6, 4]);
+        ctx.stroke();
+        ctx.restore();
+      }
+    };
+  }
+  function brushBoxPlugin() {
+    return {
+      id: `ssp-brush-${Math.random().toString(36).slice(2)}`,
+      afterDatasetsDraw(chart) {
+        const brush = chart.$sspBrush;
+        if (!brush) return;
+        const { ctx } = chart;
+        const width = brush.right - brush.left;
+        const height = brush.bottom - brush.top;
+        ctx.save();
+        ctx.fillStyle = "rgba(120, 120, 120, 0.18)";
+        ctx.strokeStyle = "rgba(90, 90, 90, 0.65)";
+        ctx.lineWidth = 1;
+        ctx.fillRect(brush.left, brush.top, width, height);
+        ctx.strokeRect(brush.left, brush.top, width, height);
+        ctx.restore();
+      }
+    };
+  }
+  function tooltipLines(pair, idCol) {
+    return [
+      `Subject ID: ${pair[idCol]}`,
+      `Baseline: ${pair.__ssp_baseline}`,
+      `Comparison: ${pair.__ssp_comparison}`,
+      `Change: ${pair.__ssp_chg}`,
+      `Percent Change: ${pair.__ssp_pchg}`
+    ];
+  }
+  function pointColors(count2, selected, base = POINT_COLOR, faded = POINT_FADED) {
+    if (!selected || !selected.size) return base;
+    return Array.from({ length: count2 }, (_, index) => selected.has(index) ? base : faded);
+  }
+
   // src/shift-plot.js
   Chart.register(ScatterController, PointElement, LinearScale, plugin_tooltip, plugin_legend);
   var INITIAL_FOOTNOTE = "Click and drag across the points to list the selected participants.";
@@ -16152,7 +16304,7 @@ var SafetyViz = (() => {
     constructor(element = "body", settings = {}) {
       this.element = typeof element === "string" ? document.querySelector(element) : element;
       if (!this.element) throw new Error(`Safety Shift Plot target not found: ${element}`);
-      this.settings = syncSettings2(settings);
+      this.settings = syncSettings4(settings);
       this.rawData = [];
       this.cleanData = [];
       this.chartPairs = [];
@@ -16284,7 +16436,7 @@ var SafetyViz = (() => {
      * @returns {SafetyShiftPlot} The instance, for chaining.
      */
     setSettings(settings) {
-      this.settings = syncSettings2({ ...this.settings, ...settings });
+      this.settings = syncSettings4({ ...this.settings, ...settings });
       this.state.baselineStat = this.settings.baseline_stat;
       this.state.comparisonStat = this.settings.comparison_stat;
       if (settings.baseline_visits !== void 0)
@@ -16305,12 +16457,12 @@ var SafetyViz = (() => {
      */
     validateAndCleanData() {
       try {
-        checkInputs2(this.rawData, this.settings);
+        checkInputs3(this.rawData, this.settings);
       } catch (error) {
         this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
         throw error;
       }
-      const { rows, removed } = cleanData2(this.rawData, this.settings);
+      const { rows, removed } = cleanData3(this.rawData, this.settings);
       this.cleanData = rows;
       this.removedRecords = removed;
       if (removed) console.warn(`${removed} missing or non-numeric results have been removed.`);
@@ -23080,7 +23232,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     constructor(element = "body", settings = {}) {
       this.element = typeof element === "string" ? document.querySelector(element) : element;
       if (!this.element) throw new Error(`Safety Hep Explorer target not found: ${element}`);
-      this.settings = syncSettings4(settings);
+      this.settings = syncSettings3(settings);
       this.rawData = [];
       this.cleanRows = [];
       this.removedRecords = 0;
@@ -23352,7 +23504,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
      * @returns {SafetyHepExplorer} The instance, for chaining.
      */
     setSettings(settings) {
-      this.settings = syncSettings4({ ...this.settings, ...settings });
+      this.settings = syncSettings3({ ...this.settings, ...settings });
       if ("view" in settings) this.state.view = resolveViewId(this.settings.view);
       if ("hide_unchanged" in settings) this.state.hideUnchanged = this.settings.hide_unchanged;
       if ("active_arms" in settings) this.state.activeArms = this.settings.active_arms;
@@ -23383,7 +23535,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
         this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
         throw error;
       }
-      const { rows, removed } = cleanData3(this.rawData, this.settings);
+      const { rows, removed } = cleanData2(this.rawData, this.settings);
       deriveBaseline(rows, this.settings);
       assignSequence(rows, this.settings);
       this.cleanRows = rows;
@@ -25239,6 +25391,9 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     reference_threshold: 10,
     ci_level: 0.9,
     filters: [],
+    profile: true,
+    profile_details: null,
+    participantProfileURL: null,
     width: "100%",
     height: 460
   };
@@ -25263,6 +25418,8 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     if (!Number.isFinite(synced.ci_level) || synced.ci_level <= 0 || synced.ci_level >= 1) {
       synced.ci_level = DEFAULT_SETTINGS10.ci_level;
     }
+    synced.profile = Boolean(synced.profile);
+    synced.profile_details = synced.profile_details === void 0 || synced.profile_details === null ? null : arrayify8(synced.profile_details).map((value) => fieldSpec8(value)).filter((d) => d.value_col);
     return synced;
   }
   function zForCi(ciLevel) {
@@ -25861,15 +26018,84 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       this.charts = [];
       this.arms = [];
       this.availableMeasures = [];
+      this.participantsSelected = [];
+      this.profile = null;
+      this.profileFeed = null;
+      this.profileKey = null;
+      this.profileRows = [];
       this.state = {
         view: "central",
         measure: this.settings.start_measure,
         statistic: "mean",
         mode: "delta",
         timepoint: TIMEPOINT_MAX,
-        filters: {}
+        filters: {},
+        selectedId: null
       };
       this.renderShellDom();
+      mountProfileDock(this, () => this.profileSettings());
+    }
+    /**
+     * The settings handed to the docked participant-profile module (#99,
+     * PPRF-QT-002) — the interval-measure (ECG) mapping onto the profile's
+     * long-lab contract:
+     *
+     * - `normal_col_high` points at the synthesized `__qt_profile_uln` (= 1)
+     *   column, so the ×ULN standardization is a no-op and the spaghetti plots
+     *   OBSERVED milliseconds (nothing drops on the ULN>0 guard).
+     * - `measure_values` is the identity map over the host's `measures`, making
+     *   the ECG parameters the profile's KEY measures.
+     * - `cuts` carry the FIRST absolute threshold (450 ms by default) per QTc
+     *   measure on the observed-ms scale; the NaN `defaults` entry leaves Heart
+     *   Rate (and any other non-QTc parameter) cut-free. The 30/60 ms
+     *   change-from-baseline thresholds are not representable in the dock — see
+     *   docs/qt-explorer-coverage.md.
+     * - the host's `baseline_col` ('BASE') is a VALUE column, not the profile's
+     *   baseline FLAG contract, so the profile's `baseline_col` stays null and
+     *   deriveBaseline's earliest-visit rule lands on the baseline visit.
+     * - `studyday_col` maps from `visitn_col` (ADEG-style data carries no DY).
+     * @private
+     */
+    profileSettings() {
+      const settings = this.settings;
+      const measureValues = {};
+      (settings.measures || []).forEach((measure) => {
+        measureValues[measure] = measure;
+      });
+      const qtcCut = settings.absolute_thresholds.length ? settings.absolute_thresholds[0] : NaN;
+      const cuts = { defaults: { relative_uln: NaN, relative_baseline: NaN } };
+      (settings.qtc_measures || []).forEach((measure) => {
+        cuts[measure] = { relative_uln: qtcCut, relative_baseline: NaN };
+      });
+      return {
+        id_col: settings.id_col,
+        measure_col: settings.measure_col,
+        value_col: settings.value_col,
+        unit_col: settings.unit_col,
+        normal_col_high: "__qt_profile_uln",
+        normal_col_low: null,
+        studyday_col: settings.visitn_col,
+        visit_col: settings.visit_col,
+        visitn_col: settings.visitn_col,
+        baseline_col: null,
+        measure_values: measureValues,
+        cuts,
+        display_options: [
+          { value: "relative_uln", label: "Observed (ms)" },
+          { value: "relative_baseline", label: "\xD7Baseline" }
+        ],
+        details: settings.profile_details && settings.profile_details.length ? settings.profile_details : [],
+        participantProfileURL: settings.participantProfileURL ?? null,
+        on_clear: () => {
+          if (this.state.selectedId != null) {
+            this.clearSelection();
+          } else {
+            this.emphasizeParticipant(null);
+            this.dispatchSelection([]);
+          }
+        },
+        on_step: (id) => this.emphasizeParticipant(id)
+      };
     }
     /** Build the shell + module-owned slots (legend, note, table, ICH callout). @private */
     renderShellDom() {
@@ -25909,9 +26135,25 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     setData(data) {
       this.rawData = Array.isArray(data) ? data : [];
       this.validateAndCleanData();
+      this.buildProfileRows();
       this.buildControls();
       this.render();
       return this;
+    }
+    /**
+     * Derive the docked profile's pre-cleaned rows ONCE per data/settings change
+     * (#99, PPRF-QT-002) — never per gesture. Each raw record is shallow-copied
+     * with a synthesized `__qt_profile_uln = 1` column before the shared
+     * hep-core ingest, so `__hep_relative_uln` carries the observed value in
+     * milliseconds and the ULN>0 guard drops nothing numeric; the host's
+     * retained rawData is never mutated.
+     * @private
+     */
+    buildProfileRows() {
+      this.profileRows = this.settings.profile ? buildProfileRows(
+        this.rawData.map((row) => ({ ...row, __qt_profile_uln: 1 })),
+        this.profileSettings()
+      ) : [];
     }
     /**
      * Merge setting overrides, re-normalize (same rules as the factory), rebuild
@@ -25925,6 +26167,8 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
         this.state.measure = this.settings.start_measure;
       }
       if (this.rawData.length) this.validateAndCleanData();
+      this.buildProfileRows();
+      syncProfileDock(this, () => this.profileSettings());
       this.buildControls();
       this.render();
       return this;
@@ -26062,6 +26306,9 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
      */
     render() {
       this.destroyCharts();
+      this.state.selectedId = null;
+      this.participantsSelected = [];
+      resetProfileDock(this);
       this.legendEl.classList.add("qt-empty");
       this.noteEl.classList.add("qt-empty");
       this.tableWrap.classList.add("qt-empty");
@@ -26380,6 +26627,22 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
               max: yDomain[1],
               title: { display: true, text: titles.y }
             }
+          },
+          onHover: (event, elements) => {
+            if (event && event.native && event.native.target) {
+              event.native.target.style.cursor = elements.length ? "pointer" : "default";
+            }
+          },
+          // Point click → participant selection feeding the docked profile
+          // (#99, PPRF-QT-001); an empty click clears (PPRF-11).
+          onClick: (event, elements) => {
+            if (!elements.length) {
+              this.clearSelection();
+              return;
+            }
+            const el = elements[0];
+            const raw = datasets[el.datasetIndex] && datasets[el.datasetIndex].data[el.index];
+            if (raw && raw.__point) this.selectParticipant(raw.__point.id);
           }
         },
         plugins: [thresholdScatterPlugin(this)]
@@ -26455,6 +26718,67 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       this.footnote.textContent = "Absolute rows use each participant\u2019s maximum post-baseline value; change rows use the maximum post-baseline change (they may fall at different visits). Exploratory tool \u2014 confirm signals with validated ICH-E14 analyses.";
     }
     /**
+     * Select one participant from the outlier scatter (#99, PPRF-QT-001): set
+     * the minimal host selection state, emphasize the participant's point, and
+     * dispatch the house participantsSelected event on the shell root — which
+     * feeds the docked profile. Single-select only (PPRF-QT-004).
+     * @param {string} id Participant identifier.
+     * @returns {void}
+     */
+    selectParticipant(id) {
+      this.state.selectedId = id == null ? null : String(id);
+      this.emphasizeParticipant(this.state.selectedId);
+      this.dispatchSelection(this.state.selectedId == null ? [] : [this.state.selectedId]);
+    }
+    /**
+     * Clear the point selection (#99, PPRF-QT-003): restore the uniform point
+     * emphasis and dispatch the empty selection so the dock empties.
+     * @returns {void}
+     */
+    clearSelection() {
+      if (this.state.selectedId == null) return;
+      this.state.selectedId = null;
+      this.emphasizeParticipant(null);
+      this.dispatchSelection([]);
+    }
+    /**
+     * Emphasize (or restore, for a null id) one participant's scatter point
+     * WITHOUT touching the host selection state — also the transient emphasis
+     * the profile stepper drives (PPRF-11). Per-point radius/border arrays are
+     * matched on each datum's __point.id; a no-op outside the outlier view.
+     * @param {?string} id Participant identifier, or null to restore.
+     * @private
+     */
+    emphasizeParticipant(id) {
+      if (!this.chart || this.state.view !== "outlier") return;
+      this.chart.data.datasets.forEach((dataset) => {
+        if (id == null) {
+          dataset.pointRadius = 4;
+          dataset.pointHoverRadius = 6;
+          dataset.pointBorderWidth = 1;
+        } else {
+          const match = (raw) => raw.__point && String(raw.__point.id) === String(id);
+          dataset.pointRadius = dataset.data.map((raw) => match(raw) ? 7 : 3);
+          dataset.pointHoverRadius = dataset.data.map((raw) => match(raw) ? 8 : 5);
+          dataset.pointBorderWidth = dataset.data.map((raw) => match(raw) ? 3 : 1);
+        }
+      });
+      this.chart.update();
+    }
+    /**
+     * Dispatch the custom participantsSelected event on the shell root with the
+     * selected IDs (the house selection contract, #99 PPRF-QT-001).
+     * @private
+     */
+    dispatchSelection(ids) {
+      this.participantsSelected = ids;
+      if (this.root) {
+        this.root.dispatchEvent(
+          new CustomEvent("participantsSelected", { detail: { data: ids }, bubbles: true })
+        );
+      }
+    }
+    /**
      * Resize the live charts (e.g. after the sidebar collapses).
      * @returns {void}
      */
@@ -26466,6 +26790,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
      * @returns {void}
      */
     destroy() {
+      unmountProfileDock(this);
       this.destroyCharts();
       this.element.innerHTML = "";
     }
@@ -26968,7 +27293,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
 
   // src/hep-waterfall/structureData.js
   function prepareData(rawData, settings) {
-    const { rows, removed } = cleanData3(Array.isArray(rawData) ? rawData : [], settings);
+    const { rows, removed } = cleanData2(Array.isArray(rawData) ? rawData : [], settings);
     deriveBaseline(rows, settings);
     assignSequence(rows, settings);
     return { rows, removed };

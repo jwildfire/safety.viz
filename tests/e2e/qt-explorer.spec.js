@@ -166,4 +166,74 @@ test.describe('safety.viz qt-explorer module', () => {
     const removed = await page.evaluate(() => window.__safetyQtExplorerInstance.removedRecords);
     expect(removed).toBe(2);
   });
+
+  test('PPRF-QT-001/PPRF-QT-002: clicking an outlier-scatter point opens the docked profile in observed ms with the 450 cut on QTcF (#99)', async ({
+    page
+  }) => {
+    await selectView(page, 'Outlier scatter');
+    const clickedId = await page.evaluate(() => {
+      const instance = window.__safetyQtExplorerInstance;
+      instance.chart.options.onClick({}, [{ datasetIndex: 0, index: 0 }]);
+      return instance.chart.data.datasets[0].data[0].__point.id;
+    });
+    // Full docked profile: header id + configured profile_details.
+    await expect(page.locator('.sv-profile .sv-profile-id')).toHaveText(`Participant ${clickedId}`);
+    await expect(page.locator('.sv-profile .sv-profile-header')).toContainText('Treatment Group');
+    // Single-select gesture: never a stepper; no listing exists or is added.
+    await expect(page.locator('.sv-profile .sv-profile-step-count')).toHaveCount(0);
+    await expect(page.locator('.sv-listing table')).toHaveCount(0);
+    // The ECG parameters are KEY measures — no extras toggle — and the
+    // spaghetti renders observed milliseconds with the 450 ms cut on the QTc
+    // corrections while Heart Rate stays cut-free.
+    await expect(page.locator('.sv-profile .sv-profile-extras')).toHaveCount(0);
+    await expect(page.locator('.sv-profile .sv-profile-spaghetti canvas')).toBeVisible();
+    await expect(page.locator('.sv-profile')).toContainText('Observed (ms)');
+    const cuts = await page.evaluate(() => {
+      const series = window.__safetyQtExplorerInstance.profile.model.spaghetti.series;
+      const byKey = Object.fromEntries(series.map((entry) => [entry.key, entry]));
+      return {
+        qtcfCut: byKey.QTcF.cut,
+        qtcfMin: Math.min(...byKey.QTcF.points.map((point) => point.value)),
+        hrCutIsNaN: Number.isNaN(byKey['Heart Rate'].cut)
+      };
+    });
+    expect(cuts.qtcfCut).toBe(450);
+    expect(cuts.qtcfMin).toBeGreaterThan(300); // observed ms, not a ×ULN ratio
+    expect(cuts.hrCutIsNaN).toBe(true);
+    await captureEvidence(page, 'PPRF-QT-002', 'docked-profile-observed-ms');
+  });
+
+  test('PPRF-QT-003/PPRF-QT-004: empty clicks and view switches clear the dock, which idles on non-scatter views (#99)', async ({
+    page
+  }) => {
+    await selectView(page, 'Outlier scatter');
+    await page.evaluate(() => {
+      window.__safetyQtExplorerInstance.chart.options.onClick({}, [{ datasetIndex: 0, index: 0 }]);
+    });
+    await expect(page.locator('.sv-profile .sv-profile-id')).toBeVisible();
+    // Empty-canvas click → the shared clear path → the dock empties and the
+    // shell's :empty rule hides the slot.
+    await page.evaluate(() => {
+      window.__safetyQtExplorerInstance.chart.options.onClick({}, []);
+    });
+    await expect(page.locator('.sv-profile > *')).toHaveCount(0);
+    await expect(page.locator('.sv-profile')).toBeHidden();
+    // Re-select, then switch views: the render preamble clears the selection
+    // and the dock idles — the central chart offers no participant marks.
+    await page.evaluate(() => {
+      window.__safetyQtExplorerInstance.chart.options.onClick({}, [{ datasetIndex: 0, index: 0 }]);
+    });
+    await expect(page.locator('.sv-profile .sv-profile-id')).toBeVisible();
+    await selectView(page, 'Central tendency');
+    await expect(page.locator('.sv-profile > *')).toHaveCount(0);
+    const state = await page.evaluate(() => ({
+      selectedId: window.__safetyQtExplorerInstance.state.selectedId,
+      centralHasOnClick:
+        typeof window.__safetyQtExplorerInstance.chart.options.onClick === 'function',
+      dockMounted: !!window.__safetyQtExplorerInstance.profile
+    }));
+    expect(state.selectedId).toBeNull();
+    expect(state.centralHasOnClick).toBe(false);
+    expect(state.dockMounted).toBe(true);
+  });
 });

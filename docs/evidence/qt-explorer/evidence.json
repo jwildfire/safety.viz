@@ -1,16 +1,13 @@
 {
   "module": "qt-explorer",
-  "generatedAt": "2026-07-23T05:40:41.867Z",
+  "generatedAt": "2026-07-23T07:10:05.509Z",
   "environment": {
-    "os": "linux 6.17.0-1020-azure",
-    "node": "v22.23.1",
+    "os": "darwin 23.6.0",
+    "node": "v24.14.0",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": {
-    "id": "29982771416",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29982771416"
-  },
+  "run": null,
   "records": [
     {
       "test": "a chart link navigates straight to that renderer demo (#71)",
@@ -154,6 +151,22 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [71],
+      "screenshots": []
+    },
+    {
+      "test": "PPRF-QT-001/PPRF-QT-002: clicking an outlier-scatter point opens the docked profile in observed ms with the 450 cut on QTcF (#99)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PPRF-QT-001", "PPRF-QT-002"],
+      "issueRefs": [99],
+      "screenshots": []
+    },
+    {
+      "test": "PPRF-QT-003/PPRF-QT-004: empty clicks and view switches clear the dock, which idles on non-scatter views (#99)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PPRF-QT-003", "PPRF-QT-004"],
+      "issueRefs": [99],
       "screenshots": []
     },
     {
@@ -813,6 +826,62 @@
       "screenshots": []
     },
     {
+      "test": "qt-explorer dock clear paths (PPRF-QT-003, PPRF-11) PPRF-QT-001: destroy tears the dock down with the instance",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-QT-003", "PPRF-QT-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer dock clear paths (PPRF-QT-003, PPRF-11) PPRF-QT-001: setSettings({profile: false}) unmounts a live dock; re-enabling remounts it",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-QT-003", "PPRF-QT-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer dock clear paths (PPRF-QT-003, PPRF-11) PPRF-QT-003: a view switch clears the selection and the dock (render preamble); non-scatter views idle",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-QT-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer dock clear paths (PPRF-QT-003, PPRF-11) PPRF-QT-003: an empty-canvas click clears the selection and empties the dock",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-QT-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer dock clear paths (PPRF-QT-003, PPRF-11) PPRF-QT-003: dock Clear empties an externally-fed cohort the host never selected (PPRF-11)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-QT-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer dock clear paths (PPRF-QT-003, PPRF-11) PPRF-QT-003: the dock Clear affordance routes through the host clear path",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-QT-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer dock clear paths (PPRF-QT-003, PPRF-11) PPRF-QT-004: stepping an externally-fed cohort emphasizes the stepped point without re-dispatching",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-QT-003", "PPRF-QT-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
       "test": "qt-explorer getPlugins helpers (QT-OUT-004/006) QT-PLG-001: hexToRgba converts to rgba at opacity",
       "suite": "unit",
       "status": "pass",
@@ -933,10 +1002,66 @@
       "screenshots": ["QT-CT-005-delta-delta-ich-metric.png"]
     },
     {
+      "test": "qt-explorer interval-measure mapping (PPRF-QT-002) PPRF-QT-002: feed rows survive the unit-ULN synthesis — observed ms on the ULN scale, nothing drops",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-QT-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer interval-measure mapping (PPRF-QT-002) PPRF-QT-002: maps the profile settings for interval measures — identity keys, per-QTc cuts, observed-ms labels",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-QT-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer interval-measure mapping (PPRF-QT-002) PPRF-QT-002: the docked spaghetti carries the 450 ms cut on QTc series and no cut on Heart Rate",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-QT-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
       "test": "qt-explorer module export QT-API-001: the public collection exposes the qtExplorer factory",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["QT-API-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer participant-profile adoption (PPRF-QT-001) PPRF-QT-001: clicking an outlier-scatter point feeds the dock the full profile via the shell root",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-QT-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer participant-profile adoption (PPRF-QT-001) PPRF-QT-001: mounts the dock by default (config-on) into the shell profile slot",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-QT-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer participant-profile adoption (PPRF-QT-001) PPRF-QT-001: profile: false leaves the slot empty and mounts no dock",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-QT-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "qt-explorer participant-profile adoption (PPRF-QT-001) PPRF-QT-004: no listing is added — the dock is the only drill-down surface",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-QT-001", "PPRF-QT-004"],
       "issueRefs": [],
       "screenshots": []
     },
