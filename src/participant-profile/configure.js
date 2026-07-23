@@ -64,6 +64,9 @@ export const MEASURE_COLORS = [
  * @property {number[]} [measureBounds=[0.01, 0.99]] Population-extent quantiles for the sparkline / inset guides (PPRF-4).
  * @property {?string} [participantProfileURL=null] Optional link-out URL, templated by every literal `{id}` token (PPRF-2, closes #53).
  * @property {?string} [p_alt_col=null] Optional column carrying a pre-computed P_ALT; passed through where present, never computed client-side (PPRF-2).
+ * @property {boolean} [listing=false] Optional participant record listing under the measure table, via the shared listing renderer (PPRF-4).
+ * @property {?Array<string|Object>} [listing_cols=null] Listing columns as names or { value_col, label } specs; null derives them from the lab mapping columns.
+ * @property {number} [listing_page_size=10] Listing page size.
  * @property {?(Element|string)} [listen_to=null] Standalone event target (Element or selector); null → document (PPRF-6).
  * @property {?Function} [on_clear=null] Callback the Clear affordance invokes so the host clears its own selection (PPRF-2/6).
  * @property {?Function} [on_step=null] Callback (id) fired on stepper navigation so the host keeps its highlight in sync (PPRF-5).
@@ -112,6 +115,9 @@ export const DEFAULT_SETTINGS = {
   measureBounds: [0.01, 0.99],
   participantProfileURL: null,
   p_alt_col: null,
+  listing: false,
+  listing_cols: null,
+  listing_page_size: 10,
   listen_to: null,
   on_clear: null,
   on_step: null,
@@ -142,6 +148,12 @@ export function syncSettings(settings = {}) {
   synced.groups = arrayify(synced.groups)
     .map((value) => fieldSpec(value))
     .filter((d) => d.value_col);
+  synced.listing_cols =
+    synced.listing_cols === undefined || synced.listing_cols === null
+      ? null
+      : arrayify(synced.listing_cols)
+          .map((value) => fieldSpec(value))
+          .filter((d) => d.value_col);
 
   synced.measure_values = {
     ...DEFAULT_SETTINGS.measure_values,

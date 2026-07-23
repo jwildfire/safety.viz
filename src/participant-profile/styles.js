@@ -31,7 +31,21 @@ const MODULE_CSS = `
 .sv-profile-spaghetti-card{height:300px;position:relative;border:1px solid #d8dee4;border-radius:10px;padding:.75rem;background:#fff}
 .sv-profile-spaghetti-footnote{margin:.5rem 0 0;font-size:.72rem;color:#52616f}
 .sv-profile-extras{display:inline-flex;align-items:center;gap:.4rem;font-size:.8rem;margin:.75rem 0 .25rem}
-.sv-profile-extras input{accent-color:#0b62a4}`;
+.sv-profile-extras input{accent-color:#0b62a4}
+.sv-profile-measure-wrap{margin:.75rem 0 0}
+.sv-profile-measure-table{width:100%;border-collapse:collapse;font-size:.82rem}
+.sv-profile-measure-table th{text-align:left;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f;padding:.3rem .5rem;border-bottom:2px solid #111827}
+.sv-profile-measure-table td{padding:.3rem .5rem;font-variant-numeric:tabular-nums}
+.sv-profile-measure-row td{border-bottom:.5px solid #111827}
+.sv-profile-inset-row td{border-bottom:.5px solid #111827;background:none}
+.sv-profile-spark{white-space:nowrap}
+.sv-profile-spark svg{vertical-align:middle}
+.sv-profile-spark-toggle{border:none;background:none;color:#999;cursor:pointer;font:inherit;font-size:.8rem;padding:.1rem .3rem;vertical-align:middle}
+.sv-profile-spark-toggle:hover{color:#1f2933}
+.sv-profile-spark-toggle:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
+.sv-profile-inset-card{height:200px;position:relative;padding:.5rem 0}
+.sv-profile-listing{margin:1rem 0 0}
+.sv-profile-listing-title{margin:0 0 .4rem;font-size:.85rem}`;
 
 /**
  * Inject the module-specific stylesheet once per document; a second profile on
