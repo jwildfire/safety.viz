@@ -94,7 +94,7 @@
     "HEP-STEP-003": "Activating that control switches to the composite view with exactly those participants restored as the selection and highlighted in the ×Baseline panels.",
     "HEP-STEP-004": "A participant selection made in any of the three views survives a switch to either of the other two, for every ordered pair of views.",
     "HEP-STEP-005": "When the Hy's Law to Hy's Law cell is non-empty, the view renders a caution note reporting the count, stating that a shift view cannot detect worsening within a category, and offering to select those participants for individual review.",
-    "HEP-ARM-001": "The arm column is resolved from settings.arm_col when that column is present in the data, and otherwise auto-detected as the first of ARM, ACTARM, TRT01A and TREATMENT that is present.",
+    "HEP-ARM-001": "The arm column is resolved from settings.arm_col when that column is present in the data, and otherwise auto-detected as the first of ARM, ACTARM, TRT01A, TREATMENT and TRTA that is present.",
     "HEP-ARM-002": "When placebo_arm is null, the placebo arm is auto-detected as the first arm value matching a case-insensitive placebo-or-control pattern.",
     "HEP-ARM-003": "Explicit placebo_arm and active_arms settings take precedence over auto-detection whenever the values they name are present in the data.",
     "HEP-ARM-004": "Participants whose arm is designated neither placebo nor active are excluded from the migration view and their count is reported in the notes.",
