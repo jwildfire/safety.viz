@@ -58,7 +58,23 @@
       "matrix": "hep-explorer.md",
       "guide": "hep-explorer.md",
       "heroAsset": "hep-explorer-hero.png",
-      "data": "adbds.csv"
+      "data": "adbds.csv",
+      "related": ["hep-waterfall"]
+    },
+    {
+      "module": "hep-waterfall",
+      "title": "Hepatic ALT Waterfall",
+      "status": "available",
+      "experimental": true,
+      "blurb": "For trials that enrol participants with elevated baseline ALT but normal baseline bilirubin, where eDISH's ×ULN quadrants lose their meaning — a floating bar per participant from their own baseline ALT to their maximum on-treatment ALT in absolute U/L, ranked by baseline so the two arms' highest baselines meet at the seam, blue for placebo and bronze for active drug with new-onset jaundice in green, flanked by a box-and-whisker summary per arm (Amirzadegan et al., Drug Safety 2025, Figure 5).",
+      "hero": "HWF-BAR-001-waterfall-default.png",
+      "heroAsset": "hep-waterfall-hero.png",
+      "matrix": "hep-waterfall.md",
+      "data": "adbds-abnbl.csv",
+      "guide": "hep-waterfall.md",
+      "guideTagline": "When to reach for the ALT waterfall instead of eDISH, how to read the baseline trace and the bar directions, and why the axis is absolute U/L.",
+      "guideCaution": "Bars flag participants for review, they do not diagnose drug-induced liver injury; and the maximum on-treatment value can hide a rise that follows a larger decline.",
+      "related": ["hep-explorer"]
     },
     {
       "module": "paneled-outlier-explorer",

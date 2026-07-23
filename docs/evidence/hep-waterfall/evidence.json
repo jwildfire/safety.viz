@@ -1,5 +1,5 @@
 {
-  "module": "histogram",
+  "module": "hep-waterfall",
   "generatedAt": "2026-07-22T22:22:43.949Z",
   "environment": {
     "os": "darwin 23.6.0",
@@ -114,6 +114,134 @@
       "screenshots": []
     },
     {
+      "test": "HWF-AXIS-002/HWF-AXIS-003/HWF-AXIS-004: mirrored absolute-unit axes and a single-value reference line (#93)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HWF-AXIS-002", "HWF-AXIS-003", "HWF-AXIS-004"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "HWF-BAR-001/HWF-BAR-002/HWF-BAR-003/HWF-BAR-004/HWF-ORDER-001/HWF-ORDER-002/HWF-ORDER-003: one floating bar per participant from baseline to on-treatment maximum, under a continuous baseline trace (#93)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [
+        "HWF-BAR-001",
+        "HWF-BAR-002",
+        "HWF-BAR-003",
+        "HWF-BAR-004",
+        "HWF-ORDER-001",
+        "HWF-ORDER-002",
+        "HWF-ORDER-003"
+      ],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "HWF-BOX-001/HWF-BOX-002/HWF-BOX-003: a summary panel flanks each arm, pinned to the main chart domain (#93)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HWF-BOX-001", "HWF-BOX-002", "HWF-BOX-003"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "HWF-COLOR-001/HWF-COLOR-002/HWF-COLOR-004: blue placebo, bronze active, green for new-onset jaundice in either arm, with the precedence stated (#93)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HWF-COLOR-001", "HWF-COLOR-002", "HWF-COLOR-004"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "HWF-COLOR-003: the arm divider splits the plot at the seam and captions each half with its arm and n (#93)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HWF-COLOR-003"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "HWF-CTRL-001: changing the plotted measure redraws in that measure and its own units (#93)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HWF-CTRL-001"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "HWF-CTRL-001: the jaundice threshold reclassifies which bars are green (#93)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HWF-CTRL-001"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "HWF-CTRL-001/HWF-CTRL-002: the control panel exposes the display settings and the arm mapping (#93)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HWF-CTRL-001", "HWF-CTRL-002"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "HWF-CTRL-003: a filter restricts the plotted cohort and the counts follow it (#93)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HWF-CTRL-003"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "HWF-CTRL-004: reset restores every control-derived setting and redraws the full cohort (#93)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HWF-CTRL-004"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "HWF-DATA-003: turning the Table-1 cohort rule off admits the excluded participants and says so (#93)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HWF-DATA-003"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "HWF-DATA-003/HWF-DATA-005/HWF-DATA-008: both cohort exclusions and the dropped records are reported separately in the notes (#93)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HWF-DATA-003", "HWF-DATA-005", "HWF-DATA-008"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "HWF-DATA-007: two units for the plotted measure suppress the chart with a warning naming them (#93)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HWF-DATA-007"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "HWF-SELECT-001: the bar tooltip names the participant, arm, both values, the change and the jaundice status (#93)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HWF-SELECT-001"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "HWF-SELECT-002/HWF-SELECT-003: clicking a bar highlights the participant, opens the listing, and dispatches participantsSelected (#93)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HWF-SELECT-002", "HWF-SELECT-003"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
       "test": "is keyboard operable: ArrowDown opens and focuses, Escape closes (#71)",
       "suite": "browser",
       "status": "pass",
@@ -146,196 +274,92 @@
       "screenshots": []
     },
     {
-      "test": "SH-API-001: lifecycle API supports init, setData, setSettings, render, resize, and destroy (#2)",
-      "suite": "browser",
+      "test": "abnormal-baseline hepatic demo cohort HWF-COHORT-001: every ABL- participant has a day-0 baseline for all four analytes (#93)",
+      "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SH-API-001"],
-      "issueRefs": [2],
+      "requirementIds": ["HWF-COHORT-001"],
+      "issueRefs": [93],
       "screenshots": []
     },
     {
-      "test": "SH-CHART-003/SH-FUNC-010/SH-FUNC-012: selecting a canvas bar opens a linked listing with record details and count (#2)",
-      "suite": "browser",
+      "test": "abnormal-baseline hepatic demo cohort HWF-COHORT-002: the file carries the shared measure contract and is labelled synthetic (#93)",
+      "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SH-CHART-003", "SH-FUNC-010", "SH-FUNC-012"],
-      "issueRefs": [2],
-      "screenshots": ["SH-FUNC-010-linked-listing.png"]
-    },
-    {
-      "test": "SH-CHART-004: group-by renders grouped histograms (#2)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-CHART-004"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CHART-004-grouped-multiples.png"]
-    },
-    {
-      "test": "SH-CHART-004/SH-CTRL-006: grouped small multiples share the main chart's bin boundaries (#19)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-CHART-004", "SH-CTRL-006"],
-      "issueRefs": [19],
-      "screenshots": ["SH-CHART-004-grouped-multiples.png", "SH-CTRL-006-shared-bin-multiples.png"]
-    },
-    {
-      "test": "SH-CHART-005: p-value annotations display the approximation and validation disclaimer (#2)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-CHART-005"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CHART-005-pvalue-disclaimer.png"]
-    },
-    {
-      "test": "SH-CTRL-001/SH-CTRL-002/SH-CTRL-006: renders measure, filter, axis, bin, and group controls (#2)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-001", "SH-CTRL-002", "SH-CTRL-006"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CTRL-001-control-panel.png", "SH-CTRL-006-shared-bin-multiples.png"]
-    },
-    {
-      "test": "SH-CTRL-003: participant note updates when a filter is applied (#2)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-003"],
-      "issueRefs": [2],
+      "requirementIds": ["HWF-COHORT-002"],
+      "issueRefs": [93],
       "screenshots": []
     },
     {
-      "test": "SH-CTRL-004/SH-FUNC-004A/SH-FUNC-004B: normal range checkbox toggles a stable overlay region (#2)",
-      "suite": "browser",
+      "test": "abnormal-baseline hepatic demo cohort HWF-COHORT-003: exactly two arms, one placebo and one active, of 40 participants each (#93)",
+      "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SH-CTRL-004", "SH-FUNC-004A", "SH-FUNC-004B"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CTRL-004-normal-range-overlay.png"]
-    },
-    {
-      "test": "SH-CTRL-005/SH-FUNC-005A/SH-FUNC-005B/SH-FUNC-005D: x-axis limit inputs redraw and normalize invalid ranges (#2)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-005", "SH-FUNC-005A", "SH-FUNC-005B", "SH-FUNC-005D"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CTRL-005-axis-limits.png"]
-    },
-    {
-      "test": "SH-CTRL-006: bin boundaries anchor to the measure results, not the filtered subset (#19)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-006"],
-      "issueRefs": [19],
-      "screenshots": ["SH-CTRL-006-shared-bin-multiples.png"]
-    },
-    {
-      "test": "SH-CTRL-007: x-axis tick mode switches labels between centers and bin boundaries (#2)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-007"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CTRL-007-boundary-ticks.png"]
-    },
-    {
-      "test": "SH-CTRL-008/SH-REG-020: editing Quantity switches the algorithm to Custom and recomputes the width (#19)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-008", "SH-REG-020"],
-      "issueRefs": [19],
-      "screenshots": ["SH-CTRL-008-bins-inputs-populated.png"]
-    },
-    {
-      "test": "SH-CTRL-008/SH-REG-024/SH-REG-025/SH-REG-026: bin quantity and width inputs reflect the resolved binning (#19)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-008", "SH-REG-024", "SH-REG-025", "SH-REG-026"],
-      "issueRefs": [19],
-      "screenshots": ["SH-CTRL-008-bins-inputs-populated.png"]
-    },
-    {
-      "test": "SH-DATA-002: missing and non-numeric results are dropped with a reported count and visible note (#2)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-DATA-002"],
-      "issueRefs": [2],
-      "screenshots": ["SH-DATA-002-invalid-data-note.png"]
-    },
-    {
-      "test": "SH-FUNC-004C: normal range control is hidden when the measure has no normal range data (#2)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-FUNC-004C"],
-      "issueRefs": [2],
-      "screenshots": ["SH-FUNC-004C-control-hidden-for-pulse.png"]
-    },
-    {
-      "test": "SH-FUNC-005C: x-axis limit inputs support stepper increments of 1 (#2)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-FUNC-005C"],
-      "issueRefs": [2],
+      "requirementIds": ["HWF-COHORT-003"],
+      "issueRefs": [93],
       "screenshots": []
     },
     {
-      "test": "SH-FUNC-011: selecting a bar de-emphasizes the bars outside the linked listing (#2)",
-      "suite": "browser",
+      "test": "abnormal-baseline hepatic demo cohort HWF-COHORT-004: ALT carries a single cohort-wide upper limit of normal and a single unit (#93)",
+      "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SH-FUNC-011"],
-      "issueRefs": [2],
-      "screenshots": ["SH-FUNC-011-bar-de-emphasis.png"]
-    },
-    {
-      "test": "SH-LIST-001/SH-LIST-002/SH-LIST-003/SH-LIST-004: listing supports pagination, search, sorting, and CSV export (#2)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-LIST-001", "SH-LIST-002", "SH-LIST-003", "SH-LIST-004"],
-      "issueRefs": [2],
-      "screenshots": ["SH-LIST-004-search-sort-paginate.png"]
-    },
-    {
-      "test": "SH-OVW-001: an unknown start_value warns and falls back to the overview (#39)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-OVW-001"],
-      "issueRefs": [39],
+      "requirementIds": ["HWF-COHORT-004"],
+      "issueRefs": [93],
       "screenshots": []
     },
     {
-      "test": "SH-OVW-001: the overview is the default view when start_value is not set (#39)",
-      "suite": "browser",
+      "test": "abnormal-baseline hepatic demo cohort HWF-COHORT-005: the plotted sub-population clears the baseline-bilirubin rule with margin (#93)",
+      "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SH-OVW-001"],
-      "issueRefs": [39],
+      "requirementIds": ["HWF-COHORT-005"],
+      "issueRefs": [93],
       "screenshots": []
     },
     {
-      "test": "SH-OVW-002: the overview renders one independently binned panel per measure (#39)",
-      "suite": "browser",
+      "test": "abnormal-baseline hepatic demo cohort HWF-COHORT-006: an excluded sub-population gives the Table-1 exclusion something to report (#93)",
+      "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SH-OVW-002"],
-      "issueRefs": [39],
-      "screenshots": ["SH-OVW-002-overview-panels.png"]
-    },
-    {
-      "test": "SH-OVW-003: clicking a small multiple opens that measure in the single-measure view (#39)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-OVW-003"],
-      "issueRefs": [39],
-      "screenshots": ["SH-OVW-003-click-through-to-pulse.png"]
-    },
-    {
-      "test": "SH-OVW-004: selecting All Measures returns from a single-measure view to the overview (#39)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["SH-OVW-004"],
-      "issueRefs": [39],
+      "requirementIds": ["HWF-COHORT-006"],
+      "issueRefs": [93],
       "screenshots": []
     },
     {
-      "test": "SH-OVW-005: filters stay active in the overview and measure controls hide (#39)",
-      "suite": "browser",
+      "test": "abnormal-baseline hepatic demo cohort HWF-COHORT-007: exactly six active and one placebo participant develop new-onset jaundice (#93)",
+      "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SH-OVW-005"],
-      "issueRefs": [39],
-      "screenshots": ["SH-OVW-005-overview-filtered.png"]
+      "requirementIds": ["HWF-COHORT-007"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "abnormal-baseline hepatic demo cohort HWF-COHORT-008: the active arm is skewed toward ALT decreases and the placebo arm is not (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-COHORT-008"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "abnormal-baseline hepatic demo cohort HWF-COHORT-009: a declining participant declines at every on-treatment visit (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-COHORT-009"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "abnormal-baseline hepatic demo cohort HWF-COHORT-010: baseline ALT spans 1-8xULN smoothly across the plotted cohort (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-COHORT-010"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "abnormal-baseline hepatic demo cohort HWF-COHORT-011: eight active participants carry a peak ALT of 3-6x their own baseline (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-COHORT-011"],
+      "issueRefs": [93],
+      "screenshots": []
     },
     {
       "test": "buildApiModel API-XFORM-010: assembles the artifact with module, factory, methods, settings, data contract, and missing docs (#6)",
@@ -514,6 +538,470 @@
       "screenshots": []
     },
     {
+      "test": "hep-waterfall checkInputs HWF-DATA-001: names every missing required variable in one error (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-DATA-001"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall checkInputs HWF-DATA-005: the arm column is required, so arms are never silently pooled (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-DATA-005"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall configure.syncSettings HWF-CFG-001: fills every default and normalizes field lists (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-CFG-001"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall configure.syncSettings HWF-CFG-002: measure, thresholds and the cohort toggle are coerced (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-CFG-002"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall configure.syncSettings HWF-CFG-003: placebo_arm and active_arms normalize to a resolved side map (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-CFG-003"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall configure.syncSettings HWF-CFG-004: uln_display accepts band, per_subject and none (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-CFG-004"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall configure.syncSettings HWF-CFG-005: summary accepts baseline_peak and peak (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-CFG-005"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall controls HWF-CTRL-001: the panel exposes measure, jaundice threshold, cohort toggle, ULN display and summary (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-CTRL-001"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall controls HWF-CTRL-002: the arm mapping control lists every arm value present in the data (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-CTRL-002"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall controls HWF-CTRL-003: configured filters restrict the cohort and update the counts (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-CTRL-003"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall controls HWF-CTRL-004: reset restores every setting-derived control and re-renders (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-CTRL-004"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getPlugins colour HWF-COLOR-001: placebo bars are blue and active bars are bronze (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-COLOR-001"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getPlugins colour HWF-COLOR-002: new-onset jaundice is green in EITHER arm (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-COLOR-002"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getPlugins colour HWF-COLOR-004: the legend states that jaundice outranks the arm colour (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-COLOR-004"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getPlugins.armDividerPlugin HWF-COLOR-003: a one-sided cohort draws no rule but still labels its arm (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-COLOR-003"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getPlugins.armDividerPlugin HWF-COLOR-003: a vertical rule marks the seam and each half is labelled with its n (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-COLOR-003"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getPlugins.ulnBandPlugin HWF-AXIS-004: a varying reference range renders as a band labelled with its range (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-AXIS-004"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getPlugins.ulnBandPlugin HWF-AXIS-004: an unusable reference range draws nothing rather than a phantom line (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-AXIS-004"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getPlugins.ulnBandPlugin HWF-AXIS-004: one cohort-wide reference range renders as a single labelled line (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-AXIS-004"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getPlugins.ulnBandPlugin HWF-AXIS-004: per_subject traces each participant reference range and none draws nothing (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-AXIS-004"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getPlugins.waterfallTooltip HWF-SELECT-001: a decline reads as a signed fall and no jaundice line (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-SELECT-001"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getPlugins.waterfallTooltip HWF-SELECT-001: the tooltip names the participant, arm, both values and the change (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-SELECT-001"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getScales.formatNumber HWF-AXIS-003: values format without spurious precision (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-AXIS-003"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getScales.mirroredScales HWF-AXIS-002: the right axis takes its min and max from the same domain call (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-AXIS-002"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getScales.mirroredScales HWF-AXIS-003: both axis titles name the measure and its unit (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-AXIS-003"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getScales.mirroredScales HWF-BOX-002: the flanking panels share the main chart vertical domain (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-BOX-002"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getScales.resolveUnit HWF-DATA-006: an unmapped or empty unit column falls back to U/L (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-DATA-006"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getScales.resolveUnit HWF-DATA-006: the axis unit is the modal unit of the plotted measure (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-DATA-006"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getScales.resolveUnit HWF-DATA-007: mixed units across participants are reported as mixed (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-DATA-007"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getScales.waterfallDomain HWF-AXIS-001: an empty or non-finite sample still yields a usable domain (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-AXIS-001"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getScales.waterfallDomain HWF-AXIS-001: the domain is in the absolute measurement units (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-AXIS-001"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getScales.waterfallDomain HWF-AXIS-001: the reference range is kept inside the domain (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-AXIS-001"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall layout and panels HWF-BOX-001: a summary panel flanks each side, placebo left and active right (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-BOX-001"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall layout and panels HWF-DATA-003/005/008: both exclusions and the dropped records are reported in the notes (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-DATA-003"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall layout and panels HWF-DATA-007: mixed units for the plotted measure suppress the chart with a warning (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-DATA-007"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall lifecycle HWF-API-002: init, setData and setSettings re-render and return the instance (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-API-002"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall lifecycle HWF-API-003: resize re-measures every chart and destroy tears them all down (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-API-003"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall module export HWF-API-001: the public collection exposes the hepWaterfall factory (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-API-001"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall selection HWF-SELECT-002: clicking a bar highlights the participant and opens the listing (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-SELECT-002"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall selection HWF-SELECT-003: selection dispatches participantsSelected with the ids (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-SELECT-003"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall structureData.applyFilters HWF-CTRL-003: an active filter restricts the plotted cohort (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-CTRL-003"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall structureData.boxSpecs HWF-BOX-003: baseline_peak stages a baseline box and a peak box per arm (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-BOX-003"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall structureData.boxSpecs HWF-BOX-004: box statistics are the shared R-7 interpolated quantiles (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-BOX-004"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall structureData.buildWaterfall HWF-DATA-001: every plotted participant carries a baseline and an on-treatment maximum in absolute units (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-DATA-001"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall structureData.buildWaterfall HWF-DATA-001: the reduction is the shared hep-core one, so ALT matches buildHepSubjects (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-DATA-001"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall structureData.buildWaterfall HWF-DATA-002: the on-treatment maximum excludes the baseline record BY IDENTITY (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-DATA-002"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall structureData.buildWaterfall HWF-DATA-003: baseline-bilirubin exclusions are counted and reported separately (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-DATA-003"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall structureData.buildWaterfall HWF-DATA-004: new-onset jaundice needs a normal baseline AND an on-treatment exceedance (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-DATA-004"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall structureData.buildWaterfall HWF-DATA-005: undesignated arms are excluded and counted apart from the bilirubin rule (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-DATA-005"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall structureData.buildWaterfall HWF-DATA-008: records dropped for a missing reference range are reported, not dropped silently (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-DATA-008"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall structureData.orderWaterfall HWF-ORDER-001: placebo participants run left to right by ascending baseline (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-ORDER-001"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall structureData.orderWaterfall HWF-ORDER-002: active participants follow by descending baseline, meeting at the seam (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-ORDER-002"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall structureData.orderWaterfall HWF-ORDER-003: the baseline trace is unimodal with its mode at the arm boundary (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-ORDER-003"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall structureData.orderWaterfall HWF-ORDER-004: ties break on participant id, so repeated renders order identically (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-ORDER-004"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall structureData.waterfallDatasets HWF-BAR-001: one floating bar per participant, spanning baseline to on-treatment maximum (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-BAR-001"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall structureData.waterfallDatasets HWF-BAR-002: bars point up on a rise and down on a fall (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-BAR-002"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall structureData.waterfallDatasets HWF-BAR-003: one continuous black line traces every participant baseline (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-BAR-003"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall structureData.waterfallDatasets HWF-BAR-004: the trace is drawn above the bars (#93)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-BAR-004"],
+      "issueRefs": [93],
+      "screenshots": []
+    },
+    {
       "test": "histogram API documentation completeness API-COMPLETE-001: the documented settings are exactly the DEFAULT_SETTINGS keys (#6)",
       "suite": "unit",
       "status": "pass",
@@ -560,294 +1048,6 @@
       "requirementIds": ["API-COMPLETE-006"],
       "issueRefs": [6],
       "screenshots": []
-    },
-    {
-      "test": "histogram binning matches the original renderer (#19) SH-CTRL-006: ADBDS Albumin reproduces the original renderer's bin parameters (#19)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-006"],
-      "issueRefs": [19, 19],
-      "screenshots": ["SH-CTRL-006-shared-bin-multiples.png"]
-    },
-    {
-      "test": "histogram binning matches the original renderer (#19) SH-CTRL-006: bin quantity is clamped to the count of unique results (#19)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-006"],
-      "issueRefs": [19, 19],
-      "screenshots": ["SH-CTRL-006-shared-bin-multiples.png"]
-    },
-    {
-      "test": "histogram binning matches the original renderer (#19) SH-CTRL-006: Scott's rule and Freedman-Diaconis enforce the original's 5-bin floor (#19)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-006"],
-      "issueRefs": [19, 19],
-      "screenshots": ["SH-CTRL-006-shared-bin-multiples.png"]
-    },
-    {
-      "test": "histogram binning matches the original renderer (#19) SH-CTRL-006: Shimazaki-Shinomoto minimizes the original's cost function (#19)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-006"],
-      "issueRefs": [19, 19],
-      "screenshots": ["SH-CTRL-006-shared-bin-multiples.png"]
-    },
-    {
-      "test": "histogram binning matches the original renderer (#19) SH-CTRL-006: zero-spread results collapse to a single bin (#19)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-006"],
-      "issueRefs": [19, 19],
-      "screenshots": ["SH-CTRL-006-shared-bin-multiples.png"]
-    },
-    {
-      "test": "histogram checkInputs SH-DATA-001: missing required variables throw the pilot's error message (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-DATA-001"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram checkInputs SH-DATA-001: the JSON schema publishes the data contract with required column mappings (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-DATA-001"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram checkInputs SH-DATA-001/SH-DATA-003: valid long-format data with optional columns passes (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-DATA-001", "SH-DATA-003"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram configure SH-CFG-004..009: default settings map the standard measure, result, id, unit, and normal-range columns (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CFG-004"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram configure SH-CFG-010: filter specs normalize strings and objects to value_col/label pairs (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CFG-010"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram configure SH-CFG-011: details default to id, filters, result, normal limits, and unit when unset (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CFG-011"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram configure SH-CFG-013/SH-CFG-014: normal-range control and initial display flags are configurable (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CFG-013", "SH-CFG-014"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram configure SH-CHART-004: the group list always offers None and adopts an unknown group_by column (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CHART-004"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CHART-004-grouped-multiples.png"]
-    },
-    {
-      "test": "histogram getPlugins SH-CHART-002: bin descriptions report the count and value range in the pilot's wording (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CHART-002"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram getPlugins SH-CHART-005: p-values format with bounded precision (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CHART-005"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CHART-005-pvalue-disclaimer.png"]
-    },
-    {
-      "test": "histogram getPlugins SH-CHART-005: the group-comparison screen needs 2+ groups and separates distinct groups (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CHART-005"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CHART-005-pvalue-disclaimer.png"]
-    },
-    {
-      "test": "histogram getPlugins SH-CHART-005: the normality screen needs at least 3 values and stays within (0, 1) (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CHART-005"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CHART-005-pvalue-disclaimer.png"]
-    },
-    {
-      "test": "histogram getPlugins SH-FUNC-011: selection colors keep the selected bar and fade the rest (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-FUNC-011"],
-      "issueRefs": [2],
-      "screenshots": ["SH-FUNC-011-bar-de-emphasis.png"]
-    },
-    {
-      "test": "histogram getScales buildScales keeps the count axis integer-based at zero (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram getScales formatNumber trims to significant digits and blanks non-finite values (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram getScales SH-CTRL-005: normalizeDomain swaps inverted lower/upper limits (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-005"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CTRL-005-axis-limits.png"]
-    },
-    {
-      "test": "histogram getScales SH-CTRL-005/SH-FUNC-005A/SH-FUNC-005B: resolveDomain applies user limits over the data extent (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-005", "SH-FUNC-005A", "SH-FUNC-005B"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CTRL-005-axis-limits.png"]
-    },
-    {
-      "test": "histogram getScales SH-CTRL-007: tick labels switch between bin centers and bin boundaries (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-007"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CTRL-007-boundary-ticks.png"]
-    },
-    {
-      "test": "histogram listing SH-LIST-002: pagination slices pages and clamps out-of-range page numbers (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-LIST-002"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram listing SH-LIST-003: CSV export renders label headers and quoted, null-safe values (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-LIST-003"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram listing SH-LIST-004: search filters rows case-insensitively across listing columns (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-LIST-004"],
-      "issueRefs": [2],
-      "screenshots": ["SH-LIST-004-search-sort-paginate.png"]
-    },
-    {
-      "test": "histogram listing SH-LIST-004: sorting is numeric when both values are numeric, string otherwise, and null-safe (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-LIST-004"],
-      "issueRefs": [2],
-      "screenshots": ["SH-LIST-004-search-sort-paginate.png"]
-    },
-    {
-      "test": "histogram structureData display digits resolve the bin width without exceeding the data precision (#15)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [15],
-      "screenshots": []
-    },
-    {
-      "test": "histogram structureData helpers: unique drops empty values; quantile, mean, sd, and precision match the pilot (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram structureData SH-CTRL-002: active filters subset rows by stringified equality (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-002"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram structureData SH-CTRL-005: an explicit domain bounds the bins and clamps edge values (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-005"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CTRL-005-axis-limits.png"]
-    },
-    {
-      "test": "histogram structureData SH-CTRL-006: binning algorithms produce the original renderer's bin quantities (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-006"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CTRL-006-shared-bin-multiples.png"]
-    },
-    {
-      "test": "histogram structureData SH-CTRL-006: custom quantity and custom width drive the bin count (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CTRL-006"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CTRL-006-shared-bin-multiples.png"]
-    },
-    {
-      "test": "histogram structureData SH-DATA-001: measure labels combine the measure with its unit when present (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-DATA-001"],
-      "issueRefs": [2],
-      "screenshots": []
-    },
-    {
-      "test": "histogram structureData SH-DATA-002: missing and non-numeric results are removed with a reported count (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-DATA-002"],
-      "issueRefs": [2],
-      "screenshots": ["SH-DATA-002-invalid-data-note.png"]
-    },
-    {
-      "test": "histogram structureData SH-FUNC-004C: measures without normal-range data are detected (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-FUNC-004C"],
-      "issueRefs": [2],
-      "screenshots": ["SH-FUNC-004C-control-hidden-for-pulse.png"]
     },
     {
       "test": "mdBlock: existing blocks are unchanged renders a numbered list as an ordered list",

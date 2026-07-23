@@ -229,6 +229,11 @@ The View control offers a third top-level view, **Migration (Sankey)**, which re
 **The two-step hand-off.** The paper frames "Sankey then composite" as a deliberate two-step replacement for the single eDISH plot: the Sankey delivers _visualise shift between arms_ and _categorise by severity_, but not _identify individual participants for case review_. So selecting a ribbon (click, Enter or Space — every ribbon is a focusable button with a spoken name) states the shift in the footnote and offers **Review these N in the composite plot**, which switches to the composite view with exactly those participants restored and highlighted in every panel.
 
 **One caution the paper asks for.** A grey **Hy's Law → Hy's Law** band looks reassuring, but it is precisely where the paper's acknowledged limitation lives: a shift view cannot detect worsening _within_ a category, and this is the most severe one. When that cell is non-empty the view says so and offers to select those participants for individual review.
+## Is this the right graphic for your trial?
+
+The eDISH scatter above assumes participants enter the study with roughly normal liver tests, because its ×ULN quadrants only carry meaning under that assumption. When the population was deliberately enrolled with abnormal baselines, a different graphic applies — the **composite plot** view on this page for participants who are abnormal in both ALT and bilirubin, and the separate [Hepatic ALT Waterfall](../hep-waterfall/guide.html) for participants with elevated baseline ALT but **normal** baseline bilirubin, which plots absolute U/L rather than a ratio and excludes exactly the baseline-jaundiced participants the composite view requires.
+
+Which one to reach for is decided by the population's baseline profile, not by preference. [Choosing a hepatic DILI graphic](https://github.com/jwildfire/safety.viz/blob/dev/docs/guides/hepatic-dili-tools.md) lays that out as a single decision table, following Table 1 of Amirzadegan et al., _Drug Safety_ 2025;48(5):443–453.
 
 ## What is not yet on this page
 
