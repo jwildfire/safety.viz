@@ -129,6 +129,35 @@ describe('outlier-explorer dock gesture contract (PPRF-OE-002, PPRF-11)', () => 
     expect(heard).toEqual([['P1']]);
   });
 
+  it('PPRF-OE-002: stepping an externally-fed cohort emphasizes the stepped participant without touching the host selection or re-dispatching', () => {
+    const instance = build();
+    const heard = [];
+    instance.root.addEventListener('participantsSelected', (event) =>
+      heard.push(event.detail.data)
+    );
+    // A root-level dispatch the host did not originate (the shared-selector
+    // shape, #87) — the dock collapses to the worst-first stepper.
+    instance.root.dispatchEvent(
+      new CustomEvent('participantsSelected', { detail: { data: ['P3', 'P1'] }, bubbles: true })
+    );
+    expect(instance.profileWrap.querySelector('.sv-profile-step-count').textContent).toContain(
+      '1 of 2'
+    );
+    const heardBefore = heard.length;
+    instance.profileWrap.querySelector('.sv-profile-step-next').click();
+    // The step re-rendered the profile for the next participant…
+    const steppedId = instance.profileWrap
+      .querySelector('.sv-profile-id')
+      .textContent.replace('Participant ', '');
+    // …emphasized ONLY that participant's series on the chart…
+    expect(instance.overlayMeta.length).toBeGreaterThan(0);
+    expect(instance.overlayMeta.every((meta) => String(meta.id) === steppedId)).toBe(true);
+    // …without converting the cohort into a host single-selection…
+    expect(instance.state.selectedId).toBeNull();
+    // …and dispatched nothing (the selection still belongs to the feeder).
+    expect(heard).toHaveLength(heardBefore);
+  });
+
   it('PPRF-OE-002: is idempotent under repeated identical dispatches', () => {
     const instance = build();
     instance.selectParticipant('P1');
@@ -159,6 +188,27 @@ describe('outlier-explorer dock clear paths (PPRF-OE-003, PPRF-11)', () => {
     expect(instance.listingWrap.innerHTML).toBe('');
     expect(instance.profileWrap.children).toHaveLength(0);
     expect(heard.at(-1)).toEqual([]);
+  });
+
+  it('PPRF-OE-003: dock Clear empties an externally-fed cohort the host never selected (PPRF-11)', () => {
+    const instance = build();
+    const heard = [];
+    instance.root.addEventListener('participantsSelected', (event) =>
+      heard.push(event.detail.data)
+    );
+    // External root dispatch: state.selectedId stays null, but the dock fills.
+    instance.root.dispatchEvent(
+      new CustomEvent('participantsSelected', { detail: { data: ['P1', 'P2'] }, bubbles: true })
+    );
+    expect(instance.profileWrap.children.length).toBeGreaterThan(0);
+    expect(instance.state.selectedId).toBeNull();
+    // Clear must still clear — the empty dispatch travels even with nothing
+    // host-side selected (the F1 regression: clearSelection's early return).
+    instance.profileWrap.querySelector('.sv-profile-clear').click();
+    expect(instance.profileWrap.children).toHaveLength(0);
+    expect(heard.at(-1)).toEqual([]);
+    // And any transient stepper emphasis is gone.
+    expect(instance.overlayMeta).toHaveLength(0);
   });
 
   it('PPRF-OE-003: a control-driven render resets the selection AND the dock (render preamble)', () => {

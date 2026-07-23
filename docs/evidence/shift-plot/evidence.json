@@ -1,6 +1,6 @@
 {
   "module": "shift-plot",
-  "generatedAt": "2026-07-23T06:29:27.072Z",
+  "generatedAt": "2026-07-23T06:49:27.989Z",
   "environment": {
     "os": "darwin 23.6.0",
     "node": "v24.14.0",
@@ -915,6 +915,14 @@
     },
     {
       "test": "shift-plot dock clear paths (PPRF-SSP-003, PPRF-11) PPRF-SSP-003: destroy tears the dock down with the instance",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "shift-plot dock clear paths (PPRF-SSP-003, PPRF-11) PPRF-SSP-003: dock Clear empties an externally-fed cohort the host never selected (PPRF-11)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["PPRF-SSP-003"],

@@ -1,6 +1,6 @@
 {
   "module": "delta-delta",
-  "generatedAt": "2026-07-23T06:16:28.952Z",
+  "generatedAt": "2026-07-23T06:49:27.989Z",
   "environment": {
     "os": "darwin 23.6.0",
     "node": "v24.14.0",
@@ -514,7 +514,23 @@
       "screenshots": []
     },
     {
+      "test": "delta-delta dock adoption (PPRF-DD-002, PPRF-11) PPRF-DD-003: a background click with nothing selected dispatches nothing",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-DD-002", "PPRF-DD-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
       "test": "delta-delta dock adoption (PPRF-DD-002, PPRF-11) PPRF-DD-003: a control-driven render resets the dock (render preamble)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-DD-002", "PPRF-DD-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "delta-delta dock adoption (PPRF-DD-002, PPRF-11) PPRF-DD-003: dock Clear empties an externally-fed cohort the host never selected (PPRF-11)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["PPRF-DD-002", "PPRF-DD-003"],

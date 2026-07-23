@@ -117,8 +117,10 @@ class SafetyOutlierExplorer {
    * PPRF-OE-001): the shared long-lab column mappings pass through verbatim;
    * `details` come from profile_details (the host `details` configure the
    * linked listing — per-row fields, not demographics); and the two outbound
-   * callbacks wire Clear to the host's own clear path and stepper navigation
-   * to a visual-only re-highlight (no dispatch).
+   * callbacks wire Clear to the host's own clear path (falling back to a bare
+   * empty dispatch when the dock was fed by an external cohort the host never
+   * selected, so Clear always clears — PPRF-11) and stepper navigation to a
+   * transient chart emphasis (no dispatch, selection state untouched).
    * @private
    */
   profileSettings() {
@@ -136,11 +138,19 @@ class SafetyOutlierExplorer {
       details:
         settings.profile_details && settings.profile_details.length ? settings.profile_details : [],
       participantProfileURL: settings.participantProfileURL ?? null,
-      on_clear: () => this.clearSelection(),
-      on_step: (id) => {
-        this.state.selectedId = String(id);
-        this.applySelection();
-      }
+      on_clear: () => {
+        if (this.state.selectedId != null) {
+          this.clearSelection();
+        } else {
+          // Externally-fed cohort (e.g. a root-level dispatch the host did not
+          // originate): nothing host-side to clear, but the dock still must —
+          // reset any transient stepper emphasis and dispatch the empty
+          // selection (PPRF-11 clear contract).
+          this.emphasizeParticipant(null);
+          this.dispatchSelection([]);
+        }
+      },
+      on_step: (id) => this.emphasizeParticipant(id)
     };
     // Only forward a caller-supplied key-measure map — null keeps the profile
     // module's own ALT/AST/TB/ALP defaults.
@@ -724,15 +734,26 @@ class SafetyOutlierExplorer {
    * @private
    */
   applySelection() {
+    this.emphasizeParticipant(this.state.selectedId);
+  }
+
+  /**
+   * Draw (or clear, for a null id) the bold overlay for one participant
+   * WITHOUT touching the host selection state — the transient emphasis the
+   * profile stepper drives (PPRF-11): the host selection still belongs to the
+   * click gesture, so footnote/listing keep narrating it while the overlay
+   * tracks the stepped participant.
+   * @param {string|null} id Participant identifier, or null to clear the overlay.
+   * @private
+   */
+  emphasizeParticipant(id) {
     if (!this.chart) return;
     const overlay = this.chart.data.datasets[1];
-    if (this.state.selectedId == null) {
+    if (id == null) {
       overlay.data = [];
       this.overlayMeta = [];
     } else {
-      const series = this.series.find(
-        (candidate) => String(candidate.id) === String(this.state.selectedId)
-      );
+      const series = this.series.find((candidate) => String(candidate.id) === String(id));
       overlay.data = series ? series.points.map((point) => ({ x: point.x, y: point.y })) : [];
       this.overlayMeta = series
         ? series.points.map((point) => ({ id: series.id, group: series.group, point }))

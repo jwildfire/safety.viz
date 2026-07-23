@@ -146,6 +146,37 @@ describe('delta-delta dock adoption (PPRF-DD-002, PPRF-11)', () => {
     expect(heard.at(-1)).toEqual([]);
   });
 
+  it('PPRF-DD-003: a background click with nothing selected dispatches nothing', () => {
+    const instance = build();
+    const heard = [];
+    instance.root.addEventListener('participantsSelected', (event) =>
+      heard.push(event.detail.data)
+    );
+    // No selection yet: an empty-canvas click must not spam external
+    // listeners with empty participantsSelected dispatches (matching
+    // hep-explorer and outlier-explorer).
+    instance.chart.options.onClick({}, []);
+    expect(heard).toEqual([]);
+  });
+
+  it('PPRF-DD-003: dock Clear empties an externally-fed cohort the host never selected (PPRF-11)', () => {
+    const instance = build();
+    const heard = [];
+    instance.root.addEventListener('participantsSelected', (event) =>
+      heard.push(event.detail.data)
+    );
+    // A root-level dispatch the host did not originate (the shared-selector
+    // shape, #87) — the dock fills while state.selectedId stays null.
+    instance.root.dispatchEvent(
+      new CustomEvent('participantsSelected', { detail: { data: ['P1', 'P2'] }, bubbles: true })
+    );
+    expect(instance.profileWrap.children.length).toBeGreaterThan(0);
+    expect(instance.state.selectedId).toBeNull();
+    instance.profileWrap.querySelector('.sv-profile-clear').click();
+    expect(instance.profileWrap.children).toHaveLength(0);
+    expect(heard.at(-1)).toEqual([]);
+  });
+
   it('PPRF-DD-003: a control-driven render resets the dock (render preamble)', () => {
     const instance = build();
     clickPoint(instance, 'P1');

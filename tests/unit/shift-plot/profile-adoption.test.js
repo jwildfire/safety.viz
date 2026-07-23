@@ -230,6 +230,23 @@ describe('shift-plot dock clear paths (PPRF-SSP-003, PPRF-11)', () => {
     expect(heard.at(-1)).toEqual([]);
   });
 
+  it('PPRF-SSP-003: dock Clear empties an externally-fed cohort the host never selected (PPRF-11)', () => {
+    const instance = build();
+    const heard = [];
+    instance.root.addEventListener('participantsSelected', (event) =>
+      heard.push(event.detail.data)
+    );
+    // A root-level dispatch the host did not originate (the shared-selector
+    // shape, #87): no brush, no $sspSelected, but the dock fills.
+    instance.root.dispatchEvent(
+      new CustomEvent('participantsSelected', { detail: { data: ['P3', 'P1'] }, bubbles: true })
+    );
+    expect(instance.profileWrap.children.length).toBeGreaterThan(0);
+    instance.profileWrap.querySelector('.sv-profile-clear').click();
+    expect(instance.profileWrap.children).toHaveLength(0);
+    expect(heard.at(-1)).toEqual([]);
+  });
+
   it('PPRF-SSP-003: a control-driven render resets the selection AND the dock (render preamble)', () => {
     const instance = build();
     brush(instance, ['P1']);

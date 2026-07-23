@@ -485,9 +485,12 @@ class SafetyDeltaDelta {
           if (target) target.style.cursor = active.length ? 'pointer' : 'default';
         },
         onClick: (event, active) => {
-          // An empty-canvas click is a clear gesture (#99, PPRF-DD-003).
+          // An empty-canvas click is a clear gesture (#99, PPRF-DD-003) — but
+          // only when something is selected, so background clicks don't spam
+          // empty participantsSelected dispatches at external listeners
+          // (matching hep-explorer and outlier-explorer).
           if (active.length) this.selectPoint(active[0].index);
-          else this.clearSelection();
+          else if (this.state.selectedId != null) this.clearSelection();
         }
       },
       plugins: [quadrantLinesPlugin(), regressionLinePlugin(this)]
