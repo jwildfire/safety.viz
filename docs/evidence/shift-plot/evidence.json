@@ -1,13 +1,16 @@
 {
   "module": "shift-plot",
-  "generatedAt": "2026-07-23T06:49:27.989Z",
+  "generatedAt": "2026-07-23T07:33:08.365Z",
   "environment": {
-    "os": "darwin 23.6.0",
-    "node": "v24.14.0",
+    "os": "linux 6.17.0-1020-azure",
+    "node": "v22.23.1",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": null,
+  "run": {
+    "id": "29988535722",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29988535722"
+  },
   "records": [
     {
       "test": "a chart link navigates straight to that renderer demo (#71)",
@@ -159,7 +162,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-SSP-001"],
       "issueRefs": [99],
-      "screenshots": []
+      "screenshots": ["PPRF-SSP-001-docked-stepper.png"]
     },
     {
       "test": "PPRF-SSP-002: a single-point brush shows the full docked profile with no stepper, beside the linked listing (#99)",
@@ -167,7 +170,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-SSP-002"],
       "issueRefs": [99],
-      "screenshots": []
+      "screenshots": ["PPRF-SSP-002-docked-full-profile.png"]
     },
     {
       "test": "PPRF-SSP-003: clearing the selection and control-driven redraws empty the dock (#99)",
@@ -815,7 +818,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-SSP-001"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-SSP-001-docked-stepper.png"]
     },
     {
       "test": "shift-plot cohort stepper (PPRF-SSP-001, PPRF-11) PPRF-SSP-001: stepping emphasizes the stepped point on the chart without re-dispatching",
@@ -823,7 +826,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-SSP-001"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-SSP-001-docked-stepper.png"]
     },
     {
       "test": "shift-plot configure SSP-API: the module collection exposes the shift-plot factory (#14)",
@@ -895,7 +898,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-SSP-003", "PPRF-SSP-002"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-SSP-002-docked-full-profile.png"]
     },
     {
       "test": "shift-plot dock clear paths (PPRF-SSP-003, PPRF-11) PPRF-SSP-003: a control-driven render resets the selection AND the dock (render preamble)",
@@ -943,7 +946,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-SSP-002"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-SSP-002-docked-full-profile.png"]
     },
     {
       "test": "shift-plot participant-profile adoption (PPRF-SSP-002) PPRF-SSP-002: derives the dock feed rows ONCE per setData from rawData through the hep-core cleaners",
@@ -951,7 +954,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-SSP-002"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-SSP-002-docked-full-profile.png"]
     },
     {
       "test": "shift-plot participant-profile adoption (PPRF-SSP-002) PPRF-SSP-002: host listing columns are NOT the dock header details (profile_details defaults empty)",
@@ -959,7 +962,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-SSP-002"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-SSP-002-docked-full-profile.png"]
     },
     {
       "test": "shift-plot participant-profile adoption (PPRF-SSP-002) PPRF-SSP-002: mounts the dock by default (config-on) into the shell profile slot",
@@ -967,7 +970,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-SSP-002"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-SSP-002-docked-full-profile.png"]
     },
     {
       "test": "shift-plot participant-profile adoption (PPRF-SSP-002) PPRF-SSP-002: passes the host lab mappings through, mapping visitn_col from visit_order_col",
@@ -975,7 +978,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-SSP-002"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-SSP-002-docked-full-profile.png"]
     },
     {
       "test": "shift-plot participant-profile adoption (PPRF-SSP-002) PPRF-SSP-002: profile: false leaves the slot empty and mounts no dock",
@@ -983,7 +986,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-SSP-002"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-SSP-002-docked-full-profile.png"]
     },
     {
       "test": "shift-plot structureData applyStat collapses a visit set with mean/min/max/first and the single-value shortcut (#14)",

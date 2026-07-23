@@ -1,13 +1,16 @@
 {
   "module": "delta-delta",
-  "generatedAt": "2026-07-23T06:49:27.989Z",
+  "generatedAt": "2026-07-23T07:33:08.365Z",
   "environment": {
-    "os": "darwin 23.6.0",
-    "node": "v24.14.0",
+    "os": "linux 6.17.0-1020-azure",
+    "node": "v22.23.1",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": null,
+  "run": {
+    "id": "29988535722",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29988535722"
+  },
   "records": [
     {
       "test": "a chart link navigates straight to that renderer demo (#71)",
@@ -159,7 +162,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-DD-001", "PPRF-DD-002", "PPRF-DD-004"],
       "issueRefs": [99],
-      "screenshots": []
+      "screenshots": ["PPRF-DD-002-docked-profile.png"]
     },
     {
       "test": "PPRF-DD-003: an empty-canvas click clears the highlight and empties the dock (#99)",
@@ -279,7 +282,7 @@
       "status": "pass",
       "requirementIds": ["SDD-REG-012", "SDD-REG-013", "PPRF-DD-002"],
       "issueRefs": [],
-      "screenshots": ["SDD-REG-012-point-selected.png"]
+      "screenshots": ["PPRF-DD-002-docked-profile.png", "SDD-REG-012-point-selected.png"]
     },
     {
       "test": "SDD-REG-026: the regression line toggles with an equation and R² note (#25)",
@@ -487,7 +490,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-DD-002", "PPRF-DD-001"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-DD-002-docked-profile.png"]
     },
     {
       "test": "delta-delta dock adoption (PPRF-DD-002, PPRF-11) PPRF-DD-002: a point click opens the docked full profile with the point highlighted",
@@ -495,7 +498,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-DD-002"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-DD-002-docked-profile.png"]
     },
     {
       "test": "delta-delta dock adoption (PPRF-DD-002, PPRF-11) PPRF-DD-002: clicking a different point re-renders the dock for the new participant (SDD-REG-013 retargeted)",
@@ -503,7 +506,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-DD-002", "SDD-REG-013"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-DD-002-docked-profile.png"]
     },
     {
       "test": "delta-delta dock adoption (PPRF-DD-002, PPRF-11) PPRF-DD-002: dock header details default to the host details minus the participant id",
@@ -511,7 +514,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-DD-002"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-DD-002-docked-profile.png"]
     },
     {
       "test": "delta-delta dock adoption (PPRF-DD-002, PPRF-11) PPRF-DD-003: a background click with nothing selected dispatches nothing",
@@ -519,7 +522,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-DD-002", "PPRF-DD-003"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-DD-002-docked-profile.png"]
     },
     {
       "test": "delta-delta dock adoption (PPRF-DD-002, PPRF-11) PPRF-DD-003: a control-driven render resets the dock (render preamble)",
@@ -527,7 +530,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-DD-002", "PPRF-DD-003"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-DD-002-docked-profile.png"]
     },
     {
       "test": "delta-delta dock adoption (PPRF-DD-002, PPRF-11) PPRF-DD-003: dock Clear empties an externally-fed cohort the host never selected (PPRF-11)",
@@ -535,7 +538,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-DD-002", "PPRF-DD-003"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-DD-002-docked-profile.png"]
     },
     {
       "test": "delta-delta dock adoption (PPRF-DD-002, PPRF-11) PPRF-DD-003: the dock Clear affordance routes through the host clear path",
@@ -543,7 +546,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-DD-002", "PPRF-DD-003"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-DD-002-docked-profile.png"]
     },
     {
       "test": "delta-delta getPlugins SDD-FUNC-004: participant count text reports total and percentage to one decimal (#25)",

@@ -1,13 +1,16 @@
 {
   "module": "outlier-explorer",
-  "generatedAt": "2026-07-23T06:49:27.989Z",
+  "generatedAt": "2026-07-23T07:33:08.365Z",
   "environment": {
-    "os": "darwin 23.6.0",
-    "node": "v24.14.0",
+    "os": "linux 6.17.0-1020-azure",
+    "node": "v22.23.1",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": null,
+  "run": {
+    "id": "29988535722",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29988535722"
+  },
   "records": [
     {
       "test": "a chart link navigates straight to that renderer demo (#71)",
@@ -159,7 +162,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-OE-001", "PPRF-OE-002"],
       "issueRefs": [99],
-      "screenshots": []
+      "screenshots": ["PPRF-OE-002-docked-profile.png"]
     },
     {
       "test": "PPRF-OE-002: the dock Clear affordance routes through the host clear path (#99)",
@@ -167,7 +170,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-OE-002"],
       "issueRefs": [99],
-      "screenshots": []
+      "screenshots": ["PPRF-OE-002-docked-profile.png"]
     },
     {
       "test": "PPRF-OE-003: background click and control changes empty the dock (#99)",
@@ -770,7 +773,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-OE-002"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-OE-002-docked-profile.png"]
     },
     {
       "test": "outlier-explorer dock gesture contract (PPRF-OE-002, PPRF-11) PPRF-OE-002: is idempotent under repeated identical dispatches",
@@ -778,7 +781,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-OE-002"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-OE-002-docked-profile.png"]
     },
     {
       "test": "outlier-explorer dock gesture contract (PPRF-OE-002, PPRF-11) PPRF-OE-002: stepping an externally-fed cohort emphasizes the stepped participant without touching the host selection or re-dispatching",
@@ -786,7 +789,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-OE-002"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-OE-002-docked-profile.png"]
     },
     {
       "test": "outlier-explorer dock gesture contract (PPRF-OE-002, PPRF-11) PPRF-OE-002: the dispatch travels via the shell root (the house participantsSelected contract)",
@@ -794,7 +797,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-OE-002"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-OE-002-docked-profile.png"]
     },
     {
       "test": "outlier-explorer getPlugins hexToRgba converts a hex color to rgba at the given opacity (#24)",

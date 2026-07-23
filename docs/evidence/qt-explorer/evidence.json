@@ -1,13 +1,16 @@
 {
   "module": "qt-explorer",
-  "generatedAt": "2026-07-23T07:10:05.509Z",
+  "generatedAt": "2026-07-23T07:33:08.365Z",
   "environment": {
-    "os": "darwin 23.6.0",
-    "node": "v24.14.0",
+    "os": "linux 6.17.0-1020-azure",
+    "node": "v22.23.1",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": null,
+  "run": {
+    "id": "29988535722",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29988535722"
+  },
   "records": [
     {
       "test": "a chart link navigates straight to that renderer demo (#71)",
@@ -159,7 +162,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-QT-001", "PPRF-QT-002"],
       "issueRefs": [99],
-      "screenshots": []
+      "screenshots": ["PPRF-QT-002-docked-profile-observed-ms.png"]
     },
     {
       "test": "PPRF-QT-003/PPRF-QT-004: empty clicks and view switches clear the dock, which idles on non-scatter views (#99)",
@@ -1007,7 +1010,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-QT-002"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-QT-002-docked-profile-observed-ms.png"]
     },
     {
       "test": "qt-explorer interval-measure mapping (PPRF-QT-002) PPRF-QT-002: maps the profile settings for interval measures — identity keys, per-QTc cuts, observed-ms labels",
@@ -1015,7 +1018,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-QT-002"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-QT-002-docked-profile-observed-ms.png"]
     },
     {
       "test": "qt-explorer interval-measure mapping (PPRF-QT-002) PPRF-QT-002: the docked spaghetti carries the 450 ms cut on QTc series and no cut on Heart Rate",
@@ -1023,7 +1026,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-QT-002"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-QT-002-docked-profile-observed-ms.png"]
     },
     {
       "test": "qt-explorer module export QT-API-001: the public collection exposes the qtExplorer factory",

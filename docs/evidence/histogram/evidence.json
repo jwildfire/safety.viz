@@ -1,13 +1,16 @@
 {
   "module": "histogram",
-  "generatedAt": "2026-07-23T07:10:05.509Z",
+  "generatedAt": "2026-07-23T07:33:08.365Z",
   "environment": {
-    "os": "darwin 23.6.0",
-    "node": "v24.14.0",
+    "os": "linux 6.17.0-1020-azure",
+    "node": "v22.23.1",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": null,
+  "run": {
+    "id": "29988535722",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29988535722"
+  },
   "records": [
     {
       "test": "a chart link navigates straight to that renderer demo (#71)",
@@ -159,7 +162,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-SH-001", "PPRF-SH-002"],
       "issueRefs": [99],
-      "screenshots": []
+      "screenshots": ["PPRF-SH-002-docked-profile-from-listing-row.png"]
     },
     {
       "test": "PPRF-SH-003: a new bin click and control changes empty the dock (#99)",
@@ -863,7 +866,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-SH-002"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-SH-002-docked-profile-from-listing-row.png"]
     },
     {
       "test": "histogram listing-row focus gesture (PPRF-SH-002, PPRF-11) PPRF-SH-002: Enter on a focused listing row activates the same path (keyboard parity)",
@@ -871,7 +874,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-SH-002"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-SH-002-docked-profile-from-listing-row.png"]
     },
     {
       "test": "histogram listing-row focus gesture (PPRF-SH-002, PPRF-11) PPRF-SH-002: is idempotent under repeated identical dispatches",
@@ -879,7 +882,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-SH-002"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-SH-002-docked-profile-from-listing-row.png"]
     },
     {
       "test": "histogram listing-row focus gesture (PPRF-SH-002, PPRF-11) PPRF-SH-002: listing rows are interactive only when the host opts in via onListingRowClick",
@@ -887,7 +890,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-SH-002"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-SH-002-docked-profile-from-listing-row.png"]
     },
     {
       "test": "histogram listing-row focus gesture (PPRF-SH-002, PPRF-11) PPRF-SH-002: stepping an externally-fed cohort moves the row highlight without touching the host selection or re-dispatching",
@@ -895,7 +898,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-SH-002"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["PPRF-SH-002-docked-profile-from-listing-row.png"]
     },
     {
       "test": "histogram participant-profile adoption (PPRF-SH-001) PPRF-SH-001: derives the dock feed rows ONCE per setData through the hep-core cleaners",
