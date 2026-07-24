@@ -1,13 +1,16 @@
 {
   "module": "results-over-time",
-  "generatedAt": "2026-07-24T12:21:18.606Z",
+  "generatedAt": "2026-07-24T12:24:21.143Z",
   "environment": {
-    "os": "darwin 23.6.0",
-    "node": "v24.14.0",
+    "os": "linux 6.17.0-1020-azure",
+    "node": "v22.23.1",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": null,
+  "run": {
+    "id": "30092922548",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/30092922548"
+  },
   "records": [
     {
       "test": "a chart link navigates straight to that renderer demo (#71)",
@@ -167,7 +170,7 @@
       "status": "pass",
       "requirementIds": ["SROT-AXIS-001", "SROT-AXIS-002", "SROT-AXIS-003"],
       "issueRefs": [85],
-      "screenshots": []
+      "screenshots": ["SROT-AXIS-001-y-limits-prefilled.png"]
     },
     {
       "test": "SROT-DATA-002: missing and non-numeric results are dropped with a reported count and visible note (#27)",
@@ -727,7 +730,7 @@
       "status": "pass",
       "requirementIds": ["SROT-AXIS-001"],
       "issueRefs": [85],
-      "screenshots": []
+      "screenshots": ["SROT-AXIS-001-y-limits-prefilled.png"]
     },
     {
       "test": "results-over-time axis-limit prefill (SROT-AXIS-001) SROT-AXIS-001: the Y-axis limit inputs load pre-filled with the domain the chart drew (#85)",
@@ -735,7 +738,7 @@
       "status": "pass",
       "requirementIds": ["SROT-AXIS-001"],
       "issueRefs": [85],
-      "screenshots": []
+      "screenshots": ["SROT-AXIS-001-y-limits-prefilled.png"]
     },
     {
       "test": "results-over-time checkInputs SROT-DATA-001: passes when the required measure, result, and visit columns are present (#27)",

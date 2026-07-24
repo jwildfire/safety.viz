@@ -1,13 +1,16 @@
 {
   "module": "histogram",
-  "generatedAt": "2026-07-24T12:21:18.606Z",
+  "generatedAt": "2026-07-24T12:24:21.143Z",
   "environment": {
-    "os": "darwin 23.6.0",
-    "node": "v24.14.0",
+    "os": "linux 6.17.0-1020-azure",
+    "node": "v22.23.1",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": null,
+  "run": {
+    "id": "30092922548",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/30092922548"
+  },
   "records": [
     {
       "test": "a chart link navigates straight to that renderer demo (#71)",
@@ -191,7 +194,7 @@
       "status": "pass",
       "requirementIds": ["SH-AXIS-001", "SH-AXIS-002", "SH-AXIS-003"],
       "issueRefs": [85],
-      "screenshots": []
+      "screenshots": ["SH-AXIS-001-axis-limits-prefilled.png"]
     },
     {
       "test": "SH-CHART-003/SH-FUNC-010/SH-FUNC-012: selecting a canvas bar opens a linked listing with record details and count (#2)",
@@ -607,7 +610,7 @@
       "status": "pass",
       "requirementIds": ["SH-AXIS-001"],
       "issueRefs": [85],
-      "screenshots": []
+      "screenshots": ["SH-AXIS-001-axis-limits-prefilled.png"]
     },
     {
       "test": "histogram axis-limit prefill (SH-AXIS-001) SH-AXIS-001: the X-axis limit inputs load pre-filled with the domain the chart drew (#85)",
@@ -615,7 +618,7 @@
       "status": "pass",
       "requirementIds": ["SH-AXIS-001"],
       "issueRefs": [85],
-      "screenshots": []
+      "screenshots": ["SH-AXIS-001-axis-limits-prefilled.png"]
     },
     {
       "test": "histogram binning matches the original renderer (#19) SH-CTRL-006: ADBDS Albumin reproduces the original renderer's bin parameters (#19)",

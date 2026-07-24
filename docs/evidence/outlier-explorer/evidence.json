@@ -1,13 +1,16 @@
 {
   "module": "outlier-explorer",
-  "generatedAt": "2026-07-24T12:21:18.606Z",
+  "generatedAt": "2026-07-24T12:24:21.143Z",
   "environment": {
-    "os": "darwin 23.6.0",
-    "node": "v24.14.0",
+    "os": "linux 6.17.0-1020-azure",
+    "node": "v22.23.1",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": null,
+  "run": {
+    "id": "30092922548",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/30092922548"
+  },
   "records": [
     {
       "test": "a chart link navigates straight to that renderer demo (#71)",
@@ -199,7 +202,7 @@
       "status": "pass",
       "requirementIds": ["SOE-AXIS-001", "SOE-AXIS-002", "SOE-AXIS-003"],
       "issueRefs": [85],
-      "screenshots": []
+      "screenshots": ["SOE-AXIS-001-y-limits-prefilled.png"]
     },
     {
       "test": "SOE-FUNC-001/SOE-FUNC-002/SOE-FUNC-004/SOE-FUNC-005/SOE-FUNC-006/SOE-FUNC-007: renders the full control panel (#24)",
@@ -650,7 +653,7 @@
       "status": "pass",
       "requirementIds": ["SOE-AXIS-001"],
       "issueRefs": [85],
-      "screenshots": []
+      "screenshots": ["SOE-AXIS-001-y-limits-prefilled.png"]
     },
     {
       "test": "outlier-explorer axis-limit prefill (SOE-AXIS-001) SOE-AXIS-001: the Y-axis limit inputs load pre-filled with the padded domain the chart drew (#85)",
@@ -658,7 +661,7 @@
       "status": "pass",
       "requirementIds": ["SOE-AXIS-001"],
       "issueRefs": [85],
-      "screenshots": []
+      "screenshots": ["SOE-AXIS-001-y-limits-prefilled.png"]
     },
     {
       "test": "outlier-explorer checkInputs SOE-DATA-001: missing required measure/value columns throw a naming error (#24)",
