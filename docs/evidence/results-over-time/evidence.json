@@ -1,6 +1,6 @@
 {
   "module": "results-over-time",
-  "generatedAt": "2026-07-23T07:33:08.365Z",
+  "generatedAt": "2026-07-24T12:24:21.143Z",
   "environment": {
     "os": "linux 6.17.0-1020-azure",
     "node": "v22.23.1",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "29988535722",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29988535722"
+    "id": "30092922548",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/30092922548"
   },
   "records": [
     {
@@ -163,6 +163,14 @@
       "requirementIds": [],
       "issueRefs": [27],
       "screenshots": []
+    },
+    {
+      "test": "SROT-AXIS-001/SROT-AXIS-002/SROT-AXIS-003: y-limit inputs load pre-filled with the drawn axis, follow the measure, and Reset restores them (#85)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SROT-AXIS-001", "SROT-AXIS-002", "SROT-AXIS-003"],
+      "issueRefs": [85],
+      "screenshots": ["SROT-AXIS-001-y-limits-prefilled.png"]
     },
     {
       "test": "SROT-DATA-002: missing and non-numeric results are dropped with a reported count and visible note (#27)",
@@ -717,6 +725,22 @@
       "screenshots": []
     },
     {
+      "test": "results-over-time axis-limit prefill (SROT-AXIS-001) SROT-AXIS-001: displaying a limit does not pin it — the overrides stay null until edited (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-AXIS-001"],
+      "issueRefs": [85],
+      "screenshots": ["SROT-AXIS-001-y-limits-prefilled.png"]
+    },
+    {
+      "test": "results-over-time axis-limit prefill (SROT-AXIS-001) SROT-AXIS-001: the Y-axis limit inputs load pre-filled with the domain the chart drew (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-AXIS-001"],
+      "issueRefs": [85],
+      "screenshots": ["SROT-AXIS-001-y-limits-prefilled.png"]
+    },
+    {
       "test": "results-over-time checkInputs SROT-DATA-001: passes when the required measure, result, and visit columns are present (#27)",
       "suite": "unit",
       "status": "pass",
@@ -877,6 +901,30 @@
       "screenshots": []
     },
     {
+      "test": "results-over-time limit guardrails with prefilled inputs (SROT-AXIS-004) SROT-AXIS-004: a lower limit typed above the prefilled upper limit is swapped, never inverted (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-AXIS-004"],
+      "issueRefs": [85],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time limit guardrails with prefilled inputs (SROT-AXIS-004) SROT-AXIS-004: clearing a prefilled input returns that limit to auto and the box refills (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-AXIS-004"],
+      "issueRefs": [85],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time Reset Limits (SROT-AXIS-003) SROT-AXIS-003: Reset Limits clears the overrides and repopulates both inputs with the derived domain (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-AXIS-003"],
+      "issueRefs": [85],
+      "screenshots": []
+    },
+    {
       "test": "results-over-time structureData quantile follows the R-7 / d3.quantile rule (#27)",
       "suite": "unit",
       "status": "pass",
@@ -978,6 +1026,30 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [27],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time unedited limits stay automatic (SROT-AXIS-002) SROT-AXIS-002: an edited limit survives a filter change and stays an override (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-AXIS-002"],
+      "issueRefs": [85],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time unedited limits stay automatic (SROT-AXIS-002) SROT-AXIS-002: an unedited limit re-derives on a measure change and the input follows (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-AXIS-002"],
+      "issueRefs": [85],
+      "screenshots": []
+    },
+    {
+      "test": "results-over-time unedited limits stay automatic (SROT-AXIS-002) SROT-AXIS-002: an unedited lower limit re-derives when the scale switches to log (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-AXIS-002"],
+      "issueRefs": [85],
       "screenshots": []
     },
     {

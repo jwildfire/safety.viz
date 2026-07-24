@@ -262,6 +262,51 @@ test.describe('safety.viz histogram module', () => {
     await captureEvidence(page, 'SH-CTRL-005', 'axis-limits');
   });
 
+  test('SH-AXIS-001/SH-AXIS-002/SH-AXIS-003: x-axis limit inputs load pre-filled with the drawn domain, follow the measure, and Reset restores them (#85)', async ({
+    page
+  }) => {
+    const measure = page.locator('.sv-control', { hasText: 'Measure' }).locator('select');
+    const lower = page.locator('.sv-control', { hasText: 'Lower' }).locator('input');
+    const upper = page.locator('.sv-control', { hasText: 'Upper' }).locator('input');
+    const drawn = () =>
+      page.evaluate(() => {
+        const chart = window.__safetyHistogramInstance.chart;
+        return [chart.$shBins[0].lower, chart.$shBins.at(-1).upper];
+      });
+
+    // Loaded pre-filled with the axis the chart actually drew (AXIS-1).
+    const domain = await drawn();
+    const tolerance = (domain[1] - domain[0]) / 500;
+    expect(await lower.inputValue()).not.toBe('');
+    expect(await upper.inputValue()).not.toBe('');
+    expect(Math.abs(Number(await lower.inputValue()) - domain[0])).toBeLessThanOrEqual(tolerance);
+    expect(Math.abs(Number(await upper.inputValue()) - domain[1])).toBeLessThanOrEqual(tolerance);
+
+    // Untouched limits still follow the data across a measure change (AXIS-2).
+    await measure.selectOption('Pulse (bpm)');
+    await page.waitForFunction(() => window.__safetyHistogramInstance.chart);
+    const pulse = await drawn();
+    expect(pulse).not.toEqual(domain);
+    expect(Math.abs(Number(await lower.inputValue()) - pulse[0])).toBeLessThanOrEqual(
+      (pulse[1] - pulse[0]) / 500
+    );
+
+    // An edit is respected, and Reset Limits puts the derived values back
+    // (AXIS-3) instead of blanking the boxes.
+    await lower.fill(String(pulse[0] + 2));
+    await lower.dispatchEvent('change');
+    expect(await page.evaluate(() => window.__safetyHistogramInstance.state.lower)).toBe(
+      pulse[0] + 2
+    );
+    await page.locator('.sv-reset-limits').click();
+    expect(await page.evaluate(() => window.__safetyHistogramInstance.state.lower)).toBeNull();
+    expect(await lower.inputValue()).not.toBe('');
+    expect(Math.abs(Number(await lower.inputValue()) - pulse[0])).toBeLessThanOrEqual(
+      (pulse[1] - pulse[0]) / 500
+    );
+    await captureEvidence(page, 'SH-AXIS-001', 'axis-limits-prefilled');
+  });
+
   test('SH-FUNC-005C: x-axis limit inputs support stepper increments of 1 (#2)', async ({
     page
   }) => {

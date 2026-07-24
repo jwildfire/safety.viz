@@ -18,6 +18,7 @@ import {
 } from 'chart.js';
 
 import { controlBuilders, createElement, option, renderShell } from './shell.js';
+import { applyLimitEdit, clearAxisLimits, seedLimitInput, syncAxisLimits } from './axis-limits.js';
 import { Y_SCALES, syncSettings } from './results-over-time/configure.js';
 import { checkInputs } from './results-over-time/checkInputs.js';
 import {
@@ -79,8 +80,12 @@ class SafetyResultsOverTime {
       measure: this.settings.start_value,
       filters: {},
       groupBy: this.settings.group_by,
+      // Y-axis limits (#85): `lower`/`upper` hold USER OVERRIDES only (null =
+      // auto), `axisDomain` the [lower, upper] the last render resolved — what
+      // the inputs display and what the chart drew. See src/axis-limits.js.
       lower: null,
       upper: null,
+      axisDomain: null,
       yScale: this.settings.y_scale,
       boxplots: this.settings.boxplots,
       outliers: this.settings.outliers,
@@ -258,14 +263,14 @@ class SafetyResultsOverTime {
     this.lowerInput = addControl('Lower', document.createElement('input'), yRow);
     this.lowerInput.type = 'number';
     this.lowerInput.step = 'any';
-    this.lowerInput.value = this.state.lower == null ? '' : this.state.lower;
-    this.lowerInput.onchange = () => this.onLimitChange();
+    this.lowerInput.value = seedLimitInput(this.state, 'lower');
+    this.lowerInput.onchange = () => this.onLimitChange('lower');
 
     this.upperInput = addControl('Upper', document.createElement('input'), yRow);
     this.upperInput.type = 'number';
     this.upperInput.step = 'any';
-    this.upperInput.value = this.state.upper == null ? '' : this.state.upper;
-    this.upperInput.onchange = () => this.onLimitChange();
+    this.upperInput.value = seedLimitInput(this.state, 'upper');
+    this.upperInput.onchange = () => this.onLimitChange('upper');
 
     const reset = createElement('button', 'sv-reset-limits', 'Reset Limits');
     reset.type = 'button';
@@ -306,29 +311,33 @@ class SafetyResultsOverTime {
   }
 
   /**
-   * Apply an edited y-limit: read the inputs, swap a crossed pair, reflect the
-   * normalized values back into the inputs, and re-render (SROT-REG-016/017).
+   * Apply an edited y-limit: record the override (an empty or non-numeric entry
+   * returns that side to auto), swap a crossed pair, and re-render
+   * (SROT-REG-016/017). The render writes the resolved domain back into both
+   * inputs (#85, AXIS-1), so the boxes always end up showing the axis drawn.
+   * @param {'lower'|'upper'} key Which limit was edited.
    * @private
    */
-  onLimitChange() {
-    this.state.lower = this.lowerInput.value === '' ? null : Number(this.lowerInput.value);
-    this.state.upper = this.upperInput.value === '' ? null : Number(this.upperInput.value);
+  onLimitChange(key) {
+    applyLimitEdit(
+      this.state,
+      key,
+      key === 'lower' ? this.lowerInput.value : this.upperInput.value
+    );
     normalizeDomain(this.state);
-    this.lowerInput.value = this.state.lower == null ? '' : this.state.lower;
-    this.upperInput.value = this.state.upper == null ? '' : this.state.upper;
     this.render();
   }
 
   /**
    * Clear the y-limit overrides back to the data extent (SROT-FUNC-005 /
-   * SROT-REG-020); optionally sync the inputs and re-render.
+   * SROT-REG-020) — on Reset Limits and on a measure change, since limits are
+   * per-measure. The recorded domain goes with them, so the render this
+   * optionally triggers re-derives it and repopulates both inputs (#85,
+   * AXIS-3).
    * @private
    */
   resetLimits(rerender) {
-    this.state.lower = null;
-    this.state.upper = null;
-    if (this.lowerInput) this.lowerInput.value = '';
-    if (this.upperInput) this.upperInput.value = '';
+    clearAxisLimits(this.state);
     if (rerender) this.render();
   }
 
@@ -395,6 +404,9 @@ class SafetyResultsOverTime {
     const groups = grouping ? unique(filtered.map((row) => String(row[grouping]))).sort() : ['All'];
     const colors = groupColors(groups);
     const domain = this.resolveDomain(measureData);
+    // The Y-axis Limits inputs mirror the domain this render resolved, including
+    // the log-scale clamp above (#85, AXIS-1/AXIS-4).
+    syncAxisLimits(this.state, domain, { lower: this.lowerInput, upper: this.upperInput });
     const precisions = statPrecisions(yPrecision(domain).precision);
     this.currentVisits = visits;
     this.currentGroups = groups;

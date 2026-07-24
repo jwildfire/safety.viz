@@ -11,38 +11,40 @@ Playwright).
 
 ## Browser evidence (Playwright — `tests/e2e/results-over-time.spec.js`)
 
-| Requirement ID                          | Source matrix rows                        | Issue | Test                                                                   |
-| --------------------------------------- | ----------------------------------------- | ----- | ---------------------------------------------------------------------- |
-| SROT-FUNC-001/SROT-FUNC-002             | SROT-FUNC-001, SROT-FUNC-002              | #27   | renders measure, group, filter, y-axis, scale, and display controls    |
-| SROT-FUNC-003/SROT-REG-001              | SROT-FUNC-003, SROT-REG-001               | #27   | participant note updates when a filter is applied                      |
-| SROT-DATA-002                           | SROT-DATA-002                             | #27   | missing and non-numeric results are dropped with a reported count      |
-| SROT-FUNC-008/SROT-REG-009              | SROT-FUNC-008, SROT-REG-009               | #27   | box-and-whisker marks render and toggle off with the Box plots control |
-| SROT-REG-002/SROT-REG-003               | SROT-REG-002, SROT-REG-003                | #27   | grouping draws side-by-side boxes with a group-ordered legend          |
-| SROT-REG-010/SROT-REG-012               | SROT-REG-010, SROT-REG-012                | #27   | the outlier overlay shows and hides with the Outliers control          |
-| SROT-REG-011                            | SROT-REG-011                              | #27   | outlier points carry a larger hover radius than their resting radius   |
-| SROT-REG-014/SROT-REG-015               | SROT-REG-014, SROT-REG-015                | #27   | hovering a box exposes the summary statistics tooltip                  |
-| SROT-FUNC-004/SROT-REG-016/SROT-REG-017 | SROT-FUNC-004, SROT-REG-016, SROT-REG-017 | #27   | y-limit inputs redraw and invert a crossed pair                        |
-| SROT-FUNC-005/SROT-REG-020              | SROT-FUNC-005, SROT-REG-020               | #27   | Reset Limits restores the data extent                                  |
-| SROT-REG-018                            | SROT-REG-018                              | #27   | the Scale control switches the y-axis between linear and log           |
-| SROT-FUNC-006/SROT-REG-004/SROT-REG-005 | SROT-FUNC-006, SROT-REG-004, SROT-REG-005 | #27   | the Visits without data control adds empty timepoints                  |
-| SROT-FUNC-007/SROT-REG-006/SROT-REG-007 | SROT-FUNC-007, SROT-REG-006, SROT-REG-007 | #27   | the Unscheduled visits control shows unscheduled timepoints            |
-| SROT-REG-023/SROT-REG-024               | SROT-REG-023, SROT-REG-024                | #27   | start_value selects the initial measure and falls back when absent     |
-| SROT-API                                | — (see legacy-API note)                   | #27   | lifecycle API supports init, setData, setSettings, render, resize      |
+| Requirement ID                          | Source matrix rows                          | Issue | Test                                                                   |
+| --------------------------------------- | ------------------------------------------- | ----- | ---------------------------------------------------------------------- |
+| SROT-FUNC-001/SROT-FUNC-002             | SROT-FUNC-001, SROT-FUNC-002                | #27   | renders measure, group, filter, y-axis, scale, and display controls    |
+| SROT-FUNC-003/SROT-REG-001              | SROT-FUNC-003, SROT-REG-001                 | #27   | participant note updates when a filter is applied                      |
+| SROT-DATA-002                           | SROT-DATA-002                               | #27   | missing and non-numeric results are dropped with a reported count      |
+| SROT-FUNC-008/SROT-REG-009              | SROT-FUNC-008, SROT-REG-009                 | #27   | box-and-whisker marks render and toggle off with the Box plots control |
+| SROT-REG-002/SROT-REG-003               | SROT-REG-002, SROT-REG-003                  | #27   | grouping draws side-by-side boxes with a group-ordered legend          |
+| SROT-REG-010/SROT-REG-012               | SROT-REG-010, SROT-REG-012                  | #27   | the outlier overlay shows and hides with the Outliers control          |
+| SROT-REG-011                            | SROT-REG-011                                | #27   | outlier points carry a larger hover radius than their resting radius   |
+| SROT-REG-014/SROT-REG-015               | SROT-REG-014, SROT-REG-015                  | #27   | hovering a box exposes the summary statistics tooltip                  |
+| SROT-FUNC-004/SROT-REG-016/SROT-REG-017 | SROT-FUNC-004, SROT-REG-016, SROT-REG-017   | #27   | y-limit inputs redraw and invert a crossed pair                        |
+| SROT-FUNC-005/SROT-REG-020              | SROT-FUNC-005, SROT-REG-020                 | #27   | Reset Limits restores the data extent                                  |
+| SROT-REG-018                            | SROT-REG-018                                | #27   | the Scale control switches the y-axis between linear and log           |
+| SROT-FUNC-006/SROT-REG-004/SROT-REG-005 | SROT-FUNC-006, SROT-REG-004, SROT-REG-005   | #27   | the Visits without data control adds empty timepoints                  |
+| SROT-FUNC-007/SROT-REG-006/SROT-REG-007 | SROT-FUNC-007, SROT-REG-006, SROT-REG-007   | #27   | the Unscheduled visits control shows unscheduled timepoints            |
+| SROT-REG-023/SROT-REG-024               | SROT-REG-023, SROT-REG-024                  | #27   | start_value selects the initial measure and falls back when absent     |
+| SROT-API                                | — (see legacy-API note)                     | #27   | lifecycle API supports init, setData, setSettings, render, resize      |
+| SROT-AXIS-001/002/003                   | SROT-AXIS-001, SROT-AXIS-002, SROT-AXIS-003 | #85   | y-limit inputs load pre-filled, follow the measure, and Reset restores |
 
 ## Unit evidence (Vitest — `tests/unit/results-over-time/`)
 
-| Requirement ID                                | Source matrix rows                                     | Issue | Test file                                       |
-| --------------------------------------------- | ------------------------------------------------------ | ----- | ----------------------------------------------- |
-| SROT-CFG-004/005/006/007/009                  | SROT-CFG-004, SROT-CFG-005, SROT-CFG-007, SROT-CFG-009 | #27   | `configure.test.js`                             |
-| SROT-CFG-008/012/013/014/015                  | SROT-CFG-008, SROT-CFG-012, SROT-CFG-013, SROT-CFG-014 | #27   | `configure.test.js`                             |
-| SROT-CFG-017/018/019, SROT-DATA-003           | SROT-CFG-017, SROT-CFG-019, SROT-DATA-003              | #27   | `configure.test.js` / `structureData.test.js`   |
-| SROT-DATA-001/002                             | SROT-DATA-001, SROT-DATA-002                           | #27   | `checkInputs.test.js` / `structureData.test.js` |
-| SROT-CFG-005/006                              | SROT-CFG-005, SROT-CFG-006                             | #27   | `structureData.test.js`                         |
-| SROT-REG-010/012                              | SROT-REG-010, SROT-REG-012                             | #27   | `structureData.test.js`                         |
-| SROT-REG-002/010 (grouping-change regression) | SROT-REG-002, SROT-REG-010                             | #27   | `structureData.test.js`                         |
-| SROT-REG-021                                  | SROT-REG-021                                           | #27   | `structureData.test.js`                         |
-| SROT-REG-015/016/017/020                      | SROT-REG-015, SROT-REG-016, SROT-REG-017, SROT-REG-020 | #27   | `getScales.test.js`                             |
-| SROT-REG-003/011/014/015                      | SROT-REG-003, SROT-REG-011, SROT-REG-014, SROT-REG-015 | #27   | `getPlugins.test.js`                            |
+| Requirement ID                                | Source matrix rows                                         | Issue | Test file                                       |
+| --------------------------------------------- | ---------------------------------------------------------- | ----- | ----------------------------------------------- |
+| SROT-CFG-004/005/006/007/009                  | SROT-CFG-004, SROT-CFG-005, SROT-CFG-007, SROT-CFG-009     | #27   | `configure.test.js`                             |
+| SROT-CFG-008/012/013/014/015                  | SROT-CFG-008, SROT-CFG-012, SROT-CFG-013, SROT-CFG-014     | #27   | `configure.test.js`                             |
+| SROT-CFG-017/018/019, SROT-DATA-003           | SROT-CFG-017, SROT-CFG-019, SROT-DATA-003                  | #27   | `configure.test.js` / `structureData.test.js`   |
+| SROT-DATA-001/002                             | SROT-DATA-001, SROT-DATA-002                               | #27   | `checkInputs.test.js` / `structureData.test.js` |
+| SROT-CFG-005/006                              | SROT-CFG-005, SROT-CFG-006                                 | #27   | `structureData.test.js`                         |
+| SROT-REG-010/012                              | SROT-REG-010, SROT-REG-012                                 | #27   | `structureData.test.js`                         |
+| SROT-REG-002/010 (grouping-change regression) | SROT-REG-002, SROT-REG-010                                 | #27   | `structureData.test.js`                         |
+| SROT-REG-021                                  | SROT-REG-021                                               | #27   | `structureData.test.js`                         |
+| SROT-REG-015/016/017/020                      | SROT-REG-015, SROT-REG-016, SROT-REG-017, SROT-REG-020     | #27   | `getScales.test.js`                             |
+| SROT-REG-003/011/014/015                      | SROT-REG-003, SROT-REG-011, SROT-REG-014, SROT-REG-015     | #27   | `getPlugins.test.js`                            |
+| SROT-AXIS-001/002/003/004                     | SROT-AXIS-001, SROT-AXIS-002, SROT-AXIS-003, SROT-AXIS-004 | #85   | `axis-limits.test.js`                           |
 
 ## Source-matrix routing status (58 rows)
 

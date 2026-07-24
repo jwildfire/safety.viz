@@ -1,6 +1,6 @@
 {
   "module": "histogram",
-  "generatedAt": "2026-07-23T07:33:08.365Z",
+  "generatedAt": "2026-07-24T12:24:21.143Z",
   "environment": {
     "os": "linux 6.17.0-1020-azure",
     "node": "v22.23.1",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "29988535722",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29988535722"
+    "id": "30092922548",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/30092922548"
   },
   "records": [
     {
@@ -187,6 +187,14 @@
       "requirementIds": ["SH-API-001"],
       "issueRefs": [2],
       "screenshots": []
+    },
+    {
+      "test": "SH-AXIS-001/SH-AXIS-002/SH-AXIS-003: x-axis limit inputs load pre-filled with the drawn domain, follow the measure, and Reset restores them (#85)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SH-AXIS-001", "SH-AXIS-002", "SH-AXIS-003"],
+      "issueRefs": [85],
+      "screenshots": ["SH-AXIS-001-axis-limits-prefilled.png"]
     },
     {
       "test": "SH-CHART-003/SH-FUNC-010/SH-FUNC-012: selecting a canvas bar opens a linked listing with record details and count (#2)",
@@ -597,6 +605,22 @@
       "screenshots": []
     },
     {
+      "test": "histogram axis-limit prefill (SH-AXIS-001) SH-AXIS-001: displaying a limit does not pin it — the overrides stay null until edited (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-AXIS-001"],
+      "issueRefs": [85],
+      "screenshots": ["SH-AXIS-001-axis-limits-prefilled.png"]
+    },
+    {
+      "test": "histogram axis-limit prefill (SH-AXIS-001) SH-AXIS-001: the X-axis limit inputs load pre-filled with the domain the chart drew (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-AXIS-001"],
+      "issueRefs": [85],
+      "screenshots": ["SH-AXIS-001-axis-limits-prefilled.png"]
+    },
+    {
       "test": "histogram binning matches the original renderer (#19) SH-CTRL-006: ADBDS Albumin reproduces the original renderer's bin parameters (#19)",
       "suite": "unit",
       "status": "pass",
@@ -829,6 +853,30 @@
       "screenshots": ["SH-CTRL-007-boundary-ticks.png"]
     },
     {
+      "test": "histogram limit guardrails with prefilled inputs (SH-AXIS-004) SH-AXIS-004: a lower limit typed above the prefilled upper limit is swapped, never inverted (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-AXIS-004"],
+      "issueRefs": [85],
+      "screenshots": []
+    },
+    {
+      "test": "histogram limit guardrails with prefilled inputs (SH-AXIS-004) SH-AXIS-004: a non-numeric entry returns that limit to auto rather than reaching the chart (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-AXIS-004"],
+      "issueRefs": [85],
+      "screenshots": []
+    },
+    {
+      "test": "histogram limit guardrails with prefilled inputs (SH-AXIS-004) SH-AXIS-004: clearing a prefilled input returns that limit to auto and the box refills (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-AXIS-004"],
+      "issueRefs": [85],
+      "screenshots": []
+    },
+    {
       "test": "histogram listing SH-LIST-002: pagination slices pages and clamps out-of-range page numbers (#2)",
       "suite": "unit",
       "status": "pass",
@@ -941,6 +989,14 @@
       "screenshots": []
     },
     {
+      "test": "histogram Reset Limits (SH-AXIS-003, SH-FUNC-006) SH-AXIS-003: Reset Limits clears the overrides and repopulates both inputs with the derived domain (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-AXIS-003", "SH-FUNC-006"],
+      "issueRefs": [85],
+      "screenshots": []
+    },
+    {
       "test": "histogram structureData display digits resolve the bin width without exceeding the data precision (#15)",
       "suite": "unit",
       "status": "pass",
@@ -1011,6 +1067,22 @@
       "requirementIds": ["SH-FUNC-004C"],
       "issueRefs": [2],
       "screenshots": ["SH-FUNC-004C-control-hidden-for-pulse.png"]
+    },
+    {
+      "test": "histogram unedited limits stay automatic (SH-AXIS-002) SH-AXIS-002: an edited limit survives a filter change and stays an override (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-AXIS-002"],
+      "issueRefs": [85],
+      "screenshots": []
+    },
+    {
+      "test": "histogram unedited limits stay automatic (SH-AXIS-002) SH-AXIS-002: an unedited limit re-derives on a measure change and the input follows (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-AXIS-002"],
+      "issueRefs": [85],
+      "screenshots": []
     },
     {
       "test": "mdBlock: existing blocks are unchanged renders a numbered list as an ordered list",
