@@ -1,0 +1,2320 @@
+{
+  "module": "participant-profile",
+  "generatedAt": "2026-07-23T07:33:08.365Z",
+  "environment": {
+    "os": "linux 6.17.0-1020-azure",
+    "node": "v22.23.1",
+    "playwright": "1.61.1",
+    "chromium": "149.0.7827.55"
+  },
+  "run": {
+    "id": "29988535722",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29988535722"
+  },
+  "records": [
+    {
+      "test": "a chart link navigates straight to that renderer demo (#71)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71],
+      "screenshots": []
+    },
+    {
+      "test": "built ae-explorer demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built ae-timelines demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built delta-delta demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built hep-explorer demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built hep-waterfall demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built histogram demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built outlier-explorer demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built participant-profile demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built qt-explorer demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built results-over-time demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built shift-plot demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "demo page loads with no console errors (#1)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [1],
+      "screenshots": []
+    },
+    {
+      "test": "gallery shows one card per available renderer (#7)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "is keyboard operable: ArrowDown opens and focuses, Escape closes (#71)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71],
+      "screenshots": []
+    },
+    {
+      "test": "lists one chart link per available renderer, closed by default (#71)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71],
+      "screenshots": []
+    },
+    {
+      "test": "marks the current chart inside the dropdown on a renderer sub-page (#71)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71],
+      "screenshots": []
+    },
+    {
+      "test": "opens on hover and the top link still points at the gallery index (#71)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71],
+      "screenshots": []
+    },
+    {
+      "test": "PPRF-ACC-001: the stepper, controls and spaghetti canvas are keyboard-operable across re-renders — repeated arrow presses step with no re-tabbing (#98)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PPRF-ACC-001"],
+      "issueRefs": [98],
+      "screenshots": ["PPRF-ACC-001-keyboard-stepper.png"]
+    },
+    {
+      "test": "PPRF-EVT-001/PPRF-CORE-002: the standalone demo wires the profile to a chart via participantsSelected — chart click renders the neighbouring profile, background click clears it (#98)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PPRF-EVT-001", "PPRF-CORE-002"],
+      "issueRefs": [98],
+      "screenshots": ["PPRF-EVT-001-linked-charts-demo.png"]
+    },
+    {
+      "test": "PPRF-GATE-001: the built site ships the full done-gate — gallery card, live demo, guide, API reference and evidence page (#98)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PPRF-GATE-001"],
+      "issueRefs": [98],
+      "screenshots": ["PPRF-GATE-001-done-gate-demo.png"]
+    },
+    {
+      "test": "PPRF-HEP-001/PPRF-CORE-001: scatter click opens the docked profile below the chart — header, spaghetti, and measure table replace the legacy detail panel (#98)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PPRF-HEP-001", "PPRF-CORE-001"],
+      "issueRefs": [98],
+      "screenshots": ["PPRF-HEP-001-scatter-dock.png"]
+    },
+    {
+      "test": "PPRF-HEP-002/PPRF-STEP-001/PPRF-HDR-002: composite multi-select collapses the dock to a stepper, stepping renders each profile and keeps the chart highlight in sync, Clear hides the dock (#98)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PPRF-HEP-002", "PPRF-STEP-001", "PPRF-HDR-002"],
+      "issueRefs": [98],
+      "screenshots": ["PPRF-STEP-001-composite-stepper.png"]
+    },
+    {
+      "test": "PPRF-HEP-003: composite single focus (point click or selector) opens the full profile, not the stepper (#98)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PPRF-HEP-003"],
+      "issueRefs": [98],
+      "screenshots": []
+    },
+    {
+      "test": "PPRF-HEP-004: the migration ribbon hand-off arrives in the composite view with the dock opened on the carried cohort (#98)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PPRF-HEP-004"],
+      "issueRefs": [98],
+      "screenshots": ["PPRF-HEP-004-migration-handoff-dock.png"]
+    },
+    {
+      "test": "PPRF-HEP-005: background click clears the selection and hides the dock (#98)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PPRF-HEP-005"],
+      "issueRefs": [98],
+      "screenshots": []
+    },
+    {
+      "test": "bandGuidePlugin (PPRF-4, PPRF-TBL-003) draws dashed guides across the chart area at the population extent",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "bandGuidePlugin (PPRF-4, PPRF-TBL-003) draws no band when no normal-range limit is finite",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "bandGuidePlugin (PPRF-4, PPRF-TBL-003) draws the LLN–ULN band in chart space (beforeDatasetsDraw)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "buildApiModel API-XFORM-010: assembles the artifact with module, factory, methods, settings, data contract, and missing docs (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-010"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "buildApiModel API-XFORM-011: flags DEFAULT_SETTINGS keys absent from the settings typedef (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-011"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "buildEcgRecords anchors BASE and CHG on each participant baseline record (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "buildEcgRecords derives QTcF and QTcB from QT and RRR rather than the pilot parameters (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "buildEcgRecords drops non-analysis rows: the AVERAGE roll-up and non-supine postures (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "buildEcgRecords keeps each participant on its own baseline (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "buildEcgRecords passes heart rate through as recorded (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "buildEcgRecords refuses to build when the RR source contradicts the recorded heart rate (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "buildEcgRecords throws when a source parameter the derivation needs is absent (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "buildProfileModel — measure table model (PPRF-4, PPRF-TBL-001) assigns each measure a color from the module palette",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "buildProfileModel — measure table model (PPRF-4, PPRF-TBL-001) carries lln/uln and flags outliers on each spark point",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "buildProfileModel — measure table model (PPRF-4, PPRF-TBL-001) computes the population extent over ALL participants at measureBounds",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "buildProfileModel — measure table model (PPRF-4, PPRF-TBL-001) narrower measureBounds move the extent inside the population range",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "buildProfileModel — measure table model (PPRF-4, PPRF-TBL-001) orders rows key-first in measure_values order, extras after",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "buildProfileModel — measure table model (PPRF-4, PPRF-TBL-001) reads the full TEST string as the label for key measures",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "buildProfileModel — measure table model (PPRF-4, PPRF-TBL-001) summarizes N/min/median/max from the raw values",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "buildProfileModel — participant header fields (PPRF-2, PPRF-HDR-001) computes the R Ratio (peak ALT xULN / peak ALP xULN) on the ULN scale",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HDR-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "buildProfileModel — participant header fields (PPRF-2, PPRF-HDR-001) leaves the R Ratio NaN when ALP is missing",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HDR-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "buildProfileModel — participant header fields (PPRF-2, PPRF-HDR-001) passes P_ALT through from p_alt_col where a value exists, never computing it",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HDR-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "buildProfileModel — participant header fields (PPRF-2, PPRF-HDR-001) resolves details from the settings specs against the participant rows",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HDR-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "buildProfileModel — spaghetti series (PPRF-3, PPRF-SPAG-001) builds one series per key measure present, day-ordered, in display units",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "buildProfileModel — spaghetti series (PPRF-3, PPRF-SPAG-001) carries raw value and visit context on every point for the tooltips (parity addPointTitles)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "buildProfileModel — spaghetti series (PPRF-3, PPRF-SPAG-001) defaults the spaghetti axis type to linear and follows an axis_type override",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "buildProfileModel — spaghetti series (PPRF-3, PPRF-SPAG-001) includes non-key measures as extra (isKey false) series",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "buildProfileModel — spaghetti series (PPRF-3, PPRF-SPAG-001) labels the y axis for the active display mode",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "buildProfileModel — spaghetti series (PPRF-3, PPRF-SPAG-001) resolves per-measure cuts, falling back to the defaults entry (PPRF-3)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "buildProfileModel — spaghetti series (PPRF-3, PPRF-SPAG-001) switches the series field with the display state (xBaseline)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "checkInputs — standalone long-lab contract (PPRF-1, PPRF-CORE-002) accepts data carrying every required mapped column",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "checkInputs — standalone long-lab contract (PPRF-1, PPRF-CORE-002) names every missing required variable in one error",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "checkInputs — standalone long-lab contract (PPRF-1, PPRF-CORE-002) treats empty data as missing every required variable",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "control accessible names + focus keys (PPRF-8, PPRF-ACC-001) carries data-sv-focus keys so re-renders can restore keyboard focus",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-ACC-001"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-ACC-001-keyboard-stepper.png"]
+    },
+    {
+      "test": "control accessible names + focus keys (PPRF-8, PPRF-ACC-001) names both selects for assistive tech — the visual labels are unassociated siblings",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-ACC-001"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-ACC-001-keyboard-stepper.png"]
+    },
+    {
+      "test": "correctQt applies Bazett — QT divided by the square root of RR in seconds (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "correctQt applies Fridericia — QT divided by the cube root of RR in seconds (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "correctQt corrects upward above 60 bpm and downward below it (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "cut lines on keyboard focus (PPRF-3/8, PPRF-SPAG-002, PPRF-ACC-001) draws EVERY visible cut line while the canvas holds focus, hover aside",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-002", "PPRF-ACC-001"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-ACC-001-keyboard-stepper.png"]
+    },
+    {
+      "test": "cut lines on keyboard focus (PPRF-3/8, PPRF-SPAG-002, PPRF-ACC-001) the rendered canvas is focusable with a text alternative (PPRF-8)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-002", "PPRF-ACC-001"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-ACC-001-keyboard-stepper.png"]
+    },
+    {
+      "test": "cutLinePlugin (PPRF-3, PPRF-SPAG-001) draws nothing when no dataset is active",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "cutLinePlugin (PPRF-3, PPRF-SPAG-001) draws the hovered dataset dashed cut line with a right-aligned 0.1f label",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "displayControl (PPRF-3, PPRF-SPAG-002) offers the display_options and reports the chosen value",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer buildEvidenceSets splits records per module and duplicates shared scaffold records (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer buildRun builds GitHub Actions run provenance from the environment (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer compareEvidence flags status drift and test-set changes, ignoring screenshots (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer compareEvidence ignores provenance so --check never drifts on generatedAt/environment/run (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer moduleForFile routes test files to renderer modules by path (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer normalizePlaywright walks nested suites into browser-suite records (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer normalizeVitest maps assertion results to unit-suite records (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer parseTestName extracts requirement IDs and issue refs (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer parseTestName recognizes every renderer requirement-ID prefix, not just SH (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer provenance lives in dedicated top-level keys; the records array stays timestamp-free (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "extrasControl (PPRF-3/4, PPRF-TBL-004) reports toggle changes and reflects the current state",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "extrasControl (PPRF-3/4, PPRF-TBL-004) uses the original's copy, singular and plural",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "footnote helpers (PPRF-4, PPRF-TBL-001) labels quantiles as ordinal percentiles",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "footnote helpers (PPRF-4, PPRF-TBL-001) reflects configured measureBounds in the footnote copy",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "formatSummary (PPRF-4, PPRF-TBL-001) formats to two decimals (parity 0.2f), blank when not finite",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-001: the documented settings are exactly the DEFAULT_SETTINGS keys (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-001"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-002: every setting row has a type, default, and description (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-002"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-003: the factory is documented with params and a return value (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-003"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-004: every lifecycle method is documented with a description and return value (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-004"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-005: no missing-documentation entries remain across the public surface (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-005"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-006: the data contract derives from the schema and its settings map onto real setting names (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-006"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "insetYDomain (PPRF-4, PPRF-TBL-003) pads the union of values, population extent, and normal-range limits",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "insetYDomain (PPRF-4, PPRF-TBL-003) survives missing normal-range limits",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "keyboard operation survives re-renders (PPRF-8, PPRF-ACC-001) announces steps through ONE persistent aria-live region, not a recreated one",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-ACC-001"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-ACC-001-keyboard-stepper.png"]
+    },
+    {
+      "test": "keyboard operation survives re-renders (PPRF-8, PPRF-ACC-001) keeps focus on the ▶ button across activations, falling back to the strip at the cohort end",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-ACC-001"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-ACC-001-keyboard-stepper.png"]
+    },
+    {
+      "test": "keyboard operation survives re-renders (PPRF-8, PPRF-ACC-001) keeps focus on the Standardization select across the display re-render",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-ACC-001"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-ACC-001-keyboard-stepper.png"]
+    },
+    {
+      "test": "keyboard operation survives re-renders (PPRF-8, PPRF-ACC-001) keeps focus on the stepper control across a step so arrows keep working",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-ACC-001"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-ACC-001-keyboard-stepper.png"]
+    },
+    {
+      "test": "keyboard operation survives re-renders (PPRF-8, PPRF-ACC-001) labels the profile block as a named region",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-ACC-001"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-ACC-001-keyboard-stepper.png"]
+    },
+    {
+      "test": "keyboard operation survives re-renders (PPRF-8, PPRF-ACC-001) re-shows of the same cohort keep the stepper position (PPRF-5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-ACC-001"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-ACC-001-keyboard-stepper.png"]
+    },
+    {
+      "test": "labControl (PPRF-3, PPRF-SPAG-002) reflects a subset and reports selection changes",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "labControl (PPRF-3, PPRF-SPAG-002) selects every lab when the state carries no subset",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "listing settings (configure, PPRF-TBL-005) defaults the listing off with derived columns and page size 10",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "listing settings (configure, PPRF-TBL-005) normalizes listing_cols to field specs",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: existing blocks are unchanged renders a numbered list as an ordered list",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: existing blocks are unchanged still renders headings, bullets, and paragraphs",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: heading ids and the guide TOC adds no heading ids by default (coverage docs stay unchanged)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: heading ids and the guide TOC adds slug ids to headings when opted in",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: heading ids and the guide TOC disambiguates repeated headings",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: heading ids and the guide TOC extractHeadings ids match the ids mdBlock emits",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: heading ids and the guide TOC slugify lowercases and collapses non-alphanumerics",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: image figures accepts a single-quoted caption (Prettier normalizes titles to single quotes)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: image figures falls back to the alt text when no caption title is given",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: image figures renders a standalone image line as a captioned figure",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: image figures treats a mid-paragraph image inline, not as a broken link",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: pipe tables applies column alignment from the delimiter row",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: pipe tables does not mistake a bare horizontal rule for a table delimiter",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: pipe tables renders a GFM pipe table inside a scroll wrapper with header and body",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "measure color palette (PPRF-3, PPRF-SPAG-003) assigns stable palette colors in key order, cycling when exhausted",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "measure-table inset lifecycle (PPRF-4, PPRF-TBL-003) collapsing destroys the chart and removes the row",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "measure-table inset lifecycle (PPRF-4, PPRF-TBL-003) destroy() tears every open inset down (re-render leaks none)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "measure-table inset lifecycle (PPRF-4, PPRF-TBL-003) expanding a spark inserts a full-width row under it hosting the inset",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "measure-table inset lifecycle (PPRF-4, PPRF-TBL-003) supports a second expand while one is open",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "participant-profile DEFAULT_SETTINGS (PPRF-1/2/3/4, PPRF-CORE-003) carries the house long-lab column defaults",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "participant-profile DEFAULT_SETTINGS (PPRF-1/2/3/4, PPRF-CORE-003) defaults measureBounds to the 1st/99th percentiles (PPRF-4)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "participant-profile DEFAULT_SETTINGS (PPRF-1/2/3/4, PPRF-CORE-003) defaults the display to relative_uln with the two toggle options (PPRF-3)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "participant-profile DEFAULT_SETTINGS (PPRF-1/2/3/4, PPRF-CORE-003) defaults the header/link/event settings off (PPRF-2/5/6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "participant-profile module export (PPRF-CORE-001) (#98) PPRF-1: the public collection exposes the participantProfile factory",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-001"],
+      "issueRefs": [98],
+      "screenshots": []
+    },
+    {
+      "test": "participant-profile syncSettings (PPRF-1, PPRF-CORE-003) coerces measureBounds back to a two-quantile array",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "participant-profile syncSettings (PPRF-1, PPRF-CORE-003) deep-merges a partial cuts override, back-filling the untouched measures",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "participant-profile syncSettings (PPRF-1, PPRF-CORE-003) deep-merges a partial measure_values override, keeping the other keys",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "participant-profile syncSettings (PPRF-1, PPRF-CORE-003) normalizes details to {value_col, label} specs from strings and objects (PPRF-2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "participant-profile syncSettings (PPRF-1, PPRF-CORE-003) normalizes filters and groups to empty arrays so hep-core reducers can run",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "participantsSelected listener (PPRF-6, PPRF-EVT-001) clears to idle on an empty selection payload",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-EVT-001"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-EVT-001-linked-charts-demo.png"]
+    },
+    {
+      "test": "participantsSelected listener (PPRF-6, PPRF-EVT-001) destroy removes the listener",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-EVT-001"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-EVT-001-linked-charts-demo.png"]
+    },
+    {
+      "test": "participantsSelected listener (PPRF-6, PPRF-EVT-001) listens on a custom listen_to element instead of document",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-EVT-001"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-EVT-001-linked-charts-demo.png"]
+    },
+    {
+      "test": "participantsSelected listener (PPRF-6, PPRF-EVT-001) listens on document by default and renders the selection",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-EVT-001"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-EVT-001-linked-charts-demo.png"]
+    },
+    {
+      "test": "participantsSelected listener (PPRF-6, PPRF-EVT-001) resolves a listen_to selector string",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-EVT-001"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-EVT-001-linked-charts-demo.png"]
+    },
+    {
+      "test": "profileDock (PPRF-1, PPRF-CORE-005) clear empties the container so the :empty slot hides",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "profileDock (PPRF-1, PPRF-CORE-005) docked Clear invokes on_clear and leaves clearing to the host (PPRF-6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "profileDock (PPRF-1, PPRF-CORE-005) installs no event listener — participantsSelected on document is ignored",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "profileDock (PPRF-1, PPRF-CORE-005) resize reaches the live charts; destroy tears them down and empties the container",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "profileDock (PPRF-1, PPRF-CORE-005) show renders the profile from pre-cleaned rows without re-ingesting",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "profileDock (PPRF-1, PPRF-CORE-005) shows the worst-first stepper for N > 1 (PPRF-5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "profileDock (PPRF-1, PPRF-CORE-005) stepping re-renders the profile and calls on_step with the id",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "programmatic selection and callbacks (PPRF-5/6, PPRF-EVT-002) never dispatches participantsSelected (or any selection event)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-EVT-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "programmatic selection and callbacks (PPRF-5/6, PPRF-EVT-002) setSelected takes the same path as the event listener",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-EVT-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "programmatic selection and callbacks (PPRF-5/6, PPRF-EVT-002) standalone Clear clears the block locally and invokes on_clear",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-EVT-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "programmatic selection and callbacks (PPRF-5/6, PPRF-EVT-002) stepping renders the next participant and calls on_step (PPRF-5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-EVT-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "rankParticipants — worst-first cohort ordering (PPRF-5, PPRF-STEP-002) breaks a quadrant tie by peak ALT xULN, descending",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-STEP-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "rankParticipants — worst-first cohort ordering (PPRF-5, PPRF-STEP-002) breaks remaining ties by id ascending, deterministically",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-STEP-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "rankParticipants — worst-first cohort ordering (PPRF-5, PPRF-STEP-002) falls back to peak severity for ids the reduction excludes, after ranked ids",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-STEP-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "rankParticipants — worst-first cohort ordering (PPRF-5, PPRF-STEP-002) orders by on-treatment quadrant severity: Hy's Law > Temple's Corollary > Normal",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-STEP-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "rankParticipants — worst-first cohort ordering (PPRF-5, PPRF-STEP-002) returns ids untouched by rank when the list has one entry",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-STEP-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "record listing (PPRF-4, PPRF-TBL-005, optional) derives default listing columns from the lab mapping, skipping absent columns",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "record listing (PPRF-4, PPRF-TBL-005, optional) honors a listing_cols override",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "record listing (PPRF-4, PPRF-TBL-005, optional) renders the participant records through the shared listing renderer",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderGuidePage: composition renders a sticky TOC sidebar whose links anchor to the heading ids",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderGuidePage: composition renders authored figures from the guide markdown",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderGuidePage: composition renders the title, non-diagnostic caution, and the guide tab",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderHeader (PPRF-2, PPRF-HDR-001) invokes the Clear handler from a real button, dispatching no selection event (PPRF-6, PPRF-HDR-002)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HDR-001", "PPRF-HDR-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderHeader (PPRF-2, PPRF-HDR-001) renders P_ALT only when the pass-through yields a value",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HDR-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderHeader (PPRF-2, PPRF-HDR-001) renders the participant id and a label/value entry per detail",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HDR-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderHeader (PPRF-2, PPRF-HDR-001) shows the computed R Ratio to two decimals, blank when not computable",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HDR-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderHeader (PPRF-2, PPRF-HDR-001) supports the original's {text_value, note} P_ALT shape with click-to-footnote",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HDR-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderHeader (PPRF-2, PPRF-HDR-001) templates the link-out href by {id}, and omits the link without a URL (PPRF-HDR-003, closes #53)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HDR-001", "PPRF-HDR-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderInset (PPRF-4, PPRF-TBL-003) fills outlier points and hollows the rest",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderInset (PPRF-4, PPRF-TBL-003) installs the band/guide plugin",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderInset (PPRF-4, PPRF-TBL-003) mounts a line chart of absolute values by study day",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderMeasureTable (PPRF-4, PPRF-TBL-001) collapses an open extra-row inset when extras are hidden again",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderMeasureTable (PPRF-4, PPRF-TBL-001) hides extra measures by default behind the parity toggle copy",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderMeasureTable (PPRF-4, PPRF-TBL-001) puts a keyboard-operable toggle and a sparkline in every spark cell",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderMeasureTable (PPRF-4, PPRF-TBL-001) renders one row per measure in model (key-first) order with summary columns",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderMeasureTable (PPRF-4, PPRF-TBL-001) renders the original's percentile footnote below the table (parity addFootnote)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderMeasureTable (PPRF-4, PPRF-TBL-001) reveals and re-hides extra rows through the toggle, reporting the change",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderMeasureTable (PPRF-4, PPRF-TBL-001) shows extras from the start when the state says so, and omits the toggle without extras",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell profile slot (PPRF-1) exposes a profileWrap slot with the sv-profile class inside the main column",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell profile slot (PPRF-1) hides the slot while it is empty via the shared stylesheet",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell profile slot (PPRF-1) places the slot between the small-multiples grid and the listing",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderSpaghetti (PPRF-3, PPRF-SPAG-001) mounts a line chart of the visible series with the display y-label",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderSpaghetti (PPRF-3, PPRF-SPAG-001) re-renders extras when the state shows them",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderSpaghetti (PPRF-3, PPRF-SPAG-001) shows the original's filled-points footnote copy",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderStepper (PPRF-5, PPRF-STEP-001) clamps at the ends: buttons disabled, no onStep past the cohort",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-STEP-001"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-STEP-001-composite-stepper.png"]
+    },
+    {
+      "test": "renderStepper (PPRF-5, PPRF-STEP-001) renders real labelled buttons in a labelled group",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-STEP-001"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-STEP-001-composite-stepper.png"]
+    },
+    {
+      "test": "renderStepper (PPRF-5, PPRF-STEP-001) shows the k-of-N count with the current id, aria-live polite",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-STEP-001"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-STEP-001-composite-stepper.png"]
+    },
+    {
+      "test": "renderStepper (PPRF-5, PPRF-STEP-001) steps forward and back through onStep with the target index",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-STEP-001"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-STEP-001-composite-stepper.png"]
+    },
+    {
+      "test": "renderStepper (PPRF-5, PPRF-STEP-001) supports ArrowLeft / ArrowRight on the focusable strip (PPRF-8)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-STEP-001"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-STEP-001-composite-stepper.png"]
+    },
+    {
+      "test": "requirements-lib: freshness guard (#63) flags added and removed requirement IDs",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "requirements-lib: freshness guard (#63) flags changed requirement text",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "requirements-lib: freshness guard (#63) reports fresh when the committed set matches a fresh extraction",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "requirements-lib: matrix parsing (#63) ignores the header, separator, and non-requirement content",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "requirements-lib: matrix parsing (#63) keeps an escaped pipe inside a requirement cell as a single row",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "requirements-lib: matrix parsing (#63) maps each requirement ID to its reviewed text",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "requirements-lib: requirement set (#63) wraps the parsed map with module + matrix provenance",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "safety.viz scaffold SH-API-001: the collection exposes the histogram module factory (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-API-001"],
+      "issueRefs": [2],
+      "screenshots": []
+    },
+    {
+      "test": "safety.viz scaffold src/main.js exports the public module collection (#1)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [1],
+      "screenshots": []
+    },
+    {
+      "test": "shared view selector VIEW-SEL-001: renders one option button per view under a titled View section (#76)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["VIEW-SEL-001"],
+      "issueRefs": [76],
+      "screenshots": []
+    },
+    {
+      "test": "shared view selector VIEW-SEL-002: highlights only the active option via is-active + aria-pressed (#76)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["VIEW-SEL-002"],
+      "issueRefs": [76],
+      "screenshots": []
+    },
+    {
+      "test": "shared view selector VIEW-SEL-003: renders real, keyboard-operable button elements (#76)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["VIEW-SEL-003"],
+      "issueRefs": [76],
+      "screenshots": []
+    },
+    {
+      "test": "shared view selector VIEW-SEL-004: clicking a non-active option fires onChange with its value; the active option is a no-op (#76)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["VIEW-SEL-004"],
+      "issueRefs": [76],
+      "screenshots": []
+    },
+    {
+      "test": "shell: prototypeBanner renders a labelled note element with the default v1.5 copy (#97)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [97],
+      "screenshots": []
+    },
+    {
+      "test": "shell: prototypeBanner uses a caller-supplied note verbatim when given (#97)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [97],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: about page (#21) carries the OpenRBQM mirror and audience framing moved off the homepage (#29)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 29],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: about page (#21) credits the safetyGraphics project and every original RhoInc renderer (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: about page (#21) describes each original renderer alongside its credit link (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: about page (#21) tells the keynote / developer-diary story and links the roadmap hub (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page opens with a module-anatomy overview linking the architecture page (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders a sidebar table of contents linking every section and method (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders each lifecycle method with signature, params, and returns (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders the factory signature and parameters (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders the schema-derived data contract (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders the settings table with type, default, and description (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: architecture page (#21) explains the shared shell and module anatomy (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: architecture page (#21) names the committed bundle for the running version (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: architecture page (#21) walks the pipeline from data contract to R htmlwidget (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: coverage parsing parses the browser and unit tables plus the routing-status tail (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page carries the routing-status sections onto the page (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page falls back to requirement-ID matching when a browser row wording drifts from the spec name (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page joins browser rows to their evidence record with status chip and screenshot (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page links source matrix rows to the safety.agent matrix (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page matches unit rows to records through expanded requirement IDs (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page rewrites repo-relative coverage links to repository URLs (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page surfaces failing records with a fail status chip (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence report provenance (#21) degrades gracefully when provenance fields are absent (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence report provenance (#21) links result chips to the CI run when a run is recorded (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence report provenance (#21) presents a captioned visual-evidence gallery of the committed screenshots (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence report provenance (#21) renders generation date, environment, and CI run when evidence.json carries them (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence report provenance (#21) summarizes scope and results in a fact panel (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery experimentalBadge renders Prototype for a prototype, Experimental for experimental, nothing otherwise (#97)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [97],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery compresses the migration queue to a one-line strip after the cards (#29)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [29],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery leads with the two-sentence intro linking the keynote and safetyGraphics (#29)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [29],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery links available renderers to demo, evidence, and API pages with a hero thumbnail (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery lists every renderer: available as cards, queued in the status strip (#7) (#29)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 29],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery marks a prototype renderer with a Prototype badge on its card (#97)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [97],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery prefers a dedicated hero asset over the evidence baseline when configured (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery nav dropdown (#71) applies the mount-depth root prefix to every internal link (#71)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71, 71],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery nav dropdown (#71) lists one link per available renderer, data-driven from config (#71)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71, 71],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery nav dropdown (#71) renders a disclosure control wired to the chart menu (#71)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71, 71],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery nav dropdown (#71) shell substitutes the {{galleryNav}} token from the passed renderers (#71)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71, 71],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery queued renderers link their requirement matrices, not site pages (#7) (#29)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 29],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: requirement text (#63) degrades to IDs-only when no requirements map is supplied",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: requirement text (#63) escapes HTML in requirement text",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: requirement text (#63) renders the reviewed requirement text for a row’s source-matrix IDs",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: requirement text (#63) shows no requirement text for IDs the matrix does not enumerate",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: requirement-ID expansion expands double-dot ranges and slash shorthand into full IDs (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: shell tokens (#21) falls back to an empty description when none is given (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: shell tokens (#21) replaces version and description tokens across the shell (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site validation: evidence screenshots flags screenshots referenced in evidence.json but missing from the evidence set (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site validation: internal links flags internal links and asset references that do not resolve (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site validation: internal links passes a site whose internal links all resolve, ignoring external and fragment links (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "spaghetti y-domain includes the reference cuts (PPRF-3, PPRF-SPAG-002) follows a log axis type without pinning the minimum to 0 (PPRF-7 drawDetail parity)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "spaghetti y-domain includes the reference cuts (PPRF-3, PPRF-SPAG-002) pins the linear axis to 0 and suggests the visible series' max cut (parity onDraw [0, max(values, cuts)])",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "spaghettiDatasets (PPRF-3, PPRF-SPAG-001) builds one line dataset per series with day x-values",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "spaghettiDatasets (PPRF-3, PPRF-SPAG-001) carries the cut on the dataset for the cut-line plugin",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "spaghettiDatasets (PPRF-3, PPRF-SPAG-001) fills points at or above the cut and hollows points below it",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "spark-toggle accessible state (PPRF-8, PPRF-ACC-001) carries a per-measure data-sv-focus key for focus restoration",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-ACC-001"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-ACC-001-keyboard-stepper.png"]
+    },
+    {
+      "test": "spark-toggle accessible state (PPRF-8, PPRF-ACC-001) flips the accessible name with the expanded state and links the inset via aria-controls",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-ACC-001"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-ACC-001-keyboard-stepper.png"]
+    },
+    {
+      "test": "sparkDomain (PPRF-4, PPRF-TBL-002) pads the union of participant values and the population extent ×0.99/×1.01",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "sparkDomain (PPRF-4, PPRF-TBL-002) unions participant outliers beyond the population extent",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "sparklineSVG (PPRF-4, PPRF-TBL-002) builds a 100×25 svg with band, guides, line, and outliers — no listeners",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "sparklineSVG (PPRF-4, PPRF-TBL-002) centers a single-day series instead of dividing by zero",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "sparklineSVG (PPRF-4, PPRF-TBL-002) draws dashed full-width guide lines at the population-extent values",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "sparklineSVG (PPRF-4, PPRF-TBL-002) draws the LLN–ULN normal-range band polygon (ULN forward, LLN reversed)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "sparklineSVG (PPRF-4, PPRF-TBL-002) draws the value path in the measure color over the day-ordered points",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "sparklineSVG (PPRF-4, PPRF-TBL-002) marks outliers with filled r=2 circles in the measure color",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-TBL-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "standalone chrome (PPRF-1, PPRF-CORE-004) mounts the shell with the chart card hidden and an idle note",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "templateProfileURL (PPRF-2, PPRF-HDR-003, closes #53) passes a token-less URL through unchanged (original static-URL back-compat)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HDR-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "templateProfileURL (PPRF-2, PPRF-HDR-003, closes #53) replaces every literal {id} token with the encoded id",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HDR-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "templateProfileURL (PPRF-2, PPRF-HDR-003, closes #53) returns null for a missing URL",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HDR-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "tooltip visit context and raw/adjusted pairing (PPRF-3, PPRF-SPAG-001) carries the point models on the dataset and formats title/label from them",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "tooltip visit context and raw/adjusted pairing (PPRF-3, PPRF-SPAG-001) falls back to the adjusted value alone when the point carries no raw/visit fields",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: factory API-XFORM-004: maps the documented module.exports doclet to the factory, named for its source file (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-004"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: factory API-XFORM-005: ignores the spurious undocumented global doclet jsdoc emits for the default export (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-005"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: methods table API-XFORM-001: extracts documented instance methods in source order with signature, params, and returns (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-001"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: methods table API-XFORM-002: brackets optional params in signatures and carries their defaults (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-002"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: methods table API-XFORM-003: excludes private and undocumented methods from the table (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-003"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: missing-doc detection API-XFORM-008: flags undocumented public methods and settings properties without descriptions (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-008"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: missing-doc detection API-XFORM-009: flags a missing factory when no documented default export exists (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-009"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: settings table API-XFORM-006: extracts settings rows from the typedef properties with display-ready types and defaults (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-006"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: settings table API-XFORM-007: normalizes non-string defaults (booleans, numbers, null) to display strings (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-007"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-001: carries the schema title and description onto the contract (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-001"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-002: flattens top-level and nested settings properties into dotted field rows (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-002"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-003: derives required flags from each level’s required array (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-003"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-004: carries types, defaults, and descriptions through from the schema (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-004"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-005: resolves local $defs references to their concrete type (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-005"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-006: every contract field carries a non-empty description (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-006"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "visibleSeries — extras and lab subsetting (PPRF-3, PPRF-SPAG-001) filters datasets through the lab subsetter",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "visibleSeries — extras and lab subsetting (PPRF-3, PPRF-SPAG-001) includes non-key measures behind the extras toggle",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "visibleSeries — extras and lab subsetting (PPRF-3, PPRF-SPAG-001) keeps the extras toggle live under a lab subset: hidden extras never draw",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "visibleSeries — extras and lab subsetting (PPRF-3, PPRF-SPAG-001) shows key measures only by default",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    }
+  ]
+}

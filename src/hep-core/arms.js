@@ -15,10 +15,12 @@
 
 /**
  * Column names searched for the treatment arm when `settings.arm_col` names a
- * column the data does not carry (HEP-ARM-001), in priority order.
+ * column the data does not carry (HEP-ARM-001), in priority order. TRTA (the
+ * BDS actual-treatment variable) sits last so its addition is strictly
+ * additive: data that resolved to any earlier column keeps resolving to it.
  * @type {string[]}
  */
-export const ARM_COL_CANDIDATES = ['ARM', 'ACTARM', 'TRT01A', 'TREATMENT'];
+export const ARM_COL_CANDIDATES = ['ARM', 'ACTARM', 'TRT01A', 'TREATMENT', 'TRTA'];
 
 /**
  * Fixed semantic bar/ribbon colours per arm side (HWF-COLOR-001): placebo blue,

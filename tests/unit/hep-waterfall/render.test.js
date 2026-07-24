@@ -46,6 +46,7 @@ vi.mock('chart.js', () => {
     PointElement: stub(),
     CategoryScale: stub(),
     LinearScale: stub(),
+    LogarithmicScale: stub(),
     Tooltip: stub(),
     Legend: stub()
   };

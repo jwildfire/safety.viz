@@ -14,24 +14,25 @@ measurement at a visit) to one point per participant: **change in measure X**
 
 ## Browser evidence (Playwright — `tests/e2e/delta-delta.spec.js`)
 
-| Requirement ID                               | Source matrix rows                                                                         | Issue | Test                                                           |
-| -------------------------------------------- | ------------------------------------------------------------------------------------------ | ----- | -------------------------------------------------------------- |
-| SDD-FUNC-001/SDD-FUNC-002/SDD-FUNC-003       | SDD-FUNC-001, SDD-FUNC-002, SDD-FUNC-003                                                   | #25   | renders visit, measure, filter, and display controls           |
-| SDD-FUNC-002/SDD-REG-003                     | SDD-FUNC-002, SDD-REG-003                                                                  | #25   | defaults to the first/second measure and first/last visit      |
-| SDD-FUNC-004                                 | SDD-FUNC-004                                                                               | #25   | the participant-count note reports the total and percentage    |
-| SDD-REG-008                                  | SDD-REG-008                                                                                | #25   | missing/non-numeric results are dropped with a reported count  |
-| SDD-REG-001                                  | SDD-REG-001                                                                                | #25   | changing the Y measure changes the plotted distribution        |
-| SDD-REG-002                                  | SDD-REG-002                                                                                | #25   | changing the comparison visit changes the plotted distribution |
-| SDD-REG-006/SDD-REG-005                      | SDD-REG-005, SDD-REG-006                                                                   | #25   | a filter narrows the plotted points and updates the count      |
-| SDD-FUNC-005                                 | SDD-FUNC-005                                                                               | #25   | the tooltip reports the participant ID and both change values  |
-| SDD-FUNC-006/SDD-REG-011/016/018/019/020/024 | SDD-FUNC-006, SDD-REG-011, SDD-REG-016, SDD-REG-018, SDD-REG-019, SDD-REG-020, SDD-REG-024 | #25   | clicking a point opens the linked measure table                |
-| SDD-REG-021/022/025                          | SDD-REG-021, SDD-REG-022, SDD-REG-025                                                      | #25   | change values are signed and colored, with axis tags           |
-| SDD-REG-012/SDD-REG-013                      | SDD-REG-012, SDD-REG-013                                                                   | #25   | the clicked point is highlighted and clicking another redraws  |
-| SDD-REG-014                                  | SDD-REG-014                                                                                | #25   | changing a control removes the detail table                    |
-| SDD-REG-026                                  | SDD-REG-026                                                                                | #25   | the regression line toggles with an equation and R² note       |
-| SDD-REG-007                                  | SDD-REG-007                                                                                | #25   | a filter for a non-existent variable logs a console warning    |
-| SDD-REG-010                                  | SDD-REG-010                                                                                | #25   | a non-existent required column errors into the container       |
-| SDD-API-001 (module scheme)                  | — (see legacy-API note)                                                                    | #25   | lifecycle API supports init, setData, setSettings, render      |
+| Requirement ID                         | Source matrix rows                                                        | Issue   | Test                                                                                                       |
+| -------------------------------------- | ------------------------------------------------------------------------- | ------- | ---------------------------------------------------------------------------------------------------------- |
+| SDD-FUNC-001/SDD-FUNC-002/SDD-FUNC-003 | SDD-FUNC-001, SDD-FUNC-002, SDD-FUNC-003                                  | #25     | renders visit, measure, filter, and display controls                                                       |
+| SDD-FUNC-002/SDD-REG-003               | SDD-FUNC-002, SDD-REG-003                                                 | #25     | defaults to the first/second measure and first/last visit                                                  |
+| SDD-FUNC-004                           | SDD-FUNC-004                                                              | #25     | the participant-count note reports the total and percentage                                                |
+| SDD-REG-008                            | SDD-REG-008                                                               | #25     | missing/non-numeric results are dropped with a reported count                                              |
+| SDD-REG-001                            | SDD-REG-001                                                               | #25     | changing the Y measure changes the plotted distribution                                                    |
+| SDD-REG-002                            | SDD-REG-002                                                               | #25     | changing the comparison visit changes the plotted distribution                                             |
+| SDD-REG-006/SDD-REG-005                | SDD-REG-005, SDD-REG-006                                                  | #25     | a filter narrows the plotted points and updates the count                                                  |
+| SDD-FUNC-005                           | SDD-FUNC-005                                                              | #25     | the tooltip reports the participant ID and both change values                                              |
+| PPRF-DD-001/PPRF-DD-002/PPRF-DD-004    | PPRF-DD-001, PPRF-DD-002, PPRF-DD-004 (participant-profile matrix)        | #99     | clicking a point dispatches the selection and opens the docked profile — the bespoke measure table is gone |
+| SDD-REG-012/SDD-REG-013/PPRF-DD-002    | SDD-REG-012, SDD-REG-013 (retargeted at chart border + dock), PPRF-DD-002 | #25/#99 | the clicked point is highlighted and clicking another re-renders the docked profile                        |
+| PPRF-DD-003 (empty click)              | PPRF-DD-003 (participant-profile matrix)                                  | #99     | an empty-canvas click clears the highlight and empties the dock                                            |
+| PPRF-DD-003 (dock Clear)               | PPRF-DD-003 (participant-profile matrix)                                  | #99     | the dock Clear affordance routes through the host clear path                                               |
+| PPRF-DD-003 (control change)           | PPRF-DD-003 (participant-profile matrix)                                  | #99     | changing a control clears the selection and the docked profile                                             |
+| SDD-REG-026                            | SDD-REG-026                                                               | #25     | the regression line toggles with an equation and R² note                                                   |
+| SDD-REG-007                            | SDD-REG-007                                                               | #25     | a filter for a non-existent variable logs a console warning                                                |
+| SDD-REG-010                            | SDD-REG-010                                                               | #25     | a non-existent required column errors into the container                                                   |
+| SDD-API-001 (module scheme)            | — (see legacy-API note)                                                   | #25     | lifecycle API supports init, setData, setSettings, render                                                  |
 
 ## Unit evidence (Vitest — `tests/unit/delta-delta/`)
 
@@ -52,13 +53,34 @@ measurement at a visit) to one point per participant: **change in measure X**
 | SDD-REG-012 (selection)            | SDD-REG-012                                                     | #25   | `getPlugins.test.js`    |
 | SDD-DATA-001/SDD-REG-010 (guard)   | SDD-DATA-001, SDD-REG-010                                       | #25   | `checkInputs.test.js`   |
 
+## Docked participant profile (#99, PPRF-12)
+
+The renderer's bespoke per-measure detail table (`src/delta-delta/listing.js`)
+was removed in the dock-adoption change
+([#99](https://github.com/jwildfire/safety.viz/issues/99) PPRF-12): the docked
+participant-profile module is the sole detail view, opened by the same point
+click, and the renderer gained the house `participantsSelected` dispatch on
+the shell root — including an empty-click clear gesture — closing its #88
+SELN-4 gap. The matrix rows the table evidenced (SDD-FUNC-006's table portion,
+SDD-REG-011, SDD-REG-014, SDD-REG-016..025) are marked `superseded` in the
+source matrix; SDD-REG-012/013 (point highlight, re-click) remain valid,
+retargeted at the chart border + dock. The adoption rows are
+PPRF-DD-001..004 in the
+[participant-profile matrix](https://github.com/jwildfire/obot.agent/blob/main/docs/requirements/participant-profile.md);
+unit evidence lives in `tests/unit/delta-delta/profile-adoption.test.js`.
+Remaining unit tests that pin the old table's data layer (sparkline record
+ordering/coloring, SDD-REG-019/022/023/025 in `structureData.test.js`) still
+run — the data layer survives for the delta computation — but their rows are
+superseded as user-facing requirements.
+
 ## Source-matrix routing status (48 rows)
 
-- **Fully evidenced (44 rows):** SDD-FUNC-001..006, SDD-REG-001..008,
-  SDD-REG-010..014, SDD-REG-016..026, SDD-DATA-001, SDD-CFG-004..015. Each maps
-  to a browser and/or unit test above. SDD-REG-017 (details metadata above the
-  table) is evidenced by the participant-detail header, which renders every
-  configured `details` column.
+- **Fully evidenced (30 rows):** SDD-FUNC-001..005, SDD-REG-001..008,
+  SDD-REG-010, SDD-REG-012/013, SDD-REG-026, SDD-DATA-001, SDD-CFG-004..015.
+  Each maps to a browser and/or unit test above.
+- **Superseded (13 rows, #99 PPRF-12):** SDD-FUNC-006 (table portion),
+  SDD-REG-011, SDD-REG-014, SDD-REG-016..025 — the bespoke measure table the
+  rows describe was replaced by the docked participant profile (see above).
 - **Partial / addressed by implementation (2 rows):**
   - **SDD-REG-009** — the initial X/Y measure is honored (`measure_x` /
     `measure_y`, verified via the default-selection browser test and

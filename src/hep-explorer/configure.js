@@ -49,8 +49,12 @@ export const AXIS_TYPES = ['linear', 'log'];
 /** Point-size options for the Point Size control: uniform radius or rRatio-scaled (HEP-CTRL-007). */
 export const POINT_SIZE_OPTIONS = ['Uniform', 'rRatio'];
 
-/** The four liver measures the explorer standardizes and can plot (HEP-DISPLAY-003). */
-export const MEASURE_KEYS = ['ALT', 'AST', 'TB', 'ALP'];
+// The four liver measures (MEASURE_KEYS) and the Hy's-Law cutpoint resolver
+// (cutFor) moved VERBATIM to src/hep-core/rows.js in safety.viz#98 so the
+// participant-profile module (PPRF-1) consumes them without importing this
+// renderer file. Re-exported here so every existing hep-explorer caller keeps
+// its original import path, identity-equal to the hep-core binding.
+export { MEASURE_KEYS, cutFor } from '../hep-core/rows.js';
 
 /**
  * Rendering and data-mapping settings for the hep-explorer module. Every key
@@ -70,7 +74,7 @@ export const MEASURE_KEYS = ['ALT', 'AST', 'TB', 'ALP'];
  * @property {?string} [studyday_col='DY'] Optional study-day column; drives the day_diff timing test and the visit-path ordering. When absent, a per-participant per-measure input-order sequence is derived (HEP-SELECT-004, HEP-DATA-004).
  * @property {?string} [visit_col='VISIT'] Optional categorical visit column; labels the visit-path overlay and pairs the X/Y trajectory points (HEP-SELECT-003).
  * @property {?string} [visitn_col='VISITNUM'] Optional numeric visit column; orders visit-keyed series when present.
- * @property {?string} [arm_col='ARM'] Treatment-arm column, structural for the migration view — it decides which side of the centre column a participant's flow leaves from. Auto-detected across ARM, ACTARM, TRT01A and TREATMENT when the named column is absent; deliberately not a globally required column, so arm-less data still renders the scatter and composite views (HEP-ARM-001).
+ * @property {?string} [arm_col='ARM'] Treatment-arm column, structural for the migration view — it decides which side of the centre column a participant's flow leaves from. Auto-detected across ARM, ACTARM, TRT01A, TREATMENT and TRTA when the named column is absent; deliberately not a globally required column, so arm-less data still renders the scatter and composite views (HEP-ARM-001).
  * @property {?string} [placebo_arm=null] Arm value plotted on the left (placebo) side of the migration Sankey; when null it is auto-detected by matching the arm values against /placebo|control/i (HEP-ARM-002).
  * @property {?Array<string>} [active_arms=null] Arm values plotted on the right (active) side; when null every non-placebo arm pools right and the pooled arms are named in the notes (HEP-ARM-003).
  * @property {?string} [baseline_col=null] Optional baseline-flag column (e.g. ABLFL). When supplied, the flagged record is the baseline, outranking the day-0-else-earliest heuristic (HEP-CORE-003).
@@ -85,6 +89,11 @@ export const MEASURE_KEYS = ['ALT', 'AST', 'TB', 'ALP'];
  * @property {Object} [cuts] Per-measure Hy's-Law cutpoints keyed by measure then display mode; a `defaults` entry back-fills any measure without its own cuts (HEP-QUAD-001).
  * @property {string} [view='scatter'] Initial view mode: `scatter` (eDISH/mDISH scatter), `migration` (the bidirectional baseline → on-treatment Sankey with per-arm cross tables), or `composite` (baseline-referenced composite plot for abnormal-baseline subjects) (HEP-COMP-006, HEP-MIG-001).
  * @property {number} [visit_window=30] Timing window (days): points whose peak-X and peak-Y days are within this many days render filled, else hollow (HEP-CTRL-008, HEP-DISPLAY-005).
+ * @property {boolean} [profile=true] Dock the shared participant-profile module (header, labs-over-time spaghetti, measure table) in the shell's profile slot, driven by every selection path via the participantsSelected event; false restores the pre-#98 behaviour of no drill-down block (#98, PPRF-7).
+ * @property {?Array<string|Object>} [profile_details=null] Demographic columns for the docked profile's header, as names or { value_col, label } specs; null falls back to the caller's own `details` value. Use this when `details` is configured for the linked listing rather than demographics (#98, PPRF-2).
+ * @property {?string} [participantProfileURL=null] Optional link-out URL for the docked profile's header, templated by every literal `{id}` token (#98, PPRF-2, closes #53).
+ * @property {?string} [p_alt_col=null] Optional column carrying a pre-computed P_ALT shown in the docked profile's header; passed through where present, never computed client-side (#98, PPRF-2).
+ * @property {number[]} [measureBounds=[0.01, 0.99]] Population-extent quantiles for the docked profile's sparkline / inset guides (#98, PPRF-4; parity with the original renderer's measureBounds).
  * @property {boolean} [r_ratio_filter=true] Whether to render the R-Ratio range filter control (HEP-CTRL-010).
  * @property {number[]} [r_ratio=[0,null]] Initial R-Ratio [min, max] range; a null max is resolved from the data on first render (HEP-CTRL-010).
  * @property {Array<string|Object>} [filters=[]] Filter controls: column names or { value_col, label } specs. Filters whose column is absent from the data are dropped with a console warning (HEP-CTRL-011).
@@ -142,6 +151,11 @@ export const DEFAULT_SETTINGS = {
     defaults: { relative_uln: 3, relative_baseline: 3.8 }
   },
   visit_window: 30,
+  profile: true,
+  profile_details: null,
+  participantProfileURL: null,
+  p_alt_col: null,
+  measureBounds: [0.01, 0.99],
   r_ratio_filter: true,
   r_ratio: [0, null],
   filters: [],
@@ -245,21 +259,19 @@ export function syncSettings(settings) {
     ? Number(synced.jaundice_uln)
     : DEFAULT_SETTINGS.jaundice_uln;
   synced.hide_unchanged = Boolean(synced.hide_unchanged);
+  synced.profile = Boolean(synced.profile);
+
+  // Docked-profile pass-throughs (#98): profile_details normalizes to a spec
+  // array only when provided (null keeps the details fallback), and
+  // measureBounds is coerced back to a two-quantile array.
+  synced.profile_details =
+    synced.profile_details === undefined || synced.profile_details === null
+      ? null
+      : arrayify(synced.profile_details)
+          .map((value) => fieldSpec(value))
+          .filter((d) => d.value_col);
+  const bounds = arrayify(synced.measureBounds).map(Number).filter(Number.isFinite);
+  synced.measureBounds = bounds.length === 2 ? bounds : [...DEFAULT_SETTINGS.measureBounds];
 
   return synced;
-}
-
-/**
- * Resolve the active Hy's-Law cutpoint for a measure + display mode, falling
- * back to the `defaults` entry for measures without their own cuts (HEP-QUAD-001).
- * @param {Object} cuts The normalized cuts object.
- * @param {string} measureKey The short measure key (ALT/AST/TB/ALP/rRatio).
- * @param {string} display The active display mode ('relative_uln'|'relative_baseline').
- * @returns {number} The cutpoint value.
- */
-export function cutFor(cuts, measureKey, display) {
-  const entry = (cuts && cuts[measureKey]) || (cuts && cuts.defaults) || {};
-  const fallback = (cuts && cuts.defaults) || {};
-  const value = entry[display];
-  return Number.isFinite(value) ? value : fallback[display];
 }

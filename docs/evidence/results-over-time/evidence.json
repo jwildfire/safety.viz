@@ -1,6 +1,6 @@
 {
   "module": "results-over-time",
-  "generatedAt": "2026-07-23T02:21:40.462Z",
+  "generatedAt": "2026-07-23T07:33:08.365Z",
   "environment": {
     "os": "linux 6.17.0-1020-azure",
     "node": "v22.23.1",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "29974167237",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29974167237"
+    "id": "29988535722",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29988535722"
   },
   "records": [
     {
@@ -70,6 +70,14 @@
     },
     {
       "test": "built outlier-explorer demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built participant-profile demo mounts the shared shell with no console errors (#7) (#17)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": [],
@@ -622,6 +630,30 @@
     },
     {
       "test": "renderGuidePage: composition renders the title, non-diagnostic caution, and the guide tab",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell profile slot (PPRF-1) exposes a profileWrap slot with the sv-profile class inside the main column",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell profile slot (PPRF-1) hides the slot while it is empty via the shared stylesheet",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell profile slot (PPRF-1) places the slot between the small-multiples grid and the listing",
       "suite": "unit",
       "status": "pass",
       "requirementIds": [],

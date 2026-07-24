@@ -4,9 +4,10 @@
 // that participant's peak standardized ALT (x) against peak standardized total
 // bilirubin (y); two Hy's-Law cut-lines split the plot into four labeled
 // quadrants; and clicking a point drives the coordinated participant
-// drill-down views — a visit-path overlay on the scatter, a companion
-// lab-over-time line chart, a per-measure summary table, and the shared linked
-// listing, all in the active display units. Same lifecycle API as the other
+// drill-down views — a visit-path overlay on the scatter, the docked
+// participant-profile module (header, labs-over-time spaghetti, measure table
+// with sparklines; #98, PPRF-7), and the shared linked listing, all in the
+// active display units. Same lifecycle API as the other
 // modules (init, setData, setSettings, render, resize, destroy) and the same
 // gsm.viz-style module flow (checkInputs → configure → structureData →
 // getScales/getPlugins → new Chart). Requirement groups: HEP-CHART-* (scatter/
@@ -55,13 +56,11 @@ import {
   cleanData,
   deriveBaseline,
   maxRRatio,
-  measureSummary,
-  participantMeasureSeries,
   unique,
   visitPathSeries
 } from './hep-explorer/structureData.js';
-import { axisSuffix, formatNumber } from './hep-explorer/getScales.js';
-import { groupColorScale } from './hep-explorer/getPlugins.js';
+import { formatNumber } from './hep-explorer/getScales.js';
+import { profileDock } from './participant-profile.js';
 import { TRACE_HEADER_HINT, createSelection } from './hep-explorer/selection.js';
 import { applyModuleStyles } from './hep-explorer/styles.js';
 import scatterView from './hep-explorer/views/scatter.js';
@@ -108,10 +107,9 @@ function resolveViewId(value) {
  * participant — with Hy's-Law quadrant cut-lines, a quadrant summary table,
  * eDISH/mDISH display modes, linear/log axes, R-Ratio and timing controls,
  * color-by grouping, and click-to-inspect participant panels (a visit-path
- * overlay, a lab-over-time companion chart, a measure summary table, and the
- * shared linked listing). Construct via the hepExplorer() factory rather than
- * directly; the constructor renders the control shell immediately and waits
- * for data.
+ * overlay, the docked participant-profile module, and the shared linked
+ * listing). Construct via the hepExplorer() factory rather than directly; the
+ * constructor renders the control shell immediately and waits for data.
  */
 class SafetyHepExplorer {
   constructor(element = 'body', settings = {}) {
@@ -169,6 +167,21 @@ class SafetyHepExplorer {
     this.migrationSvgEl = null;
     this.migrationTipEl = null;
     this.participantsSelected = [];
+    // The docked participant-profile module (#98, PPRF-7): the shared
+    // drill-down (header / spaghetti / measure table) rendered into the
+    // shell's profile slot and fed by every selection path through the ONE
+    // choke point — selection.dispatch()'s participantsSelected event on the
+    // shell root. profileKey is the idempotency guard: repeated dispatches of
+    // the identical id list never rebuild the profile DOM; the render preamble
+    // resets it so a control-driven redraw re-feeds fresh rows.
+    this.profile = null;
+    this.profileFeed = null;
+    this.profileKey = null;
+    // Header demographics for the docked profile (PPRF-2): the caller's OWN
+    // details specs, snapshotted before validateAndCleanData back-fills
+    // settings.details with the linked-listing columns (per-row fields, not
+    // demographics).
+    this.profileDetails = null;
     this.state = {
       view: resolveViewId(this.settings.view),
       measureX: this.settings.x_default,
@@ -190,7 +203,9 @@ class SafetyHepExplorer {
       xCut: null,
       yCut: null
     };
+    this.profileDetails = this.settings.details;
     this.renderShell();
+    this.mountProfileDock();
   }
 
   /**
@@ -262,14 +277,139 @@ class SafetyHepExplorer {
     this.compositeWrap.style.display = 'none';
     this.main.insertBefore(this.compositeWrap, this.multiplesWrap);
 
-    // Participant drill-down container (lab-over-time chart + measure summary),
-    // hidden until a point is selected (HEP-SELECT-002, HEP-SELECT-005).
-    this.detailWrap = createElement('div', 'hep-detail');
-    this.detailWrap.style.display = 'none';
-    this.main.insertBefore(this.detailWrap, this.listingWrap);
-
     applyModuleStyles();
     this.footnote.textContent = this.baseFootnote();
+  }
+
+  /**
+   * The settings handed to the docked participant-profile module (#98,
+   * PPRF-7): the shared long-lab column mappings and cutpoints pass through
+   * verbatim so the dock consumes this chart's pre-cleaned rows with no second
+   * ingest (PPRF-1); details are the caller's own demographics snapshot;
+   * display seeds from the live display mode; and the two outbound callbacks
+   * wire Clear to the host's own clear path (PPRF-2) and stepper navigation to
+   * transient chart emphasis (PPRF-5).
+   * @private
+   */
+  profileSettings() {
+    const settings = this.settings;
+    return {
+      id_col: settings.id_col,
+      measure_col: settings.measure_col,
+      value_col: settings.value_col,
+      unit_col: settings.unit_col,
+      normal_col_high: settings.normal_col_high,
+      normal_col_low: settings.normal_col_low,
+      studyday_col: settings.studyday_col,
+      visit_col: settings.visit_col,
+      visitn_col: settings.visitn_col,
+      baseline_col: settings.baseline_col,
+      baseline_value: settings.baseline_value,
+      measure_values: settings.measure_values,
+      // LIVE control state, not the construction-time settings: user-edited
+      // reference lines and the Axis-type control reach the dock so the
+      // coordinated panels always agree on the active cuts and scale (PPRF-7).
+      cuts: this.state.cuts,
+      axis_type: this.state.axisType === 'log' ? 'log' : 'linear',
+      details:
+        settings.profile_details && settings.profile_details.length
+          ? settings.profile_details
+          : this.profileDetails || [],
+      participantProfileURL: settings.participantProfileURL ?? null,
+      p_alt_col: settings.p_alt_col ?? null,
+      measureBounds: settings.measureBounds,
+      display: this.state.display,
+      on_clear: () => this.selection.clear(),
+      on_step: (id) => this.emphasizeParticipant(id)
+    };
+  }
+
+  /**
+   * Mount the docked participant-profile module into the shell's profile slot
+   * and subscribe it to the participantsSelected event on the shell root —
+   * the selection layer's SOLE dispatcher, so every selection path (scatter
+   * click, Participants control, composite click/selector, migration
+   * hand-off, carried selections, and every clear) feeds the dock with zero
+   * view edits (#98, PPRF-7). No-op when the `profile` setting is false or a
+   * dock is already live.
+   * @private
+   */
+  mountProfileDock() {
+    if (!this.settings.profile || this.profile) return;
+    this.profile = profileDock(this.profileWrap, this.profileSettings());
+    /**
+     * Feed one participantsSelected dispatch into the docked profile.
+     * @private
+     */
+    this.profileFeed = (event) => {
+      const data = event && event.detail ? event.detail.data : null;
+      const ids = (Array.isArray(data) ? data : []).map(String);
+      const key = ids.join('\u0000');
+      // Idempotency guard: control redraws re-dispatch the carried selection;
+      // identical back-to-back payloads must not thrash the profile DOM.
+      if (key === this.profileKey) return;
+      this.profileKey = key;
+      if (!ids.length) {
+        this.profile.clear();
+        return;
+      }
+      // Keep the dock in the host's live display units (HEP-SELECT-006
+      // parity: the coordinated panels reopen in the new units after a
+      // display change); the dock's own toggle may diverge until then.
+      this.profile.state.display = this.state.display;
+      this.profile.show(ids, this.cleanRows);
+    };
+    this.root.addEventListener('participantsSelected', this.profileFeed);
+  }
+
+  /**
+   * Tear the docked profile down: unsubscribe the feed, destroy the module's
+   * charts, and empty the slot (the shell's `:empty` rule then hides it).
+   * @private
+   */
+  unmountProfileDock() {
+    if (!this.profile) return;
+    this.root.removeEventListener('participantsSelected', this.profileFeed);
+    this.profileFeed = null;
+    this.profile.destroy();
+    this.profile = null;
+    this.profileKey = null;
+  }
+
+  /**
+   * Reconcile the docked profile with the current settings: mount or unmount
+   * on a `profile` toggle, else refresh the dock's pass-through settings.
+   * Called by setSettings before the re-render re-dispatches any carried
+   * selection.
+   * @private
+   */
+  syncProfileDock() {
+    if (!this.settings.profile) {
+      this.unmountProfileDock();
+      return;
+    }
+    if (!this.profile) {
+      this.mountProfileDock();
+      return;
+    }
+    this.profileKey = null;
+    // Hand the dock the CURRENT retained rows before its settings-driven
+    // re-render, so the transient render never uses a stale row set.
+    this.profile.cleanRows = this.cleanRows;
+    this.profile.setSettings(this.profileSettings());
+  }
+
+  /**
+   * Transient chart emphasis for the profile stepper (PPRF-5): treat the
+   * stepped participant as the hovered one and restyle through the active
+   * view's highlight() contract — no selection change, no event dispatch.
+   * @private
+   */
+  emphasizeParticipant(id) {
+    const norm = id == null ? null : String(id);
+    this.state.hoverId = norm;
+    this.compositeHoverId = norm;
+    this.activeView().highlight(this);
   }
 
   /**
@@ -331,8 +471,10 @@ class SafetyHepExplorer {
     if ('group_by' in settings) this.state.groupBy = this.settings.group_by;
     if ('cuts' in settings) this.state.cuts = JSON.parse(JSON.stringify(this.settings.cuts));
     if ('r_ratio' in settings) this.state.rRatio = [...this.settings.r_ratio];
+    if ('details' in settings) this.profileDetails = this.settings.details;
     this.state.filters = {};
     if (this.rawData.length) this.validateAndCleanData();
+    this.syncProfileDock();
     this.buildControls();
     this.render();
     return this;
@@ -445,7 +587,7 @@ class SafetyHepExplorer {
     migration.classList.add('is-disabled');
     migration.title =
       'The migration Sankey needs a treatment-arm column. Map arm_col (or add ARM, ACTARM, ' +
-      'TRT01A or TREATMENT to the data) to enable it.';
+      'TRT01A, TREATMENT or TRTA to the data) to enable it.';
   }
 
   /**
@@ -616,8 +758,14 @@ class SafetyHepExplorer {
     // Empty (and hide) the sidebar's Participants section; each view re-mounts
     // it with the freshly shown participants (HEP-COMP-007).
     this.selection.mount(this.compositeSelectSection, []);
-    this.detailWrap.innerHTML = '';
-    this.detailWrap.style.display = 'none';
+    // Re-arm the docked profile's idempotency guard: the carried selection is
+    // re-dispatched below (or by the view), and the dock must rebuild from the
+    // fresh rows/units rather than no-op (#98, PPRF-7). The dock's pass-through
+    // settings refresh FIRST (merge only, no render) so control-driven redraws
+    // — edited reference lines, the Axis-type toggle, display changes — reach
+    // the re-shown profile.
+    if (this.profile) this.profile.applySettings(this.profileSettings());
+    this.profileKey = null;
     this.currentTableData = [];
     this.listingSearch = '';
     this.listingSort = null;
@@ -663,10 +811,10 @@ class SafetyHepExplorer {
 
   /**
    * Select a participant and drive every coordinated view (HEP-SELECT-001..006):
-   * highlight the point, trace the visit path on the scatter, draw the
-   * lab-over-time companion chart and the measure summary table, open the
-   * linked listing of the participant's raw records, annotate the chart, and
-   * dispatch the participantsSelected event — all in the active display units.
+   * highlight the point, trace the visit path on the scatter, open the linked
+   * listing of the participant's raw records, annotate the chart, and dispatch
+   * the participantsSelected event — which feeds the docked participant
+   * profile (#98, PPRF-7) — all in the active display units.
    * @param {string|number} id The participant identifier.
    * @returns {void}
    */
@@ -684,7 +832,6 @@ class SafetyHepExplorer {
     this.listingSort = null;
     this.page = 1;
     renderListing(this);
-    this.drawDetail(id);
     const annotation = this.selection.annotationText(id, true);
     this.mainAnnotation.textContent = annotation;
     this.footnote.textContent = annotation;
@@ -693,10 +840,11 @@ class SafetyHepExplorer {
   }
 
   /**
-   * Close the single-participant drill-down: erase the visit-path overlay, tear
-   * down the detail chart, close the listing, and restore the base
-   * annotation/footnote — without touching the multi-highlight or notifying
-   * listeners (HEP-SELECT-007).
+   * Close the single-participant drill-down: erase the visit-path overlay,
+   * close the listing, and restore the base annotation/footnote — without
+   * touching the multi-highlight or notifying listeners (HEP-SELECT-007). The
+   * docked profile empties on the dispatch([]) that follows a full clear; its
+   * charts are module-owned, so there is nothing to tear down here (#98).
    * @private
    */
   closeDrillDown() {
@@ -705,16 +853,8 @@ class SafetyHepExplorer {
       this.chart.data.datasets[1].data = [];
       this.chart.update();
     }
-    // Tear down the detail chart (kept on this.charts) but leave the scatter.
-    this.charts = this.charts.filter((chart) => {
-      if (chart === this.chart) return true;
-      chart.destroy();
-      return false;
-    });
     this.currentTableData = [];
     this.listingWrap.innerHTML = '';
-    this.detailWrap.innerHTML = '';
-    this.detailWrap.style.display = 'none';
     this.mainAnnotation.textContent = '';
     this.footnote.textContent = this.baseFootnote();
   }
@@ -733,112 +873,6 @@ class SafetyHepExplorer {
     this.selection.sync([]);
     this.selection.updateTraceHeader(this.state.hoverId, this.scatterSelectedIds);
     this.selection.dispatch([]);
-  }
-
-  /**
-   * Draw the participant drill-down panels into the detail container: the
-   * "Standardized Lab Values by Study Day" line chart (one line per measure in
-   * the active display units) and the Measure | N | Min | Median | Max summary
-   * table (HEP-SELECT-002, HEP-SELECT-005).
-   * @private
-   */
-  drawDetail(id) {
-    // Selecting a second participant without an intervening background click
-    // must not leak the previous detail chart. Tear down every chart that is
-    // not the main scatter before building the new one (the exact teardown
-    // clearSelection() uses), so this.charts holds only the scatter plus this
-    // one detail chart (HEP-SELECT-002).
-    this.charts = this.charts.filter((chart) => {
-      if (chart === this.chart) return true;
-      chart.destroy();
-      return false;
-    });
-    this.detailWrap.innerHTML = '';
-    this.detailWrap.style.display = '';
-    this.detailWrap.append(
-      createElement('h3', 'hep-detail-title', 'Standardized Lab Values by Study Day')
-    );
-
-    const chartWrap = createElement('div', 'hep-detail-chart');
-    const canvas = createElement('canvas', 'hep-detail-canvas');
-    chartWrap.append(canvas);
-    this.detailWrap.append(chartWrap);
-
-    const series = participantMeasureSeries(this.cleanRows, id, this.settings, this.state);
-    const colors = groupColorScale(series.map((entry) => entry.key));
-    const datasets = series.map((entry) => ({
-      label: entry.label,
-      data: entry.points.map((point) => ({
-        x: Number.isFinite(point.day) ? point.day : null,
-        y: point.value
-      })),
-      borderColor: colors.get(entry.key),
-      backgroundColor: colors.get(entry.key),
-      showLine: true,
-      spanGaps: true,
-      borderWidth: 1.5,
-      pointRadius: 2.5,
-      pointHoverRadius: 4
-    }));
-
-    const suffix = axisSuffix(this.state.display);
-    const detailChart = new Chart(canvas.getContext('2d'), {
-      type: 'line',
-      data: { datasets },
-      options: {
-        maintainAspectRatio: false,
-        responsive: true,
-        animation: false,
-        plugins: {
-          legend: { display: true, position: 'bottom' },
-          tooltip: {
-            callbacks: {
-              label: (ctx) =>
-                `${ctx.dataset.label}: ${formatNumber(ctx.parsed.y)}${suffix} @ day ${ctx.parsed.x}`
-            }
-          }
-        },
-        scales: {
-          x: { type: 'linear', title: { display: true, text: 'Study Day' } },
-          y: {
-            type: this.state.axisType === 'log' ? 'logarithmic' : 'linear',
-            title: { display: true, text: `Standardized value${suffix}` }
-          }
-        }
-      }
-    });
-    this.charts.push(detailChart);
-
-    this.detailWrap.append(this.buildSummaryTable(id));
-  }
-
-  /**
-   * Build the per-measure raw-value summary table (Measure | N | Min | Median |
-   * Max) for the selected participant (HEP-SELECT-005).
-   * @private
-   */
-  buildSummaryTable(id) {
-    const table = createElement('table', 'hep-summary-table');
-    const thead = document.createElement('thead');
-    const headRow = document.createElement('tr');
-    headRow.append(createElement('th', null, 'Measure'));
-    ['N', 'Min', 'Median', 'Max'].forEach((label) =>
-      headRow.append(createElement('th', 'hep-num', label))
-    );
-    thead.append(headRow);
-    table.append(thead);
-    const tbody = document.createElement('tbody');
-    measureSummary(this.cleanRows, id, this.settings).forEach((row) => {
-      const tr = document.createElement('tr');
-      tr.append(createElement('td', null, row.label));
-      tr.append(createElement('td', 'hep-num', String(row.n)));
-      tr.append(createElement('td', 'hep-num', formatNumber(row.min)));
-      tr.append(createElement('td', 'hep-num', formatNumber(row.median)));
-      tr.append(createElement('td', 'hep-num', formatNumber(row.max)));
-      tbody.append(tr);
-    });
-    table.append(tbody);
-    return table;
   }
 
   /**
@@ -869,6 +903,7 @@ class SafetyHepExplorer {
    * @returns {void}
    */
   destroy() {
+    this.unmountProfileDock();
     this.destroyCharts();
     this.element.innerHTML = '';
   }

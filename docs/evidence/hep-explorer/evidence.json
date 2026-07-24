@@ -1,6 +1,6 @@
 {
   "module": "hep-explorer",
-  "generatedAt": "2026-07-23T02:21:40.462Z",
+  "generatedAt": "2026-07-23T07:33:08.365Z",
   "environment": {
     "os": "linux 6.17.0-1020-azure",
     "node": "v22.23.1",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "29974167237",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29974167237"
+    "id": "29988535722",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29988535722"
   },
   "records": [
     {
@@ -70,6 +70,14 @@
     },
     {
       "test": "built outlier-explorer demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built participant-profile demo mounts the shared shell with no console errors (#7) (#17)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": [],
@@ -350,7 +358,7 @@
       "screenshots": ["HEP-QUAD-002-quadrant-summary.png"]
     },
     {
-      "test": "HEP-SELECT-001/HEP-SELECT-002/HEP-SELECT-003/HEP-SELECT-005/HEP-SELECT-006: clicking a point draws the visit path, detail panels, and linked listing (#43)",
+      "test": "HEP-SELECT-001/HEP-SELECT-002/HEP-SELECT-003/HEP-SELECT-005/HEP-SELECT-006: clicking a point draws the visit path, docked profile, and linked listing (#43, #98)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": [
@@ -360,15 +368,15 @@
         "HEP-SELECT-005",
         "HEP-SELECT-006"
       ],
-      "issueRefs": [43],
+      "issueRefs": [],
       "screenshots": ["HEP-SELECT-001-participant-detail.png"]
     },
     {
-      "test": "HEP-SELECT-002: selecting a second participant without a background click destroys the prior detail chart (no Chart.js leak) (#43)",
+      "test": "HEP-SELECT-002: selecting a second participant without a background click re-renders the dock without leaking Chart.js instances (#43, #98)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["HEP-SELECT-002"],
-      "issueRefs": [43],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -380,11 +388,11 @@
       "screenshots": []
     },
     {
-      "test": "HEP-SELECT-007: clicking the background clears the selection, detail panels, and listing (#43)",
+      "test": "HEP-SELECT-007: clicking the background clears the selection, docked profile, and listing (#43, #98)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["HEP-SELECT-007"],
-      "issueRefs": [43],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -596,6 +604,38 @@
       "screenshots": []
     },
     {
+      "test": "dock coordination follows live control state (PPRF-7, PPRF-HEP-001) passes the caller measureBounds, p_alt_col and participantProfileURL knobs through",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HEP-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "dock coordination follows live control state (PPRF-7, PPRF-HEP-001) profile_details overrides the shared details knob for the dock header (PPRF-2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HEP-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "dock coordination follows live control state (PPRF-7, PPRF-HEP-001) the Axis-type control reaches the dock spaghetti (drawDetail log-axis parity)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HEP-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "dock coordination follows live control state (PPRF-7, PPRF-HEP-001) user-edited reference cuts reach the dock on the control-driven redraw",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HEP-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
       "test": "evidence normalizer buildEvidenceSets splits records per module and duplicates shared scaffold records (#20)",
       "suite": "unit",
       "status": "pass",
@@ -716,6 +756,14 @@
       "screenshots": []
     },
     {
+      "test": "hep-core arms — resolveArmCol HEP-ARM-001: TRTA is a last-resort candidate — every pre-existing column still wins (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-ARM-001"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
       "test": "hep-core arms — resolveArmCol HEP-ARM-001: uses arm_col when that column is present in the data (#91)",
       "suite": "unit",
       "status": "pass",
@@ -816,6 +864,30 @@
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["HEP-ARM-003"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core index — the barrel re-exports the whole domain layer every named export of every hep-core module is on the barrel, identity-equal (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core index — the barrel re-exports the whole domain layer no two hep-core modules export the same name, so the barrel cannot shadow (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core index — the barrel re-exports the whole domain layer the barrel adds nothing of its own — its surface is exactly the union of the five modules (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
       "issueRefs": [91],
       "screenshots": []
     },
@@ -961,6 +1033,30 @@
       "status": "pass",
       "requirementIds": ["HEP-MIG-009", "HEP-CORE-008"],
       "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core rows — the moved row-level reducers (#98, PPRF-1) rows.js exports exactly the documented reducer surface",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core rows — the moved row-level reducers (#98, PPRF-1) the hep-explorer configure shim re-exports cutFor and MEASURE_KEYS, identity-equal",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core rows — the moved row-level reducers (#98, PPRF-1) the hep-explorer structureData shim re-exports the moved reducers, identity-equal",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -1141,6 +1237,14 @@
     },
     {
       "test": "hep-core subjects — the demo-dataset composite population HEP-CORE-002: pins the composite subject and excluded counts (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CORE-002"],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-core subjects — the demo-dataset composite population HEP-CORE-002: the identity rule targets exactly the 24 no-day-0 participants, none CLD- (#91)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["HEP-CORE-002"],
@@ -1377,6 +1481,30 @@
       "status": "pass",
       "requirementIds": ["HEP-COMP-003"],
       "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer composite shim — deprecated path stays bound to hep-core buildCompositeSubjects is a distinct deprecated alias delegating to buildHepSubjects (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer composite shim — deprecated path stays bound to hep-core every shim export is the hep-core binding itself, not a copy (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer composite shim — deprecated path stays bound to hep-core the shim re-exports exactly its documented twelve names, nothing more (#91)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [91],
       "screenshots": []
     },
     {
@@ -1824,6 +1952,78 @@
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["HEP-API-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer participant-profile adoption (PPRF-7, PPRF-HEP-001) a control-driven redraw re-feeds the dock with fresh rows (the guard resets per render)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HEP-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer participant-profile adoption (PPRF-7, PPRF-HEP-001) a multi-participant dispatch collapses the dock to the worst-first stepper (PPRF-5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HEP-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer participant-profile adoption (PPRF-7, PPRF-HEP-001) an empty dispatch hides the dock; the dock Clear routes through the host clear path (PPRF-2/6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HEP-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer participant-profile adoption (PPRF-7, PPRF-HEP-001) deletes the bespoke drill-down: no drawDetail/buildSummaryTable, no .hep-detail DOM",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HEP-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer participant-profile adoption (PPRF-7, PPRF-HEP-001) destroy tears the dock down with the rest of the instance",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HEP-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer participant-profile adoption (PPRF-7, PPRF-HEP-001) is idempotent under repeated identical dispatches: the profile DOM is not rebuilt",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HEP-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer participant-profile adoption (PPRF-7, PPRF-HEP-001) mounts the dock by default and a scatter click renders the full profile in the shell slot",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HEP-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer participant-profile adoption (PPRF-7, PPRF-HEP-001) profile: false restores the pre-#98 behaviour — no dock, slot stays empty",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HEP-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer participant-profile adoption (PPRF-7, PPRF-HEP-001) stepping reports through on_step: transient chart emphasis via the view highlight contract",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HEP-001"],
       "issueRefs": [],
       "screenshots": []
     },
@@ -2277,6 +2477,30 @@
     },
     {
       "test": "renderGuidePage: composition renders the title, non-diagnostic caution, and the guide tab",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell profile slot (PPRF-1) exposes a profileWrap slot with the sv-profile class inside the main column",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell profile slot (PPRF-1) hides the slot while it is empty via the shared stylesheet",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell profile slot (PPRF-1) places the slot between the small-multiples grid and the listing",
       "suite": "unit",
       "status": "pass",
       "requirementIds": [],

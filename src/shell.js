@@ -85,6 +85,7 @@ const SHELL_STYLES = `
 .sv-warning{color:#9a3412}
 .sv-chart-wrap{height:460px;position:relative;border:1px solid #d8dee4;border-radius:10px;padding:1rem;background:#fff}
 .sv-footnote{margin:.6rem 0 0;font-size:.85rem;color:#52616f}
+.sv-profile:empty{display:none}
 .sv-multiples{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;margin-top:1.25rem}
 .sv-multiples:empty{display:none}
 .sv-multiple{border:1px solid #d8dee4;border-radius:10px;padding:.75rem .85rem;background:#fff}
@@ -97,6 +98,10 @@ const SHELL_STYLES = `
 .sv-listing th,.sv-listing td{border-bottom:1px solid #e3e8ee;padding:.45rem .55rem;text-align:left;vertical-align:top}
 .sv-listing th{border-bottom:2px solid #d8dee4;cursor:pointer;font-size:.75rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f;white-space:nowrap}
 .sv-listing tbody tr:hover{background:#f6f8fa}
+.sv-listing tbody tr.sv-listing-rowlink{cursor:pointer}
+.sv-listing tbody tr.sv-listing-rowlink:focus-visible{outline:2px solid #0b62a4;outline-offset:-2px}
+.sv-listing tbody tr.sv-listing-row-selected{background:#e8f0fe}
+.sv-listing tbody tr.sv-listing-row-selected:hover{background:#dce8fc}
 .sv-listing-actions{display:flex;align-items:center;justify-content:space-between;gap:.75rem;margin:.5rem 0;font-size:.85rem;flex-wrap:wrap}
 .sv-listing-tools{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
 .sv-listing-search{padding:.35rem .45rem;border:1px solid #b8c0cc;border-radius:6px;font:inherit;font-size:.85rem}
@@ -149,6 +154,7 @@ export function applyShellStyles() {
  * @property {HTMLElement} mainAnnotation Overlay annotation inside the chart card.
  * @property {HTMLElement} footnote Hover/selection footnote below the chart.
  * @property {HTMLElement} multiplesWrap Small-multiples grid.
+ * @property {HTMLElement} profileWrap Participant-profile dock slot below the chart card and small multiples, above the shared listing (#98, PPRF-1); hidden while empty.
  * @property {HTMLElement} listingWrap Linked participant listing container.
  */
 
@@ -192,10 +198,11 @@ export function renderShell(element, { moduleClass = '', onToggle } = {}) {
   const canvas = createElement('canvas', 'sv-chart');
   const mainAnnotation = createElement('div', 'sv-main-annotation');
   const footnote = createElement('div', 'sv-footnote');
+  const profileWrap = createElement('div', 'sv-profile');
   const multiplesWrap = createElement('div', 'sv-multiples');
   const listingWrap = createElement('div', 'sv-listing');
   chartWrap.append(canvas, mainAnnotation);
-  main.append(notes, chartWrap, footnote, multiplesWrap, listingWrap);
+  main.append(notes, chartWrap, footnote, multiplesWrap, profileWrap, listingWrap);
 
   root.append(sidebar, main);
   element.append(root);
@@ -212,6 +219,7 @@ export function renderShell(element, { moduleClass = '', onToggle } = {}) {
     mainAnnotation,
     footnote,
     multiplesWrap,
+    profileWrap,
     listingWrap
   };
 }

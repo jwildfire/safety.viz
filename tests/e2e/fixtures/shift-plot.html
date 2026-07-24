@@ -13,7 +13,7 @@
     </p>
     <div id="container"></div>
     <!-- Bundle path tracks the package.json version; bump them together. -->
-    <script src="/dist/safety.viz-1.4.0/safety.viz.js"></script>
+    <script src="/dist/safety.viz-1.4.1/safety.viz.js"></script>
     <script>
       function parseCsv(text) {
         const [header, ...lines] = text.trim().split(/\r?\n/);
@@ -32,6 +32,16 @@
               { value_col: 'SITEID', label: 'Site ID' },
               { value_col: 'SEX', label: 'Sex' },
               { value_col: 'RACE', label: 'Race' },
+              { value_col: 'ARM', label: 'Treatment Group' }
+            ],
+            // Docked-profile mappings (#99, PPRF-SSP): VISITNUM doubles as the
+            // study-day axis, the fixture's two measures are declared key
+            // measures so the dock's spaghetti and table assert
+            // deterministically, and the header carries demographic details.
+            studyday_col: 'VISITNUM',
+            measure_values: { ALB: 'Albumin', PULSE: 'Pulse' },
+            profile_details: [
+              { value_col: 'SEX', label: 'Sex' },
               { value_col: 'ARM', label: 'Treatment Group' }
             ]
           });

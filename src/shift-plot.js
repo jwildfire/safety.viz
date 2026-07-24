@@ -30,6 +30,13 @@ import {
   tooltipLines
 } from './shift-plot/getPlugins.js';
 import { renderListing } from './histogram/listing.js';
+import {
+  buildProfileRows,
+  mountProfileDock,
+  resetProfileDock,
+  syncProfileDock,
+  unmountProfileDock
+} from './profile-host.js';
 
 Chart.register(ScatterController, PointElement, LinearScale, Tooltip, Legend);
 
@@ -58,6 +65,17 @@ class SafetyShiftPlot {
     this.page = 1;
     this.brushing = false;
     this.chart = null;
+    // The docked participant-profile module (#99, PPRF-SSP): the shared
+    // drill-down rendered into the shell's profile slot and fed by the brush
+    // selection through dispatchSelected's participantsSelected event on the
+    // shell root. A multi-point brush collapses the dock to the worst-first
+    // cohort stepper (PPRF-SSP-001). profileRows is the ONE per-setData
+    // profile ingest (hep-core cleaned rows); profileKey is the idempotency
+    // guard.
+    this.profile = null;
+    this.profileFeed = null;
+    this.profileKey = null;
+    this.profileRows = [];
     this.state = {
       measure: this.settings.start_value,
       baselineVisits: this.settings.baseline_visits,
@@ -68,6 +86,61 @@ class SafetyShiftPlot {
       domain: null
     };
     this.renderShell();
+    mountProfileDock(this, () => this.profileSettings());
+  }
+
+  /**
+   * The settings handed to the docked participant-profile module (#99,
+   * PPRF-SSP-002): the long-lab column mappings pass through — visitn_col maps
+   * from the host's visit_order_col — with the profile fed from the retained
+   * rawData (NOT the pair-per-participant chartPairs); `details` come from
+   * profile_details (the host `details` configure the linked listing — pair
+   * columns, not demographics); and the two outbound callbacks wire Clear to
+   * the host's own clear path and stepper navigation to a transient border
+   * emphasis (no dispatch).
+   * @private
+   */
+  profileSettings() {
+    const settings = this.settings;
+    const profileSettings = {
+      id_col: settings.id_col,
+      measure_col: settings.measure_col,
+      value_col: settings.value_col,
+      unit_col: settings.unit_col,
+      normal_col_high: settings.normal_col_high,
+      normal_col_low: settings.normal_col_low,
+      studyday_col: settings.studyday_col,
+      visit_col: settings.visit_col,
+      visitn_col: settings.visit_order_col,
+      details:
+        settings.profile_details && settings.profile_details.length ? settings.profile_details : [],
+      participantProfileURL: settings.participantProfileURL ?? null,
+      on_clear: () => this.clearSelection(),
+      on_step: (id) => this.emphasizeParticipant(id)
+    };
+    // Only forward a caller-supplied key-measure map — null keeps the profile
+    // module's own ALT/AST/TB/ALP defaults.
+    if (settings.measure_values) profileSettings.measure_values = settings.measure_values;
+    return profileSettings;
+  }
+
+  /**
+   * Transient chart emphasis for the profile stepper (PPRF-SSP-001, PPRF-11):
+   * border-highlight the stepped participant's point without touching the
+   * brush selection ($sspSelected stays) and without dispatching — the host
+   * selection still belongs to the brush gesture. Each step recomputes the
+   * emphasis, and clearSelection restores the uniform border.
+   * @private
+   */
+  emphasizeParticipant(id) {
+    if (!this.chart) return;
+    const index = this.chartPairs.findIndex(
+      (pair) => String(pair[this.settings.id_col]) === String(id)
+    );
+    const dataset = this.chart.data.datasets[0];
+    dataset.borderWidth =
+      index < 0 ? 1 : this.chartPairs.map((pair, pairIndex) => (pairIndex === index ? 3 : 1));
+    this.chart.update('none');
   }
 
   /**
@@ -108,9 +181,23 @@ class SafetyShiftPlot {
   setData(data) {
     this.rawData = Array.isArray(data) ? data : [];
     this.validateAndCleanData();
+    this.buildProfileRows();
     this.buildControls();
     this.render();
     return this;
+  }
+
+  /**
+   * Derive the docked profile's pre-cleaned rows ONCE per data/settings change
+   * (#99, PPRF-SSP-002) — never per gesture, and from the retained rawData
+   * rather than the pair-per-participant chartPairs (the profile narrates the
+   * full series, not the baseline/comparison collapse).
+   * @private
+   */
+  buildProfileRows() {
+    this.profileRows = this.settings.profile
+      ? buildProfileRows(this.rawData, this.profileSettings())
+      : [];
   }
 
   /**
@@ -128,6 +215,8 @@ class SafetyShiftPlot {
     if (settings.comparison_visits !== undefined)
       this.state.comparisonVisits = this.settings.comparison_visits;
     this.resolveVisits();
+    this.buildProfileRows();
+    syncProfileDock(this, () => this.profileSettings());
     this.buildControls();
     this.render();
     return this;
@@ -314,6 +403,9 @@ class SafetyShiftPlot {
     this.listingSort = null;
     this.page = 1;
     this.footnote.textContent = INITIAL_FOOTNOTE;
+    // The brush selection resets silently on every render, so the dock must
+    // empty in the same preamble (#99, PPRF-SSP-003).
+    resetProfileDock(this);
     this.notes.innerHTML = '';
     this.chartPairs = this.computePairs();
     this.state.domain = computeDomain(this.chartPairs);
@@ -482,6 +574,8 @@ class SafetyShiftPlot {
     const dataset = this.chart.data.datasets[0];
     dataset.backgroundColor = pointColors(this.chartPairs.length, selected, COLORS.point);
     dataset.borderColor = pointColors(this.chartPairs.length, selected, COLORS.border);
+    // A fresh brush clears any transient stepper emphasis (PPRF-SSP-001).
+    dataset.borderWidth = 1;
     this.chart.$sspBrush = rect;
     this.chart.$sspSelected = selected;
     this.chart.update('none');
@@ -505,6 +599,7 @@ class SafetyShiftPlot {
       const dataset = this.chart.data.datasets[0];
       dataset.backgroundColor = COLORS.point;
       dataset.borderColor = COLORS.border;
+      dataset.borderWidth = 1;
       this.chart.$sspBrush = null;
       this.chart.$sspSelected = null;
       this.chart.update('none');
@@ -516,12 +611,15 @@ class SafetyShiftPlot {
   }
 
   /**
-   * Dispatch the participantsSelected event on the target element with the
-   * selected IDs (SSP-API-003).
+   * Dispatch the participantsSelected event on the shell root with the
+   * selected IDs (SSP-API-003, PPRF-SSP-004). The target moved from the host
+   * element to the shell root in the dock adoption (#99) so root-level
+   * listeners — the docked profile's feed — hear every dispatch; the event
+   * still bubbles, so element-level listeners keep working.
    * @private
    */
   dispatchSelected(ids) {
-    this.element.dispatchEvent(
+    this.root.dispatchEvent(
       new CustomEvent('participantsSelected', { detail: { data: ids }, bubbles: true })
     );
   }
@@ -572,6 +670,7 @@ class SafetyShiftPlot {
    * @returns {void}
    */
   destroy() {
+    unmountProfileDock(this);
     this.destroyChart();
     this.element.innerHTML = '';
   }

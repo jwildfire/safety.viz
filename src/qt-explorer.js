@@ -67,6 +67,13 @@ import {
   scatterTooltip,
   thresholdScatterPlugin
 } from './qt-explorer/getPlugins.js';
+import {
+  buildProfileRows,
+  mountProfileDock,
+  resetProfileDock,
+  syncProfileDock,
+  unmountProfileDock
+} from './profile-host.js';
 
 Chart.register(ScatterController, PointElement, LineElement, LinearScale, Tooltip, Legend);
 
@@ -108,15 +115,101 @@ class SafetyQtExplorer {
     this.charts = [];
     this.arms = [];
     this.availableMeasures = [];
+    this.participantsSelected = [];
+    // The docked participant-profile module (#99, PPRF-QT-001): the shared
+    // drill-down rendered into the shell's profile slot and fed by the
+    // outlier-scatter point click through dispatchSelection's
+    // participantsSelected event on the shell root. profileRows is the ONE
+    // per-setData profile ingest (hep-core cleaned rows over a synthesized
+    // unit-ULN column, so the spaghetti plots observed milliseconds);
+    // profileKey is the idempotency guard.
+    this.profile = null;
+    this.profileFeed = null;
+    this.profileKey = null;
+    this.profileRows = [];
     this.state = {
       view: 'central',
       measure: this.settings.start_measure,
       statistic: 'mean',
       mode: 'delta',
       timepoint: TIMEPOINT_MAX,
-      filters: {}
+      filters: {},
+      selectedId: null
     };
     this.renderShellDom();
+    mountProfileDock(this, () => this.profileSettings());
+  }
+
+  /**
+   * The settings handed to the docked participant-profile module (#99,
+   * PPRF-QT-002) — the interval-measure (ECG) mapping onto the profile's
+   * long-lab contract:
+   *
+   * - `normal_col_high` points at the synthesized `__qt_profile_uln` (= 1)
+   *   column, so the ×ULN standardization is a no-op and the spaghetti plots
+   *   OBSERVED milliseconds (nothing drops on the ULN>0 guard). KNOWN
+   *   module-surface side effects (routed to #98, documented in
+   *   docs/qt-explorer-coverage.md): the measure table's sparkline/inset treat
+   *   the unit ULN as a real normal-range limit, and the spaghetti's axis
+   *   label/accessible name stay "Standardized Result [xULN]".
+   * - `measure_values` is the identity map over the host's `measures`, making
+   *   the ECG parameters the profile's KEY measures.
+   * - `cuts` carry the FIRST absolute threshold (450 ms by default) per QTc
+   *   measure on the observed-ms scale; the NaN `defaults` entry leaves Heart
+   *   Rate (and any other non-QTc parameter) cut-free. The 30/60 ms
+   *   change-from-baseline thresholds are not representable in the dock — see
+   *   docs/qt-explorer-coverage.md.
+   * - the host's `baseline_col` ('BASE') is a VALUE column, not the profile's
+   *   baseline FLAG contract, so the profile's `baseline_col` stays null and
+   *   deriveBaseline's earliest-visit rule lands on the baseline visit.
+   * - `studyday_col` maps from `visitn_col` (ADEG-style data carries no DY).
+   * @private
+   */
+  profileSettings() {
+    const settings = this.settings;
+    const measureValues = {};
+    (settings.measures || []).forEach((measure) => {
+      measureValues[measure] = measure;
+    });
+    const qtcCut = settings.absolute_thresholds.length ? settings.absolute_thresholds[0] : NaN;
+    const cuts = { defaults: { relative_uln: NaN, relative_baseline: NaN } };
+    (settings.qtc_measures || []).forEach((measure) => {
+      cuts[measure] = { relative_uln: qtcCut, relative_baseline: NaN };
+    });
+    return {
+      id_col: settings.id_col,
+      measure_col: settings.measure_col,
+      value_col: settings.value_col,
+      unit_col: settings.unit_col,
+      normal_col_high: '__qt_profile_uln',
+      normal_col_low: null,
+      studyday_col: settings.visitn_col,
+      visit_col: settings.visit_col,
+      visitn_col: settings.visitn_col,
+      baseline_col: null,
+      measure_values: measureValues,
+      cuts,
+      display_options: [
+        { value: 'relative_uln', label: 'Observed (ms)' },
+        { value: 'relative_baseline', label: '×Baseline' }
+      ],
+      details:
+        settings.profile_details && settings.profile_details.length ? settings.profile_details : [],
+      participantProfileURL: settings.participantProfileURL ?? null,
+      on_clear: () => {
+        if (this.state.selectedId != null) {
+          this.clearSelection();
+        } else {
+          // Externally-fed cohort (e.g. a root-level dispatch the host did not
+          // originate): nothing host-side to clear, but the dock still must —
+          // reset any transient point emphasis and dispatch the empty
+          // selection (PPRF-11 clear contract).
+          this.emphasizeParticipant(null);
+          this.dispatchSelection([]);
+        }
+      },
+      on_step: (id) => this.emphasizeParticipant(id)
+    };
   }
 
   /** Build the shell + module-owned slots (legend, note, table, ICH callout). @private */
@@ -159,9 +252,28 @@ class SafetyQtExplorer {
   setData(data) {
     this.rawData = Array.isArray(data) ? data : [];
     this.validateAndCleanData();
+    this.buildProfileRows();
     this.buildControls();
     this.render();
     return this;
+  }
+
+  /**
+   * Derive the docked profile's pre-cleaned rows ONCE per data/settings change
+   * (#99, PPRF-QT-002) — never per gesture. Each raw record is shallow-copied
+   * with a synthesized `__qt_profile_uln = 1` column before the shared
+   * hep-core ingest, so `__hep_relative_uln` carries the observed value in
+   * milliseconds and the ULN>0 guard drops nothing numeric; the host's
+   * retained rawData is never mutated.
+   * @private
+   */
+  buildProfileRows() {
+    this.profileRows = this.settings.profile
+      ? buildProfileRows(
+          this.rawData.map((row) => ({ ...row, __qt_profile_uln: 1 })),
+          this.profileSettings()
+        )
+      : [];
   }
 
   /**
@@ -179,6 +291,8 @@ class SafetyQtExplorer {
       this.state.measure = this.settings.start_measure;
     }
     if (this.rawData.length) this.validateAndCleanData();
+    this.buildProfileRows();
+    syncProfileDock(this, () => this.profileSettings());
     this.buildControls();
     this.render();
     return this;
@@ -341,6 +455,13 @@ class SafetyQtExplorer {
     // Tear down and reset the slots first, so an empty-data render leaves no
     // stale chart, table, or note behind (a setData whose rows all clean away).
     this.destroyCharts();
+    // Any render — a view switch, a control change, new data — silently drops
+    // the outlier-scatter selection, so the dock must empty in the same
+    // preamble (#99, PPRF-QT-003); on the non-scatter views it then idles,
+    // still mounted.
+    this.state.selectedId = null;
+    this.participantsSelected = [];
+    resetProfileDock(this);
     this.legendEl.classList.add('qt-empty');
     this.noteEl.classList.add('qt-empty');
     this.tableWrap.classList.add('qt-empty');
@@ -690,6 +811,22 @@ class SafetyQtExplorer {
             max: yDomain[1],
             title: { display: true, text: titles.y }
           }
+        },
+        onHover: (event, elements) => {
+          if (event && event.native && event.native.target) {
+            event.native.target.style.cursor = elements.length ? 'pointer' : 'default';
+          }
+        },
+        // Point click → participant selection feeding the docked profile
+        // (#99, PPRF-QT-001); an empty click clears (PPRF-11).
+        onClick: (event, elements) => {
+          if (!elements.length) {
+            this.clearSelection();
+            return;
+          }
+          const el = elements[0];
+          const raw = datasets[el.datasetIndex] && datasets[el.datasetIndex].data[el.index];
+          if (raw && raw.__point) this.selectParticipant(raw.__point.id);
         }
       },
       plugins: [thresholdScatterPlugin(this)]
@@ -773,6 +910,71 @@ class SafetyQtExplorer {
   }
 
   /**
+   * Select one participant from the outlier scatter (#99, PPRF-QT-001): set
+   * the minimal host selection state, emphasize the participant's point, and
+   * dispatch the house participantsSelected event on the shell root — which
+   * feeds the docked profile. Single-select only (PPRF-QT-004).
+   * @param {string} id Participant identifier.
+   * @returns {void}
+   */
+  selectParticipant(id) {
+    this.state.selectedId = id == null ? null : String(id);
+    this.emphasizeParticipant(this.state.selectedId);
+    this.dispatchSelection(this.state.selectedId == null ? [] : [this.state.selectedId]);
+  }
+
+  /**
+   * Clear the point selection (#99, PPRF-QT-003): restore the uniform point
+   * emphasis and dispatch the empty selection so the dock empties.
+   * @returns {void}
+   */
+  clearSelection() {
+    if (this.state.selectedId == null) return;
+    this.state.selectedId = null;
+    this.emphasizeParticipant(null);
+    this.dispatchSelection([]);
+  }
+
+  /**
+   * Emphasize (or restore, for a null id) one participant's scatter point
+   * WITHOUT touching the host selection state — also the transient emphasis
+   * the profile stepper drives (PPRF-11). Per-point radius/border arrays are
+   * matched on each datum's __point.id; a no-op outside the outlier view.
+   * @param {?string} id Participant identifier, or null to restore.
+   * @private
+   */
+  emphasizeParticipant(id) {
+    if (!this.chart || this.state.view !== 'outlier') return;
+    this.chart.data.datasets.forEach((dataset) => {
+      if (id == null) {
+        dataset.pointRadius = 4;
+        dataset.pointHoverRadius = 6;
+        dataset.pointBorderWidth = 1;
+      } else {
+        const match = (raw) => raw.__point && String(raw.__point.id) === String(id);
+        dataset.pointRadius = dataset.data.map((raw) => (match(raw) ? 7 : 3));
+        dataset.pointHoverRadius = dataset.data.map((raw) => (match(raw) ? 8 : 5));
+        dataset.pointBorderWidth = dataset.data.map((raw) => (match(raw) ? 3 : 1));
+      }
+    });
+    this.chart.update();
+  }
+
+  /**
+   * Dispatch the custom participantsSelected event on the shell root with the
+   * selected IDs (the house selection contract, #99 PPRF-QT-001).
+   * @private
+   */
+  dispatchSelection(ids) {
+    this.participantsSelected = ids;
+    if (this.root) {
+      this.root.dispatchEvent(
+        new CustomEvent('participantsSelected', { detail: { data: ids }, bubbles: true })
+      );
+    }
+  }
+
+  /**
    * Resize the live charts (e.g. after the sidebar collapses).
    * @returns {void}
    */
@@ -785,6 +987,7 @@ class SafetyQtExplorer {
    * @returns {void}
    */
   destroy() {
+    unmountProfileDock(this);
     this.destroyCharts();
     this.element.innerHTML = '';
   }

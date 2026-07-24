@@ -70,7 +70,24 @@
           { value_col: 'ARM', label: 'Treatment Group' }
         ],
         baseline_visits: ['Baseline'],
-        comparison_visits: ['Week 26']
+        comparison_visits: ['Week 26'],
+        // Docked participant profile (#99, PPRF-SSP): the data carries no DY
+        // column, so VISITNUM doubles as the study-day axis (the hep-explorer
+        // demo precedent); measure_values maps the profile's key liver
+        // measures onto this data's TEST names (same mapping as the
+        // hep-explorer demo); profile_details are the header demographics.
+        studyday_col: 'VISITNUM',
+        measure_values: {
+          ALT: 'Alanine Aminotransferase',
+          AST: 'Aspartate Aminotransferase',
+          TB: 'Bilirubin',
+          ALP: 'Alkaline Phosphatase'
+        },
+        profile_details: [
+          { value_col: 'SEX', label: 'Sex' },
+          { value_col: 'RACE', label: 'Race' },
+          { value_col: 'ARM', label: 'Treatment Group' }
+        ]
       });
       window.__safetyShiftPlotInstance = instance;
       // A handful of source rows carry no visit assignment; they cannot join a

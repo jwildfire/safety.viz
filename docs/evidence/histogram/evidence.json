@@ -1,6 +1,6 @@
 {
   "module": "histogram",
-  "generatedAt": "2026-07-23T02:21:40.462Z",
+  "generatedAt": "2026-07-23T07:33:08.365Z",
   "environment": {
     "os": "linux 6.17.0-1020-azure",
     "node": "v22.23.1",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "29974167237",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29974167237"
+    "id": "29988535722",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29988535722"
   },
   "records": [
     {
@@ -70,6 +70,14 @@
     },
     {
       "test": "built outlier-explorer demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built participant-profile demo mounts the shared shell with no console errors (#7) (#17)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": [],
@@ -146,6 +154,30 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [71],
+      "screenshots": []
+    },
+    {
+      "test": "PPRF-SH-001/PPRF-SH-002: clicking a listing row focuses the participant into the docked profile (#99)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PPRF-SH-001", "PPRF-SH-002"],
+      "issueRefs": [99],
+      "screenshots": ["PPRF-SH-002-docked-profile-from-listing-row.png"]
+    },
+    {
+      "test": "PPRF-SH-003: a new bin click and control changes empty the dock (#99)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PPRF-SH-003"],
+      "issueRefs": [99],
+      "screenshots": []
+    },
+    {
+      "test": "PPRF-SH-003: the dock Clear affordance un-highlights the row and keeps the listing (#99)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PPRF-SH-003"],
+      "issueRefs": [99],
       "screenshots": []
     },
     {
@@ -669,6 +701,54 @@
       "screenshots": ["SH-CHART-004-grouped-multiples.png"]
     },
     {
+      "test": "histogram dock clear paths (PPRF-SH-003, PPRF-11) PPRF-SH-001: setSettings({profile: false}) unmounts a live dock; re-enabling remounts it",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SH-003", "PPRF-SH-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "histogram dock clear paths (PPRF-SH-003, PPRF-11) PPRF-SH-003: a control-driven render resets the selection AND the dock (render preamble)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SH-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "histogram dock clear paths (PPRF-SH-003, PPRF-11) PPRF-SH-003: a new bin click replaces the listing and clears the focused participant",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SH-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "histogram dock clear paths (PPRF-SH-003, PPRF-11) PPRF-SH-003: destroy tears the dock down with the instance",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SH-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "histogram dock clear paths (PPRF-SH-003, PPRF-11) PPRF-SH-003: dock Clear empties an externally-fed cohort the host never selected (PPRF-11)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SH-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "histogram dock clear paths (PPRF-SH-003, PPRF-11) PPRF-SH-003: the dock Clear affordance routes through the host clear path — row un-highlights, listing stays",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SH-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
       "test": "histogram getPlugins SH-CHART-002: bin descriptions report the count and value range in the pilot's wording (#2)",
       "suite": "unit",
       "status": "pass",
@@ -779,6 +859,86 @@
       "requirementIds": ["SH-LIST-004"],
       "issueRefs": [2],
       "screenshots": ["SH-LIST-004-search-sort-paginate.png"]
+    },
+    {
+      "test": "histogram listing-row focus gesture (PPRF-SH-002, PPRF-11) PPRF-SH-002: clicking a listing row focuses the participant — dock full profile, row highlight, listing stays",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SH-002"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-SH-002-docked-profile-from-listing-row.png"]
+    },
+    {
+      "test": "histogram listing-row focus gesture (PPRF-SH-002, PPRF-11) PPRF-SH-002: Enter on a focused listing row activates the same path (keyboard parity)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SH-002"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-SH-002-docked-profile-from-listing-row.png"]
+    },
+    {
+      "test": "histogram listing-row focus gesture (PPRF-SH-002, PPRF-11) PPRF-SH-002: is idempotent under repeated identical dispatches",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SH-002"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-SH-002-docked-profile-from-listing-row.png"]
+    },
+    {
+      "test": "histogram listing-row focus gesture (PPRF-SH-002, PPRF-11) PPRF-SH-002: listing rows are interactive only when the host opts in via onListingRowClick",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SH-002"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-SH-002-docked-profile-from-listing-row.png"]
+    },
+    {
+      "test": "histogram listing-row focus gesture (PPRF-SH-002, PPRF-11) PPRF-SH-002: stepping an externally-fed cohort moves the row highlight without touching the host selection or re-dispatching",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SH-002"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-SH-002-docked-profile-from-listing-row.png"]
+    },
+    {
+      "test": "histogram participant-profile adoption (PPRF-SH-001) PPRF-SH-001: derives the dock feed rows ONCE per setData through the hep-core cleaners",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SH-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "histogram participant-profile adoption (PPRF-SH-001) PPRF-SH-001: host listing columns are NOT the dock header details (profile_details defaults empty)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SH-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "histogram participant-profile adoption (PPRF-SH-001) PPRF-SH-001: mounts the dock by default (config-on) into the shell profile slot",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SH-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "histogram participant-profile adoption (PPRF-SH-001) PPRF-SH-001: passes the host lab mappings and profile_details through to the dock",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SH-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "histogram participant-profile adoption (PPRF-SH-001) PPRF-SH-001: profile: false leaves the slot empty and mounts no dock",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SH-001"],
+      "issueRefs": [],
+      "screenshots": []
     },
     {
       "test": "histogram structureData display digits resolve the bin width without exceeding the data precision (#15)",
@@ -982,6 +1142,30 @@
     },
     {
       "test": "renderGuidePage: composition renders the title, non-diagnostic caution, and the guide tab",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell profile slot (PPRF-1) exposes a profileWrap slot with the sv-profile class inside the main column",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell profile slot (PPRF-1) hides the slot while it is empty via the shared stylesheet",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell profile slot (PPRF-1) places the slot between the small-multiples grid and the listing",
       "suite": "unit",
       "status": "pass",
       "requirementIds": [],

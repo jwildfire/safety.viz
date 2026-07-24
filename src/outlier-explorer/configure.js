@@ -50,6 +50,13 @@ export const NORMAL_RANGE_METHODS = ['None', 'LLN-ULN', 'Standard Deviation', 'Q
  * @property {string} [width='100%'] Widget width, carried over for the R widget bindings; the shell always spans its container.
  * @property {number} [height=460] Chart-area height in pixels, carried over for the R widget bindings; the shell fixes the chart area height.
  * @property {number} [page_size=10] Rows per page in the linked participant listing.
+ * @property {?string} [studyday_col=null] Numeric study-day column for the docked profile's labs-over-time x-axis; when null the profile falls back to input order (#99, PPRF-OE-001).
+ * @property {?string} [visit_col=null] Visit-name column passed to the docked profile for point tooltips (#99, PPRF-OE-001).
+ * @property {?string} [visitn_col=null] Numeric visit column passed to the docked profile for point ordering context (#99, PPRF-OE-001).
+ * @property {?Object} [measure_values=null] Optional map of short profile keys (ALT/AST/TB/ALP) to this data's full measure names, passed to the docked profile so the key liver measures resolve; null keeps the profile module's defaults (#99, PPRF-OE-001).
+ * @property {boolean} [profile=true] Dock the shared participant-profile module in the shell's profile slot, fed by the point-click selection via the participantsSelected event; false restores the pre-#99 behaviour of listing-only detail (#99, PPRF-OE-001).
+ * @property {?Array<string|Object>} [profile_details=null] Demographic columns for the docked profile's header, as names or { value_col, label } specs; null shows none (the host `details` are listing columns, not demographics) (#99, PPRF-OE-001).
+ * @property {?string} [participantProfileURL=null] Optional link-out URL for the docked profile's header, templated by every literal `{id}` token (#99, PPRF-OE-001).
  */
 
 /**
@@ -79,7 +86,14 @@ export const DEFAULT_SETTINGS = {
   point_attributes: { color: '#1f78b4', radius: 3, opacity: 0.5 },
   width: '100%',
   height: 460,
-  page_size: 10
+  page_size: 10,
+  studyday_col: null,
+  visit_col: null,
+  visitn_col: null,
+  measure_values: null,
+  profile: true,
+  profile_details: null,
+  participantProfileURL: null
 };
 
 /**
@@ -173,6 +187,18 @@ export function syncSettings(settings) {
       { value_col: synced.unit_col, label: 'Unit' }
     ].filter((d) => d.value_col);
   }
+
+  // Docked-profile pass-throughs (#99): profile is a plain boolean and
+  // profile_details normalizes to a spec array only when provided (null keeps
+  // the "no header demographics" default — the host `details` are listing
+  // columns, not demographics).
+  synced.profile = Boolean(synced.profile);
+  synced.profile_details =
+    synced.profile_details === undefined || synced.profile_details === null
+      ? null
+      : arrayify(synced.profile_details)
+          .map((value) => fieldSpec(value))
+          .filter((d) => d.value_col);
 
   synced.line_attributes = {
     ...DEFAULT_SETTINGS.line_attributes,

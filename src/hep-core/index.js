@@ -17,3 +17,4 @@ export * from './subjects.js';
 export * from './arms.js';
 export * from './migration.js';
 export * from './stats.js';
+export * from './rows.js';
