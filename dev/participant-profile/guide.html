@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="How to read the participant profile — header, labs-over-time spaghetti, and measure table — and how to wire it to your own chart through the participantsSelected event." />
+    <title>Participant Profile clinical guide · safety.viz</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23271810'/%3E%3Crect x='2.5' y='8' width='3' height='5.5' fill='%23f97316'/%3E%3Crect x='6.5' y='3.5' width='3' height='10' fill='%23fb923c'/%3E%3Crect x='10.5' y='6' width='3' height='7.5' fill='%23f97316'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="../site.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="site-name" href="../index.html">
+        safety.viz
+        <span class="site-version">v1.4.1</span>
+      </a>
+      <nav class="site-nav" aria-label="Primary">
+        <div class="nav-group"><a href="../index.html">Gallery</a><button type="button" class="nav-disclosure" aria-expanded="false" aria-controls="gallery-menu" aria-label="Show charts"><span class="nav-caret" aria-hidden="true"></span></button><ul id="gallery-menu" class="nav-menu"><li><a href="../histogram/index.html">Safety Histogram</a></li><li><a href="../outlier-explorer/index.html">Safety Outlier Explorer</a></li><li><a href="../results-over-time/index.html">Safety Results Over Time</a></li><li><a href="../shift-plot/index.html">Safety Shift Plot</a></li><li><a href="../delta-delta/index.html">Safety Delta-Delta</a></li><li><a href="../hep-explorer/index.html">Hepatic Safety Explorer</a></li><li><a href="../hep-waterfall/index.html">Hepatic ALT Waterfall</a></li><li><a href="../participant-profile/index.html">Participant Profile</a></li><li><a href="../ae-explorer/index.html">Adverse Event Explorer</a></li><li><a href="../ae-timelines/index.html">Adverse Event Timelines</a></li><li><a href="../qt-explorer/index.html">QT Safety Explorer</a></li></ul></div>
+        <a href="../architecture.html">Architecture</a>
+        <a href="../about.html">About</a>
+        <a
+          href="https://github.com/jwildfire/safety.viz"
+          aria-label="GitHub"
+          title="GitHub"
+          style="display: inline-flex; align-items: center"
+          ><svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor" aria-hidden="true">
+            <title>GitHub</title>
+            <path
+              d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"
+            /></svg
+        ></a>
+        <a
+          href="https://jwildfire.github.io/obot.roadmap/"
+          aria-label="obot roadmap"
+          title="obot roadmap"
+          style="font-size: 1.05rem; line-height: 1; display: inline-flex; align-items: center"
+          ><span aria-hidden="true">🍊😺</span></a
+        >
+      </nav>
+    </header>
+    <main class="site-main"><h1>Participant Profile: clinical guide <span class="site-badge">Experimental</span></h1>
+<p class="tagline">How to read the participant profile — header, labs-over-time spaghetti, and measure table — and how to wire it to your own chart through the participantsSelected event.</p>
+<nav class="page-tabs"><a href="index.html">Live demo</a><a class="current" aria-current="page" href="guide.html">Clinical guide</a><a href="evidence.html">Test evidence</a><a href="api.html">API reference</a></nav>
+<p class="guide-caution"><strong>Exploratory review aid, not a validated diagnostic tool.</strong> The profile summarizes one participant&#39;s lab course to support review; it does not adjudicate causality or diagnose drug-induced liver injury.</p>
+<div class="guide-layout"><nav class="guide-toc" aria-label="On this page"><h2>On this page</h2><ul><li><a href="#how-to-read-it">How to read it</a><ul><li><a href="#the-header-who-this-is">The header: who this is</a></li><li><a href="#the-spaghetti-the-whole-course-at-a-glance">The spaghetti: the whole course at a glance</a></li><li><a href="#the-measure-table-one-row-per-lab-expandable">The measure table: one row per lab, expandable</a></li></ul></li><li><a href="#stepping-through-a-cohort">Stepping through a cohort</a></li><li><a href="#wiring-it-to-a-chart">Wiring it to a chart</a></li><li><a href="#what-it-is-not">What it is not</a></li></ul></nav><div class="guide-body"><p>&gt; <strong>Experimental.</strong> This module ships for evaluation alongside the Hepatic Safety Explorer&#39;s adoption of it. The profile itself reproduces long-reviewed behaviour — it is the participant drill-down the original SafetyGraphics hep-explorer always had — but its standalone API and event wiring are new and may change; pin a version if you depend on the exact surface.</p>
+<p>The Participant Profile is the answer to the question every population-level safety display eventually raises: <strong>&quot;who is that point, and what actually happened to them?&quot;</strong> A scatter, a waterfall, or an outlier plot reduces each participant to one mark; the decision about whether that mark matters — a lab error, a transient blip, or a genuine injury pattern — needs the participant&#39;s whole course. The profile shows exactly that for one participant at a time: who they are, how their key labs moved over the study, and a per-measure summary you can expand where it gets interesting.</p>
+<p>Historically this display lived welded inside the hep-explorer&#39;s eDISH scatter as its click-to-drill-down panel. safety.viz lifts it into a module of its own, so the same profile can sit under the Hepatic Safety Explorer (where it is docked by default), under any other chart in this library that dispatches the shared <code>participantsSelected</code> event, or under <strong>your</strong> chart — the wiring is one custom event, demonstrated live on this page.</p>
+<h2 id="how-to-read-it">How to read it</h2>
+<h3 id="the-header-who-this-is">The header: who this is</h3>
+<p>The top strip identifies the participant: their id, the demographic columns you configured (<code>details</code> — sex, race, arm, site, whatever your data carries), and two derived values from hepatic practice:</p>
+<ul><li><strong>R Ratio</strong> — <code>(peak ALT ÷ ALT ULN) ÷ (peak ALP ÷ ALP ULN)</code>, the standard classifier of injury pattern: <strong>≥ 5</strong> reads as hepatocellular, <strong>≤ 2</strong> as cholestatic, and the range between as mixed. It is computed from the profile&#39;s own peak values, so it always agrees with the charts below it.</li><li><strong>P_ALT</strong> — shown only when your data supplies a pre-computed value (<code>p_alt_col</code>); the profile never computes it client-side, so what you see is what your statistical pipeline produced.</li></ul>
+<p>When a <code>participantProfileURL</code> is configured, the header carries a link-out to the participant&#39;s full record in your review system — every <code>{id}</code> token in the URL is replaced with this participant&#39;s id.</p>
+<h3 id="the-spaghetti-the-whole-course-at-a-glance">The spaghetti: the whole course at a glance</h3>
+<p>The middle panel plots every key measure for this participant on one time axis (study day, or the visit sequence when no study-day column exists), one coloured line per measure, standardized so they share a scale:</p>
+<ul><li><strong>×ULN</strong> (the default) divides each result by its upper limit of normal — the eDISH frame, right when baselines are normal;</li><li><strong>×Baseline</strong> divides each result by the participant&#39;s own baseline — the mDISH/composite frame, right when baselines are abnormal.</li></ul>
+<p>The dashed horizontal lines are the configured reference cuts for the current display mode (by default the Hy&#39;s-Law-derived cuts: 3×ULN for ALT/AST, 2×ULN for bilirubin, 1×ULN for ALP). A line that crosses its cut is the event that put this participant in front of you; the lines around it tell you what the rest of the liver panel was doing at the same time — the difference between an isolated ALT blip and a hepatocellular pattern with a bilirubin rise behind it.</p>
+<p>The <strong>Labs</strong> control subsets which measures are drawn, and the extras toggle admits the participant&#39;s non-key measures when you need the wider panel.</p>
+<h3 id="the-measure-table-one-row-per-lab-expandable">The measure table: one row per lab, expandable</h3>
+<p>The bottom panel summarizes every measure the participant has: baseline, minimum, maximum (with study days), and a <strong>sparkline</strong> of the course drawn against two context bands — the participant&#39;s normal range and the population&#39;s 1st–99th percentile extent (<code>measureBounds</code>), so a flat-looking line that is nevertheless far outside the population band still catches the eye. Values flagged outside the normal range are marked.</p>
+<p>Click a sparkline (or press Enter on its row) to <strong>expand it into a full inset chart</strong> with axes, points per visit, and tooltips — the sparkline is the overview, the inset is the evidence. Rows beyond the key measures sit behind a &quot;show N additional&quot; toggle so the default view stays one screen tall. When <code>listing: true</code>, the participant&#39;s raw records render underneath in the shared listing for record-level verification.</p>
+<h2 id="stepping-through-a-cohort">Stepping through a cohort</h2>
+<p>Select more than one participant — a multi-select on the composite plot, a brushed region, a carried cohort from the migration view — and the profile collapses to a <strong>stepper</strong>: &quot;1 of N&quot; with the current participant&#39;s full profile and previous/next controls (keyboard-operable). The order is not arbitrary: the cohort is ranked <strong>worst-first</strong> using the host chart&#39;s severity frame (worst eDISH quadrant first where quadrants apply, peak severity otherwise), so the participant most worth reviewing is the one already on screen. Stepping keeps the host chart&#39;s highlight in sync — the point being profiled is emphasized above — without dispatching any new selection.</p>
+<p><strong>Clear</strong> (in the profile, in the chart&#39;s sidebar, or a background click on the chart) empties the selection everywhere and hides the profile; the three routes converge on the same host clear path, so the chart and profile can never disagree about what is selected.</p>
+<h2 id="wiring-it-to-a-chart">Wiring it to a chart</h2>
+<p>The profile is deliberately chart-agnostic, with two mounts:</p>
+<ul><li><strong>Docked</strong> — the Hepatic Safety Explorer mounts it by default in the shell&#39;s profile slot below the chart (<code>profile: false</code> turns it off, restoring the pre-adoption behaviour). The dock consumes the host&#39;s already-cleaned rows, so the chart and profile always agree on every derived value.</li><li><strong>Standalone</strong> — <code>SafetyViz.participantProfile(element, data, settings)</code> ingests the same long-format lab contract itself and listens for <code>participantsSelected</code> (<code>event.detail.data</code> = the selected ids) on <code>listen_to</code> — an element, a selector, or the document. It never dispatches selection events of its own, so wiring it up cannot create feedback loops.</li></ul>
+<p>The demo on this page is the standalone wiring end-to-end: the Hepatic Safety Explorer above with its built-in dock turned off, this module mounted independently below, and nothing connecting them except the public event on the chart&#39;s root element. Replace the top half with your own chart and dispatch the same event, and the profile works unchanged.</p>
+<h2 id="what-it-is-not">What it is not</h2>
+<p>The profile summarizes one participant&#39;s laboratory course to support review and prioritization. It does not adjudicate causality, apply stopping rules, or diagnose drug-induced liver injury — pattern classification (the R Ratio), reference cuts, and out-of-range flags are review aids, and a DILI conclusion remains a diagnosis of exclusion requiring evidence beyond what any lab display shows.</p></div></div></main>
+    <footer class="site-footer">
+      <p>
+        safety.viz v1.4.1 — clinical safety graphics on one modern charting stack, migrated
+        from the <a href="https://github.com/SafetyGraphics">safetyGraphics</a> ecosystem originally
+        built by <a href="https://github.com/RhoInc">Rho, Inc.</a> (<a href="../about.html"
+          >credits</a
+        >).
+      </p>
+      <p>
+        Built in the open for the R/Pharma 2026 keynote — follow the
+        <a href="https://jwildfire.github.io/obot.roadmap/">obot roadmap</a> ·
+        <a href="https://github.com/jwildfire/safety.viz">source on GitHub</a> ·
+        <a href="https://github.com/jwildfire/safety.viz/releases">releases</a>.
+      </p>
+    </footer>
+    <script>
+      // Mark the nav link whose resolved URL is this page; works at any mount
+      // depth (site root, /dev/, /pr/N/). Renderer sub-pages match a chart link
+      // inside the Gallery dropdown, highlighting the current chart.
+      (function () {
+        var here = location.pathname.replace(/\/$/, '/index.html');
+        var links = document.querySelectorAll('.site-nav a');
+        for (var i = 0; i < links.length; i += 1) {
+          var href = links[i].getAttribute('href');
+          if (!href || href.indexOf('http') === 0) continue;
+          if (new URL(href, location.href).pathname === here) {
+            links[i].classList.add('current');
+            links[i].setAttribute('aria-current', 'page');
+            break;
+          }
+        }
+      })();
+
+      // Gallery dropdown (#71): progressive enhancement over the hover/focus CSS.
+      // The disclosure button toggles aria-expanded (which drives the menu open
+      // via CSS), supports keyboard access (Enter/Space toggle, Arrow keys to
+      // enter and move through items, Escape to close), and closes on outside
+      // click or when focus leaves the group. With JS off, hover/focus still
+      // reveal the menu and the Gallery link still works.
+      (function () {
+        var group = document.querySelector('.site-nav .nav-group');
+        if (!group) return;
+        var button = group.querySelector('.nav-disclosure');
+        var menu = group.querySelector('.nav-menu');
+        if (!button || !menu) return;
+        var items = Array.prototype.slice.call(menu.querySelectorAll('a'));
+
+        var isOpen = function () {
+          return button.getAttribute('aria-expanded') === 'true';
+        };
+        var setOpen = function (open) {
+          button.setAttribute('aria-expanded', open ? 'true' : 'false');
+        };
+        var focusItem = function (index) {
+          if (!items.length) return;
+          setOpen(true);
+          items[(index + items.length) % items.length].focus();
+        };
+
+        button.addEventListener('click', function () {
+          setOpen(!isOpen());
+        });
+        button.addEventListener('keydown', function (event) {
+          if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            focusItem(0);
+          } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            focusItem(items.length - 1);
+          } else if (event.key === 'Escape') {
+            setOpen(false);
+          }
+        });
+        menu.addEventListener('keydown', function (event) {
+          var index = items.indexOf(document.activeElement);
+          if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            focusItem(index + 1);
+          } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            focusItem(index - 1);
+          } else if (event.key === 'Home') {
+            event.preventDefault();
+            focusItem(0);
+          } else if (event.key === 'End') {
+            event.preventDefault();
+            focusItem(items.length - 1);
+          } else if (event.key === 'Escape') {
+            event.preventDefault();
+            setOpen(false);
+            button.focus();
+          }
+        });
+
+        // Close when focus leaves the group or on an outside pointer press.
+        group.addEventListener('focusout', function (event) {
+          if (!group.contains(event.relatedTarget)) setOpen(false);
+        });
+        document.addEventListener('click', function (event) {
+          if (!group.contains(event.target)) setOpen(false);
+        });
+      })();
+    </script>
+  </body>
+</html>
