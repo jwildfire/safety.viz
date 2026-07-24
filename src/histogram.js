@@ -15,6 +15,7 @@ import {
 } from 'chart.js';
 
 import { controlBuilders, createElement, option, renderShell } from './shell.js';
+import { applyLimitEdit, clearAxisLimits, seedLimitInput, syncAxisLimits } from './axis-limits.js';
 import { ALGORITHMS, syncSettings } from './histogram/configure.js';
 import { checkInputs } from './histogram/checkInputs.js';
 import {
@@ -95,8 +96,12 @@ class SafetyHistogram {
       measure: this.settings.start_value,
       filters: {},
       groupBy: this.settings.group_by,
+      // X-axis limits (#85): `lower`/`upper` hold USER OVERRIDES only (null =
+      // auto), `axisDomain` the [lower, upper] the last render resolved — what
+      // the inputs display and what the chart drew. See src/axis-limits.js.
       lower: null,
       upper: null,
+      axisDomain: null,
       algorithm: this.settings.bin_algorithm,
       quantity: null,
       width: null,
@@ -335,22 +340,38 @@ class SafetyHistogram {
     const lower = addControl('Lower', document.createElement('input'), xAxisRow);
     lower.type = 'number';
     lower.step = 'any';
-    lower.value = this.state.lower == null ? '' : this.state.lower;
+    lower.value = seedLimitInput(this.state, 'lower');
     lower.onchange = () => {
-      this.state.lower = lower.value === '' ? null : Number(lower.value);
+      applyLimitEdit(this.state, 'lower', lower.value);
       normalizeDomain(this.state);
       this.render();
     };
+    this.lowerInput = lower;
 
     const upper = addControl('Upper', document.createElement('input'), xAxisRow);
     upper.type = 'number';
     upper.step = 'any';
-    upper.value = this.state.upper == null ? '' : this.state.upper;
+    upper.value = seedLimitInput(this.state, 'upper');
     upper.onchange = () => {
-      this.state.upper = upper.value === '' ? null : Number(upper.value);
+      applyLimitEdit(this.state, 'upper', upper.value);
       normalizeDomain(this.state);
       this.render();
     };
+    this.upperInput = upper;
+
+    // Now that the inputs are never blank, an explicit way back to the derived
+    // domain is required (#85, AXIS-3) — the affordance results-over-time and
+    // outlier-explorer already ship, and the original renderer's Reset Limits
+    // (SH-FUNC-006).
+    const reset = createElement('button', 'sv-reset-limits', 'Reset Limits');
+    reset.type = 'button';
+    reset.onclick = () => {
+      this.resetDomain();
+      this.render();
+    };
+    const resetWrap = createElement('div', 'sv-control');
+    resetWrap.append(reset);
+    xAxisParent.append(resetWrap);
 
     const binParent = addSection('Bins');
     this.binSection = binParent;
@@ -445,12 +466,13 @@ class SafetyHistogram {
   }
 
   /**
-   * Clear the x-axis limit overrides when the measure changes.
+   * Clear the x-axis limit overrides — on a measure change (limits are
+   * per-measure) and on Reset Limits. The recorded domain goes with them so the
+   * next render re-derives it and refills the inputs (#85, AXIS-3).
    * @private
    */
   resetDomain() {
-    this.state.lower = null;
-    this.state.upper = null;
+    clearAxisLimits(this.state);
   }
 
   /**
@@ -512,6 +534,12 @@ class SafetyHistogram {
       return;
     }
     this.binInputs = this.computeBinInputs();
+    // The X-axis Limits inputs mirror the domain this render resolved (#85,
+    // AXIS-1), following the resolved bin quantity/width write-back below.
+    syncAxisLimits(this.state, this.binInputs.domain, {
+      lower: this.lowerInput,
+      upper: this.upperInput
+    });
     this.drawMainChart();
     this.drawMultiples();
     this.updateNotes();

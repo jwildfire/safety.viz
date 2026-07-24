@@ -172,6 +172,52 @@ test.describe('safety.viz outlier-explorer module', () => {
     expect(reset).toEqual([null, null]);
   });
 
+  test('SOE-AXIS-001/SOE-AXIS-002/SOE-AXIS-003: y-limit inputs load pre-filled with the drawn axis, follow the measure, and Reset restores them (#85)', async ({
+    page
+  }) => {
+    const measure = page.locator('.sv-control', { hasText: 'Measure' }).locator('select');
+    const lower = page.locator('.sv-control', { hasText: 'Lower' }).locator('input');
+    const upper = page.locator('.sv-control', { hasText: 'Upper' }).locator('input');
+    const drawn = () =>
+      page.evaluate(() => {
+        const scale = window.__safetyOutlierExplorerInstance.chart.scales.y;
+        return [scale.min, scale.max];
+      });
+
+    // Loaded pre-filled with the padded axis the chart actually drew (AXIS-1).
+    const domain = await drawn();
+    const tolerance = (domain[1] - domain[0]) / 500;
+    expect(await lower.inputValue()).not.toBe('');
+    expect(await upper.inputValue()).not.toBe('');
+    expect(Math.abs(Number(await lower.inputValue()) - domain[0])).toBeLessThanOrEqual(tolerance);
+    expect(Math.abs(Number(await upper.inputValue()) - domain[1])).toBeLessThanOrEqual(tolerance);
+
+    // Untouched limits still follow the data across a measure change (AXIS-2).
+    await measure.selectOption('Sodium (mmol/L)');
+    const sodium = await drawn();
+    expect(sodium).not.toEqual(domain);
+    expect(Math.abs(Number(await lower.inputValue()) - sodium[0])).toBeLessThanOrEqual(
+      (sodium[1] - sodium[0]) / 500
+    );
+
+    // An edit is respected, and Reset Limits puts the derived values back
+    // (AXIS-3) instead of blanking the boxes.
+    await lower.fill(String(Math.round(sodium[0]) + 2));
+    await lower.dispatchEvent('change');
+    expect(await page.evaluate(() => window.__safetyOutlierExplorerInstance.state.lower)).toBe(
+      Math.round(sodium[0]) + 2
+    );
+    await page.locator('.oe-reset').click();
+    expect(
+      await page.evaluate(() => window.__safetyOutlierExplorerInstance.state.lower)
+    ).toBeNull();
+    expect(await lower.inputValue()).not.toBe('');
+    expect(Math.abs(Number(await lower.inputValue()) - sodium[0])).toBeLessThanOrEqual(
+      (sodium[1] - sodium[0]) / 500
+    );
+    await captureEvidence(page, 'SOE-AXIS-001', 'y-limits-prefilled');
+  });
+
   test('SOE-REG-048/SOE-REG-049/SOE-REG-050: grouping colors the marks and renders a legend (#24)', async ({
     page
   }) => {

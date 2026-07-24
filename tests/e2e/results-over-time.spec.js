@@ -186,11 +186,59 @@ test.describe('safety.viz results-over-time module', () => {
     const state = await instanceState(page, () => ({
       lower: window.__safetyResultsOverTimeInstance.state.lower,
       upper: window.__safetyResultsOverTimeInstance.state.upper,
-      lowerInput: window.__safetyResultsOverTimeInstance.lowerInput.value
+      lowerInput: window.__safetyResultsOverTimeInstance.lowerInput.value,
+      derived: window.__safetyResultsOverTimeInstance.state.axisDomain
     }));
     expect(state.lower).toBeNull();
     expect(state.upper).toBeNull();
-    expect(state.lowerInput).toBe('');
+    // Since #85 Reset repopulates the box with the derived limit rather than
+    // blanking it — blank is no longer how "auto" is expressed (AXIS-3).
+    expect(state.lowerInput).not.toBe('');
+    expect(Number(state.lowerInput)).toBeCloseTo(state.derived[0], 1);
+  });
+
+  test('SROT-AXIS-001/SROT-AXIS-002/SROT-AXIS-003: y-limit inputs load pre-filled with the drawn axis, follow the measure, and Reset restores them (#85)', async ({
+    page
+  }) => {
+    const lower = control(page, 'Lower').locator('input');
+    const upper = control(page, 'Upper').locator('input');
+    const drawn = () =>
+      instanceState(page, () => {
+        const scale = window.__safetyResultsOverTimeInstance.chart.scales.y;
+        return [scale.min, scale.max];
+      });
+
+    // Loaded pre-filled with the axis the chart actually drew (AXIS-1).
+    const domain = await drawn();
+    const tolerance = (domain[1] - domain[0]) / 500;
+    expect(await lower.inputValue()).not.toBe('');
+    expect(await upper.inputValue()).not.toBe('');
+    expect(Math.abs(Number(await lower.inputValue()) - domain[0])).toBeLessThanOrEqual(tolerance);
+    expect(Math.abs(Number(await upper.inputValue()) - domain[1])).toBeLessThanOrEqual(tolerance);
+
+    // Untouched limits still follow the data across a measure change (AXIS-2).
+    await control(page, 'Measure').locator('select').selectOption('Pulse (beats/min)');
+    const pulse = await drawn();
+    expect(pulse).not.toEqual(domain);
+    expect(Math.abs(Number(await lower.inputValue()) - pulse[0])).toBeLessThanOrEqual(
+      (pulse[1] - pulse[0]) / 500
+    );
+
+    // An edit is respected, and Reset Limits puts the derived values back
+    // (AXIS-3) instead of blanking the boxes.
+    await lower.fill(String(pulse[0] + 1));
+    await lower.dispatchEvent('change');
+    expect(
+      await instanceState(page, () => window.__safetyResultsOverTimeInstance.state.lower)
+    ).toBe(pulse[0] + 1);
+    await page.locator('.sv-reset-limits').click();
+    expect(
+      await instanceState(page, () => window.__safetyResultsOverTimeInstance.state.lower)
+    ).toBeNull();
+    expect(Math.abs(Number(await lower.inputValue()) - pulse[0])).toBeLessThanOrEqual(
+      (pulse[1] - pulse[0]) / 500
+    );
+    await captureEvidence(page, 'SROT-AXIS-001', 'y-limits-prefilled');
   });
 
   test('SROT-REG-018: the Scale control switches the y-axis between linear and log (#27)', async ({

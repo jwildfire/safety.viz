@@ -12520,6 +12520,47 @@ function renderViewSelector(addSection, { options, active, onChange, title = "Vi
   return section;
 }
 
+// src/axis-limits.js
+function limitDigits(domain) {
+  const range = Math.abs((domain && domain[1]) - (domain && domain[0]));
+  if (!Number.isFinite(range) || range <= 0) return 2;
+  return Math.max(0, Math.min(20, 2 - Math.floor(Math.log10(range))));
+}
+function formatLimit(value, digits) {
+  if (!Number.isFinite(value)) return "";
+  return String(Number(value.toFixed(Math.max(0, Math.min(20, digits)))));
+}
+function syncAxisLimits(state, domain, inputs = {}) {
+  state.axisDomain = [domain[0], domain[1]];
+  const digits = limitDigits(state.axisDomain);
+  if (inputs.lower) inputs.lower.value = formatLimit(domain[0], digits);
+  if (inputs.upper) inputs.upper.value = formatLimit(domain[1], digits);
+  return state.axisDomain;
+}
+function seedLimitInput(state, key) {
+  if (Number.isFinite(state[key])) return String(state[key]);
+  const domain = state.axisDomain;
+  if (!domain) return "";
+  return formatLimit(domain[key === "lower" ? 0 : 1], limitDigits(domain));
+}
+function applyLimitEdit(state, key, raw) {
+  const value = raw === "" ? null : Number(raw);
+  state[key] = Number.isFinite(value) ? value : null;
+  const domain = state.axisDomain || [];
+  const lower = state.lower == null ? domain[0] : state.lower;
+  const upper = state.upper == null ? domain[1] : state.upper;
+  if (Number.isFinite(lower) && Number.isFinite(upper) && lower >= upper) {
+    state.lower = upper;
+    state.upper = lower;
+  }
+  return state;
+}
+function clearAxisLimits(state) {
+  state.lower = null;
+  state.upper = null;
+  state.axisDomain = null;
+}
+
 // src/histogram/configure.js
 var DEFAULT_SETTINGS = {
   measure_col: "TEST",
@@ -15128,8 +15169,12 @@ var SafetyHistogram = class {
       measure: this.settings.start_value,
       filters: {},
       groupBy: this.settings.group_by,
+      // X-axis limits (#85): `lower`/`upper` hold USER OVERRIDES only (null =
+      // auto), `axisDomain` the [lower, upper] the last render resolved — what
+      // the inputs display and what the chart drew. See src/axis-limits.js.
       lower: null,
       upper: null,
+      axisDomain: null,
       algorithm: this.settings.bin_algorithm,
       quantity: null,
       width: null,
@@ -15333,21 +15378,32 @@ var SafetyHistogram = class {
     const lower = addControl("Lower", document.createElement("input"), xAxisRow);
     lower.type = "number";
     lower.step = "any";
-    lower.value = this.state.lower == null ? "" : this.state.lower;
+    lower.value = seedLimitInput(this.state, "lower");
     lower.onchange = () => {
-      this.state.lower = lower.value === "" ? null : Number(lower.value);
+      applyLimitEdit(this.state, "lower", lower.value);
       normalizeDomain(this.state);
       this.render();
     };
+    this.lowerInput = lower;
     const upper = addControl("Upper", document.createElement("input"), xAxisRow);
     upper.type = "number";
     upper.step = "any";
-    upper.value = this.state.upper == null ? "" : this.state.upper;
+    upper.value = seedLimitInput(this.state, "upper");
     upper.onchange = () => {
-      this.state.upper = upper.value === "" ? null : Number(upper.value);
+      applyLimitEdit(this.state, "upper", upper.value);
       normalizeDomain(this.state);
       this.render();
     };
+    this.upperInput = upper;
+    const reset = createElement("button", "sv-reset-limits", "Reset Limits");
+    reset.type = "button";
+    reset.onclick = () => {
+      this.resetDomain();
+      this.render();
+    };
+    const resetWrap = createElement("div", "sv-control");
+    resetWrap.append(reset);
+    xAxisParent.append(resetWrap);
     const binParent = addSection("Bins");
     this.binSection = binParent;
     const algorithm = addControl("Algorithm", document.createElement("select"), binParent);
@@ -15427,12 +15483,13 @@ var SafetyHistogram = class {
     this.normalRangeControl.classList.toggle("sv-hidden", !available);
   }
   /**
-   * Clear the x-axis limit overrides when the measure changes.
+   * Clear the x-axis limit overrides — on a measure change (limits are
+   * per-measure) and on Reset Limits. The recorded domain goes with them so the
+   * next render re-derives it and refills the inputs (#85, AXIS-3).
    * @private
    */
   resetDomain() {
-    this.state.lower = null;
-    this.state.upper = null;
+    clearAxisLimits(this.state);
   }
   /**
    * Cleaned rows for the selected measure — or every measure while the
@@ -15489,6 +15546,10 @@ var SafetyHistogram = class {
       return;
     }
     this.binInputs = this.computeBinInputs();
+    syncAxisLimits(this.state, this.binInputs.domain, {
+      lower: this.lowerInput,
+      upper: this.upperInput
+    });
     this.drawMainChart();
     this.drawMultiples();
     this.updateNotes();
@@ -18172,8 +18233,12 @@ var SafetyResultsOverTime = class {
       measure: this.settings.start_value,
       filters: {},
       groupBy: this.settings.group_by,
+      // Y-axis limits (#85): `lower`/`upper` hold USER OVERRIDES only (null =
+      // auto), `axisDomain` the [lower, upper] the last render resolved — what
+      // the inputs display and what the chart drew. See src/axis-limits.js.
       lower: null,
       upper: null,
+      axisDomain: null,
       yScale: this.settings.y_scale,
       boxplots: this.settings.boxplots,
       outliers: this.settings.outliers,
@@ -18336,13 +18401,13 @@ var SafetyResultsOverTime = class {
     this.lowerInput = addControl("Lower", document.createElement("input"), yRow);
     this.lowerInput.type = "number";
     this.lowerInput.step = "any";
-    this.lowerInput.value = this.state.lower == null ? "" : this.state.lower;
-    this.lowerInput.onchange = () => this.onLimitChange();
+    this.lowerInput.value = seedLimitInput(this.state, "lower");
+    this.lowerInput.onchange = () => this.onLimitChange("lower");
     this.upperInput = addControl("Upper", document.createElement("input"), yRow);
     this.upperInput.type = "number";
     this.upperInput.step = "any";
-    this.upperInput.value = this.state.upper == null ? "" : this.state.upper;
-    this.upperInput.onchange = () => this.onLimitChange();
+    this.upperInput.value = seedLimitInput(this.state, "upper");
+    this.upperInput.onchange = () => this.onLimitChange("upper");
     const reset = createElement("button", "sv-reset-limits", "Reset Limits");
     reset.type = "button";
     reset.onclick = () => this.resetLimits(true);
@@ -18378,28 +18443,32 @@ var SafetyResultsOverTime = class {
     addControl(label, inline, parent);
   }
   /**
-   * Apply an edited y-limit: read the inputs, swap a crossed pair, reflect the
-   * normalized values back into the inputs, and re-render (SROT-REG-016/017).
+   * Apply an edited y-limit: record the override (an empty or non-numeric entry
+   * returns that side to auto), swap a crossed pair, and re-render
+   * (SROT-REG-016/017). The render writes the resolved domain back into both
+   * inputs (#85, AXIS-1), so the boxes always end up showing the axis drawn.
+   * @param {'lower'|'upper'} key Which limit was edited.
    * @private
    */
-  onLimitChange() {
-    this.state.lower = this.lowerInput.value === "" ? null : Number(this.lowerInput.value);
-    this.state.upper = this.upperInput.value === "" ? null : Number(this.upperInput.value);
+  onLimitChange(key) {
+    applyLimitEdit(
+      this.state,
+      key,
+      key === "lower" ? this.lowerInput.value : this.upperInput.value
+    );
     normalizeDomain2(this.state);
-    this.lowerInput.value = this.state.lower == null ? "" : this.state.lower;
-    this.upperInput.value = this.state.upper == null ? "" : this.state.upper;
     this.render();
   }
   /**
    * Clear the y-limit overrides back to the data extent (SROT-FUNC-005 /
-   * SROT-REG-020); optionally sync the inputs and re-render.
+   * SROT-REG-020) — on Reset Limits and on a measure change, since limits are
+   * per-measure. The recorded domain goes with them, so the render this
+   * optionally triggers re-derives it and repopulates both inputs (#85,
+   * AXIS-3).
    * @private
    */
   resetLimits(rerender) {
-    this.state.lower = null;
-    this.state.upper = null;
-    if (this.lowerInput) this.lowerInput.value = "";
-    if (this.upperInput) this.upperInput.value = "";
+    clearAxisLimits(this.state);
     if (rerender) this.render();
   }
   /**
@@ -18459,6 +18528,7 @@ var SafetyResultsOverTime = class {
     const groups = grouping ? unique4(filtered.map((row) => String(row[grouping]))).sort() : ["All"];
     const colors2 = groupColors(groups);
     const domain = this.resolveDomain(measureData);
+    syncAxisLimits(this.state, domain, { lower: this.lowerInput, upper: this.upperInput });
     const precisions = statPrecisions(yPrecision(domain).precision);
     this.currentVisits = visits;
     this.currentGroups = groups;
@@ -19122,8 +19192,12 @@ var SafetyOutlierExplorer = class {
       filters: {},
       timeIndex: 0,
       groupBy: this.settings.group_by,
+      // Y-axis limits (#85): `lower`/`upper` hold USER OVERRIDES only (null =
+      // auto), `axisDomain` the [lower, upper] the last render resolved — what
+      // the inputs display and what the chart drew. See src/axis-limits.js.
       lower: null,
       upper: null,
+      axisDomain: null,
       normalMethod: this.settings.normal_range_method,
       normalSd: this.settings.normal_range_sd,
       quantileLow: this.settings.normal_range_quantile_low,
@@ -19369,21 +19443,23 @@ var SafetyOutlierExplorer = class {
     const lower = addControl("Lower", document.createElement("input"), yRow);
     lower.type = "number";
     lower.step = String(step);
-    lower.value = this.state.lower == null ? "" : this.state.lower;
+    lower.value = seedLimitInput(this.state, "lower");
     lower.onchange = () => {
-      this.state.lower = lower.value === "" ? null : Number(lower.value);
+      applyLimitEdit(this.state, "lower", lower.value);
       normalizeYDomain(this.state);
       this.render();
     };
+    this.lowerInput = lower;
     const upper = addControl("Upper", document.createElement("input"), yRow);
     upper.type = "number";
     upper.step = String(step);
-    upper.value = this.state.upper == null ? "" : this.state.upper;
+    upper.value = seedLimitInput(this.state, "upper");
     upper.onchange = () => {
-      this.state.upper = upper.value === "" ? null : Number(upper.value);
+      applyLimitEdit(this.state, "upper", upper.value);
       normalizeYDomain(this.state);
       this.render();
     };
+    this.upperInput = upper;
     const reset = addControl("\xA0", document.createElement("button"), yParent);
     reset.type = "button";
     reset.textContent = "Reset Limits";
@@ -19457,12 +19533,13 @@ var SafetyOutlierExplorer = class {
     return axisStep(domain[1] - domain[0]);
   }
   /**
-   * Clear the y-axis limit overrides when the measure changes or on Reset.
+   * Clear the y-axis limit overrides when the measure changes (limits are
+   * per-measure) or on Reset Limits. The recorded domain goes with them so the
+   * next render re-derives it and repopulates both inputs (#85, AXIS-3).
    * @private
    */
   resetDomain() {
-    this.state.lower = null;
-    this.state.upper = null;
+    clearAxisLimits(this.state);
   }
   /**
    * Redraw everything from the current data, settings, and control state:
@@ -19514,6 +19591,7 @@ var SafetyOutlierExplorer = class {
     });
     const values = this.filteredData.map((row) => row.__oe_value);
     const domain = resolveYDomain2(values, this.state.lower, this.state.upper);
+    syncAxisLimits(this.state, domain, { lower: this.lowerInput, upper: this.upperInput });
     const categories = timeCol.type === "ordinal" ? orderedCategories(this.currentMeasureData(), timeCol) : [];
     this.series = buildSeries(this.filteredData, this.settings, timeCol, this.state.groupBy);
     const grouped = this.state.groupBy && this.state.groupBy !== GROUP_NONE2;

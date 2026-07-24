@@ -1,16 +1,13 @@
 {
   "module": "outlier-explorer",
-  "generatedAt": "2026-07-23T07:33:08.365Z",
+  "generatedAt": "2026-07-24T12:21:18.606Z",
   "environment": {
-    "os": "linux 6.17.0-1020-azure",
-    "node": "v22.23.1",
+    "os": "darwin 23.6.0",
+    "node": "v24.14.0",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": {
-    "id": "29988535722",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29988535722"
-  },
+  "run": null,
   "records": [
     {
       "test": "a chart link navigates straight to that renderer demo (#71)",
@@ -194,6 +191,14 @@
       "status": "pass",
       "requirementIds": ["SOE-API-003"],
       "issueRefs": [24],
+      "screenshots": []
+    },
+    {
+      "test": "SOE-AXIS-001/SOE-AXIS-002/SOE-AXIS-003: y-limit inputs load pre-filled with the drawn axis, follow the measure, and Reset restores them (#85)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SOE-AXIS-001", "SOE-AXIS-002", "SOE-AXIS-003"],
+      "issueRefs": [85],
       "screenshots": []
     },
     {
@@ -640,6 +645,22 @@
       "screenshots": []
     },
     {
+      "test": "outlier-explorer axis-limit prefill (SOE-AXIS-001) SOE-AXIS-001: displaying a limit does not pin it — the overrides stay null until edited (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-AXIS-001"],
+      "issueRefs": [85],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer axis-limit prefill (SOE-AXIS-001) SOE-AXIS-001: the Y-axis limit inputs load pre-filled with the padded domain the chart drew (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-AXIS-001"],
+      "issueRefs": [85],
+      "screenshots": []
+    },
+    {
       "test": "outlier-explorer checkInputs SOE-DATA-001: missing required measure/value columns throw a naming error (#24)",
       "suite": "unit",
       "status": "pass",
@@ -872,6 +893,22 @@
       "screenshots": []
     },
     {
+      "test": "outlier-explorer limit guardrails with prefilled inputs (SOE-AXIS-004) SOE-AXIS-004: a lower limit typed above the prefilled upper limit is swapped, never inverted (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-AXIS-004"],
+      "issueRefs": [85],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer limit guardrails with prefilled inputs (SOE-AXIS-004) SOE-AXIS-004: clearing a prefilled input returns that limit to auto and the box refills (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-AXIS-004"],
+      "issueRefs": [85],
+      "screenshots": []
+    },
+    {
       "test": "outlier-explorer module export SOE-API-001: the public collection exposes the outlierExplorer factory (#24)",
       "suite": "unit",
       "status": "pass",
@@ -917,6 +954,14 @@
       "status": "pass",
       "requirementIds": ["PPRF-OE-001"],
       "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer Reset Limits (SOE-AXIS-003) SOE-AXIS-003: Reset Limits clears the overrides and repopulates both inputs with the derived domain (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-AXIS-003"],
+      "issueRefs": [85],
       "screenshots": []
     },
     {
@@ -990,6 +1035,30 @@
       "requirementIds": ["SOE-REG-037", "SOE-REG-038"],
       "issueRefs": [24],
       "screenshots": ["SOE-REG-037-invalid-data-note.png"]
+    },
+    {
+      "test": "outlier-explorer unedited limits stay automatic (SOE-AXIS-002) SOE-AXIS-002: an edited limit survives a filter change and stays an override (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-AXIS-002"],
+      "issueRefs": [85],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer unedited limits stay automatic (SOE-AXIS-002) SOE-AXIS-002: an unedited limit re-derives on a measure change and the input follows (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-AXIS-002"],
+      "issueRefs": [85],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer unedited limits stay automatic (SOE-AXIS-002) SOE-AXIS-002: an unedited limit re-derives when a filter narrows the cohort (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-AXIS-002"],
+      "issueRefs": [85],
+      "screenshots": []
     },
     {
       "test": "renderGuidePage: composition renders a sticky TOC sidebar whose links anchor to the heading ids",

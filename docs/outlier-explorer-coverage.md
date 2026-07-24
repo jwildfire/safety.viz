@@ -35,6 +35,7 @@ matching its behavior, under
 | PPRF-OE-001/PPRF-OE-002  | PPRF-OE-001, PPRF-OE-002 (participant-profile matrix)                                                     | #99   | clicking a point opens the docked profile ALONGSIDE the linked listing         |
 | PPRF-OE-003              | PPRF-OE-003 (participant-profile matrix)                                                                  | #99   | background click and control changes empty the dock                            |
 | PPRF-OE-002 (dock Clear) | PPRF-OE-002 (participant-profile matrix)                                                                  | #99   | the dock Clear affordance routes through the host clear path                   |
+| SOE-AXIS-001/002/003     | SOE-AXIS-001, SOE-AXIS-002, SOE-AXIS-003                                                                  | #85   | y-limit inputs load pre-filled, follow the measure, and Reset restores         |
 
 ## Unit evidence (Vitest — `tests/unit/outlier-explorer/`)
 
@@ -51,6 +52,7 @@ matching its behavior, under
 | SOE-REG-011/049, SOE-CFG-006         | SOE-REG-011, SOE-REG-049, SOE-CFG-006                           | #24   | `getPlugins.test.js`    |
 | SOE-DATA-001/003 (schema)            | SOE-DATA-001, SOE-DATA-003                                      | #24   | `checkInputs.test.js`   |
 | SOE-API-001 (module export)          | —                                                               | #24   | `export.test.js`        |
+| SOE-AXIS-001/002/003/004             | SOE-AXIS-001, SOE-AXIS-002, SOE-AXIS-003, SOE-AXIS-004          | #85   | `axis-limits.test.js`   |
 
 ## Source-matrix routing status
 
