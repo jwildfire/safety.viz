@@ -4,7 +4,7 @@
 #   push to main            → sync _site/ to the branch ROOT (preserving dev/, pr/)
 #   push to dev             → sync _site/ to dev/
 #   pull_request (same-repo) → sync _site/ to pr/{N}/ + sticky preview comment
-#   pull_request closed      → remove pr/{N}/
+#   pull_request closed      → replace pr/{N}/ pages with redirect stubs → dev/
 #
 # GitHub Pages serves the branch at https://jwildfire.github.io/safety.viz/
 # (one-time repo setting: Pages source = gh-pages branch, root). The site build
@@ -46,7 +46,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           # On closed PRs the merge ref may already be gone — any ref works,
-          # since the closed path only removes pr/{N} from gh-pages.
+          # since the closed path only rewrites pr/{N} on gh-pages.
           ref: ${{ github.event.action == 'closed' && github.event.pull_request.base.ref || '' }}
 
       - name: Setup Node
@@ -75,7 +75,7 @@ jobs:
           set -euo pipefail
           if [ "$EVENT_NAME" = "pull_request" ]; then
             if [ "$ACTION" = "closed" ]; then
-              mode=remove
+              mode=redirect
             else
               mode=dir
             fi
@@ -100,7 +100,7 @@ jobs:
           set -euo pipefail
           WT="$RUNNER_TEMP/gh-pages"
           MSG="Publish $DEST from ${SHA:0:7} (${{ github.event_name }}, run ${{ github.run_id }})"
-          [ "$MODE" = "remove" ] && MSG="Remove $DEST (PR closed, run ${{ github.run_id }})"
+          [ "$MODE" = "redirect" ] && MSG="Redirect $DEST to dev (PR closed, run ${{ github.run_id }})"
 
           for attempt in 1 2 3; do
             git worktree remove --force "$WT" 2>/dev/null || true
@@ -125,8 +125,35 @@ jobs:
                 mkdir -p "$WT/$DEST"
                 rsync -a --delete _site/ "$WT/$DEST"/
                 ;;
-              remove)
+              redirect)
+                # Closed PRs keep their URLs alive: every page the preview had
+                # (plus its root) becomes a stub redirecting to the matching
+                # path on the dev tier.
+                list="$RUNNER_TEMP/preview-pages"
+                printf 'index.html\n' > "$list"
+                if [ -d "$WT/$DEST" ]; then
+                  (cd "$WT/$DEST" && find . -type f -name '*.html' | sed 's|^\./||') >> "$list"
+                fi
                 rm -rf "$WT/${DEST:?}"
+                sort -u "$list" | while IFS= read -r rel; do
+                  [ -n "$rel" ] || continue
+                  mkdir -p "$WT/$DEST/$(dirname "$rel")"
+                  up="../.."
+                  tail="$rel"
+                  while [ "${tail#*/}" != "$tail" ]; do
+                    up="$up/.."
+                    tail="${tail#*/}"
+                  done
+                  target="$up/dev/$rel"
+                  printf '%s\n' \
+                    '<!doctype html>' \
+                    '<meta charset="utf-8">' \
+                    '<title>Preview closed</title>' \
+                    "<meta http-equiv=\"refresh\" content=\"0; url=$target\">" \
+                    "<link rel=\"canonical\" href=\"$target\">" \
+                    "<p>This PR preview is closed — redirecting to the <a href=\"$target\">dev site</a>.</p>" \
+                    > "$WT/$DEST/$rel"
+                done
                 ;;
             esac
             touch "$WT/.nojekyll"
@@ -160,8 +187,9 @@ jobs:
             const pr = context.payload.pull_request;
             const closed = context.payload.action === 'closed';
             const url = `https://jwildfire.github.io/safety.viz/pr/${pr.number}/`;
+            const devUrl = 'https://jwildfire.github.io/safety.viz/dev/';
             const body = closed
-              ? `${marker}\n### Site preview\n\nThe preview for this PR has been removed (PR closed).`
+              ? `${marker}\n### Site preview\n\nThis PR is closed — its preview pages now redirect to the [dev site](${devUrl}).`
               : [
                   `${marker}`,
                   `### Site preview`,
