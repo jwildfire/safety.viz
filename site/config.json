@@ -59,9 +59,7 @@
       "guide": "hep-explorer.md",
       "heroAsset": "hep-explorer-hero.png",
       "data": "adbds.csv",
-      "related": [
-        "hep-waterfall"
-      ]
+      "related": ["hep-waterfall"]
     },
     {
       "module": "hep-waterfall",
@@ -76,9 +74,7 @@
       "guide": "hep-waterfall.md",
       "guideTagline": "When to reach for the ALT waterfall instead of eDISH, how to read the baseline trace and the bar directions, and why the axis is absolute U/L.",
       "guideCaution": "Bars flag participants for review, they do not diagnose drug-induced liver injury; and the maximum on-treatment value can hide a rise that follows a larger decline.",
-      "related": [
-        "hep-explorer"
-      ]
+      "related": ["hep-explorer"]
     },
     {
       "module": "participant-profile",
@@ -92,13 +88,8 @@
       "guide": "participant-profile.md",
       "guideTagline": "How to read the participant profile \u2014 header, labs-over-time spaghetti, and measure table \u2014 and how to wire it to your own chart through the participantsSelected event.",
       "guideCaution": "The profile summarizes one participant's lab course to support review; it does not adjudicate causality or diagnose drug-induced liver injury.",
-      "data": [
-        "adbds.csv",
-        "adae.csv"
-      ],
-      "related": [
-        "hep-explorer"
-      ]
+      "data": ["adbds.csv", "adae.csv"],
+      "related": ["hep-explorer"]
     },
     {
       "module": "paneled-outlier-explorer",
