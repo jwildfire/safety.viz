@@ -7,11 +7,11 @@ These matrices are the input to the evidence pages published with every release:
 | Matrix                                                     | Module                             | Rows |
 | ---------------------------------------------------------- | ---------------------------------- | ---: |
 | [safety-histogram.md](safety-histogram.md)                 | histogram                          |  134 |
-| [hep-explorer.md](hep-explorer.md)                         | hep-explorer                       |  111 |
+| [hep-explorer.md](hep-explorer.md)                         | hep-explorer                       |  128 |
 | [safety-outlier-explorer.md](safety-outlier-explorer.md)   | outlier-explorer                   |   88 |
 | [aeexplorer.md](aeexplorer.md)                             | ae-explorer                        |   74 |
 | [safety-results-over-time.md](safety-results-over-time.md) | results-over-time                  |   62 |
-| [hep-waterfall.md](hep-waterfall.md)                       | hep-waterfall                      |   54 |
+| [hep-waterfall.md](hep-waterfall.md)                       | hep-waterfall                      |   57 |
 | [safety-delta-delta.md](safety-delta-delta.md)             | delta-delta                        |   48 |
 | [qt-explorer.md](qt-explorer.md)                           | qt-explorer                        |   47 |
 | [participant-profile.md](participant-profile.md)           | participant-profile                |   46 |
