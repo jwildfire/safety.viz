@@ -84,6 +84,56 @@ test.describe('safety.viz hep-explorer module', () => {
     await captureEvidence(page, 'HEP-DATA-003', 'invalid-data-note');
   });
 
+  test('HEP-DROP-001/HEP-DROP-002/HEP-DROP-003/HEP-IMPUTE-002: removed records are downloadable with a reason, and below-limit values are imputed (#50)', async ({
+    page
+  }) => {
+    const notes = page.locator('.sv-notes');
+
+    // HEP-DROP-003: the count that says data left the chart carries the export
+    // that says which data and why.
+    const link = notes.locator('a.hep-csv-link');
+    await expect(link).toHaveCount(1);
+    await expect(link).toContainText('Download the removed records');
+    await expect(link).toHaveAttribute('download', /^hepExplorerDroppedRows.*\.csv$/);
+
+    // HEP-DROP-001/002: the export names the mapped column that failed, per
+    // row, and carries the source columns beside it.
+    const href = await link.getAttribute('href');
+    const csv = decodeURIComponent(href.split(',').slice(1).join(','));
+    const lines = csv.split('\n');
+    expect(lines[0]).toContain('"__hep_dropReason"');
+    expect(lines[0]).toContain('"USUBJID"');
+    // The renderer's own working stays out of the reviewer's file.
+    expect(lines[0]).not.toContain('"__hep_value"');
+    expect(lines).toHaveLength(3);
+    // Quotes inside a cell are doubled, so the reason reads as the CSV escapes it.
+    expect(csv).toContain('Result column (""STRESN"") is empty.');
+    expect(csv).toContain('Result column (""STRESN"") is not numeric.');
+    expect(csv).toContain('SUBJ-001');
+    expect(csv).toContain('SUBJ-002');
+
+    // HEP-IMPUTE-002: the recorded zero is imputed to half the smallest
+    // positive ALT rather than plotted as a zero, and the chart says so.
+    await expect(notes).toContainText('below the limit of quantitation imputed to half the limit');
+    const imputation = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      const imputed = instance.cleanRows.filter((row) => row.__hep_imputed);
+      return {
+        count: instance.imputedRecords,
+        limits: instance.imputationLimits,
+        values: imputed.map((row) => ({
+          original: row.__hep_valueOriginal,
+          value: row.__hep_value
+        }))
+      };
+    });
+    expect(imputation.count).toBe(1);
+    expect(imputation.values[0].original).toBe(0);
+    expect(imputation.values[0].value).toBe(imputation.limits.ALT / 2);
+    expect(imputation.limits.ALT).toBeGreaterThan(0);
+    await captureEvidence(page.locator('.sv-notes'), 'HEP-DROP-003', 'dropped-record-downloads');
+  });
+
   test('HEP-QUAD-002/HEP-QUAD-003/HEP-QUAD-004/HEP-QUAD-005: quadrant cut-lines classify one participant per quadrant and drive the summary table (#43)', async ({
     page
   }) => {

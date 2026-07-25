@@ -35,6 +35,12 @@ import { AXIS_TYPES, DISPLAY_MODES, GROUP_NONE, POINT_SIZE_OPTIONS, cutFor } fro
 import { applyFilters, buildPoints, classifyQuadrants, unique } from '../structureData.js';
 import { cutHandleAt, cutValueFor } from '../cutDrag.js';
 import { MARGINAL_MODES, marginalPlugin, scatterPadding } from '../marginals.js';
+import {
+  DROPPED_PARTICIPANT_COLUMNS,
+  csvDownloadLink,
+  droppedRowColumns,
+  toCsv
+} from '../dropped.js';
 import { buildScales, edishDomain, formatNumber } from '../getScales.js';
 import {
   CLINICAL_CAUTION,
@@ -207,20 +213,71 @@ function updateNotes(host) {
   const totalParticipants = unique(host.cleanRows.map((row) => row[host.settings.id_col])).length;
   const shown = host.points.length;
   const pct = totalParticipants ? ((shown / totalParticipants) * 100).toFixed(1) : '0.0';
-  const removedNote = host.removedRecords
-    ? `<span class="sv-warning">${host.removedRecords} missing or non-numeric results removed.</span>`
-    : '';
-  const dropReason =
-    host.state.display === 'relative_baseline'
-      ? `missing ${host.state.measureX}/${host.state.measureY} peak or baseline`
-      : `missing ${host.state.measureX}/${host.state.measureY} peak`;
-  const droppedNote = host.droppedParticipants
-    ? `<span class="sv-warning">${host.droppedParticipants} participants dropped (${dropReason}).</span>`
-    : '';
-  host.notes.innerHTML =
-    `<span>${shown} of ${totalParticipants} participants shown (${pct}%).</span>` +
-    removedNote +
-    droppedNote;
+  host.notes.innerHTML = '';
+  host.notes.append(
+    createElement('span', null, `${shown} of ${totalParticipants} participants shown (${pct}%).`)
+  );
+
+  // Every count that says data left the chart carries the download that says
+  // WHICH data and why (HEP-DROP-003) — a count alone cannot be checked against
+  // the source dataset.
+  if (host.removedRecords) {
+    const note = createElement(
+      'span',
+      'sv-warning',
+      `${host.removedRecords} missing or non-numeric results removed. `
+    );
+    const rows = host.droppedRows || [];
+    if (rows.length) {
+      note.append(
+        csvDownloadLink(
+          toCsv(rows, droppedRowColumns(rows)),
+          'hepExplorerDroppedRows',
+          'Download the removed records (CSV)'
+        )
+      );
+    }
+    host.notes.append(note);
+  }
+
+  if (host.droppedParticipants) {
+    const dropReason =
+      host.state.display === 'relative_baseline'
+        ? `missing ${host.state.measureX}/${host.state.measureY} peak or baseline`
+        : `missing ${host.state.measureX}/${host.state.measureY} peak`;
+    const note = createElement(
+      'span',
+      'sv-warning',
+      `${host.droppedParticipants} participants dropped (${dropReason}). `
+    );
+    const dropped = host.droppedParticipantList || [];
+    if (dropped.length) {
+      note.append(
+        csvDownloadLink(
+          toCsv(dropped, DROPPED_PARTICIPANT_COLUMNS),
+          'hepExplorerDroppedParticipants',
+          'Download the dropped participants (CSV)'
+        )
+      );
+    }
+    host.notes.append(note);
+  }
+
+  // Imputation is a change to the plotted values, so it is reported wherever
+  // the drops are (HEP-IMPUTE-002) rather than left to the console.
+  if (host.imputedRecords) {
+    const limits = Object.entries(host.imputationLimits || {})
+      .map(([measure, limit]) => `${measure} < ${formatNumber(limit)}`)
+      .join(', ');
+    host.notes.append(
+      createElement(
+        'span',
+        null,
+        `${host.imputedRecords} result${host.imputedRecords > 1 ? 's' : ''} below the limit of ` +
+          `quantitation imputed to half the limit${limits ? ` (${limits})` : ''}.`
+      )
+    );
+  }
 }
 
 /**
@@ -721,6 +778,7 @@ const scatterView = {
     const built = buildPoints(host.cleanRows, host.settings, host.state);
     host.allPoints = built.points;
     host.droppedParticipants = built.droppedParticipants;
+    host.droppedParticipantList = built.droppedList;
     host.points = filteredPoints(host);
     updateNotes(host);
 

@@ -61,6 +61,7 @@ import {
 } from './hep-explorer/structureData.js';
 import { formatNumber } from './hep-explorer/getScales.js';
 import { CLINICAL_CAUTION } from './hep-explorer/getPlugins.js';
+import { imputeBelowLloq } from './hep-explorer/imputation.js';
 import { profileDock } from './participant-profile.js';
 import { TRACE_HEADER_HINT, createSelection } from './hep-explorer/selection.js';
 import { applyModuleStyles } from './hep-explorer/styles.js';
@@ -121,6 +122,10 @@ class SafetyHepExplorer {
     this.cleanRows = [];
     this.removedRecords = 0;
     this.droppedParticipants = 0;
+    this.droppedRows = [];
+    this.droppedParticipantList = [];
+    this.imputedRecords = 0;
+    this.imputationLimits = {};
     this.allPoints = [];
     this.points = [];
     this.rRatioMax = 0;
@@ -503,17 +508,24 @@ class SafetyHepExplorer {
       this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
       throw error;
     }
-    const { rows, removed } = cleanData(this.rawData, this.settings);
-    deriveBaseline(rows, this.settings);
+    const { rows, removed, dropped } = cleanData(this.rawData, this.settings);
+    // Below-LLOQ handling runs BEFORE the baseline is derived, so the ×baseline
+    // display is computed from the imputed values rather than from the values
+    // they replaced (HEP-IMPUTE-002).
+    const imputation = imputeBelowLloq(rows, this.settings);
+    this.droppedRows = [...dropped, ...imputation.dropped];
+    this.imputedRecords = imputation.imputed;
+    this.imputationLimits = imputation.limits;
+    deriveBaseline(imputation.rows, this.settings);
     // Number each participant × measure record in input order, the timing
     // fallback used when the data carries no usable study day (HEP-DATA-004).
-    assignSequence(rows, this.settings);
-    this.cleanRows = rows;
-    this.removedRecords = removed;
+    assignSequence(imputation.rows, this.settings);
+    this.cleanRows = imputation.rows;
+    this.removedRecords = removed + imputation.dropped.length;
     // Precompute the data-derived R-Ratio maximum so the R-Ratio range filter's
     // max input seeds correctly on the first buildControls, before render()
     // populates this.allPoints (HEP-CTRL-010).
-    this.rRatioMax = maxRRatio(rows, this.settings);
+    this.rRatioMax = maxRRatio(imputation.rows, this.settings);
     if (removed)
       console.warn(
         `${removed} missing or non-numeric result${removed > 1 ? 's have' : ' has'} been removed.`

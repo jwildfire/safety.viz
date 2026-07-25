@@ -113,6 +113,21 @@
         DY: 84,
         ...PARTICIPANTS['SUBJ-001']
       });
+      // One recorded zero (#50): a value below the limit of quantitation, which
+      // the data-driven rule imputes to half the smallest positive ALT rather
+      // than plotting a zero on a ratio axis.
+      data.push({
+        TEST: 'Aminotransferase, alanine (ALT)',
+        STRESN: 0,
+        STRESU: 'U/L',
+        STNRLO: 6,
+        STNRHI: 40,
+        USUBJID: 'SUBJ-001',
+        VISIT: 'Week 16',
+        VISITNUM: 5,
+        DY: 112,
+        ...PARTICIPANTS['SUBJ-001']
+      });
       data.push({
         TEST: 'Aminotransferase, alanine (ALT)',
         STRESN: 'NA',

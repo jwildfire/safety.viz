@@ -13356,8 +13356,25 @@ var SafetyViz = (() => {
     const testName = settings.measure_values ? settings.measure_values[key] : key;
     return rows.filter((row) => row[settings.measure_col] === testName);
   }
+  function dropReason(row, settings) {
+    const raw = row[settings.value_col];
+    if (raw === "" || raw === void 0 || raw === null) {
+      return `Result column ("${settings.value_col}") is empty.`;
+    }
+    if (!Number.isFinite(row.__hep_value)) {
+      return `Result column ("${settings.value_col}") is not numeric.`;
+    }
+    if (!Number.isFinite(row.__hep_uln)) {
+      return `Reference-range column ("${settings.normal_col_high}") is missing or not numeric.`;
+    }
+    if (!(row.__hep_uln > 0)) {
+      return `Reference-range column ("${settings.normal_col_high}") is not positive.`;
+    }
+    return "";
+  }
   function cleanData2(rawData, settings) {
     let removed = 0;
+    const dropped = [];
     const rows = rawData.map((row, index) => {
       const value = Number(row[settings.value_col]);
       const uln = Number(row[settings.normal_col_high]);
@@ -13374,11 +13391,16 @@ var SafetyViz = (() => {
         __hep_baseline: NaN
       };
     }).filter((row) => {
-      const keep = row[settings.value_col] !== "" && row[settings.value_col] !== void 0 && Number.isFinite(row.__hep_value) && Number.isFinite(row.__hep_uln) && row.__hep_uln > 0;
-      if (!keep) removed += 1;
-      return keep;
+      const reason = dropReason(row, settings);
+      if (reason) {
+        row.__hep_dropReason = reason;
+        dropped.push(row);
+        removed += 1;
+        return false;
+      }
+      return true;
     });
-    return { rows, removed };
+    return { rows, removed, dropped };
   }
   function assignSequence(rows, settings) {
     const counts = /* @__PURE__ */ new Map();
@@ -13602,6 +13624,13 @@ var SafetyViz = (() => {
       rRatio: { relative_uln: 5, relative_baseline: 5 },
       defaults: { relative_uln: 3, relative_baseline: 3.8 }
     },
+    imputation_methods: {
+      ALT: "data-driven",
+      AST: "data-driven",
+      TB: "data-driven",
+      ALP: "data-driven"
+    },
+    imputation_values: null,
     quadrant_labels: "shown",
     marginals: "box_rug",
     visit_window: 30,
@@ -15958,11 +15987,11 @@ var SafetyViz = (() => {
     drawOverview() {
       this.multiplesWrap.innerHTML = "";
       this.measures().forEach((measureValue) => {
-        const measureRows = this.cleanData.filter(
+        const measureRows2 = this.cleanData.filter(
           (row) => measureLabel(row, this.settings) === measureValue
         );
-        const rows = applyFilters(measureRows, this.state.filters);
-        const values = measureRows.map((row) => row.__sh_value);
+        const rows = applyFilters(measureRows2, this.state.filters);
+        const values = measureRows2.map((row) => row.__sh_value);
         const domain = resolveDomain(values, null, null);
         const binResult = calculateBins(values, this.settings.bin_algorithm, null, null, domain);
         const digits = displayDigits(binResult.width, values);
@@ -21327,6 +21356,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     });
     const points = [];
     let droppedParticipants = 0;
+    const droppedList = [];
     byId.forEach((participantRows, id) => {
       const peakX = participantPeak(
         resolveMeasureRows(participantRows, settings, measureX),
@@ -21339,7 +21369,16 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
         display
       );
       if (!peakX || !peakY || !(peakX.value > 0) || !(peakY.value > 0)) {
+        const missing = [];
+        if (!peakX) missing.push(`no usable ${measureX} value`);
+        else if (!(peakX.value > 0)) missing.push(`${measureX} value is not positive`);
+        if (!peakY) missing.push(`no usable ${measureY} value`);
+        else if (!(peakY.value > 0)) missing.push(`${measureY} value is not positive`);
         droppedParticipants += 1;
+        droppedList.push({
+          id: String(id),
+          reason: `${missing.join("; ")} for the ${display === "relative_baseline" ? "baseline-adjusted" : "reference-range-adjusted"} display.`
+        });
         return;
       }
       const daysX = peakX.day;
@@ -21364,7 +21403,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
         raw: meta
       });
     });
-    return { points, droppedParticipants };
+    return { points, droppedParticipants, droppedList };
   }
   function applyFilters6(points, filters) {
     return points.filter(
@@ -21441,6 +21480,61 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       visit: entry.visit,
       label: entry.visit ? String(entry.visit) : Number.isFinite(entry.day) ? `Day ${entry.day}` : `#${Number.isFinite(entry.seq) ? entry.seq : entry.order}`
     }));
+  }
+
+  // src/hep-explorer/imputation.js
+  var IMPUTATION_METHODS = ["data-driven", "user-defined", "drop"];
+  function measureRows(rows, settings, measureKey) {
+    const value = settings.measure_values ? settings.measure_values[measureKey] : void 0;
+    if (value === void 0) return [];
+    return rows.filter((row) => String(row[settings.measure_col]) === String(value));
+  }
+  function lloqFor(rows, settings, measureKey) {
+    const method = (settings.imputation_methods || {})[measureKey];
+    if (method === "user-defined") {
+      const configured = Number((settings.imputation_values || {})[measureKey]);
+      return Number.isFinite(configured) ? configured : NaN;
+    }
+    if (method !== "data-driven") return NaN;
+    const positives = measureRows(rows, settings, measureKey).map((row) => Number(row[settings.value_col])).filter((value) => Number.isFinite(value) && value > 0);
+    return positives.length ? Math.min(...positives) : NaN;
+  }
+  function imputeBelowLloq(rows, settings) {
+    const methods = settings.imputation_methods || {};
+    const dropped = [];
+    const limits = {};
+    let imputed = 0;
+    let surviving = rows;
+    Object.keys(settings.measure_values || {}).forEach((measureKey) => {
+      const method = methods[measureKey];
+      if (!IMPUTATION_METHODS.includes(method)) return;
+      if (method === "drop") {
+        const measureValue = settings.measure_values[measureKey];
+        surviving = surviving.filter((row) => {
+          const isMeasure = String(row[settings.measure_col]) === String(measureValue);
+          const value = Number(row[settings.value_col]);
+          if (!isMeasure || !(value <= 0)) return true;
+          row.__hep_dropReason = `${measureKey} result is not positive, and this measure is set to drop records at or below the limit of quantitation.`;
+          dropped.push(row);
+          return false;
+        });
+        return;
+      }
+      const limit = lloqFor(surviving, settings, measureKey);
+      if (!Number.isFinite(limit)) return;
+      limits[measureKey] = limit;
+      const imputedValue = limit / 2;
+      measureRows(surviving, settings, measureKey).forEach((row) => {
+        const value = Number(row[settings.value_col]);
+        if (!(value >= 0) || !(value < limit)) return;
+        row.__hep_imputed = true;
+        row.__hep_valueOriginal = value;
+        row.__hep_value = imputedValue;
+        row.__hep_relative_uln = imputedValue / row.__hep_uln;
+        imputed += 1;
+      });
+    });
+    return { rows: surviving, imputed, dropped, limits };
   }
 
   // src/hep-explorer/selection.js
@@ -21620,6 +21714,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
 .safety-hep-explorer .hep-quadrant-meaning{display:block;margin-top:.15rem;font-size:.75rem;line-height:1.35;color:#52616f}
 .safety-hep-explorer .hep-legend-note{color:#52616f;font-style:italic;font-size:.8rem}
 .safety-hep-explorer .hep-caution{margin-top:.5rem;font-size:.8rem;color:#8a4b00}
+.safety-hep-explorer .hep-csv-link{color:#1f5fa8;text-decoration:underline;cursor:pointer}
 .safety-hep-explorer .hep-composite{margin-top:.5rem}
 .safety-hep-explorer .hep-composite-header{font-size:.85rem;color:#52616f;background:#f6f8fa;border:1px solid #e3e8ee;border-radius:8px;padding:.4rem .6rem;margin:0 0 .6rem;min-height:1.2rem}
 .safety-hep-explorer .hep-composite-header.is-active{color:#1f2933;font-weight:600;border-color:#b8c0cc;background:#eef2f6}
@@ -21864,6 +21959,32 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     };
   }
 
+  // src/hep-explorer/dropped.js
+  var DROPPED_PARTICIPANT_COLUMNS = ["id", "reason"];
+  var REASON_COLUMN = "__hep_dropReason";
+  function toCsv(rows, columns) {
+    const cell2 = (value) => {
+      if (value === null || value === void 0) return '""';
+      return `"${String(value).replace(/"/g, '""')}"`;
+    };
+    const lines = [columns.map(cell2).join(",")];
+    (rows || []).forEach((row) => lines.push(columns.map((column) => cell2(row[column])).join(",")));
+    return lines.join("\n");
+  }
+  function droppedRowColumns(rows) {
+    if (!rows || !rows.length) return [];
+    const source = Object.keys(rows[0]).filter((column) => !column.startsWith("__hep_"));
+    return [REASON_COLUMN, ...source];
+  }
+  function csvDownloadLink(csv, fileCore, label) {
+    const link = document.createElement("a");
+    link.className = "hep-csv-link";
+    link.textContent = label;
+    link.setAttribute("download", `${fileCore}_${(/* @__PURE__ */ new Date()).toISOString().slice(0, 10)}.csv`);
+    link.setAttribute("href", `data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`);
+    return link;
+  }
+
   // src/hep-explorer/views/scatter.js
   var BASE_POINT_COLOR = GROUP_COLORS2[0];
   function addCutControl(host, addControl, parent, axisKey) {
@@ -21966,10 +22087,57 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     const totalParticipants = unique6(host.cleanRows.map((row) => row[host.settings.id_col])).length;
     const shown = host.points.length;
     const pct = totalParticipants ? (shown / totalParticipants * 100).toFixed(1) : "0.0";
-    const removedNote = host.removedRecords ? `<span class="sv-warning">${host.removedRecords} missing or non-numeric results removed.</span>` : "";
-    const dropReason = host.state.display === "relative_baseline" ? `missing ${host.state.measureX}/${host.state.measureY} peak or baseline` : `missing ${host.state.measureX}/${host.state.measureY} peak`;
-    const droppedNote = host.droppedParticipants ? `<span class="sv-warning">${host.droppedParticipants} participants dropped (${dropReason}).</span>` : "";
-    host.notes.innerHTML = `<span>${shown} of ${totalParticipants} participants shown (${pct}%).</span>` + removedNote + droppedNote;
+    host.notes.innerHTML = "";
+    host.notes.append(
+      createElement("span", null, `${shown} of ${totalParticipants} participants shown (${pct}%).`)
+    );
+    if (host.removedRecords) {
+      const note = createElement(
+        "span",
+        "sv-warning",
+        `${host.removedRecords} missing or non-numeric results removed. `
+      );
+      const rows = host.droppedRows || [];
+      if (rows.length) {
+        note.append(
+          csvDownloadLink(
+            toCsv(rows, droppedRowColumns(rows)),
+            "hepExplorerDroppedRows",
+            "Download the removed records (CSV)"
+          )
+        );
+      }
+      host.notes.append(note);
+    }
+    if (host.droppedParticipants) {
+      const dropReason2 = host.state.display === "relative_baseline" ? `missing ${host.state.measureX}/${host.state.measureY} peak or baseline` : `missing ${host.state.measureX}/${host.state.measureY} peak`;
+      const note = createElement(
+        "span",
+        "sv-warning",
+        `${host.droppedParticipants} participants dropped (${dropReason2}). `
+      );
+      const dropped = host.droppedParticipantList || [];
+      if (dropped.length) {
+        note.append(
+          csvDownloadLink(
+            toCsv(dropped, DROPPED_PARTICIPANT_COLUMNS),
+            "hepExplorerDroppedParticipants",
+            "Download the dropped participants (CSV)"
+          )
+        );
+      }
+      host.notes.append(note);
+    }
+    if (host.imputedRecords) {
+      const limits = Object.entries(host.imputationLimits || {}).map(([measure, limit]) => `${measure} < ${formatNumber4(limit)}`).join(", ");
+      host.notes.append(
+        createElement(
+          "span",
+          null,
+          `${host.imputedRecords} result${host.imputedRecords > 1 ? "s" : ""} below the limit of quantitation imputed to half the limit${limits ? ` (${limits})` : ""}.`
+        )
+      );
+    }
   }
   function activeId(host) {
     return host.state.hoverId != null ? host.state.hoverId : host.state.selectedId;
@@ -22336,6 +22504,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       const built = buildPoints(host.cleanRows, host.settings, host.state);
       host.allPoints = built.points;
       host.droppedParticipants = built.droppedParticipants;
+      host.droppedParticipantList = built.droppedList;
       host.points = filteredPoints(host);
       updateNotes(host);
       if (!host.points.length) {
@@ -23779,6 +23948,10 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       this.cleanRows = [];
       this.removedRecords = 0;
       this.droppedParticipants = 0;
+      this.droppedRows = [];
+      this.droppedParticipantList = [];
+      this.imputedRecords = 0;
+      this.imputationLimits = {};
       this.allPoints = [];
       this.points = [];
       this.rRatioMax = 0;
@@ -24081,12 +24254,16 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
         this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
         throw error;
       }
-      const { rows, removed } = cleanData2(this.rawData, this.settings);
-      deriveBaseline(rows, this.settings);
-      assignSequence(rows, this.settings);
-      this.cleanRows = rows;
-      this.removedRecords = removed;
-      this.rRatioMax = maxRRatio(rows, this.settings);
+      const { rows, removed, dropped } = cleanData2(this.rawData, this.settings);
+      const imputation = imputeBelowLloq(rows, this.settings);
+      this.droppedRows = [...dropped, ...imputation.dropped];
+      this.imputedRecords = imputation.imputed;
+      this.imputationLimits = imputation.limits;
+      deriveBaseline(imputation.rows, this.settings);
+      assignSequence(imputation.rows, this.settings);
+      this.cleanRows = imputation.rows;
+      this.removedRecords = removed + imputation.dropped.length;
+      this.rRatioMax = maxRRatio(imputation.rows, this.settings);
       if (removed)
         console.warn(
           `${removed} missing or non-numeric result${removed > 1 ? "s have" : " has"} been removed.`
@@ -26089,7 +26266,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     if (!active.length) return rows;
     return rows.filter((row) => active.every(([col, value]) => String(row[col]) === String(value)));
   }
-  function centralTendencySeries(measureRows, options) {
+  function centralTendencySeries(measureRows2, options) {
     const {
       statistic = "mean",
       mode = "delta",
@@ -26100,7 +26277,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     const z = zForCi(options.ciLevel);
     const cells = /* @__PURE__ */ new Map();
     for (const visit of visitOrder) cells.set(visit, /* @__PURE__ */ new Map());
-    for (const row of measureRows) {
+    for (const row of measureRows2) {
       if (!Number.isFinite(row.__qt_change)) continue;
       const visit = row.__qt_visit;
       if (!cells.has(visit)) continue;
@@ -26174,10 +26351,10 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     }
     return peaks;
   }
-  function subjectPoints(measureRows, options) {
+  function subjectPoints(measureRows2, options) {
     const { timepoint, idCol } = options;
     const bySubject = /* @__PURE__ */ new Map();
-    for (const row of measureRows) {
+    for (const row of measureRows2) {
       const id = row[idCol];
       if (timepoint === "__qt_max") {
         if (!row.__qt_postBaseline) continue;
@@ -26201,9 +26378,9 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     }
     return points;
   }
-  function subjectExtremes(measureRows, idCol) {
+  function subjectExtremes(measureRows2, idCol) {
     const extremes = /* @__PURE__ */ new Map();
-    for (const row of measureRows) {
+    for (const row of measureRows2) {
       if (!row.__qt_postBaseline) continue;
       const id = row[idCol];
       const entry = extremes.get(id) || {
@@ -26218,9 +26395,9 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     }
     return extremes;
   }
-  function classifyThresholds(measureRows, options) {
+  function classifyThresholds(measureRows2, options) {
     const { idCol, arms, absoluteThresholds = [], changeThresholds = [] } = options;
-    const extremes = subjectExtremes(measureRows, idCol);
+    const extremes = subjectExtremes(measureRows2, idCol);
     const denominators = {};
     arms.forEach((arm) => {
       denominators[arm] = 0;
@@ -26914,9 +27091,9 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     renderCentral() {
       const measure = this.state.measure;
       const isQtc = isQtcMeasure(measure, this.settings.qtc_measures);
-      const measureRows = forMeasure(this.filteredRows, measure);
-      const visitOrder = orderVisits(measureRows, this.settings);
-      const tendency = centralTendencySeries(measureRows, {
+      const measureRows2 = forMeasure(this.filteredRows, measure);
+      const visitOrder = orderVisits(measureRows2, this.settings);
+      const tendency = centralTendencySeries(measureRows2, {
         statistic: this.state.statistic,
         mode: this.state.mode,
         arms: this.arms,
@@ -27114,8 +27291,8 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
         this.footnote.textContent = "";
         return;
       }
-      const measureRows = forMeasure(this.filteredRows, measure);
-      const points = subjectPoints(measureRows, {
+      const measureRows2 = forMeasure(this.filteredRows, measure);
+      const points = subjectPoints(measureRows2, {
         timepoint: this.state.timepoint,
         idCol: this.settings.id_col
       });
@@ -27223,8 +27400,8 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
         this.footnote.textContent = "";
         return;
       }
-      const measureRows = forMeasure(this.filteredRows, measure);
-      const classification = classifyThresholds(measureRows, {
+      const measureRows2 = forMeasure(this.filteredRows, measure);
+      const classification = classifyThresholds(measureRows2, {
         idCol: this.settings.id_col,
         arms: this.arms,
         absoluteThresholds: this.settings.absolute_thresholds,
