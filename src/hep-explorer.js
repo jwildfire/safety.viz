@@ -189,6 +189,7 @@ class SafetyHepExplorer {
       display: 'relative_uln',
       axisType: 'linear',
       pointSize: 'Uniform',
+      marginals: this.settings.marginals,
       visitWindow: this.settings.visit_window,
       groupBy: this.settings.group_by,
       filters: {},

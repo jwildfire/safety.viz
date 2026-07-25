@@ -34,6 +34,7 @@ import { createElement, option } from '../../shell.js';
 import { AXIS_TYPES, DISPLAY_MODES, GROUP_NONE, POINT_SIZE_OPTIONS, cutFor } from '../configure.js';
 import { applyFilters, buildPoints, classifyQuadrants, unique } from '../structureData.js';
 import { cutHandleAt, cutValueFor } from '../cutDrag.js';
+import { MARGINAL_MODES, marginalPlugin, scatterPadding } from '../marginals.js';
 import { buildScales, edishDomain, formatNumber } from '../getScales.js';
 import {
   GROUP_COLORS,
@@ -387,7 +388,7 @@ function drawScatter(host) {
       maintainAspectRatio: false,
       responsive: true,
       animation: false,
-      layout: { padding: 6 },
+      layout: { padding: scatterPadding(host.state.marginals) },
       plugins: {
         legend: { display: false },
         tooltip: {
@@ -428,7 +429,7 @@ function drawScatter(host) {
         else host.clearSelection();
       }
     },
-    plugins: [quadrantPlugin(host)]
+    plugins: [quadrantPlugin(host), marginalPlugin(host)]
   });
   host.chart = chart;
   host.scatterChart = chart;
@@ -584,6 +585,21 @@ const scatterView = {
     AXIS_TYPES.forEach((type) => option(axisType, type, type, type === host.state.axisType));
     axisType.onchange = () => {
       host.state.axisType = axisType.value;
+      host.render();
+    };
+
+    // Marginal distributions: the one-dimensional summary of each axis the
+    // original renderer draws beside the cloud (HEP-MARG-003).
+    const marginals = addControl(
+      'Marginal Distributions',
+      document.createElement('select'),
+      settingsParent
+    );
+    MARGINAL_MODES.forEach((mode) =>
+      option(marginals, mode.value, mode.label, mode.value === host.state.marginals)
+    );
+    marginals.onchange = () => {
+      host.state.marginals = marginals.value;
       host.render();
     };
 

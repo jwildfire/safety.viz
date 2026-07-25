@@ -88,6 +88,7 @@ export { MEASURE_KEYS, cutFor } from '../hep-core/rows.js';
  * @property {string[]} [y_options=['TB']] Measures offered by the Y-axis Measure control; when only one option the control is dropped (HEP-CTRL-002).
  * @property {Object} [cuts] Per-measure Hy's-Law cutpoints keyed by measure then display mode; a `defaults` entry back-fills any measure without its own cuts (HEP-QUAD-001).
  * @property {string} [view='scatter'] Initial view mode: `scatter` (eDISH/mDISH scatter), `migration` (the bidirectional baseline → on-treatment Sankey with per-arm cross tables), or `composite` (baseline-referenced composite plot for abnormal-baseline subjects) (HEP-COMP-006, HEP-MIG-001).
+ * @property {string} [marginals='box_rug'] Marginal distributions drawn beside the eDISH scatter: `box_rug` (marginal box plots and axis rugs), `box`, `rug`, or `none` (HEP-MARG-001, HEP-MARG-002, HEP-MARG-003).
  * @property {number} [visit_window=30] Timing window (days): points whose peak-X and peak-Y days are within this many days render filled, else hollow (HEP-CTRL-008, HEP-DISPLAY-005).
  * @property {boolean} [profile=true] Dock the shared participant-profile module (header, labs-over-time spaghetti, measure table) in the shell's profile slot, driven by every selection path via the participantsSelected event; false restores the pre-#98 behaviour of no drill-down block (#98, PPRF-7).
  * @property {?Array<string|Object>} [profile_details=null] Demographic columns for the docked profile's header, as names or { value_col, label } specs; null falls back to the caller's own `details` value. Use this when `details` is configured for the linked listing rather than demographics (#98, PPRF-2).
@@ -150,6 +151,7 @@ export const DEFAULT_SETTINGS = {
     rRatio: { relative_uln: 5, relative_baseline: 5 },
     defaults: { relative_uln: 3, relative_baseline: 3.8 }
   },
+  marginals: 'box_rug',
   visit_window: 30,
   profile: true,
   profile_details: null,

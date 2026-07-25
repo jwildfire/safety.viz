@@ -118,6 +118,78 @@ test.describe('safety.viz hep-explorer module', () => {
     await captureEvidence(page, 'HEP-QUAD-002', 'quadrant-summary');
   });
 
+  test('HEP-MARG-001/HEP-MARG-002/HEP-MARG-003: marginal box plots and axis rugs summarize each measure beside the cloud (#47)', async ({
+    page
+  }) => {
+    await page.waitForFunction(() => window.__safetyHepExplorerInstance.chart.$hepMarginals);
+    const marginals = await page.evaluate(() => {
+      const chart = window.__safetyHepExplorerInstance.chart;
+      return {
+        geometry: chart.$hepMarginals,
+        padding: chart.options.layout.padding,
+        // Both marginals must sit OUTSIDE the plot, or they would be read as
+        // data: the strip is reserved by the layout padding.
+        area: { top: chart.chartArea.top, right: chart.chartArea.right },
+        canvas: { width: chart.width, height: chart.height }
+      };
+    });
+
+    // HEP-MARG-001: one box per axis, over the five shown participants, with
+    // the same R-7 quantiles the rest of the library uses.
+    expect(marginals.geometry.mode).toBe('box_rug');
+    expect(marginals.geometry.x.n).toBe(5);
+    expect(marginals.geometry.y.n).toBe(5);
+    expect(marginals.geometry.x.median).toBeCloseTo(1.5, 5);
+    expect(marginals.geometry.y.median).toBeCloseTo(1, 5);
+    // HEP-MARG-002: one rug tick per shown participant.
+    expect(marginals.geometry.rug).toBe(5);
+
+    expect(marginals.padding.top).toBeGreaterThan(6);
+    expect(marginals.padding.right).toBeGreaterThan(6);
+    expect(marginals.area.top).toBeGreaterThanOrEqual(marginals.padding.top);
+    expect(marginals.area.right).toBeLessThan(marginals.canvas.width);
+    await captureEvidence(page, 'HEP-MARG-001', 'marginal-box-plots-and-rugs');
+
+    // HEP-MARG-003: the marginals follow the filters — they summarize what is
+    // SHOWN, not the whole cohort.
+    const control = page.locator('.sv-control', {
+      has: page.locator('label:text-is("Marginal Distributions")')
+    });
+    await expect(control).toBeVisible();
+
+    const rRatioMin = page
+      .locator('.sv-control', { has: page.locator('label:text-is("R Ratio min")') })
+      .locator('input');
+    await rRatioMin.fill('3');
+    await rRatioMin.dispatchEvent('change');
+    await page.waitForFunction(() => {
+      const geometry = window.__safetyHepExplorerInstance.chart.$hepMarginals;
+      return geometry && geometry.rug < 5;
+    });
+    const shown = await page.evaluate(() => window.__safetyHepExplorerInstance.points.length);
+    const filtered = await page.evaluate(
+      () => window.__safetyHepExplorerInstance.chart.$hepMarginals
+    );
+    expect(filtered.x.n).toBe(shown);
+    expect(filtered.rug).toBe(shown);
+    await rRatioMin.fill('0');
+    await rRatioMin.dispatchEvent('change');
+
+    // Rugs alone give the strip back; hiding them draws nothing at all.
+    await control.locator('select').selectOption('rug');
+    await page.waitForFunction(
+      () => window.__safetyHepExplorerInstance.chart.$hepMarginals.mode === 'rug'
+    );
+    expect(
+      await page.evaluate(() => window.__safetyHepExplorerInstance.chart.options.layout.padding.top)
+    ).toBe(6);
+
+    await control.locator('select').selectOption('none');
+    await page.waitForFunction(
+      () => window.__safetyHepExplorerInstance.chart.$hepMarginals === null
+    );
+  });
+
   test('HEP-QUAD-006: the cut-lines can be dragged, reclassifying live and writing back to the inputs (#45)', async ({
     page
   }) => {

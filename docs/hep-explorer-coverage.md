@@ -22,6 +22,7 @@ pending; each row lists the module IDs its test covers.
 | HEP-DATA-001, HEP-CTRL-011                   | —                  | #43   | participant note reports N and % and updates on filter                                                       |
 | HEP-DATA-003                                 | —                  | #43   | missing and non-numeric results are dropped with a reported count and note                                   |
 | HEP-QUAD-002/003/004/005                     | —                  | #43   | quadrant cut-lines classify one participant per quadrant and drive the summary table                         |
+| HEP-MARG-001/002/003                         | —                  | #47   | marginal box plots and axis rugs summarize each measure beside the cloud                                     |
 | HEP-QUAD-006                                 | —                  | #45   | the cut-lines can be dragged, reclassifying live and writing back to the inputs                              |
 | HEP-QUAD-001/004                             | —                  | #43   | changing the x-axis reference line reclassifies the quadrants                                                |
 | HEP-DISPLAY-001/002, HEP-CHART-002           | —                  | #43   | the display toggle switches eDISH and mDISH axis titles and cutpoints                                        |

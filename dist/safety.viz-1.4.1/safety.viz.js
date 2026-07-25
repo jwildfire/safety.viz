@@ -13602,6 +13602,7 @@ var SafetyViz = (() => {
       rRatio: { relative_uln: 5, relative_baseline: 5 },
       defaults: { relative_uln: 3, relative_baseline: 3.8 }
     },
+    marginals: "box_rug",
     visit_window: 30,
     profile: true,
     profile_details: null,
@@ -21679,6 +21680,156 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     return roundCut(Math.min(ceiling, Math.max(floor, raw)));
   }
 
+  // src/hep-explorer/marginals.js
+  var MARGINAL_MODES = [
+    { value: "box_rug", label: "Box plots and rugs" },
+    { value: "box", label: "Box plots" },
+    { value: "rug", label: "Rugs" },
+    { value: "none", label: "Hidden" }
+  ];
+  var MARGIN_STRIP = 30;
+  var RUG_LENGTH = 9;
+  var MARGINAL_COLOR = "rgba(71, 85, 105, 0.85)";
+  var MARGINAL_FILL = "rgba(71, 85, 105, 0.18)";
+  var RUG_COLOR = "rgba(51, 65, 85, 0.7)";
+  function showsBoxes(mode) {
+    return mode !== "rug" && mode !== "none";
+  }
+  function showsRug(mode) {
+    return mode !== "box" && mode !== "none";
+  }
+  function scatterPadding(mode) {
+    const strip = showsBoxes(mode) ? MARGIN_STRIP : 6;
+    return { top: strip, right: strip, bottom: 6, left: 6 };
+  }
+  function marginalSummary(points) {
+    const rows = points || [];
+    return {
+      x: boxStats(rows.map((point) => point.x)),
+      y: boxStats(rows.map((point) => point.y))
+    };
+  }
+  function drawMarginalBox(ctx, stats, project, { across, thickness, horizontal }) {
+    if (!stats || !stats.n) return;
+    const centre = across + thickness / 2;
+    const q1 = project(stats.q25);
+    const q3 = project(stats.q75);
+    const low = project(stats.q5);
+    const high = project(stats.q95);
+    const median4 = project(stats.median);
+    const near = Math.min(q1, q3);
+    const span = Math.abs(q3 - q1);
+    ctx.strokeStyle = MARGINAL_COLOR;
+    ctx.fillStyle = MARGINAL_FILL;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    if (horizontal) {
+      ctx.moveTo(low, centre);
+      ctx.lineTo(high, centre);
+      ctx.moveTo(low, across + 2);
+      ctx.lineTo(low, across + thickness - 2);
+      ctx.moveTo(high, across + 2);
+      ctx.lineTo(high, across + thickness - 2);
+    } else {
+      ctx.moveTo(centre, low);
+      ctx.lineTo(centre, high);
+      ctx.moveTo(across + 2, low);
+      ctx.lineTo(across + thickness - 2, low);
+      ctx.moveTo(across + 2, high);
+      ctx.lineTo(across + thickness - 2, high);
+    }
+    ctx.stroke();
+    if (horizontal) {
+      ctx.fillRect(near, across, span, thickness);
+      ctx.strokeRect(near, across, span, thickness);
+      ctx.beginPath();
+      ctx.moveTo(median4, across);
+      ctx.lineTo(median4, across + thickness);
+    } else {
+      ctx.fillRect(across, near, thickness, span);
+      ctx.strokeRect(across, near, thickness, span);
+      ctx.beginPath();
+      ctx.moveTo(across, median4);
+      ctx.lineTo(across + thickness, median4);
+    }
+    ctx.lineWidth = 1.6;
+    ctx.stroke();
+  }
+  function drawRug(ctx, values, project, { from: from2, length, horizontal }) {
+    ctx.strokeStyle = RUG_COLOR;
+    ctx.lineWidth = 1.25;
+    ctx.beginPath();
+    values.forEach((value) => {
+      if (!Number.isFinite(value)) return;
+      const at = project(value);
+      if (horizontal) {
+        ctx.moveTo(at, from2);
+        ctx.lineTo(at, from2 - length);
+      } else {
+        ctx.moveTo(from2, at);
+        ctx.lineTo(from2 + length, at);
+      }
+    });
+    ctx.stroke();
+  }
+  function marginalPlugin(instance) {
+    return {
+      id: `hep-marginals-${Math.random().toString(36).slice(2)}`,
+      afterDatasetsDraw(chart) {
+        chart.$hepMarginals = null;
+        const mode = (instance.state || {}).marginals;
+        const points = instance.points || [];
+        if (mode === "none" || !points.length) return;
+        const { ctx, chartArea, scales } = chart;
+        if (!scales.x || !scales.y) return;
+        const summary = marginalSummary(points);
+        chart.$hepMarginals = {
+          mode: mode || "box_rug",
+          x: summary.x,
+          y: summary.y,
+          rug: points.filter((point) => Number.isFinite(point.x) && Number.isFinite(point.y)).length
+        };
+        ctx.save();
+        if (showsBoxes(mode)) {
+          const thickness = MARGIN_STRIP - 14;
+          drawMarginalBox(ctx, summary.x, (value) => scales.x.getPixelForValue(value), {
+            across: chartArea.top - MARGIN_STRIP + 4,
+            thickness,
+            horizontal: true
+          });
+          drawMarginalBox(ctx, summary.y, (value) => scales.y.getPixelForValue(value), {
+            across: chartArea.right + 10,
+            thickness,
+            horizontal: false
+          });
+        }
+        if (showsRug(mode)) {
+          drawRug(
+            ctx,
+            points.map((point) => point.x),
+            (value) => scales.x.getPixelForValue(value),
+            {
+              from: chartArea.bottom,
+              length: RUG_LENGTH,
+              horizontal: true
+            }
+          );
+          drawRug(
+            ctx,
+            points.map((point) => point.y),
+            (value) => scales.y.getPixelForValue(value),
+            {
+              from: chartArea.left,
+              length: RUG_LENGTH,
+              horizontal: false
+            }
+          );
+        }
+        ctx.restore();
+      }
+    };
+  }
+
   // src/hep-explorer/views/scatter.js
   var BASE_POINT_COLOR = GROUP_COLORS2[0];
   function addCutControl(host, addControl, parent, axisKey) {
@@ -21888,7 +22039,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
         maintainAspectRatio: false,
         responsive: true,
         animation: false,
-        layout: { padding: 6 },
+        layout: { padding: scatterPadding(host.state.marginals) },
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -21921,7 +22072,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
           else host.clearSelection();
         }
       },
-      plugins: [quadrantPlugin(host)]
+      plugins: [quadrantPlugin(host), marginalPlugin(host)]
     });
     host.chart = chart;
     host.scatterChart = chart;
@@ -22038,6 +22189,18 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       AXIS_TYPES.forEach((type) => option(axisType, type, type, type === host.state.axisType));
       axisType.onchange = () => {
         host.state.axisType = axisType.value;
+        host.render();
+      };
+      const marginals = addControl(
+        "Marginal Distributions",
+        document.createElement("select"),
+        settingsParent
+      );
+      MARGINAL_MODES.forEach(
+        (mode) => option(marginals, mode.value, mode.label, mode.value === host.state.marginals)
+      );
+      marginals.onchange = () => {
+        host.state.marginals = marginals.value;
         host.render();
       };
       const pointSize = addControl("Point Size", document.createElement("select"), settingsParent);
@@ -23599,6 +23762,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
         display: "relative_uln",
         axisType: "linear",
         pointSize: "Uniform",
+        marginals: this.settings.marginals,
         visitWindow: this.settings.visit_window,
         groupBy: this.settings.group_by,
         filters: {},
