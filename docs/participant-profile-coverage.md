@@ -35,11 +35,11 @@ adoption is this module's behaviour even though the fixtures drive hep-explorer.
 
 | Requirement ID              | Source matrix rows          | Issue | Test                                                                                                                          |
 | --------------------------- | --------------------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------- |
-| PPRF-HEP-001, PPRF-CORE-001 | PPRF-HEP-001, PPRF-CORE-001 | #98   | scatter click opens the docked profile below the chart — header, spaghetti, and measure table replace the legacy detail panel |
-| PPRF-HEP-005                | PPRF-HEP-005                | #98   | background click clears the selection and hides the dock                                                                      |
-| PPRF-HEP-002, PPRF-STEP-001 | PPRF-HEP-002, PPRF-STEP-001 | #98   | composite multi-select collapses the dock to a stepper, stepping renders each profile and keeps the chart highlight in sync   |
+| PPRF-HEP-001, PPRF-CORE-001 | PPRF-HEP-001, PPRF-CORE-001 | #98   | scatter click opens the railed profile below the chart — header, spaghetti, and measure table replace the legacy detail panel |
+| PPRF-HEP-005                | PPRF-HEP-005                | #98   | background click clears the selection and hides the rail                                                                      |
+| PPRF-HEP-002, PPRF-STEP-001 | PPRF-HEP-002, PPRF-STEP-001 | #98   | composite multi-select collapses the rail to a stepper, stepping renders each profile and keeps the chart highlight in sync   |
 | PPRF-HEP-003                | PPRF-HEP-003                | #98   | composite single focus (point click or selector) opens the full profile, not the stepper                                      |
-| PPRF-HEP-004                | PPRF-HEP-004                | #98   | the migration ribbon hand-off arrives in the composite view with the dock opened on the carried cohort                        |
+| PPRF-HEP-004                | PPRF-HEP-004                | #98   | the migration ribbon hand-off arrives in the composite view with the rail opened on the carried cohort                        |
 | PPRF-EVT-001, PPRF-CORE-002 | PPRF-EVT-001, PPRF-CORE-002 | #98   | the standalone demo wires the profile to a chart via participantsSelected                                                     |
 | PPRF-RAIL-001               | PPRF-RAIL-001               | #75   | the rail is a sibling of the main column, opposite the control sidebar; no dock slot remains inside the main column           |
 
@@ -77,7 +77,7 @@ resolves on merge. The matrix rows use the same `PPRF-<AREA>-<NUM>` IDs as the
 tables above, so no re-keying is needed when the extract arrives.
 
 - **Implemented (`browser`/`unit` above):** both mounts (standalone factory
-  with its own ingest and shell chrome; docked mount consuming a host's
+  with its own ingest and shell chrome; railed mount consuming a host's
   pre-cleaned rows), the participant header with R Ratio, P_ALT pass-through
   and the `{id}`-templated link-out, the standardized labs-over-time spaghetti
   with per-display cut lines, the measure table with banded sparklines and the
@@ -92,7 +92,7 @@ tables above, so no re-keying is needed when the extract arrives.
   routes to the hep-explorer evidence set by directory, so it appears there
   rather than in the unit table above. hep-explorer's own selection
   regression suite (`tests/e2e/hep-explorer.spec.js`, HEP-SELECT-\*) was
-  rewritten against the docked profile and remains in the hep-explorer
+  rewritten against the railed profile and remains in the hep-explorer
   evidence set.
 - **Accessibility (PPRF-8):** keyboard operation is asserted in the stepper and
   inset unit suites; a dedicated `PPRF-ACC-*` browser pass (tab order,

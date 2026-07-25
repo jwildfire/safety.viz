@@ -32,9 +32,9 @@ matching its behavior, under
 | SOE-EVENT-003            | SOE-API-003                                                                                               | #24   | participantsSelected fires on select and clear                                 |
 | SOE-FILT-051             | SOE-REG-051, SOE-REG-052, SOE-REG-053                                                                     | #24   | a filter with a start value initializes filtered and offers no All option      |
 | SOE-API-001              | — (see legacy-API note)                                                                                   | #24   | lifecycle API supports init, setData, setSettings, render, resize, and destroy |
-| PPRF-OE-001/PPRF-OE-002  | PPRF-OE-001, PPRF-OE-002 (participant-profile matrix)                                                     | #99   | clicking a point opens the docked profile ALONGSIDE the linked listing         |
-| PPRF-OE-003              | PPRF-OE-003 (participant-profile matrix)                                                                  | #99   | background click and control changes empty the dock                            |
-| PPRF-OE-002 (dock Clear) | PPRF-OE-002 (participant-profile matrix)                                                                  | #99   | the dock Clear affordance routes through the host clear path                   |
+| PPRF-OE-001/PPRF-OE-002  | PPRF-OE-001, PPRF-OE-002 (participant-profile matrix)                                                     | #99   | clicking a point opens the railed profile ALONGSIDE the linked listing         |
+| PPRF-OE-003              | PPRF-OE-003 (participant-profile matrix)                                                                  | #99   | background click and control changes empty the rail                            |
+| PPRF-OE-002 (rail Clear) | PPRF-OE-002 (participant-profile matrix)                                                                  | #99   | the rail Clear affordance routes through the host clear path                   |
 | SOE-AXIS-001/002/003     | SOE-AXIS-001, SOE-AXIS-002, SOE-AXIS-003                                                                  | #85   | y-limit inputs load pre-filled, follow the measure, and Reset restores         |
 
 ## Unit evidence (Vitest — `tests/unit/outlier-explorer/`)
@@ -108,12 +108,12 @@ exotic, legacy, or data-unsupported rows honestly.
   `validateAndCleanData` / `measureLabel` but not asserted by an automated row
   here.
 
-## Docked participant profile (#99, PPRF-OE)
+## Railed participant profile (#99, PPRF-OE)
 
-The shared participant-profile module docks below the chart (config-on,
+The shared participant-profile module mounts in the rail beside the chart (config-on,
 `profile: true`) and is fed by the renderer's existing point-click selection
 via the `participantsSelected` dispatch on the shell root (SOE-API-003) — the
-dock SUPPLEMENTS the linked listing (records vs story), replacing nothing.
+rail SUPPLEMENTS the linked listing (records vs story), replacing nothing.
 Adoption rows are PPRF-OE-001..003 in the
 [participant-profile matrix](https://github.com/jwildfire/obot.agent/blob/main/docs/requirements/participant-profile.md);
 unit evidence lives in `tests/unit/outlier-explorer/profile-adoption.test.js`.

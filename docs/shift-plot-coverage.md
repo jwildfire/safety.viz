@@ -27,9 +27,9 @@ matrix row → failing test → minimal implementation.
 | SSP-API-003/PPRF-SSP-004                                    | SSP-API-003 + PPRF-SSP-004 (participant-profile matrix)         | #14, #99 | brushing dispatches participantsSelected on the shell root, bubbling to the element          |
 | SSP-API-001 (module scheme)                                 | — (see legacy-API note)                                         | #14      | lifecycle API supports init, setData, setSettings, render, resize, destroy                   |
 | SSP-REG-016/SSP-REG-018                                     | SSP-REG-016, SSP-REG-018                                        | #14      | shared shell: controls left of the chart, chart above the listing (`tests/e2e/site.spec.js`) |
-| PPRF-SSP-001                                                | PPRF-SSP-001 (participant-profile matrix)                       | #99      | a multi-participant brush collapses the dock to a worst-first stepper                        |
-| PPRF-SSP-002                                                | PPRF-SSP-002 (participant-profile matrix)                       | #99      | a single-point brush shows the full docked profile beside the linked listing                 |
-| PPRF-SSP-003                                                | PPRF-SSP-003 (participant-profile matrix)                       | #99      | clearing the selection and control-driven redraws empty the dock                             |
+| PPRF-SSP-001                                                | PPRF-SSP-001 (participant-profile matrix)                       | #99      | a multi-participant brush collapses the rail to a worst-first stepper                        |
+| PPRF-SSP-002                                                | PPRF-SSP-002 (participant-profile matrix)                       | #99      | a single-point brush shows the full railed profile beside the linked listing                 |
+| PPRF-SSP-003                                                | PPRF-SSP-003 (participant-profile matrix)                       | #99      | clearing the selection and control-driven redraws empty the rail                             |
 
 ## Unit evidence (Vitest — `tests/unit/shift-plot/`)
 
@@ -82,13 +82,13 @@ the histogram precedent).
     page") — flagged vague in the AI review — is addressed by the fixed
     460px chart area and the responsive shell rather than a pixel assertion.
 
-## Docked participant profile (#99, PPRF-SSP)
+## Railed participant profile (#99, PPRF-SSP)
 
-The shared participant-profile module docks below the chart (config-on,
+The shared participant-profile module mounts in the rail beside the chart (config-on,
 `profile: true`) and is fed by the renderer's brush selection via the
-`participantsSelected` dispatch — the dock SUPPLEMENTS the linked listing
+`participantsSelected` dispatch — the rail SUPPLEMENTS the linked listing
 (records vs story), replacing nothing. shift-plot is the rollout's stepper
-renderer: a brush routinely catches several participants, so the dock collapses
+renderer: a brush routinely catches several participants, so the rail collapses
 to the worst-first cohort stepper ("1 of N"), stepper navigation
 border-emphasizes the stepped point on the chart without re-dispatching, and a
 single-point brush shows the full profile directly. The adoption moved the
