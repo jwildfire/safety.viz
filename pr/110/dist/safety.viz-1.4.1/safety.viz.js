@@ -13624,6 +13624,7 @@ var SafetyViz = (() => {
       rRatio: { relative_uln: 5, relative_baseline: 5 },
       defaults: { relative_uln: 3, relative_baseline: 3.8 }
     },
+    group_order_col: null,
     imputation_methods: {
       ALT: "data-driven",
       AST: "data-driven",
@@ -21151,6 +21152,24 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     "#00838f",
     "#c2185b"
   ];
+  var PALETTE_TIERS = 3;
+  function shade(hex2, amount) {
+    const clean = hex2.replace("#", "");
+    const channel = (offset) => {
+      const value = parseInt(clean.slice(offset, offset + 2), 16);
+      const shifted = amount >= 0 ? value + (255 - value) * amount : value * (1 + amount);
+      return Math.max(0, Math.min(255, Math.round(shifted))).toString(16).padStart(2, "0");
+    };
+    return `#${channel(0)}${channel(2)}${channel(4)}`;
+  }
+  function paletteColor(index) {
+    const size = GROUP_COLORS2.length;
+    const position = (index % (size * PALETTE_TIERS) + size * PALETTE_TIERS) % (size * PALETTE_TIERS);
+    const base = GROUP_COLORS2[position % size];
+    const tier = Math.floor(position / size);
+    if (tier === 0) return base;
+    return shade(base, tier === 1 ? 0.45 : -0.4);
+  }
   var SELECTION_COLOR2 = "#111827";
   var QUADRANT_LABELS = [
     { position: "upper-right", label: "Possible Hy's Law Range", xCat: "High", yCat: "High" },
@@ -21193,7 +21212,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
   function groupColorScale2(groupValues) {
     const scale = /* @__PURE__ */ new Map();
     groupValues.forEach((value, index) => {
-      scale.set(String(value), GROUP_COLORS2[index % GROUP_COLORS2.length]);
+      scale.set(String(value), paletteColor(index));
     });
     return scale;
   }
@@ -21346,7 +21365,10 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     const metaCols = unique6([
       settings.id_col,
       ...settings.filters.map((filter) => filter.value_col),
-      ...settings.groups.map((group) => group.value_col)
+      ...settings.groups.map((group) => group.value_col),
+      // The legend's numeric ordering column travels with the point, so the
+      // legend can be sorted without a second pass over the rows (HEP-CTRL-015).
+      settings.group_order_col
     ]).filter((col) => col && col !== GROUP_NONE);
     const byId = /* @__PURE__ */ new Map();
     cleanRows.forEach((row) => {
@@ -21535,6 +21557,55 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       });
     });
     return { rows: surviving, imputed, dropped, limits };
+  }
+
+  // src/hep-explorer/availability.js
+  function availableDisplays(rows) {
+    const records = rows || [];
+    const hasUln = records.some((row) => Number.isFinite(row.__hep_uln) && row.__hep_uln > 0);
+    const hasBaseline = records.some(
+      (row) => Number.isFinite(row.__hep_baseline) && row.__hep_baseline !== 0
+    );
+    const modes = [];
+    if (hasUln) modes.push("relative_uln");
+    if (hasBaseline) modes.push("relative_baseline");
+    if (!hasUln && !hasBaseline) {
+      return {
+        modes,
+        note: "This data carries neither a usable reference range nor a derivable baseline, so neither the reference-range-adjusted (eDISH) nor the baseline-adjusted (mDISH) view can be drawn."
+      };
+    }
+    if (!hasBaseline) {
+      return {
+        modes,
+        note: "No participant has a derivable baseline, so the baseline-adjusted (mDISH) view is not offered."
+      };
+    }
+    if (!hasUln) {
+      return {
+        modes,
+        note: "No record carries a usable upper limit of normal, so the reference-range-adjusted (eDISH) view is not offered."
+      };
+    }
+    return { modes, note: "" };
+  }
+  function groupOrder(groupValues, points, orderCol) {
+    const values = [...groupValues || []].map(String).sort();
+    if (!orderCol) return values;
+    const rank = /* @__PURE__ */ new Map();
+    (points || []).forEach((point) => {
+      const key = String(point.group);
+      if (rank.has(key)) return;
+      const raw = point.raw ? point.raw[orderCol] : void 0;
+      const value = Number(raw);
+      if (raw !== void 0 && raw !== "" && Number.isFinite(value)) rank.set(key, value);
+    });
+    return values.sort((a, b) => {
+      const rankA = rank.has(a) ? rank.get(a) : Infinity;
+      const rankB = rank.has(b) ? rank.get(b) : Infinity;
+      if (rankA !== rankB) return rankA - rankB;
+      return a.localeCompare(b);
+    });
   }
 
   // src/hep-explorer/selection.js
@@ -22128,6 +22199,10 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       }
       host.notes.append(note);
     }
+    const availability = host.displayAvailability;
+    if (availability && availability.note) {
+      host.notes.append(createElement("span", "sv-warning", availability.note));
+    }
     if (host.imputedRecords) {
       const limits = Object.entries(host.imputationLimits || {}).map(([measure, limit]) => `${measure} < ${formatNumber4(limit)}`).join(", ");
       host.notes.append(
@@ -22403,7 +22478,8 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
         host.render();
       };
       const display = addControl("Display Type", document.createElement("select"), settingsParent);
-      DISPLAY_MODES.forEach(
+      const supported = availableDisplays(host.cleanRows).modes;
+      DISPLAY_MODES.filter((mode) => !supported.length || supported.includes(mode.value)).forEach(
         (mode) => option(display, mode.value, mode.label, mode.value === host.state.display)
       );
       display.onchange = () => {
@@ -22513,7 +22589,13 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
         return;
       }
       const grouped = host.state.groupBy && host.state.groupBy !== GROUP_NONE;
-      host.groupValues = grouped ? unique6(host.points.map((point) => point.group)).filter((value) => value !== null && value !== void 0).map(String).sort() : [];
+      host.groupValues = grouped ? groupOrder(
+        unique6(host.points.map((point) => point.group)).filter(
+          (value) => value !== null && value !== void 0
+        ),
+        host.points,
+        host.settings.group_order_col
+      ) : [];
       host.colorScale = groupColorScale2(host.groupValues);
       host.quadrants = classifyQuadrants(host.points, host.state.xCut, host.state.yCut);
       drawScatter(host);
@@ -24264,6 +24346,10 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       this.cleanRows = imputation.rows;
       this.removedRecords = removed + imputation.dropped.length;
       this.rRatioMax = maxRRatio(imputation.rows, this.settings);
+      this.displayAvailability = availableDisplays(imputation.rows);
+      if (this.displayAvailability.modes.length && !this.displayAvailability.modes.includes(this.state.display)) {
+        this.state.display = this.displayAvailability.modes[0];
+      }
       if (removed)
         console.warn(
           `${removed} missing or non-numeric result${removed > 1 ? "s have" : " has"} been removed.`
@@ -24483,6 +24569,13 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       this.state.yCut = cutFor(this.state.cuts, this.state.measureY, this.state.display);
       if (!this.cleanRows.length) {
         this.notes.innerHTML = "<span>No data selected. Provide records to draw the chart.</span>";
+        if (carriedIds.length) this.selection.dispatch([]);
+        return;
+      }
+      if (this.displayAvailability && !this.displayAvailability.modes.length) {
+        this.notes.innerHTML = "";
+        this.notes.append(createElement("span", "sv-warning", this.displayAvailability.note));
+        this.chartWrap.style.display = "none";
         if (carriedIds.length) this.selection.dispatch([]);
         return;
       }
