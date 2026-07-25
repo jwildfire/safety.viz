@@ -87,7 +87,7 @@ class AETimelines {
   profileSettings() {
     return {
       id_col: this.settings.id_col,
-      details: this.settings.details,
+      details: this.settings.profile_details,
       on_clear: () => this.backToTimelines(),
       ae: {
         data: this.rawData,

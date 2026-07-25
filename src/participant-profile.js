@@ -211,6 +211,7 @@ class SafetyParticipantProfile {
 
     // Escape leaves the expanded state rather than trapping the reviewer in it
     // (decision D3).
+    /** @private */
     this.railKeyHandler = (event) => {
       if (event.key === 'Escape' && this.state.expanded) {
         event.stopPropagation();

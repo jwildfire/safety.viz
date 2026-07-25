@@ -123,6 +123,11 @@ class AEExplorer {
     // rows here, so the profile reads as the AE story alone.
     this.profileRows = [];
     this.listingSelectedId = null;
+    /**
+     * The shared listing's row-focus hook: clicking a details row focuses that
+     * participant (AE-REG-024 + obot.roadmap#75 decision D9).
+     * @private
+     */
     this.onListingRowClick = (row) => this.focusParticipant(row[this.settings.id_col]);
     mountProfileRail(this, () => this.profileSettings());
   }
@@ -217,7 +222,7 @@ class AEExplorer {
   profileSettings() {
     return {
       id_col: this.settings.id_col,
-      details: this.settings.details || [],
+      details: this.settings.profile_details || [],
       on_clear: () => this.focusParticipant(null),
       ae: {
         data: this.rawData,

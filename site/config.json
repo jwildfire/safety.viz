@@ -59,7 +59,9 @@
       "guide": "hep-explorer.md",
       "heroAsset": "hep-explorer-hero.png",
       "data": "adbds.csv",
-      "related": ["hep-waterfall"]
+      "related": [
+        "hep-waterfall"
+      ]
     },
     {
       "module": "hep-waterfall",
@@ -74,22 +76,29 @@
       "guide": "hep-waterfall.md",
       "guideTagline": "When to reach for the ALT waterfall instead of eDISH, how to read the baseline trace and the bar directions, and why the axis is absolute U/L.",
       "guideCaution": "Bars flag participants for review, they do not diagnose drug-induced liver injury; and the maximum on-treatment value can hide a rise that follows a larger decline.",
-      "related": ["hep-explorer"]
+      "related": [
+        "hep-explorer"
+      ]
     },
     {
       "module": "participant-profile",
       "title": "Participant Profile",
       "status": "available",
       "experimental": true,
-      "blurb": "The standardized-lab participant drill-down as a chart-agnostic module: a demographics header with R Ratio and a templated record link-out, a labs-over-time spaghetti with reference cut-lines, and a per-measure summary table with sparklines that expand to an inset chart — stepping worst-first through a multi-participant cohort, docked below the Hepatic Safety Explorer or mounted standalone against any chart that dispatches participantsSelected.",
+      "blurb": "The standardized-lab participant drill-down as a chart-agnostic module: a demographics header with R Ratio and a templated record link-out, a labs-over-time spaghetti with reference cut-lines, and a per-measure summary table with sparklines that expand to an inset chart \u2014 stepping worst-first through a multi-participant cohort, docked below the Hepatic Safety Explorer or mounted standalone against any chart that dispatches participantsSelected.",
       "hero": "PPRF-HEP-001-scatter-dock.png",
       "heroAsset": "participant-profile-hero.png",
       "matrix": "participant-profile.md",
       "guide": "participant-profile.md",
-      "guideTagline": "How to read the participant profile — header, labs-over-time spaghetti, and measure table — and how to wire it to your own chart through the participantsSelected event.",
+      "guideTagline": "How to read the participant profile \u2014 header, labs-over-time spaghetti, and measure table \u2014 and how to wire it to your own chart through the participantsSelected event.",
       "guideCaution": "The profile summarizes one participant's lab course to support review; it does not adjudicate causality or diagnose drug-induced liver injury.",
-      "data": "adbds.csv",
-      "related": ["hep-explorer"]
+      "data": [
+        "adbds.csv",
+        "adae.csv"
+      ],
+      "related": [
+        "hep-explorer"
+      ]
     },
     {
       "module": "paneled-outlier-explorer",
