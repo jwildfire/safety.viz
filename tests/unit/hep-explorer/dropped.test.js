@@ -50,14 +50,24 @@ describe('hep-explorer dropped-record downloads (HEP-DROP-*)', () => {
     expect(DROPPED_PARTICIPANT_COLUMNS).toEqual(['id', 'reason']);
   });
 
-  it('HEP-DROP-003: the link carries the CSV inline and names the file (#50)', () => {
-    const link = csvDownloadLink('"a"\n"1"', 'hepExplorerDroppedRows', 'download the rows');
+  it('HEP-DROP-003: the link names the file and builds the CSV only when clicked (#50)', () => {
+    let built = 0;
+    const link = csvDownloadLink(
+      () => {
+        built += 1;
+        return '"a"\n"1"';
+      },
+      'hepExplorerDroppedRows',
+      'download the rows'
+    );
     expect(link.tagName).toBe('A');
     expect(link.textContent).toBe('download the rows');
     expect(link.getAttribute('download')).toMatch(/^hepExplorerDroppedRows.*\.csv$/);
-    // A data: URI rather than an object URL — nothing to revoke, and it
-    // survives a re-render that replaces the notes wholesale.
-    expect(link.getAttribute('href')).toMatch(/^data:text\/csv;charset=utf-8,/);
-    expect(decodeURIComponent(link.getAttribute('href').split(',')[1])).toBe('"a"\n"1"');
+    // Nothing is serialized until someone asks: a study-sized drop list would
+    // otherwise put hundreds of kilobytes in the DOM on every redraw.
+    expect(built).toBe(0);
+    expect(link.getAttribute('href')).toBe('#');
+    expect(link.__hepCsv()).toBe('"a"\n"1"');
+    expect(built).toBe(1);
   });
 });

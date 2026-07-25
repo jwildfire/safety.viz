@@ -232,7 +232,7 @@ function updateNotes(host) {
     if (rows.length) {
       note.append(
         csvDownloadLink(
-          toCsv(rows, droppedRowColumns(rows)),
+          () => toCsv(rows, droppedRowColumns(rows)),
           'hepExplorerDroppedRows',
           'Download the removed records (CSV)'
         )
@@ -255,7 +255,7 @@ function updateNotes(host) {
     if (dropped.length) {
       note.append(
         csvDownloadLink(
-          toCsv(dropped, DROPPED_PARTICIPANT_COLUMNS),
+          () => toCsv(dropped, DROPPED_PARTICIPANT_COLUMNS),
           'hepExplorerDroppedParticipants',
           'Download the dropped participants (CSV)'
         )

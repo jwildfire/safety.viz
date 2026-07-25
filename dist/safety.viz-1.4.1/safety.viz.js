@@ -22047,12 +22047,23 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     const source = Object.keys(rows[0]).filter((column) => !column.startsWith("__hep_"));
     return [REASON_COLUMN, ...source];
   }
-  function csvDownloadLink(csv, fileCore, label) {
+  function csvDownloadLink(buildCsv2, fileCore, label) {
     const link = document.createElement("a");
+    const fileName = `${fileCore}_${(/* @__PURE__ */ new Date()).toISOString().slice(0, 10)}.csv`;
     link.className = "hep-csv-link";
     link.textContent = label;
-    link.setAttribute("download", `${fileCore}_${(/* @__PURE__ */ new Date()).toISOString().slice(0, 10)}.csv`);
-    link.setAttribute("href", `data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`);
+    link.setAttribute("href", "#");
+    link.setAttribute("download", fileName);
+    link.__hepCsv = buildCsv2;
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      const url = URL.createObjectURL(new Blob([buildCsv2()], { type: "text/csv;charset=utf-8;" }));
+      const trigger = document.createElement("a");
+      trigger.href = url;
+      trigger.download = fileName;
+      trigger.click();
+      setTimeout(() => URL.revokeObjectURL(url), 0);
+    });
     return link;
   }
 
@@ -22172,7 +22183,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       if (rows.length) {
         note.append(
           csvDownloadLink(
-            toCsv(rows, droppedRowColumns(rows)),
+            () => toCsv(rows, droppedRowColumns(rows)),
             "hepExplorerDroppedRows",
             "Download the removed records (CSV)"
           )
@@ -22191,7 +22202,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       if (dropped.length) {
         note.append(
           csvDownloadLink(
-            toCsv(dropped, DROPPED_PARTICIPANT_COLUMNS),
+            () => toCsv(dropped, DROPPED_PARTICIPANT_COLUMNS),
             "hepExplorerDroppedParticipants",
             "Download the dropped participants (CSV)"
           )

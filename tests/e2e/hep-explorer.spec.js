@@ -148,11 +148,16 @@ test.describe('safety.viz hep-explorer module', () => {
     await expect(link).toHaveCount(1);
     await expect(link).toContainText('Download the removed records');
     await expect(link).toHaveAttribute('download', /^hepExplorerDroppedRows.*\.csv$/);
+    // The href is a placeholder: the CSV is serialized on click, not on render.
+    await expect(link).toHaveAttribute('href', '#');
 
     // HEP-DROP-001/002: the export names the mapped column that failed, per
-    // row, and carries the source columns beside it.
-    const href = await link.getAttribute('href');
-    const csv = decodeURIComponent(href.split(',').slice(1).join(','));
+    // row, and carries the source columns beside it. The text is built through
+    // the link's own builder rather than by downloading a file, so the assertion
+    // is on what a click would produce.
+    const csv = await page.evaluate(() =>
+      document.querySelector('.sv-notes a.hep-csv-link').__hepCsv()
+    );
     const lines = csv.split('\n');
     expect(lines[0]).toContain('"__hep_dropReason"');
     expect(lines[0]).toContain('"USUBJID"');

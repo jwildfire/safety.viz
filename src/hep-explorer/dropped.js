@@ -8,9 +8,11 @@
 // exactly the sort of line that gets read past. The download turns the count
 // into something checkable against the source dataset.
 //
-// The link carries the CSV as a `data:` URI rather than an object URL: there is
-// nothing to revoke, and the notes area is rebuilt wholesale on every render,
-// which would otherwise leak a blob per redraw.
+// The CSV is built ON CLICK, not on render. A study-sized dataset drops
+// thousands of records — the pharmaverseadam demo drops 1663 — and serializing
+// them into an href would put close to half a megabyte of text in the DOM on
+// every redraw, for a link most readers never use. The click builds the text,
+// hands the browser a blob, and revokes it.
 //
 // Requirement group: HEP-DROP-*.
 
@@ -53,19 +55,35 @@ export function droppedRowColumns(rows) {
 }
 
 /**
- * A link that downloads the given CSV text (HEP-DROP-003). The file name
+ * A link that downloads a CSV built at click time (HEP-DROP-003). The file name
  * carries the run's date, so two exports from one sitting do not overwrite each
  * other in the downloads folder.
- * @param {string} csv The CSV text.
+ *
+ * The builder is also stashed on the element as `__hepCsv`, so the browser
+ * suite can assert the exported text without actually downloading a file.
+ * @param {function(): string} buildCsv Returns the CSV text; called on click.
  * @param {string} fileCore The file-name stem.
  * @param {string} label The link text.
  * @returns {HTMLAnchorElement} The link element.
  */
-export function csvDownloadLink(csv, fileCore, label) {
+export function csvDownloadLink(buildCsv, fileCore, label) {
   const link = document.createElement('a');
+  const fileName = `${fileCore}_${new Date().toISOString().slice(0, 10)}.csv`;
   link.className = 'hep-csv-link';
   link.textContent = label;
-  link.setAttribute('download', `${fileCore}_${new Date().toISOString().slice(0, 10)}.csv`);
-  link.setAttribute('href', `data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`);
+  link.setAttribute('href', '#');
+  link.setAttribute('download', fileName);
+  link.__hepCsv = buildCsv;
+  link.addEventListener('click', (event) => {
+    event.preventDefault();
+    const url = URL.createObjectURL(new Blob([buildCsv()], { type: 'text/csv;charset=utf-8;' }));
+    const trigger = document.createElement('a');
+    trigger.href = url;
+    trigger.download = fileName;
+    trigger.click();
+    // The browser has taken the blob by the time the click returns; releasing
+    // it on the next tick keeps a long session from holding every export.
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+  });
   return link;
 }
