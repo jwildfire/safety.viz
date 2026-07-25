@@ -504,7 +504,9 @@ class SafetyParticipantProfile {
     const activeEl = typeof document !== 'undefined' ? document.activeElement : null;
     const ownsFocus =
       activeEl &&
-      (this.profileHost.contains(activeEl) || (this.controls && this.controls.contains(activeEl)));
+      (this.profileHost.contains(activeEl) ||
+        (this.stepperWrap && this.stepperWrap.contains(activeEl)) ||
+        (this.controls && this.controls.contains(activeEl)));
     const focusKey = ownsFocus ? activeEl.getAttribute('data-sv-focus') : null;
 
     this.destroyContent();
@@ -663,6 +665,10 @@ class SafetyParticipantProfile {
     if (!focusKey) return;
     const find = (key) =>
       this.profileHost.querySelector(`[data-sv-focus="${key}"]`) ||
+      // The stepper is pinned outside the block in the rail (decision D8), so
+      // focus restoration has to look there too or a keyboard user loses the
+      // strip on every step.
+      (this.stepperWrap ? this.stepperWrap.querySelector(`[data-sv-focus="${key}"]`) : null) ||
       (this.controls ? this.controls.querySelector(`[data-sv-focus="${key}"]`) : null);
     let target = find(focusKey);
     if (target && target.disabled) target = find('stepper') || target;

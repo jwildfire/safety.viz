@@ -228,8 +228,8 @@ test.describe('safety.viz shift-plot module', () => {
   }) => {
     const events = await page.evaluate(() => {
       const instance = window.__safetyShiftPlotInstance;
-      // The dispatch target moved to the shell root in the dock adoption
-      // (#99, PPRF-SSP-004) so root-level listeners — the docked profile's
+      // The dispatch target moved to the shell root in the rail adoption
+      // (#99, PPRF-SSP-004) so root-level listeners — the railed profile's
       // feed — hear every dispatch; the event still bubbles, so the original
       // element-level contract keeps working.
       const root = [];
@@ -249,16 +249,16 @@ test.describe('safety.viz shift-plot module', () => {
     expect(events.element).toEqual(events.root);
   });
 
-  test('PPRF-SSP-001: a multi-participant brush collapses the dock to a worst-first stepper whose steps emphasize the chart (#99)', async ({
+  test('PPRF-SSP-001: a multi-participant brush collapses the rail to a worst-first stepper whose steps emphasize the chart (#99)', async ({
     page
   }) => {
     await page.evaluate(() => window.__safetyShiftPlotInstance.brushValues(9.5, 13.5, 9.5, 16));
     // Worst-first: S03 has the highest peak ×ULN (15/20) of the brushed four.
-    await expect(page.locator('.sv-profile .sv-profile-step-count')).toContainText('1 of 4');
-    await expect(page.locator('.sv-profile .sv-profile-id')).toHaveText('Participant S03');
+    await expect(page.locator('.sv-rail .sv-profile-step-count')).toContainText('1 of 4');
+    await expect(page.locator('.sv-rail .sv-profile-id')).toHaveText('Participant S03');
     // Header demographics come from profile_details, not the host listing columns.
-    await expect(page.locator('.sv-profile .sv-profile-header')).toContainText('Placebo');
-    await captureEvidence(page, 'PPRF-SSP-001', 'docked-stepper');
+    await expect(page.locator('.sv-rail .sv-profile-header')).toContainText('Placebo');
+    await captureEvidence(page, 'PPRF-SSP-001', 'railed-stepper');
 
     // Stepping renders the next-worst profile and border-emphasizes that
     // point on the chart without re-dispatching the selection.
@@ -271,8 +271,8 @@ test.describe('safety.viz shift-plot module', () => {
       return instance.currentTableData.length;
     });
     expect(stepped).toBe(4);
-    await page.locator('.sv-profile .sv-profile-step-next').click();
-    await expect(page.locator('.sv-profile .sv-profile-step-count')).toContainText('2 of 4');
+    await page.locator('.sv-rail .sv-profile-step-next').click();
+    await expect(page.locator('.sv-rail .sv-profile-step-count')).toContainText('2 of 4');
     const emphasis = await page.evaluate(() => {
       const instance = window.__safetyShiftPlotInstance;
       const widths = instance.chart.data.datasets[0].borderWidth;
@@ -289,45 +289,45 @@ test.describe('safety.viz shift-plot module', () => {
     expect(emphasis.emphasized).toBe(1);
   });
 
-  test('PPRF-SSP-002: a single-point brush shows the full docked profile with no stepper, beside the linked listing (#99)', async ({
+  test('PPRF-SSP-002: a single-point brush shows the full railed profile with no stepper, beside the linked listing (#99)', async ({
     page
   }) => {
     // A tight rectangle around S01's point (baseline 10, comparison 12).
     await page.evaluate(() => window.__safetyShiftPlotInstance.brushValues(9.9, 10.1, 11.9, 12.1));
-    await expect(page.locator('.sv-profile .sv-profile-id')).toHaveText('Participant S01');
-    await expect(page.locator('.sv-profile .sv-profile-step-count')).toHaveCount(0);
-    await expect(page.locator('.sv-profile .sv-profile-spaghetti canvas')).toBeVisible();
+    await expect(page.locator('.sv-rail .sv-profile-id')).toHaveText('Participant S01');
+    await expect(page.locator('.sv-rail .sv-profile-step-count')).toHaveCount(0);
+    await expect(page.locator('.sv-rail .sv-profile-spaghetti canvas')).toBeVisible();
     // Both fixture measures are key measures via measure_values, but only
     // Albumin has rows for S01.
-    await expect(page.locator('.sv-profile .sv-profile-measure-row')).toHaveCount(1);
+    await expect(page.locator('.sv-rail .sv-profile-measure-row')).toHaveCount(1);
     // The linked listing stays — records vs story (PPRF-11).
     await expect(page.locator('.sv-listing table')).toBeVisible();
-    await captureEvidence(page, 'PPRF-SSP-002', 'docked-full-profile');
+    await captureEvidence(page, 'PPRF-SSP-002', 'railed-full-profile');
   });
 
-  test('PPRF-SSP-003: clearing the selection and control-driven redraws empty the dock (#99)', async ({
+  test('PPRF-SSP-003: clearing the selection and control-driven redraws empty the rail (#99)', async ({
     page
   }) => {
     await page.evaluate(() => window.__safetyShiftPlotInstance.brushValues(9.5, 13.5, 9.5, 16));
-    await expect(page.locator('.sv-profile .sv-profile-step-count')).toContainText('1 of 4');
+    await expect(page.locator('.sv-rail .sv-profile-step-count')).toContainText('1 of 4');
     // The tiny-click path (an empty click clears the brush).
     await page.evaluate(() => window.__safetyShiftPlotInstance.clearSelection());
-    await expect(page.locator('.sv-profile')).toBeEmpty();
-    await expect(page.locator('.sv-profile')).toBeHidden();
+    await expect(page.locator('.sv-rail .sv-profile-root')).toHaveCount(0);
+    await expect(page.locator('.sv-rail .sv-profile-id')).toHaveCount(0);
 
-    // Re-brush, then clear through the dock's own Clear affordance: it routes
+    // Re-brush, then clear through the rail's own Clear affordance: it routes
     // through the host clear path, so the listing empties too.
     await page.evaluate(() => window.__safetyShiftPlotInstance.brushValues(9.5, 13.5, 9.5, 16));
     await expect(page.locator('.sv-listing table')).toBeVisible();
-    await page.locator('.sv-profile .sv-profile-clear').click();
-    await expect(page.locator('.sv-profile')).toBeEmpty();
+    await page.locator('.sv-rail .sv-profile-clear').click();
+    await expect(page.locator('.sv-rail .sv-profile-root')).toHaveCount(0);
     await expect(page.locator('.sv-listing table')).toHaveCount(0);
 
-    // A control-driven render resets the selection silently — the dock must
+    // A control-driven render resets the selection silently — the rail must
     // empty in the same preamble.
     await page.evaluate(() => window.__safetyShiftPlotInstance.brushValues(9.5, 13.5, 9.5, 16));
     await control(page, 'Measure').selectOption('Pulse');
-    await expect(page.locator('.sv-profile')).toBeEmpty();
+    await expect(page.locator('.sv-rail .sv-profile-root')).toHaveCount(0);
   });
 
   test('SSP-API-001: lifecycle API supports init, setData, setSettings, render, resize, and destroy (#14)', async ({

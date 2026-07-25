@@ -18,6 +18,15 @@ measure table, sparklines, inset, and optional listing — PPRF-4), `PPRF-STEP-*
 (the worst-first cohort stepper — PPRF-5), `PPRF-EVT-*` (the
 `participantsSelected` event contract — PPRF-6), and `PPRF-HEP-*` (the
 hep-explorer adoption that replaced the legacy welded drill-down — PPRF-7).
+
+**v2 ([obot.roadmap#75](https://github.com/jwildfire/obot.roadmap/issues/75))**
+adds `PPRF-RAIL-*` (the right-hand rail that replaces the dock — decisions
+D1/D2), `PPRF-EXP-*` (expand-to-fill-the-container — D3), `PPRF-MODE-*` (the
+rail's responsive stacking now that the dock is removed — D4), `PPRF-AE-*` (the
+adverse-event data contract and cleaning), `PPRF-AESUM-*` (the AE summary
+block — D6), `PPRF-AETL-*` (the AE timeline — D5), and `PPRF-AXIS-*` (the
+shared study-day domain — D7). `PPRF-CORE-005` is superseded: the docked mount
+it described no longer exists, and `profileRail` takes its place.
 The hep-explorer adoption tests live in this module's spec file deliberately:
 the evidence pipeline routes browser captures by spec filename, and the
 adoption is this module's behaviour even though the fixtures drive hep-explorer.
@@ -32,16 +41,17 @@ adoption is this module's behaviour even though the fixtures drive hep-explorer.
 | PPRF-HEP-003                | PPRF-HEP-003                | #98   | composite single focus (point click or selector) opens the full profile, not the stepper                                      |
 | PPRF-HEP-004                | PPRF-HEP-004                | #98   | the migration ribbon hand-off arrives in the composite view with the dock opened on the carried cohort                        |
 | PPRF-EVT-001, PPRF-CORE-002 | PPRF-EVT-001, PPRF-CORE-002 | #98   | the standalone demo wires the profile to a chart via participantsSelected                                                     |
+| PPRF-RAIL-001               | PPRF-RAIL-001               | #75   | the rail is a sibling of the main column, opposite the control sidebar; no dock slot remains inside the main column           |
 
 ## Unit evidence (Vitest — `tests/unit/participant-profile/`)
 
 | Requirement ID                                                        | Source matrix rows | Issue | Test file                                       |
 | --------------------------------------------------------------------- | ------------------ | ----- | ----------------------------------------------- |
-| PPRF-CORE-001 (module export: factory + dock)                         | PPRF-CORE-001      | #98   | `export.test.js`                                |
+| PPRF-CORE-001 (module export: factory + rail)                         | PPRF-CORE-001      | #98   | `export.test.js`                                |
 | PPRF-CORE-002 (standalone long-lab contract guard)                    | PPRF-CORE-002      | #98   | `checkInputs.test.js`                           |
 | PPRF-CORE-003 (defaults + settings normalization)                     | PPRF-CORE-003      | #98   | `configure.test.js`                             |
 | PPRF-CORE-004 (standalone chrome: shell mount, hidden chart card)     | PPRF-CORE-004      | #98   | `events.test.js`                                |
-| PPRF-CORE-005 (docked mount: pre-cleaned rows, imperative feed)       | PPRF-CORE-005      | #98   | `dock.test.js`                                  |
+| PPRF-CORE-005 (railed mount: pre-cleaned rows, imperative feed)       | PPRF-CORE-005      | #98   | `rail.test.js`                                  |
 | PPRF-HDR-001 (demographics, R Ratio, P_ALT pass-through, Clear)       | PPRF-HDR-001       | #98   | `header.test.js`, `structureData.test.js`       |
 | PPRF-HDR-002 ({id}-templated link-out, closes #53)                    | PPRF-HDR-002       | #98   | `configure.test.js`                             |
 | PPRF-SPAG-001 (series building, cut lines, spaghetti render)          | PPRF-SPAG-001      | #98   | `spaghetti.test.js`, `structureData.test.js`    |
@@ -92,3 +102,23 @@ tables above, so no re-keying is needed when the extract arrives.
   demo, the schema, and the generated API reference are the gate's artifacts;
   evidence baselines regenerate on the canonical Linux environment via the
   evidence-update workflow after merge.
+
+## v2 unit evidence (Vitest — obot.roadmap#75)
+
+| Requirement ID                                                         | Source matrix rows | Issue | Test file                        |
+| ---------------------------------------------------------------------- | ------------------ | ----- | -------------------------------- |
+| PPRF-RAIL-001 (shell rail slot, opposite the control sidebar)          | PPRF-RAIL-001      | #75   | `renderShell.test.js`            |
+| PPRF-RAIL-002 (rail head: participant, cohort count, Close)            | PPRF-RAIL-002      | #75   | `rail.test.js`                   |
+| PPRF-EXP-001 (Expand fills the host container; Escape collapses)       | PPRF-EXP-001       | #75   | `rail.test.js`                   |
+| PPRF-STEP-003 (stepper pinned in the head; expandable ranked list)     | PPRF-STEP-003      | #75   | `rail.test.js`                   |
+| PPRF-AE-001 (AE contract: ae-timelines / ae-explorer setting names)    | PPRF-AE-001        | #75   | `ae.test.js`                     |
+| PPRF-AE-002 (AE cleaning: ids, open ends, unplaceable, severity)       | PPRF-AE-002        | #75   | `ae.test.js`                     |
+| PPRF-AE-003 (per-participant ordering, worst-first)                    | PPRF-AE-003        | #75   | `ae.test.js`                     |
+| PPRF-AE-004 (the AE block sits directly under the labs chart)          | PPRF-AE-004        | #75   | `rail.test.js`                   |
+| PPRF-AE-005 (an AE-only profile: no labs, no empty spaghetti or table) | PPRF-AE-005        | #75   | `ae-adoption.test.js`            |
+| PPRF-AESUM-001 (four figures, severity mix, body-system rollup)        | PPRF-AESUM-001     | #75   | `ae.test.js`, `aeTracks.test.js` |
+| PPRF-AESUM-002 (severity named in the legend, never hue alone)         | PPRF-AESUM-002     | #75   | `aeTracks.test.js`               |
+| PPRF-AETL-001 (rows, bars, open ends, row cap, text alternatives)      | PPRF-AETL-001      | #75   | `ae.test.js`, `aeTracks.test.js` |
+| PPRF-AETL-002 (the day ruler)                                          | PPRF-AETL-002      | #75   | `ae.test.js`, `aeTracks.test.js` |
+| PPRF-AXIS-001 (union of the lab and AE domains)                        | PPRF-AXIS-001      | #75   | `ae.test.js`                     |
+| PPRF-AXIS-002 (pinned plot gutters so the two x-axes align)            | PPRF-AXIS-002      | #75   | `aeTracks.test.js`               |
