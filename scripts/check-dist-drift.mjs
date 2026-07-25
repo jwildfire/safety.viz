@@ -1,4 +1,4 @@
-import { readFileSync, mkdtempSync, rmSync, existsSync, mkdirSync } from 'node:fs';
+import { readFileSync, readdirSync, mkdtempSync, rmSync, existsSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { buildAll, rootDir, distDirFor } from './build.mjs';
 
@@ -43,6 +43,22 @@ try {
   }
 } finally {
   rmSync(tmpDir, { recursive: true, force: true });
+}
+
+// The e2e fixtures load the bundle by its versioned path, so a version bump that
+// forgets them leaves the whole browser suite exercising the previous release's
+// frozen bytes rather than the code under test (#109). Fail the same gate.
+const fixtureDir = path.join(rootDir, 'tests/e2e/fixtures');
+const pinPattern = /dist\/safety\.viz-(\d+\.\d+\.\d+)\//g;
+for (const name of readdirSync(fixtureDir).filter((f) => f.endsWith('.html'))) {
+  const html = readFileSync(path.join(fixtureDir, name), 'utf8');
+  for (const [, pinned] of html.matchAll(pinPattern)) {
+    if (pinned !== pkg.version) {
+      drifted.push(
+        `tests/e2e/fixtures/${name}: loads dist/safety.viz-${pinned}/ but package.json is ${pkg.version}`
+      );
+    }
+  }
 }
 
 if (drifted.length > 0) {
