@@ -187,3 +187,55 @@ export function makeRows() {
     )
   ];
 }
+
+// Adverse-event records for the AE-domain suite (PPRF-AE-*). Hand-built so
+// every expected count in ae.test.js can be read off this table:
+//
+//  id   preferred term          severity   serious  start  stop   note
+//  P1   hepatic failure         SEVERE     Y        30     45
+//  P1   nausea                  MODERATE   N        10     20
+//  P1   vomiting                MODERATE   N        12     18
+//  P1   headache                MILD       N        2      5     verbatim differs
+//  P1   fatigue                 MILD       N        60     —     open-ended
+//  P1   unknown grade event     (blank)    N        70     90    severity unmapped
+//  P1   no start day            MILD       N        —      —     unplaceable
+//  P1   reversed dates          MILD       N        80     70    stop before start
+//  P2   only verbatim           MILD       N        1      3     no preferred term
+//  ''   orphan                  MILD       N        1      2     no id — dropped
+//
+// P1 body systems: Gastrointestinal disorders ×3 (nausea, vomiting, no start
+// day), Hepatobiliary disorders ×1, Nervous system disorders ×1, General
+// disorders ×2 — the unplaceable and reversed-date rows keep the rollup and the
+// plot-row counts deliberately different.
+function ae(id, term, verbatim, severity, serious, start, stop, bodsys) {
+  return {
+    USUBJID: id,
+    AEDECOD: term,
+    AETERM: verbatim,
+    AEBODSYS: bodsys,
+    AESEV: severity,
+    AESER: serious,
+    ASTDY: start,
+    AENDY: stop
+  };
+}
+
+/** The adverse-event fixture used by the AE-domain unit suite. */
+export function makeAeRecords() {
+  const GI = 'Gastrointestinal disorders';
+  const HEP = 'Hepatobiliary disorders';
+  const NERV = 'Nervous system disorders';
+  const GEN = 'General disorders';
+  return [
+    ae('P1', 'hepatic failure', 'ACUTE HEPATIC FAILURE', 'SEVERE', 'Y', 30, 45, HEP),
+    ae('P1', 'nausea', 'NAUSEA', 'MODERATE', 'N', 10, 20, GI),
+    ae('P1', 'vomiting', 'VOMITING', 'MODERATE', 'N', 12, 18, GI),
+    ae('P1', 'headache', 'HEADACHE NOS', 'MILD', 'N', 2, 5, NERV),
+    ae('P1', 'fatigue', 'FATIGUE', 'MILD', 'N', 60, '', GEN),
+    ae('P1', 'unknown grade event', 'UNKNOWN GRADE EVENT', '', 'N', 70, 90, GEN),
+    ae('P1', 'no start day', 'NO START DAY', 'MILD', 'N', '', '', GI),
+    ae('P1', 'reversed dates', 'REVERSED DATES', 'MILD', 'N', 80, 70, GEN),
+    ae('P2', '', 'ONLY VERBATIM', 'MILD', 'N', 1, 3, GEN),
+    ae('', 'orphan', 'ORPHAN', 'MILD', 'N', 1, 2, GEN)
+  ];
+}
