@@ -33,6 +33,7 @@ import { Chart } from 'chart.js';
 import { createElement, option } from '../../shell.js';
 import { AXIS_TYPES, DISPLAY_MODES, GROUP_NONE, POINT_SIZE_OPTIONS, cutFor } from '../configure.js';
 import { applyFilters, buildPoints, classifyQuadrants, unique } from '../structureData.js';
+import { cutHandleAt, cutValueFor } from '../cutDrag.js';
 import { buildScales, edishDomain, formatNumber } from '../getScales.js';
 import {
   GROUP_COLORS,
@@ -68,6 +69,113 @@ function addCutControl(host, addControl, parent, axisKey) {
     input.value = value;
     host.render();
   };
+  // Either control updates the other (HEP-QUAD-006): a drag on the plot writes
+  // the value it lands on straight into this box.
+  if (!host.cutInputs) host.cutInputs = {};
+  host.cutInputs[axisKey === 'measureX' ? 'x' : 'y'] = input;
+}
+
+/**
+ * Move one cut-line to a new value and let everything that reads it follow —
+ * the state, the number input, the quadrant classification, the corner labels
+ * and the summary table (HEP-QUAD-006). Deliberately NOT a full render: a
+ * render rebuilds the scales and clears the selection, which is not what
+ * dragging a line means, and the whole point of the gesture is that the counts
+ * move under the pointer.
+ * @private
+ */
+function moveCut(host, axis, value) {
+  const measureKey = axis === 'x' ? host.state.measureX : host.state.measureY;
+  if (!host.state.cuts[measureKey]) host.state.cuts[measureKey] = {};
+  host.state.cuts[measureKey][host.state.display] = value;
+  host.state[axis === 'x' ? 'xCut' : 'yCut'] = value;
+  const input = host.cutInputs && host.cutInputs[axis];
+  if (input) input.value = String(value);
+  host.quadrants = classifyQuadrants(host.points, host.state.xCut, host.state.yCut);
+  drawQuadrantSummary(host);
+  if (host.chart) host.chart.update('none');
+}
+
+/**
+ * Make the cut-lines draggable (HEP-QUAD-006). Bound ONCE to the shell canvas,
+ * which outlives every redraw, and reading the live chart and state each time —
+ * binding per render would stack a new set of listeners on every control change.
+ *
+ * The listeners are registered in the CAPTURE phase so a drag that starts on a
+ * cut-line is claimed before Chart.js's own handlers see it; a gesture that is
+ * not on a line falls straight through to the chart's hover and click.
+ * @private
+ */
+function bindCutDrag(host) {
+  if (host.cutDragBound) return;
+  host.cutDragBound = true;
+  const canvas = host.canvas;
+  host.cutDrag = null;
+
+  const at = (event) => {
+    const bounds = canvas.getBoundingClientRect
+      ? canvas.getBoundingClientRect()
+      : { left: 0, top: 0 };
+    return { x: event.clientX - bounds.left, y: event.clientY - bounds.top };
+  };
+  const handleAt = (event) => {
+    // Only while THIS view owns the canvas: the shell's canvas is shared, and
+    // another view's chart carries no Hy's-Law cut-lines to take hold of.
+    if (!host.chart || host.chart !== host.scatterChart) return null;
+    const { x, y } = at(event);
+    return cutHandleAt(host.chart, host.state, x, y);
+  };
+
+  canvas.addEventListener(
+    'pointerdown',
+    (event) => {
+      const axis = handleAt(event);
+      if (!axis) return;
+      event.preventDefault();
+      event.stopPropagation();
+      host.cutDrag = { axis, moved: false };
+      if (canvas.setPointerCapture) canvas.setPointerCapture(event.pointerId);
+    },
+    true
+  );
+
+  canvas.addEventListener(
+    'pointermove',
+    (event) => {
+      if (!host.cutDrag) {
+        // Not dragging: the cursor is the only affordance a dashed line has.
+        host.cutHoverAxis = handleAt(event);
+        if (host.cutHoverAxis) {
+          canvas.style.cursor = host.cutHoverAxis === 'x' ? 'col-resize' : 'row-resize';
+        }
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      const { x, y } = at(event);
+      const axis = host.cutDrag.axis;
+      host.cutDrag.moved = true;
+      moveCut(host, axis, cutValueFor(host.chart, axis, axis === 'x' ? x : y));
+    },
+    true
+  );
+
+  const end = (event) => {
+    if (!host.cutDrag) return;
+    // A drag that moved must not also read as a click on the plot background,
+    // which would clear the selection the reader still has open.
+    host.cutDragged = host.cutDrag.moved;
+    host.cutDrag = null;
+    if (canvas.releasePointerCapture && event.pointerId != null) {
+      try {
+        canvas.releasePointerCapture(event.pointerId);
+      } catch {
+        // The pointer was never captured (or is already gone); nothing to release.
+      }
+    }
+  };
+  canvas.addEventListener('pointerup', end, true);
+  canvas.addEventListener('pointercancel', end, true);
 }
 
 /**
@@ -299,13 +407,22 @@ function drawScatter(host) {
       scales: buildScales(host.state, xDomain, yDomain, host.settings.measure_values),
       onHover: (event, active) => {
         const target = event?.native?.target;
-        if (target) target.style.cursor = active.length ? 'pointer' : 'default';
+        // A cut-line under the pointer owns the cursor: it is the only hint
+        // that the line can be moved (HEP-QUAD-006).
+        if (target && !host.cutHoverAxis) {
+          target.style.cursor = active.length ? 'pointer' : 'default';
+        }
         // Trace the hovered participant point (dataset 0 only, never the
         // visit-path overlay) with the same highlight as a selection.
         const hit = active.find((element) => element.datasetIndex === 0);
         setHover(host, hit ? points[hit.index].id : null);
       },
       onClick: (event, active) => {
+        // The click that ends a cut-line drag is not a click on the plot.
+        if (host.cutDragged) {
+          host.cutDragged = false;
+          return;
+        }
         const hit = active.find((element) => element.datasetIndex === 0);
         if (hit) host.selectParticipant(points[hit.index].id);
         else host.clearSelection();
@@ -314,7 +431,9 @@ function drawScatter(host) {
     plugins: [quadrantPlugin(host)]
   });
   host.chart = chart;
+  host.scatterChart = chart;
   host.charts.push(chart);
+  bindCutDrag(host);
 }
 
 /**

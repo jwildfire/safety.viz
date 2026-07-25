@@ -22,6 +22,7 @@ pending; each row lists the module IDs its test covers.
 | HEP-DATA-001, HEP-CTRL-011                   | —                  | #43   | participant note reports N and % and updates on filter                                                       |
 | HEP-DATA-003                                 | —                  | #43   | missing and non-numeric results are dropped with a reported count and note                                   |
 | HEP-QUAD-002/003/004/005                     | —                  | #43   | quadrant cut-lines classify one participant per quadrant and drive the summary table                         |
+| HEP-QUAD-006                                 | —                  | #45   | the cut-lines can be dragged, reclassifying live and writing back to the inputs                              |
 | HEP-QUAD-001/004                             | —                  | #43   | changing the x-axis reference line reclassifies the quadrants                                                |
 | HEP-DISPLAY-001/002, HEP-CHART-002           | —                  | #43   | the display toggle switches eDISH and mDISH axis titles and cutpoints                                        |
 | HEP-SELECT-001/002/003/005/006               | —                  | #43   | clicking a point draws the visit path, detail panels, and linked listing                                     |
@@ -64,6 +65,7 @@ pending; each row lists the module IDs its test covers.
 | HEP-DISPLAY-001/002/003/004/006 (×ULN, ×Baseline, peaks, R-Ratio)                          | —                  | #43   | `structureData.test.js`  |
 | HEP-CHART-001, HEP-CTRL-008/009/011 (points, timing, group, filters)                       | —                  | #43   | `structureData.test.js`  |
 | HEP-QUAD-004 (quadrant classification counts/percents)                                     | —                  | #43   | `structureData.test.js`  |
+| HEP-QUAD-006 (which cut-line the pointer holds, what a drag to a pixel means)              | —                  | #45   | `cutDrag.test.js`        |
 | HEP-SELECT-002/003/005 (drill-down series)                                                 | —                  | #43   | `structureData.test.js`  |
 | HEP-CHART-002/003/004, HEP-CTRL-006, HEP-DISPLAY-001 (domains, log, labels)                | —                  | #43   | `getScales.test.js`      |
 | HEP-CHART-004, HEP-CTRL-009, HEP-QUAD-002, HEP-SELECT-001 (tooltip, palette, plugin)       | —                  | #43   | `getPlugins.test.js`     |

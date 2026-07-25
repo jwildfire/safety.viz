@@ -118,6 +118,86 @@ test.describe('safety.viz hep-explorer module', () => {
     await captureEvidence(page, 'HEP-QUAD-002', 'quadrant-summary');
   });
 
+  test('HEP-QUAD-006: the cut-lines can be dragged, reclassifying live and writing back to the inputs (#45)', async ({
+    page
+  }) => {
+    await page.waitForFunction(() => window.__safetyHepExplorerInstance.chart.$hepQuadrants);
+    const canvas = page.locator('canvas.sv-chart').first();
+    const bounds = await canvas.boundingBox();
+    const cutInput = (measure) =>
+      page
+        .locator('.sv-control', { has: page.locator(`label:text-is("${measure} Reference Line")`) })
+        .locator('input');
+
+    // The pixel the vertical ALT line is drawn at, and the pixel 1.2xULN would
+    // be drawn at — the same reclassification the number input drives above,
+    // asked for with the pointer instead.
+    const geometry = await page.evaluate(() => {
+      const chart = window.__safetyHepExplorerInstance.chart;
+      return {
+        xPixel: chart.$hepQuadrants.xPixel,
+        yPixel: chart.$hepQuadrants.yPixel,
+        target: chart.scales.x.getPixelForValue(1.2),
+        midY: (chart.chartArea.top + chart.chartArea.bottom) / 2
+      };
+    });
+
+    // Grabbing the line puts a resize cursor on the canvas: a dashed rule has
+    // no other affordance.
+    await page.mouse.move(bounds.x + geometry.xPixel, bounds.y + geometry.midY);
+    await expect(canvas).toHaveCSS('cursor', 'col-resize');
+
+    await page.mouse.down();
+    await page.mouse.move(bounds.x + geometry.target, bounds.y + geometry.midY, { steps: 8 });
+    // Mid-drag, before the button is released, the classification has already
+    // moved: that is the point of the gesture.
+    const midDrag = await page.evaluate(
+      () => window.__safetyHepExplorerInstance.chart.$hepQuadrants
+    );
+    expect(midDrag.xCut).toBeCloseTo(1.2, 1);
+    expect(midDrag.counts['upper-right']).toBe(2);
+    expect(midDrag.counts['upper-left']).toBe(0);
+    await captureEvidence(page, 'HEP-QUAD-006', 'cut-line-drag');
+    await page.mouse.up();
+
+    // Either control updates the other: the drag wrote its value into the
+    // Reference Line box, and the summary table followed.
+    await expect(cutInput('ALT')).toHaveValue(/^1\.2/);
+    const hysLawRow = page
+      .locator('.hep-quadrant-summary tbody tr', { hasText: "Possible Hy's Law Range" })
+      .first();
+    await expect(hysLawRow).toContainText('40.0%');
+
+    // The drag is not also a click on the plot background, so a selection made
+    // before it survives.
+    const state = await page.evaluate(() => ({
+      selectedId: window.__safetyHepExplorerInstance.state.selectedId,
+      xCut: window.__safetyHepExplorerInstance.state.xCut
+    }));
+    expect(state.xCut).toBeCloseTo(1.2, 1);
+    expect(state.selectedId).toBeNull();
+
+    // The horizontal line moves on its own axis, and only it moves.
+    const yTarget = await page.evaluate(() =>
+      window.__safetyHepExplorerInstance.chart.scales.y.getPixelForValue(1)
+    );
+    const midX = await page.evaluate(
+      () =>
+        (window.__safetyHepExplorerInstance.chart.chartArea.left +
+          window.__safetyHepExplorerInstance.chart.chartArea.right) /
+        2
+    );
+    await page.mouse.move(bounds.x + midX, bounds.y + geometry.yPixel);
+    await expect(canvas).toHaveCSS('cursor', 'row-resize');
+    await page.mouse.down();
+    await page.mouse.move(bounds.x + midX, bounds.y + yTarget, { steps: 8 });
+    await page.mouse.up();
+    const after = await page.evaluate(() => window.__safetyHepExplorerInstance.chart.$hepQuadrants);
+    expect(after.yCut).toBeCloseTo(1, 1);
+    expect(after.xCut).toBeCloseTo(1.2, 1);
+    await expect(cutInput('TB')).toHaveValue(/^1/);
+  });
+
   test('HEP-QUAD-001/HEP-QUAD-004: changing the x-axis reference line reclassifies the quadrants (#43)', async ({
     page
   }) => {

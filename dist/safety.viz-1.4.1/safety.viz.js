@@ -21653,6 +21653,32 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     document.head.append(style);
   }
 
+  // src/hep-explorer/cutDrag.js
+  var CUT_GRAB_PX = 6;
+  function roundCut(value) {
+    if (!Number.isFinite(value)) return NaN;
+    return Math.round((value + Number.EPSILON) * 100) / 100;
+  }
+  function cutHandleAt(chart, cuts, x, y) {
+    const { chartArea, scales } = chart || {};
+    if (!chartArea || !scales || !scales.x || !scales.y) return null;
+    if (x < chartArea.left || x > chartArea.right || y < chartArea.top || y > chartArea.bottom) {
+      return null;
+    }
+    const { xCut, yCut } = cuts || {};
+    const dx = Number.isFinite(xCut) ? Math.abs(x - scales.x.getPixelForValue(xCut)) : Infinity;
+    const dy = Number.isFinite(yCut) ? Math.abs(y - scales.y.getPixelForValue(yCut)) : Infinity;
+    if (dx > CUT_GRAB_PX && dy > CUT_GRAB_PX) return null;
+    return dy < dx ? "y" : "x";
+  }
+  function cutValueFor(chart, axis, pixel) {
+    const scale = chart.scales[axis];
+    const raw = scale.getValueForPixel(pixel);
+    const floor = Number.isFinite(scale.min) ? Math.max(0, scale.min) : 0;
+    const ceiling = Number.isFinite(scale.max) ? scale.max : Infinity;
+    return roundCut(Math.min(ceiling, Math.max(floor, raw)));
+  }
+
   // src/hep-explorer/views/scatter.js
   var BASE_POINT_COLOR = GROUP_COLORS2[0];
   function addCutControl(host, addControl, parent, axisKey) {
@@ -21670,6 +21696,78 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       input.value = value;
       host.render();
     };
+    if (!host.cutInputs) host.cutInputs = {};
+    host.cutInputs[axisKey === "measureX" ? "x" : "y"] = input;
+  }
+  function moveCut(host, axis, value) {
+    const measureKey = axis === "x" ? host.state.measureX : host.state.measureY;
+    if (!host.state.cuts[measureKey]) host.state.cuts[measureKey] = {};
+    host.state.cuts[measureKey][host.state.display] = value;
+    host.state[axis === "x" ? "xCut" : "yCut"] = value;
+    const input = host.cutInputs && host.cutInputs[axis];
+    if (input) input.value = String(value);
+    host.quadrants = classifyQuadrants(host.points, host.state.xCut, host.state.yCut);
+    drawQuadrantSummary(host);
+    if (host.chart) host.chart.update("none");
+  }
+  function bindCutDrag(host) {
+    if (host.cutDragBound) return;
+    host.cutDragBound = true;
+    const canvas = host.canvas;
+    host.cutDrag = null;
+    const at = (event) => {
+      const bounds = canvas.getBoundingClientRect ? canvas.getBoundingClientRect() : { left: 0, top: 0 };
+      return { x: event.clientX - bounds.left, y: event.clientY - bounds.top };
+    };
+    const handleAt = (event) => {
+      if (!host.chart || host.chart !== host.scatterChart) return null;
+      const { x, y } = at(event);
+      return cutHandleAt(host.chart, host.state, x, y);
+    };
+    canvas.addEventListener(
+      "pointerdown",
+      (event) => {
+        const axis = handleAt(event);
+        if (!axis) return;
+        event.preventDefault();
+        event.stopPropagation();
+        host.cutDrag = { axis, moved: false };
+        if (canvas.setPointerCapture) canvas.setPointerCapture(event.pointerId);
+      },
+      true
+    );
+    canvas.addEventListener(
+      "pointermove",
+      (event) => {
+        if (!host.cutDrag) {
+          host.cutHoverAxis = handleAt(event);
+          if (host.cutHoverAxis) {
+            canvas.style.cursor = host.cutHoverAxis === "x" ? "col-resize" : "row-resize";
+          }
+          return;
+        }
+        event.preventDefault();
+        event.stopPropagation();
+        const { x, y } = at(event);
+        const axis = host.cutDrag.axis;
+        host.cutDrag.moved = true;
+        moveCut(host, axis, cutValueFor(host.chart, axis, axis === "x" ? x : y));
+      },
+      true
+    );
+    const end = (event) => {
+      if (!host.cutDrag) return;
+      host.cutDragged = host.cutDrag.moved;
+      host.cutDrag = null;
+      if (canvas.releasePointerCapture && event.pointerId != null) {
+        try {
+          canvas.releasePointerCapture(event.pointerId);
+        } catch {
+        }
+      }
+    };
+    canvas.addEventListener("pointerup", end, true);
+    canvas.addEventListener("pointercancel", end, true);
   }
   function filteredPoints(host) {
     const filtered = applyFilters6(host.allPoints, host.state.filters);
@@ -21807,11 +21905,17 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
         scales: buildScales5(host.state, xDomain, yDomain, host.settings.measure_values),
         onHover: (event, active) => {
           const target = event?.native?.target;
-          if (target) target.style.cursor = active.length ? "pointer" : "default";
+          if (target && !host.cutHoverAxis) {
+            target.style.cursor = active.length ? "pointer" : "default";
+          }
           const hit = active.find((element) => element.datasetIndex === 0);
           setHover(host, hit ? points[hit.index].id : null);
         },
         onClick: (event, active) => {
+          if (host.cutDragged) {
+            host.cutDragged = false;
+            return;
+          }
           const hit = active.find((element) => element.datasetIndex === 0);
           if (hit) host.selectParticipant(points[hit.index].id);
           else host.clearSelection();
@@ -21820,7 +21924,9 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       plugins: [quadrantPlugin(host)]
     });
     host.chart = chart;
+    host.scatterChart = chart;
     host.charts.push(chart);
+    bindCutDrag(host);
   }
   function drawLegend(host) {
     host.legendEl.innerHTML = "";
