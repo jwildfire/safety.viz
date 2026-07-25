@@ -131,6 +131,10 @@
     "SH-OVW-002": "The overview renders one small-multiple histogram per measure in the cleaned data, in Measure-control order, each independently binned over the measure's full value range with the configured bin algorithm. Each panel is titled with the measure name and its result count.",
     "SH-OVW-003": "Clicking a small multiple (or pressing Enter/Space on the focused panel) opens the standard single-measure view for that measure and syncs the Measure control; the overview footnote reads \"Click a chart to view that measure.\"",
     "SH-OVW-004": "Selecting \"All Measures\" in the Measure control returns from any single-measure view to the overview.",
-    "SH-OVW-005": "Filters stay active in the overview and re-render the panels; the x-axis limit, bin, display, and grouping controls are hidden in the overview and restored unchanged in the single-measure view."
+    "SH-OVW-005": "Filters stay active in the overview and re-render the panels; the x-axis limit, bin, display, and grouping controls are hidden in the overview and restored unchanged in the single-measure view.",
+    "SH-AXIS-001": "On load and after every render, each X-axis Limits input displays the limit currently in force for the selected measure — the measure's data extent by default, or the user's override — formatted to three significant figures of the axis range. Neither box is ever blank.",
+    "SH-AXIS-002": "Displaying a limit does not pin it. A limit the user has not edited remains automatic — it is re-derived from the data on every render, so changing the measure, the filters, or the y-axis scale updates the value shown — while an edited limit persists as an override until it is reset. The distinction is held in state (an override slot separate from the recorded domain), not inferred from an empty input.",
+    "SH-AXIS-003": "The Reset Limits control clears both x-axis limits overrides and repopulates both inputs with the derived limits, so there is always a way back to automatic now that an empty box no longer means it.",
+    "SH-AXIS-004": "Pre-filling must not let an invalid domain reach the chart: a limit typed across the other limit as currently displayed is swapped rather than inverted, an empty or non-numeric entry returns that limit to automatic, and a log-scale domain stays positive."
   }
 }
