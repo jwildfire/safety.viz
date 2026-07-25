@@ -55,20 +55,12 @@ jobs:
       - name: Evidence freshness guard
         run: npm run evidence:check
 
-      # Requirement text shown on the evidence pages is vendored from the
-      # reviewed matrices in the public obot.agent repo (#63). Check it out and
-      # assert the committed docs/requirements/*.json still match, so an
-      # upstream matrix edit surfaces here instead of drifting silently.
-      - name: Checkout requirement matrices (obot.agent)
-        uses: actions/checkout@v4
-        with:
-          repository: jwildfire/obot.agent
-          path: .requirements-src
-
+      # Requirement text shown on the evidence pages is extracted from the
+      # matrices in requirements/ (#63; relocated from obot.agent in hub#64).
+      # Both source and extract are in this checkout, so the guard needs no
+      # second repository and fails the build on any uncommitted drift.
       - name: Requirement-text sync guard
         run: npm run requirements:check
-        env:
-          REQUIREMENTS_SRC: .requirements-src/docs/requirements
 
       - name: Upload Playwright report
         if: always()

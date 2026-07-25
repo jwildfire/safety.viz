@@ -1,6 +1,7 @@
 // Requirement-text sync CLI (#63): extracts the reviewed requirement text from
-// the obot.agent matrices into docs/requirements/<module>.json so the evidence
-// pages can show what each test evidences. Mirrors scripts/evidence.mjs.
+// the requirement matrices in requirements/ into docs/requirements/<module>.json
+// so the evidence pages can show what each test evidences. Mirrors
+// scripts/evidence.mjs.
 //
 //   node scripts/requirements.mjs           regenerate the JSON extracts from
 //                                           the matrices
@@ -11,14 +12,15 @@
 //                                           source present, validate that the
 //                                           committed extracts are well-formed
 //
-// The matrix source root is REQUIREMENTS_SRC (default the sibling checkout
-// ../obot.agent/docs/requirements), so it is not pinned to one machine — CI
-// checks out the public obot.agent and points this at it. Each renderer's
-// matrix filename comes from site/config.json, so a new module needs no edits
-// here: add the config entry with its `matrix`, and its extract appears on the
-// next run. Modules whose matrix is not present at the source (a renderer whose
-// matrix has not been harvested yet) are reported and skipped, and their
-// evidence page degrades to IDs-only.
+// The matrix source root is REQUIREMENTS_SRC (default the in-repo requirements/
+// directory — the matrices moved here from obot.agent in hub#64 so a behavior
+// change and its requirement rows land in one PR). The env var stays as an
+// escape hatch for pointing the extractor at an external checkout. Each
+// renderer's matrix filename comes from site/config.json, so a new module needs
+// no edits here: add the config entry with its `matrix`, and its extract
+// appears on the next run. Modules whose matrix is not present at the source (a
+// renderer whose matrix has not been harvested yet) are reported and skipped,
+// and their evidence page degrades to IDs-only.
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
@@ -30,10 +32,7 @@ const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const outputRoot = path.join(rootDir, 'docs', 'requirements');
 const outputPathFor = (module) => path.join(outputRoot, `${module}.json`);
 
-const sourceRoot = path.resolve(
-  rootDir,
-  process.env.REQUIREMENTS_SRC || '../obot.agent/docs/requirements'
-);
+const sourceRoot = path.resolve(rootDir, process.env.REQUIREMENTS_SRC || 'requirements');
 const matrixPathFor = (matrix) => path.join(sourceRoot, matrix);
 
 const mode = process.argv.includes('--check') ? 'check' : 'run';
@@ -107,8 +106,8 @@ if (mode === 'check') {
 } else {
   if (!sourceAvailable) {
     console.error(
-      `✗ matrix source ${rel(sourceRoot)} not found. Clone obot.agent as a sibling of this repo, ` +
-        'or set REQUIREMENTS_SRC to its docs/requirements directory.'
+      `✗ matrix source ${rel(sourceRoot)} not found. The matrices live in this repo under ` +
+        'requirements/; unset REQUIREMENTS_SRC to use them, or point it at a valid matrix directory.'
     );
     process.exit(1);
   }

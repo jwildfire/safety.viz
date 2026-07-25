@@ -63,7 +63,7 @@ identity `measure_values` map over the host's `measures` makes the ECG
 parameters the KEY measures; and per-QTc `cuts` carry the FIRST absolute
 threshold (450 ms by default) while the NaN `defaults` entry leaves Heart Rate
 cut-free. Adoption rows are PPRF-QT-001..004 in the
-[participant-profile matrix](https://github.com/jwildfire/obot.agent/blob/main/docs/requirements/participant-profile.md);
+[participant-profile matrix](../requirements/participant-profile.md);
 unit evidence lives in `tests/unit/qt-explorer/profile-adoption.test.js`.
 
 View coverage and mapping caveats:

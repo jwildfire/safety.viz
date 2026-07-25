@@ -115,7 +115,7 @@ The shared participant-profile module docks below the chart (config-on,
 via the `participantsSelected` dispatch on the shell root (SOE-API-003) — the
 dock SUPPLEMENTS the linked listing (records vs story), replacing nothing.
 Adoption rows are PPRF-OE-001..003 in the
-[participant-profile matrix](https://github.com/jwildfire/obot.agent/blob/main/docs/requirements/participant-profile.md);
+[participant-profile matrix](../requirements/participant-profile.md);
 unit evidence lives in `tests/unit/outlier-explorer/profile-adoption.test.js`.
 
 ## View-selector rollout (VIEW-3, #76)

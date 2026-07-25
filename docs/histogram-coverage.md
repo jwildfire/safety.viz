@@ -12,7 +12,7 @@ schemes appear:
   decomposition mapping.
 - **Source matrix rows** (`SH-FUNC-*`, `SH-REG-*`, `SH-CFG-*`, …) — the
   reviewed matrix at
-  [obot.agent `docs/requirements/safety-histogram.md`](https://github.com/jwildfire/obot.agent/blob/main/docs/requirements/safety-histogram.md),
+  [`requirements/safety-histogram.md`](../requirements/safety-histogram.md),
   whose `Evidence Type` column routes rows (`unit` → Vitest, `browser` →
   Playwright). `SH-OVW-*` rows are post-pilot additions — the all-measures
   overview ([#39](https://github.com/jwildfire/safety.viz/issues/39)) is new
@@ -82,7 +82,7 @@ state (`state.selectedId`) and the house `participantsSelected` dispatch on the
 shell root. The listing stays beside the dock (records vs story, PPRF-11) with
 the focused participant's rows highlighted. Adoption rows are PPRF-SH-001..003
 in the
-[participant-profile matrix](https://github.com/jwildfire/obot.agent/blob/main/docs/requirements/participant-profile.md);
+[participant-profile matrix](../requirements/participant-profile.md);
 unit evidence lives in `tests/unit/histogram/profile-adoption.test.js`.
 
 ## Source-matrix routing status (125 rows)
