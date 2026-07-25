@@ -43,6 +43,13 @@ describe('renderShell rail slot (PPRF-RAIL-001)', () => {
     expect(style.textContent).toContain('.sv-rail:empty{display:none}');
   });
 
+  it('honours [hidden] on the rail, which the module sets while it is idle', () => {
+    renderShell(document.querySelector('#host'));
+    const style = document.getElementById('safety-viz-shell-styles');
+    // .sv-rail sets display:flex, which beats the user-agent [hidden] rule.
+    expect(style.textContent).toContain('.sv-rail[hidden]{display:none}');
+  });
+
   it('gives the rail a settable width and the root a positioning context for expand', () => {
     renderShell(document.querySelector('#host'));
     const style = document.getElementById('safety-viz-shell-styles');

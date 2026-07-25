@@ -166,6 +166,21 @@ describe('profileRail (PPRF-1, PPRF-CORE-005, PPRF-RAIL-001)', () => {
   });
 });
 
+describe('the idle rail takes no width (PPRF-RAIL-005)', () => {
+  it('is hidden on mount, before anything is selected', () => {
+    profileRail(container(), {});
+    expect(container().hidden).toBe(true);
+  });
+
+  it('appears on the first selection and goes away again on clear', () => {
+    const rail = profileRail(container(), {});
+    rail.show(['P1'], cleanFixture());
+    expect(container().hidden).toBe(false);
+    rail.clear();
+    expect(container().hidden).toBe(true);
+  });
+});
+
 describe('the rail head (PPRF-RAIL-002, PPRF-EXP-001)', () => {
   it('names the selected participant and how many are selected', () => {
     const rail = profileRail(container(), {});

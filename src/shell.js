@@ -87,6 +87,10 @@ const SHELL_STYLES = `
 .sv-footnote{margin:.6rem 0 0;font-size:.85rem;color:#52616f}
 .sv-rail{flex:0 0 var(--sv-rail-width);align-self:flex-start;position:sticky;top:1rem;max-height:calc(100vh - 2rem);display:flex;flex-direction:column;overflow:hidden;border:1px solid #d8dee4;border-radius:10px;background:#fbfcfd}
 .sv-rail:empty{display:none}
+/* The rail takes no width until a participant is selected: the module sets
+   [hidden] on the slot while it is idle, and .sv-rail's own display would
+   otherwise win over the user-agent rule. */
+.sv-rail[hidden]{display:none}
 .sv-rail-expanded .sv-rail{position:absolute;inset:0;z-index:6;max-height:none;box-shadow:0 18px 46px rgba(31,41,51,.22)}
 .sv-rail-expanded .sv-main,.sv-rail-expanded .sv-sidebar{filter:saturate(.25) opacity(.35)}
 .sv-multiples{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;margin-top:1.25rem}

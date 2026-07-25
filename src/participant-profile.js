@@ -205,6 +205,10 @@ class SafetyParticipantProfile {
     this.stepperWrap = createElement('div', 'sv-profile-rail-stepper');
     this.railBody = createElement('div', 'sv-profile-rail-body');
     rail.append(head, this.stepperWrap, this.railBody);
+    // Idle, the rail takes no width at all — an empty 520px panel beside the
+    // chart is width the chart could be using. It appears on the first
+    // selection and disappears again on clear.
+    this.element.hidden = true;
     this.element.append(rail);
     this.railRoot = rail;
     this.profileHost = this.railBody;
@@ -259,6 +263,7 @@ class SafetyParticipantProfile {
           ? `${this.state.ids.length} selected \u00b7 stepping worst first`
           : 'Selected from the chart';
     if (this.railRoot) this.railRoot.classList.toggle('is-empty', id === undefined);
+    this.element.hidden = id === undefined;
   }
 
   /**
