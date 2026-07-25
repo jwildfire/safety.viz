@@ -1,6 +1,6 @@
 {
   "module": "hep-explorer",
-  "generatedAt": "2026-07-25T03:22:21.271Z",
+  "generatedAt": "2026-07-25T03:42:04.181Z",
   "environment": {
     "os": "linux 6.17.0-1020-azure",
     "node": "v22.23.1",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "30142116462",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/30142116462"
+    "id": "30142710565",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/30142710565"
   },
   "records": [
     {
@@ -1802,7 +1802,7 @@
       "screenshots": []
     },
     {
-      "test": "hep-explorer dropped-record downloads (HEP-DROP-*) HEP-DROP-003: the link carries the CSV inline and names the file (#50)",
+      "test": "hep-explorer dropped-record downloads (HEP-DROP-*) HEP-DROP-003: the link names the file and builds the CSV only when clicked (#50)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["HEP-DROP-003"],
