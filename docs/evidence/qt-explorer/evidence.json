@@ -1,6 +1,6 @@
 {
   "module": "qt-explorer",
-  "generatedAt": "2026-07-25T04:47:40.133Z",
+  "generatedAt": "2026-07-25T05:04:20.313Z",
   "environment": {
     "os": "linux 6.17.0-1020-azure",
     "node": "v22.23.1",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "30144621325",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/30144621325"
+    "id": "30145090697",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/30145090697"
   },
   "records": [
     {
@@ -1170,6 +1170,14 @@
     },
     {
       "test": "renderShell rail slot (PPRF-RAIL-001) hides the rail while it is empty via the shared stylesheet",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) honours [hidden] on the rail, which the module sets while it is idle",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["PPRF-RAIL-001"],
