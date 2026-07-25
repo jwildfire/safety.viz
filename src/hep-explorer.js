@@ -62,6 +62,7 @@ import {
 import { formatNumber } from './hep-explorer/getScales.js';
 import { CLINICAL_CAUTION } from './hep-explorer/getPlugins.js';
 import { imputeBelowLloq } from './hep-explorer/imputation.js';
+import { availableDisplays } from './hep-explorer/availability.js';
 import { profileDock } from './participant-profile.js';
 import { TRACE_HEADER_HINT, createSelection } from './hep-explorer/selection.js';
 import { applyModuleStyles } from './hep-explorer/styles.js';
@@ -526,6 +527,16 @@ class SafetyHepExplorer {
     // max input seeds correctly on the first buildControls, before render()
     // populates this.allPoints (HEP-CTRL-010).
     this.rRatioMax = maxRRatio(imputation.rows, this.settings);
+    // A display the data cannot support is withdrawn rather than left to draw
+    // an empty plot, and a state already pointing at it falls back to one that
+    // works (HEP-DISPLAY-006).
+    this.displayAvailability = availableDisplays(imputation.rows);
+    if (
+      this.displayAvailability.modes.length &&
+      !this.displayAvailability.modes.includes(this.state.display)
+    ) {
+      this.state.display = this.displayAvailability.modes[0];
+    }
     if (removed)
       console.warn(
         `${removed} missing or non-numeric result${removed > 1 ? 's have' : ' has'} been removed.`
@@ -808,6 +819,16 @@ class SafetyHepExplorer {
 
     if (!this.cleanRows.length) {
       this.notes.innerHTML = '<span>No data selected. Provide records to draw the chart.</span>';
+      if (carriedIds.length) this.selection.dispatch([]);
+      return;
+    }
+
+    // Neither display mode is supportable: an error the reader can act on,
+    // rather than an empty plot they have to diagnose (HEP-DISPLAY-006).
+    if (this.displayAvailability && !this.displayAvailability.modes.length) {
+      this.notes.innerHTML = '';
+      this.notes.append(createElement('span', 'sv-warning', this.displayAvailability.note));
+      this.chartWrap.style.display = 'none';
       if (carriedIds.length) this.selection.dispatch([]);
       return;
     }

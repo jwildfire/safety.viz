@@ -88,6 +88,7 @@ export { MEASURE_KEYS, cutFor } from '../hep-core/rows.js';
  * @property {string[]} [y_options=['TB']] Measures offered by the Y-axis Measure control; when only one option the control is dropped (HEP-CTRL-002).
  * @property {Object} [cuts] Per-measure Hy's-Law cutpoints keyed by measure then display mode; a `defaults` entry back-fills any measure without its own cuts (HEP-QUAD-001).
  * @property {string} [view='scatter'] Initial view mode: `scatter` (eDISH/mDISH scatter), `migration` (the bidirectional baseline → on-treatment Sankey with per-arm cross tables), or `composite` (baseline-referenced composite plot for abnormal-baseline subjects) (HEP-COMP-006, HEP-MIG-001).
+ * @property {?string} [group_order_col=null] Numeric companion column (e.g. `TRTN` beside `TRT`) that orders the colour-by legend; null leaves the groups alphabetical (HEP-CTRL-015).
  * @property {Object} [imputation_methods] Below-LLOQ handling per measure key: `data-driven` (limit = the smallest positive recorded value), `user-defined` (limit from imputation_values), or `drop` (remove non-positive records). Defaults to `data-driven` for ALT, AST, TB and ALP, matching the original renderer (HEP-IMPUTE-001).
  * @property {?Object} [imputation_values=null] Per-measure lower limits of quantitation, used by the `user-defined` method (HEP-IMPUTE-001).
  * @property {string} [quadrant_labels='shown'] Whether the scatter draws the four quadrant corner labels: `shown` or `hidden` (HEP-QUAD-007).
@@ -154,6 +155,7 @@ export const DEFAULT_SETTINGS = {
     rRatio: { relative_uln: 5, relative_baseline: 5 },
     defaults: { relative_uln: 3, relative_baseline: 3.8 }
   },
+  group_order_col: null,
   imputation_methods: {
     ALT: 'data-driven',
     AST: 'data-driven',

@@ -30,11 +30,14 @@
       //   SUBJ-004  ALT 1.0xULN, TB 0.9xULN  -> Normal Range
       //   SUBJ-005  ALT 0.75xULN, TB 0.7xULN -> Normal Range
       const PARTICIPANTS = {
-        'SUBJ-001': { ARM: 'Drug', SEX: 'F', RACE: 'WHITE', AGE: 45 },
-        'SUBJ-002': { ARM: 'Placebo', SEX: 'M', RACE: 'BLACK', AGE: 52 },
-        'SUBJ-003': { ARM: 'Placebo', SEX: 'F', RACE: 'ASIAN', AGE: 38 },
-        'SUBJ-004': { ARM: 'Drug', SEX: 'M', RACE: 'WHITE', AGE: 61 },
-        'SUBJ-005': { ARM: 'Drug', SEX: 'M', RACE: 'OTHER', AGE: 29 }
+        // ARMN is the numeric companion of ARM (#55): 1 for the control arm, 2
+        // for the active one, so legend ordering by dose can be demonstrated
+        // against a column that disagrees with the alphabet.
+        'SUBJ-001': { ARM: 'Drug', ARMN: 2, SEX: 'F', RACE: 'WHITE', AGE: 45 },
+        'SUBJ-002': { ARM: 'Placebo', ARMN: 1, SEX: 'M', RACE: 'BLACK', AGE: 52 },
+        'SUBJ-003': { ARM: 'Placebo', ARMN: 1, SEX: 'F', RACE: 'ASIAN', AGE: 38 },
+        'SUBJ-004': { ARM: 'Drug', ARMN: 2, SEX: 'M', RACE: 'WHITE', AGE: 61 },
+        'SUBJ-005': { ARM: 'Drug', ARMN: 2, SEX: 'M', RACE: 'OTHER', AGE: 29 }
       };
       const VISITS = [
         { VISIT: 'Baseline', VISITNUM: 1, DY: 1 },

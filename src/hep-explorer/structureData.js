@@ -115,7 +115,10 @@ export function buildPoints(cleanRows, settings, state) {
   const metaCols = unique([
     settings.id_col,
     ...settings.filters.map((filter) => filter.value_col),
-    ...settings.groups.map((group) => group.value_col)
+    ...settings.groups.map((group) => group.value_col),
+    // The legend's numeric ordering column travels with the point, so the
+    // legend can be sorted without a second pass over the rows (HEP-CTRL-015).
+    settings.group_order_col
   ]).filter((col) => col && col !== GROUP_NONE);
 
   const byId = new Map();

@@ -34,6 +34,7 @@ import { createElement, option } from '../../shell.js';
 import { AXIS_TYPES, DISPLAY_MODES, GROUP_NONE, POINT_SIZE_OPTIONS, cutFor } from '../configure.js';
 import { applyFilters, buildPoints, classifyQuadrants, unique } from '../structureData.js';
 import { cutHandleAt, cutValueFor } from '../cutDrag.js';
+import { availableDisplays, groupOrder } from '../availability.js';
 import { MARGINAL_MODES, marginalPlugin, scatterPadding } from '../marginals.js';
 import {
   DROPPED_PARTICIPANT_COLUMNS,
@@ -261,6 +262,14 @@ function updateNotes(host) {
       );
     }
     host.notes.append(note);
+  }
+
+  // A withdrawn display mode is a visible absence — the control simply has one
+  // fewer option — so the reason is stated rather than left to be noticed
+  // (HEP-DISPLAY-006).
+  const availability = host.displayAvailability;
+  if (availability && availability.note) {
+    host.notes.append(createElement('span', 'sv-warning', availability.note));
   }
 
   // Imputation is a change to the plotted values, so it is reported wherever
@@ -663,10 +672,12 @@ const scatterView = {
       host.render();
     };
 
-    // Display Type: eDISH / mDISH (HEP-DISPLAY-001).
+    // Display Type: eDISH / mDISH (HEP-DISPLAY-001), narrowed to the modes this
+    // data can actually be plotted in (HEP-DISPLAY-006).
     const display = addControl('Display Type', document.createElement('select'), settingsParent);
-    DISPLAY_MODES.forEach((mode) =>
-      option(display, mode.value, mode.label, mode.value === host.state.display)
+    const supported = availableDisplays(host.cleanRows).modes;
+    DISPLAY_MODES.filter((mode) => !supported.length || supported.includes(mode.value)).forEach(
+      (mode) => option(display, mode.value, mode.label, mode.value === host.state.display)
     );
     display.onchange = () => {
       host.state.display = display.value;
@@ -790,10 +801,13 @@ const scatterView = {
 
     const grouped = host.state.groupBy && host.state.groupBy !== GROUP_NONE;
     host.groupValues = grouped
-      ? unique(host.points.map((point) => point.group))
-          .filter((value) => value !== null && value !== undefined)
-          .map(String)
-          .sort()
+      ? groupOrder(
+          unique(host.points.map((point) => point.group)).filter(
+            (value) => value !== null && value !== undefined
+          ),
+          host.points,
+          host.settings.group_order_col
+        )
       : [];
     host.colorScale = groupColorScale(host.groupValues);
 

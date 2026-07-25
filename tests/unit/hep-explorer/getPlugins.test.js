@@ -17,8 +17,11 @@ describe('hep-explorer getPlugins', () => {
     const scale = groupColorScale(['Placebo', 'Drug']);
     expect(scale.get('Placebo')).toBe(GROUP_COLORS[0]);
     expect(scale.get('Drug')).toBe(GROUP_COLORS[1]);
+    // Past the base palette the scale shades rather than repeats (HEP-CTRL-016,
+    // #55): the ninth group is a variant of the first, not the first again.
     const long = groupColorScale(new Array(GROUP_COLORS.length + 1).fill(0).map((_, i) => `g${i}`));
-    expect(long.get(`g${GROUP_COLORS.length}`)).toBe(GROUP_COLORS[0]);
+    expect(long.get(`g${GROUP_COLORS.length}`)).not.toBe(GROUP_COLORS[0]);
+    expect(long.get(`g${GROUP_COLORS.length}`)).toMatch(/^#[0-9a-f]{6}$/);
     // Non-string group values are keyed by their string form.
     expect(groupColorScale([1, 2]).get('1')).toBe(GROUP_COLORS[0]);
   });

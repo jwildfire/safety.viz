@@ -84,6 +84,59 @@ test.describe('safety.viz hep-explorer module', () => {
     await captureEvidence(page, 'HEP-DATA-003', 'invalid-data-note');
   });
 
+  test('HEP-DISPLAY-006/HEP-CTRL-015/HEP-CTRL-016: the display offers only what the data supports, and the legend is ordered and coloured for it (#55)', async ({
+    page
+  }) => {
+    // HEP-DISPLAY-006: this fixture supports both modes, so both are offered
+    // and nothing is withdrawn.
+    const display = page.locator('.sv-control', {
+      has: page.locator('label:text-is("Display Type")')
+    });
+    await expect(display.locator('select option')).toHaveCount(2);
+
+    const availability = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      return {
+        live: instance.displayAvailability,
+        // The same rule against data with no derivable baseline: every record
+        // is that participant's only record, so nothing has a prior value.
+        noBaseline: instance.cleanRows.map((row) => ({ ...row, __hep_baseline: NaN })),
+        noUln: instance.cleanRows.map((row) => ({ ...row, __hep_uln: NaN }))
+      };
+    });
+    expect(availability.live.modes).toEqual(['relative_uln', 'relative_baseline']);
+    expect(availability.live.note).toBe('');
+
+    // HEP-CTRL-015: with a numeric companion column the arms follow the
+    // protocol's order rather than the alphabet.
+    await page
+      .locator('.sv-control', { has: page.locator('label:text-is("Group")') })
+      .locator('select')
+      .selectOption('ARM');
+    const alphabetical = await page.evaluate(() => window.__safetyHepExplorerInstance.groupValues);
+    expect(alphabetical).toEqual(['Drug', 'Placebo']);
+
+    const ordered = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      instance.setSettings({ group_order_col: 'ARMN' });
+      return instance.groupValues;
+    });
+    // ARMN is 1 for Placebo and 2 for Drug in the fixture, so the control arm
+    // now leads the legend.
+    expect(ordered).toEqual(['Placebo', 'Drug']);
+
+    // HEP-CTRL-016 (the palette past its base colours) is a pure function with
+    // no browser surface of its own; it is pinned in availability.test.js. What
+    // the browser proves is that the two groups it does have are still coloured
+    // distinctly after the reorder.
+    const colors = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      return instance.groupValues.map((value) => instance.colorScale.get(value));
+    });
+    expect(new Set(colors).size).toBe(colors.length);
+    await captureEvidence(page.locator('.sv-main'), 'HEP-CTRL-015', 'legend-order-and-palette');
+  });
+
   test('HEP-DROP-001/HEP-DROP-002/HEP-DROP-003/HEP-IMPUTE-002: removed records are downloadable with a reason, and below-limit values are imputed (#50)', async ({
     page
   }) => {
