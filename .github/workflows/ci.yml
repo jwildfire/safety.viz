@@ -2,6 +2,9 @@ name: CI
 
 on:
   pull_request:
+    # Explicit types so a draft marked ready for review is checked; the default
+    # set (opened, synchronize, reopened) would leave that transition untested.
+    types: [opened, synchronize, reopened, ready_for_review]
   push:
     branches:
       - main
