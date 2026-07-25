@@ -23,6 +23,11 @@ const MODULE_CSS = `
 .safety-hep-explorer .hep-quadrant-summary th,.safety-hep-explorer .hep-quadrant-summary td{border-bottom:1px solid #e3e8ee;padding:.4rem .55rem;text-align:left}
 .safety-hep-explorer .hep-quadrant-summary th{border-bottom:2px solid #d8dee4;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f}
 .safety-hep-explorer .hep-quadrant-summary td.hep-num,.safety-hep-explorer .hep-quadrant-summary th.hep-num{text-align:right;font-variant-numeric:tabular-nums}
+.safety-hep-explorer .hep-quadrant-summary table{max-width:560px}
+.safety-hep-explorer .hep-quadrant-meaning{display:block;margin-top:.15rem;font-size:.75rem;line-height:1.35;color:#52616f}
+.safety-hep-explorer .hep-legend-note{color:#52616f;font-style:italic;font-size:.8rem}
+.safety-hep-explorer .hep-caution{margin-top:.5rem;font-size:.8rem;color:#8a4b00}
+.safety-hep-explorer .hep-csv-link{color:#1f5fa8;text-decoration:underline;cursor:pointer}
 .safety-hep-explorer .hep-composite{margin-top:.5rem}
 .safety-hep-explorer .hep-composite-header{font-size:.85rem;color:#52616f;background:#f6f8fa;border:1px solid #e3e8ee;border-radius:8px;padding:.4rem .6rem;margin:0 0 .6rem;min-height:1.2rem}
 .safety-hep-explorer .hep-composite-header.is-active{color:#1f2933;font-weight:600;border-color:#b8c0cc;background:#eef2f6}

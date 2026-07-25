@@ -160,7 +160,7 @@ test.describe('safety.viz hep-waterfall module', () => {
     await expect(legend).toContainText('Placebo');
     await expect(legend).toContainText('Study Drug');
     await expect(legend).toContainText('Developed new-onset jaundice (either arm, n=2)');
-    await expect(legend.locator('.hwf-legend-note')).toContainText(
+    await expect(legend.locator('.hwf-legend-note.hwf-note-jaundice')).toContainText(
       'Green takes precedence over the arm colour'
     );
     const swatches = await legend
@@ -299,6 +299,141 @@ test.describe('safety.viz hep-waterfall module', () => {
     );
     expect(peakOnly).toEqual(['Peak']);
     await captureEvidence(page, 'HWF-BOX-001', 'flanking-summary-panels');
+  });
+
+  test('HWF-BOX-006/HWF-BOX-007: the panels name their marks, their slots and their arms (#83)', async ({
+    page
+  }) => {
+    // HWF-BOX-006: the legend states what every mark the panels draw means, so
+    // a reader never has to guess whether a box edge is a quartile or a whisker.
+    const legend = page.locator('.hwf-legend');
+    await expect(legend).toContainText('interquartile range (Q1–Q3)');
+    await expect(legend).toContainText('median rule');
+    await expect(legend).toContainText('5th–95th percentiles');
+    await expect(legend).toContainText('mean');
+    // And which box is which: the abbreviated slot label is spelled out.
+    await expect(legend).toContainText('the left box is baseline');
+    await expect(legend).toContainText('maximum on-treatment');
+    await expect(page.locator('.hwf-legend .hwf-legend-box svg')).toHaveCount(1);
+
+    const panels = await page.evaluate(() => {
+      const instance = window.__safetyHepWaterfallInstance;
+      return instance.flankCharts.map((chart) => ({
+        title: chart.options.plugins.title.text,
+        axisShown: chart.options.scales.x.display,
+        // The rendered ticks, not the config: proof the slot labels reached the
+        // axis Chart.js actually drew.
+        ticks: chart.scales.x.ticks.map((tick) => tick.label)
+      }));
+    });
+    expect(panels[0].axisShown).toBe(true);
+    expect(panels[0].ticks).toEqual(['Baseline', 'Max on-tx']);
+    expect(panels[1].ticks).toEqual(['Baseline', 'Max on-tx']);
+    // Panel titles carry the arm and its n: two boxes on one domain look
+    // equally authoritative whether they summarize three participants or three
+    // hundred, and only the count says which.
+    expect(panels[0].title).toBe('Placebo (n=3)');
+    expect(panels[1].title).toBe('Study Drug (n=4)');
+
+    // HWF-BOX-007: the same facts as numbers, for a reader without a pointer.
+    const described = await page.evaluate(() => ({
+      role: document.querySelector('canvas.hwf-box-left').getAttribute('role'),
+      left: document.querySelector('canvas.hwf-box-left').getAttribute('aria-label'),
+      right: document.querySelector('canvas.hwf-box-right').getAttribute('aria-label')
+    }));
+    expect(described.role).toBe('img');
+    expect(described.left).toContain('Placebo');
+    expect(described.left).toMatch(/baseline, 3 participants, median 80/i);
+    expect(described.left).toMatch(/maximum on-treatment/i);
+    expect(described.left).toContain('U/L');
+    expect(described.right).toContain('Study Drug');
+    expect(described.right).toMatch(/4 participants/);
+
+    // The legend and the panels together, uncropped: the slot labels sit at the
+    // foot of the flank canvases, below the fold of a default viewport.
+    await captureEvidence(page.locator('.sv-main'), 'HWF-BOX-006', 'panel-labels-and-anatomy-key');
+  });
+
+  test('HWF-BOX-005: hovering a summary box reads out every statistic it draws (#83)', async ({
+    page
+  }) => {
+    const canvas = page.locator('canvas.hwf-box-left');
+    const tip = page.locator('.hwf-panel .hwf-tip').first();
+    await expect(tip).toBeHidden();
+
+    // The pointer target: the baseline box's median, resolved through the
+    // panel's own scales rather than guessed from the layout.
+    const at = async (index) =>
+      page.evaluate((slot) => {
+        const instance = window.__safetyHepWaterfallInstance;
+        const chart = instance.flankCharts[0];
+        const box = instance.boxSpecs.left[slot];
+        return {
+          x: chart.scales.x.getPixelForValue(box.x),
+          y: chart.scales.y.getPixelForValue(box.stats.median)
+        };
+      }, index);
+
+    const bounds = await canvas.boundingBox();
+    const baseline = await at(0);
+    await page.mouse.move(bounds.x + baseline.x, bounds.y + baseline.y);
+    await expect(tip).toBeVisible();
+
+    // Placebo baselines are 50/80/120 — n, median and both quartiles readable.
+    await expect(tip).toContainText('Placebo · Baseline ALT');
+    await expect(tip).toContainText('n = 3');
+    await expect(tip).toContainText('Median: 80 U/L');
+    await expect(tip).toContainText('Q1:');
+    await expect(tip).toContainText('Q3:');
+    await expect(tip).toContainText('Mean: 83.3 U/L');
+    await expect(tip).toContainText('5th percentile:');
+    await expect(tip).toContainText('95th percentile:');
+    await expect(tip).toContainText('Observed range: 50–120 U/L');
+    await captureEvidence(page.locator('.sv-chart-wrap'), 'HWF-BOX-005', 'summary-box-hover');
+
+    // The second slot is a different box, named as the maximum on-treatment
+    // value rather than the bare 'Peak' the spec carries internally.
+    const peak = await at(1);
+    await page.mouse.move(bounds.x + peak.x, bounds.y + peak.y);
+    await expect(tip).toContainText('Maximum on-treatment ALT');
+    await expect(tip).toContainText('n = 3');
+
+    // Off the boxes the tooltip closes, and the hover state closes with it.
+    await page.mouse.move(bounds.x + 2, bounds.y + 2);
+    await expect(tip).toBeHidden();
+    expect(await page.evaluate(() => window.__safetyHepWaterfallInstance.boxHover.index)).toBe(-1);
+
+    // The active arm's panel answers on its own, with its own arm name.
+    const rightCanvas = page.locator('canvas.hwf-box-right');
+    const rightBounds = await rightCanvas.boundingBox();
+    const rightAt = await page.evaluate(() => {
+      const instance = window.__safetyHepWaterfallInstance;
+      const chart = instance.flankCharts[1];
+      const box = instance.boxSpecs.right[0];
+      return {
+        x: chart.scales.x.getPixelForValue(box.x),
+        y: chart.scales.y.getPixelForValue(box.stats.median)
+      };
+    });
+    await page.mouse.move(rightBounds.x + rightAt.x, rightBounds.y + rightAt.y);
+    const rightTip = page.locator('.hwf-panel .hwf-tip').last();
+    await expect(rightTip).toBeVisible();
+    await expect(rightTip).toContainText('Study Drug · Baseline ALT');
+    await expect(rightTip).toContainText('n = 4');
+  });
+
+  test('HWF-BOX-005: the summary boxes are reachable from the keyboard (#83)', async ({ page }) => {
+    const tip = page.locator('.hwf-panel .hwf-tip').first();
+    await page.locator('canvas.hwf-box-left').focus();
+    await expect(tip).toBeVisible();
+    await expect(tip).toContainText('Baseline ALT');
+
+    await page.keyboard.press('ArrowRight');
+    await expect(tip).toContainText('Maximum on-treatment ALT');
+    await page.keyboard.press('ArrowLeft');
+    await expect(tip).toContainText('Baseline ALT');
+    await page.keyboard.press('Escape');
+    await expect(tip).toBeHidden();
   });
 
   test('HWF-DATA-003/HWF-DATA-005/HWF-DATA-008: both cohort exclusions and the dropped records are reported separately in the notes (#93)', async ({

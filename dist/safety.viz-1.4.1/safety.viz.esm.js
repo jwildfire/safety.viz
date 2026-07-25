@@ -9782,6 +9782,143 @@ var plugin_legend = {
     }
   }
 };
+var Title = class extends Element {
+  constructor(config) {
+    super();
+    this.chart = config.chart;
+    this.options = config.options;
+    this.ctx = config.ctx;
+    this._padding = void 0;
+    this.top = void 0;
+    this.bottom = void 0;
+    this.left = void 0;
+    this.right = void 0;
+    this.width = void 0;
+    this.height = void 0;
+    this.position = void 0;
+    this.weight = void 0;
+    this.fullSize = void 0;
+  }
+  update(maxWidth, maxHeight) {
+    const opts = this.options;
+    this.left = 0;
+    this.top = 0;
+    if (!opts.display) {
+      this.width = this.height = this.right = this.bottom = 0;
+      return;
+    }
+    this.width = this.right = maxWidth;
+    this.height = this.bottom = maxHeight;
+    const lineCount = isArray(opts.text) ? opts.text.length : 1;
+    this._padding = toPadding(opts.padding);
+    const textSize = lineCount * toFont(opts.font).lineHeight + this._padding.height;
+    if (this.isHorizontal()) {
+      this.height = textSize;
+    } else {
+      this.width = textSize;
+    }
+  }
+  isHorizontal() {
+    const pos = this.options.position;
+    return pos === "top" || pos === "bottom";
+  }
+  _drawArgs(offset) {
+    const { top, left, bottom, right, options } = this;
+    const align = options.align;
+    let rotation = 0;
+    let maxWidth, titleX, titleY;
+    if (this.isHorizontal()) {
+      titleX = _alignStartEnd(align, left, right);
+      titleY = top + offset;
+      maxWidth = right - left;
+    } else {
+      if (options.position === "left") {
+        titleX = left + offset;
+        titleY = _alignStartEnd(align, bottom, top);
+        rotation = PI * -0.5;
+      } else {
+        titleX = right - offset;
+        titleY = _alignStartEnd(align, top, bottom);
+        rotation = PI * 0.5;
+      }
+      maxWidth = bottom - top;
+    }
+    return {
+      titleX,
+      titleY,
+      maxWidth,
+      rotation
+    };
+  }
+  draw() {
+    const ctx = this.ctx;
+    const opts = this.options;
+    if (!opts.display) {
+      return;
+    }
+    const fontOpts = toFont(opts.font);
+    const lineHeight = fontOpts.lineHeight;
+    const offset = lineHeight / 2 + this._padding.top;
+    const { titleX, titleY, maxWidth, rotation } = this._drawArgs(offset);
+    renderText(ctx, opts.text, 0, 0, fontOpts, {
+      color: opts.color,
+      maxWidth,
+      rotation,
+      textAlign: _toLeftRightCenter(opts.align),
+      textBaseline: "middle",
+      translation: [
+        titleX,
+        titleY
+      ]
+    });
+  }
+};
+function createTitle(chart, titleOpts) {
+  const title = new Title({
+    ctx: chart.ctx,
+    options: titleOpts,
+    chart
+  });
+  layouts.configure(chart, title, titleOpts);
+  layouts.addBox(chart, title);
+  chart.titleBlock = title;
+}
+var plugin_title = {
+  id: "title",
+  _element: Title,
+  start(chart, _args, options) {
+    createTitle(chart, options);
+  },
+  stop(chart) {
+    const titleBlock = chart.titleBlock;
+    layouts.removeBox(chart, titleBlock);
+    delete chart.titleBlock;
+  },
+  beforeUpdate(chart, _args, options) {
+    const title = chart.titleBlock;
+    layouts.configure(chart, title, options);
+    title.options = options;
+  },
+  defaults: {
+    align: "center",
+    display: false,
+    font: {
+      weight: "bold"
+    },
+    fullSize: true,
+    padding: 10,
+    position: "top",
+    text: "",
+    weight: 2e3
+  },
+  defaultRoutes: {
+    color: "color"
+  },
+  descriptors: {
+    _scriptable: true,
+    _indexable: false
+  }
+};
 var positioners = {
   average(items) {
     if (!items.length) {
@@ -13183,8 +13320,25 @@ function resolveMeasureRows(rows, settings, key) {
   const testName = settings.measure_values ? settings.measure_values[key] : key;
   return rows.filter((row) => row[settings.measure_col] === testName);
 }
+function dropReason(row, settings) {
+  const raw = row[settings.value_col];
+  if (raw === "" || raw === void 0 || raw === null) {
+    return `Result column ("${settings.value_col}") is empty.`;
+  }
+  if (!Number.isFinite(row.__hep_value)) {
+    return `Result column ("${settings.value_col}") is not numeric.`;
+  }
+  if (!Number.isFinite(row.__hep_uln)) {
+    return `Reference-range column ("${settings.normal_col_high}") is missing or not numeric.`;
+  }
+  if (!(row.__hep_uln > 0)) {
+    return `Reference-range column ("${settings.normal_col_high}") is not positive.`;
+  }
+  return "";
+}
 function cleanData2(rawData, settings) {
   let removed = 0;
+  const dropped = [];
   const rows = rawData.map((row, index) => {
     const value = Number(row[settings.value_col]);
     const uln = Number(row[settings.normal_col_high]);
@@ -13201,11 +13355,16 @@ function cleanData2(rawData, settings) {
       __hep_baseline: NaN
     };
   }).filter((row) => {
-    const keep = row[settings.value_col] !== "" && row[settings.value_col] !== void 0 && Number.isFinite(row.__hep_value) && Number.isFinite(row.__hep_uln) && row.__hep_uln > 0;
-    if (!keep) removed += 1;
-    return keep;
+    const reason = dropReason(row, settings);
+    if (reason) {
+      row.__hep_dropReason = reason;
+      dropped.push(row);
+      removed += 1;
+      return false;
+    }
+    return true;
   });
-  return { rows, removed };
+  return { rows, removed, dropped };
 }
 function assignSequence(rows, settings) {
   const counts = /* @__PURE__ */ new Map();
@@ -13429,6 +13588,16 @@ var DEFAULT_SETTINGS3 = {
     rRatio: { relative_uln: 5, relative_baseline: 5 },
     defaults: { relative_uln: 3, relative_baseline: 3.8 }
   },
+  group_order_col: null,
+  imputation_methods: {
+    ALT: "data-driven",
+    AST: "data-driven",
+    TB: "data-driven",
+    ALP: "data-driven"
+  },
+  imputation_values: null,
+  quadrant_labels: "shown",
+  marginals: "box_rug",
   visit_window: 30,
   profile: true,
   profile_details: null,
@@ -15783,11 +15952,11 @@ var SafetyHistogram = class {
   drawOverview() {
     this.multiplesWrap.innerHTML = "";
     this.measures().forEach((measureValue) => {
-      const measureRows = this.cleanData.filter(
+      const measureRows2 = this.cleanData.filter(
         (row) => measureLabel(row, this.settings) === measureValue
       );
-      const rows = applyFilters(measureRows, this.state.filters);
-      const values = measureRows.map((row) => row.__sh_value);
+      const rows = applyFilters(measureRows2, this.state.filters);
+      const values = measureRows2.map((row) => row.__sh_value);
       const domain = resolveDomain(values, null, null);
       const binResult = calculateBins(values, this.settings.bin_algorithm, null, null, domain);
       const digits = displayDigits(binResult.width, values);
@@ -20947,6 +21116,24 @@ var GROUP_COLORS2 = [
   "#00838f",
   "#c2185b"
 ];
+var PALETTE_TIERS = 3;
+function shade(hex2, amount) {
+  const clean = hex2.replace("#", "");
+  const channel = (offset) => {
+    const value = parseInt(clean.slice(offset, offset + 2), 16);
+    const shifted = amount >= 0 ? value + (255 - value) * amount : value * (1 + amount);
+    return Math.max(0, Math.min(255, Math.round(shifted))).toString(16).padStart(2, "0");
+  };
+  return `#${channel(0)}${channel(2)}${channel(4)}`;
+}
+function paletteColor(index) {
+  const size = GROUP_COLORS2.length;
+  const position = (index % (size * PALETTE_TIERS) + size * PALETTE_TIERS) % (size * PALETTE_TIERS);
+  const base = GROUP_COLORS2[position % size];
+  const tier = Math.floor(position / size);
+  if (tier === 0) return base;
+  return shade(base, tier === 1 ? 0.45 : -0.4);
+}
 var SELECTION_COLOR2 = "#111827";
 var QUADRANT_LABELS = [
   { position: "upper-right", label: "Possible Hy's Law Range", xCat: "High", yCat: "High" },
@@ -20954,6 +21141,31 @@ var QUADRANT_LABELS = [
   { position: "lower-right", label: "Temple's Corollary", xCat: "High", yCat: "Normal" },
   { position: "lower-left", label: "Normal Range", xCat: "Normal", yCat: "Normal" }
 ];
+var QUADRANT_MEANINGS = {
+  "Possible Hy's Law Range": "Both measures above their cutpoints. A screening range, not a diagnosis: Hy's Law also requires that no other cause explains the injury, which only a full case review can establish.",
+  Hyperbilirubinemia: "Bilirubin above its cutpoint with the aminotransferase below its own \u2014 a bilirubin rise without the hepatocellular injury pattern (consider haemolysis, Gilbert syndrome, or cholestasis).",
+  "Temple's Corollary": "Aminotransferase above its cutpoint with bilirubin below its own \u2014 hepatocellular injury without the loss of function that defines the Hy's Law range.",
+  "Normal Range": "Neither measure above its cutpoint for this participant."
+};
+var CLINICAL_CAUTION = "Exploratory tool \u2014 not validated for clinical use. Confirm any signal with a full case review.";
+function groupLegendEntries(groupValues, points) {
+  const rows = points || [];
+  const total = rows.length;
+  return (groupValues || []).map((value) => {
+    const count2 = rows.filter((point) => String(point.group) === String(value)).length;
+    const percent = total ? count2 / total * 100 : 0;
+    return {
+      value: String(value),
+      count: count2,
+      percent,
+      label: `${value} (n=${count2}, ${percent.toFixed(1)}%)`
+    };
+  });
+}
+function pointSizeNote(pointSize) {
+  if (pointSize !== "rRatio") return "";
+  return "Point size encodes R Ratio: a larger point is a more hepatocellular pattern. Participants with no R Ratio are drawn at the base size.";
+}
 function hexToRgba3(hex2, opacity) {
   const clean = hex2.replace("#", "");
   const r = parseInt(clean.slice(0, 2), 16);
@@ -20964,7 +21176,7 @@ function hexToRgba3(hex2, opacity) {
 function groupColorScale2(groupValues) {
   const scale = /* @__PURE__ */ new Map();
   groupValues.forEach((value, index) => {
-    scale.set(String(value), GROUP_COLORS2[index % GROUP_COLORS2.length]);
+    scale.set(String(value), paletteColor(index));
   });
   return scale;
 }
@@ -21065,6 +21277,10 @@ function quadrantPlugin(instance) {
         ctx.lineTo(chartArea.right, yPixel);
         ctx.stroke();
       }
+      if (state.quadrantLabels === "hidden") {
+        ctx.restore();
+        return;
+      }
       ctx.setLineDash([]);
       ctx.fillStyle = "rgba(51, 65, 85, 0.9)";
       ctx.font = "11px system-ui, sans-serif";
@@ -21113,7 +21329,10 @@ function buildPoints(cleanRows, settings, state) {
   const metaCols = unique6([
     settings.id_col,
     ...settings.filters.map((filter) => filter.value_col),
-    ...settings.groups.map((group) => group.value_col)
+    ...settings.groups.map((group) => group.value_col),
+    // The legend's numeric ordering column travels with the point, so the
+    // legend can be sorted without a second pass over the rows (HEP-CTRL-015).
+    settings.group_order_col
   ]).filter((col) => col && col !== GROUP_NONE);
   const byId = /* @__PURE__ */ new Map();
   cleanRows.forEach((row) => {
@@ -21123,6 +21342,7 @@ function buildPoints(cleanRows, settings, state) {
   });
   const points = [];
   let droppedParticipants = 0;
+  const droppedList = [];
   byId.forEach((participantRows, id) => {
     const peakX = participantPeak(
       resolveMeasureRows(participantRows, settings, measureX),
@@ -21135,7 +21355,16 @@ function buildPoints(cleanRows, settings, state) {
       display
     );
     if (!peakX || !peakY || !(peakX.value > 0) || !(peakY.value > 0)) {
+      const missing = [];
+      if (!peakX) missing.push(`no usable ${measureX} value`);
+      else if (!(peakX.value > 0)) missing.push(`${measureX} value is not positive`);
+      if (!peakY) missing.push(`no usable ${measureY} value`);
+      else if (!(peakY.value > 0)) missing.push(`${measureY} value is not positive`);
       droppedParticipants += 1;
+      droppedList.push({
+        id: String(id),
+        reason: `${missing.join("; ")} for the ${display === "relative_baseline" ? "baseline-adjusted" : "reference-range-adjusted"} display.`
+      });
       return;
     }
     const daysX = peakX.day;
@@ -21160,7 +21389,7 @@ function buildPoints(cleanRows, settings, state) {
       raw: meta
     });
   });
-  return { points, droppedParticipants };
+  return { points, droppedParticipants, droppedList };
 }
 function applyFilters6(points, filters) {
   return points.filter(
@@ -21237,6 +21466,110 @@ function visitPathSeries(cleanRows, id, settings, state) {
     visit: entry.visit,
     label: entry.visit ? String(entry.visit) : Number.isFinite(entry.day) ? `Day ${entry.day}` : `#${Number.isFinite(entry.seq) ? entry.seq : entry.order}`
   }));
+}
+
+// src/hep-explorer/imputation.js
+var IMPUTATION_METHODS = ["data-driven", "user-defined", "drop"];
+function measureRows(rows, settings, measureKey) {
+  const value = settings.measure_values ? settings.measure_values[measureKey] : void 0;
+  if (value === void 0) return [];
+  return rows.filter((row) => String(row[settings.measure_col]) === String(value));
+}
+function lloqFor(rows, settings, measureKey) {
+  const method = (settings.imputation_methods || {})[measureKey];
+  if (method === "user-defined") {
+    const configured = Number((settings.imputation_values || {})[measureKey]);
+    return Number.isFinite(configured) ? configured : NaN;
+  }
+  if (method !== "data-driven") return NaN;
+  const positives = measureRows(rows, settings, measureKey).map((row) => Number(row[settings.value_col])).filter((value) => Number.isFinite(value) && value > 0);
+  return positives.length ? Math.min(...positives) : NaN;
+}
+function imputeBelowLloq(rows, settings) {
+  const methods = settings.imputation_methods || {};
+  const dropped = [];
+  const limits = {};
+  let imputed = 0;
+  let surviving = rows;
+  Object.keys(settings.measure_values || {}).forEach((measureKey) => {
+    const method = methods[measureKey];
+    if (!IMPUTATION_METHODS.includes(method)) return;
+    if (method === "drop") {
+      const measureValue = settings.measure_values[measureKey];
+      surviving = surviving.filter((row) => {
+        const isMeasure = String(row[settings.measure_col]) === String(measureValue);
+        const value = Number(row[settings.value_col]);
+        if (!isMeasure || !(value <= 0)) return true;
+        row.__hep_dropReason = `${measureKey} result is not positive, and this measure is set to drop records at or below the limit of quantitation.`;
+        dropped.push(row);
+        return false;
+      });
+      return;
+    }
+    const limit = lloqFor(surviving, settings, measureKey);
+    if (!Number.isFinite(limit)) return;
+    limits[measureKey] = limit;
+    const imputedValue = limit / 2;
+    measureRows(surviving, settings, measureKey).forEach((row) => {
+      const value = Number(row[settings.value_col]);
+      if (!(value >= 0) || !(value < limit)) return;
+      row.__hep_imputed = true;
+      row.__hep_valueOriginal = value;
+      row.__hep_value = imputedValue;
+      row.__hep_relative_uln = imputedValue / row.__hep_uln;
+      imputed += 1;
+    });
+  });
+  return { rows: surviving, imputed, dropped, limits };
+}
+
+// src/hep-explorer/availability.js
+function availableDisplays(rows) {
+  const records = rows || [];
+  const hasUln = records.some((row) => Number.isFinite(row.__hep_uln) && row.__hep_uln > 0);
+  const hasBaseline = records.some(
+    (row) => Number.isFinite(row.__hep_baseline) && row.__hep_baseline !== 0
+  );
+  const modes = [];
+  if (hasUln) modes.push("relative_uln");
+  if (hasBaseline) modes.push("relative_baseline");
+  if (!hasUln && !hasBaseline) {
+    return {
+      modes,
+      note: "This data carries neither a usable reference range nor a derivable baseline, so neither the reference-range-adjusted (eDISH) nor the baseline-adjusted (mDISH) view can be drawn."
+    };
+  }
+  if (!hasBaseline) {
+    return {
+      modes,
+      note: "No participant has a derivable baseline, so the baseline-adjusted (mDISH) view is not offered."
+    };
+  }
+  if (!hasUln) {
+    return {
+      modes,
+      note: "No record carries a usable upper limit of normal, so the reference-range-adjusted (eDISH) view is not offered."
+    };
+  }
+  return { modes, note: "" };
+}
+function groupOrder(groupValues, points, orderCol) {
+  const values = [...groupValues || []].map(String).sort();
+  if (!orderCol) return values;
+  const rank = /* @__PURE__ */ new Map();
+  (points || []).forEach((point) => {
+    const key = String(point.group);
+    if (rank.has(key)) return;
+    const raw = point.raw ? point.raw[orderCol] : void 0;
+    const value = Number(raw);
+    if (raw !== void 0 && raw !== "" && Number.isFinite(value)) rank.set(key, value);
+  });
+  return values.sort((a, b) => {
+    const rankA = rank.has(a) ? rank.get(a) : Infinity;
+    const rankB = rank.has(b) ? rank.get(b) : Infinity;
+    if (rankA !== rankB) return rankA - rankB;
+    return a.localeCompare(b);
+  });
 }
 
 // src/hep-explorer/selection.js
@@ -21412,6 +21745,11 @@ var MODULE_CSS2 = `
 .safety-hep-explorer .hep-quadrant-summary th,.safety-hep-explorer .hep-quadrant-summary td{border-bottom:1px solid #e3e8ee;padding:.4rem .55rem;text-align:left}
 .safety-hep-explorer .hep-quadrant-summary th{border-bottom:2px solid #d8dee4;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f}
 .safety-hep-explorer .hep-quadrant-summary td.hep-num,.safety-hep-explorer .hep-quadrant-summary th.hep-num{text-align:right;font-variant-numeric:tabular-nums}
+.safety-hep-explorer .hep-quadrant-summary table{max-width:560px}
+.safety-hep-explorer .hep-quadrant-meaning{display:block;margin-top:.15rem;font-size:.75rem;line-height:1.35;color:#52616f}
+.safety-hep-explorer .hep-legend-note{color:#52616f;font-style:italic;font-size:.8rem}
+.safety-hep-explorer .hep-caution{margin-top:.5rem;font-size:.8rem;color:#8a4b00}
+.safety-hep-explorer .hep-csv-link{color:#1f5fa8;text-decoration:underline;cursor:pointer}
 .safety-hep-explorer .hep-composite{margin-top:.5rem}
 .safety-hep-explorer .hep-composite-header{font-size:.85rem;color:#52616f;background:#f6f8fa;border:1px solid #e3e8ee;border-radius:8px;padding:.4rem .6rem;margin:0 0 .6rem;min-height:1.2rem}
 .safety-hep-explorer .hep-composite-header.is-active{color:#1f2933;font-weight:600;border-color:#b8c0cc;background:#eef2f6}
@@ -21480,6 +21818,219 @@ function applyModuleStyles() {
   document.head.append(style);
 }
 
+// src/hep-explorer/cutDrag.js
+var CUT_GRAB_PX = 6;
+function roundCut(value) {
+  if (!Number.isFinite(value)) return NaN;
+  return Math.round((value + Number.EPSILON) * 100) / 100;
+}
+function cutHandleAt(chart, cuts, x, y) {
+  const { chartArea, scales } = chart || {};
+  if (!chartArea || !scales || !scales.x || !scales.y) return null;
+  if (x < chartArea.left || x > chartArea.right || y < chartArea.top || y > chartArea.bottom) {
+    return null;
+  }
+  const { xCut, yCut } = cuts || {};
+  const dx = Number.isFinite(xCut) ? Math.abs(x - scales.x.getPixelForValue(xCut)) : Infinity;
+  const dy = Number.isFinite(yCut) ? Math.abs(y - scales.y.getPixelForValue(yCut)) : Infinity;
+  if (dx > CUT_GRAB_PX && dy > CUT_GRAB_PX) return null;
+  return dy < dx ? "y" : "x";
+}
+function cutValueFor(chart, axis, pixel) {
+  const scale = chart.scales[axis];
+  const raw = scale.getValueForPixel(pixel);
+  const floor = Number.isFinite(scale.min) ? Math.max(0, scale.min) : 0;
+  const ceiling = Number.isFinite(scale.max) ? scale.max : Infinity;
+  return roundCut(Math.min(ceiling, Math.max(floor, raw)));
+}
+
+// src/hep-explorer/marginals.js
+var MARGINAL_MODES = [
+  { value: "box_rug", label: "Box plots and rugs" },
+  { value: "box", label: "Box plots" },
+  { value: "rug", label: "Rugs" },
+  { value: "none", label: "Hidden" }
+];
+var MARGIN_STRIP = 30;
+var RUG_LENGTH = 9;
+var MARGINAL_COLOR = "rgba(71, 85, 105, 0.85)";
+var MARGINAL_FILL = "rgba(71, 85, 105, 0.18)";
+var RUG_COLOR = "rgba(51, 65, 85, 0.7)";
+function showsBoxes(mode) {
+  return mode !== "rug" && mode !== "none";
+}
+function showsRug(mode) {
+  return mode !== "box" && mode !== "none";
+}
+function scatterPadding(mode) {
+  const strip = showsBoxes(mode) ? MARGIN_STRIP : 6;
+  return { top: strip, right: strip, bottom: 6, left: 6 };
+}
+function marginalSummary(points) {
+  const rows = points || [];
+  return {
+    x: boxStats(rows.map((point) => point.x)),
+    y: boxStats(rows.map((point) => point.y))
+  };
+}
+function drawMarginalBox(ctx, stats, project, { across, thickness, horizontal }) {
+  if (!stats || !stats.n) return;
+  const centre = across + thickness / 2;
+  const q1 = project(stats.q25);
+  const q3 = project(stats.q75);
+  const low = project(stats.q5);
+  const high = project(stats.q95);
+  const median4 = project(stats.median);
+  const near = Math.min(q1, q3);
+  const span = Math.abs(q3 - q1);
+  ctx.strokeStyle = MARGINAL_COLOR;
+  ctx.fillStyle = MARGINAL_FILL;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  if (horizontal) {
+    ctx.moveTo(low, centre);
+    ctx.lineTo(high, centre);
+    ctx.moveTo(low, across + 2);
+    ctx.lineTo(low, across + thickness - 2);
+    ctx.moveTo(high, across + 2);
+    ctx.lineTo(high, across + thickness - 2);
+  } else {
+    ctx.moveTo(centre, low);
+    ctx.lineTo(centre, high);
+    ctx.moveTo(across + 2, low);
+    ctx.lineTo(across + thickness - 2, low);
+    ctx.moveTo(across + 2, high);
+    ctx.lineTo(across + thickness - 2, high);
+  }
+  ctx.stroke();
+  if (horizontal) {
+    ctx.fillRect(near, across, span, thickness);
+    ctx.strokeRect(near, across, span, thickness);
+    ctx.beginPath();
+    ctx.moveTo(median4, across);
+    ctx.lineTo(median4, across + thickness);
+  } else {
+    ctx.fillRect(across, near, thickness, span);
+    ctx.strokeRect(across, near, thickness, span);
+    ctx.beginPath();
+    ctx.moveTo(across, median4);
+    ctx.lineTo(across + thickness, median4);
+  }
+  ctx.lineWidth = 1.6;
+  ctx.stroke();
+}
+function drawRug(ctx, values, project, { from: from2, length, horizontal }) {
+  ctx.strokeStyle = RUG_COLOR;
+  ctx.lineWidth = 1.25;
+  ctx.beginPath();
+  values.forEach((value) => {
+    if (!Number.isFinite(value)) return;
+    const at = project(value);
+    if (horizontal) {
+      ctx.moveTo(at, from2);
+      ctx.lineTo(at, from2 - length);
+    } else {
+      ctx.moveTo(from2, at);
+      ctx.lineTo(from2 + length, at);
+    }
+  });
+  ctx.stroke();
+}
+function marginalPlugin(instance) {
+  return {
+    id: `hep-marginals-${Math.random().toString(36).slice(2)}`,
+    afterDatasetsDraw(chart) {
+      chart.$hepMarginals = null;
+      const mode = (instance.state || {}).marginals;
+      const points = instance.points || [];
+      if (mode === "none" || !points.length) return;
+      const { ctx, chartArea, scales } = chart;
+      if (!scales.x || !scales.y) return;
+      const summary = marginalSummary(points);
+      chart.$hepMarginals = {
+        mode: mode || "box_rug",
+        x: summary.x,
+        y: summary.y,
+        rug: points.filter((point) => Number.isFinite(point.x) && Number.isFinite(point.y)).length
+      };
+      ctx.save();
+      if (showsBoxes(mode)) {
+        const thickness = MARGIN_STRIP - 14;
+        drawMarginalBox(ctx, summary.x, (value) => scales.x.getPixelForValue(value), {
+          across: chartArea.top - MARGIN_STRIP + 4,
+          thickness,
+          horizontal: true
+        });
+        drawMarginalBox(ctx, summary.y, (value) => scales.y.getPixelForValue(value), {
+          across: chartArea.right + 10,
+          thickness,
+          horizontal: false
+        });
+      }
+      if (showsRug(mode)) {
+        drawRug(
+          ctx,
+          points.map((point) => point.x),
+          (value) => scales.x.getPixelForValue(value),
+          {
+            from: chartArea.bottom,
+            length: RUG_LENGTH,
+            horizontal: true
+          }
+        );
+        drawRug(
+          ctx,
+          points.map((point) => point.y),
+          (value) => scales.y.getPixelForValue(value),
+          {
+            from: chartArea.left,
+            length: RUG_LENGTH,
+            horizontal: false
+          }
+        );
+      }
+      ctx.restore();
+    }
+  };
+}
+
+// src/hep-explorer/dropped.js
+var DROPPED_PARTICIPANT_COLUMNS = ["id", "reason"];
+var REASON_COLUMN = "__hep_dropReason";
+function toCsv(rows, columns) {
+  const cell2 = (value) => {
+    if (value === null || value === void 0) return '""';
+    return `"${String(value).replace(/"/g, '""')}"`;
+  };
+  const lines = [columns.map(cell2).join(",")];
+  (rows || []).forEach((row) => lines.push(columns.map((column) => cell2(row[column])).join(",")));
+  return lines.join("\n");
+}
+function droppedRowColumns(rows) {
+  if (!rows || !rows.length) return [];
+  const source = Object.keys(rows[0]).filter((column) => !column.startsWith("__hep_"));
+  return [REASON_COLUMN, ...source];
+}
+function csvDownloadLink(buildCsv2, fileCore, label) {
+  const link = document.createElement("a");
+  const fileName = `${fileCore}_${(/* @__PURE__ */ new Date()).toISOString().slice(0, 10)}.csv`;
+  link.className = "hep-csv-link";
+  link.textContent = label;
+  link.setAttribute("href", "#");
+  link.setAttribute("download", fileName);
+  link.__hepCsv = buildCsv2;
+  link.addEventListener("click", (event) => {
+    event.preventDefault();
+    const url = URL.createObjectURL(new Blob([buildCsv2()], { type: "text/csv;charset=utf-8;" }));
+    const trigger = document.createElement("a");
+    trigger.href = url;
+    trigger.download = fileName;
+    trigger.click();
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+  });
+  return link;
+}
+
 // src/hep-explorer/views/scatter.js
 var BASE_POINT_COLOR = GROUP_COLORS2[0];
 function addCutControl(host, addControl, parent, axisKey) {
@@ -21497,6 +22048,78 @@ function addCutControl(host, addControl, parent, axisKey) {
     input.value = value;
     host.render();
   };
+  if (!host.cutInputs) host.cutInputs = {};
+  host.cutInputs[axisKey === "measureX" ? "x" : "y"] = input;
+}
+function moveCut(host, axis, value) {
+  const measureKey = axis === "x" ? host.state.measureX : host.state.measureY;
+  if (!host.state.cuts[measureKey]) host.state.cuts[measureKey] = {};
+  host.state.cuts[measureKey][host.state.display] = value;
+  host.state[axis === "x" ? "xCut" : "yCut"] = value;
+  const input = host.cutInputs && host.cutInputs[axis];
+  if (input) input.value = String(value);
+  host.quadrants = classifyQuadrants(host.points, host.state.xCut, host.state.yCut);
+  drawQuadrantSummary(host);
+  if (host.chart) host.chart.update("none");
+}
+function bindCutDrag(host) {
+  if (host.cutDragBound) return;
+  host.cutDragBound = true;
+  const canvas = host.canvas;
+  host.cutDrag = null;
+  const at = (event) => {
+    const bounds = canvas.getBoundingClientRect ? canvas.getBoundingClientRect() : { left: 0, top: 0 };
+    return { x: event.clientX - bounds.left, y: event.clientY - bounds.top };
+  };
+  const handleAt = (event) => {
+    if (!host.chart || host.chart !== host.scatterChart) return null;
+    const { x, y } = at(event);
+    return cutHandleAt(host.chart, host.state, x, y);
+  };
+  canvas.addEventListener(
+    "pointerdown",
+    (event) => {
+      const axis = handleAt(event);
+      if (!axis) return;
+      event.preventDefault();
+      event.stopPropagation();
+      host.cutDrag = { axis, moved: false };
+      if (canvas.setPointerCapture) canvas.setPointerCapture(event.pointerId);
+    },
+    true
+  );
+  canvas.addEventListener(
+    "pointermove",
+    (event) => {
+      if (!host.cutDrag) {
+        host.cutHoverAxis = handleAt(event);
+        if (host.cutHoverAxis) {
+          canvas.style.cursor = host.cutHoverAxis === "x" ? "col-resize" : "row-resize";
+        }
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      const { x, y } = at(event);
+      const axis = host.cutDrag.axis;
+      host.cutDrag.moved = true;
+      moveCut(host, axis, cutValueFor(host.chart, axis, axis === "x" ? x : y));
+    },
+    true
+  );
+  const end = (event) => {
+    if (!host.cutDrag) return;
+    host.cutDragged = host.cutDrag.moved;
+    host.cutDrag = null;
+    if (canvas.releasePointerCapture && event.pointerId != null) {
+      try {
+        canvas.releasePointerCapture(event.pointerId);
+      } catch {
+      }
+    }
+  };
+  canvas.addEventListener("pointerup", end, true);
+  canvas.addEventListener("pointercancel", end, true);
 }
 function filteredPoints(host) {
   const filtered = applyFilters6(host.allPoints, host.state.filters);
@@ -21510,10 +22133,61 @@ function updateNotes(host) {
   const totalParticipants = unique6(host.cleanRows.map((row) => row[host.settings.id_col])).length;
   const shown = host.points.length;
   const pct = totalParticipants ? (shown / totalParticipants * 100).toFixed(1) : "0.0";
-  const removedNote = host.removedRecords ? `<span class="sv-warning">${host.removedRecords} missing or non-numeric results removed.</span>` : "";
-  const dropReason = host.state.display === "relative_baseline" ? `missing ${host.state.measureX}/${host.state.measureY} peak or baseline` : `missing ${host.state.measureX}/${host.state.measureY} peak`;
-  const droppedNote = host.droppedParticipants ? `<span class="sv-warning">${host.droppedParticipants} participants dropped (${dropReason}).</span>` : "";
-  host.notes.innerHTML = `<span>${shown} of ${totalParticipants} participants shown (${pct}%).</span>` + removedNote + droppedNote;
+  host.notes.innerHTML = "";
+  host.notes.append(
+    createElement("span", null, `${shown} of ${totalParticipants} participants shown (${pct}%).`)
+  );
+  if (host.removedRecords) {
+    const note = createElement(
+      "span",
+      "sv-warning",
+      `${host.removedRecords} missing or non-numeric results removed. `
+    );
+    const rows = host.droppedRows || [];
+    if (rows.length) {
+      note.append(
+        csvDownloadLink(
+          () => toCsv(rows, droppedRowColumns(rows)),
+          "hepExplorerDroppedRows",
+          "Download the removed records (CSV)"
+        )
+      );
+    }
+    host.notes.append(note);
+  }
+  if (host.droppedParticipants) {
+    const dropReason2 = host.state.display === "relative_baseline" ? `missing ${host.state.measureX}/${host.state.measureY} peak or baseline` : `missing ${host.state.measureX}/${host.state.measureY} peak`;
+    const note = createElement(
+      "span",
+      "sv-warning",
+      `${host.droppedParticipants} participants dropped (${dropReason2}). `
+    );
+    const dropped = host.droppedParticipantList || [];
+    if (dropped.length) {
+      note.append(
+        csvDownloadLink(
+          () => toCsv(dropped, DROPPED_PARTICIPANT_COLUMNS),
+          "hepExplorerDroppedParticipants",
+          "Download the dropped participants (CSV)"
+        )
+      );
+    }
+    host.notes.append(note);
+  }
+  const availability = host.displayAvailability;
+  if (availability && availability.note) {
+    host.notes.append(createElement("span", "sv-warning", availability.note));
+  }
+  if (host.imputedRecords) {
+    const limits = Object.entries(host.imputationLimits || {}).map(([measure, limit]) => `${measure} < ${formatNumber4(limit)}`).join(", ");
+    host.notes.append(
+      createElement(
+        "span",
+        null,
+        `${host.imputedRecords} result${host.imputedRecords > 1 ? "s" : ""} below the limit of quantitation imputed to half the limit${limits ? ` (${limits})` : ""}.`
+      )
+    );
+  }
 }
 function activeId(host) {
   return host.state.hoverId != null ? host.state.hoverId : host.state.selectedId;
@@ -21617,7 +22291,7 @@ function drawScatter(host) {
       maintainAspectRatio: false,
       responsive: true,
       animation: false,
-      layout: { padding: 6 },
+      layout: { padding: scatterPadding(host.state.marginals) },
       plugins: {
         legend: { display: false },
         tooltip: {
@@ -21634,36 +22308,50 @@ function drawScatter(host) {
       scales: buildScales5(host.state, xDomain, yDomain, host.settings.measure_values),
       onHover: (event, active) => {
         const target = event?.native?.target;
-        if (target) target.style.cursor = active.length ? "pointer" : "default";
+        if (target && !host.cutHoverAxis) {
+          target.style.cursor = active.length ? "pointer" : "default";
+        }
         const hit = active.find((element) => element.datasetIndex === 0);
         setHover(host, hit ? points[hit.index].id : null);
       },
       onClick: (event, active) => {
+        if (host.cutDragged) {
+          host.cutDragged = false;
+          return;
+        }
         const hit = active.find((element) => element.datasetIndex === 0);
         if (hit) host.selectParticipant(points[hit.index].id);
         else host.clearSelection();
       }
     },
-    plugins: [quadrantPlugin(host)]
+    plugins: [quadrantPlugin(host), marginalPlugin(host)]
   });
   host.chart = chart;
+  host.scatterChart = chart;
   host.charts.push(chart);
+  bindCutDrag(host);
 }
 function drawLegend(host) {
   host.legendEl.innerHTML = "";
-  if (!host.groupValues.length) return;
-  const groupLabel = (host.settings.groups.find((spec) => spec.value_col === host.state.groupBy) || {}).label || host.state.groupBy;
-  host.legendEl.append(createElement("strong", null, `${groupLabel}:`));
-  host.groupValues.forEach((value) => {
-    const chip = createElement("span", "hep-legend-item");
-    chip.style.cssText = "display:inline-flex;align-items:center;gap:.3rem";
-    const swatch = createElement("span");
-    swatch.style.cssText = `display:inline-block;width:.75rem;height:.75rem;border-radius:2px;background:${host.colorScale.get(
-      String(value)
-    )}`;
-    chip.append(swatch, document.createTextNode(String(value)));
-    host.legendEl.append(chip);
-  });
+  if (host.groupValues.length) {
+    const groupLabel = (host.settings.groups.find((spec) => spec.value_col === host.state.groupBy) || {}).label || host.state.groupBy;
+    host.legendEl.append(createElement("strong", null, `${groupLabel}:`));
+    groupLegendEntries(host.groupValues, host.points).forEach((entry) => {
+      const chip = createElement("span", "hep-legend-item");
+      chip.style.cssText = "display:inline-flex;align-items:center;gap:.3rem";
+      const swatch = createElement("span");
+      swatch.style.cssText = `display:inline-block;width:.75rem;height:.75rem;border-radius:2px;background:${host.colorScale.get(
+        entry.value
+      )}`;
+      chip.append(swatch, document.createTextNode(entry.label));
+      host.legendEl.append(chip);
+    });
+  }
+  const sizeNote = pointSizeNote(host.state.pointSize);
+  if (sizeNote) {
+    const note = createElement("span", "hep-legend-note", sizeNote);
+    host.legendEl.append(note);
+  }
 }
 function drawQuadrantSummary(host) {
   host.quadrantWrap.innerHTML = "";
@@ -21678,7 +22366,10 @@ function drawQuadrantSummary(host) {
   const tbody = document.createElement("tbody");
   host.quadrants.labels.forEach((entry) => {
     const tr = document.createElement("tr");
-    tr.append(createElement("td", null, entry.label));
+    const name = createElement("td", null, entry.label);
+    const meaning = QUADRANT_MEANINGS[entry.label];
+    if (meaning) name.append(createElement("span", "hep-quadrant-meaning", meaning));
+    tr.append(name);
     tr.append(createElement("td", "hep-num", String(entry.count)));
     tr.append(
       createElement(
@@ -21746,8 +22437,24 @@ var scatterView = {
     }
     addCutControl(host, addControl, settingsParent, "measureX");
     addCutControl(host, addControl, settingsParent, "measureY");
+    const quadrantLabels = addControl(
+      "Quadrant Labels",
+      document.createElement("select"),
+      settingsParent
+    );
+    [
+      { value: "shown", label: "Shown" },
+      { value: "hidden", label: "Hidden" }
+    ].forEach(
+      (mode) => option(quadrantLabels, mode.value, mode.label, mode.value === host.state.quadrantLabels)
+    );
+    quadrantLabels.onchange = () => {
+      host.state.quadrantLabels = quadrantLabels.value;
+      host.render();
+    };
     const display = addControl("Display Type", document.createElement("select"), settingsParent);
-    DISPLAY_MODES.forEach(
+    const supported = availableDisplays(host.cleanRows).modes;
+    DISPLAY_MODES.filter((mode) => !supported.length || supported.includes(mode.value)).forEach(
       (mode) => option(display, mode.value, mode.label, mode.value === host.state.display)
     );
     display.onchange = () => {
@@ -21759,6 +22466,18 @@ var scatterView = {
     AXIS_TYPES.forEach((type) => option(axisType, type, type, type === host.state.axisType));
     axisType.onchange = () => {
       host.state.axisType = axisType.value;
+      host.render();
+    };
+    const marginals = addControl(
+      "Marginal Distributions",
+      document.createElement("select"),
+      settingsParent
+    );
+    MARGINAL_MODES.forEach(
+      (mode) => option(marginals, mode.value, mode.label, mode.value === host.state.marginals)
+    );
+    marginals.onchange = () => {
+      host.state.marginals = marginals.value;
       host.render();
     };
     const pointSize = addControl("Point Size", document.createElement("select"), settingsParent);
@@ -21836,6 +22555,7 @@ var scatterView = {
     const built = buildPoints(host.cleanRows, host.settings, host.state);
     host.allPoints = built.points;
     host.droppedParticipants = built.droppedParticipants;
+    host.droppedParticipantList = built.droppedList;
     host.points = filteredPoints(host);
     updateNotes(host);
     if (!host.points.length) {
@@ -21844,7 +22564,13 @@ var scatterView = {
       return;
     }
     const grouped = host.state.groupBy && host.state.groupBy !== GROUP_NONE;
-    host.groupValues = grouped ? unique6(host.points.map((point) => point.group)).filter((value) => value !== null && value !== void 0).map(String).sort() : [];
+    host.groupValues = grouped ? groupOrder(
+      unique6(host.points.map((point) => point.group)).filter(
+        (value) => value !== null && value !== void 0
+      ),
+      host.points,
+      host.settings.group_order_col
+    ) : [];
     host.colorScale = groupColorScale2(host.groupValues);
     host.quadrants = classifyQuadrants(host.points, host.state.xCut, host.state.yCut);
     drawScatter(host);
@@ -23279,6 +24005,10 @@ var SafetyHepExplorer = class {
     this.cleanRows = [];
     this.removedRecords = 0;
     this.droppedParticipants = 0;
+    this.droppedRows = [];
+    this.droppedParticipantList = [];
+    this.imputedRecords = 0;
+    this.imputationLimits = {};
     this.allPoints = [];
     this.points = [];
     this.rRatioMax = 0;
@@ -23320,6 +24050,8 @@ var SafetyHepExplorer = class {
       display: "relative_uln",
       axisType: "linear",
       pointSize: "Uniform",
+      marginals: this.settings.marginals,
+      quadrantLabels: this.settings.quadrant_labels,
       visitWindow: this.settings.visit_window,
       groupBy: this.settings.group_by,
       filters: {},
@@ -23389,6 +24121,8 @@ var SafetyHepExplorer = class {
     this.compositeWrap = createElement("div", "hep-composite");
     this.compositeWrap.style.display = "none";
     this.main.insertBefore(this.compositeWrap, this.multiplesWrap);
+    this.cautionEl = createElement("div", "hep-caution sv-warning", CLINICAL_CAUTION);
+    this.main.append(this.cautionEl);
     applyModuleStyles();
     this.footnote.textContent = this.baseFootnote();
   }
@@ -23577,12 +24311,20 @@ var SafetyHepExplorer = class {
       this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
       throw error;
     }
-    const { rows, removed } = cleanData2(this.rawData, this.settings);
-    deriveBaseline(rows, this.settings);
-    assignSequence(rows, this.settings);
-    this.cleanRows = rows;
-    this.removedRecords = removed;
-    this.rRatioMax = maxRRatio(rows, this.settings);
+    const { rows, removed, dropped } = cleanData2(this.rawData, this.settings);
+    const imputation = imputeBelowLloq(rows, this.settings);
+    this.droppedRows = [...dropped, ...imputation.dropped];
+    this.imputedRecords = imputation.imputed;
+    this.imputationLimits = imputation.limits;
+    deriveBaseline(imputation.rows, this.settings);
+    assignSequence(imputation.rows, this.settings);
+    this.cleanRows = imputation.rows;
+    this.removedRecords = removed + imputation.dropped.length;
+    this.rRatioMax = maxRRatio(imputation.rows, this.settings);
+    this.displayAvailability = availableDisplays(imputation.rows);
+    if (this.displayAvailability.modes.length && !this.displayAvailability.modes.includes(this.state.display)) {
+      this.state.display = this.displayAvailability.modes[0];
+    }
     if (removed)
       console.warn(
         `${removed} missing or non-numeric result${removed > 1 ? "s have" : " has"} been removed.`
@@ -23802,6 +24544,13 @@ var SafetyHepExplorer = class {
     this.state.yCut = cutFor(this.state.cuts, this.state.measureY, this.state.display);
     if (!this.cleanRows.length) {
       this.notes.innerHTML = "<span>No data selected. Provide records to draw the chart.</span>";
+      if (carriedIds.length) this.selection.dispatch([]);
+      return;
+    }
+    if (this.displayAvailability && !this.displayAvailability.modes.length) {
+      this.notes.innerHTML = "";
+      this.notes.append(createElement("span", "sv-warning", this.displayAvailability.note));
+      this.chartWrap.style.display = "none";
       if (carriedIds.length) this.selection.dispatch([]);
       return;
     }
@@ -25585,7 +26334,7 @@ function applyFilters7(rows, filterState) {
   if (!active.length) return rows;
   return rows.filter((row) => active.every(([col, value]) => String(row[col]) === String(value)));
 }
-function centralTendencySeries(measureRows, options) {
+function centralTendencySeries(measureRows2, options) {
   const {
     statistic = "mean",
     mode = "delta",
@@ -25596,7 +26345,7 @@ function centralTendencySeries(measureRows, options) {
   const z = zForCi(options.ciLevel);
   const cells = /* @__PURE__ */ new Map();
   for (const visit of visitOrder) cells.set(visit, /* @__PURE__ */ new Map());
-  for (const row of measureRows) {
+  for (const row of measureRows2) {
     if (!Number.isFinite(row.__qt_change)) continue;
     const visit = row.__qt_visit;
     if (!cells.has(visit)) continue;
@@ -25670,10 +26419,10 @@ function peakVisits(tendency) {
   }
   return peaks;
 }
-function subjectPoints(measureRows, options) {
+function subjectPoints(measureRows2, options) {
   const { timepoint, idCol } = options;
   const bySubject = /* @__PURE__ */ new Map();
-  for (const row of measureRows) {
+  for (const row of measureRows2) {
     const id = row[idCol];
     if (timepoint === "__qt_max") {
       if (!row.__qt_postBaseline) continue;
@@ -25697,9 +26446,9 @@ function subjectPoints(measureRows, options) {
   }
   return points;
 }
-function subjectExtremes(measureRows, idCol) {
+function subjectExtremes(measureRows2, idCol) {
   const extremes = /* @__PURE__ */ new Map();
-  for (const row of measureRows) {
+  for (const row of measureRows2) {
     if (!row.__qt_postBaseline) continue;
     const id = row[idCol];
     const entry = extremes.get(id) || {
@@ -25714,9 +26463,9 @@ function subjectExtremes(measureRows, idCol) {
   }
   return extremes;
 }
-function classifyThresholds(measureRows, options) {
+function classifyThresholds(measureRows2, options) {
   const { idCol, arms, absoluteThresholds = [], changeThresholds = [] } = options;
-  const extremes = subjectExtremes(measureRows, idCol);
+  const extremes = subjectExtremes(measureRows2, idCol);
   const denominators = {};
   arms.forEach((arm) => {
     denominators[arm] = 0;
@@ -26410,9 +27159,9 @@ var SafetyQtExplorer = class {
   renderCentral() {
     const measure = this.state.measure;
     const isQtc = isQtcMeasure(measure, this.settings.qtc_measures);
-    const measureRows = forMeasure(this.filteredRows, measure);
-    const visitOrder = orderVisits(measureRows, this.settings);
-    const tendency = centralTendencySeries(measureRows, {
+    const measureRows2 = forMeasure(this.filteredRows, measure);
+    const visitOrder = orderVisits(measureRows2, this.settings);
+    const tendency = centralTendencySeries(measureRows2, {
       statistic: this.state.statistic,
       mode: this.state.mode,
       arms: this.arms,
@@ -26610,8 +27359,8 @@ var SafetyQtExplorer = class {
       this.footnote.textContent = "";
       return;
     }
-    const measureRows = forMeasure(this.filteredRows, measure);
-    const points = subjectPoints(measureRows, {
+    const measureRows2 = forMeasure(this.filteredRows, measure);
+    const points = subjectPoints(measureRows2, {
       timepoint: this.state.timepoint,
       idCol: this.settings.id_col
     });
@@ -26719,8 +27468,8 @@ var SafetyQtExplorer = class {
       this.footnote.textContent = "";
       return;
     }
-    const measureRows = forMeasure(this.filteredRows, measure);
-    const classification = classifyThresholds(measureRows, {
+    const measureRows2 = forMeasure(this.filteredRows, measure);
+    const classification = classifyThresholds(measureRows2, {
       idCol: this.settings.id_col,
       arms: this.arms,
       absoluteThresholds: this.settings.absolute_thresholds,
@@ -27159,15 +27908,29 @@ function categoryScale(measure, { placeboLabel = "Placebo", activeLabel = "Activ
     }
   };
 }
-function flankScales(domain, boxes = 2) {
+function flankScales(domain, boxes = 2, { labels = [] } = {}) {
   const [min, max] = domain;
   return {
     x: {
       type: "linear",
-      display: false,
+      display: labels.length > 0,
       min: -0.5,
       max: Math.max(boxes - 0.5, 0.5),
-      grid: { display: false }
+      grid: { display: false },
+      border: { display: false },
+      // A linear axis left to itself ticks at -0.5/0.5/1.5 — between the boxes,
+      // never on one — so the slot positions are set explicitly.
+      afterBuildTicks: (axis) => {
+        if (labels.length) axis.ticks = labels.map((_, index) => ({ value: index }));
+      },
+      ticks: {
+        stepSize: 1,
+        autoSkip: false,
+        includeBounds: false,
+        maxRotation: 0,
+        font: { size: 9 },
+        callback: (value) => Number.isInteger(value) ? labels[value] || "" : ""
+      }
     },
     y: { type: "linear", display: false, min, max, grid: { display: false } }
   };
@@ -27311,6 +28074,94 @@ function ulnBandPlugin(instance) {
       ctx.textAlign = "left";
       ctx.textBaseline = "bottom";
       ctx.fillText(label, left + 4, clamp(yOf(range.max)) - 2);
+      ctx.restore();
+    }
+  };
+}
+var BOX_ANATOMY = "Box: interquartile range (Q1\u2013Q3) with the median rule; whiskers: 5th\u201395th percentiles; \u25CB mean.";
+var BOX_PANEL_NOTE = "Flanking panels summarize each arm: the left box is baseline, the right box is the maximum on-treatment value.";
+var BOX_TITLES = { Baseline: "Baseline", Peak: "Maximum on-treatment" };
+var HIT_PAD = 4;
+var HOVER_FILL = "rgba(148, 163, 184, 0.28)";
+function boxSlotLabels(summary) {
+  return summary === "peak" ? ["Max on-tx"] : ["Baseline", "Max on-tx"];
+}
+function boxBounds(chart, box) {
+  const left = chart.scales.x.getPixelForValue(box.x - box.halfWidth);
+  const right = chart.scales.x.getPixelForValue(box.x + box.halfWidth);
+  const first = chart.scales.y.getPixelForValue(box.stats.q5);
+  const second = chart.scales.y.getPixelForValue(box.stats.q95);
+  return {
+    left: Math.min(left, right),
+    right: Math.max(left, right),
+    top: Math.min(first, second),
+    bottom: Math.max(first, second)
+  };
+}
+function boxHitTest(chart, specs, x, y) {
+  const boxes = specs || [];
+  for (let index = 0; index < boxes.length; index += 1) {
+    const box = boxes[index];
+    if (!box || !box.stats || !box.stats.n) continue;
+    const bounds = boxBounds(chart, box);
+    if (x >= bounds.left - HIT_PAD && x <= bounds.right + HIT_PAD && y >= bounds.top - HIT_PAD && y <= bounds.bottom + HIT_PAD) {
+      return index;
+    }
+  }
+  return -1;
+}
+function boxTooltip(spec, { arm = "", measure = "", unit = "" } = {}) {
+  if (!spec || !spec.stats || !spec.stats.n) return [];
+  const stats = spec.stats;
+  const value = (number) => `${formatNumber6(number)}${unit ? ` ${unit}` : ""}`;
+  const title = BOX_TITLES[spec.label] || spec.label || "";
+  const heading = [arm, measure ? `${title} ${measure}` : title].filter(Boolean).join(" \xB7 ");
+  const lines = [
+    heading,
+    `n = ${stats.n}`,
+    `95th percentile: ${value(stats.q95)}`,
+    `Q3: ${value(stats.q75)}`,
+    `Median: ${value(stats.median)}`,
+    `Mean: ${value(stats.mean)}`,
+    `Q1: ${value(stats.q25)}`,
+    `5th percentile: ${value(stats.q5)}`
+  ];
+  if (Number.isFinite(stats.min) && Number.isFinite(stats.max)) {
+    lines.push(`Observed range: ${formatNumber6(stats.min)}\u2013${value(stats.max)}`);
+  }
+  return lines;
+}
+function boxPanelDescription(specs, { arm = "", measure = "", unit = "" } = {}) {
+  const boxes = (specs || []).filter((box) => box && box.stats && box.stats.n);
+  const subject = `${arm ? `${arm} ` : ""}${measure || ""}`.trim();
+  if (!boxes.length) {
+    return `Box-and-whisker summary for ${subject || "this arm"}: no participants to summarize.`;
+  }
+  const parts = boxes.map((box) => {
+    const stats = box.stats;
+    const title = (BOX_TITLES[box.label] || box.label || "").toLowerCase();
+    return `${title}, ${stats.n} participant${stats.n === 1 ? "" : "s"}, median ${formatNumber6(stats.median)}${unit ? ` ${unit}` : ""}, interquartile range ${formatNumber6(stats.q25)} to ${formatNumber6(stats.q75)}, 5th to 95th percentile ${formatNumber6(stats.q5)} to ${formatNumber6(stats.q95)}`;
+  });
+  return `Box-and-whisker summary for ${subject || "this arm"}: ${parts.join("; ")}.`;
+}
+function boxHoverPlugin(getSpecs, getActive) {
+  return {
+    id: `hwf-box-hover-${Math.random().toString(36).slice(2)}`,
+    beforeDatasetsDraw(chart) {
+      const specs = getSpecs() || [];
+      const index = getActive();
+      const box = index >= 0 ? specs[index] : null;
+      if (!box || !box.stats || !box.stats.n) return;
+      const bounds = boxBounds(chart, box);
+      const ctx = chart.ctx;
+      ctx.save();
+      ctx.fillStyle = HOVER_FILL;
+      ctx.fillRect(
+        bounds.left - HIT_PAD,
+        bounds.top - HIT_PAD,
+        bounds.right - bounds.left + HIT_PAD * 2,
+        bounds.bottom - bounds.top + HIT_PAD * 2
+      );
       ctx.restore();
     }
   };
@@ -27529,6 +28380,7 @@ Chart.register(
   PointElement,
   CategoryScale,
   LinearScale,
+  plugin_title,
   plugin_tooltip,
   plugin_legend
 );
@@ -27540,6 +28392,12 @@ var STYLES = `
 .safety-hep-waterfall .hwf-legend-item{display:inline-flex;align-items:center;gap:.3rem}
 .safety-hep-waterfall .hwf-legend-swatch{display:inline-block;width:.75rem;height:.75rem;border-radius:2px}
 .safety-hep-waterfall .hwf-legend-note{color:#52616f;font-style:italic}
+.safety-hep-waterfall .hwf-legend-box{display:inline-flex;align-items:center;gap:.3rem}
+.safety-hep-waterfall .hwf-legend-glyph{display:inline-block;width:1.6rem;height:.9rem;vertical-align:middle}
+.safety-hep-waterfall .hwf-box-canvas{outline-offset:2px}
+.safety-hep-waterfall .hwf-tip{position:absolute;left:0;top:0;display:none;width:max-content;max-width:220px;white-space:pre-line;pointer-events:none;z-index:3;background:rgba(17,24,39,.94);color:#fff;font-size:.72rem;line-height:1.35;border-radius:6px;padding:.35rem .5rem}
+.safety-hep-waterfall .hwf-tip.is-visible{display:block}
+.safety-hep-waterfall .hwf-tip.is-right{transform:translateX(-100%)}
 .safety-hep-waterfall .hwf-reset{width:100%;margin-top:.75rem;padding:.35rem .45rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.82rem;cursor:pointer}
 .safety-hep-waterfall .hwf-reset:hover{border-color:#8f9aa8;background:#f6f8fa}
 @media (max-width:700px){.safety-hep-waterfall .hwf-layout{grid-template-columns:70px 1fr 70px}}
@@ -27568,6 +28426,9 @@ var SafetyHepWaterfall = class {
     this.listingSearch = "";
     this.listingSort = null;
     this.page = 1;
+    this.flankChartsBySide = { left: null, right: null };
+    this.boxTips = { left: null, right: null };
+    this.boxHover = { side: null, index: -1 };
     this.state = this.seedState();
     this.renderShellDom();
   }
@@ -27628,16 +28489,133 @@ var SafetyHepWaterfall = class {
     this.main.insertBefore(this.legendEl, this.chartWrap);
     const layout = createElement("div", "hwf-layout");
     const leftPanel = createElement("div", "hwf-panel");
-    this.boxCanvasLeft = createElement("canvas", "hwf-box-left");
+    this.boxCanvasLeft = createElement("canvas", "hwf-box-canvas hwf-box-left");
     leftPanel.append(this.boxCanvasLeft);
     const mainPanel = createElement("div", "hwf-panel hwf-main-panel");
     this.canvas.remove();
     mainPanel.append(this.canvas);
     const rightPanel = createElement("div", "hwf-panel");
-    this.boxCanvasRight = createElement("canvas", "hwf-box-right");
+    this.boxCanvasRight = createElement("canvas", "hwf-box-canvas hwf-box-right");
     rightPanel.append(this.boxCanvasRight);
     layout.append(leftPanel, mainPanel, rightPanel);
     this.chartWrap.insertBefore(layout, this.mainAnnotation);
+    this.bindBoxHover("left", this.boxCanvasLeft, leftPanel);
+    this.bindBoxHover("right", this.boxCanvasRight, rightPanel);
+  }
+  /**
+   * Wire one flanking panel's hover, focus and keyboard interaction, and give
+   * it the tooltip element the pointer moves around (HWF-BOX-005). An
+   * absolutely-positioned HTML div, not a canvas tooltip: it matches the
+   * migration Sankey's ribbon hover, and — unlike a native tooltip — it appears
+   * in a screenshot, so the interaction is evidenceable.
+   * @private
+   */
+  bindBoxHover(side, canvas, panel) {
+    const tip = createElement("div", `hwf-tip${side === "right" ? " is-right" : ""}`);
+    panel.append(tip);
+    this.boxTips[side] = tip;
+    canvas.setAttribute("role", "img");
+    canvas.setAttribute("tabindex", "0");
+    canvas.addEventListener("pointermove", (event) => this.moveBoxHover(side, event));
+    canvas.addEventListener("pointerleave", () => this.setBoxHover(side, -1));
+    canvas.addEventListener("focus", () => this.setBoxHover(side, 0));
+    canvas.addEventListener("blur", () => this.setBoxHover(side, -1));
+    canvas.addEventListener("keydown", (event) => this.stepBoxHover(side, event));
+  }
+  /** The pointer moved over a flank panel: hover whatever box it is on. @private */
+  moveBoxHover(side, event) {
+    const chart = this.flankChartsBySide[side];
+    const specs = this.boxSpecs[side] || [];
+    if (!chart || !chart.scales || !specs.length) return;
+    const canvas = side === "left" ? this.boxCanvasLeft : this.boxCanvasRight;
+    const bounds = canvas.getBoundingClientRect ? canvas.getBoundingClientRect() : { left: 0, top: 0 };
+    const x = event.clientX - bounds.left;
+    const y = event.clientY - bounds.top;
+    this.setBoxHover(side, boxHitTest(chart, specs, x, y), { x, y });
+  }
+  /**
+   * Keyboard equivalents of the hover (HWF-BOX-005): the arrow keys step
+   * between the panel's boxes and Escape closes the tooltip, so the statistics
+   * are reachable without a pointer.
+   * @private
+   */
+  stepBoxHover(side, event) {
+    const count2 = (this.boxSpecs[side] || []).length;
+    if (!count2) return;
+    if (event.key === "Escape") {
+      event.preventDefault();
+      this.setBoxHover(side, -1);
+      return;
+    }
+    const step = event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;
+    if (!step) return;
+    event.preventDefault();
+    const current = this.boxHover.side === side ? this.boxHover.index : -1;
+    const next = ((current < 0 ? 0 : current + step) % count2 + count2) % count2;
+    this.setBoxHover(side, next);
+  }
+  /**
+   * Set the hovered box and reflect it in both channels — the tooltip text and
+   * the panel's hover backdrop — redrawing only the panel that changed.
+   * @private
+   */
+  setBoxHover(side, index, at = null) {
+    const previous = this.boxHover;
+    if (previous.side === side && previous.index === index) return;
+    this.boxHover = { side: index >= 0 ? side : null, index: index >= 0 ? index : -1 };
+    const spec = index >= 0 ? (this.boxSpecs[side] || [])[index] : null;
+    const tip = this.boxTips[side];
+    if (tip) {
+      if (spec) {
+        const lines = boxTooltip(spec, {
+          arm: this.panelArm(side),
+          measure: this.state.measure,
+          unit: this.waterfall ? this.waterfall.unit : ""
+        });
+        tip.textContent = lines.join("\n");
+        tip.classList.add("is-visible");
+        this.positionBoxTip(side, tip, at, spec);
+      } else {
+        tip.classList.remove("is-visible");
+      }
+    }
+    if (previous.side && previous.side !== side) {
+      const other = this.boxTips[previous.side];
+      if (other) other.classList.remove("is-visible");
+      this.redrawFlank(previous.side);
+    }
+    this.redrawFlank(side);
+  }
+  /**
+   * Place the tooltip beside the pointer, opening inward toward the waterfall —
+   * a 110px panel has no room to hold it, and a tooltip that widened the layout
+   * would move the very chart the reader is pointing at.
+   * @private
+   */
+  positionBoxTip(side, tip, at, spec) {
+    const chart = this.flankChartsBySide[side];
+    let x = at ? at.x : null;
+    let y = at ? at.y : null;
+    if (x === null && chart && chart.scales) {
+      x = chart.scales.x.getPixelForValue(spec.x);
+      y = chart.scales.y.getPixelForValue(spec.stats.median);
+    }
+    tip.style.left = `${Math.round((x || 0) + (side === "right" ? -12 : 12))}px`;
+    const panelHeight = tip.parentElement ? tip.parentElement.clientHeight : 0;
+    const height = tip.offsetHeight || 0;
+    const below = (y || 0) + 12;
+    const top = panelHeight && below + height > panelHeight ? (y || 0) - height - 12 : below;
+    tip.style.top = `${Math.round(Math.max(0, top))}px`;
+  }
+  /** The arm label a flank panel summarizes. @private */
+  panelArm(side) {
+    if (!this.waterfall) return "";
+    return side === "left" ? this.waterfall.placeboLabel : this.waterfall.activeLabel;
+  }
+  /** Repaint one flank panel, e.g. after its hover changed. @private */
+  redrawFlank(side) {
+    const chart = this.flankChartsBySide[side];
+    if (chart && typeof chart.update === "function") chart.update("none");
   }
   /**
    * Load data and render — an alias for setData keeping the two-step
@@ -27860,7 +28838,49 @@ var SafetyHepWaterfall = class {
       chip.append(swatch, document.createTextNode(item.label));
       this.legendEl.append(chip);
     });
-    this.legendEl.append(createElement("span", "hwf-legend-note", JAUNDICE_PRECEDENCE));
+    this.legendEl.append(
+      createElement("span", "hwf-legend-note hwf-note-jaundice", JAUNDICE_PRECEDENCE)
+    );
+    this.legendEl.append(this.boxAnatomyChip());
+    this.legendEl.append(createElement("span", "hwf-legend-note hwf-note-box", BOX_PANEL_NOTE));
+  }
+  /**
+   * The flanking panels' anatomy key (HWF-BOX-006): a miniature of the marks the
+   * shared box-and-whisker renderer draws, beside the sentence naming them. A
+   * drawn glyph rather than prose alone, because the question the reader is
+   * actually asking — "is that edge a quartile or a whisker?" — is answered
+   * fastest by pointing at the shape.
+   * @private
+   */
+  boxAnatomyChip() {
+    const chip = createElement("span", "hwf-legend-box");
+    const svgNs = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(svgNs, "svg");
+    svg.setAttribute("class", "hwf-legend-glyph");
+    svg.setAttribute("viewBox", "0 0 32 18");
+    svg.setAttribute("aria-hidden", "true");
+    const mark = (name, attrs) => {
+      const node = document.createElementNS(svgNs, name);
+      Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, String(value)));
+      svg.append(node);
+    };
+    const ink = "#52616f";
+    mark("line", { x1: 16, y1: 2, x2: 16, y2: 16, stroke: ink, "stroke-width": 1 });
+    mark("line", { x1: 11, y1: 2, x2: 21, y2: 2, stroke: ink, "stroke-width": 1 });
+    mark("line", { x1: 11, y1: 16, x2: 21, y2: 16, stroke: ink, "stroke-width": 1 });
+    mark("rect", {
+      x: 8,
+      y: 5,
+      width: 16,
+      height: 8,
+      fill: "rgba(82, 97, 111, 0.25)",
+      stroke: ink,
+      "stroke-width": 1
+    });
+    mark("line", { x1: 8, y1: 9, x2: 24, y2: 9, stroke: ink, "stroke-width": 1.6 });
+    mark("circle", { cx: 16, cy: 11.5, r: 2, fill: "#eee", stroke: ink, "stroke-width": 1 });
+    chip.append(svg, document.createTextNode(BOX_ANATOMY));
+    return chip;
   }
   /**
    * Redraw everything from the current data, settings, and control state: the
@@ -27983,14 +29003,24 @@ var SafetyHepWaterfall = class {
    */
   drawFlankCharts(waterfall, domain) {
     const summary = this.state.summary;
+    const measure = this.state.measure;
     this.boxSpecs = {
       left: boxSpecs(waterfall.placebo, { summary, color: ARM_SIDE_COLORS.placebo }),
       right: boxSpecs(waterfall.active, { summary, color: ARM_SIDE_COLORS.active })
     };
+    const labels = boxSlotLabels(summary);
     this.flankCharts = [
-      ["left", this.boxCanvasLeft, waterfall.placeboLabel],
-      ["right", this.boxCanvasRight, waterfall.activeLabel]
-    ].map(([side, canvas, label]) => {
+      ["left", this.boxCanvasLeft, waterfall.placeboLabel, waterfall.placebo],
+      ["right", this.boxCanvasRight, waterfall.activeLabel, waterfall.active]
+    ].map(([side, canvas, label, subjects]) => {
+      canvas.setAttribute(
+        "aria-label",
+        boxPanelDescription(this.boxSpecs[side], {
+          arm: label,
+          measure,
+          unit: waterfall.unit
+        })
+      );
       const chart = new Chart(canvas.getContext("2d"), {
         type: "line",
         data: { datasets: [{ data: [] }] },
@@ -28001,13 +29031,24 @@ var SafetyHepWaterfall = class {
           plugins: {
             legend: { display: false },
             tooltip: { enabled: false },
-            title: { display: true, text: label, font: { size: 11 } }
+            title: {
+              display: true,
+              text: `${label} (n=${(subjects || []).length})`,
+              font: { size: 11 }
+            }
           },
-          scales: flankScales(domain, this.boxSpecs[side].length)
+          scales: flankScales(domain, this.boxSpecs[side].length, { labels })
         },
-        plugins: [boxWhiskerPlugin(`hwf-${side}`, () => this.boxSpecs[side])]
+        plugins: [
+          boxHoverPlugin(
+            () => this.boxSpecs[side],
+            () => this.boxHover.side === side ? this.boxHover.index : -1
+          ),
+          boxWhiskerPlugin(`hwf-${side}`, () => this.boxSpecs[side])
+        ]
       });
       this.charts.push(chart);
+      this.flankChartsBySide[side] = chart;
       return chart;
     });
   }
@@ -28077,7 +29118,12 @@ var SafetyHepWaterfall = class {
     this.charts.forEach((chart) => chart.destroy());
     this.charts = [];
     this.flankCharts = [];
+    this.flankChartsBySide = { left: null, right: null };
     this.chart = null;
+    this.boxHover = { side: null, index: -1 };
+    Object.values(this.boxTips).forEach((tip) => {
+      if (tip) tip.classList.remove("is-visible");
+    });
   }
   /**
    * Tear the waterfall down: destroy every chart and empty the target element.

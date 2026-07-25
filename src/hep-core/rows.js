@@ -68,6 +68,31 @@ export function resolveMeasureRows(rows, settings, key) {
 }
 
 /**
+ * Why a raw row cannot be plotted, or '' when it can (HEP-DROP-001). Names the
+ * mapped column, so the reason reads against the caller's own data rather than
+ * against this module's internals.
+ * @param {Object} row A row carrying the derived __hep_* fields.
+ * @param {Object} settings Normalized settings.
+ * @returns {string} The reason, or ''.
+ */
+function dropReason(row, settings) {
+  const raw = row[settings.value_col];
+  if (raw === '' || raw === undefined || raw === null) {
+    return `Result column ("${settings.value_col}") is empty.`;
+  }
+  if (!Number.isFinite(row.__hep_value)) {
+    return `Result column ("${settings.value_col}") is not numeric.`;
+  }
+  if (!Number.isFinite(row.__hep_uln)) {
+    return `Reference-range column ("${settings.normal_col_high}") is missing or not numeric.`;
+  }
+  if (!(row.__hep_uln > 0)) {
+    return `Reference-range column ("${settings.normal_col_high}") is not positive.`;
+  }
+  return '';
+}
+
+/**
  * Remove missing/non-numeric results and tag each surviving row with its
  * derived columns (HEP-DATA-003, HEP-DATA-004). A row is dropped when its value
  * is blank/non-numeric or its ULN is non-numeric or ≤ 0 (the ×ULN denominator).
@@ -80,6 +105,7 @@ export function resolveMeasureRows(rows, settings, key) {
  */
 export function cleanData(rawData, settings) {
   let removed = 0;
+  const dropped = [];
   const rows = rawData
     .map((row, index) => {
       const value = Number(row[settings.value_col]);
@@ -103,16 +129,19 @@ export function cleanData(rawData, settings) {
       };
     })
     .filter((row) => {
-      const keep =
-        row[settings.value_col] !== '' &&
-        row[settings.value_col] !== undefined &&
-        Number.isFinite(row.__hep_value) &&
-        Number.isFinite(row.__hep_uln) &&
-        row.__hep_uln > 0;
-      if (!keep) removed += 1;
-      return keep;
+      // WHY a row left, not just that one did (HEP-DROP-001): a count in the
+      // notes is not checkable against the source dataset, and the reason is
+      // what makes the export worth downloading.
+      const reason = dropReason(row, settings);
+      if (reason) {
+        row.__hep_dropReason = reason;
+        dropped.push(row);
+        removed += 1;
+        return false;
+      }
+      return true;
     });
-  return { rows, removed };
+  return { rows, removed, dropped };
 }
 
 /**

@@ -115,7 +115,10 @@ export function buildPoints(cleanRows, settings, state) {
   const metaCols = unique([
     settings.id_col,
     ...settings.filters.map((filter) => filter.value_col),
-    ...settings.groups.map((group) => group.value_col)
+    ...settings.groups.map((group) => group.value_col),
+    // The legend's numeric ordering column travels with the point, so the
+    // legend can be sorted without a second pass over the rows (HEP-CTRL-015).
+    settings.group_order_col
   ]).filter((col) => col && col !== GROUP_NONE);
 
   const byId = new Map();
@@ -127,6 +130,7 @@ export function buildPoints(cleanRows, settings, state) {
 
   const points = [];
   let droppedParticipants = 0;
+  const droppedList = [];
   byId.forEach((participantRows, id) => {
     const peakX = participantPeak(
       resolveMeasureRows(participantRows, settings, measureX),
@@ -139,7 +143,20 @@ export function buildPoints(cleanRows, settings, state) {
       display
     );
     if (!peakX || !peakY || !(peakX.value > 0) || !(peakY.value > 0)) {
+      // Which measure failed, and how (HEP-DROP-001): "23 participants dropped"
+      // is not something a reviewer can check against their own dataset.
+      const missing = [];
+      if (!peakX) missing.push(`no usable ${measureX} value`);
+      else if (!(peakX.value > 0)) missing.push(`${measureX} value is not positive`);
+      if (!peakY) missing.push(`no usable ${measureY} value`);
+      else if (!(peakY.value > 0)) missing.push(`${measureY} value is not positive`);
       droppedParticipants += 1;
+      droppedList.push({
+        id: String(id),
+        reason: `${missing.join('; ')} for the ${
+          display === 'relative_baseline' ? 'baseline-adjusted' : 'reference-range-adjusted'
+        } display.`
+      });
       return;
     }
     const daysX = peakX.day;
@@ -165,7 +182,7 @@ export function buildPoints(cleanRows, settings, state) {
       raw: meta
     });
   });
-  return { points, droppedParticipants };
+  return { points, droppedParticipants, droppedList };
 }
 
 /**

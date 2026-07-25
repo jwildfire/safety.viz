@@ -33,12 +33,25 @@ import { Chart } from 'chart.js';
 import { createElement, option } from '../../shell.js';
 import { AXIS_TYPES, DISPLAY_MODES, GROUP_NONE, POINT_SIZE_OPTIONS, cutFor } from '../configure.js';
 import { applyFilters, buildPoints, classifyQuadrants, unique } from '../structureData.js';
+import { cutHandleAt, cutValueFor } from '../cutDrag.js';
+import { availableDisplays, groupOrder } from '../availability.js';
+import { MARGINAL_MODES, marginalPlugin, scatterPadding } from '../marginals.js';
+import {
+  DROPPED_PARTICIPANT_COLUMNS,
+  csvDownloadLink,
+  droppedRowColumns,
+  toCsv
+} from '../dropped.js';
 import { buildScales, edishDomain, formatNumber } from '../getScales.js';
 import {
+  CLINICAL_CAUTION,
   GROUP_COLORS,
+  QUADRANT_MEANINGS,
   SELECTION_COLOR,
   groupColorScale,
+  groupLegendEntries,
   hexToRgba,
+  pointSizeNote,
   pointTooltip,
   quadrantPlugin
 } from '../getPlugins.js';
@@ -68,6 +81,113 @@ function addCutControl(host, addControl, parent, axisKey) {
     input.value = value;
     host.render();
   };
+  // Either control updates the other (HEP-QUAD-006): a drag on the plot writes
+  // the value it lands on straight into this box.
+  if (!host.cutInputs) host.cutInputs = {};
+  host.cutInputs[axisKey === 'measureX' ? 'x' : 'y'] = input;
+}
+
+/**
+ * Move one cut-line to a new value and let everything that reads it follow —
+ * the state, the number input, the quadrant classification, the corner labels
+ * and the summary table (HEP-QUAD-006). Deliberately NOT a full render: a
+ * render rebuilds the scales and clears the selection, which is not what
+ * dragging a line means, and the whole point of the gesture is that the counts
+ * move under the pointer.
+ * @private
+ */
+function moveCut(host, axis, value) {
+  const measureKey = axis === 'x' ? host.state.measureX : host.state.measureY;
+  if (!host.state.cuts[measureKey]) host.state.cuts[measureKey] = {};
+  host.state.cuts[measureKey][host.state.display] = value;
+  host.state[axis === 'x' ? 'xCut' : 'yCut'] = value;
+  const input = host.cutInputs && host.cutInputs[axis];
+  if (input) input.value = String(value);
+  host.quadrants = classifyQuadrants(host.points, host.state.xCut, host.state.yCut);
+  drawQuadrantSummary(host);
+  if (host.chart) host.chart.update('none');
+}
+
+/**
+ * Make the cut-lines draggable (HEP-QUAD-006). Bound ONCE to the shell canvas,
+ * which outlives every redraw, and reading the live chart and state each time —
+ * binding per render would stack a new set of listeners on every control change.
+ *
+ * The listeners are registered in the CAPTURE phase so a drag that starts on a
+ * cut-line is claimed before Chart.js's own handlers see it; a gesture that is
+ * not on a line falls straight through to the chart's hover and click.
+ * @private
+ */
+function bindCutDrag(host) {
+  if (host.cutDragBound) return;
+  host.cutDragBound = true;
+  const canvas = host.canvas;
+  host.cutDrag = null;
+
+  const at = (event) => {
+    const bounds = canvas.getBoundingClientRect
+      ? canvas.getBoundingClientRect()
+      : { left: 0, top: 0 };
+    return { x: event.clientX - bounds.left, y: event.clientY - bounds.top };
+  };
+  const handleAt = (event) => {
+    // Only while THIS view owns the canvas: the shell's canvas is shared, and
+    // another view's chart carries no Hy's-Law cut-lines to take hold of.
+    if (!host.chart || host.chart !== host.scatterChart) return null;
+    const { x, y } = at(event);
+    return cutHandleAt(host.chart, host.state, x, y);
+  };
+
+  canvas.addEventListener(
+    'pointerdown',
+    (event) => {
+      const axis = handleAt(event);
+      if (!axis) return;
+      event.preventDefault();
+      event.stopPropagation();
+      host.cutDrag = { axis, moved: false };
+      if (canvas.setPointerCapture) canvas.setPointerCapture(event.pointerId);
+    },
+    true
+  );
+
+  canvas.addEventListener(
+    'pointermove',
+    (event) => {
+      if (!host.cutDrag) {
+        // Not dragging: the cursor is the only affordance a dashed line has.
+        host.cutHoverAxis = handleAt(event);
+        if (host.cutHoverAxis) {
+          canvas.style.cursor = host.cutHoverAxis === 'x' ? 'col-resize' : 'row-resize';
+        }
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      const { x, y } = at(event);
+      const axis = host.cutDrag.axis;
+      host.cutDrag.moved = true;
+      moveCut(host, axis, cutValueFor(host.chart, axis, axis === 'x' ? x : y));
+    },
+    true
+  );
+
+  const end = (event) => {
+    if (!host.cutDrag) return;
+    // A drag that moved must not also read as a click on the plot background,
+    // which would clear the selection the reader still has open.
+    host.cutDragged = host.cutDrag.moved;
+    host.cutDrag = null;
+    if (canvas.releasePointerCapture && event.pointerId != null) {
+      try {
+        canvas.releasePointerCapture(event.pointerId);
+      } catch {
+        // The pointer was never captured (or is already gone); nothing to release.
+      }
+    }
+  };
+  canvas.addEventListener('pointerup', end, true);
+  canvas.addEventListener('pointercancel', end, true);
 }
 
 /**
@@ -94,20 +214,79 @@ function updateNotes(host) {
   const totalParticipants = unique(host.cleanRows.map((row) => row[host.settings.id_col])).length;
   const shown = host.points.length;
   const pct = totalParticipants ? ((shown / totalParticipants) * 100).toFixed(1) : '0.0';
-  const removedNote = host.removedRecords
-    ? `<span class="sv-warning">${host.removedRecords} missing or non-numeric results removed.</span>`
-    : '';
-  const dropReason =
-    host.state.display === 'relative_baseline'
-      ? `missing ${host.state.measureX}/${host.state.measureY} peak or baseline`
-      : `missing ${host.state.measureX}/${host.state.measureY} peak`;
-  const droppedNote = host.droppedParticipants
-    ? `<span class="sv-warning">${host.droppedParticipants} participants dropped (${dropReason}).</span>`
-    : '';
-  host.notes.innerHTML =
-    `<span>${shown} of ${totalParticipants} participants shown (${pct}%).</span>` +
-    removedNote +
-    droppedNote;
+  host.notes.innerHTML = '';
+  host.notes.append(
+    createElement('span', null, `${shown} of ${totalParticipants} participants shown (${pct}%).`)
+  );
+
+  // Every count that says data left the chart carries the download that says
+  // WHICH data and why (HEP-DROP-003) — a count alone cannot be checked against
+  // the source dataset.
+  if (host.removedRecords) {
+    const note = createElement(
+      'span',
+      'sv-warning',
+      `${host.removedRecords} missing or non-numeric results removed. `
+    );
+    const rows = host.droppedRows || [];
+    if (rows.length) {
+      note.append(
+        csvDownloadLink(
+          () => toCsv(rows, droppedRowColumns(rows)),
+          'hepExplorerDroppedRows',
+          'Download the removed records (CSV)'
+        )
+      );
+    }
+    host.notes.append(note);
+  }
+
+  if (host.droppedParticipants) {
+    const dropReason =
+      host.state.display === 'relative_baseline'
+        ? `missing ${host.state.measureX}/${host.state.measureY} peak or baseline`
+        : `missing ${host.state.measureX}/${host.state.measureY} peak`;
+    const note = createElement(
+      'span',
+      'sv-warning',
+      `${host.droppedParticipants} participants dropped (${dropReason}). `
+    );
+    const dropped = host.droppedParticipantList || [];
+    if (dropped.length) {
+      note.append(
+        csvDownloadLink(
+          () => toCsv(dropped, DROPPED_PARTICIPANT_COLUMNS),
+          'hepExplorerDroppedParticipants',
+          'Download the dropped participants (CSV)'
+        )
+      );
+    }
+    host.notes.append(note);
+  }
+
+  // A withdrawn display mode is a visible absence — the control simply has one
+  // fewer option — so the reason is stated rather than left to be noticed
+  // (HEP-DISPLAY-006).
+  const availability = host.displayAvailability;
+  if (availability && availability.note) {
+    host.notes.append(createElement('span', 'sv-warning', availability.note));
+  }
+
+  // Imputation is a change to the plotted values, so it is reported wherever
+  // the drops are (HEP-IMPUTE-002) rather than left to the console.
+  if (host.imputedRecords) {
+    const limits = Object.entries(host.imputationLimits || {})
+      .map(([measure, limit]) => `${measure} < ${formatNumber(limit)}`)
+      .join(', ');
+    host.notes.append(
+      createElement(
+        'span',
+        null,
+        `${host.imputedRecords} result${host.imputedRecords > 1 ? 's' : ''} below the limit of ` +
+          `quantitation imputed to half the limit${limits ? ` (${limits})` : ''}.`
+      )
+    );
+  }
 }
 
 /**
@@ -279,7 +458,7 @@ function drawScatter(host) {
       maintainAspectRatio: false,
       responsive: true,
       animation: false,
-      layout: { padding: 6 },
+      layout: { padding: scatterPadding(host.state.marginals) },
       plugins: {
         legend: { display: false },
         tooltip: {
@@ -299,22 +478,33 @@ function drawScatter(host) {
       scales: buildScales(host.state, xDomain, yDomain, host.settings.measure_values),
       onHover: (event, active) => {
         const target = event?.native?.target;
-        if (target) target.style.cursor = active.length ? 'pointer' : 'default';
+        // A cut-line under the pointer owns the cursor: it is the only hint
+        // that the line can be moved (HEP-QUAD-006).
+        if (target && !host.cutHoverAxis) {
+          target.style.cursor = active.length ? 'pointer' : 'default';
+        }
         // Trace the hovered participant point (dataset 0 only, never the
         // visit-path overlay) with the same highlight as a selection.
         const hit = active.find((element) => element.datasetIndex === 0);
         setHover(host, hit ? points[hit.index].id : null);
       },
       onClick: (event, active) => {
+        // The click that ends a cut-line drag is not a click on the plot.
+        if (host.cutDragged) {
+          host.cutDragged = false;
+          return;
+        }
         const hit = active.find((element) => element.datasetIndex === 0);
         if (hit) host.selectParticipant(points[hit.index].id);
         else host.clearSelection();
       }
     },
-    plugins: [quadrantPlugin(host)]
+    plugins: [quadrantPlugin(host), marginalPlugin(host)]
   });
   host.chart = chart;
+  host.scatterChart = chart;
   host.charts.push(chart);
+  bindCutDrag(host);
 }
 
 /**
@@ -323,21 +513,31 @@ function drawScatter(host) {
  */
 function drawLegend(host) {
   host.legendEl.innerHTML = '';
-  if (!host.groupValues.length) return;
-  const groupLabel =
-    (host.settings.groups.find((spec) => spec.value_col === host.state.groupBy) || {}).label ||
-    host.state.groupBy;
-  host.legendEl.append(createElement('strong', null, `${groupLabel}:`));
-  host.groupValues.forEach((value) => {
-    const chip = createElement('span', 'hep-legend-item');
-    chip.style.cssText = 'display:inline-flex;align-items:center;gap:.3rem';
-    const swatch = createElement('span');
-    swatch.style.cssText = `display:inline-block;width:.75rem;height:.75rem;border-radius:2px;background:${host.colorScale.get(
-      String(value)
-    )}`;
-    chip.append(swatch, document.createTextNode(String(value)));
-    host.legendEl.append(chip);
-  });
+  if (host.groupValues.length) {
+    const groupLabel =
+      (host.settings.groups.find((spec) => spec.value_col === host.state.groupBy) || {}).label ||
+      host.state.groupBy;
+    host.legendEl.append(createElement('strong', null, `${groupLabel}:`));
+    // Each group with its n and its share of the plotted points (HEP-CTRL-013):
+    // a swatch alone says which colour a group is, not how much of the chart
+    // it accounts for.
+    groupLegendEntries(host.groupValues, host.points).forEach((entry) => {
+      const chip = createElement('span', 'hep-legend-item');
+      chip.style.cssText = 'display:inline-flex;align-items:center;gap:.3rem';
+      const swatch = createElement('span');
+      swatch.style.cssText = `display:inline-block;width:.75rem;height:.75rem;border-radius:2px;background:${host.colorScale.get(
+        entry.value
+      )}`;
+      chip.append(swatch, document.createTextNode(entry.label));
+      host.legendEl.append(chip);
+    });
+  }
+  // What point size encodes, when it encodes anything (HEP-CTRL-014).
+  const sizeNote = pointSizeNote(host.state.pointSize);
+  if (sizeNote) {
+    const note = createElement('span', 'hep-legend-note', sizeNote);
+    host.legendEl.append(note);
+  }
 }
 
 /**
@@ -358,7 +558,12 @@ function drawQuadrantSummary(host) {
   const tbody = document.createElement('tbody');
   host.quadrants.labels.forEach((entry) => {
     const tr = document.createElement('tr');
-    tr.append(createElement('td', null, entry.label));
+    const name = createElement('td', null, entry.label);
+    // What landing in this region means, stated next to the count that says how
+    // many participants did (HEP-QUAD-008).
+    const meaning = QUADRANT_MEANINGS[entry.label];
+    if (meaning) name.append(createElement('span', 'hep-quadrant-meaning', meaning));
+    tr.append(name);
     tr.append(createElement('td', 'hep-num', String(entry.count)));
     tr.append(
       createElement(
@@ -449,10 +654,30 @@ const scatterView = {
     addCutControl(host, addControl, settingsParent, 'measureX');
     addCutControl(host, addControl, settingsParent, 'measureY');
 
-    // Display Type: eDISH / mDISH (HEP-DISPLAY-001).
+    // Quadrant Labels: the corner labels are guidance, not data, and a reader
+    // working inside a dense cloud can turn them off (HEP-QUAD-007).
+    const quadrantLabels = addControl(
+      'Quadrant Labels',
+      document.createElement('select'),
+      settingsParent
+    );
+    [
+      { value: 'shown', label: 'Shown' },
+      { value: 'hidden', label: 'Hidden' }
+    ].forEach((mode) =>
+      option(quadrantLabels, mode.value, mode.label, mode.value === host.state.quadrantLabels)
+    );
+    quadrantLabels.onchange = () => {
+      host.state.quadrantLabels = quadrantLabels.value;
+      host.render();
+    };
+
+    // Display Type: eDISH / mDISH (HEP-DISPLAY-001), narrowed to the modes this
+    // data can actually be plotted in (HEP-DISPLAY-006).
     const display = addControl('Display Type', document.createElement('select'), settingsParent);
-    DISPLAY_MODES.forEach((mode) =>
-      option(display, mode.value, mode.label, mode.value === host.state.display)
+    const supported = availableDisplays(host.cleanRows).modes;
+    DISPLAY_MODES.filter((mode) => !supported.length || supported.includes(mode.value)).forEach(
+      (mode) => option(display, mode.value, mode.label, mode.value === host.state.display)
     );
     display.onchange = () => {
       host.state.display = display.value;
@@ -465,6 +690,21 @@ const scatterView = {
     AXIS_TYPES.forEach((type) => option(axisType, type, type, type === host.state.axisType));
     axisType.onchange = () => {
       host.state.axisType = axisType.value;
+      host.render();
+    };
+
+    // Marginal distributions: the one-dimensional summary of each axis the
+    // original renderer draws beside the cloud (HEP-MARG-003).
+    const marginals = addControl(
+      'Marginal Distributions',
+      document.createElement('select'),
+      settingsParent
+    );
+    MARGINAL_MODES.forEach((mode) =>
+      option(marginals, mode.value, mode.label, mode.value === host.state.marginals)
+    );
+    marginals.onchange = () => {
+      host.state.marginals = marginals.value;
       host.render();
     };
 
@@ -549,6 +789,7 @@ const scatterView = {
     const built = buildPoints(host.cleanRows, host.settings, host.state);
     host.allPoints = built.points;
     host.droppedParticipants = built.droppedParticipants;
+    host.droppedParticipantList = built.droppedList;
     host.points = filteredPoints(host);
     updateNotes(host);
 
@@ -560,10 +801,13 @@ const scatterView = {
 
     const grouped = host.state.groupBy && host.state.groupBy !== GROUP_NONE;
     host.groupValues = grouped
-      ? unique(host.points.map((point) => point.group))
-          .filter((value) => value !== null && value !== undefined)
-          .map(String)
-          .sort()
+      ? groupOrder(
+          unique(host.points.map((point) => point.group)).filter(
+            (value) => value !== null && value !== undefined
+          ),
+          host.points,
+          host.settings.group_order_col
+        )
       : [];
     host.colorScale = groupColorScale(host.groupValues);
 

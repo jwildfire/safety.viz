@@ -1,10 +1,17 @@
 import { describe, it, expect } from 'vitest';
 import { ARM_SIDE_COLORS, JAUNDICE_COLOR } from '../../../src/hep-core/arms.js';
 import {
+  BOX_ANATOMY,
+  BOX_PANEL_NOTE,
   JAUNDICE_PRECEDENCE,
   armDividerPlugin,
   barColor,
   barColors,
+  boxHitTest,
+  boxHoverPlugin,
+  boxPanelDescription,
+  boxSlotLabels,
+  boxTooltip,
   legendItems,
   ulnBandPlugin,
   ulnLabel,
@@ -257,5 +264,148 @@ describe('hep-waterfall getPlugins.waterfallTooltip', () => {
     const text = lines.join(' | ');
     expect(text).toContain('-40');
     expect(text).not.toMatch(/new-onset jaundice/i);
+  });
+});
+
+// The flanking box-and-whisker panels' hover and labelling (obot.roadmap#83).
+// Requirement groups HWF-BOX-005 (hover), HWF-BOX-006 (labelling) and
+// HWF-BOX-007 (the accessible description).
+
+const boxSpec = (over = {}) => ({
+  label: 'Baseline',
+  color: ARM_SIDE_COLORS.placebo,
+  x: 0,
+  halfWidth: 0.3,
+  stats: { n: 4, min: 40, q5: 43, q25: 55, median: 80, q75: 110, q95: 138, max: 140, mean: 85 },
+  ...over
+});
+
+// A flank panel's geometry: two 0/1 box slots across 110 css px, a 0-500 value
+// axis over 300 px. Mirrors flankScales(domain, 2).
+const flankChart = () => ({
+  chartArea: { left: 10, right: 100, top: 5, bottom: 305 },
+  scales: {
+    x: { getPixelForValue: (value) => 10 + ((value + 0.5) / 2) * 90 },
+    y: { getPixelForValue: (value) => 305 - (value / 500) * 300 }
+  }
+});
+
+describe('hep-waterfall flanking-panel hover (HWF-BOX-005)', () => {
+  it('HWF-BOX-005: the hit test resolves the box under the pointer and nothing outside one (#83)', () => {
+    const chart = flankChart();
+    const specs = [boxSpec(), boxSpec({ label: 'Peak', x: 1 })];
+    const centre = (spec) => ({
+      x: chart.scales.x.getPixelForValue(spec.x),
+      y: chart.scales.y.getPixelForValue(spec.stats.median)
+    });
+
+    const first = centre(specs[0]);
+    expect(boxHitTest(chart, specs, first.x, first.y)).toBe(0);
+    const second = centre(specs[1]);
+    expect(boxHitTest(chart, specs, second.x, second.y)).toBe(1);
+
+    // Between the two slots, and above the 95th-percentile cap, is nothing.
+    const between = (first.x + second.x) / 2;
+    expect(boxHitTest(chart, specs, between, first.y)).toBe(-1);
+    expect(boxHitTest(chart, specs, first.x, chart.scales.y.getPixelForValue(300))).toBe(-1);
+
+    // The whisker caps are part of the target: 5th and 95th percentiles hit.
+    expect(boxHitTest(chart, specs, first.x, chart.scales.y.getPixelForValue(43))).toBe(0);
+    expect(boxHitTest(chart, specs, first.x, chart.scales.y.getPixelForValue(138))).toBe(0);
+
+    // An empty box is not a target, and neither is an empty panel.
+    const empty = [boxSpec({ stats: { n: 0 } })];
+    expect(boxHitTest(chart, empty, first.x, first.y)).toBe(-1);
+    expect(boxHitTest(chart, [], first.x, first.y)).toBe(-1);
+  });
+
+  it('HWF-BOX-005: the tooltip names the arm, the box and every drawn statistic (#83)', () => {
+    const lines = boxTooltip(boxSpec(), {
+      arm: 'ABL: Placebo',
+      measure: 'ALT',
+      unit: 'U/L'
+    });
+    const text = lines.join(' | ');
+    expect(lines[0]).toContain('ABL: Placebo');
+    expect(lines[0]).toMatch(/baseline/i);
+    expect(text).toMatch(/n\s*=?\s*4/i);
+    // Every mark the shared renderer draws is readable as a number.
+    expect(text).toMatch(/95th percentile.*138/);
+    expect(text).toMatch(/(Q3|third quartile).*110/i);
+    expect(text).toMatch(/median.*80/i);
+    expect(text).toMatch(/mean.*85/i);
+    expect(text).toMatch(/(Q1|first quartile).*55/i);
+    expect(text).toMatch(/5th percentile.*43/);
+    expect(text).toContain('U/L');
+    // The 'Peak' spec is spelled out as maximum on-treatment, not 'Peak'.
+    const peak = boxTooltip(boxSpec({ label: 'Peak' }), { arm: 'Drug', measure: 'ALT' });
+    expect(peak[0]).toMatch(/maximum on-treatment/i);
+  });
+
+  it('HWF-BOX-005: a missing or empty box yields no tooltip (#83)', () => {
+    expect(boxTooltip(null, {})).toEqual([]);
+    expect(boxTooltip(boxSpec({ stats: { n: 0 } }), {})).toEqual([]);
+  });
+
+  it('HWF-BOX-005: the hover plugin backs the active box only, under the marks (#83)', () => {
+    const ctx = recorder();
+    const chart = { ...flankChart(), ctx };
+    const specs = [boxSpec(), boxSpec({ label: 'Peak', x: 1 })];
+    const state = { index: -1 };
+    const plugin = boxHoverPlugin(
+      () => specs,
+      () => state.index
+    );
+
+    // The highlight is drawn BEFORE the datasets so it can never repaint the
+    // shipped box-and-whisker marks (box-whisker.js draws afterDatasetsDraw).
+    expect(typeof plugin.beforeDatasetsDraw).toBe('function');
+    expect(plugin.afterDatasetsDraw).toBeUndefined();
+
+    plugin.beforeDatasetsDraw(chart);
+    expect(ctx.calls.filter(([name]) => name === 'fillRect')).toHaveLength(0);
+
+    state.index = 1;
+    plugin.beforeDatasetsDraw(chart);
+    const rects = ctx.calls.filter(([name]) => name === 'fillRect');
+    expect(rects).toHaveLength(1);
+    // It brackets the second slot's whisker span, not the first.
+    const [, x, y, width, height] = rects[0];
+    expect(x).toBeGreaterThan(chart.scales.x.getPixelForValue(0.5));
+    expect(width).toBeGreaterThan(0);
+    expect(height).toBeGreaterThan(0);
+    expect(y).toBeLessThan(chart.scales.y.getPixelForValue(138) + 1);
+  });
+});
+
+describe('hep-waterfall flanking-panel labelling (HWF-BOX-006, HWF-BOX-007)', () => {
+  it('HWF-BOX-006: the anatomy key names every mark the panels draw (#83)', () => {
+    expect(BOX_ANATOMY).toMatch(/interquartile|Q1/i);
+    expect(BOX_ANATOMY).toMatch(/median/i);
+    expect(BOX_ANATOMY).toMatch(/5th/);
+    expect(BOX_ANATOMY).toMatch(/95th/);
+    expect(BOX_ANATOMY).toMatch(/mean/i);
+  });
+
+  it('HWF-BOX-006: the slot labels distinguish baseline from maximum on-treatment (#83)', () => {
+    expect(boxSlotLabels('baseline_peak')).toEqual(['Baseline', 'Max on-tx']);
+    expect(boxSlotLabels('peak')).toEqual(['Max on-tx']);
+    // The legend spells the abbreviation out so 'Max on-tx' is never a guess.
+    expect(BOX_PANEL_NOTE).toMatch(/maximum on-treatment/i);
+    expect(BOX_PANEL_NOTE).toMatch(/baseline/i);
+  });
+
+  it('HWF-BOX-007: the panel description reads the arm and both boxes as numbers (#83)', () => {
+    const description = boxPanelDescription([boxSpec(), boxSpec({ label: 'Peak', x: 1 })], {
+      arm: 'ABL: Placebo',
+      measure: 'ALT',
+      unit: 'U/L'
+    });
+    expect(description).toContain('ABL: Placebo');
+    expect(description).toMatch(/baseline/i);
+    expect(description).toMatch(/maximum on-treatment/i);
+    expect(description).toContain('80');
+    expect(description).toContain('U/L');
+    expect(boxPanelDescription([], { arm: 'ABL: Placebo' })).toMatch(/no /i);
   });
 });

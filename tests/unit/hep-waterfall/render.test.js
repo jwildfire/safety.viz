@@ -47,6 +47,7 @@ vi.mock('chart.js', () => {
     CategoryScale: stub(),
     LinearScale: stub(),
     LogarithmicScale: stub(),
+    Title: stub(),
     Tooltip: stub(),
     Legend: stub()
   };
@@ -75,6 +76,9 @@ const labelled = (instance, label) =>
   );
 
 const noteText = (instance) => instance.notes.textContent;
+
+const chartOption = (chart, path) =>
+  path.split('.').reduce((node, key) => (node == null ? node : node[key]), chart.options);
 
 describe('hep-waterfall lifecycle', () => {
   it('HWF-API-002: init, setData and setSettings re-render and return the instance (#93)', () => {
@@ -246,5 +250,160 @@ describe('hep-waterfall selection', () => {
     instance.chart.options.onClick({}, [{ datasetIndex: 0, index }]);
     instance.chart.options.onClick({}, [{ datasetIndex: 0, index }]);
     expect(seen).toEqual([['P1'], []]);
+  });
+});
+
+// The flanking panels' hover, labelling and accessible description
+// (obot.roadmap#83). Requirement groups HWF-BOX-005/006/007.
+
+// Give the stubbed flank charts the geometry the hit test reads: two slots
+// across 90px, a 0-500 value axis over 300px.
+const geometry = (instance) => {
+  instance.flankCharts.forEach((chart) => {
+    chart.chartArea = { left: 10, right: 100, top: 5, bottom: 305 };
+    chart.scales = {
+      x: { getPixelForValue: (value) => 10 + ((value + 0.5) / 2) * 90 },
+      y: { getPixelForValue: (value) => 305 - (value / 500) * 300 }
+    };
+  });
+  return instance;
+};
+
+const pointer = (canvas, type, x, y) =>
+  canvas.dispatchEvent(
+    new window.MouseEvent(type, { clientX: x, clientY: y, bubbles: true, cancelable: true })
+  );
+
+describe('hep-waterfall flanking-panel hover and labelling', () => {
+  it('HWF-BOX-006: the legend carries the box anatomy key and names both boxes (#83)', () => {
+    const instance = mount();
+    const legend = instance.legendEl.textContent;
+    expect(legend).toMatch(/interquartile/i);
+    expect(legend).toMatch(/median/i);
+    expect(legend).toMatch(/5th–95th percentiles/);
+    expect(legend).toMatch(/mean/i);
+    expect(legend).toMatch(/maximum on-treatment/i);
+    // A drawn key, not only prose: the anatomy chip carries a glyph.
+    expect(instance.legendEl.querySelector('.hwf-legend-box')).not.toBeNull();
+  });
+
+  it('HWF-BOX-006: each flank labels its slots and titles itself with the arm and n (#83)', () => {
+    const instance = mount();
+    const [left, right] = instance.flankCharts;
+    const ticks = (chart) => chart.options.scales.x.ticks;
+    expect(chartOption(left, 'scales.x.display')).toBe(true);
+    expect(ticks(left).callback(0)).toBe('Baseline');
+    expect(ticks(left).callback(1)).toBe('Max on-tx');
+    expect(ticks(left).callback(0.5)).toBe('');
+    expect(chartOption(left, 'plugins.title.text')).toMatch(/n=3/);
+    expect(chartOption(right, 'plugins.title.text')).toMatch(/n=2/);
+
+    // The single-box reading labels its one slot as the peak.
+    const summary = labelled(instance, 'Arm summary').querySelector('select');
+    summary.value = 'peak';
+    summary.onchange();
+    expect(instance.flankCharts[0].options.scales.x.ticks.callback(0)).toBe('Max on-tx');
+  });
+
+  it('HWF-BOX-007: each flank canvas carries an accessible summary of its boxes (#83)', () => {
+    const instance = mount();
+    const label = instance.boxCanvasLeft.getAttribute('aria-label');
+    expect(instance.boxCanvasLeft.getAttribute('role')).toBe('img');
+    expect(label).toMatch(/box-and-whisker summary/i);
+    expect(label).toMatch(/baseline/i);
+    expect(label).toMatch(/maximum on-treatment/i);
+    expect(label).toMatch(/median/i);
+  });
+
+  it('HWF-BOX-005: hovering a box opens the tooltip and closes it on leave (#83)', () => {
+    const instance = geometry(mount());
+    const tip = instance.boxTips.left;
+    expect(tip).not.toBeNull();
+    expect(tip.classList.contains('is-visible')).toBe(false);
+
+    // The baseline slot's median, in the stub geometry above.
+    const box = instance.boxSpecs.left[0];
+    const chart = instance.flankCharts[0];
+    pointer(
+      instance.boxCanvasLeft,
+      'pointermove',
+      chart.scales.x.getPixelForValue(box.x),
+      chart.scales.y.getPixelForValue(box.stats.median)
+    );
+    expect(tip.classList.contains('is-visible')).toBe(true);
+    expect(tip.textContent).toMatch(/median/i);
+    expect(tip.textContent).toContain(String(box.stats.n));
+    expect(instance.boxHover).toEqual({ side: 'left', index: 0 });
+
+    // Off the boxes, the tooltip closes without needing to leave the canvas.
+    pointer(instance.boxCanvasLeft, 'pointermove', 5, 5);
+    expect(tip.classList.contains('is-visible')).toBe(false);
+    expect(instance.boxHover.index).toBe(-1);
+
+    pointer(
+      instance.boxCanvasLeft,
+      'pointermove',
+      chart.scales.x.getPixelForValue(box.x),
+      chart.scales.y.getPixelForValue(box.stats.median)
+    );
+    expect(tip.classList.contains('is-visible')).toBe(true);
+    pointer(instance.boxCanvasLeft, 'pointerleave', 0, 0);
+    expect(tip.classList.contains('is-visible')).toBe(false);
+  });
+
+  it('HWF-BOX-005: the panels are reachable and steppable from the keyboard (#83)', () => {
+    const instance = geometry(mount());
+    expect(instance.boxCanvasLeft.getAttribute('tabindex')).toBe('0');
+
+    instance.boxCanvasLeft.dispatchEvent(new window.FocusEvent('focus'));
+    expect(instance.boxHover).toEqual({ side: 'left', index: 0 });
+    expect(instance.boxTips.left.classList.contains('is-visible')).toBe(true);
+
+    const key = (name) =>
+      instance.boxCanvasLeft.dispatchEvent(
+        new window.KeyboardEvent('keydown', { key: name, bubbles: true, cancelable: true })
+      );
+    key('ArrowRight');
+    expect(instance.boxHover.index).toBe(1);
+    expect(instance.boxTips.left.textContent).toMatch(/maximum on-treatment/i);
+    key('ArrowRight');
+    expect(instance.boxHover.index).toBe(0);
+    key('ArrowLeft');
+    expect(instance.boxHover.index).toBe(1);
+    key('Escape');
+    expect(instance.boxHover.index).toBe(-1);
+    expect(instance.boxTips.left.classList.contains('is-visible')).toBe(false);
+  });
+
+  it('HWF-BOX-005: the hover survives a re-render and never doubles its listeners (#83)', () => {
+    const instance = geometry(mount());
+    const before = instance.flankCharts.map((chart) => chart.updates);
+    const box = instance.boxSpecs.right[0];
+    const chart = instance.flankCharts[1];
+    pointer(
+      instance.boxCanvasRight,
+      'pointermove',
+      chart.scales.x.getPixelForValue(box.x),
+      chart.scales.y.getPixelForValue(box.stats.median)
+    );
+    // One redraw per hover change, on the hovered panel only.
+    expect(instance.flankCharts[1].updates).toBe(before[1] + 1);
+    expect(instance.flankCharts[0].updates).toBe(before[0]);
+
+    // Re-rendering drops the stale hover rather than pointing at a destroyed
+    // chart, and the freshly built panels still answer the pointer.
+    instance.render();
+    expect(instance.boxHover.index).toBe(-1);
+    expect(instance.boxTips.right.classList.contains('is-visible')).toBe(false);
+    geometry(instance);
+    const fresh = instance.flankCharts[1];
+    pointer(
+      instance.boxCanvasRight,
+      'pointermove',
+      fresh.scales.x.getPixelForValue(box.x),
+      fresh.scales.y.getPixelForValue(instance.boxSpecs.right[0].stats.median)
+    );
+    expect(instance.boxHover).toEqual({ side: 'right', index: 0 });
+    expect(fresh.updates).toBe(1);
   });
 });

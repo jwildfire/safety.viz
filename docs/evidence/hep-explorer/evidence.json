@@ -1,6 +1,6 @@
 {
   "module": "hep-explorer",
-  "generatedAt": "2026-07-24T12:24:21.143Z",
+  "generatedAt": "2026-07-25T03:42:04.181Z",
   "environment": {
     "os": "linux 6.17.0-1020-azure",
     "node": "v22.23.1",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "30092922548",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/30092922548"
+    "id": "30142710565",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/30142710565"
   },
   "records": [
     {
@@ -294,6 +294,30 @@
       "screenshots": ["HEP-DISPLAY-001-mdish-display.png"]
     },
     {
+      "test": "HEP-DISPLAY-006/HEP-CTRL-015/HEP-CTRL-016: the display offers only what the data supports, and the legend is ordered and coloured for it (#55)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HEP-DISPLAY-006", "HEP-CTRL-015", "HEP-CTRL-016"],
+      "issueRefs": [55],
+      "screenshots": ["HEP-CTRL-015-legend-order-and-palette.png"]
+    },
+    {
+      "test": "HEP-DROP-001/HEP-DROP-002/HEP-DROP-003/HEP-IMPUTE-002: removed records are downloadable with a reason, and below-limit values are imputed (#50)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HEP-DROP-001", "HEP-DROP-002", "HEP-DROP-003", "HEP-IMPUTE-002"],
+      "issueRefs": [50],
+      "screenshots": ["HEP-DROP-003-dropped-record-downloads.png"]
+    },
+    {
+      "test": "HEP-MARG-001/HEP-MARG-002/HEP-MARG-003: marginal box plots and axis rugs summarize each measure beside the cloud (#47)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HEP-MARG-001", "HEP-MARG-002", "HEP-MARG-003"],
+      "issueRefs": [47],
+      "screenshots": ["HEP-MARG-001-marginal-box-plots-and-rugs.png"]
+    },
+    {
       "test": "HEP-MIG-001: the prototype banner is scoped to the migration view, not the stable scatter/composite views (#97)",
       "suite": "browser",
       "status": "pass",
@@ -356,6 +380,28 @@
       "requirementIds": ["HEP-QUAD-002", "HEP-QUAD-003", "HEP-QUAD-004", "HEP-QUAD-005"],
       "issueRefs": [43],
       "screenshots": ["HEP-QUAD-002-quadrant-summary.png"]
+    },
+    {
+      "test": "HEP-QUAD-006: the cut-lines can be dragged, reclassifying live and writing back to the inputs (#45)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HEP-QUAD-006"],
+      "issueRefs": [45],
+      "screenshots": ["HEP-QUAD-006-cut-line-drag.png"]
+    },
+    {
+      "test": "HEP-QUAD-007/HEP-QUAD-008/HEP-CTRL-013/HEP-CTRL-014/HEP-CAUTION-001: the labels, the legend and the caution say what the chart means (#54)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [
+        "HEP-QUAD-007",
+        "HEP-QUAD-008",
+        "HEP-CTRL-013",
+        "HEP-CTRL-014",
+        "HEP-CAUTION-001"
+      ],
+      "issueRefs": [54],
+      "screenshots": ["HEP-QUAD-008-quadrant-meanings-and-legend-counts.png"]
     },
     {
       "test": "HEP-SELECT-001/HEP-SELECT-002/HEP-SELECT-003/HEP-SELECT-005/HEP-SELECT-006: clicking a point draws the visit path, docked profile, and linked listing (#43, #98)",
@@ -1260,6 +1306,62 @@
       "screenshots": []
     },
     {
+      "test": "hep-explorer below-LLOQ imputation (HEP-IMPUTE-*) HEP-IMPUTE-001: data-driven takes the smallest POSITIVE value as the limit (#50)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-IMPUTE-001"],
+      "issueRefs": [50],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer below-LLOQ imputation (HEP-IMPUTE-*) HEP-IMPUTE-001: the method enum is the original renderer's three (#50)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-IMPUTE-001"],
+      "issueRefs": [50],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer below-LLOQ imputation (HEP-IMPUTE-*) HEP-IMPUTE-001: user-defined takes the configured limit instead of the data (#50)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-IMPUTE-001"],
+      "issueRefs": [50],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer below-LLOQ imputation (HEP-IMPUTE-*) HEP-IMPUTE-002: negatives are left alone — the rule runs from zero up (#50)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-IMPUTE-002"],
+      "issueRefs": [50],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer below-LLOQ imputation (HEP-IMPUTE-*) HEP-IMPUTE-002: values from zero up to the limit become half the limit (#50)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-IMPUTE-002"],
+      "issueRefs": [50],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer below-LLOQ imputation (HEP-IMPUTE-*) HEP-IMPUTE-003: an unmapped or absent method leaves the data untouched (#50)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-IMPUTE-003"],
+      "issueRefs": [50],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer below-LLOQ imputation (HEP-IMPUTE-*) HEP-IMPUTE-003: the drop method removes non-positive records instead (#50)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-IMPUTE-003"],
+      "issueRefs": [50],
+      "screenshots": []
+    },
+    {
       "test": "hep-explorer checkInputs — the view-aware arm guard HEP-ARM-005: reports a usable arm column without touching the global contract (#91)",
       "suite": "unit",
       "status": "pass",
@@ -1620,6 +1722,94 @@
       "screenshots": []
     },
     {
+      "test": "hep-explorer cut-line drag geometry (HEP-QUAD-006) HEP-QUAD-006: a drag reads the axis value under the pointer, clamped to the plot (#45)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-QUAD-006"],
+      "issueRefs": [45],
+      "screenshots": ["HEP-QUAD-006-cut-line-drag.png"]
+    },
+    {
+      "test": "hep-explorer cut-line drag geometry (HEP-QUAD-006) HEP-QUAD-006: dragged values are rounded to what the number input can hold (#45)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-QUAD-006"],
+      "issueRefs": [45],
+      "screenshots": ["HEP-QUAD-006-cut-line-drag.png"]
+    },
+    {
+      "test": "hep-explorer cut-line drag geometry (HEP-QUAD-006) HEP-QUAD-006: nothing is grabbable outside the plot or without cuts (#45)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-QUAD-006"],
+      "issueRefs": [45],
+      "screenshots": ["HEP-QUAD-006-cut-line-drag.png"]
+    },
+    {
+      "test": "hep-explorer cut-line drag geometry (HEP-QUAD-006) HEP-QUAD-006: the pointer takes hold of whichever cut-line it is on (#45)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-QUAD-006"],
+      "issueRefs": [45],
+      "screenshots": ["HEP-QUAD-006-cut-line-drag.png"]
+    },
+    {
+      "test": "hep-explorer display availability (HEP-DISPLAY-006) HEP-DISPLAY-006: both modes are offered when the data supports both (#55)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DISPLAY-006"],
+      "issueRefs": [55],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer display availability (HEP-DISPLAY-006) HEP-DISPLAY-006: neither is an error the caller can render, not an empty plot (#55)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DISPLAY-006"],
+      "issueRefs": [55],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer display availability (HEP-DISPLAY-006) HEP-DISPLAY-006: no reference range withdraws the eDISH mode instead (#55)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DISPLAY-006"],
+      "issueRefs": [55],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer display availability (HEP-DISPLAY-006) HEP-DISPLAY-006: the baseline mode is withdrawn, with a reason, when nothing has one (#55)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DISPLAY-006"],
+      "issueRefs": [55],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer dropped-record downloads (HEP-DROP-*) HEP-DROP-002: the CSV quotes every field and doubles embedded quotes (#50)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DROP-002"],
+      "issueRefs": [50],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer dropped-record downloads (HEP-DROP-*) HEP-DROP-002: the row export leads with the reason and hides the internals (#50)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DROP-002"],
+      "issueRefs": [50],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer dropped-record downloads (HEP-DROP-*) HEP-DROP-003: the link names the file and builds the CSV only when clicked (#50)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DROP-003"],
+      "issueRefs": [50],
+      "screenshots": ["HEP-DROP-003-dropped-record-downloads.png"]
+    },
+    {
       "test": "hep-explorer getPlugins HEP-CHART-004: pointTooltip lists participant, R Ratio, both peaks with days, and the day gap (port)",
       "suite": "unit",
       "status": "pass",
@@ -1730,6 +1920,70 @@
       "requirementIds": ["HEP-DISPLAY-001", "HEP-CHART-002"],
       "issueRefs": [],
       "screenshots": ["HEP-DISPLAY-001-mdish-display.png"]
+    },
+    {
+      "test": "hep-explorer legend ordering (HEP-CTRL-015) HEP-CTRL-015: a numeric companion column orders the groups by dose, not by spelling (#55)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-015"],
+      "issueRefs": [55],
+      "screenshots": ["HEP-CTRL-015-legend-order-and-palette.png"]
+    },
+    {
+      "test": "hep-explorer legend ordering (HEP-CTRL-015) HEP-CTRL-015: without a companion column the groups stay alphabetical (#55)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-015"],
+      "issueRefs": [55],
+      "screenshots": ["HEP-CTRL-015-legend-order-and-palette.png"]
+    },
+    {
+      "test": "hep-explorer marginal distributions (HEP-MARG-*) HEP-MARG-001: the strip is reserved only when boxes are drawn (#47)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-MARG-001"],
+      "issueRefs": [47],
+      "screenshots": ["HEP-MARG-001-marginal-box-plots-and-rugs.png"]
+    },
+    {
+      "test": "hep-explorer marginal distributions (HEP-MARG-*) HEP-MARG-001: the summary is the shown points, per axis, with R-7 quantiles (#47)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-MARG-001"],
+      "issueRefs": [47],
+      "screenshots": ["HEP-MARG-001-marginal-box-plots-and-rugs.png"]
+    },
+    {
+      "test": "hep-explorer marginal distributions (HEP-MARG-*) HEP-MARG-001/HEP-MARG-002: the plugin draws both marginals and stashes their geometry (#47)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-MARG-001", "HEP-MARG-002"],
+      "issueRefs": [47],
+      "screenshots": ["HEP-MARG-001-marginal-box-plots-and-rugs.png"]
+    },
+    {
+      "test": "hep-explorer marginal distributions (HEP-MARG-*) HEP-MARG-002: rug ticks are one per shown point per axis (#47)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-MARG-002"],
+      "issueRefs": [47],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer marginal distributions (HEP-MARG-*) HEP-MARG-003: nothing is drawn when the marginals are off or there is no data (#47)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-MARG-003"],
+      "issueRefs": [47],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer marginal distributions (HEP-MARG-*) HEP-MARG-003: the mode enum spans both marks and their combinations (#47)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-MARG-003"],
+      "issueRefs": [47],
+      "screenshots": []
     },
     {
       "test": "hep-explorer migration view — accessibility HEP-ACC-001: every ribbon is focusable, is a button, and names its count, quadrants, arm and concern (#92)",
@@ -1956,6 +2210,22 @@
       "screenshots": []
     },
     {
+      "test": "hep-explorer palette beyond the base colours (HEP-CTRL-016) HEP-CTRL-016: past the palette, groups get shaded variants rather than repeats (#55)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-016"],
+      "issueRefs": [55],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer palette beyond the base colours (HEP-CTRL-016) HEP-CTRL-016: the first groups take the base palette unchanged (#55)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-016"],
+      "issueRefs": [55],
+      "screenshots": []
+    },
+    {
       "test": "hep-explorer participant-profile adoption (PPRF-7, PPRF-HEP-001) a control-driven redraw re-feeds the dock with fresh rows (the guard resets per render)",
       "suite": "unit",
       "status": "pass",
@@ -2026,6 +2296,38 @@
       "requirementIds": ["PPRF-HEP-001"],
       "issueRefs": [],
       "screenshots": []
+    },
+    {
+      "test": "hep-explorer quadrant and legend polish (#54) HEP-CAUTION-001: the chart carries a standing not-for-clinical-use caution (#54)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CAUTION-001"],
+      "issueRefs": [54, 54],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer quadrant and legend polish (#54) HEP-CTRL-013: legend entries carry each group's count and percent (#54)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-013"],
+      "issueRefs": [54, 54],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer quadrant and legend polish (#54) HEP-CTRL-014: the point-size encoding is explained only when it encodes something (#54)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-014"],
+      "issueRefs": [54, 54],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer quadrant and legend polish (#54) HEP-QUAD-008: every quadrant carries the clinical reading it stands for (#54)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-QUAD-008"],
+      "issueRefs": [54, 54],
+      "screenshots": ["HEP-QUAD-008-quadrant-meanings-and-legend-counts.png"]
     },
     {
       "test": "hep-explorer selection layer HEP-CORE-011: mount fills the Participants section with one option per shown participant and hides it when none are shown (#91)",

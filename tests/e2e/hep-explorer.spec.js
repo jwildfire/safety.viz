@@ -84,6 +84,114 @@ test.describe('safety.viz hep-explorer module', () => {
     await captureEvidence(page, 'HEP-DATA-003', 'invalid-data-note');
   });
 
+  test('HEP-DISPLAY-006/HEP-CTRL-015/HEP-CTRL-016: the display offers only what the data supports, and the legend is ordered and coloured for it (#55)', async ({
+    page
+  }) => {
+    // HEP-DISPLAY-006: this fixture supports both modes, so both are offered
+    // and nothing is withdrawn.
+    const display = page.locator('.sv-control', {
+      has: page.locator('label:text-is("Display Type")')
+    });
+    await expect(display.locator('select option')).toHaveCount(2);
+
+    const availability = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      return {
+        live: instance.displayAvailability,
+        // The same rule against data with no derivable baseline: every record
+        // is that participant's only record, so nothing has a prior value.
+        noBaseline: instance.cleanRows.map((row) => ({ ...row, __hep_baseline: NaN })),
+        noUln: instance.cleanRows.map((row) => ({ ...row, __hep_uln: NaN }))
+      };
+    });
+    expect(availability.live.modes).toEqual(['relative_uln', 'relative_baseline']);
+    expect(availability.live.note).toBe('');
+
+    // HEP-CTRL-015: with a numeric companion column the arms follow the
+    // protocol's order rather than the alphabet.
+    await page
+      .locator('.sv-control', { has: page.locator('label:text-is("Group")') })
+      .locator('select')
+      .selectOption('ARM');
+    const alphabetical = await page.evaluate(() => window.__safetyHepExplorerInstance.groupValues);
+    expect(alphabetical).toEqual(['Drug', 'Placebo']);
+
+    const ordered = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      instance.setSettings({ group_order_col: 'ARMN' });
+      return instance.groupValues;
+    });
+    // ARMN is 1 for Placebo and 2 for Drug in the fixture, so the control arm
+    // now leads the legend.
+    expect(ordered).toEqual(['Placebo', 'Drug']);
+
+    // HEP-CTRL-016 (the palette past its base colours) is a pure function with
+    // no browser surface of its own; it is pinned in availability.test.js. What
+    // the browser proves is that the two groups it does have are still coloured
+    // distinctly after the reorder.
+    const colors = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      return instance.groupValues.map((value) => instance.colorScale.get(value));
+    });
+    expect(new Set(colors).size).toBe(colors.length);
+    await captureEvidence(page.locator('.sv-main'), 'HEP-CTRL-015', 'legend-order-and-palette');
+  });
+
+  test('HEP-DROP-001/HEP-DROP-002/HEP-DROP-003/HEP-IMPUTE-002: removed records are downloadable with a reason, and below-limit values are imputed (#50)', async ({
+    page
+  }) => {
+    const notes = page.locator('.sv-notes');
+
+    // HEP-DROP-003: the count that says data left the chart carries the export
+    // that says which data and why.
+    const link = notes.locator('a.hep-csv-link');
+    await expect(link).toHaveCount(1);
+    await expect(link).toContainText('Download the removed records');
+    await expect(link).toHaveAttribute('download', /^hepExplorerDroppedRows.*\.csv$/);
+    // The href is a placeholder: the CSV is serialized on click, not on render.
+    await expect(link).toHaveAttribute('href', '#');
+
+    // HEP-DROP-001/002: the export names the mapped column that failed, per
+    // row, and carries the source columns beside it. The text is built through
+    // the link's own builder rather than by downloading a file, so the assertion
+    // is on what a click would produce.
+    const csv = await page.evaluate(() =>
+      document.querySelector('.sv-notes a.hep-csv-link').__hepCsv()
+    );
+    const lines = csv.split('\n');
+    expect(lines[0]).toContain('"__hep_dropReason"');
+    expect(lines[0]).toContain('"USUBJID"');
+    // The renderer's own working stays out of the reviewer's file.
+    expect(lines[0]).not.toContain('"__hep_value"');
+    expect(lines).toHaveLength(3);
+    // Quotes inside a cell are doubled, so the reason reads as the CSV escapes it.
+    expect(csv).toContain('Result column (""STRESN"") is empty.');
+    expect(csv).toContain('Result column (""STRESN"") is not numeric.');
+    expect(csv).toContain('SUBJ-001');
+    expect(csv).toContain('SUBJ-002');
+
+    // HEP-IMPUTE-002: the recorded zero is imputed to half the smallest
+    // positive ALT rather than plotted as a zero, and the chart says so.
+    await expect(notes).toContainText('below the limit of quantitation imputed to half the limit');
+    const imputation = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      const imputed = instance.cleanRows.filter((row) => row.__hep_imputed);
+      return {
+        count: instance.imputedRecords,
+        limits: instance.imputationLimits,
+        values: imputed.map((row) => ({
+          original: row.__hep_valueOriginal,
+          value: row.__hep_value
+        }))
+      };
+    });
+    expect(imputation.count).toBe(1);
+    expect(imputation.values[0].original).toBe(0);
+    expect(imputation.values[0].value).toBe(imputation.limits.ALT / 2);
+    expect(imputation.limits.ALT).toBeGreaterThan(0);
+    await captureEvidence(page.locator('.sv-notes'), 'HEP-DROP-003', 'dropped-record-downloads');
+  });
+
   test('HEP-QUAD-002/HEP-QUAD-003/HEP-QUAD-004/HEP-QUAD-005: quadrant cut-lines classify one participant per quadrant and drive the summary table (#43)', async ({
     page
   }) => {
@@ -116,6 +224,229 @@ test.describe('safety.viz hep-explorer module', () => {
     await expect(normalRow).toContainText('2');
     await expect(normalRow).toContainText('40.0%');
     await captureEvidence(page, 'HEP-QUAD-002', 'quadrant-summary');
+  });
+
+  test('HEP-QUAD-007/HEP-QUAD-008/HEP-CTRL-013/HEP-CTRL-014/HEP-CAUTION-001: the labels, the legend and the caution say what the chart means (#54)', async ({
+    page
+  }) => {
+    await page.waitForFunction(() => window.__safetyHepExplorerInstance.chart.$hepQuadrants);
+
+    // HEP-CAUTION-001: the widget travels without the clinical guide, so it
+    // carries the guide's warning itself, in every view.
+    const caution = page.locator('.safety-hep-explorer .hep-caution');
+    await expect(caution).toBeVisible();
+    await expect(caution).toContainText('not validated for clinical use');
+    await page.locator('.sv-view-option', { hasText: 'Migration' }).click();
+    await expect(caution).toBeVisible();
+    await page.locator('.sv-view-option', { hasText: 'scatter' }).click();
+    await page.waitForFunction(() => window.__safetyHepExplorerInstance.chart?.$hepQuadrants);
+
+    // HEP-QUAD-008: each quadrant row states what landing there means, beside
+    // the count of who did.
+    const hysLawRow = page
+      .locator('.hep-quadrant-summary tbody tr', { hasText: "Possible Hy's Law Range" })
+      .first();
+    await expect(hysLawRow.locator('.hep-quadrant-meaning')).toContainText('not a diagnosis');
+    await expect(
+      page
+        .locator('.hep-quadrant-summary tbody tr', { hasText: 'Hyperbilirubinemia' })
+        .first()
+        .locator('.hep-quadrant-meaning')
+    ).toContainText('bilirubin');
+    await expect(page.locator('.hep-quadrant-summary .hep-quadrant-meaning')).toHaveCount(4);
+
+    // HEP-QUAD-007: the corner labels are guidance, not data, and can be turned
+    // off — the cut-lines and the classification stay.
+    const labels = page.locator('.sv-control', {
+      has: page.locator('label:text-is("Quadrant Labels")')
+    });
+    await labels.locator('select').selectOption('hidden');
+    await page.waitForFunction(
+      () => window.__safetyHepExplorerInstance.state.quadrantLabels === 'hidden'
+    );
+    const stillClassified = await page.evaluate(
+      () => window.__safetyHepExplorerInstance.chart.$hepQuadrants
+    );
+    expect(stillClassified.counts['upper-right']).toBe(1);
+    await expect(hysLawRow).toContainText('20.0%');
+    await labels.locator('select').selectOption('shown');
+
+    // HEP-CTRL-013: the legend counts each group and states its share.
+    await page
+      .locator('.sv-control', { has: page.locator('label:text-is("Group")') })
+      .locator('select')
+      .selectOption('ARM');
+    const legend = page.locator('.hep-legend');
+    await expect(legend).toContainText(/Placebo \(n=\d+, \d+\.\d%\)/);
+    await expect(legend).toContainText(/Drug \(n=\d+, \d+\.\d%\)/);
+
+    // HEP-CTRL-014: point size is explained only when it encodes something.
+    await expect(legend.locator('.hep-legend-note')).toHaveCount(0);
+    const pointSize = page.locator('.sv-control', {
+      has: page.locator('label:text-is("Point Size")')
+    });
+    await pointSize.locator('select').selectOption('rRatio');
+    await expect(legend.locator('.hep-legend-note')).toContainText('R Ratio');
+    // The whole main column: the legend counts sit above the plot and the
+    // quadrant meanings and the caution below it, so a viewport shot would
+    // always crop one end of the evidence.
+    await captureEvidence(
+      page.locator('.sv-main'),
+      'HEP-QUAD-008',
+      'quadrant-meanings-and-legend-counts'
+    );
+  });
+
+  test('HEP-MARG-001/HEP-MARG-002/HEP-MARG-003: marginal box plots and axis rugs summarize each measure beside the cloud (#47)', async ({
+    page
+  }) => {
+    await page.waitForFunction(() => window.__safetyHepExplorerInstance.chart.$hepMarginals);
+    const marginals = await page.evaluate(() => {
+      const chart = window.__safetyHepExplorerInstance.chart;
+      return {
+        geometry: chart.$hepMarginals,
+        padding: chart.options.layout.padding,
+        // Both marginals must sit OUTSIDE the plot, or they would be read as
+        // data: the strip is reserved by the layout padding.
+        area: { top: chart.chartArea.top, right: chart.chartArea.right },
+        canvas: { width: chart.width, height: chart.height }
+      };
+    });
+
+    // HEP-MARG-001: one box per axis, over the five shown participants, with
+    // the same R-7 quantiles the rest of the library uses.
+    expect(marginals.geometry.mode).toBe('box_rug');
+    expect(marginals.geometry.x.n).toBe(5);
+    expect(marginals.geometry.y.n).toBe(5);
+    expect(marginals.geometry.x.median).toBeCloseTo(1.5, 5);
+    expect(marginals.geometry.y.median).toBeCloseTo(1, 5);
+    // HEP-MARG-002: one rug tick per shown participant.
+    expect(marginals.geometry.rug).toBe(5);
+
+    expect(marginals.padding.top).toBeGreaterThan(6);
+    expect(marginals.padding.right).toBeGreaterThan(6);
+    expect(marginals.area.top).toBeGreaterThanOrEqual(marginals.padding.top);
+    expect(marginals.area.right).toBeLessThan(marginals.canvas.width);
+    await captureEvidence(page, 'HEP-MARG-001', 'marginal-box-plots-and-rugs');
+
+    // HEP-MARG-003: the marginals follow the filters — they summarize what is
+    // SHOWN, not the whole cohort.
+    const control = page.locator('.sv-control', {
+      has: page.locator('label:text-is("Marginal Distributions")')
+    });
+    await expect(control).toBeVisible();
+
+    const rRatioMin = page
+      .locator('.sv-control', { has: page.locator('label:text-is("R Ratio min")') })
+      .locator('input');
+    await rRatioMin.fill('3');
+    await rRatioMin.dispatchEvent('change');
+    await page.waitForFunction(() => {
+      const geometry = window.__safetyHepExplorerInstance.chart.$hepMarginals;
+      return geometry && geometry.rug < 5;
+    });
+    const shown = await page.evaluate(() => window.__safetyHepExplorerInstance.points.length);
+    const filtered = await page.evaluate(
+      () => window.__safetyHepExplorerInstance.chart.$hepMarginals
+    );
+    expect(filtered.x.n).toBe(shown);
+    expect(filtered.rug).toBe(shown);
+    await rRatioMin.fill('0');
+    await rRatioMin.dispatchEvent('change');
+
+    // Rugs alone give the strip back; hiding them draws nothing at all.
+    await control.locator('select').selectOption('rug');
+    await page.waitForFunction(
+      () => window.__safetyHepExplorerInstance.chart.$hepMarginals.mode === 'rug'
+    );
+    expect(
+      await page.evaluate(() => window.__safetyHepExplorerInstance.chart.options.layout.padding.top)
+    ).toBe(6);
+
+    await control.locator('select').selectOption('none');
+    await page.waitForFunction(
+      () => window.__safetyHepExplorerInstance.chart.$hepMarginals === null
+    );
+  });
+
+  test('HEP-QUAD-006: the cut-lines can be dragged, reclassifying live and writing back to the inputs (#45)', async ({
+    page
+  }) => {
+    await page.waitForFunction(() => window.__safetyHepExplorerInstance.chart.$hepQuadrants);
+    const canvas = page.locator('canvas.sv-chart').first();
+    const bounds = await canvas.boundingBox();
+    const cutInput = (measure) =>
+      page
+        .locator('.sv-control', { has: page.locator(`label:text-is("${measure} Reference Line")`) })
+        .locator('input');
+
+    // The pixel the vertical ALT line is drawn at, and the pixel 1.2xULN would
+    // be drawn at — the same reclassification the number input drives above,
+    // asked for with the pointer instead.
+    const geometry = await page.evaluate(() => {
+      const chart = window.__safetyHepExplorerInstance.chart;
+      return {
+        xPixel: chart.$hepQuadrants.xPixel,
+        yPixel: chart.$hepQuadrants.yPixel,
+        target: chart.scales.x.getPixelForValue(1.2),
+        midY: (chart.chartArea.top + chart.chartArea.bottom) / 2
+      };
+    });
+
+    // Grabbing the line puts a resize cursor on the canvas: a dashed rule has
+    // no other affordance.
+    await page.mouse.move(bounds.x + geometry.xPixel, bounds.y + geometry.midY);
+    await expect(canvas).toHaveCSS('cursor', 'col-resize');
+
+    await page.mouse.down();
+    await page.mouse.move(bounds.x + geometry.target, bounds.y + geometry.midY, { steps: 8 });
+    // Mid-drag, before the button is released, the classification has already
+    // moved: that is the point of the gesture.
+    const midDrag = await page.evaluate(
+      () => window.__safetyHepExplorerInstance.chart.$hepQuadrants
+    );
+    expect(midDrag.xCut).toBeCloseTo(1.2, 1);
+    expect(midDrag.counts['upper-right']).toBe(2);
+    expect(midDrag.counts['upper-left']).toBe(0);
+    await captureEvidence(page, 'HEP-QUAD-006', 'cut-line-drag');
+    await page.mouse.up();
+
+    // Either control updates the other: the drag wrote its value into the
+    // Reference Line box, and the summary table followed.
+    await expect(cutInput('ALT')).toHaveValue(/^1\.2/);
+    const hysLawRow = page
+      .locator('.hep-quadrant-summary tbody tr', { hasText: "Possible Hy's Law Range" })
+      .first();
+    await expect(hysLawRow).toContainText('40.0%');
+
+    // The drag is not also a click on the plot background, so a selection made
+    // before it survives.
+    const state = await page.evaluate(() => ({
+      selectedId: window.__safetyHepExplorerInstance.state.selectedId,
+      xCut: window.__safetyHepExplorerInstance.state.xCut
+    }));
+    expect(state.xCut).toBeCloseTo(1.2, 1);
+    expect(state.selectedId).toBeNull();
+
+    // The horizontal line moves on its own axis, and only it moves.
+    const yTarget = await page.evaluate(() =>
+      window.__safetyHepExplorerInstance.chart.scales.y.getPixelForValue(1)
+    );
+    const midX = await page.evaluate(
+      () =>
+        (window.__safetyHepExplorerInstance.chart.chartArea.left +
+          window.__safetyHepExplorerInstance.chart.chartArea.right) /
+        2
+    );
+    await page.mouse.move(bounds.x + midX, bounds.y + geometry.yPixel);
+    await expect(canvas).toHaveCSS('cursor', 'row-resize');
+    await page.mouse.down();
+    await page.mouse.move(bounds.x + midX, bounds.y + yTarget, { steps: 8 });
+    await page.mouse.up();
+    const after = await page.evaluate(() => window.__safetyHepExplorerInstance.chart.$hepQuadrants);
+    expect(after.yCut).toBeCloseTo(1, 1);
+    expect(after.xCut).toBeCloseTo(1.2, 1);
+    await expect(cutInput('TB')).toHaveValue(/^1/);
   });
 
   test('HEP-QUAD-001/HEP-QUAD-004: changing the x-axis reference line reclassifies the quadrants (#43)', async ({
