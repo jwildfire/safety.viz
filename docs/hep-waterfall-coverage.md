@@ -21,7 +21,7 @@ contract, the cohort rules, the baseline/on-treatment split, units),
 `HWF-ORDER-*` (the baseline ranking and the mountain invariant), `HWF-BAR-*`
 (the floating bars and the baseline trace), `HWF-AXIS-*` (the absolute-unit
 mirrored axes and the reference range), `HWF-COLOR-*` (the semantic arm palette
-and the jaundice override), `HWF-BOX-*` (the flanking summary panels),
+and the jaundice override), `HWF-BOX-*` (the flanking summary panels, their hover and their labelling),
 `HWF-CTRL-*` (controls), `HWF-SELECT-*` (tooltip, selection, event),
 `HWF-API-*` (factory and lifecycle), and `HWF-COHORT-*` (the invariants the
 synthetic demo cohort must keep for the figure to be demonstrable at all).
@@ -35,6 +35,9 @@ synthetic demo cohort must keep for the figure to be demonstrable at all).
 | HWF-COLOR-003                                  | HWF-COLOR-003                               | #93   | the arm divider splits the plot at the seam and captions each half with its arm and n                     |
 | HWF-AXIS-002, HWF-AXIS-003, HWF-AXIS-004       | HWF-AXIS-002, HWF-AXIS-003, HWF-AXIS-004    | #93   | mirrored absolute-unit axes and a single-value reference line                                             |
 | HWF-BOX-001, HWF-BOX-002, HWF-BOX-003          | HWF-BOX-001, HWF-BOX-002, HWF-BOX-003       | #93   | a summary panel flanks each arm, pinned to the main chart domain                                          |
+| HWF-BOX-006, HWF-BOX-007                       | HWF-BOX-006, HWF-BOX-007                    | #83   | the panels name their marks, their slots and their arms                                                   |
+| HWF-BOX-005                                    | HWF-BOX-005                                 | #83   | hovering a summary box reads out every statistic it draws                                                 |
+| HWF-BOX-005                                    | HWF-BOX-005                                 | #83   | the summary boxes are reachable from the keyboard                                                         |
 | HWF-DATA-003, HWF-DATA-005, HWF-DATA-008       | HWF-DATA-003, HWF-DATA-005, HWF-DATA-008    | #93   | both cohort exclusions and the dropped records are reported separately in the notes                       |
 | HWF-DATA-003                                   | HWF-DATA-003                                | #93   | turning the Table-1 cohort rule off admits the excluded participants and says so                          |
 | HWF-DATA-007                                   | HWF-DATA-007                                | #93   | two units for the plotted measure suppress the chart with a warning naming them                           |
@@ -48,29 +51,35 @@ synthetic demo cohort must keep for the figure to be demonstrable at all).
 
 ## Unit evidence (Vitest — `tests/unit/hep-waterfall/`)
 
-| Requirement ID                                                                        | Source matrix rows      | Issue | Test file               |
-| ------------------------------------------------------------------------------------- | ----------------------- | ----- | ----------------------- |
-| HWF-CFG-001..005 (defaults, thresholds, arm designation, the two enum settings)       | HWF-CFG-001..005        | #93   | `configure.test.js`     |
-| HWF-DATA-001, HWF-DATA-005 (schema required columns, arm required)                    | HWF-DATA-001, -005      | #93   | `checkInputs.test.js`   |
-| HWF-DATA-001/002/003/004/005/008 (the shared reduction, cohort rules, counted drops)  | HWF-DATA-001..005, -008 | #93   | `structureData.test.js` |
-| HWF-ORDER-001/002/003/004 (the mountain, and the mandatory identifier tie-break)      | HWF-ORDER-001..004      | #93   | `structureData.test.js` |
-| HWF-BAR-001/002/003/004 (floating-bar pairs, direction, the trace and its draw order) | HWF-BAR-001..004        | #93   | `structureData.test.js` |
-| HWF-BOX-003/004, HWF-CTRL-003 (staged box specs, R-7 statistics, filters)             | HWF-BOX-003, -004       | #93   | `structureData.test.js` |
-| HWF-AXIS-001/002/003, HWF-BOX-002, HWF-DATA-006/007 (domain, mirroring, units)        | HWF-AXIS-001..003       | #93   | `getScales.test.js`     |
-| HWF-COLOR-001..004, HWF-AXIS-004, HWF-SELECT-001 (palette, divider, band, tooltip)    | HWF-COLOR-001..004      | #93   | `getPlugins.test.js`    |
-| HWF-API-002, HWF-API-003, HWF-BOX-001, HWF-CTRL-001..004, HWF-SELECT-002/003          | HWF-API-002, -003       | #93   | `render.test.js`        |
-| HWF-API-001 (module export)                                                           | HWF-API-001             | #93   | `export.test.js`        |
-| HWF-COHORT-001..011 (the synthetic demo cohort's invariants)                          | HWF-COHORT-001..011     | #93   | `abnbl.test.js`         |
+| Requirement ID                                                                         | Source matrix rows      | Issue | Test file               |
+| -------------------------------------------------------------------------------------- | ----------------------- | ----- | ----------------------- |
+| HWF-CFG-001..005 (defaults, thresholds, arm designation, the two enum settings)        | HWF-CFG-001..005        | #93   | `configure.test.js`     |
+| HWF-DATA-001, HWF-DATA-005 (schema required columns, arm required)                     | HWF-DATA-001, -005      | #93   | `checkInputs.test.js`   |
+| HWF-DATA-001/002/003/004/005/008 (the shared reduction, cohort rules, counted drops)   | HWF-DATA-001..005, -008 | #93   | `structureData.test.js` |
+| HWF-ORDER-001/002/003/004 (the mountain, and the mandatory identifier tie-break)       | HWF-ORDER-001..004      | #93   | `structureData.test.js` |
+| HWF-BAR-001/002/003/004 (floating-bar pairs, direction, the trace and its draw order)  | HWF-BAR-001..004        | #93   | `structureData.test.js` |
+| HWF-BOX-003/004, HWF-CTRL-003 (staged box specs, R-7 statistics, filters)              | HWF-BOX-003, -004       | #93   | `structureData.test.js` |
+| HWF-AXIS-001/002/003, HWF-BOX-002, HWF-DATA-006/007 (domain, mirroring, units)         | HWF-AXIS-001..003       | #93   | `getScales.test.js`     |
+| HWF-COLOR-001..004, HWF-AXIS-004, HWF-SELECT-001 (palette, divider, band, tooltip)     | HWF-COLOR-001..004      | #93   | `getPlugins.test.js`    |
+| HWF-BOX-005/006/007 (the hit test, the tooltip text, the anatomy key, the description) | HWF-BOX-005..007        | #83   | `getPlugins.test.js`    |
+| HWF-API-002, HWF-API-003, HWF-BOX-001, HWF-CTRL-001..004, HWF-SELECT-002/003           | HWF-API-002, -003       | #93   | `render.test.js`        |
+| HWF-BOX-005/006/007 (hover wiring, slot labels, panel titles, the accessible label)    | HWF-BOX-005..007        | #83   | `render.test.js`        |
+| HWF-API-001 (module export)                                                            | HWF-API-001             | #93   | `export.test.js`        |
+| HWF-COHORT-001..011 (the synthetic demo cohort's invariants)                           | HWF-COHORT-001..011     | #93   | `abnbl.test.js`         |
 
 ## Source-matrix routing status
 
-The source matrix (`hep-waterfall.md`, 54 rows) is **authored but not yet
-merged** in the requirements repo — it was written before implementation so that
-`npm run requirements` publishes real requirement text rather than degrading the
-evidence page to IDs-only. Until it lands, `docs/requirements/hep-waterfall.json`
-is absent and the evidence page renders requirement IDs alone; the config's
-`matrix` link resolves on merge. Two of its rows carry a
-`needs-jeremy-review` flag and are called out below.
+The source matrix (`hep-waterfall.md`, 57 rows) is **merged** in the
+requirements repo and extracted into `docs/requirements/hep-waterfall.json` by
+`npm run requirements`, so the evidence page renders real requirement text
+rather than IDs alone. Two of its rows carry a `needs-jeremy-review` flag and
+are called out below.
+
+The three `HWF-BOX-005/006/007` rows are **new with
+[obot.roadmap#83](https://github.com/jwildfire/obot.roadmap/issues/83)** — user
+feedback on the shipped v1.5 prototype — and land in the matrix repo alongside
+this change; until that companion PR merges and the extract is regenerated, the
+evidence page shows those three IDs without their text.
 
 - **Implemented (`browser`/`unit` above):** the settings surface and its
   normalization, including the two thresholds that do two different jobs —

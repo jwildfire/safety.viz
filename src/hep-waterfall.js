@@ -41,6 +41,7 @@ import {
   PointElement,
   CategoryScale,
   LinearScale,
+  Title,
   Tooltip,
   Legend
 } from 'chart.js';
@@ -71,10 +72,17 @@ import {
   waterfallDomain
 } from './hep-waterfall/getScales.js';
 import {
+  BOX_ANATOMY,
+  BOX_PANEL_NOTE,
   JAUNDICE_PRECEDENCE,
   TRACE_COLOR,
   armDividerPlugin,
   barColor,
+  boxHitTest,
+  boxHoverPlugin,
+  boxPanelDescription,
+  boxSlotLabels,
+  boxTooltip,
   legendItems,
   ulnBandPlugin,
   ulnRange,
@@ -91,6 +99,7 @@ Chart.register(
   PointElement,
   CategoryScale,
   LinearScale,
+  Title,
   Tooltip,
   Legend
 );
@@ -103,6 +112,12 @@ const STYLES = `
 .safety-hep-waterfall .hwf-legend-item{display:inline-flex;align-items:center;gap:.3rem}
 .safety-hep-waterfall .hwf-legend-swatch{display:inline-block;width:.75rem;height:.75rem;border-radius:2px}
 .safety-hep-waterfall .hwf-legend-note{color:#52616f;font-style:italic}
+.safety-hep-waterfall .hwf-legend-box{display:inline-flex;align-items:center;gap:.3rem}
+.safety-hep-waterfall .hwf-legend-glyph{display:inline-block;width:1.6rem;height:.9rem;vertical-align:middle}
+.safety-hep-waterfall .hwf-box-canvas{outline-offset:2px}
+.safety-hep-waterfall .hwf-tip{position:absolute;left:0;top:0;display:none;width:max-content;max-width:220px;white-space:pre-line;pointer-events:none;z-index:3;background:rgba(17,24,39,.94);color:#fff;font-size:.72rem;line-height:1.35;border-radius:6px;padding:.35rem .5rem}
+.safety-hep-waterfall .hwf-tip.is-visible{display:block}
+.safety-hep-waterfall .hwf-tip.is-right{transform:translateX(-100%)}
 .safety-hep-waterfall .hwf-reset{width:100%;margin-top:.75rem;padding:.35rem .45rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.82rem;cursor:pointer}
 .safety-hep-waterfall .hwf-reset:hover{border-color:#8f9aa8;background:#f6f8fa}
 @media (max-width:700px){.safety-hep-waterfall .hwf-layout{grid-template-columns:70px 1fr 70px}}
@@ -143,6 +158,9 @@ class SafetyHepWaterfall {
     this.listingSearch = '';
     this.listingSort = null;
     this.page = 1;
+    this.flankChartsBySide = { left: null, right: null };
+    this.boxTips = { left: null, right: null };
+    this.boxHover = { side: null, index: -1 };
     this.state = this.seedState();
     this.renderShellDom();
   }
@@ -210,16 +228,154 @@ class SafetyHepWaterfall {
 
     const layout = createElement('div', 'hwf-layout');
     const leftPanel = createElement('div', 'hwf-panel');
-    this.boxCanvasLeft = createElement('canvas', 'hwf-box-left');
+    this.boxCanvasLeft = createElement('canvas', 'hwf-box-canvas hwf-box-left');
     leftPanel.append(this.boxCanvasLeft);
     const mainPanel = createElement('div', 'hwf-panel hwf-main-panel');
     this.canvas.remove();
     mainPanel.append(this.canvas);
     const rightPanel = createElement('div', 'hwf-panel');
-    this.boxCanvasRight = createElement('canvas', 'hwf-box-right');
+    this.boxCanvasRight = createElement('canvas', 'hwf-box-canvas hwf-box-right');
     rightPanel.append(this.boxCanvasRight);
     layout.append(leftPanel, mainPanel, rightPanel);
     this.chartWrap.insertBefore(layout, this.mainAnnotation);
+
+    // The flank panels' hover is bound ONCE, to the canvases themselves, and
+    // reads whatever is currently staged — render() destroys and rebuilds the
+    // Chart.js instances on every control change, so listeners bound per render
+    // would multiply (HWF-BOX-005).
+    this.bindBoxHover('left', this.boxCanvasLeft, leftPanel);
+    this.bindBoxHover('right', this.boxCanvasRight, rightPanel);
+  }
+
+  /**
+   * Wire one flanking panel's hover, focus and keyboard interaction, and give
+   * it the tooltip element the pointer moves around (HWF-BOX-005). An
+   * absolutely-positioned HTML div, not a canvas tooltip: it matches the
+   * migration Sankey's ribbon hover, and — unlike a native tooltip — it appears
+   * in a screenshot, so the interaction is evidenceable.
+   * @private
+   */
+  bindBoxHover(side, canvas, panel) {
+    const tip = createElement('div', `hwf-tip${side === 'right' ? ' is-right' : ''}`);
+    panel.append(tip);
+    this.boxTips[side] = tip;
+
+    // role/tabindex rather than a bare canvas: the panels carry numbers a
+    // pointer-less reader needs, and the description is refreshed per render.
+    canvas.setAttribute('role', 'img');
+    canvas.setAttribute('tabindex', '0');
+
+    canvas.addEventListener('pointermove', (event) => this.moveBoxHover(side, event));
+    canvas.addEventListener('pointerleave', () => this.setBoxHover(side, -1));
+    canvas.addEventListener('focus', () => this.setBoxHover(side, 0));
+    canvas.addEventListener('blur', () => this.setBoxHover(side, -1));
+    canvas.addEventListener('keydown', (event) => this.stepBoxHover(side, event));
+  }
+
+  /** The pointer moved over a flank panel: hover whatever box it is on. @private */
+  moveBoxHover(side, event) {
+    const chart = this.flankChartsBySide[side];
+    const specs = this.boxSpecs[side] || [];
+    if (!chart || !chart.scales || !specs.length) return;
+    const canvas = side === 'left' ? this.boxCanvasLeft : this.boxCanvasRight;
+    const bounds = canvas.getBoundingClientRect
+      ? canvas.getBoundingClientRect()
+      : { left: 0, top: 0 };
+    const x = event.clientX - bounds.left;
+    const y = event.clientY - bounds.top;
+    this.setBoxHover(side, boxHitTest(chart, specs, x, y), { x, y });
+  }
+
+  /**
+   * Keyboard equivalents of the hover (HWF-BOX-005): the arrow keys step
+   * between the panel's boxes and Escape closes the tooltip, so the statistics
+   * are reachable without a pointer.
+   * @private
+   */
+  stepBoxHover(side, event) {
+    const count = (this.boxSpecs[side] || []).length;
+    if (!count) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      this.setBoxHover(side, -1);
+      return;
+    }
+    const step = event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0;
+    if (!step) return;
+    event.preventDefault();
+    const current = this.boxHover.side === side ? this.boxHover.index : -1;
+    const next = (((current < 0 ? 0 : current + step) % count) + count) % count;
+    this.setBoxHover(side, next);
+  }
+
+  /**
+   * Set the hovered box and reflect it in both channels — the tooltip text and
+   * the panel's hover backdrop — redrawing only the panel that changed.
+   * @private
+   */
+  setBoxHover(side, index, at = null) {
+    const previous = this.boxHover;
+    if (previous.side === side && previous.index === index) return;
+    this.boxHover = { side: index >= 0 ? side : null, index: index >= 0 ? index : -1 };
+
+    const spec = index >= 0 ? (this.boxSpecs[side] || [])[index] : null;
+    const tip = this.boxTips[side];
+    if (tip) {
+      if (spec) {
+        const lines = boxTooltip(spec, {
+          arm: this.panelArm(side),
+          measure: this.state.measure,
+          unit: this.waterfall ? this.waterfall.unit : ''
+        });
+        tip.textContent = lines.join('\n');
+        tip.classList.add('is-visible');
+        this.positionBoxTip(side, tip, at, spec);
+      } else {
+        tip.classList.remove('is-visible');
+      }
+    }
+    if (previous.side && previous.side !== side) {
+      const other = this.boxTips[previous.side];
+      if (other) other.classList.remove('is-visible');
+      this.redrawFlank(previous.side);
+    }
+    this.redrawFlank(side);
+  }
+
+  /**
+   * Place the tooltip beside the pointer, opening inward toward the waterfall —
+   * a 110px panel has no room to hold it, and a tooltip that widened the layout
+   * would move the very chart the reader is pointing at.
+   * @private
+   */
+  positionBoxTip(side, tip, at, spec) {
+    const chart = this.flankChartsBySide[side];
+    let x = at ? at.x : null;
+    let y = at ? at.y : null;
+    if (x === null && chart && chart.scales) {
+      x = chart.scales.x.getPixelForValue(spec.x);
+      y = chart.scales.y.getPixelForValue(spec.stats.median);
+    }
+    tip.style.left = `${Math.round((x || 0) + (side === 'right' ? -12 : 12))}px`;
+    // Flip above the pointer rather than run off the bottom of the panel: the
+    // lower boxes are exactly the ones a reader hovers to read a small median.
+    const panelHeight = tip.parentElement ? tip.parentElement.clientHeight : 0;
+    const height = tip.offsetHeight || 0;
+    const below = (y || 0) + 12;
+    const top = panelHeight && below + height > panelHeight ? (y || 0) - height - 12 : below;
+    tip.style.top = `${Math.round(Math.max(0, top))}px`;
+  }
+
+  /** The arm label a flank panel summarizes. @private */
+  panelArm(side) {
+    if (!this.waterfall) return '';
+    return side === 'left' ? this.waterfall.placeboLabel : this.waterfall.activeLabel;
+  }
+
+  /** Repaint one flank panel, e.g. after its hover changed. @private */
+  redrawFlank(side) {
+    const chart = this.flankChartsBySide[side];
+    if (chart && typeof chart.update === 'function') chart.update('none');
   }
 
   /**
@@ -467,7 +623,51 @@ class SafetyHepWaterfall {
       chip.append(swatch, document.createTextNode(item.label));
       this.legendEl.append(chip);
     });
-    this.legendEl.append(createElement('span', 'hwf-legend-note', JAUNDICE_PRECEDENCE));
+    this.legendEl.append(
+      createElement('span', 'hwf-legend-note hwf-note-jaundice', JAUNDICE_PRECEDENCE)
+    );
+    this.legendEl.append(this.boxAnatomyChip());
+    this.legendEl.append(createElement('span', 'hwf-legend-note hwf-note-box', BOX_PANEL_NOTE));
+  }
+
+  /**
+   * The flanking panels' anatomy key (HWF-BOX-006): a miniature of the marks the
+   * shared box-and-whisker renderer draws, beside the sentence naming them. A
+   * drawn glyph rather than prose alone, because the question the reader is
+   * actually asking — "is that edge a quartile or a whisker?" — is answered
+   * fastest by pointing at the shape.
+   * @private
+   */
+  boxAnatomyChip() {
+    const chip = createElement('span', 'hwf-legend-box');
+    const svgNs = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(svgNs, 'svg');
+    svg.setAttribute('class', 'hwf-legend-glyph');
+    svg.setAttribute('viewBox', '0 0 32 18');
+    svg.setAttribute('aria-hidden', 'true');
+    const mark = (name, attrs) => {
+      const node = document.createElementNS(svgNs, name);
+      Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, String(value)));
+      svg.append(node);
+    };
+    const ink = '#52616f';
+    // Whiskers with their 5th/95th caps, the Q1–Q3 box, the median rule, the mean.
+    mark('line', { x1: 16, y1: 2, x2: 16, y2: 16, stroke: ink, 'stroke-width': 1 });
+    mark('line', { x1: 11, y1: 2, x2: 21, y2: 2, stroke: ink, 'stroke-width': 1 });
+    mark('line', { x1: 11, y1: 16, x2: 21, y2: 16, stroke: ink, 'stroke-width': 1 });
+    mark('rect', {
+      x: 8,
+      y: 5,
+      width: 16,
+      height: 8,
+      fill: 'rgba(82, 97, 111, 0.25)',
+      stroke: ink,
+      'stroke-width': 1
+    });
+    mark('line', { x1: 8, y1: 9, x2: 24, y2: 9, stroke: ink, 'stroke-width': 1.6 });
+    mark('circle', { cx: 16, cy: 11.5, r: 2, fill: '#eee', stroke: ink, 'stroke-width': 1 });
+    chip.append(svg, document.createTextNode(BOX_ANATOMY));
+    return chip;
   }
 
   /**
@@ -603,14 +803,27 @@ class SafetyHepWaterfall {
    */
   drawFlankCharts(waterfall, domain) {
     const summary = this.state.summary;
+    const measure = this.state.measure;
     this.boxSpecs = {
       left: boxSpecs(waterfall.placebo, { summary, color: ARM_SIDE_COLORS.placebo }),
       right: boxSpecs(waterfall.active, { summary, color: ARM_SIDE_COLORS.active })
     };
+    const labels = boxSlotLabels(summary);
     this.flankCharts = [
-      ['left', this.boxCanvasLeft, waterfall.placeboLabel],
-      ['right', this.boxCanvasRight, waterfall.activeLabel]
-    ].map(([side, canvas, label]) => {
+      ['left', this.boxCanvasLeft, waterfall.placeboLabel, waterfall.placebo],
+      ['right', this.boxCanvasRight, waterfall.activeLabel, waterfall.active]
+    ].map(([side, canvas, label, subjects]) => {
+      // The panel titles carry their arm's n (HWF-BOX-006): two boxes drawn to
+      // the same domain look equally authoritative whether they summarize four
+      // participants or four hundred, and only the count says which.
+      canvas.setAttribute(
+        'aria-label',
+        boxPanelDescription(this.boxSpecs[side], {
+          arm: label,
+          measure,
+          unit: waterfall.unit
+        })
+      );
       const chart = new Chart(canvas.getContext('2d'), {
         type: 'line',
         data: { datasets: [{ data: [] }] },
@@ -621,13 +834,24 @@ class SafetyHepWaterfall {
           plugins: {
             legend: { display: false },
             tooltip: { enabled: false },
-            title: { display: true, text: label, font: { size: 11 } }
+            title: {
+              display: true,
+              text: `${label} (n=${(subjects || []).length})`,
+              font: { size: 11 }
+            }
           },
-          scales: flankScales(domain, this.boxSpecs[side].length)
+          scales: flankScales(domain, this.boxSpecs[side].length, { labels })
         },
-        plugins: [boxWhiskerPlugin(`hwf-${side}`, () => this.boxSpecs[side])]
+        plugins: [
+          boxHoverPlugin(
+            () => this.boxSpecs[side],
+            () => (this.boxHover.side === side ? this.boxHover.index : -1)
+          ),
+          boxWhiskerPlugin(`hwf-${side}`, () => this.boxSpecs[side])
+        ]
       });
       this.charts.push(chart);
+      this.flankChartsBySide[side] = chart;
       return chart;
     });
   }
@@ -703,7 +927,14 @@ class SafetyHepWaterfall {
     this.charts.forEach((chart) => chart.destroy());
     this.charts = [];
     this.flankCharts = [];
+    this.flankChartsBySide = { left: null, right: null };
     this.chart = null;
+    // A hover held across a rebuild would point an index at a destroyed chart,
+    // so the panels always come back closed (HWF-BOX-005).
+    this.boxHover = { side: null, index: -1 };
+    Object.values(this.boxTips).forEach((tip) => {
+      if (tip) tip.classList.remove('is-visible');
+    });
   }
 
   /**

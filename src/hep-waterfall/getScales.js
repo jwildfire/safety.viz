@@ -132,20 +132,42 @@ export function categoryScale(measure, { placeboLabel = 'Placebo', activeLabel =
 /**
  * Scales for a flanking summary panel (HWF-BOX-002): the value axis pinned to
  * the main chart's domain so the boxes are vertically registered with the bars,
- * and a hidden linear slot axis wide enough for the staged boxes.
+ * and a linear slot axis wide enough for the staged boxes.
+ *
+ * The slot axis carries a tick per box when `labels` are supplied (HWF-BOX-006,
+ * obot.roadmap#83): the panel's own answer to "which box is baseline and which
+ * is the peak?", which the first cut left to the reader to guess. Only whole
+ * slot positions are labelled — a linear axis will otherwise offer to tick at
+ * 0.5 — and the value axis stays hidden, because the main chart's mirrored axes
+ * already carry the scale these panels are pinned to.
  * @param {number[]} domain The [min, max] from the main chart's waterfallDomain call.
  * @param {number} [boxes=2] How many boxes the panel stages.
+ * @param {{labels: string[]}} [options={}] The per-slot tick labels, in slot order.
  * @returns {{x: Object, y: Object}} The Chart.js scale configs.
  */
-export function flankScales(domain, boxes = 2) {
+export function flankScales(domain, boxes = 2, { labels = [] } = {}) {
   const [min, max] = domain;
   return {
     x: {
       type: 'linear',
-      display: false,
+      display: labels.length > 0,
       min: -0.5,
       max: Math.max(boxes - 0.5, 0.5),
-      grid: { display: false }
+      grid: { display: false },
+      border: { display: false },
+      // A linear axis left to itself ticks at -0.5/0.5/1.5 — between the boxes,
+      // never on one — so the slot positions are set explicitly.
+      afterBuildTicks: (axis) => {
+        if (labels.length) axis.ticks = labels.map((_, index) => ({ value: index }));
+      },
+      ticks: {
+        stepSize: 1,
+        autoSkip: false,
+        includeBounds: false,
+        maxRotation: 0,
+        font: { size: 9 },
+        callback: (value) => (Number.isInteger(value) ? labels[value] || '' : '')
+      }
     },
     y: { type: 'linear', display: false, min, max, grid: { display: false } }
   };

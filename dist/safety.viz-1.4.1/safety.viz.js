@@ -9818,6 +9818,143 @@ var SafetyViz = (() => {
       }
     }
   };
+  var Title = class extends Element {
+    constructor(config) {
+      super();
+      this.chart = config.chart;
+      this.options = config.options;
+      this.ctx = config.ctx;
+      this._padding = void 0;
+      this.top = void 0;
+      this.bottom = void 0;
+      this.left = void 0;
+      this.right = void 0;
+      this.width = void 0;
+      this.height = void 0;
+      this.position = void 0;
+      this.weight = void 0;
+      this.fullSize = void 0;
+    }
+    update(maxWidth, maxHeight) {
+      const opts = this.options;
+      this.left = 0;
+      this.top = 0;
+      if (!opts.display) {
+        this.width = this.height = this.right = this.bottom = 0;
+        return;
+      }
+      this.width = this.right = maxWidth;
+      this.height = this.bottom = maxHeight;
+      const lineCount = isArray(opts.text) ? opts.text.length : 1;
+      this._padding = toPadding(opts.padding);
+      const textSize = lineCount * toFont(opts.font).lineHeight + this._padding.height;
+      if (this.isHorizontal()) {
+        this.height = textSize;
+      } else {
+        this.width = textSize;
+      }
+    }
+    isHorizontal() {
+      const pos = this.options.position;
+      return pos === "top" || pos === "bottom";
+    }
+    _drawArgs(offset) {
+      const { top, left, bottom, right, options } = this;
+      const align = options.align;
+      let rotation = 0;
+      let maxWidth, titleX, titleY;
+      if (this.isHorizontal()) {
+        titleX = _alignStartEnd(align, left, right);
+        titleY = top + offset;
+        maxWidth = right - left;
+      } else {
+        if (options.position === "left") {
+          titleX = left + offset;
+          titleY = _alignStartEnd(align, bottom, top);
+          rotation = PI * -0.5;
+        } else {
+          titleX = right - offset;
+          titleY = _alignStartEnd(align, top, bottom);
+          rotation = PI * 0.5;
+        }
+        maxWidth = bottom - top;
+      }
+      return {
+        titleX,
+        titleY,
+        maxWidth,
+        rotation
+      };
+    }
+    draw() {
+      const ctx = this.ctx;
+      const opts = this.options;
+      if (!opts.display) {
+        return;
+      }
+      const fontOpts = toFont(opts.font);
+      const lineHeight = fontOpts.lineHeight;
+      const offset = lineHeight / 2 + this._padding.top;
+      const { titleX, titleY, maxWidth, rotation } = this._drawArgs(offset);
+      renderText(ctx, opts.text, 0, 0, fontOpts, {
+        color: opts.color,
+        maxWidth,
+        rotation,
+        textAlign: _toLeftRightCenter(opts.align),
+        textBaseline: "middle",
+        translation: [
+          titleX,
+          titleY
+        ]
+      });
+    }
+  };
+  function createTitle(chart, titleOpts) {
+    const title = new Title({
+      ctx: chart.ctx,
+      options: titleOpts,
+      chart
+    });
+    layouts.configure(chart, title, titleOpts);
+    layouts.addBox(chart, title);
+    chart.titleBlock = title;
+  }
+  var plugin_title = {
+    id: "title",
+    _element: Title,
+    start(chart, _args, options) {
+      createTitle(chart, options);
+    },
+    stop(chart) {
+      const titleBlock = chart.titleBlock;
+      layouts.removeBox(chart, titleBlock);
+      delete chart.titleBlock;
+    },
+    beforeUpdate(chart, _args, options) {
+      const title = chart.titleBlock;
+      layouts.configure(chart, title, options);
+      title.options = options;
+    },
+    defaults: {
+      align: "center",
+      display: false,
+      font: {
+        weight: "bold"
+      },
+      fullSize: true,
+      padding: 10,
+      position: "top",
+      text: "",
+      weight: 2e3
+    },
+    defaultRoutes: {
+      color: "color"
+    },
+    descriptors: {
+      _scriptable: true,
+      _indexable: false
+    }
+  };
   var positioners = {
     average(items) {
       if (!items.length) {
@@ -27195,15 +27332,29 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       }
     };
   }
-  function flankScales(domain, boxes = 2) {
+  function flankScales(domain, boxes = 2, { labels = [] } = {}) {
     const [min, max] = domain;
     return {
       x: {
         type: "linear",
-        display: false,
+        display: labels.length > 0,
         min: -0.5,
         max: Math.max(boxes - 0.5, 0.5),
-        grid: { display: false }
+        grid: { display: false },
+        border: { display: false },
+        // A linear axis left to itself ticks at -0.5/0.5/1.5 — between the boxes,
+        // never on one — so the slot positions are set explicitly.
+        afterBuildTicks: (axis) => {
+          if (labels.length) axis.ticks = labels.map((_, index) => ({ value: index }));
+        },
+        ticks: {
+          stepSize: 1,
+          autoSkip: false,
+          includeBounds: false,
+          maxRotation: 0,
+          font: { size: 9 },
+          callback: (value) => Number.isInteger(value) ? labels[value] || "" : ""
+        }
       },
       y: { type: "linear", display: false, min, max, grid: { display: false } }
     };
@@ -27347,6 +27498,94 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
         ctx.textAlign = "left";
         ctx.textBaseline = "bottom";
         ctx.fillText(label, left + 4, clamp(yOf(range.max)) - 2);
+        ctx.restore();
+      }
+    };
+  }
+  var BOX_ANATOMY = "Box: interquartile range (Q1\u2013Q3) with the median rule; whiskers: 5th\u201395th percentiles; \u25CB mean.";
+  var BOX_PANEL_NOTE = "Flanking panels summarize each arm: the left box is baseline, the right box is the maximum on-treatment value.";
+  var BOX_TITLES = { Baseline: "Baseline", Peak: "Maximum on-treatment" };
+  var HIT_PAD = 4;
+  var HOVER_FILL = "rgba(148, 163, 184, 0.28)";
+  function boxSlotLabels(summary) {
+    return summary === "peak" ? ["Max on-tx"] : ["Baseline", "Max on-tx"];
+  }
+  function boxBounds(chart, box) {
+    const left = chart.scales.x.getPixelForValue(box.x - box.halfWidth);
+    const right = chart.scales.x.getPixelForValue(box.x + box.halfWidth);
+    const first = chart.scales.y.getPixelForValue(box.stats.q5);
+    const second = chart.scales.y.getPixelForValue(box.stats.q95);
+    return {
+      left: Math.min(left, right),
+      right: Math.max(left, right),
+      top: Math.min(first, second),
+      bottom: Math.max(first, second)
+    };
+  }
+  function boxHitTest(chart, specs, x, y) {
+    const boxes = specs || [];
+    for (let index = 0; index < boxes.length; index += 1) {
+      const box = boxes[index];
+      if (!box || !box.stats || !box.stats.n) continue;
+      const bounds = boxBounds(chart, box);
+      if (x >= bounds.left - HIT_PAD && x <= bounds.right + HIT_PAD && y >= bounds.top - HIT_PAD && y <= bounds.bottom + HIT_PAD) {
+        return index;
+      }
+    }
+    return -1;
+  }
+  function boxTooltip(spec, { arm = "", measure = "", unit = "" } = {}) {
+    if (!spec || !spec.stats || !spec.stats.n) return [];
+    const stats = spec.stats;
+    const value = (number) => `${formatNumber6(number)}${unit ? ` ${unit}` : ""}`;
+    const title = BOX_TITLES[spec.label] || spec.label || "";
+    const heading = [arm, measure ? `${title} ${measure}` : title].filter(Boolean).join(" \xB7 ");
+    const lines = [
+      heading,
+      `n = ${stats.n}`,
+      `95th percentile: ${value(stats.q95)}`,
+      `Q3: ${value(stats.q75)}`,
+      `Median: ${value(stats.median)}`,
+      `Mean: ${value(stats.mean)}`,
+      `Q1: ${value(stats.q25)}`,
+      `5th percentile: ${value(stats.q5)}`
+    ];
+    if (Number.isFinite(stats.min) && Number.isFinite(stats.max)) {
+      lines.push(`Observed range: ${formatNumber6(stats.min)}\u2013${value(stats.max)}`);
+    }
+    return lines;
+  }
+  function boxPanelDescription(specs, { arm = "", measure = "", unit = "" } = {}) {
+    const boxes = (specs || []).filter((box) => box && box.stats && box.stats.n);
+    const subject = `${arm ? `${arm} ` : ""}${measure || ""}`.trim();
+    if (!boxes.length) {
+      return `Box-and-whisker summary for ${subject || "this arm"}: no participants to summarize.`;
+    }
+    const parts = boxes.map((box) => {
+      const stats = box.stats;
+      const title = (BOX_TITLES[box.label] || box.label || "").toLowerCase();
+      return `${title}, ${stats.n} participant${stats.n === 1 ? "" : "s"}, median ${formatNumber6(stats.median)}${unit ? ` ${unit}` : ""}, interquartile range ${formatNumber6(stats.q25)} to ${formatNumber6(stats.q75)}, 5th to 95th percentile ${formatNumber6(stats.q5)} to ${formatNumber6(stats.q95)}`;
+    });
+    return `Box-and-whisker summary for ${subject || "this arm"}: ${parts.join("; ")}.`;
+  }
+  function boxHoverPlugin(getSpecs, getActive) {
+    return {
+      id: `hwf-box-hover-${Math.random().toString(36).slice(2)}`,
+      beforeDatasetsDraw(chart) {
+        const specs = getSpecs() || [];
+        const index = getActive();
+        const box = index >= 0 ? specs[index] : null;
+        if (!box || !box.stats || !box.stats.n) return;
+        const bounds = boxBounds(chart, box);
+        const ctx = chart.ctx;
+        ctx.save();
+        ctx.fillStyle = HOVER_FILL;
+        ctx.fillRect(
+          bounds.left - HIT_PAD,
+          bounds.top - HIT_PAD,
+          bounds.right - bounds.left + HIT_PAD * 2,
+          bounds.bottom - bounds.top + HIT_PAD * 2
+        );
         ctx.restore();
       }
     };
@@ -27565,6 +27804,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     PointElement,
     CategoryScale,
     LinearScale,
+    plugin_title,
     plugin_tooltip,
     plugin_legend
   );
@@ -27576,6 +27816,12 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
 .safety-hep-waterfall .hwf-legend-item{display:inline-flex;align-items:center;gap:.3rem}
 .safety-hep-waterfall .hwf-legend-swatch{display:inline-block;width:.75rem;height:.75rem;border-radius:2px}
 .safety-hep-waterfall .hwf-legend-note{color:#52616f;font-style:italic}
+.safety-hep-waterfall .hwf-legend-box{display:inline-flex;align-items:center;gap:.3rem}
+.safety-hep-waterfall .hwf-legend-glyph{display:inline-block;width:1.6rem;height:.9rem;vertical-align:middle}
+.safety-hep-waterfall .hwf-box-canvas{outline-offset:2px}
+.safety-hep-waterfall .hwf-tip{position:absolute;left:0;top:0;display:none;width:max-content;max-width:220px;white-space:pre-line;pointer-events:none;z-index:3;background:rgba(17,24,39,.94);color:#fff;font-size:.72rem;line-height:1.35;border-radius:6px;padding:.35rem .5rem}
+.safety-hep-waterfall .hwf-tip.is-visible{display:block}
+.safety-hep-waterfall .hwf-tip.is-right{transform:translateX(-100%)}
 .safety-hep-waterfall .hwf-reset{width:100%;margin-top:.75rem;padding:.35rem .45rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.82rem;cursor:pointer}
 .safety-hep-waterfall .hwf-reset:hover{border-color:#8f9aa8;background:#f6f8fa}
 @media (max-width:700px){.safety-hep-waterfall .hwf-layout{grid-template-columns:70px 1fr 70px}}
@@ -27604,6 +27850,9 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       this.listingSearch = "";
       this.listingSort = null;
       this.page = 1;
+      this.flankChartsBySide = { left: null, right: null };
+      this.boxTips = { left: null, right: null };
+      this.boxHover = { side: null, index: -1 };
       this.state = this.seedState();
       this.renderShellDom();
     }
@@ -27664,16 +27913,133 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       this.main.insertBefore(this.legendEl, this.chartWrap);
       const layout = createElement("div", "hwf-layout");
       const leftPanel = createElement("div", "hwf-panel");
-      this.boxCanvasLeft = createElement("canvas", "hwf-box-left");
+      this.boxCanvasLeft = createElement("canvas", "hwf-box-canvas hwf-box-left");
       leftPanel.append(this.boxCanvasLeft);
       const mainPanel = createElement("div", "hwf-panel hwf-main-panel");
       this.canvas.remove();
       mainPanel.append(this.canvas);
       const rightPanel = createElement("div", "hwf-panel");
-      this.boxCanvasRight = createElement("canvas", "hwf-box-right");
+      this.boxCanvasRight = createElement("canvas", "hwf-box-canvas hwf-box-right");
       rightPanel.append(this.boxCanvasRight);
       layout.append(leftPanel, mainPanel, rightPanel);
       this.chartWrap.insertBefore(layout, this.mainAnnotation);
+      this.bindBoxHover("left", this.boxCanvasLeft, leftPanel);
+      this.bindBoxHover("right", this.boxCanvasRight, rightPanel);
+    }
+    /**
+     * Wire one flanking panel's hover, focus and keyboard interaction, and give
+     * it the tooltip element the pointer moves around (HWF-BOX-005). An
+     * absolutely-positioned HTML div, not a canvas tooltip: it matches the
+     * migration Sankey's ribbon hover, and — unlike a native tooltip — it appears
+     * in a screenshot, so the interaction is evidenceable.
+     * @private
+     */
+    bindBoxHover(side, canvas, panel) {
+      const tip = createElement("div", `hwf-tip${side === "right" ? " is-right" : ""}`);
+      panel.append(tip);
+      this.boxTips[side] = tip;
+      canvas.setAttribute("role", "img");
+      canvas.setAttribute("tabindex", "0");
+      canvas.addEventListener("pointermove", (event) => this.moveBoxHover(side, event));
+      canvas.addEventListener("pointerleave", () => this.setBoxHover(side, -1));
+      canvas.addEventListener("focus", () => this.setBoxHover(side, 0));
+      canvas.addEventListener("blur", () => this.setBoxHover(side, -1));
+      canvas.addEventListener("keydown", (event) => this.stepBoxHover(side, event));
+    }
+    /** The pointer moved over a flank panel: hover whatever box it is on. @private */
+    moveBoxHover(side, event) {
+      const chart = this.flankChartsBySide[side];
+      const specs = this.boxSpecs[side] || [];
+      if (!chart || !chart.scales || !specs.length) return;
+      const canvas = side === "left" ? this.boxCanvasLeft : this.boxCanvasRight;
+      const bounds = canvas.getBoundingClientRect ? canvas.getBoundingClientRect() : { left: 0, top: 0 };
+      const x = event.clientX - bounds.left;
+      const y = event.clientY - bounds.top;
+      this.setBoxHover(side, boxHitTest(chart, specs, x, y), { x, y });
+    }
+    /**
+     * Keyboard equivalents of the hover (HWF-BOX-005): the arrow keys step
+     * between the panel's boxes and Escape closes the tooltip, so the statistics
+     * are reachable without a pointer.
+     * @private
+     */
+    stepBoxHover(side, event) {
+      const count2 = (this.boxSpecs[side] || []).length;
+      if (!count2) return;
+      if (event.key === "Escape") {
+        event.preventDefault();
+        this.setBoxHover(side, -1);
+        return;
+      }
+      const step = event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;
+      if (!step) return;
+      event.preventDefault();
+      const current = this.boxHover.side === side ? this.boxHover.index : -1;
+      const next = ((current < 0 ? 0 : current + step) % count2 + count2) % count2;
+      this.setBoxHover(side, next);
+    }
+    /**
+     * Set the hovered box and reflect it in both channels — the tooltip text and
+     * the panel's hover backdrop — redrawing only the panel that changed.
+     * @private
+     */
+    setBoxHover(side, index, at = null) {
+      const previous = this.boxHover;
+      if (previous.side === side && previous.index === index) return;
+      this.boxHover = { side: index >= 0 ? side : null, index: index >= 0 ? index : -1 };
+      const spec = index >= 0 ? (this.boxSpecs[side] || [])[index] : null;
+      const tip = this.boxTips[side];
+      if (tip) {
+        if (spec) {
+          const lines = boxTooltip(spec, {
+            arm: this.panelArm(side),
+            measure: this.state.measure,
+            unit: this.waterfall ? this.waterfall.unit : ""
+          });
+          tip.textContent = lines.join("\n");
+          tip.classList.add("is-visible");
+          this.positionBoxTip(side, tip, at, spec);
+        } else {
+          tip.classList.remove("is-visible");
+        }
+      }
+      if (previous.side && previous.side !== side) {
+        const other = this.boxTips[previous.side];
+        if (other) other.classList.remove("is-visible");
+        this.redrawFlank(previous.side);
+      }
+      this.redrawFlank(side);
+    }
+    /**
+     * Place the tooltip beside the pointer, opening inward toward the waterfall —
+     * a 110px panel has no room to hold it, and a tooltip that widened the layout
+     * would move the very chart the reader is pointing at.
+     * @private
+     */
+    positionBoxTip(side, tip, at, spec) {
+      const chart = this.flankChartsBySide[side];
+      let x = at ? at.x : null;
+      let y = at ? at.y : null;
+      if (x === null && chart && chart.scales) {
+        x = chart.scales.x.getPixelForValue(spec.x);
+        y = chart.scales.y.getPixelForValue(spec.stats.median);
+      }
+      tip.style.left = `${Math.round((x || 0) + (side === "right" ? -12 : 12))}px`;
+      const panelHeight = tip.parentElement ? tip.parentElement.clientHeight : 0;
+      const height = tip.offsetHeight || 0;
+      const below = (y || 0) + 12;
+      const top = panelHeight && below + height > panelHeight ? (y || 0) - height - 12 : below;
+      tip.style.top = `${Math.round(Math.max(0, top))}px`;
+    }
+    /** The arm label a flank panel summarizes. @private */
+    panelArm(side) {
+      if (!this.waterfall) return "";
+      return side === "left" ? this.waterfall.placeboLabel : this.waterfall.activeLabel;
+    }
+    /** Repaint one flank panel, e.g. after its hover changed. @private */
+    redrawFlank(side) {
+      const chart = this.flankChartsBySide[side];
+      if (chart && typeof chart.update === "function") chart.update("none");
     }
     /**
      * Load data and render — an alias for setData keeping the two-step
@@ -27896,7 +28262,49 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
         chip.append(swatch, document.createTextNode(item.label));
         this.legendEl.append(chip);
       });
-      this.legendEl.append(createElement("span", "hwf-legend-note", JAUNDICE_PRECEDENCE));
+      this.legendEl.append(
+        createElement("span", "hwf-legend-note hwf-note-jaundice", JAUNDICE_PRECEDENCE)
+      );
+      this.legendEl.append(this.boxAnatomyChip());
+      this.legendEl.append(createElement("span", "hwf-legend-note hwf-note-box", BOX_PANEL_NOTE));
+    }
+    /**
+     * The flanking panels' anatomy key (HWF-BOX-006): a miniature of the marks the
+     * shared box-and-whisker renderer draws, beside the sentence naming them. A
+     * drawn glyph rather than prose alone, because the question the reader is
+     * actually asking — "is that edge a quartile or a whisker?" — is answered
+     * fastest by pointing at the shape.
+     * @private
+     */
+    boxAnatomyChip() {
+      const chip = createElement("span", "hwf-legend-box");
+      const svgNs = "http://www.w3.org/2000/svg";
+      const svg = document.createElementNS(svgNs, "svg");
+      svg.setAttribute("class", "hwf-legend-glyph");
+      svg.setAttribute("viewBox", "0 0 32 18");
+      svg.setAttribute("aria-hidden", "true");
+      const mark = (name, attrs) => {
+        const node = document.createElementNS(svgNs, name);
+        Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, String(value)));
+        svg.append(node);
+      };
+      const ink = "#52616f";
+      mark("line", { x1: 16, y1: 2, x2: 16, y2: 16, stroke: ink, "stroke-width": 1 });
+      mark("line", { x1: 11, y1: 2, x2: 21, y2: 2, stroke: ink, "stroke-width": 1 });
+      mark("line", { x1: 11, y1: 16, x2: 21, y2: 16, stroke: ink, "stroke-width": 1 });
+      mark("rect", {
+        x: 8,
+        y: 5,
+        width: 16,
+        height: 8,
+        fill: "rgba(82, 97, 111, 0.25)",
+        stroke: ink,
+        "stroke-width": 1
+      });
+      mark("line", { x1: 8, y1: 9, x2: 24, y2: 9, stroke: ink, "stroke-width": 1.6 });
+      mark("circle", { cx: 16, cy: 11.5, r: 2, fill: "#eee", stroke: ink, "stroke-width": 1 });
+      chip.append(svg, document.createTextNode(BOX_ANATOMY));
+      return chip;
     }
     /**
      * Redraw everything from the current data, settings, and control state: the
@@ -28019,14 +28427,24 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
      */
     drawFlankCharts(waterfall, domain) {
       const summary = this.state.summary;
+      const measure = this.state.measure;
       this.boxSpecs = {
         left: boxSpecs(waterfall.placebo, { summary, color: ARM_SIDE_COLORS.placebo }),
         right: boxSpecs(waterfall.active, { summary, color: ARM_SIDE_COLORS.active })
       };
+      const labels = boxSlotLabels(summary);
       this.flankCharts = [
-        ["left", this.boxCanvasLeft, waterfall.placeboLabel],
-        ["right", this.boxCanvasRight, waterfall.activeLabel]
-      ].map(([side, canvas, label]) => {
+        ["left", this.boxCanvasLeft, waterfall.placeboLabel, waterfall.placebo],
+        ["right", this.boxCanvasRight, waterfall.activeLabel, waterfall.active]
+      ].map(([side, canvas, label, subjects]) => {
+        canvas.setAttribute(
+          "aria-label",
+          boxPanelDescription(this.boxSpecs[side], {
+            arm: label,
+            measure,
+            unit: waterfall.unit
+          })
+        );
         const chart = new Chart(canvas.getContext("2d"), {
           type: "line",
           data: { datasets: [{ data: [] }] },
@@ -28037,13 +28455,24 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
             plugins: {
               legend: { display: false },
               tooltip: { enabled: false },
-              title: { display: true, text: label, font: { size: 11 } }
+              title: {
+                display: true,
+                text: `${label} (n=${(subjects || []).length})`,
+                font: { size: 11 }
+              }
             },
-            scales: flankScales(domain, this.boxSpecs[side].length)
+            scales: flankScales(domain, this.boxSpecs[side].length, { labels })
           },
-          plugins: [boxWhiskerPlugin(`hwf-${side}`, () => this.boxSpecs[side])]
+          plugins: [
+            boxHoverPlugin(
+              () => this.boxSpecs[side],
+              () => this.boxHover.side === side ? this.boxHover.index : -1
+            ),
+            boxWhiskerPlugin(`hwf-${side}`, () => this.boxSpecs[side])
+          ]
         });
         this.charts.push(chart);
+        this.flankChartsBySide[side] = chart;
         return chart;
       });
     }
@@ -28113,7 +28542,12 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       this.charts.forEach((chart) => chart.destroy());
       this.charts = [];
       this.flankCharts = [];
+      this.flankChartsBySide = { left: null, right: null };
       this.chart = null;
+      this.boxHover = { side: null, index: -1 };
+      Object.values(this.boxTips).forEach((tip) => {
+        if (tip) tip.classList.remove("is-visible");
+      });
     }
     /**
      * Tear the waterfall down: destroy every chart and empty the target element.
