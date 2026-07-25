@@ -5,4 +5,9 @@ test-results/
 package-lock.json
 _site/
 _api/
-.requirements-src/
+
+# Requirement matrices are wide, hand-maintained data tables moved verbatim from
+# obot.agent (hub#64). Alignment padding would rewrite every row on each edit and
+# would break the byte-for-byte audit trail back to the reviewed originals.
+requirements/*.md
+!requirements/README.md

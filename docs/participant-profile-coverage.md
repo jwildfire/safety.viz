@@ -59,12 +59,11 @@ adoption is this module's behaviour even though the fixtures drive hep-explorer.
 
 ## Source-matrix routing status
 
-The source matrix (`participant-profile.md`) is **authored as a companion PR to
-the requirements repo** (`obot.agent/docs/requirements/`) and not yet merged —
-until it lands, `docs/requirements/participant-profile.json` is absent and the
-evidence page renders requirement IDs alone; the config's `matrix` link
-resolves on merge. The matrix rows use the same `PPRF-<AREA>-<NUM>` IDs as the
-tables above, so no re-keying is needed when the extract arrives.
+The source matrix lives in this repo at
+[`requirements/participant-profile.md`](../requirements/participant-profile.md)
+and its extract is committed as `docs/requirements/participant-profile.json`,
+so the evidence page renders the reviewed requirement text under each ID. The
+matrix rows use the same `PPRF-<AREA>-<NUM>` IDs as the tables above.
 
 - **Implemented (`browser`/`unit` above):** both mounts (standalone factory
   with its own ingest and shell chrome; docked mount consuming a host's

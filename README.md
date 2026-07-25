@@ -99,7 +99,7 @@ Each chart re-implements an interactive display built by
 [Rho, Inc.](https://github.com/RhoInc) and used in practice under the
 safetyGraphics project. The port is held to that standard: every chart traces
 to a reviewed
-[requirement matrix](https://github.com/jwildfire/obot.agent/tree/main/docs/requirements),
+[requirement matrix](requirements/README.md),
 tests are keyed to requirement IDs, and results are published as audit-style
 [evidence reports](https://jwildfire.github.io/safety.viz/histogram/evidence.html)
 with every release.

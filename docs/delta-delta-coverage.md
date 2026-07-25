@@ -66,7 +66,7 @@ SDD-REG-011, SDD-REG-014, SDD-REG-016..025) are marked `superseded` in the
 source matrix; SDD-REG-012/013 (point highlight, re-click) remain valid,
 retargeted at the chart border + dock. The adoption rows are
 PPRF-DD-001..004 in the
-[participant-profile matrix](https://github.com/jwildfire/obot.agent/blob/main/docs/requirements/participant-profile.md);
+[participant-profile matrix](../requirements/participant-profile.md);
 unit evidence lives in `tests/unit/delta-delta/profile-adoption.test.js`.
 Remaining unit tests that pin the old table's data layer (sparkline record
 ordering/coloring, SDD-REG-019/022/023/025 in `structureData.test.js`) still
