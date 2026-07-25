@@ -125,10 +125,10 @@ function clickFirstPoint(instance) {
 }
 
 describe('qt-explorer participant-profile adoption (PPRF-QT-001)', () => {
-  it('PPRF-QT-001: mounts the dock by default (config-on) into the shell profile slot', () => {
+  it('PPRF-QT-001: mounts the rail by default (config-on) into the shell profile slot', () => {
     const instance = build();
     expect(instance.profile).toBeTruthy();
-    expect(instance.profileWrap.children).toHaveLength(0); // idle until a selection
+    expect(instance.railWrap.querySelector('.sv-profile-root')).toBeNull(); // idle until a selection
   });
 
   it('PPRF-QT-001: profile: false leaves the slot empty and mounts no dock', () => {
@@ -136,10 +136,10 @@ describe('qt-explorer participant-profile adoption (PPRF-QT-001)', () => {
     expect(instance.profile).toBeNull();
     toOutlierView(instance);
     instance.selectParticipant('PBO-1');
-    expect(instance.profileWrap.children).toHaveLength(0);
+    expect(instance.railWrap.querySelector('.sv-profile-root')).toBeNull();
   });
 
-  it('PPRF-QT-001: clicking an outlier-scatter point feeds the dock the full profile via the shell root', () => {
+  it('PPRF-QT-001: clicking an outlier-scatter point feeds the rail the full profile via the shell root', () => {
     const instance = build();
     const heard = [];
     instance.root.addEventListener('participantsSelected', (event) =>
@@ -150,16 +150,16 @@ describe('qt-explorer participant-profile adoption (PPRF-QT-001)', () => {
     expect(instance.state.selectedId).toBe(id);
     expect(heard).toEqual([[id]]);
     // Full profile, never a stepper (single-select gesture).
-    expect(instance.profileWrap.querySelector('.sv-profile-id').textContent).toBe(
+    expect(instance.railWrap.querySelector('.sv-profile-id').textContent).toBe(
       `Participant ${id}`
     );
-    expect(instance.profileWrap.querySelector('.sv-profile-step-count')).toBeNull();
+    expect(instance.railWrap.querySelector('.sv-profile-step-count')).toBeNull();
     // The ECG parameters are the KEY measures — both render without an extras toggle.
-    expect(instance.profileWrap.querySelector('.sv-profile-measure-table')).not.toBeNull();
-    expect(instance.profileWrap.querySelector('.sv-profile-extras')).toBeNull();
+    expect(instance.railWrap.querySelector('.sv-profile-measure-table')).not.toBeNull();
+    expect(instance.railWrap.querySelector('.sv-profile-extras')).toBeNull();
   });
 
-  it('PPRF-QT-004: no listing is added — the dock is the only drill-down surface', () => {
+  it('PPRF-QT-004: no listing is added — the rail is the only drill-down surface', () => {
     const instance = build();
     toOutlierView(instance);
     clickFirstPoint(instance);
@@ -201,7 +201,7 @@ describe('qt-explorer interval-measure mapping (PPRF-QT-002)', () => {
     expect(settings.baseline_col).toBeNull();
   });
 
-  it('PPRF-QT-002: the docked spaghetti carries the 450 ms cut on QTc series and no cut on Heart Rate', () => {
+  it('PPRF-QT-002: the railed spaghetti carries the 450 ms cut on QTc series and no cut on Heart Rate', () => {
     const instance = build();
     toOutlierView(instance);
     clickFirstPoint(instance);
@@ -214,8 +214,8 @@ describe('qt-explorer interval-measure mapping (PPRF-QT-002)', () => {
   });
 });
 
-describe('qt-explorer dock clear paths (PPRF-QT-003, PPRF-11)', () => {
-  it('PPRF-QT-003: an empty-canvas click clears the selection and empties the dock', () => {
+describe('qt-explorer rail clear paths (PPRF-QT-003, PPRF-11)', () => {
+  it('PPRF-QT-003: an empty-canvas click clears the selection and empties the rail', () => {
     const instance = build();
     const heard = [];
     instance.root.addEventListener('participantsSelected', (event) =>
@@ -223,29 +223,29 @@ describe('qt-explorer dock clear paths (PPRF-QT-003, PPRF-11)', () => {
     );
     toOutlierView(instance);
     clickFirstPoint(instance);
-    expect(instance.profileWrap.children.length).toBeGreaterThan(0);
+    expect(instance.railWrap.querySelector('.sv-profile-root')).not.toBeNull();
     instance.chart.options.onClick({}, []);
     expect(instance.state.selectedId).toBeNull();
-    expect(instance.profileWrap.children).toHaveLength(0);
+    expect(instance.railWrap.querySelector('.sv-profile-root')).toBeNull();
     expect(heard.at(-1)).toEqual([]);
   });
 
-  it('PPRF-QT-003: a view switch clears the selection and the dock (render preamble); non-scatter views idle', () => {
+  it('PPRF-QT-003: a view switch clears the selection and the rail (render preamble); non-scatter views idle', () => {
     const instance = build();
     toOutlierView(instance);
     clickFirstPoint(instance);
-    expect(instance.profileWrap.children.length).toBeGreaterThan(0);
+    expect(instance.railWrap.querySelector('.sv-profile-root')).not.toBeNull();
     instance.state.view = 'central';
     instance.buildControls();
     instance.render();
     expect(instance.state.selectedId).toBeNull();
-    expect(instance.profileWrap.children).toHaveLength(0);
-    // The central chart offers no point selection — the dock idles, mounted.
+    expect(instance.railWrap.querySelector('.sv-profile-root')).toBeNull();
+    // The central chart offers no point selection — the rail idles, mounted.
     expect(instance.chart.options.onClick).toBeUndefined();
     expect(instance.profile).toBeTruthy();
   });
 
-  it('PPRF-QT-003: the dock Clear affordance routes through the host clear path', () => {
+  it('PPRF-QT-003: the rail Clear affordance routes through the host clear path', () => {
     const instance = build();
     const heard = [];
     instance.root.addEventListener('participantsSelected', (event) =>
@@ -253,9 +253,9 @@ describe('qt-explorer dock clear paths (PPRF-QT-003, PPRF-11)', () => {
     );
     toOutlierView(instance);
     clickFirstPoint(instance);
-    instance.profileWrap.querySelector('.sv-profile-clear').click();
+    instance.railWrap.querySelector('.sv-profile-clear').click();
     expect(instance.state.selectedId).toBeNull();
-    expect(instance.profileWrap.children).toHaveLength(0);
+    expect(instance.railWrap.querySelector('.sv-profile-root')).toBeNull();
     expect(heard.at(-1)).toEqual([]);
   });
 
@@ -271,10 +271,10 @@ describe('qt-explorer dock clear paths (PPRF-QT-003, PPRF-11)', () => {
         bubbles: true
       })
     );
-    expect(instance.profileWrap.children.length).toBeGreaterThan(0);
+    expect(instance.railWrap.querySelector('.sv-profile-root')).not.toBeNull();
     expect(instance.state.selectedId).toBeNull();
-    instance.profileWrap.querySelector('.sv-profile-clear').click();
-    expect(instance.profileWrap.children).toHaveLength(0);
+    instance.railWrap.querySelector('.sv-profile-clear').click();
+    expect(instance.railWrap.querySelector('.sv-profile-root')).toBeNull();
     expect(heard.at(-1)).toEqual([]);
   });
 
@@ -291,11 +291,11 @@ describe('qt-explorer dock clear paths (PPRF-QT-003, PPRF-11)', () => {
         bubbles: true
       })
     );
-    expect(instance.profileWrap.querySelector('.sv-profile-step-count').textContent).toContain(
+    expect(instance.railWrap.querySelector('.sv-profile-step-count').textContent).toContain(
       '1 of 2'
     );
     const heardBefore = heard.length;
-    instance.profileWrap.querySelector('.sv-profile-step-next').click();
+    instance.railWrap.querySelector('.sv-profile-step-next').click();
     // The stepped point is emphasized on the scatter (per-point radius arrays)…
     const emphasized = instance.chart.data.datasets.some((dataset) =>
       Array.isArray(dataset.pointRadius)
@@ -312,12 +312,12 @@ describe('qt-explorer dock clear paths (PPRF-QT-003, PPRF-11)', () => {
     clickFirstPoint(instance);
     instance.setSettings({ profile: false });
     expect(instance.profile).toBeNull();
-    expect(instance.profileWrap.children).toHaveLength(0);
+    expect(instance.railWrap.querySelector('.sv-profile-root')).toBeNull();
     instance.setSettings({ profile: true });
     expect(instance.profile).toBeTruthy();
   });
 
-  it('PPRF-QT-001: destroy tears the dock down with the instance', () => {
+  it('PPRF-QT-001: destroy tears the rail down with the instance', () => {
     const instance = build();
     toOutlierView(instance);
     clickFirstPoint(instance);

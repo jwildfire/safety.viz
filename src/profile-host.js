@@ -1,15 +1,18 @@
-// Shared HOST-side adoption kit for the docked participant-profile module
-// (#99, PPRF-10/11). The module itself (src/participant-profile.js) is
-// unchanged by the rollout — this file is host code: the one-ingest-per-setData
-// row builder and the mount/feed/unmount/sync plumbing every lab-family adopter
-// repeats, extracted from the hep-explorer adoption (#98, PPRF-7) so five
-// renderers don't carry five copies. Hosts keep the same instance slots the
-// hep-explorer pattern established: `profile` (the dock), `profileFeed` (the
-// participantsSelected listener), `profileKey` (the idempotency guard), and
-// `profileRows` (the pre-cleaned rows the dock consumes).
+// Shared HOST-side adoption kit for the railed participant-profile module
+// (#99, PPRF-10/11; v2 obot.roadmap#75). This file is host code: the
+// one-ingest-per-setData row builder and the mount/feed/unmount/sync plumbing
+// every adopter repeats, extracted from the hep-explorer adoption (#98,
+// PPRF-7) so the renderers don't carry a copy each. Hosts keep the same
+// instance slots the pattern established: `profile` (the rail), `profileFeed`
+// (the participantsSelected listener), `profileKey` (the idempotency guard),
+// and `profileRows` (the pre-cleaned rows the rail consumes).
+//
+// v2 moved the mount from the dock below the chart to the rail beside it
+// (decisions D1/D4). Hosts changed by one line — `railWrap` instead of
+// `profileWrap` — because the plumbing lives here.
 
 import { assignSequence, cleanData, deriveBaseline } from './hep-core/rows.js';
-import { profileDock } from './participant-profile.js';
+import { profileRail } from './participant-profile.js';
 
 /**
  * Build the docked profile's pre-cleaned rows from a host's retained raw data
@@ -30,18 +33,18 @@ export function buildProfileRows(rawData, mapping) {
 }
 
 /**
- * Mount the docked participant-profile module into the host shell's profile
- * slot and subscribe it to the `participantsSelected` event on the shell root
- * — the house selection contract — so every selection path feeds the dock
- * with no per-gesture edits (#99, PPRF-11). No-op when the host's `profile`
- * setting is false or a dock is already live.
- * @param {Object} host The renderer instance (needs settings, root, profileWrap, profileRows).
+ * Mount the railed participant-profile module into the host shell's rail slot
+ * and subscribe it to the `participantsSelected` event on the shell root — the
+ * house selection contract — so every selection path feeds the rail with no
+ * per-gesture edits (#99, PPRF-11). No-op when the host's `profile` setting is
+ * false or a rail is already live.
+ * @param {Object} host The renderer instance (needs settings, root, railWrap, profileRows).
  * @param {() => Object} settingsFn Returns the host's current profile pass-through settings.
  * @returns {void}
  */
-export function mountProfileDock(host, settingsFn) {
+export function mountProfileRail(host, settingsFn) {
   if (!host.settings.profile || host.profile) return;
-  host.profile = profileDock(host.profileWrap, settingsFn());
+  host.profile = profileRail(host.railWrap, settingsFn());
   /**
    * Feed one participantsSelected dispatch into the docked profile.
    * @private
@@ -64,13 +67,12 @@ export function mountProfileDock(host, settingsFn) {
 }
 
 /**
- * Tear the docked profile down: unsubscribe the feed, destroy the module's
- * charts, and empty the slot (the shell's `.sv-profile:empty` rule then hides
- * it).
+ * Tear the railed profile down: unsubscribe the feed, destroy the module's
+ * charts, and empty the slot (the shell's `.sv-rail:empty` rule then hides it).
  * @param {Object} host The renderer instance.
  * @returns {void}
  */
-export function unmountProfileDock(host) {
+export function unmountProfileRail(host) {
   if (!host.profile) return;
   host.root.removeEventListener('participantsSelected', host.profileFeed);
   host.profileFeed = null;
@@ -80,25 +82,25 @@ export function unmountProfileDock(host) {
 }
 
 /**
- * Reconcile the docked profile with the current settings: mount or unmount on
- * a `profile` toggle, else hand the dock the current rows and refreshed
+ * Reconcile the railed profile with the current settings: mount or unmount on
+ * a `profile` toggle, else hand the rail the current rows and refreshed
  * pass-through settings. Called by the host's setSettings before its
  * re-render.
  * @param {Object} host The renderer instance.
  * @param {() => Object} settingsFn Returns the host's current profile pass-through settings.
  * @returns {void}
  */
-export function syncProfileDock(host, settingsFn) {
+export function syncProfileRail(host, settingsFn) {
   if (!host.settings.profile) {
-    unmountProfileDock(host);
+    unmountProfileRail(host);
     return;
   }
   if (!host.profile) {
-    mountProfileDock(host, settingsFn);
+    mountProfileRail(host, settingsFn);
     return;
   }
   host.profileKey = null;
-  // Hand the dock the CURRENT retained rows before its settings-driven
+  // Hand the rail the CURRENT retained rows before its settings-driven
   // re-render, so the transient render never uses a stale row set.
   host.profile.cleanRows = host.profileRows;
   host.profile.setSettings(settingsFn());
@@ -106,13 +108,13 @@ export function syncProfileDock(host, settingsFn) {
 
 /**
  * The render-preamble reset (#99, PPRF-11): these hosts reset their selection
- * silently on every render (control changes, new data), so the dock must
+ * silently on every render (control changes, new data), so the rail must
  * empty in the same preamble — otherwise it would keep narrating a selection
  * the chart no longer shows.
  * @param {Object} host The renderer instance.
  * @returns {void}
  */
-export function resetProfileDock(host) {
+export function resetProfileRail(host) {
   host.profileKey = null;
   if (host.profile) host.profile.clear();
 }

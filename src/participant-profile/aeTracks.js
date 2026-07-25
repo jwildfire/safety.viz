@@ -149,9 +149,15 @@ function eventDescription(event) {
  * @private
  */
 function renderTimeline(events, domain, settings) {
+  // Two elements, not one: the outer wrapper carries the same border and
+  // horizontal padding as the spaghetti card above it, and the inner plot area
+  // carries the same gutters as the chart's scales — so the two x-axes line up
+  // by construction rather than by measurement (PPRF-AXIS-002).
   const wrap = createElement('div', 'sv-profile-ae-timeline');
-  wrap.style.paddingLeft = `${PLOT_GUTTER_LEFT}px`;
-  wrap.style.paddingRight = `${PLOT_GUTTER_RIGHT}px`;
+  const area = createElement('div', 'sv-profile-ae-plotarea');
+  area.style.paddingLeft = `${PLOT_GUTTER_LEFT}px`;
+  area.style.paddingRight = `${PLOT_GUTTER_RIGHT}px`;
+  wrap.append(area);
 
   const placeable = events.filter((event) => event.__ae_placeable);
   const shown = placeable.slice(0, settings.max_rows);
@@ -194,7 +200,7 @@ function renderTimeline(events, domain, settings) {
     row.append(term, bar);
     plot.append(row);
   });
-  wrap.append(plot);
+  area.append(plot);
 
   const axis = createElement('div', 'sv-profile-ae-axis');
   axisTicks(domain).forEach((tick) => {
@@ -202,7 +208,7 @@ function renderTimeline(events, domain, settings) {
     label.style.left = `${tick.position}%`;
     axis.append(label);
   });
-  wrap.append(axis);
+  area.append(axis);
 
   const hidden = placeable.length - shown.length;
   if (hidden > 0) {

@@ -98,8 +98,9 @@ describe('renderAeTracks — the timeline (PPRF-AETL-001)', () => {
 
   it('pads the plot to the labs chart gutters so the two axes line up', () => {
     host.append(renderAeTracks(mine, [2, 90], settings));
-    const timeline = host.querySelector('.sv-profile-ae-timeline');
-    expect(timeline.style.paddingLeft).toBe('56px');
+    const area = host.querySelector('.sv-profile-ae-plotarea');
+    expect(area.style.paddingLeft).toBe('56px');
+    expect(area.style.paddingRight).toBe('12px');
   });
 
   it('draws a day ruler under the rows', () => {

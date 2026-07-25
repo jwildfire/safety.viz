@@ -28,10 +28,10 @@ import {
 } from './delta-delta/getPlugins.js';
 import {
   buildProfileRows,
-  mountProfileDock,
-  resetProfileDock,
-  syncProfileDock,
-  unmountProfileDock
+  mountProfileRail,
+  resetProfileRail,
+  syncProfileRail,
+  unmountProfileRail
 } from './profile-host.js';
 
 Chart.register(ScatterController, PointElement, LinearScale, Tooltip);
@@ -41,7 +41,7 @@ Chart.register(ScatterController, PointElement, LinearScale, Tooltip);
  * measure against the change in another, one point per participant, with
  * X/Y measure pickers, baseline/comparison visit multi-selects, configurable
  * filters, quadrant reference lines, an optional regression line, and the
- * docked participant profile opened by clicking a point (#99, PPRF-DD).
+ * railed participant profile opened by clicking a point (#99, PPRF-DD).
  * Construct via the deltaDelta() factory rather than directly; the
  * constructor renders the control shell immediately and waits for data.
  */
@@ -62,7 +62,7 @@ class SafetyDeltaDelta {
     this.charts = [];
     this.chart = null;
     this.participantsSelected = [];
-    // The docked participant-profile module (#99, PPRF-DD-002): the shared
+    // The railed participant-profile module (#99, PPRF-DD-002): the shared
     // drill-down rendered into the shell's profile slot, fed by the
     // point-click selection through dispatchSelection's participantsSelected
     // event on the shell root. It SUPERSEDES the renderer's bespoke
@@ -83,11 +83,11 @@ class SafetyDeltaDelta {
       selectedId: null
     };
     this.renderShell();
-    mountProfileDock(this, () => this.profileSettings());
+    mountProfileRail(this, () => this.profileSettings());
   }
 
   /**
-   * The settings handed to the docked participant-profile module (#99,
+   * The settings handed to the railed participant-profile module (#99,
    * PPRF-DD-002): the shared long-lab column mappings pass through verbatim;
    * `details` come from profile_details, falling back to the host `details`
    * minus the participant id (the profile header already shows it); and the
@@ -183,7 +183,7 @@ class SafetyDeltaDelta {
   }
 
   /**
-   * Derive the docked profile's pre-cleaned rows ONCE per data/settings change
+   * Derive the railed profile's pre-cleaned rows ONCE per data/settings change
    * (#99, PPRF-DD-002) — never per gesture. The underlying rows are standard
    * long labs: the baseline-vs-comparison delta is NOT re-encoded — the
    * profile shows the full series, which is the supersession story (PPRF-12).
@@ -213,7 +213,7 @@ class SafetyDeltaDelta {
     this.settings = syncSettings({ ...this.settings, ...settings });
     if (this.rawData.length) this.validateAndCleanData();
     this.buildProfileRows();
-    syncProfileDock(this, () => this.profileSettings());
+    syncProfileRail(this, () => this.profileSettings());
     this.buildControls();
     this.render();
     return this;
@@ -394,9 +394,9 @@ class SafetyDeltaDelta {
     this.multiplesWrap.innerHTML = '';
     this.state.selectedId = null;
     this.participantsSelected = [];
-    // The selection resets silently on every render, so the dock must empty in
+    // The selection resets silently on every render, so the rail must empty in
     // the same preamble (#99, PPRF-DD-003).
-    resetProfileDock(this);
+    resetProfileRail(this);
     this.regression = null;
     this.footnote.textContent = '';
     this.mainAnnotation.textContent = 'Click a point to see details.';
@@ -502,7 +502,7 @@ class SafetyDeltaDelta {
 
   /**
    * Select a scatter point: highlight it, note the participant, and dispatch
-   * the selection on the shell root — the docked participant profile is the
+   * the selection on the shell root — the railed participant profile is the
    * detail view (SDD-REG-012/013 retargeted; #99, PPRF-DD-001/002).
    * @private
    */
@@ -522,8 +522,8 @@ class SafetyDeltaDelta {
 
   /**
    * Clear the point selection (#99, PPRF-DD-003): restore the borders, reset
-   * the annotation, and dispatch the empty selection so the docked profile
-   * empties. Reached from an empty-canvas click and the dock's Clear
+   * the annotation, and dispatch the empty selection so the railed profile
+   * empties. Reached from an empty-canvas click and the rail's Clear
    * affordance.
    * @returns {void}
    */
@@ -583,7 +583,7 @@ class SafetyDeltaDelta {
    * @returns {void}
    */
   destroy() {
-    unmountProfileDock(this);
+    unmountProfileRail(this);
     this.destroyCharts();
     this.element.innerHTML = '';
   }

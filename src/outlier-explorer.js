@@ -55,10 +55,10 @@ import {
 import { renderListing } from './histogram/listing.js';
 import {
   buildProfileRows,
-  mountProfileDock,
-  resetProfileDock,
-  syncProfileDock,
-  unmountProfileDock
+  mountProfileRail,
+  resetProfileRail,
+  syncProfileRail,
+  unmountProfileRail
 } from './profile-host.js';
 
 Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip);
@@ -85,7 +85,7 @@ class SafetyOutlierExplorer {
     this.page = 1;
     this.charts = [];
     this.participantsSelected = [];
-    // The docked participant-profile module (#99, PPRF-OE-001): the shared
+    // The railed participant-profile module (#99, PPRF-OE-001): the shared
     // drill-down rendered into the shell's profile slot and fed by the
     // point-click selection through dispatchSelection's participantsSelected
     // event on the shell root. profileRows is the ONE per-setData profile
@@ -114,11 +114,11 @@ class SafetyOutlierExplorer {
     };
     this.initFilterState();
     this.renderShell();
-    mountProfileDock(this, () => this.profileSettings());
+    mountProfileRail(this, () => this.profileSettings());
   }
 
   /**
-   * The settings handed to the docked participant-profile module (#99,
+   * The settings handed to the railed participant-profile module (#99,
    * PPRF-OE-001): the shared long-lab column mappings pass through verbatim;
    * `details` come from profile_details (the host `details` configure the
    * linked listing — per-row fields, not demographics); and the two outbound
@@ -227,7 +227,7 @@ class SafetyOutlierExplorer {
   }
 
   /**
-   * Derive the docked profile's pre-cleaned rows ONCE per data/settings change
+   * Derive the railed profile's pre-cleaned rows ONCE per data/settings change
    * (#99, PPRF-OE-001) — never per gesture.
    * @private
    */
@@ -250,7 +250,7 @@ class SafetyOutlierExplorer {
     this.initFilterState();
     if (this.rawData.length) this.validateAndCleanData();
     this.buildProfileRows();
-    syncProfileDock(this, () => this.profileSettings());
+    syncProfileRail(this, () => this.profileSettings());
     this.buildControls();
     this.render();
     return this;
@@ -502,9 +502,9 @@ class SafetyOutlierExplorer {
     this.page = 1;
     this.state.selectedId = null;
     this.participantsSelected = [];
-    // The selection resets silently on every render, so the dock must empty in
+    // The selection resets silently on every render, so the rail must empty in
     // the same preamble (#99, PPRF-OE-003).
-    resetProfileDock(this);
+    resetProfileRail(this);
     this.notes.innerHTML = '';
     this.footnote.textContent =
       'Hover a point for details; click a point to highlight a participant.';
@@ -842,7 +842,7 @@ class SafetyOutlierExplorer {
    * @returns {void}
    */
   destroy() {
-    unmountProfileDock(this);
+    unmountProfileRail(this);
     this.destroyCharts();
     this.element.innerHTML = '';
   }

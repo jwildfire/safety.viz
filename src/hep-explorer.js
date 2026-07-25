@@ -4,7 +4,7 @@
 // that participant's peak standardized ALT (x) against peak standardized total
 // bilirubin (y); two Hy's-Law cut-lines split the plot into four labeled
 // quadrants; and clicking a point drives the coordinated participant
-// drill-down views — a visit-path overlay on the scatter, the docked
+// drill-down views — a visit-path overlay on the scatter, the railed
 // participant-profile module (header, labs-over-time spaghetti, measure table
 // with sparklines; #98, PPRF-7), and the shared linked listing, all in the
 // active display units. Same lifecycle API as the other
@@ -63,7 +63,7 @@ import { formatNumber } from './hep-explorer/getScales.js';
 import { CLINICAL_CAUTION } from './hep-explorer/getPlugins.js';
 import { imputeBelowLloq } from './hep-explorer/imputation.js';
 import { availableDisplays } from './hep-explorer/availability.js';
-import { profileDock } from './participant-profile.js';
+import { profileRail } from './participant-profile.js';
 import { TRACE_HEADER_HINT, createSelection } from './hep-explorer/selection.js';
 import { applyModuleStyles } from './hep-explorer/styles.js';
 import scatterView from './hep-explorer/views/scatter.js';
@@ -110,7 +110,7 @@ function resolveViewId(value) {
  * participant — with Hy's-Law quadrant cut-lines, a quadrant summary table,
  * eDISH/mDISH display modes, linear/log axes, R-Ratio and timing controls,
  * color-by grouping, and click-to-inspect participant panels (a visit-path
- * overlay, the docked participant-profile module, and the shared linked
+ * overlay, the railed participant-profile module, and the shared linked
  * listing). Construct via the hepExplorer() factory rather than directly; the
  * constructor renders the control shell immediately and waits for data.
  */
@@ -174,7 +174,7 @@ class SafetyHepExplorer {
     this.migrationSvgEl = null;
     this.migrationTipEl = null;
     this.participantsSelected = [];
-    // The docked participant-profile module (#98, PPRF-7): the shared
+    // The railed participant-profile module (#98, PPRF-7): the shared
     // drill-down (header / spaghetti / measure table) rendered into the
     // shell's profile slot and fed by every selection path through the ONE
     // choke point — selection.dispatch()'s participantsSelected event on the
@@ -184,7 +184,7 @@ class SafetyHepExplorer {
     this.profile = null;
     this.profileFeed = null;
     this.profileKey = null;
-    // Header demographics for the docked profile (PPRF-2): the caller's OWN
+    // Header demographics for the railed profile (PPRF-2): the caller's OWN
     // details specs, snapshotted before validateAndCleanData back-fills
     // settings.details with the linked-listing columns (per-row fields, not
     // demographics).
@@ -214,7 +214,7 @@ class SafetyHepExplorer {
     };
     this.profileDetails = this.settings.details;
     this.renderShell();
-    this.mountProfileDock();
+    this.mountProfileRail();
   }
 
   /**
@@ -298,9 +298,9 @@ class SafetyHepExplorer {
   }
 
   /**
-   * The settings handed to the docked participant-profile module (#98,
+   * The settings handed to the railed participant-profile module (#98,
    * PPRF-7): the shared long-lab column mappings and cutpoints pass through
-   * verbatim so the dock consumes this chart's pre-cleaned rows with no second
+   * verbatim so the rail consumes this chart's pre-cleaned rows with no second
    * ingest (PPRF-1); details are the caller's own demographics snapshot;
    * display seeds from the live display mode; and the two outbound callbacks
    * wire Clear to the host's own clear path (PPRF-2) and stepper navigation to
@@ -323,7 +323,7 @@ class SafetyHepExplorer {
       baseline_value: settings.baseline_value,
       measure_values: settings.measure_values,
       // LIVE control state, not the construction-time settings: user-edited
-      // reference lines and the Axis-type control reach the dock so the
+      // reference lines and the Axis-type control reach the rail so the
       // coordinated panels always agree on the active cuts and scale (PPRF-7).
       cuts: this.state.cuts,
       axis_type: this.state.axisType === 'log' ? 'log' : 'linear',
@@ -341,20 +341,20 @@ class SafetyHepExplorer {
   }
 
   /**
-   * Mount the docked participant-profile module into the shell's profile slot
+   * Mount the railed participant-profile module into the shell's profile slot
    * and subscribe it to the participantsSelected event on the shell root —
    * the selection layer's SOLE dispatcher, so every selection path (scatter
    * click, Participants control, composite click/selector, migration
-   * hand-off, carried selections, and every clear) feeds the dock with zero
+   * hand-off, carried selections, and every clear) feeds the rail with zero
    * view edits (#98, PPRF-7). No-op when the `profile` setting is false or a
-   * dock is already live.
+   * rail is already live.
    * @private
    */
-  mountProfileDock() {
+  mountProfileRail() {
     if (!this.settings.profile || this.profile) return;
-    this.profile = profileDock(this.profileWrap, this.profileSettings());
+    this.profile = profileRail(this.railWrap, this.profileSettings());
     /**
-     * Feed one participantsSelected dispatch into the docked profile.
+     * Feed one participantsSelected dispatch into the railed profile.
      * @private
      */
     this.profileFeed = (event) => {
@@ -369,9 +369,9 @@ class SafetyHepExplorer {
         this.profile.clear();
         return;
       }
-      // Keep the dock in the host's live display units (HEP-SELECT-006
+      // Keep the rail in the host's live display units (HEP-SELECT-006
       // parity: the coordinated panels reopen in the new units after a
-      // display change); the dock's own toggle may diverge until then.
+      // display change); the rail's own toggle may diverge until then.
       this.profile.state.display = this.state.display;
       this.profile.show(ids, this.cleanRows);
     };
@@ -379,11 +379,11 @@ class SafetyHepExplorer {
   }
 
   /**
-   * Tear the docked profile down: unsubscribe the feed, destroy the module's
+   * Tear the railed profile down: unsubscribe the feed, destroy the module's
    * charts, and empty the slot (the shell's `:empty` rule then hides it).
    * @private
    */
-  unmountProfileDock() {
+  unmountProfileRail() {
     if (!this.profile) return;
     this.root.removeEventListener('participantsSelected', this.profileFeed);
     this.profileFeed = null;
@@ -393,23 +393,23 @@ class SafetyHepExplorer {
   }
 
   /**
-   * Reconcile the docked profile with the current settings: mount or unmount
-   * on a `profile` toggle, else refresh the dock's pass-through settings.
+   * Reconcile the railed profile with the current settings: mount or unmount
+   * on a `profile` toggle, else refresh the rail's pass-through settings.
    * Called by setSettings before the re-render re-dispatches any carried
    * selection.
    * @private
    */
-  syncProfileDock() {
+  syncProfileRail() {
     if (!this.settings.profile) {
-      this.unmountProfileDock();
+      this.unmountProfileRail();
       return;
     }
     if (!this.profile) {
-      this.mountProfileDock();
+      this.mountProfileRail();
       return;
     }
     this.profileKey = null;
-    // Hand the dock the CURRENT retained rows before its settings-driven
+    // Hand the rail the CURRENT retained rows before its settings-driven
     // re-render, so the transient render never uses a stale row set.
     this.profile.cleanRows = this.cleanRows;
     this.profile.setSettings(this.profileSettings());
@@ -490,7 +490,7 @@ class SafetyHepExplorer {
     if ('details' in settings) this.profileDetails = this.settings.details;
     this.state.filters = {};
     if (this.rawData.length) this.validateAndCleanData();
-    this.syncProfileDock();
+    this.syncProfileRail();
     this.buildControls();
     this.render();
     return this;
@@ -791,9 +791,9 @@ class SafetyHepExplorer {
     // Empty (and hide) the sidebar's Participants section; each view re-mounts
     // it with the freshly shown participants (HEP-COMP-007).
     this.selection.mount(this.compositeSelectSection, []);
-    // Re-arm the docked profile's idempotency guard: the carried selection is
-    // re-dispatched below (or by the view), and the dock must rebuild from the
-    // fresh rows/units rather than no-op (#98, PPRF-7). The dock's pass-through
+    // Re-arm the railed profile's idempotency guard: the carried selection is
+    // re-dispatched below (or by the view), and the rail must rebuild from the
+    // fresh rows/units rather than no-op (#98, PPRF-7). The rail's pass-through
     // settings refresh FIRST (merge only, no render) so control-driven redraws
     // — edited reference lines, the Axis-type toggle, display changes — reach
     // the re-shown profile.
@@ -856,7 +856,7 @@ class SafetyHepExplorer {
    * Select a participant and drive every coordinated view (HEP-SELECT-001..006):
    * highlight the point, trace the visit path on the scatter, open the linked
    * listing of the participant's raw records, annotate the chart, and dispatch
-   * the participantsSelected event — which feeds the docked participant
+   * the participantsSelected event — which feeds the railed participant
    * profile (#98, PPRF-7) — all in the active display units.
    * @param {string|number} id The participant identifier.
    * @returns {void}
@@ -886,7 +886,7 @@ class SafetyHepExplorer {
    * Close the single-participant drill-down: erase the visit-path overlay,
    * close the listing, and restore the base annotation/footnote — without
    * touching the multi-highlight or notifying listeners (HEP-SELECT-007). The
-   * docked profile empties on the dispatch([]) that follows a full clear; its
+   * railed profile empties on the dispatch([]) that follows a full clear; its
    * charts are module-owned, so there is nothing to tear down here (#98).
    * @private
    */
@@ -946,7 +946,7 @@ class SafetyHepExplorer {
    * @returns {void}
    */
   destroy() {
-    this.unmountProfileDock();
+    this.unmountProfileRail();
     this.destroyCharts();
     this.element.innerHTML = '';
   }
