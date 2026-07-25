@@ -522,6 +522,18 @@ class SafetyParticipantProfile {
     const model = buildProfileModel(this.cleanRows, id, this.settings, this.state);
     this.model = model;
 
+    this.aeRows = this.aeSettings ? participantEvents(this.aeEvents, id) : [];
+    // With no laboratory records the header has nothing to read its
+    // demographics from, so the AE records stand in — they carry the same
+    // participant-level columns.
+    if (!model.spaghetti.series.length && this.aeRows.length) {
+      const first = this.aeRows[0];
+      model.participant.details = (this.settings.details || []).map((spec) => ({
+        label: spec.label,
+        value: first[spec.value_col]
+      }));
+    }
+
     const root = createElement('div', 'sv-profile-root');
     root.setAttribute('role', 'region');
     root.setAttribute('aria-label', `Participant ${id} profile`);
@@ -553,26 +565,37 @@ class SafetyParticipantProfile {
       renderHeader(model.participant, this.settings, { onClear: () => this.handleClear() })
     );
 
+    // The lab domain is optional in v2 (decision D9): ae-explorer and
+    // ae-timelines mount the profile with adverse events and no laboratory
+    // records at all, and the block reads as the AE story rather than as an
+    // empty spaghetti and an empty table.
+    const hasLabs = model.spaghetti.series.length > 0;
+
     // The Measures control lists only the AVAILABLE measures — extras join the
     // list when the extras toggle reveals them — so its selection state always
     // matches what the spaghetti draws (PPRF-3).
     const keys = model.spaghetti.series
       .filter((entry) => this.state.showExtras || entry.isKey)
       .map((entry) => entry.key);
-    if (this.mode === 'rail') root.append(this.buildInlineControls(keys));
-    else this.buildSidebarControls(keys);
+    if (hasLabs) {
+      if (this.mode === 'rail') root.append(this.buildInlineControls(keys));
+      else this.buildSidebarControls(keys);
+    } else if (this.mode === 'standalone' && this.controls) {
+      this.controls.innerHTML = '';
+    }
 
     // The shared study-day domain (decision D7): labs and adverse events
     // rescale together so an event running past the last lab draw stays
     // visible instead of clipping at the edge.
-    this.aeRows = this.aeSettings ? participantEvents(this.aeEvents, id) : [];
     this.domain = this.aeSettings
       ? unionDomain(labDomain(model.spaghetti), aeDomain(this.aeRows))
       : null;
 
-    this.spaghettiHost = createElement('div', 'sv-profile-spaghetti');
-    root.append(this.spaghettiHost);
-    this.drawSpaghetti();
+    if (hasLabs) {
+      this.spaghettiHost = createElement('div', 'sv-profile-spaghetti');
+      root.append(this.spaghettiHost);
+      this.drawSpaghetti();
+    }
 
     // Directly under the labs chart, before the measure table (decision D5):
     // the shared axis only pays off if the two time tracks touch.
@@ -580,15 +603,16 @@ class SafetyParticipantProfile {
       root.append(renderAeTracks(this.aeRows, this.domain, this.aeSettings));
     }
 
-    this.tableController = renderMeasureTable(root, model.measures, this.settings, this.state, {
-      // The extras toggle changes both the table AND the control surface
-      // (Measures options, spaghetti series), so it re-renders the block;
-      // focus restoration keeps the checkbox focused (PPRF-8).
-      onToggleExtras: (showExtras) => {
-        this.state.showExtras = showExtras;
-        this.renderProfile();
-      }
-    });
+    if (hasLabs)
+      this.tableController = renderMeasureTable(root, model.measures, this.settings, this.state, {
+        // The extras toggle changes both the table AND the control surface
+        // (Measures options, spaghetti series), so it re-renders the block;
+        // focus restoration keeps the checkbox focused (PPRF-8).
+        onToggleExtras: (showExtras) => {
+          this.state.showExtras = showExtras;
+          this.renderProfile();
+        }
+      });
 
     if (this.settings.listing) {
       const participantRows = this.cleanRows.filter(

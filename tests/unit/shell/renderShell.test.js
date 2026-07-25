@@ -53,7 +53,11 @@ describe('renderShell rail slot (PPRF-RAIL-001)', () => {
   it('stacks the rail below the main column under the shell breakpoint (D4)', () => {
     renderShell(document.querySelector('#host'));
     const style = document.getElementById('safety-viz-shell-styles');
-    const responsive = style.textContent.slice(style.textContent.indexOf('@media (max-width:900px)'));
-    expect(responsive).toContain('.sv-rail{position:static;flex:1 1 auto;width:100%;max-height:none}');
+    const responsive = style.textContent.slice(
+      style.textContent.indexOf('@media (max-width:900px)')
+    );
+    expect(responsive).toContain(
+      '.sv-rail{position:static;flex:1 1 auto;width:100%;max-height:none}'
+    );
   });
 });

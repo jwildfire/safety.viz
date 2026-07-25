@@ -150,9 +150,7 @@ describe('qt-explorer participant-profile adoption (PPRF-QT-001)', () => {
     expect(instance.state.selectedId).toBe(id);
     expect(heard).toEqual([[id]]);
     // Full profile, never a stepper (single-select gesture).
-    expect(instance.railWrap.querySelector('.sv-profile-id').textContent).toBe(
-      `Participant ${id}`
-    );
+    expect(instance.railWrap.querySelector('.sv-profile-id').textContent).toBe(`Participant ${id}`);
     expect(instance.railWrap.querySelector('.sv-profile-step-count')).toBeNull();
     // The ECG parameters are the KEY measures — both render without an extras toggle.
     expect(instance.railWrap.querySelector('.sv-profile-measure-table')).not.toBeNull();

@@ -40,11 +40,17 @@ export function buildProfileRows(rawData, mapping) {
  * false or a rail is already live.
  * @param {Object} host The renderer instance (needs settings, root, railWrap, profileRows).
  * @param {() => Object} settingsFn Returns the host's current profile pass-through settings.
+ * @param {Object} [options] Mount options.
+ * @param {?EventTarget} [options.target=null] The element the host dispatches `participantsSelected` on; defaults to the shell root.
  * @returns {void}
  */
-export function mountProfileRail(host, settingsFn) {
+export function mountProfileRail(host, settingsFn, { target = null } = {}) {
   if (!host.settings.profile || host.profile) return;
   host.profile = profileRail(host.railWrap, settingsFn());
+  // Most renderers dispatch the house selection event on the shell root; the
+  // AE renderers dispatch on their own container (AET-API-003), so the target
+  // is a parameter rather than an assumption.
+  host.profileTarget = target || host.root;
   /**
    * Feed one participantsSelected dispatch into the docked profile.
    * @private
@@ -63,7 +69,7 @@ export function mountProfileRail(host, settingsFn) {
     }
     host.profile.show(ids, host.profileRows);
   };
-  host.root.addEventListener('participantsSelected', host.profileFeed);
+  host.profileTarget.addEventListener('participantsSelected', host.profileFeed);
 }
 
 /**
@@ -74,7 +80,7 @@ export function mountProfileRail(host, settingsFn) {
  */
 export function unmountProfileRail(host) {
   if (!host.profile) return;
-  host.root.removeEventListener('participantsSelected', host.profileFeed);
+  (host.profileTarget || host.root).removeEventListener('participantsSelected', host.profileFeed);
   host.profileFeed = null;
   host.profile.destroy();
   host.profile = null;

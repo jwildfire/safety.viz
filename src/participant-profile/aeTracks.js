@@ -256,11 +256,7 @@ export function renderAeTracks(events, domain, settings) {
   const list = Array.isArray(events) ? events : [];
   if (!list.length) {
     section.append(
-      createElement(
-        'p',
-        'sv-profile-ae-empty',
-        'No adverse events recorded for this participant.'
-      )
+      createElement('p', 'sv-profile-ae-empty', 'No adverse events recorded for this participant.')
     );
     return section;
   }

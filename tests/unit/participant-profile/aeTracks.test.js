@@ -1,6 +1,10 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach } from 'vitest';
-import { syncAeSettings, cleanAeRecords, participantEvents } from '../../../src/participant-profile/ae.js';
+import {
+  syncAeSettings,
+  cleanAeRecords,
+  participantEvents
+} from '../../../src/participant-profile/ae.js';
 import { renderAeTracks } from '../../../src/participant-profile/aeTracks.js';
 import { makeAeRecords } from './fixture.js';
 
@@ -18,7 +22,9 @@ beforeEach(() => {
 describe('renderAeTracks — the summary block (PPRF-AESUM-001)', () => {
   it('renders the four headline figures with their labels', () => {
     host.append(renderAeTracks(mine, [2, 90], settings));
-    const labels = [...host.querySelectorAll('.sv-profile-ae-tile-label')].map((n) => n.textContent);
+    const labels = [...host.querySelectorAll('.sv-profile-ae-tile-label')].map(
+      (n) => n.textContent
+    );
     expect(labels).toEqual(['Events', 'Highest severity', 'Serious', 'No end date']);
     const values = [...host.querySelectorAll('.sv-profile-ae-tile-value')].map((n) =>
       n.textContent.trim()

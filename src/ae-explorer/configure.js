@@ -42,6 +42,12 @@ import { arrayify, fieldSpec } from '../histogram/configure.js';
  * @type {AEExplorerSettings}
  */
 export const DEFAULT_SETTINGS = {
+  // The railed participant profile (obot.roadmap#75 decision D9); false opts
+  // the renderer out of the drill-down. profile_ae overrides the AE mapping the
+  // profile reads (severity, seriousness, study days) where this renderer's own
+  // settings do not name those columns.
+  profile: true,
+  profile_ae: null,
   id_col: 'USUBJID',
   major_col: 'AEBODSYS',
   minor_col: 'AEDECOD',

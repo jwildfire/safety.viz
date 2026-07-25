@@ -79,7 +79,11 @@ export function renderStepper(
   // unchanged for callers that do not want the list.
   if (!onToggleList) return strip;
 
-  const toggle = createElement('button', 'sv-profile-step-toggle', listOpen ? 'Hide list' : 'Show list');
+  const toggle = createElement(
+    'button',
+    'sv-profile-step-toggle',
+    listOpen ? 'Hide list' : 'Show list'
+  );
   toggle.type = 'button';
   toggle.setAttribute('aria-expanded', String(Boolean(listOpen)));
   toggle.setAttribute('data-sv-focus', 'step-toggle');

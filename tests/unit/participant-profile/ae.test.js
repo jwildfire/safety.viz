@@ -34,7 +34,9 @@ describe('syncAeSettings — the AE data contract (PPRF-AE-001)', () => {
   });
 
   it('accepts a severity scale of any length and derives labels from the values', () => {
-    const graded = syncAeSettings({ color: { value_col: 'AETOXGR', values: ['1', '2', '3', '4'] } });
+    const graded = syncAeSettings({
+      color: { value_col: 'AETOXGR', values: ['1', '2', '3', '4'] }
+    });
     expect(graded.color.values).toHaveLength(4);
     expect(graded.color.labels).toEqual(['1', '2', '3', '4']);
   });

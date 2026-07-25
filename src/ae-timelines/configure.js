@@ -33,6 +33,10 @@ import { arrayify, fieldSpec } from '../histogram/configure.js';
  * @type {AETimelinesSettings}
  */
 export const DEFAULT_SETTINGS = {
+  // The railed participant profile (obot.roadmap#75 decision D9); false opts
+  // the renderer out of the drill-down entirely.
+  profile: true,
+  details: [],
   id_col: 'USUBJID',
   seq_col: 'AESEQ',
   stdy_col: 'ASTDY',

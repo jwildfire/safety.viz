@@ -105,7 +105,8 @@ export function syncAeSettings(settings = {}) {
       : { ...AE_DEFAULT_SETTINGS.highlight, ...(settings.highlight || {}) };
 
   const rows = Number(synced.max_rows);
-  synced.max_rows = Number.isFinite(rows) && rows > 0 ? Math.floor(rows) : AE_DEFAULT_SETTINGS.max_rows;
+  synced.max_rows =
+    Number.isFinite(rows) && rows > 0 ? Math.floor(rows) : AE_DEFAULT_SETTINGS.max_rows;
 
   return synced;
 }
@@ -128,9 +129,10 @@ export function severityOf(record, settings) {
   const scale = settings.color.values.length;
   // Map the scale onto the three-step status ramp so a 4- or 5-level grade
   // scale still reads mild → severe rather than running out of colours.
-  const step = scale <= SEVERITY_COLORS.length
-    ? SEVERITY_COLORS.length - scale + index
-    : Math.round((index / (scale - 1)) * (SEVERITY_COLORS.length - 1));
+  const step =
+    scale <= SEVERITY_COLORS.length
+      ? SEVERITY_COLORS.length - scale + index
+      : Math.round((index / (scale - 1)) * (SEVERITY_COLORS.length - 1));
   return {
     key: settings.color.values[index],
     label: settings.color.labels[index],
@@ -183,8 +185,9 @@ export function cleanAeRecords(rawData, settings) {
     const rawEnd = day(record[settings.endy_col]);
     const end = start !== null && rawEnd !== null && rawEnd >= start ? rawEnd : null;
     const serious = settings.highlight
-      ? String(record[settings.highlight.value_col] ?? '').trim().toUpperCase() ===
-        String(settings.highlight.value).toUpperCase()
+      ? String(record[settings.highlight.value_col] ?? '')
+          .trim()
+          .toUpperCase() === String(settings.highlight.value).toUpperCase()
       : false;
     events.push({
       ...record,
