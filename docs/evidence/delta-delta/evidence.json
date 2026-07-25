@@ -1,13 +1,16 @@
 {
   "module": "delta-delta",
-  "generatedAt": "2026-07-25T04:40:24.787Z",
+  "generatedAt": "2026-07-25T04:47:40.133Z",
   "environment": {
-    "os": "darwin 23.6.0",
-    "node": "v24.14.0",
+    "os": "linux 6.17.0-1020-azure",
+    "node": "v22.23.1",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": null,
+  "run": {
+    "id": "30144621325",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/30144621325"
+  },
   "records": [
     {
       "test": "a chart link navigates straight to that renderer demo (#71)",
@@ -159,7 +162,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-DD-001", "PPRF-DD-002", "PPRF-DD-004"],
       "issueRefs": [99],
-      "screenshots": ["PPRF-DD-002-docked-profile.png"]
+      "screenshots": ["PPRF-DD-002-docked-profile.png", "PPRF-DD-002-railed-profile.png"]
     },
     {
       "test": "PPRF-DD-003: an empty-canvas click clears the highlight and empties the rail (#99)",
@@ -279,7 +282,11 @@
       "status": "pass",
       "requirementIds": ["SDD-REG-012", "SDD-REG-013", "PPRF-DD-002"],
       "issueRefs": [],
-      "screenshots": ["PPRF-DD-002-docked-profile.png", "SDD-REG-012-point-selected.png"]
+      "screenshots": [
+        "PPRF-DD-002-docked-profile.png",
+        "PPRF-DD-002-railed-profile.png",
+        "SDD-REG-012-point-selected.png"
+      ]
     },
     {
       "test": "SDD-REG-026: the regression line toggles with an equation and R² note (#25)",
@@ -607,7 +614,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-DD-002", "PPRF-DD-001"],
       "issueRefs": [],
-      "screenshots": ["PPRF-DD-002-docked-profile.png"]
+      "screenshots": ["PPRF-DD-002-docked-profile.png", "PPRF-DD-002-railed-profile.png"]
     },
     {
       "test": "delta-delta rail adoption (PPRF-DD-002, PPRF-11) PPRF-DD-002: a point click opens the railed full profile with the point highlighted",
@@ -615,7 +622,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-DD-002"],
       "issueRefs": [],
-      "screenshots": ["PPRF-DD-002-docked-profile.png"]
+      "screenshots": ["PPRF-DD-002-docked-profile.png", "PPRF-DD-002-railed-profile.png"]
     },
     {
       "test": "delta-delta rail adoption (PPRF-DD-002, PPRF-11) PPRF-DD-002: clicking a different point re-renders the rail for the new participant (SDD-REG-013 retargeted)",
@@ -623,7 +630,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-DD-002", "SDD-REG-013"],
       "issueRefs": [],
-      "screenshots": ["PPRF-DD-002-docked-profile.png"]
+      "screenshots": ["PPRF-DD-002-docked-profile.png", "PPRF-DD-002-railed-profile.png"]
     },
     {
       "test": "delta-delta rail adoption (PPRF-DD-002, PPRF-11) PPRF-DD-002: dock header details default to the host details minus the participant id",
@@ -631,7 +638,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-DD-002"],
       "issueRefs": [],
-      "screenshots": ["PPRF-DD-002-docked-profile.png"]
+      "screenshots": ["PPRF-DD-002-docked-profile.png", "PPRF-DD-002-railed-profile.png"]
     },
     {
       "test": "delta-delta rail adoption (PPRF-DD-002, PPRF-11) PPRF-DD-003: a background click with nothing selected dispatches nothing",
@@ -639,7 +646,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-DD-002", "PPRF-DD-003"],
       "issueRefs": [],
-      "screenshots": ["PPRF-DD-002-docked-profile.png"]
+      "screenshots": ["PPRF-DD-002-docked-profile.png", "PPRF-DD-002-railed-profile.png"]
     },
     {
       "test": "delta-delta rail adoption (PPRF-DD-002, PPRF-11) PPRF-DD-003: a control-driven render resets the rail (render preamble)",
@@ -647,7 +654,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-DD-002", "PPRF-DD-003"],
       "issueRefs": [],
-      "screenshots": ["PPRF-DD-002-docked-profile.png"]
+      "screenshots": ["PPRF-DD-002-docked-profile.png", "PPRF-DD-002-railed-profile.png"]
     },
     {
       "test": "delta-delta rail adoption (PPRF-DD-002, PPRF-11) PPRF-DD-003: dock Clear empties an externally-fed cohort the host never selected (PPRF-11)",
@@ -655,7 +662,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-DD-002", "PPRF-DD-003"],
       "issueRefs": [],
-      "screenshots": ["PPRF-DD-002-docked-profile.png"]
+      "screenshots": ["PPRF-DD-002-docked-profile.png", "PPRF-DD-002-railed-profile.png"]
     },
     {
       "test": "delta-delta rail adoption (PPRF-DD-002, PPRF-11) PPRF-DD-003: the rail Clear affordance routes through the host clear path",
@@ -663,7 +670,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-DD-002", "PPRF-DD-003"],
       "issueRefs": [],
-      "screenshots": ["PPRF-DD-002-docked-profile.png"]
+      "screenshots": ["PPRF-DD-002-docked-profile.png", "PPRF-DD-002-railed-profile.png"]
     },
     {
       "test": "delta-delta structureData SDD-CFG-004: getMeasures returns the sorted distinct measures (#25)",
