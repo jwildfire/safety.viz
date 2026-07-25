@@ -60,6 +60,7 @@ import {
   visitPathSeries
 } from './hep-explorer/structureData.js';
 import { formatNumber } from './hep-explorer/getScales.js';
+import { CLINICAL_CAUTION } from './hep-explorer/getPlugins.js';
 import { profileDock } from './participant-profile.js';
 import { TRACE_HEADER_HINT, createSelection } from './hep-explorer/selection.js';
 import { applyModuleStyles } from './hep-explorer/styles.js';
@@ -190,6 +191,7 @@ class SafetyHepExplorer {
       axisType: 'linear',
       pointSize: 'Uniform',
       marginals: this.settings.marginals,
+      quadrantLabels: this.settings.quadrant_labels,
       visitWindow: this.settings.visit_window,
       groupBy: this.settings.group_by,
       filters: {},
@@ -277,6 +279,13 @@ class SafetyHepExplorer {
     this.compositeWrap = createElement('div', 'hep-composite');
     this.compositeWrap.style.display = 'none';
     this.main.insertBefore(this.compositeWrap, this.multiplesWrap);
+
+    // The standing caution (HEP-CAUTION-001): rendered ONCE into the shell and
+    // never rewritten by a view, because the footnote every view owns is not a
+    // place a permanent warning can live. The clinical guide carries the same
+    // sentence, and the widget travels without the guide.
+    this.cautionEl = createElement('div', 'hep-caution sv-warning', CLINICAL_CAUTION);
+    this.main.append(this.cautionEl);
 
     applyModuleStyles();
     this.footnote.textContent = this.baseFootnote();

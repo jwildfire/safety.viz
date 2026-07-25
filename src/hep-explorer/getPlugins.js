@@ -39,6 +39,70 @@ export const QUADRANT_LABELS = [
 ];
 
 /**
+ * What each quadrant MEANS clinically (HEP-QUAD-008, upstream #107). The four
+ * corner labels name a region of the plot; they do not, on their own, tell a
+ * reviewer what landing in one implies — and the upper-right label is the one
+ * most easily over-read, because "Possible Hy's Law Range" is a place on a
+ * scatter and not a finding about a participant.
+ * @type {Object<string, string>}
+ */
+export const QUADRANT_MEANINGS = {
+  "Possible Hy's Law Range":
+    "Both measures above their cutpoints. A screening range, not a diagnosis: Hy's Law also requires that no other cause explains the injury, which only a full case review can establish.",
+  Hyperbilirubinemia:
+    'Bilirubin above its cutpoint with the aminotransferase below its own — a bilirubin rise without the hepatocellular injury pattern (consider haemolysis, Gilbert syndrome, or cholestasis).',
+  "Temple's Corollary":
+    "Aminotransferase above its cutpoint with bilirubin below its own — hepatocellular injury without the loss of function that defines the Hy's Law range.",
+  'Normal Range': 'Neither measure above its cutpoint for this participant.'
+};
+
+/**
+ * The standing caution the chart carries wherever it renders (HEP-CAUTION-001,
+ * upstream #240). The clinical guide already says this; the widget travels
+ * without the guide, so it has to say it too.
+ * @type {string}
+ */
+export const CLINICAL_CAUTION =
+  'Exploratory tool — not validated for clinical use. Confirm any signal with a full case review.';
+
+/**
+ * The legend rows for the active grouping (HEP-CTRL-013, upstream #108): each
+ * group with its participant count and its share of the plotted points.
+ *
+ * The percent denominator is EVERY plotted point, not just the grouped ones, so
+ * a cohort with missing group values does not silently read as 100% covered.
+ * @param {Array<string>} groupValues The distinct group values, in legend order.
+ * @param {Object[]} points The plotted points.
+ * @returns {Array<{value: string, count: number, percent: number, label: string}>} The rows.
+ */
+export function groupLegendEntries(groupValues, points) {
+  const rows = points || [];
+  const total = rows.length;
+  return (groupValues || []).map((value) => {
+    const count = rows.filter((point) => String(point.group) === String(value)).length;
+    const percent = total ? (count / total) * 100 : 0;
+    return {
+      value: String(value),
+      count,
+      percent,
+      label: `${value} (n=${count}, ${percent.toFixed(1)}%)`
+    };
+  });
+}
+
+/**
+ * The sentence explaining what point size encodes (HEP-CTRL-014, upstream
+ * #274). Only the R-Ratio setting encodes anything, so only it needs a legend:
+ * saying "all points are the same size" is noise.
+ * @param {string} pointSize The active Point Size setting.
+ * @returns {string} The note, or '' when size carries no meaning.
+ */
+export function pointSizeNote(pointSize) {
+  if (pointSize !== 'rRatio') return '';
+  return 'Point size encodes R Ratio: a larger point is a more hepatocellular pattern. Participants with no R Ratio are drawn at the base size.';
+}
+
+/**
  * Convert a #rrggbb hex color to an rgba() string at the given opacity.
  * @param {string} hex Hex color (with or without leading #).
  * @param {number} opacity Alpha in [0, 1].
@@ -204,7 +268,13 @@ export function quadrantPlugin(instance) {
         ctx.stroke();
       }
 
-      // Corner labels with live percents (HEP-QUAD-003).
+      // Corner labels with live percents (HEP-QUAD-003), which a reviewer can
+      // turn off when they are reading the cloud rather than the regions
+      // (HEP-QUAD-007).
+      if (state.quadrantLabels === 'hidden') {
+        ctx.restore();
+        return;
+      }
       ctx.setLineDash([]);
       ctx.fillStyle = 'rgba(51, 65, 85, 0.9)';
       ctx.font = '11px system-ui, sans-serif';

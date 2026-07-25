@@ -13566,6 +13566,7 @@ var DEFAULT_SETTINGS3 = {
     rRatio: { relative_uln: 5, relative_baseline: 5 },
     defaults: { relative_uln: 3, relative_baseline: 3.8 }
   },
+  quadrant_labels: "shown",
   marginals: "box_rug",
   visit_window: 30,
   profile: true,
@@ -21092,6 +21093,31 @@ var QUADRANT_LABELS = [
   { position: "lower-right", label: "Temple's Corollary", xCat: "High", yCat: "Normal" },
   { position: "lower-left", label: "Normal Range", xCat: "Normal", yCat: "Normal" }
 ];
+var QUADRANT_MEANINGS = {
+  "Possible Hy's Law Range": "Both measures above their cutpoints. A screening range, not a diagnosis: Hy's Law also requires that no other cause explains the injury, which only a full case review can establish.",
+  Hyperbilirubinemia: "Bilirubin above its cutpoint with the aminotransferase below its own \u2014 a bilirubin rise without the hepatocellular injury pattern (consider haemolysis, Gilbert syndrome, or cholestasis).",
+  "Temple's Corollary": "Aminotransferase above its cutpoint with bilirubin below its own \u2014 hepatocellular injury without the loss of function that defines the Hy's Law range.",
+  "Normal Range": "Neither measure above its cutpoint for this participant."
+};
+var CLINICAL_CAUTION = "Exploratory tool \u2014 not validated for clinical use. Confirm any signal with a full case review.";
+function groupLegendEntries(groupValues, points) {
+  const rows = points || [];
+  const total = rows.length;
+  return (groupValues || []).map((value) => {
+    const count2 = rows.filter((point) => String(point.group) === String(value)).length;
+    const percent = total ? count2 / total * 100 : 0;
+    return {
+      value: String(value),
+      count: count2,
+      percent,
+      label: `${value} (n=${count2}, ${percent.toFixed(1)}%)`
+    };
+  });
+}
+function pointSizeNote(pointSize) {
+  if (pointSize !== "rRatio") return "";
+  return "Point size encodes R Ratio: a larger point is a more hepatocellular pattern. Participants with no R Ratio are drawn at the base size.";
+}
 function hexToRgba3(hex2, opacity) {
   const clean = hex2.replace("#", "");
   const r = parseInt(clean.slice(0, 2), 16);
@@ -21202,6 +21228,10 @@ function quadrantPlugin(instance) {
         ctx.moveTo(chartArea.left, yPixel);
         ctx.lineTo(chartArea.right, yPixel);
         ctx.stroke();
+      }
+      if (state.quadrantLabels === "hidden") {
+        ctx.restore();
+        return;
       }
       ctx.setLineDash([]);
       ctx.fillStyle = "rgba(51, 65, 85, 0.9)";
@@ -21550,6 +21580,10 @@ var MODULE_CSS2 = `
 .safety-hep-explorer .hep-quadrant-summary th,.safety-hep-explorer .hep-quadrant-summary td{border-bottom:1px solid #e3e8ee;padding:.4rem .55rem;text-align:left}
 .safety-hep-explorer .hep-quadrant-summary th{border-bottom:2px solid #d8dee4;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f}
 .safety-hep-explorer .hep-quadrant-summary td.hep-num,.safety-hep-explorer .hep-quadrant-summary th.hep-num{text-align:right;font-variant-numeric:tabular-nums}
+.safety-hep-explorer .hep-quadrant-summary table{max-width:560px}
+.safety-hep-explorer .hep-quadrant-meaning{display:block;margin-top:.15rem;font-size:.75rem;line-height:1.35;color:#52616f}
+.safety-hep-explorer .hep-legend-note{color:#52616f;font-style:italic;font-size:.8rem}
+.safety-hep-explorer .hep-caution{margin-top:.5rem;font-size:.8rem;color:#8a4b00}
 .safety-hep-explorer .hep-composite{margin-top:.5rem}
 .safety-hep-explorer .hep-composite-header{font-size:.85rem;color:#52616f;background:#f6f8fa;border:1px solid #e3e8ee;border-radius:8px;padding:.4rem .6rem;margin:0 0 .6rem;min-height:1.2rem}
 .safety-hep-explorer .hep-composite-header.is-active{color:#1f2933;font-weight:600;border-color:#b8c0cc;background:#eef2f6}
@@ -22045,19 +22079,25 @@ function drawScatter(host) {
 }
 function drawLegend(host) {
   host.legendEl.innerHTML = "";
-  if (!host.groupValues.length) return;
-  const groupLabel = (host.settings.groups.find((spec) => spec.value_col === host.state.groupBy) || {}).label || host.state.groupBy;
-  host.legendEl.append(createElement("strong", null, `${groupLabel}:`));
-  host.groupValues.forEach((value) => {
-    const chip = createElement("span", "hep-legend-item");
-    chip.style.cssText = "display:inline-flex;align-items:center;gap:.3rem";
-    const swatch = createElement("span");
-    swatch.style.cssText = `display:inline-block;width:.75rem;height:.75rem;border-radius:2px;background:${host.colorScale.get(
-      String(value)
-    )}`;
-    chip.append(swatch, document.createTextNode(String(value)));
-    host.legendEl.append(chip);
-  });
+  if (host.groupValues.length) {
+    const groupLabel = (host.settings.groups.find((spec) => spec.value_col === host.state.groupBy) || {}).label || host.state.groupBy;
+    host.legendEl.append(createElement("strong", null, `${groupLabel}:`));
+    groupLegendEntries(host.groupValues, host.points).forEach((entry) => {
+      const chip = createElement("span", "hep-legend-item");
+      chip.style.cssText = "display:inline-flex;align-items:center;gap:.3rem";
+      const swatch = createElement("span");
+      swatch.style.cssText = `display:inline-block;width:.75rem;height:.75rem;border-radius:2px;background:${host.colorScale.get(
+        entry.value
+      )}`;
+      chip.append(swatch, document.createTextNode(entry.label));
+      host.legendEl.append(chip);
+    });
+  }
+  const sizeNote = pointSizeNote(host.state.pointSize);
+  if (sizeNote) {
+    const note = createElement("span", "hep-legend-note", sizeNote);
+    host.legendEl.append(note);
+  }
 }
 function drawQuadrantSummary(host) {
   host.quadrantWrap.innerHTML = "";
@@ -22072,7 +22112,10 @@ function drawQuadrantSummary(host) {
   const tbody = document.createElement("tbody");
   host.quadrants.labels.forEach((entry) => {
     const tr = document.createElement("tr");
-    tr.append(createElement("td", null, entry.label));
+    const name = createElement("td", null, entry.label);
+    const meaning = QUADRANT_MEANINGS[entry.label];
+    if (meaning) name.append(createElement("span", "hep-quadrant-meaning", meaning));
+    tr.append(name);
     tr.append(createElement("td", "hep-num", String(entry.count)));
     tr.append(
       createElement(
@@ -22140,6 +22183,21 @@ var scatterView = {
     }
     addCutControl(host, addControl, settingsParent, "measureX");
     addCutControl(host, addControl, settingsParent, "measureY");
+    const quadrantLabels = addControl(
+      "Quadrant Labels",
+      document.createElement("select"),
+      settingsParent
+    );
+    [
+      { value: "shown", label: "Shown" },
+      { value: "hidden", label: "Hidden" }
+    ].forEach(
+      (mode) => option(quadrantLabels, mode.value, mode.label, mode.value === host.state.quadrantLabels)
+    );
+    quadrantLabels.onchange = () => {
+      host.state.quadrantLabels = quadrantLabels.value;
+      host.render();
+    };
     const display = addControl("Display Type", document.createElement("select"), settingsParent);
     DISPLAY_MODES.forEach(
       (mode) => option(display, mode.value, mode.label, mode.value === host.state.display)
@@ -23727,6 +23785,7 @@ var SafetyHepExplorer = class {
       axisType: "linear",
       pointSize: "Uniform",
       marginals: this.settings.marginals,
+      quadrantLabels: this.settings.quadrant_labels,
       visitWindow: this.settings.visit_window,
       groupBy: this.settings.group_by,
       filters: {},
@@ -23796,6 +23855,8 @@ var SafetyHepExplorer = class {
     this.compositeWrap = createElement("div", "hep-composite");
     this.compositeWrap.style.display = "none";
     this.main.insertBefore(this.compositeWrap, this.multiplesWrap);
+    this.cautionEl = createElement("div", "hep-caution sv-warning", CLINICAL_CAUTION);
+    this.main.append(this.cautionEl);
     applyModuleStyles();
     this.footnote.textContent = this.baseFootnote();
   }

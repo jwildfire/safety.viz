@@ -1,10 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import {
+  CLINICAL_CAUTION,
   GROUP_COLORS,
-  SELECTION_COLOR,
-  hexToRgba,
-  groupColorScale,
   QUADRANT_LABELS,
+  QUADRANT_MEANINGS,
+  SELECTION_COLOR,
+  groupColorScale,
+  groupLegendEntries,
+  hexToRgba,
+  pointSizeNote,
   pointTooltip
 } from '../../../src/hep-explorer/getPlugins.js';
 
@@ -102,5 +106,51 @@ describe('hep-explorer getPlugins', () => {
       'Total Bilirubin: 3 @ day 12',
       '2 days apart'
     ]);
+  });
+});
+
+// Quadrant/legend/axis polish carried from the upstream backlog (#54): the
+// clinical meaning of each quadrant, the per-group counts the legend was
+// missing, and the point-size encoding it never explained. Requirement groups
+// HEP-QUAD-007/008, HEP-CTRL-013/014, HEP-CAUTION-001.
+
+describe('hep-explorer quadrant and legend polish (#54)', () => {
+  it('HEP-QUAD-008: every quadrant carries the clinical reading it stands for (#54)', () => {
+    QUADRANT_LABELS.forEach((entry) => {
+      const meaning = QUADRANT_MEANINGS[entry.label];
+      expect(meaning, `no meaning for ${entry.label}`).toBeTruthy();
+      expect(meaning.length).toBeGreaterThan(20);
+    });
+    // The one a reviewer must not misread: the upper-right quadrant is a
+    // RANGE, not a diagnosis, and the note has to say so.
+    expect(QUADRANT_MEANINGS["Possible Hy's Law Range"]).toMatch(/not a diagnosis|case review/i);
+    expect(QUADRANT_MEANINGS['Hyperbilirubinemia']).toMatch(/bilirubin/i);
+    expect(QUADRANT_MEANINGS["Temple's Corollary"]).toMatch(/aminotransferase|ALT|transaminase/i);
+  });
+
+  it('HEP-CAUTION-001: the chart carries a standing not-for-clinical-use caution (#54)', () => {
+    expect(CLINICAL_CAUTION).toMatch(/not validated for clinical use/i);
+    expect(CLINICAL_CAUTION).toMatch(/exploratory/i);
+  });
+
+  it("HEP-CTRL-013: legend entries carry each group's count and percent (#54)", () => {
+    const points = [{ group: 'A' }, { group: 'A' }, { group: 'B' }, { group: null }];
+    const entries = groupLegendEntries(['A', 'B'], points);
+    expect(entries.map((entry) => entry.value)).toEqual(['A', 'B']);
+    expect(entries[0].count).toBe(2);
+    expect(entries[1].count).toBe(1);
+    // Percent is of the plotted points, so the ungrouped point is in the
+    // denominator — a legend that quietly dropped it would not add up.
+    expect(entries[0].percent).toBeCloseTo(50);
+    expect(entries[0].label).toBe('A (n=2, 50.0%)');
+    expect(entries[1].label).toBe('B (n=1, 25.0%)');
+    expect(groupLegendEntries([], points)).toEqual([]);
+    expect(groupLegendEntries(['A'], [])[0].label).toBe('A (n=0, 0.0%)');
+  });
+
+  it('HEP-CTRL-014: the point-size encoding is explained only when it encodes something (#54)', () => {
+    expect(pointSizeNote('rRatio')).toMatch(/R Ratio/);
+    expect(pointSizeNote('rRatio')).toMatch(/larger|bigger/i);
+    expect(pointSizeNote('Uniform')).toBe('');
   });
 });

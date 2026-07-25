@@ -118,6 +118,77 @@ test.describe('safety.viz hep-explorer module', () => {
     await captureEvidence(page, 'HEP-QUAD-002', 'quadrant-summary');
   });
 
+  test('HEP-QUAD-007/HEP-QUAD-008/HEP-CTRL-013/HEP-CTRL-014/HEP-CAUTION-001: the labels, the legend and the caution say what the chart means (#54)', async ({
+    page
+  }) => {
+    await page.waitForFunction(() => window.__safetyHepExplorerInstance.chart.$hepQuadrants);
+
+    // HEP-CAUTION-001: the widget travels without the clinical guide, so it
+    // carries the guide's warning itself, in every view.
+    const caution = page.locator('.safety-hep-explorer .hep-caution');
+    await expect(caution).toBeVisible();
+    await expect(caution).toContainText('not validated for clinical use');
+    await page.locator('.sv-view-option', { hasText: 'Migration' }).click();
+    await expect(caution).toBeVisible();
+    await page.locator('.sv-view-option', { hasText: 'scatter' }).click();
+    await page.waitForFunction(() => window.__safetyHepExplorerInstance.chart?.$hepQuadrants);
+
+    // HEP-QUAD-008: each quadrant row states what landing there means, beside
+    // the count of who did.
+    const hysLawRow = page
+      .locator('.hep-quadrant-summary tbody tr', { hasText: "Possible Hy's Law Range" })
+      .first();
+    await expect(hysLawRow.locator('.hep-quadrant-meaning')).toContainText('not a diagnosis');
+    await expect(
+      page
+        .locator('.hep-quadrant-summary tbody tr', { hasText: 'Hyperbilirubinemia' })
+        .first()
+        .locator('.hep-quadrant-meaning')
+    ).toContainText('bilirubin');
+    await expect(page.locator('.hep-quadrant-summary .hep-quadrant-meaning')).toHaveCount(4);
+
+    // HEP-QUAD-007: the corner labels are guidance, not data, and can be turned
+    // off — the cut-lines and the classification stay.
+    const labels = page.locator('.sv-control', {
+      has: page.locator('label:text-is("Quadrant Labels")')
+    });
+    await labels.locator('select').selectOption('hidden');
+    await page.waitForFunction(
+      () => window.__safetyHepExplorerInstance.state.quadrantLabels === 'hidden'
+    );
+    const stillClassified = await page.evaluate(
+      () => window.__safetyHepExplorerInstance.chart.$hepQuadrants
+    );
+    expect(stillClassified.counts['upper-right']).toBe(1);
+    await expect(hysLawRow).toContainText('20.0%');
+    await labels.locator('select').selectOption('shown');
+
+    // HEP-CTRL-013: the legend counts each group and states its share.
+    await page
+      .locator('.sv-control', { has: page.locator('label:text-is("Group")') })
+      .locator('select')
+      .selectOption('ARM');
+    const legend = page.locator('.hep-legend');
+    await expect(legend).toContainText(/Placebo \(n=\d+, \d+\.\d%\)/);
+    await expect(legend).toContainText(/Drug \(n=\d+, \d+\.\d%\)/);
+
+    // HEP-CTRL-014: point size is explained only when it encodes something.
+    await expect(legend.locator('.hep-legend-note')).toHaveCount(0);
+    const pointSize = page.locator('.sv-control', {
+      has: page.locator('label:text-is("Point Size")')
+    });
+    await pointSize.locator('select').selectOption('rRatio');
+    await expect(legend.locator('.hep-legend-note')).toContainText('R Ratio');
+    // The whole main column: the legend counts sit above the plot and the
+    // quadrant meanings and the caution below it, so a viewport shot would
+    // always crop one end of the evidence.
+    await captureEvidence(
+      page.locator('.sv-main'),
+      'HEP-QUAD-008',
+      'quadrant-meanings-and-legend-counts'
+    );
+  });
+
   test('HEP-MARG-001/HEP-MARG-002/HEP-MARG-003: marginal box plots and axis rugs summarize each measure beside the cloud (#47)', async ({
     page
   }) => {

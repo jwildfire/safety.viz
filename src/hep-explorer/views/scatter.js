@@ -37,10 +37,14 @@ import { cutHandleAt, cutValueFor } from '../cutDrag.js';
 import { MARGINAL_MODES, marginalPlugin, scatterPadding } from '../marginals.js';
 import { buildScales, edishDomain, formatNumber } from '../getScales.js';
 import {
+  CLINICAL_CAUTION,
   GROUP_COLORS,
+  QUADRANT_MEANINGS,
   SELECTION_COLOR,
   groupColorScale,
+  groupLegendEntries,
   hexToRgba,
+  pointSizeNote,
   pointTooltip,
   quadrantPlugin
 } from '../getPlugins.js';
@@ -443,21 +447,31 @@ function drawScatter(host) {
  */
 function drawLegend(host) {
   host.legendEl.innerHTML = '';
-  if (!host.groupValues.length) return;
-  const groupLabel =
-    (host.settings.groups.find((spec) => spec.value_col === host.state.groupBy) || {}).label ||
-    host.state.groupBy;
-  host.legendEl.append(createElement('strong', null, `${groupLabel}:`));
-  host.groupValues.forEach((value) => {
-    const chip = createElement('span', 'hep-legend-item');
-    chip.style.cssText = 'display:inline-flex;align-items:center;gap:.3rem';
-    const swatch = createElement('span');
-    swatch.style.cssText = `display:inline-block;width:.75rem;height:.75rem;border-radius:2px;background:${host.colorScale.get(
-      String(value)
-    )}`;
-    chip.append(swatch, document.createTextNode(String(value)));
-    host.legendEl.append(chip);
-  });
+  if (host.groupValues.length) {
+    const groupLabel =
+      (host.settings.groups.find((spec) => spec.value_col === host.state.groupBy) || {}).label ||
+      host.state.groupBy;
+    host.legendEl.append(createElement('strong', null, `${groupLabel}:`));
+    // Each group with its n and its share of the plotted points (HEP-CTRL-013):
+    // a swatch alone says which colour a group is, not how much of the chart
+    // it accounts for.
+    groupLegendEntries(host.groupValues, host.points).forEach((entry) => {
+      const chip = createElement('span', 'hep-legend-item');
+      chip.style.cssText = 'display:inline-flex;align-items:center;gap:.3rem';
+      const swatch = createElement('span');
+      swatch.style.cssText = `display:inline-block;width:.75rem;height:.75rem;border-radius:2px;background:${host.colorScale.get(
+        entry.value
+      )}`;
+      chip.append(swatch, document.createTextNode(entry.label));
+      host.legendEl.append(chip);
+    });
+  }
+  // What point size encodes, when it encodes anything (HEP-CTRL-014).
+  const sizeNote = pointSizeNote(host.state.pointSize);
+  if (sizeNote) {
+    const note = createElement('span', 'hep-legend-note', sizeNote);
+    host.legendEl.append(note);
+  }
 }
 
 /**
@@ -478,7 +492,12 @@ function drawQuadrantSummary(host) {
   const tbody = document.createElement('tbody');
   host.quadrants.labels.forEach((entry) => {
     const tr = document.createElement('tr');
-    tr.append(createElement('td', null, entry.label));
+    const name = createElement('td', null, entry.label);
+    // What landing in this region means, stated next to the count that says how
+    // many participants did (HEP-QUAD-008).
+    const meaning = QUADRANT_MEANINGS[entry.label];
+    if (meaning) name.append(createElement('span', 'hep-quadrant-meaning', meaning));
+    tr.append(name);
     tr.append(createElement('td', 'hep-num', String(entry.count)));
     tr.append(
       createElement(
@@ -568,6 +587,24 @@ const scatterView = {
     // Reference lines (the Hy's-Law cutpoints) for each axis (HEP-QUAD-001).
     addCutControl(host, addControl, settingsParent, 'measureX');
     addCutControl(host, addControl, settingsParent, 'measureY');
+
+    // Quadrant Labels: the corner labels are guidance, not data, and a reader
+    // working inside a dense cloud can turn them off (HEP-QUAD-007).
+    const quadrantLabels = addControl(
+      'Quadrant Labels',
+      document.createElement('select'),
+      settingsParent
+    );
+    [
+      { value: 'shown', label: 'Shown' },
+      { value: 'hidden', label: 'Hidden' }
+    ].forEach((mode) =>
+      option(quadrantLabels, mode.value, mode.label, mode.value === host.state.quadrantLabels)
+    );
+    quadrantLabels.onchange = () => {
+      host.state.quadrantLabels = quadrantLabels.value;
+      host.render();
+    };
 
     // Display Type: eDISH / mDISH (HEP-DISPLAY-001).
     const display = addControl('Display Type', document.createElement('select'), settingsParent);
