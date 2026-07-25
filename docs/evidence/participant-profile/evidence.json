@@ -1,16 +1,13 @@
 {
   "module": "participant-profile",
-  "generatedAt": "2026-07-25T03:42:04.181Z",
+  "generatedAt": "2026-07-25T04:40:24.787Z",
   "environment": {
-    "os": "linux 6.17.0-1020-azure",
-    "node": "v22.23.1",
+    "os": "darwin 23.6.0",
+    "node": "v24.14.0",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": {
-    "id": "30142710565",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/30142710565"
-  },
+  "run": null,
   "records": [
     {
       "test": "a chart link navigates straight to that renderer demo (#71)",
@@ -181,7 +178,7 @@
       "screenshots": ["PPRF-GATE-001-done-gate-demo.png"]
     },
     {
-      "test": "PPRF-HEP-001/PPRF-CORE-001: scatter click opens the docked profile below the chart — header, spaghetti, and measure table replace the legacy detail panel (#98)",
+      "test": "PPRF-HEP-001/PPRF-CORE-001: scatter click opens the profile in the rail beside the chart — header, spaghetti, and measure table replace the legacy detail panel (#98)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["PPRF-HEP-001", "PPRF-CORE-001"],
@@ -189,7 +186,7 @@
       "screenshots": ["PPRF-HEP-001-scatter-dock.png"]
     },
     {
-      "test": "PPRF-HEP-002/PPRF-STEP-001/PPRF-HDR-002: composite multi-select collapses the dock to a stepper, stepping renders each profile and keeps the chart highlight in sync, Clear hides the dock (#98)",
+      "test": "PPRF-HEP-002/PPRF-STEP-001/PPRF-HDR-002: composite multi-select collapses the rail to a stepper, stepping renders each profile and keeps the chart highlight in sync, Clear hides the rail (#98)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["PPRF-HEP-002", "PPRF-STEP-001", "PPRF-HDR-002"],
@@ -205,7 +202,7 @@
       "screenshots": []
     },
     {
-      "test": "PPRF-HEP-004: the migration ribbon hand-off arrives in the composite view with the dock opened on the carried cohort (#98)",
+      "test": "PPRF-HEP-004: the migration ribbon hand-off arrives in the composite view with the rail opened on the carried cohort (#98)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["PPRF-HEP-004"],
@@ -213,11 +210,115 @@
       "screenshots": ["PPRF-HEP-004-migration-handoff-dock.png"]
     },
     {
-      "test": "PPRF-HEP-005: background click clears the selection and hides the dock (#98)",
+      "test": "PPRF-HEP-005: background click clears the selection and hides the rail (#98)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["PPRF-HEP-005"],
       "issueRefs": [98],
+      "screenshots": []
+    },
+    {
+      "test": "aeDomain / unionDomain — the shared study-day axis (PPRF-AXIS-001) falls back to whichever domain exists",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AXIS-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "aeDomain / unionDomain — the shared study-day axis (PPRF-AXIS-001) ignores unplaceable events",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AXIS-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "aeDomain / unionDomain — the shared study-day axis (PPRF-AXIS-001) pads a zero-width domain so a single-day participant still plots",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AXIS-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "aeDomain / unionDomain — the shared study-day axis (PPRF-AXIS-001) spans the earliest onset to the latest stop day",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AXIS-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "aeDomain / unionDomain — the shared study-day axis (PPRF-AXIS-001) unions the lab domain with the AE domain so late events stay visible",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AXIS-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "an AE-only profile (PPRF-AE-005, decision D9) draws no spaghetti card and no measure table, rather than empty ones",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AE-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "an AE-only profile (PPRF-AE-005, decision D9) reads the header demographics off the AE records when there are no labs",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AE-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "an AE-only profile (PPRF-AE-005, decision D9) renders the header and the AE tracks",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AE-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "an AE-only profile (PPRF-AE-005, decision D9) scales the timeline to the AE domain alone",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AE-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "an AE-only profile (PPRF-AE-005, decision D9) still reads as an AE profile when the participant has no events at all",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AE-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "axisTicks — a readable ruler under the timeline (PPRF-AETL-002) never returns a single tick for a real domain",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AETL-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "axisTicks — a readable ruler under the timeline (PPRF-AETL-002) picks a coarser step for a long study",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AETL-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "axisTicks — a readable ruler under the timeline (PPRF-AETL-002) returns round day values inside the domain, as percentages",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AETL-002"],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -481,6 +582,78 @@
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["PPRF-CORE-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "cleanAeRecords — one ingest, explicit rules (PPRF-AE-002) drops records with no participant id and counts them",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AE-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "cleanAeRecords — one ingest, explicit rules (PPRF-AE-002) falls back to the verbatim term when no preferred term is present",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AE-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "cleanAeRecords — one ingest, explicit rules (PPRF-AE-002) files an unmapped severity as not recorded rather than inventing a rank",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AE-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "cleanAeRecords — one ingest, explicit rules (PPRF-AE-002) flags serious events from highlight.value",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AE-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "cleanAeRecords — one ingest, explicit rules (PPRF-AE-002) prefers the preferred term for the row label and keeps the verbatim term",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AE-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "cleanAeRecords — one ingest, explicit rules (PPRF-AE-002) ranks severity by position in color.values, one-based",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AE-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "cleanAeRecords — one ingest, explicit rules (PPRF-AE-002) retains a record with no usable start day but marks it unplaceable",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AE-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "cleanAeRecords — one ingest, explicit rules (PPRF-AE-002) treats a blank stop day as open-ended, not as a zero-length event",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AE-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "cleanAeRecords — one ingest, explicit rules (PPRF-AE-002) treats a stop day before the start day as missing",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AE-002"],
       "issueRefs": [],
       "screenshots": []
     },
@@ -1061,6 +1234,38 @@
       "screenshots": []
     },
     {
+      "test": "participantEvents — worst-first within a participant (PPRF-AE-003) orders by severity descending, then onset ascending",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AE-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "participantEvents — worst-first within a participant (PPRF-AE-003) returns an empty list for a participant with no events",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AE-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "participantEvents — worst-first within a participant (PPRF-AE-003) returns only the profiled participant’s events",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AE-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "participantEvents — worst-first within a participant (PPRF-AE-003) sorts unplaceable events last so the plot rows stay contiguous",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AE-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
       "test": "participantsSelected listener (PPRF-6, PPRF-EVT-001) clears to idle on an empty selection payload",
       "suite": "unit",
       "status": "pass",
@@ -1101,58 +1306,58 @@
       "screenshots": ["PPRF-EVT-001-linked-charts-demo.png"]
     },
     {
-      "test": "profileDock (PPRF-1, PPRF-CORE-005) clear empties the container so the :empty slot hides",
+      "test": "profileRail (PPRF-1, PPRF-CORE-005, PPRF-RAIL-001) clear empties the profile block and returns the rail to its idle head",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["PPRF-CORE-005"],
+      "requirementIds": ["PPRF-CORE-005", "PPRF-RAIL-001"],
       "issueRefs": [],
       "screenshots": []
     },
     {
-      "test": "profileDock (PPRF-1, PPRF-CORE-005) docked Clear invokes on_clear and leaves clearing to the host (PPRF-6)",
+      "test": "profileRail (PPRF-1, PPRF-CORE-005, PPRF-RAIL-001) installs no event listener — participantsSelected on document is ignored",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["PPRF-CORE-005"],
+      "requirementIds": ["PPRF-CORE-005", "PPRF-RAIL-001"],
       "issueRefs": [],
       "screenshots": []
     },
     {
-      "test": "profileDock (PPRF-1, PPRF-CORE-005) installs no event listener — participantsSelected on document is ignored",
+      "test": "profileRail (PPRF-1, PPRF-CORE-005, PPRF-RAIL-001) pins the worst-first stepper in the rail head, not in the scrolling block (D8)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["PPRF-CORE-005"],
+      "requirementIds": ["PPRF-CORE-005", "PPRF-RAIL-001"],
       "issueRefs": [],
       "screenshots": []
     },
     {
-      "test": "profileDock (PPRF-1, PPRF-CORE-005) resize reaches the live charts; destroy tears them down and empties the container",
+      "test": "profileRail (PPRF-1, PPRF-CORE-005, PPRF-RAIL-001) railed Clear invokes on_clear and leaves clearing to the host (PPRF-6)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["PPRF-CORE-005"],
+      "requirementIds": ["PPRF-CORE-005", "PPRF-RAIL-001"],
       "issueRefs": [],
       "screenshots": []
     },
     {
-      "test": "profileDock (PPRF-1, PPRF-CORE-005) show renders the profile from pre-cleaned rows without re-ingesting",
+      "test": "profileRail (PPRF-1, PPRF-CORE-005, PPRF-RAIL-001) resize reaches the live charts; destroy tears them down and empties the container",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["PPRF-CORE-005"],
+      "requirementIds": ["PPRF-CORE-005", "PPRF-RAIL-001"],
       "issueRefs": [],
       "screenshots": []
     },
     {
-      "test": "profileDock (PPRF-1, PPRF-CORE-005) shows the worst-first stepper for N > 1 (PPRF-5)",
+      "test": "profileRail (PPRF-1, PPRF-CORE-005, PPRF-RAIL-001) show renders the profile from pre-cleaned rows without re-ingesting",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["PPRF-CORE-005"],
+      "requirementIds": ["PPRF-CORE-005", "PPRF-RAIL-001"],
       "issueRefs": [],
       "screenshots": []
     },
     {
-      "test": "profileDock (PPRF-1, PPRF-CORE-005) stepping re-renders the profile and calls on_step with the id",
+      "test": "profileRail (PPRF-1, PPRF-CORE-005, PPRF-RAIL-001) stepping re-renders the profile and calls on_step with the id",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["PPRF-CORE-005"],
+      "requirementIds": ["PPRF-CORE-005", "PPRF-RAIL-001"],
       "issueRefs": [],
       "screenshots": []
     },
@@ -1249,6 +1454,118 @@
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["PPRF-TBL-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderAeTracks — the states that are not a happy path keeps the summary but suppresses the timeline when no study day resolves (D7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderAeTracks — the states that are not a happy path says so, once, when the participant has no events",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderAeTracks — the summary block (PPRF-AESUM-001) gives the mix bar a text alternative",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AESUM-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderAeTracks — the summary block (PPRF-AESUM-001) lists body systems most-first with counts",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AESUM-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderAeTracks — the summary block (PPRF-AESUM-001) names every severity level in the mix legend, so hue never carries it alone",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AESUM-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderAeTracks — the summary block (PPRF-AESUM-001) renders the four headline figures with their labels",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AESUM-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderAeTracks — the timeline (PPRF-AETL-001) draws a day ruler under the rows",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AETL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderAeTracks — the timeline (PPRF-AETL-001) draws one row per placeable event, capped at max_rows",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AETL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderAeTracks — the timeline (PPRF-AETL-001) gives every bar a text alternative naming days and severity",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AETL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderAeTracks — the timeline (PPRF-AETL-001) marks open-ended events in the label as well as the bar",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AETL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderAeTracks — the timeline (PPRF-AETL-001) marks serious events in the label as well as the bar",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AETL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderAeTracks — the timeline (PPRF-AETL-001) names events with no start day instead of dropping them silently",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AETL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderAeTracks — the timeline (PPRF-AETL-001) pads the plot to the labs chart gutters so the two axes line up",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AETL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderAeTracks — the timeline (PPRF-AETL-001) places bars as percentages of the shared domain",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AETL-001"],
       "issueRefs": [],
       "screenshots": []
     },
@@ -1405,26 +1722,50 @@
       "screenshots": []
     },
     {
-      "test": "renderShell profile slot (PPRF-1) exposes a profileWrap slot with the sv-profile class inside the main column",
+      "test": "renderShell rail slot (PPRF-RAIL-001) exposes a railWrap slot with the sv-rail class",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": [],
+      "requirementIds": ["PPRF-RAIL-001"],
       "issueRefs": [],
       "screenshots": []
     },
     {
-      "test": "renderShell profile slot (PPRF-1) hides the slot while it is empty via the shared stylesheet",
+      "test": "renderShell rail slot (PPRF-RAIL-001) gives the rail a settable width and the root a positioning context for expand",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": [],
+      "requirementIds": ["PPRF-RAIL-001"],
       "issueRefs": [],
       "screenshots": []
     },
     {
-      "test": "renderShell profile slot (PPRF-1) places the slot between the small-multiples grid and the listing",
+      "test": "renderShell rail slot (PPRF-RAIL-001) hides the rail while it is empty via the shared stylesheet",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": [],
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) no longer carries the dock slot inside the main column (D4)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) puts the rail opposite the control sidebar, with the chart between them (D2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) stacks the rail below the main column under the shell breakpoint (D4)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
       "issueRefs": [],
       "screenshots": []
     },
@@ -2125,6 +2466,86 @@
       "screenshots": []
     },
     {
+      "test": "summarizeAe — four figures, a mix and a rollup (PPRF-AESUM-001) builds the severity mix worst-first, dropping empty levels",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AESUM-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "summarizeAe — four figures, a mix and a rollup (PPRF-AESUM-001) counts events, serious events and events with no end date",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AESUM-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "summarizeAe — four figures, a mix and a rollup (PPRF-AESUM-001) reports the highest severity reached",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AESUM-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "summarizeAe — four figures, a mix and a rollup (PPRF-AESUM-001) reports zeroes rather than throwing on an empty cohort",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AESUM-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "summarizeAe — four figures, a mix and a rollup (PPRF-AESUM-001) rolls events up by body system, descending by count then name",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AESUM-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "syncAeSettings — the AE data contract (PPRF-AE-001) accepts a severity scale of any length and derives labels from the values",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AE-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "syncAeSettings — the AE data contract (PPRF-AE-001) deep-merges a partial color override onto the defaults",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AE-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "syncAeSettings — the AE data contract (PPRF-AE-001) defaults to the ae-timelines / ae-explorer column names rather than a third vocabulary",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AE-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "syncAeSettings — the AE data contract (PPRF-AE-001) disables the serious highlight when highlight is null",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AE-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "syncAeSettings — the AE data contract (PPRF-AE-001) takes explicit labels when given",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AE-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
       "test": "templateProfileURL (PPRF-2, PPRF-HDR-003, closes #53) passes a token-less URL through unchanged (original static-URL back-compat)",
       "suite": "unit",
       "status": "pass",
@@ -2145,6 +2566,126 @@
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["PPRF-HDR-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "the adverse-event tracks in the rail (PPRF-AE-004) renders no AE block at all when the host configures no AE domain",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AE-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "the adverse-event tracks in the rail (PPRF-AE-004) renders the AE block directly after the labs chart when one is configured (D5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AE-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "the adverse-event tracks in the rail (PPRF-AE-004) says so when the participant has no events of their own",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AE-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "the cohort list (PPRF-STEP-003, decision D8) expands the stepper to the ranked cohort and marks the current participant",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-STEP-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "the cohort list (PPRF-STEP-003, decision D8) picking a participant from the list steps to it",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-STEP-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "the rail head (PPRF-RAIL-002, PPRF-EXP-001) closing the rail collapses it, so it never reopens expanded",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-002", "PPRF-EXP-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "the rail head (PPRF-RAIL-002, PPRF-EXP-001) Escape leaves the expanded state",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-002", "PPRF-EXP-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "the rail head (PPRF-RAIL-002, PPRF-EXP-001) Expand fills the host container rather than the viewport (decision D3)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-002", "PPRF-EXP-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "the rail head (PPRF-RAIL-002, PPRF-EXP-001) names the selected participant and how many are selected",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-002", "PPRF-EXP-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "the rail head (PPRF-RAIL-002, PPRF-EXP-001) the head Close delegates to the host, like the block Clear",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-002", "PPRF-EXP-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "timelineGeometry — bars as percentages of the shared domain (PPRF-AETL-001) clamps and flags an event running past the domain",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AETL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "timelineGeometry — bars as percentages of the shared domain (PPRF-AETL-001) gives a same-day event a visible minimum width",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AETL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "timelineGeometry — bars as percentages of the shared domain (PPRF-AETL-001) places a bar by its start and stop day",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AETL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "timelineGeometry — bars as percentages of the shared domain (PPRF-AETL-001) returns no geometry for an unplaceable event",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AETL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "timelineGeometry — bars as percentages of the shared domain (PPRF-AETL-001) runs an open-ended event to the end of the domain and says so",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-AETL-001"],
       "issueRefs": [],
       "screenshots": []
     },
