@@ -78,7 +78,7 @@
         test_normality: true,
         group_by: 'ARM',
         compare_distributions: true,
-        // Docked participant profile (#99, PPRF-SH): the data carries no DY
+        // Railed participant profile (#99, PPRF-SH): the data carries no DY
         // column, so VISITNUM doubles as the study-day axis (the hep-explorer
         // demo precedent); measure_values maps the profile's key liver
         // measures onto this data's TEST names (same mapping as the
