@@ -32,7 +32,7 @@ linked from its page on the site.
 Vendor the committed bundle — no build step, no npm install:
 
 ```html
-<script src="dist/safety.viz-1.4.1/safety.viz.js"></script>
+<script src="dist/safety.viz-1.5.0/safety.viz.js"></script>
 <script>
   SafetyViz.histogram('#container', {
     value_col: 'STRESN',
@@ -45,7 +45,7 @@ Vendor the committed bundle — no build step, no npm install:
 An ESM build is committed alongside:
 
 ```js
-import { histogram } from './dist/safety.viz-1.4.1/safety.viz.esm.js';
+import { histogram } from './dist/safety.viz-1.5.0/safety.viz.esm.js';
 histogram('#container', settings).init(rows);
 ```
 
@@ -99,7 +99,7 @@ Each chart re-implements an interactive display built by
 [Rho, Inc.](https://github.com/RhoInc) and used in practice under the
 safetyGraphics project. The port is held to that standard: every chart traces
 to a reviewed
-[requirement matrix](https://github.com/jwildfire/obot.agent/tree/main/docs/requirements),
+[requirement matrix](requirements/README.md),
 tests are keyed to requirement IDs, and results are published as audit-style
 [evidence reports](https://jwildfire.github.io/safety.viz/histogram/evidence.html)
 with every release.

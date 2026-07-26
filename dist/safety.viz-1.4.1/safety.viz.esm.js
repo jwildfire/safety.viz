@@ -1,4 +1,4 @@
-// ../axis-prefill-85/node_modules/@kurkle/color/dist/color.esm.js
+// node_modules/@kurkle/color/dist/color.esm.js
 function round(v) {
   return v + 0.5 | 0;
 }
@@ -555,7 +555,7 @@ var Color = class _Color {
   }
 };
 
-// ../axis-prefill-85/node_modules/chart.js/dist/chunks/helpers.dataset.js
+// node_modules/chart.js/dist/chunks/helpers.dataset.js
 function noop() {
 }
 var uid = /* @__PURE__ */ (() => {
@@ -1017,7 +1017,7 @@ var _textX = (align, left, right, rtl) => {
 function _getStartAndCountOfVisiblePoints(meta, points, animationsDisabled) {
   const pointCount = points.length;
   let start = 0;
-  let count2 = pointCount;
+  let count = pointCount;
   if (meta._sorted) {
     const { iScale, vScale, _parsed } = meta;
     const spanGaps = meta.dataset ? meta.dataset.options ? meta.dataset.options.spanGaps : null : null;
@@ -1047,14 +1047,14 @@ function _getStartAndCountOfVisiblePoints(meta, points, animationsDisabled) {
         const distanceToDefinedHi = _parsed.slice(end - 1).findIndex((point) => !isNullOrUndef(point[vScale.axis]));
         end += Math.max(0, distanceToDefinedHi);
       }
-      count2 = _limitValue(end, start, pointCount) - start;
+      count = _limitValue(end, start, pointCount) - start;
     } else {
-      count2 = pointCount - start;
+      count = pointCount - start;
     }
   }
   return {
     start,
-    count: count2
+    count
   };
 }
 function _scaleRangesChanged(meta) {
@@ -2649,35 +2649,35 @@ function propertyFn(property) {
     normalize: (x) => x
   };
 }
-function normalizeSegment({ start, end, count: count2, loop, style }) {
+function normalizeSegment({ start, end, count, loop, style }) {
   return {
-    start: start % count2,
-    end: end % count2,
-    loop: loop && (end - start + 1) % count2 === 0,
+    start: start % count,
+    end: end % count,
+    loop: loop && (end - start + 1) % count === 0,
     style
   };
 }
 function getSegment(segment, points, bounds) {
   const { property, start: startBound, end: endBound } = bounds;
   const { between, normalize } = propertyFn(property);
-  const count2 = points.length;
+  const count = points.length;
   let { start, end, loop } = segment;
   let i, ilen;
   if (loop) {
-    start += count2;
-    end += count2;
-    for (i = 0, ilen = count2; i < ilen; ++i) {
-      if (!between(normalize(points[start % count2][property]), startBound, endBound)) {
+    start += count;
+    end += count;
+    for (i = 0, ilen = count; i < ilen; ++i) {
+      if (!between(normalize(points[start % count][property]), startBound, endBound)) {
         break;
       }
       start--;
       end--;
     }
-    start %= count2;
-    end %= count2;
+    start %= count;
+    end %= count;
   }
   if (end < start) {
-    end += count2;
+    end += count;
   }
   return {
     start,
@@ -2693,7 +2693,7 @@ function _boundSegment(segment, points, bounds) {
     ];
   }
   const { property, start: startBound, end: endBound } = bounds;
-  const count2 = points.length;
+  const count = points.length;
   const { compare, between, normalize } = propertyFn(property);
   const { start, end, loop, style } = getSegment(segment, points, bounds);
   const result = [];
@@ -2705,7 +2705,7 @@ function _boundSegment(segment, points, bounds) {
   const shouldStart = () => inside || startIsBefore();
   const shouldStop = () => !inside || endIsBefore();
   for (let i = start, prev = start; i <= end; ++i) {
-    point = points[i % count2];
+    point = points[i % count];
     if (point.skip) {
       continue;
     }
@@ -2722,7 +2722,7 @@ function _boundSegment(segment, points, bounds) {
         start: subStart,
         end: i,
         loop,
-        count: count2,
+        count,
         style
       }));
       subStart = null;
@@ -2735,7 +2735,7 @@ function _boundSegment(segment, points, bounds) {
       start: subStart,
       end,
       loop,
-      count: count2,
+      count,
       style
     }));
   }
@@ -2752,44 +2752,44 @@ function _boundSegments(line, bounds) {
   }
   return result;
 }
-function findStartAndEnd(points, count2, loop, spanGaps) {
+function findStartAndEnd(points, count, loop, spanGaps) {
   let start = 0;
-  let end = count2 - 1;
+  let end = count - 1;
   if (loop && !spanGaps) {
-    while (start < count2 && !points[start].skip) {
+    while (start < count && !points[start].skip) {
       start++;
     }
   }
-  while (start < count2 && points[start].skip) {
+  while (start < count && points[start].skip) {
     start++;
   }
-  start %= count2;
+  start %= count;
   if (loop) {
     end += start;
   }
-  while (end > start && points[end % count2].skip) {
+  while (end > start && points[end % count].skip) {
     end--;
   }
-  end %= count2;
+  end %= count;
   return {
     start,
     end
   };
 }
 function solidSegments(points, start, max, loop) {
-  const count2 = points.length;
+  const count = points.length;
   const result = [];
   let last = start;
   let prev = points[start];
   let end;
   for (end = start + 1; end <= max; ++end) {
-    const cur = points[end % count2];
+    const cur = points[end % count];
     if (cur.skip || cur.stop) {
       if (!prev.skip) {
         loop = false;
         result.push({
-          start: start % count2,
-          end: (end - 1) % count2,
+          start: start % count,
+          end: (end - 1) % count,
           loop
         });
         start = last = cur.stop ? end : null;
@@ -2804,8 +2804,8 @@ function solidSegments(points, start, max, loop) {
   }
   if (last !== null) {
     result.push({
-      start: start % count2,
-      end: last % count2,
+      start: start % count,
+      end: last % count,
       loop
     });
   }
@@ -2814,12 +2814,12 @@ function solidSegments(points, start, max, loop) {
 function _computeSegments(line, segmentOptions) {
   const points = line.points;
   const spanGaps = line.options.spanGaps;
-  const count2 = points.length;
-  if (!count2) {
+  const count = points.length;
+  if (!count) {
     return [];
   }
   const loop = !!line._loop;
-  const { start, end } = findStartAndEnd(points, count2, loop, spanGaps);
+  const { start, end } = findStartAndEnd(points, count, loop, spanGaps);
   if (spanGaps === true) {
     return splitByStyles(line, [
       {
@@ -2829,8 +2829,8 @@ function _computeSegments(line, segmentOptions) {
       }
     ], points, segmentOptions);
   }
-  const max = end < start ? end + count2 : end;
-  const completeLoop = !!line._fullLoop && start === 0 && end === count2 - 1;
+  const max = end < start ? end + count : end;
+  const completeLoop = !!line._fullLoop && start === 0 && end === count - 1;
   return splitByStyles(line, solidSegments(points, start, max, completeLoop), points, segmentOptions);
 }
 function splitByStyles(line, segments, points, segmentOptions) {
@@ -2843,7 +2843,7 @@ function doSplitByStyles(line, segments, points, segmentOptions) {
   const chartContext = line._chart.getContext();
   const baseStyle = readStyle(line.options);
   const { _datasetIndex: datasetIndex, options: { spanGaps } } = line;
-  const count2 = points.length;
+  const count = points.length;
   const result = [];
   let prevStyle = baseStyle;
   let start = segments[0].start;
@@ -2853,36 +2853,36 @@ function doSplitByStyles(line, segments, points, segmentOptions) {
     if (s === e) {
       return;
     }
-    s += count2;
-    while (points[s % count2].skip) {
+    s += count;
+    while (points[s % count].skip) {
       s -= dir;
     }
-    while (points[e % count2].skip) {
+    while (points[e % count].skip) {
       e += dir;
     }
-    if (s % count2 !== e % count2) {
+    if (s % count !== e % count) {
       result.push({
-        start: s % count2,
-        end: e % count2,
+        start: s % count,
+        end: e % count,
         loop: l,
         style: st
       });
       prevStyle = st;
-      start = e % count2;
+      start = e % count;
     }
   }
   for (const segment of segments) {
     start = spanGaps ? start : segment.start;
-    let prev = points[start % count2];
+    let prev = points[start % count];
     let style;
     for (i = start + 1; i <= segment.end; i++) {
-      const pt = points[i % count2];
+      const pt = points[i % count];
       style = readStyle(segmentOptions.setContext(createContext(chartContext, {
         type: "segment",
         p0: prev,
         p1: pt,
-        p0DataIndex: (i - 1) % count2,
-        p1DataIndex: i % count2,
+        p0DataIndex: (i - 1) % count,
+        p1DataIndex: i % count,
         datasetIndex
       })));
       if (styleChanged(style, prevStyle)) {
@@ -2953,7 +2953,7 @@ function getDatasetClipArea(chart, meta) {
   };
 }
 
-// ../axis-prefill-85/node_modules/chart.js/dist/chart.js
+// node_modules/chart.js/dist/chart.js
 var Animator = class {
   constructor() {
     this._request = null;
@@ -3653,11 +3653,11 @@ var DatasetController = class {
     this._parsing = this.options.parsing;
     this._cachedDataOpts = {};
   }
-  parse(start, count2) {
+  parse(start, count) {
     const { _cachedMeta: meta, _data: data } = this;
     const { iScale, _stacked } = meta;
     const iAxis = iScale.axis;
-    let sorted = start === 0 && count2 === data.length ? true : meta._sorted;
+    let sorted = start === 0 && count === data.length ? true : meta._sorted;
     let prev = start > 0 && meta._parsed[start - 1];
     let i, cur, parsed;
     if (this._parsing === false) {
@@ -3666,14 +3666,14 @@ var DatasetController = class {
       parsed = data;
     } else {
       if (isArray(data[start])) {
-        parsed = this.parseArrayData(meta, data, start, count2);
+        parsed = this.parseArrayData(meta, data, start, count);
       } else if (isObject(data[start])) {
-        parsed = this.parseObjectData(meta, data, start, count2);
+        parsed = this.parseObjectData(meta, data, start, count);
       } else {
-        parsed = this.parsePrimitiveData(meta, data, start, count2);
+        parsed = this.parsePrimitiveData(meta, data, start, count);
       }
       const isNotInOrderComparedToPrev = () => cur[iAxis] === null || prev && cur[iAxis] < prev[iAxis];
-      for (i = 0; i < count2; ++i) {
+      for (i = 0; i < count; ++i) {
         meta._parsed[i + start] = cur = parsed[i];
         if (sorted) {
           if (isNotInOrderComparedToPrev()) {
@@ -3688,15 +3688,15 @@ var DatasetController = class {
       updateStacks(this, parsed);
     }
   }
-  parsePrimitiveData(meta, data, start, count2) {
+  parsePrimitiveData(meta, data, start, count) {
     const { iScale, vScale } = meta;
     const iAxis = iScale.axis;
     const vAxis = vScale.axis;
     const labels = iScale.getLabels();
     const singleScale = iScale === vScale;
-    const parsed = new Array(count2);
+    const parsed = new Array(count);
     let i, ilen, index;
-    for (i = 0, ilen = count2; i < ilen; ++i) {
+    for (i = 0, ilen = count; i < ilen; ++i) {
       index = i + start;
       parsed[i] = {
         [iAxis]: singleScale || iScale.parse(labels[index], index),
@@ -3705,11 +3705,11 @@ var DatasetController = class {
     }
     return parsed;
   }
-  parseArrayData(meta, data, start, count2) {
+  parseArrayData(meta, data, start, count) {
     const { xScale, yScale } = meta;
-    const parsed = new Array(count2);
+    const parsed = new Array(count);
     let i, ilen, index, item;
-    for (i = 0, ilen = count2; i < ilen; ++i) {
+    for (i = 0, ilen = count; i < ilen; ++i) {
       index = i + start;
       item = data[index];
       parsed[i] = {
@@ -3719,12 +3719,12 @@ var DatasetController = class {
     }
     return parsed;
   }
-  parseObjectData(meta, data, start, count2) {
+  parseObjectData(meta, data, start, count) {
     const { xScale, yScale } = meta;
     const { xAxisKey = "x", yAxisKey = "y" } = this._parsing;
-    const parsed = new Array(count2);
+    const parsed = new Array(count);
     let i, ilen, index, item;
-    for (i = 0, ilen = count2; i < ilen; ++i) {
+    for (i = 0, ilen = count; i < ilen; ++i) {
       index = i + start;
       item = data[index];
       parsed[i] = {
@@ -3841,13 +3841,13 @@ var DatasetController = class {
     const area = chart.chartArea;
     const active = [];
     const start = this._drawStart || 0;
-    const count2 = this._drawCount || elements.length - start;
+    const count = this._drawCount || elements.length - start;
     const drawActiveElementsOnTop = this.options.drawActiveElementsOnTop;
     let i;
     if (meta.dataset) {
-      meta.dataset.draw(ctx, area, start, count2);
+      meta.dataset.draw(ctx, area, start, count);
     }
-    for (i = start; i < start + count2; ++i) {
+    for (i = start; i < start + count; ++i) {
       const element = elements[i];
       if (element.hidden) {
         continue;
@@ -4007,9 +4007,9 @@ var DatasetController = class {
     this._syncList = [];
     const numMeta = elements.length;
     const numData = data.length;
-    const count2 = Math.min(numData, numMeta);
-    if (count2) {
-      this.parse(0, count2);
+    const count = Math.min(numData, numMeta);
+    if (count) {
+      this.parse(0, count);
     }
     if (numData > numMeta) {
       this._insertElements(numMeta, numData - numMeta, resetNewElements);
@@ -4017,15 +4017,15 @@ var DatasetController = class {
       this._removeElements(numData, numMeta - numData);
     }
   }
-  _insertElements(start, count2, resetNewElements = true) {
+  _insertElements(start, count, resetNewElements = true) {
     const meta = this._cachedMeta;
     const data = meta.data;
-    const end = start + count2;
+    const end = start + count;
     let i;
     const move = (arr) => {
-      arr.length += count2;
+      arr.length += count;
       for (i = arr.length - 1; i >= end; i--) {
-        arr[i] = arr[i - count2];
+        arr[i] = arr[i - count];
       }
     };
     move(data);
@@ -4035,22 +4035,22 @@ var DatasetController = class {
     if (this._parsing) {
       move(meta._parsed);
     }
-    this.parse(start, count2);
+    this.parse(start, count);
     if (resetNewElements) {
-      this.updateElements(data, start, count2, "reset");
+      this.updateElements(data, start, count, "reset");
     }
   }
-  updateElements(element, start, count2, mode) {
+  updateElements(element, start, count, mode) {
   }
-  _removeElements(start, count2) {
+  _removeElements(start, count) {
     const meta = this._cachedMeta;
     if (this._parsing) {
-      const removed = meta._parsed.splice(start, count2);
+      const removed = meta._parsed.splice(start, count);
       if (meta._stacked) {
         clearStacks(meta, removed);
       }
     }
-    meta.data.splice(start, count2);
+    meta.data.splice(start, count);
   }
   _sync(args) {
     if (this._parsing) {
@@ -4065,11 +4065,11 @@ var DatasetController = class {
     ]);
   }
   _onDataPush() {
-    const count2 = arguments.length;
+    const count = arguments.length;
     this._sync([
       "_insertElements",
-      this.getDataset().data.length - count2,
-      count2
+      this.getDataset().data.length - count,
+      count
     ]);
   }
   _onDataPop() {
@@ -4086,12 +4086,12 @@ var DatasetController = class {
       1
     ]);
   }
-  _onDataSplice(start, count2) {
-    if (count2) {
+  _onDataSplice(start, count) {
+    if (count) {
       this._sync([
         "_removeElements",
         start,
-        count2
+        count
       ]);
     }
     const newCount = arguments.length - 2;
@@ -4212,14 +4212,14 @@ function parseValue(entry, item, vScale, i) {
   }
   return item;
 }
-function parseArrayOrPrimitive(meta, data, start, count2) {
+function parseArrayOrPrimitive(meta, data, start, count) {
   const iScale = meta.iScale;
   const vScale = meta.vScale;
   const labels = iScale.getLabels();
   const singleScale = iScale === vScale;
   const parsed = [];
   let i, ilen, item, entry;
-  for (i = start, ilen = start + count2; i < ilen; ++i) {
+  for (i = start, ilen = start + count; i < ilen; ++i) {
     entry = data[i];
     item = {};
     item[iScale.axis] = singleScale || iScale.parse(labels[i], i);
@@ -4347,20 +4347,20 @@ var BarController = class extends DatasetController {
       }
     }
   };
-  parsePrimitiveData(meta, data, start, count2) {
-    return parseArrayOrPrimitive(meta, data, start, count2);
+  parsePrimitiveData(meta, data, start, count) {
+    return parseArrayOrPrimitive(meta, data, start, count);
   }
-  parseArrayData(meta, data, start, count2) {
-    return parseArrayOrPrimitive(meta, data, start, count2);
+  parseArrayData(meta, data, start, count) {
+    return parseArrayOrPrimitive(meta, data, start, count);
   }
-  parseObjectData(meta, data, start, count2) {
+  parseObjectData(meta, data, start, count) {
     const { iScale, vScale } = meta;
     const { xAxisKey = "x", yAxisKey = "y" } = this._parsing;
     const iAxisKey = iScale.axis === "x" ? xAxisKey : yAxisKey;
     const vAxisKey = vScale.axis === "x" ? xAxisKey : yAxisKey;
     const parsed = [];
     let i, ilen, item, obj;
-    for (i = start, ilen = start + count2; i < ilen; ++i) {
+    for (i = start, ilen = start + count; i < ilen; ++i) {
       obj = data[i];
       item = {};
       item[iScale.axis] = iScale.parse(resolveObjectKey(obj, iAxisKey), i);
@@ -4400,14 +4400,14 @@ var BarController = class extends DatasetController {
     const meta = this._cachedMeta;
     this.updateElements(meta.data, 0, meta.data.length, mode);
   }
-  updateElements(bars, start, count2, mode) {
+  updateElements(bars, start, count, mode) {
     const reset = mode === "reset";
     const { index, _cachedMeta: { vScale } } = this;
     const base = vScale.getBasePixel();
     const horizontal = vScale.isHorizontal();
     const ruler = this._getRuler();
     const { sharedOptions, includeOptions } = this._getSharedOptions(start, mode);
-    for (let i = start; i < start + count2; i++) {
+    for (let i = start; i < start + count; i++) {
       const parsed = this.getParsed(i);
       const vpixels = reset || isNullOrUndef(parsed[vScale.axis]) ? {
         base,
@@ -4632,12 +4632,12 @@ var LineController = class extends DatasetController {
     const meta = this._cachedMeta;
     const { dataset: line, data: points = [], _dataset } = meta;
     const animationsDisabled = this.chart._animationsDisabled;
-    let { start, count: count2 } = _getStartAndCountOfVisiblePoints(meta, points, animationsDisabled);
+    let { start, count } = _getStartAndCountOfVisiblePoints(meta, points, animationsDisabled);
     this._drawStart = start;
-    this._drawCount = count2;
+    this._drawCount = count;
     if (_scaleRangesChanged(meta)) {
       start = 0;
-      count2 = points.length;
+      count = points.length;
     }
     line._chart = this.chart;
     line._datasetIndex = this.index;
@@ -4652,9 +4652,9 @@ var LineController = class extends DatasetController {
       animated: !animationsDisabled,
       options
     }, mode);
-    this.updateElements(points, start, count2, mode);
+    this.updateElements(points, start, count, mode);
   }
-  updateElements(points, start, count2, mode) {
+  updateElements(points, start, count, mode) {
     const reset = mode === "reset";
     const { iScale, vScale, _stacked, _dataset } = this._cachedMeta;
     const { sharedOptions, includeOptions } = this._getSharedOptions(start, mode);
@@ -4663,7 +4663,7 @@ var LineController = class extends DatasetController {
     const { spanGaps, segment } = this.options;
     const maxGapLength = isNumber(spanGaps) ? spanGaps : Number.POSITIVE_INFINITY;
     const directUpdate = this.chart._animationsDisabled || reset || mode === "none";
-    const end = start + count2;
+    const end = start + count;
     const pointsCount = points.length;
     let prevParsed = start > 0 && this.getParsed(start - 1);
     for (let i = 0; i < pointsCount; ++i) {
@@ -4747,12 +4747,12 @@ var ScatterController = class extends DatasetController {
     const meta = this._cachedMeta;
     const { data: points = [] } = meta;
     const animationsDisabled = this.chart._animationsDisabled;
-    let { start, count: count2 } = _getStartAndCountOfVisiblePoints(meta, points, animationsDisabled);
+    let { start, count } = _getStartAndCountOfVisiblePoints(meta, points, animationsDisabled);
     this._drawStart = start;
-    this._drawCount = count2;
+    this._drawCount = count;
     if (_scaleRangesChanged(meta)) {
       start = 0;
-      count2 = points.length;
+      count = points.length;
     }
     if (this.options.showLine) {
       if (!this.datasetElementType) {
@@ -4773,7 +4773,7 @@ var ScatterController = class extends DatasetController {
       delete meta.dataset;
       this.datasetElementType = false;
     }
-    this.updateElements(points, start, count2, mode);
+    this.updateElements(points, start, count, mode);
   }
   addElements() {
     const { showLine } = this.options;
@@ -4782,7 +4782,7 @@ var ScatterController = class extends DatasetController {
     }
     super.addElements();
   }
-  updateElements(points, start, count2, mode) {
+  updateElements(points, start, count, mode) {
     const reset = mode === "reset";
     const { iScale, vScale, _stacked, _dataset } = this._cachedMeta;
     const firstOpts = this.resolveDataElementOptions(start, mode);
@@ -4794,7 +4794,7 @@ var ScatterController = class extends DatasetController {
     const maxGapLength = isNumber(spanGaps) ? spanGaps : Number.POSITIVE_INFINITY;
     const directUpdate = this.chart._animationsDisabled || reset || mode === "none";
     let prevParsed = start > 0 && this.getParsed(start - 1);
-    for (let i = start; i < start + count2; ++i) {
+    for (let i = start; i < start + count; ++i) {
       const point = points[i];
       const parsed = this.getParsed(i);
       const properties = directUpdate ? point : {};
@@ -5833,22 +5833,22 @@ function getMajorIndices(ticks) {
   return result;
 }
 function skipMajors(ticks, newTicks, majorIndices, spacing) {
-  let count2 = 0;
+  let count = 0;
   let next = majorIndices[0];
   let i;
   spacing = Math.ceil(spacing);
   for (i = 0; i < ticks.length; i++) {
     if (i === next) {
       newTicks.push(ticks[i]);
-      count2++;
-      next = majorIndices[count2 * spacing];
+      count++;
+      next = majorIndices[count * spacing];
     }
   }
 }
 function skip(ticks, newTicks, spacing, majorStart, majorEnd) {
   const start = valueOrDefault(majorStart, 0);
   const end = Math.min(valueOrDefault(majorEnd, ticks.length), ticks.length);
-  let count2 = 0;
+  let count = 0;
   let length, i, next;
   spacing = Math.ceil(spacing);
   if (majorEnd) {
@@ -5857,14 +5857,14 @@ function skip(ticks, newTicks, spacing, majorStart, majorEnd) {
   }
   next = start;
   while (next < 0) {
-    count2++;
-    next = Math.round(start + count2 * spacing);
+    count++;
+    next = Math.round(start + count * spacing);
   }
   for (i = Math.max(start, 0); i < end; i++) {
     if (i === next) {
       newTicks.push(ticks[i]);
-      count2++;
-      next = Math.round(start + count2 * spacing);
+      count++;
+      next = Math.round(start + count * spacing);
     }
   }
 }
@@ -8198,8 +8198,8 @@ var Chart = class {
   _updateHiddenIndices() {
     const { _hiddenIndices } = this;
     const changes = this._getUniformDataChanges() || [];
-    for (const { method, start, count: count2 } of changes) {
-      const move = method === "_removeElements" ? -count2 : count2;
+    for (const { method, start, count } of changes) {
+      const move = method === "_removeElements" ? -count : count;
       moveNumericKeys(_hiddenIndices, start, move);
     }
   }
@@ -8699,27 +8699,27 @@ function getLineMethod(options) {
   return lineTo;
 }
 function pathVars(points, segment, params = {}) {
-  const count2 = points.length;
-  const { start: paramsStart = 0, end: paramsEnd = count2 - 1 } = params;
+  const count = points.length;
+  const { start: paramsStart = 0, end: paramsEnd = count - 1 } = params;
   const { start: segmentStart, end: segmentEnd } = segment;
   const start = Math.max(paramsStart, segmentStart);
   const end = Math.min(paramsEnd, segmentEnd);
   const outside = paramsStart < segmentStart && paramsEnd < segmentStart || paramsStart > segmentEnd && paramsEnd > segmentEnd;
   return {
-    count: count2,
+    count,
     start,
     loop: segment.loop,
-    ilen: end < start && !outside ? count2 + end - start : end - start
+    ilen: end < start && !outside ? count + end - start : end - start
   };
 }
 function pathSegment(ctx, line, segment, params) {
   const { points, options } = line;
-  const { count: count2, start, loop, ilen } = pathVars(points, segment, params);
+  const { count, start, loop, ilen } = pathVars(points, segment, params);
   const lineMethod = getLineMethod(options);
   let { move = true, reverse } = params || {};
   let i, point, prev;
   for (i = 0; i <= ilen; ++i) {
-    point = points[(start + (reverse ? ilen - i : i)) % count2];
+    point = points[(start + (reverse ? ilen - i : i)) % count];
     if (point.skip) {
       continue;
     } else if (move) {
@@ -8731,19 +8731,19 @@ function pathSegment(ctx, line, segment, params) {
     prev = point;
   }
   if (loop) {
-    point = points[(start + (reverse ? ilen : 0)) % count2];
+    point = points[(start + (reverse ? ilen : 0)) % count];
     lineMethod(ctx, prev, point, reverse, options.stepped);
   }
   return !!loop;
 }
 function fastPathSegment(ctx, line, segment, params) {
   const points = line.points;
-  const { count: count2, start, ilen } = pathVars(points, segment, params);
+  const { count, start, ilen } = pathVars(points, segment, params);
   const { move = true, reverse } = params || {};
   let avgX = 0;
   let countX = 0;
   let i, point, prevX, minY, maxY, lastY;
-  const pointIndex = (index) => (start + (reverse ? ilen - index : index)) % count2;
+  const pointIndex = (index) => (start + (reverse ? ilen - index : index)) % count;
   const drawX = () => {
     if (minY !== maxY) {
       ctx.lineTo(avgX, maxY);
@@ -8796,18 +8796,18 @@ function _getInterpolationMethod(options) {
   }
   return _pointInLine;
 }
-function strokePathWithCache(ctx, line, start, count2) {
+function strokePathWithCache(ctx, line, start, count) {
   let path = line._path;
   if (!path) {
     path = line._path = new Path2D();
-    if (line.path(path, start, count2)) {
+    if (line.path(path, start, count)) {
       path.closePath();
     }
   }
   setStyle(ctx, line.options);
   ctx.stroke(path);
 }
-function strokePathDirect(ctx, line, start, count2) {
+function strokePathDirect(ctx, line, start, count) {
   const { segments, options } = line;
   const segmentMethod = _getSegmentMethod(line);
   for (const segment of segments) {
@@ -8815,7 +8815,7 @@ function strokePathDirect(ctx, line, start, count2) {
     ctx.beginPath();
     if (segmentMethod(ctx, line, segment, {
       start,
-      end: start + count2 - 1
+      end: start + count - 1
     })) {
       ctx.closePath();
     }
@@ -8823,11 +8823,11 @@ function strokePathDirect(ctx, line, start, count2) {
   }
 }
 var usePath2D = typeof Path2D === "function";
-function draw(ctx, line, start, count2) {
+function draw(ctx, line, start, count) {
   if (usePath2D && !line.options.segment) {
-    strokePathWithCache(ctx, line, start, count2);
+    strokePathWithCache(ctx, line, start, count);
   } else {
-    strokePathDirect(ctx, line, start, count2);
+    strokePathDirect(ctx, line, start, count);
   }
 }
 var LineElement = class extends Element {
@@ -8898,8 +8898,8 @@ var LineElement = class extends Element {
   last() {
     const segments = this.segments;
     const points = this.points;
-    const count2 = segments.length;
-    return count2 && points[segments[count2 - 1].end];
+    const count = segments.length;
+    return count && points[segments[count - 1].end];
   }
   interpolate(point, property) {
     const options = this.options;
@@ -8935,26 +8935,26 @@ var LineElement = class extends Element {
     const segmentMethod = _getSegmentMethod(this);
     return segmentMethod(ctx, this, segment, params);
   }
-  path(ctx, start, count2) {
+  path(ctx, start, count) {
     const segments = this.segments;
     const segmentMethod = _getSegmentMethod(this);
     let loop = this._loop;
     start = start || 0;
-    count2 = count2 || this.points.length - start;
+    count = count || this.points.length - start;
     for (const segment of segments) {
       loop &= segmentMethod(ctx, this, segment, {
         start,
-        end: start + count2 - 1
+        end: start + count - 1
       });
     }
     return !!loop;
   }
-  draw(ctx, chartArea, start, count2) {
+  draw(ctx, chartArea, start, count) {
     const options = this.options || {};
     const points = this.points || [];
     if (points.length && options.borderWidth) {
       ctx.save();
-      draw(ctx, this, start, count2);
+      draw(ctx, this, start, count);
       ctx.restore();
     }
     if (this.animated) {
@@ -9292,19 +9292,19 @@ var Legend = class extends Element {
   }
   buildLabels() {
     const labelOpts = this.options.labels || {};
-    let legendItems2 = callback(labelOpts.generateLabels, [
+    let legendItems = callback(labelOpts.generateLabels, [
       this.chart
     ], this) || [];
     if (labelOpts.filter) {
-      legendItems2 = legendItems2.filter((item) => labelOpts.filter(item, this.chart.data));
+      legendItems = legendItems.filter((item) => labelOpts.filter(item, this.chart.data));
     }
     if (labelOpts.sort) {
-      legendItems2 = legendItems2.sort((a, b) => labelOpts.sort(a, b, this.chart.data));
+      legendItems = legendItems.sort((a, b) => labelOpts.sort(a, b, this.chart.data));
     }
     if (this.options.reverse) {
-      legendItems2.reverse();
+      legendItems.reverse();
     }
-    this.legendItems = legendItems2;
+    this.legendItems = legendItems;
   }
   fit() {
     const { options, ctx } = this;
@@ -9782,143 +9782,6 @@ var plugin_legend = {
     }
   }
 };
-var Title = class extends Element {
-  constructor(config) {
-    super();
-    this.chart = config.chart;
-    this.options = config.options;
-    this.ctx = config.ctx;
-    this._padding = void 0;
-    this.top = void 0;
-    this.bottom = void 0;
-    this.left = void 0;
-    this.right = void 0;
-    this.width = void 0;
-    this.height = void 0;
-    this.position = void 0;
-    this.weight = void 0;
-    this.fullSize = void 0;
-  }
-  update(maxWidth, maxHeight) {
-    const opts = this.options;
-    this.left = 0;
-    this.top = 0;
-    if (!opts.display) {
-      this.width = this.height = this.right = this.bottom = 0;
-      return;
-    }
-    this.width = this.right = maxWidth;
-    this.height = this.bottom = maxHeight;
-    const lineCount = isArray(opts.text) ? opts.text.length : 1;
-    this._padding = toPadding(opts.padding);
-    const textSize = lineCount * toFont(opts.font).lineHeight + this._padding.height;
-    if (this.isHorizontal()) {
-      this.height = textSize;
-    } else {
-      this.width = textSize;
-    }
-  }
-  isHorizontal() {
-    const pos = this.options.position;
-    return pos === "top" || pos === "bottom";
-  }
-  _drawArgs(offset) {
-    const { top, left, bottom, right, options } = this;
-    const align = options.align;
-    let rotation = 0;
-    let maxWidth, titleX, titleY;
-    if (this.isHorizontal()) {
-      titleX = _alignStartEnd(align, left, right);
-      titleY = top + offset;
-      maxWidth = right - left;
-    } else {
-      if (options.position === "left") {
-        titleX = left + offset;
-        titleY = _alignStartEnd(align, bottom, top);
-        rotation = PI * -0.5;
-      } else {
-        titleX = right - offset;
-        titleY = _alignStartEnd(align, top, bottom);
-        rotation = PI * 0.5;
-      }
-      maxWidth = bottom - top;
-    }
-    return {
-      titleX,
-      titleY,
-      maxWidth,
-      rotation
-    };
-  }
-  draw() {
-    const ctx = this.ctx;
-    const opts = this.options;
-    if (!opts.display) {
-      return;
-    }
-    const fontOpts = toFont(opts.font);
-    const lineHeight = fontOpts.lineHeight;
-    const offset = lineHeight / 2 + this._padding.top;
-    const { titleX, titleY, maxWidth, rotation } = this._drawArgs(offset);
-    renderText(ctx, opts.text, 0, 0, fontOpts, {
-      color: opts.color,
-      maxWidth,
-      rotation,
-      textAlign: _toLeftRightCenter(opts.align),
-      textBaseline: "middle",
-      translation: [
-        titleX,
-        titleY
-      ]
-    });
-  }
-};
-function createTitle(chart, titleOpts) {
-  const title = new Title({
-    ctx: chart.ctx,
-    options: titleOpts,
-    chart
-  });
-  layouts.configure(chart, title, titleOpts);
-  layouts.addBox(chart, title);
-  chart.titleBlock = title;
-}
-var plugin_title = {
-  id: "title",
-  _element: Title,
-  start(chart, _args, options) {
-    createTitle(chart, options);
-  },
-  stop(chart) {
-    const titleBlock = chart.titleBlock;
-    layouts.removeBox(chart, titleBlock);
-    delete chart.titleBlock;
-  },
-  beforeUpdate(chart, _args, options) {
-    const title = chart.titleBlock;
-    layouts.configure(chart, title, options);
-    title.options = options;
-  },
-  defaults: {
-    align: "center",
-    display: false,
-    font: {
-      weight: "bold"
-    },
-    fullSize: true,
-    padding: 10,
-    position: "top",
-    text: "",
-    weight: 2e3
-  },
-  defaultRoutes: {
-    color: "color"
-  },
-  descriptors: {
-    _scriptable: true,
-    _indexable: false
-  }
-};
 var positioners = {
   average(items) {
     if (!items.length) {
@@ -9927,17 +9790,17 @@ var positioners = {
     let i, len;
     let xSet = /* @__PURE__ */ new Set();
     let y = 0;
-    let count2 = 0;
+    let count = 0;
     for (i = 0, len = items.length; i < len; ++i) {
       const el = items[i].element;
       if (el && el.hasValue()) {
         const pos = el.tooltipPosition();
         xSet.add(pos.x);
         y += pos.y;
-        ++count2;
+        ++count;
       }
     }
-    if (count2 === 0 || xSet.size === 0) {
+    if (count === 0 || xSet.size === 0) {
       return false;
     }
     const xAverage = [
@@ -9945,7 +9808,7 @@ var positioners = {
     ].reduce((a, b) => a + b) / xSet.size;
     return {
       x: xAverage,
-      y: y / count2
+      y: y / count
     };
   },
   nearest(items, eventPosition) {
@@ -10023,7 +9886,7 @@ function getTooltipSize(tooltip, options) {
   const padding = toPadding(options.padding);
   let height = padding.height;
   let width = 0;
-  let combinedBodyLength = body.reduce((count2, bodyItem) => count2 + bodyItem.before.length + bodyItem.lines.length + bodyItem.after.length, 0);
+  let combinedBodyLength = body.reduce((count, bodyItem) => count + bodyItem.before.length + bodyItem.lines.length + bodyItem.after.length, 0);
   combinedBodyLength += tooltip.beforeBody.length + tooltip.afterBody.length;
   if (titleLineCount) {
     height += titleLineCount * titleFont.lineHeight + (titleLineCount - 1) * options.titleSpacing + options.titleMarginBottom;
@@ -11024,13 +10887,13 @@ var CategoryScale = class extends Scale {
 function generateTicks$1(generationOptions, dataRange) {
   const ticks = [];
   const MIN_SPACING = 1e-14;
-  const { bounds, step, min, max, precision: precision2, count: count2, maxTicks, maxDigits, includeBounds } = generationOptions;
+  const { bounds, step, min, max, precision: precision2, count, maxTicks, maxDigits, includeBounds } = generationOptions;
   const unit = step || 1;
   const maxSpaces = maxTicks - 1;
   const { min: rmin, max: rmax } = dataRange;
   const minDefined = !isNullOrUndef(min);
   const maxDefined = !isNullOrUndef(max);
-  const countDefined = !isNullOrUndef(count2);
+  const countDefined = !isNullOrUndef(count);
   const minSpacing = (rmax - rmin) / (maxDigits + 1);
   let spacing = niceNum((rmax - rmin) / maxSpaces / unit) * unit;
   let factor, niceMin, niceMax, numSpaces;
@@ -11067,7 +10930,7 @@ function generateTicks$1(generationOptions, dataRange) {
   } else if (countDefined) {
     niceMin = minDefined ? min : niceMin;
     niceMax = maxDefined ? max : niceMax;
-    numSpaces = count2 - 1;
+    numSpaces = count - 1;
     spacing = (niceMax - niceMin) / numSpaces;
   } else {
     numSpaces = (niceMax - niceMin) / spacing;
@@ -12228,7 +12091,7 @@ var TimeScale = class extends Scale {
     const hasWeekday = isNumber(weekday) || weekday === true;
     const ticks = {};
     let first = min;
-    let time, count2;
+    let time, count;
     if (hasWeekday) {
       first = +adapter.startOf(first, "isoWeek", weekday);
     }
@@ -12237,10 +12100,10 @@ var TimeScale = class extends Scale {
       throw new Error(min + " and " + max + " are too far apart with stepSize of " + stepSize + " " + minor);
     }
     const timestamps = options.ticks.source === "data" && this.getDataTimestamps();
-    for (time = first, count2 = 0; time < max; time = +adapter.add(time, stepSize, minor), count2++) {
+    for (time = first, count = 0; time < max; time = +adapter.add(time, stepSize, minor), count++) {
       addTick(ticks, time, timestamps);
     }
-    if (time === max || options.bounds === "ticks" || count2 === 1) {
+    if (time === max || options.bounds === "ticks" || count === 1) {
       addTick(ticks, time, timestamps);
     }
     return Object.keys(ticks).sort(sorter).map((x) => +x);
@@ -12469,15 +12332,6 @@ function createElement(tag, className, text) {
   if (text !== void 0) element.textContent = text;
   return element;
 }
-function prototypeBanner(note) {
-  const banner = createElement("div", "sv-prototype");
-  banner.setAttribute("role", "note");
-  const tag = createElement("span", "sv-prototype-tag", "Prototype");
-  banner.append(tag);
-  const text = note || "This chart is a prototype under evaluation for the v1.5 release \u2014 its behaviour and settings may change before it is finalized.";
-  banner.append(createElement("span", "sv-prototype-text", text));
-  return banner;
-}
 function option(select, value, label, selected) {
   const opt = document.createElement("option");
   opt.value = value;
@@ -12487,7 +12341,7 @@ function option(select, value, label, selected) {
 }
 var SHELL_STYLE_ID = "safety-viz-shell-styles";
 var SHELL_STYLES = `
-.sv-root{display:flex;align-items:flex-start;gap:1.25rem;width:100%;position:relative;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#1f2933;--sv-rail-width:520px}
+.sv-root{display:flex;align-items:flex-start;gap:1.25rem;width:100%;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#1f2933}
 .sv-sidebar{position:sticky;top:1rem;flex:0 0 250px;max-height:calc(100vh - 2rem);overflow-y:auto;border:1px solid #d8dee4;border-radius:10px;background:#f6f8fa;padding:.8rem .9rem 1rem}
 .sv-sidebar-header{display:flex;align-items:center;justify-content:space-between;gap:.5rem}
 .sv-sidebar-title{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#52616f}
@@ -12512,14 +12366,6 @@ var SHELL_STYLES = `
 .sv-warning{color:#9a3412}
 .sv-chart-wrap{height:460px;position:relative;border:1px solid #d8dee4;border-radius:10px;padding:1rem;background:#fff}
 .sv-footnote{margin:.6rem 0 0;font-size:.85rem;color:#52616f}
-.sv-rail{flex:0 0 var(--sv-rail-width);align-self:flex-start;position:sticky;top:1rem;max-height:calc(100vh - 2rem);display:flex;flex-direction:column;overflow:hidden;border:1px solid #d8dee4;border-radius:10px;background:#fbfcfd}
-.sv-rail:empty{display:none}
-/* The rail takes no width until a participant is selected: the module sets
-   [hidden] on the slot while it is idle, and .sv-rail's own display would
-   otherwise win over the user-agent rule. */
-.sv-rail[hidden]{display:none}
-.sv-rail-expanded .sv-rail{position:absolute;inset:0;z-index:6;max-height:none;box-shadow:0 18px 46px rgba(31,41,51,.22)}
-.sv-rail-expanded .sv-main,.sv-rail-expanded .sv-sidebar{filter:saturate(.25) opacity(.35)}
 .sv-multiples{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;margin-top:1.25rem}
 .sv-multiples:empty{display:none}
 .sv-multiple{border:1px solid #d8dee4;border-radius:10px;padding:.75rem .85rem;background:#fff}
@@ -12532,10 +12378,6 @@ var SHELL_STYLES = `
 .sv-listing th,.sv-listing td{border-bottom:1px solid #e3e8ee;padding:.45rem .55rem;text-align:left;vertical-align:top}
 .sv-listing th{border-bottom:2px solid #d8dee4;cursor:pointer;font-size:.75rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f;white-space:nowrap}
 .sv-listing tbody tr:hover{background:#f6f8fa}
-.sv-listing tbody tr.sv-listing-rowlink{cursor:pointer}
-.sv-listing tbody tr.sv-listing-rowlink:focus-visible{outline:2px solid #0b62a4;outline-offset:-2px}
-.sv-listing tbody tr.sv-listing-row-selected{background:#e8f0fe}
-.sv-listing tbody tr.sv-listing-row-selected:hover{background:#dce8fc}
 .sv-listing-actions{display:flex;align-items:center;justify-content:space-between;gap:.75rem;margin:.5rem 0;font-size:.85rem;flex-wrap:wrap}
 .sv-listing-tools{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
 .sv-listing-search{padding:.35rem .45rem;border:1px solid #b8c0cc;border-radius:6px;font:inherit;font-size:.85rem}
@@ -12552,15 +12394,9 @@ var SHELL_STYLES = `
 .sv-view-option:hover{border-color:#b8c0cc;background:#f6f8fa}
 .sv-view-option.is-active{border-color:#0b62a4;background:#eaf2fb;color:#0b3d63;font-weight:600;box-shadow:inset 0 0 0 1px #0b62a4}
 .sv-view-option:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
-.sv-prototype{display:flex;align-items:baseline;gap:.5rem;margin:0 0 .6rem;padding:.4rem .6rem;border:1px solid #e6c98a;border-left:4px solid #d99a2b;border-radius:6px;background:#fdf6e6;color:#6b4e12;font-size:.8rem;line-height:1.35}
-.sv-prototype-tag{flex:0 0 auto;text-transform:uppercase;letter-spacing:.05em;font-weight:700;font-size:.68rem;padding:.08rem .4rem;border-radius:999px;background:#d99a2b;color:#fff}
-.sv-prototype-text{flex:1 1 auto}
 @media (max-width:900px){
 .sv-root{flex-direction:column}
 .sv-sidebar{position:static;flex:1 1 auto;width:100%;max-height:none}
-.sv-rail{position:static;flex:1 1 auto;width:100%;max-height:none}
-.sv-rail-expanded .sv-rail{position:static}
-.sv-rail-expanded .sv-main,.sv-rail-expanded .sv-sidebar{filter:none}
 .sv-controls{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:0 1.25rem;align-items:start}
 .sv-control-section{border-top:none}
 }`;
@@ -12603,8 +12439,7 @@ function renderShell(element, { moduleClass = "", onToggle } = {}) {
   const listingWrap = createElement("div", "sv-listing");
   chartWrap.append(canvas, mainAnnotation);
   main.append(notes, chartWrap, footnote, multiplesWrap, listingWrap);
-  const railWrap = createElement("aside", "sv-rail");
-  root.append(sidebar, main, railWrap);
+  root.append(sidebar, main);
   element.append(root);
   applyShellStyles();
   return {
@@ -12619,7 +12454,6 @@ function renderShell(element, { moduleClass = "", onToggle } = {}) {
     mainAnnotation,
     footnote,
     multiplesWrap,
-    railWrap,
     listingWrap
   };
 }
@@ -12649,14 +12483,14 @@ function renderViewSelector(addSection, { options, active, onChange, title = "Vi
   const section = addSection(title);
   const list = createElement("div", "sv-view-list");
   options.forEach(({ value, label }) => {
-    const isActive3 = value === active;
+    const isActive = value === active;
     const optionButton = createElement(
       "button",
-      `sv-view-option${isActive3 ? " is-active" : ""}`,
+      `sv-view-option${isActive ? " is-active" : ""}`,
       label
     );
     optionButton.type = "button";
-    optionButton.setAttribute("aria-pressed", String(isActive3));
+    optionButton.setAttribute("aria-pressed", String(isActive));
     optionButton.onclick = () => {
       if (value === active) return;
       onChange(value);
@@ -12665,47 +12499,6 @@ function renderViewSelector(addSection, { options, active, onChange, title = "Vi
   });
   section.append(list);
   return section;
-}
-
-// src/axis-limits.js
-function limitDigits(domain) {
-  const range = Math.abs((domain && domain[1]) - (domain && domain[0]));
-  if (!Number.isFinite(range) || range <= 0) return 2;
-  return Math.max(0, Math.min(20, 2 - Math.floor(Math.log10(range))));
-}
-function formatLimit(value, digits) {
-  if (!Number.isFinite(value)) return "";
-  return String(Number(value.toFixed(Math.max(0, Math.min(20, digits)))));
-}
-function syncAxisLimits(state, domain, inputs = {}) {
-  state.axisDomain = [domain[0], domain[1]];
-  const digits = limitDigits(state.axisDomain);
-  if (inputs.lower) inputs.lower.value = formatLimit(domain[0], digits);
-  if (inputs.upper) inputs.upper.value = formatLimit(domain[1], digits);
-  return state.axisDomain;
-}
-function seedLimitInput(state, key) {
-  if (Number.isFinite(state[key])) return String(state[key]);
-  const domain = state.axisDomain;
-  if (!domain) return "";
-  return formatLimit(domain[key === "lower" ? 0 : 1], limitDigits(domain));
-}
-function applyLimitEdit(state, key, raw) {
-  const value = raw === "" ? null : Number(raw);
-  state[key] = Number.isFinite(value) ? value : null;
-  const domain = state.axisDomain || [];
-  const lower = state.lower == null ? domain[0] : state.lower;
-  const upper = state.upper == null ? domain[1] : state.upper;
-  if (Number.isFinite(lower) && Number.isFinite(upper) && lower >= upper) {
-    state.lower = upper;
-    state.upper = lower;
-  }
-  return state;
-}
-function clearAxisLimits(state) {
-  state.lower = null;
-  state.upper = null;
-  state.axisDomain = null;
 }
 
 // src/histogram/configure.js
@@ -12727,13 +12520,6 @@ var DEFAULT_SETTINGS = {
   test_normality: false,
   group_by: "sh_none",
   compare_distributions: false,
-  studyday_col: null,
-  visit_col: null,
-  visitn_col: null,
-  measure_values: null,
-  profile: true,
-  profile_details: null,
-  participantProfileURL: null,
   width: "100%",
   height: 460,
   page_size: 10
@@ -12780,8 +12566,6 @@ function syncSettings(settings) {
   }
   if (settings.displayNormalRange !== void 0)
     synced.display_normal_range = settings.displayNormalRange;
-  synced.profile = Boolean(synced.profile);
-  synced.profile_details = synced.profile_details === void 0 || synced.profile_details === null ? null : arrayify(synced.profile_details).map((value) => fieldSpec(value)).filter((d) => d.value_col);
   return synced;
 }
 
@@ -12961,8 +12745,8 @@ function shimazakiShinomotoBins(values, span) {
     const counts = new Array(binCount).fill(0);
     const countWidth = (hi - lo) / binCount;
     for (const value of values) counts[binIndex(value, lo, countWidth, binCount)] += 1;
-    const meanCount = counts.reduce((sum, count2) => sum + count2, 0) / binCount;
-    const residual = counts.reduce((sum, count2) => sum + Math.pow(count2 - meanCount, 2), 0) / candidate;
+    const meanCount = counts.reduce((sum, count) => sum + count, 0) / binCount;
+    const residual = counts.reduce((sum, count) => sum + Math.pow(count - meanCount, 2), 0) / candidate;
     const cost = (2 * meanCount - residual) / Math.pow(binWidth, 2);
     if (cost < bestCost) {
       bestCost = cost;
@@ -13097,9 +12881,9 @@ function statisticalAnnotation(label, pValue, testName, url) {
 function binDescription(bin, measure, digits) {
   return `${bin.records.length} records with ${measure} values >= ${formatNumber2(bin.lower, digits)} and <= ${formatNumber2(bin.upper, digits)}`;
 }
-function selectionColors(baseColor, count2, selectedIndex) {
+function selectionColors(baseColor, count, selectedIndex) {
   const faded = baseColor.replace(/,\s*[\d.]+\)$/, ", 0.15)");
-  return Array.from({ length: count2 }, (_, index) => index === selectedIndex ? baseColor : faded);
+  return Array.from({ length: count }, (_, index) => index === selectedIndex ? baseColor : faded);
 }
 function normalRangePlugin(instance) {
   return {
@@ -13247,27 +13031,8 @@ function renderListing(instance) {
   thead.append(headRow);
   table.append(thead);
   const tbody = document.createElement("tbody");
-  const interactive = typeof instance.onListingRowClick === "function";
-  const idCol = instance.settings.id_col;
   visible.forEach((row) => {
     const tr = document.createElement("tr");
-    if (interactive) {
-      const id = row[idCol];
-      tr.classList.add("sv-listing-rowlink");
-      tr.tabIndex = 0;
-      tr.setAttribute("role", "button");
-      tr.setAttribute("aria-label", `Focus participant ${id == null ? "" : id}`.trim());
-      const activate = () => instance.onListingRowClick(row);
-      tr.onclick = activate;
-      tr.onkeydown = (event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          activate();
-        }
-      };
-      if (instance.listingSelectedId != null && String(id) === String(instance.listingSelectedId))
-        tr.classList.add("sv-listing-row-selected");
-    }
     cols.forEach(
       (col) => tr.append(createElement("td", null, row[col.value_col] == null ? "" : row[col.value_col]))
     );
@@ -13275,2714 +13040,6 @@ function renderListing(instance) {
   });
   table.append(tbody);
   instance.listingWrap.append(actions, table);
-}
-
-// src/hep-core/stats.js
-function mean2(values) {
-  const nums = values.map(Number).filter(Number.isFinite);
-  if (!nums.length) return NaN;
-  return nums.reduce((sum, value) => sum + value, 0) / nums.length;
-}
-function quantile2(values, p) {
-  const nums = values.map(Number).filter(Number.isFinite);
-  if (!nums.length) return NaN;
-  const sorted = [...nums].sort((a, b) => a - b);
-  const idx = (sorted.length - 1) * p;
-  const lo = Math.floor(idx);
-  const hi = Math.ceil(idx);
-  if (lo === hi) return sorted[lo];
-  return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
-}
-function median(values) {
-  return quantile2(values, 0.5);
-}
-function boxStats(values) {
-  const sorted = (values || []).map(Number).filter(Number.isFinite).sort((a, b) => a - b);
-  return {
-    n: sorted.length,
-    min: sorted.length ? sorted[0] : NaN,
-    q5: quantile2(sorted, 0.05),
-    q25: quantile2(sorted, 0.25),
-    median: quantile2(sorted, 0.5),
-    q75: quantile2(sorted, 0.75),
-    q95: quantile2(sorted, 0.95),
-    max: sorted.length ? sorted[sorted.length - 1] : NaN,
-    mean: mean2(sorted)
-  };
-}
-
-// src/hep-core/rows.js
-function cutFor(cuts, measureKey, display) {
-  const entry = cuts && cuts[measureKey] || cuts && cuts.defaults || {};
-  const fallback = cuts && cuts.defaults || {};
-  const value = entry[display];
-  return Number.isFinite(value) ? value : fallback[display];
-}
-function displayField(display) {
-  return display === "relative_baseline" ? "__hep_relative_baseline" : "__hep_relative_uln";
-}
-function dayThenIndex(a, b) {
-  const da = Number.isFinite(a.__hep_day) ? a.__hep_day : Number.MAX_SAFE_INTEGER;
-  const db = Number.isFinite(b.__hep_day) ? b.__hep_day : Number.MAX_SAFE_INTEGER;
-  return da - db || a.__hep_index - b.__hep_index;
-}
-function resolveMeasureRows(rows, settings, key) {
-  const testName = settings.measure_values ? settings.measure_values[key] : key;
-  return rows.filter((row) => row[settings.measure_col] === testName);
-}
-function dropReason(row, settings) {
-  const raw = row[settings.value_col];
-  if (raw === "" || raw === void 0 || raw === null) {
-    return `Result column ("${settings.value_col}") is empty.`;
-  }
-  if (!Number.isFinite(row.__hep_value)) {
-    return `Result column ("${settings.value_col}") is not numeric.`;
-  }
-  if (!Number.isFinite(row.__hep_uln)) {
-    return `Reference-range column ("${settings.normal_col_high}") is missing or not numeric.`;
-  }
-  if (!(row.__hep_uln > 0)) {
-    return `Reference-range column ("${settings.normal_col_high}") is not positive.`;
-  }
-  return "";
-}
-function cleanData2(rawData, settings) {
-  let removed = 0;
-  const dropped = [];
-  const rows = rawData.map((row, index) => {
-    const value = Number(row[settings.value_col]);
-    const uln = Number(row[settings.normal_col_high]);
-    const day2 = settings.studyday_col && row[settings.studyday_col] !== "" && row[settings.studyday_col] !== void 0 ? Number(row[settings.studyday_col]) : NaN;
-    return {
-      ...row,
-      __hep_index: index,
-      __hep_seq: NaN,
-      __hep_value: value,
-      __hep_uln: uln,
-      __hep_day: day2,
-      __hep_relative_uln: value / uln,
-      __hep_relative_baseline: NaN,
-      __hep_baseline: NaN
-    };
-  }).filter((row) => {
-    const reason = dropReason(row, settings);
-    if (reason) {
-      row.__hep_dropReason = reason;
-      dropped.push(row);
-      removed += 1;
-      return false;
-    }
-    return true;
-  });
-  return { rows, removed, dropped };
-}
-function assignSequence(rows, settings) {
-  const counts = /* @__PURE__ */ new Map();
-  rows.forEach((row) => {
-    const key = `${row[settings.id_col]}\0${row[settings.measure_col]}`;
-    const next = (counts.get(key) || 0) + 1;
-    counts.set(key, next);
-    row.__hep_seq = next;
-  });
-  return rows;
-}
-function hasStudyDay(rows) {
-  return rows.some((row) => Number.isFinite(row.__hep_day));
-}
-function deriveBaseline(rows, settings) {
-  const groups = /* @__PURE__ */ new Map();
-  rows.forEach((row) => {
-    const key = `${row[settings.id_col]}\0${row[settings.measure_col]}`;
-    if (!groups.has(key)) groups.set(key, []);
-    groups.get(key).push(row);
-  });
-  groups.forEach((records) => {
-    const ordered = [...records].sort(dayThenIndex);
-    const zero = ordered.find((row) => row.__hep_day === 0);
-    const baselineRow = zero || ordered[0];
-    const baselineValue = baselineRow ? baselineRow.__hep_value : NaN;
-    records.forEach((row) => {
-      row.__hep_baseline = baselineValue;
-      row.__hep_relative_baseline = Number.isFinite(baselineValue) && baselineValue !== 0 ? row.__hep_value / baselineValue : NaN;
-    });
-  });
-  return rows;
-}
-function participantPeak(rows, key, display) {
-  const field = displayField(display);
-  let best = null;
-  rows.forEach((row) => {
-    const value = row[field];
-    if (!Number.isFinite(value)) return;
-    if (!best || value > best.value) {
-      best = { key, value, day: row.__hep_day, raw: row };
-    }
-  });
-  return best;
-}
-function computeRRatio(participantRows, settings) {
-  const altPeak = participantPeak(
-    resolveMeasureRows(participantRows, settings, "ALT"),
-    "ALT",
-    "relative_uln"
-  );
-  const alpPeak = participantPeak(
-    resolveMeasureRows(participantRows, settings, "ALP"),
-    "ALP",
-    "relative_uln"
-  );
-  if (!altPeak || !alpPeak || !(alpPeak.value > 0)) return NaN;
-  return altPeak.value / alpPeak.value;
-}
-
-// src/participant-profile/configure.js
-function arrayify2(value) {
-  if (value === void 0 || value === null || value === "") return [];
-  return Array.isArray(value) ? value : [value];
-}
-function fieldSpec2(value, fallbackLabel) {
-  if (typeof value === "string") return { value_col: value, label: fallbackLabel || value };
-  return { ...value, value_col: value.value_col, label: value.label || value.value_col };
-}
-var MEASURE_COLORS = [
-  "#e41a1c",
-  "#377eb8",
-  "#4daf4a",
-  "#984ea3",
-  "#ff7f00",
-  "#a65628",
-  "#f781bf",
-  "#00838f"
-];
-var DEFAULT_SETTINGS2 = {
-  id_col: "USUBJID",
-  measure_col: "TEST",
-  value_col: "STRESN",
-  unit_col: "STRESU",
-  normal_col_high: "STNRHI",
-  normal_col_low: "STNRLO",
-  studyday_col: "DY",
-  visit_col: "VISIT",
-  visitn_col: "VISITNUM",
-  baseline_col: null,
-  baseline_value: "Y",
-  details: [],
-  measure_values: {
-    ALT: "Aminotransferase, alanine (ALT)",
-    AST: "Aminotransferase, aspartate (AST)",
-    TB: "Total Bilirubin",
-    ALP: "Alkaline phosphatase (ALP)"
-  },
-  cuts: {
-    TB: { relative_uln: 2, relative_baseline: 4.8 },
-    ALP: { relative_uln: 1, relative_baseline: 3.8 },
-    defaults: { relative_uln: 3, relative_baseline: 3.8 }
-  },
-  display: "relative_uln",
-  display_options: [
-    { value: "relative_uln", label: "ULN adjusted" },
-    { value: "relative_baseline", label: "Baseline adjusted" }
-  ],
-  axis_type: "linear",
-  measureBounds: [0.01, 0.99],
-  participantProfileURL: null,
-  p_alt_col: null,
-  listing: false,
-  listing_cols: null,
-  listing_page_size: 10,
-  listen_to: null,
-  on_clear: null,
-  on_step: null,
-  filters: [],
-  groups: [],
-  width: "100%",
-  height: 300
-};
-function syncSettings2(settings = {}) {
-  const synced = { ...DEFAULT_SETTINGS2, ...settings };
-  synced.details = arrayify2(synced.details).map((value) => fieldSpec2(value)).filter((d) => d.value_col);
-  synced.filters = arrayify2(synced.filters).map((value) => fieldSpec2(value)).filter((d) => d.value_col);
-  synced.groups = arrayify2(synced.groups).map((value) => fieldSpec2(value)).filter((d) => d.value_col);
-  synced.listing_cols = synced.listing_cols === void 0 || synced.listing_cols === null ? null : arrayify2(synced.listing_cols).map((value) => fieldSpec2(value)).filter((d) => d.value_col);
-  synced.measure_values = {
-    ...DEFAULT_SETTINGS2.measure_values,
-    ...settings.measure_values || {}
-  };
-  const cutKeys = /* @__PURE__ */ new Set([
-    ...Object.keys(DEFAULT_SETTINGS2.cuts),
-    ...Object.keys(settings.cuts || {})
-  ]);
-  const mergedCuts = {};
-  cutKeys.forEach((key) => {
-    mergedCuts[key] = {
-      ...DEFAULT_SETTINGS2.cuts[key] || {},
-      ...(settings.cuts || {})[key] || {}
-    };
-  });
-  synced.cuts = mergedCuts;
-  const bounds = arrayify2(synced.measureBounds).map(Number).filter(Number.isFinite);
-  synced.measureBounds = bounds.length === 2 ? bounds : [...DEFAULT_SETTINGS2.measureBounds];
-  synced.axis_type = synced.axis_type === "log" ? "log" : "linear";
-  return synced;
-}
-function templateProfileURL(url, id) {
-  if (url === void 0 || url === null || url === "") return null;
-  return String(url).replace(/\{id\}/g, encodeURIComponent(String(id)));
-}
-function measureColorScale(keys) {
-  const scale = /* @__PURE__ */ new Map();
-  keys.forEach((key, index) => {
-    scale.set(key, MEASURE_COLORS[index % MEASURE_COLORS.length]);
-  });
-  return scale;
-}
-
-// src/participant-profile/checkInputs.js
-var REQUIRED_COLUMN_SETTINGS2 = ["id_col", "measure_col", "value_col", "normal_col_high"];
-function checkInputs2(data, settings) {
-  const rows = Array.isArray(data) ? data : [];
-  const missing = REQUIRED_COLUMN_SETTINGS2.map((key) => settings[key]).filter(
-    (col) => !rows.some((row) => row[col] !== void 0)
-  );
-  if (missing.length) {
-    throw new Error(`Required variable(s) missing: ${missing.join(", ")}`);
-  }
-}
-
-// src/hep-explorer/configure.js
-var GROUP_NONE = "hep_none";
-var DISPLAY_MODES = [
-  { value: "relative_uln", label: "Upper limit of normal adjusted (eDISH)" },
-  { value: "relative_baseline", label: "Baseline adjusted (mDISH)" }
-];
-var VIEW_MODES = [
-  { value: "scatter", label: "eDISH / mDISH scatter" },
-  { value: "migration", label: "Migration (Sankey)" },
-  { value: "composite", label: "Composite plot (baseline-referenced)" }
-];
-var AXIS_TYPES = ["linear", "log"];
-var POINT_SIZE_OPTIONS = ["Uniform", "rRatio"];
-var DEFAULT_SETTINGS3 = {
-  id_col: "USUBJID",
-  measure_col: "TEST",
-  value_col: "STRESN",
-  unit_col: "STRESU",
-  normal_col_high: "STNRHI",
-  normal_col_low: "STNRLO",
-  studyday_col: "DY",
-  visit_col: "VISIT",
-  visitn_col: "VISITNUM",
-  arm_col: "ARM",
-  placebo_arm: null,
-  active_arms: null,
-  baseline_col: null,
-  baseline_value: "Y",
-  // Defaults to BILI_ULN_CUT (2) from src/hep-core/quadrants.js so a new-onset
-  // jaundice flag and a Cholestasis/Hy's-Law classification can never disagree.
-  jaundice_uln: 2,
-  hide_unchanged: false,
-  measure_values: {
-    ALT: "Aminotransferase, alanine (ALT)",
-    AST: "Aminotransferase, aspartate (AST)",
-    TB: "Total Bilirubin",
-    ALP: "Alkaline phosphatase (ALP)"
-  },
-  view: "scatter",
-  x_default: "ALT",
-  y_default: "TB",
-  x_options: ["ALT", "AST", "TB", "ALP"],
-  y_options: ["TB"],
-  cuts: {
-    TB: { relative_uln: 2, relative_baseline: 4.8 },
-    ALP: { relative_uln: 1, relative_baseline: 3.8 },
-    rRatio: { relative_uln: 5, relative_baseline: 5 },
-    defaults: { relative_uln: 3, relative_baseline: 3.8 }
-  },
-  group_order_col: null,
-  imputation_methods: {
-    ALT: "data-driven",
-    AST: "data-driven",
-    TB: "data-driven",
-    ALP: "data-driven"
-  },
-  imputation_values: null,
-  quadrant_labels: "shown",
-  marginals: "box_rug",
-  visit_window: 30,
-  profile: true,
-  profile_details: null,
-  participantProfileURL: null,
-  p_alt_col: null,
-  measureBounds: [0.01, 0.99],
-  r_ratio_filter: true,
-  r_ratio: [0, null],
-  filters: [],
-  groups: [],
-  group_by: GROUP_NONE,
-  details: null,
-  page_size: 10,
-  width: "100%",
-  height: 460
-};
-function arrayify3(value) {
-  if (value === void 0 || value === null || value === "") return [];
-  return Array.isArray(value) ? value : [value];
-}
-function fieldSpec3(value, fallbackLabel) {
-  if (typeof value === "string") return { value_col: value, label: fallbackLabel || value };
-  return { ...value, value_col: value.value_col, label: value.label || value.value_col };
-}
-function syncSettings3(settings) {
-  const synced = { ...DEFAULT_SETTINGS3, ...settings };
-  synced.filters = arrayify3(synced.filters).map((value) => fieldSpec3(value)).filter((d) => d.value_col);
-  const defaultGroup = { value_col: GROUP_NONE, label: "None" };
-  synced.groups = [
-    defaultGroup,
-    ...arrayify3(synced.groups).map((value) => fieldSpec3(value)).filter((d) => d.value_col)
-  ];
-  if (synced.group_by && !synced.groups.some((group) => group.value_col === synced.group_by)) {
-    synced.groups.push({ value_col: synced.group_by, label: synced.group_by });
-  }
-  synced.group_by = synced.groups.some((group) => group.value_col === synced.group_by) ? synced.group_by : synced.groups[0].value_col;
-  synced.details = arrayify3(synced.details).map((value) => fieldSpec3(value)).filter((d) => d.value_col);
-  synced.x_options = arrayify3(synced.x_options);
-  synced.y_options = arrayify3(synced.y_options);
-  synced.measure_values = {
-    ...DEFAULT_SETTINGS3.measure_values,
-    ...settings.measure_values || {}
-  };
-  const cutKeys = /* @__PURE__ */ new Set([
-    ...Object.keys(DEFAULT_SETTINGS3.cuts),
-    ...Object.keys(settings.cuts || {})
-  ]);
-  const mergedCuts = {};
-  cutKeys.forEach((key) => {
-    mergedCuts[key] = {
-      ...DEFAULT_SETTINGS3.cuts[key] || {},
-      ...(settings.cuts || {})[key] || {}
-    };
-  });
-  synced.cuts = mergedCuts;
-  synced.r_ratio = arrayify3(synced.r_ratio);
-  if (synced.r_ratio.length < 2) synced.r_ratio = [0, null];
-  const activeArms = arrayify3(synced.active_arms).map(String);
-  synced.active_arms = activeArms.length ? activeArms : null;
-  synced.placebo_arm = synced.placebo_arm === void 0 || synced.placebo_arm === null || synced.placebo_arm === "" ? null : String(synced.placebo_arm);
-  synced.jaundice_uln = Number.isFinite(Number(synced.jaundice_uln)) ? Number(synced.jaundice_uln) : DEFAULT_SETTINGS3.jaundice_uln;
-  synced.hide_unchanged = Boolean(synced.hide_unchanged);
-  synced.profile = Boolean(synced.profile);
-  synced.profile_details = synced.profile_details === void 0 || synced.profile_details === null ? null : arrayify3(synced.profile_details).map((value) => fieldSpec3(value)).filter((d) => d.value_col);
-  const bounds = arrayify3(synced.measureBounds).map(Number).filter(Number.isFinite);
-  synced.measureBounds = bounds.length === 2 ? bounds : [...DEFAULT_SETTINGS3.measureBounds];
-  return synced;
-}
-
-// src/hep-core/arms.js
-var ARM_COL_CANDIDATES = ["ARM", "ACTARM", "TRT01A", "TREATMENT", "TRTA"];
-var ARM_SIDE_COLORS = { placebo: "#1f78b4", active: "#b5651d" };
-var JAUNDICE_COLOR = "#2e8b3d";
-var PLACEBO_PATTERN = /placebo|control/i;
-var PLACEBO_EXACT = ["placebo", "control"];
-function armValue(subject, armCol) {
-  if (!subject) return "";
-  const value = armCol ? subject.raw && subject.raw[armCol] !== void 0 ? subject.raw[armCol] : subject[armCol] : subject.arm;
-  return value === void 0 || value === null ? "" : String(value);
-}
-function resolveArmCol(rows, settings) {
-  const named = settings ? settings.arm_col : null;
-  if (!named) return null;
-  const data = Array.isArray(rows) ? rows : [];
-  const present = (col) => data.some((row) => row && row[col] !== void 0);
-  if (present(named)) return named;
-  return ARM_COL_CANDIDATES.find(present) || null;
-}
-function distinctArms(subjects, armCol) {
-  const values = /* @__PURE__ */ new Set();
-  (subjects || []).forEach((subject) => {
-    const value = armValue(subject, armCol);
-    if (value !== "") values.add(value);
-  });
-  return [...values].sort((a, b) => a.localeCompare(b));
-}
-function resolvePlaceboArmDetail(arms, configured) {
-  const values = arms || [];
-  const candidates = values.filter((arm) => PLACEBO_PATTERN.test(arm));
-  if (configured && values.includes(String(configured))) {
-    return { arm: String(configured), ambiguous: false, candidates, source: "configured" };
-  }
-  const exact = values.filter((arm) => PLACEBO_EXACT.includes(String(arm).trim().toLowerCase()));
-  if (exact.length === 1) {
-    return { arm: exact[0], ambiguous: false, candidates, source: "exact" };
-  }
-  if (candidates.length === 1) {
-    return { arm: candidates[0], ambiguous: false, candidates, source: "pattern" };
-  }
-  if (candidates.length > 1) {
-    return { arm: null, ambiguous: true, candidates, source: "ambiguous" };
-  }
-  return { arm: null, ambiguous: false, candidates, source: "none" };
-}
-function resolveArmDesignation(arms, settings) {
-  const values = arms || [];
-  const detail = resolvePlaceboArmDetail(values, settings ? settings.placebo_arm : null);
-  const placeboArm = detail.arm;
-  const configuredActive = settings && settings.active_arms ? settings.active_arms : null;
-  const active = configuredActive ? new Set((Array.isArray(configuredActive) ? configuredActive : [configuredActive]).map(String)) : null;
-  const sides = new Map(
-    values.map((arm) => {
-      if (placeboArm !== null && arm === placeboArm) return [arm, "placebo"];
-      if (active) return [arm, active.has(arm) ? "active" : null];
-      return [arm, "active"];
-    })
-  );
-  const warning = detail.ambiguous ? `Placebo arm is ambiguous: ${detail.candidates.join(", ")} all look like control arms. Set the placebo_arm setting to pick one; until then no arm is designated placebo.` : null;
-  return { sides, placeboArm, ambiguous: detail.ambiguous, candidates: detail.candidates, warning };
-}
-
-// src/hep-core/quadrants.js
-var COMPOSITE_QUADRANTS = ["Normal & NN", "Cholestasis", "Temple's Corollary", "Hy's Law"];
-var [NN, CH, TC, HL] = COMPOSITE_QUADRANTS;
-var ALT_ULN_CUT = 3;
-var BILI_ULN_CUT = 2;
-var BLN_LINES = [1, 3, 5];
-var QUADRANT_STYLE = {
-  [NN]: { color: "#33a02c", pointStyle: "rect", label: NN },
-  [CH]: { color: "#e6a000", pointStyle: "circle", label: CH },
-  [TC]: { color: "#1f78b4", pointStyle: "cross", label: TC },
-  [HL]: { color: "#e31a1c", pointStyle: "triangle", label: HL }
-};
-var CONCERN_COLORS = {
-  red: "#f28b82",
-  yellow: "#fdd663",
-  green: "#81c995",
-  gray: "#dadce0"
-};
-var CONCERN_MATRIX = {
-  [NN]: { [NN]: "gray", [CH]: "red", [TC]: "red", [HL]: "red" },
-  [CH]: { [NN]: "green", [CH]: "gray", [TC]: "yellow", [HL]: "red" },
-  [TC]: { [NN]: "green", [CH]: "yellow", [TC]: "gray", [HL]: "red" },
-  [HL]: { [NN]: "green", [CH]: "green", [TC]: "green", [HL]: "gray" }
-};
-function concernOf(pretreatQuadrant, onTreatQuadrant) {
-  const row = CONCERN_MATRIX[pretreatQuadrant];
-  return row && row[onTreatQuadrant] || "gray";
-}
-function classifyComposite(altULN, biliULN) {
-  const altElevated = altULN > ALT_ULN_CUT;
-  const biliElevated = biliULN > BILI_ULN_CUT;
-  if (!altElevated && !biliElevated) return NN;
-  if (!altElevated && biliElevated) return CH;
-  if (altElevated && biliElevated) return HL;
-  return TC;
-}
-var SEVERITY_TIERS = {
-  [HL]: 0,
-  [CH]: 1,
-  [TC]: 1,
-  [NN]: 2
-};
-var SEVERITY_ORDER = [HL, CH, TC, NN];
-function shiftDirection(pretreatQuadrant, onTreatQuadrant) {
-  const delta = SEVERITY_TIERS[pretreatQuadrant] - SEVERITY_TIERS[onTreatQuadrant];
-  if (delta > 0) return "up";
-  if (delta < 0) return "down";
-  return "lateral";
-}
-function ribbonColor(pretreatQuadrant, onTreatQuadrant) {
-  return CONCERN_COLORS[concernOf(pretreatQuadrant, onTreatQuadrant)];
-}
-
-// src/hep-core/subjects.js
-var DEFAULT_BASELINE_TB_MAX = 1;
-var DEFAULT_JAUNDICE_ULN = 2;
-function dayThenIndex2(a, b) {
-  const da = Number.isFinite(a.__hep_day) ? a.__hep_day : Number.MAX_SAFE_INTEGER;
-  const db = Number.isFinite(b.__hep_day) ? b.__hep_day : Number.MAX_SAFE_INTEGER;
-  return da - db || a.__hep_index - b.__hep_index;
-}
-function splitBaselineOnTreatment(rows, settings = {}) {
-  const records = rows || [];
-  if (!records.length) return { baselineRow: null, onTreatment: [] };
-  const ordered = [...records].sort(dayThenIndex2);
-  const flagged = settings.baseline_col ? ordered.find(
-    (row) => String(row[settings.baseline_col]) === String(settings.baseline_value ?? "Y")
-  ) : null;
-  const baselineRow = flagged || ordered.find((row) => row.__hep_day === 0) || ordered[0];
-  const hasDay = ordered.some((row) => Number.isFinite(row.__hep_day));
-  const baselineDay = baselineRow ? baselineRow.__hep_day : NaN;
-  const timed = hasDay && Number.isFinite(baselineDay);
-  const floor = timed ? Math.max(0, baselineDay) : NaN;
-  const onTreatment = ordered.filter((row) => {
-    if (row === baselineRow) return false;
-    if (!timed) return true;
-    return Number.isFinite(row.__hep_day) && row.__hep_day > floor;
-  });
-  return { baselineRow, onTreatment };
-}
-function reduceMeasure(rows, settings = {}) {
-  if (!rows || !rows.length) return null;
-  const { baselineRow, onTreatment } = splitBaselineOnTreatment(rows, settings);
-  if (!baselineRow || !Number.isFinite(baselineRow.__hep_value) || !(baselineRow.__hep_value > 0) || !Number.isFinite(baselineRow.__hep_relative_uln)) {
-    return null;
-  }
-  let peakULN = NaN;
-  let peakValue = NaN;
-  let peakDay = NaN;
-  onTreatment.forEach((row) => {
-    if (Number.isFinite(row.__hep_relative_uln) && !(row.__hep_relative_uln <= peakULN)) {
-      peakULN = row.__hep_relative_uln;
-    }
-    if (Number.isFinite(row.__hep_value) && !(row.__hep_value <= peakValue)) {
-      peakValue = row.__hep_value;
-      peakDay = row.__hep_day;
-    }
-  });
-  if (!Number.isFinite(peakULN) || !Number.isFinite(peakValue)) return null;
-  const peakBLN = peakValue / baselineRow.__hep_value;
-  return {
-    baselineULN: baselineRow.__hep_relative_uln,
-    peakULN,
-    peakBLN,
-    baselineValue: baselineRow.__hep_value,
-    peakValue,
-    peakDay,
-    baselineDay: baselineRow.__hep_day,
-    uln: baselineRow.__hep_uln
-  };
-}
-function buildHepSubjects(cleanRows, settings) {
-  const rows = cleanRows || [];
-  const armCol = resolveArmCol(rows, settings);
-  const metaCols = [
-    ...settings.groups.map((group) => group.value_col),
-    ...settings.filters.map((filter) => filter.value_col),
-    armCol
-  ].filter((col, index, all) => col && col !== GROUP_NONE && all.indexOf(col) === index);
-  const jaundiceULN = Number.isFinite(Number(settings.jaundice_uln)) ? Number(settings.jaundice_uln) : DEFAULT_JAUNDICE_ULN;
-  const baselineTbMax = Number.isFinite(Number(settings.baseline_tb_max)) ? Number(settings.baseline_tb_max) : DEFAULT_BASELINE_TB_MAX;
-  const byId = /* @__PURE__ */ new Map();
-  rows.forEach((row) => {
-    const id = row[settings.id_col];
-    if (!byId.has(id)) byId.set(id, []);
-    byId.get(id).push(row);
-  });
-  const subjects = [];
-  let excluded = 0;
-  byId.forEach((participantRows, id) => {
-    const alt = reduceMeasure(resolveMeasureRows(participantRows, settings, "ALT"), settings);
-    const bili = reduceMeasure(resolveMeasureRows(participantRows, settings, "TB"), settings);
-    if (!alt || !bili) {
-      excluded += 1;
-      return;
-    }
-    const pretreatQuadrant = classifyComposite(alt.baselineULN, bili.baselineULN);
-    const onTreatQuadrant = classifyComposite(alt.peakULN, bili.peakULN);
-    const raw = {};
-    metaCols.forEach((col) => {
-      raw[col] = participantRows[0][col] === void 0 ? "" : String(participantRows[0][col]);
-    });
-    subjects.push({
-      id,
-      raw,
-      baselineAltULN: alt.baselineULN,
-      baselineBiliULN: bili.baselineULN,
-      peakAltULN: alt.peakULN,
-      peakBiliULN: bili.peakULN,
-      peakAltBLN: alt.peakBLN,
-      peakBiliBLN: bili.peakBLN,
-      pretreatQuadrant,
-      onTreatQuadrant,
-      concern: concernOf(pretreatQuadrant, onTreatQuadrant),
-      // Absolute units for the ALT waterfall (Fig 5), where ×ULN quadrants lose
-      // their meaning and the axis is the measure's own U/L.
-      baselineAlt: alt.baselineValue,
-      peakAlt: alt.peakValue,
-      peakAltDay: alt.peakDay,
-      altUln: alt.uln,
-      baselineBili: bili.baselineValue,
-      peakBili: bili.peakValue,
-      // Both jaundice clauses stay explicit even though, inside the waterfall's
-      // post-exclusion cohort, the first is implied — so the predicate stays
-      // correct when apply_tb_cohort is turned off (HEP-CORE-006).
-      baselineJaundice: bili.baselineULN > baselineTbMax,
-      newOnsetJaundice: bili.baselineULN <= jaundiceULN && bili.peakULN > jaundiceULN,
-      arm: armCol ? raw[armCol] : "",
-      side: null
-    });
-  });
-  const arms = distinctArms(subjects);
-  const designation = resolveArmDesignation(arms, settings);
-  const sides = designation.sides;
-  subjects.forEach((subject) => {
-    subject.side = sides.get(subject.arm) ?? null;
-  });
-  return {
-    subjects,
-    excluded,
-    armCol,
-    arms,
-    sides,
-    placeboArm: designation.placeboArm,
-    // Surfaced by the arm-aware views as a .sv-warning: an ambiguous placebo
-    // designation must be reported, never guessed (HEP-ARM-002).
-    armWarning: designation.warning
-  };
-}
-function buildCompositeSubjects(cleanRows, settings) {
-  return buildHepSubjects(cleanRows, settings);
-}
-
-// src/participant-profile/structureData.js
-function yLabelFor(display) {
-  return display === "relative_baseline" ? "Standardized Result [xBaseline]" : "Standardized Result [xULN]";
-}
-function keyResolver(settings) {
-  const byValue = /* @__PURE__ */ new Map();
-  Object.entries(settings.measure_values || {}).forEach(([shortKey, testValue]) => {
-    byValue.set(testValue, shortKey);
-  });
-  return (measureValue) => {
-    const shortKey = byValue.get(measureValue);
-    return shortKey ? { key: shortKey, isKey: true } : { key: measureValue, isKey: false };
-  };
-}
-function orderedMeasures(participantRows, settings) {
-  const resolve2 = keyResolver(settings);
-  const byMeasure = /* @__PURE__ */ new Map();
-  participantRows.forEach((row) => {
-    const value = row[settings.measure_col];
-    if (!byMeasure.has(value)) byMeasure.set(value, []);
-    byMeasure.get(value).push(row);
-  });
-  const keyOrder = Object.keys(settings.measure_values || {});
-  const entries = [...byMeasure.entries()].map(([value, rows]) => {
-    const { key, isKey } = resolve2(value);
-    return { key, label: value, isKey, rows };
-  });
-  return entries.sort((a, b) => {
-    if (a.isKey !== b.isKey) return a.isKey ? -1 : 1;
-    if (a.isKey) return keyOrder.indexOf(a.key) - keyOrder.indexOf(b.key);
-    return 0;
-  });
-}
-function populationExtent(cleanRows, measureValue, settings) {
-  const values = cleanRows.filter((row) => row[settings.measure_col] === measureValue).map((row) => row.__hep_value).filter(Number.isFinite);
-  const [lo, hi] = settings.measureBounds;
-  return [quantile2(values, lo), quantile2(values, hi)];
-}
-function buildProfileModel(cleanRows, id, settings, state) {
-  const display = state && state.display === "relative_baseline" ? "relative_baseline" : "relative_uln";
-  const field = displayField(display);
-  const participantRows = cleanRows.filter((row) => row[settings.id_col] === id);
-  const first = participantRows[0] || {};
-  const measures = orderedMeasures(participantRows, settings);
-  const colors2 = measureColorScale(measures.map((measure) => measure.key));
-  const details = (settings.details || []).map((spec) => ({
-    label: spec.label,
-    value: first[spec.value_col]
-  }));
-  let pAlt = null;
-  if (settings.p_alt_col) {
-    const raw = first[settings.p_alt_col];
-    pAlt = raw === void 0 || raw === null || raw === "" ? null : raw;
-  }
-  const participant = {
-    id,
-    details,
-    rRatio: computeRRatio(participantRows, settings),
-    pAlt
-  };
-  const series = measures.map((measure) => {
-    const points = measure.rows.filter((row) => Number.isFinite(row[field])).sort(dayThenIndex).map((row) => ({
-      day: row.__hep_day,
-      value: row[field],
-      // Tooltip context (parity: the original spaghetti addPointTitles):
-      // the raw result alongside the adjusted value, plus the visit fields.
-      raw: row.__hep_value,
-      visit: settings.visit_col != null ? row[settings.visit_col] : void 0,
-      visitn: settings.visitn_col != null ? row[settings.visitn_col] : void 0
-    }));
-    return {
-      key: measure.key,
-      label: measure.label,
-      isKey: measure.isKey,
-      color: colors2.get(measure.key),
-      cut: cutFor(settings.cuts, measure.key, display),
-      points
-    };
-  });
-  const measureModels = measures.map((measure) => {
-    const values = measure.rows.map((row) => row.__hep_value).filter(Number.isFinite);
-    const spark = measure.rows.slice().sort(dayThenIndex).map((row) => {
-      const lln = settings.normal_col_low != null ? Number(row[settings.normal_col_low]) : NaN;
-      const uln = Number(row[settings.normal_col_high]);
-      const value = row.__hep_value;
-      const outlierLow = Number.isFinite(lln) && value < lln;
-      const outlierHigh = Number.isFinite(uln) && value > uln;
-      return {
-        day: row.__hep_day,
-        value,
-        lln,
-        uln,
-        outlier: outlierLow || outlierHigh,
-        visit: settings.visit_col != null ? row[settings.visit_col] : void 0,
-        visitn: settings.visitn_col != null ? row[settings.visitn_col] : void 0
-      };
-    });
-    return {
-      key: measure.key,
-      label: measure.label,
-      isKey: measure.isKey,
-      color: colors2.get(measure.key),
-      n: values.length,
-      min: values.length ? Math.min(...values) : NaN,
-      median: values.length ? median(values) : NaN,
-      max: values.length ? Math.max(...values) : NaN,
-      populationExtent: populationExtent(cleanRows, measure.label, settings),
-      spark
-    };
-  });
-  return {
-    participant,
-    spaghetti: {
-      series,
-      yLabel: yLabelFor(display),
-      display,
-      // Follow the host's y-axis scale (PPRF-3/7 — the deleted drawDetail
-      // honored the hep-explorer Axis-type control).
-      axisType: settings.axis_type === "log" ? "log" : "linear"
-    },
-    measures: measureModels
-  };
-}
-function fallbackSeverity(participantRows, settings) {
-  const keyOrder = Object.keys(settings.measure_values || {});
-  let max = 0;
-  keyOrder.forEach((key) => {
-    const testValue = settings.measure_values[key];
-    const values = participantRows.filter((row) => row[settings.measure_col] === testValue).map((row) => row.__hep_relative_uln).filter(Number.isFinite);
-    if (!values.length) return;
-    const cut = cutFor(settings.cuts, key, "relative_uln");
-    const score = Math.max(...values) / (Number.isFinite(cut) && cut > 0 ? cut : 1);
-    if (score > max) max = score;
-  });
-  return max;
-}
-function rankParticipants(cleanRows, ids, settings) {
-  const wanted = new Set(ids.map(String));
-  const { subjects } = buildHepSubjects(cleanRows, settings);
-  const subjectById = /* @__PURE__ */ new Map();
-  subjects.forEach((subject) => {
-    if (wanted.has(String(subject.id))) subjectById.set(String(subject.id), subject);
-  });
-  const rowsById = /* @__PURE__ */ new Map();
-  cleanRows.forEach((row) => {
-    const rid = String(row[settings.id_col]);
-    if (!wanted.has(rid)) return;
-    if (!rowsById.has(rid)) rowsById.set(rid, []);
-    rowsById.get(rid).push(row);
-  });
-  const scored = ids.map((id) => {
-    const sid = String(id);
-    const subject = subjectById.get(sid);
-    if (subject) {
-      const quadrantRank = SEVERITY_ORDER.indexOf(subject.onTreatQuadrant);
-      return {
-        id,
-        group: 0,
-        primary: quadrantRank < 0 ? SEVERITY_ORDER.length : quadrantRank,
-        secondary: Number.isFinite(subject.peakAltULN) ? subject.peakAltULN : -Infinity
-      };
-    }
-    return {
-      id,
-      group: 1,
-      primary: 0,
-      secondary: fallbackSeverity(rowsById.get(sid) || [], settings)
-    };
-  });
-  scored.sort((a, b) => {
-    if (a.group !== b.group) return a.group - b.group;
-    if (a.group === 0) {
-      if (a.primary !== b.primary) return a.primary - b.primary;
-      if (a.secondary !== b.secondary) return b.secondary - a.secondary;
-    } else if (a.secondary !== b.secondary) {
-      return b.secondary - a.secondary;
-    }
-    return String(a.id).localeCompare(String(b.id));
-  });
-  return scored.map((entry) => entry.id);
-}
-
-// src/participant-profile/header.js
-function format2(value) {
-  return Number.isFinite(value) ? value.toFixed(2) : "";
-}
-function appendDetail(list, label, value, className) {
-  const li = createElement("li", className || null);
-  li.append(createElement("div", "sv-profile-detail-label", label));
-  const valueEl = createElement("div", "sv-profile-detail-value", value);
-  li.append(valueEl);
-  list.append(li);
-  return valueEl;
-}
-function renderHeader(participant, settings, { onClear } = {}) {
-  const header = createElement("div", "sv-profile-header");
-  const titleRow = createElement("div", "sv-profile-titlerow");
-  titleRow.append(createElement("h3", "sv-profile-id", `Participant ${participant.id}`));
-  const url = templateProfileURL(settings.participantProfileURL, participant.id);
-  if (url) {
-    const link = createElement("a", "sv-profile-link", "Full Participant Profile");
-    link.setAttribute("href", url);
-    link.setAttribute("target", "_blank");
-    link.setAttribute("rel", "noopener");
-    titleRow.append(link);
-  }
-  const clear = createElement("button", "sv-profile-clear", "Clear");
-  clear.type = "button";
-  clear.setAttribute("data-sv-focus", "clear");
-  clear.onclick = () => {
-    if (onClear) onClear();
-  };
-  titleRow.append(clear);
-  header.append(titleRow);
-  const list = createElement("ul", "sv-profile-details");
-  (participant.details || []).forEach((detail) => {
-    const value = detail.value === void 0 || detail.value === null ? "" : String(detail.value);
-    appendDetail(list, detail.label, value);
-  });
-  appendDetail(list, "R Ratio", format2(participant.rRatio));
-  const footnote = createElement("p", "sv-profile-footnote", "");
-  if (participant.pAlt !== void 0 && participant.pAlt !== null && participant.pAlt !== "") {
-    const isNote = typeof participant.pAlt === "object";
-    const text = isNote ? String(participant.pAlt.text_value) : String(participant.pAlt);
-    const valueEl = appendDetail(list, "P_ALT", text, "sv-profile-palt");
-    if (isNote && participant.pAlt.note) {
-      valueEl.setAttribute("role", "button");
-      valueEl.setAttribute("tabindex", "0");
-      const show = () => {
-        footnote.textContent = participant.pAlt.note;
-      };
-      valueEl.onclick = show;
-      valueEl.onkeydown = (event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          show();
-        }
-      };
-    }
-  }
-  header.append(list, footnote);
-  return header;
-}
-
-// src/participant-profile/ae.js
-var NOT_RECORDED = { key: null, label: "Not recorded", rank: 0 };
-var MIN_BAR_PERCENT = 0.8;
-var AE_DEFAULT_SETTINGS = {
-  id_col: "USUBJID",
-  term_col: "AETERM",
-  minor_col: "AEDECOD",
-  major_col: "AEBODSYS",
-  stdy_col: "ASTDY",
-  endy_col: "AENDY",
-  color: {
-    value_col: "AESEV",
-    values: ["MILD", "MODERATE", "SEVERE"],
-    labels: null
-  },
-  highlight: {
-    value_col: "AESER",
-    value: "Y",
-    label: "Serious"
-  },
-  max_rows: 10
-};
-var SEVERITY_COLORS = ["#fab219", "#ec835a", "#d03b3b"];
-var NOT_RECORDED_COLOR = "#c3c2b7";
-function defaultLabel(value) {
-  const text = String(value);
-  if (!/^[A-Za-z][A-Za-z\s-]*$/.test(text)) return text;
-  return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
-}
-function syncAeSettings(settings = {}) {
-  const synced = { ...AE_DEFAULT_SETTINGS, ...settings };
-  const color2 = { ...AE_DEFAULT_SETTINGS.color, ...settings.color || {} };
-  color2.values = (Array.isArray(color2.values) ? color2.values : []).map(String);
-  if (!color2.values.length) color2.values = [...AE_DEFAULT_SETTINGS.color.values];
-  const labels = Array.isArray(color2.labels) ? color2.labels.map(String) : null;
-  color2.labels = color2.values.map(
-    (value, index) => labels && labels[index] !== void 0 ? labels[index] : defaultLabel(value)
-  );
-  synced.color = color2;
-  synced.highlight = settings.highlight === null ? null : { ...AE_DEFAULT_SETTINGS.highlight, ...settings.highlight || {} };
-  const rows = Number(synced.max_rows);
-  synced.max_rows = Number.isFinite(rows) && rows > 0 ? Math.floor(rows) : AE_DEFAULT_SETTINGS.max_rows;
-  return synced;
-}
-function severityOf(record, settings) {
-  const raw = record[settings.color.value_col];
-  const value = raw === void 0 || raw === null ? "" : String(raw).trim();
-  const index = settings.color.values.findIndex(
-    (level) => level.toUpperCase() === value.toUpperCase()
-  );
-  if (value === "" || index < 0) return { ...NOT_RECORDED, color: NOT_RECORDED_COLOR };
-  const scale = settings.color.values.length;
-  const step = scale <= SEVERITY_COLORS.length ? SEVERITY_COLORS.length - scale + index : Math.round(index / (scale - 1) * (SEVERITY_COLORS.length - 1));
-  return {
-    key: settings.color.values[index],
-    label: settings.color.labels[index],
-    rank: index + 1,
-    color: SEVERITY_COLORS[Math.max(0, Math.min(SEVERITY_COLORS.length - 1, step))]
-  };
-}
-function day(value) {
-  if (value === void 0 || value === null || String(value).trim() === "") return null;
-  const number = Number(value);
-  return Number.isFinite(number) ? number : null;
-}
-function cleanAeRecords(rawData, settings) {
-  const events = [];
-  let removed = 0;
-  (Array.isArray(rawData) ? rawData : []).forEach((record, index) => {
-    const id = record[settings.id_col];
-    if (id === void 0 || id === null || String(id).trim() === "") {
-      removed += 1;
-      return;
-    }
-    const verbatim = settings.term_col ? record[settings.term_col] : "";
-    const preferred = settings.minor_col ? record[settings.minor_col] : "";
-    const label = String(preferred || verbatim || "").trim();
-    const start = day(record[settings.stdy_col]);
-    const rawEnd = day(record[settings.endy_col]);
-    const end = start !== null && rawEnd !== null && rawEnd >= start ? rawEnd : null;
-    const serious = settings.highlight ? String(record[settings.highlight.value_col] ?? "").trim().toUpperCase() === String(settings.highlight.value).toUpperCase() : false;
-    events.push({
-      ...record,
-      __ae_id: String(id),
-      __ae_index: index,
-      __ae_term: label.toLowerCase(),
-      __ae_verbatim: verbatim === void 0 || verbatim === null ? "" : String(verbatim),
-      __ae_soc: settings.major_col ? String(record[settings.major_col] ?? "").trim() : "",
-      __ae_severity: severityOf(record, settings),
-      __ae_serious: serious,
-      __ae_start: start,
-      __ae_end: end,
-      __ae_open: end === null,
-      __ae_placeable: start !== null
-    });
-  });
-  return { events, removed };
-}
-function participantEvents(events, id) {
-  const key = String(id);
-  return (Array.isArray(events) ? events : []).filter((event) => event.__ae_id === key).sort((a, b) => {
-    if (a.__ae_placeable !== b.__ae_placeable) return a.__ae_placeable ? -1 : 1;
-    if (b.__ae_severity.rank !== a.__ae_severity.rank)
-      return b.__ae_severity.rank - a.__ae_severity.rank;
-    const sa = a.__ae_start === null ? Number.MAX_SAFE_INTEGER : a.__ae_start;
-    const sb = b.__ae_start === null ? Number.MAX_SAFE_INTEGER : b.__ae_start;
-    return sa - sb || a.__ae_index - b.__ae_index;
-  });
-}
-function summarizeAe(events, settings) {
-  const list = Array.isArray(events) ? events : [];
-  const worst = list.reduce(
-    (acc, event) => event.__ae_severity.rank > acc.rank ? event.__ae_severity : acc,
-    { ...NOT_RECORDED, color: NOT_RECORDED_COLOR }
-  );
-  const levels = settings.color.values.map((value, index) => ({
-    key: value,
-    label: settings.color.labels[index],
-    rank: index + 1
-  })).reverse().concat([{ key: null, label: NOT_RECORDED.label, rank: 0 }]);
-  const mix = levels.map((level) => ({
-    ...level,
-    color: level.rank === 0 ? NOT_RECORDED_COLOR : (list.find((event) => event.__ae_severity.rank === level.rank) || {}).__ae_severity?.color || NOT_RECORDED_COLOR,
-    count: list.filter((event) => event.__ae_severity.rank === level.rank).length
-  })).filter((entry) => entry.count > 0);
-  const counts = /* @__PURE__ */ new Map();
-  list.forEach((event) => {
-    const name = event.__ae_soc || "Not recorded";
-    counts.set(name, (counts.get(name) || 0) + 1);
-  });
-  const bodySystems = [...counts.entries()].map(([name, count2]) => ({ name, count: count2 })).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
-  return {
-    total: list.length,
-    serious: list.filter((event) => event.__ae_serious).length,
-    openEnded: list.filter((event) => event.__ae_open).length,
-    worst,
-    mix,
-    bodySystems
-  };
-}
-function aeDomain(events) {
-  const placeable = (Array.isArray(events) ? events : []).filter((event) => event.__ae_placeable);
-  if (!placeable.length) return null;
-  const days = [];
-  placeable.forEach((event) => {
-    days.push(event.__ae_start);
-    if (event.__ae_end !== null) days.push(event.__ae_end);
-  });
-  return [Math.min(...days), Math.max(...days)];
-}
-function unionDomain(labs, aes) {
-  const parts = [labs, aes].filter(
-    (domain) => Array.isArray(domain) && domain.length === 2 && domain.every(Number.isFinite)
-  );
-  if (!parts.length) return null;
-  const min = Math.min(...parts.map((domain) => domain[0]));
-  const max = Math.max(...parts.map((domain) => domain[1]));
-  return min === max ? [min - 1, max + 1] : [min, max];
-}
-function timelineGeometry(events, domain) {
-  if (!Array.isArray(domain) || domain.length !== 2) return (events || []).map(() => null);
-  const [min, max] = domain;
-  const span = max - min || 1;
-  const percent = (value) => (value - min) / span * 100;
-  return (Array.isArray(events) ? events : []).map((event) => {
-    if (!event || !event.__ae_placeable) return null;
-    const end = event.__ae_end === null ? max : event.__ae_end;
-    const rawLeft = percent(event.__ae_start);
-    const rawRight = percent(end);
-    const left = Math.max(0, Math.min(100, rawLeft));
-    const right = Math.max(0, Math.min(100, rawRight));
-    return {
-      left,
-      width: Math.max(MIN_BAR_PERCENT, right - left),
-      open: event.__ae_open,
-      clipped: rawRight > 100 + 1e-9 || rawLeft < -1e-9
-    };
-  });
-}
-var TICK_STEPS = [1, 2, 5, 7, 10, 14, 20, 25, 50, 100, 200, 250, 500, 1e3];
-function axisTicks(domain, target = 6) {
-  if (!Array.isArray(domain) || domain.length !== 2) return [];
-  const [min, max] = domain;
-  const span = max - min;
-  if (!Number.isFinite(span) || span <= 0) return [];
-  const step = TICK_STEPS.find((candidate) => span / candidate <= target) || TICK_STEPS[TICK_STEPS.length - 1];
-  const first = Math.ceil(min / step) * step;
-  const ticks = [];
-  for (let value = first; value <= max + 1e-9; value += step) {
-    ticks.push({ value, position: (value - min) / span * 100 });
-  }
-  return ticks;
-}
-
-// src/participant-profile/aeTracks.js
-var PLOT_GUTTER_LEFT = 56;
-var PLOT_GUTTER_RIGHT = 12;
-function renderTiles(summary) {
-  const wrap = createElement("div", "sv-profile-ae-tiles");
-  const tiles = [
-    { label: "Events", value: String(summary.total) },
-    { label: "Highest severity", value: summary.worst.label, color: summary.worst.color },
-    {
-      label: "Serious",
-      value: String(summary.serious),
-      color: summary.serious ? summary.worst.color : null
-    },
-    { label: "No end date", value: String(summary.openEnded) }
-  ];
-  tiles.forEach((tile) => {
-    const node = createElement("div", "sv-profile-ae-tile");
-    const value = createElement("div", "sv-profile-ae-tile-value");
-    if (tile.color) {
-      const dot = createElement("span", "sv-profile-ae-dot");
-      dot.style.background = tile.color;
-      value.append(dot);
-    }
-    value.append(createElement("span", null, tile.value));
-    node.append(value, createElement("div", "sv-profile-ae-tile-label", tile.label));
-    wrap.append(node);
-  });
-  return wrap;
-}
-function renderMix(summary) {
-  const wrap = createElement("div", "sv-profile-ae-mix-wrap");
-  const bar = createElement("div", "sv-profile-ae-mix");
-  bar.setAttribute("role", "img");
-  bar.setAttribute(
-    "aria-label",
-    `Severity mix: ${summary.mix.map((entry) => `${entry.label} ${entry.count}`).join(", ")}`
-  );
-  summary.mix.forEach((entry) => {
-    const segment = createElement("div", "sv-profile-ae-mix-seg");
-    segment.style.flexGrow = String(entry.count);
-    segment.style.background = entry.color;
-    segment.title = `${entry.label}: ${entry.count}`;
-    bar.append(segment);
-  });
-  const legend = createElement("div", "sv-profile-ae-legend");
-  summary.mix.forEach((entry) => {
-    const item = createElement("span", "sv-profile-ae-legend-item");
-    const dot = createElement("span", "sv-profile-ae-dot");
-    dot.style.background = entry.color;
-    item.append(dot, createElement("span", null, `${entry.label} ${entry.count}`));
-    legend.append(item);
-  });
-  wrap.append(bar, legend);
-  return wrap;
-}
-function renderBodySystems(summary, limit = 4) {
-  const wrap = createElement("div", "sv-profile-ae-soc-wrap");
-  wrap.append(createElement("div", "sv-profile-ae-track-label", "Body systems"));
-  const list = createElement("ul", "sv-profile-ae-soc");
-  summary.bodySystems.slice(0, limit).forEach((entry) => {
-    const item = createElement("li");
-    item.append(
-      createElement("span", "sv-profile-ae-soc-name", entry.name),
-      createElement("span", "sv-profile-ae-soc-count", String(entry.count))
-    );
-    list.append(item);
-  });
-  wrap.append(list);
-  const rest = summary.bodySystems.length - limit;
-  if (rest > 0) {
-    wrap.append(
-      createElement(
-        "p",
-        "sv-profile-ae-more",
-        `${rest} more body system${rest === 1 ? "" : "s"} not listed.`
-      )
-    );
-  }
-  return wrap;
-}
-function eventDescription(event) {
-  const parts = [event.__ae_verbatim || event.__ae_term, event.__ae_severity.label];
-  if (event.__ae_serious) parts.push("serious");
-  const end = event.__ae_open ? "no end date recorded" : `day ${event.__ae_end}`;
-  parts.push(event.__ae_placeable ? `day ${event.__ae_start} to ${end}` : "no start day recorded");
-  return parts.join(" \xB7 ");
-}
-function renderTimeline(events, domain, settings) {
-  const wrap = createElement("div", "sv-profile-ae-timeline");
-  const area = createElement("div", "sv-profile-ae-plotarea");
-  area.style.paddingLeft = `${PLOT_GUTTER_LEFT}px`;
-  area.style.paddingRight = `${PLOT_GUTTER_RIGHT}px`;
-  wrap.append(area);
-  const placeable = events.filter((event) => event.__ae_placeable);
-  const shown = placeable.slice(0, settings.max_rows);
-  const geometry = timelineGeometry(shown, domain);
-  const plot = createElement("div", "sv-profile-ae-plot");
-  shown.forEach((event, index) => {
-    const bars = geometry[index];
-    if (!bars) return;
-    const row = createElement("div", "sv-profile-ae-row");
-    const term = createElement("div", "sv-profile-ae-term");
-    term.textContent = event.__ae_term + (event.__ae_serious ? " \xB7 serious" : "") + (event.__ae_open ? " \xB7 no end date" : "");
-    if (bars.left > 55) {
-      term.classList.add("is-flipped");
-      term.style.right = `${100 - bars.left - bars.width}%`;
-      term.style.maxWidth = `${bars.left + bars.width}%`;
-    } else {
-      term.style.left = `${bars.left}%`;
-      term.style.maxWidth = `${100 - bars.left}%`;
-    }
-    const bar = createElement("div", "sv-profile-ae-bar");
-    bar.style.left = `${bars.left}%`;
-    bar.style.width = `${bars.width}%`;
-    bar.style.background = event.__ae_severity.color;
-    if (bars.open) bar.classList.add("is-open-ended");
-    if (bars.clipped) bar.classList.add("is-clipped");
-    if (event.__ae_serious) bar.classList.add("is-serious");
-    const description = eventDescription(event);
-    bar.title = description;
-    term.title = description;
-    bar.setAttribute("role", "img");
-    bar.setAttribute("aria-label", description);
-    row.append(term, bar);
-    plot.append(row);
-  });
-  area.append(plot);
-  const axis = createElement("div", "sv-profile-ae-axis");
-  axisTicks(domain).forEach((tick) => {
-    const label = createElement("span", "sv-profile-ae-tick", String(Math.round(tick.value)));
-    label.style.left = `${tick.position}%`;
-    axis.append(label);
-  });
-  area.append(axis);
-  const hidden = placeable.length - shown.length;
-  if (hidden > 0) {
-    wrap.append(
-      createElement(
-        "p",
-        "sv-profile-ae-more",
-        `${hidden} more event${hidden === 1 ? "" : "s"} not drawn \u2014 see the record listing.`
-      )
-    );
-  }
-  const unplaceable = events.filter((event) => !event.__ae_placeable);
-  if (unplaceable.length) {
-    const note = createElement(
-      "p",
-      "sv-profile-ae-unplaceable",
-      `No start day recorded, so not on the timeline: ${unplaceable.map((event) => event.__ae_term).join(", ")}.`
-    );
-    wrap.append(note);
-  }
-  return wrap;
-}
-function renderAeTracks(events, domain, settings) {
-  const section = createElement("section", "sv-profile-ae");
-  section.setAttribute("aria-label", "Adverse events");
-  section.append(createElement("h3", "sv-profile-ae-title", "Adverse events"));
-  const list = Array.isArray(events) ? events : [];
-  if (!list.length) {
-    section.append(
-      createElement("p", "sv-profile-ae-empty", "No adverse events recorded for this participant.")
-    );
-    return section;
-  }
-  const summary = summarizeAe(list, settings);
-  section.append(renderTiles(summary));
-  section.append(renderMix(summary));
-  if (!domain) {
-    section.append(
-      createElement(
-        "p",
-        "sv-profile-ae-empty",
-        "No study day resolves for this participant\u2019s laboratory records, so the event timeline is not drawn."
-      )
-    );
-  } else {
-    section.append(
-      createElement(
-        "div",
-        "sv-profile-ae-track-label",
-        "Timeline, on the labs chart\u2019s study-day axis"
-      )
-    );
-    section.append(renderTimeline(list, domain, settings));
-  }
-  section.append(renderBodySystems(summary));
-  return section;
-}
-
-// src/participant-profile/spaghetti.js
-Chart.register(LineController, LineElement, PointElement, LinearScale, LogarithmicScale, plugin_tooltip);
-var FOOTNOTE = "Points are filled for values above the current reference value. Mouseover a line to see the reference line for that lab.";
-function visibleSeries(series, state = {}) {
-  const base = state.showExtras ? series.slice() : series.filter((entry) => entry.isKey);
-  if (!state.labs) return base;
-  const wanted = new Set(state.labs);
-  return base.filter((entry) => wanted.has(entry.key));
-}
-function spaghettiDatasets(series) {
-  return series.map((entry) => {
-    const points = entry.points;
-    const cut = entry.cut;
-    const color2 = entry.color;
-    return {
-      label: entry.key,
-      data: points.map((point) => ({ x: point.day, y: point.value })),
-      borderColor: color2,
-      backgroundColor: color2,
-      pointBorderColor: color2,
-      pointBackgroundColor: (ctx) => {
-        const point = points[ctx.dataIndex];
-        return point && Number.isFinite(cut) && point.value >= cut ? color2 : "#fff";
-      },
-      showLine: true,
-      spanGaps: true,
-      borderWidth: 1.5,
-      pointRadius: 3,
-      pointHoverRadius: 5,
-      svCut: cut,
-      svKey: entry.key,
-      // The full point models (raw value, visit fields) for the tooltip
-      // callbacks (parity: the original's addPointTitles).
-      svPoints: points
-    };
-  });
-}
-function drawCutLine(chart, dataset) {
-  if (!dataset || !Number.isFinite(dataset.svCut)) return;
-  const y = chart.scales.y.getPixelForValue(dataset.svCut);
-  const { left, right, top, bottom } = chart.chartArea;
-  const color2 = dataset.borderColor;
-  const ctx = chart.ctx;
-  ctx.save();
-  ctx.beginPath();
-  ctx.rect(left, top, right - left, bottom - top);
-  ctx.clip();
-  ctx.strokeStyle = color2;
-  ctx.setLineDash([3, 3]);
-  ctx.beginPath();
-  ctx.moveTo(left, y);
-  ctx.lineTo(right, y);
-  ctx.stroke();
-  ctx.setLineDash([]);
-  ctx.fillStyle = color2;
-  ctx.textAlign = "right";
-  ctx.textBaseline = "bottom";
-  ctx.fillText(dataset.svCut.toFixed(1), right, y - 2);
-  ctx.restore();
-}
-function cutLinePlugin() {
-  return {
-    id: "sv-profile-cut-line",
-    afterDatasetsDraw(chart) {
-      if (chart.$svShowCuts) {
-        chart.data.datasets.forEach((dataset) => drawCutLine(chart, dataset));
-        return;
-      }
-      const active = chart.getActiveElements ? chart.getActiveElements() : [];
-      if (!active || !active.length) return;
-      drawCutLine(chart, chart.data.datasets[active[0].datasetIndex]);
-    }
-  };
-}
-function renderSpaghetti(host, model, state = {}, domain = null) {
-  const card = createElement("div", "sv-profile-spaghetti-card");
-  const canvas = createElement("canvas", "sv-profile-spaghetti-canvas");
-  card.append(canvas);
-  host.append(card);
-  const series = visibleSeries(model.series, state);
-  const datasets = spaghettiDatasets(series);
-  canvas.setAttribute("role", "img");
-  canvas.setAttribute(
-    "aria-label",
-    `Labs over time: ${series.map((entry) => entry.key).join(", ") || "no measures"} (${model.yLabel})`
-  );
-  canvas.tabIndex = 0;
-  const cuts = datasets.map((dataset) => dataset.svCut).filter(Number.isFinite);
-  const suggestedMax = cuts.length ? Math.max(...cuts) : void 0;
-  const yScale = model.axisType === "log" ? { type: "logarithmic", suggestedMax, title: { display: true, text: model.yLabel } } : { type: "linear", min: 0, suggestedMax, title: { display: true, text: model.yLabel } };
-  const chart = new Chart(canvas.getContext("2d"), {
-    type: "line",
-    data: { datasets },
-    options: {
-      maintainAspectRatio: false,
-      responsive: true,
-      animation: false,
-      parsing: false,
-      interaction: { mode: "dataset", intersect: false },
-      plugins: {
-        legend: { display: true, position: "bottom" },
-        tooltip: {
-          callbacks: {
-            // Visit context in the title, raw + adjusted pairing in the body
-            // (parity: the original's addPointTitles).
-            title: (items) => {
-              if (!items.length) return "";
-              const item = items[0];
-              const point = (item.dataset.svPoints || [])[item.dataIndex];
-              if (!point) return `Study day: ${item.parsed.x}`;
-              const lines = [`Study day: ${point.day}`];
-              if (point.visit !== void 0 && point.visit !== null && point.visit !== "") {
-                const n = point.visitn !== void 0 && point.visitn !== null && point.visitn !== "" ? ` (${point.visitn})` : "";
-                lines.push(`Visit: ${point.visit}${n}`);
-              }
-              return lines;
-            },
-            label: (ctx) => {
-              const point = (ctx.dataset.svPoints || [])[ctx.dataIndex];
-              const key = ctx.dataset.label;
-              if (!point || !Number.isFinite(point.raw))
-                return `${key}: ${Number(ctx.parsed.y).toFixed(2)}`;
-              return [
-                `Raw ${key}: ${point.raw.toFixed(2)}`,
-                `Adjusted ${key}: ${Number(ctx.parsed.y).toFixed(2)}`
-              ];
-            }
-          }
-        }
-      },
-      // The plot gutters are pinned rather than fitted so the adverse-event
-      // timeline below can share this chart's x-axis by construction — same
-      // left gutter, same right padding, same domain — instead of measuring the
-      // canvas after every render (PPRF-AXIS-002).
-      layout: { padding: { right: PLOT_GUTTER_RIGHT } },
-      scales: {
-        x: {
-          type: "linear",
-          title: { display: true, text: "Study Day" },
-          ...Array.isArray(domain) && domain.length === 2 ? { min: domain[0], max: domain[1] } : {}
-        },
-        y: {
-          ...yScale,
-          afterFit: (scale) => {
-            scale.width = PLOT_GUTTER_LEFT;
-          }
-        }
-      }
-    },
-    plugins: [cutLinePlugin()]
-  });
-  canvas.addEventListener("focus", () => {
-    chart.$svShowCuts = true;
-    chart.draw();
-  });
-  canvas.addEventListener("blur", () => {
-    chart.$svShowCuts = false;
-    chart.draw();
-  });
-  host.append(createElement("p", "sv-profile-spaghetti-footnote", FOOTNOTE));
-  return chart;
-}
-
-// src/participant-profile/controls.js
-function displayControl(settings, state, onChange) {
-  const select = document.createElement("select");
-  select.className = "sv-profile-display";
-  select.setAttribute("aria-label", "Standardization");
-  select.setAttribute("data-sv-focus", "display");
-  (settings.display_options || []).forEach(
-    (opt) => option(select, opt.value, opt.label, opt.value === state.display)
-  );
-  select.onchange = () => onChange(select.value);
-  return select;
-}
-function labControl(keys, state, onChange) {
-  const select = document.createElement("select");
-  select.className = "sv-profile-labs";
-  select.setAttribute("aria-label", "Measures");
-  select.setAttribute("data-sv-focus", "labs");
-  select.multiple = true;
-  select.size = Math.min(6, Math.max(2, keys.length));
-  const active = state.labs ? new Set(state.labs) : null;
-  keys.forEach((key) => option(select, key, key, active ? active.has(key) : true));
-  select.onchange = () => onChange([...select.selectedOptions].map((opt) => opt.value));
-  return select;
-}
-function extrasControl(count2, state, onChange) {
-  const wrap = createElement("label", "sv-profile-extras");
-  const checkbox = document.createElement("input");
-  checkbox.type = "checkbox";
-  checkbox.setAttribute("data-sv-focus", "extras");
-  checkbox.checked = Boolean(state.showExtras);
-  checkbox.onchange = () => onChange(checkbox.checked);
-  wrap.append(
-    checkbox,
-    document.createTextNode(`Show ${count2} additional measure${count2 === 1 ? "" : "s"}:`)
-  );
-  return wrap;
-}
-
-// src/participant-profile/sparkline.js
-var SPARK_WIDTH = 100;
-var SPARK_HEIGHT = 25;
-var SPARK_OFFSET = 4;
-var SVG_NS = "http://www.w3.org/2000/svg";
-function svgElement(tag, attrs) {
-  const element = document.createElementNS(SVG_NS, tag);
-  Object.entries(attrs).forEach(([name, value]) => element.setAttribute(name, String(value)));
-  return element;
-}
-function sparkDomain(measure) {
-  const pool = measure.spark.map((point) => point.value).concat(measure.populationExtent || []).filter(Number.isFinite);
-  if (!pool.length) return [0, 1];
-  return [Math.min(...pool) * 0.99, Math.max(...pool) * 1.01];
-}
-function linear([d0, d1], [r0, r1]) {
-  if (d1 === d0) return () => (r0 + r1) / 2;
-  return (value) => r0 + (value - d0) / (d1 - d0) * (r1 - r0);
-}
-function pointsAttr(coords) {
-  return coords.map(([px, py]) => `${px},${py}`).join(" ");
-}
-function sparklineSVG(measure) {
-  const svg = svgElement("svg", {
-    class: "sv-spark",
-    width: SPARK_WIDTH,
-    height: SPARK_HEIGHT,
-    "aria-hidden": "true"
-  });
-  const spark = measure.spark || [];
-  const days = spark.map((point) => point.day).filter(Number.isFinite);
-  if (!days.length) return svg;
-  const x = linear(
-    [Math.min(...days), Math.max(...days)],
-    [SPARK_OFFSET, SPARK_WIDTH - SPARK_OFFSET]
-  );
-  const y = linear(sparkDomain(measure), [SPARK_HEIGHT - SPARK_OFFSET, SPARK_OFFSET]);
-  const upper = spark.filter((point) => Number.isFinite(point.uln)).map((point) => [x(point.day), y(point.uln)]);
-  const lower = spark.filter((point) => Number.isFinite(point.lln)).map((point) => [x(point.day), y(point.lln)]).reverse();
-  const band = upper.concat(lower);
-  if (band.length) {
-    svg.append(
-      svgElement("polygon", {
-        class: "sv-spark-band",
-        points: pointsAttr(band),
-        fill: "#eee",
-        stroke: "none"
-      })
-    );
-  }
-  (measure.populationExtent || []).filter(Number.isFinite).forEach((value) => {
-    svg.append(
-      svgElement("line", {
-        class: "sv-spark-guide",
-        x1: 0,
-        x2: SPARK_WIDTH,
-        y1: y(value),
-        y2: y(value),
-        stroke: "#ccc",
-        "stroke-dasharray": "2 2"
-      })
-    );
-  });
-  const valuePoints = spark.filter((point) => Number.isFinite(point.value)).map((point) => [x(point.day), y(point.value)]);
-  if (valuePoints.length) {
-    svg.append(
-      svgElement("polyline", {
-        class: "sv-spark-line",
-        points: pointsAttr(valuePoints),
-        fill: "none",
-        stroke: measure.color,
-        "stroke-width": 1
-      })
-    );
-  }
-  spark.filter((point) => point.outlier && Number.isFinite(point.value)).forEach((point) => {
-    svg.append(
-      svgElement("circle", {
-        class: "sv-spark-outlier",
-        cx: x(point.day),
-        cy: y(point.value),
-        r: 2,
-        stroke: measure.color,
-        fill: measure.color
-      })
-    );
-  });
-  return svg;
-}
-
-// src/participant-profile/inset.js
-Chart.register(LineController, LineElement, PointElement, LinearScale, plugin_tooltip);
-function insetYDomain(measure) {
-  const pool = measure.spark.flatMap((point) => [point.value, point.lln, point.uln]).concat(measure.populationExtent || []).filter(Number.isFinite);
-  if (!pool.length) return [0, 1];
-  return [Math.min(...pool) * 0.99, Math.max(...pool) * 1.01];
-}
-function bandGuidePlugin(measure) {
-  return {
-    id: "sv-profile-inset-band",
-    beforeDatasetsDraw(chart) {
-      const { x, y } = chart.scales;
-      const { left, right } = chart.chartArea;
-      const ctx = chart.ctx;
-      const upper = measure.spark.filter((point) => Number.isFinite(point.uln)).map((point) => [x.getPixelForValue(point.day), y.getPixelForValue(point.uln)]);
-      const lower = measure.spark.filter((point) => Number.isFinite(point.lln)).map((point) => [x.getPixelForValue(point.day), y.getPixelForValue(point.lln)]).reverse();
-      const band = upper.concat(lower);
-      if (band.length) {
-        ctx.save();
-        ctx.fillStyle = "#eee";
-        ctx.beginPath();
-        band.forEach(([px, py], index) => {
-          if (index === 0) ctx.moveTo(px, py);
-          else ctx.lineTo(px, py);
-        });
-        ctx.closePath();
-        ctx.fill();
-        ctx.restore();
-      }
-      const guides = (measure.populationExtent || []).filter(Number.isFinite);
-      if (guides.length) {
-        ctx.save();
-        ctx.strokeStyle = "#ccc";
-        ctx.setLineDash([2, 2]);
-        guides.forEach((value) => {
-          const py = y.getPixelForValue(value);
-          ctx.beginPath();
-          ctx.moveTo(left, py);
-          ctx.lineTo(right, py);
-          ctx.stroke();
-        });
-        ctx.setLineDash([]);
-        ctx.restore();
-      }
-    }
-  };
-}
-function renderInset(host, measure) {
-  const card = createElement("div", "sv-profile-inset-card");
-  const canvas = createElement("canvas", "sv-profile-inset-canvas");
-  canvas.setAttribute("role", "img");
-  canvas.setAttribute("aria-label", `${measure.label} over time`);
-  card.append(canvas);
-  host.append(card);
-  const points = measure.spark.filter((point) => Number.isFinite(point.value));
-  const color2 = measure.color;
-  const [yMin, yMax] = insetYDomain(measure);
-  return new Chart(canvas.getContext("2d"), {
-    type: "line",
-    data: {
-      datasets: [
-        {
-          label: measure.label,
-          data: points.map((point) => ({ x: point.day, y: point.value })),
-          borderColor: color2,
-          backgroundColor: color2,
-          pointBorderColor: color2,
-          pointBackgroundColor: (ctx) => {
-            const point = points[ctx.dataIndex];
-            return point && point.outlier ? color2 : "#fff";
-          },
-          showLine: true,
-          spanGaps: true,
-          borderWidth: 1.5,
-          pointRadius: 4,
-          pointHoverRadius: 6
-        }
-      ]
-    },
-    options: {
-      maintainAspectRatio: false,
-      responsive: true,
-      animation: false,
-      parsing: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            // Visit context in the title (parity: the original lineChart's
-            // addPointTitles: study day, visit, visit number, value).
-            title: (items) => {
-              if (!items.length) return "";
-              const point = points[items[0].dataIndex];
-              if (!point) return `Study day: ${items[0].parsed.x}`;
-              const lines = [`Study day: ${point.day}`];
-              if (point.visit !== void 0 && point.visit !== null && point.visit !== "") {
-                const n = point.visitn !== void 0 && point.visitn !== null && point.visitn !== "" ? ` (${point.visitn})` : "";
-                lines.push(`Visit: ${point.visit}${n}`);
-              }
-              return lines;
-            },
-            label: (ctx) => `${measure.label}: ${ctx.parsed.y}`
-          }
-        }
-      },
-      scales: {
-        x: { type: "linear", title: { display: true, text: "Study Day" } },
-        y: {
-          type: "linear",
-          min: yMin,
-          max: yMax,
-          title: { display: true, text: measure.label }
-        }
-      }
-    },
-    plugins: [bandGuidePlugin(measure)]
-  });
-}
-
-// src/participant-profile/measureTable.js
-var COLUMNS = ["Measure", "N", "Min", "Median", "Max", "Spark"];
-var insetUid = 0;
-function formatSummary(value) {
-  return Number.isFinite(value) ? value.toFixed(2) : "";
-}
-function percentileLabel(quantile6) {
-  const n = Math.round(quantile6 * 100);
-  const mod100 = n % 100;
-  const mod10 = n % 10;
-  const suffix = mod10 === 1 && mod100 !== 11 ? "st" : mod10 === 2 && mod100 !== 12 ? "nd" : mod10 === 3 && mod100 !== 13 ? "rd" : "th";
-  return `${n}${suffix}`;
-}
-function tableFootnote(settings) {
-  const [lo, hi] = settings.measureBounds || [0.01, 0.99];
-  return `The y-axis for each chart is set to the ${percentileLabel(lo)} and ${percentileLabel(hi)} percentiles of the entire population's results for that measure. Values outside the normal range are plotted as individual points. Click a sparkline to view a more detailed version of the chart.`;
-}
-function listingColumns(settings) {
-  return [
-    [settings.measure_col, "Measure"],
-    [settings.visit_col, "Visit"],
-    [settings.studyday_col, "Study Day"],
-    [settings.value_col, "Value"],
-    [settings.unit_col, "Unit"]
-  ].filter(([col]) => col !== void 0 && col !== null && col !== "").map(([value_col, label]) => ({ value_col, label }));
-}
-function renderMeasureTable(host, measures, settings, state = {}, handlers = {}) {
-  const wrap = createElement("div", "sv-profile-measure-wrap");
-  const open = /* @__PURE__ */ new Map();
-  const table = createElement("table", "sv-profile-measure-table");
-  table.setAttribute("aria-label", "Measure summary");
-  const thead = createElement("thead");
-  const headRow = createElement("tr");
-  COLUMNS.forEach((label) => headRow.append(createElement("th", null, label)));
-  thead.append(headRow);
-  const tbody = createElement("tbody");
-  table.append(thead, tbody);
-  function collapse(key) {
-    const entry = open.get(key);
-    if (!entry) return;
-    entry.chart.destroy();
-    entry.insetRow.remove();
-    entry.button.setAttribute("aria-expanded", "false");
-    entry.button.setAttribute("aria-label", `Expand ${entry.measure.label} chart`);
-    entry.button.removeAttribute("aria-controls");
-    entry.button.textContent = "\u25BD";
-    if (entry.svg) entry.svg.style.display = "";
-    open.delete(key);
-  }
-  function expand(measure, row, button, svg) {
-    const insetRow = createElement("tr", "sv-profile-inset-row");
-    insetRow.id = `sv-profile-inset-${insetUid += 1}`;
-    const cell2 = createElement("td", "sv-profile-inset-cell");
-    cell2.setAttribute("colspan", String(COLUMNS.length));
-    insetRow.append(cell2);
-    row.after(insetRow);
-    const chart = renderInset(cell2, measure);
-    button.setAttribute("aria-expanded", "true");
-    button.setAttribute("aria-label", `Collapse ${measure.label} chart`);
-    button.setAttribute("aria-controls", insetRow.id);
-    button.textContent = "\u25B3 Minimize Chart";
-    if (svg) svg.style.display = "none";
-    open.set(measure.key, { measure, insetRow, chart, button, svg });
-  }
-  measures.forEach((measure) => {
-    const row = createElement(
-      "tr",
-      measure.isKey ? "sv-profile-measure-row" : "sv-profile-measure-row sv-profile-extra-row"
-    );
-    row.dataset.key = measure.key;
-    if (!measure.isKey && !state.showExtras) row.style.display = "none";
-    row.append(createElement("td", "sv-profile-measure-name", measure.label));
-    row.append(createElement("td", null, String(measure.n)));
-    row.append(createElement("td", null, formatSummary(measure.min)));
-    row.append(createElement("td", null, formatSummary(measure.median)));
-    row.append(createElement("td", null, formatSummary(measure.max)));
-    const sparkCell = createElement("td", "sv-profile-spark");
-    const button = createElement("button", "sv-profile-spark-toggle", "\u25BD");
-    button.type = "button";
-    button.setAttribute("aria-expanded", "false");
-    button.setAttribute("aria-label", `Expand ${measure.label} chart`);
-    button.setAttribute("data-sv-focus", `spark-${measure.key}`);
-    const svg = sparklineSVG(measure);
-    button.onclick = () => {
-      if (open.has(measure.key)) collapse(measure.key);
-      else expand(measure, row, button, svg);
-    };
-    sparkCell.append(button, svg);
-    row.append(sparkCell);
-    tbody.append(row);
-  });
-  const extras = measures.filter((measure) => !measure.isKey);
-  if (extras.length) {
-    const toggle = extrasControl(extras.length, state, (showExtras) => {
-      [...tbody.querySelectorAll("tr.sv-profile-extra-row")].forEach((row) => {
-        row.style.display = showExtras ? "" : "none";
-      });
-      if (!showExtras) extras.forEach((measure) => collapse(measure.key));
-      if (handlers.onToggleExtras) handlers.onToggleExtras(showExtras);
-    });
-    wrap.append(toggle);
-  }
-  wrap.append(table);
-  wrap.append(createElement("p", "sv-profile-table-footnote", tableFootnote(settings)));
-  host.append(wrap);
-  function collapseAll() {
-    [...open.keys()].forEach((key) => collapse(key));
-  }
-  return {
-    element: wrap,
-    open,
-    collapse,
-    collapseAll,
-    destroy: collapseAll
-  };
-}
-function renderRecordListing(host, rows, settings) {
-  const cols = settings.listing_cols && settings.listing_cols.length ? settings.listing_cols : listingColumns(settings);
-  const section = createElement("div", "sv-profile-listing");
-  section.append(createElement("h4", "sv-profile-listing-title", "Records"));
-  const listingWrap = createElement("div", "sv-listing");
-  section.append(listingWrap);
-  host.append(section);
-  const adapter = {
-    settings: { details: cols, page_size: settings.listing_page_size || 10 },
-    currentTableData: rows,
-    listingWrap,
-    listingSearch: "",
-    listingSort: null,
-    page: 1
-  };
-  renderListing(adapter);
-  return adapter;
-}
-
-// src/participant-profile/stepper.js
-function renderStepper(ids, index, { onStep, onToggleList, listOpen = false, ranked = null } = {}) {
-  const strip = createElement("div", "sv-profile-stepper");
-  strip.setAttribute("role", "group");
-  strip.setAttribute("aria-label", "Selected participants");
-  strip.setAttribute("data-sv-focus", "stepper");
-  strip.tabIndex = 0;
-  const step = (delta) => {
-    const target = index + delta;
-    if (target < 0 || target >= ids.length) return;
-    if (onStep) onStep(target);
-  };
-  const prev = createElement("button", "sv-profile-step sv-profile-step-prev", "\u25C0");
-  prev.type = "button";
-  prev.setAttribute("aria-label", "Previous participant");
-  prev.setAttribute("data-sv-focus", "step-prev");
-  prev.disabled = index === 0;
-  prev.onclick = () => step(-1);
-  const count2 = createElement(
-    "span",
-    "sv-profile-step-count",
-    `${index + 1} of ${ids.length} \xB7 ${ids[index]}`
-  );
-  count2.setAttribute("aria-live", "polite");
-  const next = createElement("button", "sv-profile-step sv-profile-step-next", "\u25B6");
-  next.type = "button";
-  next.setAttribute("aria-label", "Next participant");
-  next.setAttribute("data-sv-focus", "step-next");
-  next.disabled = index === ids.length - 1;
-  next.onclick = () => step(1);
-  strip.onkeydown = (event) => {
-    if (event.key === "ArrowLeft") {
-      event.preventDefault();
-      step(-1);
-    } else if (event.key === "ArrowRight") {
-      event.preventDefault();
-      step(1);
-    }
-  };
-  strip.append(prev, count2, next);
-  if (!onToggleList) return strip;
-  const toggle = createElement(
-    "button",
-    "sv-profile-step-toggle",
-    listOpen ? "Hide list" : "Show list"
-  );
-  toggle.type = "button";
-  toggle.setAttribute("aria-expanded", String(Boolean(listOpen)));
-  toggle.setAttribute("data-sv-focus", "step-toggle");
-  toggle.onclick = () => onToggleList();
-  strip.append(toggle);
-  if (!listOpen || !Array.isArray(ranked)) return strip;
-  const wrap = createElement("div", "sv-profile-cohort");
-  const list = createElement("ol", "sv-profile-cohort-list");
-  ranked.forEach((entry) => {
-    const item = createElement("li");
-    const button = createElement("button", "sv-profile-cohort-item", entry.id);
-    button.type = "button";
-    button.setAttribute("aria-current", entry.current ? "true" : "false");
-    if (entry.current) button.classList.add("is-current");
-    button.onclick = () => {
-      if (!entry.current && onStep) onStep(entry.index);
-    };
-    item.append(button);
-    list.append(item);
-  });
-  wrap.append(list);
-  const shell = createElement("div", "sv-profile-stepper-wrap");
-  shell.append(strip, wrap);
-  return shell;
-}
-
-// src/participant-profile/styles.js
-var STYLE_ID = "safety-viz-participant-profile-styles";
-var MODULE_CSS = `
-.sv-profile-root{margin-top:.5rem}
-
-/* --- the rail (obot.roadmap#75, decisions D1/D2/D3/D8) --------------------- */
-.sv-profile-rail{display:flex;flex-direction:column;min-height:0;height:100%}
-.sv-profile-rail-head{display:flex;align-items:flex-start;justify-content:space-between;gap:.6rem;padding:.55rem .7rem;border-bottom:1px solid #e3e8ee;background:#f2f6f8;flex:0 0 auto}
-.sv-profile-rail-title{margin:0;font-size:.95rem;font-weight:700;font-variant-numeric:tabular-nums}
-.sv-profile-rail-sub{margin:.1rem 0 0;font-size:.75rem;color:#52616f}
-.sv-profile-rail-actions{display:flex;gap:.35rem;flex:0 0 auto}
-.sv-profile-rail-btn{border:1px solid #d8dee4;background:#fff;color:#1f2933;border-radius:6px;font:inherit;font-size:.75rem;padding:.3rem .5rem;cursor:pointer;white-space:nowrap}
-.sv-profile-rail-btn:hover{border-color:#0b62a4;color:#0b3d63}
-.sv-profile-rail-btn:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
-.sv-profile-rail-stepper{flex:0 0 auto;background:#fff;border-bottom:1px solid #e3e8ee}
-.sv-profile-rail-stepper:empty{display:none}
-.sv-profile-rail-body{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:auto;padding:.7rem}
-.sv-profile-rail.is-empty .sv-profile-rail-body::before{content:"Click a participant in the chart to read their profile here.";display:block;padding:2rem .5rem;text-align:center;color:#7b8b96;font-size:.88rem}
-/* Expanded, the block gets room for a proper control column beside it \u2014 which
-   is to say the expanded profile is the standalone renderer (decision D3). */
-.sv-rail-expanded .sv-profile-rail-body{padding:1rem}
-.sv-rail-expanded .sv-profile-controls{flex-direction:column;align-items:stretch;float:left;width:210px;margin:0 1.25rem .75rem 0;padding-right:1rem;border-right:1px solid #e3e8ee}
-.sv-rail-expanded .sv-profile-spaghetti-card{height:360px}
-
-/* --- the cohort list (decision D8) ---------------------------------------- */
-.sv-profile-step-toggle{margin-left:auto;border:1px solid #d8dee4;background:#fff;color:#52616f;border-radius:6px;font:inherit;font-size:.72rem;padding:.2rem .45rem;cursor:pointer}
-.sv-profile-step-toggle:hover{border-color:#0b62a4;color:#0b3d63}
-.sv-profile-step-toggle:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
-.sv-profile-cohort{max-height:9rem;overflow-y:auto;border-top:1px solid #e3e8ee;background:#fbfcfd}
-.sv-profile-cohort-list{list-style:none;margin:0;padding:.25rem;counter-reset:cohort}
-.sv-profile-cohort-list li{counter-increment:cohort}
-.sv-profile-cohort-item{display:block;width:100%;text-align:left;border:0;background:none;font:inherit;font-size:.8rem;padding:.2rem .4rem;border-radius:4px;cursor:pointer;color:#1f2933}
-.sv-profile-cohort-item::before{content:counter(cohort) ". ";color:#7b8b96;font-variant-numeric:tabular-nums}
-.sv-profile-cohort-item:hover{background:#eef3f6}
-.sv-profile-cohort-item.is-current{background:#eaf2fb;font-weight:600}
-.sv-profile-cohort-item:focus-visible{outline:2px solid #0b62a4;outline-offset:-2px}
-
-/* --- the adverse-event tracks (decisions D5/D6/D7) ------------------------ */
-.sv-profile-ae{margin:.9rem 0 1rem;padding:.75rem 0 .2rem;border-top:1px solid #e3e8ee;border-bottom:1px solid #e3e8ee}
-.sv-profile-ae-title{margin:0 0 .55rem;font-size:.95rem;font-weight:700}
-.sv-profile-ae-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem;margin-bottom:.6rem}
-.sv-profile-ae-tile{border:1px solid #e3e8ee;border-radius:7px;padding:.35rem .5rem;background:#fff}
-.sv-profile-ae-tile-value{display:flex;align-items:center;gap:.3rem;font-size:1rem;font-weight:700;font-variant-numeric:tabular-nums}
-.sv-profile-ae-tile-label{margin-top:.1rem;font-size:.66rem;text-transform:uppercase;letter-spacing:.05em;color:#7b8b96}
-.sv-profile-ae-dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;display:inline-block}
-.sv-profile-ae-mix{display:flex;gap:2px;height:10px}
-.sv-profile-ae-mix-seg{border-radius:2px;min-width:4px}
-.sv-profile-ae-legend{display:flex;flex-wrap:wrap;gap:.2rem .8rem;margin-top:.3rem;font-size:.74rem;color:#52616f}
-.sv-profile-ae-legend-item{display:inline-flex;align-items:center;gap:.3rem}
-.sv-profile-ae-track-label{margin:.6rem 0 .35rem;font-size:.66rem;text-transform:uppercase;letter-spacing:.08em;color:#7b8b96}
-.sv-profile-ae-timeline{box-sizing:border-box;border:1px solid transparent;padding:0 .75rem}
-.sv-profile-ae-plotarea{position:relative;box-sizing:border-box}
-.sv-profile-ae-plot{position:relative}
-.sv-profile-ae-row{position:relative;height:27px}
-.sv-profile-ae-term{position:absolute;top:0;line-height:14px;font-size:.7rem;color:#52616f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sv-profile-ae-term.is-flipped{text-align:right}
-.sv-profile-ae-bar{position:absolute;top:16px;height:9px;border-radius:3px;min-width:4px}
-.sv-profile-ae-bar.is-open-ended{border-radius:3px 0 0 3px;-webkit-mask-image:linear-gradient(to right,#000 0,#000 60%,rgba(0,0,0,.25) 100%);mask-image:linear-gradient(to right,#000 0,#000 60%,rgba(0,0,0,.25) 100%)}
-.sv-profile-ae-bar.is-serious{box-shadow:0 0 0 2px #fff,0 0 0 3.5px #d03b3b}
-.sv-profile-ae-axis{position:relative;height:18px;margin-top:2px;border-top:1px solid #e3e8ee}
-.sv-profile-ae-tick{position:absolute;top:2px;transform:translateX(-50%);font-size:.65rem;color:#7b8b96;font-variant-numeric:tabular-nums}
-.sv-profile-ae-more,.sv-profile-ae-unplaceable{margin:.4rem 0 0;font-size:.72rem;color:#7b8b96}
-.sv-profile-ae-empty{margin:.3rem 0 .8rem;font-size:.82rem;color:#7b8b96}
-.sv-profile-ae-soc-wrap{margin-top:.7rem}
-.sv-profile-ae-soc{list-style:none;margin:0;padding:0}
-.sv-profile-ae-soc li{display:flex;justify-content:space-between;gap:.6rem;font-size:.76rem;padding:.16rem 0;border-bottom:1px dotted #e3e8ee}
-.sv-profile-ae-soc-name{color:#52616f;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sv-profile-ae-soc-count{font-variant-numeric:tabular-nums;font-weight:600}
-.sv-profile-live{position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-.sv-profile-table-footnote{margin:.5rem 0 0;font-size:.72rem;color:#52616f}
-.sv-profile-spaghetti-canvas:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
-.sv-profile-header{border-top:2px solid #111827;border-bottom:2px solid #111827;padding:.4rem .2rem;margin:0 0 .75rem}
-.sv-profile-titlerow{display:flex;align-items:baseline;flex-wrap:wrap;gap:.75rem}
-.sv-profile-id{font-size:1rem;font-weight:700;margin:0}
-.sv-profile-link{font-size:.8rem;text-decoration:none;color:#0b62a4}
-.sv-profile-link:hover{text-decoration:underline}
-.sv-profile-clear{margin-left:auto;padding:.25rem .6rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;color:#1f2933;font:inherit;font-size:.8rem;cursor:pointer}
-.sv-profile-clear:hover{border-color:#8a94a6;background:#f6f8fa}
-.sv-profile-clear:focus-visible,.sv-profile-palt .sv-profile-detail-value:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
-.sv-profile-details{list-style:none;display:flex;flex-wrap:wrap;gap:.25rem 1.5rem;padding:0;margin:.5rem 0 0}
-.sv-profile-details li{text-align:center}
-.sv-profile-detail-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f}
-.sv-profile-detail-value{font-size:.9rem;font-variant-numeric:tabular-nums}
-.sv-profile-palt .sv-profile-detail-value{border-bottom:1px dotted #999;cursor:pointer}
-.sv-profile-footnote{margin:.4rem 0 0;font-size:.75rem;color:#52616f;min-height:1rem}
-.sv-profile-controls{display:flex;flex-wrap:wrap;align-items:flex-end;gap:.75rem 1rem;margin:0 0 .75rem}
-.sv-profile-controls .sv-profile-field{display:flex;flex-direction:column;gap:.2rem;font-size:.78rem}
-.sv-profile-controls label{font-weight:600;color:#52616f}
-.sv-profile-controls select{padding:.3rem .4rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.82rem}
-.sv-profile-controls select:focus-visible,.sv-profile-extras input:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
-.sv-profile-spaghetti-card{height:300px;position:relative;border:1px solid #d8dee4;border-radius:10px;padding:.75rem;background:#fff}
-.sv-profile-spaghetti-footnote{margin:.5rem 0 0;font-size:.72rem;color:#52616f}
-.sv-profile-extras{display:inline-flex;align-items:center;gap:.4rem;font-size:.8rem;margin:.75rem 0 .25rem}
-.sv-profile-extras input{accent-color:#0b62a4}
-.sv-profile-measure-wrap{margin:.75rem 0 0}
-.sv-profile-measure-table{width:100%;border-collapse:collapse;font-size:.82rem}
-.sv-profile-measure-table th{text-align:left;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f;padding:.3rem .5rem;border-bottom:2px solid #111827}
-.sv-profile-measure-table td{padding:.3rem .5rem;font-variant-numeric:tabular-nums}
-.sv-profile-measure-row td{border-bottom:.5px solid #111827}
-.sv-profile-inset-row td{border-bottom:.5px solid #111827;background:none}
-.sv-profile-spark{white-space:nowrap}
-.sv-profile-spark svg{vertical-align:middle}
-.sv-profile-spark-toggle{border:none;background:none;color:#999;cursor:pointer;font:inherit;font-size:.8rem;padding:.1rem .3rem;vertical-align:middle}
-.sv-profile-spark-toggle:hover{color:#1f2933}
-.sv-profile-spark-toggle:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
-.sv-profile-inset-card{height:200px;position:relative;padding:.5rem 0}
-.sv-profile-listing{margin:1rem 0 0}
-.sv-profile-listing-title{margin:0 0 .4rem;font-size:.85rem}
-.sv-profile-stepper{display:flex;align-items:center;gap:.6rem;margin:0 0 .5rem;font-size:.85rem}
-.sv-profile-step{padding:.2rem .55rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;color:#1f2933;font:inherit;font-size:.8rem;cursor:pointer}
-.sv-profile-step:hover:not(:disabled){border-color:#8a94a6;background:#f6f8fa}
-.sv-profile-step:disabled{opacity:.45;cursor:default}
-.sv-profile-step:focus-visible,.sv-profile-stepper:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
-.sv-profile-step-count{font-variant-numeric:tabular-nums}
-@media (prefers-reduced-motion:no-preference){.sv-profile-root{scroll-behavior:smooth}}`;
-function applyProfileStyles() {
-  if (typeof document === "undefined" || document.getElementById(STYLE_ID)) return;
-  const style = document.createElement("style");
-  style.id = STYLE_ID;
-  style.textContent = MODULE_CSS;
-  document.head.append(style);
-}
-
-// src/participant-profile.js
-Chart.register(
-  LineController,
-  LineElement,
-  PointElement,
-  LinearScale,
-  LogarithmicScale,
-  plugin_tooltip,
-  plugin_legend
-);
-function labDomain(spaghetti) {
-  const days = [];
-  (spaghetti && spaghetti.series || []).forEach((entry) => {
-    (entry.points || []).forEach((point) => {
-      if (Number.isFinite(point.day)) days.push(point.day);
-    });
-  });
-  if (!days.length) return null;
-  return [Math.min(...days), Math.max(...days)];
-}
-function resolveListenTarget(listenTo) {
-  if (!listenTo) return document;
-  if (typeof listenTo === "string") return document.querySelector(listenTo) || document;
-  return listenTo;
-}
-function listenTargetLabel(listenTo, target) {
-  if (typeof listenTo === "string") return listenTo;
-  if (!listenTo || target === document) return "document";
-  if (listenTo.id) return `#${listenTo.id}`;
-  return (listenTo.tagName || "element").toLowerCase();
-}
-var SafetyParticipantProfile = class {
-  constructor(element = "body", settings = {}, { mode = "standalone" } = {}) {
-    this.mode = mode;
-    this.element = typeof element === "string" ? document.querySelector(element) : element;
-    if (!this.element) throw new Error(`Safety Participant Profile target not found: ${element}`);
-    this.settings = syncSettings2(settings);
-    this.rawData = [];
-    this.cleanRows = [];
-    this.removedRecords = 0;
-    this.model = null;
-    this.spaghettiChart = null;
-    this.spaghettiHost = null;
-    this.tableController = null;
-    this.listenTarget = null;
-    this.listenHandler = null;
-    this.liveRegion = null;
-    this.state = {
-      display: this.settings.display,
-      showExtras: false,
-      labs: null,
-      ids: [],
-      index: 0,
-      expanded: false,
-      cohortOpen: false
-    };
-    this.aeSettings = this.settings.ae ? syncAeSettings(this.settings.ae) : null;
-    this.aeEvents = [];
-    this.aeRemoved = 0;
-    if (this.aeSettings && Array.isArray(this.settings.ae.data)) {
-      this.setAeData(this.settings.ae.data);
-    }
-    applyProfileStyles();
-    if (this.mode === "standalone") {
-      this.renderChrome();
-      this.listen();
-      this.setIdle();
-    } else {
-      this.renderRailChrome();
-    }
-  }
-  /**
-   * Ingest adverse-event records once (PPRF-AE-002). Hosts that already hold
-   * cleaned AE rows may pass them here instead of through settings.ae.data;
-   * either way the cleaning runs once per call, never per gesture.
-   * @param {Object[]} records Raw adverse-event records.
-   * @returns {SafetyParticipantProfile} The instance, for chaining.
-   */
-  setAeData(records) {
-    if (!this.aeSettings) return this;
-    const { events, removed } = cleanAeRecords(records, this.aeSettings);
-    this.aeEvents = events;
-    this.aeRemoved = removed;
-    return this;
-  }
-  /**
-   * Build the rail chrome (decisions D1/D2/D3/D8): a header naming the current
-   * participant with Expand and Close, a stepper strip pinned so it survives
-   * scrolling the rail, and a scrolling body the profile block renders into.
-   * @private
-   */
-  renderRailChrome() {
-    this.element.innerHTML = "";
-    const rail = createElement("div", "sv-profile-rail");
-    const head = createElement("div", "sv-profile-rail-head");
-    const heading = createElement("div", "sv-profile-rail-heading");
-    this.railTitle = createElement("h2", "sv-profile-rail-title", "Participant profile");
-    this.railSub = createElement("p", "sv-profile-rail-sub", "Nothing selected");
-    heading.append(this.railTitle, this.railSub);
-    const actions = createElement("div", "sv-profile-rail-actions");
-    this.expandButton = createElement("button", "sv-profile-rail-btn", "Expand");
-    this.expandButton.type = "button";
-    this.expandButton.setAttribute("data-sv-focus", "rail-expand");
-    this.expandButton.setAttribute("aria-pressed", "false");
-    this.expandButton.onclick = () => this.setExpanded(!this.state.expanded);
-    const close = createElement("button", "sv-profile-rail-btn sv-profile-rail-close", "\u2715");
-    close.type = "button";
-    close.setAttribute("aria-label", "Close the participant profile");
-    close.setAttribute("data-sv-focus", "rail-close");
-    close.onclick = () => this.handleClear();
-    actions.append(this.expandButton, close);
-    head.append(heading, actions);
-    this.stepperWrap = createElement("div", "sv-profile-rail-stepper");
-    this.railBody = createElement("div", "sv-profile-rail-body");
-    rail.append(head, this.stepperWrap, this.railBody);
-    this.element.hidden = true;
-    this.element.append(rail);
-    this.railRoot = rail;
-    this.profileHost = this.railBody;
-    this.railKeyHandler = (event) => {
-      if (event.key === "Escape" && this.state.expanded) {
-        event.stopPropagation();
-        this.setExpanded(false);
-      }
-    };
-    rail.addEventListener("keydown", this.railKeyHandler);
-  }
-  /**
-   * Expand the rail to fill the host renderer's own container, or collapse it
-   * back (decision D3). Deliberately NOT a viewport overlay or the native
-   * Fullscreen API: the same module has to behave identically inside a
-   * gsm.safety htmlwidget and an open.gismo panel, where escaping the container
-   * is either impossible or rude.
-   * @param {boolean} expanded The target state.
-   * @returns {SafetyParticipantProfile} The instance, for chaining.
-   */
-  setExpanded(expanded) {
-    const next = Boolean(expanded);
-    this.state.expanded = next;
-    const shellRoot = this.element.closest ? this.element.closest(".sv-root") : null;
-    if (shellRoot) shellRoot.classList.toggle("sv-rail-expanded", next);
-    if (this.railRoot) this.railRoot.classList.toggle("is-expanded", next);
-    if (this.expandButton) {
-      this.expandButton.textContent = next ? "Collapse" : "Expand";
-      this.expandButton.setAttribute("aria-pressed", String(next));
-    }
-    this.resize();
-    return this;
-  }
-  /**
-   * Update the rail header for the current selection.
-   * @private
-   */
-  updateRailHead() {
-    if (!this.railTitle) return;
-    const id = this.state.ids[this.state.index];
-    this.railTitle.textContent = id === void 0 ? "Participant profile" : String(id);
-    this.railSub.textContent = id === void 0 ? "Nothing selected" : this.state.ids.length > 1 ? `${this.state.ids.length} selected \xB7 stepping worst first` : "Selected from the chart";
-    if (this.railRoot) this.railRoot.classList.toggle("is-empty", id === void 0);
-    this.element.hidden = id === void 0;
-  }
-  /**
-   * Build the standalone shell chrome: the shared sidebar/main layout with the
-   * chart card hidden, the profile block owning the main column. The rail slot
-   * stays empty here — standalone IS the expanded reading, so there is nothing
-   * to put beside itself.
-   * @private
-   */
-  renderChrome() {
-    Object.assign(
-      this,
-      renderShell(this.element, {
-        moduleClass: "safety-participant-profile",
-        onToggle: () => this.resize()
-      })
-    );
-    this.chartWrap.style.display = "none";
-    this.profileHost = createElement("div", "sv-profile");
-    this.main.insertBefore(this.profileHost, this.multiplesWrap);
-  }
-  /**
-   * Install the standalone `participantsSelected` listener on the configured
-   * target (PPRF-6). The handler reads `event.detail?.data ?? []`, coerces the
-   * ids to strings, and shows the selection — or clears to idle when it is
-   * empty. The docked mount installs no listener.
-   * @private
-   */
-  listen() {
-    this.listenTarget = resolveListenTarget(this.settings.listen_to);
-    this.listenLabel = listenTargetLabel(this.settings.listen_to, this.listenTarget);
-    this.listenHandler = (event) => {
-      const data = event && event.detail ? event.detail.data : null;
-      const ids = (Array.isArray(data) ? data : []).map(String);
-      if (ids.length) this.show(ids);
-      else this.clear();
-    };
-    this.listenTarget.addEventListener("participantsSelected", this.listenHandler);
-  }
-  /**
-   * Show the standalone idle note: waiting for a selection on the listen
-   * target.
-   * @private
-   */
-  setIdle() {
-    if (this.notes)
-      this.notes.textContent = `Waiting for selection \u2014 listening on ${this.listenLabel}.`;
-  }
-  /**
-   * Load data and render: an alias for setData that keeps the two-step
-   * create-then-init call shape working.
-   * @param {Object[]} data Long-format lab records matching the profile data contract.
-   * @returns {SafetyParticipantProfile} The instance, for chaining.
-   */
-  init(data) {
-    this.setData(data);
-    return this;
-  }
-  /**
-   * Replace the bound data and re-render (standalone ingest path). The data is
-   * validated against the settings mapping (throwing, and rendering the message
-   * into the target element, when required columns are missing), then cleaned
-   * and baseline-derived through the shared hep-core reducers.
-   * @param {Object[]} data Long-format lab records matching the profile data contract.
-   * @returns {SafetyParticipantProfile} The instance, for chaining.
-   */
-  setData(data) {
-    this.rawData = Array.isArray(data) ? data : [];
-    this.validateAndCleanData();
-    this.render();
-    return this;
-  }
-  /**
-   * Merge setting overrides onto the current settings without re-rendering:
-   * the merge half of setSettings, also used by a docked host to refresh
-   * live pass-through settings (cuts, axis type, display) before its own
-   * selection re-dispatch re-renders the block (PPRF-7).
-   * @param {Object} settings Setting overrides to merge.
-   * @returns {SafetyParticipantProfile} The instance, for chaining.
-   */
-  applySettings(settings) {
-    if ("display" in settings) this.state.display = settings.display;
-    this.settings = syncSettings2({ ...this.settings, ...settings });
-    return this;
-  }
-  /**
-   * Merge setting overrides onto the current settings, adopt a provided display
-   * mode into the live state, re-clean any bound data, and re-render.
-   * @param {Object} settings Setting overrides to merge.
-   * @returns {SafetyParticipantProfile} The instance, for chaining.
-   */
-  setSettings(settings) {
-    this.applySettings(settings);
-    if (this.mode === "standalone" && this.rawData.length) this.validateAndCleanData();
-    this.render();
-    return this;
-  }
-  /**
-   * Validate and clean the raw data (standalone only): checkInputs guards the
-   * long-lab contract, cleanData derives the __hep_* columns, deriveBaseline
-   * fills the ×Baseline field.
-   * @private
-   */
-  validateAndCleanData() {
-    try {
-      checkInputs2(this.rawData, this.settings);
-    } catch (error) {
-      this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
-      throw error;
-    }
-    const { rows, removed } = cleanData2(this.rawData, this.settings);
-    deriveBaseline(rows, this.settings);
-    this.cleanRows = rows;
-    this.removedRecords = removed;
-    if (removed)
-      console.warn(
-        `${removed} missing or non-numeric result${removed > 1 ? "s have" : " has"} been removed.`
-      );
-  }
-  /**
-   * Programmatic selection: the same path the participantsSelected listener
-   * takes (PPRF-6). A non-empty list ranks and shows the cohort; an empty list
-   * clears.
-   * @param {Array<string|number>} ids The selected participant ids.
-   * @returns {SafetyParticipantProfile} The instance, for chaining.
-   */
-  setSelected(ids) {
-    const list = (Array.isArray(ids) ? ids : []).map(String);
-    if (list.length) this.show(list);
-    else this.clear();
-    return this;
-  }
-  /**
-   * Show a selection: rank the ids worst-first (PPRF-5) and render the profile
-   * for the first. The docked mount passes the host's pre-cleaned rows, which
-   * are consumed verbatim — no checkInputs, no cleanData (PPRF-1).
-   * @param {Array<string|number>} ids The selected participant ids.
-   * @param {Object[]} [cleanRows] Pre-cleaned rows carrying the __hep_* columns (dock contract).
-   * @returns {SafetyParticipantProfile} The instance, for chaining.
-   */
-  show(ids, cleanRows) {
-    if (cleanRows !== void 0) this.cleanRows = Array.isArray(cleanRows) ? cleanRows : [];
-    const list = (Array.isArray(ids) ? ids : []).map(String);
-    if (!list.length) return this.clear();
-    const ranked = rankParticipants(this.cleanRows, list, this.settings);
-    const sameCohort = ranked.length === this.state.ids.length && ranked.every((id, index) => String(id) === String(this.state.ids[index]));
-    this.state.ids = ranked;
-    this.state.index = sameCohort ? Math.min(this.state.index, ranked.length - 1) : 0;
-    this.renderProfile();
-    return this;
-  }
-  /**
-   * Clear the profile block: destroy the live charts, empty the slot (the
-   * shell's `.sv-profile:empty` rule hides it), and return the standalone
-   * mount to its idle note.
-   * @returns {SafetyParticipantProfile} The instance, for chaining.
-   */
-  clear() {
-    this.destroyContent();
-    this.state.ids = [];
-    this.state.index = 0;
-    this.profileHost.innerHTML = "";
-    this.liveRegion = null;
-    if (this.stepperWrap) this.stepperWrap.innerHTML = "";
-    if (this.mode === "standalone") {
-      if (this.controls) this.controls.innerHTML = "";
-      this.setIdle();
-    } else {
-      this.state.expanded = false;
-      this.setExpanded(false);
-      this.updateRailHead();
-    }
-    return this;
-  }
-  /**
-   * The Clear affordance (PPRF-2/6): docked, the host owns the selection, so
-   * Clear delegates to on_clear (falling back to a local clear when the host
-   * wired none); standalone, the module clears its own block and then notifies
-   * on_clear so a host can sync.
-   * @private
-   */
-  handleClear() {
-    if (this.mode === "rail") {
-      if (this.settings.on_clear) this.settings.on_clear();
-      else this.clear();
-      return;
-    }
-    this.clear();
-    if (this.settings.on_clear) this.settings.on_clear();
-  }
-  /**
-   * Step the cohort to another index (PPRF-5): re-render the full profile for
-   * the target participant and report the id through on_step so the host keeps
-   * its chart highlight in sync — the module itself dispatches nothing.
-   * @param {number} index The clamped target index.
-   * @private
-   */
-  step(index) {
-    if (index < 0 || index >= this.state.ids.length) return;
-    this.state.index = index;
-    this.renderProfile();
-    if (this.settings.on_step) this.settings.on_step(this.state.ids[index]);
-  }
-  /**
-   * Re-render from the current state: the profile when a selection is live,
-   * the idle/empty state otherwise.
-   * @returns {SafetyParticipantProfile} The instance, for chaining.
-   */
-  render() {
-    if (this.state.ids.length) this.renderProfile();
-    else this.clear();
-    return this;
-  }
-  /**
-   * Render the full profile block for the current participant: stepper (N > 1),
-   * header, controls, spaghetti card, measure table, and the optional record
-   * listing (PPRF-2/3/4/5). The rebuild is keyboard-safe (PPRF-8): the focused
-   * control's data-sv-focus key is captured first and focus is restored onto
-   * its recreated counterpart, and a persistent aria-live region (never torn
-   * down between renders) announces the current participant.
-   * @private
-   */
-  renderProfile() {
-    const activeEl = typeof document !== "undefined" ? document.activeElement : null;
-    const ownsFocus = activeEl && (this.profileHost.contains(activeEl) || this.stepperWrap && this.stepperWrap.contains(activeEl) || this.controls && this.controls.contains(activeEl));
-    const focusKey = ownsFocus ? activeEl.getAttribute("data-sv-focus") : null;
-    this.destroyContent();
-    if (!this.liveRegion || this.liveRegion.parentElement !== this.profileHost) {
-      this.profileHost.innerHTML = "";
-      this.liveRegion = createElement("div", "sv-profile-live");
-      this.liveRegion.setAttribute("aria-live", "polite");
-      this.profileHost.append(this.liveRegion);
-    } else {
-      [...this.profileHost.children].forEach((child) => {
-        if (child !== this.liveRegion) child.remove();
-      });
-    }
-    const id = this.state.ids[this.state.index];
-    const model = buildProfileModel(this.cleanRows, id, this.settings, this.state);
-    this.model = model;
-    this.aeRows = this.aeSettings ? participantEvents(this.aeEvents, id) : [];
-    if (!model.spaghetti.series.length && this.aeRows.length) {
-      const first = this.aeRows[0];
-      model.participant.details = (this.settings.details || []).map((spec) => ({
-        label: spec.label,
-        value: first[spec.value_col]
-      }));
-    }
-    const root = createElement("div", "sv-profile-root");
-    root.setAttribute("role", "region");
-    root.setAttribute("aria-label", `Participant ${id} profile`);
-    this.profileHost.append(root);
-    const stepper = this.state.ids.length > 1 ? renderStepper(this.state.ids, this.state.index, {
-      onStep: (index) => this.step(index),
-      onToggleList: () => {
-        this.state.cohortOpen = !this.state.cohortOpen;
-        this.renderProfile();
-      },
-      listOpen: this.state.cohortOpen,
-      ranked: this.state.cohortOpen ? this.cohortRows() : null
-    }) : null;
-    if (this.stepperWrap) {
-      this.stepperWrap.innerHTML = "";
-      if (stepper) this.stepperWrap.append(stepper);
-    } else if (stepper) {
-      root.append(stepper);
-    }
-    root.append(
-      renderHeader(model.participant, this.settings, { onClear: () => this.handleClear() })
-    );
-    const hasLabs = model.spaghetti.series.length > 0;
-    const keys = model.spaghetti.series.filter((entry) => this.state.showExtras || entry.isKey).map((entry) => entry.key);
-    if (hasLabs) {
-      if (this.mode === "rail") root.append(this.buildInlineControls(keys));
-      else this.buildSidebarControls(keys);
-    } else if (this.mode === "standalone" && this.controls) {
-      this.controls.innerHTML = "";
-    }
-    this.domain = this.aeSettings ? unionDomain(labDomain(model.spaghetti), aeDomain(this.aeRows)) : null;
-    if (hasLabs) {
-      this.spaghettiHost = createElement("div", "sv-profile-spaghetti");
-      root.append(this.spaghettiHost);
-      this.drawSpaghetti();
-    }
-    if (this.aeSettings) {
-      root.append(renderAeTracks(this.aeRows, this.domain, this.aeSettings));
-    }
-    if (hasLabs)
-      this.tableController = renderMeasureTable(root, model.measures, this.settings, this.state, {
-        // The extras toggle changes both the table AND the control surface
-        // (Measures options, spaghetti series), so it re-renders the block;
-        // focus restoration keeps the checkbox focused (PPRF-8).
-        onToggleExtras: (showExtras) => {
-          this.state.showExtras = showExtras;
-          this.renderProfile();
-        }
-      });
-    if (this.settings.listing) {
-      const participantRows = this.cleanRows.filter(
-        (row) => String(row[this.settings.id_col]) === String(id)
-      );
-      renderRecordListing(root, participantRows, this.settings);
-    }
-    if (this.mode === "standalone" && this.notes) {
-      const n2 = this.state.ids.length;
-      this.notes.textContent = n2 > 1 ? `Profiling ${n2} selected participants.` : `Profiling participant ${id}.`;
-    }
-    const n = this.state.ids.length;
-    this.liveRegion.textContent = n > 1 ? `Participant ${id}, ${this.state.index + 1} of ${n}` : `Participant ${id}`;
-    this.updateRailHead();
-    this.restoreFocus(focusKey);
-  }
-  /**
-   * The ranked cohort as rows for the stepper's expandable list (decision D8):
-   * every selected participant, worst-first, with the current one marked — so
-   * "which twelve am I stepping through?" is answerable without leaving the
-   * rail.
-   * @returns {Array<{id: string, index: number, current: boolean}>} The rows.
-   * @private
-   */
-  cohortRows() {
-    return this.state.ids.map((id, index) => ({
-      id: String(id),
-      index,
-      current: index === this.state.index
-    }));
-  }
-  /**
-   * Restore keyboard focus after a rebuild (PPRF-8): find the recreated
-   * control carrying the captured data-sv-focus key and focus it; when a
-   * stepper button came back disabled (the cohort end was reached), focus the
-   * stepper strip instead so arrow-key navigation keeps working.
-   * @param {?string} focusKey The captured data-sv-focus key, or null.
-   * @private
-   */
-  restoreFocus(focusKey) {
-    if (!focusKey) return;
-    const find = (key) => this.profileHost.querySelector(`[data-sv-focus="${key}"]`) || // The stepper is pinned outside the block in the rail (decision D8), so
-    // focus restoration has to look there too or a keyboard user loses the
-    // strip on every step.
-    (this.stepperWrap ? this.stepperWrap.querySelector(`[data-sv-focus="${key}"]`) : null) || (this.controls ? this.controls.querySelector(`[data-sv-focus="${key}"]`) : null);
-    let target = find(focusKey);
-    if (target && target.disabled) target = find("stepper") || target;
-    if (target && !target.disabled && typeof target.focus === "function") target.focus();
-  }
-  /**
-   * (Re)draw the spaghetti card from the current model and control state,
-   * destroying any previous chart first.
-   * @private
-   */
-  drawSpaghetti() {
-    if (this.spaghettiChart) this.spaghettiChart.destroy();
-    this.spaghettiChart = null;
-    if (!this.spaghettiHost || !this.model) return;
-    this.spaghettiHost.innerHTML = "";
-    this.spaghettiChart = renderSpaghetti(
-      this.spaghettiHost,
-      this.model.spaghetti,
-      this.state,
-      this.domain
-    );
-  }
-  /**
-   * Build the standalone sidebar controls (house convention): Display and Labs
-   * sections through the shared control builders.
-   * @param {string[]} keys The measure keys of the current profile.
-   * @private
-   */
-  buildSidebarControls(keys) {
-    this.controls.innerHTML = "";
-    const { addSection, addControl } = controlBuilders(this.controls);
-    const displayParent = addSection("Display");
-    addControl(
-      "Standardization",
-      displayControl(this.settings, this.state, (value) => this.onDisplayChange(value)),
-      displayParent
-    );
-    const labParent = addSection("Labs");
-    addControl(
-      "Measures",
-      labControl(keys, this.state, (labs) => this.onLabsChange(labs)),
-      labParent
-    );
-  }
-  /**
-   * Build the dock's compact inline controls strip: the same builders as the
-   * sidebar, placed inside the block (section 6 of the module spec).
-   * @param {string[]} keys The measure keys of the current profile.
-   * @returns {HTMLElement} The controls strip.
-   * @private
-   */
-  buildInlineControls(keys) {
-    const strip = createElement("div", "sv-profile-controls");
-    const displayField2 = createElement("div", "sv-profile-field");
-    displayField2.append(
-      createElement("label", null, "Standardization"),
-      displayControl(this.settings, this.state, (value) => this.onDisplayChange(value))
-    );
-    const labField = createElement("div", "sv-profile-field");
-    labField.append(
-      createElement("label", null, "Measures"),
-      labControl(keys, this.state, (labs) => this.onLabsChange(labs))
-    );
-    strip.append(displayField2, labField);
-    return strip;
-  }
-  /**
-   * Display-toggle change (PPRF-3): switch the standardization field and
-   * rebuild the profile (series values, cuts, and y-label all change).
-   * @param {string} value The chosen display mode.
-   * @private
-   */
-  onDisplayChange(value) {
-    this.state.display = value;
-    this.renderProfile();
-  }
-  /**
-   * Lab-subsetter change (PPRF-3): filter the spaghetti datasets to the
-   * selected measure keys.
-   * @param {string[]} labs The selected measure keys.
-   * @private
-   */
-  onLabsChange(labs) {
-    this.state.labs = labs;
-    this.drawSpaghetti();
-  }
-  /**
-   * Resize the live charts to their containers — the spaghetti card and any
-   * open measure-table insets. For host layouts that change the container size
-   * without a window resize (e.g. the R htmlwidget bindings).
-   * @returns {void}
-   */
-  resize() {
-    if (this.spaghettiChart) this.spaghettiChart.resize();
-    if (this.tableController) this.tableController.open.forEach((entry) => entry.chart.resize());
-  }
-  /**
-   * Destroy the live Chart.js instances (spaghetti + open insets) without
-   * touching the block's DOM.
-   * @private
-   */
-  destroyContent() {
-    if (this.spaghettiChart) this.spaghettiChart.destroy();
-    this.spaghettiChart = null;
-    this.spaghettiHost = null;
-    if (this.tableController) this.tableController.destroy();
-    this.tableController = null;
-  }
-  /**
-   * Tear the profile down: destroy the charts, remove the standalone event
-   * listener, and empty the mount element. The instance cannot be reused
-   * afterwards — create a new one via the factory instead.
-   * @returns {void}
-   */
-  destroy() {
-    this.destroyContent();
-    if (this.railRoot && this.railKeyHandler)
-      this.railRoot.removeEventListener("keydown", this.railKeyHandler);
-    if (this.listenTarget && this.listenHandler)
-      this.listenTarget.removeEventListener("participantsSelected", this.listenHandler);
-    this.listenTarget = null;
-    this.listenHandler = null;
-    this.element.innerHTML = "";
-  }
-};
-function participantProfile(element = "body", data = null, settings = {}) {
-  const instance = new SafetyParticipantProfile(element, settings);
-  if (data) instance.setData(data);
-  return instance;
-}
-function profileRail(container, settings = {}) {
-  return new SafetyParticipantProfile(container, settings, { mode: "rail" });
-}
-
-// src/profile-host.js
-function buildProfileRows(rawData, mapping) {
-  const { rows } = cleanData2(Array.isArray(rawData) ? rawData : [], mapping);
-  assignSequence(rows, mapping);
-  deriveBaseline(rows, mapping);
-  return rows;
-}
-function mountProfileRail(host, settingsFn, { target = null } = {}) {
-  if (!host.settings.profile || host.profile) return;
-  host.profile = profileRail(host.railWrap, settingsFn());
-  host.profileTarget = target || host.root;
-  host.profileFeed = (event) => {
-    const data = event && event.detail ? event.detail.data : null;
-    const ids = (Array.isArray(data) ? data : []).map(String);
-    const key = ids.join("\0");
-    if (key === host.profileKey) return;
-    host.profileKey = key;
-    if (!ids.length) {
-      host.profile.clear();
-      return;
-    }
-    host.profile.show(ids, host.profileRows);
-  };
-  host.profileTarget.addEventListener("participantsSelected", host.profileFeed);
-}
-function unmountProfileRail(host) {
-  if (!host.profile) return;
-  (host.profileTarget || host.root).removeEventListener("participantsSelected", host.profileFeed);
-  host.profileFeed = null;
-  host.profile.destroy();
-  host.profile = null;
-  host.profileKey = null;
-}
-function syncProfileRail(host, settingsFn) {
-  if (!host.settings.profile) {
-    unmountProfileRail(host);
-    return;
-  }
-  if (!host.profile) {
-    mountProfileRail(host, settingsFn);
-    return;
-  }
-  host.profileKey = null;
-  host.profile.cleanRows = host.profileRows;
-  host.profile.setSettings(settingsFn());
-}
-function resetProfileRail(host) {
-  host.profileKey = null;
-  if (host.profile) host.profile.clear();
 }
 
 // src/histogram.js
@@ -16001,71 +13058,20 @@ var SafetyHistogram = class {
     this.listingSort = null;
     this.page = 1;
     this.charts = [];
-    this.participantsSelected = [];
-    this.profile = null;
-    this.profileFeed = null;
-    this.profileKey = null;
-    this.profileRows = [];
-    this.listingSelectedId = null;
     this.state = {
       measure: this.settings.start_value,
       filters: {},
       groupBy: this.settings.group_by,
-      // X-axis limits (#85): `lower`/`upper` hold USER OVERRIDES only (null =
-      // auto), `axisDomain` the [lower, upper] the last render resolved — what
-      // the inputs display and what the chart drew. See src/axis-limits.js.
       lower: null,
       upper: null,
-      axisDomain: null,
       algorithm: this.settings.bin_algorithm,
       quantity: null,
       width: null,
       displayNormalRange: this.settings.display_normal_range,
       normalRange: null,
-      annotateBoundaries: this.settings.annotate_bin_boundaries,
-      selectedId: null
+      annotateBoundaries: this.settings.annotate_bin_boundaries
     };
     this.renderShell();
-    this.onListingRowClick = (row) => this.selectParticipant(row[this.settings.id_col]);
-    mountProfileRail(this, () => this.profileSettings());
-  }
-  /**
-   * The settings handed to the railed participant-profile module (#99,
-   * PPRF-SH-001): the shared long-lab column mappings pass through verbatim;
-   * `details` come from profile_details (the host `details` configure the
-   * linked listing — per-row fields, not demographics); and the two outbound
-   * callbacks wire Clear to the host's own clear path (falling back to a bare
-   * empty dispatch when the dock was fed by an external cohort the host never
-   * selected, so Clear always clears — PPRF-11) and stepper navigation to the
-   * listing row highlight (no dispatch, selection state untouched).
-   * @private
-   */
-  profileSettings() {
-    const settings = this.settings;
-    const profileSettings = {
-      id_col: settings.id_col,
-      measure_col: settings.measure_col,
-      value_col: settings.value_col,
-      unit_col: settings.unit_col,
-      normal_col_high: settings.normal_col_high,
-      normal_col_low: settings.normal_col_low,
-      studyday_col: settings.studyday_col,
-      visit_col: settings.visit_col,
-      visitn_col: settings.visitn_col,
-      details: settings.profile_details && settings.profile_details.length ? settings.profile_details : [],
-      participantProfileURL: settings.participantProfileURL ?? null,
-      on_clear: () => {
-        if (this.state.selectedId != null) {
-          this.clearSelection();
-        } else {
-          this.focusListingRow(null);
-          this.dispatchSelection([]);
-        }
-      },
-      on_step: (id) => this.focusListingRow(id)
-    };
-    if (settings.measure_values) profileSettings.measure_values = settings.measure_values;
-    return profileSettings;
   }
   /**
    * Build the static DOM shell the charts and listing render into.
@@ -16103,18 +13109,9 @@ var SafetyHistogram = class {
   setData(data) {
     this.rawData = Array.isArray(data) ? data : [];
     this.validateAndCleanData();
-    this.buildProfileRows();
     this.buildControls();
     this.render();
     return this;
-  }
-  /**
-   * Derive the railed profile's pre-cleaned rows ONCE per data/settings change
-   * (#99, PPRF-SH-001) — never per gesture.
-   * @private
-   */
-  buildProfileRows() {
-    this.profileRows = this.settings.profile ? buildProfileRows(this.rawData, this.profileSettings()) : [];
   }
   /**
    * Merge setting overrides onto the current settings, re-normalize them
@@ -16124,9 +13121,6 @@ var SafetyHistogram = class {
    */
   setSettings(settings) {
     this.settings = syncSettings({ ...this.settings, ...settings });
-    if (this.rawData.length) this.validateAndCleanData();
-    this.buildProfileRows();
-    syncProfileRail(this, () => this.profileSettings());
     this.buildControls();
     this.render();
     return this;
@@ -16220,32 +13214,21 @@ var SafetyHistogram = class {
     const lower = addControl("Lower", document.createElement("input"), xAxisRow);
     lower.type = "number";
     lower.step = "any";
-    lower.value = seedLimitInput(this.state, "lower");
+    lower.value = this.state.lower == null ? "" : this.state.lower;
     lower.onchange = () => {
-      applyLimitEdit(this.state, "lower", lower.value);
+      this.state.lower = lower.value === "" ? null : Number(lower.value);
       normalizeDomain(this.state);
       this.render();
     };
-    this.lowerInput = lower;
     const upper = addControl("Upper", document.createElement("input"), xAxisRow);
     upper.type = "number";
     upper.step = "any";
-    upper.value = seedLimitInput(this.state, "upper");
+    upper.value = this.state.upper == null ? "" : this.state.upper;
     upper.onchange = () => {
-      applyLimitEdit(this.state, "upper", upper.value);
+      this.state.upper = upper.value === "" ? null : Number(upper.value);
       normalizeDomain(this.state);
       this.render();
     };
-    this.upperInput = upper;
-    const reset = createElement("button", "sv-reset-limits", "Reset Limits");
-    reset.type = "button";
-    reset.onclick = () => {
-      this.resetDomain();
-      this.render();
-    };
-    const resetWrap = createElement("div", "sv-control");
-    resetWrap.append(reset);
-    xAxisParent.append(resetWrap);
     const binParent = addSection("Bins");
     this.binSection = binParent;
     const algorithm = addControl("Algorithm", document.createElement("select"), binParent);
@@ -16325,13 +13308,12 @@ var SafetyHistogram = class {
     this.normalRangeControl.classList.toggle("sv-hidden", !available);
   }
   /**
-   * Clear the x-axis limit overrides — on a measure change (limits are
-   * per-measure) and on Reset Limits. The recorded domain goes with them so the
-   * next render re-derives it and refills the inputs (#85, AXIS-3).
+   * Clear the x-axis limit overrides when the measure changes.
    * @private
    */
   resetDomain() {
-    clearAxisLimits(this.state);
+    this.state.lower = null;
+    this.state.upper = null;
   }
   /**
    * Cleaned rows for the selected measure — or every measure while the
@@ -16367,10 +13349,6 @@ var SafetyHistogram = class {
     this.listingSearch = "";
     this.listingSort = null;
     this.page = 1;
-    this.state.selectedId = null;
-    this.listingSelectedId = null;
-    this.participantsSelected = [];
-    resetProfileRail(this);
     this.footnote.textContent = "Hover over or click a bar for details.";
     this.mainAnnotation.innerHTML = "";
     this.notes.innerHTML = "";
@@ -16388,10 +13366,6 @@ var SafetyHistogram = class {
       return;
     }
     this.binInputs = this.computeBinInputs();
-    syncAxisLimits(this.state, this.binInputs.domain, {
-      lower: this.lowerInput,
-      upper: this.upperInput
-    });
     this.drawMainChart();
     this.drawMultiples();
     this.updateNotes();
@@ -16625,11 +13599,11 @@ var SafetyHistogram = class {
   drawOverview() {
     this.multiplesWrap.innerHTML = "";
     this.measures().forEach((measureValue) => {
-      const measureRows2 = this.cleanData.filter(
+      const measureRows = this.cleanData.filter(
         (row) => measureLabel(row, this.settings) === measureValue
       );
-      const rows = applyFilters(measureRows2, this.state.filters);
-      const values = measureRows2.map((row) => row.__sh_value);
+      const rows = applyFilters(measureRows, this.state.filters);
+      const values = measureRows.map((row) => row.__sh_value);
       const domain = resolveDomain(values, null, null);
       const binResult = calculateBins(values, this.settings.bin_algorithm, null, null, domain);
       const digits = displayDigits(binResult.width, values);
@@ -16694,68 +13668,12 @@ var SafetyHistogram = class {
    * @private
    */
   showListing(records, bin, digits) {
-    if (this.state.selectedId != null) {
-      this.state.selectedId = null;
-      this.listingSelectedId = null;
-      this.dispatchSelection([]);
-    }
     this.currentTableData = records;
     this.listingSearch = "";
     this.listingSort = null;
     this.page = 1;
     this.describeBin(bin, digits, true);
     renderListing(this);
-  }
-  /**
-   * Focus one participant from the linked listing (#99, PPRF-SH-002): set the
-   * new host selection state, highlight the participant's listing rows, and
-   * dispatch the house participantsSelected event on the shell root — which
-   * feeds the railed profile. The listing itself stays (PPRF-11: records vs
-   * story).
-   * @param {string} id Participant identifier.
-   * @returns {void}
-   */
-  selectParticipant(id) {
-    this.state.selectedId = id == null ? null : String(id);
-    this.focusListingRow(this.state.selectedId);
-    this.dispatchSelection(this.state.selectedId == null ? [] : [this.state.selectedId]);
-  }
-  /**
-   * Clear the focused participant (#99, PPRF-SH-003): un-highlight the listing
-   * rows and dispatch the empty selection so the dock empties. The listing is
-   * retained — Clear clears the focus, not the records.
-   * @returns {void}
-   */
-  clearSelection() {
-    if (this.state.selectedId == null) return;
-    this.state.selectedId = null;
-    this.focusListingRow(null);
-    this.dispatchSelection([]);
-  }
-  /**
-   * Move the listing row highlight WITHOUT touching the host selection state —
-   * the transient sync the profile stepper drives (PPRF-11): the highlight
-   * tracks the stepped participant while the selection still belongs to the
-   * feeding gesture. Re-renders the listing only when one is on screen.
-   * @param {?string} id Participant identifier, or null to un-highlight.
-   * @private
-   */
-  focusListingRow(id) {
-    this.listingSelectedId = id == null ? null : String(id);
-    if (this.currentTableData.length) renderListing(this);
-  }
-  /**
-   * Dispatch the custom participantsSelected event on the shell root with the
-   * selected IDs (the house selection contract, #99 PPRF-SH-002).
-   * @private
-   */
-  dispatchSelection(ids) {
-    this.participantsSelected = ids;
-    if (this.root) {
-      this.root.dispatchEvent(
-        new CustomEvent("participantsSelected", { detail: { data: ids }, bubbles: true })
-      );
-    }
   }
   /**
    * Resize every live chart (the main chart and any small multiples) to its
@@ -16781,7 +13699,6 @@ var SafetyHistogram = class {
    * @returns {void}
    */
   destroy() {
-    unmountProfileRail(this);
     this.destroyCharts();
     this.element.innerHTML = "";
   }
@@ -16792,7 +13709,7 @@ function histogram(element = "body", settings = {}) {
 
 // src/shift-plot/configure.js
 var STATS = ["mean", "min", "max", "first"];
-var DEFAULT_SETTINGS4 = {
+var DEFAULT_SETTINGS2 = {
   measure_col: "TEST",
   value_col: "STRESN",
   visit_col: "VISIT",
@@ -16808,31 +13725,24 @@ var DEFAULT_SETTINGS4 = {
   start_value: null,
   width: "100%",
   height: 460,
-  page_size: 10,
-  normal_col_low: "STNRLO",
-  normal_col_high: "STNRHI",
-  studyday_col: null,
-  measure_values: null,
-  profile: true,
-  profile_details: null,
-  participantProfileURL: null
+  page_size: 10
 };
-function arrayify4(value) {
+function arrayify2(value) {
   if (value === null || value === void 0 || value === "") return [];
   return Array.isArray(value) ? value : [value];
 }
-function fieldSpec4(value, fallbackLabel) {
+function fieldSpec2(value, fallbackLabel) {
   if (typeof value === "string") return { value_col: value, label: fallbackLabel || value };
   return { value_col: value.value_col, label: value.label || value.value_col };
 }
-function syncSettings4(settings) {
-  const synced = { ...DEFAULT_SETTINGS4, ...settings };
-  synced.filters = arrayify4(synced.filters).map((filter) => fieldSpec4(filter)).filter((filter) => filter.value_col);
-  synced.baseline_visits = synced.baseline_visits == null ? null : arrayify4(synced.baseline_visits);
-  synced.comparison_visits = synced.comparison_visits == null ? null : arrayify4(synced.comparison_visits);
+function syncSettings2(settings) {
+  const synced = { ...DEFAULT_SETTINGS2, ...settings };
+  synced.filters = arrayify2(synced.filters).map((filter) => fieldSpec2(filter)).filter((filter) => filter.value_col);
+  synced.baseline_visits = synced.baseline_visits == null ? null : arrayify2(synced.baseline_visits);
+  synced.comparison_visits = synced.comparison_visits == null ? null : arrayify2(synced.comparison_visits);
   synced.baseline_stat = STATS.includes(synced.baseline_stat) ? synced.baseline_stat : "mean";
   synced.comparison_stat = STATS.includes(synced.comparison_stat) ? synced.comparison_stat : "mean";
-  synced.details = arrayify4(synced.details).map((detail) => fieldSpec4(detail)).filter((detail) => detail.value_col);
+  synced.details = arrayify2(synced.details).map((detail) => fieldSpec2(detail)).filter((detail) => detail.value_col);
   if (!synced.details.length) {
     synced.details = [
       { value_col: synced.id_col, label: "Participant ID" },
@@ -16842,8 +13752,6 @@ function syncSettings4(settings) {
       { value_col: "__ssp_pchg", label: "Percent Change" }
     ];
   }
-  synced.profile = Boolean(synced.profile);
-  synced.profile_details = synced.profile_details === void 0 || synced.profile_details === null ? null : arrayify4(synced.profile_details).map((value) => fieldSpec4(value)).filter((detail) => detail.value_col);
   return synced;
 }
 
@@ -16953,10 +13861,10 @@ var shift_plot_default = {
 };
 
 // src/shift-plot/checkInputs.js
-var REQUIRED_COLUMN_SETTINGS3 = shift_plot_default.properties.settings.required;
-function checkInputs3(data, settings) {
+var REQUIRED_COLUMN_SETTINGS2 = shift_plot_default.properties.settings.required;
+function checkInputs2(data, settings) {
   const rows = Array.isArray(data) ? data : [];
-  const missing = REQUIRED_COLUMN_SETTINGS3.map((key) => settings[key]).filter(
+  const missing = REQUIRED_COLUMN_SETTINGS2.map((key) => settings[key]).filter(
     (col) => !rows.some((row) => row[col] !== void 0)
   );
   if (missing.length) {
@@ -16970,7 +13878,7 @@ function unique2(values) {
     ...new Set(values.filter((value) => value !== void 0 && value !== null && value !== ""))
   ];
 }
-function mean3(values) {
+function mean2(values) {
   return values.reduce((sum, value) => sum + value, 0) / values.length;
 }
 function applyStat(values, stat) {
@@ -16979,7 +13887,7 @@ function applyStat(values, stat) {
   if (stat === "min") return Math.min(...values);
   if (stat === "max") return Math.max(...values);
   if (stat === "first") return values[0];
-  return mean3(values);
+  return mean2(values);
 }
 function roundValue(value, digits = 2) {
   if (!Number.isFinite(value)) return "";
@@ -16989,7 +13897,7 @@ function formatPercent(value) {
   if (!Number.isFinite(value)) return "";
   return `${value.toFixed(1)}%`;
 }
-function cleanData3(rawData, settings) {
+function cleanData2(rawData, settings) {
   let removed = 0;
   const rows = rawData.map((row, index) => ({
     ...row,
@@ -17159,9 +14067,9 @@ function tooltipLines(pair, idCol) {
     `Percent Change: ${pair.__ssp_pchg}`
   ];
 }
-function pointColors(count2, selected, base = POINT_COLOR, faded = POINT_FADED) {
+function pointColors(count, selected, base = POINT_COLOR, faded = POINT_FADED) {
   if (!selected || !selected.size) return base;
-  return Array.from({ length: count2 }, (_, index) => selected.has(index) ? base : faded);
+  return Array.from({ length: count }, (_, index) => selected.has(index) ? base : faded);
 }
 
 // src/shift-plot.js
@@ -17171,7 +14079,7 @@ var SafetyShiftPlot = class {
   constructor(element = "body", settings = {}) {
     this.element = typeof element === "string" ? document.querySelector(element) : element;
     if (!this.element) throw new Error(`Safety Shift Plot target not found: ${element}`);
-    this.settings = syncSettings4(settings);
+    this.settings = syncSettings2(settings);
     this.rawData = [];
     this.cleanData = [];
     this.chartPairs = [];
@@ -17181,10 +14089,6 @@ var SafetyShiftPlot = class {
     this.page = 1;
     this.brushing = false;
     this.chart = null;
-    this.profile = null;
-    this.profileFeed = null;
-    this.profileKey = null;
-    this.profileRows = [];
     this.state = {
       measure: this.settings.start_value,
       baselineVisits: this.settings.baseline_visits,
@@ -17195,55 +14099,6 @@ var SafetyShiftPlot = class {
       domain: null
     };
     this.renderShell();
-    mountProfileRail(this, () => this.profileSettings());
-  }
-  /**
-   * The settings handed to the railed participant-profile module (#99,
-   * PPRF-SSP-002): the long-lab column mappings pass through — visitn_col maps
-   * from the host's visit_order_col — with the profile fed from the retained
-   * rawData (NOT the pair-per-participant chartPairs); `details` come from
-   * profile_details (the host `details` configure the linked listing — pair
-   * columns, not demographics); and the two outbound callbacks wire Clear to
-   * the host's own clear path and stepper navigation to a transient border
-   * emphasis (no dispatch).
-   * @private
-   */
-  profileSettings() {
-    const settings = this.settings;
-    const profileSettings = {
-      id_col: settings.id_col,
-      measure_col: settings.measure_col,
-      value_col: settings.value_col,
-      unit_col: settings.unit_col,
-      normal_col_high: settings.normal_col_high,
-      normal_col_low: settings.normal_col_low,
-      studyday_col: settings.studyday_col,
-      visit_col: settings.visit_col,
-      visitn_col: settings.visit_order_col,
-      details: settings.profile_details && settings.profile_details.length ? settings.profile_details : [],
-      participantProfileURL: settings.participantProfileURL ?? null,
-      on_clear: () => this.clearSelection(),
-      on_step: (id) => this.emphasizeParticipant(id)
-    };
-    if (settings.measure_values) profileSettings.measure_values = settings.measure_values;
-    return profileSettings;
-  }
-  /**
-   * Transient chart emphasis for the profile stepper (PPRF-SSP-001, PPRF-11):
-   * border-highlight the stepped participant's point without touching the
-   * brush selection ($sspSelected stays) and without dispatching — the host
-   * selection still belongs to the brush gesture. Each step recomputes the
-   * emphasis, and clearSelection restores the uniform border.
-   * @private
-   */
-  emphasizeParticipant(id) {
-    if (!this.chart) return;
-    const index = this.chartPairs.findIndex(
-      (pair) => String(pair[this.settings.id_col]) === String(id)
-    );
-    const dataset = this.chart.data.datasets[0];
-    dataset.borderWidth = index < 0 ? 1 : this.chartPairs.map((pair, pairIndex) => pairIndex === index ? 3 : 1);
-    this.chart.update("none");
   }
   /**
    * Build the static DOM shell the scatter and listing render into.
@@ -17281,20 +14136,9 @@ var SafetyShiftPlot = class {
   setData(data) {
     this.rawData = Array.isArray(data) ? data : [];
     this.validateAndCleanData();
-    this.buildProfileRows();
     this.buildControls();
     this.render();
     return this;
-  }
-  /**
-   * Derive the railed profile's pre-cleaned rows ONCE per data/settings change
-   * (#99, PPRF-SSP-002) — never per gesture, and from the retained rawData
-   * rather than the pair-per-participant chartPairs (the profile narrates the
-   * full series, not the baseline/comparison collapse).
-   * @private
-   */
-  buildProfileRows() {
-    this.profileRows = this.settings.profile ? buildProfileRows(this.rawData, this.profileSettings()) : [];
   }
   /**
    * Merge setting overrides onto the current settings, re-normalize them (same
@@ -17303,7 +14147,7 @@ var SafetyShiftPlot = class {
    * @returns {SafetyShiftPlot} The instance, for chaining.
    */
   setSettings(settings) {
-    this.settings = syncSettings4({ ...this.settings, ...settings });
+    this.settings = syncSettings2({ ...this.settings, ...settings });
     this.state.baselineStat = this.settings.baseline_stat;
     this.state.comparisonStat = this.settings.comparison_stat;
     if (settings.baseline_visits !== void 0)
@@ -17311,8 +14155,6 @@ var SafetyShiftPlot = class {
     if (settings.comparison_visits !== void 0)
       this.state.comparisonVisits = this.settings.comparison_visits;
     this.resolveVisits();
-    this.buildProfileRows();
-    syncProfileRail(this, () => this.profileSettings());
     this.buildControls();
     this.render();
     return this;
@@ -17324,12 +14166,12 @@ var SafetyShiftPlot = class {
    */
   validateAndCleanData() {
     try {
-      checkInputs3(this.rawData, this.settings);
+      checkInputs2(this.rawData, this.settings);
     } catch (error) {
       this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
       throw error;
     }
-    const { rows, removed } = cleanData3(this.rawData, this.settings);
+    const { rows, removed } = cleanData2(this.rawData, this.settings);
     this.cleanData = rows;
     this.removedRecords = removed;
     if (removed) console.warn(`${removed} missing or non-numeric results have been removed.`);
@@ -17484,7 +14326,6 @@ var SafetyShiftPlot = class {
     this.listingSort = null;
     this.page = 1;
     this.footnote.textContent = INITIAL_FOOTNOTE;
-    resetProfileRail(this);
     this.notes.innerHTML = "";
     this.chartPairs = this.computePairs();
     this.state.domain = computeDomain(this.chartPairs);
@@ -17642,7 +14483,6 @@ var SafetyShiftPlot = class {
     const dataset = this.chart.data.datasets[0];
     dataset.backgroundColor = pointColors(this.chartPairs.length, selected, COLORS.point);
     dataset.borderColor = pointColors(this.chartPairs.length, selected, COLORS.border);
-    dataset.borderWidth = 1;
     this.chart.$sspBrush = rect;
     this.chart.$sspSelected = selected;
     this.chart.update("none");
@@ -17665,7 +14505,6 @@ var SafetyShiftPlot = class {
       const dataset = this.chart.data.datasets[0];
       dataset.backgroundColor = COLORS.point;
       dataset.borderColor = COLORS.border;
-      dataset.borderWidth = 1;
       this.chart.$sspBrush = null;
       this.chart.$sspSelected = null;
       this.chart.update("none");
@@ -17676,15 +14515,12 @@ var SafetyShiftPlot = class {
     this.dispatchSelected([]);
   }
   /**
-   * Dispatch the participantsSelected event on the shell root with the
-   * selected IDs (SSP-API-003, PPRF-SSP-004). The target moved from the host
-   * element to the shell root in the rail adoption (#99) so root-level
-   * listeners — the railed profile's feed — hear every dispatch; the event
-   * still bubbles, so element-level listeners keep working.
+   * Dispatch the participantsSelected event on the target element with the
+   * selected IDs (SSP-API-003).
    * @private
    */
   dispatchSelected(ids) {
-    this.root.dispatchEvent(
+    this.element.dispatchEvent(
       new CustomEvent("participantsSelected", { detail: { data: ids }, bubbles: true })
     );
   }
@@ -17727,7 +14563,6 @@ var SafetyShiftPlot = class {
    * @returns {void}
    */
   destroy() {
-    unmountProfileRail(this);
     this.destroyChart();
     this.element.innerHTML = "";
   }
@@ -17737,7 +14572,7 @@ function shiftPlot(element = "body", settings = {}) {
 }
 
 // src/delta-delta/configure.js
-var DEFAULT_SETTINGS5 = {
+var DEFAULT_SETTINGS3 = {
   measure_col: "TEST",
   value_col: "STRESN",
   id_col: "USUBJID",
@@ -17751,30 +14586,22 @@ var DEFAULT_SETTINGS5 = {
   filters: [],
   details: null,
   width: "100%",
-  height: 460,
-  unit_col: "STRESU",
-  normal_col_low: "STNRLO",
-  normal_col_high: "STNRHI",
-  studyday_col: null,
-  measure_values: null,
-  profile: true,
-  profile_details: null,
-  participantProfileURL: null
+  height: 460
 };
-function arrayify5(value) {
+function arrayify3(value) {
   if (value === void 0 || value === null) return [];
   return Array.isArray(value) ? value : [value];
 }
-function fieldSpec5(value, fallbackLabel) {
+function fieldSpec3(value, fallbackLabel) {
   if (typeof value === "string") return { value_col: value, label: fallbackLabel || value };
   return { value_col: value.value_col, label: value.label || value.value_col };
 }
-function syncSettings5(settings) {
-  const synced = { ...DEFAULT_SETTINGS5, ...settings };
-  synced.filters = arrayify5(synced.filters).map((filter) => fieldSpec5(filter)).filter((filter) => filter.value_col);
-  synced.baseline_visits = arrayify5(synced.baseline_visits);
-  synced.comparison_visits = arrayify5(synced.comparison_visits);
-  const suppliedDetails = arrayify5(synced.details).map((detail) => fieldSpec5(detail)).filter((detail) => detail.value_col);
+function syncSettings3(settings) {
+  const synced = { ...DEFAULT_SETTINGS3, ...settings };
+  synced.filters = arrayify3(synced.filters).map((filter) => fieldSpec3(filter)).filter((filter) => filter.value_col);
+  synced.baseline_visits = arrayify3(synced.baseline_visits);
+  synced.comparison_visits = arrayify3(synced.comparison_visits);
+  const suppliedDetails = arrayify3(synced.details).map((detail) => fieldSpec3(detail)).filter((detail) => detail.value_col);
   const defaultDetails = [
     { value_col: synced.id_col, label: "Participant ID" },
     ...synced.filters.filter((filter) => filter.value_col !== synced.id_col)
@@ -17784,8 +14611,6 @@ function syncSettings5(settings) {
     if (!merged.some((existing) => existing.value_col === detail.value_col)) merged.push(detail);
   });
   synced.details = merged;
-  synced.profile = Boolean(synced.profile);
-  synced.profile_details = synced.profile_details === void 0 || synced.profile_details === null ? null : arrayify5(synced.profile_details).map((detail) => fieldSpec5(detail)).filter((detail) => detail.value_col);
   return synced;
 }
 
@@ -17893,10 +14718,10 @@ var delta_delta_default = {
 };
 
 // src/delta-delta/checkInputs.js
-var REQUIRED_COLUMN_SETTINGS4 = delta_delta_default.properties.settings.required;
-function checkInputs4(data, settings) {
+var REQUIRED_COLUMN_SETTINGS3 = delta_delta_default.properties.settings.required;
+function checkInputs3(data, settings) {
   const rows = Array.isArray(data) ? data : [];
-  const missing = REQUIRED_COLUMN_SETTINGS4.map((key) => settings[key]).filter(
+  const missing = REQUIRED_COLUMN_SETTINGS3.map((key) => settings[key]).filter(
     (col) => !rows.some((row) => row[col] !== void 0)
   );
   if (missing.length) {
@@ -17913,7 +14738,7 @@ function unique3(values) {
     ...new Set(values.filter((value) => value !== void 0 && value !== null && value !== ""))
   ];
 }
-function mean4(values) {
+function mean3(values) {
   const nums = values.map(Number).filter(Number.isFinite);
   if (!nums.length) return NaN;
   return nums.reduce((sum, value) => sum + value, 0) / nums.length;
@@ -17939,7 +14764,7 @@ function getVisits(rows, settings) {
 function visitMean(records, visits, settings) {
   const set2 = new Set(visits);
   const matched = records.filter((row) => set2.has(row[settings.visit_col]));
-  return mean4(matched.map((row) => row.__dd_value));
+  return mean3(matched.map((row) => row.__dd_value));
 }
 function measureDetails(participantRows, settings, state) {
   const { measureX, measureY, baseline, comparison } = state;
@@ -18023,6 +14848,10 @@ function applyFilters3(participants, filters) {
 }
 
 // src/delta-delta/getScales.js
+var POSITIVE_COLOR = "#16a34a";
+var NEGATIVE_COLOR = "#dc2626";
+var ZERO_COLOR = "#6b7280";
+var NA_COLOR = "#9ca3af";
 function formatNumber3(value, digits = 2) {
   if (!Number.isFinite(value)) return "";
   return Number(value.toFixed(digits)).toString();
@@ -18031,6 +14860,12 @@ function formatDelta(value) {
   if (!Number.isFinite(value)) return "NA";
   const fixed = value.toFixed(2);
   return value >= 0 ? `+${fixed}` : fixed;
+}
+function deltaColor(value) {
+  if (!Number.isFinite(value)) return NA_COLOR;
+  if (value > 0) return POSITIVE_COLOR;
+  if (value < 0) return NEGATIVE_COLOR;
+  return ZERO_COLOR;
 }
 function axisLabel(measure) {
   return `Change in ${measure ?? ""}`;
@@ -18159,14 +14994,136 @@ function regressionLinePlugin(instance) {
     }
   };
 }
-function selectionBorders(count2, selectedIndex) {
+function selectionBorders(count, selectedIndex) {
   return {
     colors: Array.from(
-      { length: count2 },
+      { length: count },
       (_, index) => index === selectedIndex ? "#111827" : "rgba(37, 99, 235, 0.9)"
     ),
-    widths: Array.from({ length: count2 }, (_, index) => index === selectedIndex ? 3 : 0.5)
+    widths: Array.from({ length: count }, (_, index) => index === selectedIndex ? 3 : 0.5)
   };
+}
+
+// src/delta-delta/listing.js
+var SVG_NS = "http://www.w3.org/2000/svg";
+var LISTING_STYLE_ID = "safety-viz-delta-delta-styles";
+var LISTING_STYLES = `
+.safety-delta-delta .sdd-detail-header{display:flex;flex-wrap:wrap;gap:.35rem 1.5rem;margin:0 0 .75rem;padding:0 0 .6rem;border-bottom:2px solid #111827}
+.safety-delta-delta .sdd-detail-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f}
+.safety-delta-delta .sdd-detail-value{font-size:.95rem;font-weight:600}
+.safety-delta-delta .sdd-measure-table{width:100%;border-collapse:collapse;font-size:.85rem;background:#fff}
+.safety-delta-delta .sdd-measure-table th,.safety-delta-delta .sdd-measure-table td{border-bottom:1px solid #e3e8ee;padding:.4rem .55rem;text-align:left;vertical-align:middle}
+.safety-delta-delta .sdd-measure-table th{border-bottom:2px solid #d8dee4;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f}
+.safety-delta-delta .sdd-measure-table td.sdd-delta{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.safety-delta-delta .sdd-axis-tag{display:inline-block;margin-right:.4rem;padding:.05rem .35rem;border-radius:4px;background:#dbeafe;color:#1d4ed8;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+.safety-delta-delta .sdd-spark-cell{width:120px}
+.safety-delta-delta .sdd-table-footnote{margin:.6rem 0 0;font-size:.75rem;color:#52616f;line-height:1.4}`;
+function applyListingStyles() {
+  if (typeof document === "undefined" || document.getElementById(LISTING_STYLE_ID)) return;
+  const style = document.createElement("style");
+  style.id = LISTING_STYLE_ID;
+  style.textContent = LISTING_STYLES;
+  document.head.append(style);
+}
+function svgEl(tag, attrs) {
+  const el = document.createElementNS(SVG_NS, tag);
+  Object.entries(attrs).forEach(([key, value]) => el.setAttribute(key, String(value)));
+  return el;
+}
+function sparkline(records, settings) {
+  const width = 110;
+  const height = 26;
+  const pad = 4;
+  const svg = svgEl("svg", { width, height, class: "sdd-sparkline" });
+  if (!records.length) return svg;
+  const xs = records.map((row) => Number(row[settings.visitn_col] ?? 0));
+  const ys = records.map((row) => row.__dd_value);
+  const xMin = Math.min(...xs);
+  const xMax = Math.max(...xs);
+  const yMin = Math.min(...ys);
+  const yMax = Math.max(...ys);
+  const scaleX = (x) => xMax === xMin ? width / 2 : pad + (x - xMin) / (xMax - xMin) * (width - 2 * pad);
+  const scaleY = (y) => yMax === yMin ? height / 2 : height - pad - (y - yMin) / (yMax - yMin) * (height - 2 * pad);
+  const points = records.map((row) => ({
+    cx: scaleX(Number(row[settings.visitn_col] ?? 0)),
+    cy: scaleY(row.__dd_value),
+    color: row.color
+  }));
+  if (points.length > 1) {
+    svg.append(
+      svgEl("polyline", {
+        points: points.map((p) => `${p.cx},${p.cy}`).join(" "),
+        fill: "none",
+        stroke: OTHER_COLOR,
+        "stroke-width": 1
+      })
+    );
+  }
+  points.forEach((p) => {
+    svg.append(
+      svgEl("circle", {
+        cx: p.cx,
+        cy: p.cy,
+        r: 2.5,
+        stroke: p.color,
+        "stroke-width": 1,
+        fill: p.color === OTHER_COLOR ? "transparent" : p.color
+      })
+    );
+  });
+  return svg;
+}
+function detailHeader(participant, settings) {
+  const header = createElement("div", "sdd-detail-header");
+  settings.details.forEach((detail) => {
+    const item = createElement("div", "sdd-detail");
+    item.append(
+      createElement("div", "sdd-detail-label", detail.label),
+      createElement("div", "sdd-detail-value", participant.meta[detail.value_col] ?? "")
+    );
+    header.append(item);
+  });
+  return header;
+}
+function drawMeasureTable(instance, participant) {
+  const settings = instance.settings;
+  applyListingStyles();
+  instance.listingWrap.innerHTML = "";
+  instance.listingWrap.append(detailHeader(participant, settings));
+  const table = createElement("table", "sdd-measure-table");
+  const thead = document.createElement("thead");
+  const headRow = document.createElement("tr");
+  ["Measure", "", "Change over Time"].forEach(
+    (label) => headRow.append(createElement("th", null, label))
+  );
+  thead.append(headRow);
+  table.append(thead);
+  const tbody = document.createElement("tbody");
+  participant.measures.forEach((measure) => {
+    const tr = document.createElement("tr");
+    const measureCell = createElement("td", "sdd-measure-name");
+    if (measure.axisFlag) {
+      measureCell.append(createElement("span", "sdd-axis-tag", `${measure.axisFlag}-axis`));
+    }
+    measureCell.append(document.createTextNode(measure.key));
+    tr.append(measureCell);
+    const sparkCell = createElement("td", "sdd-spark-cell");
+    sparkCell.append(sparkline(measure.records, settings));
+    tr.append(sparkCell);
+    const deltaCell = createElement("td", "sdd-delta", formatDelta(measure.delta));
+    deltaCell.style.color = deltaColor(measure.delta);
+    deltaCell.style.fontWeight = "600";
+    tr.append(deltaCell);
+    tbody.append(tr);
+  });
+  table.append(tbody);
+  instance.listingWrap.append(table);
+  const footnote = createElement(
+    "p",
+    "sdd-table-footnote",
+    "One row per measure collected for the selected participant. In each sparkline, baseline visits are filled blue, comparison visits filled orange, and other visits empty gray. Change-over-time values are green when above 0, red when below 0, and gray when 0 or missing (NA)."
+  );
+  instance.listingWrap.append(footnote);
 }
 
 // src/delta-delta.js
@@ -18175,7 +15132,7 @@ var SafetyDeltaDelta = class {
   constructor(element = "body", settings = {}) {
     this.element = typeof element === "string" ? document.querySelector(element) : element;
     if (!this.element) throw new Error(`Safety Delta-Delta target not found: ${element}`);
-    this.settings = syncSettings5(settings);
+    this.settings = syncSettings3(settings);
     this.rawData = [];
     this.cleanRows = [];
     this.removedRecords = 0;
@@ -18187,11 +15144,6 @@ var SafetyDeltaDelta = class {
     this.regression = null;
     this.charts = [];
     this.chart = null;
-    this.participantsSelected = [];
-    this.profile = null;
-    this.profileFeed = null;
-    this.profileKey = null;
-    this.profileRows = [];
     this.state = {
       measureX: this.settings.measure_x,
       measureY: this.settings.measure_y,
@@ -18202,52 +15154,6 @@ var SafetyDeltaDelta = class {
       selectedId: null
     };
     this.renderShell();
-    mountProfileRail(this, () => this.profileSettings());
-  }
-  /**
-   * The settings handed to the railed participant-profile module (#99,
-   * PPRF-DD-002): the shared long-lab column mappings pass through verbatim;
-   * `details` come from profile_details, falling back to the host `details`
-   * minus the participant id (the profile header already shows it); and the
-   * two outbound callbacks wire Clear to the host's own clear path and
-   * stepper navigation to transient border emphasis (no dispatch).
-   * @private
-   */
-  profileSettings() {
-    const settings = this.settings;
-    const profileSettings = {
-      id_col: settings.id_col,
-      measure_col: settings.measure_col,
-      value_col: settings.value_col,
-      unit_col: settings.unit_col,
-      normal_col_high: settings.normal_col_high,
-      normal_col_low: settings.normal_col_low,
-      studyday_col: settings.studyday_col,
-      visit_col: settings.visit_col,
-      visitn_col: settings.visitn_col,
-      details: settings.profile_details && settings.profile_details.length ? settings.profile_details : (settings.details || []).filter((detail) => detail.value_col !== settings.id_col),
-      participantProfileURL: settings.participantProfileURL ?? null,
-      on_clear: () => this.clearSelection(),
-      on_step: (id) => this.emphasizeParticipant(id)
-    };
-    if (settings.measure_values) profileSettings.measure_values = settings.measure_values;
-    return profileSettings;
-  }
-  /**
-   * Transient chart emphasis for the profile stepper (PPRF-11): border-
-   * highlight the stepped participant's point without touching the selection
-   * state and without dispatching — the host selection still belongs to the
-   * click gesture.
-   * @private
-   */
-  emphasizeParticipant(id) {
-    if (!this.chart) return;
-    const index = this.points.findIndex((point) => String(point.id) === String(id));
-    const borders = selectionBorders(this.points.length, index);
-    const dataset = this.chart.data.datasets[0];
-    dataset.pointBorderColor = borders.colors;
-    dataset.pointBorderWidth = borders.widths;
-    this.chart.update();
   }
   /**
    * Build the static DOM shell the chart and measure table render into.
@@ -18285,20 +15191,9 @@ var SafetyDeltaDelta = class {
   setData(data) {
     this.rawData = Array.isArray(data) ? data : [];
     this.validateAndCleanData();
-    this.buildProfileRows();
     this.buildControls();
     this.render();
     return this;
-  }
-  /**
-   * Derive the railed profile's pre-cleaned rows ONCE per data/settings change
-   * (#99, PPRF-DD-002) — never per gesture. The underlying rows are standard
-   * long labs: the baseline-vs-comparison delta is NOT re-encoded — the
-   * profile shows the full series, which is the supersession story (PPRF-12).
-   * @private
-   */
-  buildProfileRows() {
-    this.profileRows = this.settings.profile ? buildProfileRows(this.rawData, this.profileSettings()) : [];
   }
   /**
    * Merge setting overrides onto the current settings, adopt any provided
@@ -18310,15 +15205,13 @@ var SafetyDeltaDelta = class {
   setSettings(settings) {
     if ("measure_x" in settings) this.state.measureX = settings.measure_x;
     if ("measure_y" in settings) this.state.measureY = settings.measure_y;
-    if ("baseline_visits" in settings) this.state.baseline = arrayify5(settings.baseline_visits);
+    if ("baseline_visits" in settings) this.state.baseline = arrayify3(settings.baseline_visits);
     if ("comparison_visits" in settings)
-      this.state.comparison = arrayify5(settings.comparison_visits);
+      this.state.comparison = arrayify3(settings.comparison_visits);
     if ("add_regression_line" in settings)
       this.state.addRegressionLine = settings.add_regression_line;
-    this.settings = syncSettings5({ ...this.settings, ...settings });
+    this.settings = syncSettings3({ ...this.settings, ...settings });
     if (this.rawData.length) this.validateAndCleanData();
-    this.buildProfileRows();
-    syncProfileRail(this, () => this.profileSettings());
     this.buildControls();
     this.render();
     return this;
@@ -18331,7 +15224,7 @@ var SafetyDeltaDelta = class {
    */
   validateAndCleanData() {
     try {
-      checkInputs4(this.rawData, this.settings);
+      checkInputs3(this.rawData, this.settings);
     } catch (error) {
       this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
       throw error;
@@ -18468,10 +15361,10 @@ var SafetyDeltaDelta = class {
   }
   /**
    * Redraw everything from the current data, settings, and control state:
-   * destroys the live chart, clears any point selection and the docked
-   * profile, recomputes the per-participant points, and draws the scatter
-   * plus the participant-count and regression notes. Called automatically by
-   * the controls and the data/settings setters.
+   * destroys the live chart, clears the measure table and any point selection,
+   * recomputes the per-participant points, and draws the scatter plus the
+   * participant-count and regression notes. Called automatically by the
+   * controls and the data/settings setters.
    * @returns {void}
    */
   render() {
@@ -18479,8 +15372,6 @@ var SafetyDeltaDelta = class {
     this.listingWrap.innerHTML = "";
     this.multiplesWrap.innerHTML = "";
     this.state.selectedId = null;
-    this.participantsSelected = [];
-    resetProfileRail(this);
     this.regression = null;
     this.footnote.textContent = "";
     this.mainAnnotation.textContent = "Click a point to see details.";
@@ -18557,7 +15448,6 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
         },
         onClick: (event, active) => {
           if (active.length) this.selectPoint(active[0].index);
-          else if (this.state.selectedId != null) this.clearSelection();
         }
       },
       plugins: [quadrantLinesPlugin(), regressionLinePlugin(this)]
@@ -18567,9 +15457,8 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     this.charts.push(chart);
   }
   /**
-   * Select a scatter point: highlight it, note the participant, and dispatch
-   * the selection on the shell root — the railed participant profile is the
-   * detail view (SDD-REG-012/013 retargeted; #99, PPRF-DD-001/002).
+   * Select a scatter point: highlight it, open the linked measure table, and
+   * note the participant (SDD-FUNC-006, SDD-REG-012/013).
    * @private
    */
   selectPoint(index) {
@@ -18583,42 +15472,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     this.chart.$ddSelectedIndex = index;
     this.chart.update();
     this.mainAnnotation.textContent = `Participant ${point.id} selected.`;
-    this.dispatchSelection([point.id]);
-  }
-  /**
-   * Clear the point selection (#99, PPRF-DD-003): restore the borders, reset
-   * the annotation, and dispatch the empty selection so the railed profile
-   * empties. Reached from an empty-canvas click and the rail's Clear
-   * affordance.
-   * @returns {void}
-   */
-  clearSelection() {
-    this.state.selectedId = null;
-    if (this.chart) {
-      const borders = selectionBorders(this.points.length, -1);
-      const dataset = this.chart.data.datasets[0];
-      dataset.pointBorderColor = borders.colors;
-      dataset.pointBorderWidth = borders.widths;
-      this.chart.$ddSelectedIndex = null;
-      this.chart.update();
-    }
-    this.mainAnnotation.textContent = "Click a point to see details.";
-    this.listingWrap.innerHTML = "";
-    this.dispatchSelection([]);
-  }
-  /**
-   * Dispatch the custom participantsSelected event on the shell root with the
-   * selected IDs — the house selection payload, closing this renderer's
-   * dispatch gap (#88 SELN-4; #99, PPRF-DD-001).
-   * @private
-   */
-  dispatchSelection(ids) {
-    this.participantsSelected = ids;
-    if (this.root) {
-      this.root.dispatchEvent(
-        new CustomEvent("participantsSelected", { detail: { data: ids }, bubbles: true })
-      );
-    }
+    drawMeasureTable(this, point);
   }
   /**
    * Resize the live chart to its container. For host layouts that change the
@@ -18644,7 +15498,6 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
    * @returns {void}
    */
   destroy() {
-    unmountProfileRail(this);
     this.destroyCharts();
     this.element.innerHTML = "";
   }
@@ -18654,7 +15507,7 @@ function deltaDelta(element = "body", settings = {}) {
 }
 
 // src/results-over-time/configure.js
-var DEFAULT_SETTINGS6 = {
+var DEFAULT_SETTINGS4 = {
   id_col: "USUBJID",
   measure_col: "TEST",
   value_col: "STRESN",
@@ -18677,21 +15530,21 @@ var DEFAULT_SETTINGS6 = {
   height: 460
 };
 var Y_SCALES = ["linear", "log"];
-function arrayify6(value) {
+function arrayify4(value) {
   if (!value) return [];
   return Array.isArray(value) ? value : [value];
 }
-function fieldSpec6(value, fallbackLabel) {
+function fieldSpec4(value, fallbackLabel) {
   if (typeof value === "string") return { value_col: value, label: fallbackLabel || value };
   return { value_col: value.value_col, label: value.label || value.value_col };
 }
-function syncSettings6(settings) {
-  const synced = { ...DEFAULT_SETTINGS6, ...settings };
-  synced.filters = arrayify6(synced.filters).map((value) => fieldSpec6(value)).filter((spec) => spec.value_col);
+function syncSettings4(settings) {
+  const synced = { ...DEFAULT_SETTINGS4, ...settings };
+  synced.filters = arrayify4(synced.filters).map((value) => fieldSpec4(value)).filter((spec) => spec.value_col);
   const defaultGroup = { value_col: "srot_none", label: "None" };
   synced.groups = [
     defaultGroup,
-    ...arrayify6(synced.groups).map((value) => fieldSpec6(value)).filter((spec) => spec.value_col)
+    ...arrayify4(synced.groups).map((value) => fieldSpec4(value)).filter((spec) => spec.value_col)
   ];
   if (synced.group_by && !synced.groups.some((group) => group.value_col === synced.group_by)) {
     synced.groups.push({ value_col: synced.group_by, label: synced.group_by });
@@ -18783,10 +15636,10 @@ var results_over_time_default = {
 };
 
 // src/results-over-time/checkInputs.js
-var REQUIRED_COLUMN_SETTINGS5 = results_over_time_default.properties.settings.required;
-function checkInputs5(data, settings) {
+var REQUIRED_COLUMN_SETTINGS4 = results_over_time_default.properties.settings.required;
+function checkInputs4(data, settings) {
   const rows = Array.isArray(data) ? data : [];
-  const missing = REQUIRED_COLUMN_SETTINGS5.map((key) => settings[key]).filter(
+  const missing = REQUIRED_COLUMN_SETTINGS4.map((key) => settings[key]).filter(
     (col) => !rows.some((row) => row[col] !== void 0)
   );
   if (missing.length) {
@@ -18800,7 +15653,7 @@ function unique4(values) {
     ...new Set(values.filter((value) => value !== void 0 && value !== null && value !== ""))
   ];
 }
-function quantile3(values, p) {
+function quantile2(values, p) {
   if (!values.length) return NaN;
   const sorted = [...values].sort((a, b) => a - b);
   const idx = (sorted.length - 1) * p;
@@ -18809,17 +15662,17 @@ function quantile3(values, p) {
   if (lo === hi) return sorted[lo];
   return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
 }
-function mean5(values) {
+function mean4(values) {
   return values.reduce((sum, value) => sum + value, 0) / values.length;
 }
 function sd2(values) {
   if (values.length < 2) return Number.NaN;
-  const m = mean5(values);
+  const m = mean4(values);
   return Math.sqrt(
     values.reduce((sum, value) => sum + Math.pow(value - m, 2), 0) / (values.length - 1)
   );
 }
-function cleanData4(rawData, settings) {
+function cleanData3(rawData, settings) {
   let removed = 0;
   const rows = rawData.map((row, index) => ({
     ...row,
@@ -18860,13 +15713,13 @@ function summarize(values) {
   return {
     n: sorted.length,
     min: sorted[0],
-    q5: quantile3(sorted, 0.05),
-    q25: quantile3(sorted, 0.25),
-    median: quantile3(sorted, 0.5),
-    q75: quantile3(sorted, 0.75),
-    q95: quantile3(sorted, 0.95),
+    q5: quantile2(sorted, 0.05),
+    q25: quantile2(sorted, 0.25),
+    median: quantile2(sorted, 0.5),
+    q75: quantile2(sorted, 0.75),
+    q95: quantile2(sorted, 0.95),
     max: sorted[sorted.length - 1],
-    mean: mean5(sorted),
+    mean: mean4(sorted),
     deviation: sd2(sorted),
     values: sorted
   };
@@ -18944,71 +15797,6 @@ function statPrecisions(basePrecision) {
   return { p0: base, p1: base + 1, p2: base + 2 };
 }
 
-// src/box-whisker.js
-function hexToRgba(hex2, alpha2) {
-  const value = hex2.replace("#", "");
-  const r = parseInt(value.slice(0, 2), 16);
-  const g = parseInt(value.slice(2, 4), 16);
-  const b = parseInt(value.slice(4, 6), 16);
-  return `rgba(${r}, ${g}, ${b}, ${alpha2})`;
-}
-function drawBoxWhisker(ctx, { scales, chartArea }, specs) {
-  const yOf = (value) => scales.y.getPixelForValue(value);
-  ctx.save();
-  for (const box of specs) {
-    const { stats, color: color2 } = box;
-    if (!stats || !stats.n) continue;
-    const centerX = scales.x.getPixelForValue(box.x);
-    const left = scales.x.getPixelForValue(box.x - box.halfWidth);
-    const right = scales.x.getPixelForValue(box.x + box.halfWidth);
-    const clamp = (y) => Math.max(chartArea.top, Math.min(chartArea.bottom, y));
-    ctx.fillStyle = hexToRgba(color2, 0.35);
-    ctx.strokeStyle = color2;
-    ctx.lineWidth = 1.5;
-    const top = clamp(yOf(stats.q75));
-    const bottom = clamp(yOf(stats.q25));
-    ctx.fillRect(left, top, right - left, bottom - top);
-    ctx.strokeRect(left, top, right - left, bottom - top);
-    ctx.beginPath();
-    ctx.moveTo(centerX, clamp(yOf(stats.q5)));
-    ctx.lineTo(centerX, bottom);
-    ctx.moveTo(centerX, top);
-    ctx.lineTo(centerX, clamp(yOf(stats.q95)));
-    ctx.moveTo(left, clamp(yOf(stats.q5)));
-    ctx.lineTo(right, clamp(yOf(stats.q5)));
-    ctx.moveTo(left, clamp(yOf(stats.q95)));
-    ctx.lineTo(right, clamp(yOf(stats.q95)));
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.lineWidth = 2;
-    ctx.moveTo(left, clamp(yOf(stats.median)));
-    ctx.lineTo(right, clamp(yOf(stats.median)));
-    ctx.stroke();
-    const meanY = clamp(yOf(stats.mean));
-    const radius = Math.min((right - left) / 6, 6);
-    ctx.beginPath();
-    ctx.fillStyle = "#eee";
-    ctx.arc(centerX, meanY, radius, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.fillStyle = color2;
-    ctx.arc(centerX, meanY, radius / 2, 0, 2 * Math.PI);
-    ctx.fill();
-  }
-  ctx.restore();
-}
-function boxWhiskerPlugin(idPrefix, getSpecs) {
-  return {
-    id: `${idPrefix}-boxwhisker-${Math.random().toString(36).slice(2)}`,
-    afterDatasetsDraw(chart) {
-      const specs = getSpecs() || [];
-      if (!specs.length) return;
-      drawBoxWhisker(chart.ctx, chart, specs);
-    }
-  };
-}
-
 // src/results-over-time/getPlugins.js
 var PALETTE = [
   "#2563eb",
@@ -19024,6 +15812,13 @@ var PALETTE = [
 ];
 function groupColors(groups) {
   return Object.fromEntries(groups.map((group, index) => [group, PALETTE[index % PALETTE.length]]));
+}
+function hexToRgba(hex2, alpha2) {
+  const value = hex2.replace("#", "");
+  const r = parseInt(value.slice(0, 2), 16);
+  const g = parseInt(value.slice(2, 4), 16);
+  const b = parseInt(value.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha2})`;
 }
 function summaryTooltip(group, visit, stats, { p0, p1, p2 }) {
   return [
@@ -19043,11 +15838,59 @@ function summaryTooltip(group, visit, stats, { p0, p1, p2 }) {
 function outlierTooltip(row, settings, { p1 }) {
   return `${row[settings.id_col]}: ${formatFixed(row.__srot_value, p1)}`;
 }
-function boxWhiskerPlugin2(instance) {
-  return boxWhiskerPlugin(
-    "srot",
-    () => instance.state.boxplots ? instance.boxSpecs || [] : []
-  );
+function boxWhiskerPlugin(instance) {
+  return {
+    id: `srot-boxwhisker-${Math.random().toString(36).slice(2)}`,
+    afterDatasetsDraw(chart) {
+      const boxes = instance.state.boxplots ? instance.boxSpecs || [] : [];
+      if (!boxes.length) return;
+      const { ctx, scales, chartArea } = chart;
+      const yOf = (value) => scales.y.getPixelForValue(value);
+      ctx.save();
+      for (const box of boxes) {
+        const { stats, color: color2 } = box;
+        if (!stats || !stats.n) continue;
+        const centerX = scales.x.getPixelForValue(box.x);
+        const left = scales.x.getPixelForValue(box.x - box.halfWidth);
+        const right = scales.x.getPixelForValue(box.x + box.halfWidth);
+        const clamp = (y) => Math.max(chartArea.top, Math.min(chartArea.bottom, y));
+        ctx.fillStyle = hexToRgba(color2, 0.35);
+        ctx.strokeStyle = color2;
+        ctx.lineWidth = 1.5;
+        const top = clamp(yOf(stats.q75));
+        const bottom = clamp(yOf(stats.q25));
+        ctx.fillRect(left, top, right - left, bottom - top);
+        ctx.strokeRect(left, top, right - left, bottom - top);
+        ctx.beginPath();
+        ctx.moveTo(centerX, clamp(yOf(stats.q5)));
+        ctx.lineTo(centerX, bottom);
+        ctx.moveTo(centerX, top);
+        ctx.lineTo(centerX, clamp(yOf(stats.q95)));
+        ctx.moveTo(left, clamp(yOf(stats.q5)));
+        ctx.lineTo(right, clamp(yOf(stats.q5)));
+        ctx.moveTo(left, clamp(yOf(stats.q95)));
+        ctx.lineTo(right, clamp(yOf(stats.q95)));
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.lineWidth = 2;
+        ctx.moveTo(left, clamp(yOf(stats.median)));
+        ctx.lineTo(right, clamp(yOf(stats.median)));
+        ctx.stroke();
+        const meanY = clamp(yOf(stats.mean));
+        const radius = Math.min((right - left) / 6, 6);
+        ctx.beginPath();
+        ctx.fillStyle = "#eee";
+        ctx.arc(centerX, meanY, radius, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.fillStyle = color2;
+        ctx.arc(centerX, meanY, radius / 2, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+  };
 }
 
 // src/results-over-time.js
@@ -19065,7 +15908,7 @@ var SafetyResultsOverTime = class {
   constructor(element = "body", settings = {}) {
     this.element = typeof element === "string" ? document.querySelector(element) : element;
     if (!this.element) throw new Error(`Safety Results Over Time target not found: ${element}`);
-    this.settings = syncSettings6(settings);
+    this.settings = syncSettings4(settings);
     this.rawData = [];
     this.cleanData = [];
     this.filteredData = [];
@@ -19075,12 +15918,8 @@ var SafetyResultsOverTime = class {
       measure: this.settings.start_value,
       filters: {},
       groupBy: this.settings.group_by,
-      // Y-axis limits (#85): `lower`/`upper` hold USER OVERRIDES only (null =
-      // auto), `axisDomain` the [lower, upper] the last render resolved — what
-      // the inputs display and what the chart drew. See src/axis-limits.js.
       lower: null,
       upper: null,
-      axisDomain: null,
       yScale: this.settings.y_scale,
       boxplots: this.settings.boxplots,
       outliers: this.settings.outliers,
@@ -19136,7 +15975,7 @@ var SafetyResultsOverTime = class {
    * @returns {SafetyResultsOverTime} The instance, for chaining.
    */
   setSettings(settings) {
-    this.settings = syncSettings6({ ...this.settings, ...settings });
+    this.settings = syncSettings4({ ...this.settings, ...settings });
     this.state.groupBy = this.settings.group_by;
     this.state.yScale = this.settings.y_scale;
     this.state.boxplots = this.settings.boxplots;
@@ -19156,12 +15995,12 @@ var SafetyResultsOverTime = class {
    */
   validateAndCleanData() {
     try {
-      checkInputs5(this.rawData, this.settings);
+      checkInputs4(this.rawData, this.settings);
     } catch (error) {
       this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
       throw error;
     }
-    const { rows, removed } = cleanData4(this.rawData, this.settings);
+    const { rows, removed } = cleanData3(this.rawData, this.settings);
     this.cleanData = rows;
     this.removedRecords = removed;
     if (removed) console.warn(`${removed} missing or non-numeric results have been removed.`);
@@ -19243,13 +16082,13 @@ var SafetyResultsOverTime = class {
     this.lowerInput = addControl("Lower", document.createElement("input"), yRow);
     this.lowerInput.type = "number";
     this.lowerInput.step = "any";
-    this.lowerInput.value = seedLimitInput(this.state, "lower");
-    this.lowerInput.onchange = () => this.onLimitChange("lower");
+    this.lowerInput.value = this.state.lower == null ? "" : this.state.lower;
+    this.lowerInput.onchange = () => this.onLimitChange();
     this.upperInput = addControl("Upper", document.createElement("input"), yRow);
     this.upperInput.type = "number";
     this.upperInput.step = "any";
-    this.upperInput.value = seedLimitInput(this.state, "upper");
-    this.upperInput.onchange = () => this.onLimitChange("upper");
+    this.upperInput.value = this.state.upper == null ? "" : this.state.upper;
+    this.upperInput.onchange = () => this.onLimitChange();
     const reset = createElement("button", "sv-reset-limits", "Reset Limits");
     reset.type = "button";
     reset.onclick = () => this.resetLimits(true);
@@ -19285,32 +16124,28 @@ var SafetyResultsOverTime = class {
     addControl(label, inline, parent);
   }
   /**
-   * Apply an edited y-limit: record the override (an empty or non-numeric entry
-   * returns that side to auto), swap a crossed pair, and re-render
-   * (SROT-REG-016/017). The render writes the resolved domain back into both
-   * inputs (#85, AXIS-1), so the boxes always end up showing the axis drawn.
-   * @param {'lower'|'upper'} key Which limit was edited.
+   * Apply an edited y-limit: read the inputs, swap a crossed pair, reflect the
+   * normalized values back into the inputs, and re-render (SROT-REG-016/017).
    * @private
    */
-  onLimitChange(key) {
-    applyLimitEdit(
-      this.state,
-      key,
-      key === "lower" ? this.lowerInput.value : this.upperInput.value
-    );
+  onLimitChange() {
+    this.state.lower = this.lowerInput.value === "" ? null : Number(this.lowerInput.value);
+    this.state.upper = this.upperInput.value === "" ? null : Number(this.upperInput.value);
     normalizeDomain2(this.state);
+    this.lowerInput.value = this.state.lower == null ? "" : this.state.lower;
+    this.upperInput.value = this.state.upper == null ? "" : this.state.upper;
     this.render();
   }
   /**
    * Clear the y-limit overrides back to the data extent (SROT-FUNC-005 /
-   * SROT-REG-020) — on Reset Limits and on a measure change, since limits are
-   * per-measure. The recorded domain goes with them, so the render this
-   * optionally triggers re-derives it and repopulates both inputs (#85,
-   * AXIS-3).
+   * SROT-REG-020); optionally sync the inputs and re-render.
    * @private
    */
   resetLimits(rerender) {
-    clearAxisLimits(this.state);
+    this.state.lower = null;
+    this.state.upper = null;
+    if (this.lowerInput) this.lowerInput.value = "";
+    if (this.upperInput) this.upperInput.value = "";
     if (rerender) this.render();
   }
   /**
@@ -19370,7 +16205,6 @@ var SafetyResultsOverTime = class {
     const groups = grouping ? unique4(filtered.map((row) => String(row[grouping]))).sort() : ["All"];
     const colors2 = groupColors(groups);
     const domain = this.resolveDomain(measureData);
-    syncAxisLimits(this.state, domain, { lower: this.lowerInput, upper: this.upperInput });
     const precisions = statPrecisions(yPrecision(domain).precision);
     this.currentVisits = visits;
     this.currentGroups = groups;
@@ -19492,7 +16326,7 @@ var SafetyResultsOverTime = class {
           }
         }
       },
-      plugins: [boxWhiskerPlugin2(this)]
+      plugins: [boxWhiskerPlugin(this)]
     });
     chart.$srotBoxes = this.boxSpecs;
     this.chart = chart;
@@ -19544,9 +16378,9 @@ function resultsOverTime(element = "body", settings = {}) {
 
 // src/outlier-explorer/configure.js
 var OE_SEQ = "__oe_seq";
-var GROUP_NONE2 = "oe_none";
+var GROUP_NONE = "oe_none";
 var NORMAL_RANGE_METHODS = ["None", "LLN-ULN", "Standard Deviation", "Quantiles"];
-var DEFAULT_SETTINGS7 = {
+var DEFAULT_SETTINGS5 = {
   measure_col: "TEST",
   value_col: "STRESN",
   id_col: "USUBJID",
@@ -19561,27 +16395,20 @@ var DEFAULT_SETTINGS7 = {
   start_value: null,
   filters: [],
   groups: [],
-  group_by: GROUP_NONE2,
+  group_by: GROUP_NONE,
   details: null,
   tooltip_cols: [],
   line_attributes: { color: "#5b6b7b", width: 1, opacity: 0.28 },
   point_attributes: { color: "#1f78b4", radius: 3, opacity: 0.5 },
   width: "100%",
   height: 460,
-  page_size: 10,
-  studyday_col: null,
-  visit_col: null,
-  visitn_col: null,
-  measure_values: null,
-  profile: true,
-  profile_details: null,
-  participantProfileURL: null
+  page_size: 10
 };
-function arrayify7(value) {
+function arrayify5(value) {
   if (value === void 0 || value === null || value === "") return [];
   return Array.isArray(value) ? value : [value];
 }
-function fieldSpec7(value, fallbackLabel) {
+function fieldSpec5(value, fallbackLabel) {
   if (typeof value === "string") return { value_col: value, label: fallbackLabel || value };
   return { ...value, value_col: value.value_col, label: value.label || value.value_col };
 }
@@ -19595,26 +16422,26 @@ function timeSpec(value) {
     order_col: base.order_col || base.value_col
   };
 }
-function syncSettings7(settings) {
-  const synced = { ...DEFAULT_SETTINGS7, ...settings };
-  synced.filters = arrayify7(synced.filters).map((value) => fieldSpec7(value)).filter((d) => d.value_col);
-  const defaultGroup = { value_col: GROUP_NONE2, label: "None" };
+function syncSettings5(settings) {
+  const synced = { ...DEFAULT_SETTINGS5, ...settings };
+  synced.filters = arrayify5(synced.filters).map((value) => fieldSpec5(value)).filter((d) => d.value_col);
+  const defaultGroup = { value_col: GROUP_NONE, label: "None" };
   synced.groups = [
     defaultGroup,
-    ...arrayify7(synced.groups).map((value) => fieldSpec7(value)).filter((d) => d.value_col)
+    ...arrayify5(synced.groups).map((value) => fieldSpec5(value)).filter((d) => d.value_col)
   ];
   if (synced.group_by && !synced.groups.some((group) => group.value_col === synced.group_by)) {
     synced.groups.push({ value_col: synced.group_by, label: synced.group_by });
   }
   synced.group_by = synced.groups.some((group) => group.value_col === synced.group_by) ? synced.group_by : synced.groups[0].value_col;
-  synced.time_cols = arrayify7(synced.time_cols).map(timeSpec).filter((d) => d.value_col);
+  synced.time_cols = arrayify5(synced.time_cols).map(timeSpec).filter((d) => d.value_col);
   if (!synced.time_cols.length) {
     synced.time_cols = [
       { value_col: OE_SEQ, label: "Measurement", type: "linear", order_col: OE_SEQ }
     ];
   }
-  synced.tooltip_cols = arrayify7(synced.tooltip_cols).map((value) => fieldSpec7(value)).filter((d) => d.value_col);
-  synced.details = arrayify7(synced.details).map((value) => fieldSpec7(value)).filter((d) => d.value_col);
+  synced.tooltip_cols = arrayify5(synced.tooltip_cols).map((value) => fieldSpec5(value)).filter((d) => d.value_col);
+  synced.details = arrayify5(synced.details).map((value) => fieldSpec5(value)).filter((d) => d.value_col);
   if (!synced.details.length) {
     synced.details = [
       { value_col: "__oe_timeLabel", label: "Time" },
@@ -19625,14 +16452,12 @@ function syncSettings7(settings) {
       { value_col: synced.unit_col, label: "Unit" }
     ].filter((d) => d.value_col);
   }
-  synced.profile = Boolean(synced.profile);
-  synced.profile_details = synced.profile_details === void 0 || synced.profile_details === null ? null : arrayify7(synced.profile_details).map((value) => fieldSpec7(value)).filter((d) => d.value_col);
   synced.line_attributes = {
-    ...DEFAULT_SETTINGS7.line_attributes,
+    ...DEFAULT_SETTINGS5.line_attributes,
     ...settings.line_attributes || {}
   };
   synced.point_attributes = {
-    ...DEFAULT_SETTINGS7.point_attributes,
+    ...DEFAULT_SETTINGS5.point_attributes,
     ...settings.point_attributes || {}
   };
   return synced;
@@ -19737,10 +16562,10 @@ var outlier_explorer_default = {
 };
 
 // src/outlier-explorer/checkInputs.js
-var REQUIRED_COLUMN_SETTINGS6 = outlier_explorer_default.properties.settings.required;
-function checkInputs6(data, settings) {
+var REQUIRED_COLUMN_SETTINGS5 = outlier_explorer_default.properties.settings.required;
+function checkInputs5(data, settings) {
   const rows = Array.isArray(data) ? data : [];
-  const missing = REQUIRED_COLUMN_SETTINGS6.map((key) => settings[key]).filter(
+  const missing = REQUIRED_COLUMN_SETTINGS5.map((key) => settings[key]).filter(
     (col) => !rows.some((row) => row[col] !== void 0)
   );
   if (missing.length) {
@@ -19754,17 +16579,17 @@ function unique5(values) {
     ...new Set(values.filter((value) => value !== void 0 && value !== null && value !== ""))
   ];
 }
-function mean6(values) {
+function mean5(values) {
   return values.reduce((sum, value) => sum + value, 0) / values.length;
 }
 function sd3(values) {
   if (values.length < 2) return 0;
-  const m = mean6(values);
+  const m = mean5(values);
   return Math.sqrt(
     values.reduce((sum, value) => sum + Math.pow(value - m, 2), 0) / (values.length - 1)
   );
 }
-function quantile4(values, p) {
+function quantile3(values, p) {
   if (!values.length) return NaN;
   const sorted = [...values].sort((a, b) => a - b);
   const idx = (sorted.length - 1) * p;
@@ -19773,10 +16598,10 @@ function quantile4(values, p) {
   if (lo === hi) return sorted[lo];
   return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
 }
-function median2(values) {
-  return quantile4(values, 0.5);
+function median(values) {
+  return quantile3(values, 0.5);
 }
-function cleanData5(rawData, settings) {
+function cleanData4(rawData, settings) {
   let removed = 0;
   const rows = rawData.map((row, index) => ({
     ...row,
@@ -19799,7 +16624,7 @@ function applyFilters5(rows, filters) {
     (row) => Object.entries(filters).every(([key, value]) => !value || String(row[key]) === String(value))
   );
 }
-function assignSequence2(rows, idCol) {
+function assignSequence(rows, idCol) {
   const counts = /* @__PURE__ */ new Map();
   rows.forEach((row) => {
     const id = row[idCol];
@@ -19858,20 +16683,20 @@ function computeNormalRange(rows, settings) {
   if (method === "None" || !rows.length) return null;
   const results = rows.map((row) => row.__oe_value);
   if (method === "Standard Deviation") {
-    const m = mean6(results);
+    const m = mean5(results);
     const s = sd3(results);
     return { low: m - settings.normal_range_sd * s, high: m + settings.normal_range_sd * s };
   }
   if (method === "Quantiles") {
     return {
-      low: quantile4(results, settings.normal_range_quantile_low),
-      high: quantile4(results, settings.normal_range_quantile_high)
+      low: quantile3(results, settings.normal_range_quantile_low),
+      high: quantile3(results, settings.normal_range_quantile_high)
     };
   }
   const lows = rows.map((row) => Number(row[settings.normal_col_low])).filter(Number.isFinite);
   const highs = rows.map((row) => Number(row[settings.normal_col_high])).filter(Number.isFinite);
   if (!lows.length || !highs.length) return null;
-  return { low: median2(lows), high: median2(highs) };
+  return { low: median(lows), high: median(highs) };
 }
 function countInliers(rows, normalRange) {
   if (!normalRange) return null;
@@ -20015,7 +16840,7 @@ var SafetyOutlierExplorer = class {
   constructor(element = "body", settings = {}) {
     this.element = typeof element === "string" ? document.querySelector(element) : element;
     if (!this.element) throw new Error(`Safety Outlier Explorer target not found: ${element}`);
-    this.settings = syncSettings7(settings);
+    this.settings = syncSettings5(settings);
     this.rawData = [];
     this.cleanData = [];
     this.filteredData = [];
@@ -20025,21 +16850,13 @@ var SafetyOutlierExplorer = class {
     this.page = 1;
     this.charts = [];
     this.participantsSelected = [];
-    this.profile = null;
-    this.profileFeed = null;
-    this.profileKey = null;
-    this.profileRows = [];
     this.state = {
       measure: this.settings.start_value,
       filters: {},
       timeIndex: 0,
       groupBy: this.settings.group_by,
-      // Y-axis limits (#85): `lower`/`upper` hold USER OVERRIDES only (null =
-      // auto), `axisDomain` the [lower, upper] the last render resolved — what
-      // the inputs display and what the chart drew. See src/axis-limits.js.
       lower: null,
       upper: null,
-      axisDomain: null,
       normalMethod: this.settings.normal_range_method,
       normalSd: this.settings.normal_range_sd,
       quantileLow: this.settings.normal_range_quantile_low,
@@ -20049,45 +16866,6 @@ var SafetyOutlierExplorer = class {
     };
     this.initFilterState();
     this.renderShell();
-    mountProfileRail(this, () => this.profileSettings());
-  }
-  /**
-   * The settings handed to the railed participant-profile module (#99,
-   * PPRF-OE-001): the shared long-lab column mappings pass through verbatim;
-   * `details` come from profile_details (the host `details` configure the
-   * linked listing — per-row fields, not demographics); and the two outbound
-   * callbacks wire Clear to the host's own clear path (falling back to a bare
-   * empty dispatch when the dock was fed by an external cohort the host never
-   * selected, so Clear always clears — PPRF-11) and stepper navigation to a
-   * transient chart emphasis (no dispatch, selection state untouched).
-   * @private
-   */
-  profileSettings() {
-    const settings = this.settings;
-    const profileSettings = {
-      id_col: settings.id_col,
-      measure_col: settings.measure_col,
-      value_col: settings.value_col,
-      unit_col: settings.unit_col,
-      normal_col_high: settings.normal_col_high,
-      normal_col_low: settings.normal_col_low,
-      studyday_col: settings.studyday_col,
-      visit_col: settings.visit_col,
-      visitn_col: settings.visitn_col,
-      details: settings.profile_details && settings.profile_details.length ? settings.profile_details : [],
-      participantProfileURL: settings.participantProfileURL ?? null,
-      on_clear: () => {
-        if (this.state.selectedId != null) {
-          this.clearSelection();
-        } else {
-          this.emphasizeParticipant(null);
-          this.dispatchSelection([]);
-        }
-      },
-      on_step: (id) => this.emphasizeParticipant(id)
-    };
-    if (settings.measure_values) profileSettings.measure_values = settings.measure_values;
-    return profileSettings;
   }
   /**
    * Initialize the active filter values from any filter `start` settings
@@ -20141,18 +16919,9 @@ var SafetyOutlierExplorer = class {
   setData(data) {
     this.rawData = Array.isArray(data) ? data : [];
     this.validateAndCleanData();
-    this.buildProfileRows();
     this.buildControls();
     this.render();
     return this;
-  }
-  /**
-   * Derive the railed profile's pre-cleaned rows ONCE per data/settings change
-   * (#99, PPRF-OE-001) — never per gesture.
-   * @private
-   */
-  buildProfileRows() {
-    this.profileRows = this.settings.profile ? buildProfileRows(this.rawData, this.profileSettings()) : [];
   }
   /**
    * Merge setting overrides onto the current settings, re-normalize them (same
@@ -20161,13 +16930,11 @@ var SafetyOutlierExplorer = class {
    * @returns {SafetyOutlierExplorer} The instance, for chaining.
    */
   setSettings(settings) {
-    this.settings = syncSettings7({ ...this.settings, ...settings });
+    this.settings = syncSettings5({ ...this.settings, ...settings });
     this.state.normalMethod = this.settings.normal_range_method;
     this.state.groupBy = this.settings.group_by;
     this.initFilterState();
     if (this.rawData.length) this.validateAndCleanData();
-    this.buildProfileRows();
-    syncProfileRail(this, () => this.profileSettings());
     this.buildControls();
     this.render();
     return this;
@@ -20178,12 +16945,12 @@ var SafetyOutlierExplorer = class {
    */
   validateAndCleanData() {
     try {
-      checkInputs6(this.rawData, this.settings);
+      checkInputs5(this.rawData, this.settings);
     } catch (error) {
       this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
       throw error;
     }
-    const { rows, removed } = cleanData5(this.rawData, this.settings);
+    const { rows, removed } = cleanData4(this.rawData, this.settings);
     this.cleanData = rows;
     this.removedRecords = removed;
     if (removed) console.warn(`${removed} missing or non-numeric results have been removed.`);
@@ -20218,7 +16985,7 @@ var SafetyOutlierExplorer = class {
     const rows = this.cleanData.filter(
       (row) => measureLabel4(row, this.settings) === this.state.measure
     );
-    return assignSequence2(rows, this.settings.id_col);
+    return assignSequence(rows, this.settings.id_col);
   }
   /**
    * Cleaned rows for the selected measure after the active filters.
@@ -20285,23 +17052,21 @@ var SafetyOutlierExplorer = class {
     const lower = addControl("Lower", document.createElement("input"), yRow);
     lower.type = "number";
     lower.step = String(step);
-    lower.value = seedLimitInput(this.state, "lower");
+    lower.value = this.state.lower == null ? "" : this.state.lower;
     lower.onchange = () => {
-      applyLimitEdit(this.state, "lower", lower.value);
+      this.state.lower = lower.value === "" ? null : Number(lower.value);
       normalizeYDomain(this.state);
       this.render();
     };
-    this.lowerInput = lower;
     const upper = addControl("Upper", document.createElement("input"), yRow);
     upper.type = "number";
     upper.step = String(step);
-    upper.value = seedLimitInput(this.state, "upper");
+    upper.value = this.state.upper == null ? "" : this.state.upper;
     upper.onchange = () => {
-      applyLimitEdit(this.state, "upper", upper.value);
+      this.state.upper = upper.value === "" ? null : Number(upper.value);
       normalizeYDomain(this.state);
       this.render();
     };
-    this.upperInput = upper;
     const reset = addControl("\xA0", document.createElement("button"), yParent);
     reset.type = "button";
     reset.textContent = "Reset Limits";
@@ -20375,13 +17140,12 @@ var SafetyOutlierExplorer = class {
     return axisStep(domain[1] - domain[0]);
   }
   /**
-   * Clear the y-axis limit overrides when the measure changes (limits are
-   * per-measure) or on Reset Limits. The recorded domain goes with them so the
-   * next render re-derives it and repopulates both inputs (#85, AXIS-3).
+   * Clear the y-axis limit overrides when the measure changes or on Reset.
    * @private
    */
   resetDomain() {
-    clearAxisLimits(this.state);
+    this.state.lower = null;
+    this.state.upper = null;
   }
   /**
    * Redraw everything from the current data, settings, and control state:
@@ -20400,7 +17164,6 @@ var SafetyOutlierExplorer = class {
     this.page = 1;
     this.state.selectedId = null;
     this.participantsSelected = [];
-    resetProfileRail(this);
     this.notes.innerHTML = "";
     this.footnote.textContent = "Hover a point for details; click a point to highlight a participant.";
     this.filteredData = this.currentFilteredData();
@@ -20433,10 +17196,9 @@ var SafetyOutlierExplorer = class {
     });
     const values = this.filteredData.map((row) => row.__oe_value);
     const domain = resolveYDomain2(values, this.state.lower, this.state.upper);
-    syncAxisLimits(this.state, domain, { lower: this.lowerInput, upper: this.upperInput });
     const categories = timeCol.type === "ordinal" ? orderedCategories(this.currentMeasureData(), timeCol) : [];
     this.series = buildSeries(this.filteredData, this.settings, timeCol, this.state.groupBy);
-    const grouped = this.state.groupBy && this.state.groupBy !== GROUP_NONE2;
+    const grouped = this.state.groupBy && this.state.groupBy !== GROUP_NONE;
     this.groupValues = grouped ? unique5(this.filteredData.map((row) => row[this.state.groupBy])).sort() : [];
     this.colorScale = groupColorScale(this.groupValues);
     const lineAttr = this.settings.line_attributes;
@@ -20607,25 +17369,15 @@ var SafetyOutlierExplorer = class {
    * @private
    */
   applySelection() {
-    this.emphasizeParticipant(this.state.selectedId);
-  }
-  /**
-   * Draw (or clear, for a null id) the bold overlay for one participant
-   * WITHOUT touching the host selection state — the transient emphasis the
-   * profile stepper drives (PPRF-11): the host selection still belongs to the
-   * click gesture, so footnote/listing keep narrating it while the overlay
-   * tracks the stepped participant.
-   * @param {string|null} id Participant identifier, or null to clear the overlay.
-   * @private
-   */
-  emphasizeParticipant(id) {
     if (!this.chart) return;
     const overlay = this.chart.data.datasets[1];
-    if (id == null) {
+    if (this.state.selectedId == null) {
       overlay.data = [];
       this.overlayMeta = [];
     } else {
-      const series = this.series.find((candidate) => String(candidate.id) === String(id));
+      const series = this.series.find(
+        (candidate) => String(candidate.id) === String(this.state.selectedId)
+      );
       overlay.data = series ? series.points.map((point) => ({ x: point.x, y: point.y })) : [];
       this.overlayMeta = series ? series.points.map((point) => ({ id: series.id, group: series.group, point })) : [];
     }
@@ -20686,7 +17438,6 @@ var SafetyOutlierExplorer = class {
    * @returns {void}
    */
   destroy() {
-    unmountProfileRail(this);
     this.destroyCharts();
     this.element.innerHTML = "";
   }
@@ -20696,11 +17447,7 @@ function outlierExplorer(element = "body", settings = {}) {
 }
 
 // src/ae-timelines/configure.js
-var DEFAULT_SETTINGS8 = {
-  // The railed participant profile (obot.roadmap#75 decision D9); false opts
-  // the renderer out of the drill-down entirely.
-  profile: true,
-  profile_details: [],
+var DEFAULT_SETTINGS6 = {
   id_col: "USUBJID",
   seq_col: "AESEQ",
   stdy_col: "ASTDY",
@@ -20738,14 +17485,14 @@ var DEFAULT_SETTINGS8 = {
   page_size: 10
 };
 var SORT_OPTIONS = ["earliest", "alphabetical-descending"];
-function syncSettings8(settings) {
-  const synced = { ...DEFAULT_SETTINGS8, ...settings };
-  synced.color = { ...DEFAULT_SETTINGS8.color, ...settings.color || {} };
+function syncSettings6(settings) {
+  const synced = { ...DEFAULT_SETTINGS6, ...settings };
+  synced.color = { ...DEFAULT_SETTINGS6.color, ...settings.color || {} };
   synced.highlight = settings.highlight === null ? null : {
-    ...DEFAULT_SETTINGS8.highlight,
+    ...DEFAULT_SETTINGS6.highlight,
     ...settings.highlight || {},
     attributes: {
-      ...DEFAULT_SETTINGS8.highlight.attributes,
+      ...DEFAULT_SETTINGS6.highlight.attributes,
       ...(settings.highlight || {}).attributes || {}
     }
   };
@@ -20778,7 +17525,7 @@ function syncSettings8(settings) {
     return true;
   });
   if (!SORT_OPTIONS.includes(synced.sort_participants)) {
-    synced.sort_participants = DEFAULT_SETTINGS8.sort_participants;
+    synced.sort_participants = DEFAULT_SETTINGS6.sort_participants;
   }
   return synced;
 }
@@ -20911,13 +17658,13 @@ var ae_timelines_default = {
 };
 
 // src/ae-timelines/checkInputs.js
-var REQUIRED_COLUMN_SETTINGS7 = ae_timelines_default.properties.settings.required.filter(
+var REQUIRED_COLUMN_SETTINGS6 = ae_timelines_default.properties.settings.required.filter(
   (key) => key !== "color"
 );
-function checkInputs7(data, settings) {
+function checkInputs6(data, settings) {
   const rows = Array.isArray(data) ? data : [];
   const columns = [
-    ...REQUIRED_COLUMN_SETTINGS7.map((key) => settings[key]),
+    ...REQUIRED_COLUMN_SETTINGS6.map((key) => settings[key]),
     settings.color.value_col
   ];
   const missing = columns.filter((col) => !rows.some((row) => row[col] !== void 0));
@@ -20929,11 +17676,11 @@ function checkInputs7(data, settings) {
 // src/ae-timelines/structureData.js
 var HAS_CONTENT = /[^\s*$]/;
 var INTEGER_DAY = /^-?\d+$/;
-var NA_COLOR = "#999999";
+var NA_COLOR2 = "#999999";
 function populationCount(rawData, settings) {
   return unique(rawData.map((row) => row[settings.id_col])).length;
 }
-function cleanData6(rawData, settings) {
+function cleanData5(rawData, settings) {
   let removedTerm = 0;
   let removedDay = 0;
   const rows = rawData.filter((row) => {
@@ -20961,7 +17708,7 @@ function colorDomain(rows, colorSettings) {
   return [...colorSettings.values, ...extras];
 }
 function colorFor(value, domain, colors2) {
-  if (value === "N/A") return NA_COLOR;
+  if (value === "N/A") return NA_COLOR2;
   return colors2[domain.indexOf(value) % colors2.length];
 }
 function sortSubjects(rows, settings, order) {
@@ -21146,7 +17893,7 @@ var AETimelines = class {
   constructor(element = "body", settings = {}) {
     this.element = typeof element === "string" ? document.querySelector(element) : element;
     if (!this.element) throw new Error(`AE Timelines target not found: ${element}`);
-    this.settings = syncSettings8(settings);
+    this.settings = syncSettings6(settings);
     this.rawData = [];
     this.cleanRows = [];
     this.filteredData = [];
@@ -21164,37 +17911,6 @@ var AETimelines = class {
       sort: this.settings.sort_participants
     };
     this.renderShell();
-    this.profileRows = [];
-    mountProfileRail(this, () => this.profileSettings(), { target: this.element });
-  }
-  /**
-   * The settings handed to the railed participant-profile module: this
-   * renderer's own AE mapping, passed through so the profile reads the same
-   * records with the same severity scale and serious flag.
-   * @returns {Object} The profile pass-through settings.
-   * @private
-   */
-  profileSettings() {
-    return {
-      id_col: this.settings.id_col,
-      details: this.settings.profile_details,
-      on_clear: () => this.backToTimelines(),
-      ae: {
-        data: this.rawData,
-        id_col: this.settings.id_col,
-        term_col: this.settings.term_col,
-        stdy_col: this.settings.stdy_col,
-        endy_col: this.settings.endy_col,
-        color: {
-          value_col: this.settings.color.value_col,
-          values: this.settings.color.values
-        },
-        highlight: this.settings.highlight ? {
-          value_col: this.settings.highlight.value_col,
-          value: this.settings.highlight.value
-        } : null
-      }
-    };
   }
   /**
    * Build the static DOM shell the charts and listing render into, plus the
@@ -21251,8 +17967,6 @@ var AETimelines = class {
     this.rawData = Array.isArray(data) ? data : [];
     this.validateAndCleanData();
     this.buildControls();
-    syncProfileRail(this, () => this.profileSettings());
-    if (this.profile) this.profile.setAeData(this.rawData);
     this.render();
     return this;
   }
@@ -21263,7 +17977,7 @@ var AETimelines = class {
    * @returns {AETimelines} The instance, for chaining.
    */
   setSettings(settings) {
-    this.settings = syncSettings8({ ...this.settings, ...settings });
+    this.settings = syncSettings6({ ...this.settings, ...settings });
     this.state.sort = this.settings.sort_participants;
     this.validateAndCleanData();
     this.buildControls();
@@ -21277,13 +17991,13 @@ var AETimelines = class {
    */
   validateAndCleanData() {
     try {
-      checkInputs7(this.rawData, this.settings);
+      checkInputs6(this.rawData, this.settings);
     } catch (error) {
       this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
       throw error;
     }
     this.population = populationCount(this.rawData, this.settings);
-    const { rows, removedTerm, removedDay } = cleanData6(this.rawData, this.settings);
+    const { rows, removedTerm, removedDay } = cleanData5(this.rawData, this.settings);
     this.cleanRows = rows;
     this.removedTerm = removedTerm;
     this.removedDay = removedDay;
@@ -21550,13 +18264,113 @@ var AETimelines = class {
    * @returns {void}
    */
   destroy() {
-    unmountProfileRail(this);
     this.destroyCharts();
     this.element.innerHTML = "";
   }
 };
 function aeTimelines(element = "body", settings = {}) {
   return new AETimelines(element, settings);
+}
+
+// src/hep-explorer/configure.js
+var GROUP_NONE2 = "hep_none";
+var DISPLAY_MODES = [
+  { value: "relative_uln", label: "Upper limit of normal adjusted (eDISH)" },
+  { value: "relative_baseline", label: "Baseline adjusted (mDISH)" }
+];
+var VIEW_MODES = [
+  { value: "scatter", label: "eDISH / mDISH scatter" },
+  { value: "composite", label: "Composite plot (baseline-referenced)" }
+];
+var AXIS_TYPES = ["linear", "log"];
+var POINT_SIZE_OPTIONS = ["Uniform", "rRatio"];
+var MEASURE_KEYS = ["ALT", "AST", "TB", "ALP"];
+var DEFAULT_SETTINGS7 = {
+  id_col: "USUBJID",
+  measure_col: "TEST",
+  value_col: "STRESN",
+  unit_col: "STRESU",
+  normal_col_high: "STNRHI",
+  normal_col_low: "STNRLO",
+  studyday_col: "DY",
+  visit_col: "VISIT",
+  visitn_col: "VISITNUM",
+  measure_values: {
+    ALT: "Aminotransferase, alanine (ALT)",
+    AST: "Aminotransferase, aspartate (AST)",
+    TB: "Total Bilirubin",
+    ALP: "Alkaline phosphatase (ALP)"
+  },
+  view: "scatter",
+  x_default: "ALT",
+  y_default: "TB",
+  x_options: ["ALT", "AST", "TB", "ALP"],
+  y_options: ["TB"],
+  cuts: {
+    TB: { relative_uln: 2, relative_baseline: 4.8 },
+    ALP: { relative_uln: 1, relative_baseline: 3.8 },
+    rRatio: { relative_uln: 5, relative_baseline: 5 },
+    defaults: { relative_uln: 3, relative_baseline: 3.8 }
+  },
+  visit_window: 30,
+  r_ratio_filter: true,
+  r_ratio: [0, null],
+  filters: [],
+  groups: [],
+  group_by: GROUP_NONE2,
+  details: null,
+  page_size: 10,
+  width: "100%",
+  height: 460
+};
+function arrayify6(value) {
+  if (value === void 0 || value === null || value === "") return [];
+  return Array.isArray(value) ? value : [value];
+}
+function fieldSpec6(value, fallbackLabel) {
+  if (typeof value === "string") return { value_col: value, label: fallbackLabel || value };
+  return { ...value, value_col: value.value_col, label: value.label || value.value_col };
+}
+function syncSettings7(settings) {
+  const synced = { ...DEFAULT_SETTINGS7, ...settings };
+  synced.filters = arrayify6(synced.filters).map((value) => fieldSpec6(value)).filter((d) => d.value_col);
+  const defaultGroup = { value_col: GROUP_NONE2, label: "None" };
+  synced.groups = [
+    defaultGroup,
+    ...arrayify6(synced.groups).map((value) => fieldSpec6(value)).filter((d) => d.value_col)
+  ];
+  if (synced.group_by && !synced.groups.some((group) => group.value_col === synced.group_by)) {
+    synced.groups.push({ value_col: synced.group_by, label: synced.group_by });
+  }
+  synced.group_by = synced.groups.some((group) => group.value_col === synced.group_by) ? synced.group_by : synced.groups[0].value_col;
+  synced.details = arrayify6(synced.details).map((value) => fieldSpec6(value)).filter((d) => d.value_col);
+  synced.x_options = arrayify6(synced.x_options);
+  synced.y_options = arrayify6(synced.y_options);
+  synced.measure_values = {
+    ...DEFAULT_SETTINGS7.measure_values,
+    ...settings.measure_values || {}
+  };
+  const cutKeys = /* @__PURE__ */ new Set([
+    ...Object.keys(DEFAULT_SETTINGS7.cuts),
+    ...Object.keys(settings.cuts || {})
+  ]);
+  const mergedCuts = {};
+  cutKeys.forEach((key) => {
+    mergedCuts[key] = {
+      ...DEFAULT_SETTINGS7.cuts[key] || {},
+      ...(settings.cuts || {})[key] || {}
+    };
+  });
+  synced.cuts = mergedCuts;
+  synced.r_ratio = arrayify6(synced.r_ratio);
+  if (synced.r_ratio.length < 2) synced.r_ratio = [0, null];
+  return synced;
+}
+function cutFor(cuts, measureKey, display) {
+  const entry = cuts && cuts[measureKey] || cuts && cuts.defaults || {};
+  const fallback = cuts && cuts.defaults || {};
+  const value = entry[display];
+  return Number.isFinite(value) ? value : fallback[display];
 }
 
 // src/data/schema/hep-explorer.json
@@ -21624,42 +18438,6 @@ var hep_explorer_default = {
           default: "VISITNUM",
           description: "Optional numeric visit column; orders visit-keyed series when present."
         },
-        arm_col: {
-          type: ["string", "null"],
-          default: "ARM",
-          description: "Treatment-arm column, structural for the migration view \u2014 it decides which side of the centre column a participant's flow leaves from. Auto-detected across ARM, ACTARM, TRT01A, TREATMENT and TRTA when the named column is absent, and deliberately NOT in this contract's required list, so arm-less data still renders the scatter and composite views (HEP-ARM-001)."
-        },
-        placebo_arm: {
-          type: ["string", "null"],
-          default: null,
-          description: "Arm value plotted on the left (placebo) side of the migration Sankey; when null it is auto-detected by matching the arm values against /placebo|control/i (HEP-ARM-002)."
-        },
-        active_arms: {
-          type: ["array", "string", "null"],
-          items: { type: "string" },
-          default: null,
-          description: "Arm values plotted on the right (active) side; when null every non-placebo arm pools right and the pooled arms are named in the notes (HEP-ARM-003)."
-        },
-        baseline_col: {
-          type: ["string", "null"],
-          default: null,
-          description: "Optional baseline-flag column (e.g. ABLFL). When supplied, the flagged record is the baseline, outranking the day-0-else-earliest heuristic (HEP-CORE-003)."
-        },
-        baseline_value: {
-          type: "string",
-          default: "Y",
-          description: "The value of baseline_col that marks the baseline record (HEP-CORE-003)."
-        },
-        jaundice_uln: {
-          type: "number",
-          default: 2,
-          description: "New-onset-jaundice threshold on the total-bilirubin \xD7ULN scale: flagged when baseline is at or below it and the on-treatment maximum exceeds it. Defaults to the composite plot's bilirubin cutpoint so the flag and the quadrants stay mutually consistent (HEP-CORE-006)."
-        },
-        hide_unchanged: {
-          type: "boolean",
-          default: false,
-          description: "Migration view: suppress the diagonal (no-migration) ribbons; the hidden participant count stays in the notes and the cross tables (HEP-MIG-013)."
-        },
         measure_values: {
           type: "object",
           default: {
@@ -21672,9 +18450,9 @@ var hep_explorer_default = {
         },
         view: {
           type: "string",
-          enum: ["scatter", "migration", "composite"],
+          enum: ["scatter", "composite"],
           default: "scatter",
-          description: "Initial view mode: `scatter` (eDISH/mDISH one-point-per-participant scatter), `migration` (the bidirectional baseline \u2192 peak on-treatment Sankey mirrored about the baseline categorization, with one cross table per treatment arm \u2014 Amirzadegan et al., Drug Safety 2025, Fig 3; needs arm_col mapped), or `composite` (baseline-referenced composite plot for subjects with abnormal baseline liver tests \u2014 pretreatment and on-treatment eDISH panels, a four-panel \xD7Baseline shift plot, and a migration table) (HEP-COMP-006, HEP-MIG-001)."
+          description: "Initial view mode: `scatter` (eDISH/mDISH one-point-per-participant scatter) or `composite` (baseline-referenced composite plot for subjects with abnormal baseline liver tests \u2014 pretreatment and on-treatment eDISH panels, a four-panel \xD7Baseline shift plot, and a migration table) (HEP-COMP-006)."
         },
         x_default: {
           type: "string",
@@ -21760,10 +18538,10 @@ var hep_explorer_default = {
 };
 
 // src/hep-explorer/checkInputs.js
-var REQUIRED_COLUMN_SETTINGS8 = hep_explorer_default.properties.settings.required;
-function checkInputs8(data, settings) {
+var REQUIRED_COLUMN_SETTINGS7 = hep_explorer_default.properties.settings.required;
+function checkInputs7(data, settings) {
   const rows = Array.isArray(data) ? data : [];
-  const missing = REQUIRED_COLUMN_SETTINGS8.map((key) => settings[key]).filter(
+  const missing = REQUIRED_COLUMN_SETTINGS7.map((key) => settings[key]).filter(
     (col) => !rows.some((row) => row[col] !== void 0)
   );
   if (missing.length) {
@@ -21827,24 +18605,6 @@ var GROUP_COLORS2 = [
   "#00838f",
   "#c2185b"
 ];
-var PALETTE_TIERS = 3;
-function shade(hex2, amount) {
-  const clean = hex2.replace("#", "");
-  const channel = (offset) => {
-    const value = parseInt(clean.slice(offset, offset + 2), 16);
-    const shifted = amount >= 0 ? value + (255 - value) * amount : value * (1 + amount);
-    return Math.max(0, Math.min(255, Math.round(shifted))).toString(16).padStart(2, "0");
-  };
-  return `#${channel(0)}${channel(2)}${channel(4)}`;
-}
-function paletteColor(index) {
-  const size = GROUP_COLORS2.length;
-  const position = (index % (size * PALETTE_TIERS) + size * PALETTE_TIERS) % (size * PALETTE_TIERS);
-  const base = GROUP_COLORS2[position % size];
-  const tier = Math.floor(position / size);
-  if (tier === 0) return base;
-  return shade(base, tier === 1 ? 0.45 : -0.4);
-}
 var SELECTION_COLOR2 = "#111827";
 var QUADRANT_LABELS = [
   { position: "upper-right", label: "Possible Hy's Law Range", xCat: "High", yCat: "High" },
@@ -21852,31 +18612,6 @@ var QUADRANT_LABELS = [
   { position: "lower-right", label: "Temple's Corollary", xCat: "High", yCat: "Normal" },
   { position: "lower-left", label: "Normal Range", xCat: "Normal", yCat: "Normal" }
 ];
-var QUADRANT_MEANINGS = {
-  "Possible Hy's Law Range": "Both measures above their cutpoints. A screening range, not a diagnosis: Hy's Law also requires that no other cause explains the injury, which only a full case review can establish.",
-  Hyperbilirubinemia: "Bilirubin above its cutpoint with the aminotransferase below its own \u2014 a bilirubin rise without the hepatocellular injury pattern (consider haemolysis, Gilbert syndrome, or cholestasis).",
-  "Temple's Corollary": "Aminotransferase above its cutpoint with bilirubin below its own \u2014 hepatocellular injury without the loss of function that defines the Hy's Law range.",
-  "Normal Range": "Neither measure above its cutpoint for this participant."
-};
-var CLINICAL_CAUTION = "Exploratory tool \u2014 not validated for clinical use. Confirm any signal with a full case review.";
-function groupLegendEntries(groupValues, points) {
-  const rows = points || [];
-  const total = rows.length;
-  return (groupValues || []).map((value) => {
-    const count2 = rows.filter((point) => String(point.group) === String(value)).length;
-    const percent = total ? count2 / total * 100 : 0;
-    return {
-      value: String(value),
-      count: count2,
-      percent,
-      label: `${value} (n=${count2}, ${percent.toFixed(1)}%)`
-    };
-  });
-}
-function pointSizeNote(pointSize) {
-  if (pointSize !== "rRatio") return "";
-  return "Point size encodes R Ratio: a larger point is a more hepatocellular pattern. Participants with no R Ratio are drawn at the base size.";
-}
 function hexToRgba3(hex2, opacity) {
   const clean = hex2.replace("#", "");
   const r = parseInt(clean.slice(0, 2), 16);
@@ -21887,12 +18622,12 @@ function hexToRgba3(hex2, opacity) {
 function groupColorScale2(groupValues) {
   const scale = /* @__PURE__ */ new Map();
   groupValues.forEach((value, index) => {
-    scale.set(String(value), paletteColor(index));
+    scale.set(String(value), GROUP_COLORS2[index % GROUP_COLORS2.length]);
   });
   return scale;
 }
-function dayText(day2) {
-  return Number.isFinite(day2) ? String(day2) : "NA";
+function dayText(day) {
+  return Number.isFinite(day) ? String(day) : "NA";
 }
 function pointTooltip2(point, state, measureValues) {
   const lines = [
@@ -21988,10 +18723,6 @@ function quadrantPlugin(instance) {
         ctx.lineTo(chartArea.right, yPixel);
         ctx.stroke();
       }
-      if (state.quadrantLabels === "hidden") {
-        ctx.restore();
-        return;
-      }
       ctx.setLineDash([]);
       ctx.fillStyle = "rgba(51, 65, 85, 0.9)";
       ctx.font = "11px system-ui, sans-serif";
@@ -22020,6 +18751,68 @@ function unique6(values) {
     ...new Set(values.filter((value) => value !== void 0 && value !== null && value !== ""))
   ];
 }
+function quantile4(values, p) {
+  const nums = values.map(Number).filter(Number.isFinite);
+  if (!nums.length) return NaN;
+  const sorted = [...nums].sort((a, b) => a - b);
+  const idx = (sorted.length - 1) * p;
+  const lo = Math.floor(idx);
+  const hi = Math.ceil(idx);
+  if (lo === hi) return sorted[lo];
+  return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
+}
+function median2(values) {
+  return quantile4(values, 0.5);
+}
+function displayField(display) {
+  return display === "relative_baseline" ? "__hep_relative_baseline" : "__hep_relative_uln";
+}
+function dayThenIndex(a, b) {
+  const da = Number.isFinite(a.__hep_day) ? a.__hep_day : Number.MAX_SAFE_INTEGER;
+  const db = Number.isFinite(b.__hep_day) ? b.__hep_day : Number.MAX_SAFE_INTEGER;
+  return da - db || a.__hep_index - b.__hep_index;
+}
+function resolveMeasureRows(rows, settings, key) {
+  const testName = settings.measure_values ? settings.measure_values[key] : key;
+  return rows.filter((row) => row[settings.measure_col] === testName);
+}
+function cleanData6(rawData, settings) {
+  let removed = 0;
+  const rows = rawData.map((row, index) => {
+    const value = Number(row[settings.value_col]);
+    const uln = Number(row[settings.normal_col_high]);
+    const day = settings.studyday_col && row[settings.studyday_col] !== "" && row[settings.studyday_col] !== void 0 ? Number(row[settings.studyday_col]) : NaN;
+    return {
+      ...row,
+      __hep_index: index,
+      __hep_seq: NaN,
+      __hep_value: value,
+      __hep_uln: uln,
+      __hep_day: day,
+      __hep_relative_uln: value / uln,
+      __hep_relative_baseline: NaN,
+      __hep_baseline: NaN
+    };
+  }).filter((row) => {
+    const keep = row[settings.value_col] !== "" && row[settings.value_col] !== void 0 && Number.isFinite(row.__hep_value) && Number.isFinite(row.__hep_uln) && row.__hep_uln > 0;
+    if (!keep) removed += 1;
+    return keep;
+  });
+  return { rows, removed };
+}
+function assignSequence2(rows, settings) {
+  const counts = /* @__PURE__ */ new Map();
+  rows.forEach((row) => {
+    const key = `${row[settings.id_col]}\0${row[settings.measure_col]}`;
+    const next = (counts.get(key) || 0) + 1;
+    counts.set(key, next);
+    row.__hep_seq = next;
+  });
+  return rows;
+}
+function hasStudyDay(rows) {
+  return rows.some((row) => Number.isFinite(row.__hep_day));
+}
 function maxRRatio(cleanRows, settings) {
   const byId = /* @__PURE__ */ new Map();
   cleanRows.forEach((row) => {
@@ -22034,17 +18827,59 @@ function maxRRatio(cleanRows, settings) {
   });
   return max;
 }
+function deriveBaseline(rows, settings) {
+  const groups = /* @__PURE__ */ new Map();
+  rows.forEach((row) => {
+    const key = `${row[settings.id_col]}\0${row[settings.measure_col]}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(row);
+  });
+  groups.forEach((records) => {
+    const ordered = [...records].sort(dayThenIndex);
+    const zero = ordered.find((row) => row.__hep_day === 0);
+    const baselineRow = zero || ordered[0];
+    const baselineValue = baselineRow ? baselineRow.__hep_value : NaN;
+    records.forEach((row) => {
+      row.__hep_baseline = baselineValue;
+      row.__hep_relative_baseline = Number.isFinite(baselineValue) && baselineValue !== 0 ? row.__hep_value / baselineValue : NaN;
+    });
+  });
+  return rows;
+}
+function participantPeak(rows, key, display) {
+  const field = displayField(display);
+  let best = null;
+  rows.forEach((row) => {
+    const value = row[field];
+    if (!Number.isFinite(value)) return;
+    if (!best || value > best.value) {
+      best = { key, value, day: row.__hep_day, raw: row };
+    }
+  });
+  return best;
+}
+function computeRRatio(participantRows, settings) {
+  const altPeak = participantPeak(
+    resolveMeasureRows(participantRows, settings, "ALT"),
+    "ALT",
+    "relative_uln"
+  );
+  const alpPeak = participantPeak(
+    resolveMeasureRows(participantRows, settings, "ALP"),
+    "ALP",
+    "relative_uln"
+  );
+  if (!altPeak || !alpPeak || !(alpPeak.value > 0)) return NaN;
+  return altPeak.value / alpPeak.value;
+}
 function buildPoints(cleanRows, settings, state) {
   const { measureX, measureY, display, visitWindow, groupBy: groupBy2 } = state;
   const timed = hasStudyDay(cleanRows);
   const metaCols = unique6([
     settings.id_col,
     ...settings.filters.map((filter) => filter.value_col),
-    ...settings.groups.map((group) => group.value_col),
-    // The legend's numeric ordering column travels with the point, so the
-    // legend can be sorted without a second pass over the rows (HEP-CTRL-015).
-    settings.group_order_col
-  ]).filter((col) => col && col !== GROUP_NONE);
+    ...settings.groups.map((group) => group.value_col)
+  ]).filter((col) => col && col !== GROUP_NONE2);
   const byId = /* @__PURE__ */ new Map();
   cleanRows.forEach((row) => {
     const id = row[settings.id_col];
@@ -22053,7 +18888,6 @@ function buildPoints(cleanRows, settings, state) {
   });
   const points = [];
   let droppedParticipants = 0;
-  const droppedList = [];
   byId.forEach((participantRows, id) => {
     const peakX = participantPeak(
       resolveMeasureRows(participantRows, settings, measureX),
@@ -22066,23 +18900,14 @@ function buildPoints(cleanRows, settings, state) {
       display
     );
     if (!peakX || !peakY || !(peakX.value > 0) || !(peakY.value > 0)) {
-      const missing = [];
-      if (!peakX) missing.push(`no usable ${measureX} value`);
-      else if (!(peakX.value > 0)) missing.push(`${measureX} value is not positive`);
-      if (!peakY) missing.push(`no usable ${measureY} value`);
-      else if (!(peakY.value > 0)) missing.push(`${measureY} value is not positive`);
       droppedParticipants += 1;
-      droppedList.push({
-        id: String(id),
-        reason: `${missing.join("; ")} for the ${display === "relative_baseline" ? "baseline-adjusted" : "reference-range-adjusted"} display.`
-      });
       return;
     }
     const daysX = peakX.day;
     const daysY = peakY.day;
     const dayDiff = Number.isFinite(daysX) && Number.isFinite(daysY) ? Math.abs(daysX - daysY) : NaN;
     const withinWindow = Number.isFinite(dayDiff) ? dayDiff <= visitWindow : !timed;
-    const groupValue = groupBy2 && groupBy2 !== GROUP_NONE ? participantRows[0][groupBy2] : null;
+    const groupValue = groupBy2 && groupBy2 !== GROUP_NONE2 ? participantRows[0][groupBy2] : null;
     const meta = {};
     metaCols.forEach((col) => {
       meta[col] = participantRows[0][col] === void 0 ? "" : String(participantRows[0][col]);
@@ -22100,7 +18925,7 @@ function buildPoints(cleanRows, settings, state) {
       raw: meta
     });
   });
-  return { points, droppedParticipants, droppedList };
+  return { points, droppedParticipants };
 }
 function applyFilters6(points, filters) {
   return points.filter(
@@ -22122,12 +18947,12 @@ function classifyQuadrants(points, xCut, yCut) {
   });
   const total = points.length;
   const labels = QUADRANT_LABELS.map((entry) => {
-    const count2 = counts[entry.position];
+    const count = counts[entry.position];
     return {
       position: entry.position,
       label: entry.label,
-      count: count2,
-      percent: total ? count2 / total * 100 : 0
+      count,
+      percent: total ? count / total * 100 : 0
     };
   });
   return { counts, labels };
@@ -22178,1165 +19003,135 @@ function visitPathSeries(cleanRows, id, settings, state) {
     label: entry.visit ? String(entry.visit) : Number.isFinite(entry.day) ? `Day ${entry.day}` : `#${Number.isFinite(entry.seq) ? entry.seq : entry.order}`
   }));
 }
-
-// src/hep-explorer/imputation.js
-var IMPUTATION_METHODS = ["data-driven", "user-defined", "drop"];
-function measureRows(rows, settings, measureKey) {
-  const value = settings.measure_values ? settings.measure_values[measureKey] : void 0;
-  if (value === void 0) return [];
-  return rows.filter((row) => String(row[settings.measure_col]) === String(value));
+function participantMeasureSeries(cleanRows, id, settings, state) {
+  const field = displayField(state.display);
+  const participantRows = cleanRows.filter((row) => row[settings.id_col] === id);
+  return MEASURE_KEYS.map((key) => {
+    const rows = resolveMeasureRows(participantRows, settings, key);
+    const points = rows.filter((row) => Number.isFinite(row[field])).sort(dayThenIndex).map((row) => ({ day: row.__hep_day, value: row[field], raw: row }));
+    return { key, label: key, points };
+  }).filter((series) => series.points.length > 0);
 }
-function lloqFor(rows, settings, measureKey) {
-  const method = (settings.imputation_methods || {})[measureKey];
-  if (method === "user-defined") {
-    const configured = Number((settings.imputation_values || {})[measureKey]);
-    return Number.isFinite(configured) ? configured : NaN;
-  }
-  if (method !== "data-driven") return NaN;
-  const positives = measureRows(rows, settings, measureKey).map((row) => Number(row[settings.value_col])).filter((value) => Number.isFinite(value) && value > 0);
-  return positives.length ? Math.min(...positives) : NaN;
-}
-function imputeBelowLloq(rows, settings) {
-  const methods = settings.imputation_methods || {};
-  const dropped = [];
-  const limits = {};
-  let imputed = 0;
-  let surviving = rows;
-  Object.keys(settings.measure_values || {}).forEach((measureKey) => {
-    const method = methods[measureKey];
-    if (!IMPUTATION_METHODS.includes(method)) return;
-    if (method === "drop") {
-      const measureValue = settings.measure_values[measureKey];
-      surviving = surviving.filter((row) => {
-        const isMeasure = String(row[settings.measure_col]) === String(measureValue);
-        const value = Number(row[settings.value_col]);
-        if (!isMeasure || !(value <= 0)) return true;
-        row.__hep_dropReason = `${measureKey} result is not positive, and this measure is set to drop records at or below the limit of quantitation.`;
-        dropped.push(row);
-        return false;
-      });
-      return;
-    }
-    const limit = lloqFor(surviving, settings, measureKey);
-    if (!Number.isFinite(limit)) return;
-    limits[measureKey] = limit;
-    const imputedValue = limit / 2;
-    measureRows(surviving, settings, measureKey).forEach((row) => {
-      const value = Number(row[settings.value_col]);
-      if (!(value >= 0) || !(value < limit)) return;
-      row.__hep_imputed = true;
-      row.__hep_valueOriginal = value;
-      row.__hep_value = imputedValue;
-      row.__hep_relative_uln = imputedValue / row.__hep_uln;
-      imputed += 1;
-    });
-  });
-  return { rows: surviving, imputed, dropped, limits };
+function measureSummary(cleanRows, id, settings) {
+  const participantRows = cleanRows.filter((row) => row[settings.id_col] === id);
+  return MEASURE_KEYS.map((key) => {
+    const values = resolveMeasureRows(participantRows, settings, key).map((row) => row.__hep_value).filter(Number.isFinite);
+    return {
+      key,
+      label: key,
+      n: values.length,
+      min: values.length ? Math.min(...values) : NaN,
+      median: values.length ? median2(values) : NaN,
+      max: values.length ? Math.max(...values) : NaN
+    };
+  }).filter((row) => row.n > 0);
 }
 
-// src/hep-explorer/availability.js
-function availableDisplays(rows) {
-  const records = rows || [];
-  const hasUln = records.some((row) => Number.isFinite(row.__hep_uln) && row.__hep_uln > 0);
-  const hasBaseline = records.some(
-    (row) => Number.isFinite(row.__hep_baseline) && row.__hep_baseline !== 0
-  );
-  const modes = [];
-  if (hasUln) modes.push("relative_uln");
-  if (hasBaseline) modes.push("relative_baseline");
-  if (!hasUln && !hasBaseline) {
-    return {
-      modes,
-      note: "This data carries neither a usable reference range nor a derivable baseline, so neither the reference-range-adjusted (eDISH) nor the baseline-adjusted (mDISH) view can be drawn."
-    };
-  }
-  if (!hasBaseline) {
-    return {
-      modes,
-      note: "No participant has a derivable baseline, so the baseline-adjusted (mDISH) view is not offered."
-    };
-  }
-  if (!hasUln) {
-    return {
-      modes,
-      note: "No record carries a usable upper limit of normal, so the reference-range-adjusted (eDISH) view is not offered."
-    };
-  }
-  return { modes, note: "" };
-}
-function groupOrder(groupValues, points, orderCol) {
-  const values = [...groupValues || []].map(String).sort();
-  if (!orderCol) return values;
-  const rank = /* @__PURE__ */ new Map();
-  (points || []).forEach((point) => {
-    const key = String(point.group);
-    if (rank.has(key)) return;
-    const raw = point.raw ? point.raw[orderCol] : void 0;
-    const value = Number(raw);
-    if (raw !== void 0 && raw !== "" && Number.isFinite(value)) rank.set(key, value);
-  });
-  return values.sort((a, b) => {
-    const rankA = rank.has(a) ? rank.get(a) : Infinity;
-    const rankB = rank.has(b) ? rank.get(b) : Infinity;
-    if (rankA !== rankB) return rankA - rankB;
-    return a.localeCompare(b);
-  });
-}
-
-// src/hep-explorer/selection.js
-var HIGHLIGHT = {
-  DIM_FILL: 0.15,
-  DIM_BORDER: 0.25,
-  RADIUS_BOOST: 2.5,
-  BORDER_WIDTH: 2.5
+// src/hep-explorer/composite.js
+var COMPOSITE_QUADRANTS = ["Normal & NN", "Cholestasis", "Temple's Corollary", "Hy's Law"];
+var [NN, CH, TC, HL] = COMPOSITE_QUADRANTS;
+var ALT_ULN_CUT = 3;
+var BILI_ULN_CUT = 2;
+var BLN_LINES = [1, 3, 5];
+var QUADRANT_STYLE = {
+  [NN]: { color: "#33a02c", pointStyle: "rect", label: NN },
+  [CH]: { color: "#e6a000", pointStyle: "circle", label: CH },
+  [TC]: { color: "#1f78b4", pointStyle: "cross", label: TC },
+  [HL]: { color: "#e31a1c", pointStyle: "triangle", label: HL }
 };
-var TRACE_HEADER_HINT = "Hover a point to trace a participant across every panel; click to keep it selected.";
-var UNBOUND = {
-  selectedIds: () => [],
-  changed: () => {
-  },
-  cleared: () => {
-  }
+var CONCERN_COLORS = {
+  red: "#f28b82",
+  yellow: "#fdd663",
+  green: "#81c995",
+  gray: "#dadce0"
 };
-function createSelection(host) {
-  let view = UNBOUND;
-  function buildControl(shown) {
-    const wrap = createElement("div", "hep-composite-select sv-control");
-    wrap.append(createElement("label", null, "Selected participants"));
-    const select = document.createElement("select");
-    select.multiple = true;
-    select.size = Math.min(8, Math.max(3, shown.length));
-    shown.forEach((subject) => option(select, String(subject.id), String(subject.id), false));
-    select.onchange = () => api.set([...select.selectedOptions].map((opt) => opt.value));
-    host.compositeSelectEl = select;
-    wrap.append(select);
-    const clear = document.createElement("button");
-    clear.type = "button";
-    clear.className = "hep-composite-clear";
-    clear.textContent = "Clear selection";
-    clear.disabled = !view.selectedIds().length;
-    clear.onclick = () => api.clear();
-    host.compositeClearBtn = clear;
-    wrap.append(clear);
-    return wrap;
-  }
-  const api = {
-    /**
-     * Point the layer at the active view: the view supplies its sticky
-     * selection and the two gestures the shared control can produce. Called by
-     * the orchestrator's view dispatch, and by nothing else.
-     * @param {{selectedIds: Function, changed: Function, cleared: Function}} handlers
-     * @returns {void}
-     */
-    bind(handlers) {
-      view = { ...UNBOUND, ...handlers };
-    },
-    /**
-     * Mount the participant multi-select into the sidebar's Participants
-     * section (HEP-SELECT-001, HEP-COMP-007): the section is created by
-     * buildControls and filled here once the view's shown participants are
-     * known; with nothing shown the whole section is hidden.
-     * @param {?HTMLElement} section The sidebar's Participants section.
-     * @param {Object[]} shown The shown participants ({id} each).
-     * @returns {void}
-     */
-    mount(section, shown) {
-      if (!section) return;
-      [...section.querySelectorAll(".sv-control")].forEach((el) => el.remove());
-      section.style.display = shown.length ? "" : "none";
-      if (shown.length) section.append(buildControl(shown));
-    },
-    /**
-     * Mirror a view's sticky selection into the shared control: the dropdown's
-     * selected options and the Clear button's enabled state (HEP-SELECT-001,
-     * HEP-COMP-007).
-     * @param {Array<string|number>} ids The view's selected participant ids.
-     * @returns {void}
-     */
-    sync(ids) {
-      if (host.compositeSelectEl) {
-        const set2 = new Set(ids.map(String));
-        [...host.compositeSelectEl.options].forEach((opt) => {
-          opt.selected = set2.has(opt.value);
-        });
-      }
-      if (host.compositeClearBtn) host.compositeClearBtn.disabled = !ids.length;
-    },
-    /**
-     * Select participants programmatically — the path the shared dropdown takes,
-     * and the one a view uses to hand a selection over from a mark of its own (a
-     * Sankey ribbon or a cross-table cell, safety.viz#92). The bound view decides
-     * what the selection means.
-     * @param {Array<string|number>} ids The participant ids to select.
-     * @returns {void}
-     */
-    set(ids) {
-      view.changed([...ids].map(String));
-    },
-    /**
-     * Clear the whole selection — the shared Clear selection button's gesture,
-     * handed to the bound view (HEP-SELECT-007).
-     * @returns {void}
-     */
-    clear() {
-      view.cleared();
-    },
-    /**
-     * The selection to carry across a redraw or a view switch (HEP-SELECT-006):
-     * the last dispatched participantsSelected payload, read once per render
-     * before the preamble resets it.
-     * @returns {string[]} The carried participant ids.
-     */
-    carried() {
-      return host.participantsSelected.map(String);
-    },
-    /**
-     * The shared annotation text for a traced participant, identical in every
-     * view (HEP-SELECT-001, HEP-COMP-007): "Participant {id} selected." when it
-     * is the sticky selection, else "Participant {id}" for a transient hover.
-     * @param {string|number} id The participant identifier.
-     * @param {boolean} selected Whether the participant is in the sticky selection.
-     * @returns {string} The annotation text.
-     */
-    annotationText(id, selected) {
-      return `Participant ${id}${selected ? " selected." : ""}`;
-    },
-    /**
-     * Update the shared participant-trace header from a view's hover +
-     * selection: a hover names that participant (marked selected when it is also
-     * in the selection), a single selection reads "Participant X selected.",
-     * several are counted, and the idle hint returns when nothing is traced
-     * (HEP-SELECT-001, HEP-COMP-007).
-     * @param {string|number|null} hoverId The view's transient hovered id.
-     * @param {Array<string|number>} selected The view's sticky selected ids.
-     * @returns {void}
-     */
-    updateTraceHeader(hoverId, selected) {
-      if (!host.compositeHeaderEl) return;
-      let text;
-      let active = true;
-      if (hoverId != null) {
-        text = api.annotationText(hoverId, selected.includes(String(hoverId)));
-      } else if (selected.length === 1) {
-        text = api.annotationText(selected[0], true);
-      } else if (selected.length > 1) {
-        text = `${selected.length} participants selected.`;
-      } else {
-        text = TRACE_HEADER_HINT;
-        active = false;
-      }
-      host.compositeHeaderEl.textContent = text;
-      host.compositeHeaderEl.classList.toggle("is-active", active);
-    },
-    /**
-     * Dispatch the custom participantsSelected event on the shell root with the
-     * selected ids, and record them as the selection to carry (HEP-API-003,
-     * HEP-SELECT-006). The only writer of host.participantsSelected outside the
-     * orchestrator's render preamble.
-     * @param {Array<string|number>} ids The selected participant ids.
-     * @returns {void}
-     */
-    dispatch(ids) {
-      host.participantsSelected = ids;
-      if (host.root) {
-        host.root.dispatchEvent(
-          new CustomEvent("participantsSelected", { detail: { data: ids }, bubbles: true })
-        );
-      }
-    }
-  };
-  return api;
+var CONCERN_MATRIX = {
+  [NN]: { [NN]: "gray", [CH]: "red", [TC]: "red", [HL]: "red" },
+  [CH]: { [NN]: "green", [CH]: "gray", [TC]: "yellow", [HL]: "red" },
+  [TC]: { [NN]: "green", [CH]: "yellow", [TC]: "gray", [HL]: "red" },
+  [HL]: { [NN]: "green", [CH]: "green", [TC]: "green", [HL]: "gray" }
+};
+function concernOf(pretreatQuadrant, onTreatQuadrant) {
+  const row = CONCERN_MATRIX[pretreatQuadrant];
+  return row && row[onTreatQuadrant] || "gray";
 }
-
-// src/hep-explorer/styles.js
-var STYLE_ID2 = "safety-viz-hep-explorer-styles";
-var MODULE_CSS2 = `
-.safety-hep-explorer .hep-quadrant-summary{margin-top:1rem}
-.safety-hep-explorer .hep-quadrant-summary table{width:100%;max-width:420px;border-collapse:collapse;font-size:.85rem;background:#fff}
-.safety-hep-explorer .hep-quadrant-summary th,.safety-hep-explorer .hep-quadrant-summary td{border-bottom:1px solid #e3e8ee;padding:.4rem .55rem;text-align:left}
-.safety-hep-explorer .hep-quadrant-summary th{border-bottom:2px solid #d8dee4;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f}
-.safety-hep-explorer .hep-quadrant-summary td.hep-num,.safety-hep-explorer .hep-quadrant-summary th.hep-num{text-align:right;font-variant-numeric:tabular-nums}
-.safety-hep-explorer .hep-quadrant-summary table{max-width:560px}
-.safety-hep-explorer .hep-quadrant-meaning{display:block;margin-top:.15rem;font-size:.75rem;line-height:1.35;color:#52616f}
-.safety-hep-explorer .hep-legend-note{color:#52616f;font-style:italic;font-size:.8rem}
-.safety-hep-explorer .hep-caution{margin-top:.5rem;font-size:.8rem;color:#8a4b00}
-.safety-hep-explorer .hep-csv-link{color:#1f5fa8;text-decoration:underline;cursor:pointer}
-.safety-hep-explorer .hep-composite{margin-top:.5rem}
-.safety-hep-explorer .hep-composite-header{font-size:.85rem;color:#52616f;background:#f6f8fa;border:1px solid #e3e8ee;border-radius:8px;padding:.4rem .6rem;margin:0 0 .6rem;min-height:1.2rem}
-.safety-hep-explorer .hep-composite-header.is-active{color:#1f2933;font-weight:600;border-color:#b8c0cc;background:#eef2f6}
-.safety-hep-explorer .hep-composite-select select{padding:.25rem;font-size:.82rem}
-.safety-hep-explorer .hep-composite-select option{padding:.15rem .3rem}
-.safety-hep-explorer .hep-composite-clear{width:100%;margin-top:.35rem;padding:.25rem .45rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.78rem;cursor:pointer}
-.safety-hep-explorer .hep-composite-clear:disabled{color:#9aa5b1;cursor:default}
-.safety-hep-explorer .hep-composite-legend{display:flex;flex-wrap:wrap;gap:.35rem 1rem;font-size:.8rem;color:#52616f;margin:0 0 .75rem}
-.safety-hep-explorer .hep-composite-legend .hep-legend-item{display:inline-flex;align-items:center;gap:.3rem}
-.safety-hep-explorer .hep-composite-section-title{font-size:.9rem;margin:1rem 0 .5rem;color:#1f2933}
-.safety-hep-explorer .hep-composite-edish{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem}
-.safety-hep-explorer .hep-composite-panels{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;max-width:760px}
-.safety-hep-explorer .hep-composite-card{border:1px solid #d8dee4;border-radius:10px;padding:.6rem .7rem;background:#fff}
-.safety-hep-explorer .hep-composite-card h4{font-size:.82rem;margin:0 0 .4rem;color:#52616f;font-weight:600}
-.safety-hep-explorer .hep-composite-canvas{height:280px;position:relative}
-.safety-hep-explorer .hep-composite-panel-canvas{height:210px;position:relative}
-.safety-hep-explorer .hep-migration{margin-top:1.25rem}
-.safety-hep-explorer .hep-migration table{border-collapse:collapse;font-size:.82rem;background:#fff}
-.safety-hep-explorer .hep-migration th,.safety-hep-explorer .hep-migration td{border:1px solid #d8dee4;padding:.35rem .55rem;text-align:center}
-.safety-hep-explorer .hep-migration th{font-size:.72rem;text-transform:uppercase;letter-spacing:.02em;color:#52616f;font-weight:700}
-.safety-hep-explorer .hep-migration td.hep-rowhead{text-align:left;font-weight:600;color:#1f2933;white-space:nowrap}
-.safety-hep-explorer .hep-migration td.hep-total,.safety-hep-explorer .hep-migration th.hep-total{background:#f6f8fa;font-weight:700}
-.safety-hep-explorer .hep-migration caption{caption-side:top;text-align:left;font-size:.82rem;color:#52616f;margin-bottom:.35rem}
-.safety-hep-explorer .hep-concern-legend{display:flex;flex-wrap:wrap;gap:.35rem .9rem;font-size:.76rem;color:#52616f;margin:.5rem 0 0}
-.safety-hep-explorer .hep-concern-legend .hep-legend-item{display:inline-flex;align-items:center;gap:.3rem}
-.safety-hep-explorer .hep-concern-swatch{display:inline-block;width:.8rem;height:.8rem;border:1px solid #b8c0cc;border-radius:2px}
-.safety-hep-explorer .sv-view-option.is-disabled{opacity:.5;cursor:not-allowed;background:#f6f8fa}
-.safety-hep-explorer .hep-migration-view{margin-top:.5rem}
-.safety-hep-explorer .hep-sankey-wrap{position:relative;border:1px solid #d8dee4;border-radius:10px;padding:.6rem .7rem;background:#fff}
-.safety-hep-explorer .hep-sankey{display:block;width:100%;height:auto;overflow:visible}
-.safety-hep-explorer .hep-sankey-tier{fill:#f2f5f8}
-.safety-hep-explorer .hep-sankey-tier-label{font-size:11px;fill:#7b8794;font-weight:600}
-.safety-hep-explorer .hep-sankey-col-label{font-size:12px;fill:#52616f;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
-.safety-hep-explorer .hep-sankey-node{fill-opacity:.9;stroke:#fff;stroke-width:1}
-.safety-hep-explorer .hep-sankey-node.is-stub{fill-opacity:.45}
-.safety-hep-explorer .hep-sankey-node.is-active{stroke:#111827;stroke-width:1.5}
-.safety-hep-explorer .hep-sankey-node-label{font-size:11px;fill:#1f2933}
-.safety-hep-explorer .hep-sankey-node-label.is-centre{font-weight:600;stroke:#fff;stroke-width:3;paint-order:stroke}
-.safety-hep-explorer .hep-sankey-node-label.is-stub{fill:#9aa5b1}
-.safety-hep-explorer .hep-ribbon{cursor:pointer;transition:fill-opacity .12s ease}
-.safety-hep-explorer .hep-ribbon.is-dim{fill-opacity:.25;stroke-opacity:.3}
-.safety-hep-explorer .hep-ribbon.is-active{fill-opacity:1;stroke:#111827;stroke-width:1.5}
-.safety-hep-explorer .hep-ribbon.is-selected{stroke:#111827;stroke-width:2}
-.safety-hep-explorer .hep-ribbon:focus-visible{outline:2px solid #0b62a4;outline-offset:2px}
-.safety-hep-explorer .hep-tip{position:absolute;left:0;top:0;display:none;max-width:260px;white-space:pre-line;pointer-events:none;z-index:3;background:rgba(17,24,39,.94);color:#fff;font-size:.78rem;line-height:1.35;border-radius:6px;padding:.35rem .5rem}
-.safety-hep-explorer .hep-tip.is-visible{display:block}
-.safety-hep-explorer .hep-sankey-caution{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-top:.75rem;border:1px solid #f0b37e;border-radius:8px;background:#fff7ed;padding:.5rem .6rem;font-size:.82rem}
-.safety-hep-explorer .hep-step{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem}
-.safety-hep-explorer .hep-step-text{color:#1f2933}
-.safety-hep-explorer .hep-step-btn{padding:.3rem .6rem;border:1px solid #0b62a4;border-radius:6px;background:#eaf2fb;color:#0b3d63;font:inherit;font-size:.8rem;font-weight:600;cursor:pointer}
-.safety-hep-explorer .hep-step-btn:hover{background:#dbe9f8}
-.safety-hep-explorer .hep-step-btn:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
-.safety-hep-explorer .hep-xtab-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:1rem;margin-top:1rem}
-.safety-hep-explorer .hep-xtab{min-width:0;overflow-x:auto}
-.safety-hep-explorer .hep-xtab table{width:100%}
-.safety-hep-explorer .hep-xtab th,.safety-hep-explorer .hep-xtab td{padding:.3rem .4rem}
-.safety-hep-explorer .hep-xtab td.hep-xtab-cell.is-clickable{cursor:pointer}
-.safety-hep-explorer .hep-xtab td.hep-xtab-cell.is-clickable:hover{outline:2px solid #0b62a4;outline-offset:-2px}
-.safety-hep-explorer .hep-xtab td.hep-xtab-cell.is-selected{outline:2px solid #111827;outline-offset:-2px;font-weight:700}
-.safety-hep-explorer .hep-xtab td.hep-xtab-cell:focus-visible{outline:2px solid #0b62a4;outline-offset:-2px}`;
-function applyModuleStyles() {
-  if (typeof document === "undefined" || document.getElementById(STYLE_ID2)) return;
-  const style = document.createElement("style");
-  style.id = STYLE_ID2;
-  style.textContent = MODULE_CSS2;
-  document.head.append(style);
+function classifyComposite(altULN, biliULN) {
+  const altElevated = altULN > ALT_ULN_CUT;
+  const biliElevated = biliULN > BILI_ULN_CUT;
+  if (!altElevated && !biliElevated) return NN;
+  if (!altElevated && biliElevated) return CH;
+  if (altElevated && biliElevated) return HL;
+  return TC;
 }
-
-// src/hep-explorer/cutDrag.js
-var CUT_GRAB_PX = 6;
-function roundCut(value) {
-  if (!Number.isFinite(value)) return NaN;
-  return Math.round((value + Number.EPSILON) * 100) / 100;
+function dayThenIndex2(a, b) {
+  const da = Number.isFinite(a.__hep_day) ? a.__hep_day : Number.MAX_SAFE_INTEGER;
+  const db = Number.isFinite(b.__hep_day) ? b.__hep_day : Number.MAX_SAFE_INTEGER;
+  return da - db || a.__hep_index - b.__hep_index;
 }
-function cutHandleAt(chart, cuts, x, y) {
-  const { chartArea, scales } = chart || {};
-  if (!chartArea || !scales || !scales.x || !scales.y) return null;
-  if (x < chartArea.left || x > chartArea.right || y < chartArea.top || y > chartArea.bottom) {
+function reduceMeasure(rows) {
+  if (!rows.length) return null;
+  const ordered = [...rows].sort(dayThenIndex2);
+  const baselineRow = ordered.find((row) => row.__hep_day === 0) || ordered[0];
+  if (!baselineRow || !Number.isFinite(baselineRow.__hep_value) || !(baselineRow.__hep_value > 0) || !Number.isFinite(baselineRow.__hep_relative_uln)) {
     return null;
   }
-  const { xCut, yCut } = cuts || {};
-  const dx = Number.isFinite(xCut) ? Math.abs(x - scales.x.getPixelForValue(xCut)) : Infinity;
-  const dy = Number.isFinite(yCut) ? Math.abs(y - scales.y.getPixelForValue(yCut)) : Infinity;
-  if (dx > CUT_GRAB_PX && dy > CUT_GRAB_PX) return null;
-  return dy < dx ? "y" : "x";
-}
-function cutValueFor(chart, axis, pixel) {
-  const scale = chart.scales[axis];
-  const raw = scale.getValueForPixel(pixel);
-  const floor = Number.isFinite(scale.min) ? Math.max(0, scale.min) : 0;
-  const ceiling = Number.isFinite(scale.max) ? scale.max : Infinity;
-  return roundCut(Math.min(ceiling, Math.max(floor, raw)));
-}
-
-// src/hep-explorer/marginals.js
-var MARGINAL_MODES = [
-  { value: "box_rug", label: "Box plots and rugs" },
-  { value: "box", label: "Box plots" },
-  { value: "rug", label: "Rugs" },
-  { value: "none", label: "Hidden" }
-];
-var MARGIN_STRIP = 30;
-var RUG_LENGTH = 9;
-var MARGINAL_COLOR = "rgba(71, 85, 105, 0.85)";
-var MARGINAL_FILL = "rgba(71, 85, 105, 0.18)";
-var RUG_COLOR = "rgba(51, 65, 85, 0.7)";
-function showsBoxes(mode) {
-  return mode !== "rug" && mode !== "none";
-}
-function showsRug(mode) {
-  return mode !== "box" && mode !== "none";
-}
-function scatterPadding(mode) {
-  const strip = showsBoxes(mode) ? MARGIN_STRIP : 6;
-  return { top: strip, right: strip, bottom: 6, left: 6 };
-}
-function marginalSummary(points) {
-  const rows = points || [];
-  return {
-    x: boxStats(rows.map((point) => point.x)),
-    y: boxStats(rows.map((point) => point.y))
-  };
-}
-function drawMarginalBox(ctx, stats, project, { across, thickness, horizontal }) {
-  if (!stats || !stats.n) return;
-  const centre = across + thickness / 2;
-  const q1 = project(stats.q25);
-  const q3 = project(stats.q75);
-  const low = project(stats.q5);
-  const high = project(stats.q95);
-  const median4 = project(stats.median);
-  const near = Math.min(q1, q3);
-  const span = Math.abs(q3 - q1);
-  ctx.strokeStyle = MARGINAL_COLOR;
-  ctx.fillStyle = MARGINAL_FILL;
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  if (horizontal) {
-    ctx.moveTo(low, centre);
-    ctx.lineTo(high, centre);
-    ctx.moveTo(low, across + 2);
-    ctx.lineTo(low, across + thickness - 2);
-    ctx.moveTo(high, across + 2);
-    ctx.lineTo(high, across + thickness - 2);
-  } else {
-    ctx.moveTo(centre, low);
-    ctx.lineTo(centre, high);
-    ctx.moveTo(across + 2, low);
-    ctx.lineTo(across + thickness - 2, low);
-    ctx.moveTo(across + 2, high);
-    ctx.lineTo(across + thickness - 2, high);
-  }
-  ctx.stroke();
-  if (horizontal) {
-    ctx.fillRect(near, across, span, thickness);
-    ctx.strokeRect(near, across, span, thickness);
-    ctx.beginPath();
-    ctx.moveTo(median4, across);
-    ctx.lineTo(median4, across + thickness);
-  } else {
-    ctx.fillRect(across, near, thickness, span);
-    ctx.strokeRect(across, near, thickness, span);
-    ctx.beginPath();
-    ctx.moveTo(across, median4);
-    ctx.lineTo(across + thickness, median4);
-  }
-  ctx.lineWidth = 1.6;
-  ctx.stroke();
-}
-function drawRug(ctx, values, project, { from: from2, length, horizontal }) {
-  ctx.strokeStyle = RUG_COLOR;
-  ctx.lineWidth = 1.25;
-  ctx.beginPath();
-  values.forEach((value) => {
-    if (!Number.isFinite(value)) return;
-    const at = project(value);
-    if (horizontal) {
-      ctx.moveTo(at, from2);
-      ctx.lineTo(at, from2 - length);
-    } else {
-      ctx.moveTo(from2, at);
-      ctx.lineTo(from2 + length, at);
+  const hasDay = rows.some((row) => Number.isFinite(row.__hep_day));
+  const isOnTreatment = (row) => hasDay ? Number.isFinite(row.__hep_day) && row.__hep_day > 0 : row !== baselineRow;
+  let peakULN = NaN;
+  let peakBLN = NaN;
+  rows.forEach((row) => {
+    if (!isOnTreatment(row)) return;
+    if (Number.isFinite(row.__hep_relative_uln) && !(row.__hep_relative_uln <= peakULN)) {
+      peakULN = row.__hep_relative_uln;
+    }
+    if (Number.isFinite(row.__hep_relative_baseline) && !(row.__hep_relative_baseline <= peakBLN)) {
+      peakBLN = row.__hep_relative_baseline;
     }
   });
-  ctx.stroke();
+  if (!Number.isFinite(peakULN) || !Number.isFinite(peakBLN)) return null;
+  return { baselineULN: baselineRow.__hep_relative_uln, peakULN, peakBLN };
 }
-function marginalPlugin(instance) {
-  return {
-    id: `hep-marginals-${Math.random().toString(36).slice(2)}`,
-    afterDatasetsDraw(chart) {
-      chart.$hepMarginals = null;
-      const mode = (instance.state || {}).marginals;
-      const points = instance.points || [];
-      if (mode === "none" || !points.length) return;
-      const { ctx, chartArea, scales } = chart;
-      if (!scales.x || !scales.y) return;
-      const summary = marginalSummary(points);
-      chart.$hepMarginals = {
-        mode: mode || "box_rug",
-        x: summary.x,
-        y: summary.y,
-        rug: points.filter((point) => Number.isFinite(point.x) && Number.isFinite(point.y)).length
-      };
-      ctx.save();
-      if (showsBoxes(mode)) {
-        const thickness = MARGIN_STRIP - 14;
-        drawMarginalBox(ctx, summary.x, (value) => scales.x.getPixelForValue(value), {
-          across: chartArea.top - MARGIN_STRIP + 4,
-          thickness,
-          horizontal: true
-        });
-        drawMarginalBox(ctx, summary.y, (value) => scales.y.getPixelForValue(value), {
-          across: chartArea.right + 10,
-          thickness,
-          horizontal: false
-        });
-      }
-      if (showsRug(mode)) {
-        drawRug(
-          ctx,
-          points.map((point) => point.x),
-          (value) => scales.x.getPixelForValue(value),
-          {
-            from: chartArea.bottom,
-            length: RUG_LENGTH,
-            horizontal: true
-          }
-        );
-        drawRug(
-          ctx,
-          points.map((point) => point.y),
-          (value) => scales.y.getPixelForValue(value),
-          {
-            from: chartArea.left,
-            length: RUG_LENGTH,
-            horizontal: false
-          }
-        );
-      }
-      ctx.restore();
-    }
-  };
-}
-
-// src/hep-explorer/dropped.js
-var DROPPED_PARTICIPANT_COLUMNS = ["id", "reason"];
-var REASON_COLUMN = "__hep_dropReason";
-function toCsv(rows, columns) {
-  const cell2 = (value) => {
-    if (value === null || value === void 0) return '""';
-    return `"${String(value).replace(/"/g, '""')}"`;
-  };
-  const lines = [columns.map(cell2).join(",")];
-  (rows || []).forEach((row) => lines.push(columns.map((column) => cell2(row[column])).join(",")));
-  return lines.join("\n");
-}
-function droppedRowColumns(rows) {
-  if (!rows || !rows.length) return [];
-  const source = Object.keys(rows[0]).filter((column) => !column.startsWith("__hep_"));
-  return [REASON_COLUMN, ...source];
-}
-function csvDownloadLink(buildCsv2, fileCore, label) {
-  const link = document.createElement("a");
-  const fileName = `${fileCore}_${(/* @__PURE__ */ new Date()).toISOString().slice(0, 10)}.csv`;
-  link.className = "hep-csv-link";
-  link.textContent = label;
-  link.setAttribute("href", "#");
-  link.setAttribute("download", fileName);
-  link.__hepCsv = buildCsv2;
-  link.addEventListener("click", (event) => {
-    event.preventDefault();
-    const url = URL.createObjectURL(new Blob([buildCsv2()], { type: "text/csv;charset=utf-8;" }));
-    const trigger = document.createElement("a");
-    trigger.href = url;
-    trigger.download = fileName;
-    trigger.click();
-    setTimeout(() => URL.revokeObjectURL(url), 0);
+function buildCompositeSubjects(cleanRows, settings) {
+  const metaCols = [
+    ...settings.groups.map((group) => group.value_col),
+    ...settings.filters.map((filter) => filter.value_col)
+  ].filter((col) => col && col !== GROUP_NONE2);
+  const byId = /* @__PURE__ */ new Map();
+  cleanRows.forEach((row) => {
+    const id = row[settings.id_col];
+    if (!byId.has(id)) byId.set(id, []);
+    byId.get(id).push(row);
   });
-  return link;
-}
-
-// src/hep-explorer/views/scatter.js
-var BASE_POINT_COLOR = GROUP_COLORS2[0];
-function addCutControl(host, addControl, parent, axisKey) {
-  const measureKey = host.state[axisKey];
-  const input = addControl(`${measureKey} Reference Line`, document.createElement("input"), parent);
-  input.type = "number";
-  input.step = "0.1";
-  input.min = "0";
-  const current = cutFor(host.state.cuts, measureKey, host.state.display);
-  input.value = Number.isFinite(current) ? current : "";
-  input.onchange = () => {
-    const value = Math.max(0, Number(input.value) || 0);
-    if (!host.state.cuts[measureKey]) host.state.cuts[measureKey] = {};
-    host.state.cuts[measureKey][host.state.display] = value;
-    input.value = value;
-    host.render();
-  };
-  if (!host.cutInputs) host.cutInputs = {};
-  host.cutInputs[axisKey === "measureX" ? "x" : "y"] = input;
-}
-function moveCut(host, axis, value) {
-  const measureKey = axis === "x" ? host.state.measureX : host.state.measureY;
-  if (!host.state.cuts[measureKey]) host.state.cuts[measureKey] = {};
-  host.state.cuts[measureKey][host.state.display] = value;
-  host.state[axis === "x" ? "xCut" : "yCut"] = value;
-  const input = host.cutInputs && host.cutInputs[axis];
-  if (input) input.value = String(value);
-  host.quadrants = classifyQuadrants(host.points, host.state.xCut, host.state.yCut);
-  drawQuadrantSummary(host);
-  if (host.chart) host.chart.update("none");
-}
-function bindCutDrag(host) {
-  if (host.cutDragBound) return;
-  host.cutDragBound = true;
-  const canvas = host.canvas;
-  host.cutDrag = null;
-  const at = (event) => {
-    const bounds = canvas.getBoundingClientRect ? canvas.getBoundingClientRect() : { left: 0, top: 0 };
-    return { x: event.clientX - bounds.left, y: event.clientY - bounds.top };
-  };
-  const handleAt = (event) => {
-    if (!host.chart || host.chart !== host.scatterChart) return null;
-    const { x, y } = at(event);
-    return cutHandleAt(host.chart, host.state, x, y);
-  };
-  canvas.addEventListener(
-    "pointerdown",
-    (event) => {
-      const axis = handleAt(event);
-      if (!axis) return;
-      event.preventDefault();
-      event.stopPropagation();
-      host.cutDrag = { axis, moved: false };
-      if (canvas.setPointerCapture) canvas.setPointerCapture(event.pointerId);
-    },
-    true
-  );
-  canvas.addEventListener(
-    "pointermove",
-    (event) => {
-      if (!host.cutDrag) {
-        host.cutHoverAxis = handleAt(event);
-        if (host.cutHoverAxis) {
-          canvas.style.cursor = host.cutHoverAxis === "x" ? "col-resize" : "row-resize";
-        }
-        return;
-      }
-      event.preventDefault();
-      event.stopPropagation();
-      const { x, y } = at(event);
-      const axis = host.cutDrag.axis;
-      host.cutDrag.moved = true;
-      moveCut(host, axis, cutValueFor(host.chart, axis, axis === "x" ? x : y));
-    },
-    true
-  );
-  const end = (event) => {
-    if (!host.cutDrag) return;
-    host.cutDragged = host.cutDrag.moved;
-    host.cutDrag = null;
-    if (canvas.releasePointerCapture && event.pointerId != null) {
-      try {
-        canvas.releasePointerCapture(event.pointerId);
-      } catch {
-      }
+  const subjects = [];
+  let excluded = 0;
+  byId.forEach((participantRows, id) => {
+    const alt = reduceMeasure(resolveMeasureRows(participantRows, settings, "ALT"));
+    const bili = reduceMeasure(resolveMeasureRows(participantRows, settings, "TB"));
+    if (!alt || !bili) {
+      excluded += 1;
+      return;
     }
-  };
-  canvas.addEventListener("pointerup", end, true);
-  canvas.addEventListener("pointercancel", end, true);
-}
-function filteredPoints(host) {
-  const filtered = applyFilters6(host.allPoints, host.state.filters);
-  const { min, max } = host.effectiveRRatio();
-  return filtered.filter((point) => {
-    if (!Number.isFinite(point.rRatio)) return true;
-    return point.rRatio >= min && point.rRatio <= max;
-  });
-}
-function updateNotes(host) {
-  const totalParticipants = unique6(host.cleanRows.map((row) => row[host.settings.id_col])).length;
-  const shown = host.points.length;
-  const pct = totalParticipants ? (shown / totalParticipants * 100).toFixed(1) : "0.0";
-  host.notes.innerHTML = "";
-  host.notes.append(
-    createElement("span", null, `${shown} of ${totalParticipants} participants shown (${pct}%).`)
-  );
-  if (host.removedRecords) {
-    const note = createElement(
-      "span",
-      "sv-warning",
-      `${host.removedRecords} missing or non-numeric results removed. `
-    );
-    const rows = host.droppedRows || [];
-    if (rows.length) {
-      note.append(
-        csvDownloadLink(
-          () => toCsv(rows, droppedRowColumns(rows)),
-          "hepExplorerDroppedRows",
-          "Download the removed records (CSV)"
-        )
-      );
-    }
-    host.notes.append(note);
-  }
-  if (host.droppedParticipants) {
-    const dropReason2 = host.state.display === "relative_baseline" ? `missing ${host.state.measureX}/${host.state.measureY} peak or baseline` : `missing ${host.state.measureX}/${host.state.measureY} peak`;
-    const note = createElement(
-      "span",
-      "sv-warning",
-      `${host.droppedParticipants} participants dropped (${dropReason2}). `
-    );
-    const dropped = host.droppedParticipantList || [];
-    if (dropped.length) {
-      note.append(
-        csvDownloadLink(
-          () => toCsv(dropped, DROPPED_PARTICIPANT_COLUMNS),
-          "hepExplorerDroppedParticipants",
-          "Download the dropped participants (CSV)"
-        )
-      );
-    }
-    host.notes.append(note);
-  }
-  const availability = host.displayAvailability;
-  if (availability && availability.note) {
-    host.notes.append(createElement("span", "sv-warning", availability.note));
-  }
-  if (host.imputedRecords) {
-    const limits = Object.entries(host.imputationLimits || {}).map(([measure, limit]) => `${measure} < ${formatNumber4(limit)}`).join(", ");
-    host.notes.append(
-      createElement(
-        "span",
-        null,
-        `${host.imputedRecords} result${host.imputedRecords > 1 ? "s" : ""} below the limit of quantitation imputed to half the limit${limits ? ` (${limits})` : ""}.`
-      )
-    );
-  }
-}
-function activeId(host) {
-  return host.state.hoverId != null ? host.state.hoverId : host.state.selectedId;
-}
-function anyActive(host) {
-  return host.state.hoverId != null || host.scatterSelectedIds.length > 0;
-}
-function isActive(host, point) {
-  if (!point) return false;
-  const id = String(point.id);
-  if (host.state.hoverId != null && String(host.state.hoverId) === id) return true;
-  return host.scatterSelectedIds.includes(id);
-}
-function isSelectedId(host, id) {
-  return host.state.selectedId != null && String(host.state.selectedId) === String(id);
-}
-function updateHeader(host) {
-  host.selection.updateTraceHeader(host.state.hoverId, host.scatterSelectedIds);
-}
-function setHover(host, id) {
-  const norm = id ?? null;
-  if (String(norm ?? "") === String(host.state.hoverId ?? "")) return;
-  host.state.hoverId = norm;
-  if (host.chart) host.chart.update("none");
-  const traced = activeId(host);
-  host.mainAnnotation.textContent = traced == null ? "" : host.selection.annotationText(traced, isSelectedId(host, traced));
-  updateHeader(host);
-}
-function colorFor2(host, point) {
-  if (host.groupValues.length && point.group != null) {
-    return host.colorScale.get(String(point.group)) || BASE_POINT_COLOR;
-  }
-  return BASE_POINT_COLOR;
-}
-function radiusFor(host, point) {
-  if (host.state.pointSize !== "rRatio") return 5;
-  const values = host.points.map((candidate) => candidate.rRatio).filter(Number.isFinite);
-  const rMax = values.length ? Math.max(...values) : 0;
-  if (!Number.isFinite(point.rRatio) || rMax <= 0) return 3;
-  return 3 + 7 * (point.rRatio / rMax);
-}
-function drawScatter(host) {
-  const points = host.points;
-  const data = points.map((point) => ({ x: point.x, y: point.y }));
-  const type = host.state.axisType === "log" ? "log" : "linear";
-  const xDomain = edishDomain(
-    points.map((point) => point.x),
-    host.state.xCut,
-    type
-  );
-  const yDomain = edishDomain(
-    points.map((point) => point.y),
-    host.state.yCut,
-    type
-  );
-  const traced = (point) => isActive(host, point);
-  const fill = (ctx) => {
-    const point = points[ctx.dataIndex];
-    if (!point) return "rgba(0,0,0,0)";
-    const active = traced(point);
-    if (!point.withinWindow && !active) return "rgba(0,0,0,0)";
-    const color2 = colorFor2(host, point);
-    const opacity = anyActive(host) ? active ? 1 : HIGHLIGHT.DIM_FILL : 0.75;
-    return hexToRgba3(color2, opacity);
-  };
-  const border = (ctx) => {
-    const point = points[ctx.dataIndex];
-    if (!point) return "rgba(0,0,0,0)";
-    if (traced(point)) return SELECTION_COLOR2;
-    const opacity = anyActive(host) ? HIGHLIGHT.DIM_BORDER : 0.9;
-    return hexToRgba3(colorFor2(host, point), opacity);
-  };
-  const chart = new Chart(host.canvas.getContext("2d"), {
-    type: "scatter",
-    data: {
-      datasets: [
-        {
-          label: "Participants",
-          data,
-          pointBackgroundColor: fill,
-          pointBorderColor: border,
-          pointBorderWidth: (ctx) => traced(points[ctx.dataIndex]) ? HIGHLIGHT.BORDER_WIDTH : 1.25,
-          pointRadius: (ctx) => radiusFor(host, points[ctx.dataIndex]) + (traced(points[ctx.dataIndex]) ? HIGHLIGHT.RADIUS_BOOST : 0),
-          pointHoverRadius: (ctx) => radiusFor(host, points[ctx.dataIndex]) + 2
-        },
-        {
-          type: "line",
-          label: "Visit path",
-          data: [],
-          showLine: true,
-          borderColor: hexToRgba3(SELECTION_COLOR2, 0.7),
-          borderWidth: 1.5,
-          pointRadius: 3,
-          pointHoverRadius: 4,
-          pointBackgroundColor: SELECTION_COLOR2,
-          pointBorderColor: SELECTION_COLOR2
-        }
-      ]
-    },
-    options: {
-      maintainAspectRatio: false,
-      responsive: true,
-      animation: false,
-      layout: { padding: scatterPadding(host.state.marginals) },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          // Exclude the visit-path overlay (dataset 1) so hovering the path
-          // line never pops an empty tooltip box; only the participant points
-          // (dataset 0) carry a tooltip (HEP-CHART-004, HEP-SELECT-003).
-          filter: (item) => item.datasetIndex === 0,
-          callbacks: {
-            title: () => "",
-            label: (ctx) => ctx.datasetIndex === 0 ? pointTooltip2(points[ctx.dataIndex], host.state, host.settings.measure_values) : ""
-          }
-        }
-      },
-      scales: buildScales5(host.state, xDomain, yDomain, host.settings.measure_values),
-      onHover: (event, active) => {
-        const target = event?.native?.target;
-        if (target && !host.cutHoverAxis) {
-          target.style.cursor = active.length ? "pointer" : "default";
-        }
-        const hit = active.find((element) => element.datasetIndex === 0);
-        setHover(host, hit ? points[hit.index].id : null);
-      },
-      onClick: (event, active) => {
-        if (host.cutDragged) {
-          host.cutDragged = false;
-          return;
-        }
-        const hit = active.find((element) => element.datasetIndex === 0);
-        if (hit) host.selectParticipant(points[hit.index].id);
-        else host.clearSelection();
-      }
-    },
-    plugins: [quadrantPlugin(host), marginalPlugin(host)]
-  });
-  host.chart = chart;
-  host.scatterChart = chart;
-  host.charts.push(chart);
-  bindCutDrag(host);
-}
-function drawLegend(host) {
-  host.legendEl.innerHTML = "";
-  if (host.groupValues.length) {
-    const groupLabel = (host.settings.groups.find((spec) => spec.value_col === host.state.groupBy) || {}).label || host.state.groupBy;
-    host.legendEl.append(createElement("strong", null, `${groupLabel}:`));
-    groupLegendEntries(host.groupValues, host.points).forEach((entry) => {
-      const chip = createElement("span", "hep-legend-item");
-      chip.style.cssText = "display:inline-flex;align-items:center;gap:.3rem";
-      const swatch = createElement("span");
-      swatch.style.cssText = `display:inline-block;width:.75rem;height:.75rem;border-radius:2px;background:${host.colorScale.get(
-        entry.value
-      )}`;
-      chip.append(swatch, document.createTextNode(entry.label));
-      host.legendEl.append(chip);
+    const pretreatQuadrant = classifyComposite(alt.baselineULN, bili.baselineULN);
+    const onTreatQuadrant = classifyComposite(alt.peakULN, bili.peakULN);
+    const raw = {};
+    metaCols.forEach((col) => {
+      raw[col] = participantRows[0][col] === void 0 ? "" : String(participantRows[0][col]);
     });
-  }
-  const sizeNote = pointSizeNote(host.state.pointSize);
-  if (sizeNote) {
-    const note = createElement("span", "hep-legend-note", sizeNote);
-    host.legendEl.append(note);
-  }
-}
-function drawQuadrantSummary(host) {
-  host.quadrantWrap.innerHTML = "";
-  const table = createElement("table");
-  const thead = document.createElement("thead");
-  const headRow = document.createElement("tr");
-  headRow.append(createElement("th", null, "Quadrant"));
-  headRow.append(createElement("th", "hep-num", "#"));
-  headRow.append(createElement("th", "hep-num", "%"));
-  thead.append(headRow);
-  table.append(thead);
-  const tbody = document.createElement("tbody");
-  host.quadrants.labels.forEach((entry) => {
-    const tr = document.createElement("tr");
-    const name = createElement("td", null, entry.label);
-    const meaning = QUADRANT_MEANINGS[entry.label];
-    if (meaning) name.append(createElement("span", "hep-quadrant-meaning", meaning));
-    tr.append(name);
-    tr.append(createElement("td", "hep-num", String(entry.count)));
-    tr.append(
-      createElement(
-        "td",
-        "hep-num",
-        `${Number.isFinite(entry.percent) ? entry.percent.toFixed(1) : "0.0"}%`
-      )
-    );
-    tbody.append(tr);
+    subjects.push({
+      id,
+      raw,
+      baselineAltULN: alt.baselineULN,
+      baselineBiliULN: bili.baselineULN,
+      peakAltULN: alt.peakULN,
+      peakBiliULN: bili.peakULN,
+      peakAltBLN: alt.peakBLN,
+      peakBiliBLN: bili.peakBLN,
+      pretreatQuadrant,
+      onTreatQuadrant,
+      concern: concernOf(pretreatQuadrant, onTreatQuadrant)
+    });
   });
-  table.append(tbody);
-  host.quadrantWrap.append(table);
-}
-function restoreSelection(host, ids) {
-  const shownIds = new Set(host.points.map((point) => String(point.id)));
-  const survivors = ids.map(String).filter((id) => shownIds.has(id));
-  if (survivors.length === 1) {
-    host.selectParticipant(survivors[0]);
-    return;
-  }
-  host.scatterSelectedIds = survivors;
-  host.selection.sync(survivors);
-  if (host.chart) host.chart.update("none");
-  updateHeader(host);
-  host.selection.dispatch([...survivors]);
-}
-var scatterView = {
-  id: "scatter",
-  label: "eDISH scatter",
-  // The shell containers this view occupies: the single scatter canvas, the
-  // color-by legend, and the quadrant summary table (HEP-COMP-006).
-  slots: ["chart", "legend", "quadrantSummary"],
-  // The R-Ratio range filter narrows the plotted points, so it belongs to this
-  // view's pipeline (HEP-CTRL-010).
-  usesRRatioFilter: true,
-  /**
-   * The scatter's own Settings controls (HEP-CTRL-001, HEP-CTRL-002,
-   * HEP-QUAD-001, HEP-DISPLAY-001, HEP-CTRL-006, HEP-CTRL-007, HEP-CTRL-008),
-   * appended to the shared Settings section in the order the shell renders them.
-   */
-  contributeControls(host, { addControl, settingsParent }) {
-    const measureX = addControl("X-axis Measure", document.createElement("select"), settingsParent);
-    host.settings.x_options.forEach(
-      (key) => option(measureX, key, key, key === host.state.measureX)
-    );
-    measureX.onchange = () => {
-      host.state.measureX = measureX.value;
-      host.buildControls();
-      host.render();
-    };
-    if (host.settings.y_options.length > 1) {
-      const measureY = addControl(
-        "Y-axis Measure",
-        document.createElement("select"),
-        settingsParent
-      );
-      host.settings.y_options.forEach(
-        (key) => option(measureY, key, key, key === host.state.measureY)
-      );
-      measureY.onchange = () => {
-        host.state.measureY = measureY.value;
-        host.buildControls();
-        host.render();
-      };
-    }
-    addCutControl(host, addControl, settingsParent, "measureX");
-    addCutControl(host, addControl, settingsParent, "measureY");
-    const quadrantLabels = addControl(
-      "Quadrant Labels",
-      document.createElement("select"),
-      settingsParent
-    );
-    [
-      { value: "shown", label: "Shown" },
-      { value: "hidden", label: "Hidden" }
-    ].forEach(
-      (mode) => option(quadrantLabels, mode.value, mode.label, mode.value === host.state.quadrantLabels)
-    );
-    quadrantLabels.onchange = () => {
-      host.state.quadrantLabels = quadrantLabels.value;
-      host.render();
-    };
-    const display = addControl("Display Type", document.createElement("select"), settingsParent);
-    const supported = availableDisplays(host.cleanRows).modes;
-    DISPLAY_MODES.filter((mode) => !supported.length || supported.includes(mode.value)).forEach(
-      (mode) => option(display, mode.value, mode.label, mode.value === host.state.display)
-    );
-    display.onchange = () => {
-      host.state.display = display.value;
-      host.buildControls();
-      host.render();
-    };
-    const axisType = addControl("Axis Type", document.createElement("select"), settingsParent);
-    AXIS_TYPES.forEach((type) => option(axisType, type, type, type === host.state.axisType));
-    axisType.onchange = () => {
-      host.state.axisType = axisType.value;
-      host.render();
-    };
-    const marginals = addControl(
-      "Marginal Distributions",
-      document.createElement("select"),
-      settingsParent
-    );
-    MARGINAL_MODES.forEach(
-      (mode) => option(marginals, mode.value, mode.label, mode.value === host.state.marginals)
-    );
-    marginals.onchange = () => {
-      host.state.marginals = marginals.value;
-      host.render();
-    };
-    const pointSize = addControl("Point Size", document.createElement("select"), settingsParent);
-    POINT_SIZE_OPTIONS.forEach(
-      (value) => option(pointSize, value, value, value === host.state.pointSize)
-    );
-    pointSize.onchange = () => {
-      host.state.pointSize = pointSize.value;
-      host.render();
-    };
-    const window2 = addControl(
-      "Highlight Points Based on Timing",
-      document.createElement("input"),
-      settingsParent
-    );
-    window2.type = "number";
-    window2.min = "0";
-    window2.step = "1";
-    window2.value = host.state.visitWindow;
-    window2.onchange = () => {
-      const value = Number(window2.value);
-      host.state.visitWindow = Number.isFinite(value) && value >= 0 ? value : 0;
-      window2.value = host.state.visitWindow;
-      host.render();
-    };
-  },
-  /**
-   * The R-Ratio range filter: min/max number inputs plus a Reset button that
-   * restores the initial range (HEP-CTRL-010).
-   */
-  contributeFilters(host, { addRow, addControl }, parent) {
-    const { max, dataMax } = host.effectiveRRatio();
-    const row = addRow(parent);
-    const min = addControl("R Ratio min", document.createElement("input"), row);
-    min.type = "number";
-    min.step = "0.1";
-    min.value = Number.isFinite(host.state.rRatio[0]) ? host.state.rRatio[0] : 0;
-    min.onchange = () => {
-      host.state.rRatio[0] = min.value === "" ? 0 : Number(min.value);
-      host.render();
-    };
-    const maxInput = addControl("R Ratio max", document.createElement("input"), row);
-    maxInput.type = "number";
-    maxInput.step = "0.1";
-    maxInput.value = formatNumber4(max) || dataMax;
-    maxInput.onchange = () => {
-      host.state.rRatio[1] = maxInput.value === "" ? null : Number(maxInput.value);
-      host.render();
-    };
-    const reset = addControl(" ", document.createElement("button"), parent);
-    reset.type = "button";
-    reset.textContent = "Reset R Ratio";
-    reset.style.cssText = "width:100%;padding:.3rem .45rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.8rem;cursor:pointer";
-    reset.onclick = () => {
-      host.state.rRatio = [...host.settings.r_ratio];
-      host.buildControls();
-      host.render();
-    };
-  },
-  /**
-   * Nothing view-local survives a redraw here: the orchestrator's render
-   * preamble already clears the hover, the sticky selection and the
-   * multi-highlight for every view.
-   */
-  teardown() {
-  },
-  /**
-   * Draw the scatter from the cleaned rows: build the per-participant points,
-   * apply the filters, refresh the notes, resolve the grouping colors, classify
-   * the quadrants, then draw the plot, the legend and the summary table, mount
-   * the Participants control, and restore any carried selection
-   * (HEP-SELECT-006).
-   */
-  render(host, { carriedIds = [] } = {}) {
-    const built = buildPoints(host.cleanRows, host.settings, host.state);
-    host.allPoints = built.points;
-    host.droppedParticipants = built.droppedParticipants;
-    host.droppedParticipantList = built.droppedList;
-    host.points = filteredPoints(host);
-    updateNotes(host);
-    if (!host.points.length) {
-      host.mainAnnotation.textContent = "No participants to plot for the current selection.";
-      if (carriedIds.length) host.selection.dispatch([]);
-      return;
-    }
-    const grouped = host.state.groupBy && host.state.groupBy !== GROUP_NONE;
-    host.groupValues = grouped ? groupOrder(
-      unique6(host.points.map((point) => point.group)).filter(
-        (value) => value !== null && value !== void 0
-      ),
-      host.points,
-      host.settings.group_order_col
-    ) : [];
-    host.colorScale = groupColorScale2(host.groupValues);
-    host.quadrants = classifyQuadrants(host.points, host.state.xCut, host.state.yCut);
-    drawScatter(host);
-    drawLegend(host);
-    drawQuadrantSummary(host);
-    host.selection.mount(
-      host.compositeSelectSection,
-      unique6(host.points.map((point) => String(point.id))).map((id) => ({ id }))
-    );
-    if (carriedIds.length) restoreSelection(host, carriedIds);
-  },
-  /** The scatter's sticky selection: the Participants-control multi-highlight. */
-  selectedIds(host) {
-    return host.scatterSelectedIds;
-  },
-  /**
-   * Apply a Participants-control selection to the scatter view (HEP-SELECT-001,
-   * HEP-COMP-007): exactly one participant opens the full drill-down (the same
-   * path as clicking their point), none clears everything, and several highlight
-   * those participants across the scatter — dimming the rest and counting them
-   * in the header — while the single-participant drill-down closes.
-   */
-  onParticipantsChanged(host, ids) {
-    if (ids.length === 1) {
-      host.selectParticipant(ids[0]);
-      return;
-    }
-    if (!ids.length) {
-      host.clearSelection();
-      return;
-    }
-    host.closeDrillDown();
-    host.scatterSelectedIds = ids.map(String);
-    host.selection.sync(host.scatterSelectedIds);
-    if (host.chart) host.chart.update("none");
-    updateHeader(host);
-    host.selection.dispatch([...host.scatterSelectedIds]);
-  },
-  /** The Clear selection gesture: the module's public clearSelection. */
-  clearSelection(host) {
-    host.clearSelection();
-  },
-  /** Restyle the scatter to the current trace and refresh the header. */
-  highlight(host) {
-    if (host.chart) host.chart.update("none");
-    updateHeader(host);
-  }
-};
-var scatter_default = scatterView;
-
-// src/hep-core/migration.js
-var SIDES = ["placebo", "active"];
-function sideOf(subject, sides) {
-  if (sides && typeof sides.get === "function") return sides.get(subject.arm) ?? null;
-  return subject.side ?? null;
+  return { subjects, excluded };
 }
 function migrationMatrix(subjects) {
   const counts = {};
@@ -23363,41 +19158,6 @@ function migrationMatrix(subjects) {
   });
   return { counts, rowTotals, colTotals, total };
 }
-function migrationMatrixBySide(subjects, sides) {
-  const buckets = new Map(SIDES.map((side) => [side, []]));
-  (subjects || []).forEach((subject) => {
-    const side = sideOf(subject, sides);
-    if (buckets.has(side)) buckets.get(side).push(subject);
-  });
-  return new Map([...buckets].map(([side, list]) => [side, migrationMatrix(list)]));
-}
-function migrationCells(subjects, sides) {
-  const staged = /* @__PURE__ */ new Map();
-  (subjects || []).forEach((subject) => {
-    const side = sideOf(subject, sides);
-    if (!SIDES.includes(side)) return;
-    const key = `${side}|${subject.pretreatQuadrant}|${subject.onTreatQuadrant}`;
-    if (!staged.has(key)) staged.set(key, []);
-    staged.get(key).push(subject.id);
-  });
-  const cells = /* @__PURE__ */ new Map();
-  SIDES.forEach(
-    (side) => SEVERITY_ORDER.forEach(
-      (pre) => SEVERITY_ORDER.forEach((post) => {
-        const key = `${side}|${pre}|${post}`;
-        const ids = staged.get(key);
-        if (!ids || !ids.length) return;
-        cells.set(key, {
-          side,
-          pre,
-          post,
-          ids: [...ids].sort((a, b) => String(a).localeCompare(String(b)))
-        });
-      })
-    )
-  );
-  return cells;
-}
 function byArmSummary(subjects, armCol) {
   const buckets = /* @__PURE__ */ new Map();
   const bucketFor = (arm) => {
@@ -23414,1280 +19174,6 @@ function byArmSummary(subjects, armCol) {
   return [...buckets.values()].sort((a, b) => String(a.arm).localeCompare(String(b.arm)));
 }
 
-// src/hep-explorer/sankeyLayout.js
-var SANKEY_WIDTH = 980;
-var SANKEY_HEIGHT = 540;
-var NODE_W = 18;
-var PAD = 12;
-var TIER_GAP = 26;
-var SUB_GAP = 8;
-var SIDES2 = ["placebo", "active"];
-var COLUMN_OF_SIDE = { placebo: "left", active: "right" };
-var COLUMN_SIDES = { left: ["placebo"], centre: SIDES2, right: ["active"] };
-function gapAfter(index) {
-  const quadrant = SEVERITY_ORDER[index];
-  const next = SEVERITY_ORDER[index + 1];
-  if (next === void 0) return 0;
-  return SEVERITY_TIERS[next] === SEVERITY_TIERS[quadrant] ? SUB_GAP : TIER_GAP;
-}
-var GAP_TOTAL = SEVERITY_ORDER.reduce((total, _, index) => total + gapAfter(index), 0);
-function sankeyColumns(width = SANKEY_WIDTH) {
-  const centreX0 = Math.round(width / 2 - NODE_W / 2);
-  return {
-    left: [0, NODE_W],
-    centre: [centreX0, centreX0 + NODE_W],
-    right: [width - NODE_W, width]
-  };
-}
-function zeroed() {
-  const tally = {};
-  SEVERITY_ORDER.forEach((quadrant) => {
-    tally[quadrant] = 0;
-  });
-  return tally;
-}
-function emptyTally() {
-  return {
-    centre: { placebo: zeroed(), active: zeroed() },
-    outer: { placebo: zeroed(), active: zeroed() }
-  };
-}
-function normalizeCells(cells) {
-  const list = cells instanceof Map ? [...cells.values()] : Array.isArray(cells) ? cells : cells && typeof cells === "object" ? Object.values(cells) : [];
-  const normalized = [];
-  list.forEach((cell2) => {
-    if (!cell2 || !SIDES2.includes(cell2.side)) return;
-    if (!SEVERITY_ORDER.includes(cell2.pre) || !SEVERITY_ORDER.includes(cell2.post)) return;
-    const ids = Array.isArray(cell2.ids) ? cell2.ids : [];
-    const count2 = Number.isFinite(cell2.count) ? cell2.count : ids.length;
-    if (!(count2 > 0)) return;
-    normalized.push({
-      key: `${cell2.side}|${cell2.pre}|${cell2.post}`,
-      side: cell2.side,
-      pre: cell2.pre,
-      post: cell2.post,
-      count: count2,
-      ids
-    });
-  });
-  return normalized;
-}
-function deriveCounts(cellList) {
-  const tally = emptyTally();
-  cellList.forEach((cell2) => {
-    tally.centre[cell2.side][cell2.pre] += cell2.count;
-    tally.outer[cell2.side][cell2.post] += cell2.count;
-  });
-  return tally;
-}
-function normalizeCounts(counts) {
-  const tally = emptyTally();
-  const centre = counts.centre || counts.center || {};
-  const outer = counts.outer || counts.side || {};
-  SIDES2.forEach((side) => {
-    SEVERITY_ORDER.forEach((quadrant) => {
-      tally.centre[side][quadrant] = Number(centre[side]?.[quadrant]) || 0;
-      tally.outer[side][quadrant] = Number(outer[side]?.[quadrant]) || 0;
-    });
-  });
-  return tally;
-}
-function faceCount(tally, column, side, quadrant) {
-  if (!COLUMN_SIDES[column].includes(side)) return 0;
-  return column === "centre" ? tally.centre[side][quadrant] : tally.outer[side][quadrant];
-}
-function buildNodes(tally, columns, unit) {
-  const nodes = [];
-  const tops = /* @__PURE__ */ new Map();
-  Object.keys(columns).forEach((column) => {
-    const [x0, x1] = columns[column];
-    let cursor = PAD;
-    SEVERITY_ORDER.forEach((quadrant, index) => {
-      const sides = COLUMN_SIDES[column];
-      const counts = {
-        placebo: faceCount(tally, column, "placebo", quadrant),
-        active: faceCount(tally, column, "active", quadrant)
-      };
-      const count2 = Math.max(...sides.map((side) => counts[side]));
-      const height = count2 * unit;
-      const y0 = Math.round(cursor);
-      const y1 = Math.max(Math.round(cursor + height), y0 + 1);
-      const faces = {};
-      sides.forEach((side) => {
-        const faceHeight = counts[side] * unit;
-        const top = cursor + (height - faceHeight) / 2;
-        faces[side] = {
-          side,
-          // The centre column emits from the face pointing at that arm's
-          // column; a flanking column emits from the face pointing inward.
-          x: column === "centre" ? side === "placebo" ? x0 : x1 : column === "left" ? x1 : x0,
-          y0: Math.round(top),
-          y1: Math.round(top + faceHeight),
-          count: counts[side]
-        };
-        tops.set(`${column}|${quadrant}|${side}`, top);
-      });
-      nodes.push({
-        id: `${column}|${quadrant}`,
-        column,
-        quadrant,
-        tier: SEVERITY_TIERS[quadrant],
-        x0,
-        x1,
-        y0,
-        y1,
-        height: y1 - y0,
-        count: count2,
-        counts,
-        faces,
-        stub: height < 1
-      });
-      cursor += height + gapAfter(index);
-    });
-  });
-  return { nodes, tops };
-}
-function ribbonPath(xCentre, a0, a1, xOuter, b0, b1, straight) {
-  const k = Math.trunc((xOuter - xCentre) * 0.5);
-  const c0 = xCentre + k;
-  const c1 = xOuter - k;
-  if (straight) {
-    return `M ${xCentre},${a0} L ${xOuter},${b0} L ${xOuter},${b1} L ${xCentre},${a1} Z`;
-  }
-  return `M ${xCentre},${a0} C ${c0},${a0} ${c1},${b0} ${xOuter},${b0} L ${xOuter},${b1} C ${c1},${b1} ${c0},${a1} ${xCentre},${a1} Z`;
-}
-function layoutSankey({
-  counts = null,
-  cells = null,
-  width = SANKEY_WIDTH,
-  height = SANKEY_HEIGHT,
-  hideDiagonal = false
-} = {}) {
-  const cellList = normalizeCells(cells);
-  const byKey = new Map(cellList.map((cell2) => [cell2.key, cell2]));
-  const tally = counts ? normalizeCounts(counts) : deriveCounts(cellList);
-  const columns = sankeyColumns(width);
-  const centreTotal = SEVERITY_ORDER.reduce(
-    (total, quadrant) => total + Math.max(tally.centre.placebo[quadrant], tally.centre.active[quadrant]),
-    0
-  );
-  const sideTotal = Math.max(
-    ...SIDES2.map(
-      (side) => SEVERITY_ORDER.reduce((total, quadrant) => total + tally.outer[side][quadrant], 0)
-    )
-  );
-  const usable = Math.max(0, height - 2 * PAD - GAP_TOTAL);
-  const denominator = Math.max(centreTotal, sideTotal);
-  const unit = denominator > 0 ? usable / denominator : 0;
-  const { nodes, tops } = buildNodes(tally, columns, unit);
-  const nodeById = new Map(nodes.map((node) => [node.id, node]));
-  const cursors = new Map(tops);
-  const ribbons = [];
-  SIDES2.forEach((side) => {
-    const outerColumn = COLUMN_OF_SIDE[side];
-    SEVERITY_ORDER.forEach((pre) => {
-      SEVERITY_ORDER.forEach((post) => {
-        const cell2 = byKey.get(`${side}|${pre}|${post}`);
-        if (!cell2) return;
-        const centreKey = `centre|${pre}|${side}`;
-        const outerKey = `${outerColumn}|${post}|${side}`;
-        const span = cell2.count * unit;
-        const centreTop = cursors.get(centreKey);
-        const outerTop = cursors.get(outerKey);
-        cursors.set(centreKey, centreTop + span);
-        cursors.set(outerKey, outerTop + span);
-        const centreNode = nodeById.get(`centre|${pre}`);
-        const outerNode = nodeById.get(`${outerColumn}|${post}`);
-        const xCentre = centreNode.faces[side].x;
-        const xOuter = outerNode.faces[side].x;
-        const a0 = Math.round(centreTop);
-        const a1 = Math.max(Math.round(centreTop + span), a0 + 1);
-        const b0 = Math.round(outerTop);
-        const b1 = Math.max(Math.round(outerTop + span), b0 + 1);
-        const diagonal = pre === post;
-        if (hideDiagonal && diagonal) return;
-        ribbons.push({
-          key: cell2.key,
-          side,
-          pre,
-          post,
-          count: cell2.count,
-          ids: cell2.ids,
-          diagonal,
-          concern: concernOf(pre, post),
-          direction: shiftDirection(pre, post),
-          color: ribbonColor(pre, post),
-          centreNode: centreNode.id,
-          outerNode: outerNode.id,
-          centre: { x: xCentre, y0: a0, y1: a1 },
-          outer: { x: xOuter, y0: b0, y1: b1 },
-          // Both edges are count x unit, but each rounds against its own face's
-          // cursor, so they can differ by a pixel. `thickness` reports the
-          // on-treatment edge; a conservation check must use the anchor
-          // belonging to the face under test.
-          thickness: b1 - b0,
-          // The control point's x doubles as the horizontal centre of the
-          // ribbon, so a pointer test can click the flow without re-deriving
-          // the curve.
-          centroid: {
-            x: xCentre + Math.trunc((xOuter - xCentre) * 0.5),
-            y: Math.round((a0 + a1 + b0 + b1) / 4)
-          },
-          d: ribbonPath(xCentre, a0, a1, xOuter, b0, b1, diagonal)
-        });
-      });
-    });
-  });
-  ribbons.sort((a, b) => b.count - a.count);
-  return { nodes, ribbons, scale: unit };
-}
-
-// src/hep-explorer/views/migration.js
-var SVG_NS2 = "http://www.w3.org/2000/svg";
-var SIDES3 = ["placebo", "active"];
-var SIDE_LABEL = { placebo: "placebo", active: "active drug" };
-var SIDE_TITLE = { placebo: "Placebo", active: "Active drug" };
-var CONCERN_PHRASE = {
-  red: "unfavourable",
-  yellow: "lateral (single-analyte)",
-  green: "favourable",
-  gray: "no migration"
-};
-var TIER_LABELS = ["Both elevated", "Single-analyte elevation", "Neither elevated"];
-var MARGIN = { left: 132, right: 44, top: 46, bottom: 16 };
-var OUTER_WIDTH = MARGIN.left + SANKEY_WIDTH + MARGIN.right;
-var OUTER_HEIGHT = MARGIN.top + SANKEY_HEIGHT + MARGIN.bottom;
-function svgEl(tag, attrs = {}) {
-  const el = document.createElementNS(SVG_NS2, tag);
-  Object.entries(attrs).forEach(([key, value]) => {
-    if (value !== null && value !== void 0) el.setAttribute(key, String(value));
-  });
-  return el;
-}
-function participantCount(count2) {
-  return `${count2} participant${count2 === 1 ? "" : "s"}`;
-}
-function designationFor(host, arms) {
-  const activeArms = host.state.activeArms;
-  return resolveArmDesignation(arms, { ...host.settings, active_arms: activeArms });
-}
-function buildCohort(host) {
-  const built = buildHepSubjects(host.cleanRows, host.settings);
-  const shown = applyFilters6(built.subjects, host.state.filters);
-  const designation = designationFor(host, built.arms);
-  const sides = designation.sides;
-  const plotted = shown.filter((subject) => SIDES3.includes(sides.get(subject.arm)));
-  const cells = migrationCells(plotted, sides);
-  return {
-    arms: built.arms,
-    armCol: built.armCol,
-    excludedNoData: built.excluded,
-    designation,
-    sides,
-    shown,
-    plotted,
-    armExcluded: shown.length - plotted.length,
-    cells,
-    matrices: migrationMatrixBySide(plotted, sides)
-  };
-}
-function shiftSummary(cells) {
-  const summary = {
-    placebo: { up: 0, down: 0, lateral: 0, diagonal: 0, total: 0 },
-    active: { up: 0, down: 0, lateral: 0, diagonal: 0, total: 0 }
-  };
-  cells.forEach((cell2) => {
-    const bucket = summary[cell2.side];
-    if (!bucket) return;
-    const count2 = cell2.ids.length;
-    const concern = concernOf(cell2.pre, cell2.post);
-    if (concern === "red") bucket.up += count2;
-    else if (concern === "green") bucket.down += count2;
-    else bucket.lateral += count2;
-    if (cell2.pre === cell2.post) bucket.diagonal += count2;
-    bucket.total += count2;
-  });
-  return summary;
-}
-function sankeyLabel(summary) {
-  const arm = (side) => `${SIDE_TITLE[side]}: ${summary[side].up} unfavourable and ${summary[side].down} favourable shifts among ${participantCount(summary[side].total)}`;
-  return `Baseline to peak on-treatment migration Sankey. Baseline categorization in the centre, placebo flows left, active drug flows right. ${arm("placebo")}. ${arm("active")}.`;
-}
-function ribbonLabel(ribbon) {
-  const verb = ribbon.pre === ribbon.post ? "remained in" : "shifted from";
-  const where = ribbon.pre === ribbon.post ? `${ribbon.pre}` : `${ribbon.pre} to ${ribbon.post}`;
-  return `${participantCount(ribbon.count)} ${verb} ${where} on ${SIDE_LABEL[ribbon.side]} \u2014 ${CONCERN_PHRASE[ribbon.concern]}`;
-}
-function ribbonTip(ribbon) {
-  return `${SIDE_TITLE[ribbon.side]} \xB7 ${participantCount(ribbon.count)}
-${ribbon.pre} \u2192 ${ribbon.post}
-${CONCERN_PHRASE[ribbon.concern]}`;
-}
-function showTip(host, event, text) {
-  const tip = host.migrationTipEl;
-  if (!tip) return;
-  tip.textContent = text;
-  tip.classList.add("is-visible");
-  const bounds = host.migrationWrap.getBoundingClientRect();
-  const x = (event.clientX ?? bounds.left) - bounds.left;
-  const y = (event.clientY ?? bounds.top) - bounds.top;
-  tip.style.left = `${Math.max(0, Math.min(x + 14, bounds.width - 40))}px`;
-  tip.style.top = `${Math.max(0, y + 14)}px`;
-}
-function hideTip(host) {
-  if (host.migrationTipEl) host.migrationTipEl.classList.remove("is-visible");
-}
-function refreshHighlight(host) {
-  const svg = host.migrationSvgEl;
-  if (svg) {
-    const activeKey = host.migrationHoverKey || host.migrationSelectedKey;
-    const nodes = /* @__PURE__ */ new Set();
-    svg.querySelectorAll(".hep-ribbon").forEach((path) => {
-      const isActive3 = path.dataset.key === activeKey;
-      const isSelected = path.dataset.key === host.migrationSelectedKey;
-      path.classList.toggle("is-active", isActive3);
-      path.classList.toggle("is-selected", isSelected);
-      path.classList.toggle("is-dim", Boolean(activeKey) && !isActive3);
-      if (isActive3) {
-        nodes.add(path.dataset.centreNode);
-        nodes.add(path.dataset.outerNode);
-      }
-    });
-    svg.querySelectorAll(".hep-sankey-node").forEach((rect) => {
-      rect.classList.toggle("is-active", nodes.has(rect.dataset.node));
-    });
-  }
-  if (host.migrationWrap) {
-    host.migrationWrap.querySelectorAll(".hep-xtab-cell").forEach((cell2) => {
-      cell2.classList.toggle("is-selected", cell2.dataset.key === host.migrationSelectedKey);
-    });
-  }
-  host.selection.updateTraceHeader(null, host.migrationSelectedIds);
-}
-function renderFootnote(host) {
-  const footnote = host.footnote;
-  footnote.textContent = "";
-  const cell2 = host.migrationSelectedKey ? host.migrationCellIndex.get(host.migrationSelectedKey) : null;
-  if (!cell2) {
-    footnote.textContent = "Migration plot (Amirzadegan et al., Drug Safety 2025, Fig 3): baseline eDISH categorization in the centre, peak on-treatment shifts running left for placebo and right for active drug. Ribbon thickness is participant count on one shared scale; upward shifts are unfavourable (pink) and downward shifts favourable (green). Select a ribbon or a cross-table cell to carry those participants into the composite plot.";
-    return;
-  }
-  const count2 = cell2.ids.length;
-  const block = createElement("div", "hep-step");
-  const move = cell2.pre === cell2.post ? `remained in ${cell2.pre}` : `shifted ${cell2.pre} \u2192 ${cell2.post}`;
-  block.append(
-    createElement(
-      "strong",
-      "hep-step-text",
-      `${participantCount(count2)} ${move} on ${SIDE_LABEL[cell2.side]}.`
-    )
-  );
-  const button = createElement(
-    "button",
-    "hep-step-btn",
-    `Review these ${count2} in the composite plot`
-  );
-  button.type = "button";
-  button.onclick = () => host.switchView("composite");
-  block.append(button);
-  footnote.append(block);
-}
-function selectCell(host, key) {
-  const cell2 = host.migrationCellIndex.get(key);
-  if (!cell2) return;
-  host.migrationSelectedKey = key;
-  host.migrationSelectedIds = cell2.ids.map(String);
-  host.selection.sync(host.migrationSelectedIds);
-  refreshHighlight(host);
-  renderFootnote(host);
-  host.selection.dispatch([...host.migrationSelectedIds]);
-}
-function setSelection(host, ids) {
-  host.migrationSelectedIds = ids.map(String);
-  const key = host.migrationSelectedKey;
-  const cell2 = key ? host.migrationCellIndex.get(key) : null;
-  if (!cell2 || cell2.ids.length !== host.migrationSelectedIds.length || cell2.ids.some((id, index) => String(id) !== host.migrationSelectedIds[index])) {
-    host.migrationSelectedKey = null;
-  }
-  host.selection.sync(host.migrationSelectedIds);
-  refreshHighlight(host);
-  renderFootnote(host);
-  host.selection.dispatch([...host.migrationSelectedIds]);
-}
-function clearSelection(host) {
-  if (!host.migrationSelectedIds.length && !host.migrationSelectedKey) return;
-  host.migrationSelectedKey = null;
-  host.migrationSelectedIds = [];
-  host.selection.sync([]);
-  refreshHighlight(host);
-  renderFootnote(host);
-  host.selection.dispatch([]);
-}
-function paintTiers(group, nodes) {
-  const bands = /* @__PURE__ */ new Map();
-  nodes.forEach((node) => {
-    const band = bands.get(node.tier) || { y0: Infinity, y1: -Infinity };
-    band.y0 = Math.min(band.y0, node.y0);
-    band.y1 = Math.max(band.y1, node.y1);
-    bands.set(node.tier, band);
-  });
-  [...bands.keys()].sort((a, b) => a - b).forEach((tier) => {
-    const band = bands.get(tier);
-    group.append(
-      svgEl("rect", {
-        class: "hep-sankey-tier",
-        "data-tier": tier,
-        x: 0,
-        y: band.y0 - 6,
-        width: SANKEY_WIDTH,
-        height: band.y1 - band.y0 + 12,
-        rx: 6
-      })
-    );
-    const label = svgEl("text", {
-      class: "hep-sankey-tier-label",
-      "data-tier": tier,
-      x: -10,
-      y: (band.y0 + band.y1) / 2,
-      "text-anchor": "end",
-      "dominant-baseline": "middle"
-    });
-    label.textContent = TIER_LABELS[tier] || `Tier ${tier}`;
-    group.append(label);
-  });
-}
-function paintNodes(group, nodes) {
-  const columns = sankeyColumns();
-  nodes.forEach((node) => {
-    const style = QUADRANT_STYLE[node.quadrant];
-    group.append(
-      svgEl("rect", {
-        class: `hep-sankey-node${node.stub ? " is-stub" : ""}`,
-        "data-node": node.id,
-        "data-column": node.column,
-        "data-quadrant": node.quadrant,
-        "data-count": node.count,
-        "data-placebo": node.counts.placebo,
-        "data-active": node.counts.active,
-        x: node.x0,
-        y: node.y0,
-        width: node.x1 - node.x0,
-        height: node.height,
-        fill: style.color,
-        rx: 2
-      })
-    );
-    const centred = node.column === "centre";
-    const counts = centred ? `${node.counts.placebo} / ${node.counts.active}` : String(node.count);
-    const text = svgEl("text", {
-      class: `hep-sankey-node-label${node.stub ? " is-stub" : ""}${centred ? " is-centre" : ""}`,
-      "data-node": node.id,
-      x: centred ? (columns.centre[0] + columns.centre[1]) / 2 : node.column === "left" ? node.x1 + 8 : node.x0 - 8,
-      y: (node.y0 + node.y1) / 2,
-      "text-anchor": centred ? "middle" : node.column === "left" ? "start" : "end",
-      "dominant-baseline": "middle"
-    });
-    text.textContent = `${node.quadrant} ${counts}`;
-    group.append(text);
-  });
-}
-function paintRibbons(host, group, ribbons) {
-  ribbons.forEach((ribbon) => {
-    const path = svgEl("path", {
-      class: `hep-ribbon is-${ribbon.direction}`,
-      d: ribbon.d,
-      "data-key": ribbon.key,
-      "data-side": ribbon.side,
-      "data-pre": ribbon.pre,
-      "data-post": ribbon.post,
-      "data-count": ribbon.count,
-      "data-concern": ribbon.concern,
-      "data-direction": ribbon.direction,
-      "data-centre-node": ribbon.centreNode,
-      "data-outer-node": ribbon.outerNode,
-      "data-centroid-x": ribbon.centroid.x,
-      "data-centroid-y": ribbon.centroid.y,
-      fill: hexToRgba3(ribbon.color, 0.55),
-      stroke: hexToRgba3(ribbon.color, 0.9),
-      "stroke-width": 1,
-      tabindex: 0,
-      role: "button",
-      "aria-label": ribbonLabel(ribbon)
-    });
-    const tip = ribbonTip(ribbon);
-    path.addEventListener("pointerenter", (event) => {
-      host.migrationHoverKey = ribbon.key;
-      refreshHighlight(host);
-      showTip(host, event, tip);
-    });
-    path.addEventListener("pointermove", (event) => showTip(host, event, tip));
-    path.addEventListener("pointerleave", () => {
-      host.migrationHoverKey = null;
-      refreshHighlight(host);
-      hideTip(host);
-    });
-    path.addEventListener("click", () => selectCell(host, ribbon.key));
-    path.addEventListener("focus", () => {
-      host.migrationHoverKey = ribbon.key;
-      refreshHighlight(host);
-    });
-    path.addEventListener("blur", () => {
-      host.migrationHoverKey = null;
-      refreshHighlight(host);
-    });
-    path.addEventListener("keydown", (event) => {
-      if (event.key !== "Enter" && event.key !== " " && event.key !== "Spacebar") return;
-      event.preventDefault();
-      selectCell(host, ribbon.key);
-    });
-    group.append(path);
-  });
-}
-function buildSankey(host, layout, summary) {
-  const svg = svgEl("svg", {
-    class: "hep-sankey",
-    viewBox: `0 0 ${OUTER_WIDTH} ${OUTER_HEIGHT}`,
-    preserveAspectRatio: "xMidYMid meet",
-    width: "100%",
-    role: "img",
-    "aria-label": sankeyLabel(summary)
-  });
-  const group = svgEl("g", {
-    class: "hep-sankey-plot",
-    transform: `translate(${MARGIN.left}, ${MARGIN.top})`
-  });
-  const headers = [
-    ["placebo", 0, "start", `${SIDE_TITLE.placebo} \u2014 peak on-treatment`],
-    ["centre", SANKEY_WIDTH / 2, "middle", "Baseline categorization"],
-    ["active", SANKEY_WIDTH, "end", `${SIDE_TITLE.active} \u2014 peak on-treatment`]
-  ];
-  headers.forEach(([key, x, anchor, label]) => {
-    const text = svgEl("text", {
-      class: "hep-sankey-col-label",
-      "data-column": key,
-      x,
-      y: -22,
-      "text-anchor": anchor
-    });
-    text.textContent = label;
-    group.append(text);
-  });
-  paintTiers(group, layout.nodes);
-  paintRibbons(host, group, layout.ribbons);
-  paintNodes(group, layout.nodes);
-  svg.append(group);
-  return svg;
-}
-function buildConcernLegend() {
-  const legend = createElement("div", "hep-concern-legend");
-  [
-    ["red", "Unfavourable shift (potential DILI)"],
-    ["yellow", "Lateral single-analyte shift"],
-    ["green", "Favourable shift (potential benefit)"],
-    ["gray", "No migration"]
-  ].forEach(([key, label]) => {
-    const item = createElement("span", "hep-legend-item");
-    const swatch = createElement("span", "hep-concern-swatch");
-    swatch.style.background = CONCERN_COLORS[key];
-    item.append(swatch, document.createTextNode(label));
-    legend.append(item);
-  });
-  return legend;
-}
-function buildCrossTable(host, side, matrix) {
-  const wrap = createElement("div", "hep-migration hep-xtab");
-  const table = createElement("table");
-  table.dataset.side = side;
-  table.append(
-    createElement(
-      "caption",
-      null,
-      `${SIDE_TITLE[side]} \u2014 baseline (rows) \xD7 peak on-treatment (columns), most severe first`
-    )
-  );
-  const thead = document.createElement("thead");
-  const headRow = document.createElement("tr");
-  headRow.append(createElement("th", null, "Baseline \u2193 / On-treatment \u2192"));
-  SEVERITY_ORDER.forEach((quadrant) => headRow.append(createElement("th", null, quadrant)));
-  headRow.append(createElement("th", "hep-total", "Total"));
-  thead.append(headRow);
-  table.append(thead);
-  const tbody = document.createElement("tbody");
-  SEVERITY_ORDER.forEach((pre) => {
-    const tr = document.createElement("tr");
-    tr.append(createElement("td", "hep-rowhead", pre));
-    SEVERITY_ORDER.forEach((post) => {
-      const count2 = matrix.counts[pre][post];
-      const key = `${side}|${pre}|${post}`;
-      const td = createElement("td", "hep-xtab-cell", String(count2));
-      td.style.background = CONCERN_COLORS[concernOf(pre, post)];
-      td.dataset.key = key;
-      td.dataset.side = side;
-      td.dataset.pre = pre;
-      td.dataset.post = post;
-      td.dataset.count = String(count2);
-      if (count2 > 0) {
-        td.classList.add("is-clickable");
-        td.tabIndex = 0;
-        td.setAttribute("role", "button");
-        td.setAttribute(
-          "aria-label",
-          `${participantCount(count2)}, ${pre} to ${post}, ${SIDE_LABEL[side]}`
-        );
-        td.onclick = () => selectCell(host, key);
-        td.onkeydown = (event) => {
-          if (event.key !== "Enter" && event.key !== " " && event.key !== "Spacebar") return;
-          event.preventDefault();
-          selectCell(host, key);
-        };
-      }
-      tr.append(td);
-    });
-    tr.append(createElement("td", "hep-total", String(matrix.rowTotals[pre])));
-    tbody.append(tr);
-  });
-  const totalRow = document.createElement("tr");
-  totalRow.append(createElement("td", "hep-rowhead hep-total", "Total"));
-  SEVERITY_ORDER.forEach(
-    (post) => totalRow.append(createElement("td", "hep-total", String(matrix.colTotals[post])))
-  );
-  totalRow.append(createElement("td", "hep-total", String(matrix.total)));
-  tbody.append(totalRow);
-  table.append(tbody);
-  wrap.append(table);
-  return wrap;
-}
-function buildHyLawCaution(host, cells) {
-  const stuck = SIDES3.map((side) => cells.get(`${side}|Hy's Law|Hy's Law`)).filter(Boolean);
-  if (!stuck.length) return null;
-  const ids = stuck.flatMap((cell2) => cell2.ids.map(String));
-  const note = createElement("div", "hep-sankey-caution sv-warning");
-  note.append(
-    createElement(
-      "span",
-      "hep-caution-text",
-      `\u26A0 ${participantCount(ids.length)} remained in Hy's Law throughout. A shift view cannot detect worsening within a category \u2014 review them individually.`
-    )
-  );
-  const button = createElement("button", "hep-step-btn", `Review these ${ids.length}`);
-  button.type = "button";
-  button.onclick = () => {
-    if (stuck.length === 1) selectCell(host, `${stuck[0].side}|Hy's Law|Hy's Law`);
-    else setSelection(host, ids);
-  };
-  note.append(button);
-  return note;
-}
-function renderNotes(host, cohort, summary) {
-  const total = unique6(host.cleanRows.map((row) => row[host.settings.id_col])).length;
-  const parts = [
-    `<span>${cohort.plotted.length} of ${total} participants shown in the migration plot.</span>`
-  ];
-  if (cohort.excludedNoData)
-    parts.push(
-      `<span class="sv-warning">${cohort.excludedNoData} participant${cohort.excludedNoData > 1 ? "s" : ""} excluded (missing baseline or on-treatment ALT/total bilirubin).</span>`
-    );
-  if (cohort.armExcluded)
-    parts.push(
-      `<span class="sv-warning">${cohort.armExcluded} participant${cohort.armExcluded > 1 ? "s" : ""} excluded: arm not designated placebo or active.</span>`
-    );
-  if (host.state.hideUnchanged) {
-    const hidden = summary.placebo.diagonal + summary.active.diagonal;
-    parts.push(`<span>Hide unchanged is on: ${hidden} no-migration participants hidden.</span>`);
-  }
-  if (cohort.designation.warning)
-    parts.push(`<span class="sv-warning">${cohort.designation.warning}</span>`);
-  if (cohort.designation.placeboArm && !host.state.activeArms) {
-    const pooled = cohort.arms.filter((arm) => arm !== cohort.designation.placeboArm);
-    if (pooled.length > 1)
-      parts.push(
-        `<span class="sv-warning">Active side pools ${pooled.join(", ")}; use the Active arm control to compare one at a time.</span>`
-      );
-  }
-  const sidesPresent = SIDES3.filter((side) => summary[side].total > 0);
-  if (sidesPresent.length < 2)
-    parts.push(
-      '<span class="sv-warning">Only one treatment side is designated, so the plot is one-directional. Map arm_col and set placebo_arm / active_arms to compare arms.</span>'
-    );
-  host.notes.innerHTML = parts.join("");
-}
-function contributeControls(host, { addControl, settingsParent }) {
-  const hide = addControl("Hide unchanged", document.createElement("input"), settingsParent);
-  hide.type = "checkbox";
-  hide.className = "hep-hide-unchanged";
-  hide.checked = Boolean(host.state.hideUnchanged);
-  hide.onchange = () => {
-    host.state.hideUnchanged = hide.checked;
-    host.render();
-  };
-  const arms = buildHepSubjects(host.cleanRows, host.settings).arms;
-  const placeboArm = designationFor(host, arms).placeboArm;
-  const candidates = arms.filter((arm) => arm !== placeboArm);
-  if (candidates.length > 1) {
-    const select = addControl("Active arm", document.createElement("select"), settingsParent);
-    select.className = "hep-active-arm";
-    const current = host.state.activeArms;
-    const options = [["__all__", "All non-placebo arms"], ...candidates.map((arm) => [arm, arm])];
-    options.forEach(([value, label]) => {
-      const opt = document.createElement("option");
-      opt.value = value;
-      opt.textContent = label;
-      opt.selected = value === "__all__" ? !current : Boolean(current) && current[0] === value;
-      select.append(opt);
-    });
-    select.onchange = () => {
-      host.state.activeArms = select.value === "__all__" ? null : [select.value];
-      host.render();
-    };
-  }
-}
-var migrationView = {
-  id: "migration",
-  label: "Migration (Sankey)",
-  // The migration view owns the whole main column: the svg, the per-arm cross
-  // tables, the caution note and the hand-off all render into its container.
-  slots: ["migration"],
-  // The R-Ratio range filter is a scatter-pipeline control; this cohort is
-  // defined by baseline availability and arm designation instead.
-  usesRRatioFilter: false,
-  contributeControls,
-  /** The migration view adds no Filters controls beyond the shared categorical ones. */
-  contributeFilters() {
-  },
-  /** Reset the view-local hover/selection state before a fresh render. */
-  teardown(host) {
-    host.migrationSelectedIds = [];
-    host.migrationSelectedKey = null;
-    host.migrationHoverKey = null;
-    host.migrationCellIndex = /* @__PURE__ */ new Map();
-    host.migrationSvgEl = null;
-    host.migrationTipEl = null;
-  },
-  /**
-   * Render the migration view (HEP-MIG-*, HEP-XTAB-*, HEP-STEP-*): the mirrored
-   * Sankey, one cross table per designated arm, the Hy's-Law self-flow caution,
-   * and the notes reporting every participant the plot could not show. A live
-   * selection carried in from another view (HEP-SELECT-006) arrives selected
-   * for the participants that are part of this cohort; when none survive, the
-   * selection is cleared and listeners are notified.
-   */
-  render(host, { carriedIds = [] } = {}) {
-    host.migrationWrap.append(
-      prototypeBanner(
-        "The Migration (Sankey) view is a prototype under evaluation for the v1.5 release \u2014 its behaviour and settings may change before it is finalized."
-      )
-    );
-    const cohort = buildCohort(host);
-    host.migrationCellIndex = cohort.cells;
-    host.migrationShown = cohort.plotted;
-    const summary = shiftSummary(cohort.cells);
-    host.selection.mount(host.compositeSelectSection, cohort.plotted);
-    renderNotes(host, cohort, summary);
-    renderFootnote(host);
-    if (!cohort.plotted.length) {
-      const note = createElement("div", "sv-warning");
-      note.textContent = "The migration plot needs participants in an arm designated placebo or active, each with baseline and on-treatment ALT and total bilirubin. No participant in the current selection qualifies.";
-      host.migrationWrap.append(note);
-      if (carriedIds.length) host.selection.dispatch([]);
-      return;
-    }
-    const layout = layoutSankey({
-      cells: cohort.cells,
-      hideDiagonal: Boolean(host.state.hideUnchanged)
-    });
-    const plot = createElement("div", "hep-sankey-wrap");
-    const svg = buildSankey(host, layout, summary);
-    host.migrationSvgEl = svg;
-    plot.append(svg);
-    host.migrationTipEl = createElement("div", "hep-tip");
-    plot.append(host.migrationTipEl);
-    host.migrationWrap.append(plot);
-    const caution = buildHyLawCaution(host, cohort.cells);
-    if (caution) host.migrationWrap.append(caution);
-    const tables = createElement("div", "hep-xtab-grid");
-    SIDES3.forEach((side) => tables.append(buildCrossTable(host, side, cohort.matrices.get(side))));
-    host.migrationWrap.append(tables);
-    host.migrationWrap.append(buildConcernLegend());
-    host.root.$hepSankey = {
-      nodes: layout.nodes,
-      ribbons: layout.ribbons.map((ribbon) => ({ ...ribbon })),
-      scale: layout.scale
-    };
-    if (carriedIds.length) {
-      const shownIds = new Set(cohort.plotted.map((subject) => String(subject.id)));
-      const survivors = carriedIds.map(String).filter((id) => shownIds.has(id));
-      if (survivors.length) setSelection(host, survivors);
-      else host.selection.dispatch([]);
-    }
-  },
-  /** The migration view's sticky selection: the selected flow's participants. */
-  selectedIds(host) {
-    return host.migrationSelectedIds;
-  },
-  /** The shared Participants control set a new multi-selection. */
-  onParticipantsChanged(host, ids) {
-    setSelection(host, ids);
-  },
-  /** The Clear selection gesture: drop the whole selection. */
-  clearSelection(host) {
-    clearSelection(host);
-  },
-  /** Restyle the diagram and the cross tables to the current hover/selection. */
-  highlight(host) {
-    refreshHighlight(host);
-  }
-};
-var migration_default = migrationView;
-
-// src/hep-explorer/views/composite.js
-function buildLegend() {
-  const legend = createElement("div", "hep-composite-legend");
-  legend.append(createElement("strong", null, "Baseline quadrant:"));
-  COMPOSITE_QUADRANTS.forEach((quadrant) => {
-    const style = QUADRANT_STYLE[quadrant];
-    const item = createElement("span", "hep-legend-item");
-    const swatch = createElement("span");
-    swatch.style.cssText = `display:inline-block;width:.7rem;height:.7rem;border-radius:${style.pointStyle === "circle" ? "50%" : "2px"};background:${style.color}`;
-    item.append(swatch, document.createTextNode(quadrant));
-    legend.append(item);
-  });
-  return legend;
-}
-function edishScales(xValues, yValues) {
-  const xDomain = edishDomain(xValues, ALT_ULN_CUT, "log");
-  const yDomain = edishDomain(yValues, BILI_ULN_CUT, "log");
-  return {
-    x: {
-      type: "logarithmic",
-      min: xDomain[0],
-      max: xDomain[1],
-      title: { display: true, text: "ALT [\xD7ULN]" },
-      grid: { color: "rgba(148, 163, 184, 0.25)" }
-    },
-    y: {
-      type: "logarithmic",
-      min: yDomain[0],
-      max: yDomain[1],
-      title: { display: true, text: "Total Bilirubin [\xD7ULN]" },
-      grid: { color: "rgba(148, 163, 184, 0.25)" }
-    }
-  };
-}
-function blnDomain(values) {
-  const positives = [...values.filter(Number.isFinite), ...BLN_LINES].filter((v) => v > 0);
-  if (!positives.length) return [0.5, 5];
-  const min = Math.min(...positives, 0.5);
-  const max = Math.max(...positives);
-  return [min / 1.3, max * 1.3];
-}
-function tooltipLine(subject, which) {
-  if (!subject) return "";
-  if (which === "bln") {
-    return `${subject.id}: ALT ${formatNumber4(subject.peakAltBLN)}\xD7BLN, TB ${formatNumber4(subject.peakBiliBLN)}\xD7BLN (baseline ${subject.pretreatQuadrant})`;
-  }
-  const alt = which === "pretreat" ? subject.baselineAltULN : subject.peakAltULN;
-  const bili = which === "pretreat" ? subject.baselineBiliULN : subject.peakBiliULN;
-  return `${subject.id}: ALT ${formatNumber4(alt)}\xD7ULN, TB ${formatNumber4(bili)}\xD7ULN \u2014 ${subject.pretreatQuadrant} \u2192 ${subject.onTreatQuadrant}`;
-}
-function tooltipConfig(subjects, which) {
-  let itemCount = 0;
-  return {
-    filter: (item, index, items) => {
-      itemCount = items.length;
-      return items.length > 2 ? index === 0 : true;
-    },
-    callbacks: {
-      title: () => "",
-      label: (ctx) => itemCount > 2 ? `${itemCount} participants` : tooltipLine(subjects[ctx.dataIndex], which)
-    }
-  };
-}
-function anyActive2(host) {
-  return host.compositeHoverId != null || host.compositeSelectedIds.length > 0;
-}
-function isActive2(host, subject) {
-  if (!subject) return false;
-  const id = String(subject.id);
-  if (host.compositeHoverId != null && String(host.compositeHoverId) === id) return true;
-  return host.compositeSelectedIds.includes(id);
-}
-function datasetStyle(host, subjects, baseRadius) {
-  return {
-    pointStyle: subjects.map((subject) => QUADRANT_STYLE[subject.pretreatQuadrant].pointStyle),
-    pointBackgroundColor: (ctx) => {
-      const subject = subjects[ctx.dataIndex];
-      if (!subject) return "rgba(0, 0, 0, 0)";
-      const color2 = QUADRANT_STYLE[subject.pretreatQuadrant].color;
-      if (!anyActive2(host)) return hexToRgba3(color2, 0.8);
-      return hexToRgba3(color2, isActive2(host, subject) ? 1 : HIGHLIGHT.DIM_FILL);
-    },
-    pointBorderColor: (ctx) => {
-      const subject = subjects[ctx.dataIndex];
-      if (!subject) return "rgba(0, 0, 0, 0)";
-      const color2 = QUADRANT_STYLE[subject.pretreatQuadrant].color;
-      if (isActive2(host, subject)) return SELECTION_COLOR2;
-      return !anyActive2(host) ? color2 : hexToRgba3(color2, HIGHLIGHT.DIM_BORDER);
-    },
-    pointBorderWidth: (ctx) => isActive2(host, subjects[ctx.dataIndex]) ? HIGHLIGHT.BORDER_WIDTH : 1,
-    pointRadius: (ctx) => baseRadius + (isActive2(host, subjects[ctx.dataIndex]) ? HIGHLIGHT.RADIUS_BOOST : 0),
-    pointHoverRadius: baseRadius + 2
-  };
-}
-function refreshHighlight2(host) {
-  host.compositeCharts.forEach((chart) => chart.update("none"));
-  host.selection.updateTraceHeader(host.compositeHoverId, host.compositeSelectedIds);
-}
-function afterSelectionChange(host) {
-  host.selection.sync(host.compositeSelectedIds);
-  refreshHighlight2(host);
-  host.selection.dispatch([...host.compositeSelectedIds]);
-}
-function setHover2(host, id) {
-  const norm = id == null ? null : String(id);
-  if (String(norm ?? "") === String(host.compositeHoverId ?? "")) return;
-  host.compositeHoverId = norm;
-  refreshHighlight2(host);
-}
-function toggleSelection(host, id) {
-  const key = String(id);
-  const index = host.compositeSelectedIds.indexOf(key);
-  if (index >= 0) host.compositeSelectedIds.splice(index, 1);
-  else host.compositeSelectedIds.push(key);
-  afterSelectionChange(host);
-}
-function clearSelection2(host) {
-  if (!host.compositeSelectedIds.length) return;
-  host.compositeSelectedIds = [];
-  afterSelectionChange(host);
-}
-function interactionOptions(host) {
-  const idAt = (chart, element) => {
-    const subjects = chart && chart.$compositeSubjects;
-    const subject = subjects && element && subjects[element.index];
-    return subject ? subject.id : null;
-  };
-  return {
-    onHover: (event, active, chart) => {
-      const target = event?.native?.target;
-      if (target) target.style.cursor = active.length ? "pointer" : "default";
-      setHover2(host, active.length ? idAt(chart, active[0]) : null);
-    },
-    onClick: (event, active, chart) => {
-      if (!active.length) {
-        clearSelection2(host);
-        return;
-      }
-      const id = idAt(chart, active[0]);
-      if (id != null) toggleSelection(host, id);
-    }
-  };
-}
-function registerChart(host, chart, subjects, canvas) {
-  chart.$compositeSubjects = subjects;
-  host.charts.push(chart);
-  host.compositeCharts.push(chart);
-  canvas.addEventListener("pointerleave", () => setHover2(host, null));
-}
-function buildEdishCard(host, title, subjects, which) {
-  const card = createElement("div", "hep-composite-card");
-  card.append(createElement("h4", null, title));
-  const wrap = createElement("div", "hep-composite-canvas");
-  const canvas = document.createElement("canvas");
-  wrap.append(canvas);
-  card.append(wrap);
-  const xKey = which === "pretreat" ? "baselineAltULN" : "peakAltULN";
-  const yKey = which === "pretreat" ? "baselineBiliULN" : "peakBiliULN";
-  const data = subjects.map((subject) => ({ x: subject[xKey], y: subject[yKey] }));
-  const chart = new Chart(canvas.getContext("2d"), {
-    type: "scatter",
-    data: {
-      datasets: [{ data, ...datasetStyle(host, subjects, 5) }]
-    },
-    options: {
-      maintainAspectRatio: false,
-      responsive: true,
-      animation: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: tooltipConfig(subjects, which)
-      },
-      scales: edishScales(
-        subjects.map((subject) => subject[xKey]),
-        subjects.map((subject) => subject[yKey])
-      ),
-      ...interactionOptions(host)
-    },
-    plugins: [
-      referenceLinePlugin({
-        vLines: [{ value: ALT_ULN_CUT, label: `${ALT_ULN_CUT}\xD7ULN` }],
-        hLines: [{ value: BILI_ULN_CUT, label: `${BILI_ULN_CUT}\xD7ULN` }]
-      })
-    ]
-  });
-  registerChart(host, chart, subjects, canvas);
-  return card;
-}
-function buildPanels(host, subjects) {
-  const grid = createElement("div", "hep-composite-panels");
-  const order = ["Cholestasis", "Hy's Law", "Normal & NN", "Temple's Corollary"];
-  const xDomain = blnDomain(subjects.map((subject) => subject.peakAltBLN));
-  const yDomain = blnDomain(subjects.map((subject) => subject.peakBiliBLN));
-  const refLines = BLN_LINES.map((value) => ({ value, label: `${value}\xD7` }));
-  order.forEach((quadrant) => {
-    const members = subjects.filter((subject) => subject.onTreatQuadrant === quadrant);
-    const card = createElement("div", "hep-composite-card");
-    card.append(createElement("h4", null, `${quadrant} (${members.length})`));
-    const wrap = createElement("div", "hep-composite-panel-canvas");
-    const canvas = document.createElement("canvas");
-    wrap.append(canvas);
-    card.append(wrap);
-    const data = members.map((subject) => ({ x: subject.peakAltBLN, y: subject.peakBiliBLN }));
-    const chart = new Chart(canvas.getContext("2d"), {
-      type: "scatter",
-      data: {
-        datasets: [{ data, ...datasetStyle(host, members, 4.5) }]
-      },
-      options: {
-        maintainAspectRatio: false,
-        responsive: true,
-        animation: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: tooltipConfig(members, "bln")
-        },
-        scales: {
-          x: {
-            type: "logarithmic",
-            min: xDomain[0],
-            max: xDomain[1],
-            title: { display: true, text: "ALT [\xD7Baseline]" },
-            grid: { color: "rgba(148, 163, 184, 0.2)" }
-          },
-          y: {
-            type: "logarithmic",
-            min: yDomain[0],
-            max: yDomain[1],
-            title: { display: true, text: "TB [\xD7Baseline]" },
-            grid: { color: "rgba(148, 163, 184, 0.2)" }
-          }
-        },
-        ...interactionOptions(host)
-      },
-      plugins: [referenceLinePlugin({ vLines: refLines, hLines: refLines })]
-    });
-    registerChart(host, chart, members, canvas);
-    grid.append(card);
-  });
-  return grid;
-}
-function buildConcernLegend2() {
-  const legend = createElement("div", "hep-concern-legend");
-  const items = [
-    ["red", "Migration of concern"],
-    ["yellow", "Migration of potential concern"],
-    ["green", "Migration of no concern (potential benefit)"],
-    ["gray", "No migration"]
-  ];
-  items.forEach(([key, label]) => {
-    const item = createElement("span", "hep-legend-item");
-    const swatch = createElement("span", "hep-concern-swatch");
-    swatch.style.background = CONCERN_COLORS[key];
-    item.append(swatch, document.createTextNode(label));
-    legend.append(item);
-  });
-  return legend;
-}
-function buildMigrationTable(subjects) {
-  const wrap = createElement("div", "hep-migration");
-  const matrix = migrationMatrix(subjects);
-  const table = createElement("table");
-  table.append(
-    createElement(
-      "caption",
-      null,
-      "Migration table \u2014 pretreatment (rows) \xD7 on-treatment (columns) quadrant counts"
-    )
-  );
-  const thead = document.createElement("thead");
-  const headRow = document.createElement("tr");
-  headRow.append(createElement("th", null, "Baseline \u2193 / On-treatment \u2192"));
-  COMPOSITE_QUADRANTS.forEach((quadrant) => headRow.append(createElement("th", null, quadrant)));
-  headRow.append(createElement("th", "hep-total", "Total"));
-  thead.append(headRow);
-  table.append(thead);
-  const tbody = document.createElement("tbody");
-  COMPOSITE_QUADRANTS.forEach((pre) => {
-    const tr = document.createElement("tr");
-    tr.append(createElement("td", "hep-rowhead", pre));
-    COMPOSITE_QUADRANTS.forEach((post) => {
-      const td = createElement("td", null, String(matrix.counts[pre][post]));
-      td.style.background = CONCERN_COLORS[concernOf(pre, post)];
-      tr.append(td);
-    });
-    tr.append(createElement("td", "hep-total", String(matrix.rowTotals[pre])));
-    tbody.append(tr);
-  });
-  const totalRow = document.createElement("tr");
-  totalRow.append(createElement("td", "hep-rowhead hep-total", "Total"));
-  COMPOSITE_QUADRANTS.forEach(
-    (post) => totalRow.append(createElement("td", "hep-total", String(matrix.colTotals[post])))
-  );
-  totalRow.append(createElement("td", "hep-total", String(matrix.total)));
-  tbody.append(totalRow);
-  table.append(tbody);
-  wrap.append(table);
-  wrap.append(buildConcernLegend2());
-  return wrap;
-}
-function buildByArmSummary(host, subjects) {
-  const armCol = host.state.groupBy && host.state.groupBy !== GROUP_NONE ? host.state.groupBy : null;
-  const armLabel = armCol ? (host.settings.groups.find((group) => group.value_col === armCol) || {}).label || armCol : null;
-  const rows = byArmSummary(subjects, armCol);
-  const wrap = createElement("div", "hep-migration");
-  const table = createElement("table");
-  table.append(
-    createElement(
-      "caption",
-      null,
-      armCol ? `Concern vs. benefit summary by ${armLabel}` : "Concern vs. benefit summary (all participants)"
-    )
-  );
-  const thead = document.createElement("thead");
-  const headRow = document.createElement("tr");
-  [
-    armCol ? armLabel : "Group",
-    "Concern",
-    "Potential concern",
-    "No concern / benefit",
-    "No migration",
-    "Total"
-  ].forEach((label) => headRow.append(createElement("th", null, label)));
-  thead.append(headRow);
-  table.append(thead);
-  const tbody = document.createElement("tbody");
-  const cell2 = (count2, key) => {
-    const td = createElement("td", null, String(count2));
-    td.style.background = CONCERN_COLORS[key];
-    return td;
-  };
-  rows.forEach((row) => {
-    const tr = document.createElement("tr");
-    tr.append(createElement("td", "hep-rowhead", String(row.arm)));
-    tr.append(cell2(row.red, "red"));
-    tr.append(cell2(row.yellow, "yellow"));
-    tr.append(cell2(row.green, "green"));
-    tr.append(cell2(row.gray, "gray"));
-    tr.append(createElement("td", "hep-total", String(row.total)));
-    tbody.append(tr);
-  });
-  table.append(tbody);
-  wrap.append(table);
-  return wrap;
-}
-var compositeView = {
-  id: "composite",
-  label: "Composite plot",
-  // The composite view owns the whole main column: its panels, tables and
-  // legends render into the composite container (HEP-COMP-006).
-  slots: ["composite"],
-  // The R-Ratio range filter is a scatter-pipeline control; the composite
-  // cohort is defined by baseline availability instead (HEP-COMP-006).
-  usesRRatioFilter: false,
-  /** The composite view adds no Settings controls; Group (shared) drives it. */
-  contributeControls() {
-  },
-  /** The composite view adds no Filters controls beyond the shared categorical ones. */
-  contributeFilters() {
-  },
-  /**
-   * Reset the participant cross-linking state for a fresh render
-   * (HEP-COMP-007); the charts register themselves as they are built.
-   */
-  teardown(host) {
-    host.compositeCharts = [];
-    host.compositeHoverId = null;
-    host.compositeSelectedIds = [];
-    host.compositeSelectEl = null;
-    host.compositeClearBtn = null;
-  },
-  /**
-   * Render the composite plot into the composite container (HEP-COMP-001..006):
-   * a baseline-quadrant legend, the pretreatment and peak on-treatment eDISH
-   * panels (each point colored/shaped by its baseline quadrant so migration is
-   * visible), the four-panel xBaseline shift plot (one panel per on-treatment
-   * quadrant, with 1x/3x/5x reference lines), the pretreatment x on-treatment
-   * migration table with concern coding, and the by-arm concern/benefit summary.
-   * Degrades to an explanatory note when no participant in the current selection
-   * has a usable baseline and on-treatment ALT and total bilirubin. A live
-   * selection carried in from another view (HEP-SELECT-006) arrives selected for
-   * the participants that are part of the composite cohort; when none survive
-   * the selection is cleared and listeners notified.
-   */
-  render(host, { carriedIds = [] } = {}) {
-    const { subjects, excluded } = buildCompositeSubjects(host.cleanRows, host.settings);
-    const shown = applyFilters6(subjects, host.state.filters);
-    host.compositeSubjectsShown = shown;
-    host.selection.mount(host.compositeSelectSection, shown);
-    const totalParticipants = unique6(host.cleanRows.map((row) => row[host.settings.id_col])).length;
-    const excludedNote = excluded ? `<span class="sv-warning">${excluded} participant${excluded > 1 ? "s" : ""} excluded (missing baseline or on-treatment ALT/total bilirubin).</span>` : "";
-    host.notes.innerHTML = `<span>${shown.length} of ${totalParticipants} participants shown in the composite plot.</span>` + excludedNote;
-    host.footnote.textContent = "Composite plot (Tesfaldet et al., Drug Safety 2024): symbol color and shape mark each participant\u2019s baseline (pretreatment) eDISH quadrant, carried through every panel so migration is visible. \xD7Baseline = peak on-treatment value \xF7 the participant\u2019s own baseline.";
-    if (!shown.length) {
-      const note = createElement("div", "sv-warning");
-      note.textContent = "The composite plot needs baseline and on-treatment ALT and total bilirubin for at least one participant. No participant in the current selection qualifies.";
-      host.compositeWrap.append(note);
-      if (carriedIds.length) host.selection.dispatch([]);
-      return;
-    }
-    host.compositeWrap.append(buildLegend());
-    host.compositeWrap.append(
-      createElement("h3", "hep-composite-section-title", "Baseline \u2192 on-treatment eDISH (\xD7ULN)")
-    );
-    const edishRow = createElement("div", "hep-composite-edish");
-    edishRow.append(buildEdishCard(host, "Pretreatment (baseline)", shown, "pretreat"));
-    edishRow.append(buildEdishCard(host, "Peak on-treatment", shown, "ontreat"));
-    host.compositeWrap.append(edishRow);
-    host.compositeWrap.append(
-      createElement(
-        "h3",
-        "hep-composite-section-title",
-        "Peak on-treatment relative to own baseline (\xD7Baseline)"
-      )
-    );
-    host.compositeWrap.append(buildPanels(host, shown));
-    host.compositeWrap.append(buildMigrationTable(shown));
-    host.compositeWrap.append(buildByArmSummary(host, shown));
-    if (carriedIds.length) {
-      const shownIds = new Set(shown.map((subject) => String(subject.id)));
-      const survivors = carriedIds.map(String).filter((id) => shownIds.has(id));
-      if (survivors.length) {
-        host.compositeSelectedIds = survivors;
-        afterSelectionChange(host);
-      } else {
-        host.selection.dispatch([]);
-      }
-    }
-  },
-  /** The composite view's sticky selection: the click-driven multi-selection. */
-  selectedIds(host) {
-    return host.compositeSelectedIds;
-  },
-  /** The shared Participants control set a new multi-selection (HEP-COMP-007). */
-  onParticipantsChanged(host, ids) {
-    host.compositeSelectedIds = ids;
-    afterSelectionChange(host);
-  },
-  /** The Clear selection gesture: drop the whole multi-selection. */
-  clearSelection(host) {
-    clearSelection2(host);
-  },
-  /** Restyle every composite panel to the current trace and refresh the header. */
-  highlight(host) {
-    refreshHighlight2(host);
-  }
-};
-var composite_default = compositeView;
-
 // src/hep-explorer.js
 Chart.register(
   ScatterController,
@@ -24699,27 +19185,21 @@ Chart.register(
   plugin_tooltip,
   plugin_legend
 );
-var VIEWS = {
-  scatter: scatter_default,
-  migration: migration_default,
-  composite: composite_default
-};
-function resolveViewId(value) {
-  return Object.prototype.hasOwnProperty.call(VIEWS, value) ? value : "scatter";
-}
+var BASE_POINT_COLOR = GROUP_COLORS2[0];
+var COMPOSITE_HEADER_HINT = "Hover a point to trace a participant across every panel; click to keep it selected.";
+var HIGHLIGHT_DIM_FILL = 0.15;
+var HIGHLIGHT_DIM_BORDER = 0.25;
+var HIGHLIGHT_RADIUS_BOOST = 2.5;
+var HIGHLIGHT_BORDER_WIDTH = 2.5;
 var SafetyHepExplorer = class {
   constructor(element = "body", settings = {}) {
     this.element = typeof element === "string" ? document.querySelector(element) : element;
     if (!this.element) throw new Error(`Safety Hep Explorer target not found: ${element}`);
-    this.settings = syncSettings3(settings);
+    this.settings = syncSettings7(settings);
     this.rawData = [];
     this.cleanRows = [];
     this.removedRecords = 0;
     this.droppedParticipants = 0;
-    this.droppedRows = [];
-    this.droppedParticipantList = [];
-    this.imputedRecords = 0;
-    this.imputationLimits = {};
     this.allPoints = [];
     this.points = [];
     this.rRatioMax = 0;
@@ -24732,7 +19212,6 @@ var SafetyHepExplorer = class {
     this.page = 1;
     this.charts = [];
     this.chart = null;
-    this.selection = createSelection(this);
     this.compositeCharts = [];
     this.compositeSubjectsShown = [];
     this.compositeHoverId = null;
@@ -24742,68 +19221,25 @@ var SafetyHepExplorer = class {
     this.compositeSelectSection = null;
     this.compositeClearBtn = null;
     this.scatterSelectedIds = [];
-    this.migrationSelectedIds = [];
-    this.migrationSelectedKey = null;
-    this.migrationHoverKey = null;
-    this.migrationCellIndex = /* @__PURE__ */ new Map();
-    this.migrationShown = [];
-    this.migrationSvgEl = null;
-    this.migrationTipEl = null;
     this.participantsSelected = [];
-    this.profile = null;
-    this.profileFeed = null;
-    this.profileKey = null;
-    this.profileDetails = null;
     this.state = {
-      view: resolveViewId(this.settings.view),
+      view: this.settings.view === "composite" ? "composite" : "scatter",
       measureX: this.settings.x_default,
       measureY: this.settings.y_default,
       display: "relative_uln",
       axisType: "linear",
       pointSize: "Uniform",
-      marginals: this.settings.marginals,
-      quadrantLabels: this.settings.quadrant_labels,
       visitWindow: this.settings.visit_window,
       groupBy: this.settings.group_by,
       filters: {},
       rRatio: [...this.settings.r_ratio],
       cuts: JSON.parse(JSON.stringify(this.settings.cuts)),
-      // Migration-view controls (HEP-MIG-013, HEP-ARM-003): suppress the
-      // no-migration diagonal, and narrow the right-hand side to one active arm.
-      hideUnchanged: this.settings.hide_unchanged,
-      activeArms: this.settings.active_arms,
       selectedId: null,
       hoverId: null,
       xCut: null,
       yCut: null
     };
-    this.profileDetails = this.settings.details;
     this.renderShell();
-    this.mountProfileRail();
-  }
-  /**
-   * The active view component — the module's ONLY view dispatch (HEP-COMP-006).
-   * Every other file resolves view-specific behaviour through the contract
-   * rather than by testing state.view.
-   * @private
-   */
-  activeView() {
-    return VIEWS[this.state.view] || VIEWS.scatter;
-  }
-  /**
-   * Point the shared Participants control at the active view (HEP-SELECT-001,
-   * HEP-COMP-007). The selection layer holds no view knowledge, so the view
-   * injects the three things the control needs: what its sticky selection is,
-   * what a selection change means, and what a clear means. This is the only
-   * place the two are wired together.
-   * @private
-   */
-  bindSelection(view) {
-    this.selection.bind({
-      selectedIds: () => view.selectedIds(this),
-      changed: (ids) => view.onParticipantsChanged(this, ids),
-      cleared: () => view.clearSelection(this)
-    });
   }
   /**
    * Build the static DOM shell the scatter, legend, quadrant summary,
@@ -24822,132 +19258,69 @@ var SafetyHepExplorer = class {
     this.legendEl.style.cssText = "display:flex;flex-wrap:wrap;gap:.35rem .9rem;font-size:.8rem;color:#52616f;margin:0 0 .5rem";
     this.main.insertBefore(this.legendEl, this.chartWrap);
     this.compositeHeaderEl = createElement("div", "hep-composite-header");
-    this.compositeHeaderEl.textContent = TRACE_HEADER_HINT;
+    this.compositeHeaderEl.textContent = COMPOSITE_HEADER_HINT;
     this.main.insertBefore(this.compositeHeaderEl, this.legendEl);
     this.quadrantWrap = createElement("div", "hep-quadrant-summary");
     this.main.insertBefore(this.quadrantWrap, this.multiplesWrap);
-    this.migrationWrap = createElement("div", "hep-migration-view");
-    this.migrationWrap.style.display = "none";
-    this.main.insertBefore(this.migrationWrap, this.multiplesWrap);
     this.compositeWrap = createElement("div", "hep-composite");
     this.compositeWrap.style.display = "none";
     this.main.insertBefore(this.compositeWrap, this.multiplesWrap);
-    this.cautionEl = createElement("div", "hep-caution sv-warning", CLINICAL_CAUTION);
-    this.main.append(this.cautionEl);
-    applyModuleStyles();
+    this.detailWrap = createElement("div", "hep-detail");
+    this.detailWrap.style.display = "none";
+    this.main.insertBefore(this.detailWrap, this.listingWrap);
+    this.applyModuleStyles();
     this.footnote.textContent = this.baseFootnote();
   }
   /**
-   * The settings handed to the railed participant-profile module (#98,
-   * PPRF-7): the shared long-lab column mappings and cutpoints pass through
-   * verbatim so the rail consumes this chart's pre-cleaned rows with no second
-   * ingest (PPRF-1); details are the caller's own demographics snapshot;
-   * display seeds from the live display mode; and the two outbound callbacks
-   * wire Clear to the host's own clear path (PPRF-2) and stepper navigation to
-   * transient chart emphasis (PPRF-5).
+   * Inject the module-specific stylesheet (quadrant summary + detail panels)
+   * once per document; the shared shell stylesheet stays module-agnostic.
    * @private
    */
-  profileSettings() {
-    const settings = this.settings;
-    return {
-      id_col: settings.id_col,
-      measure_col: settings.measure_col,
-      value_col: settings.value_col,
-      unit_col: settings.unit_col,
-      normal_col_high: settings.normal_col_high,
-      normal_col_low: settings.normal_col_low,
-      studyday_col: settings.studyday_col,
-      visit_col: settings.visit_col,
-      visitn_col: settings.visitn_col,
-      baseline_col: settings.baseline_col,
-      baseline_value: settings.baseline_value,
-      measure_values: settings.measure_values,
-      // LIVE control state, not the construction-time settings: user-edited
-      // reference lines and the Axis-type control reach the rail so the
-      // coordinated panels always agree on the active cuts and scale (PPRF-7).
-      cuts: this.state.cuts,
-      axis_type: this.state.axisType === "log" ? "log" : "linear",
-      details: settings.profile_details && settings.profile_details.length ? settings.profile_details : this.profileDetails || [],
-      participantProfileURL: settings.participantProfileURL ?? null,
-      p_alt_col: settings.p_alt_col ?? null,
-      measureBounds: settings.measureBounds,
-      display: this.state.display,
-      on_clear: () => this.selection.clear(),
-      on_step: (id) => this.emphasizeParticipant(id)
-    };
-  }
-  /**
-   * Mount the railed participant-profile module into the shell's profile slot
-   * and subscribe it to the participantsSelected event on the shell root —
-   * the selection layer's SOLE dispatcher, so every selection path (scatter
-   * click, Participants control, composite click/selector, migration
-   * hand-off, carried selections, and every clear) feeds the rail with zero
-   * view edits (#98, PPRF-7). No-op when the `profile` setting is false or a
-   * rail is already live.
-   * @private
-   */
-  mountProfileRail() {
-    if (!this.settings.profile || this.profile) return;
-    this.profile = profileRail(this.railWrap, this.profileSettings());
-    this.profileFeed = (event) => {
-      const data = event && event.detail ? event.detail.data : null;
-      const ids = (Array.isArray(data) ? data : []).map(String);
-      const key = ids.join("\0");
-      if (key === this.profileKey) return;
-      this.profileKey = key;
-      if (!ids.length) {
-        this.profile.clear();
-        return;
-      }
-      this.profile.state.display = this.state.display;
-      this.profile.show(ids, this.cleanRows);
-    };
-    this.root.addEventListener("participantsSelected", this.profileFeed);
-  }
-  /**
-   * Tear the railed profile down: unsubscribe the feed, destroy the module's
-   * charts, and empty the slot (the shell's `:empty` rule then hides it).
-   * @private
-   */
-  unmountProfileRail() {
-    if (!this.profile) return;
-    this.root.removeEventListener("participantsSelected", this.profileFeed);
-    this.profileFeed = null;
-    this.profile.destroy();
-    this.profile = null;
-    this.profileKey = null;
-  }
-  /**
-   * Reconcile the railed profile with the current settings: mount or unmount
-   * on a `profile` toggle, else refresh the rail's pass-through settings.
-   * Called by setSettings before the re-render re-dispatches any carried
-   * selection.
-   * @private
-   */
-  syncProfileRail() {
-    if (!this.settings.profile) {
-      this.unmountProfileRail();
-      return;
-    }
-    if (!this.profile) {
-      this.mountProfileRail();
-      return;
-    }
-    this.profileKey = null;
-    this.profile.cleanRows = this.cleanRows;
-    this.profile.setSettings(this.profileSettings());
-  }
-  /**
-   * Transient chart emphasis for the profile stepper (PPRF-5): treat the
-   * stepped participant as the hovered one and restyle through the active
-   * view's highlight() contract — no selection change, no event dispatch.
-   * @private
-   */
-  emphasizeParticipant(id) {
-    const norm = id == null ? null : String(id);
-    this.state.hoverId = norm;
-    this.compositeHoverId = norm;
-    this.activeView().highlight(this);
+  applyModuleStyles() {
+    const id = "safety-viz-hep-explorer-styles";
+    if (typeof document === "undefined" || document.getElementById(id)) return;
+    const style = document.createElement("style");
+    style.id = id;
+    style.textContent = `
+.safety-hep-explorer .hep-quadrant-summary{margin-top:1rem}
+.safety-hep-explorer .hep-quadrant-summary table{width:100%;max-width:420px;border-collapse:collapse;font-size:.85rem;background:#fff}
+.safety-hep-explorer .hep-quadrant-summary th,.safety-hep-explorer .hep-quadrant-summary td{border-bottom:1px solid #e3e8ee;padding:.4rem .55rem;text-align:left}
+.safety-hep-explorer .hep-quadrant-summary th{border-bottom:2px solid #d8dee4;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f}
+.safety-hep-explorer .hep-quadrant-summary td.hep-num,.safety-hep-explorer .hep-quadrant-summary th.hep-num{text-align:right;font-variant-numeric:tabular-nums}
+.safety-hep-explorer .hep-detail{margin-top:1.25rem;border-top:2px solid #111827;padding-top:.75rem}
+.safety-hep-explorer .hep-detail-title{font-size:.95rem;margin:0 0 .5rem}
+.safety-hep-explorer .hep-detail-chart{height:220px;position:relative;border:1px solid #d8dee4;border-radius:10px;padding:.75rem;background:#fff}
+.safety-hep-explorer .hep-summary-table{width:100%;max-width:520px;border-collapse:collapse;font-size:.85rem;background:#fff;margin-top:.9rem}
+.safety-hep-explorer .hep-summary-table th,.safety-hep-explorer .hep-summary-table td{border-bottom:1px solid #e3e8ee;padding:.4rem .55rem;text-align:left}
+.safety-hep-explorer .hep-summary-table th{border-bottom:2px solid #d8dee4;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f}
+.safety-hep-explorer .hep-summary-table td.hep-num,.safety-hep-explorer .hep-summary-table th.hep-num{text-align:right;font-variant-numeric:tabular-nums}
+.safety-hep-explorer .hep-composite{margin-top:.5rem}
+.safety-hep-explorer .hep-composite-header{font-size:.85rem;color:#52616f;background:#f6f8fa;border:1px solid #e3e8ee;border-radius:8px;padding:.4rem .6rem;margin:0 0 .6rem;min-height:1.2rem}
+.safety-hep-explorer .hep-composite-header.is-active{color:#1f2933;font-weight:600;border-color:#b8c0cc;background:#eef2f6}
+.safety-hep-explorer .hep-composite-select select{padding:.25rem;font-size:.82rem}
+.safety-hep-explorer .hep-composite-select option{padding:.15rem .3rem}
+.safety-hep-explorer .hep-composite-clear{width:100%;margin-top:.35rem;padding:.25rem .45rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.78rem;cursor:pointer}
+.safety-hep-explorer .hep-composite-clear:disabled{color:#9aa5b1;cursor:default}
+.safety-hep-explorer .hep-composite-legend{display:flex;flex-wrap:wrap;gap:.35rem 1rem;font-size:.8rem;color:#52616f;margin:0 0 .75rem}
+.safety-hep-explorer .hep-composite-legend .hep-legend-item{display:inline-flex;align-items:center;gap:.3rem}
+.safety-hep-explorer .hep-composite-section-title{font-size:.9rem;margin:1rem 0 .5rem;color:#1f2933}
+.safety-hep-explorer .hep-composite-edish{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem}
+.safety-hep-explorer .hep-composite-panels{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;max-width:760px}
+.safety-hep-explorer .hep-composite-card{border:1px solid #d8dee4;border-radius:10px;padding:.6rem .7rem;background:#fff}
+.safety-hep-explorer .hep-composite-card h4{font-size:.82rem;margin:0 0 .4rem;color:#52616f;font-weight:600}
+.safety-hep-explorer .hep-composite-canvas{height:280px;position:relative}
+.safety-hep-explorer .hep-composite-panel-canvas{height:210px;position:relative}
+.safety-hep-explorer .hep-migration{margin-top:1.25rem}
+.safety-hep-explorer .hep-migration table{border-collapse:collapse;font-size:.82rem;background:#fff}
+.safety-hep-explorer .hep-migration th,.safety-hep-explorer .hep-migration td{border:1px solid #d8dee4;padding:.35rem .55rem;text-align:center}
+.safety-hep-explorer .hep-migration th{font-size:.72rem;text-transform:uppercase;letter-spacing:.02em;color:#52616f;font-weight:700}
+.safety-hep-explorer .hep-migration td.hep-rowhead{text-align:left;font-weight:600;color:#1f2933;white-space:nowrap}
+.safety-hep-explorer .hep-migration td.hep-total,.safety-hep-explorer .hep-migration th.hep-total{background:#f6f8fa;font-weight:700}
+.safety-hep-explorer .hep-migration caption{caption-side:top;text-align:left;font-size:.82rem;color:#52616f;margin-bottom:.35rem}
+.safety-hep-explorer .hep-concern-legend{display:flex;flex-wrap:wrap;gap:.35rem .9rem;font-size:.76rem;color:#52616f;margin:.5rem 0 0}
+.safety-hep-explorer .hep-concern-legend .hep-legend-item{display:inline-flex;align-items:center;gap:.3rem}
+.safety-hep-explorer .hep-concern-swatch{display:inline-block;width:.8rem;height:.8rem;border:1px solid #b8c0cc;border-radius:2px}`;
+    document.head.append(style);
   }
   /**
    * The base footnote: usage hint plus the timing-window sentence explaining
@@ -24991,20 +19364,17 @@ var SafetyHepExplorer = class {
    * @returns {SafetyHepExplorer} The instance, for chaining.
    */
   setSettings(settings) {
-    this.settings = syncSettings3({ ...this.settings, ...settings });
-    if ("view" in settings) this.state.view = resolveViewId(this.settings.view);
-    if ("hide_unchanged" in settings) this.state.hideUnchanged = this.settings.hide_unchanged;
-    if ("active_arms" in settings) this.state.activeArms = this.settings.active_arms;
+    this.settings = syncSettings7({ ...this.settings, ...settings });
+    if ("view" in settings)
+      this.state.view = this.settings.view === "composite" ? "composite" : "scatter";
     if ("x_default" in settings) this.state.measureX = this.settings.x_default;
     if ("y_default" in settings) this.state.measureY = this.settings.y_default;
     if ("visit_window" in settings) this.state.visitWindow = this.settings.visit_window;
     if ("group_by" in settings) this.state.groupBy = this.settings.group_by;
     if ("cuts" in settings) this.state.cuts = JSON.parse(JSON.stringify(this.settings.cuts));
     if ("r_ratio" in settings) this.state.rRatio = [...this.settings.r_ratio];
-    if ("details" in settings) this.profileDetails = this.settings.details;
     this.state.filters = {};
     if (this.rawData.length) this.validateAndCleanData();
-    this.syncProfileRail();
     this.buildControls();
     this.render();
     return this;
@@ -25017,25 +19387,17 @@ var SafetyHepExplorer = class {
    */
   validateAndCleanData() {
     try {
-      checkInputs8(this.rawData, this.settings);
+      checkInputs7(this.rawData, this.settings);
     } catch (error) {
       this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
       throw error;
     }
-    const { rows, removed, dropped } = cleanData2(this.rawData, this.settings);
-    const imputation = imputeBelowLloq(rows, this.settings);
-    this.droppedRows = [...dropped, ...imputation.dropped];
-    this.imputedRecords = imputation.imputed;
-    this.imputationLimits = imputation.limits;
-    deriveBaseline(imputation.rows, this.settings);
-    assignSequence(imputation.rows, this.settings);
-    this.cleanRows = imputation.rows;
-    this.removedRecords = removed + imputation.dropped.length;
-    this.rRatioMax = maxRRatio(imputation.rows, this.settings);
-    this.displayAvailability = availableDisplays(imputation.rows);
-    if (this.displayAvailability.modes.length && !this.displayAvailability.modes.includes(this.state.display)) {
-      this.state.display = this.displayAvailability.modes[0];
-    }
+    const { rows, removed } = cleanData6(this.rawData, this.settings);
+    deriveBaseline(rows, this.settings);
+    assignSequence2(rows, this.settings);
+    this.cleanRows = rows;
+    this.removedRecords = removed;
+    this.rRatioMax = maxRRatio(rows, this.settings);
     if (removed)
       console.warn(
         `${removed} missing or non-numeric result${removed > 1 ? "s have" : " has"} been removed.`
@@ -25092,35 +19454,99 @@ var SafetyHepExplorer = class {
    * @private
    */
   buildViewControl(addSection) {
-    const section = renderViewSelector(addSection, {
+    renderViewSelector(addSection, {
       options: VIEW_MODES,
       active: this.state.view,
-      onChange: (value) => this.switchView(value)
+      onChange: (value) => {
+        this.state.view = value;
+        this.buildControls();
+        this.render();
+      }
     });
-    if (resolveArmCol(this.cleanRows, this.settings)) return;
-    const options = [...section.querySelectorAll(".sv-view-option")];
-    const migration = options[VIEW_MODES.findIndex((mode) => mode.value === "migration")];
-    if (!migration) return;
-    migration.disabled = true;
-    migration.classList.add("is-disabled");
-    migration.title = "The migration Sankey needs a treatment-arm column. Map arm_col (or add ARM, ACTARM, TRT01A, TREATMENT or TRTA to the data) to enable it.";
   }
   /**
-   * Rebuild the settings/filters controls from data + state (HEP-CTRL-*). The
-   * shared controls (View, Group, the categorical filters, Participants, Reset)
-   * are built here; the active view contributes the controls it alone drives.
-   * Only controls with ≥2 meaningful options are rendered: the Y-measure picker
-   * is dropped when a single option, Group when only None, and the R-Ratio
-   * filter when r_ratio_filter is false or the view does not use it.
+   * Rebuild the settings/filters controls from data + state (HEP-CTRL-*). Only
+   * controls with ≥2 meaningful options are rendered: the Y-measure picker is
+   * dropped when a single option, Group when only None, and the R-Ratio filter
+   * when r_ratio_filter is false.
    * @private
    */
   buildControls() {
     this.controls.innerHTML = "";
     const { addSection, addRow, addControl } = controlBuilders(this.controls);
-    const view = this.activeView();
+    const scatter = this.state.view !== "composite";
     this.buildViewControl(addSection);
     const settingsParent = addSection("Settings");
-    view.contributeControls(this, { addSection, addRow, addControl, settingsParent });
+    if (scatter) {
+      const measureX = addControl(
+        "X-axis Measure",
+        document.createElement("select"),
+        settingsParent
+      );
+      this.settings.x_options.forEach(
+        (key) => option(measureX, key, key, key === this.state.measureX)
+      );
+      measureX.onchange = () => {
+        this.state.measureX = measureX.value;
+        this.buildControls();
+        this.render();
+      };
+      if (this.settings.y_options.length > 1) {
+        const measureY = addControl(
+          "Y-axis Measure",
+          document.createElement("select"),
+          settingsParent
+        );
+        this.settings.y_options.forEach(
+          (key) => option(measureY, key, key, key === this.state.measureY)
+        );
+        measureY.onchange = () => {
+          this.state.measureY = measureY.value;
+          this.buildControls();
+          this.render();
+        };
+      }
+      this.addCutControl(addControl, settingsParent, "measureX");
+      this.addCutControl(addControl, settingsParent, "measureY");
+      const display = addControl("Display Type", document.createElement("select"), settingsParent);
+      DISPLAY_MODES.forEach(
+        (mode) => option(display, mode.value, mode.label, mode.value === this.state.display)
+      );
+      display.onchange = () => {
+        this.state.display = display.value;
+        this.buildControls();
+        this.render();
+      };
+      const axisType = addControl("Axis Type", document.createElement("select"), settingsParent);
+      AXIS_TYPES.forEach((type) => option(axisType, type, type, type === this.state.axisType));
+      axisType.onchange = () => {
+        this.state.axisType = axisType.value;
+        this.render();
+      };
+      const pointSize = addControl("Point Size", document.createElement("select"), settingsParent);
+      POINT_SIZE_OPTIONS.forEach(
+        (value) => option(pointSize, value, value, value === this.state.pointSize)
+      );
+      pointSize.onchange = () => {
+        this.state.pointSize = pointSize.value;
+        this.render();
+      };
+      const window2 = addControl(
+        "Highlight Points Based on Timing",
+        document.createElement("input"),
+        settingsParent
+      );
+      window2.type = "number";
+      window2.min = "0";
+      window2.step = "1";
+      window2.value = this.state.visitWindow;
+      window2.onchange = () => {
+        const value = Number(window2.value);
+        this.state.visitWindow = Number.isFinite(value) && value >= 0 ? value : 0;
+        window2.value = this.state.visitWindow;
+        this.render();
+      };
+    }
     if (this.settings.groups.length > 1) {
       const group = addControl("Group", document.createElement("select"), settingsParent);
       this.settings.groups.forEach(
@@ -25132,7 +19558,7 @@ var SafetyHepExplorer = class {
       };
     }
     const filterSpecs = this.activeFilterSpecs();
-    const showRRatio = this.settings.r_ratio_filter && view.usesRRatioFilter;
+    const showRRatio = this.settings.r_ratio_filter && scatter;
     if (filterSpecs.length || showRRatio) {
       const filterParent = addSection("Filters");
       filterSpecs.forEach((filter) => {
@@ -25151,7 +19577,7 @@ var SafetyHepExplorer = class {
           this.render();
         };
       });
-      if (showRRatio) view.contributeFilters(this, { addRow, addControl }, filterParent);
+      if (showRRatio) this.addRRatioControl(addRow, addControl, filterParent);
     }
     this.compositeSelectSection = addSection("Participants");
     const reset = addControl(" ", document.createElement("button"), this.controls);
@@ -25160,6 +19586,66 @@ var SafetyHepExplorer = class {
     reset.className = "hep-reset";
     reset.style.cssText = "width:100%;margin-top:.75rem;padding:.35rem .45rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.82rem;cursor:pointer";
     reset.onclick = () => this.resetChart();
+  }
+  /**
+   * Add a reference-line (cutpoint) number input for one axis; edits write the
+   * per-measure, per-display cut into state.cuts and clamp it to ≥ 0 so it
+   * cannot fall below the axis minimum (HEP-QUAD-001).
+   * @private
+   */
+  addCutControl(addControl, parent, axisKey) {
+    const measureKey = this.state[axisKey];
+    const input = addControl(
+      `${measureKey} Reference Line`,
+      document.createElement("input"),
+      parent
+    );
+    input.type = "number";
+    input.step = "0.1";
+    input.min = "0";
+    const current = cutFor(this.state.cuts, measureKey, this.state.display);
+    input.value = Number.isFinite(current) ? current : "";
+    input.onchange = () => {
+      const value = Math.max(0, Number(input.value) || 0);
+      if (!this.state.cuts[measureKey]) this.state.cuts[measureKey] = {};
+      this.state.cuts[measureKey][this.state.display] = value;
+      input.value = value;
+      this.render();
+    };
+  }
+  /**
+   * Add the R-Ratio range filter: min/max number inputs plus a Reset button
+   * that restores the initial range (HEP-CTRL-010).
+   * @private
+   */
+  addRRatioControl(addRow, addControl, parent) {
+    const { max, dataMax } = this.effectiveRRatio();
+    const row = addRow(parent);
+    const min = addControl("R Ratio min", document.createElement("input"), row);
+    min.type = "number";
+    min.step = "0.1";
+    min.value = Number.isFinite(this.state.rRatio[0]) ? this.state.rRatio[0] : 0;
+    min.onchange = () => {
+      this.state.rRatio[0] = min.value === "" ? 0 : Number(min.value);
+      this.render();
+    };
+    const maxInput = addControl("R Ratio max", document.createElement("input"), row);
+    maxInput.type = "number";
+    maxInput.step = "0.1";
+    maxInput.value = formatNumber4(max) || dataMax;
+    maxInput.onchange = () => {
+      this.state.rRatio[1] = maxInput.value === "" ? null : Number(maxInput.value);
+      this.render();
+    };
+    const reset = addControl(" ", document.createElement("button"), parent);
+    reset.type = "button";
+    reset.textContent = "Reset R Ratio";
+    reset.style.cssText = "width:100%;padding:.3rem .45rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.8rem;cursor:pointer";
+    reset.onclick = () => {
+      this.state.rRatio = [...this.settings.r_ratio];
+      this.buildControls();
+      this.render();
+    };
   }
   /**
    * Reset the cutpoints, display mode, axis type, point size, filters, and
@@ -25175,69 +19661,47 @@ var SafetyHepExplorer = class {
     this.state.visitWindow = this.settings.visit_window;
     this.state.filters = {};
     this.state.rRatio = [...this.settings.r_ratio];
-    this.state.hideUnchanged = this.settings.hide_unchanged;
-    this.state.activeArms = this.settings.active_arms;
     this.buildControls();
     this.render();
   }
   /**
-   * Show the shell containers the active view occupies and hide the rest, per
-   * the view's declared slots (HEP-COMP-006).
+   * The shown scatter points after the categorical filters and the R-Ratio
+   * range (HEP-CTRL-010, HEP-CTRL-011). Points with an unknown (NA) R-Ratio are
+   * retained.
    * @private
    */
-  setViewVisibility(view) {
-    const slots = new Set(view.slots);
-    this.chartWrap.style.display = slots.has("chart") ? "" : "none";
-    this.legendEl.style.display = slots.has("legend") ? "flex" : "none";
-    this.quadrantWrap.style.display = slots.has("quadrantSummary") ? "" : "none";
-    this.migrationWrap.style.display = slots.has("migration") ? "" : "none";
-    this.compositeWrap.style.display = slots.has("composite") ? "" : "none";
-  }
-  /**
-   * Switch to another registered view and redraw (HEP-STEP-003). The migration
-   * view's "review these in the composite plot" hand-off calls this rather than
-   * writing state.view itself: the module's only view dispatch lives in this
-   * file, and the existing carriedIds mechanism then restores exactly the
-   * selected participants, highlighted, in the composite panels.
-   * @param {string} view The view id to switch to.
-   * @returns {void}
-   * @private
-   */
-  switchView(view) {
-    const next = resolveViewId(view);
-    if (next === this.state.view) return;
-    this.state.view = next;
-    this.buildControls();
-    this.render();
+  filteredPoints() {
+    const filtered = applyFilters6(this.allPoints, this.state.filters);
+    const { min, max } = this.effectiveRRatio();
+    return filtered.filter((point) => {
+      if (!Number.isFinite(point.rRatio)) return true;
+      return point.rRatio >= min && point.rRatio <= max;
+    });
   }
   /**
    * Redraw everything from the current data, settings, and control state:
    * destroys the live charts, clears the listing, legend, quadrant summary,
-   * and any selection, then hands off to the active view, which recomputes its
-   * own data and draws (the scatter, its legend and quadrant summary table, or
-   * the composite panels — or an empty-data message). A live participant
-   * selection survives the redraw: when the participant is still shown, every
-   * coordinated panel — scatter highlight, visit path, lab-over-time chart,
-   * summary table, and listing — is re-rendered from the same selection in the
-   * active display units (HEP-SELECT-006); otherwise the selection is cleared
-   * and listeners are notified. Called automatically by the controls and the
-   * data/settings setters.
+   * and any selection, recomputes the per-participant points and quadrants,
+   * then draws the scatter, legend, and quadrant summary table (or an
+   * empty-data message). A live participant selection survives the redraw:
+   * when the participant is still shown, every coordinated panel — scatter
+   * highlight, visit path, lab-over-time chart, summary table, and listing —
+   * is re-rendered from the same selection in the active display units
+   * (HEP-SELECT-006); otherwise the selection is cleared and listeners are
+   * notified. Called automatically by the controls and the data/settings
+   * setters.
    * @returns {void}
    */
   render() {
-    const view = this.activeView();
-    this.bindSelection(view);
-    const carriedIds = this.selection.carried();
+    const carriedIds = this.participantsSelected.map(String);
     this.destroyCharts();
     this.listingWrap.innerHTML = "";
     this.legendEl.innerHTML = "";
     this.quadrantWrap.innerHTML = "";
-    this.migrationWrap.innerHTML = "";
-    if (this.root) this.root.$hepSankey = null;
     this.compositeWrap.innerHTML = "";
-    this.selection.mount(this.compositeSelectSection, []);
-    if (this.profile) this.profile.applySettings(this.profileSettings());
-    this.profileKey = null;
+    this.mountCompositeSelect([]);
+    this.detailWrap.innerHTML = "";
+    this.detailWrap.style.display = "none";
     this.currentTableData = [];
     this.listingSearch = "";
     this.listingSort = null;
@@ -25249,24 +19713,988 @@ var SafetyHepExplorer = class {
     this.notes.innerHTML = "";
     this.mainAnnotation.textContent = "";
     this.footnote.textContent = this.baseFootnote();
-    this.selection.updateTraceHeader(null, []);
-    this.setViewVisibility(view);
+    if (this.compositeHeaderEl) {
+      this.compositeHeaderEl.textContent = COMPOSITE_HEADER_HINT;
+      this.compositeHeaderEl.classList.remove("is-active");
+    }
+    const composite = this.state.view === "composite";
+    this.setViewVisibility(composite);
     this.state.xCut = cutFor(this.state.cuts, this.state.measureX, this.state.display);
     this.state.yCut = cutFor(this.state.cuts, this.state.measureY, this.state.display);
     if (!this.cleanRows.length) {
       this.notes.innerHTML = "<span>No data selected. Provide records to draw the chart.</span>";
-      if (carriedIds.length) this.selection.dispatch([]);
+      if (carriedIds.length) this.dispatchSelection([]);
       return;
     }
-    if (this.displayAvailability && !this.displayAvailability.modes.length) {
-      this.notes.innerHTML = "";
-      this.notes.append(createElement("span", "sv-warning", this.displayAvailability.note));
-      this.chartWrap.style.display = "none";
-      if (carriedIds.length) this.selection.dispatch([]);
+    if (composite) {
+      this.renderComposite(carriedIds);
       return;
     }
-    view.teardown(this);
-    view.render(this, { carriedIds });
+    const built = buildPoints(this.cleanRows, this.settings, this.state);
+    this.allPoints = built.points;
+    this.droppedParticipants = built.droppedParticipants;
+    this.points = this.filteredPoints();
+    this.updateNotes();
+    if (!this.points.length) {
+      this.mainAnnotation.textContent = "No participants to plot for the current selection.";
+      if (carriedIds.length) this.dispatchSelection([]);
+      return;
+    }
+    const grouped = this.state.groupBy && this.state.groupBy !== GROUP_NONE2;
+    this.groupValues = grouped ? unique6(this.points.map((point) => point.group)).filter((value) => value !== null && value !== void 0).map(String).sort() : [];
+    this.colorScale = groupColorScale2(this.groupValues);
+    this.quadrants = classifyQuadrants(this.points, this.state.xCut, this.state.yCut);
+    this.drawScatter();
+    this.drawLegend();
+    this.drawQuadrantSummary();
+    this.mountCompositeSelect(
+      unique6(this.points.map((point) => String(point.id))).map((id) => ({ id }))
+    );
+    if (carriedIds.length) this.restoreSelection(carriedIds);
+  }
+  /**
+   * Re-apply the participant selection that was live before a redraw or a view
+   * switch. A single surviving participant reopens every coordinated panel —
+   * visit path, lab-over-time chart, measure summary table, and listing — in
+   * the active display units (HEP-SELECT-006); several survivors restore the
+   * multi-highlight and the Participants control without the single-participant
+   * drill-down; participants no longer shown (filtered out, or dropped by the
+   * mDISH view for lacking a baseline) fall out, and listeners always hear the
+   * surviving selection.
+   * @param {Array<string|number>} ids The previously selected participant ids.
+   * @private
+   */
+  restoreSelection(ids) {
+    const shownIds = new Set(this.points.map((point) => String(point.id)));
+    const survivors = ids.map(String).filter((id) => shownIds.has(id));
+    if (survivors.length === 1) {
+      this.selectParticipant(survivors[0]);
+      return;
+    }
+    this.scatterSelectedIds = survivors;
+    this.syncSelectControl(survivors);
+    if (this.chart) this.chart.update("none");
+    this.updateScatterHeader();
+    this.dispatchSelection([...survivors]);
+  }
+  /**
+   * Refresh the shown/total participant counts, the removed-record note, and
+   * the dropped-participant note (HEP-DATA-003, HEP-DISPLAY-004).
+   * @private
+   */
+  updateNotes() {
+    const totalParticipants = unique6(this.cleanRows.map((row) => row[this.settings.id_col])).length;
+    const shown = this.points.length;
+    const pct = totalParticipants ? (shown / totalParticipants * 100).toFixed(1) : "0.0";
+    const removedNote = this.removedRecords ? `<span class="sv-warning">${this.removedRecords} missing or non-numeric results removed.</span>` : "";
+    const dropReason = this.state.display === "relative_baseline" ? `missing ${this.state.measureX}/${this.state.measureY} peak or baseline` : `missing ${this.state.measureX}/${this.state.measureY} peak`;
+    const droppedNote = this.droppedParticipants ? `<span class="sv-warning">${this.droppedParticipants} participants dropped (${dropReason}).</span>` : "";
+    this.notes.innerHTML = `<span>${shown} of ${totalParticipants} participants shown (${pct}%).</span>` + removedNote + droppedNote;
+  }
+  /**
+   * The scatter participant being traced: the hovered participant takes priority
+   * over the clicked (sticky) selection, or null when neither is active — the
+   * same hover-over-select rule the composite view uses (HEP-SELECT-001).
+   * @private
+   */
+  scatterActiveId() {
+    return this.state.hoverId != null ? this.state.hoverId : this.state.selectedId;
+  }
+  /**
+   * Whether any scatter participant is currently traced — hovered, or in the
+   * control-driven multi-highlight (HEP-SELECT-001, HEP-COMP-007).
+   * @private
+   */
+  anyScatterActive() {
+    return this.state.hoverId != null || this.scatterSelectedIds.length > 0;
+  }
+  /**
+   * Whether a scatter point is currently traced: hovered, or one of the
+   * Participants-control multi-highlight (a click selection is always mirrored
+   * there) (HEP-SELECT-001).
+   * @private
+   */
+  isScatterActive(point) {
+    if (!point) return false;
+    const id = String(point.id);
+    if (this.state.hoverId != null && String(this.state.hoverId) === id) return true;
+    return this.scatterSelectedIds.includes(id);
+  }
+  /**
+   * Whether the given participant id is the sticky (clicked) selection.
+   * @private
+   */
+  isSelectedId(id) {
+    return this.state.selectedId != null && String(this.state.selectedId) === String(id);
+  }
+  /**
+   * The shared annotation text for a traced participant, identical in both views
+   * (HEP-SELECT-001, HEP-COMP-007): "Participant {id} selected." when it is the
+   * clicked selection, else "Participant {id}" for a transient hover.
+   * @private
+   */
+  participantAnnotationText(id, selected) {
+    return `Participant ${id}${selected ? " selected." : ""}`;
+  }
+  /**
+   * Set the transient hovered scatter participant and restyle the scatter +
+   * overlay annotation when it changes, without triggering the drill-down (which
+   * stays a click action). The overlay follows the hover, then reverts to the
+   * sticky selection when the pointer leaves (HEP-SELECT-001).
+   * @private
+   */
+  setScatterHover(id) {
+    const norm = id ?? null;
+    if (String(norm ?? "") === String(this.state.hoverId ?? "")) return;
+    this.state.hoverId = norm;
+    if (this.chart) this.chart.update("none");
+    const activeId = this.scatterActiveId();
+    this.mainAnnotation.textContent = activeId == null ? "" : this.participantAnnotationText(activeId, this.isSelectedId(activeId));
+    this.updateScatterHeader();
+  }
+  /**
+   * The palette color for a point given the active grouping (HEP-CTRL-009).
+   * @private
+   */
+  colorFor(point) {
+    if (this.groupValues.length && point.group != null) {
+      return this.colorScale.get(String(point.group)) || BASE_POINT_COLOR;
+    }
+    return BASE_POINT_COLOR;
+  }
+  /**
+   * The point radius for the active Point Size mode (HEP-CTRL-007): a uniform
+   * radius, or a radius scaled by the participant R-Ratio.
+   * @private
+   */
+  radiusFor(point) {
+    if (this.state.pointSize !== "rRatio") return 5;
+    const values = this.points.map((candidate) => candidate.rRatio).filter(Number.isFinite);
+    const rMax = values.length ? Math.max(...values) : 0;
+    if (!Number.isFinite(point.rRatio) || rMax <= 0) return 3;
+    return 3 + 7 * (point.rRatio / rMax);
+  }
+  /**
+   * Draw the Chart.js eDISH scatter: dataset 0 = participant points styled by
+   * group, timing, and selection; dataset 1 = the (initially empty) visit-path
+   * line overlay. The quadrant plugin draws the cut-lines and labels; clicking
+   * a point selects the participant, clicking empty space clears the selection.
+   * @private
+   */
+  drawScatter() {
+    const points = this.points;
+    const data = points.map((point) => ({ x: point.x, y: point.y }));
+    const type = this.state.axisType === "log" ? "log" : "linear";
+    const xDomain = edishDomain(
+      points.map((point) => point.x),
+      this.state.xCut,
+      type
+    );
+    const yDomain = edishDomain(
+      points.map((point) => point.y),
+      this.state.yCut,
+      type
+    );
+    const anyActive = () => this.anyScatterActive();
+    const isActive = (point) => this.isScatterActive(point);
+    const fill = (ctx) => {
+      const point = points[ctx.dataIndex];
+      if (!point) return "rgba(0,0,0,0)";
+      const active = isActive(point);
+      if (!point.withinWindow && !active) return "rgba(0,0,0,0)";
+      const color2 = this.colorFor(point);
+      const opacity = anyActive() ? active ? 1 : HIGHLIGHT_DIM_FILL : 0.75;
+      return hexToRgba3(color2, opacity);
+    };
+    const border = (ctx) => {
+      const point = points[ctx.dataIndex];
+      if (!point) return "rgba(0,0,0,0)";
+      if (isActive(point)) return SELECTION_COLOR2;
+      const opacity = anyActive() ? HIGHLIGHT_DIM_BORDER : 0.9;
+      return hexToRgba3(this.colorFor(point), opacity);
+    };
+    const chart = new Chart(this.canvas.getContext("2d"), {
+      type: "scatter",
+      data: {
+        datasets: [
+          {
+            label: "Participants",
+            data,
+            pointBackgroundColor: fill,
+            pointBorderColor: border,
+            pointBorderWidth: (ctx) => isActive(points[ctx.dataIndex]) ? HIGHLIGHT_BORDER_WIDTH : 1.25,
+            pointRadius: (ctx) => this.radiusFor(points[ctx.dataIndex]) + (isActive(points[ctx.dataIndex]) ? HIGHLIGHT_RADIUS_BOOST : 0),
+            pointHoverRadius: (ctx) => this.radiusFor(points[ctx.dataIndex]) + 2
+          },
+          {
+            type: "line",
+            label: "Visit path",
+            data: [],
+            showLine: true,
+            borderColor: hexToRgba3(SELECTION_COLOR2, 0.7),
+            borderWidth: 1.5,
+            pointRadius: 3,
+            pointHoverRadius: 4,
+            pointBackgroundColor: SELECTION_COLOR2,
+            pointBorderColor: SELECTION_COLOR2
+          }
+        ]
+      },
+      options: {
+        maintainAspectRatio: false,
+        responsive: true,
+        animation: false,
+        layout: { padding: 6 },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            // Exclude the visit-path overlay (dataset 1) so hovering the path
+            // line never pops an empty tooltip box; only the participant points
+            // (dataset 0) carry a tooltip (HEP-CHART-004, HEP-SELECT-003).
+            filter: (item) => item.datasetIndex === 0,
+            callbacks: {
+              title: () => "",
+              label: (ctx) => ctx.datasetIndex === 0 ? pointTooltip2(points[ctx.dataIndex], this.state, this.settings.measure_values) : ""
+            }
+          }
+        },
+        scales: buildScales5(this.state, xDomain, yDomain, this.settings.measure_values),
+        onHover: (event, active) => {
+          const target = event?.native?.target;
+          if (target) target.style.cursor = active.length ? "pointer" : "default";
+          const hit = active.find((element) => element.datasetIndex === 0);
+          this.setScatterHover(hit ? points[hit.index].id : null);
+        },
+        onClick: (event, active) => {
+          const hit = active.find((element) => element.datasetIndex === 0);
+          if (hit) this.selectParticipant(points[hit.index].id);
+          else this.clearSelection();
+        }
+      },
+      plugins: [quadrantPlugin(this)]
+    });
+    this.chart = chart;
+    this.charts.push(chart);
+  }
+  /**
+   * Render the color-by legend for the active grouping (HEP-CTRL-009).
+   * @private
+   */
+  drawLegend() {
+    this.legendEl.innerHTML = "";
+    if (!this.groupValues.length) return;
+    const groupLabel = (this.settings.groups.find((spec) => spec.value_col === this.state.groupBy) || {}).label || this.state.groupBy;
+    this.legendEl.append(createElement("strong", null, `${groupLabel}:`));
+    this.groupValues.forEach((value) => {
+      const chip = createElement("span", "hep-legend-item");
+      chip.style.cssText = "display:inline-flex;align-items:center;gap:.3rem";
+      const swatch = createElement("span");
+      swatch.style.cssText = `display:inline-block;width:.75rem;height:.75rem;border-radius:2px;background:${this.colorScale.get(
+        String(value)
+      )}`;
+      chip.append(swatch, document.createTextNode(String(value)));
+      this.legendEl.append(chip);
+    });
+  }
+  /**
+   * Render the quadrant summary table (Quadrant | # | %) below the chart from
+   * the live classification (HEP-QUAD-005).
+   * @private
+   */
+  drawQuadrantSummary() {
+    this.quadrantWrap.innerHTML = "";
+    const table = createElement("table");
+    const thead = document.createElement("thead");
+    const headRow = document.createElement("tr");
+    headRow.append(createElement("th", null, "Quadrant"));
+    headRow.append(createElement("th", "hep-num", "#"));
+    headRow.append(createElement("th", "hep-num", "%"));
+    thead.append(headRow);
+    table.append(thead);
+    const tbody = document.createElement("tbody");
+    this.quadrants.labels.forEach((entry) => {
+      const tr = document.createElement("tr");
+      tr.append(createElement("td", null, entry.label));
+      tr.append(createElement("td", "hep-num", String(entry.count)));
+      tr.append(
+        createElement(
+          "td",
+          "hep-num",
+          `${Number.isFinite(entry.percent) ? entry.percent.toFixed(1) : "0.0"}%`
+        )
+      );
+      tbody.append(tr);
+    });
+    table.append(tbody);
+    this.quadrantWrap.append(table);
+  }
+  /**
+   * Show either the scatter chrome (single canvas, legend, quadrant summary) or
+   * the composite container, per the active view (HEP-COMP-006).
+   * @private
+   */
+  setViewVisibility(composite) {
+    this.chartWrap.style.display = composite ? "none" : "";
+    this.legendEl.style.display = composite ? "none" : "flex";
+    this.quadrantWrap.style.display = composite ? "none" : "";
+    this.compositeWrap.style.display = composite ? "" : "none";
+  }
+  /**
+   * Render the composite plot into the composite container (HEP-COMP-001..006):
+   * a baseline-quadrant legend, the pretreatment and peak on-treatment eDISH
+   * panels (each point colored/shaped by its baseline quadrant so migration is
+   * visible), the four-panel ×Baseline shift plot (one panel per on-treatment
+   * quadrant, with 1×/3×/5× reference lines), the pretreatment × on-treatment
+   * migration table with concern coding, and the by-arm concern/benefit
+   * summary. Degrades to an explanatory note when no participant in the current
+   * selection has a usable baseline and on-treatment ALT and total bilirubin.
+   * @param {Array<string|number>} [carriedIds] A live selection to carry into
+   *   the composite view (HEP-SELECT-006): the participants that are part of
+   *   the composite cohort arrive selected; when none survive the selection is
+   *   cleared and listeners notified.
+   * @private
+   */
+  renderComposite(carriedIds = []) {
+    const { subjects, excluded } = buildCompositeSubjects(this.cleanRows, this.settings);
+    const shown = applyFilters6(subjects, this.state.filters);
+    this.compositeCharts = [];
+    this.compositeSubjectsShown = shown;
+    this.compositeHoverId = null;
+    this.compositeSelectedIds = [];
+    this.compositeSelectEl = null;
+    this.compositeClearBtn = null;
+    this.mountCompositeSelect(shown);
+    const totalParticipants = unique6(this.cleanRows.map((row) => row[this.settings.id_col])).length;
+    const excludedNote = excluded ? `<span class="sv-warning">${excluded} participant${excluded > 1 ? "s" : ""} excluded (missing baseline or on-treatment ALT/total bilirubin).</span>` : "";
+    this.notes.innerHTML = `<span>${shown.length} of ${totalParticipants} participants shown in the composite plot.</span>` + excludedNote;
+    this.footnote.textContent = "Composite plot (Tesfaldet et al., Drug Safety 2024): symbol color and shape mark each participant\u2019s baseline (pretreatment) eDISH quadrant, carried through every panel so migration is visible. \xD7Baseline = peak on-treatment value \xF7 the participant\u2019s own baseline.";
+    if (!shown.length) {
+      const note = createElement("div", "sv-warning");
+      note.textContent = "The composite plot needs baseline and on-treatment ALT and total bilirubin for at least one participant. No participant in the current selection qualifies.";
+      this.compositeWrap.append(note);
+      if (carriedIds.length) this.dispatchSelection([]);
+      return;
+    }
+    this.compositeWrap.append(this.buildCompositeLegend());
+    this.compositeWrap.append(
+      createElement("h3", "hep-composite-section-title", "Baseline \u2192 on-treatment eDISH (\xD7ULN)")
+    );
+    const edishRow = createElement("div", "hep-composite-edish");
+    edishRow.append(this.buildEdishCard("Pretreatment (baseline)", shown, "pretreat"));
+    edishRow.append(this.buildEdishCard("Peak on-treatment", shown, "ontreat"));
+    this.compositeWrap.append(edishRow);
+    this.compositeWrap.append(
+      createElement(
+        "h3",
+        "hep-composite-section-title",
+        "Peak on-treatment relative to own baseline (\xD7Baseline)"
+      )
+    );
+    this.compositeWrap.append(this.buildCompositePanels(shown));
+    this.compositeWrap.append(this.buildMigrationTable(shown));
+    this.compositeWrap.append(this.buildByArmSummary(shown));
+    if (carriedIds.length) {
+      const shownIds = new Set(shown.map((subject) => String(subject.id)));
+      const survivors = carriedIds.map(String).filter((id) => shownIds.has(id));
+      if (survivors.length) {
+        this.compositeSelectedIds = survivors;
+        this.afterCompositeSelectionChange();
+      } else {
+        this.dispatchSelection([]);
+      }
+    }
+  }
+  /**
+   * The baseline-quadrant legend for the composite plot: the four quadrants,
+   * each with its coded color and symbol (HEP-COMP-001).
+   * @private
+   */
+  buildCompositeLegend() {
+    const legend = createElement("div", "hep-composite-legend");
+    legend.append(createElement("strong", null, "Baseline quadrant:"));
+    COMPOSITE_QUADRANTS.forEach((quadrant) => {
+      const style = QUADRANT_STYLE[quadrant];
+      const item = createElement("span", "hep-legend-item");
+      const swatch = createElement("span");
+      swatch.style.cssText = `display:inline-block;width:.7rem;height:.7rem;border-radius:${style.pointStyle === "circle" ? "50%" : "2px"};background:${style.color}`;
+      item.append(swatch, document.createTextNode(quadrant));
+      legend.append(item);
+    });
+    return legend;
+  }
+  /**
+   * Log-log Chart.js scale configs for the composite eDISH scatters, widened to
+   * keep the ALT 3×ULN / BILI 2×ULN cut-lines in view.
+   * @private
+   */
+  compositeEdishScales(xValues, yValues) {
+    const xDomain = edishDomain(xValues, ALT_ULN_CUT, "log");
+    const yDomain = edishDomain(yValues, BILI_ULN_CUT, "log");
+    return {
+      x: {
+        type: "logarithmic",
+        min: xDomain[0],
+        max: xDomain[1],
+        title: { display: true, text: "ALT [\xD7ULN]" },
+        grid: { color: "rgba(148, 163, 184, 0.25)" }
+      },
+      y: {
+        type: "logarithmic",
+        min: yDomain[0],
+        max: yDomain[1],
+        title: { display: true, text: "Total Bilirubin [\xD7ULN]" },
+        grid: { color: "rgba(148, 163, 184, 0.25)" }
+      }
+    };
+  }
+  /**
+   * Build one composite eDISH scatter card (pretreatment or peak on-treatment):
+   * peak/baseline ALT (x) vs total bilirubin (y) in ×ULN, each point colored and
+   * shaped by its baseline quadrant, with the ALT 3×ULN / BILI 2×ULN cut-lines
+   * (HEP-COMP-001, HEP-COMP-002).
+   * @private
+   */
+  buildEdishCard(title, subjects, which) {
+    const card = createElement("div", "hep-composite-card");
+    card.append(createElement("h4", null, title));
+    const wrap = createElement("div", "hep-composite-canvas");
+    const canvas = document.createElement("canvas");
+    wrap.append(canvas);
+    card.append(wrap);
+    const xKey = which === "pretreat" ? "baselineAltULN" : "peakAltULN";
+    const yKey = which === "pretreat" ? "baselineBiliULN" : "peakBiliULN";
+    const data = subjects.map((subject) => ({ x: subject[xKey], y: subject[yKey] }));
+    const chart = new Chart(canvas.getContext("2d"), {
+      type: "scatter",
+      data: {
+        datasets: [{ data, ...this.compositeDatasetStyle(subjects, 5) }]
+      },
+      options: {
+        maintainAspectRatio: false,
+        responsive: true,
+        animation: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: this.compositeTooltipConfig(subjects, which)
+        },
+        scales: this.compositeEdishScales(
+          subjects.map((subject) => subject[xKey]),
+          subjects.map((subject) => subject[yKey])
+        ),
+        ...this.compositeInteractionOptions()
+      },
+      plugins: [
+        referenceLinePlugin({
+          vLines: [{ value: ALT_ULN_CUT, label: `${ALT_ULN_CUT}\xD7ULN` }],
+          hLines: [{ value: BILI_ULN_CUT, label: `${BILI_ULN_CUT}\xD7ULN` }]
+        })
+      ]
+    });
+    this.registerCompositeChart(chart, subjects, canvas);
+    return card;
+  }
+  /**
+   * A log-log ×Baseline domain over a set of values, always including the
+   * 1×/3×/5× reference lines and padded so no point sits on the frame.
+   * @private
+   */
+  blnDomain(values) {
+    const positives = [...values.filter(Number.isFinite), ...BLN_LINES].filter((v) => v > 0);
+    if (!positives.length) return [0.5, 5];
+    const min = Math.min(...positives, 0.5);
+    const max = Math.max(...positives);
+    return [min / 1.3, max * 1.3];
+  }
+  /**
+   * Build the four-panel ×Baseline shift plot (HEP-COMP-003): one panel per
+   * on-treatment quadrant, arranged in the eDISH spatial layout (Cholestasis
+   * upper-left, Hy's Law upper-right, Normal & NN lower-left, Temple's Corollary
+   * lower-right, matching the paper's Figs 4–6). Each point is the participant's
+   * peak ALT vs total bilirubin as multiples of its own baseline, colored/shaped
+   * by baseline quadrant, over shared axes with 1×/3×/5× reference lines.
+   * @private
+   */
+  buildCompositePanels(subjects) {
+    const grid = createElement("div", "hep-composite-panels");
+    const order = ["Cholestasis", "Hy's Law", "Normal & NN", "Temple's Corollary"];
+    const xDomain = this.blnDomain(subjects.map((subject) => subject.peakAltBLN));
+    const yDomain = this.blnDomain(subjects.map((subject) => subject.peakBiliBLN));
+    const refLines = BLN_LINES.map((value) => ({ value, label: `${value}\xD7` }));
+    order.forEach((quadrant) => {
+      const members = subjects.filter((subject) => subject.onTreatQuadrant === quadrant);
+      const card = createElement("div", "hep-composite-card");
+      card.append(createElement("h4", null, `${quadrant} (${members.length})`));
+      const wrap = createElement("div", "hep-composite-panel-canvas");
+      const canvas = document.createElement("canvas");
+      wrap.append(canvas);
+      card.append(wrap);
+      const data = members.map((subject) => ({ x: subject.peakAltBLN, y: subject.peakBiliBLN }));
+      const chart = new Chart(canvas.getContext("2d"), {
+        type: "scatter",
+        data: {
+          datasets: [{ data, ...this.compositeDatasetStyle(members, 4.5) }]
+        },
+        options: {
+          maintainAspectRatio: false,
+          responsive: true,
+          animation: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: this.compositeTooltipConfig(members, "bln")
+          },
+          scales: {
+            x: {
+              type: "logarithmic",
+              min: xDomain[0],
+              max: xDomain[1],
+              title: { display: true, text: "ALT [\xD7Baseline]" },
+              grid: { color: "rgba(148, 163, 184, 0.2)" }
+            },
+            y: {
+              type: "logarithmic",
+              min: yDomain[0],
+              max: yDomain[1],
+              title: { display: true, text: "TB [\xD7Baseline]" },
+              grid: { color: "rgba(148, 163, 184, 0.2)" }
+            }
+          },
+          ...this.compositeInteractionOptions()
+        },
+        plugins: [referenceLinePlugin({ vLines: refLines, hLines: refLines })]
+      });
+      this.registerCompositeChart(chart, members, canvas);
+      grid.append(card);
+    });
+    return grid;
+  }
+  /**
+   * Tooltip line for a composite point: the participant id, the panel-relevant
+   * standardized values, and the baseline → on-treatment migration.
+   * @private
+   */
+  compositeTooltip(subject, which) {
+    if (!subject) return "";
+    if (which === "bln") {
+      return `${subject.id}: ALT ${formatNumber4(subject.peakAltBLN)}\xD7BLN, TB ${formatNumber4(subject.peakBiliBLN)}\xD7BLN (baseline ${subject.pretreatQuadrant})`;
+    }
+    const alt = which === "pretreat" ? subject.baselineAltULN : subject.peakAltULN;
+    const bili = which === "pretreat" ? subject.baselineBiliULN : subject.peakBiliULN;
+    return `${subject.id}: ALT ${formatNumber4(alt)}\xD7ULN, TB ${formatNumber4(bili)}\xD7ULN \u2014 ${subject.pretreatQuadrant} \u2192 ${subject.onTreatQuadrant}`;
+  }
+  /**
+   * Tooltip config for a composite chart (HEP-COMP-007): when more than two
+   * points overlap under the cursor (dense panels), the tooltip collapses to a
+   * "N participants" count instead of stacking a line per participant, so the
+   * box stays small and does not cover the points beneath it. With one or two
+   * points it lists each participant's detail line.
+   * @param {Object[]} subjects The subjects backing this chart's single dataset.
+   * @param {string} which The panel kind ('pretreat' | 'ontreat' | 'bln').
+   * @private
+   */
+  compositeTooltipConfig(subjects, which) {
+    let itemCount = 0;
+    return {
+      filter: (item, index, items) => {
+        itemCount = items.length;
+        return items.length > 2 ? index === 0 : true;
+      },
+      callbacks: {
+        title: () => "",
+        label: (ctx) => itemCount > 2 ? `${itemCount} participants` : this.compositeTooltip(subjects[ctx.dataIndex], which)
+      }
+    };
+  }
+  /**
+   * Whether any participant is currently traced — hovered, or in the sticky
+   * multi-selection (HEP-COMP-007).
+   * @private
+   */
+  anyCompositeActive() {
+    return this.compositeHoverId != null || this.compositeSelectedIds.length > 0;
+  }
+  /**
+   * Whether a composite subject is currently traced: hovered, or one of the
+   * clicked multi-selection (HEP-COMP-007).
+   * @private
+   */
+  compositeIsActive(subject) {
+    if (!subject) return false;
+    const id = String(subject.id);
+    if (this.compositeHoverId != null && String(this.compositeHoverId) === id) return true;
+    return this.compositeSelectedIds.includes(id);
+  }
+  /**
+   * Scriptable point styling shared by every composite chart (HEP-COMP-007): each
+   * point keeps its baseline-quadrant color and shape; when a participant is
+   * traced, that participant's point(s) render full-opacity with a dark ring and
+   * a larger radius while every other point dims, so the traced participant
+   * stands out in each panel it appears in. With no trace active the styling is
+   * the module's default (0.8 opacity, quadrant-colored border).
+   * @param {Object[]} subjects The subjects backing this chart's single dataset.
+   * @param {number} baseRadius The unemphasized point radius.
+   * @private
+   */
+  compositeDatasetStyle(subjects, baseRadius) {
+    return {
+      pointStyle: subjects.map((subject) => QUADRANT_STYLE[subject.pretreatQuadrant].pointStyle),
+      pointBackgroundColor: (ctx) => {
+        const subject = subjects[ctx.dataIndex];
+        if (!subject) return "rgba(0, 0, 0, 0)";
+        const color2 = QUADRANT_STYLE[subject.pretreatQuadrant].color;
+        if (!this.anyCompositeActive()) return hexToRgba3(color2, 0.8);
+        return hexToRgba3(color2, this.compositeIsActive(subject) ? 1 : HIGHLIGHT_DIM_FILL);
+      },
+      pointBorderColor: (ctx) => {
+        const subject = subjects[ctx.dataIndex];
+        if (!subject) return "rgba(0, 0, 0, 0)";
+        const color2 = QUADRANT_STYLE[subject.pretreatQuadrant].color;
+        if (this.compositeIsActive(subject)) return SELECTION_COLOR2;
+        return !this.anyCompositeActive() ? color2 : hexToRgba3(color2, HIGHLIGHT_DIM_BORDER);
+      },
+      pointBorderWidth: (ctx) => this.compositeIsActive(subjects[ctx.dataIndex]) ? HIGHLIGHT_BORDER_WIDTH : 1,
+      pointRadius: (ctx) => baseRadius + (this.compositeIsActive(subjects[ctx.dataIndex]) ? HIGHLIGHT_RADIUS_BOOST : 0),
+      pointHoverRadius: baseRadius + 2
+    };
+  }
+  /**
+   * The hover/click handlers shared by every composite chart (HEP-COMP-007):
+   * hovering a point traces its participant everywhere; clicking a point toggles
+   * that participant in the multi-selection; clicking empty space clears the
+   * selection. Chart.js passes the chart as the THIRD handler argument (the
+   * active elements carry no chart reference), so the backing subjects are
+   * looked up from that chart.
+   * @private
+   */
+  compositeInteractionOptions() {
+    const idAt = (chart, element) => {
+      const subjects = chart && chart.$compositeSubjects;
+      const subject = subjects && element && subjects[element.index];
+      return subject ? subject.id : null;
+    };
+    return {
+      onHover: (event, active, chart) => {
+        const target = event?.native?.target;
+        if (target) target.style.cursor = active.length ? "pointer" : "default";
+        this.setCompositeHover(active.length ? idAt(chart, active[0]) : null);
+      },
+      onClick: (event, active, chart) => {
+        if (!active.length) {
+          this.clearCompositeSelection();
+          return;
+        }
+        const id = idAt(chart, active[0]);
+        if (id != null) this.toggleCompositeSelection(id);
+      }
+    };
+  }
+  /**
+   * Register a freshly built composite chart for teardown, resize, and
+   * cross-linking: it joins this.charts and this.compositeCharts, remembers its
+   * backing subjects for the interaction handlers, and clears the hover trace
+   * when the pointer leaves its canvas (HEP-COMP-007).
+   * @private
+   */
+  registerCompositeChart(chart, subjects, canvas) {
+    chart.$compositeSubjects = subjects;
+    this.charts.push(chart);
+    this.compositeCharts.push(chart);
+    canvas.addEventListener("pointerleave", () => this.setCompositeHover(null));
+  }
+  /**
+   * Mount the participant multi-select into the sidebar's Participants section
+   * (HEP-COMP-007): the section is created by buildControls (composite view
+   * only) and filled here once the shown subjects are known; with nothing shown
+   * the whole section is hidden.
+   * @param {Object[]} shown The shown composite subjects.
+   * @private
+   */
+  mountCompositeSelect(shown) {
+    const section = this.compositeSelectSection;
+    if (!section) return;
+    [...section.querySelectorAll(".sv-control")].forEach((el) => el.remove());
+    section.style.display = shown.length ? "" : "none";
+    if (shown.length) section.append(this.buildCompositeSelect(shown));
+  }
+  /**
+   * The active view's sticky participant selection: the composite
+   * multi-selection, or the scatter multi-highlight (HEP-SELECT-001,
+   * HEP-COMP-007).
+   * @private
+   */
+  activeSelectedIds() {
+    return this.state.view === "composite" ? this.compositeSelectedIds : this.scatterSelectedIds;
+  }
+  /**
+   * Build the participant multi-select dropdown for the sidebar's Participants
+   * section, shared by both views (HEP-SELECT-001, HEP-COMP-007): one option
+   * per shown participant, its selected options mirroring the view's sticky
+   * selection, plus a Clear selection button (disabled while nothing is
+   * selected) that resets the whole selection. Editing the select drives the
+   * highlight, and clicking points keeps it in sync.
+   * @param {Object[]} shown The shown participants ({id} each).
+   * @private
+   */
+  buildCompositeSelect(shown) {
+    const wrap = createElement("div", "hep-composite-select sv-control");
+    wrap.append(createElement("label", null, "Selected participants"));
+    const select = document.createElement("select");
+    select.multiple = true;
+    select.size = Math.min(8, Math.max(3, shown.length));
+    shown.forEach((subject) => option(select, String(subject.id), String(subject.id), false));
+    select.onchange = () => {
+      const ids = [...select.selectedOptions].map((opt) => opt.value);
+      if (this.state.view === "composite") {
+        this.compositeSelectedIds = ids;
+        this.afterCompositeSelectionChange();
+      } else {
+        this.applyScatterControlSelection(ids);
+      }
+    };
+    this.compositeSelectEl = select;
+    wrap.append(select);
+    const clear = document.createElement("button");
+    clear.type = "button";
+    clear.className = "hep-composite-clear";
+    clear.textContent = "Clear selection";
+    clear.disabled = !this.activeSelectedIds().length;
+    clear.onclick = () => this.state.view === "composite" ? this.clearCompositeSelection() : this.clearSelection();
+    this.compositeClearBtn = clear;
+    wrap.append(clear);
+    return wrap;
+  }
+  /**
+   * Mirror a view's sticky selection into the shared Participants control: the
+   * dropdown's selected options and the Clear button's enabled state
+   * (HEP-SELECT-001, HEP-COMP-007).
+   * @param {string[]} ids The view's selected participant ids.
+   * @private
+   */
+  syncSelectControl(ids) {
+    if (this.compositeSelectEl) {
+      const set2 = new Set(ids.map(String));
+      [...this.compositeSelectEl.options].forEach((opt) => {
+        opt.selected = set2.has(opt.value);
+      });
+    }
+    if (this.compositeClearBtn) this.compositeClearBtn.disabled = !ids.length;
+  }
+  /**
+   * Set the transient hovered participant and restyle the panels + header when it
+   * changes (HEP-COMP-007).
+   * @private
+   */
+  setCompositeHover(id) {
+    const norm = id == null ? null : String(id);
+    if (String(norm ?? "") === String(this.compositeHoverId ?? "")) return;
+    this.compositeHoverId = norm;
+    this.refreshCompositeHighlight();
+  }
+  /**
+   * Toggle a participant in the click-driven multi-selection (HEP-COMP-007).
+   * @private
+   */
+  toggleCompositeSelection(id) {
+    const key = String(id);
+    const index = this.compositeSelectedIds.indexOf(key);
+    if (index >= 0) this.compositeSelectedIds.splice(index, 1);
+    else this.compositeSelectedIds.push(key);
+    this.afterCompositeSelectionChange();
+  }
+  /**
+   * Clear the whole multi-selection (e.g. a click on empty plot space)
+   * (HEP-COMP-007).
+   * @private
+   */
+  clearCompositeSelection() {
+    if (!this.compositeSelectedIds.length) return;
+    this.compositeSelectedIds = [];
+    this.afterCompositeSelectionChange();
+  }
+  /**
+   * Sync the dropdown and its Clear selection button to the current
+   * multi-selection, restyle the panels + header, and dispatch the
+   * participantsSelected event so host apps stay in sync (HEP-COMP-007,
+   * HEP-API-003).
+   * @private
+   */
+  afterCompositeSelectionChange() {
+    this.syncSelectControl(this.compositeSelectedIds);
+    this.refreshCompositeHighlight();
+    this.dispatchSelection([...this.compositeSelectedIds]);
+  }
+  /**
+   * Restyle every composite chart to the current trace and refresh the header.
+   * Uses Chart.js's no-animation update so the highlight tracks the pointer
+   * without flicker (HEP-COMP-007).
+   * @private
+   */
+  refreshCompositeHighlight() {
+    this.compositeCharts.forEach((chart) => chart.update("none"));
+    this.updateCompositeHeader();
+  }
+  /**
+   * Update the shared participant-trace header from a view's hover + selection:
+   * a hover names that participant (marked selected when it is also in the
+   * selection), a single selection reads "Participant X selected.", several are
+   * counted, and the idle hint returns when nothing is traced (HEP-SELECT-001,
+   * HEP-COMP-007).
+   * @param {string|number|null} hoverId The view's transient hovered id.
+   * @param {string[]} selected The view's sticky selected ids.
+   * @private
+   */
+  updateTraceHeader(hoverId, selected) {
+    if (!this.compositeHeaderEl) return;
+    let text;
+    let active = true;
+    if (hoverId != null) {
+      text = this.participantAnnotationText(hoverId, selected.includes(String(hoverId)));
+    } else if (selected.length === 1) {
+      text = this.participantAnnotationText(selected[0], true);
+    } else if (selected.length > 1) {
+      text = `${selected.length} participants selected.`;
+    } else {
+      text = COMPOSITE_HEADER_HINT;
+      active = false;
+    }
+    this.compositeHeaderEl.textContent = text;
+    this.compositeHeaderEl.classList.toggle("is-active", active);
+  }
+  /**
+   * Refresh the shared trace header from the composite view's hover +
+   * multi-selection (HEP-COMP-007).
+   * @private
+   */
+  updateCompositeHeader() {
+    this.updateTraceHeader(this.compositeHoverId, this.compositeSelectedIds);
+  }
+  /**
+   * Refresh the shared trace header from the scatter view's hover +
+   * multi-highlight (HEP-SELECT-001).
+   * @private
+   */
+  updateScatterHeader() {
+    this.updateTraceHeader(this.state.hoverId, this.scatterSelectedIds);
+  }
+  /**
+   * Build the pretreatment × on-treatment migration table (HEP-COMP-004): counts
+   * with row/column totals, each interior cell shaded by its level of DILI
+   * concern (red/yellow/green/gray), plus the concern legend.
+   * @private
+   */
+  buildMigrationTable(subjects) {
+    const wrap = createElement("div", "hep-migration");
+    const matrix = migrationMatrix(subjects);
+    const table = createElement("table");
+    table.append(
+      createElement(
+        "caption",
+        null,
+        "Migration table \u2014 pretreatment (rows) \xD7 on-treatment (columns) quadrant counts"
+      )
+    );
+    const thead = document.createElement("thead");
+    const headRow = document.createElement("tr");
+    headRow.append(createElement("th", null, "Baseline \u2193 / On-treatment \u2192"));
+    COMPOSITE_QUADRANTS.forEach((quadrant) => headRow.append(createElement("th", null, quadrant)));
+    headRow.append(createElement("th", "hep-total", "Total"));
+    thead.append(headRow);
+    table.append(thead);
+    const tbody = document.createElement("tbody");
+    COMPOSITE_QUADRANTS.forEach((pre) => {
+      const tr = document.createElement("tr");
+      tr.append(createElement("td", "hep-rowhead", pre));
+      COMPOSITE_QUADRANTS.forEach((post) => {
+        const td = createElement("td", null, String(matrix.counts[pre][post]));
+        td.style.background = CONCERN_COLORS[concernOf(pre, post)];
+        tr.append(td);
+      });
+      tr.append(createElement("td", "hep-total", String(matrix.rowTotals[pre])));
+      tbody.append(tr);
+    });
+    const totalRow = document.createElement("tr");
+    totalRow.append(createElement("td", "hep-rowhead hep-total", "Total"));
+    COMPOSITE_QUADRANTS.forEach(
+      (post) => totalRow.append(createElement("td", "hep-total", String(matrix.colTotals[post])))
+    );
+    totalRow.append(createElement("td", "hep-total", String(matrix.total)));
+    tbody.append(totalRow);
+    table.append(tbody);
+    wrap.append(table);
+    wrap.append(this.buildConcernLegend());
+    return wrap;
+  }
+  /**
+   * The concern color legend for the migration table (HEP-COMP-004).
+   * @private
+   */
+  buildConcernLegend() {
+    const legend = createElement("div", "hep-concern-legend");
+    const items = [
+      ["red", "Migration of concern"],
+      ["yellow", "Migration of potential concern"],
+      ["green", "Migration of no concern (potential benefit)"],
+      ["gray", "No migration"]
+    ];
+    items.forEach(([key, label]) => {
+      const item = createElement("span", "hep-legend-item");
+      const swatch = createElement("span", "hep-concern-swatch");
+      swatch.style.background = CONCERN_COLORS[key];
+      item.append(swatch, document.createTextNode(label));
+      legend.append(item);
+    });
+    return legend;
+  }
+  /**
+   * Build the by-arm concern/benefit summary table (HEP-COMP-005): per value of
+   * the active Group column (or all participants when no grouping), the count of
+   * subjects whose migration is a concern (red), potential concern (yellow), no
+   * concern / benefit (green), or no migration (gray), with the arm total.
+   * @private
+   */
+  buildByArmSummary(subjects) {
+    const armCol = this.state.groupBy && this.state.groupBy !== GROUP_NONE2 ? this.state.groupBy : null;
+    const armLabel = armCol ? (this.settings.groups.find((group) => group.value_col === armCol) || {}).label || armCol : null;
+    const rows = byArmSummary(subjects, armCol);
+    const wrap = createElement("div", "hep-migration");
+    const table = createElement("table");
+    table.append(
+      createElement(
+        "caption",
+        null,
+        armCol ? `Concern vs. benefit summary by ${armLabel}` : "Concern vs. benefit summary (all participants)"
+      )
+    );
+    const thead = document.createElement("thead");
+    const headRow = document.createElement("tr");
+    [
+      armCol ? armLabel : "Group",
+      "Concern",
+      "Potential concern",
+      "No concern / benefit",
+      "No migration",
+      "Total"
+    ].forEach((label) => headRow.append(createElement("th", null, label)));
+    thead.append(headRow);
+    table.append(thead);
+    const tbody = document.createElement("tbody");
+    const cell2 = (count, key) => {
+      const td = createElement("td", null, String(count));
+      td.style.background = CONCERN_COLORS[key];
+      return td;
+    };
+    rows.forEach((row) => {
+      const tr = document.createElement("tr");
+      tr.append(createElement("td", "hep-rowhead", String(row.arm)));
+      tr.append(cell2(row.red, "red"));
+      tr.append(cell2(row.yellow, "yellow"));
+      tr.append(cell2(row.green, "green"));
+      tr.append(cell2(row.gray, "gray"));
+      tr.append(createElement("td", "hep-total", String(row.total)));
+      tbody.append(tr);
+    });
+    table.append(tbody);
+    wrap.append(table);
+    return wrap;
   }
   /**
    * The selected participant's cleaned lab records, augmented with the derived
@@ -25282,17 +20710,17 @@ var SafetyHepExplorer = class {
   }
   /**
    * Select a participant and drive every coordinated view (HEP-SELECT-001..006):
-   * highlight the point, trace the visit path on the scatter, open the linked
-   * listing of the participant's raw records, annotate the chart, and dispatch
-   * the participantsSelected event — which feeds the railed participant
-   * profile (#98, PPRF-7) — all in the active display units.
+   * highlight the point, trace the visit path on the scatter, draw the
+   * lab-over-time companion chart and the measure summary table, open the
+   * linked listing of the participant's raw records, annotate the chart, and
+   * dispatch the participantsSelected event — all in the active display units.
    * @param {string|number} id The participant identifier.
    * @returns {void}
    */
   selectParticipant(id) {
     this.state.selectedId = id;
     this.scatterSelectedIds = [String(id)];
-    this.selection.sync(this.scatterSelectedIds);
+    this.syncSelectControl(this.scatterSelectedIds);
     if (this.chart) {
       const path = visitPathSeries(this.cleanRows, id, this.settings, this.state);
       this.chart.data.datasets[1].data = path.map((entry) => ({ x: entry.x, y: entry.y }));
@@ -25303,18 +20731,18 @@ var SafetyHepExplorer = class {
     this.listingSort = null;
     this.page = 1;
     renderListing(this);
-    const annotation = this.selection.annotationText(id, true);
+    this.drawDetail(id);
+    const annotation = this.participantAnnotationText(id, true);
     this.mainAnnotation.textContent = annotation;
     this.footnote.textContent = annotation;
-    this.selection.updateTraceHeader(this.state.hoverId, this.scatterSelectedIds);
-    this.selection.dispatch([id]);
+    this.updateScatterHeader();
+    this.dispatchSelection([id]);
   }
   /**
-   * Close the single-participant drill-down: erase the visit-path overlay,
-   * close the listing, and restore the base annotation/footnote — without
-   * touching the multi-highlight or notifying listeners (HEP-SELECT-007). The
-   * railed profile empties on the dispatch([]) that follows a full clear; its
-   * charts are module-owned, so there is nothing to tear down here (#98).
+   * Close the single-participant drill-down: erase the visit-path overlay, tear
+   * down the detail chart, close the listing, and restore the base
+   * annotation/footnote — without touching the multi-highlight or notifying
+   * listeners (HEP-SELECT-007).
    * @private
    */
   closeDrillDown() {
@@ -25323,8 +20751,15 @@ var SafetyHepExplorer = class {
       this.chart.data.datasets[1].data = [];
       this.chart.update();
     }
+    this.charts = this.charts.filter((chart) => {
+      if (chart === this.chart) return true;
+      chart.destroy();
+      return false;
+    });
     this.currentTableData = [];
     this.listingWrap.innerHTML = "";
+    this.detailWrap.innerHTML = "";
+    this.detailWrap.style.display = "none";
     this.mainAnnotation.textContent = "";
     this.footnote.textContent = this.baseFootnote();
   }
@@ -25339,9 +20774,142 @@ var SafetyHepExplorer = class {
     if (this.state.selectedId == null && !this.scatterSelectedIds.length) return;
     this.scatterSelectedIds = [];
     this.closeDrillDown();
-    this.selection.sync([]);
-    this.selection.updateTraceHeader(this.state.hoverId, this.scatterSelectedIds);
-    this.selection.dispatch([]);
+    this.syncSelectControl([]);
+    this.updateScatterHeader();
+    this.dispatchSelection([]);
+  }
+  /**
+   * Apply a Participants-control selection to the scatter view (HEP-SELECT-001,
+   * HEP-COMP-007): exactly one participant opens the full drill-down (the same
+   * path as clicking their point), none clears everything, and several
+   * highlight those participants across the scatter — dimming the rest and
+   * counting them in the header — while the single-participant drill-down
+   * closes.
+   * @param {string[]} ids The participant ids selected in the control.
+   * @private
+   */
+  applyScatterControlSelection(ids) {
+    if (ids.length === 1) {
+      this.selectParticipant(ids[0]);
+      return;
+    }
+    if (!ids.length) {
+      this.clearSelection();
+      return;
+    }
+    this.closeDrillDown();
+    this.scatterSelectedIds = ids.map(String);
+    this.syncSelectControl(this.scatterSelectedIds);
+    if (this.chart) this.chart.update("none");
+    this.updateScatterHeader();
+    this.dispatchSelection([...this.scatterSelectedIds]);
+  }
+  /**
+   * Draw the participant drill-down panels into the detail container: the
+   * "Standardized Lab Values by Study Day" line chart (one line per measure in
+   * the active display units) and the Measure | N | Min | Median | Max summary
+   * table (HEP-SELECT-002, HEP-SELECT-005).
+   * @private
+   */
+  drawDetail(id) {
+    this.charts = this.charts.filter((chart) => {
+      if (chart === this.chart) return true;
+      chart.destroy();
+      return false;
+    });
+    this.detailWrap.innerHTML = "";
+    this.detailWrap.style.display = "";
+    this.detailWrap.append(
+      createElement("h3", "hep-detail-title", "Standardized Lab Values by Study Day")
+    );
+    const chartWrap = createElement("div", "hep-detail-chart");
+    const canvas = createElement("canvas", "hep-detail-canvas");
+    chartWrap.append(canvas);
+    this.detailWrap.append(chartWrap);
+    const series = participantMeasureSeries(this.cleanRows, id, this.settings, this.state);
+    const colors2 = groupColorScale2(series.map((entry) => entry.key));
+    const datasets = series.map((entry) => ({
+      label: entry.label,
+      data: entry.points.map((point) => ({
+        x: Number.isFinite(point.day) ? point.day : null,
+        y: point.value
+      })),
+      borderColor: colors2.get(entry.key),
+      backgroundColor: colors2.get(entry.key),
+      showLine: true,
+      spanGaps: true,
+      borderWidth: 1.5,
+      pointRadius: 2.5,
+      pointHoverRadius: 4
+    }));
+    const suffix = axisSuffix(this.state.display);
+    const detailChart = new Chart(canvas.getContext("2d"), {
+      type: "line",
+      data: { datasets },
+      options: {
+        maintainAspectRatio: false,
+        responsive: true,
+        animation: false,
+        plugins: {
+          legend: { display: true, position: "bottom" },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => `${ctx.dataset.label}: ${formatNumber4(ctx.parsed.y)}${suffix} @ day ${ctx.parsed.x}`
+            }
+          }
+        },
+        scales: {
+          x: { type: "linear", title: { display: true, text: "Study Day" } },
+          y: {
+            type: this.state.axisType === "log" ? "logarithmic" : "linear",
+            title: { display: true, text: `Standardized value${suffix}` }
+          }
+        }
+      }
+    });
+    this.charts.push(detailChart);
+    this.detailWrap.append(this.buildSummaryTable(id));
+  }
+  /**
+   * Build the per-measure raw-value summary table (Measure | N | Min | Median |
+   * Max) for the selected participant (HEP-SELECT-005).
+   * @private
+   */
+  buildSummaryTable(id) {
+    const table = createElement("table", "hep-summary-table");
+    const thead = document.createElement("thead");
+    const headRow = document.createElement("tr");
+    headRow.append(createElement("th", null, "Measure"));
+    ["N", "Min", "Median", "Max"].forEach(
+      (label) => headRow.append(createElement("th", "hep-num", label))
+    );
+    thead.append(headRow);
+    table.append(thead);
+    const tbody = document.createElement("tbody");
+    measureSummary(this.cleanRows, id, this.settings).forEach((row) => {
+      const tr = document.createElement("tr");
+      tr.append(createElement("td", null, row.label));
+      tr.append(createElement("td", "hep-num", String(row.n)));
+      tr.append(createElement("td", "hep-num", formatNumber4(row.min)));
+      tr.append(createElement("td", "hep-num", formatNumber4(row.median)));
+      tr.append(createElement("td", "hep-num", formatNumber4(row.max)));
+      tbody.append(tr);
+    });
+    table.append(tbody);
+    return table;
+  }
+  /**
+   * Dispatch the custom participantsSelected event on the shell root with the
+   * selected IDs (HEP-API-003).
+   * @private
+   */
+  dispatchSelection(ids) {
+    this.participantsSelected = ids;
+    if (this.root) {
+      this.root.dispatchEvent(
+        new CustomEvent("participantsSelected", { detail: { data: ids }, bubbles: true })
+      );
+    }
   }
   /**
    * Resize the live charts to their containers. For host layouts that change
@@ -25369,7 +20937,6 @@ var SafetyHepExplorer = class {
    * @returns {void}
    */
   destroy() {
-    this.unmountProfileRail();
     this.destroyCharts();
     this.element.innerHTML = "";
   }
@@ -25379,14 +20946,7 @@ function hepExplorer(element = "body", settings = {}) {
 }
 
 // src/ae-explorer/configure.js
-var DEFAULT_SETTINGS9 = {
-  // The railed participant profile (obot.roadmap#75 decision D9); false opts
-  // the renderer out of the drill-down. profile_ae overrides the AE mapping the
-  // profile reads (severity, seriousness, study days) where this renderer's own
-  // settings do not name those columns.
-  profile: true,
-  profile_details: [],
-  profile_ae: null,
+var DEFAULT_SETTINGS8 = {
   id_col: "USUBJID",
   major_col: "AEBODSYS",
   minor_col: "AEDECOD",
@@ -25429,30 +20989,30 @@ function filterSpec(value) {
   const start = value && value.start || null;
   return { ...spec, type, start };
 }
-function syncSettings9(settings) {
-  const synced = { ...DEFAULT_SETTINGS9, ...settings };
+function syncSettings8(settings) {
+  const synced = { ...DEFAULT_SETTINGS8, ...settings };
   synced.placeholder_flag = {
-    ...DEFAULT_SETTINGS9.placeholder_flag,
+    ...DEFAULT_SETTINGS8.placeholder_flag,
     ...settings.placeholder_flag || {}
   };
   if (!synced.placeholder_flag.value_col) synced.placeholder_flag.value_col = synced.major_col;
   synced.plot_settings = {
-    ...DEFAULT_SETTINGS9.plot_settings,
+    ...DEFAULT_SETTINGS8.plot_settings,
     ...settings.plot_settings || {}
   };
   synced.plot_settings.margin = {
-    ...DEFAULT_SETTINGS9.plot_settings.margin,
+    ...DEFAULT_SETTINGS8.plot_settings.margin,
     ...(settings.plot_settings || {}).margin || {}
   };
   synced.plot_settings.diff_margin = {
-    ...DEFAULT_SETTINGS9.plot_settings.diff_margin,
+    ...DEFAULT_SETTINGS8.plot_settings.diff_margin,
     ...(settings.plot_settings || {}).diff_margin || {}
   };
   const customFilters = arrayify(synced.filters).map((value) => filterSpec(value)).filter((filter) => filter.value_col);
   synced.filters = customFilters.length ? customFilters : DEFAULT_FILTERS.map((filter) => filterSpec(filter));
   synced.details = synced.details ? arrayify(synced.details).map((value) => fieldSpec(value)).filter((column) => column.value_col) : null;
   if (!SUMMARIZE_OPTIONS.includes(synced.summarize_by)) {
-    synced.summarize_by = DEFAULT_SETTINGS9.summarize_by;
+    synced.summarize_by = DEFAULT_SETTINGS8.summarize_by;
   }
   return synced;
 }
@@ -25649,10 +21209,10 @@ var ae_explorer_default = {
 };
 
 // src/ae-explorer/checkInputs.js
-var REQUIRED_COLUMN_SETTINGS9 = ae_explorer_default.properties.settings.required;
-function checkInputs9(data, settings) {
+var REQUIRED_COLUMN_SETTINGS8 = ae_explorer_default.properties.settings.required;
+function checkInputs8(data, settings) {
   const rows = Array.isArray(data) ? data : [];
-  const columns = REQUIRED_COLUMN_SETTINGS9.map((key) => settings[key]);
+  const columns = REQUIRED_COLUMN_SETTINGS8.map((key) => settings[key]);
   const missing = columns.filter((col) => !rows.some((row) => row[col] !== void 0));
   if (missing.length) {
     throw new Error(`Required variable(s) missing: ${missing.join(", ")}`);
@@ -25722,9 +21282,9 @@ function groupCounts(populationRows, eventRows, settings, groups) {
     nEvents: eventRows.filter((row) => String(row[settings.group_col] ?? "") === key).length
   }));
 }
-function cell(rows, settings, count2, summarizeBy) {
+function cell(rows, settings, count, summarizeBy) {
   const n = summarizeBy === "event" ? rows.length : unique7(rows.map((row) => row[settings.id_col])).length;
-  const tot = summarizeBy === "event" ? count2.nEvents : count2.n;
+  const tot = summarizeBy === "event" ? count.nEvents : count.n;
   return { n, tot, per: rate(n, tot) };
 }
 function groupBy(rows, col) {
@@ -25746,7 +21306,7 @@ function cellsFor(rows, settings, groups, counts, summarizeBy) {
 }
 function totalFor(rows, settings, counts, summarizeBy) {
   const total = {
-    n: summarizeBy === "event" ? counts.reduce((sum, count2) => sum + count2.nEvents, 0) : counts.reduce((sum, count2) => sum + count2.n, 0)
+    n: summarizeBy === "event" ? counts.reduce((sum, count) => sum + count.nEvents, 0) : counts.reduce((sum, count) => sum + count.n, 0)
   };
   return cell(rows, settings, { n: total.n, nEvents: total.n }, summarizeBy);
 }
@@ -25828,24 +21388,24 @@ function searchCategories(majors, term) {
   const minorKeys = /* @__PURE__ */ new Set();
   const lowered = String(term || "").toLowerCase();
   if (!lowered) return { count: 0, majorKeys, minorKeys };
-  let count2 = 0;
+  let count = 0;
   majors.forEach((major) => {
     if (major.key.toLowerCase().includes(lowered)) {
       majorKeys.add(major.key);
-      count2 += 1;
+      count += 1;
     }
     major.minors.forEach((minor) => {
       if (minor.key.toLowerCase().includes(lowered)) {
         minorKeys.add(`${major.key}||${minor.key}`);
-        count2 += 1;
+        count += 1;
       }
     });
   });
-  return { count: count2, majorKeys, minorKeys };
+  return { count, majorKeys, minorKeys };
 }
 
 // src/ae-explorer/getScales.js
-function linear2(domain, range) {
+function linear(domain, range) {
   const [d0, d1] = domain;
   const [r0, r1] = range;
   const span = d1 - d0 || 1;
@@ -25856,11 +21416,11 @@ function linear2(domain, range) {
   };
 }
 function makePercentScale(maxPer2, plot) {
-  return linear2([0, maxPer2 || 1], [plot.margin.left, plot.width - plot.margin.right]);
+  return linear([0, maxPer2 || 1], [plot.margin.left, plot.width - plot.margin.right]);
 }
 function makeDiffScale(extent, plot) {
   const reach = Math.max(Math.abs(extent[0] || 0), Math.abs(extent[1] || 0)) || 1;
-  return linear2([-reach, reach], [plot.diff_margin.left, plot.width - plot.diff_margin.right]);
+  return linear([-reach, reach], [plot.diff_margin.left, plot.width - plot.diff_margin.right]);
 }
 function formatPercent2(value) {
   return (Number(value) || 0).toFixed(1);
@@ -25910,7 +21470,7 @@ function summaryCsv(majors, groups) {
 }
 
 // src/ae-explorer.js
-var SVG_NS3 = "http://www.w3.org/2000/svg";
+var SVG_NS2 = "http://www.w3.org/2000/svg";
 var NO_MATCH_MESSAGE = "Error: No AEs found for the current filters. Update the filters to see results.";
 var SUMMARY_FOOTNOTE = "Click a category to view the underlying records. Hover a rate for counts.";
 var FILTER_TYPE_NOTES = {
@@ -25954,7 +21514,7 @@ var AEExplorer = class {
   constructor(element = "body", settings = {}) {
     this.element = typeof element === "string" ? document.querySelector(element) : element;
     if (!this.element) throw new Error(`AE Explorer target not found: ${element}`);
-    this.settings = syncSettings9(settings);
+    this.settings = syncSettings8(settings);
     this.initialMappings = {
       id: this.settings.id_col,
       major: this.settings.major_col,
@@ -25977,10 +21537,6 @@ var AEExplorer = class {
       expanded: /* @__PURE__ */ new Set()
     };
     this.renderShellChrome();
-    this.profileRows = [];
-    this.listingSelectedId = null;
-    this.onListingRowClick = (row) => this.focusParticipant(row[this.settings.id_col]);
-    mountProfileRail(this, () => this.profileSettings());
   }
   /**
    * Build the static DOM the table renders into: the shared shell (with the
@@ -26049,50 +21605,8 @@ var AEExplorer = class {
     this.validateAndCleanData();
     this.seedFilterState();
     this.buildControls();
-    syncProfileRail(this, () => this.profileSettings());
-    if (this.profile) this.profile.setAeData(this.rawData);
     this.render();
     return this;
-  }
-  /**
-   * The settings handed to the railed participant-profile module: this
-   * renderer's own AE mapping passed through, so the profile reads the same
-   * records the table counts.
-   * @returns {Object} The profile pass-through settings.
-   * @private
-   */
-  profileSettings() {
-    return {
-      id_col: this.settings.id_col,
-      details: this.settings.profile_details || [],
-      on_clear: () => this.focusParticipant(null),
-      ae: {
-        data: this.rawData,
-        id_col: this.settings.id_col,
-        major_col: this.settings.major_col,
-        minor_col: this.settings.minor_col,
-        ...this.settings.profile_ae || {}
-      }
-    };
-  }
-  /**
-   * Focus one participant (or none) and tell the page: the house
-   * `participantsSelected` event on the shell root, which is what feeds the
-   * rail. The listing highlights the focused rows.
-   * @param {?(string|number)} id The participant id, or null to clear.
-   * @returns {void}
-   * @private
-   */
-  focusParticipant(id) {
-    this.listingSelectedId = id === void 0 ? null : id;
-    this.participantsSelected = this.listingSelectedId === null ? [] : [String(id)];
-    renderListing(this);
-    this.root.dispatchEvent(
-      new CustomEvent("participantsSelected", {
-        detail: { data: this.participantsSelected },
-        bubbles: true
-      })
-    );
   }
   /**
    * Merge setting overrides onto the current settings, re-normalize them
@@ -26102,7 +21616,7 @@ var AEExplorer = class {
    * @returns {AEExplorer} The instance, for chaining.
    */
   setSettings(settings) {
-    this.settings = syncSettings9({ ...this.settings, ...settings });
+    this.settings = syncSettings8({ ...this.settings, ...settings });
     this.state.summarizeBy = this.settings.summarize_by;
     this.state.maxPrevalence = this.settings.max_prevalence;
     this.validateAndCleanData();
@@ -26119,7 +21633,7 @@ var AEExplorer = class {
    */
   validateAndCleanData() {
     try {
-      checkInputs9(this.rawData, this.settings);
+      checkInputs8(this.rawData, this.settings);
     } catch (error) {
       this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
       throw error;
@@ -26441,7 +21955,7 @@ var AEExplorer = class {
       th.append(this.buildAxis(diffScale, (value) => `${Math.round(value)}`));
       return th;
     };
-    const totalN = () => counts.reduce((sum, count2) => sum + count2.n, 0);
+    const totalN = () => counts.reduce((sum, count) => sum + count.n, 0);
     if (plan.groupCols && groups.length >= 2) {
       const top = document.createElement("tr");
       const bottom = document.createElement("tr");
@@ -26477,12 +21991,12 @@ var AEExplorer = class {
    */
   buildAxis(scale, format) {
     const { width } = this.settings.plot_settings;
-    const svg = document.createElementNS(SVG_NS3, "svg");
+    const svg = document.createElementNS(SVG_NS2, "svg");
     svg.setAttribute("width", width);
     svg.setAttribute("height", 18);
     svg.setAttribute("class", "ae-axis");
     const [d0, d1] = scale.domain;
-    const line = document.createElementNS(SVG_NS3, "line");
+    const line = document.createElementNS(SVG_NS2, "line");
     line.setAttribute("x1", scale.x(d0));
     line.setAttribute("x2", scale.x(d1));
     line.setAttribute("y1", 4);
@@ -26491,7 +22005,7 @@ var AEExplorer = class {
     svg.append(line);
     const anchors = ["start", "middle", "end"];
     [d0, (d0 + d1) / 2, d1].forEach((value, index) => {
-      const text = document.createElementNS(SVG_NS3, "text");
+      const text = document.createElementNS(SVG_NS2, "text");
       text.setAttribute("x", scale.x(value));
       text.setAttribute("y", 15);
       text.setAttribute("text-anchor", anchors[index]);
@@ -26535,9 +22049,9 @@ var AEExplorer = class {
         const cell2 = item.cells[group];
         const td = createElement("td", "ae-value", formatPercent2(cell2.per));
         td.title = cellTitle(cell2);
-        const count2 = createElement("span", "ae-cell-count", `(${cellTitle(cell2)})`);
-        count2.dataset.group = group;
-        td.append(count2);
+        const count = createElement("span", "ae-cell-count", `(${cellTitle(cell2)})`);
+        count.dataset.group = group;
+        td.append(count);
         tr.append(td);
       });
     }
@@ -26584,19 +22098,19 @@ var AEExplorer = class {
    */
   buildDotPlot(item, color2, percentScale) {
     const { height, width, radius } = this.settings.plot_settings;
-    const svg = document.createElementNS(SVG_NS3, "svg");
+    const svg = document.createElementNS(SVG_NS2, "svg");
     svg.setAttribute("width", width);
     svg.setAttribute("height", height);
     svg.setAttribute("class", "ae-plot");
     this.groups.forEach((group) => {
       const cell2 = item.cells[group];
-      const circle = document.createElementNS(SVG_NS3, "circle");
+      const circle = document.createElementNS(SVG_NS2, "circle");
       circle.setAttribute("cx", percentScale.x(cell2.per));
       circle.setAttribute("cy", height / 2);
       circle.setAttribute("r", Math.max(2, radius - 2));
       circle.setAttribute("fill", color2(group));
       circle.setAttribute("fill-opacity", "0.85");
-      const title = document.createElementNS(SVG_NS3, "title");
+      const title = document.createElementNS(SVG_NS2, "title");
       title.textContent = dotTitle(group, cell2);
       circle.append(title);
       svg.append(circle);
@@ -26613,7 +22127,7 @@ var AEExplorer = class {
    */
   buildDiffPlot(item, color2, diffScale) {
     const { height, width, radius } = this.settings.plot_settings;
-    const svg = document.createElementNS(SVG_NS3, "svg");
+    const svg = document.createElementNS(SVG_NS2, "svg");
     svg.setAttribute("width", width);
     svg.setAttribute("height", height);
     svg.setAttribute("class", "ae-plot");
@@ -26622,7 +22136,7 @@ var AEExplorer = class {
     const diffs = addDifferences(item.cells, this.groups);
     const hideCi = this.groups.length > 2;
     diffs.forEach((diff) => {
-      const line = document.createElementNS(SVG_NS3, "line");
+      const line = document.createElementNS(SVG_NS2, "line");
       line.setAttribute("x1", diffScale.x(diff.lower));
       line.setAttribute("x2", diffScale.x(diff.upper));
       line.setAttribute("y1", mid);
@@ -26631,7 +22145,7 @@ var AEExplorer = class {
       line.setAttribute("class", hideCi ? "ae-ci ae-ci-hidden" : "ae-ci");
       svg.append(line);
       const x = diffScale.x(diff.diff);
-      const diamond = document.createElementNS(SVG_NS3, "path");
+      const diamond = document.createElementNS(SVG_NS2, "path");
       diamond.setAttribute(
         "d",
         `M ${x} ${mid - half} L ${x + half} ${mid} L ${x} ${mid + half} L ${x - half} ${mid} Z`
@@ -26641,7 +22155,7 @@ var AEExplorer = class {
       diamond.setAttribute("stroke", color2(higher));
       diamond.setAttribute("fill-opacity", diff.sig ? "1" : "0.1");
       diamond.setAttribute("class", "ae-diamond");
-      const title = document.createElementNS(SVG_NS3, "title");
+      const title = document.createElementNS(SVG_NS2, "title");
       title.textContent = diffTitle(diff, item.cells);
       diamond.append(title);
       svg.append(diamond);
@@ -26749,7 +22263,6 @@ var AEExplorer = class {
    * @returns {void}
    */
   destroy() {
-    unmountProfileRail(this);
     this.charts.forEach((chart) => chart.destroy());
     this.charts = [];
     this.element.innerHTML = "";
@@ -26901,10 +22414,10 @@ var qt_explorer_default = {
 };
 
 // src/qt-explorer/checkInputs.js
-var REQUIRED_COLUMN_SETTINGS10 = qt_explorer_default.properties.settings.required;
-function checkInputs10(data, settings) {
+var REQUIRED_COLUMN_SETTINGS9 = qt_explorer_default.properties.settings.required;
+function checkInputs9(data, settings) {
   const rows = Array.isArray(data) ? data : [];
-  const missing = REQUIRED_COLUMN_SETTINGS10.map((key) => settings[key]).filter(
+  const missing = REQUIRED_COLUMN_SETTINGS9.map((key) => settings[key]).filter(
     (col) => !rows.some((row) => row[col] !== void 0)
   );
   if (missing.length) {
@@ -26913,7 +22426,7 @@ function checkInputs10(data, settings) {
 }
 
 // src/qt-explorer/configure.js
-var VIEWS2 = [
+var VIEWS = [
   { value: "central", label: "Central tendency" },
   { value: "outlier", label: "Outlier scatter" },
   { value: "categorical", label: "Categorical" }
@@ -26927,7 +22440,7 @@ var DISPLAY_MODES2 = [
   { value: "deltadelta", label: "\u0394\u0394 (placebo-corrected)" }
 ];
 var TIMEPOINT_MAX = "__qt_max";
-var DEFAULT_SETTINGS10 = {
+var DEFAULT_SETTINGS9 = {
   id_col: "USUBJID",
   measure_col: "TEST",
   value_col: "STRESN",
@@ -26947,35 +22460,30 @@ var DEFAULT_SETTINGS10 = {
   reference_threshold: 10,
   ci_level: 0.9,
   filters: [],
-  profile: true,
-  profile_details: null,
-  participantProfileURL: null,
   width: "100%",
   height: 460
 };
-function arrayify8(value) {
+function arrayify7(value) {
   if (value === void 0 || value === null || value === "") return [];
   return Array.isArray(value) ? value : [value];
 }
-function fieldSpec8(value, fallbackLabel) {
+function fieldSpec7(value, fallbackLabel) {
   if (typeof value === "string") return { value_col: value, label: fallbackLabel || value };
   return { ...value, value_col: value.value_col, label: value.label || value.value_col };
 }
-function syncSettings10(settings) {
-  const synced = { ...DEFAULT_SETTINGS10, ...settings };
-  synced.filters = arrayify8(synced.filters).map((value) => fieldSpec8(value)).filter((d) => d.value_col);
-  synced.measures = arrayify8(synced.measures);
-  synced.qtc_measures = arrayify8(synced.qtc_measures);
-  synced.absolute_thresholds = arrayify8(synced.absolute_thresholds).map(Number).filter((n) => Number.isFinite(n)).sort((a, b) => a - b);
-  synced.change_thresholds = arrayify8(synced.change_thresholds).map(Number).filter((n) => Number.isFinite(n)).sort((a, b) => a - b);
+function syncSettings9(settings) {
+  const synced = { ...DEFAULT_SETTINGS9, ...settings };
+  synced.filters = arrayify7(synced.filters).map((value) => fieldSpec7(value)).filter((d) => d.value_col);
+  synced.measures = arrayify7(synced.measures);
+  synced.qtc_measures = arrayify7(synced.qtc_measures);
+  synced.absolute_thresholds = arrayify7(synced.absolute_thresholds).map(Number).filter((n) => Number.isFinite(n)).sort((a, b) => a - b);
+  synced.change_thresholds = arrayify7(synced.change_thresholds).map(Number).filter((n) => Number.isFinite(n)).sort((a, b) => a - b);
   if (!synced.start_measure || !synced.measures.includes(synced.start_measure)) {
     synced.start_measure = synced.measures[0] || null;
   }
   if (!Number.isFinite(synced.ci_level) || synced.ci_level <= 0 || synced.ci_level >= 1) {
-    synced.ci_level = DEFAULT_SETTINGS10.ci_level;
+    synced.ci_level = DEFAULT_SETTINGS9.ci_level;
   }
-  synced.profile = Boolean(synced.profile);
-  synced.profile_details = synced.profile_details === void 0 || synced.profile_details === null ? null : arrayify8(synced.profile_details).map((value) => fieldSpec8(value)).filter((d) => d.value_col);
   return synced;
 }
 function zForCi(ciLevel) {
@@ -27009,13 +22517,13 @@ function unique8(values) {
     ...new Set(values.filter((value) => value !== void 0 && value !== null && value !== ""))
   ];
 }
-function mean7(values) {
+function mean6(values) {
   if (!values.length) return Number.NaN;
   return values.reduce((sum, value) => sum + value, 0) / values.length;
 }
 function sd4(values) {
   if (values.length < 2) return Number.NaN;
-  const m = mean7(values);
+  const m = mean6(values);
   return Math.sqrt(
     values.reduce((sum, value) => sum + Math.pow(value - m, 2), 0) / (values.length - 1)
   );
@@ -27099,7 +22607,7 @@ function applyFilters7(rows, filterState) {
   if (!active.length) return rows;
   return rows.filter((row) => active.every(([col, value]) => String(row[col]) === String(value)));
 }
-function centralTendencySeries(measureRows2, options) {
+function centralTendencySeries(measureRows, options) {
   const {
     statistic = "mean",
     mode = "delta",
@@ -27110,7 +22618,7 @@ function centralTendencySeries(measureRows2, options) {
   const z = zForCi(options.ciLevel);
   const cells = /* @__PURE__ */ new Map();
   for (const visit of visitOrder) cells.set(visit, /* @__PURE__ */ new Map());
-  for (const row of measureRows2) {
+  for (const row of measureRows) {
     if (!Number.isFinite(row.__qt_change)) continue;
     const visit = row.__qt_visit;
     if (!cells.has(visit)) continue;
@@ -27123,7 +22631,7 @@ function centralTendencySeries(measureRows2, options) {
     const values = (cells.get(visit) || /* @__PURE__ */ new Map()).get(arm) || [];
     if (!values.length) return null;
     const n = values.length;
-    const m = mean7(values);
+    const m = mean6(values);
     const s = sd4(values);
     const se = Number.isFinite(s) ? s / Math.sqrt(n) : Number.NaN;
     return { n, mean: m, median: median3(values), sd: s, se };
@@ -27184,10 +22692,10 @@ function peakVisits(tendency) {
   }
   return peaks;
 }
-function subjectPoints(measureRows2, options) {
+function subjectPoints(measureRows, options) {
   const { timepoint, idCol } = options;
   const bySubject = /* @__PURE__ */ new Map();
-  for (const row of measureRows2) {
+  for (const row of measureRows) {
     const id = row[idCol];
     if (timepoint === "__qt_max") {
       if (!row.__qt_postBaseline) continue;
@@ -27211,9 +22719,9 @@ function subjectPoints(measureRows2, options) {
   }
   return points;
 }
-function subjectExtremes(measureRows2, idCol) {
+function subjectExtremes(measureRows, idCol) {
   const extremes = /* @__PURE__ */ new Map();
-  for (const row of measureRows2) {
+  for (const row of measureRows) {
     if (!row.__qt_postBaseline) continue;
     const id = row[idCol];
     const entry = extremes.get(id) || {
@@ -27228,9 +22736,9 @@ function subjectExtremes(measureRows2, idCol) {
   }
   return extremes;
 }
-function classifyThresholds(measureRows2, options) {
+function classifyThresholds(measureRows, options) {
   const { idCol, arms, absoluteThresholds = [], changeThresholds = [] } = options;
-  const extremes = subjectExtremes(measureRows2, idCol);
+  const extremes = subjectExtremes(measureRows, idCol);
   const denominators = {};
   arms.forEach((arm) => {
     denominators[arm] = 0;
@@ -27567,95 +23075,22 @@ var SafetyQtExplorer = class {
   constructor(element = "body", settings = {}) {
     this.element = typeof element === "string" ? document.querySelector(element) : element;
     if (!this.element) throw new Error(`Safety QT Explorer target not found: ${element}`);
-    this.settings = syncSettings10(settings);
+    this.settings = syncSettings9(settings);
     this.rawData = [];
     this.cleanRows = [];
     this.filteredRows = [];
     this.charts = [];
     this.arms = [];
     this.availableMeasures = [];
-    this.participantsSelected = [];
-    this.profile = null;
-    this.profileFeed = null;
-    this.profileKey = null;
-    this.profileRows = [];
     this.state = {
       view: "central",
       measure: this.settings.start_measure,
       statistic: "mean",
       mode: "delta",
       timepoint: TIMEPOINT_MAX,
-      filters: {},
-      selectedId: null
+      filters: {}
     };
     this.renderShellDom();
-    mountProfileRail(this, () => this.profileSettings());
-  }
-  /**
-   * The settings handed to the railed participant-profile module (#99,
-   * PPRF-QT-002) — the interval-measure (ECG) mapping onto the profile's
-   * long-lab contract:
-   *
-   * - `normal_col_high` points at the synthesized `__qt_profile_uln` (= 1)
-   *   column, so the ×ULN standardization is a no-op and the spaghetti plots
-   *   OBSERVED milliseconds (nothing drops on the ULN>0 guard). KNOWN
-   *   module-surface side effects (routed to #98, documented in
-   *   docs/qt-explorer-coverage.md): the measure table's sparkline/inset treat
-   *   the unit ULN as a real normal-range limit, and the spaghetti's axis
-   *   label/accessible name stay "Standardized Result [xULN]".
-   * - `measure_values` is the identity map over the host's `measures`, making
-   *   the ECG parameters the profile's KEY measures.
-   * - `cuts` carry the FIRST absolute threshold (450 ms by default) per QTc
-   *   measure on the observed-ms scale; the NaN `defaults` entry leaves Heart
-   *   Rate (and any other non-QTc parameter) cut-free. The 30/60 ms
-   *   change-from-baseline thresholds are not representable in the dock — see
-   *   docs/qt-explorer-coverage.md.
-   * - the host's `baseline_col` ('BASE') is a VALUE column, not the profile's
-   *   baseline FLAG contract, so the profile's `baseline_col` stays null and
-   *   deriveBaseline's earliest-visit rule lands on the baseline visit.
-   * - `studyday_col` maps from `visitn_col` (ADEG-style data carries no DY).
-   * @private
-   */
-  profileSettings() {
-    const settings = this.settings;
-    const measureValues = {};
-    (settings.measures || []).forEach((measure) => {
-      measureValues[measure] = measure;
-    });
-    const qtcCut = settings.absolute_thresholds.length ? settings.absolute_thresholds[0] : NaN;
-    const cuts = { defaults: { relative_uln: NaN, relative_baseline: NaN } };
-    (settings.qtc_measures || []).forEach((measure) => {
-      cuts[measure] = { relative_uln: qtcCut, relative_baseline: NaN };
-    });
-    return {
-      id_col: settings.id_col,
-      measure_col: settings.measure_col,
-      value_col: settings.value_col,
-      unit_col: settings.unit_col,
-      normal_col_high: "__qt_profile_uln",
-      normal_col_low: null,
-      studyday_col: settings.visitn_col,
-      visit_col: settings.visit_col,
-      visitn_col: settings.visitn_col,
-      baseline_col: null,
-      measure_values: measureValues,
-      cuts,
-      display_options: [
-        { value: "relative_uln", label: "Observed (ms)" },
-        { value: "relative_baseline", label: "\xD7Baseline" }
-      ],
-      details: settings.profile_details && settings.profile_details.length ? settings.profile_details : [],
-      participantProfileURL: settings.participantProfileURL ?? null,
-      on_clear: () => {
-        if (this.state.selectedId != null) {
-          this.clearSelection();
-        } else {
-          this.emphasizeParticipant(null);
-          this.dispatchSelection([]);
-        }
-      },
-      on_step: (id) => this.emphasizeParticipant(id)
-    };
   }
   /** Build the shell + module-owned slots (legend, note, table, ICH callout). @private */
   renderShellDom() {
@@ -27695,25 +23130,9 @@ var SafetyQtExplorer = class {
   setData(data) {
     this.rawData = Array.isArray(data) ? data : [];
     this.validateAndCleanData();
-    this.buildProfileRows();
     this.buildControls();
     this.render();
     return this;
-  }
-  /**
-   * Derive the railed profile's pre-cleaned rows ONCE per data/settings change
-   * (#99, PPRF-QT-002) — never per gesture. Each raw record is shallow-copied
-   * with a synthesized `__qt_profile_uln = 1` column before the shared
-   * hep-core ingest, so `__hep_relative_uln` carries the observed value in
-   * milliseconds and the ULN>0 guard drops nothing numeric; the host's
-   * retained rawData is never mutated.
-   * @private
-   */
-  buildProfileRows() {
-    this.profileRows = this.settings.profile ? buildProfileRows(
-      this.rawData.map((row) => ({ ...row, __qt_profile_uln: 1 })),
-      this.profileSettings()
-    ) : [];
   }
   /**
    * Merge setting overrides, re-normalize (same rules as the factory), rebuild
@@ -27722,13 +23141,11 @@ var SafetyQtExplorer = class {
    * @returns {SafetyQtExplorer} The instance, for chaining.
    */
   setSettings(settings) {
-    this.settings = syncSettings10({ ...this.settings, ...settings });
+    this.settings = syncSettings9({ ...this.settings, ...settings });
     if ("start_measure" in settings || "measures" in settings) {
       this.state.measure = this.settings.start_measure;
     }
     if (this.rawData.length) this.validateAndCleanData();
-    this.buildProfileRows();
-    syncProfileRail(this, () => this.profileSettings());
     this.buildControls();
     this.render();
     return this;
@@ -27736,7 +23153,7 @@ var SafetyQtExplorer = class {
   /** Validate + clean; resolve measures, arms, placebo, visits, and prune stale state. @private */
   validateAndCleanData() {
     try {
-      checkInputs10(this.rawData, this.settings);
+      checkInputs9(this.rawData, this.settings);
     } catch (error) {
       this.destroyCharts();
       this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
@@ -27773,7 +23190,7 @@ var SafetyQtExplorer = class {
    */
   buildViewControl(addSection) {
     renderViewSelector(addSection, {
-      options: VIEWS2,
+      options: VIEWS,
       active: this.state.view,
       onChange: (value) => {
         this.state.view = value;
@@ -27866,9 +23283,6 @@ var SafetyQtExplorer = class {
    */
   render() {
     this.destroyCharts();
-    this.state.selectedId = null;
-    this.participantsSelected = [];
-    resetProfileRail(this);
     this.legendEl.classList.add("qt-empty");
     this.noteEl.classList.add("qt-empty");
     this.tableWrap.classList.add("qt-empty");
@@ -27924,9 +23338,9 @@ var SafetyQtExplorer = class {
   renderCentral() {
     const measure = this.state.measure;
     const isQtc = isQtcMeasure(measure, this.settings.qtc_measures);
-    const measureRows2 = forMeasure(this.filteredRows, measure);
-    const visitOrder = orderVisits(measureRows2, this.settings);
-    const tendency = centralTendencySeries(measureRows2, {
+    const measureRows = forMeasure(this.filteredRows, measure);
+    const visitOrder = orderVisits(measureRows, this.settings);
+    const tendency = centralTendencySeries(measureRows, {
       statistic: this.state.statistic,
       mode: this.state.mode,
       arms: this.arms,
@@ -28124,8 +23538,8 @@ var SafetyQtExplorer = class {
       this.footnote.textContent = "";
       return;
     }
-    const measureRows2 = forMeasure(this.filteredRows, measure);
-    const points = subjectPoints(measureRows2, {
+    const measureRows = forMeasure(this.filteredRows, measure);
+    const points = subjectPoints(measureRows, {
       timepoint: this.state.timepoint,
       idCol: this.settings.id_col
     });
@@ -28187,22 +23601,6 @@ var SafetyQtExplorer = class {
             max: yDomain[1],
             title: { display: true, text: titles.y }
           }
-        },
-        onHover: (event, elements) => {
-          if (event && event.native && event.native.target) {
-            event.native.target.style.cursor = elements.length ? "pointer" : "default";
-          }
-        },
-        // Point click → participant selection feeding the railed profile
-        // (#99, PPRF-QT-001); an empty click clears (PPRF-11).
-        onClick: (event, elements) => {
-          if (!elements.length) {
-            this.clearSelection();
-            return;
-          }
-          const el = elements[0];
-          const raw = datasets[el.datasetIndex] && datasets[el.datasetIndex].data[el.index];
-          if (raw && raw.__point) this.selectParticipant(raw.__point.id);
         }
       },
       plugins: [thresholdScatterPlugin(this)]
@@ -28233,8 +23631,8 @@ var SafetyQtExplorer = class {
       this.footnote.textContent = "";
       return;
     }
-    const measureRows2 = forMeasure(this.filteredRows, measure);
-    const classification = classifyThresholds(measureRows2, {
+    const measureRows = forMeasure(this.filteredRows, measure);
+    const classification = classifyThresholds(measureRows, {
       idCol: this.settings.id_col,
       arms: this.arms,
       absoluteThresholds: this.settings.absolute_thresholds,
@@ -28278,67 +23676,6 @@ var SafetyQtExplorer = class {
     this.footnote.textContent = "Absolute rows use each participant\u2019s maximum post-baseline value; change rows use the maximum post-baseline change (they may fall at different visits). Exploratory tool \u2014 confirm signals with validated ICH-E14 analyses.";
   }
   /**
-   * Select one participant from the outlier scatter (#99, PPRF-QT-001): set
-   * the minimal host selection state, emphasize the participant's point, and
-   * dispatch the house participantsSelected event on the shell root — which
-   * feeds the railed profile. Single-select only (PPRF-QT-004).
-   * @param {string} id Participant identifier.
-   * @returns {void}
-   */
-  selectParticipant(id) {
-    this.state.selectedId = id == null ? null : String(id);
-    this.emphasizeParticipant(this.state.selectedId);
-    this.dispatchSelection(this.state.selectedId == null ? [] : [this.state.selectedId]);
-  }
-  /**
-   * Clear the point selection (#99, PPRF-QT-003): restore the uniform point
-   * emphasis and dispatch the empty selection so the dock empties.
-   * @returns {void}
-   */
-  clearSelection() {
-    if (this.state.selectedId == null) return;
-    this.state.selectedId = null;
-    this.emphasizeParticipant(null);
-    this.dispatchSelection([]);
-  }
-  /**
-   * Emphasize (or restore, for a null id) one participant's scatter point
-   * WITHOUT touching the host selection state — also the transient emphasis
-   * the profile stepper drives (PPRF-11). Per-point radius/border arrays are
-   * matched on each datum's __point.id; a no-op outside the outlier view.
-   * @param {?string} id Participant identifier, or null to restore.
-   * @private
-   */
-  emphasizeParticipant(id) {
-    if (!this.chart || this.state.view !== "outlier") return;
-    this.chart.data.datasets.forEach((dataset) => {
-      if (id == null) {
-        dataset.pointRadius = 4;
-        dataset.pointHoverRadius = 6;
-        dataset.pointBorderWidth = 1;
-      } else {
-        const match = (raw) => raw.__point && String(raw.__point.id) === String(id);
-        dataset.pointRadius = dataset.data.map((raw) => match(raw) ? 7 : 3);
-        dataset.pointHoverRadius = dataset.data.map((raw) => match(raw) ? 8 : 5);
-        dataset.pointBorderWidth = dataset.data.map((raw) => match(raw) ? 3 : 1);
-      }
-    });
-    this.chart.update();
-  }
-  /**
-   * Dispatch the custom participantsSelected event on the shell root with the
-   * selected IDs (the house selection contract, #99 PPRF-QT-001).
-   * @private
-   */
-  dispatchSelection(ids) {
-    this.participantsSelected = ids;
-    if (this.root) {
-      this.root.dispatchEvent(
-        new CustomEvent("participantsSelected", { detail: { data: ids }, bubbles: true })
-      );
-    }
-  }
-  /**
    * Resize the live charts (e.g. after the sidebar collapses).
    * @returns {void}
    */
@@ -28350,1558 +23687,12 @@ var SafetyQtExplorer = class {
    * @returns {void}
    */
   destroy() {
-    unmountProfileRail(this);
     this.destroyCharts();
     this.element.innerHTML = "";
   }
 };
 function qtExplorer(element = "body", settings = {}) {
   return new SafetyQtExplorer(element, settings);
-}
-
-// src/data/schema/hep-waterfall.json
-var hep_waterfall_default = {
-  $schema: "https://json-schema.org/draft/2020-12/schema",
-  $id: "https://raw.githubusercontent.com/jwildfire/safety.viz/main/src/data/schema/hep-waterfall.json",
-  title: "safety.viz hep-waterfall data contract",
-  description: "Long-format liver-chemistry data: one record per participant per measure per visit (HWF-DATA-001), the same record contract the hep-explorer reads, plus a required treatment-arm column. The hep-waterfall draws the modified waterfall of Amirzadegan et al., Drug Safety 2025;48(5):443-453, Figure 5, for trials enrolling participants with elevated baseline ALT but NORMAL baseline bilirubin: one floating bar per participant spanning their baseline value to their maximum on-treatment value in the data's absolute units, participants ranked by baseline with placebo ascending left-to-right and active descending right-to-centre so the highest baselines of the two arms meet at the seam, a black line tracing the baselines, blue/bronze arm colours with a green override for new-onset jaundice, and a box-and-whisker summary flanking each arm. Participants whose baseline total bilirubin exceeds baseline_tb_max are excluded by the paper's Table 1 rule, and participants whose arm is designated neither placebo nor active are excluded; both counts are reported separately (HWF-DATA-003, HWF-DATA-005).",
-  type: "object",
-  required: ["data", "settings"],
-  properties: {
-    data: {
-      type: "array",
-      minItems: 1,
-      items: { type: "object" },
-      description: "d3.csv()-style records; every row carries the participant, measure, result, reference-range and treatment-arm columns named in settings, one row per participant per measure per visit. Both ALT (or the configured measure) and total bilirubin must be present for a participant to be plotted: the measure supplies the bar, the bilirubin the cohort rule and the jaundice flag."
-    },
-    settings: {
-      type: "object",
-      description: "Column mappings and rendering options; merged onto the module's DEFAULT_SETTINGS, so only overrides need to be supplied. The lab-mapping block is identical to the hep-explorer contract so one settings list can drive both.",
-      required: ["id_col", "measure_col", "value_col", "normal_col_high", "arm_col"],
-      properties: {
-        id_col: {
-          type: "string",
-          default: "USUBJID",
-          description: "Participant identifier column; required in data \u2014 one bar per participant, and the tie-break that makes the ordering reproducible (HWF-DATA-001, HWF-ORDER-004)."
-        },
-        measure_col: {
-          type: "string",
-          default: "TEST",
-          description: "Column holding the measure name; required in data. Rows are matched to the ALT/AST/TB/ALP keys via measure_values."
-        },
-        value_col: {
-          type: "string",
-          default: "STRESN",
-          description: "Column holding the numeric result; required in data. The bars, the baseline trace and both axes are in these units \u2014 absolute, never a multiple of the reference range or of baseline (HWF-AXIS-001)."
-        },
-        unit_col: {
-          type: ["string", "null"],
-          default: "STRESU",
-          description: "Unit column. The modal unit of the plotted measure titles both axes, falling back to U/L; a cohort carrying more than one unit for that measure is a warning, not a chart (HWF-DATA-006, HWF-DATA-007)."
-        },
-        normal_col_high: {
-          type: "string",
-          default: "STNRHI",
-          description: "Upper-limit-of-normal column; required in data. It draws the reference-range band on the absolute axis and standardizes total bilirubin for the cohort rule and the jaundice flag (HWF-AXIS-004, HWF-DATA-003, HWF-DATA-004)."
-        },
-        normal_col_low: {
-          type: ["string", "null"],
-          default: "STNRLO",
-          description: "Optional lower-limit-of-normal column, carried into the linked participant listing."
-        },
-        studyday_col: {
-          type: ["string", "null"],
-          default: "DY",
-          description: "Study-day column; separates the baseline record from the on-treatment records and dates the maximum shown in the tooltip (HWF-DATA-002)."
-        },
-        visit_col: {
-          type: ["string", "null"],
-          default: "VISIT",
-          description: "Optional categorical visit column, shown in the linked participant listing."
-        },
-        visitn_col: {
-          type: ["string", "null"],
-          default: "VISITNUM",
-          description: "Optional numeric visit column ordering the visits."
-        },
-        measure_values: {
-          type: "object",
-          default: {
-            ALT: "Aminotransferase, alanine (ALT)",
-            AST: "Aminotransferase, aspartate (AST)",
-            TB: "Total Bilirubin",
-            ALP: "Alkaline phosphatase (ALP)"
-          },
-          description: "Map of the short measure key (ALT/AST/TB/ALP) to the full measure string in the data; the controls present the short keys but resolve rows via these strings."
-        },
-        measure: {
-          type: "string",
-          default: "ALT",
-          description: "The plotted analyte. The paper plots ALT; AST, ALP and TB are available (HWF-CFG-002)."
-        },
-        arm_col: {
-          type: "string",
-          default: "ARM",
-          description: "Treatment-arm column; required in data. The arm decides which half of the waterfall a participant's bar sits in and which colour it takes, so a waterfall without it has no seam and no comparison (HWF-DATA-005, HWF-COLOR-001)."
-        },
-        placebo_arm: {
-          type: ["string", "null"],
-          default: null,
-          description: "Arm plotted blue on the left half; when null it is auto-detected by matching the arm values against /placebo|control/i, an exact match beating a substring one (HWF-CFG-003)."
-        },
-        active_arms: {
-          type: ["array", "null"],
-          items: { type: "string" },
-          default: null,
-          description: "Arms plotted bronze on the right half; when null every non-placebo arm pools right. Arms named by neither setting are excluded with a counted note (HWF-CFG-003, HWF-DATA-005)."
-        },
-        baseline_col: {
-          type: ["string", "null"],
-          default: null,
-          description: "Optional baseline-flag column (e.g. ABLFL). When supplied, the flagged record is the baseline, outranking the day-0-else-earliest heuristic."
-        },
-        baseline_value: {
-          type: "string",
-          default: "Y",
-          description: "The value of baseline_col that marks the baseline record."
-        },
-        jaundice_uln: {
-          type: "number",
-          default: 2,
-          description: "New-onset-jaundice threshold on the total-bilirubin xULN scale: flagged when the baseline is at or below it and the maximum on-treatment value exceeds it. Defaults to the composite plot's bilirubin cutpoint so the flag and the Hy's-Law quadrants stay mutually consistent (HWF-DATA-004)."
-        },
-        baseline_tb_max: {
-          type: "number",
-          default: 1,
-          description: "The paper's Table-1 cohort rule: participants whose baseline total bilirubin exceeds this many xULN are excluded, because the waterfall serves the abnormal-ALT / NORMAL-bilirubin population. Separate from jaundice_uln, which is an event threshold (HWF-DATA-003)."
-        },
-        apply_tb_cohort: {
-          type: "boolean",
-          default: true,
-          description: "Whether to apply the Table-1 baseline-bilirubin exclusion. Turning it off admits baseline-jaundiced participants for exploratory use and says so in the notes (HWF-DATA-003)."
-        },
-        uln_display: {
-          type: "string",
-          enum: ["band", "per_subject", "none"],
-          default: "band",
-          description: "How the reference range is drawn on the absolute axis. Because the upper limit of normal genuinely varies across a real cohort, a single line would be undefined: 'band' shades min-to-max and collapses to a line when the cohort shares one limit, 'per_subject' traces each participant's own limit, 'none' draws nothing (HWF-AXIS-004)."
-        },
-        summary: {
-          type: "string",
-          enum: ["baseline_peak", "peak"],
-          default: "baseline_peak",
-          description: "What the flanking box-and-whisker panels show: 'baseline_peak' gives a baseline box and a maximum-on-treatment box per arm, so the panel summarizes the same shift the bars show per participant; 'peak' gives the single-box reading (HWF-BOX-003)."
-        },
-        filters: {
-          $ref: "#/$defs/fieldList",
-          description: "Optional filter columns rendered as controls; an active filter restricts the plotted cohort and the counts in the notes (HWF-CTRL-003)."
-        },
-        details: {
-          $ref: "#/$defs/fieldList",
-          description: "Columns for the linked participant listing opened by clicking a bar; when null, defaults derive from the measure/day/value mappings (HWF-SELECT-002)."
-        },
-        page_size: {
-          type: "number",
-          default: 10,
-          description: "Rows per page in the linked participant listing."
-        }
-      }
-    }
-  },
-  $defs: {
-    fieldList: {
-      type: "array",
-      items: {
-        anyOf: [
-          { type: "string" },
-          {
-            type: "object",
-            required: ["value_col"],
-            properties: {
-              value_col: { type: "string" },
-              label: { type: "string" }
-            }
-          }
-        ]
-      }
-    }
-  }
-};
-
-// src/hep-waterfall/checkInputs.js
-var REQUIRED_COLUMN_SETTINGS11 = hep_waterfall_default.properties.settings.required;
-function checkInputs11(data, settings) {
-  const rows = Array.isArray(data) ? data : [];
-  const missing = REQUIRED_COLUMN_SETTINGS11.map((key) => settings[key]).filter(
-    (col) => !rows.some((row) => row[col] !== void 0)
-  );
-  if (missing.length) {
-    throw new Error(`Required variable(s) missing: ${missing.join(", ")}`);
-  }
-}
-
-// src/hep-waterfall/configure.js
-var MEASURE_KEYS2 = ["ALT", "AST", "TB", "ALP"];
-var ULN_DISPLAYS = ["band", "per_subject", "none"];
-var SUMMARY_MODES = ["baseline_peak", "peak"];
-var DEFAULT_SETTINGS11 = {
-  id_col: "USUBJID",
-  measure_col: "TEST",
-  value_col: "STRESN",
-  unit_col: "STRESU",
-  normal_col_high: "STNRHI",
-  normal_col_low: "STNRLO",
-  studyday_col: "DY",
-  visit_col: "VISIT",
-  visitn_col: "VISITNUM",
-  measure_values: {
-    ALT: "Aminotransferase, alanine (ALT)",
-    AST: "Aminotransferase, aspartate (AST)",
-    TB: "Total Bilirubin",
-    ALP: "Alkaline phosphatase (ALP)"
-  },
-  measure: "ALT",
-  arm_col: "ARM",
-  placebo_arm: null,
-  active_arms: null,
-  baseline_col: null,
-  baseline_value: "Y",
-  jaundice_uln: 2,
-  baseline_tb_max: 1,
-  apply_tb_cohort: true,
-  uln_display: "band",
-  summary: "baseline_peak",
-  filters: [],
-  details: null,
-  page_size: 10,
-  width: "100%",
-  height: 480
-};
-function arrayify9(value) {
-  if (value === void 0 || value === null || value === "") return [];
-  return Array.isArray(value) ? value : [value];
-}
-function fieldSpec9(value, fallbackLabel) {
-  if (typeof value === "string") return { value_col: value, label: fallbackLabel || value };
-  return { ...value, value_col: value.value_col, label: value.label || value.value_col };
-}
-function numberOr(value, key) {
-  const parsed = Number(value);
-  return value !== "" && value !== null && value !== void 0 && Number.isFinite(parsed) ? parsed : DEFAULT_SETTINGS11[key];
-}
-function enumOr(value, allowed, key) {
-  return allowed.includes(value) ? value : DEFAULT_SETTINGS11[key];
-}
-function syncSettings11(settings = {}) {
-  const synced = { ...DEFAULT_SETTINGS11, ...settings };
-  synced.filters = arrayify9(synced.filters).map((value) => fieldSpec9(value)).filter((spec) => spec.value_col);
-  synced.details = arrayify9(synced.details).map((value) => fieldSpec9(value)).filter((spec) => spec.value_col);
-  synced.measure_values = {
-    ...DEFAULT_SETTINGS11.measure_values,
-    ...settings.measure_values || {}
-  };
-  synced.measure = synced.measure ? String(synced.measure) : DEFAULT_SETTINGS11.measure;
-  const activeArms = arrayify9(synced.active_arms).map(String);
-  synced.active_arms = activeArms.length ? activeArms : null;
-  synced.placebo_arm = synced.placebo_arm === void 0 || synced.placebo_arm === null || synced.placebo_arm === "" ? null : String(synced.placebo_arm);
-  synced.jaundice_uln = numberOr(synced.jaundice_uln, "jaundice_uln");
-  synced.baseline_tb_max = numberOr(synced.baseline_tb_max, "baseline_tb_max");
-  synced.apply_tb_cohort = synced.apply_tb_cohort === void 0 ? DEFAULT_SETTINGS11.apply_tb_cohort : Boolean(synced.apply_tb_cohort);
-  synced.uln_display = enumOr(synced.uln_display, ULN_DISPLAYS, "uln_display");
-  synced.summary = enumOr(synced.summary, SUMMARY_MODES, "summary");
-  synced.page_size = numberOr(synced.page_size, "page_size");
-  return synced;
-}
-
-// src/hep-waterfall/getScales.js
-var DEFAULT_UNIT = "U/L";
-function formatNumber6(value, digits = 1) {
-  if (!Number.isFinite(value)) return "";
-  return Number(value.toFixed(digits)).toString();
-}
-function resolveUnit(cleanRows, settings, measure) {
-  const empty = { unit: DEFAULT_UNIT, units: [], mixed: false };
-  if (!settings || !settings.unit_col) return empty;
-  const rows = resolveMeasureRows(cleanRows || [], settings, measure);
-  const counts = /* @__PURE__ */ new Map();
-  rows.forEach((row) => {
-    const value = row[settings.unit_col];
-    if (value === void 0 || value === null || String(value).trim() === "") return;
-    const unit2 = String(value).trim();
-    counts.set(unit2, (counts.get(unit2) || 0) + 1);
-  });
-  if (!counts.size) return empty;
-  const units = [...counts.keys()];
-  const unit = units.reduce((best, value) => counts.get(value) > counts.get(best) ? value : best);
-  return { unit, units, mixed: units.length > 1 };
-}
-function waterfallDomain(values, extras = []) {
-  const nums = [...values || [], ...extras || []].map(Number).filter(Number.isFinite);
-  if (!nums.length) return [0, 1];
-  const min = Math.min(...nums);
-  const max = Math.max(...nums);
-  const span = max - min;
-  const pad = span > 0 ? span * 0.06 : Math.max(Math.abs(max) * 0.1, 1);
-  return [Math.max(0, min - pad), max + pad];
-}
-function mirroredScales(domain, title) {
-  const [min, max] = domain;
-  const axis = (position) => ({
-    type: "linear",
-    position,
-    min,
-    max,
-    title: { display: true, text: title }
-  });
-  return {
-    y: { ...axis("left"), grid: { color: "rgba(148, 163, 184, 0.25)" } },
-    y1: { ...axis("right"), display: true, grid: { drawOnChartArea: false } }
-  };
-}
-function axisTitle(measure, unit) {
-  return `${measure} (${unit || DEFAULT_UNIT})`;
-}
-function categoryScale(measure, { placeboLabel = "Placebo", activeLabel = "Active" } = {}) {
-  return {
-    type: "category",
-    offset: false,
-    ticks: { display: false },
-    grid: { display: false },
-    title: {
-      display: true,
-      text: `Participants ranked by baseline ${measure} \u2014 ${placeboLabel} ascending \u25C0 | \u25B6 ${activeLabel} descending`
-    }
-  };
-}
-function flankScales(domain, boxes = 2, { labels = [] } = {}) {
-  const [min, max] = domain;
-  return {
-    x: {
-      type: "linear",
-      display: labels.length > 0,
-      min: -0.5,
-      max: Math.max(boxes - 0.5, 0.5),
-      grid: { display: false },
-      border: { display: false },
-      // A linear axis left to itself ticks at -0.5/0.5/1.5 — between the boxes,
-      // never on one — so the slot positions are set explicitly.
-      afterBuildTicks: (axis) => {
-        if (labels.length) axis.ticks = labels.map((_, index) => ({ value: index }));
-      },
-      ticks: {
-        stepSize: 1,
-        autoSkip: false,
-        includeBounds: false,
-        maxRotation: 0,
-        font: { size: 9 },
-        callback: (value) => Number.isInteger(value) ? labels[value] || "" : ""
-      }
-    },
-    y: { type: "linear", display: false, min, max, grid: { display: false } }
-  };
-}
-
-// src/hep-waterfall/getPlugins.js
-var TRACE_COLOR = "#111827";
-var DIVIDER_COLOR = "#475569";
-var ULN_COLOR = "#94a3b8";
-var JAUNDICE_PRECEDENCE = "Green takes precedence over the arm colour: a participant who developed new-onset jaundice is green in either arm.";
-function barColor(subject) {
-  if (!subject) return ARM_SIDE_COLORS.placebo;
-  if (subject.newOnsetJaundice) return JAUNDICE_COLOR;
-  return ARM_SIDE_COLORS[subject.side] || DIVIDER_COLOR;
-}
-function barColors(subjects) {
-  return (subjects || []).map(barColor);
-}
-function legendItems({
-  placeboLabel = "Placebo",
-  activeLabel = "Active",
-  jaundiceCount = 0
-} = {}) {
-  return [
-    { color: ARM_SIDE_COLORS.placebo, label: placeboLabel },
-    { color: ARM_SIDE_COLORS.active, label: activeLabel },
-    {
-      color: JAUNDICE_COLOR,
-      label: `Developed new-onset jaundice (either arm, n=${jaundiceCount})`
-    }
-  ];
-}
-function ulnRange(subjects) {
-  const values = [
-    ...new Set(
-      (subjects || []).map((subject) => Number(subject && subject.uln)).filter(Number.isFinite)
-    )
-  ].sort((a, b) => a - b);
-  if (!values.length) return { min: NaN, max: NaN, single: false, values };
-  return { min: values[0], max: values[values.length - 1], single: values.length === 1, values };
-}
-function ulnLabel(range, unit) {
-  if (!range || !Number.isFinite(range.min)) return "";
-  if (range.single || range.min === range.max) {
-    return `ULN (${formatNumber6(range.min)} ${unit})`;
-  }
-  return `ULN range (${formatNumber6(range.min)}\u2013${formatNumber6(range.max)} ${unit})`;
-}
-function halfSlot(chart, count2) {
-  const { left, right } = chart.chartArea;
-  if (count2 > 1) {
-    return Math.abs(chart.scales.x.getPixelForValue(1) - chart.scales.x.getPixelForValue(0)) / 2;
-  }
-  return (right - left) / 2;
-}
-function armDividerPlugin(instance) {
-  return {
-    id: "hwf-arm-divider",
-    afterDatasetsDraw(chart) {
-      const waterfall = instance.waterfall;
-      if (!waterfall || !waterfall.ordered.length) return;
-      const { placebo, active, placeboLabel, activeLabel } = waterfall;
-      const { top, bottom, left, right } = chart.chartArea;
-      const ctx = chart.ctx;
-      ctx.save();
-      ctx.font = "600 11px system-ui, -apple-system, sans-serif";
-      ctx.textBaseline = "top";
-      ctx.textAlign = "center";
-      if (placebo.length && active.length) {
-        const seam = (chart.scales.x.getPixelForValue(placebo.length - 1) + chart.scales.x.getPixelForValue(placebo.length)) / 2;
-        ctx.strokeStyle = DIVIDER_COLOR;
-        ctx.lineWidth = 1;
-        ctx.setLineDash([4, 3]);
-        ctx.beginPath();
-        ctx.moveTo(seam, top);
-        ctx.lineTo(seam, bottom);
-        ctx.stroke();
-        ctx.setLineDash([]);
-        ctx.fillStyle = DIVIDER_COLOR;
-        ctx.fillText(`${placeboLabel} (n=${placebo.length})`, (left + seam) / 2, top + 4);
-        ctx.fillText(`${activeLabel} (n=${active.length})`, (seam + right) / 2, top + 4);
-      } else {
-        const only = placebo.length ? `${placeboLabel} (n=${placebo.length})` : `${activeLabel} (n=${active.length})`;
-        ctx.fillStyle = DIVIDER_COLOR;
-        ctx.fillText(only, (left + right) / 2, top + 4);
-      }
-      ctx.restore();
-    }
-  };
-}
-function ulnBandPlugin(instance) {
-  return {
-    id: "hwf-uln-band",
-    beforeDatasetsDraw(chart) {
-      const waterfall = instance.waterfall;
-      const mode = instance.state ? instance.state.ulnDisplay : "band";
-      if (!waterfall || mode === "none") return;
-      const range = waterfall.uln;
-      if (!range || !Number.isFinite(range.min) || !Number.isFinite(range.max)) return;
-      const { top, bottom, left, right } = chart.chartArea;
-      const ctx = chart.ctx;
-      const yOf = (value) => chart.scales.y.getPixelForValue(value);
-      const clamp = (y) => Math.max(top, Math.min(bottom, y));
-      ctx.save();
-      ctx.strokeStyle = ULN_COLOR;
-      ctx.fillStyle = ULN_COLOR;
-      ctx.lineWidth = 1;
-      if (mode === "per_subject") {
-        const half = halfSlot(chart, waterfall.ordered.length);
-        ctx.setLineDash([3, 2]);
-        ctx.beginPath();
-        waterfall.ordered.forEach((subject, index) => {
-          if (!Number.isFinite(subject.uln)) return;
-          const x = chart.scales.x.getPixelForValue(index);
-          const y = clamp(yOf(subject.uln));
-          ctx.moveTo(x - half, y);
-          ctx.lineTo(x + half, y);
-        });
-        ctx.stroke();
-        ctx.setLineDash([]);
-        ctx.restore();
-        return;
-      }
-      const label = ulnLabel(range, waterfall.unit);
-      if (range.single || range.min === range.max) {
-        const y = clamp(yOf(range.min));
-        ctx.setLineDash([6, 4]);
-        ctx.beginPath();
-        ctx.moveTo(left, y);
-        ctx.lineTo(right, y);
-        ctx.stroke();
-        ctx.setLineDash([]);
-      } else {
-        const upper = clamp(yOf(range.max));
-        const lower = clamp(yOf(range.min));
-        ctx.fillStyle = "rgba(148, 163, 184, 0.22)";
-        ctx.fillRect(left, upper, right - left, lower - upper);
-      }
-      ctx.fillStyle = DIVIDER_COLOR;
-      ctx.font = "11px system-ui, -apple-system, sans-serif";
-      ctx.textAlign = "left";
-      ctx.textBaseline = "bottom";
-      ctx.fillText(label, left + 4, clamp(yOf(range.max)) - 2);
-      ctx.restore();
-    }
-  };
-}
-var BOX_ANATOMY = "Box: interquartile range (Q1\u2013Q3) with the median rule; whiskers: 5th\u201395th percentiles; \u25CB mean.";
-var BOX_PANEL_NOTE = "Flanking panels summarize each arm: the left box is baseline, the right box is the maximum on-treatment value.";
-var BOX_TITLES = { Baseline: "Baseline", Peak: "Maximum on-treatment" };
-var HIT_PAD = 4;
-var HOVER_FILL = "rgba(148, 163, 184, 0.28)";
-function boxSlotLabels(summary) {
-  return summary === "peak" ? ["Max on-tx"] : ["Baseline", "Max on-tx"];
-}
-function boxBounds(chart, box) {
-  const left = chart.scales.x.getPixelForValue(box.x - box.halfWidth);
-  const right = chart.scales.x.getPixelForValue(box.x + box.halfWidth);
-  const first = chart.scales.y.getPixelForValue(box.stats.q5);
-  const second = chart.scales.y.getPixelForValue(box.stats.q95);
-  return {
-    left: Math.min(left, right),
-    right: Math.max(left, right),
-    top: Math.min(first, second),
-    bottom: Math.max(first, second)
-  };
-}
-function boxHitTest(chart, specs, x, y) {
-  const boxes = specs || [];
-  for (let index = 0; index < boxes.length; index += 1) {
-    const box = boxes[index];
-    if (!box || !box.stats || !box.stats.n) continue;
-    const bounds = boxBounds(chart, box);
-    if (x >= bounds.left - HIT_PAD && x <= bounds.right + HIT_PAD && y >= bounds.top - HIT_PAD && y <= bounds.bottom + HIT_PAD) {
-      return index;
-    }
-  }
-  return -1;
-}
-function boxTooltip(spec, { arm = "", measure = "", unit = "" } = {}) {
-  if (!spec || !spec.stats || !spec.stats.n) return [];
-  const stats = spec.stats;
-  const value = (number) => `${formatNumber6(number)}${unit ? ` ${unit}` : ""}`;
-  const title = BOX_TITLES[spec.label] || spec.label || "";
-  const heading = [arm, measure ? `${title} ${measure}` : title].filter(Boolean).join(" \xB7 ");
-  const lines = [
-    heading,
-    `n = ${stats.n}`,
-    `95th percentile: ${value(stats.q95)}`,
-    `Q3: ${value(stats.q75)}`,
-    `Median: ${value(stats.median)}`,
-    `Mean: ${value(stats.mean)}`,
-    `Q1: ${value(stats.q25)}`,
-    `5th percentile: ${value(stats.q5)}`
-  ];
-  if (Number.isFinite(stats.min) && Number.isFinite(stats.max)) {
-    lines.push(`Observed range: ${formatNumber6(stats.min)}\u2013${value(stats.max)}`);
-  }
-  return lines;
-}
-function boxPanelDescription(specs, { arm = "", measure = "", unit = "" } = {}) {
-  const boxes = (specs || []).filter((box) => box && box.stats && box.stats.n);
-  const subject = `${arm ? `${arm} ` : ""}${measure || ""}`.trim();
-  if (!boxes.length) {
-    return `Box-and-whisker summary for ${subject || "this arm"}: no participants to summarize.`;
-  }
-  const parts = boxes.map((box) => {
-    const stats = box.stats;
-    const title = (BOX_TITLES[box.label] || box.label || "").toLowerCase();
-    return `${title}, ${stats.n} participant${stats.n === 1 ? "" : "s"}, median ${formatNumber6(stats.median)}${unit ? ` ${unit}` : ""}, interquartile range ${formatNumber6(stats.q25)} to ${formatNumber6(stats.q75)}, 5th to 95th percentile ${formatNumber6(stats.q5)} to ${formatNumber6(stats.q95)}`;
-  });
-  return `Box-and-whisker summary for ${subject || "this arm"}: ${parts.join("; ")}.`;
-}
-function boxHoverPlugin(getSpecs, getActive) {
-  return {
-    id: `hwf-box-hover-${Math.random().toString(36).slice(2)}`,
-    beforeDatasetsDraw(chart) {
-      const specs = getSpecs() || [];
-      const index = getActive();
-      const box = index >= 0 ? specs[index] : null;
-      if (!box || !box.stats || !box.stats.n) return;
-      const bounds = boxBounds(chart, box);
-      const ctx = chart.ctx;
-      ctx.save();
-      ctx.fillStyle = HOVER_FILL;
-      ctx.fillRect(
-        bounds.left - HIT_PAD,
-        bounds.top - HIT_PAD,
-        bounds.right - bounds.left + HIT_PAD * 2,
-        bounds.bottom - bounds.top + HIT_PAD * 2
-      );
-      ctx.restore();
-    }
-  };
-}
-function signed(value) {
-  if (!Number.isFinite(value)) return "";
-  return `${value > 0 ? "+" : ""}${formatNumber6(value)}`;
-}
-function waterfallTooltip(subject, { measure = "ALT", unit = "U/L" } = {}) {
-  if (!subject) return [];
-  const day2 = Number.isFinite(subject.peakDay) ? ` (day ${subject.peakDay})` : "";
-  const fold = subject.baseline > 0 ? ` (${formatNumber6(subject.peak / subject.baseline, 2)}\xD7baseline)` : "";
-  const lines = [
-    String(subject.id),
-    `Arm: ${subject.arm || "(not reported)"}`,
-    `Baseline ${measure}: ${formatNumber6(subject.baseline)} ${unit}`,
-    `Maximum on-treatment ${measure}: ${formatNumber6(subject.peak)} ${unit}${day2}`,
-    `Change: ${signed(subject.peak - subject.baseline)} ${unit}${fold}`
-  ];
-  if (Number.isFinite(subject.peakBiliULN)) {
-    lines.push(`Peak total bilirubin: ${formatNumber6(subject.peakBiliULN, 2)}\xD7ULN`);
-  }
-  if (subject.newOnsetJaundice) lines.push("Developed new-onset jaundice");
-  return lines;
-}
-
-// src/hep-waterfall/structureData.js
-function prepareData(rawData, settings) {
-  const { rows, removed } = cleanData2(Array.isArray(rawData) ? rawData : [], settings);
-  deriveBaseline(rows, settings);
-  assignSequence(rows, settings);
-  return { rows, removed };
-}
-function measureReduction(cleanRows, settings) {
-  const byId = /* @__PURE__ */ new Map();
-  cleanRows.forEach((row) => {
-    const id = row[settings.id_col];
-    if (!byId.has(id)) byId.set(id, []);
-    byId.get(id).push(row);
-  });
-  const reduced = /* @__PURE__ */ new Map();
-  byId.forEach((rows, id) => {
-    const reduction = reduceMeasure(resolveMeasureRows(rows, settings, settings.measure), settings);
-    if (reduction) reduced.set(id, reduction);
-  });
-  return reduced;
-}
-function count(n, noun) {
-  return `${n} ${noun}${n === 1 ? "" : "s"}`;
-}
-function orderWaterfall(subjects) {
-  const byId = (a, b) => String(a.id).localeCompare(String(b.id));
-  const placebo = (subjects || []).filter((subject) => subject.side === "placebo").sort((a, b) => a.baseline - b.baseline || byId(a, b));
-  const active = (subjects || []).filter((subject) => subject.side === "active").sort((a, b) => b.baseline - a.baseline || byId(a, b));
-  return [...placebo, ...active];
-}
-function applyFilters8(subjects, filters) {
-  const active = Object.entries(filters || {}).filter(
-    ([, value]) => value !== null && value !== ""
-  );
-  if (!active.length) return [...subjects || []];
-  return (subjects || []).filter(
-    (subject) => active.every(([col, value]) => String(subject.raw ? subject.raw[col] : "") === String(value))
-  );
-}
-function buildWaterfall(cleanRows, settings, { removed = 0, filters = {} } = {}) {
-  const rows = cleanRows || [];
-  const built = buildHepSubjects(rows, { ...settings, groups: [] });
-  const reduction = measureReduction(rows, settings);
-  const excluded = { arm: 0, bilirubin: 0, measurement: built.excluded };
-  const eligible = [];
-  built.subjects.forEach((subject) => {
-    if (!subject.side) {
-      excluded.arm += 1;
-      return;
-    }
-    if (settings.apply_tb_cohort && subject.baselineJaundice) {
-      excluded.bilirubin += 1;
-      return;
-    }
-    const plotted = reduction.get(subject.id);
-    if (!plotted || !Number.isFinite(plotted.baselineValue) || !Number.isFinite(plotted.peakValue)) {
-      excluded.measurement += 1;
-      return;
-    }
-    eligible.push({
-      ...subject,
-      baseline: plotted.baselineValue,
-      peak: plotted.peakValue,
-      peakDay: plotted.peakDay,
-      baselineDay: plotted.baselineDay,
-      uln: plotted.uln,
-      change: plotted.peakValue - plotted.baselineValue,
-      foldChange: plotted.peakBLN
-    });
-  });
-  const shown = applyFilters8(eligible, filters);
-  const ordered = orderWaterfall(shown);
-  const placebo = ordered.filter((subject) => subject.side === "placebo");
-  const active = ordered.filter((subject) => subject.side === "active");
-  const placeboLabel = built.placeboArm || "Placebo";
-  const activeArms = [...new Set(active.map((subject) => subject.arm).filter(Boolean))];
-  const activeLabel = activeArms.length ? activeArms.join(", ") : "Active";
-  const notes = [];
-  notes.push({
-    tone: "note",
-    text: `${count(ordered.length, "participant")} plotted (${placeboLabel} n=${placebo.length}, ${activeLabel} n=${active.length}).`
-  });
-  if (excluded.bilirubin) {
-    notes.push({
-      tone: "note",
-      text: `${count(excluded.bilirubin, "participant")} excluded: abnormal baseline bilirubin (paper Table 1).`
-    });
-  }
-  if (!settings.apply_tb_cohort) {
-    notes.push({
-      tone: "warning",
-      text: "The paper's Table-1 baseline-bilirubin exclusion is off: baseline-jaundiced participants are plotted."
-    });
-  }
-  if (excluded.arm) {
-    notes.push({
-      tone: "note",
-      text: `${count(excluded.arm, "participant")} excluded: arm not designated placebo or active.`
-    });
-  }
-  if (excluded.measurement) {
-    notes.push({
-      tone: "note",
-      text: `${count(excluded.measurement, "participant")} excluded: no usable baseline or on-treatment measurement.`
-    });
-  }
-  if (removed) {
-    notes.push({
-      tone: "note",
-      text: `${count(removed, "record")} removed: missing result or missing/non-positive reference range.`
-    });
-  }
-  if (built.armWarning) notes.push({ tone: "warning", text: built.armWarning });
-  return {
-    subjects: ordered,
-    ordered,
-    placebo,
-    active,
-    eligible,
-    excluded,
-    notes,
-    placeboLabel,
-    activeLabel,
-    arms: built.arms,
-    sides: built.sides,
-    placeboArm: built.placeboArm,
-    armCol: built.armCol,
-    armWarning: built.armWarning,
-    jaundiceCount: ordered.filter((subject) => subject.newOnsetJaundice).length
-  };
-}
-function waterfallDatasets(ordered, { measure = "ALT" } = {}) {
-  const subjects = ordered || [];
-  return [
-    {
-      type: "bar",
-      order: 2,
-      yAxisID: "y",
-      label: `Maximum on-treatment ${measure}`,
-      data: subjects.map((subject) => [subject.baseline, subject.peak]),
-      backgroundColor: barColors(subjects),
-      borderColor: barColors(subjects),
-      borderWidth: subjects.map(() => 0),
-      barPercentage: 1,
-      categoryPercentage: 1
-    },
-    {
-      type: "line",
-      order: 1,
-      yAxisID: "y",
-      label: `Baseline ${measure}`,
-      data: subjects.map((subject) => subject.baseline),
-      borderColor: TRACE_COLOR,
-      backgroundColor: TRACE_COLOR,
-      borderWidth: 1.5,
-      pointRadius: 0,
-      pointHitRadius: 0,
-      tension: 0,
-      fill: false
-    }
-  ];
-}
-function boxSpecs(subjects, { summary = "baseline_peak", color: color2, halfWidth = 0.3 } = {}) {
-  const rows = subjects || [];
-  const peak = {
-    label: "Peak",
-    stats: boxStats(rows.map((subject) => subject.peak)),
-    color: color2,
-    halfWidth
-  };
-  if (summary === "peak") return [{ ...peak, x: 0 }];
-  return [
-    {
-      label: "Baseline",
-      stats: boxStats(rows.map((subject) => subject.baseline)),
-      color: color2,
-      halfWidth,
-      x: 0
-    },
-    { ...peak, x: 1 }
-  ];
-}
-
-// src/hep-waterfall.js
-Chart.register(
-  BarController,
-  BarElement,
-  LineController,
-  LineElement,
-  PointElement,
-  CategoryScale,
-  LinearScale,
-  plugin_title,
-  plugin_tooltip,
-  plugin_legend
-);
-var STYLE_ID3 = "safety-viz-hep-waterfall-styles";
-var STYLES = `
-.safety-hep-waterfall .hwf-layout{display:grid;grid-template-columns:110px 1fr 110px;gap:.5rem;height:100%;align-items:stretch}
-.safety-hep-waterfall .hwf-panel{position:relative;min-width:0}
-.safety-hep-waterfall .hwf-legend{display:flex;flex-wrap:wrap;align-items:center;gap:.35rem .9rem;font-size:.8rem;color:#52616f;margin:0 0 .5rem}
-.safety-hep-waterfall .hwf-legend-item{display:inline-flex;align-items:center;gap:.3rem}
-.safety-hep-waterfall .hwf-legend-swatch{display:inline-block;width:.75rem;height:.75rem;border-radius:2px}
-.safety-hep-waterfall .hwf-legend-note{color:#52616f;font-style:italic}
-.safety-hep-waterfall .hwf-legend-box{display:inline-flex;align-items:center;gap:.3rem}
-.safety-hep-waterfall .hwf-legend-glyph{display:inline-block;width:1.6rem;height:.9rem;vertical-align:middle}
-.safety-hep-waterfall .hwf-box-canvas{outline-offset:2px}
-.safety-hep-waterfall .hwf-tip{position:absolute;left:0;top:0;display:none;width:max-content;max-width:220px;white-space:pre-line;pointer-events:none;z-index:3;background:rgba(17,24,39,.94);color:#fff;font-size:.72rem;line-height:1.35;border-radius:6px;padding:.35rem .5rem}
-.safety-hep-waterfall .hwf-tip.is-visible{display:block}
-.safety-hep-waterfall .hwf-tip.is-right{transform:translateX(-100%)}
-.safety-hep-waterfall .hwf-reset{width:100%;margin-top:.75rem;padding:.35rem .45rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.82rem;cursor:pointer}
-.safety-hep-waterfall .hwf-reset:hover{border-color:#8f9aa8;background:#f6f8fa}
-@media (max-width:700px){.safety-hep-waterfall .hwf-layout{grid-template-columns:70px 1fr 70px}}
-`;
-function applyWaterfallStyles() {
-  if (typeof document === "undefined" || document.getElementById(STYLE_ID3)) return;
-  const style = document.createElement("style");
-  style.id = STYLE_ID3;
-  style.textContent = STYLES;
-  document.head.append(style);
-}
-var SafetyHepWaterfall = class {
-  constructor(element = "body", settings = {}) {
-    this.element = typeof element === "string" ? document.querySelector(element) : element;
-    if (!this.element) throw new Error(`Safety Hep Waterfall target not found: ${element}`);
-    this.settings = syncSettings11(settings);
-    this.rawData = [];
-    this.cleanRows = [];
-    this.removedRecords = 0;
-    this.charts = [];
-    this.flankCharts = [];
-    this.chart = null;
-    this.waterfall = null;
-    this.boxSpecs = { left: [], right: [] };
-    this.currentTableData = [];
-    this.listingSearch = "";
-    this.listingSort = null;
-    this.page = 1;
-    this.flankChartsBySide = { left: null, right: null };
-    this.boxTips = { left: null, right: null };
-    this.boxHover = { side: null, index: -1 };
-    this.state = this.seedState();
-    this.renderShellDom();
-  }
-  /**
-   * The control state derived from the settings — the single place the sidebar
-   * controls, setSettings and the Reset button all read their starting values
-   * from (HWF-CTRL-004).
-   * @private
-   */
-  seedState() {
-    const active = this.settings.active_arms;
-    return {
-      measure: this.settings.measure,
-      jaundiceUln: this.settings.jaundice_uln,
-      applyTbCohort: this.settings.apply_tb_cohort,
-      ulnDisplay: this.settings.uln_display,
-      summary: this.settings.summary,
-      placeboArm: this.settings.placebo_arm,
-      activeArm: active && active.length === 1 ? active[0] : "",
-      filters: {},
-      selectedIds: []
-    };
-  }
-  /**
-   * The settings the render actually runs on: the configured settings with the
-   * live control values merged over them, so structureData and getScales never
-   * have to know that a control exists.
-   * @private
-   */
-  effectiveSettings() {
-    return {
-      ...this.settings,
-      measure: this.state.measure,
-      jaundice_uln: this.state.jaundiceUln,
-      apply_tb_cohort: this.state.applyTbCohort,
-      uln_display: this.state.ulnDisplay,
-      summary: this.state.summary,
-      placebo_arm: this.state.placeboArm,
-      active_arms: this.state.activeArm ? [this.state.activeArm] : null
-    };
-  }
-  /**
-   * Build the shell and the three-canvas grid the paper's flanking panels need:
-   * a placebo summary, the waterfall, an active summary (HWF-BOX-001).
-   * @private
-   */
-  renderShellDom() {
-    Object.assign(
-      this,
-      renderShell(this.element, {
-        moduleClass: "safety-hep-waterfall",
-        onToggle: () => this.resize()
-      })
-    );
-    applyWaterfallStyles();
-    this.main.insertBefore(prototypeBanner(), this.main.firstChild);
-    this.legendEl = createElement("div", "hwf-legend");
-    this.main.insertBefore(this.legendEl, this.chartWrap);
-    const layout = createElement("div", "hwf-layout");
-    const leftPanel = createElement("div", "hwf-panel");
-    this.boxCanvasLeft = createElement("canvas", "hwf-box-canvas hwf-box-left");
-    leftPanel.append(this.boxCanvasLeft);
-    const mainPanel = createElement("div", "hwf-panel hwf-main-panel");
-    this.canvas.remove();
-    mainPanel.append(this.canvas);
-    const rightPanel = createElement("div", "hwf-panel");
-    this.boxCanvasRight = createElement("canvas", "hwf-box-canvas hwf-box-right");
-    rightPanel.append(this.boxCanvasRight);
-    layout.append(leftPanel, mainPanel, rightPanel);
-    this.chartWrap.insertBefore(layout, this.mainAnnotation);
-    this.bindBoxHover("left", this.boxCanvasLeft, leftPanel);
-    this.bindBoxHover("right", this.boxCanvasRight, rightPanel);
-  }
-  /**
-   * Wire one flanking panel's hover, focus and keyboard interaction, and give
-   * it the tooltip element the pointer moves around (HWF-BOX-005). An
-   * absolutely-positioned HTML div, not a canvas tooltip: it matches the
-   * migration Sankey's ribbon hover, and — unlike a native tooltip — it appears
-   * in a screenshot, so the interaction is evidenceable.
-   * @private
-   */
-  bindBoxHover(side, canvas, panel) {
-    const tip = createElement("div", `hwf-tip${side === "right" ? " is-right" : ""}`);
-    panel.append(tip);
-    this.boxTips[side] = tip;
-    canvas.setAttribute("role", "img");
-    canvas.setAttribute("tabindex", "0");
-    canvas.addEventListener("pointermove", (event) => this.moveBoxHover(side, event));
-    canvas.addEventListener("pointerleave", () => this.setBoxHover(side, -1));
-    canvas.addEventListener("focus", () => this.setBoxHover(side, 0));
-    canvas.addEventListener("blur", () => this.setBoxHover(side, -1));
-    canvas.addEventListener("keydown", (event) => this.stepBoxHover(side, event));
-  }
-  /** The pointer moved over a flank panel: hover whatever box it is on. @private */
-  moveBoxHover(side, event) {
-    const chart = this.flankChartsBySide[side];
-    const specs = this.boxSpecs[side] || [];
-    if (!chart || !chart.scales || !specs.length) return;
-    const canvas = side === "left" ? this.boxCanvasLeft : this.boxCanvasRight;
-    const bounds = canvas.getBoundingClientRect ? canvas.getBoundingClientRect() : { left: 0, top: 0 };
-    const x = event.clientX - bounds.left;
-    const y = event.clientY - bounds.top;
-    this.setBoxHover(side, boxHitTest(chart, specs, x, y), { x, y });
-  }
-  /**
-   * Keyboard equivalents of the hover (HWF-BOX-005): the arrow keys step
-   * between the panel's boxes and Escape closes the tooltip, so the statistics
-   * are reachable without a pointer.
-   * @private
-   */
-  stepBoxHover(side, event) {
-    const count2 = (this.boxSpecs[side] || []).length;
-    if (!count2) return;
-    if (event.key === "Escape") {
-      event.preventDefault();
-      this.setBoxHover(side, -1);
-      return;
-    }
-    const step = event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;
-    if (!step) return;
-    event.preventDefault();
-    const current = this.boxHover.side === side ? this.boxHover.index : -1;
-    const next = ((current < 0 ? 0 : current + step) % count2 + count2) % count2;
-    this.setBoxHover(side, next);
-  }
-  /**
-   * Set the hovered box and reflect it in both channels — the tooltip text and
-   * the panel's hover backdrop — redrawing only the panel that changed.
-   * @private
-   */
-  setBoxHover(side, index, at = null) {
-    const previous = this.boxHover;
-    if (previous.side === side && previous.index === index) return;
-    this.boxHover = { side: index >= 0 ? side : null, index: index >= 0 ? index : -1 };
-    const spec = index >= 0 ? (this.boxSpecs[side] || [])[index] : null;
-    const tip = this.boxTips[side];
-    if (tip) {
-      if (spec) {
-        const lines = boxTooltip(spec, {
-          arm: this.panelArm(side),
-          measure: this.state.measure,
-          unit: this.waterfall ? this.waterfall.unit : ""
-        });
-        tip.textContent = lines.join("\n");
-        tip.classList.add("is-visible");
-        this.positionBoxTip(side, tip, at, spec);
-      } else {
-        tip.classList.remove("is-visible");
-      }
-    }
-    if (previous.side && previous.side !== side) {
-      const other = this.boxTips[previous.side];
-      if (other) other.classList.remove("is-visible");
-      this.redrawFlank(previous.side);
-    }
-    this.redrawFlank(side);
-  }
-  /**
-   * Place the tooltip beside the pointer, opening inward toward the waterfall —
-   * a 110px panel has no room to hold it, and a tooltip that widened the layout
-   * would move the very chart the reader is pointing at.
-   * @private
-   */
-  positionBoxTip(side, tip, at, spec) {
-    const chart = this.flankChartsBySide[side];
-    let x = at ? at.x : null;
-    let y = at ? at.y : null;
-    if (x === null && chart && chart.scales) {
-      x = chart.scales.x.getPixelForValue(spec.x);
-      y = chart.scales.y.getPixelForValue(spec.stats.median);
-    }
-    tip.style.left = `${Math.round((x || 0) + (side === "right" ? -12 : 12))}px`;
-    const panelHeight = tip.parentElement ? tip.parentElement.clientHeight : 0;
-    const height = tip.offsetHeight || 0;
-    const below = (y || 0) + 12;
-    const top = panelHeight && below + height > panelHeight ? (y || 0) - height - 12 : below;
-    tip.style.top = `${Math.round(Math.max(0, top))}px`;
-  }
-  /** The arm label a flank panel summarizes. @private */
-  panelArm(side) {
-    if (!this.waterfall) return "";
-    return side === "left" ? this.waterfall.placeboLabel : this.waterfall.activeLabel;
-  }
-  /** Repaint one flank panel, e.g. after its hover changed. @private */
-  redrawFlank(side) {
-    const chart = this.flankChartsBySide[side];
-    if (chart && typeof chart.update === "function") chart.update("none");
-  }
-  /**
-   * Load data and render — an alias for setData keeping the two-step
-   * create-then-init call shape (HWF-API-002).
-   * @param {Object[]} data Long-format liver-chemistry records matching the hep-waterfall data contract.
-   * @returns {SafetyHepWaterfall} The instance, for chaining.
-   */
-  init(data) {
-    return this.setData(data);
-  }
-  /**
-   * Replace the bound data and re-render: validate against the settings mapping
-   * (throwing, and rendering the message into the target, when a required
-   * column is missing), clean, rebuild the controls, and draw.
-   * @param {Object[]} data Long-format liver-chemistry records matching the hep-waterfall data contract.
-   * @returns {SafetyHepWaterfall} The instance, for chaining.
-   */
-  setData(data) {
-    this.rawData = Array.isArray(data) ? data : [];
-    this.validateAndCleanData();
-    this.buildControls();
-    this.render();
-    return this;
-  }
-  /**
-   * Merge setting overrides, re-normalize them (same rules as the factory),
-   * re-seed every control from the merged settings, rebuild the controls, and
-   * re-render.
-   * @param {HepWaterfallSettings} settings Setting overrides to merge.
-   * @returns {SafetyHepWaterfall} The instance, for chaining.
-   */
-  setSettings(settings) {
-    this.settings = syncSettings11({ ...this.settings, ...settings });
-    this.state = this.seedState();
-    if (this.rawData.length) this.validateAndCleanData();
-    this.buildControls();
-    this.render();
-    return this;
-  }
-  /**
-   * Validate the raw data, drop unusable records, derive the baseline columns,
-   * and fill in the listing columns when none were supplied.
-   * @private
-   */
-  validateAndCleanData() {
-    try {
-      checkInputs11(this.rawData, this.settings);
-    } catch (error) {
-      this.destroyCharts();
-      this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
-      throw error;
-    }
-    const { rows, removed } = prepareData(this.rawData, this.settings);
-    this.cleanRows = rows;
-    this.removedRecords = removed;
-    if (removed) {
-      console.warn(
-        `${removed} missing or non-numeric result${removed > 1 ? "s have" : " has"} been removed.`
-      );
-    }
-    if (!this.settings.details.length) {
-      this.settings.details = [
-        { value_col: this.settings.id_col, label: "Participant" },
-        { value_col: this.settings.measure_col, label: "Measure" },
-        { value_col: "__hwf_dayLabel", label: "Study Day" },
-        { value_col: this.settings.value_col, label: "Result" },
-        { value_col: this.settings.normal_col_high, label: "ULN" }
-      ];
-    }
-  }
-  /**
-   * The distinct arm values present in the cleaned data.
-   * @private
-   */
-  armValues() {
-    const armCol = this.waterfall && this.waterfall.armCol || this.settings.arm_col;
-    return unique6(this.cleanRows.map((row) => row[armCol])).map(String).sort();
-  }
-  /**
-   * Rebuild the sidebar controls (HWF-CTRL-001..004): the display settings, the
-   * arm mapping, the configured filters, and Reset.
-   * @private
-   */
-  buildControls() {
-    this.controls.innerHTML = "";
-    const { addSection, addControl } = controlBuilders(this.controls);
-    const display = addSection("Display");
-    const measure = addControl("Measure", document.createElement("select"), display);
-    const measureKeys = unique6([...Object.keys(this.settings.measure_values), ...MEASURE_KEYS2]);
-    measureKeys.forEach((key) => option(measure, key, key, key === this.state.measure));
-    measure.onchange = () => {
-      this.state.measure = measure.value;
-      this.render();
-    };
-    const jaundice = addControl(
-      "Jaundice threshold (\xD7ULN)",
-      document.createElement("input"),
-      display
-    );
-    jaundice.type = "number";
-    jaundice.min = "0";
-    jaundice.step = "0.1";
-    jaundice.value = String(this.state.jaundiceUln);
-    jaundice.onchange = () => {
-      const value = Number(jaundice.value);
-      this.state.jaundiceUln = Number.isFinite(value) ? value : this.settings.jaundice_uln;
-      jaundice.value = String(this.state.jaundiceUln);
-      this.render();
-    };
-    const cohortWrap = createElement("div", "sv-control sv-control-inline");
-    const cohort = document.createElement("input");
-    cohort.type = "checkbox";
-    cohort.id = "hwf-cohort";
-    cohort.checked = this.state.applyTbCohort;
-    cohort.onchange = () => {
-      this.state.applyTbCohort = cohort.checked;
-      this.render();
-    };
-    const cohortLabel = createElement(
-      "label",
-      null,
-      `Exclude baseline bilirubin > ${formatNumber6(this.settings.baseline_tb_max, 2)}\xD7ULN`
-    );
-    cohortLabel.htmlFor = cohort.id;
-    cohortWrap.append(cohort, cohortLabel);
-    display.append(cohortWrap);
-    const uln = addControl("Reference range", document.createElement("select"), display);
-    const ulnLabels = {
-      band: "Band (cohort range)",
-      per_subject: "Per participant",
-      none: "Hidden"
-    };
-    ULN_DISPLAYS.forEach(
-      (value) => option(uln, value, ulnLabels[value], value === this.state.ulnDisplay)
-    );
-    uln.onchange = () => {
-      this.state.ulnDisplay = uln.value;
-      this.render();
-    };
-    const summary = addControl("Arm summary", document.createElement("select"), display);
-    const summaryLabels = { baseline_peak: "Baseline and peak", peak: "Peak only" };
-    SUMMARY_MODES.forEach(
-      (value) => option(summary, value, summaryLabels[value], value === this.state.summary)
-    );
-    summary.onchange = () => {
-      this.state.summary = summary.value;
-      this.render();
-    };
-    const arms = this.armValues();
-    const armSection = addSection("Arms");
-    const placebo = addControl("Placebo arm", document.createElement("select"), armSection);
-    option(placebo, "", "Auto-detect", !this.state.placeboArm);
-    arms.forEach((arm) => option(placebo, arm, arm, arm === this.state.placeboArm));
-    placebo.onchange = () => {
-      this.state.placeboArm = placebo.value || null;
-      this.buildControls();
-      this.render();
-    };
-    const active = addControl("Active arm", document.createElement("select"), armSection);
-    option(active, "", "All non-placebo arms", !this.state.activeArm);
-    arms.forEach((arm) => option(active, arm, arm, arm === this.state.activeArm));
-    active.onchange = () => {
-      this.state.activeArm = active.value;
-      this.buildControls();
-      this.render();
-    };
-    const filterSpecs = this.settings.filters.filter(
-      (filter) => this.cleanRows.some((row) => row[filter.value_col] !== void 0)
-    );
-    if (filterSpecs.length) {
-      const filterSection = addSection("Filters");
-      filterSpecs.forEach((filter) => {
-        const select = addControl(filter.label, document.createElement("select"), filterSection);
-        option(select, "", "All", !this.state.filters[filter.value_col]);
-        unique6(this.cleanRows.map((row) => row[filter.value_col])).map(String).sort().forEach(
-          (value) => option(select, value, value, this.state.filters[filter.value_col] === value)
-        );
-        select.onchange = () => {
-          if (select.value) this.state.filters[filter.value_col] = select.value;
-          else delete this.state.filters[filter.value_col];
-          this.render();
-        };
-      });
-    }
-    const reset = createElement("button", "hwf-reset", "Reset chart");
-    reset.type = "button";
-    reset.onclick = () => {
-      this.state = this.seedState();
-      this.buildControls();
-      this.render();
-    };
-    this.controls.append(reset);
-  }
-  /**
-   * Render the notes line from the cohort's staged notes.
-   * @private
-   */
-  renderNotes(notes) {
-    this.notes.innerHTML = "";
-    notes.forEach(
-      (note) => this.notes.append(
-        createElement("span", note.tone === "warning" ? "sv-warning" : null, note.text)
-      )
-    );
-  }
-  /**
-   * Draw the colour legend, including the jaundice precedence rule.
-   * @private
-   */
-  drawLegend() {
-    this.legendEl.innerHTML = "";
-    legendItems({
-      placeboLabel: this.waterfall.placeboLabel,
-      activeLabel: this.waterfall.activeLabel,
-      jaundiceCount: this.waterfall.jaundiceCount
-    }).forEach((item) => {
-      const chip = createElement("span", "hwf-legend-item");
-      const swatch = createElement("span", "hwf-legend-swatch");
-      swatch.style.background = item.color;
-      chip.append(swatch, document.createTextNode(item.label));
-      this.legendEl.append(chip);
-    });
-    this.legendEl.append(
-      createElement("span", "hwf-legend-note hwf-note-jaundice", JAUNDICE_PRECEDENCE)
-    );
-    this.legendEl.append(this.boxAnatomyChip());
-    this.legendEl.append(createElement("span", "hwf-legend-note hwf-note-box", BOX_PANEL_NOTE));
-  }
-  /**
-   * The flanking panels' anatomy key (HWF-BOX-006): a miniature of the marks the
-   * shared box-and-whisker renderer draws, beside the sentence naming them. A
-   * drawn glyph rather than prose alone, because the question the reader is
-   * actually asking — "is that edge a quartile or a whisker?" — is answered
-   * fastest by pointing at the shape.
-   * @private
-   */
-  boxAnatomyChip() {
-    const chip = createElement("span", "hwf-legend-box");
-    const svgNs = "http://www.w3.org/2000/svg";
-    const svg = document.createElementNS(svgNs, "svg");
-    svg.setAttribute("class", "hwf-legend-glyph");
-    svg.setAttribute("viewBox", "0 0 32 18");
-    svg.setAttribute("aria-hidden", "true");
-    const mark = (name, attrs) => {
-      const node = document.createElementNS(svgNs, name);
-      Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, String(value)));
-      svg.append(node);
-    };
-    const ink = "#52616f";
-    mark("line", { x1: 16, y1: 2, x2: 16, y2: 16, stroke: ink, "stroke-width": 1 });
-    mark("line", { x1: 11, y1: 2, x2: 21, y2: 2, stroke: ink, "stroke-width": 1 });
-    mark("line", { x1: 11, y1: 16, x2: 21, y2: 16, stroke: ink, "stroke-width": 1 });
-    mark("rect", {
-      x: 8,
-      y: 5,
-      width: 16,
-      height: 8,
-      fill: "rgba(82, 97, 111, 0.25)",
-      stroke: ink,
-      "stroke-width": 1
-    });
-    mark("line", { x1: 8, y1: 9, x2: 24, y2: 9, stroke: ink, "stroke-width": 1.6 });
-    mark("circle", { cx: 16, cy: 11.5, r: 2, fill: "#eee", stroke: ink, "stroke-width": 1 });
-    chip.append(svg, document.createTextNode(BOX_ANATOMY));
-    return chip;
-  }
-  /**
-   * Redraw everything from the current data, settings, and control state: the
-   * cohort and its notes, the floating bars and baseline trace, the mirrored
-   * axes, the arm divider and reference range, and the two flanking summary
-   * panels. Called automatically by the controls and the data/settings setters.
-   * @returns {void}
-   */
-  render() {
-    this.destroyCharts();
-    this.legendEl.innerHTML = "";
-    this.listingWrap.innerHTML = "";
-    this.currentTableData = [];
-    this.listingSearch = "";
-    this.listingSort = null;
-    this.page = 1;
-    this.state.selectedIds = [];
-    this.mainAnnotation.textContent = "";
-    this.chartWrap.style.display = "";
-    this.footnote.textContent = "";
-    if (!this.cleanRows.length) {
-      this.waterfall = null;
-      this.renderNotes([
-        { tone: "note", text: "No data selected. Provide records to draw the chart." }
-      ]);
-      this.chartWrap.style.display = "none";
-      return;
-    }
-    const settings = this.effectiveSettings();
-    const waterfall = buildWaterfall(this.cleanRows, settings, {
-      removed: this.removedRecords,
-      filters: this.state.filters
-    });
-    const unit = resolveUnit(this.cleanRows, settings, settings.measure);
-    waterfall.unit = unit.unit;
-    waterfall.uln = ulnRange(waterfall.ordered);
-    this.waterfall = waterfall;
-    const notes = [...waterfall.notes];
-    if (unit.mixed) {
-      notes.push({
-        tone: "warning",
-        text: `${settings.measure} carries more than one unit in this data (${unit.units.join(", ")}). The chart is suppressed: an absolute axis cannot mix units.`
-      });
-    }
-    if (!unit.mixed && !waterfall.ordered.length) {
-      notes.push({
-        tone: "warning",
-        text: "No participants meet the cohort rules for this chart."
-      });
-    }
-    this.renderNotes(notes);
-    if (unit.mixed || !waterfall.ordered.length) {
-      this.chartWrap.style.display = "none";
-      return;
-    }
-    const domain = waterfallDomain(
-      waterfall.ordered.flatMap((subject) => [subject.baseline, subject.peak]),
-      this.state.ulnDisplay === "none" ? [] : waterfall.uln.values
-    );
-    this.domain = domain;
-    this.drawMainChart(waterfall, domain, unit.unit);
-    this.drawFlankCharts(waterfall, domain);
-    this.drawLegend();
-    this.footnote.textContent = `Each bar spans one participant's baseline ${settings.measure} to their maximum on-treatment ${settings.measure} in ${unit.unit}; the black line traces the baselines. Click a bar for that participant's records. Exploratory tool \u2014 confirm signals with a full case review.`;
-  }
-  /**
-   * Build the waterfall chart itself.
-   * @private
-   */
-  drawMainChart(waterfall, domain, unit) {
-    const settings = this.effectiveSettings();
-    const title = axisTitle(settings.measure, unit);
-    const { y, y1 } = mirroredScales(domain, title);
-    this.chart = new Chart(this.canvas.getContext("2d"), {
-      type: "bar",
-      data: {
-        labels: waterfall.ordered.map((subject) => String(subject.id)),
-        datasets: waterfallDatasets(waterfall.ordered, { measure: settings.measure })
-      },
-      options: {
-        maintainAspectRatio: false,
-        responsive: true,
-        animation: false,
-        onClick: (event, elements) => {
-          if (!elements || !elements.length) return;
-          const subject = waterfall.ordered[elements[0].index];
-          if (subject) this.selectParticipant(subject.id);
-        },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              title: () => "",
-              label: (ctx) => waterfallTooltip(waterfall.ordered[ctx.dataIndex], {
-                measure: settings.measure,
-                unit
-              })
-            }
-          }
-        },
-        scales: {
-          x: categoryScale(settings.measure, {
-            placeboLabel: waterfall.placeboLabel,
-            activeLabel: waterfall.activeLabel
-          }),
-          y,
-          y1
-        }
-      },
-      plugins: [ulnBandPlugin(this), armDividerPlugin(this)]
-    });
-    this.charts.push(this.chart);
-  }
-  /**
-   * Build the two flanking summary panels (HWF-BOX-001/002): minimal charts
-   * whose only marks come from the shared box-and-whisker plugin, with their
-   * value axis pinned to the main chart's domain so all three panels are
-   * vertically registered.
-   * @private
-   */
-  drawFlankCharts(waterfall, domain) {
-    const summary = this.state.summary;
-    const measure = this.state.measure;
-    this.boxSpecs = {
-      left: boxSpecs(waterfall.placebo, { summary, color: ARM_SIDE_COLORS.placebo }),
-      right: boxSpecs(waterfall.active, { summary, color: ARM_SIDE_COLORS.active })
-    };
-    const labels = boxSlotLabels(summary);
-    this.flankCharts = [
-      ["left", this.boxCanvasLeft, waterfall.placeboLabel, waterfall.placebo],
-      ["right", this.boxCanvasRight, waterfall.activeLabel, waterfall.active]
-    ].map(([side, canvas, label, subjects]) => {
-      canvas.setAttribute(
-        "aria-label",
-        boxPanelDescription(this.boxSpecs[side], {
-          arm: label,
-          measure,
-          unit: waterfall.unit
-        })
-      );
-      const chart = new Chart(canvas.getContext("2d"), {
-        type: "line",
-        data: { datasets: [{ data: [] }] },
-        options: {
-          maintainAspectRatio: false,
-          responsive: true,
-          animation: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: { enabled: false },
-            title: {
-              display: true,
-              text: `${label} (n=${(subjects || []).length})`,
-              font: { size: 11 }
-            }
-          },
-          scales: flankScales(domain, this.boxSpecs[side].length, { labels })
-        },
-        plugins: [
-          boxHoverPlugin(
-            () => this.boxSpecs[side],
-            () => this.boxHover.side === side ? this.boxHover.index : -1
-          ),
-          boxWhiskerPlugin(`hwf-${side}`, () => this.boxSpecs[side])
-        ]
-      });
-      this.charts.push(chart);
-      this.flankChartsBySide[side] = chart;
-      return chart;
-    });
-  }
-  /**
-   * The selected participant's records, with the listing's derived columns.
-   * @private
-   */
-  participantRecords(id) {
-    return this.cleanRows.filter((row) => String(row[this.settings.id_col]) === String(id)).map((row) => ({
-      ...row,
-      __hwf_dayLabel: Number.isFinite(row.__hep_day) ? row.__hep_day : ""
-    }));
-  }
-  /**
-   * Select (or, when already selected, deselect) a participant: highlight their
-   * bar, open the linked listing of their records, and dispatch the
-   * participantsSelected event (HWF-SELECT-002, HWF-SELECT-003).
-   * @param {string|number} id The participant identifier.
-   * @returns {void}
-   */
-  selectParticipant(id) {
-    const key = String(id);
-    const selected = this.state.selectedIds.includes(key) ? [] : [key];
-    this.state.selectedIds = selected;
-    if (this.chart && this.waterfall) {
-      const dataset = this.chart.data.datasets[0];
-      dataset.borderColor = this.waterfall.ordered.map(
-        (subject) => selected.includes(String(subject.id)) ? TRACE_COLOR : barColor(subject)
-      );
-      dataset.borderWidth = this.waterfall.ordered.map(
-        (subject) => selected.includes(String(subject.id)) ? 2 : 0
-      );
-      this.chart.update();
-    }
-    if (selected.length) {
-      this.currentTableData = this.participantRecords(key);
-      this.listingSearch = "";
-      this.listingSort = null;
-      this.page = 1;
-      renderListing(this);
-      this.mainAnnotation.textContent = key;
-    } else {
-      this.currentTableData = [];
-      this.listingWrap.innerHTML = "";
-      this.mainAnnotation.textContent = "";
-    }
-    if (this.root) {
-      this.root.dispatchEvent(
-        new CustomEvent("participantsSelected", { detail: { data: selected }, bubbles: true })
-      );
-    }
-  }
-  /**
-   * Resize every live chart — the waterfall and both flanking panels — to their
-   * containers. For host layouts that change the container size without a
-   * window resize, e.g. the R htmlwidget bindings.
-   * @returns {void}
-   */
-  resize() {
-    this.charts.forEach((chart) => chart.resize());
-  }
-  /**
-   * Destroy the live Chart.js instances without touching the shell.
-   * @private
-   */
-  destroyCharts() {
-    this.charts.forEach((chart) => chart.destroy());
-    this.charts = [];
-    this.flankCharts = [];
-    this.flankChartsBySide = { left: null, right: null };
-    this.chart = null;
-    this.boxHover = { side: null, index: -1 };
-    Object.values(this.boxTips).forEach((tip) => {
-      if (tip) tip.classList.remove("is-visible");
-    });
-  }
-  /**
-   * Tear the waterfall down: destroy every chart and empty the target element.
-   * The instance cannot be reused afterwards — create a new one via the factory.
-   * @returns {void}
-   */
-  destroy() {
-    this.destroyCharts();
-    this.element.innerHTML = "";
-  }
-};
-function hepWaterfall(element = "body", settings = {}) {
-  return new SafetyHepWaterfall(element, settings);
 }
 
 // src/main.js
@@ -29914,9 +23705,7 @@ var main_default = {
   aeTimelines,
   hepExplorer,
   aeExplorer,
-  qtExplorer,
-  hepWaterfall,
-  participantProfile
+  qtExplorer
 };
 export {
   aeExplorer,
@@ -29924,10 +23713,8 @@ export {
   main_default as default,
   deltaDelta,
   hepExplorer,
-  hepWaterfall,
   histogram,
   outlierExplorer,
-  participantProfile,
   qtExplorer,
   resultsOverTime,
   shiftPlot

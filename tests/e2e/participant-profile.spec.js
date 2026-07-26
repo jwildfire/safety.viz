@@ -7,7 +7,7 @@ import { captureEvidence } from './evidence.js';
 // pipeline derives docs/evidence/participant-profile/ from this file name — so
 // the hep-explorer ADOPTION tests (PPRF-HEP-*, which drive hep-explorer
 // fixtures) live here too, alongside the module's own coverage. Requirement
-// IDs use the PPRF-* area scheme from the obot.agent requirement matrix.
+// IDs use the PPRF-* area scheme from the participant-profile requirement matrix.
 
 // ── hep-explorer adoption, scatter view (PPRF-7) ────────────────────────────
 test.describe('participant-profile rail: hep-explorer scatter view', () => {

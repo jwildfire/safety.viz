@@ -55,15 +55,21 @@ page, the reviewed requirement **text** is vendored into
 `docs/requirements/<module>.json` (`{ module, matrix, requirements: { id: text } }`)
 and rendered beneath each ID in the evidence table's Requirement column. The
 site build is a pure function of the repo tree, so the text is committed rather
-than fetched at build time. `npm run requirements` regenerates the extracts
-from the matrices; it reads them from `REQUIREMENTS_SRC` (default the sibling
-`../obot.agent/docs/requirements` checkout). The set of modules is data-driven
-from `site/config.json`, so a new renderer needs no edits — add its config
-entry with the `matrix` filename and its extract appears on the next run. A
-module whose matrix has not been harvested yet is skipped and its evidence page
-simply shows requirement IDs. `npm run requirements:check` (a CI step that
-checks out the public `obot.agent`) fails if a committed extract has drifted
-from its matrix.
+than fetched at build time. The matrices themselves live in this repo under
+[`requirements/`](requirements/README.md) — one Markdown file per renderer,
+the reviewed source of record. `npm run requirements` regenerates the extracts
+from them (`REQUIREMENTS_SRC` overrides the source directory if you ever need
+to point it elsewhere). The set of modules is data-driven from
+`site/config.json`, so a new renderer needs no edits — add its config entry
+with the `matrix` filename and its extract appears on the next run. A module
+whose matrix has not been harvested yet is skipped and its evidence page simply
+shows requirement IDs. `npm run requirements:check` (a CI step) fails if a
+committed extract has drifted from its matrix.
+
+Because matrix and code are now in the same repo, a behavior change and the
+requirement rows that describe it belong in the **same PR**: edit
+`requirements/<matrix>.md`, run `npm run requirements`, and commit the
+regenerated extract alongside the implementation.
 
 qcthat itself doesn't support JS test frameworks yet; this issue-linked
 naming convention future-proofs the evidence until full qcthat-compatible

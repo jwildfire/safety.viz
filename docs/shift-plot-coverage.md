@@ -95,7 +95,7 @@ single-point brush shows the full profile directly. The adoption moved the
 `SSP-API-003` dispatch target from the host element to the shell root
 (PPRF-SSP-004) — backward-compatible because the event bubbles. Adoption rows
 are PPRF-SSP-001..004 in the
-[participant-profile matrix](https://github.com/jwildfire/obot.agent/blob/main/docs/requirements/participant-profile.md);
+[participant-profile matrix](../requirements/participant-profile.md);
 unit evidence lives in `tests/unit/shift-plot/profile-adoption.test.js`.
 
 ## View-selector rollout (VIEW-3, #76)
