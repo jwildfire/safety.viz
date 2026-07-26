@@ -34,6 +34,13 @@ export const STATS = ['mean', 'min', 'max', 'first'];
  * @property {string} [width='100%'] Widget width, carried over for the R widget bindings; the current shell always spans its container.
  * @property {number} [height=460] Chart-area height in pixels, carried over for the R widget bindings; the current shell fixes the chart area at 460px.
  * @property {number} [page_size=10] Rows per page in the linked participant listing.
+ * @property {?string} [normal_col_low='STNRLO'] Lower-limit-of-normal column passed to the docked profile's lab mappings (#99, PPRF-SSP-002).
+ * @property {?string} [normal_col_high='STNRHI'] Upper-limit-of-normal column passed to the docked profile; profile feed rows without a finite positive value here are dropped (the ×ULN denominator) (#99, PPRF-SSP-002).
+ * @property {?string} [studyday_col=null] Numeric study-day column for the docked profile's labs-over-time x-axis; when null the profile falls back to input order (#99, PPRF-SSP-002).
+ * @property {?Object} [measure_values=null] Optional map of short profile keys (ALT/AST/TB/ALP) to this data's full measure names, passed to the docked profile so the key liver measures resolve; null keeps the profile module's defaults (#99, PPRF-SSP-002).
+ * @property {boolean} [profile=true] Dock the shared participant-profile module in the shell's profile slot, fed by the brush selection via the participantsSelected event; false restores the pre-#99 behaviour of listing-only detail (#99, PPRF-SSP-002).
+ * @property {?Array<string|Object>} [profile_details=null] Demographic columns for the docked profile's header, as names or { value_col, label } specs; null shows none (the host `details` are pair columns, not demographics) (#99, PPRF-SSP-002).
+ * @property {?string} [participantProfileURL=null] Optional link-out URL for the docked profile's header, templated by every literal `{id}` token (#99, PPRF-SSP-002).
  */
 
 /**
@@ -57,7 +64,14 @@ export const DEFAULT_SETTINGS = {
   start_value: null,
   width: '100%',
   height: 460,
-  page_size: 10
+  page_size: 10,
+  normal_col_low: 'STNRLO',
+  normal_col_high: 'STNRHI',
+  studyday_col: null,
+  measure_values: null,
+  profile: true,
+  profile_details: null,
+  participantProfileURL: null
 };
 
 /**
@@ -109,5 +123,16 @@ export function syncSettings(settings) {
       { value_col: '__ssp_pchg', label: 'Percent Change' }
     ];
   }
+  // Docked-profile pass-throughs (#99): profile is a plain boolean and
+  // profile_details normalizes to a spec array only when provided (null keeps
+  // the "no header demographics" default — the host `details` are pair
+  // columns, not demographics).
+  synced.profile = Boolean(synced.profile);
+  synced.profile_details =
+    synced.profile_details === undefined || synced.profile_details === null
+      ? null
+      : arrayify(synced.profile_details)
+          .map((value) => fieldSpec(value))
+          .filter((detail) => detail.value_col);
   return synced;
 }

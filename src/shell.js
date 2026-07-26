@@ -19,6 +19,29 @@ export function createElement(tag, className, text) {
 }
 
 /**
+ * Build the standard "prototype" banner (HEP-MIG / HWF prototype marking): a
+ * self-contained notice a chart prepends to its own output so the not-yet-stable
+ * status travels with the chart everywhere it renders — the demo, the deployed
+ * site, and any downstream embed (e.g. a gsm.safety htmlwidget) — not just the
+ * gallery pages. The default copy names the target release and warns that
+ * behaviour and API may change.
+ * @param {string} [note] Optional trailing sentence appended after the label.
+ * @returns {HTMLElement} A `.sv-prototype` banner element.
+ */
+export function prototypeBanner(note) {
+  const banner = createElement('div', 'sv-prototype');
+  banner.setAttribute('role', 'note');
+  const tag = createElement('span', 'sv-prototype-tag', 'Prototype');
+  banner.append(tag);
+  const text =
+    note ||
+    'This chart is a prototype under evaluation for the v1.5 release — its behaviour and ' +
+      'settings may change before it is finalized.';
+  banner.append(createElement('span', 'sv-prototype-text', text));
+  return banner;
+}
+
+/**
  * Append an option to a select.
  * @param {HTMLSelectElement} select Select to append to.
  * @param {string} value Option value.
@@ -37,7 +60,7 @@ export function option(select, value, label, selected) {
 const SHELL_STYLE_ID = 'safety-viz-shell-styles';
 
 const SHELL_STYLES = `
-.sv-root{display:flex;align-items:flex-start;gap:1.25rem;width:100%;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#1f2933}
+.sv-root{display:flex;align-items:flex-start;gap:1.25rem;width:100%;position:relative;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#1f2933;--sv-rail-width:520px}
 .sv-sidebar{position:sticky;top:1rem;flex:0 0 250px;max-height:calc(100vh - 2rem);overflow-y:auto;border:1px solid #d8dee4;border-radius:10px;background:#f6f8fa;padding:.8rem .9rem 1rem}
 .sv-sidebar-header{display:flex;align-items:center;justify-content:space-between;gap:.5rem}
 .sv-sidebar-title{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#52616f}
@@ -62,6 +85,14 @@ const SHELL_STYLES = `
 .sv-warning{color:#9a3412}
 .sv-chart-wrap{height:460px;position:relative;border:1px solid #d8dee4;border-radius:10px;padding:1rem;background:#fff}
 .sv-footnote{margin:.6rem 0 0;font-size:.85rem;color:#52616f}
+.sv-rail{flex:0 0 var(--sv-rail-width);align-self:flex-start;position:sticky;top:1rem;max-height:calc(100vh - 2rem);display:flex;flex-direction:column;overflow:hidden;border:1px solid #d8dee4;border-radius:10px;background:#fbfcfd}
+.sv-rail:empty{display:none}
+/* The rail takes no width until a participant is selected: the module sets
+   [hidden] on the slot while it is idle, and .sv-rail's own display would
+   otherwise win over the user-agent rule. */
+.sv-rail[hidden]{display:none}
+.sv-rail-expanded .sv-rail{position:absolute;inset:0;z-index:6;max-height:none;box-shadow:0 18px 46px rgba(31,41,51,.22)}
+.sv-rail-expanded .sv-main,.sv-rail-expanded .sv-sidebar{filter:saturate(.25) opacity(.35)}
 .sv-multiples{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;margin-top:1.25rem}
 .sv-multiples:empty{display:none}
 .sv-multiple{border:1px solid #d8dee4;border-radius:10px;padding:.75rem .85rem;background:#fff}
@@ -74,6 +105,10 @@ const SHELL_STYLES = `
 .sv-listing th,.sv-listing td{border-bottom:1px solid #e3e8ee;padding:.45rem .55rem;text-align:left;vertical-align:top}
 .sv-listing th{border-bottom:2px solid #d8dee4;cursor:pointer;font-size:.75rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f;white-space:nowrap}
 .sv-listing tbody tr:hover{background:#f6f8fa}
+.sv-listing tbody tr.sv-listing-rowlink{cursor:pointer}
+.sv-listing tbody tr.sv-listing-rowlink:focus-visible{outline:2px solid #0b62a4;outline-offset:-2px}
+.sv-listing tbody tr.sv-listing-row-selected{background:#e8f0fe}
+.sv-listing tbody tr.sv-listing-row-selected:hover{background:#dce8fc}
 .sv-listing-actions{display:flex;align-items:center;justify-content:space-between;gap:.75rem;margin:.5rem 0;font-size:.85rem;flex-wrap:wrap}
 .sv-listing-tools{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
 .sv-listing-search{padding:.35rem .45rem;border:1px solid #b8c0cc;border-radius:6px;font:inherit;font-size:.85rem}
@@ -90,9 +125,15 @@ const SHELL_STYLES = `
 .sv-view-option:hover{border-color:#b8c0cc;background:#f6f8fa}
 .sv-view-option.is-active{border-color:#0b62a4;background:#eaf2fb;color:#0b3d63;font-weight:600;box-shadow:inset 0 0 0 1px #0b62a4}
 .sv-view-option:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
+.sv-prototype{display:flex;align-items:baseline;gap:.5rem;margin:0 0 .6rem;padding:.4rem .6rem;border:1px solid #e6c98a;border-left:4px solid #d99a2b;border-radius:6px;background:#fdf6e6;color:#6b4e12;font-size:.8rem;line-height:1.35}
+.sv-prototype-tag{flex:0 0 auto;text-transform:uppercase;letter-spacing:.05em;font-weight:700;font-size:.68rem;padding:.08rem .4rem;border-radius:999px;background:#d99a2b;color:#fff}
+.sv-prototype-text{flex:1 1 auto}
 @media (max-width:900px){
 .sv-root{flex-direction:column}
 .sv-sidebar{position:static;flex:1 1 auto;width:100%;max-height:none}
+.sv-rail{position:static;flex:1 1 auto;width:100%;max-height:none}
+.sv-rail-expanded .sv-rail{position:static}
+.sv-rail-expanded .sv-main,.sv-rail-expanded .sv-sidebar{filter:none}
 .sv-controls{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:0 1.25rem;align-items:start}
 .sv-control-section{border-top:none}
 }`;
@@ -123,6 +164,7 @@ export function applyShellStyles() {
  * @property {HTMLElement} mainAnnotation Overlay annotation inside the chart card.
  * @property {HTMLElement} footnote Hover/selection footnote below the chart.
  * @property {HTMLElement} multiplesWrap Small-multiples grid.
+ * @property {HTMLElement} railWrap Participant-profile rail slot: a right-hand column beside the main column, opposite the control sidebar (obot.roadmap#75, decisions D1/D2). Hidden while empty; stacks below the main column under 900px, which is where the removed dock used to sit (D4).
  * @property {HTMLElement} listingWrap Linked participant listing container.
  */
 
@@ -171,7 +213,11 @@ export function renderShell(element, { moduleClass = '', onToggle } = {}) {
   chartWrap.append(canvas, mainAnnotation);
   main.append(notes, chartWrap, footnote, multiplesWrap, listingWrap);
 
-  root.append(sidebar, main);
+  // The participant profile lives in a rail on the RIGHT, opposite the control
+  // sidebar on the left (decisions D1/D2) — the dock slot that used to sit
+  // inside the main column is gone (D4).
+  const railWrap = createElement('aside', 'sv-rail');
+  root.append(sidebar, main, railWrap);
   element.append(root);
   applyShellStyles();
   return {
@@ -186,6 +232,7 @@ export function renderShell(element, { moduleClass = '', onToggle } = {}) {
     mainAnnotation,
     footnote,
     multiplesWrap,
+    railWrap,
     listingWrap
   };
 }

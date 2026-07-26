@@ -81,3 +81,10 @@ asserts those top-to-bottom orders directly.
 ## View-selector rollout (VIEW-3, #76)
 
 One primary display — the participant timeline chart. Controls are Filters and a participant-ID sort order; the participant detail is a y-axis-click drill-down listing, not a view switch. Ruled **single-view** in the shared view-selector rollout ([#76](https://github.com/jwildfire/safety.viz/issues/76)) — no view control is added; see [view-selector-inventory.md](view-selector-inventory.md).
+
+## Participant-profile rail (obot.roadmap#75 D9, PPRF-AE-005)
+
+ae-timelines now mounts the railed participant profile. The deferral recorded here under PPRF-COV-001 — that ae-timelines ingests adverse-event records rather than the measure-per-visit long-lab contract the profile consumed — ended when v2 gave the profile an adverse-event domain of its own ([obot.roadmap#75](https://github.com/jwildfire/obot.roadmap/issues/75) decision D9).
+
+There are no laboratory records here, so the profile renders as the AE story alone: header, summary block and timeline, with no spaghetti card and no measure table. Adoption rows are PPRF-AE-005 in the
+[participant-profile matrix](https://github.com/jwildfire/obot.agent/blob/main/docs/requirements/participant-profile.md); unit evidence lives in `tests/unit/participant-profile/ae-adoption.test.js`.

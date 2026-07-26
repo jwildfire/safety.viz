@@ -6,7 +6,7 @@ v3.4.1 matching the original renderer's behavior, under
 [#60](https://github.com/jwildfire/safety.viz/issues/60)), per the convention
 in [CONTRIBUTING.md](../CONTRIBUTING.md). Requirement IDs are the `AE-*` rows
 of the harvested 74-row matrix at
-[obot.agent `docs/requirements/aeexplorer.md`](https://github.com/jwildfire/obot.agent/blob/main/docs/requirements/aeexplorer.md);
+[`requirements/aeexplorer.md`](../requirements/aeexplorer.md);
 rows are routed to Vitest (transforms) or Playwright (interaction/visual
 behavior) by judgment, since every source row is still typed `planned`.
 
@@ -64,7 +64,7 @@ behavior) by judgment, since every source row is still typed `planned`.
   AE-REG-046, AE-DATA-001/003, AE-CFG-001..009, and AE-API-001 are evidenced
   by the tables above. Every source row is still typed `planned` in the
   matrix; re-typing covered rows (`planned` → `unit`/`browser`) with links
-  back to these tests is an obot.agent follow-up.
+  back to these tests is a follow-up in `requirements/aeexplorer.md`.
 - **AE-REG-024 (details column labels):** the details setting accepts
   `{ value_col, label }` specs with and without labels via the shared
   field-list normalization (`configure.test.js`); the labeled-listing
@@ -93,3 +93,10 @@ behavior) by judgment, since every source row is still typed `planned`.
 ## View-selector rollout (VIEW-3, #76)
 
 One primary display — the SOC→PT incidence table. "Summarize by" is a statistic-basis picker that reshapes the same table, and the category drill-down is a master-detail listing restored via a "Return to the Summary View" button, not a mutually-exclusive view switch. Ruled **single-view** in the shared view-selector rollout ([#76](https://github.com/jwildfire/safety.viz/issues/76)) — no view control is added; see [view-selector-inventory.md](view-selector-inventory.md).
+
+## Participant-profile rail (obot.roadmap#75 D9, PPRF-AE-005)
+
+ae-explorer now mounts the railed participant profile. The deferral recorded here under PPRF-COV-001 — that ae-explorer ingests adverse-event records rather than the measure-per-visit long-lab contract the profile consumed — ended when v2 gave the profile an adverse-event domain of its own ([obot.roadmap#75](https://github.com/jwildfire/obot.roadmap/issues/75) decision D9).
+
+There are no laboratory records here, so the profile renders as the AE story alone: header, summary block and timeline, with no spaghetti card and no measure table. Adoption rows are PPRF-AE-005 in the
+[participant-profile matrix](https://github.com/jwildfire/obot.agent/blob/main/docs/requirements/participant-profile.md); unit evidence lives in `tests/unit/participant-profile/ae-adoption.test.js`.

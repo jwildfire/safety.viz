@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/jwildfire/safety.viz/main/src/data/schema/hep-waterfall.json",
+  "title": "safety.viz hep-waterfall data contract",
+  "description": "Long-format liver-chemistry data: one record per participant per measure per visit (HWF-DATA-001), the same record contract the hep-explorer reads, plus a required treatment-arm column. The hep-waterfall draws the modified waterfall of Amirzadegan et al., Drug Safety 2025;48(5):443-453, Figure 5, for trials enrolling participants with elevated baseline ALT but NORMAL baseline bilirubin: one floating bar per participant spanning their baseline value to their maximum on-treatment value in the data's absolute units, participants ranked by baseline with placebo ascending left-to-right and active descending right-to-centre so the highest baselines of the two arms meet at the seam, a black line tracing the baselines, blue/bronze arm colours with a green override for new-onset jaundice, and a box-and-whisker summary flanking each arm. Participants whose baseline total bilirubin exceeds baseline_tb_max are excluded by the paper's Table 1 rule, and participants whose arm is designated neither placebo nor active are excluded; both counts are reported separately (HWF-DATA-003, HWF-DATA-005).",
+  "type": "object",
+  "required": ["data", "settings"],
+  "properties": {
+    "data": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "object" },
+      "description": "d3.csv()-style records; every row carries the participant, measure, result, reference-range and treatment-arm columns named in settings, one row per participant per measure per visit. Both ALT (or the configured measure) and total bilirubin must be present for a participant to be plotted: the measure supplies the bar, the bilirubin the cohort rule and the jaundice flag."
+    },
+    "settings": {
+      "type": "object",
+      "description": "Column mappings and rendering options; merged onto the module's DEFAULT_SETTINGS, so only overrides need to be supplied. The lab-mapping block is identical to the hep-explorer contract so one settings list can drive both.",
+      "required": ["id_col", "measure_col", "value_col", "normal_col_high", "arm_col"],
+      "properties": {
+        "id_col": {
+          "type": "string",
+          "default": "USUBJID",
+          "description": "Participant identifier column; required in data — one bar per participant, and the tie-break that makes the ordering reproducible (HWF-DATA-001, HWF-ORDER-004)."
+        },
+        "measure_col": {
+          "type": "string",
+          "default": "TEST",
+          "description": "Column holding the measure name; required in data. Rows are matched to the ALT/AST/TB/ALP keys via measure_values."
+        },
+        "value_col": {
+          "type": "string",
+          "default": "STRESN",
+          "description": "Column holding the numeric result; required in data. The bars, the baseline trace and both axes are in these units — absolute, never a multiple of the reference range or of baseline (HWF-AXIS-001)."
+        },
+        "unit_col": {
+          "type": ["string", "null"],
+          "default": "STRESU",
+          "description": "Unit column. The modal unit of the plotted measure titles both axes, falling back to U/L; a cohort carrying more than one unit for that measure is a warning, not a chart (HWF-DATA-006, HWF-DATA-007)."
+        },
+        "normal_col_high": {
+          "type": "string",
+          "default": "STNRHI",
+          "description": "Upper-limit-of-normal column; required in data. It draws the reference-range band on the absolute axis and standardizes total bilirubin for the cohort rule and the jaundice flag (HWF-AXIS-004, HWF-DATA-003, HWF-DATA-004)."
+        },
+        "normal_col_low": {
+          "type": ["string", "null"],
+          "default": "STNRLO",
+          "description": "Optional lower-limit-of-normal column, carried into the linked participant listing."
+        },
+        "studyday_col": {
+          "type": ["string", "null"],
+          "default": "DY",
+          "description": "Study-day column; separates the baseline record from the on-treatment records and dates the maximum shown in the tooltip (HWF-DATA-002)."
+        },
+        "visit_col": {
+          "type": ["string", "null"],
+          "default": "VISIT",
+          "description": "Optional categorical visit column, shown in the linked participant listing."
+        },
+        "visitn_col": {
+          "type": ["string", "null"],
+          "default": "VISITNUM",
+          "description": "Optional numeric visit column ordering the visits."
+        },
+        "measure_values": {
+          "type": "object",
+          "default": {
+            "ALT": "Aminotransferase, alanine (ALT)",
+            "AST": "Aminotransferase, aspartate (AST)",
+            "TB": "Total Bilirubin",
+            "ALP": "Alkaline phosphatase (ALP)"
+          },
+          "description": "Map of the short measure key (ALT/AST/TB/ALP) to the full measure string in the data; the controls present the short keys but resolve rows via these strings."
+        },
+        "measure": {
+          "type": "string",
+          "default": "ALT",
+          "description": "The plotted analyte. The paper plots ALT; AST, ALP and TB are available (HWF-CFG-002)."
+        },
+        "arm_col": {
+          "type": "string",
+          "default": "ARM",
+          "description": "Treatment-arm column; required in data. The arm decides which half of the waterfall a participant's bar sits in and which colour it takes, so a waterfall without it has no seam and no comparison (HWF-DATA-005, HWF-COLOR-001)."
+        },
+        "placebo_arm": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "Arm plotted blue on the left half; when null it is auto-detected by matching the arm values against /placebo|control/i, an exact match beating a substring one (HWF-CFG-003)."
+        },
+        "active_arms": {
+          "type": ["array", "null"],
+          "items": { "type": "string" },
+          "default": null,
+          "description": "Arms plotted bronze on the right half; when null every non-placebo arm pools right. Arms named by neither setting are excluded with a counted note (HWF-CFG-003, HWF-DATA-005)."
+        },
+        "baseline_col": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "Optional baseline-flag column (e.g. ABLFL). When supplied, the flagged record is the baseline, outranking the day-0-else-earliest heuristic."
+        },
+        "baseline_value": {
+          "type": "string",
+          "default": "Y",
+          "description": "The value of baseline_col that marks the baseline record."
+        },
+        "jaundice_uln": {
+          "type": "number",
+          "default": 2,
+          "description": "New-onset-jaundice threshold on the total-bilirubin xULN scale: flagged when the baseline is at or below it and the maximum on-treatment value exceeds it. Defaults to the composite plot's bilirubin cutpoint so the flag and the Hy's-Law quadrants stay mutually consistent (HWF-DATA-004)."
+        },
+        "baseline_tb_max": {
+          "type": "number",
+          "default": 1,
+          "description": "The paper's Table-1 cohort rule: participants whose baseline total bilirubin exceeds this many xULN are excluded, because the waterfall serves the abnormal-ALT / NORMAL-bilirubin population. Separate from jaundice_uln, which is an event threshold (HWF-DATA-003)."
+        },
+        "apply_tb_cohort": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to apply the Table-1 baseline-bilirubin exclusion. Turning it off admits baseline-jaundiced participants for exploratory use and says so in the notes (HWF-DATA-003)."
+        },
+        "uln_display": {
+          "type": "string",
+          "enum": ["band", "per_subject", "none"],
+          "default": "band",
+          "description": "How the reference range is drawn on the absolute axis. Because the upper limit of normal genuinely varies across a real cohort, a single line would be undefined: 'band' shades min-to-max and collapses to a line when the cohort shares one limit, 'per_subject' traces each participant's own limit, 'none' draws nothing (HWF-AXIS-004)."
+        },
+        "summary": {
+          "type": "string",
+          "enum": ["baseline_peak", "peak"],
+          "default": "baseline_peak",
+          "description": "What the flanking box-and-whisker panels show: 'baseline_peak' gives a baseline box and a maximum-on-treatment box per arm, so the panel summarizes the same shift the bars show per participant; 'peak' gives the single-box reading (HWF-BOX-003)."
+        },
+        "filters": {
+          "$ref": "#/$defs/fieldList",
+          "description": "Optional filter columns rendered as controls; an active filter restricts the plotted cohort and the counts in the notes (HWF-CTRL-003)."
+        },
+        "details": {
+          "$ref": "#/$defs/fieldList",
+          "description": "Columns for the linked participant listing opened by clicking a bar; when null, defaults derive from the measure/day/value mappings (HWF-SELECT-002)."
+        },
+        "page_size": {
+          "type": "number",
+          "default": 10,
+          "description": "Rows per page in the linked participant listing."
+        }
+      }
+    }
+  },
+  "$defs": {
+    "fieldList": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          { "type": "string" },
+          {
+            "type": "object",
+            "required": ["value_col"],
+            "properties": {
+              "value_col": { "type": "string" },
+              "label": { "type": "string" }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

@@ -16,14 +16,21 @@ import { test, expect } from '@playwright/test';
 
 export const CANONICAL = process.platform === 'linux';
 
-export async function captureEvidence(page, requirementId, slug) {
+/**
+ * `target` is normally the page, giving the familiar viewport shot. Pass a
+ * Locator instead when the evidence is a detail the viewport would crop — the
+ * hep-waterfall flank panels' slot labels sit below the fold on a default
+ * viewport, and a screenshot that cuts off the label is not evidence that the
+ * label exists. Both Page and Locator answer screenshot() and toHaveScreenshot().
+ */
+export async function captureEvidence(target, requirementId, slug) {
   const module = path.basename(test.info().file).replace(/\.spec\.js$/, '');
   const name = `${requirementId}-${slug}.png`;
   if (CANONICAL) {
     // Path segments + the config's snapshotPathTemplate ('docs/evidence/
     // {arg}{ext}') put the baseline in the module's evidence directory.
-    await expect(page).toHaveScreenshot([module, name]);
+    await expect(target).toHaveScreenshot([module, name]);
   } else {
-    await page.screenshot({ path: `test-results/evidence-preview/${module}/${name}` });
+    await target.screenshot({ path: `test-results/evidence-preview/${module}/${name}` });
   }
 }

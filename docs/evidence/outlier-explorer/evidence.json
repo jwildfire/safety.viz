@@ -1,6 +1,6 @@
 {
   "module": "outlier-explorer",
-  "generatedAt": "2026-07-22T02:43:43.459Z",
+  "generatedAt": "2026-07-26T02:24:23.094Z",
   "environment": {
     "os": "linux 6.17.0-1020-azure",
     "node": "v22.23.1",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "29886544593",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29886544593"
+    "id": "30184486512",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/30184486512"
   },
   "records": [
     {
@@ -53,6 +53,14 @@
       "screenshots": []
     },
     {
+      "test": "built hep-waterfall demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
       "test": "built histogram demo mounts the shared shell with no console errors (#7) (#17)",
       "suite": "browser",
       "status": "pass",
@@ -62,6 +70,14 @@
     },
     {
       "test": "built outlier-explorer demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built participant-profile demo mounts the shared shell with no console errors (#7) (#17)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": [],
@@ -141,6 +157,30 @@
       "screenshots": []
     },
     {
+      "test": "PPRF-OE-001/PPRF-OE-002: clicking a point opens the railed profile ALONGSIDE the linked listing (#99)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PPRF-OE-001", "PPRF-OE-002"],
+      "issueRefs": [99],
+      "screenshots": ["PPRF-OE-002-docked-profile.png", "PPRF-OE-002-railed-profile.png"]
+    },
+    {
+      "test": "PPRF-OE-002: the rail Clear affordance routes through the host clear path (#99)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PPRF-OE-002"],
+      "issueRefs": [99],
+      "screenshots": ["PPRF-OE-002-docked-profile.png", "PPRF-OE-002-railed-profile.png"]
+    },
+    {
+      "test": "PPRF-OE-003: background click and control changes empty the rail (#99)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PPRF-OE-003"],
+      "issueRefs": [99],
+      "screenshots": []
+    },
+    {
       "test": "SOE-API-001: lifecycle API supports init, setData, setSettings, render, resize, and destroy (#24)",
       "suite": "browser",
       "status": "pass",
@@ -155,6 +195,14 @@
       "requirementIds": ["SOE-API-003"],
       "issueRefs": [24],
       "screenshots": []
+    },
+    {
+      "test": "SOE-AXIS-001/SOE-AXIS-002/SOE-AXIS-003: y-limit inputs load pre-filled with the drawn axis, follow the measure, and Reset restores them (#85)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SOE-AXIS-001", "SOE-AXIS-002", "SOE-AXIS-003"],
+      "issueRefs": [85],
+      "screenshots": ["SOE-AXIS-001-y-limits-prefilled.png"]
     },
     {
       "test": "SOE-FUNC-001/SOE-FUNC-002/SOE-FUNC-004/SOE-FUNC-005/SOE-FUNC-006/SOE-FUNC-007: renders the full control panel (#24)",
@@ -600,6 +648,22 @@
       "screenshots": []
     },
     {
+      "test": "outlier-explorer axis-limit prefill (SOE-AXIS-001) SOE-AXIS-001: displaying a limit does not pin it — the overrides stay null until edited (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-AXIS-001"],
+      "issueRefs": [85],
+      "screenshots": ["SOE-AXIS-001-y-limits-prefilled.png"]
+    },
+    {
+      "test": "outlier-explorer axis-limit prefill (SOE-AXIS-001) SOE-AXIS-001: the Y-axis limit inputs load pre-filled with the padded domain the chart drew (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-AXIS-001"],
+      "issueRefs": [85],
+      "screenshots": ["SOE-AXIS-001-y-limits-prefilled.png"]
+    },
+    {
       "test": "outlier-explorer checkInputs SOE-DATA-001: missing required measure/value columns throw a naming error (#24)",
       "suite": "unit",
       "status": "pass",
@@ -680,6 +744,38 @@
       "screenshots": []
     },
     {
+      "test": "outlier-explorer dock gesture contract (PPRF-OE-002, PPRF-11) PPRF-OE-002: a point click feeds the rail the full profile AND keeps the linked listing",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-OE-002"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-OE-002-docked-profile.png", "PPRF-OE-002-railed-profile.png"]
+    },
+    {
+      "test": "outlier-explorer dock gesture contract (PPRF-OE-002, PPRF-11) PPRF-OE-002: is idempotent under repeated identical dispatches",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-OE-002"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-OE-002-docked-profile.png", "PPRF-OE-002-railed-profile.png"]
+    },
+    {
+      "test": "outlier-explorer dock gesture contract (PPRF-OE-002, PPRF-11) PPRF-OE-002: stepping an externally-fed cohort emphasizes the stepped participant without touching the host selection or re-dispatching",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-OE-002"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-OE-002-docked-profile.png", "PPRF-OE-002-railed-profile.png"]
+    },
+    {
+      "test": "outlier-explorer dock gesture contract (PPRF-OE-002, PPRF-11) PPRF-OE-002: the dispatch travels via the shell root (the house participantsSelected contract)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-OE-002"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-OE-002-docked-profile.png", "PPRF-OE-002-railed-profile.png"]
+    },
+    {
       "test": "outlier-explorer getPlugins hexToRgba converts a hex color to rgba at the given opacity (#24)",
       "suite": "unit",
       "status": "pass",
@@ -752,11 +848,123 @@
       "screenshots": []
     },
     {
+      "test": "outlier-explorer limit guardrails with prefilled inputs (SOE-AXIS-004) SOE-AXIS-004: a lower limit typed above the prefilled upper limit is swapped, never inverted (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-AXIS-004"],
+      "issueRefs": [85],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer limit guardrails with prefilled inputs (SOE-AXIS-004) SOE-AXIS-004: clearing a prefilled input returns that limit to auto and the box refills (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-AXIS-004"],
+      "issueRefs": [85],
+      "screenshots": []
+    },
+    {
       "test": "outlier-explorer module export SOE-API-001: the public collection exposes the outlierExplorer factory (#24)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["SOE-API-001"],
       "issueRefs": [24],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer participant-profile adoption (PPRF-OE-001) PPRF-OE-001: derives the rail feed rows ONCE per setData through the hep-core cleaners",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-OE-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer participant-profile adoption (PPRF-OE-001) PPRF-OE-001: host listing columns are NOT the rail header details (profile_details defaults empty)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-OE-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer participant-profile adoption (PPRF-OE-001) PPRF-OE-001: mounts the rail by default (config-on) into the shell profile slot",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-OE-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer participant-profile adoption (PPRF-OE-001) PPRF-OE-001: passes the host lab mappings and profile_details through to the rail",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-OE-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer participant-profile adoption (PPRF-OE-001) PPRF-OE-001: profile: false leaves the slot empty and mounts no dock",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-OE-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer rail clear paths (PPRF-OE-003, PPRF-11) PPRF-OE-001: setSettings({profile: false}) unmounts a live dock; re-enabling remounts it",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-OE-003", "PPRF-OE-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer rail clear paths (PPRF-OE-003, PPRF-11) PPRF-OE-003: a background click (clearSelection) empties the rail",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-OE-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer rail clear paths (PPRF-OE-003, PPRF-11) PPRF-OE-003: a control-driven render resets the selection AND the rail (render preamble)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-OE-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer rail clear paths (PPRF-OE-003, PPRF-11) PPRF-OE-003: destroy tears the rail down with the instance",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-OE-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer rail clear paths (PPRF-OE-003, PPRF-11) PPRF-OE-003: dock Clear empties an externally-fed cohort the host never selected (PPRF-11)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-OE-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer rail clear paths (PPRF-OE-003, PPRF-11) PPRF-OE-003: the rail Clear affordance routes through the host clear path",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-OE-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer Reset Limits (SOE-AXIS-003) SOE-AXIS-003: Reset Limits clears the overrides and repopulates both inputs with the derived domain (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-AXIS-003"],
+      "issueRefs": [85],
       "screenshots": []
     },
     {
@@ -832,6 +1040,30 @@
       "screenshots": ["SOE-REG-037-invalid-data-note.png"]
     },
     {
+      "test": "outlier-explorer unedited limits stay automatic (SOE-AXIS-002) SOE-AXIS-002: an edited limit survives a filter change and stays an override (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-AXIS-002"],
+      "issueRefs": [85],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer unedited limits stay automatic (SOE-AXIS-002) SOE-AXIS-002: an unedited limit re-derives on a measure change and the input follows (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-AXIS-002"],
+      "issueRefs": [85],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer unedited limits stay automatic (SOE-AXIS-002) SOE-AXIS-002: an unedited limit re-derives when a filter narrows the cohort (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-AXIS-002"],
+      "issueRefs": [85],
+      "screenshots": []
+    },
+    {
       "test": "renderGuidePage: composition renders a sticky TOC sidebar whose links anchor to the heading ids",
       "suite": "unit",
       "status": "pass",
@@ -852,6 +1084,62 @@
       "suite": "unit",
       "status": "pass",
       "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) exposes a railWrap slot with the sv-rail class",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) gives the rail a settable width and the root a positioning context for expand",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) hides the rail while it is empty via the shared stylesheet",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) honours [hidden] on the rail, which the module sets while it is idle",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) no longer carries the dock slot inside the main column (D4)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) puts the rail opposite the control sidebar, with the chart between them (D2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) stacks the rail below the main column under the shell breakpoint (D4)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
       "issueRefs": [],
       "screenshots": []
     },
@@ -957,6 +1245,22 @@
       "status": "pass",
       "requirementIds": ["VIEW-SEL-004"],
       "issueRefs": [76],
+      "screenshots": []
+    },
+    {
+      "test": "shell: prototypeBanner renders a labelled note element with the default v1.5 copy (#97)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [97],
+      "screenshots": []
+    },
+    {
+      "test": "shell: prototypeBanner uses a caller-supplied note verbatim when given (#97)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [97],
       "screenshots": []
     },
     {
@@ -1168,6 +1472,14 @@
       "screenshots": []
     },
     {
+      "test": "site generator: gallery experimentalBadge renders Prototype for a prototype, Experimental for experimental, nothing otherwise (#97)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [97],
+      "screenshots": []
+    },
+    {
       "test": "site generator: gallery gallery compresses the migration queue to a one-line strip after the cards (#29)",
       "suite": "unit",
       "status": "pass",
@@ -1197,6 +1509,14 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [7, 29],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery marks a prototype renderer with a Prototype badge on its card (#97)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [97],
       "screenshots": []
     },
     {

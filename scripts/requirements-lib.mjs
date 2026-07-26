@@ -1,8 +1,8 @@
-// Requirement-text extractor (#63): reshapes an obot.agent requirements matrix
-// (docs/requirements/<matrix>.md) into an `{ id: text }` map so the evidence
-// pages can show the reviewed requirement each test evidences without leaving
-// the page. Pure functions; the CLI (scripts/requirements.mjs) wires them to
-// the filesystem and the freshness guard, mirroring scripts/evidence-lib.mjs.
+// Requirement-text extractor (#63): reshapes a requirements matrix
+// (requirements/<matrix>.md) into an `{ id: text }` map so the evidence pages
+// can show the reviewed requirement each test evidences without leaving the
+// page. Pure functions; the CLI (scripts/requirements.mjs) wires them to the
+// filesystem and the freshness guard, mirroring scripts/evidence-lib.mjs.
 
 // Requirement IDs are `<PREFIX>-<AREA>-<NUM><suffix?>` per the matrices — SH-
 // (histogram), SSP- (shift-plot), SDD- (delta-delta), SROT- (results-over-

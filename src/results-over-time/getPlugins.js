@@ -1,10 +1,16 @@
 // Tooltip text, group colors, and the box-and-whisker Chart.js plugin for the
 // results-over-time module (#27). The statistics come pre-computed from
-// structureData (unit-tested); this module only formats and draws them,
-// reproducing the original renderer's box-plot marks (whiskers at the 5th/95th
-// percentiles, box Q1–Q3, median line, mean marker) on a Chart.js canvas.
+// structureData (unit-tested); this module only formats them and stages the
+// draw. The box-plot marks themselves (whiskers at the 5th/95th percentiles,
+// box Q1–Q3, median line, mean marker) are drawn by the shared box-whisker
+// module, promoted verbatim from here for reuse (#91, HEP-CORE-010) — this
+// module's plugin is now a thin delegation that preserves the srot id prefix
+// and the state.boxplots/boxSpecs gating exactly.
 
 import { formatFixed } from './getScales.js';
+import { boxWhiskerPlugin as sharedBoxWhiskerPlugin } from '../box-whisker.js';
+
+export { hexToRgba } from '../box-whisker.js';
 
 // Categorical palette for grouped box plots; index-stable so a group keeps its
 // color across renders and matches its legend entry (SROT-REG-003).
@@ -28,20 +34,6 @@ const PALETTE = [
  */
 export function groupColors(groups) {
   return Object.fromEntries(groups.map((group, index) => [group, PALETTE[index % PALETTE.length]]));
-}
-
-/**
- * Convert a #rrggbb color to an rgba() string at the given alpha.
- * @param {string} hex A #rrggbb color.
- * @param {number} alpha Opacity in [0, 1].
- * @returns {string} The rgba() color.
- */
-export function hexToRgba(hex, alpha) {
-  const value = hex.replace('#', '');
-  const r = parseInt(value.slice(0, 2), 16);
-  const g = parseInt(value.slice(2, 4), 16);
-  const b = parseInt(value.slice(4, 6), 16);
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
 /**
@@ -92,64 +84,7 @@ export function outlierTooltip(row, settings, { p1 }) {
  * @returns {Object} A Chart.js plugin object.
  */
 export function boxWhiskerPlugin(instance) {
-  return {
-    id: `srot-boxwhisker-${Math.random().toString(36).slice(2)}`,
-    afterDatasetsDraw(chart) {
-      const boxes = instance.state.boxplots ? instance.boxSpecs || [] : [];
-      if (!boxes.length) return;
-      const { ctx, scales, chartArea } = chart;
-      const yOf = (value) => scales.y.getPixelForValue(value);
-      ctx.save();
-      for (const box of boxes) {
-        const { stats, color } = box;
-        if (!stats || !stats.n) continue;
-        const centerX = scales.x.getPixelForValue(box.x);
-        const left = scales.x.getPixelForValue(box.x - box.halfWidth);
-        const right = scales.x.getPixelForValue(box.x + box.halfWidth);
-        const clamp = (y) => Math.max(chartArea.top, Math.min(chartArea.bottom, y));
-
-        // Box: Q1–Q3.
-        ctx.fillStyle = hexToRgba(color, 0.35);
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 1.5;
-        const top = clamp(yOf(stats.q75));
-        const bottom = clamp(yOf(stats.q25));
-        ctx.fillRect(left, top, right - left, bottom - top);
-        ctx.strokeRect(left, top, right - left, bottom - top);
-
-        // Whiskers: q5→Q1 and Q3→q95, with caps at the 5th/95th percentiles.
-        ctx.beginPath();
-        ctx.moveTo(centerX, clamp(yOf(stats.q5)));
-        ctx.lineTo(centerX, bottom);
-        ctx.moveTo(centerX, top);
-        ctx.lineTo(centerX, clamp(yOf(stats.q95)));
-        ctx.moveTo(left, clamp(yOf(stats.q5)));
-        ctx.lineTo(right, clamp(yOf(stats.q5)));
-        ctx.moveTo(left, clamp(yOf(stats.q95)));
-        ctx.lineTo(right, clamp(yOf(stats.q95)));
-        ctx.stroke();
-
-        // Median line.
-        ctx.beginPath();
-        ctx.lineWidth = 2;
-        ctx.moveTo(left, clamp(yOf(stats.median)));
-        ctx.lineTo(right, clamp(yOf(stats.median)));
-        ctx.stroke();
-
-        // Mean: outer light circle + inner colored dot.
-        const meanY = clamp(yOf(stats.mean));
-        const radius = Math.min((right - left) / 6, 6);
-        ctx.beginPath();
-        ctx.fillStyle = '#eee';
-        ctx.arc(centerX, meanY, radius, 0, 2 * Math.PI);
-        ctx.fill();
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.fillStyle = color;
-        ctx.arc(centerX, meanY, radius / 2, 0, 2 * Math.PI);
-        ctx.fill();
-      }
-      ctx.restore();
-    }
-  };
+  return sharedBoxWhiskerPlugin('srot', () =>
+    instance.state.boxplots ? instance.boxSpecs || [] : []
+  );
 }

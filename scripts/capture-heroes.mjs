@@ -56,9 +56,14 @@ const page = await browser.newPage({
 for (const module of modules) {
   await page.goto(`http://127.0.0.1:${port}/${module}/index.html`);
   // Chart renderers surface a canvas; table-first renderers (ae-explorer,
-  // #60) surface a table in the same main-column slot.
+  // #60) surface a table in the same main-column slot; diagram views drawn as
+  // hand-rolled inline SVG (hep-explorer's migration Sankey, #92) surface
+  // neither, so the locator needs an svg branch or a demo opening on such a
+  // view would hang here instead of shooting its hero.
   const canvas = page
-    .locator('#container canvas:visible, #container .sv-main table:visible')
+    .locator(
+      '#container canvas:visible, #container .sv-main table:visible, #container .sv-main svg:visible'
+    )
     .first();
   await canvas.waitFor({ state: 'visible' });
   // Charts animate in and some demos fetch CSV first; settle before shooting.

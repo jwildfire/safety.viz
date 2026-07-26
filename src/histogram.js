@@ -15,6 +15,7 @@ import {
 } from 'chart.js';
 
 import { controlBuilders, createElement, option, renderShell } from './shell.js';
+import { applyLimitEdit, clearAxisLimits, seedLimitInput, syncAxisLimits } from './axis-limits.js';
 import { ALGORITHMS, syncSettings } from './histogram/configure.js';
 import { checkInputs } from './histogram/checkInputs.js';
 import {
@@ -42,6 +43,13 @@ import {
   statisticalAnnotation
 } from './histogram/getPlugins.js';
 import { renderListing } from './histogram/listing.js';
+import {
+  buildProfileRows,
+  mountProfileRail,
+  resetProfileRail,
+  syncProfileRail,
+  unmountProfileRail
+} from './profile-host.js';
 
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
@@ -72,20 +80,94 @@ class SafetyHistogram {
     this.listingSort = null;
     this.page = 1;
     this.charts = [];
+    this.participantsSelected = [];
+    // The railed participant-profile module (#99, PPRF-SH-001): the shared
+    // drill-down rendered into the shell's profile slot and fed by the linked
+    // listing's row-click focus through dispatchSelection's
+    // participantsSelected event on the shell root. profileRows is the ONE
+    // per-setData profile ingest (hep-core cleaned rows); profileKey is the
+    // idempotency guard; listingSelectedId drives the listing row highlight.
+    this.profile = null;
+    this.profileFeed = null;
+    this.profileKey = null;
+    this.profileRows = [];
+    this.listingSelectedId = null;
     this.state = {
       measure: this.settings.start_value,
       filters: {},
       groupBy: this.settings.group_by,
+      // X-axis limits (#85): `lower`/`upper` hold USER OVERRIDES only (null =
+      // auto), `axisDomain` the [lower, upper] the last render resolved — what
+      // the inputs display and what the chart drew. See src/axis-limits.js.
       lower: null,
       upper: null,
+      axisDomain: null,
       algorithm: this.settings.bin_algorithm,
       quantity: null,
       width: null,
       displayNormalRange: this.settings.display_normal_range,
       normalRange: null,
-      annotateBoundaries: this.settings.annotate_bin_boundaries
+      annotateBoundaries: this.settings.annotate_bin_boundaries,
+      selectedId: null
     };
     this.renderShell();
+    /**
+     * Listing-row activation callback (#99, PPRF-SH-002). Its presence opts
+     * the SHARED listing renderer into clickable/keyboard-focusable rows —
+     * consumers that never set it (outlier-explorer, shift-plot) keep the
+     * pre-#99 listing untouched. The default focuses the clicked row's
+     * participant into the railed profile via selectParticipant.
+     * @param {Object} row The clicked listing record.
+     * @returns {void}
+     */
+    this.onListingRowClick = (row) => this.selectParticipant(row[this.settings.id_col]);
+    mountProfileRail(this, () => this.profileSettings());
+  }
+
+  /**
+   * The settings handed to the railed participant-profile module (#99,
+   * PPRF-SH-001): the shared long-lab column mappings pass through verbatim;
+   * `details` come from profile_details (the host `details` configure the
+   * linked listing — per-row fields, not demographics); and the two outbound
+   * callbacks wire Clear to the host's own clear path (falling back to a bare
+   * empty dispatch when the dock was fed by an external cohort the host never
+   * selected, so Clear always clears — PPRF-11) and stepper navigation to the
+   * listing row highlight (no dispatch, selection state untouched).
+   * @private
+   */
+  profileSettings() {
+    const settings = this.settings;
+    const profileSettings = {
+      id_col: settings.id_col,
+      measure_col: settings.measure_col,
+      value_col: settings.value_col,
+      unit_col: settings.unit_col,
+      normal_col_high: settings.normal_col_high,
+      normal_col_low: settings.normal_col_low,
+      studyday_col: settings.studyday_col,
+      visit_col: settings.visit_col,
+      visitn_col: settings.visitn_col,
+      details:
+        settings.profile_details && settings.profile_details.length ? settings.profile_details : [],
+      participantProfileURL: settings.participantProfileURL ?? null,
+      on_clear: () => {
+        if (this.state.selectedId != null) {
+          this.clearSelection();
+        } else {
+          // Externally-fed cohort (e.g. a root-level dispatch the host did not
+          // originate): nothing host-side to clear, but the dock still must —
+          // reset any transient row highlight and dispatch the empty selection
+          // (PPRF-11 clear contract).
+          this.focusListingRow(null);
+          this.dispatchSelection([]);
+        }
+      },
+      on_step: (id) => this.focusListingRow(id)
+    };
+    // Only forward a caller-supplied key-measure map — null keeps the profile
+    // module's own ALT/AST/TB/ALP defaults.
+    if (settings.measure_values) profileSettings.measure_values = settings.measure_values;
+    return profileSettings;
   }
 
   /**
@@ -126,9 +208,21 @@ class SafetyHistogram {
   setData(data) {
     this.rawData = Array.isArray(data) ? data : [];
     this.validateAndCleanData();
+    this.buildProfileRows();
     this.buildControls();
     this.render();
     return this;
+  }
+
+  /**
+   * Derive the railed profile's pre-cleaned rows ONCE per data/settings change
+   * (#99, PPRF-SH-001) — never per gesture.
+   * @private
+   */
+  buildProfileRows() {
+    this.profileRows = this.settings.profile
+      ? buildProfileRows(this.rawData, this.profileSettings())
+      : [];
   }
 
   /**
@@ -139,6 +233,9 @@ class SafetyHistogram {
    */
   setSettings(settings) {
     this.settings = syncSettings({ ...this.settings, ...settings });
+    if (this.rawData.length) this.validateAndCleanData();
+    this.buildProfileRows();
+    syncProfileRail(this, () => this.profileSettings());
     this.buildControls();
     this.render();
     return this;
@@ -243,22 +340,38 @@ class SafetyHistogram {
     const lower = addControl('Lower', document.createElement('input'), xAxisRow);
     lower.type = 'number';
     lower.step = 'any';
-    lower.value = this.state.lower == null ? '' : this.state.lower;
+    lower.value = seedLimitInput(this.state, 'lower');
     lower.onchange = () => {
-      this.state.lower = lower.value === '' ? null : Number(lower.value);
+      applyLimitEdit(this.state, 'lower', lower.value);
       normalizeDomain(this.state);
       this.render();
     };
+    this.lowerInput = lower;
 
     const upper = addControl('Upper', document.createElement('input'), xAxisRow);
     upper.type = 'number';
     upper.step = 'any';
-    upper.value = this.state.upper == null ? '' : this.state.upper;
+    upper.value = seedLimitInput(this.state, 'upper');
     upper.onchange = () => {
-      this.state.upper = upper.value === '' ? null : Number(upper.value);
+      applyLimitEdit(this.state, 'upper', upper.value);
       normalizeDomain(this.state);
       this.render();
     };
+    this.upperInput = upper;
+
+    // Now that the inputs are never blank, an explicit way back to the derived
+    // domain is required (#85, AXIS-3) — the affordance results-over-time and
+    // outlier-explorer already ship, and the original renderer's Reset Limits
+    // (SH-FUNC-006).
+    const reset = createElement('button', 'sv-reset-limits', 'Reset Limits');
+    reset.type = 'button';
+    reset.onclick = () => {
+      this.resetDomain();
+      this.render();
+    };
+    const resetWrap = createElement('div', 'sv-control');
+    resetWrap.append(reset);
+    xAxisParent.append(resetWrap);
 
     const binParent = addSection('Bins');
     this.binSection = binParent;
@@ -353,12 +466,13 @@ class SafetyHistogram {
   }
 
   /**
-   * Clear the x-axis limit overrides when the measure changes.
+   * Clear the x-axis limit overrides — on a measure change (limits are
+   * per-measure) and on Reset Limits. The recorded domain goes with them so the
+   * next render re-derives it and refills the inputs (#85, AXIS-3).
    * @private
    */
   resetDomain() {
-    this.state.lower = null;
-    this.state.upper = null;
+    clearAxisLimits(this.state);
   }
 
   /**
@@ -397,6 +511,12 @@ class SafetyHistogram {
     this.listingSearch = '';
     this.listingSort = null;
     this.page = 1;
+    this.state.selectedId = null;
+    this.listingSelectedId = null;
+    this.participantsSelected = [];
+    // The selection resets silently on every render, so the rail must empty in
+    // the same preamble (#99, PPRF-SH-003).
+    resetProfileRail(this);
     this.footnote.textContent = 'Hover over or click a bar for details.';
     this.mainAnnotation.innerHTML = '';
     this.notes.innerHTML = '';
@@ -414,6 +534,12 @@ class SafetyHistogram {
       return;
     }
     this.binInputs = this.computeBinInputs();
+    // The X-axis Limits inputs mirror the domain this render resolved (#85,
+    // AXIS-1), following the resolved bin quantity/width write-back below.
+    syncAxisLimits(this.state, this.binInputs.domain, {
+      lower: this.lowerInput,
+      upper: this.upperInput
+    });
     this.drawMainChart();
     this.drawMultiples();
     this.updateNotes();
@@ -739,12 +865,75 @@ class SafetyHistogram {
    * @private
    */
   showListing(records, bin, digits) {
+    // A new bin replaces the listing, so any focused participant is gone with
+    // it — clear the selection and let the empty dispatch empty the dock
+    // (#99, PPRF-SH-003) before the new records render.
+    if (this.state.selectedId != null) {
+      this.state.selectedId = null;
+      this.listingSelectedId = null;
+      this.dispatchSelection([]);
+    }
     this.currentTableData = records;
     this.listingSearch = '';
     this.listingSort = null;
     this.page = 1;
     this.describeBin(bin, digits, true);
     renderListing(this);
+  }
+
+  /**
+   * Focus one participant from the linked listing (#99, PPRF-SH-002): set the
+   * new host selection state, highlight the participant's listing rows, and
+   * dispatch the house participantsSelected event on the shell root — which
+   * feeds the railed profile. The listing itself stays (PPRF-11: records vs
+   * story).
+   * @param {string} id Participant identifier.
+   * @returns {void}
+   */
+  selectParticipant(id) {
+    this.state.selectedId = id == null ? null : String(id);
+    this.focusListingRow(this.state.selectedId);
+    this.dispatchSelection(this.state.selectedId == null ? [] : [this.state.selectedId]);
+  }
+
+  /**
+   * Clear the focused participant (#99, PPRF-SH-003): un-highlight the listing
+   * rows and dispatch the empty selection so the dock empties. The listing is
+   * retained — Clear clears the focus, not the records.
+   * @returns {void}
+   */
+  clearSelection() {
+    if (this.state.selectedId == null) return;
+    this.state.selectedId = null;
+    this.focusListingRow(null);
+    this.dispatchSelection([]);
+  }
+
+  /**
+   * Move the listing row highlight WITHOUT touching the host selection state —
+   * the transient sync the profile stepper drives (PPRF-11): the highlight
+   * tracks the stepped participant while the selection still belongs to the
+   * feeding gesture. Re-renders the listing only when one is on screen.
+   * @param {?string} id Participant identifier, or null to un-highlight.
+   * @private
+   */
+  focusListingRow(id) {
+    this.listingSelectedId = id == null ? null : String(id);
+    if (this.currentTableData.length) renderListing(this);
+  }
+
+  /**
+   * Dispatch the custom participantsSelected event on the shell root with the
+   * selected IDs (the house selection contract, #99 PPRF-SH-002).
+   * @private
+   */
+  dispatchSelection(ids) {
+    this.participantsSelected = ids;
+    if (this.root) {
+      this.root.dispatchEvent(
+        new CustomEvent('participantsSelected', { detail: { data: ids }, bubbles: true })
+      );
+    }
   }
 
   /**
@@ -773,6 +962,7 @@ class SafetyHistogram {
    * @returns {void}
    */
   destroy() {
+    unmountProfileRail(this);
     this.destroyCharts();
     this.element.innerHTML = '';
   }

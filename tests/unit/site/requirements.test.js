@@ -7,7 +7,7 @@ import {
 } from '../../../scripts/requirements-lib.mjs';
 
 // Requirement-text sync (#63): extract the reviewed requirement text from the
-// obot.agent matrices into a committed docs/requirements/<module>.json so the
+// requirements/ matrices into a committed docs/requirements/<module>.json so the
 // evidence pages can show what each test evidences without leaving the page.
 // The extract is a pure function of the matrix markdown; a freshness guard
 // (compareRequirements) keeps the vendored copy from drifting.

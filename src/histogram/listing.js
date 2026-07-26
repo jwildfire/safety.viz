@@ -134,8 +134,32 @@ export function renderListing(instance) {
   thead.append(headRow);
   table.append(thead);
   const tbody = document.createElement('tbody');
+  // Opt-in row focus (#99, PPRF-SH-002): when the host instance carries an
+  // onListingRowClick callback, rows become clickable/keyboard-focusable
+  // participant-focus affordances and the row(s) matching
+  // instance.listingSelectedId highlight. Hosts that never set the callback
+  // (outlier-explorer, shift-plot) render the listing exactly as before.
+  const interactive = typeof instance.onListingRowClick === 'function';
+  const idCol = instance.settings.id_col;
   visible.forEach((row) => {
     const tr = document.createElement('tr');
+    if (interactive) {
+      const id = row[idCol];
+      tr.classList.add('sv-listing-rowlink');
+      tr.tabIndex = 0;
+      tr.setAttribute('role', 'button');
+      tr.setAttribute('aria-label', `Focus participant ${id == null ? '' : id}`.trim());
+      const activate = () => instance.onListingRowClick(row);
+      tr.onclick = activate;
+      tr.onkeydown = (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          activate();
+        }
+      };
+      if (instance.listingSelectedId != null && String(id) === String(instance.listingSelectedId))
+        tr.classList.add('sv-listing-row-selected');
+    }
     cols.forEach((col) =>
       tr.append(createElement('td', null, row[col.value_col] == null ? '' : row[col.value_col]))
     );

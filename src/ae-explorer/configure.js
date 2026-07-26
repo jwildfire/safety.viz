@@ -21,6 +21,9 @@ import { arrayify, fieldSpec } from '../histogram/configure.js';
  * @property {?Array<string>} [groups=null] Group levels to show as columns (AE-CFG-005). Null derives every level found in group_col, sorted; configured levels missing from the data are dropped with a console warning. A single group hides the Total and Difference columns (AE-USER-019).
  * @property {Array<string>} [colors] Group colors assigned by column order (AE-CFG-006); the Total column always renders gray, and the default palette carries no yellow (AE-REG-040).
  * @property {?Array<string|Object>} [filters=null] Filter controls (AE-USER-018): column names or { value_col, label, type, start } specs. Type 'event' narrows the events counted; type 'participant' narrows the analysis population and its denominators (AE-REG-006). Defaults to the four ADAE event filters — seriousness, severity, relationship, outcome; filters whose column is absent or single-valued are dropped with a console warning.
+ * @property {boolean} [profile=true] Mount the railed participant profile beside the table (obot.roadmap#75 decision D9); false opts out of the drill-down entirely.
+ * @property {Array<string|Object>} [profile_details=[]] Header demographics for the participant profile: column names or { value_col, label } specs. Distinct from `details`, which lists the drill-down columns.
+ * @property {?Object} [profile_ae=null] Overrides for the AE mapping the profile reads (severity, seriousness, study days) where this renderer's own settings do not name those columns.
  * @property {?Array<string|Object>} [details=null] Columns for the details drill-down listing (AE-REG-024); null shows every input column.
  * @property {?Object} [variable_options=null] Valid alternative columns for the primary mappings (AE-CFG-004): keys id, major, minor, group, each an array of column names. Two or more options for a mapping draw a re-mapping control; the current mapping is always offered even when not listed (AE-REG-044).
  * @property {Object} [placeholder_flag] How placeholder rows for AE-free participants are identified (AE-DATA-001): value_col (null follows major_col) and the values marking a placeholder (blank and 'NA' by default).
@@ -42,6 +45,13 @@ import { arrayify, fieldSpec } from '../histogram/configure.js';
  * @type {AEExplorerSettings}
  */
 export const DEFAULT_SETTINGS = {
+  // The railed participant profile (obot.roadmap#75 decision D9); false opts
+  // the renderer out of the drill-down. profile_ae overrides the AE mapping the
+  // profile reads (severity, seriousness, study days) where this renderer's own
+  // settings do not name those columns.
+  profile: true,
+  profile_details: [],
+  profile_ae: null,
   id_col: 'USUBJID',
   major_col: 'AEBODSYS',
   minor_col: 'AEDECOD',

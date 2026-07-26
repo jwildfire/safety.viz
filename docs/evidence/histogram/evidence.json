@@ -1,6 +1,6 @@
 {
   "module": "histogram",
-  "generatedAt": "2026-07-22T02:43:43.459Z",
+  "generatedAt": "2026-07-26T02:24:23.094Z",
   "environment": {
     "os": "linux 6.17.0-1020-azure",
     "node": "v22.23.1",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "29886544593",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29886544593"
+    "id": "30184486512",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/30184486512"
   },
   "records": [
     {
@@ -53,6 +53,14 @@
       "screenshots": []
     },
     {
+      "test": "built hep-waterfall demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
       "test": "built histogram demo mounts the shared shell with no console errors (#7) (#17)",
       "suite": "browser",
       "status": "pass",
@@ -62,6 +70,14 @@
     },
     {
       "test": "built outlier-explorer demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built participant-profile demo mounts the shared shell with no console errors (#7) (#17)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": [],
@@ -141,12 +157,47 @@
       "screenshots": []
     },
     {
+      "test": "PPRF-SH-001/PPRF-SH-002: clicking a listing row focuses the participant into the railed profile (#99)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PPRF-SH-001", "PPRF-SH-002"],
+      "issueRefs": [99],
+      "screenshots": [
+        "PPRF-SH-002-docked-profile-from-listing-row.png",
+        "PPRF-SH-002-railed-profile-from-listing-row.png"
+      ]
+    },
+    {
+      "test": "PPRF-SH-003: a new bin click and control changes empty the rail (#99)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PPRF-SH-003"],
+      "issueRefs": [99],
+      "screenshots": []
+    },
+    {
+      "test": "PPRF-SH-003: the rail Clear affordance un-highlights the row and keeps the listing (#99)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PPRF-SH-003"],
+      "issueRefs": [99],
+      "screenshots": []
+    },
+    {
       "test": "SH-API-001: lifecycle API supports init, setData, setSettings, render, resize, and destroy (#2)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["SH-API-001"],
       "issueRefs": [2],
       "screenshots": []
+    },
+    {
+      "test": "SH-AXIS-001/SH-AXIS-002/SH-AXIS-003: x-axis limit inputs load pre-filled with the drawn domain, follow the measure, and Reset restores them (#85)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SH-AXIS-001", "SH-AXIS-002", "SH-AXIS-003"],
+      "issueRefs": [85],
+      "screenshots": ["SH-AXIS-001-axis-limits-prefilled.png"]
     },
     {
       "test": "SH-CHART-003/SH-FUNC-010/SH-FUNC-012: selecting a canvas bar opens a linked listing with record details and count (#2)",
@@ -557,6 +608,22 @@
       "screenshots": []
     },
     {
+      "test": "histogram axis-limit prefill (SH-AXIS-001) SH-AXIS-001: displaying a limit does not pin it — the overrides stay null until edited (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-AXIS-001"],
+      "issueRefs": [85],
+      "screenshots": ["SH-AXIS-001-axis-limits-prefilled.png"]
+    },
+    {
+      "test": "histogram axis-limit prefill (SH-AXIS-001) SH-AXIS-001: the X-axis limit inputs load pre-filled with the domain the chart drew (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-AXIS-001"],
+      "issueRefs": [85],
+      "screenshots": ["SH-AXIS-001-axis-limits-prefilled.png"]
+    },
+    {
       "test": "histogram binning matches the original renderer (#19) SH-CTRL-006: ADBDS Albumin reproduces the original renderer's bin parameters (#19)",
       "suite": "unit",
       "status": "pass",
@@ -741,6 +808,30 @@
       "screenshots": ["SH-CTRL-007-boundary-ticks.png"]
     },
     {
+      "test": "histogram limit guardrails with prefilled inputs (SH-AXIS-004) SH-AXIS-004: a lower limit typed above the prefilled upper limit is swapped, never inverted (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-AXIS-004"],
+      "issueRefs": [85],
+      "screenshots": []
+    },
+    {
+      "test": "histogram limit guardrails with prefilled inputs (SH-AXIS-004) SH-AXIS-004: a non-numeric entry returns that limit to auto rather than reaching the chart (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-AXIS-004"],
+      "issueRefs": [85],
+      "screenshots": []
+    },
+    {
+      "test": "histogram limit guardrails with prefilled inputs (SH-AXIS-004) SH-AXIS-004: clearing a prefilled input returns that limit to auto and the box refills (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-AXIS-004"],
+      "issueRefs": [85],
+      "screenshots": []
+    },
+    {
       "test": "histogram listing SH-LIST-002: pagination slices pages and clamps out-of-range page numbers (#2)",
       "suite": "unit",
       "status": "pass",
@@ -771,6 +862,157 @@
       "requirementIds": ["SH-LIST-004"],
       "issueRefs": [2],
       "screenshots": ["SH-LIST-004-search-sort-paginate.png"]
+    },
+    {
+      "test": "histogram listing-row focus gesture (PPRF-SH-002, PPRF-11) PPRF-SH-002: clicking a listing row focuses the participant — dock full profile, row highlight, listing stays",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SH-002"],
+      "issueRefs": [],
+      "screenshots": [
+        "PPRF-SH-002-docked-profile-from-listing-row.png",
+        "PPRF-SH-002-railed-profile-from-listing-row.png"
+      ]
+    },
+    {
+      "test": "histogram listing-row focus gesture (PPRF-SH-002, PPRF-11) PPRF-SH-002: Enter on a focused listing row activates the same path (keyboard parity)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SH-002"],
+      "issueRefs": [],
+      "screenshots": [
+        "PPRF-SH-002-docked-profile-from-listing-row.png",
+        "PPRF-SH-002-railed-profile-from-listing-row.png"
+      ]
+    },
+    {
+      "test": "histogram listing-row focus gesture (PPRF-SH-002, PPRF-11) PPRF-SH-002: is idempotent under repeated identical dispatches",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SH-002"],
+      "issueRefs": [],
+      "screenshots": [
+        "PPRF-SH-002-docked-profile-from-listing-row.png",
+        "PPRF-SH-002-railed-profile-from-listing-row.png"
+      ]
+    },
+    {
+      "test": "histogram listing-row focus gesture (PPRF-SH-002, PPRF-11) PPRF-SH-002: listing rows are interactive only when the host opts in via onListingRowClick",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SH-002"],
+      "issueRefs": [],
+      "screenshots": [
+        "PPRF-SH-002-docked-profile-from-listing-row.png",
+        "PPRF-SH-002-railed-profile-from-listing-row.png"
+      ]
+    },
+    {
+      "test": "histogram listing-row focus gesture (PPRF-SH-002, PPRF-11) PPRF-SH-002: stepping an externally-fed cohort moves the row highlight without touching the host selection or re-dispatching",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SH-002"],
+      "issueRefs": [],
+      "screenshots": [
+        "PPRF-SH-002-docked-profile-from-listing-row.png",
+        "PPRF-SH-002-railed-profile-from-listing-row.png"
+      ]
+    },
+    {
+      "test": "histogram participant-profile adoption (PPRF-SH-001) PPRF-SH-001: derives the rail feed rows ONCE per setData through the hep-core cleaners",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SH-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "histogram participant-profile adoption (PPRF-SH-001) PPRF-SH-001: host listing columns are NOT the rail header details (profile_details defaults empty)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SH-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "histogram participant-profile adoption (PPRF-SH-001) PPRF-SH-001: mounts the rail by default (config-on) into the shell profile slot",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SH-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "histogram participant-profile adoption (PPRF-SH-001) PPRF-SH-001: passes the host lab mappings and profile_details through to the rail",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SH-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "histogram participant-profile adoption (PPRF-SH-001) PPRF-SH-001: profile: false leaves the slot empty and mounts no dock",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SH-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "histogram rail clear paths (PPRF-SH-003, PPRF-11) PPRF-SH-001: setSettings({profile: false}) unmounts a live dock; re-enabling remounts it",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SH-003", "PPRF-SH-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "histogram rail clear paths (PPRF-SH-003, PPRF-11) PPRF-SH-003: a control-driven render resets the selection AND the rail (render preamble)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SH-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "histogram rail clear paths (PPRF-SH-003, PPRF-11) PPRF-SH-003: a new bin click replaces the listing and clears the focused participant",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SH-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "histogram rail clear paths (PPRF-SH-003, PPRF-11) PPRF-SH-003: destroy tears the rail down with the instance",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SH-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "histogram rail clear paths (PPRF-SH-003, PPRF-11) PPRF-SH-003: dock Clear empties an externally-fed cohort the host never selected (PPRF-11)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SH-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "histogram rail clear paths (PPRF-SH-003, PPRF-11) PPRF-SH-003: the rail Clear affordance routes through the host clear path — row un-highlights, listing stays",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SH-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "histogram Reset Limits (SH-AXIS-003, SH-FUNC-006) SH-AXIS-003: Reset Limits clears the overrides and repopulates both inputs with the derived domain (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-AXIS-003", "SH-FUNC-006"],
+      "issueRefs": [85],
+      "screenshots": []
     },
     {
       "test": "histogram structureData display digits resolve the bin width without exceeding the data precision (#15)",
@@ -843,6 +1085,22 @@
       "requirementIds": ["SH-FUNC-004C"],
       "issueRefs": [2],
       "screenshots": ["SH-FUNC-004C-control-hidden-for-pulse.png"]
+    },
+    {
+      "test": "histogram unedited limits stay automatic (SH-AXIS-002) SH-AXIS-002: an edited limit survives a filter change and stays an override (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-AXIS-002"],
+      "issueRefs": [85],
+      "screenshots": []
+    },
+    {
+      "test": "histogram unedited limits stay automatic (SH-AXIS-002) SH-AXIS-002: an unedited limit re-derives on a measure change and the input follows (#85)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-AXIS-002"],
+      "issueRefs": [85],
+      "screenshots": []
     },
     {
       "test": "mdBlock: existing blocks are unchanged renders a numbered list as an ordered list",
@@ -981,6 +1239,62 @@
       "screenshots": []
     },
     {
+      "test": "renderShell rail slot (PPRF-RAIL-001) exposes a railWrap slot with the sv-rail class",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) gives the rail a settable width and the root a positioning context for expand",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) hides the rail while it is empty via the shared stylesheet",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) honours [hidden] on the rail, which the module sets while it is idle",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) no longer carries the dock slot inside the main column (D4)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) puts the rail opposite the control sidebar, with the chart between them (D2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) stacks the rail below the main column under the shell breakpoint (D4)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
       "test": "requirements-lib: freshness guard (#63) flags added and removed requirement IDs",
       "suite": "unit",
       "status": "pass",
@@ -1082,6 +1396,22 @@
       "status": "pass",
       "requirementIds": ["VIEW-SEL-004"],
       "issueRefs": [76],
+      "screenshots": []
+    },
+    {
+      "test": "shell: prototypeBanner renders a labelled note element with the default v1.5 copy (#97)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [97],
+      "screenshots": []
+    },
+    {
+      "test": "shell: prototypeBanner uses a caller-supplied note verbatim when given (#97)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [97],
       "screenshots": []
     },
     {
@@ -1293,6 +1623,14 @@
       "screenshots": []
     },
     {
+      "test": "site generator: gallery experimentalBadge renders Prototype for a prototype, Experimental for experimental, nothing otherwise (#97)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [97],
+      "screenshots": []
+    },
+    {
       "test": "site generator: gallery gallery compresses the migration queue to a one-line strip after the cards (#29)",
       "suite": "unit",
       "status": "pass",
@@ -1322,6 +1660,14 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [7, 29],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery marks a prototype renderer with a Prototype badge on its card (#97)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [97],
       "screenshots": []
     },
     {

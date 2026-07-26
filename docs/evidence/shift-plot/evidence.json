@@ -1,6 +1,6 @@
 {
   "module": "shift-plot",
-  "generatedAt": "2026-07-22T02:43:43.459Z",
+  "generatedAt": "2026-07-26T02:24:23.094Z",
   "environment": {
     "os": "linux 6.17.0-1020-azure",
     "node": "v22.23.1",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "29886544593",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/29886544593"
+    "id": "30184486512",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/30184486512"
   },
   "records": [
     {
@@ -53,6 +53,14 @@
       "screenshots": []
     },
     {
+      "test": "built hep-waterfall demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
       "test": "built histogram demo mounts the shared shell with no console errors (#7) (#17)",
       "suite": "browser",
       "status": "pass",
@@ -62,6 +70,14 @@
     },
     {
       "test": "built outlier-explorer demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built participant-profile demo mounts the shared shell with no console errors (#7) (#17)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": [],
@@ -141,6 +157,33 @@
       "screenshots": []
     },
     {
+      "test": "PPRF-SSP-001: a multi-participant brush collapses the rail to a worst-first stepper whose steps emphasize the chart (#99)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-001"],
+      "issueRefs": [99],
+      "screenshots": ["PPRF-SSP-001-docked-stepper.png", "PPRF-SSP-001-railed-stepper.png"]
+    },
+    {
+      "test": "PPRF-SSP-002: a single-point brush shows the full railed profile with no stepper, beside the linked listing (#99)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-002"],
+      "issueRefs": [99],
+      "screenshots": [
+        "PPRF-SSP-002-docked-full-profile.png",
+        "PPRF-SSP-002-railed-full-profile.png"
+      ]
+    },
+    {
+      "test": "PPRF-SSP-003: clearing the selection and control-driven redraws empty the rail (#99)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-003"],
+      "issueRefs": [99],
+      "screenshots": []
+    },
+    {
       "test": "SSP-API-001: lifecycle API supports init, setData, setSettings, render, resize, and destroy (#14)",
       "suite": "browser",
       "status": "pass",
@@ -149,11 +192,11 @@
       "screenshots": []
     },
     {
-      "test": "SSP-API-003: brushing dispatches participantsSelected with the selected ids (#14)",
+      "test": "SSP-API-003/PPRF-SSP-004: brushing dispatches participantsSelected on the shell root, bubbling to the element (#14, #99)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["SSP-API-003"],
-      "issueRefs": [14],
+      "requirementIds": ["SSP-API-003", "PPRF-SSP-004"],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -605,6 +648,62 @@
       "screenshots": []
     },
     {
+      "test": "renderShell rail slot (PPRF-RAIL-001) exposes a railWrap slot with the sv-rail class",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) gives the rail a settable width and the root a positioning context for expand",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) hides the rail while it is empty via the shared stylesheet",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) honours [hidden] on the rail, which the module sets while it is idle",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) no longer carries the dock slot inside the main column (D4)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) puts the rail opposite the control sidebar, with the chart between them (D2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) stacks the rail below the main column under the shell breakpoint (D4)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
       "test": "requirements-lib: freshness guard (#63) flags added and removed requirement IDs",
       "suite": "unit",
       "status": "pass",
@@ -709,6 +808,22 @@
       "screenshots": []
     },
     {
+      "test": "shell: prototypeBanner renders a labelled note element with the default v1.5 copy (#97)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [97],
+      "screenshots": []
+    },
+    {
+      "test": "shell: prototypeBanner uses a caller-supplied note verbatim when given (#97)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [97],
+      "screenshots": []
+    },
+    {
       "test": "shift-plot checkInputs SSP-DATA-001: missing required variables throw a clear message (#14)",
       "suite": "unit",
       "status": "pass",
@@ -731,6 +846,22 @@
       "requirementIds": ["SSP-DATA-003"],
       "issueRefs": [14],
       "screenshots": []
+    },
+    {
+      "test": "shift-plot cohort stepper (PPRF-SSP-001, PPRF-11) PPRF-SSP-001: a multi-participant brush collapses the rail to a worst-first stepper",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-001"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-SSP-001-docked-stepper.png", "PPRF-SSP-001-railed-stepper.png"]
+    },
+    {
+      "test": "shift-plot cohort stepper (PPRF-SSP-001, PPRF-11) PPRF-SSP-001: stepping emphasizes the stepped point on the chart without re-dispatching",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-001"],
+      "issueRefs": [],
+      "screenshots": ["PPRF-SSP-001-docked-stepper.png", "PPRF-SSP-001-railed-stepper.png"]
     },
     {
       "test": "shift-plot configure SSP-API: the module collection exposes the shift-plot factory (#14)",
@@ -770,6 +901,147 @@
       "status": "pass",
       "requirementIds": ["SSP-REQ-005"],
       "issueRefs": [14],
+      "screenshots": []
+    },
+    {
+      "test": "shift-plot dispatch target (PPRF-SSP-004, SSP-API-003) PPRF-SSP-004: is idempotent under repeated identical dispatches",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-004", "SSP-API-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "shift-plot dispatch target (PPRF-SSP-004, SSP-API-003) PPRF-SSP-004: the dispatch still bubbles to element-level listeners (backward compatibility)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-004", "SSP-API-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "shift-plot dispatch target (PPRF-SSP-004, SSP-API-003) PPRF-SSP-004: the dispatch travels via the shell root (the house participantsSelected contract)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-004", "SSP-API-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "shift-plot participant-profile adoption (PPRF-SSP-002) PPRF-SSP-002: a single-point brush shows the full profile with no stepper AND keeps the listing",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-002"],
+      "issueRefs": [],
+      "screenshots": [
+        "PPRF-SSP-002-docked-full-profile.png",
+        "PPRF-SSP-002-railed-full-profile.png"
+      ]
+    },
+    {
+      "test": "shift-plot participant-profile adoption (PPRF-SSP-002) PPRF-SSP-002: derives the rail feed rows ONCE per setData from rawData through the hep-core cleaners",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-002"],
+      "issueRefs": [],
+      "screenshots": [
+        "PPRF-SSP-002-docked-full-profile.png",
+        "PPRF-SSP-002-railed-full-profile.png"
+      ]
+    },
+    {
+      "test": "shift-plot participant-profile adoption (PPRF-SSP-002) PPRF-SSP-002: host listing columns are NOT the rail header details (profile_details defaults empty)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-002"],
+      "issueRefs": [],
+      "screenshots": [
+        "PPRF-SSP-002-docked-full-profile.png",
+        "PPRF-SSP-002-railed-full-profile.png"
+      ]
+    },
+    {
+      "test": "shift-plot participant-profile adoption (PPRF-SSP-002) PPRF-SSP-002: mounts the rail by default (config-on) into the shell profile slot",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-002"],
+      "issueRefs": [],
+      "screenshots": [
+        "PPRF-SSP-002-docked-full-profile.png",
+        "PPRF-SSP-002-railed-full-profile.png"
+      ]
+    },
+    {
+      "test": "shift-plot participant-profile adoption (PPRF-SSP-002) PPRF-SSP-002: passes the host lab mappings through, mapping visitn_col from visit_order_col",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-002"],
+      "issueRefs": [],
+      "screenshots": [
+        "PPRF-SSP-002-docked-full-profile.png",
+        "PPRF-SSP-002-railed-full-profile.png"
+      ]
+    },
+    {
+      "test": "shift-plot participant-profile adoption (PPRF-SSP-002) PPRF-SSP-002: profile: false leaves the slot empty and mounts no dock",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-002"],
+      "issueRefs": [],
+      "screenshots": [
+        "PPRF-SSP-002-docked-full-profile.png",
+        "PPRF-SSP-002-railed-full-profile.png"
+      ]
+    },
+    {
+      "test": "shift-plot rail clear paths (PPRF-SSP-003, PPRF-11) PPRF-SSP-002: setSettings({profile: false}) unmounts a live dock; re-enabling remounts it",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-003", "PPRF-SSP-002"],
+      "issueRefs": [],
+      "screenshots": [
+        "PPRF-SSP-002-docked-full-profile.png",
+        "PPRF-SSP-002-railed-full-profile.png"
+      ]
+    },
+    {
+      "test": "shift-plot rail clear paths (PPRF-SSP-003, PPRF-11) PPRF-SSP-003: a control-driven render resets the selection AND the rail (render preamble)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "shift-plot rail clear paths (PPRF-SSP-003, PPRF-11) PPRF-SSP-003: clearing the selection (the tiny-click path) empties the rail and the emphasis",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "shift-plot rail clear paths (PPRF-SSP-003, PPRF-11) PPRF-SSP-003: destroy tears the rail down with the instance",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "shift-plot rail clear paths (PPRF-SSP-003, PPRF-11) PPRF-SSP-003: dock Clear empties an externally-fed cohort the host never selected (PPRF-11)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "shift-plot rail clear paths (PPRF-SSP-003, PPRF-11) PPRF-SSP-003: the rail Clear affordance routes through the host clear path",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-003"],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -1061,6 +1333,14 @@
       "screenshots": []
     },
     {
+      "test": "site generator: gallery experimentalBadge renders Prototype for a prototype, Experimental for experimental, nothing otherwise (#97)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [97],
+      "screenshots": []
+    },
+    {
       "test": "site generator: gallery gallery compresses the migration queue to a one-line strip after the cards (#29)",
       "suite": "unit",
       "status": "pass",
@@ -1090,6 +1370,14 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [7, 29],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery marks a prototype renderer with a Prototype badge on its card (#97)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [97],
       "screenshots": []
     },
     {

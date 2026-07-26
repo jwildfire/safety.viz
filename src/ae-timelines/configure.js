@@ -21,6 +21,8 @@ import { arrayify, fieldSpec } from '../histogram/configure.js';
  * @property {Object} [color] Event color stratification (AET-CFG-005): value_col (default 'AESEV'; required in the data, but remappable), label ('Severity/Intensity'), values (expected levels in legend order: MILD, MODERATE, SEVERE), and colors (assigned by domain position; N/A always renders gray).
  * @property {?Object} [highlight] Distinct marking for notable events (AET-CFG-007) — serious events by default: value_col ('AESER'), label ('Serious Event'), value ('Y', AET-CFG-008), detail_col (optional tooltip/listing detail, AET-CFG-009), and attributes ({ stroke, 'stroke-width' } mark style, AET-CFG-010). Pass null to disable highlighting.
  * @property {?Array<string|Object>} [filters=null] Filter controls (AET-CFG-011): column names or { value_col, label } specs. When null, defaults to serious event, severity, and participant identifier; filters whose column is absent or single-valued are dropped with a console warning.
+ * @property {boolean} [profile=true] Mount the railed participant profile beside the chart (obot.roadmap#75 decision D9); false opts out of the drill-down entirely.
+ * @property {Array<string|Object>} [profile_details=[]] Header demographics for the participant profile: column names or { value_col, label } specs. Distinct from `details`, which lists the detail-view columns.
  * @property {?Array<string|Object>} [details=null] Columns for the participant detail listing (AET-CFG-012). Custom columns append after the defaults (sequence, start/stop day, term, severity, seriousness), deduplicated by column.
  * @property {string} [sort_participants='earliest'] Initial participant order: 'earliest' (first adverse-event onset, earliest at the top) or 'alphabetical-descending' (the original's label for its alphabetical order).
  * @property {number} [row_height=15] Vertical pixels per participant row; the chart area grows with the participant count like the original's range band.
@@ -33,6 +35,10 @@ import { arrayify, fieldSpec } from '../histogram/configure.js';
  * @type {AETimelinesSettings}
  */
 export const DEFAULT_SETTINGS = {
+  // The railed participant profile (obot.roadmap#75 decision D9); false opts
+  // the renderer out of the drill-down entirely.
+  profile: true,
+  profile_details: [],
   id_col: 'USUBJID',
   seq_col: 'AESEQ',
   stdy_col: 'ASTDY',

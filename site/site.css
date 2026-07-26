@@ -113,6 +113,20 @@ h1 {
   white-space: nowrap;
 }
 
+.site-badge-prototype {
+  color: #6b4e12;
+  background: #fdf6e6;
+  border-color: #e6c98a;
+}
+
+/* On a gallery card the badge sits inline after the title, not raised. */
+.card-body h3 .site-badge {
+  margin-left: 0.4rem;
+  top: 0;
+  font-size: 0.62rem;
+  padding: 0.14rem 0.45rem;
+}
+
 h2 {
   font-size: 1.5rem;
   margin: 2.2rem 0 0.75rem;

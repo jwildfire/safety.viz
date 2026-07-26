@@ -172,6 +172,52 @@ test.describe('safety.viz outlier-explorer module', () => {
     expect(reset).toEqual([null, null]);
   });
 
+  test('SOE-AXIS-001/SOE-AXIS-002/SOE-AXIS-003: y-limit inputs load pre-filled with the drawn axis, follow the measure, and Reset restores them (#85)', async ({
+    page
+  }) => {
+    const measure = page.locator('.sv-control', { hasText: 'Measure' }).locator('select');
+    const lower = page.locator('.sv-control', { hasText: 'Lower' }).locator('input');
+    const upper = page.locator('.sv-control', { hasText: 'Upper' }).locator('input');
+    const drawn = () =>
+      page.evaluate(() => {
+        const scale = window.__safetyOutlierExplorerInstance.chart.scales.y;
+        return [scale.min, scale.max];
+      });
+
+    // Loaded pre-filled with the padded axis the chart actually drew (AXIS-1).
+    const domain = await drawn();
+    const tolerance = (domain[1] - domain[0]) / 500;
+    expect(await lower.inputValue()).not.toBe('');
+    expect(await upper.inputValue()).not.toBe('');
+    expect(Math.abs(Number(await lower.inputValue()) - domain[0])).toBeLessThanOrEqual(tolerance);
+    expect(Math.abs(Number(await upper.inputValue()) - domain[1])).toBeLessThanOrEqual(tolerance);
+
+    // Untouched limits still follow the data across a measure change (AXIS-2).
+    await measure.selectOption('Sodium (mmol/L)');
+    const sodium = await drawn();
+    expect(sodium).not.toEqual(domain);
+    expect(Math.abs(Number(await lower.inputValue()) - sodium[0])).toBeLessThanOrEqual(
+      (sodium[1] - sodium[0]) / 500
+    );
+
+    // An edit is respected, and Reset Limits puts the derived values back
+    // (AXIS-3) instead of blanking the boxes.
+    await lower.fill(String(Math.round(sodium[0]) + 2));
+    await lower.dispatchEvent('change');
+    expect(await page.evaluate(() => window.__safetyOutlierExplorerInstance.state.lower)).toBe(
+      Math.round(sodium[0]) + 2
+    );
+    await page.locator('.oe-reset').click();
+    expect(
+      await page.evaluate(() => window.__safetyOutlierExplorerInstance.state.lower)
+    ).toBeNull();
+    expect(await lower.inputValue()).not.toBe('');
+    expect(Math.abs(Number(await lower.inputValue()) - sodium[0])).toBeLessThanOrEqual(
+      (sodium[1] - sodium[0]) / 500
+    );
+    await captureEvidence(page, 'SOE-AXIS-001', 'y-limits-prefilled');
+  });
+
   test('SOE-REG-048/SOE-REG-049/SOE-REG-050: grouping colors the marks and renders a legend (#24)', async ({
     page
   }) => {
@@ -277,5 +323,80 @@ test.describe('safety.viz outlier-explorer module', () => {
     expect(result.renderReturns).toBeUndefined();
     expect(result.chartCountBeforeDestroy).toBeGreaterThan(0);
     expect(result.containerText).toBe('');
+  });
+
+  test('PPRF-OE-001/PPRF-OE-002: clicking a point opens the railed profile ALONGSIDE the linked listing (#99)', async ({
+    page
+  }) => {
+    await page.evaluate(() => {
+      const instance = window.__safetyOutlierExplorerInstance;
+      instance.chart.options.onClick({}, [{ datasetIndex: 0, index: 0 }]);
+    });
+    // Full railed profile: header id + configured profile_details.
+    await expect(page.locator('.sv-rail .sv-profile-id')).toHaveText('Participant SUBJ-001');
+    await expect(page.locator('.sv-rail .sv-profile-header')).toContainText('Placebo');
+    // Single-select gesture: never a stepper.
+    await expect(page.locator('.sv-rail .sv-profile-step-count')).toHaveCount(0);
+    // The fixture's measures are non-key labs — they sit behind the module's
+    // "show N additional measures" toggle; revealing them fills the table and
+    // the spaghetti (the module-default key-measure map matches no fixture
+    // TEST value).
+    await expect(page.locator('.sv-rail .sv-profile-extras')).toContainText(
+      'Show 2 additional measures'
+    );
+    await page.locator('.sv-rail .sv-profile-extras input').check();
+    await expect(page.locator('.sv-rail .sv-profile-measure-row:visible')).toHaveCount(2);
+    await expect(page.locator('.sv-rail .sv-profile-spaghetti canvas')).toBeVisible();
+    // The linked listing STAYS beside the rail (PPRF-11: records vs story).
+    await expect(page.locator('.sv-listing table')).toBeVisible();
+    await captureEvidence(page, 'PPRF-OE-002', 'railed-profile');
+  });
+
+  test('PPRF-OE-003: background click and control changes empty the rail (#99)', async ({
+    page
+  }) => {
+    await page.evaluate(() => {
+      const instance = window.__safetyOutlierExplorerInstance;
+      instance.chart.options.onClick({}, [{ datasetIndex: 0, index: 0 }]);
+    });
+    await expect(page.locator('.sv-rail .sv-profile-id')).toHaveText('Participant SUBJ-001');
+
+    // Background click → the shared clear path → the rail empties and the
+    // shell's :empty rule hides the slot.
+    await page.evaluate(() => {
+      window.__safetyOutlierExplorerInstance.chart.options.onClick({}, []);
+    });
+    await expect(page.locator('.sv-rail .sv-profile-root')).toHaveCount(0);
+    await expect(page.locator('.sv-rail .sv-profile-id')).toHaveCount(0);
+
+    // Re-select, then drive a control change: the render preamble resets the
+    // selection AND the rail.
+    await page.evaluate(() => {
+      const instance = window.__safetyOutlierExplorerInstance;
+      instance.chart.options.onClick({}, [{ datasetIndex: 0, index: 0 }]);
+    });
+    await expect(page.locator('.sv-rail .sv-profile-id')).toHaveText('Participant SUBJ-001');
+    await page
+      .locator('.sv-controls .sv-control', { has: page.locator('label:text-is("Sex")') })
+      .locator('select')
+      .selectOption('F');
+    await expect(page.locator('.sv-rail .sv-profile-root')).toHaveCount(0);
+  });
+
+  test('PPRF-OE-002: the rail Clear affordance routes through the host clear path (#99)', async ({
+    page
+  }) => {
+    await page.evaluate(() => {
+      const instance = window.__safetyOutlierExplorerInstance;
+      instance.chart.options.onClick({}, [{ datasetIndex: 0, index: 0 }]);
+    });
+    await page.locator('.sv-rail .sv-profile-clear').click();
+    await expect(page.locator('.sv-rail .sv-profile-root')).toHaveCount(0);
+    const state = await page.evaluate(() => ({
+      selectedId: window.__safetyOutlierExplorerInstance.state.selectedId,
+      listing: document.querySelectorAll('.sv-listing table').length
+    }));
+    expect(state.selectedId).toBeNull();
+    expect(state.listing).toBe(0);
   });
 });

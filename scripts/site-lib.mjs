@@ -228,7 +228,7 @@ export function mdBlock(markdown, { headingIds = false } = {}) {
 // shorthands: full IDs (SH-CFG-004, SSP-CTRL-001, suffixed SH-FUNC-004A),
 // slash lists continuing the last prefix (SH-LIST-002/003), and double-dot
 // ranges (SH-CFG-004..009). The leading module prefix is any 2–4 letter code
-// (SH-, SSP-, SDD-, AET-, …) per the safety.agent matrices, so every
+// (SH-, SSP-, SDD-, AET-, …) per the requirement matrices, so every
 // renderer's coverage doc parses (#14, #26). Prose like "(defaults)" or "—"
 // contributes nothing.
 export function expandRequirementIds(cell) {
@@ -649,7 +649,8 @@ export function renderGallery(config) {
       `<a class="card-thumb" href="${base}/index.html">` +
       `<img src="${hero}" alt="${escapeHtml(renderer.title)} preview" loading="lazy">` +
       `</a><div class="card-body">` +
-      `<h3><a href="${base}/index.html">${escapeHtml(renderer.title)}</a></h3>` +
+      `<h3><a href="${base}/index.html">${escapeHtml(renderer.title)}</a>` +
+      `${experimentalBadge(renderer)}</h3>` +
       `<p>${escapeHtml(renderer.blurb)}</p>` +
       `<p class="card-links"><a href="${base}/index.html">Demo</a> · ` +
       `<a href="${base}/evidence.html">Evidence</a> · ` +
@@ -681,9 +682,9 @@ export function renderGallery(config) {
     `<h2>Available renderers <span class="gallery-count">${available.length} of ` +
       `${config.renderers.length} migrated</span></h2>`,
     `<ul class="gallery gallery-lead">${available.map(availableCard).join('\n')}</ul>`,
-    `<p class="queue-strip">In the queue: ${queueLinks} — each already has a reviewed` +
-      ` requirement matrix in` +
-      ` <a href="https://github.com/jwildfire/safety.agent">safety.agent</a>.</p>`
+    `<p class="queue-strip">In the queue: ${queueLinks} — each already has a` +
+      ` <a href="${config.repoUrl}/tree/HEAD/requirements">reviewed requirement matrix</a>` +
+      ` in this repo.</p>`
   );
   return html.join('\n');
 }
@@ -745,8 +746,9 @@ export function renderAboutPage(config) {
       ` developer-diary keynote at R/Pharma 2026; the running story lives on the` +
       ` <a href="${config.hubUrl}">obot roadmap</a>.</p>`,
     `<p>The working method is deliberately conservative for safety software: each renderer` +
-      ` starts from a reviewed requirement matrix in` +
-      ` <a href="https://github.com/jwildfire/safety.agent">safety.agent</a>, extracted from the` +
+      ` starts from a` +
+      ` <a href="${config.repoUrl}/tree/HEAD/requirements">reviewed requirement matrix</a>,` +
+      ` extracted from the` +
       ` original renderer&#39;s documented behavior; development is red-green (a failing,` +
       ` requirement-keyed test first, then the minimal change); and a renderer only counts as` +
       ` migrated when its live demo, requirement-traced ${evidenceRef}, and generated API` +
@@ -859,8 +861,9 @@ export function renderArchitecturePage({ config, version }) {
       ` shared chrome.</p>`,
 
     `<h2 id="quality">Quality machinery</h2>`,
-    `<p>Each migration starts from a reviewed requirement matrix in` +
-      ` <a href="https://github.com/jwildfire/safety.agent">safety.agent</a>; matrix rows route to` +
+    `<p>Each migration starts from a` +
+      ` <a href="${config.repoUrl}/tree/HEAD/requirements">reviewed requirement matrix</a>;` +
+      ` matrix rows route to` +
       ` unit (Vitest) or browser (Playwright) tests whose names carry the requirement IDs. The` +
       ` evidence pipeline replays both suites and commits results plus screenshots to` +
       ` <a href="${config.repoUrl}/tree/HEAD/docs/evidence">docs/evidence/</a>, which this site` +
@@ -906,7 +909,10 @@ function methodSection(method) {
 // _api/<module>.json artifact (scripts/api/build-api-data.mjs, #6) — a
 // module-anatomy overview, then factory, methods, settings, and the
 // schema-derived data contract, with a sticky sidebar table of contents.
-export function renderApiPage(model, { hasGuide = false, experimental = false } = {}) {
+export function renderApiPage(
+  model,
+  { hasGuide = false, experimental = false, prototype = false } = {}
+) {
   const toc =
     `<nav class="api-toc" aria-label="On this page"><h2>On this page</h2><ul>` +
     `<li><a href="#overview">Overview</a></li>` +
@@ -976,7 +982,7 @@ export function renderApiPage(model, { hasGuide = false, experimental = false } 
 
   const html = [];
   html.push(
-    `<h1><code>${escapeHtml(model.module)}</code> API reference${experimentalBadge({ experimental })}</h1>`
+    `<h1><code>${escapeHtml(model.module)}</code> API reference${experimentalBadge({ experimental, prototype })}</h1>`
   );
   html.push(
     `<p class="tagline">Generated from the module&#39;s JSDoc and JSON-Schema data contract` +
@@ -992,9 +998,14 @@ export function renderApiPage(model, { hasGuide = false, experimental = false } 
 // real example data (the renderer's `data` config key, defaulting to the
 // shared ADBDS extract, #26). The .demo-page wrapper widens the layout
 // (site.css) so the control sidebar and chart get full room.
-// A small "Experimental" pill for the page title when the config marks a
-// renderer experimental — an exploratory, not-yet-stable renderer.
+// A small status pill for a page title / gallery card: "Prototype" when the
+// config marks a renderer a prototype (a new chart still under evaluation, e.g.
+// the hep-waterfall shipped alongside v1.5), else "Experimental" for an
+// exploratory, not-yet-stable renderer. Prototype takes precedence.
 export function experimentalBadge(renderer) {
+  if (renderer && renderer.prototype) {
+    return ` <span class="site-badge site-badge-prototype">Prototype</span>`;
+  }
   return renderer && renderer.experimental ? ` <span class="site-badge">Experimental</span>` : '';
 }
 
