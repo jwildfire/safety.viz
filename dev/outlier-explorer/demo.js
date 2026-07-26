@@ -83,7 +83,7 @@
           { value_col: 'RACE', label: 'Race' },
           { value_col: 'ARM', label: 'Treatment Group' }
         ],
-        // Docked participant profile (#99, PPRF-OE): the data carries no DY
+        // Railed participant profile (#99, PPRF-OE): the data carries no DY
         // column, so VISITNUM doubles as the study-day axis (the hep-explorer
         // demo precedent); measure_values maps the profile's key liver
         // measures onto this data's TEST names (same mapping as the
