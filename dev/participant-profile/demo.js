@@ -1,12 +1,16 @@
-// Demo mount for the participant-profile page (#98): the library's first
-// linked-charts demo. Two stacked mounts share one dataset: the top container
-// runs the Hepatic Safety Explorer with its built-in profile dock turned OFF
-// (`profile: false`), and the bottom container mounts the standalone
-// participant-profile module against the same CSV, listening for the chart's
+// Demo mount for the participant-profile page (#98; v2 obot.roadmap#75): the
+// library's first linked-charts demo. Two stacked mounts share one dataset: the
+// top container runs the Hepatic Safety Explorer with its built-in profile rail
+// turned OFF (`profile: false`), and the bottom container mounts the standalone
+// participant-profile module against the same CSVs, listening for the chart's
 // public `participantsSelected` event on the chart root (PPRF-6). Clicking an
 // eDISH point drives the neighbouring profile purely through that event
-// contract — the two modules never share internals. Loaded by
-// participant-profile/index.html after the dist/ bundle.
+// contract — the two modules never share internals.
+//
+// v2 adds the adverse-event domain, so the standalone mount here reads both the
+// long-lab records and the AE records and draws the summary block and timeline
+// beneath the labs chart. Loaded by participant-profile/index.html after the
+// dist/ bundle.
 (function () {
   // Quote-aware CSV parser: the real data may quote fields with embedded
   // commas (e.g. long lab-test names).
@@ -57,12 +61,29 @@
     });
   }
 
+  // The distribution lab file carries visits, not study days, while the AE file
+  // is in study days — and v2 draws both tracks against one clock. So derive a
+  // nominal day per lab record from the visit label (Baseline = day 1, "Week N"
+  // = day 7N + 1) for the demo. In real use the lab domain carries a study-day
+  // column; this is the demo dataset standing in for one.
+  function deriveStudyDay(rows) {
+    rows.forEach(function (row) {
+      var label = String(row.VISIT || '').trim();
+      var week = label.match(/^Week\s+(\d+)$/i);
+      var day = null;
+      if (/^Baseline$/i.test(label)) day = 1;
+      else if (week) day = Number(week[1]) * 7 + 1;
+      row.__day = day === null ? '' : day;
+    });
+    return rows;
+  }
+
   // The shared adbds.csv mapping the hep-explorer demo established: TEST
   // strings for the four liver measures, and the numeric visit sequence
   // standing in for study day (the distribution set carries no study-day
   // column).
   var mapping = {
-    studyday_col: 'VISITNUM',
+    studyday_col: '__day',
     visit_col: 'VISIT',
     visitn_col: 'VISITNUM',
     measure_values: {
@@ -77,7 +98,7 @@
 
   var chartSection = document.createElement('section');
   var chartHeading = document.createElement('h2');
-  chartHeading.textContent = 'The chart: Hepatic Safety Explorer, profile dock off';
+  chartHeading.textContent = 'The chart: Hepatic Safety Explorer, profile rail off';
   var chartMount = document.createElement('div');
   chartMount.id = 'linked-chart';
   chartSection.appendChild(chartHeading);
@@ -101,12 +122,21 @@
   container.appendChild(chartSection);
   container.appendChild(profileSection);
 
-  fetch('./adbds.csv')
-    .then(function (response) {
+  // Two domains now (obot.roadmap#75): the long-lab records the profile has
+  // always read, and the adverse events v2 added. The AE file is the same one
+  // the ae-explorer and ae-timelines demos use — the point of reusing their
+  // column names is that no third mapping is needed.
+  Promise.all([
+    fetch('./adbds.csv').then(function (response) {
+      return response.text();
+    }),
+    fetch('./adae.csv').then(function (response) {
       return response.text();
     })
-    .then(function (text) {
-      var rows = parseCsv(text);
+  ])
+    .then(function (texts) {
+      var rows = deriveStudyDay(parseCsv(texts[0]));
+      var aeRows = parseCsv(texts[1]);
 
       // Top: the host chart, with its built-in dock disabled so the wiring
       // below is demonstrably the public event contract, not the adoption
@@ -137,6 +167,9 @@
       // of its own (PPRF-6).
       var profile = SafetyViz.participantProfile('#linked-profile', rows, {
         listen_to: chartMount.querySelector('.sv-root'),
+        // The adverse-event domain: summary block and timeline, drawn on the
+        // same study-day axis as the labs chart above them (decisions D5/D7).
+        ae: { data: aeRows },
         studyday_col: mapping.studyday_col,
         visit_col: mapping.visit_col,
         visitn_col: mapping.visitn_col,
