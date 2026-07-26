@@ -1,6 +1,6 @@
 {
   "module": "hep-waterfall",
-  "generatedAt": "2026-07-25T05:04:20.313Z",
+  "generatedAt": "2026-07-26T02:24:23.094Z",
   "environment": {
     "os": "linux 6.17.0-1020-azure",
     "node": "v22.23.1",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "30145090697",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/30145090697"
+    "id": "30184486512",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/30184486512"
   },
   "records": [
     {
