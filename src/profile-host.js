@@ -15,7 +15,7 @@ import { assignSequence, cleanData, deriveBaseline } from './hep-core/rows.js';
 import { profileRail } from './participant-profile.js';
 
 /**
- * Build the docked profile's pre-cleaned rows from a host's retained raw data
+ * Build the railed profile's pre-cleaned rows from a host's retained raw data
  * (PPRF-CORE-003/005 spirit: ONE profile ingest per setData, never per
  * gesture). Runs the shared hep-core reducers — cleanData, assignSequence,
  * deriveBaseline — over the raw records with the host's profile column
@@ -52,7 +52,7 @@ export function mountProfileRail(host, settingsFn, { target = null } = {}) {
   // is a parameter rather than an assumption.
   host.profileTarget = target || host.root;
   /**
-   * Feed one participantsSelected dispatch into the docked profile.
+   * Feed one participantsSelected dispatch into the railed profile.
    * @private
    */
   host.profileFeed = (event) => {

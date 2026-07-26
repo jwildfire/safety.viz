@@ -2,7 +2,7 @@
 
 The Participant Profile is the answer to the question every population-level safety display eventually raises: **"who is that point, and what actually happened to them?"** A scatter, a waterfall, or an outlier plot reduces each participant to one mark; the decision about whether that mark matters — a lab error, a transient blip, or a genuine injury pattern — needs the participant's whole course. The profile shows exactly that for one participant at a time: who they are, how their key labs moved over the study, and a per-measure summary you can expand where it gets interesting.
 
-Historically this display lived welded inside the hep-explorer's eDISH scatter as its click-to-drill-down panel. safety.viz lifts it into a module of its own, so the same profile can sit under the Hepatic Safety Explorer (where it is docked by default), under any other chart in this library that dispatches the shared `participantsSelected` event, or under **your** chart — the wiring is one custom event, demonstrated live on this page.
+Historically this display lived welded inside the hep-explorer's eDISH scatter as its click-to-drill-down panel. safety.viz lifts it into a module of its own, so the same profile can sit beside the Hepatic Safety Explorer (where it is mounted by default), beside any other chart in this library that dispatches the shared `participantsSelected` event, or beside **your** chart — the wiring is one custom event, demonstrated live on this page.
 
 ## How to read it
 
@@ -38,14 +38,20 @@ Select more than one participant — a multi-select on the composite plot, a bru
 
 **Clear** (in the profile, in the chart's sidebar, or a background click on the chart) empties the selection everywhere and hides the profile; the three routes converge on the same host clear path, so the chart and profile can never disagree about what is selected.
 
+## Where it sits: the rail
+
+The profile lives in a **rail** — a right-hand column beside the chart, opposite the control sidebar. The rail takes no width at all until you select a participant, so a chart with nothing selected is exactly as wide as it was before; picking a point opens the rail beside the chart rather than pushing the chart up the page. Its head names the participant and carries two controls: **Close**, and **Expand**, which fills the host renderer's own container when one participant needs the whole area. Expand is deliberately not a viewport overlay or the native Fullscreen API — the same module has to behave identically inside a gsm.safety htmlwidget or an open.gismo panel, where escaping the container is either impossible or rude. **Escape** collapses it again rather than trapping you there.
+
+Below 900px there is no room for a column beside the chart, so the rail stacks underneath it.
+
 ## Wiring it to a chart
 
 The profile is deliberately chart-agnostic, with two mounts:
 
-- **Docked** — the Hepatic Safety Explorer mounts it by default in the shell's profile slot below the chart (`profile: false` turns it off, restoring the pre-adoption behaviour). The dock consumes the host's already-cleaned rows, so the chart and profile always agree on every derived value.
+- **Adopted by a host chart** — the Hepatic Safety Explorer mounts it in the shell's rail slot by default (`profile: false` turns it off, restoring the pre-adoption behaviour). The rail consumes the host's already-cleaned rows, so the chart and profile always agree on every derived value.
 - **Standalone** — `SafetyViz.participantProfile(element, data, settings)` ingests the same long-format lab contract itself and listens for `participantsSelected` (`event.detail.data` = the selected ids) on `listen_to` — an element, a selector, or the document. It never dispatches selection events of its own, so wiring it up cannot create feedback loops.
 
-The demo on this page is the standalone wiring end-to-end: the Hepatic Safety Explorer above with its built-in dock turned off, this module mounted independently below, and nothing connecting them except the public event on the chart's root element. Replace the top half with your own chart and dispatch the same event, and the profile works unchanged.
+The demo on this page is the standalone wiring end-to-end: the Hepatic Safety Explorer above with its built-in profile turned off, this module mounted independently below, and nothing connecting them except the public event on the chart's root element. Replace the top half with your own chart and dispatch the same event, and the profile works unchanged.
 
 ## What it is not
 

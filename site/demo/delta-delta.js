@@ -74,7 +74,7 @@
         measure_x: 'Alanine Aminotransferase',
         measure_y: 'Aspartate Aminotransferase',
         add_regression_line: true,
-        // Docked participant profile (#99, PPRF-DD): it supersedes the old
+        // Railed participant profile (#99, PPRF-DD): it supersedes the old
         // bespoke measure table. The data carries no DY column, so VISITNUM
         // doubles as the study-day axis (the hep-explorer demo precedent) and
         // measure_values maps the profile's key liver measures onto this

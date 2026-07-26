@@ -186,7 +186,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-HEP-001", "PPRF-CORE-001"],
       "issueRefs": [98],
-      "screenshots": ["PPRF-HEP-001-scatter-dock.png"]
+      "screenshots": ["PPRF-HEP-001-scatter-rail.png"]
     },
     {
       "test": "PPRF-HEP-002/PPRF-STEP-001/PPRF-HDR-002: composite multi-select collapses the rail to a stepper, stepping renders each profile and keeps the chart highlight in sync, Clear hides the rail (#98)",

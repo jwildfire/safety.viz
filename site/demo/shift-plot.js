@@ -71,7 +71,7 @@
         ],
         baseline_visits: ['Baseline'],
         comparison_visits: ['Week 26'],
-        // Docked participant profile (#99, PPRF-SSP): the data carries no DY
+        // Railed participant profile (#99, PPRF-SSP): the data carries no DY
         // column, so VISITNUM doubles as the study-day axis (the hep-explorer
         // demo precedent); measure_values maps the profile's key liver
         // measures onto this data's TEST names (same mapping as the
