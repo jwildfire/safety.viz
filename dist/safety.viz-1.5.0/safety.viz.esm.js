@@ -1,4 +1,4 @@
-// node_modules/@kurkle/color/dist/color.esm.js
+// ../../safety.viz/node_modules/@kurkle/color/dist/color.esm.js
 function round(v) {
   return v + 0.5 | 0;
 }
@@ -555,7 +555,7 @@ var Color = class _Color {
   }
 };
 
-// node_modules/chart.js/dist/chunks/helpers.dataset.js
+// ../../safety.viz/node_modules/chart.js/dist/chunks/helpers.dataset.js
 function noop() {
 }
 var uid = /* @__PURE__ */ (() => {
@@ -2953,7 +2953,7 @@ function getDatasetClipArea(chart, meta) {
   };
 }
 
-// node_modules/chart.js/dist/chart.js
+// ../../safety.viz/node_modules/chart.js/dist/chart.js
 var Animator = class {
   constructor() {
     this._request = null;
@@ -12487,7 +12487,7 @@ function option(select, value, label, selected) {
 }
 var SHELL_STYLE_ID = "safety-viz-shell-styles";
 var SHELL_STYLES = `
-.sv-root{display:flex;align-items:flex-start;gap:1.25rem;width:100%;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#1f2933}
+.sv-root{display:flex;align-items:flex-start;gap:1.25rem;width:100%;position:relative;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#1f2933;--sv-rail-width:520px}
 .sv-sidebar{position:sticky;top:1rem;flex:0 0 250px;max-height:calc(100vh - 2rem);overflow-y:auto;border:1px solid #d8dee4;border-radius:10px;background:#f6f8fa;padding:.8rem .9rem 1rem}
 .sv-sidebar-header{display:flex;align-items:center;justify-content:space-between;gap:.5rem}
 .sv-sidebar-title{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#52616f}
@@ -12512,7 +12512,14 @@ var SHELL_STYLES = `
 .sv-warning{color:#9a3412}
 .sv-chart-wrap{height:460px;position:relative;border:1px solid #d8dee4;border-radius:10px;padding:1rem;background:#fff}
 .sv-footnote{margin:.6rem 0 0;font-size:.85rem;color:#52616f}
-.sv-profile:empty{display:none}
+.sv-rail{flex:0 0 var(--sv-rail-width);align-self:flex-start;position:sticky;top:1rem;max-height:calc(100vh - 2rem);display:flex;flex-direction:column;overflow:hidden;border:1px solid #d8dee4;border-radius:10px;background:#fbfcfd}
+.sv-rail:empty{display:none}
+/* The rail takes no width until a participant is selected: the module sets
+   [hidden] on the slot while it is idle, and .sv-rail's own display would
+   otherwise win over the user-agent rule. */
+.sv-rail[hidden]{display:none}
+.sv-rail-expanded .sv-rail{position:absolute;inset:0;z-index:6;max-height:none;box-shadow:0 18px 46px rgba(31,41,51,.22)}
+.sv-rail-expanded .sv-main,.sv-rail-expanded .sv-sidebar{filter:saturate(.25) opacity(.35)}
 .sv-multiples{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;margin-top:1.25rem}
 .sv-multiples:empty{display:none}
 .sv-multiple{border:1px solid #d8dee4;border-radius:10px;padding:.75rem .85rem;background:#fff}
@@ -12551,6 +12558,9 @@ var SHELL_STYLES = `
 @media (max-width:900px){
 .sv-root{flex-direction:column}
 .sv-sidebar{position:static;flex:1 1 auto;width:100%;max-height:none}
+.sv-rail{position:static;flex:1 1 auto;width:100%;max-height:none}
+.sv-rail-expanded .sv-rail{position:static}
+.sv-rail-expanded .sv-main,.sv-rail-expanded .sv-sidebar{filter:none}
 .sv-controls{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:0 1.25rem;align-items:start}
 .sv-control-section{border-top:none}
 }`;
@@ -12589,12 +12599,12 @@ function renderShell(element, { moduleClass = "", onToggle } = {}) {
   const canvas = createElement("canvas", "sv-chart");
   const mainAnnotation = createElement("div", "sv-main-annotation");
   const footnote = createElement("div", "sv-footnote");
-  const profileWrap = createElement("div", "sv-profile");
   const multiplesWrap = createElement("div", "sv-multiples");
   const listingWrap = createElement("div", "sv-listing");
   chartWrap.append(canvas, mainAnnotation);
-  main.append(notes, chartWrap, footnote, multiplesWrap, profileWrap, listingWrap);
-  root.append(sidebar, main);
+  main.append(notes, chartWrap, footnote, multiplesWrap, listingWrap);
+  const railWrap = createElement("aside", "sv-rail");
+  root.append(sidebar, main, railWrap);
   element.append(root);
   applyShellStyles();
   return {
@@ -12609,7 +12619,7 @@ function renderShell(element, { moduleClass = "", onToggle } = {}) {
     mainAnnotation,
     footnote,
     multiplesWrap,
-    profileWrap,
+    railWrap,
     listingWrap
   };
 }
@@ -13342,14 +13352,14 @@ function cleanData2(rawData, settings) {
   const rows = rawData.map((row, index) => {
     const value = Number(row[settings.value_col]);
     const uln = Number(row[settings.normal_col_high]);
-    const day = settings.studyday_col && row[settings.studyday_col] !== "" && row[settings.studyday_col] !== void 0 ? Number(row[settings.studyday_col]) : NaN;
+    const day2 = settings.studyday_col && row[settings.studyday_col] !== "" && row[settings.studyday_col] !== void 0 ? Number(row[settings.studyday_col]) : NaN;
     return {
       ...row,
       __hep_index: index,
       __hep_seq: NaN,
       __hep_value: value,
       __hep_uln: uln,
-      __hep_day: day,
+      __hep_day: day2,
       __hep_relative_uln: value / uln,
       __hep_relative_baseline: NaN,
       __hep_baseline: NaN
@@ -14166,6 +14176,391 @@ function renderHeader(participant, settings, { onClear } = {}) {
   return header;
 }
 
+// src/participant-profile/ae.js
+var NOT_RECORDED = { key: null, label: "Not recorded", rank: 0 };
+var MIN_BAR_PERCENT = 0.8;
+var AE_DEFAULT_SETTINGS = {
+  id_col: "USUBJID",
+  term_col: "AETERM",
+  minor_col: "AEDECOD",
+  major_col: "AEBODSYS",
+  stdy_col: "ASTDY",
+  endy_col: "AENDY",
+  color: {
+    value_col: "AESEV",
+    values: ["MILD", "MODERATE", "SEVERE"],
+    labels: null
+  },
+  highlight: {
+    value_col: "AESER",
+    value: "Y",
+    label: "Serious"
+  },
+  max_rows: 10
+};
+var SEVERITY_COLORS = ["#fab219", "#ec835a", "#d03b3b"];
+var NOT_RECORDED_COLOR = "#c3c2b7";
+function defaultLabel(value) {
+  const text = String(value);
+  if (!/^[A-Za-z][A-Za-z\s-]*$/.test(text)) return text;
+  return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+}
+function syncAeSettings(settings = {}) {
+  const synced = { ...AE_DEFAULT_SETTINGS, ...settings };
+  const color2 = { ...AE_DEFAULT_SETTINGS.color, ...settings.color || {} };
+  color2.values = (Array.isArray(color2.values) ? color2.values : []).map(String);
+  if (!color2.values.length) color2.values = [...AE_DEFAULT_SETTINGS.color.values];
+  const labels = Array.isArray(color2.labels) ? color2.labels.map(String) : null;
+  color2.labels = color2.values.map(
+    (value, index) => labels && labels[index] !== void 0 ? labels[index] : defaultLabel(value)
+  );
+  synced.color = color2;
+  synced.highlight = settings.highlight === null ? null : { ...AE_DEFAULT_SETTINGS.highlight, ...settings.highlight || {} };
+  const rows = Number(synced.max_rows);
+  synced.max_rows = Number.isFinite(rows) && rows > 0 ? Math.floor(rows) : AE_DEFAULT_SETTINGS.max_rows;
+  return synced;
+}
+function severityOf(record, settings) {
+  const raw = record[settings.color.value_col];
+  const value = raw === void 0 || raw === null ? "" : String(raw).trim();
+  const index = settings.color.values.findIndex(
+    (level) => level.toUpperCase() === value.toUpperCase()
+  );
+  if (value === "" || index < 0) return { ...NOT_RECORDED, color: NOT_RECORDED_COLOR };
+  const scale = settings.color.values.length;
+  const step = scale <= SEVERITY_COLORS.length ? SEVERITY_COLORS.length - scale + index : Math.round(index / (scale - 1) * (SEVERITY_COLORS.length - 1));
+  return {
+    key: settings.color.values[index],
+    label: settings.color.labels[index],
+    rank: index + 1,
+    color: SEVERITY_COLORS[Math.max(0, Math.min(SEVERITY_COLORS.length - 1, step))]
+  };
+}
+function day(value) {
+  if (value === void 0 || value === null || String(value).trim() === "") return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+function cleanAeRecords(rawData, settings) {
+  const events = [];
+  let removed = 0;
+  (Array.isArray(rawData) ? rawData : []).forEach((record, index) => {
+    const id = record[settings.id_col];
+    if (id === void 0 || id === null || String(id).trim() === "") {
+      removed += 1;
+      return;
+    }
+    const verbatim = settings.term_col ? record[settings.term_col] : "";
+    const preferred = settings.minor_col ? record[settings.minor_col] : "";
+    const label = String(preferred || verbatim || "").trim();
+    const start = day(record[settings.stdy_col]);
+    const rawEnd = day(record[settings.endy_col]);
+    const end = start !== null && rawEnd !== null && rawEnd >= start ? rawEnd : null;
+    const serious = settings.highlight ? String(record[settings.highlight.value_col] ?? "").trim().toUpperCase() === String(settings.highlight.value).toUpperCase() : false;
+    events.push({
+      ...record,
+      __ae_id: String(id),
+      __ae_index: index,
+      __ae_term: label.toLowerCase(),
+      __ae_verbatim: verbatim === void 0 || verbatim === null ? "" : String(verbatim),
+      __ae_soc: settings.major_col ? String(record[settings.major_col] ?? "").trim() : "",
+      __ae_severity: severityOf(record, settings),
+      __ae_serious: serious,
+      __ae_start: start,
+      __ae_end: end,
+      __ae_open: end === null,
+      __ae_placeable: start !== null
+    });
+  });
+  return { events, removed };
+}
+function participantEvents(events, id) {
+  const key = String(id);
+  return (Array.isArray(events) ? events : []).filter((event) => event.__ae_id === key).sort((a, b) => {
+    if (a.__ae_placeable !== b.__ae_placeable) return a.__ae_placeable ? -1 : 1;
+    if (b.__ae_severity.rank !== a.__ae_severity.rank)
+      return b.__ae_severity.rank - a.__ae_severity.rank;
+    const sa = a.__ae_start === null ? Number.MAX_SAFE_INTEGER : a.__ae_start;
+    const sb = b.__ae_start === null ? Number.MAX_SAFE_INTEGER : b.__ae_start;
+    return sa - sb || a.__ae_index - b.__ae_index;
+  });
+}
+function summarizeAe(events, settings) {
+  const list = Array.isArray(events) ? events : [];
+  const worst = list.reduce(
+    (acc, event) => event.__ae_severity.rank > acc.rank ? event.__ae_severity : acc,
+    { ...NOT_RECORDED, color: NOT_RECORDED_COLOR }
+  );
+  const levels = settings.color.values.map((value, index) => ({
+    key: value,
+    label: settings.color.labels[index],
+    rank: index + 1
+  })).reverse().concat([{ key: null, label: NOT_RECORDED.label, rank: 0 }]);
+  const mix = levels.map((level) => ({
+    ...level,
+    color: level.rank === 0 ? NOT_RECORDED_COLOR : (list.find((event) => event.__ae_severity.rank === level.rank) || {}).__ae_severity?.color || NOT_RECORDED_COLOR,
+    count: list.filter((event) => event.__ae_severity.rank === level.rank).length
+  })).filter((entry) => entry.count > 0);
+  const counts = /* @__PURE__ */ new Map();
+  list.forEach((event) => {
+    const name = event.__ae_soc || "Not recorded";
+    counts.set(name, (counts.get(name) || 0) + 1);
+  });
+  const bodySystems = [...counts.entries()].map(([name, count2]) => ({ name, count: count2 })).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+  return {
+    total: list.length,
+    serious: list.filter((event) => event.__ae_serious).length,
+    openEnded: list.filter((event) => event.__ae_open).length,
+    worst,
+    mix,
+    bodySystems
+  };
+}
+function aeDomain(events) {
+  const placeable = (Array.isArray(events) ? events : []).filter((event) => event.__ae_placeable);
+  if (!placeable.length) return null;
+  const days = [];
+  placeable.forEach((event) => {
+    days.push(event.__ae_start);
+    if (event.__ae_end !== null) days.push(event.__ae_end);
+  });
+  return [Math.min(...days), Math.max(...days)];
+}
+function unionDomain(labs, aes) {
+  const parts = [labs, aes].filter(
+    (domain) => Array.isArray(domain) && domain.length === 2 && domain.every(Number.isFinite)
+  );
+  if (!parts.length) return null;
+  const min = Math.min(...parts.map((domain) => domain[0]));
+  const max = Math.max(...parts.map((domain) => domain[1]));
+  return min === max ? [min - 1, max + 1] : [min, max];
+}
+function timelineGeometry(events, domain) {
+  if (!Array.isArray(domain) || domain.length !== 2) return (events || []).map(() => null);
+  const [min, max] = domain;
+  const span = max - min || 1;
+  const percent = (value) => (value - min) / span * 100;
+  return (Array.isArray(events) ? events : []).map((event) => {
+    if (!event || !event.__ae_placeable) return null;
+    const end = event.__ae_end === null ? max : event.__ae_end;
+    const rawLeft = percent(event.__ae_start);
+    const rawRight = percent(end);
+    const left = Math.max(0, Math.min(100, rawLeft));
+    const right = Math.max(0, Math.min(100, rawRight));
+    return {
+      left,
+      width: Math.max(MIN_BAR_PERCENT, right - left),
+      open: event.__ae_open,
+      clipped: rawRight > 100 + 1e-9 || rawLeft < -1e-9
+    };
+  });
+}
+var TICK_STEPS = [1, 2, 5, 7, 10, 14, 20, 25, 50, 100, 200, 250, 500, 1e3];
+function axisTicks(domain, target = 6) {
+  if (!Array.isArray(domain) || domain.length !== 2) return [];
+  const [min, max] = domain;
+  const span = max - min;
+  if (!Number.isFinite(span) || span <= 0) return [];
+  const step = TICK_STEPS.find((candidate) => span / candidate <= target) || TICK_STEPS[TICK_STEPS.length - 1];
+  const first = Math.ceil(min / step) * step;
+  const ticks = [];
+  for (let value = first; value <= max + 1e-9; value += step) {
+    ticks.push({ value, position: (value - min) / span * 100 });
+  }
+  return ticks;
+}
+
+// src/participant-profile/aeTracks.js
+var PLOT_GUTTER_LEFT = 56;
+var PLOT_GUTTER_RIGHT = 12;
+function renderTiles(summary) {
+  const wrap = createElement("div", "sv-profile-ae-tiles");
+  const tiles = [
+    { label: "Events", value: String(summary.total) },
+    { label: "Highest severity", value: summary.worst.label, color: summary.worst.color },
+    {
+      label: "Serious",
+      value: String(summary.serious),
+      color: summary.serious ? summary.worst.color : null
+    },
+    { label: "No end date", value: String(summary.openEnded) }
+  ];
+  tiles.forEach((tile) => {
+    const node = createElement("div", "sv-profile-ae-tile");
+    const value = createElement("div", "sv-profile-ae-tile-value");
+    if (tile.color) {
+      const dot = createElement("span", "sv-profile-ae-dot");
+      dot.style.background = tile.color;
+      value.append(dot);
+    }
+    value.append(createElement("span", null, tile.value));
+    node.append(value, createElement("div", "sv-profile-ae-tile-label", tile.label));
+    wrap.append(node);
+  });
+  return wrap;
+}
+function renderMix(summary) {
+  const wrap = createElement("div", "sv-profile-ae-mix-wrap");
+  const bar = createElement("div", "sv-profile-ae-mix");
+  bar.setAttribute("role", "img");
+  bar.setAttribute(
+    "aria-label",
+    `Severity mix: ${summary.mix.map((entry) => `${entry.label} ${entry.count}`).join(", ")}`
+  );
+  summary.mix.forEach((entry) => {
+    const segment = createElement("div", "sv-profile-ae-mix-seg");
+    segment.style.flexGrow = String(entry.count);
+    segment.style.background = entry.color;
+    segment.title = `${entry.label}: ${entry.count}`;
+    bar.append(segment);
+  });
+  const legend = createElement("div", "sv-profile-ae-legend");
+  summary.mix.forEach((entry) => {
+    const item = createElement("span", "sv-profile-ae-legend-item");
+    const dot = createElement("span", "sv-profile-ae-dot");
+    dot.style.background = entry.color;
+    item.append(dot, createElement("span", null, `${entry.label} ${entry.count}`));
+    legend.append(item);
+  });
+  wrap.append(bar, legend);
+  return wrap;
+}
+function renderBodySystems(summary, limit = 4) {
+  const wrap = createElement("div", "sv-profile-ae-soc-wrap");
+  wrap.append(createElement("div", "sv-profile-ae-track-label", "Body systems"));
+  const list = createElement("ul", "sv-profile-ae-soc");
+  summary.bodySystems.slice(0, limit).forEach((entry) => {
+    const item = createElement("li");
+    item.append(
+      createElement("span", "sv-profile-ae-soc-name", entry.name),
+      createElement("span", "sv-profile-ae-soc-count", String(entry.count))
+    );
+    list.append(item);
+  });
+  wrap.append(list);
+  const rest = summary.bodySystems.length - limit;
+  if (rest > 0) {
+    wrap.append(
+      createElement(
+        "p",
+        "sv-profile-ae-more",
+        `${rest} more body system${rest === 1 ? "" : "s"} not listed.`
+      )
+    );
+  }
+  return wrap;
+}
+function eventDescription(event) {
+  const parts = [event.__ae_verbatim || event.__ae_term, event.__ae_severity.label];
+  if (event.__ae_serious) parts.push("serious");
+  const end = event.__ae_open ? "no end date recorded" : `day ${event.__ae_end}`;
+  parts.push(event.__ae_placeable ? `day ${event.__ae_start} to ${end}` : "no start day recorded");
+  return parts.join(" \xB7 ");
+}
+function renderTimeline(events, domain, settings) {
+  const wrap = createElement("div", "sv-profile-ae-timeline");
+  const area = createElement("div", "sv-profile-ae-plotarea");
+  area.style.paddingLeft = `${PLOT_GUTTER_LEFT}px`;
+  area.style.paddingRight = `${PLOT_GUTTER_RIGHT}px`;
+  wrap.append(area);
+  const placeable = events.filter((event) => event.__ae_placeable);
+  const shown = placeable.slice(0, settings.max_rows);
+  const geometry = timelineGeometry(shown, domain);
+  const plot = createElement("div", "sv-profile-ae-plot");
+  shown.forEach((event, index) => {
+    const bars = geometry[index];
+    if (!bars) return;
+    const row = createElement("div", "sv-profile-ae-row");
+    const term = createElement("div", "sv-profile-ae-term");
+    term.textContent = event.__ae_term + (event.__ae_serious ? " \xB7 serious" : "") + (event.__ae_open ? " \xB7 no end date" : "");
+    if (bars.left > 55) {
+      term.classList.add("is-flipped");
+      term.style.right = `${100 - bars.left - bars.width}%`;
+      term.style.maxWidth = `${bars.left + bars.width}%`;
+    } else {
+      term.style.left = `${bars.left}%`;
+      term.style.maxWidth = `${100 - bars.left}%`;
+    }
+    const bar = createElement("div", "sv-profile-ae-bar");
+    bar.style.left = `${bars.left}%`;
+    bar.style.width = `${bars.width}%`;
+    bar.style.background = event.__ae_severity.color;
+    if (bars.open) bar.classList.add("is-open-ended");
+    if (bars.clipped) bar.classList.add("is-clipped");
+    if (event.__ae_serious) bar.classList.add("is-serious");
+    const description = eventDescription(event);
+    bar.title = description;
+    term.title = description;
+    bar.setAttribute("role", "img");
+    bar.setAttribute("aria-label", description);
+    row.append(term, bar);
+    plot.append(row);
+  });
+  area.append(plot);
+  const axis = createElement("div", "sv-profile-ae-axis");
+  axisTicks(domain).forEach((tick) => {
+    const label = createElement("span", "sv-profile-ae-tick", String(Math.round(tick.value)));
+    label.style.left = `${tick.position}%`;
+    axis.append(label);
+  });
+  area.append(axis);
+  const hidden = placeable.length - shown.length;
+  if (hidden > 0) {
+    wrap.append(
+      createElement(
+        "p",
+        "sv-profile-ae-more",
+        `${hidden} more event${hidden === 1 ? "" : "s"} not drawn \u2014 see the record listing.`
+      )
+    );
+  }
+  const unplaceable = events.filter((event) => !event.__ae_placeable);
+  if (unplaceable.length) {
+    const note = createElement(
+      "p",
+      "sv-profile-ae-unplaceable",
+      `No start day recorded, so not on the timeline: ${unplaceable.map((event) => event.__ae_term).join(", ")}.`
+    );
+    wrap.append(note);
+  }
+  return wrap;
+}
+function renderAeTracks(events, domain, settings) {
+  const section = createElement("section", "sv-profile-ae");
+  section.setAttribute("aria-label", "Adverse events");
+  section.append(createElement("h3", "sv-profile-ae-title", "Adverse events"));
+  const list = Array.isArray(events) ? events : [];
+  if (!list.length) {
+    section.append(
+      createElement("p", "sv-profile-ae-empty", "No adverse events recorded for this participant.")
+    );
+    return section;
+  }
+  const summary = summarizeAe(list, settings);
+  section.append(renderTiles(summary));
+  section.append(renderMix(summary));
+  if (!domain) {
+    section.append(
+      createElement(
+        "p",
+        "sv-profile-ae-empty",
+        "No study day resolves for this participant\u2019s laboratory records, so the event timeline is not drawn."
+      )
+    );
+  } else {
+    section.append(
+      createElement(
+        "div",
+        "sv-profile-ae-track-label",
+        "Timeline, on the labs chart\u2019s study-day axis"
+      )
+    );
+    section.append(renderTimeline(list, domain, settings));
+  }
+  section.append(renderBodySystems(summary));
+  return section;
+}
+
 // src/participant-profile/spaghetti.js
 Chart.register(LineController, LineElement, PointElement, LinearScale, LogarithmicScale, plugin_tooltip);
 var FOOTNOTE = "Points are filled for values above the current reference value. Mouseover a line to see the reference line for that lab.";
@@ -14240,7 +14635,7 @@ function cutLinePlugin() {
     }
   };
 }
-function renderSpaghetti(host, model, state = {}) {
+function renderSpaghetti(host, model, state = {}, domain = null) {
   const card = createElement("div", "sv-profile-spaghetti-card");
   const canvas = createElement("canvas", "sv-profile-spaghetti-canvas");
   card.append(canvas);
@@ -14296,9 +14691,23 @@ function renderSpaghetti(host, model, state = {}) {
           }
         }
       },
+      // The plot gutters are pinned rather than fitted so the adverse-event
+      // timeline below can share this chart's x-axis by construction — same
+      // left gutter, same right padding, same domain — instead of measuring the
+      // canvas after every render (PPRF-AXIS-002).
+      layout: { padding: { right: PLOT_GUTTER_RIGHT } },
       scales: {
-        x: { type: "linear", title: { display: true, text: "Study Day" } },
-        y: yScale
+        x: {
+          type: "linear",
+          title: { display: true, text: "Study Day" },
+          ...Array.isArray(domain) && domain.length === 2 ? { min: domain[0], max: domain[1] } : {}
+        },
+        y: {
+          ...yScale,
+          afterFit: (scale) => {
+            scale.width = PLOT_GUTTER_LEFT;
+          }
+        }
       }
     },
     plugins: [cutLinePlugin()]
@@ -14698,7 +15107,7 @@ function renderRecordListing(host, rows, settings) {
 }
 
 // src/participant-profile/stepper.js
-function renderStepper(ids, index, { onStep } = {}) {
+function renderStepper(ids, index, { onStep, onToggleList, listOpen = false, ranked = null } = {}) {
   const strip = createElement("div", "sv-profile-stepper");
   strip.setAttribute("role", "group");
   strip.setAttribute("aria-label", "Selected participants");
@@ -14737,13 +15146,106 @@ function renderStepper(ids, index, { onStep } = {}) {
     }
   };
   strip.append(prev, count2, next);
-  return strip;
+  if (!onToggleList) return strip;
+  const toggle = createElement(
+    "button",
+    "sv-profile-step-toggle",
+    listOpen ? "Hide list" : "Show list"
+  );
+  toggle.type = "button";
+  toggle.setAttribute("aria-expanded", String(Boolean(listOpen)));
+  toggle.setAttribute("data-sv-focus", "step-toggle");
+  toggle.onclick = () => onToggleList();
+  strip.append(toggle);
+  if (!listOpen || !Array.isArray(ranked)) return strip;
+  const wrap = createElement("div", "sv-profile-cohort");
+  const list = createElement("ol", "sv-profile-cohort-list");
+  ranked.forEach((entry) => {
+    const item = createElement("li");
+    const button = createElement("button", "sv-profile-cohort-item", entry.id);
+    button.type = "button";
+    button.setAttribute("aria-current", entry.current ? "true" : "false");
+    if (entry.current) button.classList.add("is-current");
+    button.onclick = () => {
+      if (!entry.current && onStep) onStep(entry.index);
+    };
+    item.append(button);
+    list.append(item);
+  });
+  wrap.append(list);
+  const shell = createElement("div", "sv-profile-stepper-wrap");
+  shell.append(strip, wrap);
+  return shell;
 }
 
 // src/participant-profile/styles.js
 var STYLE_ID = "safety-viz-participant-profile-styles";
 var MODULE_CSS = `
 .sv-profile-root{margin-top:.5rem}
+
+/* --- the rail (obot.roadmap#75, decisions D1/D2/D3/D8) --------------------- */
+.sv-profile-rail{display:flex;flex-direction:column;min-height:0;height:100%}
+.sv-profile-rail-head{display:flex;align-items:flex-start;justify-content:space-between;gap:.6rem;padding:.55rem .7rem;border-bottom:1px solid #e3e8ee;background:#f2f6f8;flex:0 0 auto}
+.sv-profile-rail-title{margin:0;font-size:.95rem;font-weight:700;font-variant-numeric:tabular-nums}
+.sv-profile-rail-sub{margin:.1rem 0 0;font-size:.75rem;color:#52616f}
+.sv-profile-rail-actions{display:flex;gap:.35rem;flex:0 0 auto}
+.sv-profile-rail-btn{border:1px solid #d8dee4;background:#fff;color:#1f2933;border-radius:6px;font:inherit;font-size:.75rem;padding:.3rem .5rem;cursor:pointer;white-space:nowrap}
+.sv-profile-rail-btn:hover{border-color:#0b62a4;color:#0b3d63}
+.sv-profile-rail-btn:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
+.sv-profile-rail-stepper{flex:0 0 auto;background:#fff;border-bottom:1px solid #e3e8ee}
+.sv-profile-rail-stepper:empty{display:none}
+.sv-profile-rail-body{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:auto;padding:.7rem}
+.sv-profile-rail.is-empty .sv-profile-rail-body::before{content:"Click a participant in the chart to read their profile here.";display:block;padding:2rem .5rem;text-align:center;color:#7b8b96;font-size:.88rem}
+/* Expanded, the block gets room for a proper control column beside it \u2014 which
+   is to say the expanded profile is the standalone renderer (decision D3). */
+.sv-rail-expanded .sv-profile-rail-body{padding:1rem}
+.sv-rail-expanded .sv-profile-controls{flex-direction:column;align-items:stretch;float:left;width:210px;margin:0 1.25rem .75rem 0;padding-right:1rem;border-right:1px solid #e3e8ee}
+.sv-rail-expanded .sv-profile-spaghetti-card{height:360px}
+
+/* --- the cohort list (decision D8) ---------------------------------------- */
+.sv-profile-step-toggle{margin-left:auto;border:1px solid #d8dee4;background:#fff;color:#52616f;border-radius:6px;font:inherit;font-size:.72rem;padding:.2rem .45rem;cursor:pointer}
+.sv-profile-step-toggle:hover{border-color:#0b62a4;color:#0b3d63}
+.sv-profile-step-toggle:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
+.sv-profile-cohort{max-height:9rem;overflow-y:auto;border-top:1px solid #e3e8ee;background:#fbfcfd}
+.sv-profile-cohort-list{list-style:none;margin:0;padding:.25rem;counter-reset:cohort}
+.sv-profile-cohort-list li{counter-increment:cohort}
+.sv-profile-cohort-item{display:block;width:100%;text-align:left;border:0;background:none;font:inherit;font-size:.8rem;padding:.2rem .4rem;border-radius:4px;cursor:pointer;color:#1f2933}
+.sv-profile-cohort-item::before{content:counter(cohort) ". ";color:#7b8b96;font-variant-numeric:tabular-nums}
+.sv-profile-cohort-item:hover{background:#eef3f6}
+.sv-profile-cohort-item.is-current{background:#eaf2fb;font-weight:600}
+.sv-profile-cohort-item:focus-visible{outline:2px solid #0b62a4;outline-offset:-2px}
+
+/* --- the adverse-event tracks (decisions D5/D6/D7) ------------------------ */
+.sv-profile-ae{margin:.9rem 0 1rem;padding:.75rem 0 .2rem;border-top:1px solid #e3e8ee;border-bottom:1px solid #e3e8ee}
+.sv-profile-ae-title{margin:0 0 .55rem;font-size:.95rem;font-weight:700}
+.sv-profile-ae-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem;margin-bottom:.6rem}
+.sv-profile-ae-tile{border:1px solid #e3e8ee;border-radius:7px;padding:.35rem .5rem;background:#fff}
+.sv-profile-ae-tile-value{display:flex;align-items:center;gap:.3rem;font-size:1rem;font-weight:700;font-variant-numeric:tabular-nums}
+.sv-profile-ae-tile-label{margin-top:.1rem;font-size:.66rem;text-transform:uppercase;letter-spacing:.05em;color:#7b8b96}
+.sv-profile-ae-dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;display:inline-block}
+.sv-profile-ae-mix{display:flex;gap:2px;height:10px}
+.sv-profile-ae-mix-seg{border-radius:2px;min-width:4px}
+.sv-profile-ae-legend{display:flex;flex-wrap:wrap;gap:.2rem .8rem;margin-top:.3rem;font-size:.74rem;color:#52616f}
+.sv-profile-ae-legend-item{display:inline-flex;align-items:center;gap:.3rem}
+.sv-profile-ae-track-label{margin:.6rem 0 .35rem;font-size:.66rem;text-transform:uppercase;letter-spacing:.08em;color:#7b8b96}
+.sv-profile-ae-timeline{box-sizing:border-box;border:1px solid transparent;padding:0 .75rem}
+.sv-profile-ae-plotarea{position:relative;box-sizing:border-box}
+.sv-profile-ae-plot{position:relative}
+.sv-profile-ae-row{position:relative;height:27px}
+.sv-profile-ae-term{position:absolute;top:0;line-height:14px;font-size:.7rem;color:#52616f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sv-profile-ae-term.is-flipped{text-align:right}
+.sv-profile-ae-bar{position:absolute;top:16px;height:9px;border-radius:3px;min-width:4px}
+.sv-profile-ae-bar.is-open-ended{border-radius:3px 0 0 3px;-webkit-mask-image:linear-gradient(to right,#000 0,#000 60%,rgba(0,0,0,.25) 100%);mask-image:linear-gradient(to right,#000 0,#000 60%,rgba(0,0,0,.25) 100%)}
+.sv-profile-ae-bar.is-serious{box-shadow:0 0 0 2px #fff,0 0 0 3.5px #d03b3b}
+.sv-profile-ae-axis{position:relative;height:18px;margin-top:2px;border-top:1px solid #e3e8ee}
+.sv-profile-ae-tick{position:absolute;top:2px;transform:translateX(-50%);font-size:.65rem;color:#7b8b96;font-variant-numeric:tabular-nums}
+.sv-profile-ae-more,.sv-profile-ae-unplaceable{margin:.4rem 0 0;font-size:.72rem;color:#7b8b96}
+.sv-profile-ae-empty{margin:.3rem 0 .8rem;font-size:.82rem;color:#7b8b96}
+.sv-profile-ae-soc-wrap{margin-top:.7rem}
+.sv-profile-ae-soc{list-style:none;margin:0;padding:0}
+.sv-profile-ae-soc li{display:flex;justify-content:space-between;gap:.6rem;font-size:.76rem;padding:.16rem 0;border-bottom:1px dotted #e3e8ee}
+.sv-profile-ae-soc-name{color:#52616f;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sv-profile-ae-soc-count{font-variant-numeric:tabular-nums;font-weight:600}
 .sv-profile-live{position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .sv-profile-table-footnote{margin:.5rem 0 0;font-size:.72rem;color:#52616f}
 .sv-profile-spaghetti-canvas:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
@@ -14809,6 +15311,16 @@ Chart.register(
   plugin_tooltip,
   plugin_legend
 );
+function labDomain(spaghetti) {
+  const days = [];
+  (spaghetti && spaghetti.series || []).forEach((entry) => {
+    (entry.points || []).forEach((point) => {
+      if (Number.isFinite(point.day)) days.push(point.day);
+    });
+  });
+  if (!days.length) return null;
+  return [Math.min(...days), Math.max(...days)];
+}
 function resolveListenTarget(listenTo) {
   if (!listenTo) return document;
   if (typeof listenTo === "string") return document.querySelector(listenTo) || document;
@@ -14841,22 +15353,120 @@ var SafetyParticipantProfile = class {
       showExtras: false,
       labs: null,
       ids: [],
-      index: 0
+      index: 0,
+      expanded: false,
+      cohortOpen: false
     };
+    this.aeSettings = this.settings.ae ? syncAeSettings(this.settings.ae) : null;
+    this.aeEvents = [];
+    this.aeRemoved = 0;
+    if (this.aeSettings && Array.isArray(this.settings.ae.data)) {
+      this.setAeData(this.settings.ae.data);
+    }
     applyProfileStyles();
     if (this.mode === "standalone") {
       this.renderChrome();
       this.listen();
       this.setIdle();
     } else {
-      this.profileHost = this.element;
+      this.renderRailChrome();
     }
   }
   /**
+   * Ingest adverse-event records once (PPRF-AE-002). Hosts that already hold
+   * cleaned AE rows may pass them here instead of through settings.ae.data;
+   * either way the cleaning runs once per call, never per gesture.
+   * @param {Object[]} records Raw adverse-event records.
+   * @returns {SafetyParticipantProfile} The instance, for chaining.
+   */
+  setAeData(records) {
+    if (!this.aeSettings) return this;
+    const { events, removed } = cleanAeRecords(records, this.aeSettings);
+    this.aeEvents = events;
+    this.aeRemoved = removed;
+    return this;
+  }
+  /**
+   * Build the rail chrome (decisions D1/D2/D3/D8): a header naming the current
+   * participant with Expand and Close, a stepper strip pinned so it survives
+   * scrolling the rail, and a scrolling body the profile block renders into.
+   * @private
+   */
+  renderRailChrome() {
+    this.element.innerHTML = "";
+    const rail = createElement("div", "sv-profile-rail");
+    const head = createElement("div", "sv-profile-rail-head");
+    const heading = createElement("div", "sv-profile-rail-heading");
+    this.railTitle = createElement("h2", "sv-profile-rail-title", "Participant profile");
+    this.railSub = createElement("p", "sv-profile-rail-sub", "Nothing selected");
+    heading.append(this.railTitle, this.railSub);
+    const actions = createElement("div", "sv-profile-rail-actions");
+    this.expandButton = createElement("button", "sv-profile-rail-btn", "Expand");
+    this.expandButton.type = "button";
+    this.expandButton.setAttribute("data-sv-focus", "rail-expand");
+    this.expandButton.setAttribute("aria-pressed", "false");
+    this.expandButton.onclick = () => this.setExpanded(!this.state.expanded);
+    const close = createElement("button", "sv-profile-rail-btn sv-profile-rail-close", "\u2715");
+    close.type = "button";
+    close.setAttribute("aria-label", "Close the participant profile");
+    close.setAttribute("data-sv-focus", "rail-close");
+    close.onclick = () => this.handleClear();
+    actions.append(this.expandButton, close);
+    head.append(heading, actions);
+    this.stepperWrap = createElement("div", "sv-profile-rail-stepper");
+    this.railBody = createElement("div", "sv-profile-rail-body");
+    rail.append(head, this.stepperWrap, this.railBody);
+    this.element.hidden = true;
+    this.element.append(rail);
+    this.railRoot = rail;
+    this.profileHost = this.railBody;
+    this.railKeyHandler = (event) => {
+      if (event.key === "Escape" && this.state.expanded) {
+        event.stopPropagation();
+        this.setExpanded(false);
+      }
+    };
+    rail.addEventListener("keydown", this.railKeyHandler);
+  }
+  /**
+   * Expand the rail to fill the host renderer's own container, or collapse it
+   * back (decision D3). Deliberately NOT a viewport overlay or the native
+   * Fullscreen API: the same module has to behave identically inside a
+   * gsm.safety htmlwidget and an open.gismo panel, where escaping the container
+   * is either impossible or rude.
+   * @param {boolean} expanded The target state.
+   * @returns {SafetyParticipantProfile} The instance, for chaining.
+   */
+  setExpanded(expanded) {
+    const next = Boolean(expanded);
+    this.state.expanded = next;
+    const shellRoot = this.element.closest ? this.element.closest(".sv-root") : null;
+    if (shellRoot) shellRoot.classList.toggle("sv-rail-expanded", next);
+    if (this.railRoot) this.railRoot.classList.toggle("is-expanded", next);
+    if (this.expandButton) {
+      this.expandButton.textContent = next ? "Collapse" : "Expand";
+      this.expandButton.setAttribute("aria-pressed", String(next));
+    }
+    this.resize();
+    return this;
+  }
+  /**
+   * Update the rail header for the current selection.
+   * @private
+   */
+  updateRailHead() {
+    if (!this.railTitle) return;
+    const id = this.state.ids[this.state.index];
+    this.railTitle.textContent = id === void 0 ? "Participant profile" : String(id);
+    this.railSub.textContent = id === void 0 ? "Nothing selected" : this.state.ids.length > 1 ? `${this.state.ids.length} selected \xB7 stepping worst first` : "Selected from the chart";
+    if (this.railRoot) this.railRoot.classList.toggle("is-empty", id === void 0);
+    this.element.hidden = id === void 0;
+  }
+  /**
    * Build the standalone shell chrome: the shared sidebar/main layout with the
-   * chart card hidden (the profile block owns the main column via the
-   * profileWrap slot — the per-view slot-visibility precedent from
-   * hep-explorer).
+   * chart card hidden, the profile block owning the main column. The rail slot
+   * stays empty here — standalone IS the expanded reading, so there is nothing
+   * to put beside itself.
    * @private
    */
   renderChrome() {
@@ -14868,7 +15478,8 @@ var SafetyParticipantProfile = class {
       })
     );
     this.chartWrap.style.display = "none";
-    this.profileHost = this.profileWrap;
+    this.profileHost = createElement("div", "sv-profile");
+    this.main.insertBefore(this.profileHost, this.multiplesWrap);
   }
   /**
    * Install the standalone `participantsSelected` listener on the configured
@@ -15012,9 +15623,14 @@ var SafetyParticipantProfile = class {
     this.state.index = 0;
     this.profileHost.innerHTML = "";
     this.liveRegion = null;
+    if (this.stepperWrap) this.stepperWrap.innerHTML = "";
     if (this.mode === "standalone") {
       if (this.controls) this.controls.innerHTML = "";
       this.setIdle();
+    } else {
+      this.state.expanded = false;
+      this.setExpanded(false);
+      this.updateRailHead();
     }
     return this;
   }
@@ -15026,7 +15642,7 @@ var SafetyParticipantProfile = class {
    * @private
    */
   handleClear() {
-    if (this.mode === "dock") {
+    if (this.mode === "rail") {
       if (this.settings.on_clear) this.settings.on_clear();
       else this.clear();
       return;
@@ -15068,7 +15684,7 @@ var SafetyParticipantProfile = class {
    */
   renderProfile() {
     const activeEl = typeof document !== "undefined" ? document.activeElement : null;
-    const ownsFocus = activeEl && (this.profileHost.contains(activeEl) || this.controls && this.controls.contains(activeEl));
+    const ownsFocus = activeEl && (this.profileHost.contains(activeEl) || this.stepperWrap && this.stepperWrap.contains(activeEl) || this.controls && this.controls.contains(activeEl));
     const focusKey = ownsFocus ? activeEl.getAttribute("data-sv-focus") : null;
     this.destroyContent();
     if (!this.liveRegion || this.liveRegion.parentElement !== this.profileHost) {
@@ -15084,33 +15700,63 @@ var SafetyParticipantProfile = class {
     const id = this.state.ids[this.state.index];
     const model = buildProfileModel(this.cleanRows, id, this.settings, this.state);
     this.model = model;
+    this.aeRows = this.aeSettings ? participantEvents(this.aeEvents, id) : [];
+    if (!model.spaghetti.series.length && this.aeRows.length) {
+      const first = this.aeRows[0];
+      model.participant.details = (this.settings.details || []).map((spec) => ({
+        label: spec.label,
+        value: first[spec.value_col]
+      }));
+    }
     const root = createElement("div", "sv-profile-root");
     root.setAttribute("role", "region");
     root.setAttribute("aria-label", `Participant ${id} profile`);
     this.profileHost.append(root);
-    if (this.state.ids.length > 1) {
-      root.append(
-        renderStepper(this.state.ids, this.state.index, { onStep: (index) => this.step(index) })
-      );
+    const stepper = this.state.ids.length > 1 ? renderStepper(this.state.ids, this.state.index, {
+      onStep: (index) => this.step(index),
+      onToggleList: () => {
+        this.state.cohortOpen = !this.state.cohortOpen;
+        this.renderProfile();
+      },
+      listOpen: this.state.cohortOpen,
+      ranked: this.state.cohortOpen ? this.cohortRows() : null
+    }) : null;
+    if (this.stepperWrap) {
+      this.stepperWrap.innerHTML = "";
+      if (stepper) this.stepperWrap.append(stepper);
+    } else if (stepper) {
+      root.append(stepper);
     }
     root.append(
       renderHeader(model.participant, this.settings, { onClear: () => this.handleClear() })
     );
+    const hasLabs = model.spaghetti.series.length > 0;
     const keys = model.spaghetti.series.filter((entry) => this.state.showExtras || entry.isKey).map((entry) => entry.key);
-    if (this.mode === "dock") root.append(this.buildInlineControls(keys));
-    else this.buildSidebarControls(keys);
-    this.spaghettiHost = createElement("div", "sv-profile-spaghetti");
-    root.append(this.spaghettiHost);
-    this.drawSpaghetti();
-    this.tableController = renderMeasureTable(root, model.measures, this.settings, this.state, {
-      // The extras toggle changes both the table AND the control surface
-      // (Measures options, spaghetti series), so it re-renders the block;
-      // focus restoration keeps the checkbox focused (PPRF-8).
-      onToggleExtras: (showExtras) => {
-        this.state.showExtras = showExtras;
-        this.renderProfile();
-      }
-    });
+    if (hasLabs) {
+      if (this.mode === "rail") root.append(this.buildInlineControls(keys));
+      else this.buildSidebarControls(keys);
+    } else if (this.mode === "standalone" && this.controls) {
+      this.controls.innerHTML = "";
+    }
+    this.domain = this.aeSettings ? unionDomain(labDomain(model.spaghetti), aeDomain(this.aeRows)) : null;
+    if (hasLabs) {
+      this.spaghettiHost = createElement("div", "sv-profile-spaghetti");
+      root.append(this.spaghettiHost);
+      this.drawSpaghetti();
+    }
+    if (this.aeSettings) {
+      root.append(renderAeTracks(this.aeRows, this.domain, this.aeSettings));
+    }
+    if (hasLabs)
+      this.tableController = renderMeasureTable(root, model.measures, this.settings, this.state, {
+        // The extras toggle changes both the table AND the control surface
+        // (Measures options, spaghetti series), so it re-renders the block;
+        // focus restoration keeps the checkbox focused (PPRF-8).
+        onToggleExtras: (showExtras) => {
+          this.state.showExtras = showExtras;
+          this.renderProfile();
+        }
+      });
     if (this.settings.listing) {
       const participantRows = this.cleanRows.filter(
         (row) => String(row[this.settings.id_col]) === String(id)
@@ -15123,7 +15769,23 @@ var SafetyParticipantProfile = class {
     }
     const n = this.state.ids.length;
     this.liveRegion.textContent = n > 1 ? `Participant ${id}, ${this.state.index + 1} of ${n}` : `Participant ${id}`;
+    this.updateRailHead();
     this.restoreFocus(focusKey);
+  }
+  /**
+   * The ranked cohort as rows for the stepper's expandable list (decision D8):
+   * every selected participant, worst-first, with the current one marked — so
+   * "which twelve am I stepping through?" is answerable without leaving the
+   * rail.
+   * @returns {Array<{id: string, index: number, current: boolean}>} The rows.
+   * @private
+   */
+  cohortRows() {
+    return this.state.ids.map((id, index) => ({
+      id: String(id),
+      index,
+      current: index === this.state.index
+    }));
   }
   /**
    * Restore keyboard focus after a rebuild (PPRF-8): find the recreated
@@ -15135,7 +15797,10 @@ var SafetyParticipantProfile = class {
    */
   restoreFocus(focusKey) {
     if (!focusKey) return;
-    const find = (key) => this.profileHost.querySelector(`[data-sv-focus="${key}"]`) || (this.controls ? this.controls.querySelector(`[data-sv-focus="${key}"]`) : null);
+    const find = (key) => this.profileHost.querySelector(`[data-sv-focus="${key}"]`) || // The stepper is pinned outside the block in the rail (decision D8), so
+    // focus restoration has to look there too or a keyboard user loses the
+    // strip on every step.
+    (this.stepperWrap ? this.stepperWrap.querySelector(`[data-sv-focus="${key}"]`) : null) || (this.controls ? this.controls.querySelector(`[data-sv-focus="${key}"]`) : null);
     let target = find(focusKey);
     if (target && target.disabled) target = find("stepper") || target;
     if (target && !target.disabled && typeof target.focus === "function") target.focus();
@@ -15150,7 +15815,12 @@ var SafetyParticipantProfile = class {
     this.spaghettiChart = null;
     if (!this.spaghettiHost || !this.model) return;
     this.spaghettiHost.innerHTML = "";
-    this.spaghettiChart = renderSpaghetti(this.spaghettiHost, this.model.spaghetti, this.state);
+    this.spaghettiChart = renderSpaghetti(
+      this.spaghettiHost,
+      this.model.spaghetti,
+      this.state,
+      this.domain
+    );
   }
   /**
    * Build the standalone sidebar controls (house convention): Display and Labs
@@ -15246,6 +15916,8 @@ var SafetyParticipantProfile = class {
    */
   destroy() {
     this.destroyContent();
+    if (this.railRoot && this.railKeyHandler)
+      this.railRoot.removeEventListener("keydown", this.railKeyHandler);
     if (this.listenTarget && this.listenHandler)
       this.listenTarget.removeEventListener("participantsSelected", this.listenHandler);
     this.listenTarget = null;
@@ -15258,8 +15930,8 @@ function participantProfile(element = "body", data = null, settings = {}) {
   if (data) instance.setData(data);
   return instance;
 }
-function profileDock(container, settings = {}) {
-  return new SafetyParticipantProfile(container, settings, { mode: "dock" });
+function profileRail(container, settings = {}) {
+  return new SafetyParticipantProfile(container, settings, { mode: "rail" });
 }
 
 // src/profile-host.js
@@ -15269,9 +15941,10 @@ function buildProfileRows(rawData, mapping) {
   deriveBaseline(rows, mapping);
   return rows;
 }
-function mountProfileDock(host, settingsFn) {
+function mountProfileRail(host, settingsFn, { target = null } = {}) {
   if (!host.settings.profile || host.profile) return;
-  host.profile = profileDock(host.profileWrap, settingsFn());
+  host.profile = profileRail(host.railWrap, settingsFn());
+  host.profileTarget = target || host.root;
   host.profileFeed = (event) => {
     const data = event && event.detail ? event.detail.data : null;
     const ids = (Array.isArray(data) ? data : []).map(String);
@@ -15284,30 +15957,30 @@ function mountProfileDock(host, settingsFn) {
     }
     host.profile.show(ids, host.profileRows);
   };
-  host.root.addEventListener("participantsSelected", host.profileFeed);
+  host.profileTarget.addEventListener("participantsSelected", host.profileFeed);
 }
-function unmountProfileDock(host) {
+function unmountProfileRail(host) {
   if (!host.profile) return;
-  host.root.removeEventListener("participantsSelected", host.profileFeed);
+  (host.profileTarget || host.root).removeEventListener("participantsSelected", host.profileFeed);
   host.profileFeed = null;
   host.profile.destroy();
   host.profile = null;
   host.profileKey = null;
 }
-function syncProfileDock(host, settingsFn) {
+function syncProfileRail(host, settingsFn) {
   if (!host.settings.profile) {
-    unmountProfileDock(host);
+    unmountProfileRail(host);
     return;
   }
   if (!host.profile) {
-    mountProfileDock(host, settingsFn);
+    mountProfileRail(host, settingsFn);
     return;
   }
   host.profileKey = null;
   host.profile.cleanRows = host.profileRows;
   host.profile.setSettings(settingsFn());
 }
-function resetProfileDock(host) {
+function resetProfileRail(host) {
   host.profileKey = null;
   if (host.profile) host.profile.clear();
 }
@@ -15354,10 +16027,10 @@ var SafetyHistogram = class {
     };
     this.renderShell();
     this.onListingRowClick = (row) => this.selectParticipant(row[this.settings.id_col]);
-    mountProfileDock(this, () => this.profileSettings());
+    mountProfileRail(this, () => this.profileSettings());
   }
   /**
-   * The settings handed to the docked participant-profile module (#99,
+   * The settings handed to the railed participant-profile module (#99,
    * PPRF-SH-001): the shared long-lab column mappings pass through verbatim;
    * `details` come from profile_details (the host `details` configure the
    * linked listing — per-row fields, not demographics); and the two outbound
@@ -15436,7 +16109,7 @@ var SafetyHistogram = class {
     return this;
   }
   /**
-   * Derive the docked profile's pre-cleaned rows ONCE per data/settings change
+   * Derive the railed profile's pre-cleaned rows ONCE per data/settings change
    * (#99, PPRF-SH-001) — never per gesture.
    * @private
    */
@@ -15453,7 +16126,7 @@ var SafetyHistogram = class {
     this.settings = syncSettings({ ...this.settings, ...settings });
     if (this.rawData.length) this.validateAndCleanData();
     this.buildProfileRows();
-    syncProfileDock(this, () => this.profileSettings());
+    syncProfileRail(this, () => this.profileSettings());
     this.buildControls();
     this.render();
     return this;
@@ -15697,7 +16370,7 @@ var SafetyHistogram = class {
     this.state.selectedId = null;
     this.listingSelectedId = null;
     this.participantsSelected = [];
-    resetProfileDock(this);
+    resetProfileRail(this);
     this.footnote.textContent = "Hover over or click a bar for details.";
     this.mainAnnotation.innerHTML = "";
     this.notes.innerHTML = "";
@@ -16037,7 +16710,7 @@ var SafetyHistogram = class {
    * Focus one participant from the linked listing (#99, PPRF-SH-002): set the
    * new host selection state, highlight the participant's listing rows, and
    * dispatch the house participantsSelected event on the shell root — which
-   * feeds the docked profile. The listing itself stays (PPRF-11: records vs
+   * feeds the railed profile. The listing itself stays (PPRF-11: records vs
    * story).
    * @param {string} id Participant identifier.
    * @returns {void}
@@ -16108,7 +16781,7 @@ var SafetyHistogram = class {
    * @returns {void}
    */
   destroy() {
-    unmountProfileDock(this);
+    unmountProfileRail(this);
     this.destroyCharts();
     this.element.innerHTML = "";
   }
@@ -16522,10 +17195,10 @@ var SafetyShiftPlot = class {
       domain: null
     };
     this.renderShell();
-    mountProfileDock(this, () => this.profileSettings());
+    mountProfileRail(this, () => this.profileSettings());
   }
   /**
-   * The settings handed to the docked participant-profile module (#99,
+   * The settings handed to the railed participant-profile module (#99,
    * PPRF-SSP-002): the long-lab column mappings pass through — visitn_col maps
    * from the host's visit_order_col — with the profile fed from the retained
    * rawData (NOT the pair-per-participant chartPairs); `details` come from
@@ -16614,7 +17287,7 @@ var SafetyShiftPlot = class {
     return this;
   }
   /**
-   * Derive the docked profile's pre-cleaned rows ONCE per data/settings change
+   * Derive the railed profile's pre-cleaned rows ONCE per data/settings change
    * (#99, PPRF-SSP-002) — never per gesture, and from the retained rawData
    * rather than the pair-per-participant chartPairs (the profile narrates the
    * full series, not the baseline/comparison collapse).
@@ -16639,7 +17312,7 @@ var SafetyShiftPlot = class {
       this.state.comparisonVisits = this.settings.comparison_visits;
     this.resolveVisits();
     this.buildProfileRows();
-    syncProfileDock(this, () => this.profileSettings());
+    syncProfileRail(this, () => this.profileSettings());
     this.buildControls();
     this.render();
     return this;
@@ -16811,7 +17484,7 @@ var SafetyShiftPlot = class {
     this.listingSort = null;
     this.page = 1;
     this.footnote.textContent = INITIAL_FOOTNOTE;
-    resetProfileDock(this);
+    resetProfileRail(this);
     this.notes.innerHTML = "";
     this.chartPairs = this.computePairs();
     this.state.domain = computeDomain(this.chartPairs);
@@ -17005,8 +17678,8 @@ var SafetyShiftPlot = class {
   /**
    * Dispatch the participantsSelected event on the shell root with the
    * selected IDs (SSP-API-003, PPRF-SSP-004). The target moved from the host
-   * element to the shell root in the dock adoption (#99) so root-level
-   * listeners — the docked profile's feed — hear every dispatch; the event
+   * element to the shell root in the rail adoption (#99) so root-level
+   * listeners — the railed profile's feed — hear every dispatch; the event
    * still bubbles, so element-level listeners keep working.
    * @private
    */
@@ -17054,7 +17727,7 @@ var SafetyShiftPlot = class {
    * @returns {void}
    */
   destroy() {
-    unmountProfileDock(this);
+    unmountProfileRail(this);
     this.destroyChart();
     this.element.innerHTML = "";
   }
@@ -17529,10 +18202,10 @@ var SafetyDeltaDelta = class {
       selectedId: null
     };
     this.renderShell();
-    mountProfileDock(this, () => this.profileSettings());
+    mountProfileRail(this, () => this.profileSettings());
   }
   /**
-   * The settings handed to the docked participant-profile module (#99,
+   * The settings handed to the railed participant-profile module (#99,
    * PPRF-DD-002): the shared long-lab column mappings pass through verbatim;
    * `details` come from profile_details, falling back to the host `details`
    * minus the participant id (the profile header already shows it); and the
@@ -17618,7 +18291,7 @@ var SafetyDeltaDelta = class {
     return this;
   }
   /**
-   * Derive the docked profile's pre-cleaned rows ONCE per data/settings change
+   * Derive the railed profile's pre-cleaned rows ONCE per data/settings change
    * (#99, PPRF-DD-002) — never per gesture. The underlying rows are standard
    * long labs: the baseline-vs-comparison delta is NOT re-encoded — the
    * profile shows the full series, which is the supersession story (PPRF-12).
@@ -17645,7 +18318,7 @@ var SafetyDeltaDelta = class {
     this.settings = syncSettings5({ ...this.settings, ...settings });
     if (this.rawData.length) this.validateAndCleanData();
     this.buildProfileRows();
-    syncProfileDock(this, () => this.profileSettings());
+    syncProfileRail(this, () => this.profileSettings());
     this.buildControls();
     this.render();
     return this;
@@ -17807,7 +18480,7 @@ var SafetyDeltaDelta = class {
     this.multiplesWrap.innerHTML = "";
     this.state.selectedId = null;
     this.participantsSelected = [];
-    resetProfileDock(this);
+    resetProfileRail(this);
     this.regression = null;
     this.footnote.textContent = "";
     this.mainAnnotation.textContent = "Click a point to see details.";
@@ -17895,7 +18568,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
   }
   /**
    * Select a scatter point: highlight it, note the participant, and dispatch
-   * the selection on the shell root — the docked participant profile is the
+   * the selection on the shell root — the railed participant profile is the
    * detail view (SDD-REG-012/013 retargeted; #99, PPRF-DD-001/002).
    * @private
    */
@@ -17914,8 +18587,8 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
   }
   /**
    * Clear the point selection (#99, PPRF-DD-003): restore the borders, reset
-   * the annotation, and dispatch the empty selection so the docked profile
-   * empties. Reached from an empty-canvas click and the dock's Clear
+   * the annotation, and dispatch the empty selection so the railed profile
+   * empties. Reached from an empty-canvas click and the rail's Clear
    * affordance.
    * @returns {void}
    */
@@ -17971,7 +18644,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
    * @returns {void}
    */
   destroy() {
-    unmountProfileDock(this);
+    unmountProfileRail(this);
     this.destroyCharts();
     this.element.innerHTML = "";
   }
@@ -19376,10 +20049,10 @@ var SafetyOutlierExplorer = class {
     };
     this.initFilterState();
     this.renderShell();
-    mountProfileDock(this, () => this.profileSettings());
+    mountProfileRail(this, () => this.profileSettings());
   }
   /**
-   * The settings handed to the docked participant-profile module (#99,
+   * The settings handed to the railed participant-profile module (#99,
    * PPRF-OE-001): the shared long-lab column mappings pass through verbatim;
    * `details` come from profile_details (the host `details` configure the
    * linked listing — per-row fields, not demographics); and the two outbound
@@ -19474,7 +20147,7 @@ var SafetyOutlierExplorer = class {
     return this;
   }
   /**
-   * Derive the docked profile's pre-cleaned rows ONCE per data/settings change
+   * Derive the railed profile's pre-cleaned rows ONCE per data/settings change
    * (#99, PPRF-OE-001) — never per gesture.
    * @private
    */
@@ -19494,7 +20167,7 @@ var SafetyOutlierExplorer = class {
     this.initFilterState();
     if (this.rawData.length) this.validateAndCleanData();
     this.buildProfileRows();
-    syncProfileDock(this, () => this.profileSettings());
+    syncProfileRail(this, () => this.profileSettings());
     this.buildControls();
     this.render();
     return this;
@@ -19727,7 +20400,7 @@ var SafetyOutlierExplorer = class {
     this.page = 1;
     this.state.selectedId = null;
     this.participantsSelected = [];
-    resetProfileDock(this);
+    resetProfileRail(this);
     this.notes.innerHTML = "";
     this.footnote.textContent = "Hover a point for details; click a point to highlight a participant.";
     this.filteredData = this.currentFilteredData();
@@ -20013,7 +20686,7 @@ var SafetyOutlierExplorer = class {
    * @returns {void}
    */
   destroy() {
-    unmountProfileDock(this);
+    unmountProfileRail(this);
     this.destroyCharts();
     this.element.innerHTML = "";
   }
@@ -20024,6 +20697,10 @@ function outlierExplorer(element = "body", settings = {}) {
 
 // src/ae-timelines/configure.js
 var DEFAULT_SETTINGS8 = {
+  // The railed participant profile (obot.roadmap#75 decision D9); false opts
+  // the renderer out of the drill-down entirely.
+  profile: true,
+  profile_details: [],
   id_col: "USUBJID",
   seq_col: "AESEQ",
   stdy_col: "ASTDY",
@@ -20487,6 +21164,37 @@ var AETimelines = class {
       sort: this.settings.sort_participants
     };
     this.renderShell();
+    this.profileRows = [];
+    mountProfileRail(this, () => this.profileSettings(), { target: this.element });
+  }
+  /**
+   * The settings handed to the railed participant-profile module: this
+   * renderer's own AE mapping, passed through so the profile reads the same
+   * records with the same severity scale and serious flag.
+   * @returns {Object} The profile pass-through settings.
+   * @private
+   */
+  profileSettings() {
+    return {
+      id_col: this.settings.id_col,
+      details: this.settings.profile_details,
+      on_clear: () => this.backToTimelines(),
+      ae: {
+        data: this.rawData,
+        id_col: this.settings.id_col,
+        term_col: this.settings.term_col,
+        stdy_col: this.settings.stdy_col,
+        endy_col: this.settings.endy_col,
+        color: {
+          value_col: this.settings.color.value_col,
+          values: this.settings.color.values
+        },
+        highlight: this.settings.highlight ? {
+          value_col: this.settings.highlight.value_col,
+          value: this.settings.highlight.value
+        } : null
+      }
+    };
   }
   /**
    * Build the static DOM shell the charts and listing render into, plus the
@@ -20543,6 +21251,8 @@ var AETimelines = class {
     this.rawData = Array.isArray(data) ? data : [];
     this.validateAndCleanData();
     this.buildControls();
+    syncProfileRail(this, () => this.profileSettings());
+    if (this.profile) this.profile.setAeData(this.rawData);
     this.render();
     return this;
   }
@@ -20840,6 +21550,7 @@ var AETimelines = class {
    * @returns {void}
    */
   destroy() {
+    unmountProfileRail(this);
     this.destroyCharts();
     this.element.innerHTML = "";
   }
@@ -21180,8 +21891,8 @@ function groupColorScale2(groupValues) {
   });
   return scale;
 }
-function dayText(day) {
-  return Number.isFinite(day) ? String(day) : "NA";
+function dayText(day2) {
+  return Number.isFinite(day2) ? String(day2) : "NA";
 }
 function pointTooltip2(point, state, measureValues) {
   const lines = [
@@ -24068,7 +24779,7 @@ var SafetyHepExplorer = class {
     };
     this.profileDetails = this.settings.details;
     this.renderShell();
-    this.mountProfileDock();
+    this.mountProfileRail();
   }
   /**
    * The active view component — the module's ONLY view dispatch (HEP-COMP-006).
@@ -24127,9 +24838,9 @@ var SafetyHepExplorer = class {
     this.footnote.textContent = this.baseFootnote();
   }
   /**
-   * The settings handed to the docked participant-profile module (#98,
+   * The settings handed to the railed participant-profile module (#98,
    * PPRF-7): the shared long-lab column mappings and cutpoints pass through
-   * verbatim so the dock consumes this chart's pre-cleaned rows with no second
+   * verbatim so the rail consumes this chart's pre-cleaned rows with no second
    * ingest (PPRF-1); details are the caller's own demographics snapshot;
    * display seeds from the live display mode; and the two outbound callbacks
    * wire Clear to the host's own clear path (PPRF-2) and stepper navigation to
@@ -24152,7 +24863,7 @@ var SafetyHepExplorer = class {
       baseline_value: settings.baseline_value,
       measure_values: settings.measure_values,
       // LIVE control state, not the construction-time settings: user-edited
-      // reference lines and the Axis-type control reach the dock so the
+      // reference lines and the Axis-type control reach the rail so the
       // coordinated panels always agree on the active cuts and scale (PPRF-7).
       cuts: this.state.cuts,
       axis_type: this.state.axisType === "log" ? "log" : "linear",
@@ -24166,18 +24877,18 @@ var SafetyHepExplorer = class {
     };
   }
   /**
-   * Mount the docked participant-profile module into the shell's profile slot
+   * Mount the railed participant-profile module into the shell's profile slot
    * and subscribe it to the participantsSelected event on the shell root —
    * the selection layer's SOLE dispatcher, so every selection path (scatter
    * click, Participants control, composite click/selector, migration
-   * hand-off, carried selections, and every clear) feeds the dock with zero
+   * hand-off, carried selections, and every clear) feeds the rail with zero
    * view edits (#98, PPRF-7). No-op when the `profile` setting is false or a
-   * dock is already live.
+   * rail is already live.
    * @private
    */
-  mountProfileDock() {
+  mountProfileRail() {
     if (!this.settings.profile || this.profile) return;
-    this.profile = profileDock(this.profileWrap, this.profileSettings());
+    this.profile = profileRail(this.railWrap, this.profileSettings());
     this.profileFeed = (event) => {
       const data = event && event.detail ? event.detail.data : null;
       const ids = (Array.isArray(data) ? data : []).map(String);
@@ -24194,11 +24905,11 @@ var SafetyHepExplorer = class {
     this.root.addEventListener("participantsSelected", this.profileFeed);
   }
   /**
-   * Tear the docked profile down: unsubscribe the feed, destroy the module's
+   * Tear the railed profile down: unsubscribe the feed, destroy the module's
    * charts, and empty the slot (the shell's `:empty` rule then hides it).
    * @private
    */
-  unmountProfileDock() {
+  unmountProfileRail() {
     if (!this.profile) return;
     this.root.removeEventListener("participantsSelected", this.profileFeed);
     this.profileFeed = null;
@@ -24207,19 +24918,19 @@ var SafetyHepExplorer = class {
     this.profileKey = null;
   }
   /**
-   * Reconcile the docked profile with the current settings: mount or unmount
-   * on a `profile` toggle, else refresh the dock's pass-through settings.
+   * Reconcile the railed profile with the current settings: mount or unmount
+   * on a `profile` toggle, else refresh the rail's pass-through settings.
    * Called by setSettings before the re-render re-dispatches any carried
    * selection.
    * @private
    */
-  syncProfileDock() {
+  syncProfileRail() {
     if (!this.settings.profile) {
-      this.unmountProfileDock();
+      this.unmountProfileRail();
       return;
     }
     if (!this.profile) {
-      this.mountProfileDock();
+      this.mountProfileRail();
       return;
     }
     this.profileKey = null;
@@ -24293,7 +25004,7 @@ var SafetyHepExplorer = class {
     if ("details" in settings) this.profileDetails = this.settings.details;
     this.state.filters = {};
     if (this.rawData.length) this.validateAndCleanData();
-    this.syncProfileDock();
+    this.syncProfileRail();
     this.buildControls();
     this.render();
     return this;
@@ -24573,7 +25284,7 @@ var SafetyHepExplorer = class {
    * Select a participant and drive every coordinated view (HEP-SELECT-001..006):
    * highlight the point, trace the visit path on the scatter, open the linked
    * listing of the participant's raw records, annotate the chart, and dispatch
-   * the participantsSelected event — which feeds the docked participant
+   * the participantsSelected event — which feeds the railed participant
    * profile (#98, PPRF-7) — all in the active display units.
    * @param {string|number} id The participant identifier.
    * @returns {void}
@@ -24602,7 +25313,7 @@ var SafetyHepExplorer = class {
    * Close the single-participant drill-down: erase the visit-path overlay,
    * close the listing, and restore the base annotation/footnote — without
    * touching the multi-highlight or notifying listeners (HEP-SELECT-007). The
-   * docked profile empties on the dispatch([]) that follows a full clear; its
+   * railed profile empties on the dispatch([]) that follows a full clear; its
    * charts are module-owned, so there is nothing to tear down here (#98).
    * @private
    */
@@ -24658,7 +25369,7 @@ var SafetyHepExplorer = class {
    * @returns {void}
    */
   destroy() {
-    this.unmountProfileDock();
+    this.unmountProfileRail();
     this.destroyCharts();
     this.element.innerHTML = "";
   }
@@ -24669,6 +25380,13 @@ function hepExplorer(element = "body", settings = {}) {
 
 // src/ae-explorer/configure.js
 var DEFAULT_SETTINGS9 = {
+  // The railed participant profile (obot.roadmap#75 decision D9); false opts
+  // the renderer out of the drill-down. profile_ae overrides the AE mapping the
+  // profile reads (severity, seriousness, study days) where this renderer's own
+  // settings do not name those columns.
+  profile: true,
+  profile_details: [],
+  profile_ae: null,
   id_col: "USUBJID",
   major_col: "AEBODSYS",
   minor_col: "AEDECOD",
@@ -25259,6 +25977,10 @@ var AEExplorer = class {
       expanded: /* @__PURE__ */ new Set()
     };
     this.renderShellChrome();
+    this.profileRows = [];
+    this.listingSelectedId = null;
+    this.onListingRowClick = (row) => this.focusParticipant(row[this.settings.id_col]);
+    mountProfileRail(this, () => this.profileSettings());
   }
   /**
    * Build the static DOM the table renders into: the shared shell (with the
@@ -25327,8 +26049,50 @@ var AEExplorer = class {
     this.validateAndCleanData();
     this.seedFilterState();
     this.buildControls();
+    syncProfileRail(this, () => this.profileSettings());
+    if (this.profile) this.profile.setAeData(this.rawData);
     this.render();
     return this;
+  }
+  /**
+   * The settings handed to the railed participant-profile module: this
+   * renderer's own AE mapping passed through, so the profile reads the same
+   * records the table counts.
+   * @returns {Object} The profile pass-through settings.
+   * @private
+   */
+  profileSettings() {
+    return {
+      id_col: this.settings.id_col,
+      details: this.settings.profile_details || [],
+      on_clear: () => this.focusParticipant(null),
+      ae: {
+        data: this.rawData,
+        id_col: this.settings.id_col,
+        major_col: this.settings.major_col,
+        minor_col: this.settings.minor_col,
+        ...this.settings.profile_ae || {}
+      }
+    };
+  }
+  /**
+   * Focus one participant (or none) and tell the page: the house
+   * `participantsSelected` event on the shell root, which is what feeds the
+   * rail. The listing highlights the focused rows.
+   * @param {?(string|number)} id The participant id, or null to clear.
+   * @returns {void}
+   * @private
+   */
+  focusParticipant(id) {
+    this.listingSelectedId = id === void 0 ? null : id;
+    this.participantsSelected = this.listingSelectedId === null ? [] : [String(id)];
+    renderListing(this);
+    this.root.dispatchEvent(
+      new CustomEvent("participantsSelected", {
+        detail: { data: this.participantsSelected },
+        bubbles: true
+      })
+    );
   }
   /**
    * Merge setting overrides onto the current settings, re-normalize them
@@ -25985,6 +26749,7 @@ var AEExplorer = class {
    * @returns {void}
    */
   destroy() {
+    unmountProfileRail(this);
     this.charts.forEach((chart) => chart.destroy());
     this.charts = [];
     this.element.innerHTML = "";
@@ -26824,10 +27589,10 @@ var SafetyQtExplorer = class {
       selectedId: null
     };
     this.renderShellDom();
-    mountProfileDock(this, () => this.profileSettings());
+    mountProfileRail(this, () => this.profileSettings());
   }
   /**
-   * The settings handed to the docked participant-profile module (#99,
+   * The settings handed to the railed participant-profile module (#99,
    * PPRF-QT-002) — the interval-measure (ECG) mapping onto the profile's
    * long-lab contract:
    *
@@ -26936,7 +27701,7 @@ var SafetyQtExplorer = class {
     return this;
   }
   /**
-   * Derive the docked profile's pre-cleaned rows ONCE per data/settings change
+   * Derive the railed profile's pre-cleaned rows ONCE per data/settings change
    * (#99, PPRF-QT-002) — never per gesture. Each raw record is shallow-copied
    * with a synthesized `__qt_profile_uln = 1` column before the shared
    * hep-core ingest, so `__hep_relative_uln` carries the observed value in
@@ -26963,7 +27728,7 @@ var SafetyQtExplorer = class {
     }
     if (this.rawData.length) this.validateAndCleanData();
     this.buildProfileRows();
-    syncProfileDock(this, () => this.profileSettings());
+    syncProfileRail(this, () => this.profileSettings());
     this.buildControls();
     this.render();
     return this;
@@ -27103,7 +27868,7 @@ var SafetyQtExplorer = class {
     this.destroyCharts();
     this.state.selectedId = null;
     this.participantsSelected = [];
-    resetProfileDock(this);
+    resetProfileRail(this);
     this.legendEl.classList.add("qt-empty");
     this.noteEl.classList.add("qt-empty");
     this.tableWrap.classList.add("qt-empty");
@@ -27428,7 +28193,7 @@ var SafetyQtExplorer = class {
             event.native.target.style.cursor = elements.length ? "pointer" : "default";
           }
         },
-        // Point click → participant selection feeding the docked profile
+        // Point click → participant selection feeding the railed profile
         // (#99, PPRF-QT-001); an empty click clears (PPRF-11).
         onClick: (event, elements) => {
           if (!elements.length) {
@@ -27516,7 +28281,7 @@ var SafetyQtExplorer = class {
    * Select one participant from the outlier scatter (#99, PPRF-QT-001): set
    * the minimal host selection state, emphasize the participant's point, and
    * dispatch the house participantsSelected event on the shell root — which
-   * feeds the docked profile. Single-select only (PPRF-QT-004).
+   * feeds the railed profile. Single-select only (PPRF-QT-004).
    * @param {string} id Participant identifier.
    * @returns {void}
    */
@@ -27585,7 +28350,7 @@ var SafetyQtExplorer = class {
    * @returns {void}
    */
   destroy() {
-    unmountProfileDock(this);
+    unmountProfileRail(this);
     this.destroyCharts();
     this.element.innerHTML = "";
   }
@@ -28172,13 +28937,13 @@ function signed(value) {
 }
 function waterfallTooltip(subject, { measure = "ALT", unit = "U/L" } = {}) {
   if (!subject) return [];
-  const day = Number.isFinite(subject.peakDay) ? ` (day ${subject.peakDay})` : "";
+  const day2 = Number.isFinite(subject.peakDay) ? ` (day ${subject.peakDay})` : "";
   const fold = subject.baseline > 0 ? ` (${formatNumber6(subject.peak / subject.baseline, 2)}\xD7baseline)` : "";
   const lines = [
     String(subject.id),
     `Arm: ${subject.arm || "(not reported)"}`,
     `Baseline ${measure}: ${formatNumber6(subject.baseline)} ${unit}`,
-    `Maximum on-treatment ${measure}: ${formatNumber6(subject.peak)} ${unit}${day}`,
+    `Maximum on-treatment ${measure}: ${formatNumber6(subject.peak)} ${unit}${day2}`,
     `Change: ${signed(subject.peak - subject.baseline)} ${unit}${fold}`
   ];
   if (Number.isFinite(subject.peakBiliULN)) {

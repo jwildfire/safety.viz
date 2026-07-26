@@ -514,7 +514,7 @@ test.describe('safety.viz hep-explorer module', () => {
     await captureEvidence(page, 'HEP-DISPLAY-001', 'mdish-display');
   });
 
-  test('HEP-SELECT-001/HEP-SELECT-002/HEP-SELECT-003/HEP-SELECT-005/HEP-SELECT-006: clicking a point draws the visit path, docked profile, and linked listing (#43, #98)', async ({
+  test('HEP-SELECT-001/HEP-SELECT-002/HEP-SELECT-003/HEP-SELECT-005/HEP-SELECT-006: clicking a point draws the visit path, railed profile, and linked listing (#43, #98)', async ({
     page
   }) => {
     await page.evaluate(() => {
@@ -534,17 +534,17 @@ test.describe('safety.viz hep-explorer module', () => {
     });
     expect(state.selectedId).toBe('SUBJ-001');
     expect(state.overlayCount).toBe(3);
-    // The docked profile owns its own charts (#98, PPRF-7): this.charts holds
+    // The railed profile owns its own charts (#98, PPRF-7): this.charts holds
     // the scatter alone.
     expect(state.chartCount).toBe(1);
 
-    // Participant drill-down: the docked profile module renders the header,
+    // Participant drill-down: the railed profile module renders the header,
     // labs-over-time spaghetti, and measure table into the sv-profile slot
     // (#98, PPRF-7); the legacy .hep-detail panel is gone from the DOM.
     await expect(page.locator('.hep-detail')).toHaveCount(0);
-    await expect(page.locator('.sv-profile .sv-profile-id')).toHaveText('Participant SUBJ-001');
-    await expect(page.locator('.sv-profile .sv-profile-spaghetti canvas')).toBeVisible();
-    await expect(page.locator('.sv-profile .sv-profile-measure-row')).toHaveCount(3);
+    await expect(page.locator('.sv-rail .sv-profile-id')).toHaveText('Participant SUBJ-001');
+    await expect(page.locator('.sv-rail .sv-profile-spaghetti canvas')).toBeVisible();
+    await expect(page.locator('.sv-rail .sv-profile-measure-row')).toHaveCount(3);
 
     // Linked listing of the participant's raw lab records.
     await expect(page.locator('.sv-listing table')).toBeVisible();
@@ -573,7 +573,7 @@ test.describe('safety.viz hep-explorer module', () => {
     await captureEvidence(page, 'HEP-SELECT-001', 'participant-detail');
 
     // Selecting several via the control highlights them across the scatter and
-    // collapses the docked profile to its cohort stepper (#98, PPRF-5); the
+    // collapses the railed profile to its cohort stepper (#98, PPRF-5); the
     // header counts them.
     const multi = await page.evaluate(() => {
       const instance = window.__safetyHepExplorerInstance;
@@ -583,7 +583,7 @@ test.describe('safety.viz hep-explorer module', () => {
       return {
         selected: instance.scatterSelectedIds.slice(),
         selectedId: instance.state.selectedId,
-        stepper: Boolean(document.querySelector('.sv-profile .sv-profile-stepper')),
+        stepper: Boolean(document.querySelector('.sv-rail .sv-profile-stepper')),
         header: instance.compositeHeaderEl.textContent
       };
     });
@@ -600,8 +600,8 @@ test.describe('safety.viz hep-explorer module', () => {
       select.dispatchEvent(new Event('change'));
       return {
         selectedId: instance.state.selectedId,
-        stepper: Boolean(document.querySelector('.sv-profile .sv-profile-stepper')),
-        profileId: document.querySelector('.sv-profile .sv-profile-id')?.textContent
+        stepper: Boolean(document.querySelector('.sv-rail .sv-profile-stepper')),
+        profileId: document.querySelector('.sv-rail .sv-profile-id')?.textContent
       };
     });
     expect(single.selectedId).toBe('SUBJ-001');
@@ -609,10 +609,10 @@ test.describe('safety.viz hep-explorer module', () => {
     expect(single.profileId).toBe('Participant SUBJ-001');
   });
 
-  test('HEP-SELECT-002: selecting a second participant without a background click re-renders the dock without leaking Chart.js instances (#43, #98)', async ({
+  test('HEP-SELECT-002: selecting a second participant without a background click re-renders the rail without leaking Chart.js instances (#43, #98)', async ({
     page
   }) => {
-    // Select participant A directly on the scatter: the dock renders A and the
+    // Select participant A directly on the scatter: the rail renders A and the
     // module's charts stay off this.charts (scatter only).
     await page.evaluate(() => {
       const instance = window.__safetyHepExplorerInstance;
@@ -620,9 +620,9 @@ test.describe('safety.viz hep-explorer module', () => {
       instance.chart.options.onClick({}, [{ datasetIndex: 0, index }]);
     });
     expect(await page.evaluate(() => window.__safetyHepExplorerInstance.charts.length)).toBe(1);
-    await expect(page.locator('.sv-profile .sv-profile-id')).toHaveText('Participant SUBJ-001');
+    await expect(page.locator('.sv-rail .sv-profile-id')).toHaveText('Participant SUBJ-001');
 
-    // Select participant B without an intervening background click. The dock
+    // Select participant B without an intervening background click. The rail
     // re-renders for B, destroying the prior spaghetti chart rather than
     // leaking it: exactly one live canvas in the slot, and the previous
     // Chart.js instance reports destroyed.
@@ -635,24 +635,24 @@ test.describe('safety.viz hep-explorer module', () => {
         chartCount: instance.charts.length,
         selectedId: instance.state.selectedId,
         previousDestroyed: !previous.ctx && !previous.canvas,
-        canvases: instance.profileWrap.querySelectorAll('canvas').length
+        canvases: instance.railWrap.querySelectorAll('canvas').length
       };
     });
     expect(leak.chartCount).toBe(1);
     expect(leak.selectedId).toBe('SUBJ-003');
     expect(leak.previousDestroyed).toBe(true);
     expect(leak.canvases).toBe(1);
-    await expect(page.locator('.sv-profile .sv-profile-id')).toHaveText('Participant SUBJ-003');
+    await expect(page.locator('.sv-rail .sv-profile-id')).toHaveText('Participant SUBJ-003');
 
-    // Clearing the selection empties the dock and leaves only the scatter.
+    // Clearing the selection empties the rail and leaves only the scatter.
     await page.evaluate(() => {
       window.__safetyHepExplorerInstance.chart.options.onClick({}, []);
     });
     expect(await page.evaluate(() => window.__safetyHepExplorerInstance.charts.length)).toBe(1);
-    await expect(page.locator('.sv-profile')).toBeEmpty();
+    await expect(page.locator('.sv-rail .sv-profile-root')).toHaveCount(0);
   });
 
-  test('HEP-SELECT-007: clicking the background clears the selection, docked profile, and listing (#43, #98)', async ({
+  test('HEP-SELECT-007: clicking the background clears the selection, railed profile, and listing (#43, #98)', async ({
     page
   }) => {
     await page.evaluate(() => {
@@ -661,14 +661,14 @@ test.describe('safety.viz hep-explorer module', () => {
       instance.chart.options.onClick({}, [{ datasetIndex: 0, index }]);
     });
     await expect(page.locator('.sv-listing table')).toBeVisible();
-    await expect(page.locator('.sv-profile .sv-profile-id')).toBeVisible();
+    await expect(page.locator('.sv-rail .sv-profile-id')).toBeVisible();
 
     await page.evaluate(() => {
       window.__safetyHepExplorerInstance.chart.options.onClick({}, []);
     });
     await expect(page.locator('.sv-listing table')).toHaveCount(0);
-    await expect(page.locator('.sv-profile')).toBeEmpty();
-    await expect(page.locator('.sv-profile')).toBeHidden();
+    await expect(page.locator('.sv-rail .sv-profile-root')).toHaveCount(0);
+    await expect(page.locator('.sv-rail .sv-profile-id')).toHaveCount(0);
     const cleared = await page.evaluate(() => {
       const instance = window.__safetyHepExplorerInstance;
       return {
@@ -690,7 +690,7 @@ test.describe('safety.viz hep-explorer module', () => {
       const index = instance.points.findIndex((point) => point.id === 'SUBJ-001');
       instance.chart.options.onClick({}, [{ datasetIndex: 0, index }]);
     });
-    await expect(page.locator('.sv-profile .sv-profile-id')).toBeVisible();
+    await expect(page.locator('.sv-rail .sv-profile-id')).toBeVisible();
 
     await page
       .locator('.sv-control', { has: page.locator('label:text-is("Display Type")') })
@@ -701,7 +701,7 @@ test.describe('safety.viz hep-explorer module', () => {
     );
 
     // The selection survives the redraw and every coordinated panel is rebuilt
-    // in the mDISH (×Baseline) units — including the docked profile, whose
+    // in the mDISH (×Baseline) units — including the railed profile, whose
     // spaghetti follows the host's display mode on the re-dispatch (#98).
     const state = await page.evaluate(() => {
       const instance = window.__safetyHepExplorerInstance;
@@ -721,8 +721,8 @@ test.describe('safety.viz hep-explorer module', () => {
     expect(state.xCut).toBe(3.8);
     expect(state.yCut).toBe(4.8);
     expect(state.profileYTitle).toBe('Standardized Result [xBaseline]');
-    await expect(page.locator('.sv-profile .sv-profile-id')).toHaveText('Participant SUBJ-001');
-    await expect(page.locator('.sv-profile .sv-profile-measure-row')).toHaveCount(3);
+    await expect(page.locator('.sv-rail .sv-profile-id')).toHaveText('Participant SUBJ-001');
+    await expect(page.locator('.sv-rail .sv-profile-measure-row')).toHaveCount(3);
     await expect(page.locator('.sv-listing table')).toBeVisible();
     await expect(page.locator('.sv-footnote')).toContainText('Participant SUBJ-001 selected.');
 
@@ -743,7 +743,7 @@ test.describe('safety.viz hep-explorer module', () => {
       .locator('.sv-control', { has: page.locator('label:text-is("Sex")') })
       .locator('select')
       .selectOption('M');
-    await expect(page.locator('.sv-profile')).toBeEmpty();
+    await expect(page.locator('.sv-rail .sv-profile-root')).toHaveCount(0);
     await expect(page.locator('.sv-listing table')).toHaveCount(0);
     const cleared = await page.evaluate(() => ({
       selectedId: window.__safetyHepExplorerInstance.state.selectedId,
@@ -997,7 +997,7 @@ test.describe('safety.viz hep-explorer composite plot', () => {
 
     // A composite multi-selection carries back into the scatter view: the
     // participants arrive highlighted with the control and shared header
-    // mirroring them, and the docked profile shows its cohort stepper rather
+    // mirroring them, and the railed profile shows its cohort stepper rather
     // than a single-participant profile (#98, PPRF-5).
     const compositeMulti = await page.evaluate(() => {
       const instance = window.__safetyHepExplorerInstance;
@@ -1019,7 +1019,7 @@ test.describe('safety.viz hep-explorer composite plot', () => {
         selectedId: instance.state.selectedId,
         dropdownSelected: [...instance.compositeSelectEl.selectedOptions].map((o) => o.value),
         header: instance.compositeHeaderEl.textContent,
-        profileStepper: Boolean(document.querySelector('.sv-profile .sv-profile-stepper'))
+        profileStepper: Boolean(document.querySelector('.sv-rail .sv-profile-stepper'))
       };
     });
     expect([...carriedBack.selected].sort()).toEqual([...compositeMulti].map(String).sort());

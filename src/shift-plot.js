@@ -32,10 +32,10 @@ import {
 import { renderListing } from './histogram/listing.js';
 import {
   buildProfileRows,
-  mountProfileDock,
-  resetProfileDock,
-  syncProfileDock,
-  unmountProfileDock
+  mountProfileRail,
+  resetProfileRail,
+  syncProfileRail,
+  unmountProfileRail
 } from './profile-host.js';
 
 Chart.register(ScatterController, PointElement, LinearScale, Tooltip, Legend);
@@ -65,7 +65,7 @@ class SafetyShiftPlot {
     this.page = 1;
     this.brushing = false;
     this.chart = null;
-    // The docked participant-profile module (#99, PPRF-SSP): the shared
+    // The railed participant-profile module (#99, PPRF-SSP): the shared
     // drill-down rendered into the shell's profile slot and fed by the brush
     // selection through dispatchSelected's participantsSelected event on the
     // shell root. A multi-point brush collapses the dock to the worst-first
@@ -86,11 +86,11 @@ class SafetyShiftPlot {
       domain: null
     };
     this.renderShell();
-    mountProfileDock(this, () => this.profileSettings());
+    mountProfileRail(this, () => this.profileSettings());
   }
 
   /**
-   * The settings handed to the docked participant-profile module (#99,
+   * The settings handed to the railed participant-profile module (#99,
    * PPRF-SSP-002): the long-lab column mappings pass through — visitn_col maps
    * from the host's visit_order_col — with the profile fed from the retained
    * rawData (NOT the pair-per-participant chartPairs); `details` come from
@@ -188,7 +188,7 @@ class SafetyShiftPlot {
   }
 
   /**
-   * Derive the docked profile's pre-cleaned rows ONCE per data/settings change
+   * Derive the railed profile's pre-cleaned rows ONCE per data/settings change
    * (#99, PPRF-SSP-002) — never per gesture, and from the retained rawData
    * rather than the pair-per-participant chartPairs (the profile narrates the
    * full series, not the baseline/comparison collapse).
@@ -216,7 +216,7 @@ class SafetyShiftPlot {
       this.state.comparisonVisits = this.settings.comparison_visits;
     this.resolveVisits();
     this.buildProfileRows();
-    syncProfileDock(this, () => this.profileSettings());
+    syncProfileRail(this, () => this.profileSettings());
     this.buildControls();
     this.render();
     return this;
@@ -403,9 +403,9 @@ class SafetyShiftPlot {
     this.listingSort = null;
     this.page = 1;
     this.footnote.textContent = INITIAL_FOOTNOTE;
-    // The brush selection resets silently on every render, so the dock must
+    // The brush selection resets silently on every render, so the rail must
     // empty in the same preamble (#99, PPRF-SSP-003).
-    resetProfileDock(this);
+    resetProfileRail(this);
     this.notes.innerHTML = '';
     this.chartPairs = this.computePairs();
     this.state.domain = computeDomain(this.chartPairs);
@@ -613,8 +613,8 @@ class SafetyShiftPlot {
   /**
    * Dispatch the participantsSelected event on the shell root with the
    * selected IDs (SSP-API-003, PPRF-SSP-004). The target moved from the host
-   * element to the shell root in the dock adoption (#99) so root-level
-   * listeners — the docked profile's feed — hear every dispatch; the event
+   * element to the shell root in the rail adoption (#99) so root-level
+   * listeners — the railed profile's feed — hear every dispatch; the event
    * still bubbles, so element-level listeners keep working.
    * @private
    */
@@ -670,7 +670,7 @@ class SafetyShiftPlot {
    * @returns {void}
    */
   destroy() {
-    unmountProfileDock(this);
+    unmountProfileRail(this);
     this.destroyChart();
     this.element.innerHTML = '';
   }

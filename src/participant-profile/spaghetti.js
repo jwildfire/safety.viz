@@ -18,6 +18,7 @@ import {
 } from 'chart.js';
 
 import { createElement } from '../shell.js';
+import { PLOT_GUTTER_LEFT, PLOT_GUTTER_RIGHT } from './aeTracks.js';
 
 Chart.register(LineController, LineElement, PointElement, LinearScale, LogarithmicScale, Tooltip);
 
@@ -142,9 +143,10 @@ export function cutLinePlugin() {
  * @param {HTMLElement} host The element to render into.
  * @param {Object} model The spaghetti model ({ series, yLabel, display }).
  * @param {Object} state The live state ({ showExtras, labs }).
+ * @param {?number[]} [domain=null] The shared study-day domain (decision D7); null lets the chart autoscale.
  * @returns {Object} The Chart.js instance.
  */
-export function renderSpaghetti(host, model, state = {}) {
+export function renderSpaghetti(host, model, state = {}, domain = null) {
   const card = createElement('div', 'sv-profile-spaghetti-card');
   const canvas = createElement('canvas', 'sv-profile-spaghetti-canvas');
   card.append(canvas);
@@ -216,9 +218,25 @@ export function renderSpaghetti(host, model, state = {}) {
           }
         }
       },
+      // The plot gutters are pinned rather than fitted so the adverse-event
+      // timeline below can share this chart's x-axis by construction — same
+      // left gutter, same right padding, same domain — instead of measuring the
+      // canvas after every render (PPRF-AXIS-002).
+      layout: { padding: { right: PLOT_GUTTER_RIGHT } },
       scales: {
-        x: { type: 'linear', title: { display: true, text: 'Study Day' } },
-        y: yScale
+        x: {
+          type: 'linear',
+          title: { display: true, text: 'Study Day' },
+          ...(Array.isArray(domain) && domain.length === 2
+            ? { min: domain[0], max: domain[1] }
+            : {})
+        },
+        y: {
+          ...yScale,
+          afterFit: (scale) => {
+            scale.width = PLOT_GUTTER_LEFT;
+          }
+        }
       }
     },
     plugins: [cutLinePlugin()]

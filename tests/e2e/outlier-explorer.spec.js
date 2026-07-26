@@ -325,73 +325,73 @@ test.describe('safety.viz outlier-explorer module', () => {
     expect(result.containerText).toBe('');
   });
 
-  test('PPRF-OE-001/PPRF-OE-002: clicking a point opens the docked profile ALONGSIDE the linked listing (#99)', async ({
+  test('PPRF-OE-001/PPRF-OE-002: clicking a point opens the railed profile ALONGSIDE the linked listing (#99)', async ({
     page
   }) => {
     await page.evaluate(() => {
       const instance = window.__safetyOutlierExplorerInstance;
       instance.chart.options.onClick({}, [{ datasetIndex: 0, index: 0 }]);
     });
-    // Full docked profile: header id + configured profile_details.
-    await expect(page.locator('.sv-profile .sv-profile-id')).toHaveText('Participant SUBJ-001');
-    await expect(page.locator('.sv-profile .sv-profile-header')).toContainText('Placebo');
+    // Full railed profile: header id + configured profile_details.
+    await expect(page.locator('.sv-rail .sv-profile-id')).toHaveText('Participant SUBJ-001');
+    await expect(page.locator('.sv-rail .sv-profile-header')).toContainText('Placebo');
     // Single-select gesture: never a stepper.
-    await expect(page.locator('.sv-profile .sv-profile-step-count')).toHaveCount(0);
+    await expect(page.locator('.sv-rail .sv-profile-step-count')).toHaveCount(0);
     // The fixture's measures are non-key labs — they sit behind the module's
     // "show N additional measures" toggle; revealing them fills the table and
     // the spaghetti (the module-default key-measure map matches no fixture
     // TEST value).
-    await expect(page.locator('.sv-profile .sv-profile-extras')).toContainText(
+    await expect(page.locator('.sv-rail .sv-profile-extras')).toContainText(
       'Show 2 additional measures'
     );
-    await page.locator('.sv-profile .sv-profile-extras input').check();
-    await expect(page.locator('.sv-profile .sv-profile-measure-row:visible')).toHaveCount(2);
-    await expect(page.locator('.sv-profile .sv-profile-spaghetti canvas')).toBeVisible();
-    // The linked listing STAYS beside the dock (PPRF-11: records vs story).
+    await page.locator('.sv-rail .sv-profile-extras input').check();
+    await expect(page.locator('.sv-rail .sv-profile-measure-row:visible')).toHaveCount(2);
+    await expect(page.locator('.sv-rail .sv-profile-spaghetti canvas')).toBeVisible();
+    // The linked listing STAYS beside the rail (PPRF-11: records vs story).
     await expect(page.locator('.sv-listing table')).toBeVisible();
-    await captureEvidence(page, 'PPRF-OE-002', 'docked-profile');
+    await captureEvidence(page, 'PPRF-OE-002', 'railed-profile');
   });
 
-  test('PPRF-OE-003: background click and control changes empty the dock (#99)', async ({
+  test('PPRF-OE-003: background click and control changes empty the rail (#99)', async ({
     page
   }) => {
     await page.evaluate(() => {
       const instance = window.__safetyOutlierExplorerInstance;
       instance.chart.options.onClick({}, [{ datasetIndex: 0, index: 0 }]);
     });
-    await expect(page.locator('.sv-profile .sv-profile-id')).toHaveText('Participant SUBJ-001');
+    await expect(page.locator('.sv-rail .sv-profile-id')).toHaveText('Participant SUBJ-001');
 
-    // Background click → the shared clear path → the dock empties and the
+    // Background click → the shared clear path → the rail empties and the
     // shell's :empty rule hides the slot.
     await page.evaluate(() => {
       window.__safetyOutlierExplorerInstance.chart.options.onClick({}, []);
     });
-    await expect(page.locator('.sv-profile > *')).toHaveCount(0);
-    await expect(page.locator('.sv-profile')).toBeHidden();
+    await expect(page.locator('.sv-rail .sv-profile-root')).toHaveCount(0);
+    await expect(page.locator('.sv-rail .sv-profile-id')).toHaveCount(0);
 
     // Re-select, then drive a control change: the render preamble resets the
-    // selection AND the dock.
+    // selection AND the rail.
     await page.evaluate(() => {
       const instance = window.__safetyOutlierExplorerInstance;
       instance.chart.options.onClick({}, [{ datasetIndex: 0, index: 0 }]);
     });
-    await expect(page.locator('.sv-profile .sv-profile-id')).toHaveText('Participant SUBJ-001');
+    await expect(page.locator('.sv-rail .sv-profile-id')).toHaveText('Participant SUBJ-001');
     await page
       .locator('.sv-controls .sv-control', { has: page.locator('label:text-is("Sex")') })
       .locator('select')
       .selectOption('F');
-    await expect(page.locator('.sv-profile > *')).toHaveCount(0);
+    await expect(page.locator('.sv-rail .sv-profile-root')).toHaveCount(0);
   });
 
-  test('PPRF-OE-002: the dock Clear affordance routes through the host clear path (#99)', async ({
+  test('PPRF-OE-002: the rail Clear affordance routes through the host clear path (#99)', async ({
     page
   }) => {
     await page.evaluate(() => {
       const instance = window.__safetyOutlierExplorerInstance;
       instance.chart.options.onClick({}, [{ datasetIndex: 0, index: 0 }]);
     });
-    await page.locator('.sv-profile .sv-profile-clear').click();
-    await expect(page.locator('.sv-profile > *')).toHaveCount(0);
+    await page.locator('.sv-rail .sv-profile-clear').click();
+    await expect(page.locator('.sv-rail .sv-profile-root')).toHaveCount(0);
     const state = await page.evaluate(() => ({
       selectedId: window.__safetyOutlierExplorerInstance.state.selectedId,
       listing: document.querySelectorAll('.sv-listing table').length

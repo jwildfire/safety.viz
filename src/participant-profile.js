@@ -1,12 +1,19 @@
-// Public entrypoint for the participant-profile module (#98, obot.roadmap#45):
-// the shared eDISH-style drill-down — participant header, standardized-labs
-// spaghetti, measure table with sparklines + inset — as one module with two
-// mounts (PPRF-1). Standalone (this file's default factory) it renders the
-// house shell, ingests the standard long-lab contract through the shared
-// hep-core cleaners, and listens for `participantsSelected` on a configurable
-// target (PPRF-6). Docked (profileDock) it renders the same block into a host
-// chart's `sv-profile` shell slot, consumes the host's pre-cleaned rows
-// verbatim — no second ingest — and is driven imperatively via show/clear.
+// Public entrypoint for the participant-profile module (#98, obot.roadmap#45,
+// v2 obot.roadmap#75): the shared eDISH-style drill-down — participant header,
+// standardized-labs spaghetti, adverse-event tracks, measure table with
+// sparklines + inset — as one module with two mounts (PPRF-1).
+//
+// Standalone (this file's default factory) it renders the house shell, ingests
+// the standard long-lab contract through the shared hep-core cleaners, and
+// listens for `participantsSelected` on a configurable target (PPRF-6).
+//
+// Railed (profileRail) it renders into a host chart's `sv-rail` shell slot — a
+// right-hand rail opposite the control sidebar — consumes the host's
+// pre-cleaned rows verbatim (no second ingest) and is driven imperatively via
+// show/clear. The rail is v2's default surfacing (decision D1); it replaces the
+// dock below the chart, which is removed outright (decision D4) and reached
+// only by the shell's under-900px stacking.
+//
 // Outbound coordination is callbacks only (on_clear, on_step); the module
 // never dispatches a selection event. Class shape mirrors SafetyDeltaDelta
 // (init/setData/setSettings/render/resize/destroy).
@@ -33,6 +40,14 @@ import { renderMeasureTable, renderRecordListing } from './participant-profile/m
 import { renderStepper } from './participant-profile/stepper.js';
 import { displayControl, labControl } from './participant-profile/controls.js';
 import { applyProfileStyles } from './participant-profile/styles.js';
+import {
+  syncAeSettings,
+  cleanAeRecords,
+  participantEvents,
+  aeDomain,
+  unionDomain
+} from './participant-profile/ae.js';
+import { renderAeTracks } from './participant-profile/aeTracks.js';
 
 Chart.register(
   LineController,
@@ -43,6 +58,24 @@ Chart.register(
   Tooltip,
   Legend
 );
+
+/**
+ * The day span the visible lab series occupy — half of the union domain
+ * (PPRF-AXIS-001).
+ * @param {Object} spaghetti The spaghetti model ({ series }).
+ * @returns {?number[]} [min, max], or null when no series carries a finite day.
+ * @private
+ */
+function labDomain(spaghetti) {
+  const days = [];
+  ((spaghetti && spaghetti.series) || []).forEach((entry) => {
+    (entry.points || []).forEach((point) => {
+      if (Number.isFinite(point.day)) days.push(point.day);
+    });
+  });
+  if (!days.length) return null;
+  return [Math.min(...days), Math.max(...days)];
+}
 
 /**
  * Resolve the standalone event target (PPRF-6): an Element passes through, a
@@ -78,8 +111,8 @@ function listenTargetLabel(listenTo, target) {
  * at a time, with a worst-first cohort stepper when the selection holds more
  * (PPRF-5). Construct standalone via the participantProfile() factory (renders
  * the control shell, ingests raw long-lab records, listens for
- * participantsSelected) or docked via profileDock() (renders into a host
- * chart's profile slot, fed the host's pre-cleaned rows imperatively).
+ * participantsSelected) or railed via profileRail() (renders into a host
+ * chart's rail slot, fed the host's pre-cleaned rows imperatively).
  */
 class SafetyParticipantProfile {
   constructor(element = 'body', settings = {}, { mode = 'standalone' } = {}) {
@@ -102,23 +135,142 @@ class SafetyParticipantProfile {
       showExtras: false,
       labs: null,
       ids: [],
-      index: 0
+      index: 0,
+      expanded: false,
+      cohortOpen: false
     };
+    // The AE domain is opt-in: without settings.ae the profile is exactly the
+    // v1 lab-only block (PPRF-AE-001).
+    this.aeSettings = this.settings.ae ? syncAeSettings(this.settings.ae) : null;
+    this.aeEvents = [];
+    this.aeRemoved = 0;
+    if (this.aeSettings && Array.isArray(this.settings.ae.data)) {
+      this.setAeData(this.settings.ae.data);
+    }
     applyProfileStyles();
     if (this.mode === 'standalone') {
       this.renderChrome();
       this.listen();
       this.setIdle();
     } else {
-      this.profileHost = this.element;
+      this.renderRailChrome();
     }
   }
 
   /**
+   * Ingest adverse-event records once (PPRF-AE-002). Hosts that already hold
+   * cleaned AE rows may pass them here instead of through settings.ae.data;
+   * either way the cleaning runs once per call, never per gesture.
+   * @param {Object[]} records Raw adverse-event records.
+   * @returns {SafetyParticipantProfile} The instance, for chaining.
+   */
+  setAeData(records) {
+    if (!this.aeSettings) return this;
+    const { events, removed } = cleanAeRecords(records, this.aeSettings);
+    this.aeEvents = events;
+    this.aeRemoved = removed;
+    return this;
+  }
+
+  /**
+   * Build the rail chrome (decisions D1/D2/D3/D8): a header naming the current
+   * participant with Expand and Close, a stepper strip pinned so it survives
+   * scrolling the rail, and a scrolling body the profile block renders into.
+   * @private
+   */
+  renderRailChrome() {
+    this.element.innerHTML = '';
+    const rail = createElement('div', 'sv-profile-rail');
+
+    const head = createElement('div', 'sv-profile-rail-head');
+    const heading = createElement('div', 'sv-profile-rail-heading');
+    this.railTitle = createElement('h2', 'sv-profile-rail-title', 'Participant profile');
+    this.railSub = createElement('p', 'sv-profile-rail-sub', 'Nothing selected');
+    heading.append(this.railTitle, this.railSub);
+
+    const actions = createElement('div', 'sv-profile-rail-actions');
+    this.expandButton = createElement('button', 'sv-profile-rail-btn', 'Expand');
+    this.expandButton.type = 'button';
+    this.expandButton.setAttribute('data-sv-focus', 'rail-expand');
+    this.expandButton.setAttribute('aria-pressed', 'false');
+    this.expandButton.onclick = () => this.setExpanded(!this.state.expanded);
+    const close = createElement('button', 'sv-profile-rail-btn sv-profile-rail-close', '\u2715');
+    close.type = 'button';
+    close.setAttribute('aria-label', 'Close the participant profile');
+    close.setAttribute('data-sv-focus', 'rail-close');
+    close.onclick = () => this.handleClear();
+    actions.append(this.expandButton, close);
+    head.append(heading, actions);
+
+    this.stepperWrap = createElement('div', 'sv-profile-rail-stepper');
+    this.railBody = createElement('div', 'sv-profile-rail-body');
+    rail.append(head, this.stepperWrap, this.railBody);
+    // Idle, the rail takes no width at all — an empty 520px panel beside the
+    // chart is width the chart could be using. It appears on the first
+    // selection and disappears again on clear.
+    this.element.hidden = true;
+    this.element.append(rail);
+    this.railRoot = rail;
+    this.profileHost = this.railBody;
+
+    // Escape leaves the expanded state rather than trapping the reviewer in it
+    // (decision D3).
+    /** @private */
+    this.railKeyHandler = (event) => {
+      if (event.key === 'Escape' && this.state.expanded) {
+        event.stopPropagation();
+        this.setExpanded(false);
+      }
+    };
+    rail.addEventListener('keydown', this.railKeyHandler);
+  }
+
+  /**
+   * Expand the rail to fill the host renderer's own container, or collapse it
+   * back (decision D3). Deliberately NOT a viewport overlay or the native
+   * Fullscreen API: the same module has to behave identically inside a
+   * gsm.safety htmlwidget and an open.gismo panel, where escaping the container
+   * is either impossible or rude.
+   * @param {boolean} expanded The target state.
+   * @returns {SafetyParticipantProfile} The instance, for chaining.
+   */
+  setExpanded(expanded) {
+    const next = Boolean(expanded);
+    this.state.expanded = next;
+    const shellRoot = this.element.closest ? this.element.closest('.sv-root') : null;
+    if (shellRoot) shellRoot.classList.toggle('sv-rail-expanded', next);
+    if (this.railRoot) this.railRoot.classList.toggle('is-expanded', next);
+    if (this.expandButton) {
+      this.expandButton.textContent = next ? 'Collapse' : 'Expand';
+      this.expandButton.setAttribute('aria-pressed', String(next));
+    }
+    this.resize();
+    return this;
+  }
+
+  /**
+   * Update the rail header for the current selection.
+   * @private
+   */
+  updateRailHead() {
+    if (!this.railTitle) return;
+    const id = this.state.ids[this.state.index];
+    this.railTitle.textContent = id === undefined ? 'Participant profile' : String(id);
+    this.railSub.textContent =
+      id === undefined
+        ? 'Nothing selected'
+        : this.state.ids.length > 1
+          ? `${this.state.ids.length} selected \u00b7 stepping worst first`
+          : 'Selected from the chart';
+    if (this.railRoot) this.railRoot.classList.toggle('is-empty', id === undefined);
+    this.element.hidden = id === undefined;
+  }
+
+  /**
    * Build the standalone shell chrome: the shared sidebar/main layout with the
-   * chart card hidden (the profile block owns the main column via the
-   * profileWrap slot — the per-view slot-visibility precedent from
-   * hep-explorer).
+   * chart card hidden, the profile block owning the main column. The rail slot
+   * stays empty here — standalone IS the expanded reading, so there is nothing
+   * to put beside itself.
    * @private
    */
   renderChrome() {
@@ -130,7 +282,8 @@ class SafetyParticipantProfile {
       })
     );
     this.chartWrap.style.display = 'none';
-    this.profileHost = this.profileWrap;
+    this.profileHost = createElement('div', 'sv-profile');
+    this.main.insertBefore(this.profileHost, this.multiplesWrap);
   }
 
   /**
@@ -289,9 +442,14 @@ class SafetyParticipantProfile {
     this.state.index = 0;
     this.profileHost.innerHTML = '';
     this.liveRegion = null;
+    if (this.stepperWrap) this.stepperWrap.innerHTML = '';
     if (this.mode === 'standalone') {
       if (this.controls) this.controls.innerHTML = '';
       this.setIdle();
+    } else {
+      this.state.expanded = false;
+      this.setExpanded(false);
+      this.updateRailHead();
     }
     return this;
   }
@@ -304,7 +462,7 @@ class SafetyParticipantProfile {
    * @private
    */
   handleClear() {
-    if (this.mode === 'dock') {
+    if (this.mode === 'rail') {
       if (this.settings.on_clear) this.settings.on_clear();
       else this.clear();
       return;
@@ -351,7 +509,9 @@ class SafetyParticipantProfile {
     const activeEl = typeof document !== 'undefined' ? document.activeElement : null;
     const ownsFocus =
       activeEl &&
-      (this.profileHost.contains(activeEl) || (this.controls && this.controls.contains(activeEl)));
+      (this.profileHost.contains(activeEl) ||
+        (this.stepperWrap && this.stepperWrap.contains(activeEl)) ||
+        (this.controls && this.controls.contains(activeEl)));
     const focusKey = ownsFocus ? activeEl.getAttribute('data-sv-focus') : null;
 
     this.destroyContent();
@@ -370,20 +530,54 @@ class SafetyParticipantProfile {
     const model = buildProfileModel(this.cleanRows, id, this.settings, this.state);
     this.model = model;
 
+    this.aeRows = this.aeSettings ? participantEvents(this.aeEvents, id) : [];
+    // With no laboratory records the header has nothing to read its
+    // demographics from, so the AE records stand in — they carry the same
+    // participant-level columns.
+    if (!model.spaghetti.series.length && this.aeRows.length) {
+      const first = this.aeRows[0];
+      model.participant.details = (this.settings.details || []).map((spec) => ({
+        label: spec.label,
+        value: first[spec.value_col]
+      }));
+    }
+
     const root = createElement('div', 'sv-profile-root');
     root.setAttribute('role', 'region');
     root.setAttribute('aria-label', `Participant ${id} profile`);
     this.profileHost.append(root);
 
-    if (this.state.ids.length > 1) {
-      root.append(
-        renderStepper(this.state.ids, this.state.index, { onStep: (index) => this.step(index) })
-      );
+    // The cohort stepper is pinned to the rail head rather than drawn inside
+    // the scrolling block (decision D8) — in a rail it would otherwise leave
+    // the viewport the moment the reviewer reaches the measure table.
+    const stepper =
+      this.state.ids.length > 1
+        ? renderStepper(this.state.ids, this.state.index, {
+            onStep: (index) => this.step(index),
+            onToggleList: () => {
+              this.state.cohortOpen = !this.state.cohortOpen;
+              this.renderProfile();
+            },
+            listOpen: this.state.cohortOpen,
+            ranked: this.state.cohortOpen ? this.cohortRows() : null
+          })
+        : null;
+    if (this.stepperWrap) {
+      this.stepperWrap.innerHTML = '';
+      if (stepper) this.stepperWrap.append(stepper);
+    } else if (stepper) {
+      root.append(stepper);
     }
 
     root.append(
       renderHeader(model.participant, this.settings, { onClear: () => this.handleClear() })
     );
+
+    // The lab domain is optional in v2 (decision D9): ae-explorer and
+    // ae-timelines mount the profile with adverse events and no laboratory
+    // records at all, and the block reads as the AE story rather than as an
+    // empty spaghetti and an empty table.
+    const hasLabs = model.spaghetti.series.length > 0;
 
     // The Measures control lists only the AVAILABLE measures — extras join the
     // list when the extras toggle reveals them — so its selection state always
@@ -391,22 +585,42 @@ class SafetyParticipantProfile {
     const keys = model.spaghetti.series
       .filter((entry) => this.state.showExtras || entry.isKey)
       .map((entry) => entry.key);
-    if (this.mode === 'dock') root.append(this.buildInlineControls(keys));
-    else this.buildSidebarControls(keys);
+    if (hasLabs) {
+      if (this.mode === 'rail') root.append(this.buildInlineControls(keys));
+      else this.buildSidebarControls(keys);
+    } else if (this.mode === 'standalone' && this.controls) {
+      this.controls.innerHTML = '';
+    }
 
-    this.spaghettiHost = createElement('div', 'sv-profile-spaghetti');
-    root.append(this.spaghettiHost);
-    this.drawSpaghetti();
+    // The shared study-day domain (decision D7): labs and adverse events
+    // rescale together so an event running past the last lab draw stays
+    // visible instead of clipping at the edge.
+    this.domain = this.aeSettings
+      ? unionDomain(labDomain(model.spaghetti), aeDomain(this.aeRows))
+      : null;
 
-    this.tableController = renderMeasureTable(root, model.measures, this.settings, this.state, {
-      // The extras toggle changes both the table AND the control surface
-      // (Measures options, spaghetti series), so it re-renders the block;
-      // focus restoration keeps the checkbox focused (PPRF-8).
-      onToggleExtras: (showExtras) => {
-        this.state.showExtras = showExtras;
-        this.renderProfile();
-      }
-    });
+    if (hasLabs) {
+      this.spaghettiHost = createElement('div', 'sv-profile-spaghetti');
+      root.append(this.spaghettiHost);
+      this.drawSpaghetti();
+    }
+
+    // Directly under the labs chart, before the measure table (decision D5):
+    // the shared axis only pays off if the two time tracks touch.
+    if (this.aeSettings) {
+      root.append(renderAeTracks(this.aeRows, this.domain, this.aeSettings));
+    }
+
+    if (hasLabs)
+      this.tableController = renderMeasureTable(root, model.measures, this.settings, this.state, {
+        // The extras toggle changes both the table AND the control surface
+        // (Measures options, spaghetti series), so it re-renders the block;
+        // focus restoration keeps the checkbox focused (PPRF-8).
+        onToggleExtras: (showExtras) => {
+          this.state.showExtras = showExtras;
+          this.renderProfile();
+        }
+      });
 
     if (this.settings.listing) {
       const participantRows = this.cleanRows.filter(
@@ -424,7 +638,24 @@ class SafetyParticipantProfile {
     const n = this.state.ids.length;
     this.liveRegion.textContent =
       n > 1 ? `Participant ${id}, ${this.state.index + 1} of ${n}` : `Participant ${id}`;
+    this.updateRailHead();
     this.restoreFocus(focusKey);
+  }
+
+  /**
+   * The ranked cohort as rows for the stepper's expandable list (decision D8):
+   * every selected participant, worst-first, with the current one marked — so
+   * "which twelve am I stepping through?" is answerable without leaving the
+   * rail.
+   * @returns {Array<{id: string, index: number, current: boolean}>} The rows.
+   * @private
+   */
+  cohortRows() {
+    return this.state.ids.map((id, index) => ({
+      id: String(id),
+      index,
+      current: index === this.state.index
+    }));
   }
 
   /**
@@ -439,6 +670,10 @@ class SafetyParticipantProfile {
     if (!focusKey) return;
     const find = (key) =>
       this.profileHost.querySelector(`[data-sv-focus="${key}"]`) ||
+      // The stepper is pinned outside the block in the rail (decision D8), so
+      // focus restoration has to look there too or a keyboard user loses the
+      // strip on every step.
+      (this.stepperWrap ? this.stepperWrap.querySelector(`[data-sv-focus="${key}"]`) : null) ||
       (this.controls ? this.controls.querySelector(`[data-sv-focus="${key}"]`) : null);
     let target = find(focusKey);
     if (target && target.disabled) target = find('stepper') || target;
@@ -455,7 +690,12 @@ class SafetyParticipantProfile {
     this.spaghettiChart = null;
     if (!this.spaghettiHost || !this.model) return;
     this.spaghettiHost.innerHTML = '';
-    this.spaghettiChart = renderSpaghetti(this.spaghettiHost, this.model.spaghetti, this.state);
+    this.spaghettiChart = renderSpaghetti(
+      this.spaghettiHost,
+      this.model.spaghetti,
+      this.state,
+      this.domain
+    );
   }
 
   /**
@@ -558,6 +798,8 @@ class SafetyParticipantProfile {
    */
   destroy() {
     this.destroyContent();
+    if (this.railRoot && this.railKeyHandler)
+      this.railRoot.removeEventListener('keydown', this.railKeyHandler);
     if (this.listenTarget && this.listenHandler)
       this.listenTarget.removeEventListener('participantsSelected', this.listenHandler);
     this.listenTarget = null;
@@ -584,17 +826,21 @@ export default function participantProfile(element = 'body', data = null, settin
 }
 
 /**
- * Create a docked participant profile inside a host chart's profile slot
- * (PPRF-1): no shell, no ingest, no event listener. The host drives it
- * imperatively — `show(ids, cleanRows)` with its own retained pre-cleaned rows
- * (carrying the __hep_* columns), `clear()` to empty the slot (which then
- * auto-hides), plus `resize()`/`destroy()`. Clear and stepper navigation
- * report through settings.on_clear / settings.on_step.
- * @param {string|HTMLElement} container The host's profile slot (e.g. the shell's profileWrap).
+ * Create a railed participant profile inside a host chart's rail slot
+ * (PPRF-1, decision D1): no shell, no ingest, no event listener. The host
+ * drives it imperatively — `show(ids, cleanRows)` with its own retained
+ * pre-cleaned rows (carrying the __hep_* columns), `clear()` to empty the rail
+ * (which then auto-hides), plus `resize()`/`destroy()`. Clear and stepper
+ * navigation report through settings.on_clear / settings.on_step.
+ *
+ * This replaces v1's `profileDock`: the dock below the chart is removed
+ * outright (decision D4), and under the shell's 900px breakpoint the rail
+ * stacks below the main column, which is where the dock used to be.
+ * @param {string|HTMLElement} container The host's rail slot (the shell's railWrap).
  * @param {Object} [settings={}] Setting overrides, merged onto DEFAULT_SETTINGS and normalized.
- * @returns {SafetyParticipantProfile} The live dock instance.
+ * @returns {SafetyParticipantProfile} The live rail instance.
  * @throws {Error} When no element matches the container selector.
  */
-export function profileDock(container, settings = {}) {
-  return new SafetyParticipantProfile(container, settings, { mode: 'dock' });
+export function profileRail(container, settings = {}) {
+  return new SafetyParticipantProfile(container, settings, { mode: 'rail' });
 }

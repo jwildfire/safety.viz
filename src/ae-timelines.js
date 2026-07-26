@@ -16,6 +16,7 @@ import {
 } from 'chart.js';
 
 import { controlBuilders, createElement, option, renderShell } from './shell.js';
+import { mountProfileRail, syncProfileRail, unmountProfileRail } from './profile-host.js';
 import { SORT_OPTIONS, syncSettings } from './ae-timelines/configure.js';
 import { checkInputs } from './ae-timelines/checkInputs.js';
 import {
@@ -67,6 +68,45 @@ class AETimelines {
       sort: this.settings.sort_participants
     };
     this.renderShell();
+    // The participant profile in the rail (obot.roadmap#75 decision D9). The AE
+    // renderers were deferred in #45 because the profile had no AE domain;
+    // building it removed the reason, and these records are exactly what the AE
+    // adapter reads. There are no laboratory rows here, so the profile renders
+    // as the AE story alone.
+    this.profileRows = [];
+    mountProfileRail(this, () => this.profileSettings(), { target: this.element });
+  }
+
+  /**
+   * The settings handed to the railed participant-profile module: this
+   * renderer's own AE mapping, passed through so the profile reads the same
+   * records with the same severity scale and serious flag.
+   * @returns {Object} The profile pass-through settings.
+   * @private
+   */
+  profileSettings() {
+    return {
+      id_col: this.settings.id_col,
+      details: this.settings.profile_details,
+      on_clear: () => this.backToTimelines(),
+      ae: {
+        data: this.rawData,
+        id_col: this.settings.id_col,
+        term_col: this.settings.term_col,
+        stdy_col: this.settings.stdy_col,
+        endy_col: this.settings.endy_col,
+        color: {
+          value_col: this.settings.color.value_col,
+          values: this.settings.color.values
+        },
+        highlight: this.settings.highlight
+          ? {
+              value_col: this.settings.highlight.value_col,
+              value: this.settings.highlight.value
+            }
+          : null
+      }
+    };
   }
 
   /**
@@ -128,6 +168,10 @@ class AETimelines {
     this.rawData = Array.isArray(data) ? data : [];
     this.validateAndCleanData();
     this.buildControls();
+    // One AE ingest per setData, never per gesture — the profile's own rule,
+    // kept here because the host owns the records.
+    syncProfileRail(this, () => this.profileSettings());
+    if (this.profile) this.profile.setAeData(this.rawData);
     this.render();
     return this;
   }
@@ -463,6 +507,7 @@ class AETimelines {
    * @returns {void}
    */
   destroy() {
+    unmountProfileRail(this);
     this.destroyCharts();
     this.element.innerHTML = '';
   }

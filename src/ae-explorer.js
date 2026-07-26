@@ -33,6 +33,7 @@ import {
   summaryCsv
 } from './ae-explorer/getPlugins.js';
 import { renderListing } from './histogram/listing.js';
+import { mountProfileRail, syncProfileRail, unmountProfileRail } from './profile-host.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const NO_MATCH_MESSAGE =
@@ -117,6 +118,18 @@ class AEExplorer {
       expanded: new Set()
     };
     this.renderShellChrome();
+    // The participant profile in the rail (obot.roadmap#75 decision D9), fed
+    // from the details listing's existing row-focus affordance. No laboratory
+    // rows here, so the profile reads as the AE story alone.
+    this.profileRows = [];
+    this.listingSelectedId = null;
+    /**
+     * The shared listing's row-focus hook: clicking a details row focuses that
+     * participant (AE-REG-024 + obot.roadmap#75 decision D9).
+     * @private
+     */
+    this.onListingRowClick = (row) => this.focusParticipant(row[this.settings.id_col]);
+    mountProfileRail(this, () => this.profileSettings());
   }
 
   /**
@@ -193,8 +206,52 @@ class AEExplorer {
     this.validateAndCleanData();
     this.seedFilterState();
     this.buildControls();
+    syncProfileRail(this, () => this.profileSettings());
+    if (this.profile) this.profile.setAeData(this.rawData);
     this.render();
     return this;
+  }
+
+  /**
+   * The settings handed to the railed participant-profile module: this
+   * renderer's own AE mapping passed through, so the profile reads the same
+   * records the table counts.
+   * @returns {Object} The profile pass-through settings.
+   * @private
+   */
+  profileSettings() {
+    return {
+      id_col: this.settings.id_col,
+      details: this.settings.profile_details || [],
+      on_clear: () => this.focusParticipant(null),
+      ae: {
+        data: this.rawData,
+        id_col: this.settings.id_col,
+        major_col: this.settings.major_col,
+        minor_col: this.settings.minor_col,
+        ...(this.settings.profile_ae || {})
+      }
+    };
+  }
+
+  /**
+   * Focus one participant (or none) and tell the page: the house
+   * `participantsSelected` event on the shell root, which is what feeds the
+   * rail. The listing highlights the focused rows.
+   * @param {?(string|number)} id The participant id, or null to clear.
+   * @returns {void}
+   * @private
+   */
+  focusParticipant(id) {
+    this.listingSelectedId = id === undefined ? null : id;
+    this.participantsSelected = this.listingSelectedId === null ? [] : [String(id)];
+    renderListing(this);
+    this.root.dispatchEvent(
+      new CustomEvent('participantsSelected', {
+        detail: { data: this.participantsSelected },
+        bubbles: true
+      })
+    );
   }
 
   /**
@@ -922,6 +979,7 @@ class AEExplorer {
    * @returns {void}
    */
   destroy() {
+    unmountProfileRail(this);
     this.charts.forEach((chart) => chart.destroy());
     this.charts = [];
     this.element.innerHTML = '';

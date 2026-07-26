@@ -1,6 +1,6 @@
 {
   "module": "hep-explorer",
-  "generatedAt": "2026-07-25T03:42:04.181Z",
+  "generatedAt": "2026-07-26T02:24:23.094Z",
   "environment": {
     "os": "linux 6.17.0-1020-azure",
     "node": "v22.23.1",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "30142710565",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/30142710565"
+    "id": "30184486512",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/30184486512"
   },
   "records": [
     {
@@ -404,7 +404,7 @@
       "screenshots": ["HEP-QUAD-008-quadrant-meanings-and-legend-counts.png"]
     },
     {
-      "test": "HEP-SELECT-001/HEP-SELECT-002/HEP-SELECT-003/HEP-SELECT-005/HEP-SELECT-006: clicking a point draws the visit path, docked profile, and linked listing (#43, #98)",
+      "test": "HEP-SELECT-001/HEP-SELECT-002/HEP-SELECT-003/HEP-SELECT-005/HEP-SELECT-006: clicking a point draws the visit path, railed profile, and linked listing (#43, #98)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": [
@@ -418,7 +418,7 @@
       "screenshots": ["HEP-SELECT-001-participant-detail.png"]
     },
     {
-      "test": "HEP-SELECT-002: selecting a second participant without a background click re-renders the dock without leaking Chart.js instances (#43, #98)",
+      "test": "HEP-SELECT-002: selecting a second participant without a background click re-renders the rail without leaking Chart.js instances (#43, #98)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["HEP-SELECT-002"],
@@ -434,7 +434,7 @@
       "screenshots": []
     },
     {
-      "test": "HEP-SELECT-007: clicking the background clears the selection, docked profile, and listing (#43, #98)",
+      "test": "HEP-SELECT-007: clicking the background clears the selection, railed profile, and listing (#43, #98)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["HEP-SELECT-007"],
@@ -658,7 +658,7 @@
       "screenshots": []
     },
     {
-      "test": "dock coordination follows live control state (PPRF-7, PPRF-HEP-001) profile_details overrides the shared details knob for the dock header (PPRF-2)",
+      "test": "dock coordination follows live control state (PPRF-7, PPRF-HEP-001) profile_details overrides the shared details knob for the rail header (PPRF-2)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["PPRF-HEP-001"],
@@ -666,7 +666,7 @@
       "screenshots": []
     },
     {
-      "test": "dock coordination follows live control state (PPRF-7, PPRF-HEP-001) the Axis-type control reaches the dock spaghetti (drawDetail log-axis parity)",
+      "test": "dock coordination follows live control state (PPRF-7, PPRF-HEP-001) the Axis-type control reaches the rail spaghetti (drawDetail log-axis parity)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["PPRF-HEP-001"],
@@ -674,7 +674,7 @@
       "screenshots": []
     },
     {
-      "test": "dock coordination follows live control state (PPRF-7, PPRF-HEP-001) user-edited reference cuts reach the dock on the control-driven redraw",
+      "test": "dock coordination follows live control state (PPRF-7, PPRF-HEP-001) user-edited reference cuts reach the rail on the control-driven redraw",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["PPRF-HEP-001"],
@@ -2226,7 +2226,7 @@
       "screenshots": []
     },
     {
-      "test": "hep-explorer participant-profile adoption (PPRF-7, PPRF-HEP-001) a control-driven redraw re-feeds the dock with fresh rows (the guard resets per render)",
+      "test": "hep-explorer participant-profile adoption (PPRF-7, PPRF-HEP-001) a control-driven redraw re-feeds the rail with fresh rows (the guard resets per render)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["PPRF-HEP-001"],
@@ -2234,7 +2234,7 @@
       "screenshots": []
     },
     {
-      "test": "hep-explorer participant-profile adoption (PPRF-7, PPRF-HEP-001) a multi-participant dispatch collapses the dock to the worst-first stepper (PPRF-5)",
+      "test": "hep-explorer participant-profile adoption (PPRF-7, PPRF-HEP-001) a multi-participant dispatch collapses the rail to the worst-first stepper (PPRF-5)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["PPRF-HEP-001"],
@@ -2242,7 +2242,7 @@
       "screenshots": []
     },
     {
-      "test": "hep-explorer participant-profile adoption (PPRF-7, PPRF-HEP-001) an empty dispatch hides the dock; the dock Clear routes through the host clear path (PPRF-2/6)",
+      "test": "hep-explorer participant-profile adoption (PPRF-7, PPRF-HEP-001) an empty dispatch hides the rail; the rail Clear routes through the host clear path (PPRF-2/6)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["PPRF-HEP-001"],
@@ -2258,7 +2258,7 @@
       "screenshots": []
     },
     {
-      "test": "hep-explorer participant-profile adoption (PPRF-7, PPRF-HEP-001) destroy tears the dock down with the rest of the instance",
+      "test": "hep-explorer participant-profile adoption (PPRF-7, PPRF-HEP-001) destroy tears the rail down with the rest of the instance",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["PPRF-HEP-001"],
@@ -2274,7 +2274,7 @@
       "screenshots": []
     },
     {
-      "test": "hep-explorer participant-profile adoption (PPRF-7, PPRF-HEP-001) mounts the dock by default and a scatter click renders the full profile in the shell slot",
+      "test": "hep-explorer participant-profile adoption (PPRF-7, PPRF-HEP-001) mounts the rail by default and a scatter click renders the full profile in the shell slot",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["PPRF-HEP-001"],
@@ -2786,26 +2786,58 @@
       "screenshots": []
     },
     {
-      "test": "renderShell profile slot (PPRF-1) exposes a profileWrap slot with the sv-profile class inside the main column",
+      "test": "renderShell rail slot (PPRF-RAIL-001) exposes a railWrap slot with the sv-rail class",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": [],
+      "requirementIds": ["PPRF-RAIL-001"],
       "issueRefs": [],
       "screenshots": []
     },
     {
-      "test": "renderShell profile slot (PPRF-1) hides the slot while it is empty via the shared stylesheet",
+      "test": "renderShell rail slot (PPRF-RAIL-001) gives the rail a settable width and the root a positioning context for expand",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": [],
+      "requirementIds": ["PPRF-RAIL-001"],
       "issueRefs": [],
       "screenshots": []
     },
     {
-      "test": "renderShell profile slot (PPRF-1) places the slot between the small-multiples grid and the listing",
+      "test": "renderShell rail slot (PPRF-RAIL-001) hides the rail while it is empty via the shared stylesheet",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": [],
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) honours [hidden] on the rail, which the module sets while it is idle",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) no longer carries the dock slot inside the main column (D4)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) puts the rail opposite the control sidebar, with the chart between them (D2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) stacks the rail below the main column under the shell breakpoint (D4)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
       "issueRefs": [],
       "screenshots": []
     },

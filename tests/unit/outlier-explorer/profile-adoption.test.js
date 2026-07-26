@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 // outlier-explorer adopts the participant-profile dock (#99, PPRF-10/11): the
 // chart's existing point-click selection path — selectParticipant →
-// dispatchSelection on the shell root (SOE-API-003) — feeds the docked module
+// dispatchSelection on the shell root (SOE-API-003) — feeds the railed module
 // with no new gesture, SUPPLEMENTING the linked listing rather than replacing
 // it (records vs story). These tests prove the wiring at the orchestrator
 // level: config-on mount + one-ingest feed rows, click → full profile beside
@@ -58,22 +58,22 @@ function build(settings = {}) {
 }
 
 describe('outlier-explorer participant-profile adoption (PPRF-OE-001)', () => {
-  it('PPRF-OE-001: mounts the dock by default (config-on) into the shell profile slot', () => {
+  it('PPRF-OE-001: mounts the rail by default (config-on) into the shell profile slot', () => {
     const instance = build();
     expect(instance.profile).toBeTruthy();
-    expect(instance.profileWrap.children).toHaveLength(0); // idle until a selection
+    expect(instance.railWrap.querySelector('.sv-profile-root')).toBeNull(); // idle until a selection
   });
 
   it('PPRF-OE-001: profile: false leaves the slot empty and mounts no dock', () => {
     const instance = build({ profile: false });
     expect(instance.profile).toBeNull();
     instance.selectParticipant('P1');
-    expect(instance.profileWrap.children).toHaveLength(0);
+    expect(instance.railWrap.querySelector('.sv-profile-root')).toBeNull();
   });
 
-  it('PPRF-OE-001: derives the dock feed rows ONCE per setData through the hep-core cleaners', () => {
+  it('PPRF-OE-001: derives the rail feed rows ONCE per setData through the hep-core cleaners', () => {
     const rows = makeRows();
-    // A row without a usable ULN never reaches the dock (the ×ULN denominator).
+    // A row without a usable ULN never reaches the rail (the ×ULN denominator).
     rows.push({ USUBJID: 'P9', TEST: ALT_TEST, STRESN: 50, STNRHI: '' });
     const instance = outlierExplorer(document.querySelector('#host'), {});
     instance.init(rows);
@@ -81,7 +81,7 @@ describe('outlier-explorer participant-profile adoption (PPRF-OE-001)', () => {
     expect(instance.profileRows.every((row) => Number.isFinite(row.__hep_relative_uln))).toBe(true);
   });
 
-  it('PPRF-OE-001: passes the host lab mappings and profile_details through to the dock', () => {
+  it('PPRF-OE-001: passes the host lab mappings and profile_details through to the rail', () => {
     const instance = build({
       studyday_col: 'DY',
       visit_col: 'VISIT',
@@ -97,22 +97,22 @@ describe('outlier-explorer participant-profile adoption (PPRF-OE-001)', () => {
     expect(instance.profile.settings.participantProfileURL).toBe('https://x.test/{id}');
   });
 
-  it('PPRF-OE-001: host listing columns are NOT the dock header details (profile_details defaults empty)', () => {
+  it('PPRF-OE-001: host listing columns are NOT the rail header details (profile_details defaults empty)', () => {
     const instance = build();
     // The host `details` default to listing columns (time/result/limits) —
-    // per-row fields, not demographics — so the dock header shows none.
+    // per-row fields, not demographics — so the rail header shows none.
     expect(instance.profile.settings.details).toEqual([]);
   });
 });
 
 describe('outlier-explorer dock gesture contract (PPRF-OE-002, PPRF-11)', () => {
-  it('PPRF-OE-002: a point click feeds the dock the full profile AND keeps the linked listing', () => {
+  it('PPRF-OE-002: a point click feeds the rail the full profile AND keeps the linked listing', () => {
     const instance = build({ studyday_col: 'DY' });
     instance.selectParticipant('P1');
     // Full profile, no stepper (single-select gesture).
-    expect(instance.profileWrap.querySelector('.sv-profile-id').textContent).toBe('Participant P1');
-    expect(instance.profileWrap.querySelector('.sv-profile-measure-table')).not.toBeNull();
-    expect(instance.profileWrap.querySelector('.sv-profile-step-count')).toBeNull();
+    expect(instance.railWrap.querySelector('.sv-profile-id').textContent).toBe('Participant P1');
+    expect(instance.railWrap.querySelector('.sv-profile-measure-table')).not.toBeNull();
+    expect(instance.railWrap.querySelector('.sv-profile-step-count')).toBeNull();
     // The linked listing stays — records vs story (PPRF-11 linked-listings-stay).
     expect(instance.listingWrap.querySelector('table')).not.toBeNull();
     // And the chart overlay still highlights the participant.
@@ -136,17 +136,17 @@ describe('outlier-explorer dock gesture contract (PPRF-OE-002, PPRF-11)', () => 
       heard.push(event.detail.data)
     );
     // A root-level dispatch the host did not originate (the shared-selector
-    // shape, #87) — the dock collapses to the worst-first stepper.
+    // shape, #87) — the rail collapses to the worst-first stepper.
     instance.root.dispatchEvent(
       new CustomEvent('participantsSelected', { detail: { data: ['P3', 'P1'] }, bubbles: true })
     );
-    expect(instance.profileWrap.querySelector('.sv-profile-step-count').textContent).toContain(
+    expect(instance.railWrap.querySelector('.sv-profile-step-count').textContent).toContain(
       '1 of 2'
     );
     const heardBefore = heard.length;
-    instance.profileWrap.querySelector('.sv-profile-step-next').click();
+    instance.railWrap.querySelector('.sv-profile-step-next').click();
     // The step re-rendered the profile for the next participant…
-    const steppedId = instance.profileWrap
+    const steppedId = instance.railWrap
       .querySelector('.sv-profile-id')
       .textContent.replace('Participant ', '');
     // …emphasized ONLY that participant's series on the chart…
@@ -161,32 +161,32 @@ describe('outlier-explorer dock gesture contract (PPRF-OE-002, PPRF-11)', () => 
   it('PPRF-OE-002: is idempotent under repeated identical dispatches', () => {
     const instance = build();
     instance.selectParticipant('P1');
-    const rootBefore = instance.profileWrap.querySelector('.sv-profile-root');
+    const rootBefore = instance.railWrap.querySelector('.sv-profile-root');
     instance.dispatchSelection(['P1']);
-    expect(instance.profileWrap.querySelector('.sv-profile-root')).toBe(rootBefore);
+    expect(instance.railWrap.querySelector('.sv-profile-root')).toBe(rootBefore);
   });
 });
 
-describe('outlier-explorer dock clear paths (PPRF-OE-003, PPRF-11)', () => {
-  it('PPRF-OE-003: a background click (clearSelection) empties the dock', () => {
+describe('outlier-explorer rail clear paths (PPRF-OE-003, PPRF-11)', () => {
+  it('PPRF-OE-003: a background click (clearSelection) empties the rail', () => {
     const instance = build();
     instance.selectParticipant('P1');
-    expect(instance.profileWrap.children.length).toBeGreaterThan(0);
+    expect(instance.railWrap.querySelector('.sv-profile-root')).not.toBeNull();
     instance.clearSelection();
-    expect(instance.profileWrap.children).toHaveLength(0);
+    expect(instance.railWrap.querySelector('.sv-profile-root')).toBeNull();
   });
 
-  it('PPRF-OE-003: the dock Clear affordance routes through the host clear path', () => {
+  it('PPRF-OE-003: the rail Clear affordance routes through the host clear path', () => {
     const instance = build();
     const heard = [];
     instance.root.addEventListener('participantsSelected', (event) =>
       heard.push(event.detail.data)
     );
     instance.selectParticipant('P1');
-    instance.profileWrap.querySelector('.sv-profile-clear').click();
+    instance.railWrap.querySelector('.sv-profile-clear').click();
     expect(instance.state.selectedId).toBeNull();
     expect(instance.listingWrap.innerHTML).toBe('');
-    expect(instance.profileWrap.children).toHaveLength(0);
+    expect(instance.railWrap.querySelector('.sv-profile-root')).toBeNull();
     expect(heard.at(-1)).toEqual([]);
   });
 
@@ -196,35 +196,35 @@ describe('outlier-explorer dock clear paths (PPRF-OE-003, PPRF-11)', () => {
     instance.root.addEventListener('participantsSelected', (event) =>
       heard.push(event.detail.data)
     );
-    // External root dispatch: state.selectedId stays null, but the dock fills.
+    // External root dispatch: state.selectedId stays null, but the rail fills.
     instance.root.dispatchEvent(
       new CustomEvent('participantsSelected', { detail: { data: ['P1', 'P2'] }, bubbles: true })
     );
-    expect(instance.profileWrap.children.length).toBeGreaterThan(0);
+    expect(instance.railWrap.querySelector('.sv-profile-root')).not.toBeNull();
     expect(instance.state.selectedId).toBeNull();
     // Clear must still clear — the empty dispatch travels even with nothing
     // host-side selected (the F1 regression: clearSelection's early return).
-    instance.profileWrap.querySelector('.sv-profile-clear').click();
-    expect(instance.profileWrap.children).toHaveLength(0);
+    instance.railWrap.querySelector('.sv-profile-clear').click();
+    expect(instance.railWrap.querySelector('.sv-profile-root')).toBeNull();
     expect(heard.at(-1)).toEqual([]);
     // And any transient stepper emphasis is gone.
     expect(instance.overlayMeta).toHaveLength(0);
   });
 
-  it('PPRF-OE-003: a control-driven render resets the selection AND the dock (render preamble)', () => {
+  it('PPRF-OE-003: a control-driven render resets the selection AND the rail (render preamble)', () => {
     const instance = build();
     instance.selectParticipant('P1');
-    expect(instance.profileWrap.children.length).toBeGreaterThan(0);
-    // Controls reset selection silently on render — the dock must not go stale.
+    expect(instance.railWrap.querySelector('.sv-profile-root')).not.toBeNull();
+    // Controls reset selection silently on render — the rail must not go stale.
     instance.render();
     expect(instance.state.selectedId).toBeNull();
-    expect(instance.profileWrap.children).toHaveLength(0);
-    // And the guard reset means the next identical selection re-feeds the dock.
+    expect(instance.railWrap.querySelector('.sv-profile-root')).toBeNull();
+    // And the guard reset means the next identical selection re-feeds the rail.
     instance.selectParticipant('P1');
-    expect(instance.profileWrap.querySelector('.sv-profile-id').textContent).toBe('Participant P1');
+    expect(instance.railWrap.querySelector('.sv-profile-id').textContent).toBe('Participant P1');
   });
 
-  it('PPRF-OE-003: destroy tears the dock down with the instance', () => {
+  it('PPRF-OE-003: destroy tears the rail down with the instance', () => {
     const instance = build();
     instance.selectParticipant('P1');
     instance.destroy();
@@ -237,7 +237,7 @@ describe('outlier-explorer dock clear paths (PPRF-OE-003, PPRF-11)', () => {
     instance.selectParticipant('P1');
     instance.setSettings({ profile: false });
     expect(instance.profile).toBeNull();
-    expect(instance.profileWrap.children).toHaveLength(0);
+    expect(instance.railWrap.querySelector('.sv-profile-root')).toBeNull();
     instance.setSettings({ profile: true });
     expect(instance.profile).toBeTruthy();
   });

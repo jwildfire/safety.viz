@@ -1,7 +1,11 @@
-// The cohort stepper for the participant-profile module (#98, PPRF-5): when a
-// selection holds more than one participant, a header-adjacent strip
-// `◀ k of N · id ▶` walks the worst-first cohort (rankParticipants,
-// structureData.js), rendering the full profile for the current participant.
+// The cohort stepper for the participant-profile module (#98, PPRF-5; v2
+// obot.roadmap#75 decision D8): when a selection holds more than one
+// participant, a strip `◀ k of N · id ▶` walks the worst-first cohort
+// (rankParticipants, structureData.js), rendering the full profile for the
+// current participant. In the rail the strip is pinned above the scrolling
+// block — it would otherwise leave the viewport the moment the reviewer reaches
+// the measure table — and it expands to the ranked list so the cohort itself is
+// readable without leaving the rail.
 // Real buttons with aria-labels, an aria-live count, and ArrowLeft/ArrowRight
 // support on the focusable strip (PPRF-8). Navigation reports through the
 // onStep callback with the target index — the entry re-renders and notifies the
@@ -16,9 +20,16 @@ import { createElement } from '../shell.js';
  * @param {number} index The current 0-based position in the cohort.
  * @param {Object} [handlers] Optional handlers.
  * @param {(index: number) => void} [handlers.onStep] Called with the clamped target index on navigation.
+ * @param {Function} [handlers.onToggleList] Called when the ranked-list disclosure is activated (decision D8).
+ * @param {boolean} [handlers.listOpen=false] Whether the ranked list is currently open.
+ * @param {?Array<{id: string, index: number, current: boolean}>} [handlers.ranked=null] The ranked cohort rows to list when open.
  * @returns {HTMLElement} The stepper strip element.
  */
-export function renderStepper(ids, index, { onStep } = {}) {
+export function renderStepper(
+  ids,
+  index,
+  { onStep, onToggleList, listOpen = false, ranked = null } = {}
+) {
   const strip = createElement('div', 'sv-profile-stepper');
   strip.setAttribute('role', 'group');
   strip.setAttribute('aria-label', 'Selected participants');
@@ -63,5 +74,41 @@ export function renderStepper(ids, index, { onStep } = {}) {
   };
 
   strip.append(prev, count, next);
-  return strip;
+
+  // The disclosure only appears when a host wired it, so the v1 strip shape is
+  // unchanged for callers that do not want the list.
+  if (!onToggleList) return strip;
+
+  const toggle = createElement(
+    'button',
+    'sv-profile-step-toggle',
+    listOpen ? 'Hide list' : 'Show list'
+  );
+  toggle.type = 'button';
+  toggle.setAttribute('aria-expanded', String(Boolean(listOpen)));
+  toggle.setAttribute('data-sv-focus', 'step-toggle');
+  toggle.onclick = () => onToggleList();
+  strip.append(toggle);
+
+  if (!listOpen || !Array.isArray(ranked)) return strip;
+
+  const wrap = createElement('div', 'sv-profile-cohort');
+  const list = createElement('ol', 'sv-profile-cohort-list');
+  ranked.forEach((entry) => {
+    const item = createElement('li');
+    const button = createElement('button', 'sv-profile-cohort-item', entry.id);
+    button.type = 'button';
+    button.setAttribute('aria-current', entry.current ? 'true' : 'false');
+    if (entry.current) button.classList.add('is-current');
+    button.onclick = () => {
+      if (!entry.current && onStep) onStep(entry.index);
+    };
+    item.append(button);
+    list.append(item);
+  });
+  wrap.append(list);
+
+  const shell = createElement('div', 'sv-profile-stepper-wrap');
+  shell.append(strip, wrap);
+  return shell;
 }

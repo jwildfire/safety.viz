@@ -111,8 +111,13 @@ for (const renderer of config.renderers.filter((entry) => entry.status === 'avai
   // real example data (#15) — not the crafted e2e fixture. Modules with a
   // different data domain name their dataset via the config entry's `data`
   // key (#26); the shared lab/vitals adbds.csv stays the default.
-  const dataFile = renderer.data || 'adbds.csv';
-  copyFileSync(path.join(rootDir, `site/data/${dataFile}`), path.join(moduleDir, dataFile));
+  // A module reading two domains names both (obot.roadmap#75: the participant
+  // profile reads labs AND adverse events); `data` stays a string for the
+  // single-domain modules.
+  const dataFiles = [].concat(renderer.data || 'adbds.csv');
+  for (const dataFile of dataFiles) {
+    copyFileSync(path.join(rootDir, `site/data/${dataFile}`), path.join(moduleDir, dataFile));
+  }
   copyFileSync(path.join(rootDir, `site/demo/${module}.js`), path.join(moduleDir, 'demo.js'));
   page(
     path.join(moduleDir, 'index.html'),

@@ -69,10 +69,10 @@ import {
 } from './qt-explorer/getPlugins.js';
 import {
   buildProfileRows,
-  mountProfileDock,
-  resetProfileDock,
-  syncProfileDock,
-  unmountProfileDock
+  mountProfileRail,
+  resetProfileRail,
+  syncProfileRail,
+  unmountProfileRail
 } from './profile-host.js';
 
 Chart.register(ScatterController, PointElement, LineElement, LinearScale, Tooltip, Legend);
@@ -116,7 +116,7 @@ class SafetyQtExplorer {
     this.arms = [];
     this.availableMeasures = [];
     this.participantsSelected = [];
-    // The docked participant-profile module (#99, PPRF-QT-001): the shared
+    // The railed participant-profile module (#99, PPRF-QT-001): the shared
     // drill-down rendered into the shell's profile slot and fed by the
     // outlier-scatter point click through dispatchSelection's
     // participantsSelected event on the shell root. profileRows is the ONE
@@ -137,11 +137,11 @@ class SafetyQtExplorer {
       selectedId: null
     };
     this.renderShellDom();
-    mountProfileDock(this, () => this.profileSettings());
+    mountProfileRail(this, () => this.profileSettings());
   }
 
   /**
-   * The settings handed to the docked participant-profile module (#99,
+   * The settings handed to the railed participant-profile module (#99,
    * PPRF-QT-002) — the interval-measure (ECG) mapping onto the profile's
    * long-lab contract:
    *
@@ -259,7 +259,7 @@ class SafetyQtExplorer {
   }
 
   /**
-   * Derive the docked profile's pre-cleaned rows ONCE per data/settings change
+   * Derive the railed profile's pre-cleaned rows ONCE per data/settings change
    * (#99, PPRF-QT-002) — never per gesture. Each raw record is shallow-copied
    * with a synthesized `__qt_profile_uln = 1` column before the shared
    * hep-core ingest, so `__hep_relative_uln` carries the observed value in
@@ -292,7 +292,7 @@ class SafetyQtExplorer {
     }
     if (this.rawData.length) this.validateAndCleanData();
     this.buildProfileRows();
-    syncProfileDock(this, () => this.profileSettings());
+    syncProfileRail(this, () => this.profileSettings());
     this.buildControls();
     this.render();
     return this;
@@ -456,12 +456,12 @@ class SafetyQtExplorer {
     // stale chart, table, or note behind (a setData whose rows all clean away).
     this.destroyCharts();
     // Any render — a view switch, a control change, new data — silently drops
-    // the outlier-scatter selection, so the dock must empty in the same
+    // the outlier-scatter selection, so the rail must empty in the same
     // preamble (#99, PPRF-QT-003); on the non-scatter views it then idles,
     // still mounted.
     this.state.selectedId = null;
     this.participantsSelected = [];
-    resetProfileDock(this);
+    resetProfileRail(this);
     this.legendEl.classList.add('qt-empty');
     this.noteEl.classList.add('qt-empty');
     this.tableWrap.classList.add('qt-empty');
@@ -817,7 +817,7 @@ class SafetyQtExplorer {
             event.native.target.style.cursor = elements.length ? 'pointer' : 'default';
           }
         },
-        // Point click → participant selection feeding the docked profile
+        // Point click → participant selection feeding the railed profile
         // (#99, PPRF-QT-001); an empty click clears (PPRF-11).
         onClick: (event, elements) => {
           if (!elements.length) {
@@ -913,7 +913,7 @@ class SafetyQtExplorer {
    * Select one participant from the outlier scatter (#99, PPRF-QT-001): set
    * the minimal host selection state, emphasize the participant's point, and
    * dispatch the house participantsSelected event on the shell root — which
-   * feeds the docked profile. Single-select only (PPRF-QT-004).
+   * feeds the railed profile. Single-select only (PPRF-QT-004).
    * @param {string} id Participant identifier.
    * @returns {void}
    */
@@ -987,7 +987,7 @@ class SafetyQtExplorer {
    * @returns {void}
    */
   destroy() {
-    unmountProfileDock(this);
+    unmountProfileRail(this);
     this.destroyCharts();
     this.element.innerHTML = '';
   }

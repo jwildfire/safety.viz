@@ -60,7 +60,7 @@ export function option(select, value, label, selected) {
 const SHELL_STYLE_ID = 'safety-viz-shell-styles';
 
 const SHELL_STYLES = `
-.sv-root{display:flex;align-items:flex-start;gap:1.25rem;width:100%;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#1f2933}
+.sv-root{display:flex;align-items:flex-start;gap:1.25rem;width:100%;position:relative;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#1f2933;--sv-rail-width:520px}
 .sv-sidebar{position:sticky;top:1rem;flex:0 0 250px;max-height:calc(100vh - 2rem);overflow-y:auto;border:1px solid #d8dee4;border-radius:10px;background:#f6f8fa;padding:.8rem .9rem 1rem}
 .sv-sidebar-header{display:flex;align-items:center;justify-content:space-between;gap:.5rem}
 .sv-sidebar-title{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#52616f}
@@ -85,7 +85,14 @@ const SHELL_STYLES = `
 .sv-warning{color:#9a3412}
 .sv-chart-wrap{height:460px;position:relative;border:1px solid #d8dee4;border-radius:10px;padding:1rem;background:#fff}
 .sv-footnote{margin:.6rem 0 0;font-size:.85rem;color:#52616f}
-.sv-profile:empty{display:none}
+.sv-rail{flex:0 0 var(--sv-rail-width);align-self:flex-start;position:sticky;top:1rem;max-height:calc(100vh - 2rem);display:flex;flex-direction:column;overflow:hidden;border:1px solid #d8dee4;border-radius:10px;background:#fbfcfd}
+.sv-rail:empty{display:none}
+/* The rail takes no width until a participant is selected: the module sets
+   [hidden] on the slot while it is idle, and .sv-rail's own display would
+   otherwise win over the user-agent rule. */
+.sv-rail[hidden]{display:none}
+.sv-rail-expanded .sv-rail{position:absolute;inset:0;z-index:6;max-height:none;box-shadow:0 18px 46px rgba(31,41,51,.22)}
+.sv-rail-expanded .sv-main,.sv-rail-expanded .sv-sidebar{filter:saturate(.25) opacity(.35)}
 .sv-multiples{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;margin-top:1.25rem}
 .sv-multiples:empty{display:none}
 .sv-multiple{border:1px solid #d8dee4;border-radius:10px;padding:.75rem .85rem;background:#fff}
@@ -124,6 +131,9 @@ const SHELL_STYLES = `
 @media (max-width:900px){
 .sv-root{flex-direction:column}
 .sv-sidebar{position:static;flex:1 1 auto;width:100%;max-height:none}
+.sv-rail{position:static;flex:1 1 auto;width:100%;max-height:none}
+.sv-rail-expanded .sv-rail{position:static}
+.sv-rail-expanded .sv-main,.sv-rail-expanded .sv-sidebar{filter:none}
 .sv-controls{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:0 1.25rem;align-items:start}
 .sv-control-section{border-top:none}
 }`;
@@ -154,7 +164,7 @@ export function applyShellStyles() {
  * @property {HTMLElement} mainAnnotation Overlay annotation inside the chart card.
  * @property {HTMLElement} footnote Hover/selection footnote below the chart.
  * @property {HTMLElement} multiplesWrap Small-multiples grid.
- * @property {HTMLElement} profileWrap Participant-profile dock slot below the chart card and small multiples, above the shared listing (#98, PPRF-1); hidden while empty.
+ * @property {HTMLElement} railWrap Participant-profile rail slot: a right-hand column beside the main column, opposite the control sidebar (obot.roadmap#75, decisions D1/D2). Hidden while empty; stacks below the main column under 900px, which is where the removed dock used to sit (D4).
  * @property {HTMLElement} listingWrap Linked participant listing container.
  */
 
@@ -198,13 +208,16 @@ export function renderShell(element, { moduleClass = '', onToggle } = {}) {
   const canvas = createElement('canvas', 'sv-chart');
   const mainAnnotation = createElement('div', 'sv-main-annotation');
   const footnote = createElement('div', 'sv-footnote');
-  const profileWrap = createElement('div', 'sv-profile');
   const multiplesWrap = createElement('div', 'sv-multiples');
   const listingWrap = createElement('div', 'sv-listing');
   chartWrap.append(canvas, mainAnnotation);
-  main.append(notes, chartWrap, footnote, multiplesWrap, profileWrap, listingWrap);
+  main.append(notes, chartWrap, footnote, multiplesWrap, listingWrap);
 
-  root.append(sidebar, main);
+  // The participant profile lives in a rail on the RIGHT, opposite the control
+  // sidebar on the left (decisions D1/D2) — the dock slot that used to sit
+  // inside the main column is gone (D4).
+  const railWrap = createElement('aside', 'sv-rail');
+  root.append(sidebar, main, railWrap);
   element.append(root);
   applyShellStyles();
   return {
@@ -219,7 +232,7 @@ export function renderShell(element, { moduleClass = '', onToggle } = {}) {
     mainAnnotation,
     footnote,
     multiplesWrap,
-    profileWrap,
+    railWrap,
     listingWrap
   };
 }

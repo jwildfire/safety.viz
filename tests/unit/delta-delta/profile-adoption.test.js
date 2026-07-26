@@ -3,7 +3,7 @@
 // renderer FIRST gains the house participantsSelected dispatch on the shell
 // root — including an empty-click clear gesture — closing its #88/SELN-4 gap
 // (PPRF-DD-001/003), and its bespoke per-measure detail table is DELETED in
-// the same change because the docked profile supersedes it (PPRF-12,
+// the same change because the railed profile supersedes it (PPRF-12,
 // PPRF-DD-004). The spaghetti + per-measure sparklines show the participant's
 // full series; the baseline-vs-comparison delta encoding stays on the chart.
 import { describe, it, expect, beforeEach, vi } from 'vitest';
@@ -106,24 +106,24 @@ describe('delta-delta participantsSelected dispatch (PPRF-DD-001)', () => {
   });
 });
 
-describe('delta-delta dock adoption (PPRF-DD-002, PPRF-11)', () => {
-  it('PPRF-DD-002: a point click opens the docked full profile with the point highlighted', () => {
+describe('delta-delta rail adoption (PPRF-DD-002, PPRF-11)', () => {
+  it('PPRF-DD-002: a point click opens the railed full profile with the point highlighted', () => {
     const instance = build();
     const index = clickPoint(instance, 'P1');
-    expect(instance.profileWrap.querySelector('.sv-profile-id').textContent).toBe('Participant P1');
+    expect(instance.railWrap.querySelector('.sv-profile-id').textContent).toBe('Participant P1');
     // Key liver measures resolve through the module defaults — the profile is
     // the participant's full story, not a re-encoding of the delta pair.
-    expect(instance.profileWrap.querySelector('.sv-profile-measure-table')).not.toBeNull();
-    expect(instance.profileWrap.querySelector('.sv-profile-step-count')).toBeNull();
+    expect(instance.railWrap.querySelector('.sv-profile-measure-table')).not.toBeNull();
+    expect(instance.railWrap.querySelector('.sv-profile-step-count')).toBeNull();
     expect(instance.chart.data.datasets[0].pointBorderWidth[index]).toBe(3);
     expect(instance.mainAnnotation.textContent).toBe('Participant P1 selected.');
   });
 
-  it('PPRF-DD-002: clicking a different point re-renders the dock for the new participant (SDD-REG-013 retargeted)', () => {
+  it('PPRF-DD-002: clicking a different point re-renders the rail for the new participant (SDD-REG-013 retargeted)', () => {
     const instance = build();
     clickPoint(instance, 'P1');
     clickPoint(instance, 'P2');
-    expect(instance.profileWrap.querySelector('.sv-profile-id').textContent).toBe('Participant P2');
+    expect(instance.railWrap.querySelector('.sv-profile-id').textContent).toBe('Participant P2');
   });
 
   it('PPRF-DD-002: dock header details default to the host details minus the participant id', () => {
@@ -133,16 +133,16 @@ describe('delta-delta dock adoption (PPRF-DD-002, PPRF-11)', () => {
     expect(instance.profile.settings.details).toEqual([{ value_col: 'SEX', label: 'Sex' }]);
   });
 
-  it('PPRF-DD-003: the dock Clear affordance routes through the host clear path', () => {
+  it('PPRF-DD-003: the rail Clear affordance routes through the host clear path', () => {
     const instance = build();
     const heard = [];
     instance.root.addEventListener('participantsSelected', (event) =>
       heard.push(event.detail.data)
     );
     clickPoint(instance, 'P1');
-    instance.profileWrap.querySelector('.sv-profile-clear').click();
+    instance.railWrap.querySelector('.sv-profile-clear').click();
     expect(instance.state.selectedId).toBeNull();
-    expect(instance.profileWrap.children).toHaveLength(0);
+    expect(instance.railWrap.querySelector('.sv-profile-root')).toBeNull();
     expect(heard.at(-1)).toEqual([]);
   });
 
@@ -166,27 +166,27 @@ describe('delta-delta dock adoption (PPRF-DD-002, PPRF-11)', () => {
       heard.push(event.detail.data)
     );
     // A root-level dispatch the host did not originate (the shared-selector
-    // shape, #87) — the dock fills while state.selectedId stays null.
+    // shape, #87) — the rail fills while state.selectedId stays null.
     instance.root.dispatchEvent(
       new CustomEvent('participantsSelected', { detail: { data: ['P1', 'P2'] }, bubbles: true })
     );
-    expect(instance.profileWrap.children.length).toBeGreaterThan(0);
+    expect(instance.railWrap.querySelector('.sv-profile-root')).not.toBeNull();
     expect(instance.state.selectedId).toBeNull();
-    instance.profileWrap.querySelector('.sv-profile-clear').click();
-    expect(instance.profileWrap.children).toHaveLength(0);
+    instance.railWrap.querySelector('.sv-profile-clear').click();
+    expect(instance.railWrap.querySelector('.sv-profile-root')).toBeNull();
     expect(heard.at(-1)).toEqual([]);
   });
 
-  it('PPRF-DD-003: a control-driven render resets the dock (render preamble)', () => {
+  it('PPRF-DD-003: a control-driven render resets the rail (render preamble)', () => {
     const instance = build();
     clickPoint(instance, 'P1');
-    expect(instance.profileWrap.children.length).toBeGreaterThan(0);
+    expect(instance.railWrap.querySelector('.sv-profile-root')).not.toBeNull();
     instance.render();
     expect(instance.state.selectedId).toBeNull();
-    expect(instance.profileWrap.children).toHaveLength(0);
+    expect(instance.railWrap.querySelector('.sv-profile-root')).toBeNull();
   });
 
-  it('PPRF-DD-001: profile: false still dispatches (the event contract is independent of the dock)', () => {
+  it('PPRF-DD-001: profile: false still dispatches (the event contract is independent of the rail)', () => {
     const instance = build({ profile: false });
     const heard = [];
     instance.root.addEventListener('participantsSelected', (event) =>
@@ -194,13 +194,13 @@ describe('delta-delta dock adoption (PPRF-DD-002, PPRF-11)', () => {
     );
     clickPoint(instance, 'P1');
     expect(instance.profile).toBeNull();
-    expect(instance.profileWrap.children).toHaveLength(0);
+    expect(instance.railWrap.querySelector('.sv-profile-root')).toBeNull();
     expect(heard).toEqual([['P1']]);
   });
 });
 
 describe('delta-delta bespoke measure table removal (PPRF-DD-004, PPRF-12)', () => {
-  it('PPRF-DD-004: the bespoke measure table is gone — the docked profile is the sole detail', () => {
+  it('PPRF-DD-004: the bespoke measure table is gone — the railed profile is the sole detail', () => {
     const instance = build();
     clickPoint(instance, 'P1');
     expect(document.querySelector('.sdd-measure-table')).toBeNull();

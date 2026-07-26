@@ -46,9 +46,9 @@ schemes appear:
 | —                                   | SH-OVW-003                                            | #39   | clicking a small multiple opens that measure in the single-measure view     |
 | —                                   | SH-OVW-004                                            | #39   | selecting All Measures returns from a single-measure view to the overview   |
 | —                                   | SH-OVW-005                                            | #39   | filters stay active in the overview and measure controls hide               |
-| PPRF-SH-001/PPRF-SH-002             | PPRF-SH-001, PPRF-SH-002 (participant-profile matrix) | #99   | clicking a listing row focuses the participant into the docked profile      |
-| PPRF-SH-003                         | PPRF-SH-003 (participant-profile matrix)              | #99   | the dock Clear affordance un-highlights the row and keeps the listing       |
-| PPRF-SH-003 (bin/control clears)    | PPRF-SH-003 (participant-profile matrix)              | #99   | a new bin click and control changes empty the dock                          |
+| PPRF-SH-001/PPRF-SH-002             | PPRF-SH-001, PPRF-SH-002 (participant-profile matrix) | #99   | clicking a listing row focuses the participant into the railed profile      |
+| PPRF-SH-003                         | PPRF-SH-003 (participant-profile matrix)              | #99   | the rail Clear affordance un-highlights the row and keeps the listing       |
+| PPRF-SH-003 (bin/control clears)    | PPRF-SH-003 (participant-profile matrix)              | #99   | a new bin click and control changes empty the rail                          |
 | SH-AXIS-001/002/003                 | SH-AXIS-001, SH-AXIS-002, SH-AXIS-003, SH-FUNC-006    | #85   | x-axis limit inputs load pre-filled, follow the measure, and Reset restores |
 
 ## Unit evidence (Vitest — `tests/unit/histogram/`)
@@ -69,9 +69,9 @@ schemes appear:
 | SH-API-001 (module export)   | —                                                  | #2    | `../main.test.js`          |
 | PPRF-SH-001/002/003          | PPRF-SH-001..003 (participant-profile matrix)      | #99   | `profile-adoption.test.js` |
 
-## Docked participant profile (#99, PPRF-SH)
+## Railed participant profile (#99, PPRF-SH)
 
-The shared participant-profile module docks below the chart (config-on,
+The shared participant-profile module mounts in the rail beside the chart (config-on,
 `profile: true`) and is fed from the histogram's natural participant surface —
 the SHARED linked listing a bin click opens. Setting the host's
 `onListingRowClick` callback opts the shared listing renderer into
@@ -79,7 +79,7 @@ clickable/keyboard-focusable rows (presence-of-callback opt-in: the other
 consumers of `src/histogram/listing.js`, outlier-explorer and shift-plot, are
 unaffected); a row click focuses that participant via a NEW host selection
 state (`state.selectedId`) and the house `participantsSelected` dispatch on the
-shell root. The listing stays beside the dock (records vs story, PPRF-11) with
+shell root. The listing stays beside the rail (records vs story, PPRF-11) with
 the focused participant's rows highlighted. Adoption rows are PPRF-SH-001..003
 in the
 [participant-profile matrix](../requirements/participant-profile.md);

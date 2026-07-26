@@ -24,11 +24,11 @@ measurement at a visit) to one point per participant: **change in measure X**
 | SDD-REG-002                            | SDD-REG-002                                                               | #25     | changing the comparison visit changes the plotted distribution                                             |
 | SDD-REG-006/SDD-REG-005                | SDD-REG-005, SDD-REG-006                                                  | #25     | a filter narrows the plotted points and updates the count                                                  |
 | SDD-FUNC-005                           | SDD-FUNC-005                                                              | #25     | the tooltip reports the participant ID and both change values                                              |
-| PPRF-DD-001/PPRF-DD-002/PPRF-DD-004    | PPRF-DD-001, PPRF-DD-002, PPRF-DD-004 (participant-profile matrix)        | #99     | clicking a point dispatches the selection and opens the docked profile — the bespoke measure table is gone |
-| SDD-REG-012/SDD-REG-013/PPRF-DD-002    | SDD-REG-012, SDD-REG-013 (retargeted at chart border + dock), PPRF-DD-002 | #25/#99 | the clicked point is highlighted and clicking another re-renders the docked profile                        |
-| PPRF-DD-003 (empty click)              | PPRF-DD-003 (participant-profile matrix)                                  | #99     | an empty-canvas click clears the highlight and empties the dock                                            |
-| PPRF-DD-003 (dock Clear)               | PPRF-DD-003 (participant-profile matrix)                                  | #99     | the dock Clear affordance routes through the host clear path                                               |
-| PPRF-DD-003 (control change)           | PPRF-DD-003 (participant-profile matrix)                                  | #99     | changing a control clears the selection and the docked profile                                             |
+| PPRF-DD-001/PPRF-DD-002/PPRF-DD-004    | PPRF-DD-001, PPRF-DD-002, PPRF-DD-004 (participant-profile matrix)        | #99     | clicking a point dispatches the selection and opens the railed profile — the bespoke measure table is gone |
+| SDD-REG-012/SDD-REG-013/PPRF-DD-002    | SDD-REG-012, SDD-REG-013 (retargeted at chart border + rail), PPRF-DD-002 | #25/#99 | the clicked point is highlighted and clicking another re-renders the railed profile                        |
+| PPRF-DD-003 (empty click)              | PPRF-DD-003 (participant-profile matrix)                                  | #99     | an empty-canvas click clears the highlight and empties the rail                                            |
+| PPRF-DD-003 (rail Clear)               | PPRF-DD-003 (participant-profile matrix)                                  | #99     | the rail Clear affordance routes through the host clear path                                               |
+| PPRF-DD-003 (control change)           | PPRF-DD-003 (participant-profile matrix)                                  | #99     | changing a control clears the selection and the railed profile                                             |
 | SDD-REG-026                            | SDD-REG-026                                                               | #25     | the regression line toggles with an equation and R² note                                                   |
 | SDD-REG-007                            | SDD-REG-007                                                               | #25     | a filter for a non-existent variable logs a console warning                                                |
 | SDD-REG-010                            | SDD-REG-010                                                               | #25     | a non-existent required column errors into the container                                                   |
@@ -53,18 +53,18 @@ measurement at a visit) to one point per participant: **change in measure X**
 | SDD-REG-012 (selection)            | SDD-REG-012                                                     | #25   | `getPlugins.test.js`    |
 | SDD-DATA-001/SDD-REG-010 (guard)   | SDD-DATA-001, SDD-REG-010                                       | #25   | `checkInputs.test.js`   |
 
-## Docked participant profile (#99, PPRF-12)
+## Railed participant profile (#99, PPRF-12)
 
 The renderer's bespoke per-measure detail table (`src/delta-delta/listing.js`)
-was removed in the dock-adoption change
-([#99](https://github.com/jwildfire/safety.viz/issues/99) PPRF-12): the docked
+was removed in the profile-adoption change
+([#99](https://github.com/jwildfire/safety.viz/issues/99) PPRF-12): the railed
 participant-profile module is the sole detail view, opened by the same point
 click, and the renderer gained the house `participantsSelected` dispatch on
 the shell root — including an empty-click clear gesture — closing its #88
 SELN-4 gap. The matrix rows the table evidenced (SDD-FUNC-006's table portion,
 SDD-REG-011, SDD-REG-014, SDD-REG-016..025) are marked `superseded` in the
 source matrix; SDD-REG-012/013 (point highlight, re-click) remain valid,
-retargeted at the chart border + dock. The adoption rows are
+retargeted at the chart border + rail. The adoption rows are
 PPRF-DD-001..004 in the
 [participant-profile matrix](../requirements/participant-profile.md);
 unit evidence lives in `tests/unit/delta-delta/profile-adoption.test.js`.
@@ -80,7 +80,7 @@ superseded as user-facing requirements.
   Each maps to a browser and/or unit test above.
 - **Superseded (13 rows, #99 PPRF-12):** SDD-FUNC-006 (table portion),
   SDD-REG-011, SDD-REG-014, SDD-REG-016..025 — the bespoke measure table the
-  rows describe was replaced by the docked participant profile (see above).
+  rows describe was replaced by the railed participant profile (see above).
 - **Partial / addressed by implementation (2 rows):**
   - **SDD-REG-009** — the initial X/Y measure is honored (`measure_x` /
     `measure_y`, verified via the default-selection browser test and

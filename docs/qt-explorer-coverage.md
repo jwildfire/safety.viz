@@ -33,8 +33,8 @@ its test covers.
 | QT-CT-007                             | —                                                     | #68   | heart rate is offered in central tendency without the QTc reference line                           |
 | QT-OUT-007                            | —                                                     | #68   | heart rate shows a QTc-only note in the outlier view                                               |
 | QT-DATA-003                           | —                                                     | #68   | the removed-count path drops missing and non-numeric results                                       |
-| PPRF-QT-001, PPRF-QT-002              | PPRF-QT-001, PPRF-QT-002 (participant-profile matrix) | #99   | clicking an outlier-scatter point opens the docked profile in observed ms with the 450 cut on QTcF |
-| PPRF-QT-003, PPRF-QT-004              | PPRF-QT-003, PPRF-QT-004 (participant-profile matrix) | #99   | empty clicks and view switches clear the dock, which idles on non-scatter views                    |
+| PPRF-QT-001, PPRF-QT-002              | PPRF-QT-001, PPRF-QT-002 (participant-profile matrix) | #99   | clicking an outlier-scatter point opens the railed profile in observed ms with the 450 cut on QTcF |
+| PPRF-QT-003, PPRF-QT-004              | PPRF-QT-003, PPRF-QT-004 (participant-profile matrix) | #99   | empty clicks and view switches clear the rail, which idles on non-scatter views                    |
 
 ## Unit evidence (Vitest — `tests/unit/qt-explorer/`)
 
@@ -49,11 +49,11 @@ its test covers.
 | QT-SCL-001..008 (correction suffix, axis titles, domains, arm marks)      | —                                             | #68   | `getScales.test.js`        |
 | QT-PLG-001/002/003 (color scale, rgba, scatter tooltip)                   | —                                             | #68   | `getPlugins.test.js`       |
 | QT-API-001 (module export)                                                | —                                             | #68   | `export.test.js`           |
-| PPRF-QT-001..004 (dock adoption, interval-measure mapping, clear paths)   | PPRF-QT-001..004 (participant-profile matrix) | #99   | `profile-adoption.test.js` |
+| PPRF-QT-001..004 (rail adoption, interval-measure mapping, clear paths)   | PPRF-QT-001..004 (participant-profile matrix) | #99   | `profile-adoption.test.js` |
 
-## Docked participant profile (#99, PPRF-QT)
+## Railed participant profile (#99, PPRF-QT)
 
-The shared participant-profile module docks below the chart (config-on,
+The shared participant-profile module mounts in the rail beside the chart (config-on,
 `profile: true`), fed by a NEW outlier-scatter point-click selection
 (`state.selectedId`, single-select only) via the house `participantsSelected`
 dispatch on the shell root. The profile's long-lab contract is mapped for
@@ -70,10 +70,10 @@ View coverage and mapping caveats:
 
 - **Only the outlier scatter carries participant marks.** The central-tendency
   and categorical views aggregate by arm, so they offer no selection gesture;
-  the dock stays mounted and idles there, and every view switch clears the
-  selection and the dock in the render preamble (PPRF-QT-003).
+  the rail stays mounted and idles there, and every view switch clears the
+  selection and the rail in the render preamble (PPRF-QT-003).
 - **The 30/60 ms change-from-baseline thresholds are not representable in the
-  dock** — the profile draws one cut per measure per display mode, and the
+  rail** — the profile draws one cut per measure per display mode, and the
   change thresholds apply to Δ, not the observed series. They stay on the
   scatter and the categorical table.
 - **The host's `baseline_col` ('BASE') is a VALUE column**, not the profile's
@@ -90,7 +90,7 @@ View coverage and mapping caveats:
   is a module "no normal range" mode for hosts without real LLN/ULN columns —
   routed to #98's surface per this issue's out-of-scope rule; not adopter-fixable
   (the hep-core cleaner's ULN>0 guard drops rows without a positive finite ULN).
-- **Module-surface (#98): the docked spaghetti's y-axis title and canvas
+- **Module-surface (#98): the railed spaghetti's y-axis title and canvas
   accessible name read "Standardized Result [xULN]"** while plotting observed
   milliseconds — the module hard-codes the label per display mode and offers no
   override, so the host's `display_options` relabel ("Observed (ms)") reaches

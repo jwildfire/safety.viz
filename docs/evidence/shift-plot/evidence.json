@@ -1,6 +1,6 @@
 {
   "module": "shift-plot",
-  "generatedAt": "2026-07-25T03:42:04.181Z",
+  "generatedAt": "2026-07-26T02:24:23.094Z",
   "environment": {
     "os": "linux 6.17.0-1020-azure",
     "node": "v22.23.1",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "30142710565",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/30142710565"
+    "id": "30184486512",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/30184486512"
   },
   "records": [
     {
@@ -157,23 +157,26 @@
       "screenshots": []
     },
     {
-      "test": "PPRF-SSP-001: a multi-participant brush collapses the dock to a worst-first stepper whose steps emphasize the chart (#99)",
+      "test": "PPRF-SSP-001: a multi-participant brush collapses the rail to a worst-first stepper whose steps emphasize the chart (#99)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["PPRF-SSP-001"],
       "issueRefs": [99],
-      "screenshots": ["PPRF-SSP-001-docked-stepper.png"]
+      "screenshots": ["PPRF-SSP-001-docked-stepper.png", "PPRF-SSP-001-railed-stepper.png"]
     },
     {
-      "test": "PPRF-SSP-002: a single-point brush shows the full docked profile with no stepper, beside the linked listing (#99)",
+      "test": "PPRF-SSP-002: a single-point brush shows the full railed profile with no stepper, beside the linked listing (#99)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["PPRF-SSP-002"],
       "issueRefs": [99],
-      "screenshots": ["PPRF-SSP-002-docked-full-profile.png"]
+      "screenshots": [
+        "PPRF-SSP-002-docked-full-profile.png",
+        "PPRF-SSP-002-railed-full-profile.png"
+      ]
     },
     {
-      "test": "PPRF-SSP-003: clearing the selection and control-driven redraws empty the dock (#99)",
+      "test": "PPRF-SSP-003: clearing the selection and control-driven redraws empty the rail (#99)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["PPRF-SSP-003"],
@@ -645,26 +648,58 @@
       "screenshots": []
     },
     {
-      "test": "renderShell profile slot (PPRF-1) exposes a profileWrap slot with the sv-profile class inside the main column",
+      "test": "renderShell rail slot (PPRF-RAIL-001) exposes a railWrap slot with the sv-rail class",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": [],
+      "requirementIds": ["PPRF-RAIL-001"],
       "issueRefs": [],
       "screenshots": []
     },
     {
-      "test": "renderShell profile slot (PPRF-1) hides the slot while it is empty via the shared stylesheet",
+      "test": "renderShell rail slot (PPRF-RAIL-001) gives the rail a settable width and the root a positioning context for expand",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": [],
+      "requirementIds": ["PPRF-RAIL-001"],
       "issueRefs": [],
       "screenshots": []
     },
     {
-      "test": "renderShell profile slot (PPRF-1) places the slot between the small-multiples grid and the listing",
+      "test": "renderShell rail slot (PPRF-RAIL-001) hides the rail while it is empty via the shared stylesheet",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": [],
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) honours [hidden] on the rail, which the module sets while it is idle",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) no longer carries the dock slot inside the main column (D4)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) puts the rail opposite the control sidebar, with the chart between them (D2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) stacks the rail below the main column under the shell breakpoint (D4)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
       "issueRefs": [],
       "screenshots": []
     },
@@ -813,12 +848,12 @@
       "screenshots": []
     },
     {
-      "test": "shift-plot cohort stepper (PPRF-SSP-001, PPRF-11) PPRF-SSP-001: a multi-participant brush collapses the dock to a worst-first stepper",
+      "test": "shift-plot cohort stepper (PPRF-SSP-001, PPRF-11) PPRF-SSP-001: a multi-participant brush collapses the rail to a worst-first stepper",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["PPRF-SSP-001"],
       "issueRefs": [],
-      "screenshots": ["PPRF-SSP-001-docked-stepper.png"]
+      "screenshots": ["PPRF-SSP-001-docked-stepper.png", "PPRF-SSP-001-railed-stepper.png"]
     },
     {
       "test": "shift-plot cohort stepper (PPRF-SSP-001, PPRF-11) PPRF-SSP-001: stepping emphasizes the stepped point on the chart without re-dispatching",
@@ -826,7 +861,7 @@
       "status": "pass",
       "requirementIds": ["PPRF-SSP-001"],
       "issueRefs": [],
-      "screenshots": ["PPRF-SSP-001-docked-stepper.png"]
+      "screenshots": ["PPRF-SSP-001-docked-stepper.png", "PPRF-SSP-001-railed-stepper.png"]
     },
     {
       "test": "shift-plot configure SSP-API: the module collection exposes the shift-plot factory (#14)",
@@ -893,84 +928,48 @@
       "screenshots": []
     },
     {
-      "test": "shift-plot dock clear paths (PPRF-SSP-003, PPRF-11) PPRF-SSP-002: setSettings({profile: false}) unmounts a live dock; re-enabling remounts it",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["PPRF-SSP-003", "PPRF-SSP-002"],
-      "issueRefs": [],
-      "screenshots": ["PPRF-SSP-002-docked-full-profile.png"]
-    },
-    {
-      "test": "shift-plot dock clear paths (PPRF-SSP-003, PPRF-11) PPRF-SSP-003: a control-driven render resets the selection AND the dock (render preamble)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["PPRF-SSP-003"],
-      "issueRefs": [],
-      "screenshots": []
-    },
-    {
-      "test": "shift-plot dock clear paths (PPRF-SSP-003, PPRF-11) PPRF-SSP-003: clearing the selection (the tiny-click path) empties the dock and the emphasis",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["PPRF-SSP-003"],
-      "issueRefs": [],
-      "screenshots": []
-    },
-    {
-      "test": "shift-plot dock clear paths (PPRF-SSP-003, PPRF-11) PPRF-SSP-003: destroy tears the dock down with the instance",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["PPRF-SSP-003"],
-      "issueRefs": [],
-      "screenshots": []
-    },
-    {
-      "test": "shift-plot dock clear paths (PPRF-SSP-003, PPRF-11) PPRF-SSP-003: dock Clear empties an externally-fed cohort the host never selected (PPRF-11)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["PPRF-SSP-003"],
-      "issueRefs": [],
-      "screenshots": []
-    },
-    {
-      "test": "shift-plot dock clear paths (PPRF-SSP-003, PPRF-11) PPRF-SSP-003: the dock Clear affordance routes through the host clear path",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["PPRF-SSP-003"],
-      "issueRefs": [],
-      "screenshots": []
-    },
-    {
       "test": "shift-plot participant-profile adoption (PPRF-SSP-002) PPRF-SSP-002: a single-point brush shows the full profile with no stepper AND keeps the listing",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["PPRF-SSP-002"],
       "issueRefs": [],
-      "screenshots": ["PPRF-SSP-002-docked-full-profile.png"]
+      "screenshots": [
+        "PPRF-SSP-002-docked-full-profile.png",
+        "PPRF-SSP-002-railed-full-profile.png"
+      ]
     },
     {
-      "test": "shift-plot participant-profile adoption (PPRF-SSP-002) PPRF-SSP-002: derives the dock feed rows ONCE per setData from rawData through the hep-core cleaners",
+      "test": "shift-plot participant-profile adoption (PPRF-SSP-002) PPRF-SSP-002: derives the rail feed rows ONCE per setData from rawData through the hep-core cleaners",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["PPRF-SSP-002"],
       "issueRefs": [],
-      "screenshots": ["PPRF-SSP-002-docked-full-profile.png"]
+      "screenshots": [
+        "PPRF-SSP-002-docked-full-profile.png",
+        "PPRF-SSP-002-railed-full-profile.png"
+      ]
     },
     {
-      "test": "shift-plot participant-profile adoption (PPRF-SSP-002) PPRF-SSP-002: host listing columns are NOT the dock header details (profile_details defaults empty)",
+      "test": "shift-plot participant-profile adoption (PPRF-SSP-002) PPRF-SSP-002: host listing columns are NOT the rail header details (profile_details defaults empty)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["PPRF-SSP-002"],
       "issueRefs": [],
-      "screenshots": ["PPRF-SSP-002-docked-full-profile.png"]
+      "screenshots": [
+        "PPRF-SSP-002-docked-full-profile.png",
+        "PPRF-SSP-002-railed-full-profile.png"
+      ]
     },
     {
-      "test": "shift-plot participant-profile adoption (PPRF-SSP-002) PPRF-SSP-002: mounts the dock by default (config-on) into the shell profile slot",
+      "test": "shift-plot participant-profile adoption (PPRF-SSP-002) PPRF-SSP-002: mounts the rail by default (config-on) into the shell profile slot",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["PPRF-SSP-002"],
       "issueRefs": [],
-      "screenshots": ["PPRF-SSP-002-docked-full-profile.png"]
+      "screenshots": [
+        "PPRF-SSP-002-docked-full-profile.png",
+        "PPRF-SSP-002-railed-full-profile.png"
+      ]
     },
     {
       "test": "shift-plot participant-profile adoption (PPRF-SSP-002) PPRF-SSP-002: passes the host lab mappings through, mapping visitn_col from visit_order_col",
@@ -978,7 +977,10 @@
       "status": "pass",
       "requirementIds": ["PPRF-SSP-002"],
       "issueRefs": [],
-      "screenshots": ["PPRF-SSP-002-docked-full-profile.png"]
+      "screenshots": [
+        "PPRF-SSP-002-docked-full-profile.png",
+        "PPRF-SSP-002-railed-full-profile.png"
+      ]
     },
     {
       "test": "shift-plot participant-profile adoption (PPRF-SSP-002) PPRF-SSP-002: profile: false leaves the slot empty and mounts no dock",
@@ -986,7 +988,61 @@
       "status": "pass",
       "requirementIds": ["PPRF-SSP-002"],
       "issueRefs": [],
-      "screenshots": ["PPRF-SSP-002-docked-full-profile.png"]
+      "screenshots": [
+        "PPRF-SSP-002-docked-full-profile.png",
+        "PPRF-SSP-002-railed-full-profile.png"
+      ]
+    },
+    {
+      "test": "shift-plot rail clear paths (PPRF-SSP-003, PPRF-11) PPRF-SSP-002: setSettings({profile: false}) unmounts a live dock; re-enabling remounts it",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-003", "PPRF-SSP-002"],
+      "issueRefs": [],
+      "screenshots": [
+        "PPRF-SSP-002-docked-full-profile.png",
+        "PPRF-SSP-002-railed-full-profile.png"
+      ]
+    },
+    {
+      "test": "shift-plot rail clear paths (PPRF-SSP-003, PPRF-11) PPRF-SSP-003: a control-driven render resets the selection AND the rail (render preamble)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "shift-plot rail clear paths (PPRF-SSP-003, PPRF-11) PPRF-SSP-003: clearing the selection (the tiny-click path) empties the rail and the emphasis",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "shift-plot rail clear paths (PPRF-SSP-003, PPRF-11) PPRF-SSP-003: destroy tears the rail down with the instance",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "shift-plot rail clear paths (PPRF-SSP-003, PPRF-11) PPRF-SSP-003: dock Clear empties an externally-fed cohort the host never selected (PPRF-11)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "shift-plot rail clear paths (PPRF-SSP-003, PPRF-11) PPRF-SSP-003: the rail Clear affordance routes through the host clear path",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SSP-003"],
+      "issueRefs": [],
+      "screenshots": []
     },
     {
       "test": "shift-plot structureData applyStat collapses a visit set with mean/min/max/first and the single-value shortcut (#14)",

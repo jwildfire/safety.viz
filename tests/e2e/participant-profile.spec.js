@@ -10,7 +10,7 @@ import { captureEvidence } from './evidence.js';
 // IDs use the PPRF-* area scheme from the participant-profile requirement matrix.
 
 // ── hep-explorer adoption, scatter view (PPRF-7) ────────────────────────────
-test.describe('participant-profile dock: hep-explorer scatter view', () => {
+test.describe('participant-profile rail: hep-explorer scatter view', () => {
   test.beforeEach(async ({ page }) => {
     const errors = [];
     page.on('pageerror', (error) => errors.push(error.message));
@@ -29,13 +29,13 @@ test.describe('participant-profile dock: hep-explorer scatter view', () => {
     expect(page._profileErrors).toEqual([]);
   });
 
-  test('PPRF-HEP-001/PPRF-CORE-001: scatter click opens the docked profile below the chart — header, spaghetti, and measure table replace the legacy detail panel (#98)', async ({
+  test('PPRF-HEP-001/PPRF-CORE-001: scatter click opens the profile in the rail beside the chart — header, spaghetti, and measure table replace the legacy detail panel (#98)', async ({
     page
   }) => {
     // The legacy bespoke drill-down is deleted outright: no .hep-detail node
     // exists anywhere in the DOM, selected or not.
     await expect(page.locator('.hep-detail')).toHaveCount(0);
-    await expect(page.locator('.sv-profile')).toBeEmpty();
+    await expect(page.locator('.sv-rail .sv-profile-root')).toHaveCount(0);
 
     await page.evaluate(() => {
       const instance = window.__safetyHepExplorerInstance;
@@ -43,11 +43,11 @@ test.describe('participant-profile dock: hep-explorer scatter view', () => {
       instance.chart.options.onClick({}, [{ datasetIndex: 0, index }]);
     });
 
-    // The docked profile renders in the shell's sv-profile slot: header with
+    // The railed profile renders in the shell's sv-rail slot: header with
     // the participant id and Clear, the labs-over-time spaghetti, and the
     // measure table with sparklines. Single selection → full profile, no
     // stepper.
-    const profile = page.locator('.sv-profile');
+    const profile = page.locator('.sv-rail');
     await expect(profile.locator('.sv-profile-id')).toHaveText('Participant SUBJ-001');
     await expect(profile.locator('.sv-profile-clear')).toBeVisible();
     await expect(profile.locator('.sv-profile-spaghetti canvas')).toBeVisible();
@@ -55,40 +55,47 @@ test.describe('participant-profile dock: hep-explorer scatter view', () => {
     await expect(profile.locator('.sv-profile-stepper')).toHaveCount(0);
     await expect(page.locator('.hep-detail')).toHaveCount(0);
 
-    // The dock sits below the chart card and above the shared listing.
-    const order = await page.evaluate(() => {
+    // The rail is a sibling of the main column, on the opposite side from the
+    // control sidebar — not a block inside it (decisions D1/D2/D4).
+    const layout = await page.evaluate(() => {
       const instance = window.__safetyHepExplorerInstance;
-      const children = [...instance.main.children];
+      const root = [...instance.root.children];
       return {
-        chartBeforeProfile:
-          children.indexOf(instance.chartWrap) < children.indexOf(instance.profileWrap),
-        profileBeforeListing:
-          children.indexOf(instance.profileWrap) < children.indexOf(instance.listingWrap)
+        order: root.map((node) => node.className.split(' ')[0]),
+        railOutsideMain: !instance.main.contains(instance.railWrap),
+        noDockSlot: instance.main.querySelector('.sv-profile') === null
       };
     });
-    expect(order.chartBeforeProfile).toBe(true);
-    expect(order.profileBeforeListing).toBe(true);
+    expect(layout.order).toEqual(['sv-sidebar', 'sv-main', 'sv-rail']);
+    expect(layout.railOutsideMain).toBe(true);
+    expect(layout.noDockSlot).toBe(true);
 
-    // The on-chart visit trace is retained alongside the dock (PPRF-7).
+    // The on-chart visit trace is retained alongside the rail (PPRF-7).
     const overlayCount = await page.evaluate(
       () => window.__safetyHepExplorerInstance.chart.data.datasets[1].data.length
     );
     expect(overlayCount).toBe(3);
 
-    // Idempotency: re-dispatching the identical selection must not rebuild
-    // the profile DOM (the composite controls re-dispatch on every redraw).
+    // Idempotency: re-dispatching the identical selection must not rebuild the
+    // profile DOM (the composite controls re-dispatch on every redraw). The
+    // first dispatch here re-arms the guard on purpose — opening the rail
+    // narrows the main column, which resizes the chart and runs the render
+    // preamble, and that preamble deliberately clears the guard so the next
+    // build uses fresh rows. The claim under test is the one that matters: two
+    // identical dispatches in a row rebuild nothing.
     const stable = await page.evaluate(() => {
       const instance = window.__safetyHepExplorerInstance;
-      const before = instance.profileWrap.querySelector('.sv-profile-root');
       instance.selection.dispatch(['SUBJ-001']);
-      return before === instance.profileWrap.querySelector('.sv-profile-root');
+      const before = instance.railWrap.querySelector('.sv-profile-root');
+      instance.selection.dispatch(['SUBJ-001']);
+      return before === instance.railWrap.querySelector('.sv-profile-root');
     });
     expect(stable).toBe(true);
 
     await captureEvidence(page, 'PPRF-HEP-001', 'scatter-dock');
   });
 
-  test('PPRF-HEP-005: background click clears the selection and hides the dock (#98)', async ({
+  test('PPRF-HEP-005: background click clears the selection and hides the rail (#98)', async ({
     page
   }) => {
     await page.evaluate(() => {
@@ -96,20 +103,20 @@ test.describe('participant-profile dock: hep-explorer scatter view', () => {
       const index = instance.points.findIndex((point) => point.id === 'SUBJ-001');
       instance.chart.options.onClick({}, [{ datasetIndex: 0, index }]);
     });
-    await expect(page.locator('.sv-profile .sv-profile-id')).toBeVisible();
+    await expect(page.locator('.sv-rail .sv-profile-id')).toBeVisible();
 
     await page.evaluate(() => {
       window.__safetyHepExplorerInstance.chart.options.onClick({}, []);
     });
     // dispatch([]) empties the slot; the shell's :empty rule collapses it, so
     // the nine non-adopting renderers' layout math applies here too.
-    await expect(page.locator('.sv-profile')).toBeEmpty();
-    await expect(page.locator('.sv-profile')).toBeHidden();
+    await expect(page.locator('.sv-rail .sv-profile-root')).toHaveCount(0);
+    await expect(page.locator('.sv-rail .sv-profile-id')).toHaveCount(0);
   });
 });
 
 // ── hep-explorer adoption, composite + migration views (PPRF-5/7) ───────────
-test.describe('participant-profile dock: hep-explorer composite and migration views', () => {
+test.describe('participant-profile rail: hep-explorer composite and migration views', () => {
   test.beforeEach(async ({ page }) => {
     const errors = [];
     page.on('pageerror', (error) => errors.push(error.message));
@@ -129,7 +136,7 @@ test.describe('participant-profile dock: hep-explorer composite and migration vi
     expect(page._profileErrors).toEqual([]);
   });
 
-  test('PPRF-HEP-002/PPRF-STEP-001/PPRF-HDR-002: composite multi-select collapses the dock to a stepper, stepping renders each profile and keeps the chart highlight in sync, Clear hides the dock (#98)', async ({
+  test('PPRF-HEP-002/PPRF-STEP-001/PPRF-HDR-002: composite multi-select collapses the rail to a stepper, stepping renders each profile and keeps the chart highlight in sync, Clear hides the rail (#98)', async ({
     page
   }) => {
     const events = [];
@@ -152,24 +159,24 @@ test.describe('participant-profile dock: hep-explorer composite and migration vi
 
     // The dock collapses to the worst-first stepper: "1 of 2 · <id>", and the
     // rendered profile is the stepper's current participant.
-    const stepper = page.locator('.sv-profile .sv-profile-stepper');
+    const stepper = page.locator('.sv-rail .sv-profile-stepper');
     await expect(stepper).toBeVisible();
-    const count = page.locator('.sv-profile .sv-profile-step-count');
+    const count = page.locator('.sv-rail .sv-profile-step-count');
     await expect(count).toHaveText(/^1 of 2 · /);
     const firstId = (await count.textContent()).replace('1 of 2 · ', '');
     expect(picked).toContain(firstId);
-    await expect(page.locator('.sv-profile .sv-profile-id')).toHaveText(`Participant ${firstId}`);
+    await expect(page.locator('.sv-rail .sv-profile-id')).toHaveText(`Participant ${firstId}`);
     await captureEvidence(page, 'PPRF-STEP-001', 'composite-stepper');
 
     // Stepping renders the other participant's full profile and reports it
     // through on_step → transient chart emphasis via the view's highlight
     // contract — with no extra selection dispatch (PPRF-5/6).
     const dispatchesBeforeStep = events.length;
-    await page.locator('.sv-profile .sv-profile-step-next').click();
+    await page.locator('.sv-rail .sv-profile-step-next').click();
     await expect(count).toHaveText(/^2 of 2 · /);
     const secondId = (await count.textContent()).replace('2 of 2 · ', '');
     expect(secondId).not.toBe(firstId);
-    await expect(page.locator('.sv-profile .sv-profile-id')).toHaveText(`Participant ${secondId}`);
+    await expect(page.locator('.sv-rail .sv-profile-id')).toHaveText(`Participant ${secondId}`);
     const emphasis = await page.evaluate(() => ({
       hoverId: window.__safetyHepExplorerInstance.state.hoverId,
       compositeHoverId: window.__safetyHepExplorerInstance.compositeHoverId
@@ -179,10 +186,10 @@ test.describe('participant-profile dock: hep-explorer composite and migration vi
     expect(events.length).toBe(dispatchesBeforeStep);
 
     // The dock's Clear routes through the host's own clear path: the sticky
-    // selection empties, participantsSelected fires with [], the dock hides.
-    await page.locator('.sv-profile .sv-profile-clear').click();
-    await expect(page.locator('.sv-profile')).toBeEmpty();
-    await expect(page.locator('.sv-profile')).toBeHidden();
+    // selection empties, participantsSelected fires with [], the rail hides.
+    await page.locator('.sv-rail .sv-profile-clear').click();
+    await expect(page.locator('.sv-rail .sv-profile-root')).toHaveCount(0);
+    await expect(page.locator('.sv-rail .sv-profile-id')).toHaveCount(0);
     await expect.poll(() => events.at(-1)).toEqual([]);
     const cleared = await page.evaluate(() =>
       window.__safetyHepExplorerInstance.compositeSelectedIds.slice()
@@ -200,8 +207,8 @@ test.describe('participant-profile dock: hep-explorer composite and migration vi
       chart.options.onClick({}, [{ index: 0 }], chart);
       return String(instance.compositeSelectedIds[0]);
     });
-    await expect(page.locator('.sv-profile .sv-profile-id')).toHaveText(`Participant ${viaClick}`);
-    await expect(page.locator('.sv-profile .sv-profile-stepper')).toHaveCount(0);
+    await expect(page.locator('.sv-rail .sv-profile-id')).toHaveText(`Participant ${viaClick}`);
+    await expect(page.locator('.sv-rail .sv-profile-stepper')).toHaveCount(0);
 
     // Narrowing through the shared Participants selector to ONE participant is
     // the same single-focus path.
@@ -213,10 +220,8 @@ test.describe('participant-profile dock: hep-explorer composite and migration vi
       select.dispatchEvent(new Event('change'));
       return target;
     });
-    await expect(page.locator('.sv-profile .sv-profile-id')).toHaveText(
-      `Participant ${viaSelector}`
-    );
-    await expect(page.locator('.sv-profile .sv-profile-stepper')).toHaveCount(0);
+    await expect(page.locator('.sv-rail .sv-profile-id')).toHaveText(`Participant ${viaSelector}`);
+    await expect(page.locator('.sv-rail .sv-profile-stepper')).toHaveCount(0);
   });
 
   test('PPRF-ACC-001: the stepper, controls and spaghetti canvas are keyboard-operable across re-renders — repeated arrow presses step with no re-tabbing (#98)', async ({
@@ -229,45 +234,42 @@ test.describe('participant-profile dock: hep-explorer composite and migration vi
       chart.options.onClick({}, [{ index: 0 }], chart);
       chart.options.onClick({}, [{ index: 1 }], chart);
     });
-    const count = page.locator('.sv-profile .sv-profile-step-count');
+    const count = page.locator('.sv-rail .sv-profile-step-count');
     await expect(count).toHaveText(/^1 of 2 · /);
 
     // Focus the stepper strip and step by keyboard TWICE in a row: the block
     // re-renders on every step, so this only works when focus is restored onto
     // the recreated strip (the PPRF-8 promise a keyboard user relies on).
-    await page.locator('.sv-profile .sv-profile-stepper').focus();
+    await page.locator('.sv-rail .sv-profile-stepper').focus();
     await page.keyboard.press('ArrowRight');
     await expect(count).toHaveText(/^2 of 2 · /);
-    await expect(page.locator('.sv-profile .sv-profile-stepper')).toBeFocused();
+    await expect(page.locator('.sv-rail .sv-profile-stepper')).toBeFocused();
     await page.keyboard.press('ArrowLeft');
     await expect(count).toHaveText(/^1 of 2 · /);
-    await expect(page.locator('.sv-profile .sv-profile-stepper')).toBeFocused();
+    await expect(page.locator('.sv-rail .sv-profile-stepper')).toBeFocused();
 
     // Activating ▶ by keyboard keeps keyboard control inside the stepper even
     // when the recreated button comes back disabled at the cohort end.
-    await page.locator('.sv-profile .sv-profile-step-next').focus();
+    await page.locator('.sv-rail .sv-profile-step-next').focus();
     await page.keyboard.press('Enter');
     await expect(count).toHaveText(/^2 of 2 · /);
-    await expect(page.locator('.sv-profile .sv-profile-stepper')).toBeFocused();
+    await expect(page.locator('.sv-rail .sv-profile-stepper')).toBeFocused();
 
     // The Standardization select survives the display re-render with focus.
-    const display = page.locator('.sv-profile .sv-profile-display');
+    const display = page.locator('.sv-rail .sv-profile-display');
     await display.focus();
     await display.selectOption('relative_baseline');
-    await expect(page.locator('.sv-profile .sv-profile-display')).toBeFocused();
-    await expect(page.locator('.sv-profile .sv-profile-display')).toHaveValue('relative_baseline');
+    await expect(page.locator('.sv-rail .sv-profile-display')).toBeFocused();
+    await expect(page.locator('.sv-rail .sv-profile-display')).toHaveValue('relative_baseline');
 
     // Labeled regions and canvas text alternatives (PPRF-8), and ONE
     // persistent polite live region announcing the current participant.
-    await expect(page.locator('.sv-profile .sv-profile-root')).toHaveAttribute('role', 'region');
-    const canvas = page.locator('.sv-profile .sv-profile-spaghetti-canvas');
+    await expect(page.locator('.sv-rail .sv-profile-root')).toHaveAttribute('role', 'region');
+    const canvas = page.locator('.sv-rail .sv-profile-spaghetti-canvas');
     await expect(canvas).toHaveAttribute('role', 'img');
     await expect(canvas).toHaveAttribute('aria-label', /Labs over time/);
-    await expect(page.locator('.sv-profile .sv-profile-live')).toHaveAttribute(
-      'aria-live',
-      'polite'
-    );
-    await expect(page.locator('.sv-profile .sv-profile-live')).toHaveCount(1);
+    await expect(page.locator('.sv-rail .sv-profile-live')).toHaveAttribute('aria-live', 'polite');
+    await expect(page.locator('.sv-rail .sv-profile-live')).toHaveCount(1);
 
     // The spaghetti canvas is focusable: focusing it shows the reference cut
     // lines (the keyboard half of PPRF-3's hover/focus cut affordance).
@@ -282,24 +284,24 @@ test.describe('participant-profile dock: hep-explorer composite and migration vi
     await captureEvidence(page, 'PPRF-ACC-001', 'keyboard-stepper');
   });
 
-  test('PPRF-HEP-004: the migration ribbon hand-off arrives in the composite view with the dock opened on the carried cohort (#98)', async ({
+  test('PPRF-HEP-004: the migration ribbon hand-off arrives in the composite view with the rail opened on the carried cohort (#98)', async ({
     page
   }) => {
     // The §1.5 acceptance demo: NO code path in migration.js, composite.js, or
-    // selection.js was edited for the dock — the carried ids flow through the
-    // existing choke point and the dock simply hears the dispatch.
+    // selection.js was edited for the rail — the carried ids flow through the
+    // existing choke point and the rail simply hears the dispatch.
     await page.locator('.sv-view-option', { hasText: 'Migration' }).click();
     await page.waitForFunction(() => window.__safetyHepExplorerInstance.root.$hepSankey);
 
-    // Selecting a flow opens the dock on the flow's cohort already in the
+    // Selecting a flow opens the rail on the flow's cohort already in the
     // migration view (every dispatch feeds it) …
     await page
       .locator('.hep-ribbon[data-side="active"][data-pre="Normal & NN"][data-post="Hy\'s Law"]')
       .click();
-    await expect(page.locator('.sv-profile .sv-profile-id')).toHaveText('Participant CS-01');
+    await expect(page.locator('.sv-rail .sv-profile-id')).toHaveText('Participant CS-01');
 
     // … and the "Review these N in the composite plot" hand-off lands in the
-    // composite view with the dock still open on exactly that cohort.
+    // composite view with the rail still open on exactly that cohort.
     await page.locator('.sv-footnote .hep-step-btn').click();
     await page.waitForFunction(
       () => window.__safetyHepExplorerInstance.compositeCharts.length === 6
@@ -310,9 +312,9 @@ test.describe('participant-profile dock: hep-explorer composite and migration vi
     }));
     expect(landed.view).toBe('composite');
     expect(landed.selected).toEqual(['CS-01']);
-    await expect(page.locator('.sv-profile .sv-profile-id')).toHaveText('Participant CS-01');
+    await expect(page.locator('.sv-rail .sv-profile-id')).toHaveText('Participant CS-01');
     // A one-participant cohort is a full profile, not a stepper.
-    await expect(page.locator('.sv-profile .sv-profile-stepper')).toHaveCount(0);
+    await expect(page.locator('.sv-rail .sv-profile-stepper')).toHaveCount(0);
     await captureEvidence(page, 'PPRF-HEP-004', 'migration-handoff-dock');
   });
 });
@@ -346,7 +348,7 @@ test.describe('participant-profile standalone: built linked-charts demo page', (
 
     // Two independent mounts: the chart's own dock is off (profile: false), and
     // the standalone module idles until a selection arrives on the chart root.
-    await expect(page.locator('#linked-chart .sv-profile')).toBeEmpty();
+    await expect(page.locator('#linked-chart .sv-profile-root')).toHaveCount(0);
     const profile = page.locator('#linked-profile');
     await expect(profile.locator('.sv-notes')).toContainText('Waiting for selection');
 

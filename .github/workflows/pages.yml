@@ -22,7 +22,10 @@ on:
       - main
       - dev
   pull_request:
-    types: [opened, synchronize, reopened, closed]
+    # ready_for_review is in the list because a PR opened as a draft gets no
+    # preview until something else fires: without it, marking a draft ready
+    # leaves the reviewer on a PR whose preview link was never built.
+    types: [opened, synchronize, reopened, closed, ready_for_review]
 
 permissions:
   contents: write

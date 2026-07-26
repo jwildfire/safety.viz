@@ -12,8 +12,8 @@ async function selectPoint(page, index) {
     const instance = window.__safetyDeltaDeltaInstance;
     instance.chart.options.onClick({}, [{ index: i }]);
   }, index);
-  // The docked participant profile is the detail view (#99, PPRF-DD-002).
-  await expect(page.locator('.sv-profile .sv-profile-root')).toBeVisible();
+  // The railed participant profile is the detail view (#99, PPRF-DD-002).
+  await expect(page.locator('.sv-rail .sv-profile-root')).toBeVisible();
 }
 
 test.describe('safety.viz delta-delta module', () => {
@@ -156,7 +156,7 @@ test.describe('safety.viz delta-delta module', () => {
     expect(tip.afterLabel).toContain('Change in Bilirubin: -0.30');
   });
 
-  test('PPRF-DD-001/PPRF-DD-002/PPRF-DD-004: clicking a point dispatches the selection and opens the docked profile — the bespoke measure table is gone (#99)', async ({
+  test('PPRF-DD-001/PPRF-DD-002/PPRF-DD-004: clicking a point dispatches the selection and opens the railed profile — the bespoke measure table is gone (#99)', async ({
     page
   }) => {
     // The house dispatch lands on the shell root (#88 SELN-4 gap closed).
@@ -170,22 +170,22 @@ test.describe('safety.viz delta-delta module', () => {
     await selectPoint(page, 0);
     expect(await page.evaluate(() => window.__sddHeard)).toEqual([['SUBJ-01']]);
 
-    // Full docked profile: header id + demographic details (host details minus
+    // Full railed profile: header id + demographic details (host details minus
     // the id), spaghetti, and one measure row per key measure (PPRF-12: the
     // profile is the participant's full story, not the delta re-encoded).
-    await expect(page.locator('.sv-profile .sv-profile-id')).toHaveText('Participant SUBJ-01');
-    await expect(page.locator('.sv-profile .sv-profile-header')).toContainText('North');
-    await expect(page.locator('.sv-profile .sv-profile-spaghetti canvas')).toBeVisible();
-    await expect(page.locator('.sv-profile .sv-profile-measure-row')).toHaveCount(3);
+    await expect(page.locator('.sv-rail .sv-profile-id')).toHaveText('Participant SUBJ-01');
+    await expect(page.locator('.sv-rail .sv-profile-header')).toContainText('North');
+    await expect(page.locator('.sv-rail .sv-profile-spaghetti canvas')).toBeVisible();
+    await expect(page.locator('.sv-rail .sv-profile-measure-row')).toHaveCount(3);
     // No stepper for a single-select gesture.
-    await expect(page.locator('.sv-profile .sv-profile-step-count')).toHaveCount(0);
+    await expect(page.locator('.sv-rail .sv-profile-step-count')).toHaveCount(0);
     // The bespoke measure table is removed in the adopting change (PPRF-12).
     await expect(page.locator('.sdd-measure-table')).toHaveCount(0);
     await expect(page.locator('.sdd-detail-header')).toHaveCount(0);
-    await captureEvidence(page, 'PPRF-DD-002', 'docked-profile');
+    await captureEvidence(page, 'PPRF-DD-002', 'railed-profile');
   });
 
-  test('SDD-REG-012/SDD-REG-013/PPRF-DD-002: the clicked point is highlighted and clicking another re-renders the docked profile (#25, #99)', async ({
+  test('SDD-REG-012/SDD-REG-013/PPRF-DD-002: the clicked point is highlighted and clicking another re-renders the railed profile (#25, #99)', async ({
     page
   }) => {
     await selectPoint(page, 0);
@@ -198,7 +198,7 @@ test.describe('safety.viz delta-delta module', () => {
     await captureEvidence(page, 'SDD-REG-012', 'point-selected');
 
     await selectPoint(page, 1);
-    await expect(page.locator('.sv-profile .sv-profile-id')).toHaveText('Participant SUBJ-02');
+    await expect(page.locator('.sv-rail .sv-profile-id')).toHaveText('Participant SUBJ-02');
     const second = await page.evaluate(() => {
       const dataset = window.__safetyDeltaDeltaInstance.chart.data.datasets[0];
       return { w0: dataset.pointBorderWidth[0], w1: dataset.pointBorderWidth[1] };
@@ -207,14 +207,14 @@ test.describe('safety.viz delta-delta module', () => {
     expect(second.w1).toBe(3);
   });
 
-  test('PPRF-DD-003: an empty-canvas click clears the highlight and empties the dock (#99)', async ({
+  test('PPRF-DD-003: an empty-canvas click clears the highlight and empties the rail (#99)', async ({
     page
   }) => {
     await selectPoint(page, 0);
     await page.evaluate(() => {
       window.__safetyDeltaDeltaInstance.chart.options.onClick({}, []);
     });
-    await expect(page.locator('.sv-profile > *')).toHaveCount(0);
+    await expect(page.locator('.sv-rail .sv-profile-root')).toHaveCount(0);
     const state = await page.evaluate(() => {
       const instance = window.__safetyDeltaDeltaInstance;
       return {
@@ -228,18 +228,18 @@ test.describe('safety.viz delta-delta module', () => {
     expect(state.annotation).toBe('Click a point to see details.');
   });
 
-  test('PPRF-DD-003: the dock Clear affordance routes through the host clear path (#99)', async ({
+  test('PPRF-DD-003: the rail Clear affordance routes through the host clear path (#99)', async ({
     page
   }) => {
     await selectPoint(page, 0);
-    await page.locator('.sv-profile .sv-profile-clear').click();
-    await expect(page.locator('.sv-profile > *')).toHaveCount(0);
+    await page.locator('.sv-rail .sv-profile-clear').click();
+    await expect(page.locator('.sv-rail .sv-profile-root')).toHaveCount(0);
     expect(
       await page.evaluate(() => window.__safetyDeltaDeltaInstance.state.selectedId)
     ).toBeNull();
   });
 
-  test('PPRF-DD-003: changing a control clears the selection and the docked profile (#99)', async ({
+  test('PPRF-DD-003: changing a control clears the selection and the railed profile (#99)', async ({
     page
   }) => {
     await selectPoint(page, 0);
@@ -247,7 +247,7 @@ test.describe('safety.viz delta-delta module', () => {
       .locator('.sv-control', { hasText: 'X Measure' })
       .locator('select')
       .selectOption('Calcium');
-    await expect(page.locator('.sv-profile > *')).toHaveCount(0);
+    await expect(page.locator('.sv-rail .sv-profile-root')).toHaveCount(0);
   });
 
   test('SDD-REG-026: the regression line toggles with an equation and R² note (#25)', async ({
