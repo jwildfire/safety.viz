@@ -15,7 +15,7 @@
     <header class="site-header">
       <a class="site-name" href="../index.html">
         safety.viz
-        <span class="site-version">v1.4.1</span>
+        <span class="site-version">v1.5.0</span>
       </a>
       <nav class="site-nav" aria-label="Primary">
         <div class="nav-group"><a href="../index.html">Gallery</a><button type="button" class="nav-disclosure" aria-expanded="false" aria-controls="gallery-menu" aria-label="Show charts"><span class="nav-caret" aria-hidden="true"></span></button><ul id="gallery-menu" class="nav-menu"><li><a href="../histogram/index.html">Safety Histogram</a></li><li><a href="../outlier-explorer/index.html">Safety Outlier Explorer</a></li><li><a href="../results-over-time/index.html">Safety Results Over Time</a></li><li><a href="../shift-plot/index.html">Safety Shift Plot</a></li><li><a href="../delta-delta/index.html">Safety Delta-Delta</a></li><li><a href="../hep-explorer/index.html">Hepatic Safety Explorer</a></li><li><a href="../hep-waterfall/index.html">Hepatic ALT Waterfall</a></li><li><a href="../participant-profile/index.html">Participant Profile</a></li><li><a href="../ae-explorer/index.html">Adverse Event Explorer</a></li><li><a href="../ae-timelines/index.html">Adverse Event Timelines</a></li><li><a href="../qt-explorer/index.html">QT Safety Explorer</a></li></ul></div>
@@ -44,7 +44,7 @@
     <main class="site-main"><h1>Hepatic Safety Explorer: test evidence</h1>
 <p class="tagline">Requirement-traced qualification evidence for the safety.viz <code>hep-explorer</code> module.</p>
 <nav class="page-tabs"><a href="index.html">Live demo</a><a href="guide.html">Clinical guide</a><a class="current" aria-current="page" href="evidence.html">Test evidence</a><a href="api.html">API reference</a></nav>
-<p class="matrix-link"><a href="https://github.com/jwildfire/obot.agent/blob/main/docs/requirements/hep-explorer.md">Requirement matrix ↗</a> — the reviewed source specification these tests trace to.</p>
+<p class="matrix-link"><a href="https://github.com/jwildfire/safety.viz/blob/HEAD/requirements/hep-explorer.md">Requirement matrix ↗</a> — the reviewed source specification these tests trace to.</p>
 <dl class="facts"><div class="fact"><dt>Scope</dt><dd>56 coverage rows<span class="sub">89 distinct requirement IDs</span></dd></div><div class="fact"><dt>Tests executed</dt><dd>454 automated checks<span class="sub">58 browser · 396 unit</span></dd></div><div class="fact"><dt>Result</dt><dd><a class="chip-link" href="https://github.com/jwildfire/safety.viz/actions/runs/30145090697" title="View the CI run that executed this test"><span class="chip status-pass">pass</span></a> all passing<span class="sub">21 evidence screenshots</span></dd></div><div class="fact"><dt>Generated</dt><dd>2026-07-25 05:04 UTC</dd></div><div class="fact"><dt>Environment</dt><dd><code>linux 6.17.0-1020-azure · node v22.23.1 · playwright 1.61.1 · chromium 149.0.7827.55</code></dd></div><div class="fact"><dt>Test run</dt><dd><a href="https://github.com/jwildfire/safety.viz/actions/runs/30145090697">Actions run #30145090697</a></dd></div></dl>
 <h2 id="scope">Scope &amp; approach</h2>
 <p>Traceability for the hep-explorer module (a Chart.js reimplementation of the <a href="https://github.com/SafetyGraphics/hep-explorer">SafetyGraphics/hep-explorer</a> eDISH hepatotoxicity explorer matching its core behavior, under <a href="https://github.com/jwildfire/safety.viz/issues/43">#43</a>), per the convention in <a href="https://github.com/jwildfire/safety.viz/blob/HEAD/CONTRIBUTING.md">CONTRIBUTING.md</a>. Requirement IDs use the module&#39;s condensed **<code>HEP-*</code>** scheme cited in the source and test names — <code>HEP-CHART-*</code> (scatter/axes), <code>HEP-QUAD-*</code> (quadrants/cutpoints), <code>HEP-CTRL-*</code> (controls), <code>HEP-DISPLAY-*</code> (eDISH/mDISH standardization), <code>HEP-SELECT-*</code> (participant detail/visit path), <code>HEP-DATA-*</code> (data contract/cleaning), <code>HEP-API-*</code> (lifecycle/events), and <code>HEP-COMP-*</code> (the composite plot for abnormal-baseline subjects, <a href="https://github.com/jwildfire/safety.viz/issues/67">#67</a>). A reviewed source requirement matrix (<code>hep-explorer.md</code> in the requirements repo) is not yet published, so the source-matrix column is pending; each row lists the module IDs its test covers.</p>
@@ -195,7 +195,7 @@ npm run evidence:check   # compare a fresh run against the committed evidence
 npm run evidence         # regenerate docs/evidence/hep-explorer/evidence.json</code></pre><p>Screenshot baselines are canonical to the Linux CI runner; the repository&#39;s <em>Update evidence baselines</em> workflow is the authoritative way to refresh them. See <a href="https://github.com/jwildfire/safety.viz/blob/HEAD/CONTRIBUTING.md">CONTRIBUTING.md</a> for the traceability convention.</p></section></main>
     <footer class="site-footer">
       <p>
-        safety.viz v1.4.1 — clinical safety graphics on one modern charting stack, migrated
+        safety.viz v1.5.0 — clinical safety graphics on one modern charting stack, migrated
         from the <a href="https://github.com/SafetyGraphics">safetyGraphics</a> ecosystem originally
         built by <a href="https://github.com/RhoInc">Rho, Inc.</a> (<a href="../about.html"
           >credits</a
