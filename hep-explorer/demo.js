@@ -70,6 +70,17 @@
         // tests, so the baseline-referenced composite view is meaningful. Switch
         // the View control to "eDISH / mDISH scatter" for the classic view.
         view: 'composite',
+        // Designate the arm pair the migration Sankey (Amirzadegan et al., Drug
+        // Safety 2025, Fig 3) mirrors about its centre column. The synthetic
+        // chronic-liver-disease cohort is the one population in this dataset
+        // where a baseline → on-treatment shift comparison is meaningful, and
+        // it reproduces the paper's Study-2 shape (the drug arm shows fewer
+        // unfavourable and more than twice the favourable shifts). The ~231
+        // pilot participants are designated neither side and fall out with a
+        // counted note, which is exactly what an undesignated arm should do.
+        arm_col: 'ARM',
+        placebo_arm: 'CLD: Placebo',
+        active_arms: ['CLD: Study Drug'],
         studyday_col: 'VISITNUM',
         visit_col: 'VISIT',
         visitn_col: 'VISITNUM',
