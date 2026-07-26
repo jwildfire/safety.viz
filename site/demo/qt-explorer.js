@@ -64,7 +64,7 @@
           { value_col: 'RACE', label: 'Race' },
           { value_col: 'SITE', label: 'Site' }
         ],
-        // Docked participant profile (#99, PPRF-QT): the ECG parameters render
+        // Railed participant profile (#99, PPRF-QT): the ECG parameters render
         // as key measures in observed milliseconds (unit-ULN mapping) with the
         // 450 ms absolute threshold as the QTc cut; profile_details are the
         // header demographics from adeg.csv.

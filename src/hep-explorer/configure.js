@@ -94,11 +94,11 @@ export { MEASURE_KEYS, cutFor } from '../hep-core/rows.js';
  * @property {string} [quadrant_labels='shown'] Whether the scatter draws the four quadrant corner labels: `shown` or `hidden` (HEP-QUAD-007).
  * @property {string} [marginals='box_rug'] Marginal distributions drawn beside the eDISH scatter: `box_rug` (marginal box plots and axis rugs), `box`, `rug`, or `none` (HEP-MARG-001, HEP-MARG-002, HEP-MARG-003).
  * @property {number} [visit_window=30] Timing window (days): points whose peak-X and peak-Y days are within this many days render filled, else hollow (HEP-CTRL-008, HEP-DISPLAY-005).
- * @property {boolean} [profile=true] Dock the shared participant-profile module (header, labs-over-time spaghetti, measure table) in the shell's profile slot, driven by every selection path via the participantsSelected event; false restores the pre-#98 behaviour of no drill-down block (#98, PPRF-7).
- * @property {?Array<string|Object>} [profile_details=null] Demographic columns for the docked profile's header, as names or { value_col, label } specs; null falls back to the caller's own `details` value. Use this when `details` is configured for the linked listing rather than demographics (#98, PPRF-2).
- * @property {?string} [participantProfileURL=null] Optional link-out URL for the docked profile's header, templated by every literal `{id}` token (#98, PPRF-2, closes #53).
- * @property {?string} [p_alt_col=null] Optional column carrying a pre-computed P_ALT shown in the docked profile's header; passed through where present, never computed client-side (#98, PPRF-2).
- * @property {number[]} [measureBounds=[0.01, 0.99]] Population-extent quantiles for the docked profile's sparkline / inset guides (#98, PPRF-4; parity with the original renderer's measureBounds).
+ * @property {boolean} [profile=true] Mount the shared participant-profile module (header, labs-over-time spaghetti, measure table) in the shell's rail slot beside the chart, driven by every selection path via the participantsSelected event; false restores the pre-#98 behaviour of no drill-down block (#98, PPRF-7; obot.roadmap#75 moved the mount from the dock to the rail).
+ * @property {?Array<string|Object>} [profile_details=null] Demographic columns for the railed profile's header, as names or { value_col, label } specs; null falls back to the caller's own `details` value. Use this when `details` is configured for the linked listing rather than demographics (#98, PPRF-2).
+ * @property {?string} [participantProfileURL=null] Optional link-out URL for the railed profile's header, templated by every literal `{id}` token (#98, PPRF-2, closes #53).
+ * @property {?string} [p_alt_col=null] Optional column carrying a pre-computed P_ALT shown in the railed profile's header; passed through where present, never computed client-side (#98, PPRF-2).
+ * @property {number[]} [measureBounds=[0.01, 0.99]] Population-extent quantiles for the railed profile's sparkline / inset guides (#98, PPRF-4; parity with the original renderer's measureBounds).
  * @property {boolean} [r_ratio_filter=true] Whether to render the R-Ratio range filter control (HEP-CTRL-010).
  * @property {number[]} [r_ratio=[0,null]] Initial R-Ratio [min, max] range; a null max is resolved from the data on first render (HEP-CTRL-010).
  * @property {Array<string|Object>} [filters=[]] Filter controls: column names or { value_col, label } specs. Filters whose column is absent from the data are dropped with a console warning (HEP-CTRL-011).
@@ -276,7 +276,7 @@ export function syncSettings(settings) {
   synced.hide_unchanged = Boolean(synced.hide_unchanged);
   synced.profile = Boolean(synced.profile);
 
-  // Docked-profile pass-throughs (#98): profile_details normalizes to a spec
+  // Railed-profile pass-throughs (#98): profile_details normalizes to a spec
   // array only when provided (null keeps the details fallback), and
   // measureBounds is coerced back to a two-quantile array.
   synced.profile_details =

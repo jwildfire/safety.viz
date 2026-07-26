@@ -92,7 +92,7 @@ test.describe('participant-profile rail: hep-explorer scatter view', () => {
     });
     expect(stable).toBe(true);
 
-    await captureEvidence(page, 'PPRF-HEP-001', 'scatter-dock');
+    await captureEvidence(page, 'PPRF-HEP-001', 'scatter-rail');
   });
 
   test('PPRF-HEP-005: background click clears the selection and hides the rail (#98)', async ({
