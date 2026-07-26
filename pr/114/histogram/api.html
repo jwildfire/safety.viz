@@ -58,7 +58,7 @@ on the returned instance to validate the data and draw the chart.</p>
 the SHARED listing renderer into clickable/keyboard-focusable rows —
 consumers that never set it (outlier-explorer, shift-plot) keep the
 pre-#99 listing untouched. The default focuses the clicked row&#39;s
-participant into the docked profile via selectParticipant.</p>
+participant into the railed profile via selectParticipant.</p>
 <table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>row</code></td><td><code>Object</code></td><td>—</td><td>The clicked listing record.</td></tr></tbody></table>
 <p class="returns"><strong>Returns:</strong> <code>void</code> — </p>
 <h3 id="init"><code>init(data)</code></h3>
@@ -91,7 +91,7 @@ hand.</p>
 <p>Focus one participant from the linked listing (#99, PPRF-SH-002): set the
 new host selection state, highlight the participant&#39;s listing rows, and
 dispatch the house participantsSelected event on the shell root — which
-feeds the docked profile. The listing itself stays (PPRF-11: records vs
+feeds the railed profile. The listing itself stays (PPRF-11: records vs
 story).</p>
 <table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>id</code></td><td><code>string</code></td><td>—</td><td>Participant identifier.</td></tr></tbody></table>
 <p class="returns"><strong>Returns:</strong> <code>void</code> — </p>
