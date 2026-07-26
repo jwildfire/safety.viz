@@ -138,7 +138,7 @@
       var rows = deriveStudyDay(parseCsv(texts[0]));
       var aeRows = parseCsv(texts[1]);
 
-      // Top: the host chart, with its built-in dock disabled so the wiring
+      // Top: the host chart, with its built-in profile disabled so the wiring
       // below is demonstrably the public event contract, not the adoption
       // path.
       var chart = SafetyViz.hepExplorer('#linked-chart', {

@@ -71,6 +71,12 @@ Select more than one participant — a multi-select on the composite plot, a bru
 
 **Clear** (in the profile, the ✕ in the rail head, the chart's sidebar, or a background click on the chart) empties the selection everywhere and hides the rail; every route converges on the same host clear path, so the chart and profile can never disagree about what is selected.
 
+## Where it sits: the rail
+
+The profile lives in a **rail** — a right-hand column beside the chart, opposite the control sidebar. The rail takes no width at all until you select a participant, so a chart with nothing selected is exactly as wide as it was before; picking a point opens the rail beside the chart rather than pushing the chart up the page. Its head names the participant and carries two controls: **Close**, and **Expand**, which fills the host renderer's own container when one participant needs the whole area. Expand is deliberately not a viewport overlay or the native Fullscreen API — the same module has to behave identically inside a gsm.safety htmlwidget or an open.gismo panel, where escaping the container is either impossible or rude. **Escape** collapses it again rather than trapping you there.
+
+Below 900px there is no room for a column beside the chart, so the rail stacks underneath it.
+
 ## Wiring it to a chart
 
 The profile is deliberately chart-agnostic, with two mounts:
