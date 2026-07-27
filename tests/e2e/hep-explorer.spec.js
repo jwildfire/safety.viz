@@ -867,6 +867,183 @@ test.describe('safety.viz hep-explorer module', () => {
     expect(result.chartCountBeforeDestroy).toBeGreaterThan(0);
     expect(result.containerText).toBe('');
   });
+  test('HEP-ANIM-001/HEP-ANIM-003/HEP-ANIM-006/HEP-ANIM-007: the study-day playback bar scrubs the cloud through time and resets back to the peaks (#46)', async ({
+    page
+  }) => {
+    // The bar renders under the plot, spanning the study-day range the fixture
+    // carries (day 1 through the day-112 record) (HEP-ANIM-001).
+    const bar = page.locator('.hep-animation-bar');
+    await expect(bar).toBeVisible();
+    const slider = page.locator('.hep-animation-slider');
+    await expect(slider).toHaveAttribute('min', '1');
+    await expect(slider).toHaveAttribute('max', '112');
+    await expect(page.locator('.hep-animation-label')).toHaveText('Showing peak values (all days)');
+
+    // The static scatter is the peak-vs-peak reduction: SUBJ-001 sits at its
+    // ALT peak of 4xULN.
+    const peakX = await page.evaluate(() => {
+      const chart = window.__safetyHepExplorerInstance.chart;
+      const index = window.__safetyHepExplorerInstance.points.findIndex(
+        (point) => String(point.id) === 'SUBJ-001'
+      );
+      return chart.data.datasets[0].data[index].x;
+    });
+    expect(peakX).toBeCloseTo(4, 5);
+
+    // Scrub to day 1: every point falls back to its FIRST result, so SUBJ-001
+    // shows its baseline ALT of 40/40 = 1xULN, not its peak (HEP-ANIM-003).
+    await slider.fill('1');
+    await slider.dispatchEvent('input');
+    await expect(page.locator('.hep-animation-label')).toHaveText('Showing data from: Day 1');
+    const dayOne = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      const index = instance.points.findIndex((point) => String(point.id) === 'SUBJ-001');
+      return {
+        x: instance.chart.data.datasets[0].data[index].x,
+        y: instance.chart.data.datasets[0].data[index].y,
+        day: instance.state.animation.day
+      };
+    });
+    expect(dayOne.x).toBeCloseTo(1, 5);
+    expect(dayOne.y).toBeCloseTo(1, 5);
+    expect(dayOne.day).toBe(1);
+
+    // Day 28 advances the same participant to its peak week-4 draw.
+    await slider.fill('28');
+    await slider.dispatchEvent('input');
+    const dayTwentyEight = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      const index = instance.points.findIndex((point) => String(point.id) === 'SUBJ-001');
+      return instance.chart.data.datasets[0].data[index];
+    });
+    expect(dayTwentyEight.x).toBeCloseTo(4, 5);
+    expect(dayTwentyEight.y).toBeCloseTo(2.5, 5);
+
+    await captureEvidence(page, 'HEP-ANIM-001', 'study-day-playback');
+
+    // Reset returns to the peak-vs-peak scatter every other control describes
+    // (HEP-ANIM-007), clearing the trails with it.
+    await page.locator('.hep-animation-reset').click();
+    await expect(page.locator('.hep-animation-label')).toHaveText('Showing peak values (all days)');
+    const afterReset = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      const index = instance.points.findIndex((point) => String(point.id) === 'SUBJ-001');
+      return {
+        x: instance.chart.data.datasets[0].data[index].x,
+        day: instance.state.animation.day,
+        trails: instance.chart.data.datasets[2].data.length
+      };
+    });
+    expect(afterReset.x).toBeCloseTo(4, 5);
+    expect(afterReset.day).toBeNull();
+    expect(afterReset.trails).toBe(0);
+  });
+
+  test('HEP-ANIM-004/HEP-ANIM-005: the play control runs the animation and leaves motion trails behind the moving points (#46)', async ({
+    page
+  }) => {
+    const play = page.locator('.hep-animation-play');
+    await expect(play).toHaveAttribute('aria-pressed', 'false');
+    await play.click();
+    await expect(play).toHaveAttribute('aria-pressed', 'true');
+    await expect(play).toHaveText('■');
+
+    // Points move, and the segments they travelled accumulate in the trail
+    // dataset (HEP-ANIM-004).
+    await page.waitForFunction(
+      () => window.__safetyHepExplorerInstance.chart.data.datasets[2].data.length > 0
+    );
+    // While playing, the quadrant percents — which describe the PEAK
+    // classification, not the moving cloud — are suppressed (HEP-ANIM-006).
+    expect(
+      await page.evaluate(() => window.__safetyHepExplorerInstance.state.animation.playing)
+    ).toBe(true);
+
+    // Stopping leaves the cloud where it stopped and restores the button.
+    await play.click();
+    await expect(play).toHaveAttribute('aria-pressed', 'false');
+    await expect(play).toHaveText('▶');
+    const stopped = await page.evaluate(() => window.__safetyHepExplorerInstance.state.animation);
+    expect(stopped.playing).toBe(false);
+    expect(stopped.day).toBeGreaterThan(0);
+
+    // A play-through left running across a redraw would write into a destroyed
+    // chart: changing a control stops it (HEP-ANIM-005).
+    await play.click();
+    await page
+      .locator('.sv-controls .sv-control', { has: page.locator('label:text-is("Axis Type")') })
+      .locator('select')
+      .selectOption('log');
+    await expect(page.locator('.hep-animation-play')).toHaveAttribute('aria-pressed', 'false');
+    expect(
+      await page.evaluate(() => window.__safetyHepExplorerInstance.state.animation.day)
+    ).toBeNull();
+  });
+
+  test('HEP-PALT-001/HEP-PALT-003: the opted-in P_ALT estimate is shown in the profile header with the arithmetic behind it (#49)', async ({
+    page
+  }) => {
+    // Off by default: no client-side estimate appears unless the caller asks
+    // for one (HEP-PALT-002 — the estimate carries unit and sampling
+    // assumptions only the data owner can confirm).
+    await page.evaluate(() => window.__safetyHepExplorerInstance.selectParticipant('SUBJ-001'));
+    await expect(page.locator('.sv-rail .sv-profile-id')).toHaveText('Participant SUBJ-001');
+    await expect(page.locator('.sv-rail .sv-profile-palt')).toHaveCount(0);
+
+    await page.evaluate(() =>
+      window.__safetyHepExplorerInstance.setSettings({ calculate_palt: true })
+    );
+    await page.evaluate(() => window.__safetyHepExplorerInstance.selectParticipant('SUBJ-001'));
+    const palt = page.locator('.sv-rail .sv-profile-palt');
+    await expect(palt).toHaveCount(1);
+    await expect(palt).toContainText(/\d+\.\d{2}/);
+
+    // Clicking the figure shows the arithmetic that produced it, not just the
+    // number (HEP-PALT-003).
+    await palt.locator('.sv-profile-detail-value').click();
+    const footnote = page.locator('.sv-rail .sv-profile-footnote');
+    await expect(footnote).toContainText('ALT AUC');
+    await expect(footnote).toContainText('IU/L');
+    await expect(footnote.locator('a')).toHaveAttribute(
+      'href',
+      'https://pubmed.ncbi.nlm.nih.gov/30303523/'
+    );
+
+    await captureEvidence(page, 'HEP-PALT-001', 'palt-estimate');
+  });
+
+  test('HEP-SELECT-008: the selected participant’s measure table draws a sparkline per row and expands it into a full chart (#48)', async ({
+    page
+  }) => {
+    await page.evaluate(() => window.__safetyHepExplorerInstance.selectParticipant('SUBJ-001'));
+    await expect(page.locator('.sv-rail .sv-profile-id')).toHaveText('Participant SUBJ-001');
+
+    // One sparkline per measure row, each with plotted geometry rather than an
+    // empty frame (#48 — the original's lab summary table with spark lines).
+    const rows = page.locator('.sv-rail .sv-profile-measure-row');
+    await expect(rows).toHaveCount(3);
+    await expect(page.locator('.sv-rail .sv-profile-spark svg')).toHaveCount(3);
+    const sparkPaths = await page.evaluate(() =>
+      [...document.querySelectorAll('.sv-rail .sv-profile-spark svg')].map(
+        (svg) => svg.querySelectorAll('path, polyline, circle').length
+      )
+    );
+    expect(sparkPaths.every((count) => count > 0)).toBe(true);
+
+    // Clicking a sparkline expands that measure into a full drill-down chart
+    // beneath its row, and clicking again collapses it.
+    const toggle = page.locator('.sv-rail .sv-profile-spark-toggle').first();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.locator('.sv-rail .sv-profile-inset-row canvas')).toHaveCount(1);
+
+    await captureEvidence(page, 'HEP-SELECT-008', 'measure-sparkline-drilldown');
+
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.locator('.sv-rail .sv-profile-inset-row')).toHaveCount(0);
+  });
 });
 
 // Composite plot (#67, HEP-COMP-*): the baseline-referenced composite view for

@@ -111,6 +111,11 @@
           "default": null,
           "description": "Optional link-out URL for the header; every literal `{id}` token is replaced with the URL-encoded participant id (PPRF-2, closes #53)."
         },
+        "calculate_palt": {
+          "type": "boolean",
+          "default": false,
+          "description": "Opt in to computing P_ALT from the participant's ALT trajectory when p_alt_col supplies no value; a supplied value always wins (HEP-PALT-001)."
+        },
         "p_alt_col": {
           "type": ["string", "null"],
           "default": null,

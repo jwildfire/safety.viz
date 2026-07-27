@@ -8,6 +8,16 @@
 // the distribution set carries no study-day column — the visit sequence stands
 // in for study day in the timing highlight, tooltips, and visit path. Loaded
 // by hep-explorer/index.html after the dist/ bundle.
+//
+// Two feature notes for this dataset (#46, #49). The eDISH / mDISH scatter now
+// carries a study-day playback bar — switch the View control to
+// "eDISH / mDISH scatter" and press play to watch each participant walk its own
+// lab trajectory — but because studyday_col maps to VISITNUM here, the playback
+// runs over the visit sequence, not calendar study days. And calculate_palt is
+// deliberately left OFF: the P_ALT estimate integrates ALT over study day × 24
+// hours, which a visit sequence cannot stand in for. This distribution set also
+// carries no EX (exposure) domain, so the exposure track of sv#49 has nothing
+// to draw here.
 (function () {
   // Quote-aware CSV parser: the real data may quote fields with embedded
   // commas (e.g. long lab-test names).

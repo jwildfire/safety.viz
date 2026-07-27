@@ -1,6 +1,6 @@
 {
   "module": "participant-profile",
-  "generatedAt": "2026-07-26T02:24:23.094Z",
+  "generatedAt": "2026-07-27T02:53:20.506Z",
   "environment": {
     "os": "linux 6.17.0-1020-azure",
     "node": "v22.23.1",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "30184486512",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/30184486512"
+    "id": "30233211267",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/30233211267"
   },
   "records": [
     {
@@ -477,6 +477,14 @@
       "screenshots": []
     },
     {
+      "test": "buildProfileModel — participant header fields (PPRF-2, PPRF-HDR-001) computes P_ALT only when the caller opts in, as the {text_value, note} the header explains (#49)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HDR-001"],
+      "issueRefs": [49],
+      "screenshots": []
+    },
+    {
       "test": "buildProfileModel — participant header fields (PPRF-2, PPRF-HDR-001) computes the R Ratio (peak ALT xULN / peak ALP xULN) on the ULN scale",
       "suite": "unit",
       "status": "pass",
@@ -493,11 +501,19 @@
       "screenshots": []
     },
     {
-      "test": "buildProfileModel — participant header fields (PPRF-2, PPRF-HDR-001) passes P_ALT through from p_alt_col where a value exists, never computing it",
+      "test": "buildProfileModel — participant header fields (PPRF-2, PPRF-HDR-001) passes P_ALT through from p_alt_col where a value exists, and computes none by default",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["PPRF-HDR-001"],
       "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "buildProfileModel — participant header fields (PPRF-2, PPRF-HDR-001) prefers the caller’s own supplied P_ALT over the computed estimate (#49)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HDR-001"],
+      "issueRefs": [49],
       "screenshots": []
     },
     {
