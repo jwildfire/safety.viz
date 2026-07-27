@@ -1,13 +1,16 @@
 {
   "module": "hep-explorer",
-  "generatedAt": "2026-07-27T02:48:23.439Z",
+  "generatedAt": "2026-07-27T02:53:20.506Z",
   "environment": {
-    "os": "darwin 23.6.0",
-    "node": "v24.14.0",
+    "os": "linux 6.17.0-1020-azure",
+    "node": "v22.23.1",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": null,
+  "run": {
+    "id": "30233211267",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/30233211267"
+  },
   "records": [
     {
       "test": "a chart link navigates straight to that renderer demo (#71)",
@@ -135,7 +138,7 @@
       "status": "pass",
       "requirementIds": ["HEP-ANIM-001", "HEP-ANIM-003", "HEP-ANIM-006", "HEP-ANIM-007"],
       "issueRefs": [46],
-      "screenshots": []
+      "screenshots": ["HEP-ANIM-001-study-day-playback.png"]
     },
     {
       "test": "HEP-ANIM-004/HEP-ANIM-005: the play control runs the animation and leaves motion trails behind the moving points (#46)",
@@ -384,7 +387,7 @@
       "status": "pass",
       "requirementIds": ["HEP-PALT-001", "HEP-PALT-003"],
       "issueRefs": [49],
-      "screenshots": []
+      "screenshots": ["HEP-PALT-001-palt-estimate.png"]
     },
     {
       "test": "HEP-QUAD-001/HEP-QUAD-004: changing the x-axis reference line reclassifies the quadrants (#43)",
@@ -468,7 +471,7 @@
       "status": "pass",
       "requirementIds": ["HEP-SELECT-008"],
       "issueRefs": [48],
-      "screenshots": []
+      "screenshots": ["HEP-SELECT-008-measure-sparkline-drilldown.png"]
     },
     {
       "test": "HEP-STEP-001/HEP-STEP-002/HEP-STEP-003: a ribbon click carries its participants into the composite plot (#92)",
@@ -708,7 +711,7 @@
       "status": "pass",
       "requirementIds": ["HEP-PALT-001"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["HEP-PALT-001-palt-estimate.png"]
     },
     {
       "test": "calculatePalt (HEP-PALT-001) reproduces the original’s ALT AUC × peak^0.18 / 1e5 on hand-computable data",
@@ -716,7 +719,7 @@
       "status": "pass",
       "requirementIds": ["HEP-PALT-001"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["HEP-PALT-001-palt-estimate.png"]
     },
     {
       "test": "calculatePalt (HEP-PALT-001) sums every trapezoid, in study-day order rather than input order",
@@ -724,7 +727,7 @@
       "status": "pass",
       "requirementIds": ["HEP-PALT-001"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["HEP-PALT-001-palt-estimate.png"]
     },
     {
       "test": "calculatePalt (HEP-PALT-001) uses the raw result, not the ×ULN standardization",
@@ -732,7 +735,7 @@
       "status": "pass",
       "requirementIds": ["HEP-PALT-001"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["HEP-PALT-001-palt-estimate.png"]
     },
     {
       "test": "correctQt applies Bazett — QT divided by the square root of RR in seconds (#79)",
@@ -1524,7 +1527,7 @@
       "status": "pass",
       "requirementIds": ["HEP-ANIM-001"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["HEP-ANIM-001-study-day-playback.png"]
     },
     {
       "test": "hep-explorer animation — study-day range (HEP-ANIM-001) spans the smallest to largest study day carried by the plotted measures",
@@ -1532,7 +1535,7 @@
       "status": "pass",
       "requirementIds": ["HEP-ANIM-001"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["HEP-ANIM-001-study-day-playback.png"]
     },
     {
       "test": "hep-explorer below-LLOQ imputation (HEP-IMPUTE-*) HEP-IMPUTE-001: data-driven takes the smallest POSITIVE value as the limit (#50)",
