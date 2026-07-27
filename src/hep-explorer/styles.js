@@ -87,7 +87,18 @@ const MODULE_CSS = `
 .safety-hep-explorer .hep-xtab td.hep-xtab-cell.is-clickable{cursor:pointer}
 .safety-hep-explorer .hep-xtab td.hep-xtab-cell.is-clickable:hover{outline:2px solid #0b62a4;outline-offset:-2px}
 .safety-hep-explorer .hep-xtab td.hep-xtab-cell.is-selected{outline:2px solid #111827;outline-offset:-2px;font-weight:700}
-.safety-hep-explorer .hep-xtab td.hep-xtab-cell:focus-visible{outline:2px solid #0b62a4;outline-offset:-2px}`;
+.safety-hep-explorer .hep-xtab td.hep-xtab-cell:focus-visible{outline:2px solid #0b62a4;outline-offset:-2px}
+.safety-hep-explorer .hep-animation{margin-top:.35rem}
+.safety-hep-explorer .hep-animation-bar{display:flex;align-items:center;gap:.5rem;max-width:560px}
+.safety-hep-explorer .hep-animation-slider{flex:1 1 auto;min-width:120px;accent-color:#0b62a4}
+.safety-hep-explorer .hep-animation-end{font-size:.72rem;color:#7b8794;font-variant-numeric:tabular-nums}
+.safety-hep-explorer .hep-animation-play{width:2rem;padding:.2rem 0;border:1px solid #0b62a4;border-radius:6px;background:#eaf2fb;color:#0b3d63;font:inherit;font-size:.85rem;line-height:1;cursor:pointer}
+.safety-hep-explorer .hep-animation-play:hover{background:#dbe9f8}
+.safety-hep-explorer .hep-animation-play:focus-visible,.safety-hep-explorer .hep-animation-reset:focus-visible,.safety-hep-explorer .hep-animation-slider:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
+.safety-hep-explorer .hep-animation-reset{padding:.2rem .5rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.75rem;cursor:pointer}
+.safety-hep-explorer .hep-animation-label{margin-top:.2rem;font-size:.78rem;color:#52616f;font-variant-numeric:tabular-nums}
+.safety-hep-explorer .hep-animation-note{font-size:.78rem;color:#7b8794;font-style:italic}
+.safety-hep-explorer .hep-quadrant-summary{transition:opacity .15s ease}`;
 
 /**
  * Inject the module-specific stylesheet once per document; a second explorer on

@@ -13348,6 +13348,7 @@ var SafetyViz = (() => {
   }
 
   // src/hep-core/rows.js
+  var MEASURE_KEYS = ["ALT", "AST", "TB", "ALP"];
   function cutFor(cuts, measureKey, display) {
     const entry = cuts && cuts[measureKey] || cuts && cuts.defaults || {};
     const fallback = cuts && cuts.defaults || {};
@@ -22024,7 +22025,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
           ctx.lineTo(chartArea.right, yPixel);
           ctx.stroke();
         }
-        if (state.quadrantLabels === "hidden") {
+        if (state.quadrantLabels === "hidden" || state.animation && state.animation.playing) {
           ctx.restore();
           return;
         }
@@ -22556,7 +22557,18 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
 .safety-hep-explorer .hep-xtab td.hep-xtab-cell.is-clickable{cursor:pointer}
 .safety-hep-explorer .hep-xtab td.hep-xtab-cell.is-clickable:hover{outline:2px solid #0b62a4;outline-offset:-2px}
 .safety-hep-explorer .hep-xtab td.hep-xtab-cell.is-selected{outline:2px solid #111827;outline-offset:-2px;font-weight:700}
-.safety-hep-explorer .hep-xtab td.hep-xtab-cell:focus-visible{outline:2px solid #0b62a4;outline-offset:-2px}`;
+.safety-hep-explorer .hep-xtab td.hep-xtab-cell:focus-visible{outline:2px solid #0b62a4;outline-offset:-2px}
+.safety-hep-explorer .hep-animation{margin-top:.35rem}
+.safety-hep-explorer .hep-animation-bar{display:flex;align-items:center;gap:.5rem;max-width:560px}
+.safety-hep-explorer .hep-animation-slider{flex:1 1 auto;min-width:120px;accent-color:#0b62a4}
+.safety-hep-explorer .hep-animation-end{font-size:.72rem;color:#7b8794;font-variant-numeric:tabular-nums}
+.safety-hep-explorer .hep-animation-play{width:2rem;padding:.2rem 0;border:1px solid #0b62a4;border-radius:6px;background:#eaf2fb;color:#0b3d63;font:inherit;font-size:.85rem;line-height:1;cursor:pointer}
+.safety-hep-explorer .hep-animation-play:hover{background:#dbe9f8}
+.safety-hep-explorer .hep-animation-play:focus-visible,.safety-hep-explorer .hep-animation-reset:focus-visible,.safety-hep-explorer .hep-animation-slider:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
+.safety-hep-explorer .hep-animation-reset{padding:.2rem .5rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.75rem;cursor:pointer}
+.safety-hep-explorer .hep-animation-label{margin-top:.2rem;font-size:.78rem;color:#52616f;font-variant-numeric:tabular-nums}
+.safety-hep-explorer .hep-animation-note{font-size:.78rem;color:#7b8794;font-style:italic}
+.safety-hep-explorer .hep-quadrant-summary{transition:opacity .15s ease}`;
   function applyModuleStyles() {
     if (typeof document === "undefined" || document.getElementById(STYLE_ID2)) return;
     const style = document.createElement("style");
@@ -22778,8 +22790,99 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     return link;
   }
 
+  // src/hep-explorer/animation.js
+  var ANIMATION_MAX_DURATION = 3e4;
+  var MS_PER_DAY = 100;
+  function studyDayRange(cleanRows, settings) {
+    const days = [];
+    MEASURE_KEYS.forEach((key) => {
+      resolveMeasureRows(cleanRows, settings, key).forEach((row) => {
+        if (Number.isFinite(row.__hep_day)) days.push(row.__hep_day);
+      });
+    });
+    if (!days.length) return null;
+    return [Math.min(...days), Math.max(...days)];
+  }
+  function measureSeries(participantRows, settings, key, field) {
+    return resolveMeasureRows(participantRows, settings, key).filter((row) => Number.isFinite(row[field]) && Number.isFinite(row.__hep_day)).map((row) => ({ day: row.__hep_day, value: row[field] })).sort((a, b) => a.day - b.day);
+  }
+  function buildAnimationFrames(cleanRows, settings, state) {
+    const { measureX, measureY, display, groupBy: groupBy2 } = state;
+    const field = displayField(display);
+    const byId = /* @__PURE__ */ new Map();
+    cleanRows.forEach((row) => {
+      const id = row[settings.id_col];
+      if (!byId.has(id)) byId.set(id, []);
+      byId.get(id).push(row);
+    });
+    const frames = [];
+    byId.forEach((participantRows, id) => {
+      const x = measureSeries(participantRows, settings, measureX, field);
+      const y = measureSeries(participantRows, settings, measureY, field);
+      if (!x.length || !y.length) return;
+      const days = participantRows.map((row) => row.__hep_day).filter(Number.isFinite);
+      const groupValue = groupBy2 && groupBy2 !== "hep_none" ? participantRows[0][groupBy2] ?? null : null;
+      frames.push({
+        id,
+        x,
+        y,
+        dayRange: days.length ? [Math.min(...days), Math.max(...days)] : [NaN, NaN],
+        group: groupValue === null || groupValue === void 0 ? null : String(groupValue),
+        raw: participantRows[0]
+      });
+    });
+    return frames;
+  }
+  function valueAtDay(series, day2) {
+    let value = series[0].value;
+    for (let i = 0; i < series.length; i += 1) {
+      if (series[i].day <= day2) value = series[i].value;
+      else break;
+    }
+    return value;
+  }
+  function outsideSeries(series, day2) {
+    return day2 < series[0].day || day2 > series[series.length - 1].day;
+  }
+  function pointsAtDay(frames, day2) {
+    return frames.map((frame) => ({
+      id: frame.id,
+      x: valueAtDay(frame.x, day2),
+      y: valueAtDay(frame.y, day2),
+      outOfRange: outsideSeries(frame.x, day2) || outsideSeries(frame.y, day2),
+      enrolled: !Number.isFinite(frame.dayRange[0]) || day2 >= frame.dayRange[0],
+      group: frame.group,
+      raw: frame.raw
+    }));
+  }
+  function trailSegments(previous, next) {
+    const before = new Map(previous.map((point) => [String(point.id), point]));
+    const segments = [];
+    next.forEach((point) => {
+      const prior = before.get(String(point.id));
+      if (!prior) return;
+      if (prior.x === point.x && prior.y === point.y) return;
+      segments.push({
+        id: point.id,
+        x1: prior.x,
+        y1: prior.y,
+        x2: point.x,
+        y2: point.y,
+        group: point.group
+      });
+    });
+    return segments;
+  }
+  function animationDuration(fromDay, toDay) {
+    const dayCount = toDay - fromDay;
+    if (!Number.isFinite(dayCount) || dayCount <= 0) return MS_PER_DAY;
+    return dayCount < 100 ? dayCount * MS_PER_DAY : ANIMATION_MAX_DURATION;
+  }
+
   // src/hep-explorer/views/scatter.js
   var BASE_POINT_COLOR = GROUP_COLORS2[0];
+  var TRAIL_FRAMES = 10;
+  var ANIMATION_FPS = 20;
   function addCutControl(host, addControl, parent, axisKey) {
     const measureKey = host.state[axisKey];
     const input = addControl(`${measureKey} Reference Line`, document.createElement("input"), parent);
@@ -22976,6 +23079,179 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     if (!Number.isFinite(point.rRatio) || rMax <= 0) return 3;
     return 3 + 7 * (point.rRatio / rMax);
   }
+  function animating(host) {
+    return host.state.animation && host.state.animation.day != null;
+  }
+  function animatedAt(host, index) {
+    return animating(host) && host.animationPositions ? host.animationPositions[index] : null;
+  }
+  function rebuildAnimationFrames(host) {
+    host.animationRange = studyDayRange(host.cleanRows, host.settings);
+    const frames = buildAnimationFrames(host.cleanRows, host.settings, host.state);
+    const byId = new Map(frames.map((frame) => [String(frame.id), frame]));
+    host.animationFrames = host.points.map((point) => byId.get(String(point.id)) || null);
+    host.animationPositions = null;
+    host.animationTrail = [];
+  }
+  function showDay(host, day2) {
+    const frames = host.animationFrames || [];
+    const previous = host.animationPositions;
+    const dated = frames.filter(Boolean);
+    const positionsByFrame = dated.length ? pointsAtDay(dated, day2) : [];
+    const byId = new Map(positionsByFrame.map((point) => [String(point.id), point]));
+    const positions2 = frames.map((frame, index) => {
+      const point = host.points[index];
+      if (!frame) return { id: point.id, x: point.x, y: point.y, outOfRange: false, enrolled: true };
+      return byId.get(String(frame.id)) || null;
+    });
+    if (previous) {
+      const segments = trailSegments(previous.filter(Boolean), positions2.filter(Boolean));
+      if (segments.length) host.animationTrail.push(segments);
+      while (host.animationTrail.length > TRAIL_FRAMES) host.animationTrail.shift();
+    }
+    host.animationPositions = positions2;
+    host.state.animation.day = day2;
+    const chart = host.chart;
+    if (chart) {
+      chart.data.datasets[0].data = positions2.map(
+        (position, index) => position ? { x: position.x, y: position.y } : { x: host.points[index].x, y: host.points[index].y }
+      );
+      chart.data.datasets[2].data = trailData(host);
+      chart.update("none");
+    }
+    if (host.animationSlider) host.animationSlider.value = String(day2);
+    if (host.animationLabel) host.animationLabel.textContent = `Showing data from: Day ${day2}`;
+  }
+  function trailData(host) {
+    const data = [];
+    (host.animationTrail || []).forEach((segments) => {
+      segments.forEach((segment) => {
+        data.push(
+          { x: segment.x1, y: segment.y1 },
+          { x: segment.x2, y: segment.y2 },
+          { x: NaN, y: NaN }
+        );
+      });
+    });
+    return data;
+  }
+  function trailAlpha(host, dataIndex) {
+    const frames = host.animationTrail || [];
+    let offset = 0;
+    for (let i = 0; i < frames.length; i += 1) {
+      const span = frames[i].length * 3;
+      if (dataIndex < offset + span) return (0.15 + 0.45 * (i + 1)) / (frames.length + 1);
+      offset += span;
+    }
+    return 0;
+  }
+  function stopPlayback(host) {
+    if (host.animationTimer) {
+      clearInterval(host.animationTimer);
+      host.animationTimer = null;
+    }
+    if (host.state.animation) host.state.animation.playing = false;
+    syncPlayButton(host);
+    if (host.quadrantWrap) host.quadrantWrap.style.opacity = "";
+    if (host.chart) host.chart.update("none");
+  }
+  function startPlayback(host) {
+    const range = host.animationRange;
+    if (!range) return;
+    stopPlayback(host);
+    const start = host.state.animation.day == null ? range[0] : host.state.animation.day;
+    const from2 = start >= range[1] ? range[0] : start;
+    const duration = animationDuration(from2, range[1]);
+    const frameCount = Math.max(1, Math.round(duration / 1e3 * ANIMATION_FPS));
+    const step = (range[1] - from2) / frameCount;
+    host.state.animation.playing = true;
+    host.animationTrail = [];
+    syncPlayButton(host);
+    if (host.quadrantWrap) host.quadrantWrap.style.opacity = "0.35";
+    showDay(host, from2);
+    let frame = 0;
+    host.animationTimer = setInterval(() => {
+      frame += 1;
+      const day2 = frame >= frameCount ? range[1] : Math.round(from2 + step * frame);
+      showDay(host, day2);
+      if (frame >= frameCount) stopPlayback(host);
+    }, 1e3 / ANIMATION_FPS);
+  }
+  function resetPlayback(host) {
+    stopPlayback(host);
+    host.state.animation.day = null;
+    host.animationPositions = null;
+    host.animationTrail = [];
+    if (host.animationLabel) host.animationLabel.textContent = "Showing peak values (all days)";
+    if (host.chart) {
+      host.chart.data.datasets[0].data = host.points.map((point) => ({ x: point.x, y: point.y }));
+      host.chart.data.datasets[2].data = [];
+      host.chart.update("none");
+    }
+  }
+  function syncPlayButton(host) {
+    const button = host.animationPlayBtn;
+    if (!button) return;
+    const playing = Boolean(host.state.animation && host.state.animation.playing);
+    button.textContent = playing ? "\u25A0" : "\u25B6";
+    button.title = playing ? "Stop the study-day playback" : "Play the study-day animation";
+    button.setAttribute("aria-label", button.title);
+    button.setAttribute("aria-pressed", String(playing));
+  }
+  function drawAnimationBar(host) {
+    host.animationPlayBtn = null;
+    host.animationSlider = null;
+    host.animationLabel = null;
+    if (!host.animationWrap) return;
+    const range = host.animationRange;
+    if (!range || range[0] === range[1]) {
+      if (range) {
+        host.animationWrap.append(
+          createElement(
+            "span",
+            "hep-animation-note",
+            "Study-day playback needs records on more than one study day."
+          )
+        );
+      }
+      return;
+    }
+    const bar = createElement("div", "hep-animation-bar");
+    const play = createElement("button", "hep-animation-play");
+    play.type = "button";
+    host.animationPlayBtn = play;
+    play.onclick = () => {
+      if (host.state.animation.playing) stopPlayback(host);
+      else startPlayback(host);
+    };
+    bar.append(play, createElement("span", "hep-animation-end", String(range[0])));
+    const slider = createElement("input", "hep-animation-slider");
+    slider.type = "range";
+    slider.min = String(range[0]);
+    slider.max = String(range[1]);
+    slider.step = "1";
+    slider.value = String(host.state.animation.day == null ? range[0] : host.state.animation.day);
+    slider.setAttribute("aria-label", "Study day");
+    slider.oninput = () => {
+      stopPlayback(host);
+      showDay(host, Number(slider.value));
+    };
+    host.animationSlider = slider;
+    bar.append(slider, createElement("span", "hep-animation-end", String(range[1])));
+    const reset = createElement("button", "hep-animation-reset", "Reset");
+    reset.type = "button";
+    reset.title = "Return to the peak-value scatter";
+    reset.onclick = () => resetPlayback(host);
+    bar.append(reset);
+    const label = createElement(
+      "div",
+      "hep-animation-label",
+      host.state.animation.day == null ? "Showing peak values (all days)" : `Showing data from: Day ${host.state.animation.day}`
+    );
+    host.animationLabel = label;
+    host.animationWrap.append(bar, label);
+    syncPlayButton(host);
+  }
   function drawScatter(host) {
     const points = host.points;
     const data = points.map((point) => ({ x: point.x, y: point.y }));
@@ -22995,17 +23271,29 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       const point = points[ctx.dataIndex];
       if (!point) return "rgba(0,0,0,0)";
       const active = traced(point);
-      if (!point.withinWindow && !active) return "rgba(0,0,0,0)";
       const color2 = colorFor2(host, point);
+      const moving = animatedAt(host, ctx.dataIndex);
+      if (moving) {
+        if (!moving.enrolled) return "rgba(0,0,0,0)";
+        return hexToRgba3(color2, anyActive(host) ? active ? 1 : HIGHLIGHT.DIM_FILL : 0.5);
+      }
+      if (!point.withinWindow && !active) return "rgba(0,0,0,0)";
       const opacity = anyActive(host) ? active ? 1 : HIGHLIGHT.DIM_FILL : 0.75;
       return hexToRgba3(color2, opacity);
     };
     const border = (ctx) => {
       const point = points[ctx.dataIndex];
       if (!point) return "rgba(0,0,0,0)";
+      const moving = animatedAt(host, ctx.dataIndex);
+      if (moving && !moving.enrolled) return "rgba(0,0,0,0)";
       if (traced(point)) return SELECTION_COLOR2;
       const opacity = anyActive(host) ? HIGHLIGHT.DIM_BORDER : 0.9;
       return hexToRgba3(colorFor2(host, point), opacity);
+    };
+    const animatedRadius = (index) => {
+      const moving = animatedAt(host, index);
+      const base = radiusFor(host, points[index]);
+      return moving && moving.outOfRange ? base / 2 : base;
     };
     const chart = new Chart(host.canvas.getContext("2d"), {
       type: "scatter",
@@ -23017,8 +23305,8 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
             pointBackgroundColor: fill,
             pointBorderColor: border,
             pointBorderWidth: (ctx) => traced(points[ctx.dataIndex]) ? HIGHLIGHT.BORDER_WIDTH : 1.25,
-            pointRadius: (ctx) => radiusFor(host, points[ctx.dataIndex]) + (traced(points[ctx.dataIndex]) ? HIGHLIGHT.RADIUS_BOOST : 0),
-            pointHoverRadius: (ctx) => radiusFor(host, points[ctx.dataIndex]) + 2
+            pointRadius: (ctx) => animatedRadius(ctx.dataIndex) + (traced(points[ctx.dataIndex]) ? HIGHLIGHT.RADIUS_BOOST : 0),
+            pointHoverRadius: (ctx) => animatedRadius(ctx.dataIndex) + 2
           },
           {
             type: "line",
@@ -23031,6 +23319,22 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
             pointHoverRadius: 4,
             pointBackgroundColor: SELECTION_COLOR2,
             pointBorderColor: SELECTION_COLOR2
+          },
+          {
+            // Motion trails (HEP-ANIM-004): one two-vertex, gap-separated segment
+            // per point that moved, fading with age across the trail buffer.
+            type: "line",
+            label: "Motion trails",
+            data: [],
+            showLine: true,
+            spanGaps: false,
+            borderWidth: 2,
+            pointRadius: 0,
+            pointHoverRadius: 0,
+            borderColor: (ctx) => hexToRgba3(BASE_POINT_COLOR, trailAlpha(host, ctx.p0DataIndex ?? ctx.dataIndex ?? 0)),
+            segment: {
+              borderColor: (ctx) => hexToRgba3(BASE_POINT_COLOR, trailAlpha(host, ctx.p0DataIndex))
+            }
           }
         ]
       },
@@ -23148,7 +23452,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     label: "eDISH scatter",
     // The shell containers this view occupies: the single scatter canvas, the
     // color-by legend, and the quadrant summary table (HEP-COMP-006).
-    slots: ["chart", "legend", "quadrantSummary"],
+    slots: ["chart", "legend", "quadrantSummary", "animation"],
     // The R-Ratio range filter narrows the plotted points, so it belongs to this
     // view's pipeline (HEP-CTRL-010).
     usesRRatioFilter: true,
@@ -23285,11 +23589,17 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       };
     },
     /**
-     * Nothing view-local survives a redraw here: the orchestrator's render
-     * preamble already clears the hover, the sticky selection and the
-     * multi-highlight for every view.
+     * The one thing that must not survive a redraw: a running play-through
+     * (HEP-ANIM-005). Its interval holds the OLD Chart.js instance, so leaving it
+     * running across a control change would keep writing into a destroyed chart.
+     * Everything else view-local is already cleared by the orchestrator's render
+     * preamble — the hover, the sticky selection and the multi-highlight.
      */
-    teardown() {
+    teardown(host) {
+      stopPlayback(host);
+      if (host.state.animation) host.state.animation.day = null;
+      host.animationPositions = null;
+      host.animationTrail = [];
     },
     /**
      * Draw the scatter from the cleaned rows: build the per-participant points,
@@ -23321,6 +23631,8 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       host.colorScale = groupColorScale2(host.groupValues);
       host.quadrants = classifyQuadrants(host.points, host.state.xCut, host.state.yCut);
       drawScatter(host);
+      rebuildAnimationFrames(host);
+      drawAnimationBar(host);
       drawLegend(host);
       drawQuadrantSummary(host);
       host.selection.mount(
@@ -24808,6 +25120,12 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
         // no-migration diagonal, and narrow the right-hand side to one active arm.
         hideUnchanged: this.settings.hide_unchanged,
         activeArms: this.settings.active_arms,
+        // Study-day playback (HEP-ANIM-*): the day the cloud is positioned on
+        // (null = the static peak-vs-peak scatter), and whether the play-through
+        // is running. Lives on state — not on the view — because the quadrant
+        // plugin reads `playing` to suppress labels that do not describe a moving
+        // cloud (HEP-ANIM-006).
+        animation: { day: null, playing: false },
         selectedId: null,
         hoverId: null,
         xCut: null,
@@ -24860,6 +25178,8 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       this.compositeHeaderEl = createElement("div", "hep-composite-header");
       this.compositeHeaderEl.textContent = TRACE_HEADER_HINT;
       this.main.insertBefore(this.compositeHeaderEl, this.legendEl);
+      this.animationWrap = createElement("div", "hep-animation");
+      this.main.insertBefore(this.animationWrap, this.multiplesWrap);
       this.quadrantWrap = createElement("div", "hep-quadrant-summary");
       this.main.insertBefore(this.quadrantWrap, this.multiplesWrap);
       this.migrationWrap = createElement("div", "hep-migration-view");
@@ -25226,6 +25546,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       this.chartWrap.style.display = slots.has("chart") ? "" : "none";
       this.legendEl.style.display = slots.has("legend") ? "flex" : "none";
       this.quadrantWrap.style.display = slots.has("quadrantSummary") ? "" : "none";
+      this.animationWrap.style.display = slots.has("animation") ? "" : "none";
       this.migrationWrap.style.display = slots.has("migration") ? "" : "none";
       this.compositeWrap.style.display = slots.has("composite") ? "" : "none";
     }
@@ -25268,6 +25589,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       this.listingWrap.innerHTML = "";
       this.legendEl.innerHTML = "";
       this.quadrantWrap.innerHTML = "";
+      this.animationWrap.innerHTML = "";
       this.migrationWrap.innerHTML = "";
       if (this.root) this.root.$hepSankey = null;
       this.compositeWrap.innerHTML = "";
@@ -25405,6 +25727,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
      * @returns {void}
      */
     destroy() {
+      this.activeView().teardown(this);
       this.unmountProfileRail();
       this.destroyCharts();
       this.element.innerHTML = "";

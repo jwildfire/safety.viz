@@ -207,6 +207,12 @@ class SafetyHepExplorer {
       // no-migration diagonal, and narrow the right-hand side to one active arm.
       hideUnchanged: this.settings.hide_unchanged,
       activeArms: this.settings.active_arms,
+      // Study-day playback (HEP-ANIM-*): the day the cloud is positioned on
+      // (null = the static peak-vs-peak scatter), and whether the play-through
+      // is running. Lives on state — not on the view — because the quadrant
+      // plugin reads `playing` to suppress labels that do not describe a moving
+      // cloud (HEP-ANIM-006).
+      animation: { day: null, playing: false },
       selectedId: null,
       hoverId: null,
       xCut: null,
@@ -267,6 +273,13 @@ class SafetyHepExplorer {
     this.compositeHeaderEl = createElement('div', 'hep-composite-header');
     this.compositeHeaderEl.textContent = TRACE_HEADER_HINT;
     this.main.insertBefore(this.compositeHeaderEl, this.legendEl);
+
+    // Study-day playback bar (HEP-ANIM-001): the slider, the play/stop button
+    // and the day readout sit directly beneath the plot, where the original
+    // renderer puts its secondary control bar — not in the sidebar, because the
+    // control is read while watching the cloud move.
+    this.animationWrap = createElement('div', 'hep-animation');
+    this.main.insertBefore(this.animationWrap, this.multiplesWrap);
 
     // Quadrant summary table sits directly below the chart footnote.
     this.quadrantWrap = createElement('div', 'hep-quadrant-summary');
@@ -734,6 +747,7 @@ class SafetyHepExplorer {
     // restore 'flex' rather than '' for the views that show it.
     this.legendEl.style.display = slots.has('legend') ? 'flex' : 'none';
     this.quadrantWrap.style.display = slots.has('quadrantSummary') ? '' : 'none';
+    this.animationWrap.style.display = slots.has('animation') ? '' : 'none';
     this.migrationWrap.style.display = slots.has('migration') ? '' : 'none';
     this.compositeWrap.style.display = slots.has('composite') ? '' : 'none';
   }
@@ -783,6 +797,7 @@ class SafetyHepExplorer {
     this.listingWrap.innerHTML = '';
     this.legendEl.innerHTML = '';
     this.quadrantWrap.innerHTML = '';
+    this.animationWrap.innerHTML = '';
     this.migrationWrap.innerHTML = '';
     // Drop the previous Sankey geometry so a stale $hepSankey can never be read
     // after a view switch or a filter change (HEP-MIG-015).
@@ -946,6 +961,10 @@ class SafetyHepExplorer {
    * @returns {void}
    */
   destroy() {
+    // Let the active view release anything that outlives a chart — today the
+    // scatter's study-day playback interval (HEP-ANIM-005), which would
+    // otherwise keep ticking against a destroyed instance.
+    this.activeView().teardown(this);
     this.unmountProfileRail();
     this.destroyCharts();
     this.element.innerHTML = '';

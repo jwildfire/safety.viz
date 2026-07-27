@@ -56,9 +56,25 @@ import {
   quadrantPlugin
 } from '../getPlugins.js';
 import { HIGHLIGHT } from '../selection.js';
+import {
+  animationDuration,
+  buildAnimationFrames,
+  pointsAtDay,
+  studyDayRange,
+  trailSegments
+} from '../animation.js';
 
 // Base point color when no grouping is active (HEP-CTRL-009 default).
 const BASE_POINT_COLOR = GROUP_COLORS[0];
+
+// Study-day playback (HEP-ANIM-*). The trail buffer holds this many frames, so
+// a motion trail is a short fading tail behind the point rather than a
+// permanent scribble across the plot — the original fades each trail out over
+// ten frame-durations.
+const TRAIL_FRAMES = 10;
+// Frames per second the play-through advances at; the day step is derived from
+// this and the duration so a long study skips days instead of slowing down.
+const ANIMATION_FPS = 20;
 
 /**
  * Add a reference-line (cutpoint) number input for one axis; edits write the
@@ -381,10 +397,283 @@ function radiusFor(host, point) {
 }
 
 /**
+ * Whether the scatter is currently showing a study day rather than the static
+ * peak-vs-peak reduction (HEP-ANIM-003).
+ * @private
+ */
+function animating(host) {
+  return host.state.animation && host.state.animation.day != null;
+}
+
+/**
+ * The animated position of one shown point, or null when playback is off or
+ * that participant carries no dated series to walk along (HEP-ANIM-003). A
+ * point with no frame simply holds its peak position for the whole
+ * play-through — the alternative, dropping it, would make the cloud change size
+ * for a reason that has nothing to do with time.
+ * @private
+ */
+function animatedAt(host, index) {
+  return animating(host) && host.animationPositions ? host.animationPositions[index] : null;
+}
+
+/**
+ * Rebuild the per-participant animation frames for the SHOWN points, in the
+ * same order as `host.points` so a Chart.js data index means the same
+ * participant whether the scatter is static or playing (HEP-ANIM-002).
+ * @private
+ */
+function rebuildAnimationFrames(host) {
+  host.animationRange = studyDayRange(host.cleanRows, host.settings);
+  const frames = buildAnimationFrames(host.cleanRows, host.settings, host.state);
+  const byId = new Map(frames.map((frame) => [String(frame.id), frame]));
+  host.animationFrames = host.points.map((point) => byId.get(String(point.id)) || null);
+  host.animationPositions = null;
+  host.animationTrail = [];
+}
+
+/**
+ * Position the cloud on one study day and redraw (HEP-ANIM-003, HEP-ANIM-004):
+ * every point moves to its most recent value at or before the day, the segment
+ * each moving point just travelled is pushed onto the fading trail buffer, and
+ * the day readout and slider follow. Deliberately a `chart.update('none')`
+ * rather than a render: a render rebuilds the scales and clears the selection,
+ * and a play-through that reset the axes under the moving points would be
+ * unreadable.
+ * @private
+ */
+function showDay(host, day) {
+  const frames = host.animationFrames || [];
+  const previous = host.animationPositions;
+  const dated = frames.filter(Boolean);
+  const positionsByFrame = dated.length ? pointsAtDay(dated, day) : [];
+  const byId = new Map(positionsByFrame.map((point) => [String(point.id), point]));
+  const positions = frames.map((frame, index) => {
+    const point = host.points[index];
+    if (!frame) return { id: point.id, x: point.x, y: point.y, outOfRange: false, enrolled: true };
+    return byId.get(String(frame.id)) || null;
+  });
+
+  // The trail is the path the points just took, not a decoration: it is built
+  // from the two positions that actually bracket this step.
+  if (previous) {
+    const segments = trailSegments(previous.filter(Boolean), positions.filter(Boolean));
+    if (segments.length) host.animationTrail.push(segments);
+    while (host.animationTrail.length > TRAIL_FRAMES) host.animationTrail.shift();
+  }
+
+  host.animationPositions = positions;
+  host.state.animation.day = day;
+
+  const chart = host.chart;
+  if (chart) {
+    chart.data.datasets[0].data = positions.map((position, index) =>
+      position
+        ? { x: position.x, y: position.y }
+        : { x: host.points[index].x, y: host.points[index].y }
+    );
+    chart.data.datasets[2].data = trailData(host);
+    chart.update('none');
+  }
+  if (host.animationSlider) host.animationSlider.value = String(day);
+  if (host.animationLabel) host.animationLabel.textContent = `Showing data from: Day ${day}`;
+}
+
+/**
+ * Flatten the trail buffer into one gap-separated line dataset, oldest frame
+ * first so the fade runs from faint to solid (HEP-ANIM-004).
+ * @private
+ */
+function trailData(host) {
+  const data = [];
+  (host.animationTrail || []).forEach((segments) => {
+    segments.forEach((segment) => {
+      // The third vertex is the gap: Chart.js skips a NaN-valued point and,
+      // with spanGaps off, breaks the line there — a literal null would fail
+      // object-mode parsing instead of separating the segments.
+      data.push(
+        { x: segment.x1, y: segment.y1 },
+        { x: segment.x2, y: segment.y2 },
+        { x: NaN, y: NaN }
+      );
+    });
+  });
+  return data;
+}
+
+/**
+ * The opacity a trail vertex is drawn at: the oldest buffered frame is nearly
+ * gone, the newest is at full trail strength (HEP-ANIM-004).
+ * @private
+ */
+function trailAlpha(host, dataIndex) {
+  const frames = host.animationTrail || [];
+  let offset = 0;
+  for (let i = 0; i < frames.length; i += 1) {
+    const span = frames[i].length * 3;
+    if (dataIndex < offset + span) return (0.15 + 0.45 * (i + 1)) / (frames.length + 1);
+    offset += span;
+  }
+  return 0;
+}
+
+/**
+ * Stop a running play-through, leaving the cloud where it stopped (HEP-ANIM-005).
+ * Idempotent, and safe to call from teardown when nothing is playing.
+ * @private
+ */
+function stopPlayback(host) {
+  if (host.animationTimer) {
+    clearInterval(host.animationTimer);
+    host.animationTimer = null;
+  }
+  if (host.state.animation) host.state.animation.playing = false;
+  syncPlayButton(host);
+  // The quadrant labels and summary describe the peak-vs-peak classification,
+  // so they come back the moment the cloud stops moving (HEP-ANIM-006).
+  if (host.quadrantWrap) host.quadrantWrap.style.opacity = '';
+  if (host.chart) host.chart.update('none');
+}
+
+/**
+ * Start (or restart) the play-through from the current day to the end of the
+ * study-day range (HEP-ANIM-005). The step size is derived from the ported
+ * duration formula and a fixed frame rate, so a long study skips days rather
+ * than crawling.
+ * @private
+ */
+function startPlayback(host) {
+  const range = host.animationRange;
+  if (!range) return;
+  stopPlayback(host);
+  const start = host.state.animation.day == null ? range[0] : host.state.animation.day;
+  const from = start >= range[1] ? range[0] : start;
+  const duration = animationDuration(from, range[1]);
+  const frameCount = Math.max(1, Math.round((duration / 1000) * ANIMATION_FPS));
+  const step = (range[1] - from) / frameCount;
+  host.state.animation.playing = true;
+  host.animationTrail = [];
+  syncPlayButton(host);
+  if (host.quadrantWrap) host.quadrantWrap.style.opacity = '0.35';
+  showDay(host, from);
+  let frame = 0;
+  host.animationTimer = setInterval(() => {
+    frame += 1;
+    const day = frame >= frameCount ? range[1] : Math.round(from + step * frame);
+    showDay(host, day);
+    if (frame >= frameCount) stopPlayback(host);
+  }, 1000 / ANIMATION_FPS);
+}
+
+/**
+ * Return the scatter to the static peak-vs-peak reduction (HEP-ANIM-007): the
+ * whole point of the animation is that you can leave it, and a reader who has
+ * scrubbed to day 40 needs one gesture back to the chart every other control
+ * describes.
+ * @private
+ */
+function resetPlayback(host) {
+  stopPlayback(host);
+  host.state.animation.day = null;
+  host.animationPositions = null;
+  host.animationTrail = [];
+  if (host.animationLabel) host.animationLabel.textContent = 'Showing peak values (all days)';
+  if (host.chart) {
+    host.chart.data.datasets[0].data = host.points.map((point) => ({ x: point.x, y: point.y }));
+    host.chart.data.datasets[2].data = [];
+    host.chart.update('none');
+  }
+}
+
+/** Keep the play/stop button's glyph, title and aria-label on the live state. @private */
+function syncPlayButton(host) {
+  const button = host.animationPlayBtn;
+  if (!button) return;
+  const playing = Boolean(host.state.animation && host.state.animation.playing);
+  button.textContent = playing ? '■' : '▶';
+  button.title = playing ? 'Stop the study-day playback' : 'Play the study-day animation';
+  button.setAttribute('aria-label', button.title);
+  button.setAttribute('aria-pressed', String(playing));
+}
+
+/**
+ * Render the study-day playback bar beneath the plot (HEP-ANIM-001): a play /
+ * stop button, a day slider annotated with the range endpoints, the day
+ * readout, and the reset back to the peak-vs-peak view. Drawn only when the
+ * data carries usable study days — an animation over undated records would move
+ * points along an axis that does not exist (HEP-ANIM-008).
+ * @private
+ */
+function drawAnimationBar(host) {
+  host.animationPlayBtn = null;
+  host.animationSlider = null;
+  host.animationLabel = null;
+  if (!host.animationWrap) return;
+  const range = host.animationRange;
+  if (!range || range[0] === range[1]) {
+    if (range) {
+      host.animationWrap.append(
+        createElement(
+          'span',
+          'hep-animation-note',
+          'Study-day playback needs records on more than one study day.'
+        )
+      );
+    }
+    return;
+  }
+
+  const bar = createElement('div', 'hep-animation-bar');
+  const play = createElement('button', 'hep-animation-play');
+  play.type = 'button';
+  host.animationPlayBtn = play;
+  play.onclick = () => {
+    if (host.state.animation.playing) stopPlayback(host);
+    else startPlayback(host);
+  };
+
+  bar.append(play, createElement('span', 'hep-animation-end', String(range[0])));
+  const slider = createElement('input', 'hep-animation-slider');
+  slider.type = 'range';
+  slider.min = String(range[0]);
+  slider.max = String(range[1]);
+  slider.step = '1';
+  slider.value = String(host.state.animation.day == null ? range[0] : host.state.animation.day);
+  slider.setAttribute('aria-label', 'Study day');
+  // Scrubbing is the same gesture as playing, one frame at a time, so it stops
+  // a running play-through rather than fighting it for the day.
+  slider.oninput = () => {
+    stopPlayback(host);
+    showDay(host, Number(slider.value));
+  };
+  host.animationSlider = slider;
+  bar.append(slider, createElement('span', 'hep-animation-end', String(range[1])));
+
+  const reset = createElement('button', 'hep-animation-reset', 'Reset');
+  reset.type = 'button';
+  reset.title = 'Return to the peak-value scatter';
+  reset.onclick = () => resetPlayback(host);
+  bar.append(reset);
+
+  const label = createElement(
+    'div',
+    'hep-animation-label',
+    host.state.animation.day == null
+      ? 'Showing peak values (all days)'
+      : `Showing data from: Day ${host.state.animation.day}`
+  );
+  host.animationLabel = label;
+  host.animationWrap.append(bar, label);
+  syncPlayButton(host);
+}
+
+/**
  * Draw the Chart.js eDISH scatter: dataset 0 = participant points styled by
  * group, timing, and selection; dataset 1 = the (initially empty) visit-path
- * line overlay. The quadrant plugin draws the cut-lines and labels; clicking a
- * point selects the participant, clicking empty space clears the selection.
+ * line overlay; dataset 2 = the (initially empty) motion trails the study-day
+ * playback leaves behind (HEP-ANIM-004). The quadrant plugin draws the
+ * cut-lines and labels; clicking a point selects the participant, clicking
+ * empty space clears the selection.
  * @private
  */
 function drawScatter(host) {
@@ -411,17 +700,34 @@ function drawScatter(host) {
     const point = points[ctx.dataIndex];
     if (!point) return 'rgba(0,0,0,0)';
     const active = traced(point);
-    if (!point.withinWindow && !active) return 'rgba(0,0,0,0)';
     const color = colorFor(host, point);
+    // While a study day is being shown, the timing highlight is meaningless
+    // (it compares two PEAK days) and the fill instead says whether that
+    // participant has been enrolled yet (HEP-ANIM-003).
+    const moving = animatedAt(host, ctx.dataIndex);
+    if (moving) {
+      if (!moving.enrolled) return 'rgba(0,0,0,0)';
+      return hexToRgba(color, anyActive(host) ? (active ? 1 : HIGHLIGHT.DIM_FILL) : 0.5);
+    }
+    if (!point.withinWindow && !active) return 'rgba(0,0,0,0)';
     const opacity = anyActive(host) ? (active ? 1 : HIGHLIGHT.DIM_FILL) : 0.75;
     return hexToRgba(color, opacity);
   };
   const border = (ctx) => {
     const point = points[ctx.dataIndex];
     if (!point) return 'rgba(0,0,0,0)';
+    const moving = animatedAt(host, ctx.dataIndex);
+    if (moving && !moving.enrolled) return 'rgba(0,0,0,0)';
     if (traced(point)) return SELECTION_COLOR;
     const opacity = anyActive(host) ? HIGHLIGHT.DIM_BORDER : 0.9;
     return hexToRgba(colorFor(host, point), opacity);
+  };
+  // A point sitting outside its own measured span is drawn at half size, the
+  // original's signal that it is being held rather than observed (HEP-ANIM-003).
+  const animatedRadius = (index) => {
+    const moving = animatedAt(host, index);
+    const base = radiusFor(host, points[index]);
+    return moving && moving.outOfRange ? base / 2 : base;
   };
 
   const chart = new Chart(host.canvas.getContext('2d'), {
@@ -436,9 +742,9 @@ function drawScatter(host) {
           pointBorderWidth: (ctx) =>
             traced(points[ctx.dataIndex]) ? HIGHLIGHT.BORDER_WIDTH : 1.25,
           pointRadius: (ctx) =>
-            radiusFor(host, points[ctx.dataIndex]) +
+            animatedRadius(ctx.dataIndex) +
             (traced(points[ctx.dataIndex]) ? HIGHLIGHT.RADIUS_BOOST : 0),
-          pointHoverRadius: (ctx) => radiusFor(host, points[ctx.dataIndex]) + 2
+          pointHoverRadius: (ctx) => animatedRadius(ctx.dataIndex) + 2
         },
         {
           type: 'line',
@@ -451,6 +757,23 @@ function drawScatter(host) {
           pointHoverRadius: 4,
           pointBackgroundColor: SELECTION_COLOR,
           pointBorderColor: SELECTION_COLOR
+        },
+        {
+          // Motion trails (HEP-ANIM-004): one two-vertex, gap-separated segment
+          // per point that moved, fading with age across the trail buffer.
+          type: 'line',
+          label: 'Motion trails',
+          data: [],
+          showLine: true,
+          spanGaps: false,
+          borderWidth: 2,
+          pointRadius: 0,
+          pointHoverRadius: 0,
+          borderColor: (ctx) =>
+            hexToRgba(BASE_POINT_COLOR, trailAlpha(host, ctx.p0DataIndex ?? ctx.dataIndex ?? 0)),
+          segment: {
+            borderColor: (ctx) => hexToRgba(BASE_POINT_COLOR, trailAlpha(host, ctx.p0DataIndex))
+          }
         }
       ]
     },
@@ -610,7 +933,7 @@ const scatterView = {
 
   // The shell containers this view occupies: the single scatter canvas, the
   // color-by legend, and the quadrant summary table (HEP-COMP-006).
-  slots: ['chart', 'legend', 'quadrantSummary'],
+  slots: ['chart', 'legend', 'quadrantSummary', 'animation'],
 
   // The R-Ratio range filter narrows the plotted points, so it belongs to this
   // view's pipeline (HEP-CTRL-010).
@@ -772,11 +1095,18 @@ const scatterView = {
   },
 
   /**
-   * Nothing view-local survives a redraw here: the orchestrator's render
-   * preamble already clears the hover, the sticky selection and the
-   * multi-highlight for every view.
+   * The one thing that must not survive a redraw: a running play-through
+   * (HEP-ANIM-005). Its interval holds the OLD Chart.js instance, so leaving it
+   * running across a control change would keep writing into a destroyed chart.
+   * Everything else view-local is already cleared by the orchestrator's render
+   * preamble — the hover, the sticky selection and the multi-highlight.
    */
-  teardown() {},
+  teardown(host) {
+    stopPlayback(host);
+    if (host.state.animation) host.state.animation.day = null;
+    host.animationPositions = null;
+    host.animationTrail = [];
+  },
 
   /**
    * Draw the scatter from the cleaned rows: build the per-participant points,
@@ -813,6 +1143,10 @@ const scatterView = {
 
     host.quadrants = classifyQuadrants(host.points, host.state.xCut, host.state.yCut);
     drawScatter(host);
+    // The playback frames are rebuilt AFTER the points, because they are the
+    // same participants in the same order (HEP-ANIM-002).
+    rebuildAnimationFrames(host);
+    drawAnimationBar(host);
     drawLegend(host);
     drawQuadrantSummary(host);
     host.selection.mount(
