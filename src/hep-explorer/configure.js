@@ -97,6 +97,7 @@ export { MEASURE_KEYS, cutFor } from '../hep-core/rows.js';
  * @property {boolean} [profile=true] Mount the shared participant-profile module (header, labs-over-time spaghetti, measure table) in the shell's rail slot beside the chart, driven by every selection path via the participantsSelected event; false restores the pre-#98 behaviour of no drill-down block (#98, PPRF-7; obot.roadmap#75 moved the mount from the dock to the rail).
  * @property {?Array<string|Object>} [profile_details=null] Demographic columns for the railed profile's header, as names or { value_col, label } specs; null falls back to the caller's own `details` value. Use this when `details` is configured for the linked listing rather than demographics (#98, PPRF-2).
  * @property {?string} [participantProfileURL=null] Optional link-out URL for the railed profile's header, templated by every literal `{id}` token (#98, PPRF-2, closes #53).
+ * @property {boolean} [calculate_palt=false] Opt in to computing the P_ALT hepatocyte-loss estimate (Chung et al., PMID 30303523) from each participant's ALT trajectory when `p_alt_col` supplies none; shown in the railed profile's header with the arithmetic behind it (HEP-PALT-001). Off by default because the estimate assumes ALT in IU/L and a study-day axis dense enough for a trapezoidal AUC.
  * @property {?string} [p_alt_col=null] Optional column carrying a pre-computed P_ALT shown in the railed profile's header; passed through where present, never computed client-side (#98, PPRF-2).
  * @property {number[]} [measureBounds=[0.01, 0.99]] Population-extent quantiles for the railed profile's sparkline / inset guides (#98, PPRF-4; parity with the original renderer's measureBounds).
  * @property {boolean} [r_ratio_filter=true] Whether to render the R-Ratio range filter control (HEP-CTRL-010).
@@ -170,6 +171,7 @@ export const DEFAULT_SETTINGS = {
   profile_details: null,
   participantProfileURL: null,
   p_alt_col: null,
+  calculate_palt: false,
   measureBounds: [0.01, 0.99],
   r_ratio_filter: true,
   r_ratio: [0, null],

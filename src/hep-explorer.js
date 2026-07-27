@@ -346,6 +346,7 @@ class SafetyHepExplorer {
           : this.profileDetails || [],
       participantProfileURL: settings.participantProfileURL ?? null,
       p_alt_col: settings.p_alt_col ?? null,
+      calculate_palt: settings.calculate_palt,
       measureBounds: settings.measureBounds,
       display: this.state.display,
       on_clear: () => this.selection.clear(),

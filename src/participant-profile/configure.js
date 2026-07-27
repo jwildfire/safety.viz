@@ -64,7 +64,8 @@ export const MEASURE_COLORS = [
  * @property {string} [axis_type='linear'] Spaghetti y-axis scale: `linear` or `log`; a host passes its live axis-type state through so the drill-down follows the chart (PPRF-3/7).
  * @property {number[]} [measureBounds=[0.01, 0.99]] Population-extent quantiles for the sparkline / inset guides (PPRF-4).
  * @property {?string} [participantProfileURL=null] Optional link-out URL, templated by every literal `{id}` token (PPRF-2, closes #53).
- * @property {?string} [p_alt_col=null] Optional column carrying a pre-computed P_ALT; passed through where present, never computed client-side (PPRF-2).
+ * @property {?string} [p_alt_col=null] Optional column carrying a pre-computed P_ALT; passed through where present, and always preferred over a computed one (PPRF-2).
+ * @property {boolean} [calculate_palt=false] Opt in to computing P_ALT from the participant's ALT trajectory when `p_alt_col` supplies none (HEP-PALT-001). Off by default: the estimate assumes ALT in IU/L and a study-day axis dense enough for a trapezoidal AUC, which only the data owner can confirm.
  * @property {boolean} [listing=false] Optional participant record listing under the measure table, via the shared listing renderer (PPRF-4).
  * @property {?Array<string|Object>} [listing_cols=null] Listing columns as names or { value_col, label } specs; null derives them from the lab mapping columns.
  * @property {number} [listing_page_size=10] Listing page size.
@@ -117,6 +118,7 @@ export const DEFAULT_SETTINGS = {
   measureBounds: [0.01, 0.99],
   participantProfileURL: null,
   p_alt_col: null,
+  calculate_palt: false,
   listing: false,
   listing_cols: null,
   listing_page_size: 10,

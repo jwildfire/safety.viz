@@ -980,6 +980,38 @@ test.describe('safety.viz hep-explorer module', () => {
     ).toBeNull();
   });
 
+  test('HEP-PALT-001/HEP-PALT-003: the opted-in P_ALT estimate is shown in the profile header with the arithmetic behind it (#49)', async ({
+    page
+  }) => {
+    // Off by default: no client-side estimate appears unless the caller asks
+    // for one (HEP-PALT-002 — the estimate carries unit and sampling
+    // assumptions only the data owner can confirm).
+    await page.evaluate(() => window.__safetyHepExplorerInstance.selectParticipant('SUBJ-001'));
+    await expect(page.locator('.sv-rail .sv-profile-id')).toHaveText('Participant SUBJ-001');
+    await expect(page.locator('.sv-rail .sv-profile-palt')).toHaveCount(0);
+
+    await page.evaluate(() =>
+      window.__safetyHepExplorerInstance.setSettings({ calculate_palt: true })
+    );
+    await page.evaluate(() => window.__safetyHepExplorerInstance.selectParticipant('SUBJ-001'));
+    const palt = page.locator('.sv-rail .sv-profile-palt');
+    await expect(palt).toHaveCount(1);
+    await expect(palt).toContainText(/\d+\.\d{2}/);
+
+    // Clicking the figure shows the arithmetic that produced it, not just the
+    // number (HEP-PALT-003).
+    await palt.locator('.sv-profile-detail-value').click();
+    const footnote = page.locator('.sv-rail .sv-profile-footnote');
+    await expect(footnote).toContainText('ALT AUC');
+    await expect(footnote).toContainText('IU/L');
+    await expect(footnote.locator('a')).toHaveAttribute(
+      'href',
+      'https://pubmed.ncbi.nlm.nih.gov/30303523/'
+    );
+
+    await captureEvidence(page, 'HEP-PALT-001', 'palt-estimate');
+  });
+
   test('HEP-SELECT-008: the selected participant’s measure table draws a sparkline per row and expands it into a full chart (#48)', async ({
     page
   }) => {

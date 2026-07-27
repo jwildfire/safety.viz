@@ -28,6 +28,10 @@ pending; each row lists the module IDs its test covers.
 | HEP-QUAD-001/004                                    | —                  | #43   | changing the x-axis reference line reclassifies the quadrants                                                |
 | HEP-DISPLAY-001/002, HEP-CHART-002                  | —                  | #43   | the display toggle switches eDISH and mDISH axis titles and cutpoints                                        |
 | HEP-SELECT-001/002/003/005/006                      | —                  | #43   | clicking a point draws the visit path, detail panels, and linked listing                                     |
+| HEP-ANIM-001/003/006/007                            | —                  | #46   | the study-day playback bar scrubs the cloud through time and resets back to the peaks                        |
+| HEP-ANIM-004/005                                    | —                  | #46   | the play control runs the animation and leaves motion trails behind the moving points                        |
+| HEP-SELECT-008                                      | —                  | #48   | the selected participant's measure table draws a sparkline per row and expands it into a full chart          |
+| HEP-PALT-001/003                                    | —                  | #49   | the opted-in P_ALT estimate is shown in the profile header with the arithmetic behind it                     |
 | HEP-SELECT-002                                      | —                  | #43   | selecting a second participant without a background click destroys the prior detail chart (no Chart.js leak) |
 | HEP-SELECT-007                                      | —                  | #43   | clicking the background clears the selection, detail panels, and listing                                     |
 | HEP-SELECT-006                                      | —                  | #43   | changing Display Type while a participant is selected re-renders the coordinated panels in the new units     |
@@ -68,6 +72,8 @@ pending; each row lists the module IDs its test covers.
 | HEP-CHART-001, HEP-CTRL-008/009/011 (points, timing, group, filters)                       | —                  | #43   | `structureData.test.js`  |
 | HEP-QUAD-004 (quadrant classification counts/percents)                                     | —                  | #43   | `structureData.test.js`  |
 | HEP-QUAD-006 (which cut-line the pointer holds, what a drag to a pixel means)              | —                  | #45   | `cutDrag.test.js`        |
+| HEP-ANIM-001..005 (day range, frames, position at a day, trails, duration)                 | —                  | #46   | `animation.test.js`      |
+| HEP-PALT-001/002/003 (AUC × peak^0.18 / 1e5, when it declines, the shown note)             | —                  | #49   | `palt.test.js`           |
 | HEP-SELECT-002/003/005 (drill-down series)                                                 | —                  | #43   | `structureData.test.js`  |
 | HEP-CHART-002/003/004, HEP-CTRL-006, HEP-DISPLAY-001 (domains, log, labels)                | —                  | #43   | `getScales.test.js`      |
 | HEP-CHART-004, HEP-CTRL-009, HEP-QUAD-002, HEP-SELECT-001 (tooltip, palette, plugin)       | —                  | #43   | `getPlugins.test.js`     |

@@ -13488,6 +13488,7 @@ var DEFAULT_SETTINGS2 = {
   measureBounds: [0.01, 0.99],
   participantProfileURL: null,
   p_alt_col: null,
+  calculate_palt: false,
   listing: false,
   listing_cols: null,
   listing_page_size: 10,
@@ -13614,6 +13615,7 @@ var DEFAULT_SETTINGS3 = {
   profile_details: null,
   participantProfileURL: null,
   p_alt_col: null,
+  calculate_palt: false,
   measureBounds: [0.01, 0.99],
   r_ratio_filter: true,
   r_ratio: [0, null],
@@ -13933,6 +13935,40 @@ function buildCompositeSubjects(cleanRows, settings) {
   return buildHepSubjects(cleanRows, settings);
 }
 
+// src/hep-core/palt.js
+var PEAK_EXPONENT = 0.18;
+var SCALE = 1e5;
+var HOURS_PER_DAY = 24;
+var f2 = (value) => value.toFixed(2);
+function calculatePalt(participantRows, settings) {
+  if (!Array.isArray(participantRows) || !participantRows.length) return null;
+  const altRows = resolveMeasureRows(participantRows, settings, MEASURE_KEYS[0]);
+  const values = altRows.filter((row) => Number.isFinite(row.__hep_value) && Number.isFinite(row.__hep_day)).sort(dayThenIndex).map((row) => ({ day: row.__hep_day, value: row.__hep_value }));
+  if (values.length < 2) return null;
+  if (values[values.length - 1].day === values[0].day) return null;
+  const peak = Math.max(...values.map((point) => point.value));
+  let auc = 0;
+  for (let i = 0; i < values.length - 1; i += 1) {
+    const meanValue = (values[i].value + values[i + 1].value) / 2;
+    const hours = (values[i + 1].day - values[i].day) * HOURS_PER_DAY;
+    auc += meanValue * hours;
+  }
+  const value = auc * Math.pow(peak, PEAK_EXPONENT) / SCALE;
+  const text = f2(value);
+  const note = `NOTE: For this participant, P_ALT was calculated as ALT AUC \xD7 Peak ALT^${PEAK_EXPONENT} / 10^5 = ${f2(auc)} \xD7 ${f2(peak)}^${PEAK_EXPONENT} / 10^5 = ${text}. The AUC is trapezoidal over study day \xD7 24 hours, and the estimate assumes ALT is reported in IU/L \u2014 if your results are in other units this figure does not apply. P_ALT predicts the percentage hepatocyte loss from the maximum value and the AUC of serum ALT observed during a DILI event (Chung et al., PMID 30303523). It is an estimate, not a measurement, and is not validated for clinical use.`;
+  return {
+    value,
+    text_value: text,
+    note,
+    reference: {
+      label: "A Rapid Method to Estimate Hepatocyte Loss Due to Drug-Induced Liver Injury",
+      url: "https://pubmed.ncbi.nlm.nih.gov/30303523/"
+    },
+    components: { peak, auc },
+    values
+  };
+}
+
 // src/participant-profile/structureData.js
 function yLabelFor(display) {
   return display === "relative_baseline" ? "Standardized Result [xBaseline]" : "Standardized Result [xULN]";
@@ -13986,6 +14022,9 @@ function buildProfileModel(cleanRows, id, settings, state) {
   if (settings.p_alt_col) {
     const raw = first[settings.p_alt_col];
     pAlt = raw === void 0 || raw === null || raw === "" ? null : raw;
+  }
+  if (pAlt === null && settings.calculate_palt) {
+    pAlt = calculatePalt(participantRows, settings);
   }
   const participant = {
     id,
@@ -14163,6 +14202,14 @@ function renderHeader(participant, settings, { onClear } = {}) {
       valueEl.setAttribute("tabindex", "0");
       const show = () => {
         footnote.textContent = participant.pAlt.note;
+        const reference = participant.pAlt.reference;
+        if (reference && reference.url) {
+          const link = createElement("a", "sv-profile-footnote-link", reference.label);
+          link.setAttribute("href", reference.url);
+          link.setAttribute("target", "_blank");
+          link.setAttribute("rel", "noopener");
+          footnote.append(" ", link);
+        }
       };
       valueEl.onclick = show;
       valueEl.onkeydown = (event) => {
@@ -21709,6 +21756,11 @@ var hep_explorer_default = {
           },
           description: "Per-measure Hy's-Law cutpoints keyed by measure then display mode; a `defaults` entry back-fills any measure without its own cuts (HEP-QUAD-001)."
         },
+        calculate_palt: {
+          type: "boolean",
+          default: false,
+          description: "Opt in to computing the P_ALT hepatocyte-loss estimate (ALT AUC x peak ALT^0.18 / 10^5; Chung et al., PMID 30303523) from each participant's ALT trajectory when no pre-computed value is mapped. Off by default: the estimate assumes ALT in IU/L and a study-day axis dense enough for a trapezoidal AUC (HEP-PALT-001, HEP-PALT-002)."
+        },
         visit_window: {
           type: "number",
           default: 30,
@@ -25190,6 +25242,7 @@ var SafetyHepExplorer = class {
       details: settings.profile_details && settings.profile_details.length ? settings.profile_details : this.profileDetails || [],
       participantProfileURL: settings.participantProfileURL ?? null,
       p_alt_col: settings.p_alt_col ?? null,
+      calculate_palt: settings.calculate_palt,
       measureBounds: settings.measureBounds,
       display: this.state.display,
       on_clear: () => this.selection.clear(),

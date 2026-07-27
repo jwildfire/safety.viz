@@ -36,10 +36,31 @@ describe('buildProfileModel — participant header fields (PPRF-2, PPRF-HDR-001)
     expect(Number.isNaN(model('P4').participant.rRatio)).toBe(true);
   });
 
-  it('passes P_ALT through from p_alt_col where a value exists, never computing it', () => {
+  it('passes P_ALT through from p_alt_col where a value exists, and computes none by default', () => {
     expect(model('P1', { p_alt_col: 'PALT' }).participant.pAlt).toBe('0.87');
     expect(model('P2', { p_alt_col: 'PALT' }).participant.pAlt).toBeNull();
     expect(model('P1').participant.pAlt).toBeNull();
+  });
+
+  it('computes P_ALT only when the caller opts in, as the {text_value, note} the header explains (#49)', () => {
+    const computed = model('P1', { calculate_palt: true }).participant.pAlt;
+    expect(computed).not.toBeNull();
+    expect(computed.text_value).toMatch(/^\d+\.\d{2}$/);
+    // The note is plain prose plus a separate citation link, so the header can
+    // render it with textContent rather than an innerHTML sink (#49).
+    expect(computed.note).toContain('ALT AUC');
+    expect(computed.note).not.toContain('<');
+    expect(computed.reference.url).toContain('30303523');
+  });
+
+  it('prefers the caller’s own supplied P_ALT over the computed estimate (#49)', () => {
+    // Both routes available: the data owner's value is what a reader sees, so
+    // a browser-side estimate can never silently overwrite a validated one.
+    expect(model('P1', { p_alt_col: 'PALT', calculate_palt: true }).participant.pAlt).toBe('0.87');
+    // ...and the estimate fills the gap only where the column is empty.
+    expect(
+      model('P2', { p_alt_col: 'PALT', calculate_palt: true }).participant.pAlt
+    ).not.toBeNull();
   });
 });
 
