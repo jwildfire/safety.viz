@@ -14,6 +14,7 @@ These matrices are the input to the evidence pages published with every release:
 | [hep-waterfall.md](hep-waterfall.md)                       | hep-waterfall                      |   57 |
 | [safety-delta-delta.md](safety-delta-delta.md)             | delta-delta                        |   48 |
 | [qt-explorer.md](qt-explorer.md)                           | qt-explorer                        |   47 |
+| [nep-explorer.md](nep-explorer.md)                         | nep-explorer                       |   46 |
 | [participant-profile.md](participant-profile.md)           | participant-profile                |   68 |
 | [ae-timelines.md](ae-timelines.md)                         | ae-timelines                       |   43 |
 | [safety-shift-plot.md](safety-shift-plot.md)               | shift-plot                         |   39 |
