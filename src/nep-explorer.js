@@ -184,7 +184,10 @@ class SafetyNepExplorer {
     this.nativeUnit = structured.nativeUnit;
   }
 
-  /** The creatinine measure's display name. @private */
+  /**
+   * The creatinine measure's display name.
+   * @private
+   */
   measureLabel() {
     return this.settings.measure_values.CREAT;
   }

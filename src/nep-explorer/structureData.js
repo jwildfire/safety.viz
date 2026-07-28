@@ -183,7 +183,6 @@ export function cleanData(rawData, settings) {
  */
 export function buildParticipants(rows, settings) {
   const unitsResolved = rows.every((row) => row.__nep_factor !== null);
-  const observedUnits = unique(rows.map((row) => row.__nep_unitKey));
   const nativeUnit = unitsResolved
     ? settings.units.target
     : unique(
@@ -280,8 +279,7 @@ export function buildParticipants(rows, settings) {
     droppedParticipants,
     baselineFallbacks,
     unitsResolved,
-    nativeUnit,
-    observedUnits
+    nativeUnit
   };
 }
 
