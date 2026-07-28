@@ -94,9 +94,16 @@
     {
       "module": "nep-explorer",
       "title": "Nephrotoxicity Explorer",
-      "status": "planned",
-      "blurb": "KDIGO acute-kidney-injury screening: one point per participant at their maximum fold change in serum creatinine against their maximum absolute change, over coloured stage zones, with a stage summary table.",
-      "matrix": "nep-explorer.md"
+      "status": "available",
+      "experimental": true,
+      "blurb": "KDIGO acute-kidney-injury screening: one point per participant at their maximum post-baseline fold change in serum creatinine against their maximum absolute change, over the L-shaped KDIGO stage zones, with a distinct mark for the ≥ 4.0 mg/dL Stage-3 rule, per-record mg/dL unit resolution, counted and exportable dropped records, and a stage summary table counting the population by fold change, by absolute change, and by the combined stage.",
+      "hero": "NEP-ZONE-001-stage-zones-scatter.png",
+      "matrix": "nep-explorer.md",
+      "guide": "nep-explorer.md",
+      "guideTagline": "How to read the KDIGO creatinine scatter to screen for acute kidney injury — the two axes, the L-shaped stage zones, the ≥ 4.0 mg/dL mark — and what the criteria's time window means for a flagged participant.",
+      "guideCaution": "The chart flags participants for review, it does not diagnose acute kidney injury; and no time window is applied, so a slow drift stages the same as an acute injury.",
+      "data": "adbds.csv",
+      "related": ["hep-explorer"]
     },
     {
       "module": "paneled-outlier-explorer",

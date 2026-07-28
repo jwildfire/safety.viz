@@ -51,7 +51,7 @@ const STYLE_ID = 'safety-viz-nep-explorer-styles';
 const MODULE_CSS = `
 .safety-nep-explorer .nep-summary-title{font-size:.95rem;margin:0 0 .5rem}
 .safety-nep-explorer .nep-table-scroll{overflow-x:auto}
-.safety-nep-explorer .nep-summary{border-collapse:collapse;font-size:.85rem;background:#fff;min-width:32rem}
+.safety-nep-explorer .nep-summary{width:auto;border-collapse:collapse;font-size:.85rem;background:#fff;min-width:30rem;max-width:44rem}
 .safety-nep-explorer .nep-summary th,.safety-nep-explorer .nep-summary td{border-bottom:1px solid #e3e8ee;padding:.4rem .6rem;text-align:right;font-variant-numeric:tabular-nums}
 .safety-nep-explorer .nep-summary thead th{border-bottom:2px solid #d8dee4;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f;text-align:center;white-space:nowrap}
 .safety-nep-explorer .nep-summary tbody th{text-align:left;font-weight:600}

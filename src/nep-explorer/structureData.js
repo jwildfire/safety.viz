@@ -224,7 +224,6 @@ export function buildParticipants(rows, settings) {
       droppedParticipants.push({ id, reason: REASON_NO_USABLE });
       return;
     }
-    if (resolved.fallback) baselineFallbacks += 1;
     const baselineRow = resolved.record;
     const baseline = valueOf(baselineRow);
     const post = participantRows.filter((row) => row !== baselineRow);
@@ -232,6 +231,10 @@ export function buildParticipants(rows, settings) {
       droppedParticipants.push({ id, reason: REASON_NO_POST_BASELINE });
       return;
     }
+    // Counted only for participants who make it onto the plot: the note sits
+    // beside the plotted-participant count, so it has to describe the same
+    // population.
+    if (resolved.fallback) baselineFallbacks += 1;
     let maxRow = post[0];
     post.forEach((row) => {
       if (valueOf(row) > valueOf(maxRow)) maxRow = row;

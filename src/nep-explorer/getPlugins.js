@@ -248,10 +248,14 @@ export function stageZonesPlugin(instance) {
       ctx.lineWidth = 1;
       ctx.setLineDash([4, 4]);
       painted.forEach((zone) => {
-        ctx.beginPath();
-        ctx.moveTo(zone.left, zone.top);
-        ctx.lineTo(zone.left, zone.bottom);
-        ctx.stroke();
+        // A zone's left edge is only a boundary when it is a cut-point; at the
+        // domain edge it is just the frame.
+        if (zone.x0 > scales.x.min) {
+          ctx.beginPath();
+          ctx.moveTo(zone.left, zone.top);
+          ctx.lineTo(zone.left, zone.bottom);
+          ctx.stroke();
+        }
         if (zone.y0 > scales.y.min) {
           ctx.beginPath();
           ctx.moveTo(zone.left, zone.bottom);
@@ -264,11 +268,15 @@ export function stageZonesPlugin(instance) {
         ctx.setLineDash([]);
         ctx.fillStyle = 'rgba(51, 65, 85, 0.9)';
         ctx.font = '11px system-ui, sans-serif';
-        ctx.textBaseline = 'top';
+        // Labels sit at the FOOT of each band, not the head: the shell's
+        // annotation overlay is anchored top-right, and the worst zone is the
+        // rightmost one — so a top-anchored "Stage 3" is the one label that
+        // reliably ends up underneath it.
+        ctx.textBaseline = 'bottom';
         ctx.textAlign = 'left';
         painted.forEach((zone) => {
           if (!zone.label) return;
-          ctx.fillText(zone.label, zone.left + 4, chartArea.top + 6);
+          ctx.fillText(zone.label, zone.left + 4, chartArea.bottom - 6);
         });
       }
       ctx.restore();

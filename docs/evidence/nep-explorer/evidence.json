@@ -1,5 +1,5 @@
 {
-  "module": "qt-explorer",
+  "module": "nep-explorer",
   "generatedAt": "2026-07-28T18:09:34.635Z",
   "environment": {
     "os": "darwin 23.6.0",
@@ -154,102 +154,91 @@
       "screenshots": []
     },
     {
+      "test": "NEP-CFG-006: the filters narrow the plotted population and restate the summary (#120)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["NEP-CFG-006"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "NEP-DATA-005: unusable records and participants are counted with a download each (#120)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["NEP-DATA-005"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-DATA-005-dropped-record-notes.png"]
+    },
+    {
+      "test": "NEP-SCAT-001/NEP-STAGE-003: the >= 4.0 mg/dL participant carries a distinct mark (#120)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["NEP-SCAT-001", "NEP-STAGE-003"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-STAGE-003-absolute-rule-mark.png"]
+    },
+    {
+      "test": "NEP-SCAT-004: clicking a point selects it and dispatches participantsSelected (#120)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["NEP-SCAT-004"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-SCAT-004-participant-selected.png"]
+    },
+    {
+      "test": "NEP-STAGE-001/NEP-STAGE-004: each participant lands in the zone their staging names (#120)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["NEP-STAGE-001", "NEP-STAGE-004"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "NEP-TBL-001/NEP-TBL-002: the summary tabulates the fold, absolute and combined stagings (#120)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["NEP-TBL-001", "NEP-TBL-002"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-TBL-001-stage-summary-table.png"]
+    },
+    {
+      "test": "NEP-UNIT-002: a participant whose records mix mg/dL and µmol/L stages on the converted values (#120)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["NEP-UNIT-002"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "NEP-UNIT-003: the fold axis survives and every absolute claim is withheld (#120)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["NEP-UNIT-003"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-UNIT-003-unknown-unit-suppression.png"]
+    },
+    {
+      "test": "NEP-ZONE-001/NEP-ZONE-002: the stage zones paint worst-first behind the points (#120)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["NEP-ZONE-001", "NEP-ZONE-002"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-ZONE-001-stage-zones-scatter.png"]
+    },
+    {
+      "test": "NEP-ZONE-004: the zone labels can be hidden (#120)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["NEP-ZONE-004"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-ZONE-004-zone-labels-hidden.png"]
+    },
+    {
       "test": "opens on hover and the top link still points at the gallery index (#71)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [71],
-      "screenshots": []
-    },
-    {
-      "test": "PPRF-QT-001/PPRF-QT-002: clicking an outlier-scatter point opens the railed profile in observed ms with the 450 cut on QTcF (#99)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["PPRF-QT-001", "PPRF-QT-002"],
-      "issueRefs": [99],
-      "screenshots": [
-        "PPRF-QT-002-docked-profile-observed-ms.png",
-        "PPRF-QT-002-railed-profile-observed-ms.png"
-      ]
-    },
-    {
-      "test": "PPRF-QT-003/PPRF-QT-004: empty clicks and view switches clear the rail, which idles on non-scatter views (#99)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["PPRF-QT-003", "PPRF-QT-004"],
-      "issueRefs": [99],
-      "screenshots": []
-    },
-    {
-      "test": "QT-CAT-001/QT-CAT-002/QT-CAT-003: the categorical view hides the chart and tabulates by-arm exceedance (#68)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["QT-CAT-001", "QT-CAT-002", "QT-CAT-003"],
-      "issueRefs": [68],
-      "screenshots": ["QT-CAT-002-categorical-table.png"]
-    },
-    {
-      "test": "QT-CT-002/QT-CT-003/QT-CT-006: central tendency draws per-arm lines, a CI band, the reference line and the peak marker (#68)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["QT-CT-002", "QT-CT-003", "QT-CT-006"],
-      "issueRefs": [68],
-      "screenshots": []
-    },
-    {
-      "test": "QT-CT-004/QT-CT-005: ΔΔ drops placebo and reports the ICH-E14 metric above the reference (#68)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["QT-CT-004", "QT-CT-005"],
-      "issueRefs": [68],
-      "screenshots": ["QT-CT-005-delta-delta-ich-metric.png"]
-    },
-    {
-      "test": "QT-CT-007: heart rate is offered in central tendency without the QTc reference line (#68)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["QT-CT-007"],
-      "issueRefs": [68],
-      "screenshots": []
-    },
-    {
-      "test": "QT-CTRL-001/QT-CTRL-002/QT-CTRL-003: renders the view, correction, statistic, display, and filter controls (#68)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["QT-CTRL-001", "QT-CTRL-002", "QT-CTRL-003"],
-      "issueRefs": [68],
-      "screenshots": ["QT-CTRL-001-central-tendency-delta.png"]
-    },
-    {
-      "test": "QT-DATA-003: the participant note / removed-count path leaves no page errors (#68)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["QT-DATA-003"],
-      "issueRefs": [68],
-      "screenshots": []
-    },
-    {
-      "test": "QT-OUT-002/QT-OUT-003/QT-OUT-004: the outlier scatter draws absolute diagonals, the zero line, and per-arm marks (#68)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["QT-OUT-002", "QT-OUT-003", "QT-OUT-004"],
-      "issueRefs": [68],
-      "screenshots": ["QT-OUT-003-outlier-scatter-max.png"]
-    },
-    {
-      "test": "QT-OUT-003: a specific visit adds the change-from-baseline lines (#68)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["QT-OUT-003"],
-      "issueRefs": [68],
-      "screenshots": ["QT-OUT-003-outlier-scatter-max.png"]
-    },
-    {
-      "test": "QT-OUT-007: heart rate shows a QTc-only note in the outlier view (#68)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["QT-OUT-007"],
-      "issueRefs": [68],
       "screenshots": []
     },
     {
@@ -589,549 +578,452 @@
       "screenshots": []
     },
     {
-      "test": "qt-explorer arms/visits/measures/filters QT-CT-001: orderVisits sorts by numeric visit",
+      "test": "nep-explorer baseline resolution NEP-DATA-001: an explicit baseline flag outranks record order (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-CT-001"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-DATA-001"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer arms/visits/measures/filters QT-CT-004: armsPresent puts the placebo arm first",
+      "test": "nep-explorer baseline resolution NEP-DATA-002: a configured flag that no record carries still falls back rather than dropping the participant (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-CT-004"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-DATA-002"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer arms/visits/measures/filters QT-CT-004: placeboArmFor auto-detects /placebo/i",
+      "test": "nep-explorer baseline resolution NEP-DATA-002: with neither column the fallback keeps input order (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-CT-004"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-DATA-002"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer arms/visits/measures/filters QT-CTRL-003: applyFilters constrains on active selections only",
+      "test": "nep-explorer baseline resolution NEP-DATA-002: with no flag configured the earliest record is the baseline, and the fallback is counted (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-CTRL-003"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-DATA-002"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer arms/visits/measures/filters QT-DATA-006: measuresPresent lists distinct measures",
+      "test": "nep-explorer baseline resolution NEP-DATA-002: without a study-day column the fallback orders on visit number (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-DATA-006"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-DATA-002"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer centralTendencySeries (QT-CT-001/004/005) QT-CT-002: median mode carries no CI (lo/hi NaN)",
+      "test": "nep-explorer checkInputs NEP-CFG-008: the creatinine check follows a renamed measure (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-CT-001", "QT-CT-002"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-CFG-008"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer centralTendencySeries (QT-CT-001/004/005) QT-CT-002: Δ mean series carries per-arm means and a 90% CI",
+      "test": "nep-explorer checkInputs NEP-DATA-006: a dataset with no creatinine is reported, not thrown (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-CT-001", "QT-CT-002"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-DATA-006"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer centralTendencySeries (QT-CT-001/004/005) QT-CT-004: ΔΔ drops placebo and subtracts placebo mean change",
+      "test": "nep-explorer checkInputs NEP-DATA-006: every required mapped column is named when it is missing (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-CT-001", "QT-CT-004"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-DATA-006"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer checkInputs (QT-DATA-005) QT-DATA-005: an empty dataset reports all required columns missing",
+      "test": "nep-explorer configure NEP-CFG-001: DEFAULT_SETTINGS carries the BDS lab mapping the KDIGO scatter needs (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-DATA-005"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-CFG-001"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer checkInputs (QT-DATA-005) QT-DATA-005: passes when every required column is present",
+      "test": "nep-explorer configure NEP-CFG-002: baseline identification is an explicit setting pair, unset by default (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-DATA-005"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-CFG-002"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer checkInputs (QT-DATA-005) QT-DATA-005: throws naming each missing required column",
+      "test": "nep-explorer configure NEP-CFG-003: the stage cut-points default to the KDIGO ladder and are configurable (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-DATA-005"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-CFG-003"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer classifyThresholds (QT-CAT-002/003) QT-CAT-001: denominators are post-baseline subjects per arm",
+      "test": "nep-explorer configure NEP-CFG-004: fold cut-points are sorted and numified, and a bad ladder falls back (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-CAT-002", "QT-CAT-001"],
-      "issueRefs": [],
-      "screenshots": ["QT-CAT-002-categorical-table.png"]
-    },
-    {
-      "test": "qt-explorer classifyThresholds (QT-CAT-002/003) QT-CAT-002: absolute >450 counts D1(470) and D2(500) in Drug",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["QT-CAT-002"],
-      "issueRefs": [],
-      "screenshots": ["QT-CAT-002-categorical-table.png"]
-    },
-    {
-      "test": "qt-explorer classifyThresholds (QT-CAT-002/003) QT-CAT-002: absolute >500 excludes the boundary value 500 (strict >)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["QT-CAT-002"],
-      "issueRefs": [],
-      "screenshots": ["QT-CAT-002-categorical-table.png"]
-    },
-    {
-      "test": "qt-explorer classifyThresholds (QT-CAT-002/003) QT-CAT-003: change >60 counts only D2(70) using max change independently",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["QT-CAT-002", "QT-CAT-003"],
-      "issueRefs": [],
-      "screenshots": ["QT-CAT-002-categorical-table.png"]
-    },
-    {
-      "test": "qt-explorer cleanData (QT-DATA-003/004) QT-DATA-003: drops missing / non-numeric values with a count",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["QT-DATA-003"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-CFG-004"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer cleanData (QT-DATA-003/004) QT-DATA-004: derives change as value − baseline when the change column is blank",
+      "test": "nep-explorer configure NEP-CFG-005: the units contract targets mg/dL with a configurable factor table (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-DATA-003", "QT-DATA-004"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-CFG-005"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer cleanData (QT-DATA-003/004) QT-DATA-004: keeps the source change when present",
+      "test": "nep-explorer configure NEP-CFG-006: syncSettings normalizes the field-list settings and defaults the details (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-DATA-003", "QT-DATA-004"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-CFG-006"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer cleanData (QT-DATA-003/004) QT-DATA-005: flags the ABLFL=Y baseline record as not post-baseline",
+      "test": "nep-explorer configure NEP-CFG-007: zone labels are a shown/hidden setting, defaulting to shown (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-DATA-003", "QT-DATA-005"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-CFG-007"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer cleanData (QT-DATA-003/004) QT-DATA-005: when the flag column is present, a post-baseline change-0 row with a missing flag stays post-baseline",
+      "test": "nep-explorer configure NEP-CFG-008: the creatinine measure resolves through measure_values (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-DATA-003", "QT-DATA-005"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-CFG-008"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer cleanData (QT-DATA-003/004) QT-DATA-005: with no baseline-flag column at all, a change-0 row is treated as the baseline",
+      "test": "nep-explorer configure NEP-UNIT-001: unit strings normalize across the three mu spellings, case and whitespace (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-DATA-003", "QT-DATA-005"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-UNIT-001"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer configure defaults QT-DATA-001: default settings carry the ADEG column mapping",
+      "test": "nep-explorer marks and tooltip NEP-SCAT-001: the >= 4.0 mg/dL rule gets a distinct mark, and the selected point a border (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-DATA-001"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-SCAT-001"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer configure.resolvePlaceboArm QT-CFG-007: auto-detects /placebo/i otherwise",
+      "test": "nep-explorer marks and tooltip NEP-SCAT-002: a negative change keeps its sign and stays Stage 0 (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-CFG-007"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-SCAT-002"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer configure.resolvePlaceboArm QT-CFG-007: prefers the explicit setting when present",
+      "test": "nep-explorer marks and tooltip NEP-SCAT-002: the tooltip carries the source lines, in the source order (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-CFG-007"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-SCAT-002"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer configure.syncSettings QT-CFG-001: fills defaults and normalizes field lists",
+      "test": "nep-explorer marks and tooltip NEP-SCAT-003: the study-day line degrades away rather than rendering blank (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-CFG-001"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-SCAT-003"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer configure.syncSettings QT-CFG-002: sorts and numifies threshold lists",
+      "test": "nep-explorer marks and tooltip NEP-SCAT-004: selection styling thickens exactly one point (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-CFG-002"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-SCAT-004"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-SCAT-004-participant-selected.png"]
+    },
+    {
+      "test": "nep-explorer marks and tooltip NEP-UNIT-003: a suppressed delta stage is reported as unstageable, not as Stage 0 (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-UNIT-003"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-UNIT-003-unknown-unit-suppression.png"]
+    },
+    {
+      "test": "nep-explorer module export NEP-API-001: the public collection exposes the nepExplorer factory (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-API-001"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer configure.syncSettings QT-CFG-003: falls back start_measure to the first available measure",
+      "test": "nep-explorer scales NEP-ZONE-005: a custom ladder moves the floor with it (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-CFG-003"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-ZONE-005"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer configure.syncSettings QT-CFG-004: rejects an out-of-range ci_level, keeping the default",
+      "test": "nep-explorer scales NEP-ZONE-005: axis titles name the measure and, in the suppressed mode, the native unit (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-CFG-004"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-ZONE-005"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer configure.syncSettings QT-CFG-005: VIEWS and TIMEPOINT_MAX are stable",
+      "test": "nep-explorer scales NEP-ZONE-005: formatNumber trims trailing zeroes and guards non-finite values (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-CFG-005"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-ZONE-005"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer configure.zForCi QT-CFG-006: interpolates between table points and clamps the ends",
+      "test": "nep-explorer scales NEP-ZONE-005: the built scales carry the cut-point ticks (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-CFG-006"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-ZONE-005"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer configure.zForCi QT-CFG-006: returns the two-sided z for common levels",
+      "test": "nep-explorer scales NEP-ZONE-005: the delta axis keeps the trigger visible and extends below zero when the data goes there (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-CFG-006"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-ZONE-005"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer getPlugins helpers (QT-OUT-004/006) QT-PLG-001: hexToRgba converts to rgba at opacity",
+      "test": "nep-explorer scales NEP-ZONE-005: the fold axis always reaches past the last cut-point (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-OUT-004", "QT-PLG-001"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-ZONE-005"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer getPlugins helpers (QT-OUT-004/006) QT-PLG-002: armColorScale assigns stable cycling colors",
+      "test": "nep-explorer stage zones NEP-UNIT-003: with the unit unresolved the absolute trigger is not drawn (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-OUT-004", "QT-PLG-002"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-UNIT-003"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-UNIT-003-unknown-unit-suppression.png"]
+    },
+    {
+      "test": "nep-explorer stage zones NEP-ZONE-001: a custom ladder moves the zone boundaries with it (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-ZONE-001"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-ZONE-001-stage-zones-scatter.png"]
+    },
+    {
+      "test": "nep-explorer stage zones NEP-ZONE-001: the zones are the L-shaped KDIGO geometry, not four nested rectangles (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-ZONE-001"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-ZONE-001-stage-zones-scatter.png"]
+    },
+    {
+      "test": "nep-explorer stage zones NEP-ZONE-001: zones clip to the visible domain and vanish when it excludes them (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-ZONE-001"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-ZONE-001-stage-zones-scatter.png"]
+    },
+    {
+      "test": "nep-explorer stage zones NEP-ZONE-002: zones paint worst-stage-first so points are always drawn on top (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-ZONE-002"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer getPlugins helpers (QT-OUT-004/006) QT-PLG-003: scatterTooltip lists id, arm, baseline, value, change, visit",
+      "test": "nep-explorer stage zones NEP-ZONE-003: every zone is labelled once and colour is never the only cue (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-OUT-004", "QT-PLG-003"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-ZONE-003"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer getScales arm point styles (QT-OUT-004) QT-SCL-008: assigns a distinct cycling point style per arm",
+      "test": "nep-explorer staging NEP-STAGE-001: the fold ladder stages at 1.5 / 2 / 3, worst match first (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-OUT-004", "QT-SCL-008"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-STAGE-001"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer getScales formatting + domains QT-SCL-005: formatNumber trims and guards non-finite",
+      "test": "nep-explorer staging NEP-STAGE-001: the ladder is read worst-first, so an ascending source ordering cannot hide Stages 2 and 3 (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-SCL-005"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-STAGE-001"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer getScales formatting + domains QT-SCL-006: formatSigned signs the change with a real minus glyph",
+      "test": "nep-explorer staging NEP-STAGE-002: the absolute-change axis carries one cut-point and produces Stage 1 only (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-SCL-006"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-STAGE-002"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer getScales formatting + domains QT-SCL-007: paddedDomain covers values and forced inclusions",
+      "test": "nep-explorer staging NEP-STAGE-003: the >= 4.0 mg/dL rule raises the stage to 3 whatever the fold change says (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-SCL-007"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-STAGE-003"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-STAGE-003-absolute-rule-mark.png"]
+    },
+    {
+      "test": "nep-explorer staging NEP-STAGE-004: the combined stage is the worse of the two axes (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-STAGE-004"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer getScales formatting + domains QT-SCL-007: paddedDomain handles an empty / degenerate sample",
+      "test": "nep-explorer structureData NEP-CFG-003: custom stage cut-points restage the same data (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-SCL-007"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-CFG-003"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer getScales titles + units (QT-OUT-005, QT-CT-001) QT-SCL-001: correctionSuffix maps the QTc formulas",
+      "test": "nep-explorer structureData NEP-CFG-006: filters constrain the plotted population on the active selections only (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-OUT-005", "QT-CT-001", "QT-SCL-001"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-CFG-006"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer getScales titles + units (QT-OUT-005, QT-CT-001) QT-SCL-002: isQtcMeasure + measureUnit distinguish QTc from HR",
+      "test": "nep-explorer structureData NEP-DATA-002: the count of participants resolved by the baseline fallback is reported (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-OUT-005", "QT-CT-001", "QT-SCL-002"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-DATA-002"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer getScales titles + units (QT-OUT-005, QT-CT-001) QT-SCL-003: central axis title carries mode prefix + correction suffix",
+      "test": "nep-explorer structureData NEP-DATA-003: reduces each participant to one staged point at their maximum post-baseline value (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-OUT-005", "QT-CT-001", "QT-SCL-003"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-DATA-003"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer getScales titles + units (QT-OUT-005, QT-CT-001) QT-SCL-004: scatter titles mirror the mockup",
+      "test": "nep-explorer structureData NEP-DATA-004: a participant whose creatinine only falls keeps a negative delta and is plotted (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-OUT-005", "QT-CT-001", "QT-SCL-004"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-DATA-004"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer ICH-E14 metric + peak visit (QT-CT-005/006) QT-CT-005: ICH-E14 metric is the largest ΔΔ upper CI bound, flagged vs 10 ms",
+      "test": "nep-explorer structureData NEP-DATA-005: unusable records and participants are counted and exportable, never silently dropped (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-CT-005"],
-      "issueRefs": [],
-      "screenshots": ["QT-CT-005-delta-delta-ich-metric.png"]
+      "requirementIds": ["NEP-DATA-005"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-DATA-005-dropped-record-notes.png"]
     },
     {
-      "test": "qt-explorer ICH-E14 metric + peak visit (QT-CT-005/006) QT-CT-005: metric is empty outside mean + ΔΔ",
+      "test": "nep-explorer structureData NEP-SCAT-003: the point carries the visit and study day its maximum came from (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["QT-CT-005"],
-      "issueRefs": [],
-      "screenshots": ["QT-CT-005-delta-delta-ich-metric.png"]
-    },
-    {
-      "test": "qt-explorer ICH-E14 metric + peak visit (QT-CT-005/006) QT-CT-006: peakVisits returns each arm peak",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["QT-CT-005", "QT-CT-006"],
-      "issueRefs": [],
-      "screenshots": ["QT-CT-005-delta-delta-ich-metric.png"]
-    },
-    {
-      "test": "qt-explorer interval-measure mapping (PPRF-QT-002) PPRF-QT-002: feed rows survive the unit-ULN synthesis — observed ms on the ULN scale, nothing drops",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["PPRF-QT-002"],
-      "issueRefs": [],
-      "screenshots": [
-        "PPRF-QT-002-docked-profile-observed-ms.png",
-        "PPRF-QT-002-railed-profile-observed-ms.png"
-      ]
-    },
-    {
-      "test": "qt-explorer interval-measure mapping (PPRF-QT-002) PPRF-QT-002: maps the profile settings for interval measures — identity keys, per-QTc cuts, observed-ms labels",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["PPRF-QT-002"],
-      "issueRefs": [],
-      "screenshots": [
-        "PPRF-QT-002-docked-profile-observed-ms.png",
-        "PPRF-QT-002-railed-profile-observed-ms.png"
-      ]
-    },
-    {
-      "test": "qt-explorer interval-measure mapping (PPRF-QT-002) PPRF-QT-002: the railed spaghetti carries the 450 ms cut on QTc series and no cut on Heart Rate",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["PPRF-QT-002"],
-      "issueRefs": [],
-      "screenshots": [
-        "PPRF-QT-002-docked-profile-observed-ms.png",
-        "PPRF-QT-002-railed-profile-observed-ms.png"
-      ]
-    },
-    {
-      "test": "qt-explorer module export QT-API-001: the public collection exposes the qtExplorer factory",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["QT-API-001"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-SCAT-003"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer participant-profile adoption (PPRF-QT-001) PPRF-QT-001: clicking an outlier-scatter point feeds the rail the full profile via the shell root",
+      "test": "nep-explorer structureData NEP-STAGE-003: a participant reaching the absolute rule is Stage 3 on a Stage-1 fold change (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["PPRF-QT-001"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-STAGE-003"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-STAGE-003-absolute-rule-mark.png"]
+    },
+    {
+      "test": "nep-explorer structureData NEP-TBL-001: the summary reports N and % for the fold, delta and combined stagings (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-TBL-001"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-TBL-001-stage-summary-table.png"]
+    },
+    {
+      "test": "nep-explorer structureData NEP-TBL-002: every stage row is present even when empty (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-TBL-002"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer participant-profile adoption (PPRF-QT-001) PPRF-QT-001: mounts the rail by default (config-on) into the shell profile slot",
+      "test": "nep-explorer structureData NEP-TBL-003: an empty population summarizes to zeroes rather than dividing by zero (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["PPRF-QT-001"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-TBL-003"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer participant-profile adoption (PPRF-QT-001) PPRF-QT-001: profile: false leaves the slot empty and mounts no dock",
+      "test": "nep-explorer structureData NEP-UNIT-002: values convert to mg/dL per record, so one participant may mix known units (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["PPRF-QT-001"],
-      "issueRefs": [],
+      "requirementIds": ["NEP-UNIT-002"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {
-      "test": "qt-explorer participant-profile adoption (PPRF-QT-001) PPRF-QT-004: no listing is added — the rail is the only drill-down surface",
+      "test": "nep-explorer structureData NEP-UNIT-003: a record with no unit at all also suppresses, rather than assuming mg/dL (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["PPRF-QT-001", "PPRF-QT-004"],
-      "issueRefs": [],
-      "screenshots": []
+      "requirementIds": ["NEP-UNIT-003"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-UNIT-003-unknown-unit-suppression.png"]
     },
     {
-      "test": "qt-explorer rail clear paths (PPRF-QT-003, PPRF-11) PPRF-QT-001: destroy tears the rail down with the instance",
+      "test": "nep-explorer structureData NEP-UNIT-003: an unrecognized unit suppresses the absolute claims and keeps the fold axis (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["PPRF-QT-003", "PPRF-QT-001"],
-      "issueRefs": [],
-      "screenshots": []
+      "requirementIds": ["NEP-UNIT-003"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-UNIT-003-unknown-unit-suppression.png"]
     },
     {
-      "test": "qt-explorer rail clear paths (PPRF-QT-003, PPRF-11) PPRF-QT-001: setSettings({profile: false}) unmounts a live dock; re-enabling remounts it",
+      "test": "nep-explorer structureData NEP-UNIT-003: one unrecognized record suppresses for the whole chart, and mixed native units drop (#120)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["PPRF-QT-003", "PPRF-QT-001"],
-      "issueRefs": [],
-      "screenshots": []
-    },
-    {
-      "test": "qt-explorer rail clear paths (PPRF-QT-003, PPRF-11) PPRF-QT-003: a view switch clears the selection and the rail (render preamble); non-scatter views idle",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["PPRF-QT-003"],
-      "issueRefs": [],
-      "screenshots": []
-    },
-    {
-      "test": "qt-explorer rail clear paths (PPRF-QT-003, PPRF-11) PPRF-QT-003: an empty-canvas click clears the selection and empties the rail",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["PPRF-QT-003"],
-      "issueRefs": [],
-      "screenshots": []
-    },
-    {
-      "test": "qt-explorer rail clear paths (PPRF-QT-003, PPRF-11) PPRF-QT-003: dock Clear empties an externally-fed cohort the host never selected (PPRF-11)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["PPRF-QT-003"],
-      "issueRefs": [],
-      "screenshots": []
-    },
-    {
-      "test": "qt-explorer rail clear paths (PPRF-QT-003, PPRF-11) PPRF-QT-003: the rail Clear affordance routes through the host clear path",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["PPRF-QT-003"],
-      "issueRefs": [],
-      "screenshots": []
-    },
-    {
-      "test": "qt-explorer rail clear paths (PPRF-QT-003, PPRF-11) PPRF-QT-004: stepping an externally-fed cohort emphasizes the stepped point without re-dispatching",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["PPRF-QT-003", "PPRF-QT-004"],
-      "issueRefs": [],
-      "screenshots": []
-    },
-    {
-      "test": "qt-explorer structureData statistics helpers QT-STAT-001: unique keeps first-seen non-empty values",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["QT-STAT-001"],
-      "issueRefs": [],
-      "screenshots": []
-    },
-    {
-      "test": "qt-explorer structureData statistics helpers QT-STAT-002: mean/sd/quantile/median match hand values",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["QT-STAT-002"],
-      "issueRefs": [],
-      "screenshots": []
-    },
-    {
-      "test": "qt-explorer subjectExtremes (QT-CAT-001) QT-CAT-001: tracks max value and max change independently",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["QT-CAT-001"],
-      "issueRefs": [],
-      "screenshots": []
-    },
-    {
-      "test": "qt-explorer subjectPoints (QT-OUT-001/002) QT-OUT-002: a specific visit picks that visit row",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["QT-OUT-001", "QT-OUT-002"],
-      "issueRefs": [],
-      "screenshots": []
-    },
-    {
-      "test": "qt-explorer subjectPoints (QT-OUT-001/002) QT-OUT-002: matches a numeric-typed visit against a string timepoint",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["QT-OUT-001", "QT-OUT-002"],
-      "issueRefs": [],
-      "screenshots": []
-    },
-    {
-      "test": "qt-explorer subjectPoints (QT-OUT-001/002) QT-OUT-002: maximum post-baseline picks the max absolute value row",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["QT-OUT-001", "QT-OUT-002"],
-      "issueRefs": [],
-      "screenshots": []
+      "requirementIds": ["NEP-UNIT-003"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-UNIT-003-unknown-unit-suppression.png"]
     },
     {
       "test": "renderGuidePage: composition renders a sticky TOC sidebar whose links anchor to the heading ids",
@@ -1715,6 +1607,102 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "synthetic AKI demo cohort NEP-COHORT-001: the cohort is present, labelled synthetic, and carries the shared measure contract (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-COHORT-001"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "synthetic AKI demo cohort NEP-COHORT-002: every participant has a day-0 baseline and enough post-baseline visits to trace a path (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-COHORT-002"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "synthetic AKI demo cohort NEP-COHORT-003: creatinine is written in umol/L so the demo exercises the unit conversion (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-COHORT-003"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "synthetic AKI demo cohort NEP-COHORT-004: the cohort ships no baseline flag, so the demo runs on the D7 fallback (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-COHORT-004"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "synthetic AKI demo cohort NEP-COHORT-005: all four fold-change stages are populated (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-COHORT-005"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "synthetic AKI demo cohort NEP-COHORT-006: the delta axis carries Stage 1 and no-stage participants only (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-COHORT-006"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "synthetic AKI demo cohort NEP-COHORT-007: the fold and delta stagings disagree in both directions (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-COHORT-007"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "synthetic AKI demo cohort NEP-COHORT-008: the combined stage populates every zone the chart paints (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-COHORT-008"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "synthetic AKI demo cohort NEP-COHORT-009: participants trip the >= 4.0 mg/dL rule, including one the fold ladder alone would call Stage 1 (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-COHORT-009"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "synthetic AKI demo cohort NEP-COHORT-010: participants whose creatinine only falls are present, so the negative domain is visible (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-COHORT-010"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "synthetic AKI demo cohort NEP-COHORT-011: the injury signal skews to the active arm and both arms are populated (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-COHORT-011"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "synthetic AKI demo cohort NEP-COHORT-012: the injection leaves the pharmaverseadam population untouched (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-COHORT-012"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {

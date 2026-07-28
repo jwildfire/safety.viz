@@ -30690,7 +30690,6 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
         droppedParticipants.push({ id, reason: REASON_NO_USABLE });
         return;
       }
-      if (resolved.fallback) baselineFallbacks += 1;
       const baselineRow = resolved.record;
       const baseline = valueOf(baselineRow);
       const post = participantRows.filter((row) => row !== baselineRow);
@@ -30698,6 +30697,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
         droppedParticipants.push({ id, reason: REASON_NO_POST_BASELINE });
         return;
       }
+      if (resolved.fallback) baselineFallbacks += 1;
       let maxRow = post[0];
       post.forEach((row) => {
         if (valueOf(row) > valueOf(maxRow)) maxRow = row;
@@ -30975,10 +30975,12 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
         ctx.lineWidth = 1;
         ctx.setLineDash([4, 4]);
         painted.forEach((zone) => {
-          ctx.beginPath();
-          ctx.moveTo(zone.left, zone.top);
-          ctx.lineTo(zone.left, zone.bottom);
-          ctx.stroke();
+          if (zone.x0 > scales.x.min) {
+            ctx.beginPath();
+            ctx.moveTo(zone.left, zone.top);
+            ctx.lineTo(zone.left, zone.bottom);
+            ctx.stroke();
+          }
           if (zone.y0 > scales.y.min) {
             ctx.beginPath();
             ctx.moveTo(zone.left, zone.bottom);
@@ -30990,11 +30992,11 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
           ctx.setLineDash([]);
           ctx.fillStyle = "rgba(51, 65, 85, 0.9)";
           ctx.font = "11px system-ui, sans-serif";
-          ctx.textBaseline = "top";
+          ctx.textBaseline = "bottom";
           ctx.textAlign = "left";
           painted.forEach((zone) => {
             if (!zone.label) return;
-            ctx.fillText(zone.label, zone.left + 4, chartArea.top + 6);
+            ctx.fillText(zone.label, zone.left + 4, chartArea.bottom - 6);
           });
         }
         ctx.restore();
@@ -31009,7 +31011,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
   var MODULE_CSS3 = `
 .safety-nep-explorer .nep-summary-title{font-size:.95rem;margin:0 0 .5rem}
 .safety-nep-explorer .nep-table-scroll{overflow-x:auto}
-.safety-nep-explorer .nep-summary{border-collapse:collapse;font-size:.85rem;background:#fff;min-width:32rem}
+.safety-nep-explorer .nep-summary{width:auto;border-collapse:collapse;font-size:.85rem;background:#fff;min-width:30rem;max-width:44rem}
 .safety-nep-explorer .nep-summary th,.safety-nep-explorer .nep-summary td{border-bottom:1px solid #e3e8ee;padding:.4rem .6rem;text-align:right;font-variant-numeric:tabular-nums}
 .safety-nep-explorer .nep-summary thead th{border-bottom:2px solid #d8dee4;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f;text-align:center;white-space:nowrap}
 .safety-nep-explorer .nep-summary tbody th{text-align:left;font-weight:600}
@@ -31265,7 +31267,9 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
      */
     droppedRowColumns() {
       if (!this.droppedRows.length) return [];
-      const source = Object.keys(this.droppedRows[0]).filter((column) => !column.startsWith("__nep_"));
+      const source = Object.keys(this.droppedRows[0]).filter(
+        (column) => !column.startsWith("__nep_")
+      );
       return [DROP_REASON_COLUMN, ...source];
     }
     /**
