@@ -30660,7 +30660,6 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
   }
   function buildParticipants2(rows, settings) {
     const unitsResolved = rows.every((row) => row.__nep_factor !== null);
-    const observedUnits = unique9(rows.map((row) => row.__nep_unitKey));
     const nativeUnit = unitsResolved ? settings.units.target : unique9(
       rows.filter((row) => row.__nep_factor === null).map((row) => settings.unit_col ? row[settings.unit_col] : "")
     )[0] || "(unit not recorded)";
@@ -30738,8 +30737,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       droppedParticipants,
       baselineFallbacks,
       unitsResolved,
-      nativeUnit,
-      observedUnits
+      nativeUnit
     };
   }
   function structureData(rawData, settings) {
@@ -31123,7 +31121,10 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       this.unitsResolved = structured.unitsResolved;
       this.nativeUnit = structured.nativeUnit;
     }
-    /** The creatinine measure's display name. @private */
+    /**
+     * The creatinine measure's display name.
+     * @private
+     */
     measureLabel() {
       return this.settings.measure_values.CREAT;
     }
