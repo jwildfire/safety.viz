@@ -1,6 +1,6 @@
 {
   "module": "ae-timelines",
-  "generatedAt": "2026-07-28T18:12:48.339Z",
+  "generatedAt": "2026-07-28T18:16:27.223Z",
   "environment": {
     "os": "linux 6.17.0-1020-azure",
     "node": "v22.23.1",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "30386342223",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/30386342223"
+    "id": "30386625355",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/30386625355"
   },
   "records": [
     {
