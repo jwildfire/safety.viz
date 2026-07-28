@@ -10,7 +10,7 @@ per the convention in [CONTRIBUTING.md](../CONTRIBUTING.md). The reviewed source
 matrix is [`requirements/nep-explorer.md`](../requirements/nep-explorer.md) in
 this repo, and each row below cites the matrix rows its test covers.
 
-Requirement IDs use the module's condensed **`NEP-*`** scheme cited in the source
+Requirement IDs use the module's condensed `NEP-*` scheme cited in the source
 and test names — `NEP-CFG-*` (settings, the `stages` and `units` objects, measure
 resolution), `NEP-UNIT-*` (per-record mg/dL conversion, string normalization, the
 refuse-to-guess path), `NEP-DATA-*` (baseline resolution and its fallback,
