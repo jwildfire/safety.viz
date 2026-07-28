@@ -402,8 +402,14 @@ describe('hep-core subjects — the demo-dataset composite population', () => {
   const demoIds = new Set(demo.subjects.map((subject) => subject.id));
 
   it('HEP-CORE-002: pins the composite subject and excluded counts (#91)', () => {
+    // The composite POPULATION is unchanged by the AKI cohort injected for the
+    // nep-explorer demo (#120): those 46 participants carry creatinine and no
+    // liver analytes, so they cannot enter an ALT-vs-bilirubin display and the
+    // subject count still reads 293. They do join the excluded tally — 25 → 71 —
+    // because they are genuinely participants in this file with no usable
+    // ALT/TB, which is what that note reports.
     expect(demo.subjects).toHaveLength(293);
-    expect(demo.excluded).toBe(25);
+    expect(demo.excluded).toBe(71);
   });
 
   it('HEP-CORE-002: the two participants the baseline fix drops are named (#91)', () => {
@@ -433,9 +439,14 @@ describe('hep-core subjects — the demo-dataset composite population', () => {
       const tbNo = tb.length && !tb.some((r) => r.__hep_day === 0);
       if (altNo || tbNo) noDay0.push(id);
     });
-    expect(byId.size).toBe(318);
+    // 318 pilot + CLD participants, plus the 46 AKI- participants injected for
+    // the nep-explorer demo (#120). The rule-TARGET population is untouched:
+    // the AKI cohort has a day-0 record for every participant, and no liver
+    // analytes for any of them, so it contributes nothing to noDay0.
+    expect(byId.size).toBe(364);
     expect(noDay0).toHaveLength(24);
     expect(noDay0.some((id) => id.startsWith('CLD-'))).toBe(false);
+    expect(noDay0.some((id) => id.startsWith('AKI-'))).toBe(false);
     // The two the fix fully drops are a subset of the rule-target population.
     expect(noDay0).toContain('01-703-1197');
     expect(noDay0).toContain('01-708-1236');

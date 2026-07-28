@@ -92,6 +92,13 @@
       "related": ["hep-explorer"]
     },
     {
+      "module": "nep-explorer",
+      "title": "Nephrotoxicity Explorer",
+      "status": "planned",
+      "blurb": "KDIGO acute-kidney-injury screening: one point per participant at their maximum fold change in serum creatinine against their maximum absolute change, over coloured stage zones, with a stage summary table.",
+      "matrix": "nep-explorer.md"
+    },
+    {
       "module": "paneled-outlier-explorer",
       "title": "Paneled Outlier Explorer",
       "status": "planned",
