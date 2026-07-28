@@ -96,7 +96,10 @@
       const instance = SafetyViz.nepExplorer('#container', {
         filters: [
           { value_col: 'SEX', label: 'Sex' },
-          { value_col: 'ARM', label: 'Treatment Group' }
+          { value_col: 'ARM', label: 'Treatment Group' },
+          // A column this data does not carry: the control is dropped with a
+          // console warning rather than rendered with one empty option.
+          { value_col: 'NOSUCHCOL', label: 'Absent Column' }
         ]
       });
       window.__safetyNepExplorerInstance = instance;

@@ -198,7 +198,11 @@ class SafetyNepExplorer {
     const { addSection, addControl } = controlBuilders(this.controls);
 
     const filterSpecs = this.settings.filters.filter((filter) => {
-      const exists = this.allPoints.some((point) => point.meta[filter.value_col] !== undefined);
+      // Tested against the RAW records, not the built points: buildParticipants
+      // fills every mapped meta column with '' when the source row has none, so
+      // a point's meta is always defined and would report a missing column as
+      // present — a filter control with one empty option and no way to know why.
+      const exists = this.rawData.some((row) => row[filter.value_col] !== undefined);
       if (!exists)
         console.warn(
           `The [ ${filter.label} ] filter has been removed because the variable does not exist.`

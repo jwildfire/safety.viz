@@ -31098,7 +31098,7 @@ var SafetyNepExplorer = class {
     this.controls.innerHTML = "";
     const { addSection, addControl } = controlBuilders(this.controls);
     const filterSpecs = this.settings.filters.filter((filter) => {
-      const exists = this.allPoints.some((point) => point.meta[filter.value_col] !== void 0);
+      const exists = this.rawData.some((row) => row[filter.value_col] !== void 0);
       if (!exists)
         console.warn(
           `The [ ${filter.label} ] filter has been removed because the variable does not exist.`

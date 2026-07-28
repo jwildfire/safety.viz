@@ -240,6 +240,9 @@ test.describe('safety.viz nep-explorer module', () => {
   }) => {
     const labels = await page.locator('.sv-control label').allTextContents();
     expect(labels).toEqual(expect.arrayContaining(['Sex', 'Treatment Group', 'Stage zone labels']));
+    // A filter whose column the data does not carry is dropped, not rendered
+    // with a single empty option (the fixture configures one deliberately).
+    expect(labels).not.toContain('Absent Column');
     await selectByLabel(page, 'Treatment Group', 'Placebo');
     await expect(page.locator('.sv-notes')).toContainText('of 10 participants shown');
     const shown = await page.evaluate(() => window.__safetyNepExplorerInstance.points.length);
