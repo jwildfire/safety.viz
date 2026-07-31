@@ -31,7 +31,14 @@
 import { Chart } from 'chart.js';
 
 import { createElement, option } from '../../shell.js';
-import { AXIS_TYPES, DISPLAY_MODES, GROUP_NONE, POINT_SIZE_OPTIONS, cutFor } from '../configure.js';
+import {
+  AXIS_TYPES,
+  DISPLAY_MODES,
+  GROUP_NONE,
+  LOG_BASES,
+  POINT_SIZE_OPTIONS,
+  cutFor
+} from '../configure.js';
 import { applyFilters, buildPoints, classifyQuadrants, unique } from '../structureData.js';
 import { cutHandleAt, cutValueFor } from '../cutDrag.js';
 import { availableDisplays, groupOrder } from '../availability.js';
@@ -1008,13 +1015,29 @@ const scatterView = {
       host.render();
     };
 
-    // Axis Type: linear / log (HEP-CTRL-006).
+    // Axis Type: linear / log (HEP-CTRL-006). Rebuilds the controls because the
+    // Log Base picker below only exists while the axis is logarithmic.
     const axisType = addControl('Axis Type', document.createElement('select'), settingsParent);
     AXIS_TYPES.forEach((type) => option(axisType, type, type, type === host.state.axisType));
     axisType.onchange = () => {
       host.state.axisType = axisType.value;
+      host.buildControls();
       host.render();
     };
+
+    // Log Base: log10 / log2 (HEP-CTRL-017), offered only while the axis is
+    // logarithmic — on a linear axis it names nothing. It moves the gridlines,
+    // not the points: position on a log axis is base-independent.
+    if (host.state.axisType === 'log') {
+      const logBase = addControl('Log Base', document.createElement('select'), settingsParent);
+      LOG_BASES.forEach((base) =>
+        option(logBase, base.value, base.label, base.value === Number(host.state.logBase))
+      );
+      logBase.onchange = () => {
+        host.state.logBase = Number(logBase.value);
+        host.render();
+      };
+    }
 
     // Marginal distributions: the one-dimensional summary of each axis the
     // original renderer draws beside the cloud (HEP-MARG-003).

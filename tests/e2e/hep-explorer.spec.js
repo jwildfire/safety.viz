@@ -793,6 +793,42 @@ test.describe('safety.viz hep-explorer module', () => {
     await captureEvidence(page, 'HEP-CTRL-006', 'log-axes');
   });
 
+  test('HEP-CTRL-017: the log base picker appears with the log axis and moves the gridlines to every doubling (#54)', async ({
+    page
+  }) => {
+    const axisType = page
+      .locator('.sv-control', { has: page.locator('label:text-is("Axis Type")') })
+      .locator('select');
+    const logBase = page.locator('.sv-control', { has: page.locator('label:text-is("Log Base")') });
+
+    // On a linear axis the control names nothing, so it is not offered.
+    await expect(logBase).toHaveCount(0);
+
+    await axisType.selectOption('log');
+    await expect(logBase).toHaveCount(1);
+    await logBase.locator('select').selectOption('2');
+
+    const ticks = await page.evaluate(() => {
+      const chart = window.__safetyHepExplorerInstance.chart;
+      return {
+        x: chart.scales.x.ticks.map((tick) => tick.value),
+        y: chart.scales.y.ticks.map((tick) => tick.value),
+        xType: chart.scales.x.type
+      };
+    });
+    // Every gridline is a power of two, and there is more than one of them.
+    expect(ticks.xType).toBe('logarithmic');
+    expect(ticks.x.length).toBeGreaterThan(1);
+    for (const value of [...ticks.x, ...ticks.y]) {
+      expect(Number.isInteger(Math.round(Math.log2(value) * 1e6) / 1e6)).toBe(true);
+    }
+    await captureEvidence(page, 'HEP-CTRL-017', 'log-base-doublings');
+
+    // Returning to a linear axis withdraws the control again (HEP-CTRL-017).
+    await axisType.selectOption('linear');
+    await expect(logBase).toHaveCount(0);
+  });
+
   test('HEP-CHART-004: point tooltips list participant, R Ratio, peaks with days, and the day difference (#43)', async ({
     page
   }) => {

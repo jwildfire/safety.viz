@@ -5,7 +5,9 @@ import {
   measureLabel,
   axisLabel,
   edishDomain,
-  buildScales
+  buildScales,
+  logTicks,
+  formatLogTick
 } from '../../../src/hep-explorer/getScales.js';
 
 // Full measure labels, as settings.measure_values maps the short keys.
@@ -97,5 +99,92 @@ describe('hep-explorer getScales', () => {
     expect(scales.y.min).toBe(0.5);
     expect(scales.x.title.text).toBe('Aminotransferase, alanine (ALT) [×Baseline]');
     expect(scales.y.title.text).toBe('Total Bilirubin [×Baseline]');
+  });
+});
+
+// HEP-CTRL-017 (SafetyGraphics/hep-explorer#112): "each unit increase would be
+// an X fold increase on the original scale". Position on a log axis is
+// base-independent — log_b(x) differs from log10(x) only by a constant factor —
+// so the base is not a rescaling, it is the choice of WHICH multiples the
+// gridlines land on. Base 2 is the one clinicians ask for: a gridline every
+// doubling, on data where a 2-fold rise is the unit of interest.
+describe('log axis base (HEP-CTRL-017, #54)', () => {
+  it('places a tick at every power of the base inside the domain', () => {
+    expect(logTicks([0.2, 9], 2)).toEqual([0.25, 0.5, 1, 2, 4, 8]);
+    expect(logTicks([0.05, 500], 10)).toEqual([0.1, 1, 10, 100]);
+  });
+
+  it('includes a bound that IS a power of the base, floating-point error aside', () => {
+    // Math.log(0.1) / Math.log(10) is -0.9999999999999998, so a naive ceil()
+    // drops the 0.1 decade the domain actually starts on.
+    expect(logTicks([0.1, 100], 10)).toEqual([0.1, 1, 10, 100]);
+    expect(logTicks([0.25, 8], 2)).toEqual([0.25, 0.5, 1, 2, 4, 8]);
+  });
+
+  it('declines a domain too narrow to carry two gridlines, rather than drawing one', () => {
+    expect(logTicks([1.2, 8], 10)).toEqual([]);
+    expect(logTicks([1.2, 1.9], 2)).toEqual([]);
+  });
+
+  it('declines a domain a log axis cannot take at all', () => {
+    expect(logTicks([0, 10], 10)).toEqual([]);
+    expect(logTicks([-5, 10], 10)).toEqual([]);
+    expect(logTicks([5, 1], 10)).toEqual([]);
+    expect(logTicks([1, 100], 1)).toEqual([]);
+  });
+
+  it('formats a tick at the precision the value needs, not in exponent notation', () => {
+    expect(formatLogTick(1024)).toBe('1024');
+    expect(formatLogTick(0.125)).toBe('0.125');
+    expect(formatLogTick(1)).toBe('1');
+    expect(formatLogTick(Number.NaN)).toBe('');
+  });
+
+  it('drives both scales from state.logBase when the axis is logarithmic', () => {
+    const scales = buildScales(
+      { measureX: 'ALT', measureY: 'TB', display: 'relative_uln', axisType: 'log', logBase: 2 },
+      [0.2, 9],
+      [0.2, 5],
+      MEASURE_VALUES
+    );
+    // afterBuildTicks REPLACES the tick array on the scale it is handed.
+    const xScale = { ticks: [] };
+    scales.x.afterBuildTicks(xScale);
+    expect(xScale.ticks.map((tick) => tick.value)).toEqual([0.25, 0.5, 1, 2, 4, 8]);
+    const yScale = { ticks: [] };
+    scales.y.afterBuildTicks(yScale);
+    expect(yScale.ticks.map((tick) => tick.value)).toEqual([0.25, 0.5, 1, 2, 4]);
+  });
+
+  it('leaves Chart.js its own ticks when the base cannot span the domain', () => {
+    const scales = buildScales(
+      { measureX: 'ALT', measureY: 'TB', display: 'relative_uln', axisType: 'log', logBase: 10 },
+      [0.4, 6],
+      [0.4, 6],
+      MEASURE_VALUES
+    );
+    expect(scales.x.afterBuildTicks).toBeUndefined();
+    expect(scales.y.afterBuildTicks).toBeUndefined();
+  });
+
+  it('defaults to base 10 and touches nothing on a linear axis', () => {
+    const log = buildScales(
+      { measureX: 'ALT', measureY: 'TB', display: 'relative_uln', axisType: 'log' },
+      [0.05, 500],
+      [0.05, 500],
+      MEASURE_VALUES
+    );
+    const scale = { ticks: [] };
+    log.x.afterBuildTicks(scale);
+    expect(scale.ticks.map((tick) => tick.value)).toEqual([0.1, 1, 10, 100]);
+
+    const linear = buildScales(
+      { measureX: 'ALT', measureY: 'TB', display: 'relative_uln', axisType: 'linear', logBase: 2 },
+      [0, 9],
+      [0, 5],
+      MEASURE_VALUES
+    );
+    expect(linear.x.afterBuildTicks).toBeUndefined();
+    expect(linear.x.type).toBe('linear');
   });
 });

@@ -195,6 +195,9 @@ class SafetyHepExplorer {
       measureY: this.settings.y_default,
       display: 'relative_uln',
       axisType: 'linear',
+      // Gridline base for a logarithmic axis (HEP-CTRL-017); inert while the
+      // axis is linear.
+      logBase: this.settings.log_base,
       pointSize: 'Uniform',
       marginals: this.settings.marginals,
       quadrantLabels: this.settings.quadrant_labels,
@@ -726,6 +729,7 @@ class SafetyHepExplorer {
     this.state.cuts = JSON.parse(JSON.stringify(this.settings.cuts));
     this.state.display = 'relative_uln';
     this.state.axisType = 'linear';
+    this.state.logBase = this.settings.log_base;
     this.state.pointSize = 'Uniform';
     this.state.visitWindow = this.settings.visit_window;
     this.state.filters = {};

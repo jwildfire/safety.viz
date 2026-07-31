@@ -37,6 +37,7 @@ pending; each row lists the module IDs its test covers.
 | HEP-SELECT-006                                      | —                  | #43   | changing Display Type while a participant is selected re-renders the coordinated panels in the new units     |
 | HEP-CTRL-009                                        | —                  | #43   | grouping colors the points and renders a legend                                                              |
 | HEP-CTRL-006, HEP-CHART-003                         | —                  | #43   | the axis-type toggle switches both axes between linear and log                                               |
+| HEP-CTRL-017                                        | —                  | #54   | the log base picker appears with the log axis and moves the gridlines to every doubling                      |
 | HEP-CHART-004                                       | —                  | #43   | point tooltips list participant, R Ratio, peaks with days, and the day difference                            |
 | HEP-API-003                                         | —                  | #43   | participantsSelected fires on select and clear                                                               |
 | HEP-API-001                                         | —                  | #43   | lifecycle API supports init, setData, setSettings, render, resize, and destroy                               |
