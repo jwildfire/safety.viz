@@ -57,6 +57,7 @@ adoption is this module's behaviour even though the fixtures drive hep-explorer.
 | PPRF-SPAG-001 (series building, cut lines, spaghetti render)          | PPRF-SPAG-001      | #98   | `spaghetti.test.js`, `structureData.test.js`    |
 | PPRF-SPAG-002 (×ULN/×Baseline and lab-subset controls)                | PPRF-SPAG-002      | #98   | `controls.test.js`                              |
 | PPRF-SPAG-003 (measure color palette)                                 | PPRF-SPAG-003      | #98   | `configure.test.js`                             |
+| PPRF-SPAG-004 (full names in the legend, short keys on the lines)     | PPRF-SPAG-004      | #54   | `spaghetti.test.js`                             |
 | PPRF-TBL-001 (per-measure summary model + table render)               | PPRF-TBL-001       | #98   | `measureTable.test.js`, `structureData.test.js` |
 | PPRF-TBL-002 (sparklines with normal-range and population bands)      | PPRF-TBL-002       | #98   | `sparkline.test.js`                             |
 | PPRF-TBL-003 (sparkline → inset expansion lifecycle)                  | PPRF-TBL-003       | #98   | `inset.test.js`                                 |
