@@ -23053,7 +23053,6 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       };
       return input;
     };
-    if (!host.axisLimitInputs) host.axisLimitInputs = {};
     host.axisLimitInputs[axis] = {
       lower: limitInput("Lower", "lower"),
       upper: limitInput("Upper", "upper")

@@ -23017,7 +23017,6 @@ function addAxisLimitControls(host, { addSection, addRow, addControl }, axis) {
     };
     return input;
   };
-  if (!host.axisLimitInputs) host.axisLimitInputs = {};
   host.axisLimitInputs[axis] = {
     lower: limitInput("Lower", "lower"),
     upper: limitInput("Upper", "upper")
