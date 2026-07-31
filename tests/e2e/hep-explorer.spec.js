@@ -793,6 +793,105 @@ test.describe('safety.viz hep-explorer module', () => {
     await captureEvidence(page, 'HEP-CTRL-006', 'log-axes');
   });
 
+  test('HEP-CTRL-017: the log base picker appears with the log axis and moves the gridlines to every doubling (#54)', async ({
+    page
+  }) => {
+    const axisType = page
+      .locator('.sv-control', { has: page.locator('label:text-is("Axis Type")') })
+      .locator('select');
+    const logBase = page.locator('.sv-control', { has: page.locator('label:text-is("Log Base")') });
+
+    // On a linear axis the control names nothing, so it is not offered.
+    await expect(logBase).toHaveCount(0);
+
+    await axisType.selectOption('log');
+    await expect(logBase).toHaveCount(1);
+    await logBase.locator('select').selectOption('2');
+
+    const ticks = await page.evaluate(() => {
+      const chart = window.__safetyHepExplorerInstance.chart;
+      return {
+        x: chart.scales.x.ticks.map((tick) => tick.value),
+        y: chart.scales.y.ticks.map((tick) => tick.value),
+        xType: chart.scales.x.type
+      };
+    });
+    // Every gridline is a power of two, and there is more than one of them.
+    expect(ticks.xType).toBe('logarithmic');
+    expect(ticks.x.length).toBeGreaterThan(1);
+    for (const value of [...ticks.x, ...ticks.y]) {
+      expect(Number.isInteger(Math.round(Math.log2(value) * 1e6) / 1e6)).toBe(true);
+    }
+    await captureEvidence(page, 'HEP-CTRL-017', 'log-base-doublings');
+
+    // Returning to a linear axis withdraws the control again (HEP-CTRL-017).
+    await axisType.selectOption('linear');
+    await expect(logBase).toHaveCount(0);
+  });
+
+  test('HEP-AXIS-001/002/003/004: each axis carries editable limits that seed from the domain in force (#54)', async ({
+    page
+  }) => {
+    const section = (axis) =>
+      page.locator('.sv-control-section', {
+        has: page.locator(`.sv-section-title:text-is("${axis}-axis Limits")`)
+      });
+    const box = (axis, label) =>
+      section(axis)
+        .locator('.sv-control', { has: page.locator(`label:text-is("${label}")`) })
+        .locator('input');
+
+    const domain = () =>
+      page.evaluate(() => {
+        const chart = window.__safetyHepExplorerInstance.chart;
+        return { xMin: chart.scales.x.min, xMax: chart.scales.x.max, yMax: chart.scales.y.max };
+      });
+
+    // HEP-AXIS-001: never blank — every box shows the limit actually in force.
+    const derived = await domain();
+    for (const axis of ['X', 'Y']) {
+      for (const label of ['Lower', 'Upper']) {
+        await expect(box(axis, label)).not.toHaveValue('');
+      }
+    }
+    expect(Number(await box('X', 'Upper').inputValue())).toBeCloseTo(derived.xMax, 1);
+
+    // HEP-AXIS-002: an edit becomes an override and the chart follows it.
+    await box('X', 'Upper').fill('12');
+    await box('X', 'Upper').blur();
+    expect((await domain()).xMax).toBe(12);
+    // The OTHER axis stayed automatic — limits are per axis, not per chart.
+    expect((await domain()).yMax).toBeCloseTo(derived.yMax, 6);
+
+    // Captured with a live override in force and the cloud still on the plot:
+    // the widened x-axis and the box that says why it is widened.
+    await captureEvidence(page, 'HEP-AXIS-001', 'axis-limits');
+
+    // HEP-AXIS-004: a bound typed across the displayed opposite one is swapped,
+    // never sent to the chart inverted.
+    await box('X', 'Lower').fill('20');
+    await box('X', 'Lower').blur();
+    const swapped = await domain();
+    expect(swapped.xMin).toBeLessThan(swapped.xMax);
+
+    // HEP-AXIS-003: Reset Limits returns THAT axis to automatic and refills.
+    await section('X').locator('button.sv-reset-limits').click();
+    const reset = await domain();
+    expect(reset.xMax).toBeCloseTo(derived.xMax, 6);
+    expect(Number(await box('X', 'Upper').inputValue())).toBeCloseTo(derived.xMax, 1);
+
+    // HEP-AXIS-002: a measure change returns both axes to automatic, since a
+    // limit typed for one measure says nothing about another.
+    await box('Y', 'Upper').fill('9');
+    await box('Y', 'Upper').blur();
+    expect((await domain()).yMax).toBe(9);
+    await page
+      .locator('.sv-control', { has: page.locator('label:text-is("X-axis Measure")') })
+      .locator('select')
+      .selectOption('ALP');
+    expect((await domain()).yMax).not.toBe(9);
+  });
+
   test('HEP-CHART-004: point tooltips list participant, R Ratio, peaks with days, and the day difference (#43)', async ({
     page
   }) => {

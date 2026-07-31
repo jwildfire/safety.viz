@@ -1,6 +1,6 @@
 {
   "module": "hep-explorer",
-  "generatedAt": "2026-07-27T02:53:20.506Z",
+  "generatedAt": "2026-07-31T01:47:11.186Z",
   "environment": {
     "os": "linux 6.17.0-1020-azure",
     "node": "v22.23.1",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "30233211267",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/30233211267"
+    "id": "30597231264",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/30597231264"
   },
   "records": [
     {
@@ -189,6 +189,14 @@
       "screenshots": []
     },
     {
+      "test": "HEP-AXIS-001/002/003/004: each axis carries editable limits that seed from the domain in force (#54)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HEP-AXIS-001"],
+      "issueRefs": [54],
+      "screenshots": ["HEP-AXIS-001-axis-limits.png"]
+    },
+    {
       "test": "HEP-CHART-004: point tooltips list participant, R Ratio, peaks with days, and the day difference (#43)",
       "suite": "browser",
       "status": "pass",
@@ -284,6 +292,14 @@
       "requirementIds": ["HEP-CTRL-009"],
       "issueRefs": [43],
       "screenshots": ["HEP-CTRL-009-color-by-group.png"]
+    },
+    {
+      "test": "HEP-CTRL-017: the log base picker appears with the log axis and moves the gridlines to every doubling (#54)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-017"],
+      "issueRefs": [54],
+      "screenshots": ["HEP-CTRL-017-log-base-doublings.png"]
     },
     {
       "test": "HEP-DATA-001/HEP-CTRL-011: participant note reports N and % and updates on filter (#43)",
@@ -1415,6 +1431,46 @@
       "status": "pass",
       "requirementIds": ["HEP-CORE-002"],
       "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "HEP-DOC-001: the guide links its R / nR sources (#54, #335) gives the reference-list entries for both sources a resolvable link",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DOC-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "HEP-DOC-001: the guide links its R / nR sources (#54, #335) keeps the reference list alphabetical where the new entry lands",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DOC-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "HEP-DOC-001: the guide links its R / nR sources (#54, #335) links the definition from the R-Ratio passage itself, where the question arises",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DOC-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "HEP-DOC-001: the guide links its R / nR sources (#54, #335) links the R-Ratio primary sources from the Source and attribution section",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DOC-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "HEP-DOC-001: the guide links its R / nR sources (#54, #335) names the R and nR definitions the links resolve",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DOC-001"],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -2882,6 +2938,110 @@
       "screenshots": []
     },
     {
+      "test": "log axis base (HEP-CTRL-017, #54) declines a domain a log axis cannot take at all",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-017"],
+      "issueRefs": [],
+      "screenshots": ["HEP-CTRL-017-log-base-doublings.png"]
+    },
+    {
+      "test": "log axis base (HEP-CTRL-017, #54) declines a domain too narrow to carry two gridlines, rather than drawing one",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-017"],
+      "issueRefs": [],
+      "screenshots": ["HEP-CTRL-017-log-base-doublings.png"]
+    },
+    {
+      "test": "log axis base (HEP-CTRL-017, #54) defaults to base 10 and touches nothing on a linear axis",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-017"],
+      "issueRefs": [],
+      "screenshots": ["HEP-CTRL-017-log-base-doublings.png"]
+    },
+    {
+      "test": "log axis base (HEP-CTRL-017, #54) drives both scales from state.logBase when the axis is logarithmic",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-017"],
+      "issueRefs": [],
+      "screenshots": ["HEP-CTRL-017-log-base-doublings.png"]
+    },
+    {
+      "test": "log axis base (HEP-CTRL-017, #54) formats a tick at the precision the value needs, not in exponent notation",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-017"],
+      "issueRefs": [],
+      "screenshots": ["HEP-CTRL-017-log-base-doublings.png"]
+    },
+    {
+      "test": "log axis base (HEP-CTRL-017, #54) includes a bound that IS a power of the base, floating-point error aside",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-017"],
+      "issueRefs": [],
+      "screenshots": ["HEP-CTRL-017-log-base-doublings.png"]
+    },
+    {
+      "test": "log axis base (HEP-CTRL-017, #54) leaves Chart.js its own ticks when the base cannot span the domain",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-017"],
+      "issueRefs": [],
+      "screenshots": ["HEP-CTRL-017-log-base-doublings.png"]
+    },
+    {
+      "test": "log axis base (HEP-CTRL-017, #54) places a tick at every power of the base inside the domain",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-017"],
+      "issueRefs": [],
+      "screenshots": ["HEP-CTRL-017-log-base-doublings.png"]
+    },
+    {
+      "test": "manual axis limits on the eDISH scatter (HEP-AXIS-001..004, #54) derives both bounds when neither limit is overridden",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-AXIS-001"],
+      "issueRefs": [],
+      "screenshots": ["HEP-AXIS-001-axis-limits.png"]
+    },
+    {
+      "test": "manual axis limits on the eDISH scatter (HEP-AXIS-001..004, #54) falls back to the derived domain rather than drawing an inverted one",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-AXIS-001"],
+      "issueRefs": [],
+      "screenshots": ["HEP-AXIS-001-axis-limits.png"]
+    },
+    {
+      "test": "manual axis limits on the eDISH scatter (HEP-AXIS-001..004, #54) ignores a non-numeric override rather than sending NaN to the chart",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-AXIS-001"],
+      "issueRefs": [],
+      "screenshots": ["HEP-AXIS-001-axis-limits.png"]
+    },
+    {
+      "test": "manual axis limits on the eDISH scatter (HEP-AXIS-001..004, #54) refuses a non-positive lower bound on a log axis, where it has no meaning",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-AXIS-001"],
+      "issueRefs": [],
+      "screenshots": ["HEP-AXIS-001-axis-limits.png"]
+    },
+    {
+      "test": "manual axis limits on the eDISH scatter (HEP-AXIS-001..004, #54) takes each overridden bound and leaves the other derived",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-AXIS-001"],
+      "issueRefs": [],
+      "screenshots": ["HEP-AXIS-001-axis-limits.png"]
+    },
+    {
       "test": "mdBlock: existing blocks are unchanged renders a numbered list as an ordered list",
       "suite": "unit",
       "status": "pass",
@@ -2987,6 +3147,46 @@
     },
     {
       "test": "mdBlock: pipe tables renders a GFM pipe table inside a scroll wrapper with header and body",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdInline: parenthesised link destinations applies the same rule to image destinations",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdInline: parenthesised link destinations does not swallow the text after the link",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdInline: parenthesised link destinations keeps a balanced-paren URL whole in the href",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdInline: parenthesised link destinations still stops at the closing paren for an ordinary destination",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdInline: parenthesised link destinations unwraps the angle-bracketed destination Prettier normalizes to",
       "suite": "unit",
       "status": "pass",
       "requirementIds": [],

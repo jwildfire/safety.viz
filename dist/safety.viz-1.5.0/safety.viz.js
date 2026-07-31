@@ -13599,6 +13599,10 @@ var SafetyViz = (() => {
     { value: "composite", label: "Composite plot (baseline-referenced)" }
   ];
   var AXIS_TYPES = ["linear", "log"];
+  var LOG_BASES = [
+    { value: 10, label: "log10 (decades)" },
+    { value: 2, label: "log2 (doublings)" }
+  ];
   var POINT_SIZE_OPTIONS = ["Uniform", "rRatio"];
   var DEFAULT_SETTINGS3 = {
     id_col: "USUBJID",
@@ -13645,6 +13649,7 @@ var SafetyViz = (() => {
     },
     imputation_values: null,
     quadrant_labels: "shown",
+    log_base: 10,
     marginals: "box_rug",
     visit_window: 30,
     profile: true,
@@ -14648,6 +14653,8 @@ var SafetyViz = (() => {
   // src/participant-profile/spaghetti.js
   Chart.register(LineController, LineElement, PointElement, LinearScale, LogarithmicScale, plugin_tooltip);
   var FOOTNOTE = "Points are filled for values above the current reference value. Mouseover a line to see the reference line for that lab.";
+  var ANNOTATION_GAP = 12;
+  var ANNOTATION_FONT = '600 10px system-ui, -apple-system, "Segoe UI", sans-serif';
   function visibleSeries(series, state = {}) {
     const base = state.showExtras ? series.slice() : series.filter((entry) => entry.isKey);
     if (!state.labs) return base;
@@ -14660,7 +14667,7 @@ var SafetyViz = (() => {
       const cut = entry.cut;
       const color2 = entry.color;
       return {
-        label: entry.key,
+        label: entry.label || entry.key,
         data: points.map((point) => ({ x: point.day, y: point.value })),
         borderColor: color2,
         backgroundColor: color2,
@@ -14719,6 +14726,49 @@ var SafetyViz = (() => {
       }
     };
   }
+  function annotationPlacements(entries, gap = ANNOTATION_GAP) {
+    let last = -Infinity;
+    return entries.slice().sort((a, b) => a.y - b.y).map((entry) => {
+      const y = Math.max(entry.y, last + gap);
+      last = y;
+      return { ...entry, y };
+    });
+  }
+  function measureAnnotationPlugin() {
+    return {
+      id: "sv-profile-measure-annotation",
+      afterDatasetsDraw(chart) {
+        const entries = [];
+        chart.data.datasets.forEach((dataset, index) => {
+          const meta = chart.getDatasetMeta ? chart.getDatasetMeta(index) : null;
+          const drawn = meta && meta.data || [];
+          const last = drawn[drawn.length - 1];
+          if (!last || !Number.isFinite(last.x) || !Number.isFinite(last.y)) return;
+          entries.push({
+            key: dataset.svKey || dataset.label,
+            x: last.x,
+            y: last.y,
+            color: dataset.borderColor
+          });
+        });
+        if (!entries.length) return;
+        const { left, right, top, bottom } = chart.chartArea;
+        const ctx = chart.ctx;
+        ctx.save();
+        ctx.font = ANNOTATION_FONT;
+        ctx.textAlign = "right";
+        ctx.textBaseline = "bottom";
+        annotationPlacements(entries).forEach((entry) => {
+          ctx.fillStyle = entry.color;
+          const width = ctx.measureText ? ctx.measureText(entry.key).width : 0;
+          const x = Math.min(Math.max(entry.x, left + width), right);
+          const y = Math.min(Math.max(entry.y - 4, top + 10), bottom);
+          ctx.fillText(entry.key, x, y);
+        });
+        ctx.restore();
+      }
+    };
+  }
   function renderSpaghetti(host, model, state = {}, domain = null) {
     const card = createElement("div", "sv-profile-spaghetti-card");
     const canvas = createElement("canvas", "sv-profile-spaghetti-canvas");
@@ -14729,7 +14779,7 @@ var SafetyViz = (() => {
     canvas.setAttribute("role", "img");
     canvas.setAttribute(
       "aria-label",
-      `Labs over time: ${series.map((entry) => entry.key).join(", ") || "no measures"} (${model.yLabel})`
+      `Labs over time: ${series.map((entry) => entry.label || entry.key).join(", ") || "no measures"} (${model.yLabel})`
     );
     canvas.tabIndex = 0;
     const cuts = datasets.map((dataset) => dataset.svCut).filter(Number.isFinite);
@@ -14764,7 +14814,7 @@ var SafetyViz = (() => {
               },
               label: (ctx) => {
                 const point = (ctx.dataset.svPoints || [])[ctx.dataIndex];
-                const key = ctx.dataset.label;
+                const key = ctx.dataset.svKey || ctx.dataset.label;
                 if (!point || !Number.isFinite(point.raw))
                   return `${key}: ${Number(ctx.parsed.y).toFixed(2)}`;
                 return [
@@ -14794,7 +14844,7 @@ var SafetyViz = (() => {
           }
         }
       },
-      plugins: [cutLinePlugin()]
+      plugins: [cutLinePlugin(), measureAnnotationPlugin()]
     });
     canvas.addEventListener("focus", () => {
       chart.$svShowCuts = true;
@@ -21887,17 +21937,51 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     }
     return [0, max * 1.05 || 1];
   }
+  function resolveEdishDomain(values, cut, type, limits) {
+    const derived = edishDomain(values, cut, type);
+    const override = (value, fallback) => Number.isFinite(value) ? value : fallback;
+    let lower = override(limits && limits.lower, derived[0]);
+    const upper = override(limits && limits.upper, derived[1]);
+    if (type === "log" && !(lower > 0)) lower = derived[0];
+    if (!(upper > lower)) return derived;
+    return [lower, upper];
+  }
+  var LOG_EPSILON = 1e-9;
+  function logTicks(domain, base = 10) {
+    const [min, max] = domain || [];
+    if (!(min > 0) || !(max > min) || !(base > 1)) return [];
+    const power = (value) => Math.log(value) / Math.log(base);
+    const first = Math.ceil(power(min) - LOG_EPSILON);
+    const last = Math.floor(power(max) + LOG_EPSILON);
+    if (!(last > first)) return [];
+    const ticks = [];
+    for (let exponent = first; exponent <= last; exponent += 1) ticks.push(base ** exponent);
+    return ticks;
+  }
+  function formatLogTick(value) {
+    if (!Number.isFinite(value)) return "";
+    return Number(value.toPrecision(6)).toString();
+  }
   function buildScales5(state, xDomain, yDomain, measureValues) {
     const type = state.axisType === "log" ? "logarithmic" : "linear";
+    const base = Number(state.logBase) > 1 ? Number(state.logBase) : 10;
     const axis = (domain, label) => {
       const min = type === "logarithmic" && !(domain[0] > 0) ? void 0 : domain[0];
-      return {
+      const scale = {
         type,
         min,
         max: domain[1],
         title: { display: true, text: label },
         grid: { color: "rgba(148, 163, 184, 0.25)" }
       };
+      if (type !== "logarithmic") return scale;
+      const ticks = logTicks([min, domain[1]], base);
+      if (!ticks.length) return scale;
+      scale.afterBuildTicks = (built) => {
+        built.ticks = ticks.map((value) => ({ value }));
+      };
+      scale.ticks = { callback: (value) => formatLogTick(value) };
+      return scale;
     };
     return {
       x: axis(xDomain, axisLabel2(state.measureX, state.display, measureValues)),
@@ -22953,6 +23037,37 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     if (!host.cutInputs) host.cutInputs = {};
     host.cutInputs[axisKey === "measureX" ? "x" : "y"] = input;
   }
+  function addAxisLimitControls(host, { addSection, addRow, addControl }, axis) {
+    const key = axis === "x" ? "axisX" : "axisY";
+    const measure = axis === "x" ? host.state.measureX : host.state.measureY;
+    const parent = addSection(`${axis.toUpperCase()}-axis Limits`);
+    const row = addRow(parent);
+    const limitInput = (label, side) => {
+      const input = addControl(label, document.createElement("input"), row);
+      input.type = "number";
+      input.step = "any";
+      input.value = seedLimitInput(host.state[key], side);
+      input.onchange = () => {
+        applyLimitEdit(host.state[key], side, input.value);
+        host.render();
+      };
+      return input;
+    };
+    host.axisLimitInputs[axis] = {
+      lower: limitInput("Lower", "lower"),
+      upper: limitInput("Upper", "upper")
+    };
+    const reset = addControl(" ", document.createElement("button"), parent);
+    reset.type = "button";
+    reset.textContent = "Reset Limits";
+    reset.className = "sv-reset-limits";
+    reset.title = `Return the ${measure} axis to its derived limits`;
+    reset.style.cssText = "width:100%;padding:.3rem .45rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.8rem;cursor:pointer";
+    reset.onclick = () => {
+      clearAxisLimits(host.state[key]);
+      host.render();
+    };
+  }
   function moveCut(host, axis, value) {
     const measureKey = axis === "x" ? host.state.measureX : host.state.measureY;
     if (!host.state.cuts[measureKey]) host.state.cuts[measureKey] = {};
@@ -23308,16 +23423,21 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     const points = host.points;
     const data = points.map((point) => ({ x: point.x, y: point.y }));
     const type = host.state.axisType === "log" ? "log" : "linear";
-    const xDomain = edishDomain(
+    const xDomain = resolveEdishDomain(
       points.map((point) => point.x),
       host.state.xCut,
-      type
+      type,
+      host.state.axisX
     );
-    const yDomain = edishDomain(
+    const yDomain = resolveEdishDomain(
       points.map((point) => point.y),
       host.state.yCut,
-      type
+      type,
+      host.state.axisY
     );
+    const inputs = host.axisLimitInputs || {};
+    syncAxisLimits(host.state.axisX, xDomain, inputs.x);
+    syncAxisLimits(host.state.axisY, yDomain, inputs.y);
     const traced = (point) => isActive(host, point);
     const fill = (ctx) => {
       const point = points[ctx.dataIndex];
@@ -23513,13 +23633,18 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
      * HEP-QUAD-001, HEP-DISPLAY-001, HEP-CTRL-006, HEP-CTRL-007, HEP-CTRL-008),
      * appended to the shared Settings section in the order the shell renders them.
      */
-    contributeControls(host, { addControl, settingsParent }) {
+    contributeControls(host, { addSection, addRow, addControl, settingsParent }) {
+      const resetLimits = () => {
+        clearAxisLimits(host.state.axisX);
+        clearAxisLimits(host.state.axisY);
+      };
       const measureX = addControl("X-axis Measure", document.createElement("select"), settingsParent);
       host.settings.x_options.forEach(
         (key) => option(measureX, key, key, key === host.state.measureX)
       );
       measureX.onchange = () => {
         host.state.measureX = measureX.value;
+        resetLimits();
         host.buildControls();
         host.render();
       };
@@ -23534,6 +23659,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
         );
         measureY.onchange = () => {
           host.state.measureY = measureY.value;
+          resetLimits();
           host.buildControls();
           host.render();
         };
@@ -23562,6 +23688,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       );
       display.onchange = () => {
         host.state.display = display.value;
+        resetLimits();
         host.buildControls();
         host.render();
       };
@@ -23569,8 +23696,19 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       AXIS_TYPES.forEach((type) => option(axisType, type, type, type === host.state.axisType));
       axisType.onchange = () => {
         host.state.axisType = axisType.value;
+        host.buildControls();
         host.render();
       };
+      if (host.state.axisType === "log") {
+        const logBase = addControl("Log Base", document.createElement("select"), settingsParent);
+        LOG_BASES.forEach(
+          (base) => option(logBase, base.value, base.label, base.value === Number(host.state.logBase))
+        );
+        logBase.onchange = () => {
+          host.state.logBase = Number(logBase.value);
+          host.render();
+        };
+      }
       const marginals = addControl(
         "Marginal Distributions",
         document.createElement("select"),
@@ -23606,6 +23744,9 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
         window2.value = host.state.visitWindow;
         host.render();
       };
+      host.axisLimitInputs = {};
+      addAxisLimitControls(host, { addSection, addRow, addControl }, "x");
+      addAxisLimitControls(host, { addSection, addRow, addControl }, "y");
     },
     /**
      * The R-Ratio range filter: min/max number inputs plus a Reset button that
@@ -25160,6 +25301,15 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
         measureY: this.settings.y_default,
         display: "relative_uln",
         axisType: "linear",
+        // Gridline base for a logarithmic axis (HEP-CTRL-017); inert while the
+        // axis is linear.
+        logBase: this.settings.log_base,
+        // Manual axis limits, one slot per axis (HEP-AXIS-001..004). Each carries
+        // the shared contract of src/axis-limits.js: `lower`/`upper` hold USER
+        // OVERRIDES only (null = automatic), `axisDomain` the [lower, upper] the
+        // last render resolved — what the chart drew and what the inputs show.
+        axisX: { lower: null, upper: null, axisDomain: null },
+        axisY: { lower: null, upper: null, axisDomain: null },
         pointSize: "Uniform",
         marginals: this.settings.marginals,
         quadrantLabels: this.settings.quadrant_labels,
@@ -25580,6 +25730,9 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       this.state.cuts = JSON.parse(JSON.stringify(this.settings.cuts));
       this.state.display = "relative_uln";
       this.state.axisType = "linear";
+      this.state.logBase = this.settings.log_base;
+      clearAxisLimits(this.state.axisX);
+      clearAxisLimits(this.state.axisY);
       this.state.pointSize = "Uniform";
       this.state.visitWindow = this.settings.visit_window;
       this.state.filters = {};

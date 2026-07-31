@@ -17,11 +17,37 @@ export function escapeHtml(text) {
 // The image rule runs before the link rule so `![alt](src)` is not mis-parsed
 // as a link with a stray leading `!` (block-level figures are handled by
 // mdBlock; this covers any image that appears mid-paragraph).
+// A link destination in either CommonMark spelling: a bare run of non-space,
+// non-paren characters admitting BALANCED parenthesised groups, or the
+// angle-bracketed form `<...>` that carries anything up to the closing bracket.
+//
+// Journal permalinks embed parentheses routinely —
+// gastrojournal.org/article/S0016-5085(14)01484-X/fulltext — and both spellings
+// are load-bearing for them (#54): a pattern that stops at the first `)` ships
+// such a link truncated, and Prettier NORMALIZES a parenthesised destination to
+// the angle-bracketed form when it formats the markdown, so a renderer that
+// handles only the bare form puts `&lt;https://…&gt;` in the href.
+// Matched AFTER escapeHtml has run, so the angle brackets arrive as entities.
+const DESTINATION = '&lt;.*?&gt;|(?:[^()\\s]|\\([^()\\s]*\\))+';
+
+// Strip the angle brackets off an angle-bracketed destination; other
+// destinations pass through untouched.
+const bareDestination = (destination) =>
+  destination.startsWith('&lt;') && destination.endsWith('&gt;')
+    ? destination.slice(4, -4)
+    : destination;
+
 export function mdInline(text) {
   return escapeHtml(text)
     .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g, '<img src="$2" alt="$1">')
-    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2">$1</a>')
+    .replace(
+      new RegExp(`!\\[([^\\]]*)\\]\\((${DESTINATION})\\)`, 'g'),
+      (match, alt, destination) => `<img src="${bareDestination(destination)}" alt="${alt}">`
+    )
+    .replace(
+      new RegExp(`\\[([^\\]]+)\\]\\((${DESTINATION})\\)`, 'g'),
+      (match, label, destination) => `<a href="${bareDestination(destination)}">${label}</a>`
+    )
     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
 }
 
