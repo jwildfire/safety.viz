@@ -87,6 +87,45 @@ describe('mdBlock: existing blocks are unchanged', () => {
   });
 });
 
+// Link destinations carrying balanced parentheses (#54). Journal permalinks
+// routinely embed a PII with parentheses —
+// gastrojournal.org/article/S0016-5085(14)01484-X/fulltext — and the
+// destination pattern stopped at the FIRST `)`, so such a link shipped
+// truncated: half the URL in the href and the rest as loose text beside it.
+// CommonMark allows balanced parens in a destination, and allows the whole
+// destination to be wrapped in angle brackets instead. BOTH spellings matter
+// here: Prettier normalizes a parenthesised destination to the angle-bracketed
+// form when it formats the guide, so a renderer that handles only the bare form
+// puts a literal `&lt;https://…&gt;` in the href — which is what the site build's
+// link validator caught.
+describe('mdInline: parenthesised link destinations', () => {
+  const url = 'https://www.gastrojournal.org/article/S0016-5085(14)01484-X/fulltext';
+
+  it('keeps a balanced-paren URL whole in the href', () => {
+    const html = mdInline(`see [Robles-Diaz et al. 2014](${url}) for nR`);
+    expect(html).toBe(`see <a href="${url}">Robles-Diaz et al. 2014</a> for nR`);
+  });
+
+  it('unwraps the angle-bracketed destination Prettier normalizes to', () => {
+    const html = mdInline(`see [Robles-Diaz et al. 2014](<${url}>) for nR`);
+    expect(html).toBe(`see <a href="${url}">Robles-Diaz et al. 2014</a> for nR`);
+  });
+
+  it('does not swallow the text after the link', () => {
+    const html = mdInline(`[a](<${url}>), then more`);
+    expect(html).toContain('</a>, then more');
+  });
+
+  it('applies the same rule to image destinations', () => {
+    expect(mdInline('![x](guide/fig(1).png)')).toContain('<img src="guide/fig(1).png" alt="x">');
+    expect(mdInline('![x](<guide/fig(1).png>)')).toContain('<img src="guide/fig(1).png" alt="x">');
+  });
+
+  it('still stops at the closing paren for an ordinary destination', () => {
+    expect(mdInline('[a](x.html) (aside)')).toBe('<a href="x.html">a</a> (aside)');
+  });
+});
+
 describe('mdBlock: heading ids and the guide TOC', () => {
   it('adds no heading ids by default (coverage docs stay unchanged)', () => {
     expect(mdBlock('## Routing status')).toContain('<h2>Routing status</h2>');

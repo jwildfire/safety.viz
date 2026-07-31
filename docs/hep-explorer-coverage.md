@@ -85,6 +85,7 @@ pending; each row lists the module IDs its test covers.
 | HEP-STEP-001/002/003/005 (selection, hand-off footnote, Hy's-Law caution)                  | —                  | #92   | `migration-view.test.js` |
 | HEP-ARM-003/004/005/006, HEP-DATA-012 (arm scoping, degradation, exclusion notes)          | —                  | #92   | `migration-view.test.js` |
 | HEP-ACC-001/002/003 (ribbon role/name/keys, svg role and summary)                          | —                  | #92   | `migration-view.test.js` |
+| HEP-DOC-001 (the Clinical guide links its R / nR primary sources)                          | —                  | #54   | `guide.test.js`          |
 
 ## Source-matrix routing status
 
