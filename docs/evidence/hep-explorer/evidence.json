@@ -1,13 +1,16 @@
 {
   "module": "hep-explorer",
-  "generatedAt": "2026-07-31T01:38:31.834Z",
+  "generatedAt": "2026-07-31T01:41:35.470Z",
   "environment": {
-    "os": "darwin 23.6.0",
-    "node": "v24.14.0",
+    "os": "linux 6.17.0-1020-azure",
+    "node": "v22.23.1",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": null,
+  "run": {
+    "id": "30596981392",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/30596981392"
+  },
   "records": [
     {
       "test": "a chart link navigates straight to that renderer demo (#71)",
@@ -191,7 +194,7 @@
       "status": "pass",
       "requirementIds": ["HEP-AXIS-001"],
       "issueRefs": [54],
-      "screenshots": []
+      "screenshots": ["HEP-AXIS-001-axis-limits.png"]
     },
     {
       "test": "HEP-CHART-004: point tooltips list participant, R Ratio, peaks with days, and the day difference (#43)",
@@ -296,7 +299,7 @@
       "status": "pass",
       "requirementIds": ["HEP-CTRL-017"],
       "issueRefs": [54],
-      "screenshots": []
+      "screenshots": ["HEP-CTRL-017-log-base-doublings.png"]
     },
     {
       "test": "HEP-DATA-001/HEP-CTRL-011: participant note reports N and % and updates on filter (#43)",
@@ -2940,7 +2943,7 @@
       "status": "pass",
       "requirementIds": ["HEP-CTRL-017"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["HEP-CTRL-017-log-base-doublings.png"]
     },
     {
       "test": "log axis base (HEP-CTRL-017, #54) declines a domain too narrow to carry two gridlines, rather than drawing one",
@@ -2948,7 +2951,7 @@
       "status": "pass",
       "requirementIds": ["HEP-CTRL-017"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["HEP-CTRL-017-log-base-doublings.png"]
     },
     {
       "test": "log axis base (HEP-CTRL-017, #54) defaults to base 10 and touches nothing on a linear axis",
@@ -2956,7 +2959,7 @@
       "status": "pass",
       "requirementIds": ["HEP-CTRL-017"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["HEP-CTRL-017-log-base-doublings.png"]
     },
     {
       "test": "log axis base (HEP-CTRL-017, #54) drives both scales from state.logBase when the axis is logarithmic",
@@ -2964,7 +2967,7 @@
       "status": "pass",
       "requirementIds": ["HEP-CTRL-017"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["HEP-CTRL-017-log-base-doublings.png"]
     },
     {
       "test": "log axis base (HEP-CTRL-017, #54) formats a tick at the precision the value needs, not in exponent notation",
@@ -2972,7 +2975,7 @@
       "status": "pass",
       "requirementIds": ["HEP-CTRL-017"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["HEP-CTRL-017-log-base-doublings.png"]
     },
     {
       "test": "log axis base (HEP-CTRL-017, #54) includes a bound that IS a power of the base, floating-point error aside",
@@ -2980,7 +2983,7 @@
       "status": "pass",
       "requirementIds": ["HEP-CTRL-017"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["HEP-CTRL-017-log-base-doublings.png"]
     },
     {
       "test": "log axis base (HEP-CTRL-017, #54) leaves Chart.js its own ticks when the base cannot span the domain",
@@ -2988,7 +2991,7 @@
       "status": "pass",
       "requirementIds": ["HEP-CTRL-017"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["HEP-CTRL-017-log-base-doublings.png"]
     },
     {
       "test": "log axis base (HEP-CTRL-017, #54) places a tick at every power of the base inside the domain",
@@ -2996,7 +2999,7 @@
       "status": "pass",
       "requirementIds": ["HEP-CTRL-017"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["HEP-CTRL-017-log-base-doublings.png"]
     },
     {
       "test": "manual axis limits on the eDISH scatter (HEP-AXIS-001..004, #54) derives both bounds when neither limit is overridden",
@@ -3004,7 +3007,7 @@
       "status": "pass",
       "requirementIds": ["HEP-AXIS-001"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["HEP-AXIS-001-axis-limits.png"]
     },
     {
       "test": "manual axis limits on the eDISH scatter (HEP-AXIS-001..004, #54) falls back to the derived domain rather than drawing an inverted one",
@@ -3012,7 +3015,7 @@
       "status": "pass",
       "requirementIds": ["HEP-AXIS-001"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["HEP-AXIS-001-axis-limits.png"]
     },
     {
       "test": "manual axis limits on the eDISH scatter (HEP-AXIS-001..004, #54) ignores a non-numeric override rather than sending NaN to the chart",
@@ -3020,7 +3023,7 @@
       "status": "pass",
       "requirementIds": ["HEP-AXIS-001"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["HEP-AXIS-001-axis-limits.png"]
     },
     {
       "test": "manual axis limits on the eDISH scatter (HEP-AXIS-001..004, #54) refuses a non-positive lower bound on a log axis, where it has no meaning",
@@ -3028,7 +3031,7 @@
       "status": "pass",
       "requirementIds": ["HEP-AXIS-001"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["HEP-AXIS-001-axis-limits.png"]
     },
     {
       "test": "manual axis limits on the eDISH scatter (HEP-AXIS-001..004, #54) takes each overridden bound and leaves the other derived",
@@ -3036,7 +3039,7 @@
       "status": "pass",
       "requirementIds": ["HEP-AXIS-001"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["HEP-AXIS-001-axis-limits.png"]
     },
     {
       "test": "mdBlock: existing blocks are unchanged renders a numbered list as an ordered list",
