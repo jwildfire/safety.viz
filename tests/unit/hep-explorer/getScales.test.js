@@ -7,7 +7,8 @@ import {
   edishDomain,
   buildScales,
   logTicks,
-  formatLogTick
+  formatLogTick,
+  resolveEdishDomain
 } from '../../../src/hep-explorer/getScales.js';
 
 // Full measure labels, as settings.measure_values maps the short keys.
@@ -186,5 +187,55 @@ describe('log axis base (HEP-CTRL-017, #54)', () => {
     );
     expect(linear.x.afterBuildTicks).toBeUndefined();
     expect(linear.x.type).toBe('linear');
+  });
+});
+
+// HEP-AXIS-001..004 (SafetyGraphics/hep-explorer#238): the eDISH axes were
+// derived and unreachable — a reviewer who wanted to zoom on the cloud near the
+// origin, or to hold one scale still while comparing two filters, had no way to
+// say so. The limit contract is the one #85 established for histogram,
+// results-over-time and outlier-explorer (src/axis-limits.js), applied per axis:
+// an UNEDITED limit stays automatic and re-derives on every render, an edited
+// one persists until reset, and the distinction lives in state rather than in
+// the emptiness of an input box.
+describe('manual axis limits on the eDISH scatter (HEP-AXIS-001..004, #54)', () => {
+  const values = [0.5, 1, 4];
+
+  it('derives both bounds when neither limit is overridden', () => {
+    expect(resolveEdishDomain(values, 3, 'linear', {})).toEqual(edishDomain(values, 3, 'linear'));
+    expect(resolveEdishDomain(values, 3, 'linear', null)).toEqual(edishDomain(values, 3, 'linear'));
+  });
+
+  it('takes each overridden bound and leaves the other derived', () => {
+    const derived = edishDomain(values, 3, 'linear');
+    expect(resolveEdishDomain(values, 3, 'linear', { lower: 1, upper: null })).toEqual([
+      1,
+      derived[1]
+    ]);
+    expect(resolveEdishDomain(values, 3, 'linear', { lower: null, upper: 10 })).toEqual([
+      derived[0],
+      10
+    ]);
+    expect(resolveEdishDomain(values, 3, 'linear', { lower: 1, upper: 10 })).toEqual([1, 10]);
+  });
+
+  it('ignores a non-numeric override rather than sending NaN to the chart', () => {
+    const derived = edishDomain(values, 3, 'linear');
+    expect(resolveEdishDomain(values, 3, 'linear', { lower: Number.NaN })).toEqual(derived);
+    expect(resolveEdishDomain(values, 3, 'linear', { upper: undefined })).toEqual(derived);
+  });
+
+  it('refuses a non-positive lower bound on a log axis, where it has no meaning', () => {
+    const derived = edishDomain(values, 3, 'log');
+    expect(resolveEdishDomain(values, 3, 'log', { lower: 0 })).toEqual(derived);
+    expect(resolveEdishDomain(values, 3, 'log', { lower: -2 })).toEqual(derived);
+    // A positive one is honoured.
+    expect(resolveEdishDomain(values, 3, 'log', { lower: 0.5 })[0]).toBe(0.5);
+  });
+
+  it('falls back to the derived domain rather than drawing an inverted one', () => {
+    const derived = edishDomain(values, 3, 'linear');
+    expect(resolveEdishDomain(values, 3, 'linear', { lower: 9, upper: 2 })).toEqual(derived);
+    expect(resolveEdishDomain(values, 3, 'linear', { lower: 4, upper: 4 })).toEqual(derived);
   });
 });

@@ -21937,6 +21937,15 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     }
     return [0, max * 1.05 || 1];
   }
+  function resolveEdishDomain(values, cut, type, limits) {
+    const derived = edishDomain(values, cut, type);
+    const override = (value, fallback) => Number.isFinite(value) ? value : fallback;
+    let lower = override(limits && limits.lower, derived[0]);
+    const upper = override(limits && limits.upper, derived[1]);
+    if (type === "log" && !(lower > 0)) lower = derived[0];
+    if (!(upper > lower)) return derived;
+    return [lower, upper];
+  }
   var LOG_EPSILON = 1e-9;
   function logTicks(domain, base = 10) {
     const [min, max] = domain || [];
@@ -23028,6 +23037,38 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     if (!host.cutInputs) host.cutInputs = {};
     host.cutInputs[axisKey === "measureX" ? "x" : "y"] = input;
   }
+  function addAxisLimitControls(host, { addSection, addRow, addControl }, axis) {
+    const key = axis === "x" ? "axisX" : "axisY";
+    const measure = axis === "x" ? host.state.measureX : host.state.measureY;
+    const parent = addSection(`${axis.toUpperCase()}-axis Limits`);
+    const row = addRow(parent);
+    const limitInput = (label, side) => {
+      const input = addControl(label, document.createElement("input"), row);
+      input.type = "number";
+      input.step = "any";
+      input.value = seedLimitInput(host.state[key], side);
+      input.onchange = () => {
+        applyLimitEdit(host.state[key], side, input.value);
+        host.render();
+      };
+      return input;
+    };
+    if (!host.axisLimitInputs) host.axisLimitInputs = {};
+    host.axisLimitInputs[axis] = {
+      lower: limitInput("Lower", "lower"),
+      upper: limitInput("Upper", "upper")
+    };
+    const reset = addControl(" ", document.createElement("button"), parent);
+    reset.type = "button";
+    reset.textContent = "Reset Limits";
+    reset.className = "sv-reset-limits";
+    reset.title = `Return the ${measure} axis to its derived limits`;
+    reset.style.cssText = "width:100%;padding:.3rem .45rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.8rem;cursor:pointer";
+    reset.onclick = () => {
+      clearAxisLimits(host.state[key]);
+      host.render();
+    };
+  }
   function moveCut(host, axis, value) {
     const measureKey = axis === "x" ? host.state.measureX : host.state.measureY;
     if (!host.state.cuts[measureKey]) host.state.cuts[measureKey] = {};
@@ -23383,16 +23424,21 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     const points = host.points;
     const data = points.map((point) => ({ x: point.x, y: point.y }));
     const type = host.state.axisType === "log" ? "log" : "linear";
-    const xDomain = edishDomain(
+    const xDomain = resolveEdishDomain(
       points.map((point) => point.x),
       host.state.xCut,
-      type
+      type,
+      host.state.axisX
     );
-    const yDomain = edishDomain(
+    const yDomain = resolveEdishDomain(
       points.map((point) => point.y),
       host.state.yCut,
-      type
+      type,
+      host.state.axisY
     );
+    const inputs = host.axisLimitInputs || {};
+    syncAxisLimits(host.state.axisX, xDomain, inputs.x);
+    syncAxisLimits(host.state.axisY, yDomain, inputs.y);
     const traced = (point) => isActive(host, point);
     const fill = (ctx) => {
       const point = points[ctx.dataIndex];
@@ -23588,13 +23634,18 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
      * HEP-QUAD-001, HEP-DISPLAY-001, HEP-CTRL-006, HEP-CTRL-007, HEP-CTRL-008),
      * appended to the shared Settings section in the order the shell renders them.
      */
-    contributeControls(host, { addControl, settingsParent }) {
+    contributeControls(host, { addSection, addRow, addControl, settingsParent }) {
+      const resetLimits = () => {
+        clearAxisLimits(host.state.axisX);
+        clearAxisLimits(host.state.axisY);
+      };
       const measureX = addControl("X-axis Measure", document.createElement("select"), settingsParent);
       host.settings.x_options.forEach(
         (key) => option(measureX, key, key, key === host.state.measureX)
       );
       measureX.onchange = () => {
         host.state.measureX = measureX.value;
+        resetLimits();
         host.buildControls();
         host.render();
       };
@@ -23609,6 +23660,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
         );
         measureY.onchange = () => {
           host.state.measureY = measureY.value;
+          resetLimits();
           host.buildControls();
           host.render();
         };
@@ -23637,6 +23689,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       );
       display.onchange = () => {
         host.state.display = display.value;
+        resetLimits();
         host.buildControls();
         host.render();
       };
@@ -23692,6 +23745,9 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
         window2.value = host.state.visitWindow;
         host.render();
       };
+      host.axisLimitInputs = {};
+      addAxisLimitControls(host, { addSection, addRow, addControl }, "x");
+      addAxisLimitControls(host, { addSection, addRow, addControl }, "y");
     },
     /**
      * The R-Ratio range filter: min/max number inputs plus a Reset button that
@@ -25249,6 +25305,12 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
         // Gridline base for a logarithmic axis (HEP-CTRL-017); inert while the
         // axis is linear.
         logBase: this.settings.log_base,
+        // Manual axis limits, one slot per axis (HEP-AXIS-001..004). Each carries
+        // the shared contract of src/axis-limits.js: `lower`/`upper` hold USER
+        // OVERRIDES only (null = automatic), `axisDomain` the [lower, upper] the
+        // last render resolved — what the chart drew and what the inputs show.
+        axisX: { lower: null, upper: null, axisDomain: null },
+        axisY: { lower: null, upper: null, axisDomain: null },
         pointSize: "Uniform",
         marginals: this.settings.marginals,
         quadrantLabels: this.settings.quadrant_labels,
@@ -25670,6 +25732,8 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       this.state.display = "relative_uln";
       this.state.axisType = "linear";
       this.state.logBase = this.settings.log_base;
+      clearAxisLimits(this.state.axisX);
+      clearAxisLimits(this.state.axisY);
       this.state.pointSize = "Uniform";
       this.state.visitWindow = this.settings.visit_window;
       this.state.filters = {};

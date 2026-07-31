@@ -80,6 +80,34 @@ export function edishDomain(values, cut, type = 'linear') {
   return [0, max * 1.05 || 1];
 }
 
+/**
+ * The eDISH domain actually drawn for one axis: the derived domain
+ * (edishDomain), with each bound replaced by the user's override when there is
+ * one (HEP-AXIS-001..004, #238). Overrides live in the shared limit contract of
+ * src/axis-limits.js — `null` means automatic, so an unedited bound keeps
+ * re-deriving as the measure, filters and scale change.
+ *
+ * Two things an override may not do, because either would draw a lie:
+ * push a log axis to a non-positive floor, or invert the domain. Either is
+ * declined in favour of the derived domain — the crossed-pair case is normally
+ * caught earlier by applyLimitEdit's swap, and this is the backstop for the
+ * paths that do not go through an input.
+ * @param {number[]} values The standardized values on the axis.
+ * @param {number} cut The active Hy's-Law cutpoint for the axis.
+ * @param {string} type 'linear' or 'log'.
+ * @param {?Object} limits The axis's limit state ({ lower, upper }); null/absent = fully automatic.
+ * @returns {number[]} The [min, max] domain to draw.
+ */
+export function resolveEdishDomain(values, cut, type, limits) {
+  const derived = edishDomain(values, cut, type);
+  const override = (value, fallback) => (Number.isFinite(value) ? value : fallback);
+  let lower = override(limits && limits.lower, derived[0]);
+  const upper = override(limits && limits.upper, derived[1]);
+  if (type === 'log' && !(lower > 0)) lower = derived[0];
+  if (!(upper > lower)) return derived;
+  return [lower, upper];
+}
+
 // Guards the floating-point edge of the power-of-base search: Math.log(0.1) /
 // Math.log(10) is -0.9999999999999998, so a naive ceil() drops the decade the
 // domain actually starts on.

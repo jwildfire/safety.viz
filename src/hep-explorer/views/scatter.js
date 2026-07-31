@@ -49,7 +49,13 @@ import {
   droppedRowColumns,
   toCsv
 } from '../dropped.js';
-import { buildScales, edishDomain, formatNumber } from '../getScales.js';
+import { buildScales, formatNumber, resolveEdishDomain } from '../getScales.js';
+import {
+  applyLimitEdit,
+  clearAxisLimits,
+  seedLimitInput,
+  syncAxisLimits
+} from '../../axis-limits.js';
 import {
   CLINICAL_CAUTION,
   GROUP_COLORS,
@@ -108,6 +114,57 @@ function addCutControl(host, addControl, parent, axisKey) {
   // the value it lands on straight into this box.
   if (!host.cutInputs) host.cutInputs = {};
   host.cutInputs[axisKey === 'measureX' ? 'x' : 'y'] = input;
+}
+
+/**
+ * Build one axis's Limits section — Lower / Upper number inputs on one row plus
+ * a Reset Limits button (HEP-AXIS-001..004, #238). The inputs carry the shared
+ * limit contract of src/axis-limits.js, the same one histogram,
+ * results-over-time and outlier-explorer ship: they are seeded with the limit
+ * in force rather than left blank, an edit becomes an override, and Reset
+ * returns that axis to automatic.
+ *
+ * Per axis, not per chart: on a two-axis plot, holding the bilirubin scale
+ * still while zooming the transaminase axis is the whole point of the control.
+ * @private
+ */
+function addAxisLimitControls(host, { addSection, addRow, addControl }, axis) {
+  const key = axis === 'x' ? 'axisX' : 'axisY';
+  const measure = axis === 'x' ? host.state.measureX : host.state.measureY;
+  const parent = addSection(`${axis.toUpperCase()}-axis Limits`);
+  const row = addRow(parent);
+
+  const limitInput = (label, side) => {
+    const input = addControl(label, document.createElement('input'), row);
+    input.type = 'number';
+    input.step = 'any';
+    input.value = seedLimitInput(host.state[key], side);
+    input.onchange = () => {
+      applyLimitEdit(host.state[key], side, input.value);
+      host.render();
+    };
+    return input;
+  };
+
+  if (!host.axisLimitInputs) host.axisLimitInputs = {};
+  host.axisLimitInputs[axis] = {
+    lower: limitInput('Lower', 'lower'),
+    upper: limitInput('Upper', 'upper')
+  };
+
+  // Now that neither box is ever blank, blankness no longer means "automatic",
+  // so there has to be an explicit way back to it (#85, AXIS-3).
+  const reset = addControl(' ', document.createElement('button'), parent);
+  reset.type = 'button';
+  reset.textContent = 'Reset Limits';
+  reset.className = 'sv-reset-limits';
+  reset.title = `Return the ${measure} axis to its derived limits`;
+  reset.style.cssText =
+    'width:100%;padding:.3rem .45rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.8rem;cursor:pointer';
+  reset.onclick = () => {
+    clearAxisLimits(host.state[key]);
+    host.render();
+  };
 }
 
 /**
@@ -687,16 +744,23 @@ function drawScatter(host) {
   const points = host.points;
   const data = points.map((point) => ({ x: point.x, y: point.y }));
   const type = host.state.axisType === 'log' ? 'log' : 'linear';
-  const xDomain = edishDomain(
+  const xDomain = resolveEdishDomain(
     points.map((point) => point.x),
     host.state.xCut,
-    type
+    type,
+    host.state.axisX
   );
-  const yDomain = edishDomain(
+  const yDomain = resolveEdishDomain(
     points.map((point) => point.y),
     host.state.yCut,
-    type
+    type,
+    host.state.axisY
   );
+  // The Axis Limits inputs mirror the domain this render resolved, so the boxes
+  // and the axes always agree and neither box is ever blank (HEP-AXIS-001).
+  const inputs = host.axisLimitInputs || {};
+  syncAxisLimits(host.state.axisX, xDomain, inputs.x);
+  syncAxisLimits(host.state.axisY, yDomain, inputs.y);
 
   // A participant is "active" when hovered or selected (including the
   // Participants-control multi-highlight); the active points keep their color
@@ -951,7 +1015,16 @@ const scatterView = {
    * HEP-QUAD-001, HEP-DISPLAY-001, HEP-CTRL-006, HEP-CTRL-007, HEP-CTRL-008),
    * appended to the shared Settings section in the order the shell renders them.
    */
-  contributeControls(host, { addControl, settingsParent }) {
+  contributeControls(host, { addSection, addRow, addControl, settingsParent }) {
+    // Axis limits are PER MEASURE and per display: a limit typed for ALT ×ULN
+    // says nothing about AST, and nothing about the same measure read ×Baseline.
+    // Both changes therefore return the axis to automatic — the contract the
+    // other limit-carrying renderers already keep (#85, AXIS-2).
+    const resetLimits = () => {
+      clearAxisLimits(host.state.axisX);
+      clearAxisLimits(host.state.axisY);
+    };
+
     // X-axis Measure (HEP-CTRL-001).
     const measureX = addControl('X-axis Measure', document.createElement('select'), settingsParent);
     host.settings.x_options.forEach((key) =>
@@ -959,6 +1032,7 @@ const scatterView = {
     );
     measureX.onchange = () => {
       host.state.measureX = measureX.value;
+      resetLimits();
       host.buildControls();
       host.render();
     };
@@ -975,6 +1049,7 @@ const scatterView = {
       );
       measureY.onchange = () => {
         host.state.measureY = measureY.value;
+        resetLimits();
         host.buildControls();
         host.render();
       };
@@ -1011,6 +1086,7 @@ const scatterView = {
     );
     display.onchange = () => {
       host.state.display = display.value;
+      resetLimits();
       host.buildControls();
       host.render();
     };
@@ -1080,6 +1156,14 @@ const scatterView = {
       window.value = host.state.visitWindow;
       host.render();
     };
+
+    // Manual axis limits, one section per axis (HEP-AXIS-001..004). Their own
+    // sections rather than more rows in Settings: on a two-axis plot the pair
+    // of bounds per axis reads as a unit, and each carries its own way back to
+    // automatic.
+    host.axisLimitInputs = {};
+    addAxisLimitControls(host, { addSection, addRow, addControl }, 'x');
+    addAxisLimitControls(host, { addSection, addRow, addControl }, 'y');
   },
 
   /**
