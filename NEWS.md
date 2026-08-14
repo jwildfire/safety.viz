@@ -6,6 +6,10 @@ functionality-first account of what a user can now do. The GitHub release publis
 from the section here when the release-candidate PR (dev -> main) merges and is tagged.
 -->
 
+# safety.viz v1.6.1 (Upcoming)
+
+- **NEWS.md becomes the running release log** — this file, introduced with the v1.6.0 notes as its first section; unreleased work now accumulates under a `(Upcoming)` heading per the program-wide convention ([#125](https://github.com/jwildfire/safety.viz/pull/125), convention: [obot.roadmap#155](https://github.com/jwildfire/obot.roadmap/discussions/155)).
+
 # safety.viz v1.6.0
 
 **See it move:** the [annotated v1.6.0 demo](https://jwildfire.github.io/obot.roadmap/reports/sv-v1.6-demo/) walks each update with captures and try-it-yourself steps against the live gallery.
