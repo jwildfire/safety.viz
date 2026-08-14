@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="Live Safety Outlier Explorer demo: Participant-level results over time: one line per participant for the selected measure against a population normal-range band, with filters, x-axis and y-limit controls, color-by grouping, and click-to-select participant detail." />
-    <title>Safety Outlier Explorer demo · safety.viz</title>
+    <meta name="description" content="Live Nephrotoxicity Explorer demo: KDIGO acute-kidney-injury screening: one point per participant at their maximum post-baseline fold change in serum creatinine against their maximum absolute change, over the L-shaped KDIGO stage zones, with a distinct mark for the ≥ 4.0 mg/dL Stage-3 rule, per-record mg/dL unit resolution, counted and exportable dropped records, and a stage summary table counting the population by fold change, by absolute change, and by the combined stage." />
+    <title>Nephrotoxicity Explorer demo · safety.viz</title>
     <link
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23271810'/%3E%3Crect x='2.5' y='8' width='3' height='5.5' fill='%23f97316'/%3E%3Crect x='6.5' y='3.5' width='3' height='10' fill='%23fb923c'/%3E%3Crect x='10.5' y='6' width='3' height='7.5' fill='%23f97316'/%3E%3C/svg%3E"
@@ -41,7 +41,7 @@
         >
       </nav>
     </header>
-    <main class="site-main"><div class="demo-page"><h1>Safety Outlier Explorer</h1><p class="tagline">Participant-level results over time: one line per participant for the selected measure against a population normal-range band, with filters, x-axis and y-limit controls, color-by grouping, and click-to-select participant detail.</p><nav class="page-tabs"><a class="current" aria-current="page" href="index.html">Live demo</a><a href="evidence.html">Test evidence</a><a href="api.html">API reference</a></nav><p>This live demo mounts the committed <code>dist/safety.viz-1.5.0</code> IIFE bundle — the same asset gsm.safety vendors — against real example data (<code>adbds.csv</code>, built from the <a href="https://github.com/pharmaverse/pharmaverseadam">pharmaverseadam</a> CDISC Pilot 01 ADaM datasets), with the full control panel active.</p><div id="container"></div><script src="../dist/safety.viz-1.5.0/safety.viz.js"></script><script src="./demo.js"></script></div></main>
+    <main class="site-main"><div class="demo-page"><h1>Nephrotoxicity Explorer <span class="site-badge">Experimental</span></h1><p class="tagline">KDIGO acute-kidney-injury screening: one point per participant at their maximum post-baseline fold change in serum creatinine against their maximum absolute change, over the L-shaped KDIGO stage zones, with a distinct mark for the ≥ 4.0 mg/dL Stage-3 rule, per-record mg/dL unit resolution, counted and exportable dropped records, and a stage summary table counting the population by fold change, by absolute change, and by the combined stage.</p><nav class="page-tabs"><a class="current" aria-current="page" href="index.html">Live demo</a><a href="guide.html">Clinical guide</a><a href="evidence.html">Test evidence</a><a href="api.html">API reference</a></nav><p>This live demo mounts the committed <code>dist/safety.viz-1.5.0</code> IIFE bundle — the same asset gsm.safety vendors — against real example data (<code>adbds.csv</code>, built from the <a href="https://github.com/pharmaverse/pharmaverseadam">pharmaverseadam</a> CDISC Pilot 01 ADaM datasets), with the full control panel active.</p><div id="container"></div><script src="../dist/safety.viz-1.5.0/safety.viz.js"></script><script src="./demo.js"></script></div></main>
     <footer class="site-footer">
       <p>
         safety.viz v1.5.0 — clinical safety graphics on one modern charting stack, migrated

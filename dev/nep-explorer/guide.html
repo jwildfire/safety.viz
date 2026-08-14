@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="How to read the KDIGO creatinine scatter to screen for acute kidney injury — the two axes, the L-shaped stage zones, the ≥ 4.0 mg/dL mark — and what the criteria&#39;s time window means for a flagged participant." />
+    <title>Nephrotoxicity Explorer clinical guide · safety.viz</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23271810'/%3E%3Crect x='2.5' y='8' width='3' height='5.5' fill='%23f97316'/%3E%3Crect x='6.5' y='3.5' width='3' height='10' fill='%23fb923c'/%3E%3Crect x='10.5' y='6' width='3' height='7.5' fill='%23f97316'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="../site.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="site-name" href="../index.html">
+        safety.viz
+        <span class="site-version">v1.5.0</span>
+      </a>
+      <nav class="site-nav" aria-label="Primary">
+        <div class="nav-group"><a href="../index.html">Gallery</a><button type="button" class="nav-disclosure" aria-expanded="false" aria-controls="gallery-menu" aria-label="Show charts"><span class="nav-caret" aria-hidden="true"></span></button><ul id="gallery-menu" class="nav-menu"><li><a href="../histogram/index.html">Safety Histogram</a></li><li><a href="../outlier-explorer/index.html">Safety Outlier Explorer</a></li><li><a href="../results-over-time/index.html">Safety Results Over Time</a></li><li><a href="../shift-plot/index.html">Safety Shift Plot</a></li><li><a href="../delta-delta/index.html">Safety Delta-Delta</a></li><li><a href="../hep-explorer/index.html">Hepatic Safety Explorer</a></li><li><a href="../hep-waterfall/index.html">Hepatic ALT Waterfall</a></li><li><a href="../participant-profile/index.html">Participant Profile</a></li><li><a href="../nep-explorer/index.html">Nephrotoxicity Explorer</a></li><li><a href="../ae-explorer/index.html">Adverse Event Explorer</a></li><li><a href="../ae-timelines/index.html">Adverse Event Timelines</a></li><li><a href="../qt-explorer/index.html">QT Safety Explorer</a></li></ul></div>
+        <a href="../architecture.html">Architecture</a>
+        <a href="../about.html">About</a>
+        <a
+          href="https://github.com/jwildfire/safety.viz"
+          aria-label="GitHub"
+          title="GitHub"
+          style="display: inline-flex; align-items: center"
+          ><svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor" aria-hidden="true">
+            <title>GitHub</title>
+            <path
+              d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"
+            /></svg
+        ></a>
+        <a
+          href="https://jwildfire.github.io/obot.roadmap/"
+          aria-label="obot roadmap"
+          title="obot roadmap"
+          style="font-size: 1.05rem; line-height: 1; display: inline-flex; align-items: center"
+          ><span aria-hidden="true">🍊😺</span></a
+        >
+      </nav>
+    </header>
+    <main class="site-main"><h1>Nephrotoxicity Explorer: clinical guide <span class="site-badge">Experimental</span></h1>
+<p class="tagline">How to read the KDIGO creatinine scatter to screen for acute kidney injury — the two axes, the L-shaped stage zones, the ≥ 4.0 mg/dL mark — and what the criteria&#39;s time window means for a flagged participant.</p>
+<nav class="page-tabs"><a href="index.html">Live demo</a><a class="current" aria-current="page" href="guide.html">Clinical guide</a><a href="evidence.html">Test evidence</a><a href="api.html">API reference</a></nav>
+<p class="guide-caution"><strong>Exploratory review aid, not a validated diagnostic tool.</strong> The chart flags participants for review, it does not diagnose acute kidney injury; and no time window is applied, so a slow drift stages the same as an acute injury.</p>
+<div class="guide-layout"><nav class="guide-toc" aria-label="On this page"><h2>On this page</h2><ul><li><a href="#what-the-nephrotoxicity-explorer-shows">What the Nephrotoxicity Explorer shows</a></li><li><a href="#the-kdigo-criteria-and-how-they-are-drawn-here">The KDIGO criteria, and how they are drawn here</a></li><li><a href="#reading-the-chart">Reading the chart</a></li><li><a href="#baseline-and-why-it-matters-more-here-than-elsewhere">Baseline, and why it matters more here than elsewhere</a></li><li><a href="#units">Units</a></li><li><a href="#how-this-maps-to-the-controls-on-this-page">How this maps to the controls on this page</a></li><li><a href="#about-this-page-s-demo-data">About this page&#39;s demo data</a></li><li><a href="#what-is-not-yet-on-this-page">What is not yet on this page</a></li><li><a href="#where-this-differs-from-the-original-nepexplorer">Where this differs from the original nepExplorer</a></li><li><a href="#source-and-attribution">Source and attribution</a></li></ul></nav><div class="guide-body"><h2 id="what-the-nephrotoxicity-explorer-shows">What the Nephrotoxicity Explorer shows</h2>
+<p>The Nephrotoxicity Explorer screens trial laboratory data for <strong>acute kidney injury (AKI)</strong> — an abrupt fall in kidney function, which in a clinical trial is detected as a rise in <strong>serum creatinine</strong>. Creatinine is a muscle-metabolism waste product cleared almost entirely by glomerular filtration, so when filtration falls, creatinine rises. It is an imperfect marker (it lags the injury by a day or more, and its baseline depends on muscle mass, age and sex), but it is measured in essentially every chemistry panel, which makes it the practical screening measure.</p>
+<p>The chart is one point per participant. Its two axes are the two ways the <strong>KDIGO</strong> acute-kidney-injury criteria describe a rise:</p>
+<ul><li><strong>x — maximum fold change</strong>: the participant&#39;s highest post-baseline creatinine divided by their own baseline. A ratio, so it is unit-free, and it reads the same for a small person and a large one.</li><li><strong>y — maximum absolute change</strong>: the same highest value minus their baseline, in mg/dL. An absolute quantity, and the axis where the units matter.</li></ul>
+<p>The coloured background regions are the KDIGO stages. A point&#39;s region is the <strong>worse</strong> of what its two axes say, which is what gives the plot its L-shaped silhouette: the whole 1.5–2× fold band is Stage 1 at any absolute change, and so is everything at or above a 0.3 mg/dL rise below 1.5× fold. The unpainted box in the lower left is the one region where both criteria are clear.</p>
+<p>Beside the chart, the <strong>stage summary</strong> counts the population three ways — by the fold change, by the absolute change, and by the combined stage the zones show.</p>
+<p>This tool is <strong>exploratory</strong>. It flags participants for review; it does not diagnose acute kidney injury, which requires the clinical context the chart cannot see — hydration status, concomitant nephrotoxins, obstruction, sepsis, contrast exposure, and the timing of each relative to the rise.</p>
+<h2 id="the-kdigo-criteria-and-how-they-are-drawn-here">The KDIGO criteria, and how they are drawn here</h2>
+<p>KDIGO stages an AKI on serum creatinine three ways:</p>
+<div class="table-scroll"><table class="guide-table"><thead><tr><th>Stage</th><th>Fold change (value ÷ baseline)</th><th>Absolute criteria</th></tr></thead><tbody><tr><td>1</td><td>1.5 – 1.9×</td><td><strong>or</strong> an increase of ≥ 0.3 mg/dL</td></tr><tr><td>2</td><td>2.0 – 2.9×</td><td>—</td></tr><tr><td>3</td><td>≥ 3.0×</td><td><strong>or</strong> an increase _to_ ≥ 4.0 mg/dL, or the initiation of renal replacement therapy</td></tr></tbody></table></div>
+<p>Two consequences shape the display, and both are worth knowing before reading it.</p>
+<p><strong>The absolute-change axis carries exactly one cut-point.</strong> The 0.3 mg/dL rise produces Stage 1 and nothing else — KDIGO defines no Stage 2 or Stage 3 on absolute _change_. That is why the summary table&#39;s absolute-change column shows a dash for Stages 2 and 3 rather than a zero: those cells are not empty, they do not exist.</p>
+<p><strong>The ≥ 4.0 mg/dL rule is about the value reached, not the change.</strong> It is therefore not a region of the plane at all, and a participant can trip it while sitting well inside the Stage-1 zone — a chronic-kidney-disease baseline of 2.7 mg/dL rising to 4.4 mg/dL is a 1.6× change, Stage 1 on the ladder, and Stage 3 by the rule. Those participants are drawn with a <strong>larger, differently-shaped mark</strong>, their tooltip says which rule staged them, and the summary table counts them as Stage 3. If you are reading the chart by region alone, these are the points you would otherwise miss.</p>
+<p><strong>No time window is applied.</strong> KDIGO&#39;s 0.3 mg/dL rise is defined _within 48 hours_ and the fold change _within 7 days_. This chart — like the original nepExplorer — takes each participant&#39;s maximum over their whole post-baseline course, so a slow drift across six months stages the same as an acute injury across two days. That is a deliberate screening simplification, and it means a flagged participant&#39;s <strong>timing</strong> has to be checked before the flag means anything. Their tooltip names the visit the maximum came from for exactly that reason.</p>
+<h2 id="reading-the-chart">Reading the chart</h2>
+<p><strong>Start with the cloud, not the corners.</strong> Most of any real cohort sits in the unpainted no-stage box, and the shape of that cloud tells you whether the assay and the population are behaving. Participants whose creatinine only ever _fell_ plot below the zero line — they are kept deliberately, because a chart that starts its axis at zero silently drops them, and their spread is the best available sense of how much of the upward scatter is noise.</p>
+<p><strong>Then read the bands, left to right.</strong> Each vertical boundary is a fold cut-point and is labelled on the axis. A participant one pixel into the Stage-2 band is a 2.0× rise; the band is not a gradient.</p>
+<p><strong>Then look for the odd marks.</strong> The differently-shaped points are the ≥ 4.0 mg/dL rule, wherever they sit.</p>
+<p><strong>Then click.</strong> Selecting a point names the participant, their stage, their baseline and maximum values and the visits both came from, and dispatches the selection to anything mounted alongside the chart.</p>
+<p>Two questions the chart is good at answering, and one it is not. It is good at _who_ rose and _by how much relative to themselves_. It is good at whether a treatment arm carries more of them than its comparator — use the <strong>Treatment Group</strong> filter and watch the summary table. It is <strong>not</strong> good at _when_, because of the time window above, or at _why_, which needs the participant&#39;s whole course rather than one point.</p>
+<h2 id="baseline-and-why-it-matters-more-here-than-elsewhere">Baseline, and why it matters more here than elsewhere</h2>
+<p>Every number on this chart is relative to one record: the participant&#39;s baseline creatinine. When the dataset carries a baseline flag, the module uses the flagged record. When it does not — which is the common case, and the case on this page — it falls back to the participant&#39;s earliest record by study day, then visit number, then the order the records arrived, and it <strong>reports how many participants were resolved that way</strong> in the note above the chart.</p>
+<p>Read that number. If a participant&#39;s earliest record was drawn after dosing began, their &quot;baseline&quot; is already an on-treatment value and both of their axes are understated.</p>
+<h2 id="units">Units</h2>
+<p>Creatinine is reported in <strong>mg/dL</strong> in some regions and <strong>µmol/L</strong> in most others (1 mg/dL = 88.4 µmol/L). The fold-change axis is a ratio and is unaffected either way. The absolute axis and both absolute cut-points are not, so the module converts <strong>every record individually</strong> rather than assuming one unit for the dataset — a study whose central lab and one site lab report in different units is a real thing, and a per-dataset assumption would stage it wrongly and silently.</p>
+<p>When a record&#39;s unit is missing or unrecognized, the module refuses to guess. The fold-change axis stays — it is still exact — and the absolute-change staging, the 0.3 mg/dL boundary and the ≥ 4.0 mg/dL rule are all withheld, with a line above the chart saying so and the y-axis labelled in whatever unit the data actually used. An incomplete staging is recoverable; a confidently wrong one is not.</p>
+<h2 id="how-this-maps-to-the-controls-on-this-page">How this maps to the controls on this page</h2>
+<ul><li><strong>Filters</strong> (Treatment Group, Sex, Race, Site) narrow the plotted population; the stage summary recounts on the filtered set, so its percentages always describe what is on screen.</li><li><strong>Stage zone labels</strong> hides the lettering without removing the regions, for reading the cloud rather than the bands.</li><li>The <strong>note above the chart</strong> carries the plotted-participant count, the baseline-fallback count, and — where anything could not be plotted — a count with a <strong>CSV download</strong> of exactly which records and participants left, and why. A count tells you how much data is missing; the download tells you which.</li></ul>
+<h2 id="about-this-page-s-demo-data">About this page&#39;s demo data</h2>
+<p>The demo runs on the vendored CDISC Pilot 01 extract <strong>plus a synthetic acute-kidney-injury cohort</strong> (<code>AKI-*</code> participants, <code>Nephrology Research Unit</code>). The cohort exists because the pilot population cannot demonstrate this chart at all: all 208 of its stageable participants land in the no-stage box, its largest fold change anywhere is 1.45×, and not one reaches the 1.5× Stage-1 line.</p>
+<p>So the coloured zones on this page are populated by <strong>simulated injury</strong>. No <code>AKI-*</code> participant is a real person, their trajectories were designed to exercise every zone rather than to be clinically typical, and the two participants tripping the ≥ 4.0 mg/dL rule exist because no real dataset available here reaches 4.0 mg/dL at all. Read the page as a demonstration of the display, not as a study finding. Provenance and the full cohort specification are in <a href="https://github.com/jwildfire/safety.viz/blob/main/docs/DATA_SOURCES.md"><code>docs/DATA_SOURCES.md</code></a>.</p>
+<h2 id="what-is-not-yet-on-this-page">What is not yet on this page</h2>
+<ul><li><strong>The patient-profile drill-down</strong> — the original app&#39;s per-participant panels for creatinine and cystatin C, eGFR and eGFRcys, related electrolytes, blood pressure and urine albumin/creatinine, with KDIGO reference lines. Phase 2. Clicking a point already dispatches the selection event the profile will mount onto.</li><li><strong>eGFR</strong> in any form. The demo extract carries creatinine only; the estimated filtration rate needs age and sex, and the dataset that carries them arrives with Phase 2.</li><li><strong>A time window</strong> on the criteria, as above.</li><li><strong>Renal replacement therapy</strong>, the third KDIGO Stage-3 criterion, which is not a lab value and so is not in this data domain at all. A participant on dialysis is Stage 3 regardless of what their creatinine does, and this chart cannot know it.</li></ul>
+<h2 id="where-this-differs-from-the-original-nepexplorer">Where this differs from the original nepExplorer</h2>
+<p>This is a behaviour port, not a pixel port, and three differences are deliberate.</p>
+<p>The <strong>staging ladder</strong> is read worst-match-first from parameterized cut-points defaulting to the KDIGO criteria. The R source stages its summary table with a <code>case_when</code> whose branches ascend — and <code>case_when</code> returns the first match, so its Stage 2 and Stage 3 branches are unreachable and every rise above the lowest cut is labelled Stage 1. Its chart paints the same three numbers in the opposite order, so the shipped app plots a participant inside the Stage-2 rectangle and labels them &quot;Stage 1&quot; in the table beside it. The chart&#39;s geometry was right and the table was wrong; porting either alone would have carried the disagreement forward. A sponsor who wants the original rectangles back sets three numbers in the <code>stages</code> setting.</p>
+<p>The <strong>absolute-change axis extends below zero</strong>. The source&#39;s axis starts at zero, so participants whose creatinine only fell are dropped by the plotting library rather than drawn — a fifth of the cohort in the dataset the original was built against, with nothing on screen to say so.</p>
+<p>The <strong>≥ 4.0 mg/dL rule is a mark</strong>, as described above, rather than being folded into the regions or dropped.</p>
+<h2 id="source-and-attribution">Source and attribution</h2>
+<p>Ported from <a href="https://github.com/SafetyGraphics/nepExplorer">SafetyGraphics/nepExplorer</a> (R Shiny, v1.0.0), which is the behavioural specification for this module. Staging follows the KDIGO Clinical Practice Guideline for Acute Kidney Injury (KDIGO AKI Work Group, _Kidney International Supplements_ 2012;2:1–138), Section 2.1.</p></div></div></main>
+    <footer class="site-footer">
+      <p>
+        safety.viz v1.5.0 — clinical safety graphics on one modern charting stack, migrated
+        from the <a href="https://github.com/SafetyGraphics">safetyGraphics</a> ecosystem originally
+        built by <a href="https://github.com/RhoInc">Rho, Inc.</a> (<a href="../about.html"
+          >credits</a
+        >).
+      </p>
+      <p>
+        Built in the open for the R/Pharma 2026 keynote — follow the
+        <a href="https://jwildfire.github.io/obot.roadmap/">obot roadmap</a> ·
+        <a href="https://github.com/jwildfire/safety.viz">source on GitHub</a> ·
+        <a href="https://github.com/jwildfire/safety.viz/releases">releases</a>.
+      </p>
+    </footer>
+    <script>
+      // Mark the nav link whose resolved URL is this page; works at any mount
+      // depth (site root, /dev/, /pr/N/). Renderer sub-pages match a chart link
+      // inside the Gallery dropdown, highlighting the current chart.
+      (function () {
+        var here = location.pathname.replace(/\/$/, '/index.html');
+        var links = document.querySelectorAll('.site-nav a');
+        for (var i = 0; i < links.length; i += 1) {
+          var href = links[i].getAttribute('href');
+          if (!href || href.indexOf('http') === 0) continue;
+          if (new URL(href, location.href).pathname === here) {
+            links[i].classList.add('current');
+            links[i].setAttribute('aria-current', 'page');
+            break;
+          }
+        }
+      })();
+
+      // Gallery dropdown (#71): progressive enhancement over the hover/focus CSS.
+      // The disclosure button toggles aria-expanded (which drives the menu open
+      // via CSS), supports keyboard access (Enter/Space toggle, Arrow keys to
+      // enter and move through items, Escape to close), and closes on outside
+      // click or when focus leaves the group. With JS off, hover/focus still
+      // reveal the menu and the Gallery link still works.
+      (function () {
+        var group = document.querySelector('.site-nav .nav-group');
+        if (!group) return;
+        var button = group.querySelector('.nav-disclosure');
+        var menu = group.querySelector('.nav-menu');
+        if (!button || !menu) return;
+        var items = Array.prototype.slice.call(menu.querySelectorAll('a'));
+
+        var isOpen = function () {
+          return button.getAttribute('aria-expanded') === 'true';
+        };
+        var setOpen = function (open) {
+          button.setAttribute('aria-expanded', open ? 'true' : 'false');
+        };
+        var focusItem = function (index) {
+          if (!items.length) return;
+          setOpen(true);
+          items[(index + items.length) % items.length].focus();
+        };
+
+        button.addEventListener('click', function () {
+          setOpen(!isOpen());
+        });
+        button.addEventListener('keydown', function (event) {
+          if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            focusItem(0);
+          } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            focusItem(items.length - 1);
+          } else if (event.key === 'Escape') {
+            setOpen(false);
+          }
+        });
+        menu.addEventListener('keydown', function (event) {
+          var index = items.indexOf(document.activeElement);
+          if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            focusItem(index + 1);
+          } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            focusItem(index - 1);
+          } else if (event.key === 'Home') {
+            event.preventDefault();
+            focusItem(0);
+          } else if (event.key === 'End') {
+            event.preventDefault();
+            focusItem(items.length - 1);
+          } else if (event.key === 'Escape') {
+            event.preventDefault();
+            setOpen(false);
+            button.focus();
+          }
+        });
+
+        // Close when focus leaves the group or on an outside pointer press.
+        group.addEventListener('focusout', function (event) {
+          if (!group.contains(event.relatedTarget)) setOpen(false);
+        });
+        document.addEventListener('click', function (event) {
+          if (!group.contains(event.target)) setOpen(false);
+        });
+      })();
+    </script>
+  </body>
+</html>

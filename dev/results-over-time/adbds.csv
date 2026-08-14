@@ -57560,3 +57560,371 @@ CLD-9064,Hepatology Research Unit,900,M,BLACK OR AFRICAN AMERICAN,CLD: Placebo,W
 CLD-9064,Hepatology Research Unit,900,M,BLACK OR AFRICAN AMERICAN,CLD: Placebo,Week 12,12,Aspartate Aminotransferase,U/L,65,6,40
 CLD-9064,Hepatology Research Unit,900,M,BLACK OR AFRICAN AMERICAN,CLD: Placebo,Week 12,12,Bilirubin,mg/dL,2.6,0.1,1.2
 CLD-9064,Hepatology Research Unit,900,M,BLACK OR AFRICAN AMERICAN,CLD: Placebo,Week 12,12,Alkaline Phosphatase,U/L,145,40,120
+AKI-9001,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Baseline,0,Creatinine,umol/L,83.31,71,141
+AKI-9001,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 2,4,Creatinine,umol/L,88.98,71,141
+AKI-9001,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 4,5,Creatinine,umol/L,88.98,71,141
+AKI-9001,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 6,7,Creatinine,umol/L,98.86,71,141
+AKI-9001,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 8,8,Creatinine,umol/L,87.97,71,141
+AKI-9001,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 12,9,Creatinine,umol/L,88.98,71,141
+AKI-9001,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 16,10,Creatinine,umol/L,88.98,71,141
+AKI-9001,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 24,12,Creatinine,umol/L,88.98,71,141
+AKI-9002,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Baseline,0,Creatinine,umol/L,69.02,62,124
+AKI-9002,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Week 2,4,Creatinine,umol/L,67.26,62,124
+AKI-9002,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Week 4,5,Creatinine,umol/L,67.26,62,124
+AKI-9002,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Week 6,7,Creatinine,umol/L,67.26,62,124
+AKI-9002,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Week 8,8,Creatinine,umol/L,74.73,62,124
+AKI-9002,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Week 12,9,Creatinine,umol/L,67.26,62,124
+AKI-9002,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Week 16,10,Creatinine,umol/L,67.26,62,124
+AKI-9002,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Week 24,12,Creatinine,umol/L,67.26,62,124
+AKI-9003,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Baseline,0,Creatinine,umol/L,78.91,71,141
+AKI-9003,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Week 2,4,Creatinine,umol/L,78.71,71,141
+AKI-9003,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Week 4,5,Creatinine,umol/L,78.71,71,141
+AKI-9003,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Week 6,7,Creatinine,umol/L,78.71,71,141
+AKI-9003,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Week 8,8,Creatinine,umol/L,78.71,71,141
+AKI-9003,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Week 12,9,Creatinine,umol/L,87.46,71,141
+AKI-9003,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Week 16,10,Creatinine,umol/L,78.71,71,141
+AKI-9003,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Week 24,12,Creatinine,umol/L,78.71,71,141
+AKI-9004,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Baseline,0,Creatinine,umol/L,74.82,62,124
+AKI-9004,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 2,4,Creatinine,umol/L,79.22,62,124
+AKI-9004,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 4,5,Creatinine,umol/L,81.98,62,124
+AKI-9004,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 6,7,Creatinine,umol/L,79.54,62,124
+AKI-9004,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 8,8,Creatinine,umol/L,81.98,62,124
+AKI-9004,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 12,9,Creatinine,umol/L,81.98,62,124
+AKI-9004,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 16,10,Creatinine,umol/L,91.09,62,124
+AKI-9004,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 24,12,Creatinine,umol/L,81.98,62,124
+AKI-9005,Nephrology Research Unit,952,M,ASIAN,AKI: Study Drug,Baseline,0,Creatinine,umol/L,64.56,71,141
+AKI-9005,Nephrology Research Unit,952,M,ASIAN,AKI: Study Drug,Week 2,4,Creatinine,umol/L,72.28,71,141
+AKI-9005,Nephrology Research Unit,952,M,ASIAN,AKI: Study Drug,Week 4,5,Creatinine,umol/L,72.13,71,141
+AKI-9005,Nephrology Research Unit,952,M,ASIAN,AKI: Study Drug,Week 6,7,Creatinine,umol/L,74.23,71,141
+AKI-9005,Nephrology Research Unit,952,M,ASIAN,AKI: Study Drug,Week 8,8,Creatinine,umol/L,74.23,71,141
+AKI-9005,Nephrology Research Unit,952,M,ASIAN,AKI: Study Drug,Week 12,9,Creatinine,umol/L,74.23,71,141
+AKI-9005,Nephrology Research Unit,952,M,ASIAN,AKI: Study Drug,Week 16,10,Creatinine,umol/L,72.65,71,141
+AKI-9005,Nephrology Research Unit,952,M,ASIAN,AKI: Study Drug,Week 24,12,Creatinine,umol/L,82.47,71,141
+AKI-9006,Nephrology Research Unit,950,F,WHITE,AKI: Study Drug,Baseline,0,Creatinine,umol/L,233.4,62,124
+AKI-9006,Nephrology Research Unit,950,F,WHITE,AKI: Study Drug,Week 2,4,Creatinine,umol/L,207.05,62,124
+AKI-9006,Nephrology Research Unit,950,F,WHITE,AKI: Study Drug,Week 4,5,Creatinine,umol/L,195.52,62,124
+AKI-9006,Nephrology Research Unit,950,F,WHITE,AKI: Study Drug,Week 6,7,Creatinine,umol/L,178,62,124
+AKI-9006,Nephrology Research Unit,950,F,WHITE,AKI: Study Drug,Week 8,8,Creatinine,umol/L,167.96,62,124
+AKI-9006,Nephrology Research Unit,950,F,WHITE,AKI: Study Drug,Week 12,9,Creatinine,umol/L,162.88,62,124
+AKI-9006,Nephrology Research Unit,950,F,WHITE,AKI: Study Drug,Week 16,10,Creatinine,umol/L,172.56,62,124
+AKI-9006,Nephrology Research Unit,950,F,WHITE,AKI: Study Drug,Week 24,12,Creatinine,umol/L,184.12,62,124
+AKI-9007,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Baseline,0,Creatinine,umol/L,251.7,71,141
+AKI-9007,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 2,4,Creatinine,umol/L,291.45,71,141
+AKI-9007,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 4,5,Creatinine,umol/L,291.45,71,141
+AKI-9007,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 6,7,Creatinine,umol/L,323.84,71,141
+AKI-9007,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 8,8,Creatinine,umol/L,291.45,71,141
+AKI-9007,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 12,9,Creatinine,umol/L,276.38,71,141
+AKI-9007,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 16,10,Creatinine,umol/L,283.03,71,141
+AKI-9007,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 24,12,Creatinine,umol/L,286.76,71,141
+AKI-9008,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Baseline,0,Creatinine,umol/L,250.97,62,124
+AKI-9008,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Week 2,4,Creatinine,umol/L,277.09,62,124
+AKI-9008,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Week 4,5,Creatinine,umol/L,281.91,62,124
+AKI-9008,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Week 6,7,Creatinine,umol/L,266.6,62,124
+AKI-9008,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Week 8,8,Creatinine,umol/L,313.23,62,124
+AKI-9008,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Week 12,9,Creatinine,umol/L,271.55,62,124
+AKI-9008,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Week 16,10,Creatinine,umol/L,281.91,62,124
+AKI-9008,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Week 24,12,Creatinine,umol/L,281.91,62,124
+AKI-9009,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Baseline,0,Creatinine,umol/L,42.81,71,141
+AKI-9009,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Week 2,4,Creatinine,umol/L,59.06,71,141
+AKI-9009,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Week 4,5,Creatinine,umol/L,51.84,71,141
+AKI-9009,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Week 6,7,Creatinine,umol/L,57.43,71,141
+AKI-9009,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Week 8,8,Creatinine,umol/L,49.25,71,141
+AKI-9009,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Week 12,9,Creatinine,umol/L,65.88,71,141
+AKI-9009,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Week 16,10,Creatinine,umol/L,55.7,71,141
+AKI-9009,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Week 24,12,Creatinine,umol/L,50.07,71,141
+AKI-9010,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Baseline,0,Creatinine,umol/L,79.61,62,124
+AKI-9010,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 2,4,Creatinine,umol/L,121.33,62,124
+AKI-9010,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 4,5,Creatinine,umol/L,112.55,62,124
+AKI-9010,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 6,7,Creatinine,umol/L,111.38,62,124
+AKI-9010,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 8,8,Creatinine,umol/L,111.64,62,124
+AKI-9010,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 12,9,Creatinine,umol/L,111.14,62,124
+AKI-9010,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 16,10,Creatinine,umol/L,144.2,62,124
+AKI-9010,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 24,12,Creatinine,umol/L,116.38,62,124
+AKI-9011,Nephrology Research Unit,952,M,ASIAN,AKI: Study Drug,Baseline,0,Creatinine,umol/L,76.2,71,141
+AKI-9011,Nephrology Research Unit,952,M,ASIAN,AKI: Study Drug,Week 2,4,Creatinine,umol/L,88.97,71,141
+AKI-9011,Nephrology Research Unit,952,M,ASIAN,AKI: Study Drug,Week 4,5,Creatinine,umol/L,89.41,71,141
+AKI-9011,Nephrology Research Unit,952,M,ASIAN,AKI: Study Drug,Week 6,7,Creatinine,umol/L,91.23,71,141
+AKI-9011,Nephrology Research Unit,952,M,ASIAN,AKI: Study Drug,Week 8,8,Creatinine,umol/L,102.82,71,141
+AKI-9011,Nephrology Research Unit,952,M,ASIAN,AKI: Study Drug,Week 12,9,Creatinine,umol/L,98.24,71,141
+AKI-9011,Nephrology Research Unit,952,M,ASIAN,AKI: Study Drug,Week 16,10,Creatinine,umol/L,102.61,71,141
+AKI-9011,Nephrology Research Unit,952,M,ASIAN,AKI: Study Drug,Week 24,12,Creatinine,umol/L,119.29,71,141
+AKI-9012,Nephrology Research Unit,950,F,WHITE,AKI: Study Drug,Baseline,0,Creatinine,umol/L,81.8,62,124
+AKI-9012,Nephrology Research Unit,950,F,WHITE,AKI: Study Drug,Week 2,4,Creatinine,umol/L,119.94,62,124
+AKI-9012,Nephrology Research Unit,950,F,WHITE,AKI: Study Drug,Week 4,5,Creatinine,umol/L,142.66,62,124
+AKI-9012,Nephrology Research Unit,950,F,WHITE,AKI: Study Drug,Week 6,7,Creatinine,umol/L,119.98,62,124
+AKI-9012,Nephrology Research Unit,950,F,WHITE,AKI: Study Drug,Week 8,8,Creatinine,umol/L,121.12,62,124
+AKI-9012,Nephrology Research Unit,950,F,WHITE,AKI: Study Drug,Week 12,9,Creatinine,umol/L,101.63,62,124
+AKI-9012,Nephrology Research Unit,950,F,WHITE,AKI: Study Drug,Week 16,10,Creatinine,umol/L,125.76,62,124
+AKI-9012,Nephrology Research Unit,950,F,WHITE,AKI: Study Drug,Week 24,12,Creatinine,umol/L,121.01,62,124
+AKI-9013,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Baseline,0,Creatinine,umol/L,77.33,71,141
+AKI-9013,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 2,4,Creatinine,umol/L,116.73,71,141
+AKI-9013,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 4,5,Creatinine,umol/L,120.21,71,141
+AKI-9013,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 6,7,Creatinine,umol/L,136.19,71,141
+AKI-9013,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 8,8,Creatinine,umol/L,114.7,71,141
+AKI-9013,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 12,9,Creatinine,umol/L,115.56,71,141
+AKI-9013,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 16,10,Creatinine,umol/L,113.25,71,141
+AKI-9013,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 24,12,Creatinine,umol/L,101.2,71,141
+AKI-9014,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Baseline,0,Creatinine,umol/L,71.6,62,124
+AKI-9014,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Week 2,4,Creatinine,umol/L,108.93,62,124
+AKI-9014,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Week 4,5,Creatinine,umol/L,110.33,62,124
+AKI-9014,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Week 6,7,Creatinine,umol/L,89.25,62,124
+AKI-9014,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Week 8,8,Creatinine,umol/L,125.3,62,124
+AKI-9014,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Week 12,9,Creatinine,umol/L,105.3,62,124
+AKI-9014,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Week 16,10,Creatinine,umol/L,99.07,62,124
+AKI-9014,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Week 24,12,Creatinine,umol/L,96.97,62,124
+AKI-9015,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Baseline,0,Creatinine,umol/L,69.4,71,141
+AKI-9015,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Week 2,4,Creatinine,umol/L,109.19,71,141
+AKI-9015,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Week 4,5,Creatinine,umol/L,90.21,71,141
+AKI-9015,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Week 6,7,Creatinine,umol/L,113.01,71,141
+AKI-9015,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Week 8,8,Creatinine,umol/L,90.81,71,141
+AKI-9015,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Week 12,9,Creatinine,umol/L,148.88,71,141
+AKI-9015,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Week 16,10,Creatinine,umol/L,109.16,71,141
+AKI-9015,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Week 24,12,Creatinine,umol/L,131.32,71,141
+AKI-9016,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Baseline,0,Creatinine,umol/L,87.43,62,124
+AKI-9016,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 2,4,Creatinine,umol/L,170.42,62,124
+AKI-9016,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 4,5,Creatinine,umol/L,141.14,62,124
+AKI-9016,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 6,7,Creatinine,umol/L,134.27,62,124
+AKI-9016,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 8,8,Creatinine,umol/L,134.84,62,124
+AKI-9016,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 12,9,Creatinine,umol/L,174.46,62,124
+AKI-9016,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 16,10,Creatinine,umol/L,206.65,62,124
+AKI-9016,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 24,12,Creatinine,umol/L,156.88,62,124
+AKI-9017,Nephrology Research Unit,952,M,ASIAN,AKI: Study Drug,Baseline,0,Creatinine,umol/L,76.53,71,141
+AKI-9017,Nephrology Research Unit,952,M,ASIAN,AKI: Study Drug,Week 2,4,Creatinine,umol/L,129.8,71,141
+AKI-9017,Nephrology Research Unit,952,M,ASIAN,AKI: Study Drug,Week 4,5,Creatinine,umol/L,133.65,71,141
+AKI-9017,Nephrology Research Unit,952,M,ASIAN,AKI: Study Drug,Week 6,7,Creatinine,umol/L,116.17,71,141
+AKI-9017,Nephrology Research Unit,952,M,ASIAN,AKI: Study Drug,Week 8,8,Creatinine,umol/L,160.95,71,141
+AKI-9017,Nephrology Research Unit,952,M,ASIAN,AKI: Study Drug,Week 12,9,Creatinine,umol/L,164.02,71,141
+AKI-9017,Nephrology Research Unit,952,M,ASIAN,AKI: Study Drug,Week 16,10,Creatinine,umol/L,122.91,71,141
+AKI-9017,Nephrology Research Unit,952,M,ASIAN,AKI: Study Drug,Week 24,12,Creatinine,umol/L,186.47,71,141
+AKI-9018,Nephrology Research Unit,950,F,WHITE,AKI: Study Drug,Baseline,0,Creatinine,umol/L,75.85,62,124
+AKI-9018,Nephrology Research Unit,950,F,WHITE,AKI: Study Drug,Week 2,4,Creatinine,umol/L,167.48,62,124
+AKI-9018,Nephrology Research Unit,950,F,WHITE,AKI: Study Drug,Week 4,5,Creatinine,umol/L,210.37,62,124
+AKI-9018,Nephrology Research Unit,950,F,WHITE,AKI: Study Drug,Week 6,7,Creatinine,umol/L,177.19,62,124
+AKI-9018,Nephrology Research Unit,950,F,WHITE,AKI: Study Drug,Week 8,8,Creatinine,umol/L,112.45,62,124
+AKI-9018,Nephrology Research Unit,950,F,WHITE,AKI: Study Drug,Week 12,9,Creatinine,umol/L,170.83,62,124
+AKI-9018,Nephrology Research Unit,950,F,WHITE,AKI: Study Drug,Week 16,10,Creatinine,umol/L,181.19,62,124
+AKI-9018,Nephrology Research Unit,950,F,WHITE,AKI: Study Drug,Week 24,12,Creatinine,umol/L,144.57,62,124
+AKI-9019,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Baseline,0,Creatinine,umol/L,69.17,71,141
+AKI-9019,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 2,4,Creatinine,umol/L,112.29,71,141
+AKI-9019,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 4,5,Creatinine,umol/L,91.64,71,141
+AKI-9019,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 6,7,Creatinine,umol/L,148.67,71,141
+AKI-9019,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 8,8,Creatinine,umol/L,92.6,71,141
+AKI-9019,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 12,9,Creatinine,umol/L,129.88,71,141
+AKI-9019,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 16,10,Creatinine,umol/L,121.74,71,141
+AKI-9019,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 24,12,Creatinine,umol/L,127.59,71,141
+AKI-9020,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Baseline,0,Creatinine,umol/L,71.24,62,124
+AKI-9020,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Week 2,4,Creatinine,umol/L,115.39,62,124
+AKI-9020,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Week 4,5,Creatinine,umol/L,127.1,62,124
+AKI-9020,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Week 6,7,Creatinine,umol/L,119.22,62,124
+AKI-9020,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Week 8,8,Creatinine,umol/L,163.31,62,124
+AKI-9020,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Week 12,9,Creatinine,umol/L,120.52,62,124
+AKI-9020,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Week 16,10,Creatinine,umol/L,142.28,62,124
+AKI-9020,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Week 24,12,Creatinine,umol/L,142.36,62,124
+AKI-9021,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Baseline,0,Creatinine,umol/L,76.91,71,141
+AKI-9021,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Week 2,4,Creatinine,umol/L,170.14,71,141
+AKI-9021,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Week 4,5,Creatinine,umol/L,166.14,71,141
+AKI-9021,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Week 6,7,Creatinine,umol/L,184.96,71,141
+AKI-9021,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Week 8,8,Creatinine,umol/L,213.3,71,141
+AKI-9021,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Week 12,9,Creatinine,umol/L,252.74,71,141
+AKI-9021,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Week 16,10,Creatinine,umol/L,153.66,71,141
+AKI-9021,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Week 24,12,Creatinine,umol/L,161.86,71,141
+AKI-9022,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Baseline,0,Creatinine,umol/L,81.71,62,124
+AKI-9022,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 2,4,Creatinine,umol/L,184.22,62,124
+AKI-9022,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 4,5,Creatinine,umol/L,220.45,62,124
+AKI-9022,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 6,7,Creatinine,umol/L,172.51,62,124
+AKI-9022,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 8,8,Creatinine,umol/L,179.79,62,124
+AKI-9022,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 12,9,Creatinine,umol/L,138.89,62,124
+AKI-9022,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 16,10,Creatinine,umol/L,309.86,62,124
+AKI-9022,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 24,12,Creatinine,umol/L,247.85,62,124
+AKI-9023,Nephrology Research Unit,952,M,ASIAN,AKI: Study Drug,Baseline,0,Creatinine,umol/L,68.86,71,141
+AKI-9023,Nephrology Research Unit,952,M,ASIAN,AKI: Study Drug,Week 2,4,Creatinine,umol/L,137.69,71,141
+AKI-9023,Nephrology Research Unit,952,M,ASIAN,AKI: Study Drug,Week 4,5,Creatinine,umol/L,167.58,71,141
+AKI-9023,Nephrology Research Unit,952,M,ASIAN,AKI: Study Drug,Week 6,7,Creatinine,umol/L,207.7,71,141
+AKI-9023,Nephrology Research Unit,952,M,ASIAN,AKI: Study Drug,Week 8,8,Creatinine,umol/L,192.04,71,141
+AKI-9023,Nephrology Research Unit,952,M,ASIAN,AKI: Study Drug,Week 12,9,Creatinine,umol/L,120.09,71,141
+AKI-9023,Nephrology Research Unit,952,M,ASIAN,AKI: Study Drug,Week 16,10,Creatinine,umol/L,190.08,71,141
+AKI-9023,Nephrology Research Unit,952,M,ASIAN,AKI: Study Drug,Week 24,12,Creatinine,umol/L,264.33,71,141
+AKI-9024,Nephrology Research Unit,950,F,WHITE,AKI: Study Drug,Baseline,0,Creatinine,umol/L,68.94,62,124
+AKI-9024,Nephrology Research Unit,950,F,WHITE,AKI: Study Drug,Week 2,4,Creatinine,umol/L,149.12,62,124
+AKI-9024,Nephrology Research Unit,950,F,WHITE,AKI: Study Drug,Week 4,5,Creatinine,umol/L,221.89,62,124
+AKI-9024,Nephrology Research Unit,950,F,WHITE,AKI: Study Drug,Week 6,7,Creatinine,umol/L,129.99,62,124
+AKI-9024,Nephrology Research Unit,950,F,WHITE,AKI: Study Drug,Week 8,8,Creatinine,umol/L,116.26,62,124
+AKI-9024,Nephrology Research Unit,950,F,WHITE,AKI: Study Drug,Week 12,9,Creatinine,umol/L,167.82,62,124
+AKI-9024,Nephrology Research Unit,950,F,WHITE,AKI: Study Drug,Week 16,10,Creatinine,umol/L,177.18,62,124
+AKI-9024,Nephrology Research Unit,950,F,WHITE,AKI: Study Drug,Week 24,12,Creatinine,umol/L,167.57,62,124
+AKI-9025,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Baseline,0,Creatinine,umol/L,103.46,71,141
+AKI-9025,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 2,4,Creatinine,umol/L,192.52,71,141
+AKI-9025,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 4,5,Creatinine,umol/L,349.12,71,141
+AKI-9025,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 6,7,Creatinine,umol/L,417.13,71,141
+AKI-9025,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 8,8,Creatinine,umol/L,241.7,71,141
+AKI-9025,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 12,9,Creatinine,umol/L,288.65,71,141
+AKI-9025,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 16,10,Creatinine,umol/L,300.83,71,141
+AKI-9025,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Study Drug,Week 24,12,Creatinine,umol/L,227.01,71,141
+AKI-9026,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Baseline,0,Creatinine,umol/L,104.07,62,124
+AKI-9026,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Week 2,4,Creatinine,umol/L,304.96,62,124
+AKI-9026,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Week 4,5,Creatinine,umol/L,307,62,124
+AKI-9026,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Week 6,7,Creatinine,umol/L,267.13,62,124
+AKI-9026,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Week 8,8,Creatinine,umol/L,417.66,62,124
+AKI-9026,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Week 12,9,Creatinine,umol/L,225.76,62,124
+AKI-9026,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Week 16,10,Creatinine,umol/L,185.6,62,124
+AKI-9026,Nephrology Research Unit,952,F,ASIAN,AKI: Study Drug,Week 24,12,Creatinine,umol/L,278.4,62,124
+AKI-9027,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Baseline,0,Creatinine,umol/L,239.81,71,141
+AKI-9027,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Week 2,4,Creatinine,umol/L,365.53,71,141
+AKI-9027,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Week 4,5,Creatinine,umol/L,350.06,71,141
+AKI-9027,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Week 6,7,Creatinine,umol/L,286.51,71,141
+AKI-9027,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Week 8,8,Creatinine,umol/L,292.04,71,141
+AKI-9027,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Week 12,9,Creatinine,umol/L,406.83,71,141
+AKI-9027,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Week 16,10,Creatinine,umol/L,309.85,71,141
+AKI-9027,Nephrology Research Unit,950,M,WHITE,AKI: Study Drug,Week 24,12,Creatinine,umol/L,353.23,71,141
+AKI-9028,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Baseline,0,Creatinine,umol/L,63.75,62,124
+AKI-9028,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 2,4,Creatinine,umol/L,65.31,62,124
+AKI-9028,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 4,5,Creatinine,umol/L,65.31,62,124
+AKI-9028,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 6,7,Creatinine,umol/L,65.31,62,124
+AKI-9028,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 8,8,Creatinine,umol/L,65.31,62,124
+AKI-9028,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 12,9,Creatinine,umol/L,65.31,62,124
+AKI-9028,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 16,10,Creatinine,umol/L,72.57,62,124
+AKI-9028,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 24,12,Creatinine,umol/L,65.31,62,124
+AKI-9029,Nephrology Research Unit,952,M,ASIAN,AKI: Placebo,Baseline,0,Creatinine,umol/L,67.39,71,141
+AKI-9029,Nephrology Research Unit,952,M,ASIAN,AKI: Placebo,Week 2,4,Creatinine,umol/L,69.62,71,141
+AKI-9029,Nephrology Research Unit,952,M,ASIAN,AKI: Placebo,Week 4,5,Creatinine,umol/L,69.62,71,141
+AKI-9029,Nephrology Research Unit,952,M,ASIAN,AKI: Placebo,Week 6,7,Creatinine,umol/L,69.62,71,141
+AKI-9029,Nephrology Research Unit,952,M,ASIAN,AKI: Placebo,Week 8,8,Creatinine,umol/L,69.62,71,141
+AKI-9029,Nephrology Research Unit,952,M,ASIAN,AKI: Placebo,Week 12,9,Creatinine,umol/L,69.62,71,141
+AKI-9029,Nephrology Research Unit,952,M,ASIAN,AKI: Placebo,Week 16,10,Creatinine,umol/L,69.62,71,141
+AKI-9029,Nephrology Research Unit,952,M,ASIAN,AKI: Placebo,Week 24,12,Creatinine,umol/L,77.36,71,141
+AKI-9030,Nephrology Research Unit,950,F,WHITE,AKI: Placebo,Baseline,0,Creatinine,umol/L,73.83,62,124
+AKI-9030,Nephrology Research Unit,950,F,WHITE,AKI: Placebo,Week 2,4,Creatinine,umol/L,72.45,62,124
+AKI-9030,Nephrology Research Unit,950,F,WHITE,AKI: Placebo,Week 4,5,Creatinine,umol/L,80.5,62,124
+AKI-9030,Nephrology Research Unit,950,F,WHITE,AKI: Placebo,Week 6,7,Creatinine,umol/L,72.45,62,124
+AKI-9030,Nephrology Research Unit,950,F,WHITE,AKI: Placebo,Week 8,8,Creatinine,umol/L,72.45,62,124
+AKI-9030,Nephrology Research Unit,950,F,WHITE,AKI: Placebo,Week 12,9,Creatinine,umol/L,72.45,62,124
+AKI-9030,Nephrology Research Unit,950,F,WHITE,AKI: Placebo,Week 16,10,Creatinine,umol/L,72.45,62,124
+AKI-9030,Nephrology Research Unit,950,F,WHITE,AKI: Placebo,Week 24,12,Creatinine,umol/L,72.45,62,124
+AKI-9031,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Baseline,0,Creatinine,umol/L,62.53,71,141
+AKI-9031,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 2,4,Creatinine,umol/L,62.62,71,141
+AKI-9031,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 4,5,Creatinine,umol/L,62.62,71,141
+AKI-9031,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 6,7,Creatinine,umol/L,69.58,71,141
+AKI-9031,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 8,8,Creatinine,umol/L,62.62,71,141
+AKI-9031,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 12,9,Creatinine,umol/L,62.62,71,141
+AKI-9031,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 16,10,Creatinine,umol/L,62.62,71,141
+AKI-9031,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 24,12,Creatinine,umol/L,62.62,71,141
+AKI-9032,Nephrology Research Unit,952,F,ASIAN,AKI: Placebo,Baseline,0,Creatinine,umol/L,73.32,62,124
+AKI-9032,Nephrology Research Unit,952,F,ASIAN,AKI: Placebo,Week 2,4,Creatinine,umol/L,81.59,62,124
+AKI-9032,Nephrology Research Unit,952,F,ASIAN,AKI: Placebo,Week 4,5,Creatinine,umol/L,82.86,62,124
+AKI-9032,Nephrology Research Unit,952,F,ASIAN,AKI: Placebo,Week 6,7,Creatinine,umol/L,82.86,62,124
+AKI-9032,Nephrology Research Unit,952,F,ASIAN,AKI: Placebo,Week 8,8,Creatinine,umol/L,92.07,62,124
+AKI-9032,Nephrology Research Unit,952,F,ASIAN,AKI: Placebo,Week 12,9,Creatinine,umol/L,82.86,62,124
+AKI-9032,Nephrology Research Unit,952,F,ASIAN,AKI: Placebo,Week 16,10,Creatinine,umol/L,82.86,62,124
+AKI-9032,Nephrology Research Unit,952,F,ASIAN,AKI: Placebo,Week 24,12,Creatinine,umol/L,78.5,62,124
+AKI-9033,Nephrology Research Unit,950,M,WHITE,AKI: Placebo,Baseline,0,Creatinine,umol/L,59.84,71,141
+AKI-9033,Nephrology Research Unit,950,M,WHITE,AKI: Placebo,Week 2,4,Creatinine,umol/L,61.95,71,141
+AKI-9033,Nephrology Research Unit,950,M,WHITE,AKI: Placebo,Week 4,5,Creatinine,umol/L,61.95,71,141
+AKI-9033,Nephrology Research Unit,950,M,WHITE,AKI: Placebo,Week 6,7,Creatinine,umol/L,61.95,71,141
+AKI-9033,Nephrology Research Unit,950,M,WHITE,AKI: Placebo,Week 8,8,Creatinine,umol/L,61.95,71,141
+AKI-9033,Nephrology Research Unit,950,M,WHITE,AKI: Placebo,Week 12,9,Creatinine,umol/L,68.84,71,141
+AKI-9033,Nephrology Research Unit,950,M,WHITE,AKI: Placebo,Week 16,10,Creatinine,umol/L,61.95,71,141
+AKI-9033,Nephrology Research Unit,950,M,WHITE,AKI: Placebo,Week 24,12,Creatinine,umol/L,61.95,71,141
+AKI-9034,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Baseline,0,Creatinine,umol/L,70.3,62,124
+AKI-9034,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 2,4,Creatinine,umol/L,79.9,62,124
+AKI-9034,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 4,5,Creatinine,umol/L,77.61,62,124
+AKI-9034,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 6,7,Creatinine,umol/L,79.03,62,124
+AKI-9034,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 8,8,Creatinine,umol/L,78.21,62,124
+AKI-9034,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 12,9,Creatinine,umol/L,76.59,62,124
+AKI-9034,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 16,10,Creatinine,umol/L,88.78,62,124
+AKI-9034,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 24,12,Creatinine,umol/L,79.9,62,124
+AKI-9035,Nephrology Research Unit,952,M,ASIAN,AKI: Placebo,Baseline,0,Creatinine,umol/L,200.99,71,141
+AKI-9035,Nephrology Research Unit,952,M,ASIAN,AKI: Placebo,Week 2,4,Creatinine,umol/L,185.18,71,141
+AKI-9035,Nephrology Research Unit,952,M,ASIAN,AKI: Placebo,Week 4,5,Creatinine,umol/L,173.47,71,141
+AKI-9035,Nephrology Research Unit,952,M,ASIAN,AKI: Placebo,Week 6,7,Creatinine,umol/L,157.79,71,141
+AKI-9035,Nephrology Research Unit,952,M,ASIAN,AKI: Placebo,Week 8,8,Creatinine,umol/L,147.98,71,141
+AKI-9035,Nephrology Research Unit,952,M,ASIAN,AKI: Placebo,Week 12,9,Creatinine,umol/L,144.84,71,141
+AKI-9035,Nephrology Research Unit,952,M,ASIAN,AKI: Placebo,Week 16,10,Creatinine,umol/L,154.3,71,141
+AKI-9035,Nephrology Research Unit,952,M,ASIAN,AKI: Placebo,Week 24,12,Creatinine,umol/L,161.48,71,141
+AKI-9036,Nephrology Research Unit,950,F,WHITE,AKI: Placebo,Baseline,0,Creatinine,umol/L,225.63,62,124
+AKI-9036,Nephrology Research Unit,950,F,WHITE,AKI: Placebo,Week 2,4,Creatinine,umol/L,205.05,62,124
+AKI-9036,Nephrology Research Unit,950,F,WHITE,AKI: Placebo,Week 4,5,Creatinine,umol/L,192.36,62,124
+AKI-9036,Nephrology Research Unit,950,F,WHITE,AKI: Placebo,Week 6,7,Creatinine,umol/L,177.79,62,124
+AKI-9036,Nephrology Research Unit,950,F,WHITE,AKI: Placebo,Week 8,8,Creatinine,umol/L,162.46,62,124
+AKI-9036,Nephrology Research Unit,950,F,WHITE,AKI: Placebo,Week 12,9,Creatinine,umol/L,159.24,62,124
+AKI-9036,Nephrology Research Unit,950,F,WHITE,AKI: Placebo,Week 16,10,Creatinine,umol/L,171.76,62,124
+AKI-9036,Nephrology Research Unit,950,F,WHITE,AKI: Placebo,Week 24,12,Creatinine,umol/L,179.57,62,124
+AKI-9037,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Baseline,0,Creatinine,umol/L,223.73,71,141
+AKI-9037,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 2,4,Creatinine,umol/L,262.74,71,141
+AKI-9037,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 4,5,Creatinine,umol/L,253.61,71,141
+AKI-9037,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 6,7,Creatinine,umol/L,291.94,71,141
+AKI-9037,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 8,8,Creatinine,umol/L,252.7,71,141
+AKI-9037,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 12,9,Creatinine,umol/L,249.38,71,141
+AKI-9037,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 16,10,Creatinine,umol/L,253.83,71,141
+AKI-9037,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 24,12,Creatinine,umol/L,255.58,71,141
+AKI-9038,Nephrology Research Unit,952,F,ASIAN,AKI: Placebo,Baseline,0,Creatinine,umol/L,214.32,62,124
+AKI-9038,Nephrology Research Unit,952,F,ASIAN,AKI: Placebo,Week 2,4,Creatinine,umol/L,231.65,62,124
+AKI-9038,Nephrology Research Unit,952,F,ASIAN,AKI: Placebo,Week 4,5,Creatinine,umol/L,240.34,62,124
+AKI-9038,Nephrology Research Unit,952,F,ASIAN,AKI: Placebo,Week 6,7,Creatinine,umol/L,240.34,62,124
+AKI-9038,Nephrology Research Unit,952,F,ASIAN,AKI: Placebo,Week 8,8,Creatinine,umol/L,267.04,62,124
+AKI-9038,Nephrology Research Unit,952,F,ASIAN,AKI: Placebo,Week 12,9,Creatinine,umol/L,240.34,62,124
+AKI-9038,Nephrology Research Unit,952,F,ASIAN,AKI: Placebo,Week 16,10,Creatinine,umol/L,240.34,62,124
+AKI-9038,Nephrology Research Unit,952,F,ASIAN,AKI: Placebo,Week 24,12,Creatinine,umol/L,239.28,62,124
+AKI-9039,Nephrology Research Unit,950,M,WHITE,AKI: Placebo,Baseline,0,Creatinine,umol/L,41.51,71,141
+AKI-9039,Nephrology Research Unit,950,M,WHITE,AKI: Placebo,Week 2,4,Creatinine,umol/L,52.33,71,141
+AKI-9039,Nephrology Research Unit,950,M,WHITE,AKI: Placebo,Week 4,5,Creatinine,umol/L,58,71,141
+AKI-9039,Nephrology Research Unit,950,M,WHITE,AKI: Placebo,Week 6,7,Creatinine,umol/L,54.98,71,141
+AKI-9039,Nephrology Research Unit,950,M,WHITE,AKI: Placebo,Week 8,8,Creatinine,umol/L,55.76,71,141
+AKI-9039,Nephrology Research Unit,950,M,WHITE,AKI: Placebo,Week 12,9,Creatinine,umol/L,64.53,71,141
+AKI-9039,Nephrology Research Unit,950,M,WHITE,AKI: Placebo,Week 16,10,Creatinine,umol/L,51.84,71,141
+AKI-9039,Nephrology Research Unit,950,M,WHITE,AKI: Placebo,Week 24,12,Creatinine,umol/L,47.5,71,141
+AKI-9040,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Baseline,0,Creatinine,umol/L,78.21,62,124
+AKI-9040,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 2,4,Creatinine,umol/L,94.11,62,124
+AKI-9040,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 4,5,Creatinine,umol/L,94.13,62,124
+AKI-9040,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 6,7,Creatinine,umol/L,101.08,62,124
+AKI-9040,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 8,8,Creatinine,umol/L,118.5,62,124
+AKI-9040,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 12,9,Creatinine,umol/L,102.62,62,124
+AKI-9040,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 16,10,Creatinine,umol/L,131.67,62,124
+AKI-9040,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 24,12,Creatinine,umol/L,116.96,62,124
+AKI-9041,Nephrology Research Unit,952,M,ASIAN,AKI: Placebo,Baseline,0,Creatinine,umol/L,77.62,71,141
+AKI-9041,Nephrology Research Unit,952,M,ASIAN,AKI: Placebo,Week 2,4,Creatinine,umol/L,120.24,71,141
+AKI-9041,Nephrology Research Unit,952,M,ASIAN,AKI: Placebo,Week 4,5,Creatinine,umol/L,105.11,71,141
+AKI-9041,Nephrology Research Unit,952,M,ASIAN,AKI: Placebo,Week 6,7,Creatinine,umol/L,97.46,71,141
+AKI-9041,Nephrology Research Unit,952,M,ASIAN,AKI: Placebo,Week 8,8,Creatinine,umol/L,119.65,71,141
+AKI-9041,Nephrology Research Unit,952,M,ASIAN,AKI: Placebo,Week 12,9,Creatinine,umol/L,123.75,71,141
+AKI-9041,Nephrology Research Unit,952,M,ASIAN,AKI: Placebo,Week 16,10,Creatinine,umol/L,93.87,71,141
+AKI-9041,Nephrology Research Unit,952,M,ASIAN,AKI: Placebo,Week 24,12,Creatinine,umol/L,138.44,71,141
+AKI-9042,Nephrology Research Unit,950,F,WHITE,AKI: Placebo,Baseline,0,Creatinine,umol/L,75.83,62,124
+AKI-9042,Nephrology Research Unit,950,F,WHITE,AKI: Placebo,Week 2,4,Creatinine,umol/L,94.55,62,124
+AKI-9042,Nephrology Research Unit,950,F,WHITE,AKI: Placebo,Week 4,5,Creatinine,umol/L,131.41,62,124
+AKI-9042,Nephrology Research Unit,950,F,WHITE,AKI: Placebo,Week 6,7,Creatinine,umol/L,95.41,62,124
+AKI-9042,Nephrology Research Unit,950,F,WHITE,AKI: Placebo,Week 8,8,Creatinine,umol/L,111.33,62,124
+AKI-9042,Nephrology Research Unit,950,F,WHITE,AKI: Placebo,Week 12,9,Creatinine,umol/L,97.54,62,124
+AKI-9042,Nephrology Research Unit,950,F,WHITE,AKI: Placebo,Week 16,10,Creatinine,umol/L,110.64,62,124
+AKI-9042,Nephrology Research Unit,950,F,WHITE,AKI: Placebo,Week 24,12,Creatinine,umol/L,97.11,62,124
+AKI-9043,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Baseline,0,Creatinine,umol/L,76.51,71,141
+AKI-9043,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 2,4,Creatinine,umol/L,153.17,71,141
+AKI-9043,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 4,5,Creatinine,umol/L,174.35,71,141
+AKI-9043,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 6,7,Creatinine,umol/L,218.03,71,141
+AKI-9043,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 8,8,Creatinine,umol/L,149.84,71,141
+AKI-9043,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 12,9,Creatinine,umol/L,116.5,71,141
+AKI-9043,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 16,10,Creatinine,umol/L,182.2,71,141
+AKI-9043,Nephrology Research Unit,951,M,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 24,12,Creatinine,umol/L,122.86,71,141
+AKI-9044,Nephrology Research Unit,952,F,ASIAN,AKI: Placebo,Baseline,0,Creatinine,umol/L,85.88,62,124
+AKI-9044,Nephrology Research Unit,952,F,ASIAN,AKI: Placebo,Week 2,4,Creatinine,umol/L,132.24,62,124
+AKI-9044,Nephrology Research Unit,952,F,ASIAN,AKI: Placebo,Week 4,5,Creatinine,umol/L,160.02,62,124
+AKI-9044,Nephrology Research Unit,952,F,ASIAN,AKI: Placebo,Week 6,7,Creatinine,umol/L,122.88,62,124
+AKI-9044,Nephrology Research Unit,952,F,ASIAN,AKI: Placebo,Week 8,8,Creatinine,umol/L,186.56,62,124
+AKI-9044,Nephrology Research Unit,952,F,ASIAN,AKI: Placebo,Week 12,9,Creatinine,umol/L,154.45,62,124
+AKI-9044,Nephrology Research Unit,952,F,ASIAN,AKI: Placebo,Week 16,10,Creatinine,umol/L,138.2,62,124
+AKI-9044,Nephrology Research Unit,952,F,ASIAN,AKI: Placebo,Week 24,12,Creatinine,umol/L,122.91,62,124
+AKI-9045,Nephrology Research Unit,950,M,WHITE,AKI: Placebo,Baseline,0,Creatinine,umol/L,75.4,71,141
+AKI-9045,Nephrology Research Unit,950,M,WHITE,AKI: Placebo,Week 2,4,Creatinine,umol/L,169.22,71,141
+AKI-9045,Nephrology Research Unit,950,M,WHITE,AKI: Placebo,Week 4,5,Creatinine,umol/L,136.82,71,141
+AKI-9045,Nephrology Research Unit,950,M,WHITE,AKI: Placebo,Week 6,7,Creatinine,umol/L,223.38,71,141
+AKI-9045,Nephrology Research Unit,950,M,WHITE,AKI: Placebo,Week 8,8,Creatinine,umol/L,228.41,71,141
+AKI-9045,Nephrology Research Unit,950,M,WHITE,AKI: Placebo,Week 12,9,Creatinine,umol/L,284.53,71,141
+AKI-9045,Nephrology Research Unit,950,M,WHITE,AKI: Placebo,Week 16,10,Creatinine,umol/L,226.89,71,141
+AKI-9045,Nephrology Research Unit,950,M,WHITE,AKI: Placebo,Week 24,12,Creatinine,umol/L,166.36,71,141
+AKI-9046,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Baseline,0,Creatinine,umol/L,242.21,62,124
+AKI-9046,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 2,4,Creatinine,umol/L,321.4,62,124
+AKI-9046,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 4,5,Creatinine,umol/L,350.29,62,124
+AKI-9046,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 6,7,Creatinine,umol/L,300.7,62,124
+AKI-9046,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 8,8,Creatinine,umol/L,333.77,62,124
+AKI-9046,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 12,9,Creatinine,umol/L,317.49,62,124
+AKI-9046,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 16,10,Creatinine,umol/L,389.21,62,124
+AKI-9046,Nephrology Research Unit,951,F,BLACK OR AFRICAN AMERICAN,AKI: Placebo,Week 24,12,Creatinine,umol/L,335.87,62,124
