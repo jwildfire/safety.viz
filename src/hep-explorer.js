@@ -60,6 +60,7 @@ import {
   visitPathSeries
 } from './hep-explorer/structureData.js';
 import { formatNumber } from './hep-explorer/getScales.js';
+import { clearAxisLimits } from './axis-limits.js';
 import { CLINICAL_CAUTION } from './hep-explorer/getPlugins.js';
 import { imputeBelowLloq } from './hep-explorer/imputation.js';
 import { availableDisplays } from './hep-explorer/availability.js';
@@ -195,6 +196,15 @@ class SafetyHepExplorer {
       measureY: this.settings.y_default,
       display: 'relative_uln',
       axisType: 'linear',
+      // Gridline base for a logarithmic axis (HEP-CTRL-017); inert while the
+      // axis is linear.
+      logBase: this.settings.log_base,
+      // Manual axis limits, one slot per axis (HEP-AXIS-001..004). Each carries
+      // the shared contract of src/axis-limits.js: `lower`/`upper` hold USER
+      // OVERRIDES only (null = automatic), `axisDomain` the [lower, upper] the
+      // last render resolved — what the chart drew and what the inputs show.
+      axisX: { lower: null, upper: null, axisDomain: null },
+      axisY: { lower: null, upper: null, axisDomain: null },
       pointSize: 'Uniform',
       marginals: this.settings.marginals,
       quadrantLabels: this.settings.quadrant_labels,
@@ -726,6 +736,9 @@ class SafetyHepExplorer {
     this.state.cuts = JSON.parse(JSON.stringify(this.settings.cuts));
     this.state.display = 'relative_uln';
     this.state.axisType = 'linear';
+    this.state.logBase = this.settings.log_base;
+    clearAxisLimits(this.state.axisX);
+    clearAxisLimits(this.state.axisY);
     this.state.pointSize = 'Uniform';
     this.state.visitWindow = this.settings.visit_window;
     this.state.filters = {};

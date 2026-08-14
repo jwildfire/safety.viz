@@ -59,7 +59,7 @@ Characterize the injury pattern with the **R-Ratio**, `R = (ALT/ULN) / (ALP/ULN)
 | `R = 2–5` | Mixed hepatocellular / cholestatic |
 |  `R < 2`  | Cholestatic                        |
 
-Read the R-Ratio in the point tooltip, filter on it with the **R-Ratio range** control, or encode it as point size via **Point Size → rRatio**. A newer variant, **nR**, substitutes AST when AST gives the higher fold change so that AST-predominant injury is not missed (Robles-Diaz et al. 2014); this tool computes R from ALT, so nR is a manual calculation for now.
+Read the R-Ratio in the point tooltip, filter on it with the **R-Ratio range** control, or encode it as point size via **Point Size → rRatio**. A newer variant, **nR** — `nR = (highest of AST or ALT / ULN) / (ALP/ULN)`, substituting AST for ALT whenever AST yields the greater ratio so that AST-predominant injury is not missed — comes from [Robles-Diaz et al. 2014](<https://www.gastrojournal.org/article/S0016-5085(14)01484-X/fulltext>), whose composite algorithm introduced it; [Suh 2020](https://pmc.ncbi.nlm.nih.gov/articles/PMC6986960/) states the calculation in one line. This tool computes R from ALT, so nR is a manual calculation for now.
 
 ### Step 2b — Onset window and rate of rise (ALT)
 
@@ -262,6 +262,8 @@ Open the [live demo](index.html) and work a few of the steps against real data.
 
 This guide ports the workflow and clinical rationale of the **"Interactive Safety Graphic — Hepatic Safety Explorer User's Manual" (v1.2.1)**, a product of the **DIA-ASA Interactive Safety Graphics Working Group**, which authored the manual and authorized this migration. The decision diagrams above are reproduced from that manual; the surrounding text follows its evaluation steps and interpretive guidance. For the complete manual with full clinical detail, see the authoritative source: [HepExplorerWorkflow v1.2.1 (PDF)](https://github.com/SafetyGraphics/SafetyGraphics.github.io/raw/master/guide/HepExplorerWorkflow_v1_2_1.pdf).
 
+**Where the R-Ratio and nR come from.** The R-Ratio bands this guide uses at Steps 2a, 5a and 8a follow Kullak-Ublick et al. 2017 and Leise et al. 2014. For the ratios themselves, go to the primary sources: [Robles-Diaz et al., _Gastroenterology_ 2014;147:109–118](<https://www.gastrojournal.org/article/S0016-5085(14)01484-X/fulltext>) is the composite-algorithm paper that introduced **nR**, and [Suh, _Yeungnam Univ J Med_ 2020;37:2–12](https://pmc.ncbi.nlm.nih.gov/articles/PMC6986960/) is an open-access review that states the nR calculation in a single line — `nR = (highest of AST or ALT / ULN) / (ALP/ULN)`, AST substituted for ALT when AST gives the greater ratio. This chart reports the ALT-based **R-Ratio** only.
+
 ## References
 
 - Abboud G, Kaplowitz N. Drug-induced liver injury. _Drug Saf._ 2007;30:277–294.
@@ -294,9 +296,10 @@ This guide ports the workflow and clinical rationale of the **"Interactive Safet
 - Moylen CA, Suzuki A, Papay JI, et al. A pre-market ALT signal predicts post-marketing liver safety. _Regul Toxicol Pharmacol._ 2012;63:433–439.
 - Ozer JS, Chetty R, Kenna G, et al. Enhancing the utility of alanine aminotransferase as a reference standard biomarker for drug-induced liver injury. _Regul Toxicol Pharmacol._ 2010;56:237–246.
 - Parks D, Lin X, Painter JL, et al. A proposed modification to Hy's law and eDISH criteria in oncology clinical trials using aggregated historical data. _Pharmacoepidemiol Drug Saf._ 2013;22:571–578.
-- Robles-Diaz M, Lucena MI, Kaplowitz N, et al. Use of Hy's law and a new composite algorithm to predict acute liver failure in patients with drug-induced liver injury. _Gastroenterology_ 2014;147:109–118.
+- Robles-Diaz M, Lucena MI, Kaplowitz N, et al. Use of Hy's law and a new composite algorithm to predict acute liver failure in patients with drug-induced liver injury. _Gastroenterology_ 2014;147:109–118. [Full text](<https://www.gastrojournal.org/article/S0016-5085(14)01484-X/fulltext>).
 - Senior JR. Evolution of the FDA approach to liver safety assessment for new drugs: current status and challenges. _Drug Saf._ 2014;37(Suppl 1):S9–S17.
 - Shapiro MA, Lewis JH. Causality assessment of drug-induced hepatotoxicity: promises and pitfalls. _Clin Liver Dis._ 2007;11:477–505.
+- Suh JI. Drug-induced liver injury. _Yeungnam Univ J Med._ 2020;37:2–12. [Full text](https://pmc.ncbi.nlm.nih.gov/articles/PMC6986960/).
 - Thapa BR, Walia A. Liver function tests and their interpretation. _Indian J Pediatr._ 2007;74:663–671.
 - Trost DC. Hepatotoxicity. In: _Statistical Methods for Evaluating Safety in Medical Product Development_, 1st ed. Wiley; 2015:229–270.
 - Watkins PB. Idiosyncratic liver injury: challenges and approaches. _Toxicol Pathol._ 2005;33:1–5.
