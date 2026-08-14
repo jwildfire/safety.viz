@@ -1,16 +1,13 @@
 {
   "module": "participant-profile",
-  "generatedAt": "2026-08-14T17:47:26.446Z",
+  "generatedAt": "2026-08-14T23:32:42.797Z",
   "environment": {
-    "os": "linux 6.17.0-1022-azure",
-    "node": "v22.23.2",
+    "os": "darwin 23.6.0",
+    "node": "v24.14.0",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": {
-    "id": "31825573019",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/31825573019"
-  },
+  "run": null,
   "records": [
     {
       "test": "a chart link navigates straight to that renderer demo (#71)",
@@ -110,6 +107,14 @@
     },
     {
       "test": "built shift-plot demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built time-to-event demo mounts the shared shell with no console errors (#7) (#17)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": [],
@@ -589,6 +594,70 @@
       "screenshots": []
     },
     {
+      "test": "buildTteRecords breaks earliest-day ties by numeric AESEQ so the derivation is order-independent (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "buildTteRecords censors event-free participants at end of study: AVAL = EOSDT − TRTSDT + 1, CNSR 1 (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "buildTteRecords events: AVAL is the earliest qualifying ASTDY, CNSR 0, EVNTDESC the first qualifying term (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "buildTteRecords excludes non-safety participants and participants with no treatment start (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "buildTteRecords falls back to TRTEDT for a censored participant with no EOSDT, and drops with a warning when neither exists (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "buildTteRecords ignores non-treatment-emergent rows and rows with no usable positive ASTDY (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "buildTteRecords takes the group from the subject-level actual treatment, covering AE-free participants (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "buildTteRecords writes one row per safety participant per endpoint, in the declared column and param order (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
       "test": "checkInputs — standalone long-lab contract (PPRF-1, PPRF-CORE-002) accepts data carrying every required mapped column",
       "suite": "unit",
       "status": "pass",
@@ -681,6 +750,22 @@
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["PPRF-AE-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "committed adtte.csv carries 254 safety participants × 3 endpoints with the measured event counts (TTE-DEMO-002, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-DEMO-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "committed adtte.csv every AVAL is a positive integer day and censor days stay within the measured 1–213 range (TTE-DEMO-002, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-DEMO-002"],
       "issueRefs": [],
       "screenshots": []
     },
@@ -1010,6 +1095,14 @@
       "status": "pass",
       "requirementIds": ["PPRF-TBL-003"],
       "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "isDermEvent qualifies the skin SOC and APPLICATION SITE preferred terms, nothing else (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
       "screenshots": []
     },
     {

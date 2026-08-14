@@ -241,7 +241,7 @@ describe('committed adtte.csv', () => {
     });
   }
 
-  it('carries 254 safety participants × 3 endpoints with the measured event counts (#128)', () => {
+  it('carries 254 safety participants × 3 endpoints with the measured event counts (TTE-DEMO-002, #128)', () => {
     const rows = parse();
     expect(rows).toHaveLength(254 * 3);
     const ids = new Set(rows.map((r) => r.USUBJID));
@@ -252,7 +252,7 @@ describe('committed adtte.csv', () => {
     expect(events('TTAE')).toBe(217);
   });
 
-  it('every AVAL is a positive integer day and censor days stay within the measured 1–213 range (#128)', () => {
+  it('every AVAL is a positive integer day and censor days stay within the measured 1–213 range (TTE-DEMO-002, #128)', () => {
     const rows = parse();
     for (const r of rows) {
       const t = Number(r.AVAL);

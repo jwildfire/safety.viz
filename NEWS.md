@@ -6,6 +6,10 @@ functionality-first account of what a user can now do. The GitHub release publis
 from the section here when the release-candidate PR (dev -> main) merges and is tagged.
 -->
 
+# safety.viz v1.7.0 (Upcoming)
+
+- **Time-to-Event Explorer** — a new renderer for Kaplan–Meier safety displays ([obot.roadmap#161](https://github.com/jwildfire/obot.roadmap/issues/161), [#128](https://github.com/jwildfire/safety.viz/issues/128)). Step curves by treatment group with censoring tick marks, **pointwise 95% confidence bands** (Greenwood variance, log-log transform — the `survival::survfit` default family, cross-validated against it to 1e-10 on the demo data), and the **at-risk / cumulative-events strip table** the FDA ST&F guide mandates beneath every time-to-event plot — all derived from one estimator pass, so the table cannot disagree with the curve. Consumes an ADTTE-shaped analysis dataset (the clinical derivation of "first qualifying event" stays upstream with the data owner); default display is **cumulative incidence (1 − KM)** with the estimator always named on the axis, and the in-app notes plus the clinical guide state plainly that 1 − KM overestimates absolute risk when competing events are present. Demo endpoints derived from pharmaverseadam `adae` + `adsl` (`site/data/adtte.csv`): time to first dermatologic event, first serious AE (deliberately sparse — the honest wide-band case), and first any TEAE. Marked **Experimental** pending @jwildfire's review of design decisions D1–D6. [Try it live](https://jwildfire.github.io/safety.viz/time-to-event/index.html).
+
 # safety.viz v1.6.0
 
 **See it move:** the [annotated v1.6.0 demo](https://jwildfire.github.io/obot.roadmap/reports/sv-v1.6-demo/) walks each update with captures and try-it-yourself steps against the live gallery.

@@ -103,7 +103,7 @@
         },
         "height": {
           "type": "number",
-          "default": 520,
+          "default": 560,
           "description": "Chart-area height in pixels, including the in-canvas at-risk / cumulative-events table."
         }
       }

@@ -132,7 +132,7 @@ class SafetyTimeToEvent {
   /**
    * Merge setting overrides onto the current settings, re-normalize, rebuild
    * the controls, and re-render.
-   * @param {import('./time-to-event/configure.js').TimeToEventSettings} settings Setting overrides to merge.
+   * @param {TimeToEventSettings} settings Setting overrides to merge.
    * @returns {SafetyTimeToEvent} The instance, for chaining.
    */
   setSettings(settings) {
@@ -407,6 +407,9 @@ class SafetyTimeToEvent {
           legend: {
             display: true,
             position: 'top',
+            // Left-aligned so the legend never collides with the shell's
+            // top-right annotation overlay.
+            align: 'start',
             labels: {
               usePointStyle: false,
               // One legend entry per group: the censor datasets follow their
@@ -549,7 +552,7 @@ class SafetyTimeToEvent {
  * control shell renders immediately; pass ADTTE-shaped records to setData (or
  * init) on the returned instance to validate the data and draw the curves.
  * @param {string|HTMLElement} [element='body'] Container node, or a CSS selector for it.
- * @param {import('./time-to-event/configure.js').TimeToEventSettings} [settings={}] Setting overrides, merged onto DEFAULT_SETTINGS and normalized.
+ * @param {TimeToEventSettings} [settings={}] Setting overrides, merged onto DEFAULT_SETTINGS and normalized.
  * @returns {SafetyTimeToEvent} The live time-to-event instance.
  * @throws {Error} When no element matches the target selector.
  */

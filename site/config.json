@@ -107,6 +107,21 @@
       "related": ["hep-explorer"]
     },
     {
+      "module": "time-to-event",
+      "title": "Time-to-Event Explorer",
+      "status": "available",
+      "experimental": true,
+      "blurb": "Kaplan–Meier time-to-event display: step curves by treatment group with censoring tick marks, pointwise 95% confidence bands (Greenwood, log-log — matching survival::survfit), and the at-risk / cumulative-events strip table beneath the time axis, all derived from one estimator pass so the table cannot disagree with the curve. Consumes an ADTTE-shaped analysis dataset; cumulative-incidence orientation by default with the estimator named on the axis.",
+      "hero": "TTE-CURV-001-km-curves-incidence.png",
+      "heroAsset": "time-to-event-hero.png",
+      "matrix": "time-to-event.md",
+      "guide": "time-to-event.md",
+      "guideTagline": "How to read the Kaplan–Meier safety display — the step curves, censor marks, pointwise bands, and the risk table — and what 1 − KM does and does not claim when competing events are present.",
+      "guideCaution": "1 − KM overestimates absolute risk when competing events (death, discontinuation) are present, and the bands are pointwise, not simultaneous; the curves flag timing patterns for review, they do not establish absolute risk.",
+      "data": "adtte.csv",
+      "related": ["ae-explorer", "ae-timelines"]
+    },
+    {
       "module": "paneled-outlier-explorer",
       "title": "Paneled Outlier Explorer",
       "status": "planned",

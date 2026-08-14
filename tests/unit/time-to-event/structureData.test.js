@@ -132,7 +132,7 @@ describe('structureData', () => {
     expect(structured.maxTime).toBe(9);
   });
 
-  it('falls back to one pooled group when the group column is absent (#128)', () => {
+  it('falls back to one pooled group when the group column is absent (TTE-DATA-004, #128)', () => {
     const bare = [
       { USUBJID: 'a', AVAL: '5', CNSR: '0' },
       { USUBJID: 'b', AVAL: '8', CNSR: '1' }

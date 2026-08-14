@@ -31,7 +31,7 @@ describe('kmEstimate vs survival::survfit on the demo adtte.csv', () => {
   expect(fixture.groups.length).toBeGreaterThan(0);
 
   for (const group of fixture.groups) {
-    it(`agrees with survfit for ${group.paramcd} / ${group.arm} (#128)`, () => {
+    it(`TTE-STAT-004: agrees with survfit for ${group.paramcd} / ${group.arm} (#128)`, () => {
       const observations = rows
         .filter((r) => r.PARAMCD === group.paramcd && r.ARM === group.arm)
         .map((r) => ({ time: Number(r.AVAL), event: r.CNSR === '0', id: r.USUBJID }));

@@ -26,7 +26,7 @@ const estimate = kmEstimate([
 // censoring); censored at 4 and 9; curve extends flat to 9.
 
 describe('groupStyle', () => {
-  it('assigns colors and dash patterns in fixed order — identity, never rank (#128)', () => {
+  it('assigns colors and dash patterns in fixed order — identity, never rank (TTE-CURV-006, #128)', () => {
     expect(groupStyle(0)).toEqual({ color: GROUP_COLORS[0], dash: GROUP_DASHES[0] });
     expect(groupStyle(1).color).toBe(GROUP_COLORS[1]);
     expect(GROUP_COLORS.length).toBeGreaterThanOrEqual(6);
@@ -116,7 +116,7 @@ describe('riskTableHeight', () => {
 });
 
 describe('tooltips', () => {
-  it('an event tooltip names the time, the step, and the interval as pointwise (#128)', () => {
+  it('an event tooltip names the time, the step, and the interval as pointwise (TTE-USER-005, #128)', () => {
     const lines = pointTooltip(estimate.points[0], {
       groupName: 'Placebo',
       direction: 'incidence',
@@ -130,7 +130,7 @@ describe('tooltips', () => {
     expect(text).toMatch(/1 of 4 at risk|1 event/i);
   });
 
-  it('a censor tooltip names the count and the reason (#128)', () => {
+  it('a censor tooltip names the count and the reason (TTE-USER-006, #128)', () => {
     const lines = censorTooltip(estimate.censorTimes[0], {
       groupName: 'Placebo',
       timeUnit: 'day',

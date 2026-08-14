@@ -131,7 +131,7 @@ export function riskRows(groups, ticks) {
 const RISK_HEADER_PX = 16;
 const RISK_ROW_PX = 14;
 const RISK_STRIP_GAP_PX = 6;
-const RISK_TOP_GAP_PX = 30; // clears the x-axis tick labels and title
+const RISK_TOP_GAP_PX = 46; // clears the x-axis tick labels and title
 
 /**
  * The bottom padding the chart reserves for the risk table.
@@ -251,7 +251,13 @@ export function riskTablePlugin(context) {
       );
       const { ctx, chartArea } = chart;
       const xScale = chart.scales.x;
-      let y = chartArea.bottom + RISK_TOP_GAP_PX;
+      // Anchor the strips to the reserved padding at the canvas BOTTOM, not to
+      // chartArea.bottom: the axis tick labels and title render between the two,
+      // and anchoring from the top of that region draws the strips through the
+      // axis title. riskTableHeight() reserves the strips' height plus the
+      // clearance, so bottom-anchoring keeps both intact at any axis depth.
+      const stripHeight = RISK_HEADER_PX + strips[0].groups.length * RISK_ROW_PX;
+      let y = chart.height - (2 * stripHeight + RISK_STRIP_GAP_PX) - 4;
       const drawn = [];
       ctx.save();
       ctx.font = '11px -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif';

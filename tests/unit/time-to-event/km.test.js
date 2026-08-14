@@ -22,7 +22,7 @@ describe('kmEstimate — tiny exact example', () => {
     ])
   );
 
-  it('computes the product-limit survival at each distinct event time (#128)', () => {
+  it('computes the product-limit survival at each distinct event time (TTE-STAT-002, #128)', () => {
     expect(result.points.map((p) => p.time)).toEqual([2, 5]);
     expect(result.points[0].surv).toBeCloseTo(2 / 3, 12);
     expect(result.points[1].surv).toBeCloseTo(0, 12);
@@ -31,11 +31,11 @@ describe('kmEstimate — tiny exact example', () => {
     expect(result.points[1].atRisk).toBe(1);
   });
 
-  it('computes the Greenwood standard error (#128)', () => {
+  it('computes the Greenwood standard error (TTE-STAT-003, #128)', () => {
     expect(result.points[0].se).toBeCloseTo(Math.sqrt(2 / 27), 12);
   });
 
-  it('bounds are log-log and absent where the transform is undefined (S = 0) (#128)', () => {
+  it('bounds are log-log and absent where the transform is undefined (S = 0) (TTE-STAT-003, #128)', () => {
     // θ = log(−log S), Var[θ] = Var[S]/(S·log S)², CI = S^exp(±1.959964·√Var[θ]).
     const s = 2 / 3;
     const varTheta = 2 / 27 / Math.pow(s * Math.log(s), 2);
@@ -62,7 +62,7 @@ describe('kmEstimate — tiny exact example', () => {
     expect(result.maxTime).toBe(5);
   });
 
-  it('derives the risk table from the same pass: at-risk means observed time ≥ t (#128)', () => {
+  it('derives the risk table from the same pass: at-risk means observed time ≥ t (TTE-STAT-005, #128)', () => {
     expect(result.riskTableAt([0, 2, 4, 6])).toEqual([
       { time: 0, atRisk: 3, cumEvents: 0 },
       { time: 2, atRisk: 3, cumEvents: 1 },
@@ -108,7 +108,7 @@ describe('kmEstimate — Freireich 6-MP arm (classic textbook values)', () => {
   ]);
   const result = kmEstimate(sixMp);
 
-  it('reproduces the published survival estimates (#128)', () => {
+  it('reproduces the published survival estimates (TTE-STAT-002, #128)', () => {
     const surv = Object.fromEntries(result.points.map((p) => [p.time, p.surv]));
     expect(surv[6]).toBeCloseTo(0.857143, 6);
     expect(surv[7]).toBeCloseTo(0.806723, 6);
@@ -119,7 +119,7 @@ describe('kmEstimate — Freireich 6-MP arm (classic textbook values)', () => {
     expect(surv[23]).toBeCloseTo(0.448179, 6);
   });
 
-  it('processes ties with censorings still at risk at the tied time (#128)', () => {
+  it('processes ties with censorings still at risk at the tied time (TTE-STAT-002, #128)', () => {
     // At t=6: three events and one censoring share the time; all 21 are at risk.
     const p6 = result.points.find((p) => p.time === 6);
     expect(p6.atRisk).toBe(21);
@@ -129,7 +129,7 @@ describe('kmEstimate — Freireich 6-MP arm (classic textbook values)', () => {
     expect(p10.atRisk).toBe(15);
   });
 
-  it('reproduces the Greenwood SE at day 13 (#128)', () => {
+  it('reproduces the Greenwood SE at day 13 (TTE-STAT-003, #128)', () => {
     // Var = S(13)² · (3/(21·18) + 1/(17·16) + 1/(15·14) + 1/(12·11))
     //     = 0.690196² · 0.02395064 = 0.01140889 → SE = 0.106815 (texts quote 0.1068).
     const p13 = result.points.find((p) => p.time === 13);
@@ -143,7 +143,7 @@ describe('kmEstimate — Freireich 6-MP arm (classic textbook values)', () => {
 });
 
 describe('kmEstimate — degenerate inputs', () => {
-  it('an all-censored group stays at S = 1 with no confidence band (#128)', () => {
+  it('an all-censored group stays at S = 1 with no confidence band (TTE-STAT-006, #128)', () => {
     const result = kmEstimate(
       obs([
         [3, false],
@@ -168,7 +168,7 @@ describe('kmEstimate — degenerate inputs', () => {
     expect(result.maxTime).toBe(0);
   });
 
-  it('the band gaps from the point where the risk set is exhausted mid-curve (#128)', () => {
+  it('the band gaps from the point where the risk set is exhausted mid-curve (TTE-STAT-003, #128)', () => {
     // Two participants, both events at distinct times: at the second event nⱼ = dⱼ
     // exhausts the risk set (S = 0) — no bound is drawn there.
     const result = kmEstimate(

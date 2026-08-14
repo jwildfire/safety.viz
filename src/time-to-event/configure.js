@@ -33,7 +33,7 @@
  * @property {string} [time_unit='day'] Axis label unit; display only, no rescaling.
  * @property {Array<string|Object>} [filters=[]] Filter controls: column names or { value_col, label } specs.
  * @property {string} [width='100%'] Widget width, carried for the R widget bindings.
- * @property {number} [height=520] Chart-area height in pixels, carried for the R widget bindings; includes the in-canvas risk table.
+ * @property {number} [height=560] Chart-area height in pixels, carried for the R widget bindings; includes the in-canvas risk table.
  */
 
 /**
@@ -56,7 +56,7 @@ export const DEFAULT_SETTINGS = {
   time_unit: 'day',
   filters: [],
   width: '100%',
-  height: 520
+  height: 560
 };
 
 /**
