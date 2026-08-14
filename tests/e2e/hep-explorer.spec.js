@@ -1038,7 +1038,7 @@ test.describe('safety.viz hep-explorer module', () => {
     expect(afterReset.trails).toBe(0);
   });
 
-  test('HEP-ANIM-004/HEP-ANIM-005: the play control runs the animation and leaves motion trails behind the moving points (#46)', async ({
+  test('HEP-ANIM-004/HEP-ANIM-005/HEP-ANIM-008: the play control runs the animation, leaves motion trails, and yields to a scrub (#46)', async ({
     page
   }) => {
     const play = page.locator('.hep-animation-play');
@@ -1065,6 +1065,24 @@ test.describe('safety.viz hep-explorer module', () => {
     const stopped = await page.evaluate(() => window.__safetyHepExplorerInstance.state.animation);
     expect(stopped.playing).toBe(false);
     expect(stopped.day).toBeGreaterThan(0);
+
+    // Scrubbing the slider while playing stops the play-through rather than
+    // fighting it for the day, and lands on the day the reader asked for
+    // (HEP-ANIM-008).
+    await play.click();
+    await expect(play).toHaveAttribute('aria-pressed', 'true');
+    const slider = page.locator('.hep-animation-slider');
+    await slider.fill('56');
+    await slider.dispatchEvent('input');
+    await expect(play).toHaveAttribute('aria-pressed', 'false');
+    const scrubbed = await page.evaluate(() => window.__safetyHepExplorerInstance.state.animation);
+    expect(scrubbed.playing).toBe(false);
+    expect(scrubbed.day).toBe(56);
+    // ...and it stays there: a still-running timer would move it off 56.
+    await page.waitForTimeout(300);
+    expect(await page.evaluate(() => window.__safetyHepExplorerInstance.state.animation.day)).toBe(
+      56
+    );
 
     // A play-through left running across a redraw would write into a destroyed
     // chart: changing a control stops it (HEP-ANIM-005).

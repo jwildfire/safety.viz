@@ -141,10 +141,10 @@
       "screenshots": ["HEP-ANIM-001-study-day-playback.png"]
     },
     {
-      "test": "HEP-ANIM-004/HEP-ANIM-005: the play control runs the animation and leaves motion trails behind the moving points (#46)",
+      "test": "HEP-ANIM-004/HEP-ANIM-005/HEP-ANIM-008: the play control runs the animation, leaves motion trails, and yields to a scrub (#46)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["HEP-ANIM-004", "HEP-ANIM-005"],
+      "requirementIds": ["HEP-ANIM-004", "HEP-ANIM-005", "HEP-ANIM-008"],
       "issueRefs": [46],
       "screenshots": []
     },

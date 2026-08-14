@@ -29,7 +29,7 @@ pending; each row lists the module IDs its test covers.
 | HEP-DISPLAY-001/002, HEP-CHART-002                  | —                  | #43   | the display toggle switches eDISH and mDISH axis titles and cutpoints                                        |
 | HEP-SELECT-001/002/003/005/006                      | —                  | #43   | clicking a point draws the visit path, detail panels, and linked listing                                     |
 | HEP-ANIM-001/003/006/007                            | —                  | #46   | the study-day playback bar scrubs the cloud through time and resets back to the peaks                        |
-| HEP-ANIM-004/005                                    | —                  | #46   | the play control runs the animation and leaves motion trails behind the moving points                        |
+| HEP-ANIM-004/005/008                                | —                  | #46   | the play control runs the animation, leaves motion trails, and yields to a scrub                             |
 | HEP-SELECT-008                                      | —                  | #48   | the selected participant's measure table draws a sparkline per row and expands it into a full chart          |
 | HEP-PALT-001/003                                    | —                  | #49   | the opted-in P_ALT estimate is shown in the profile header with the arithmetic behind it                     |
 | HEP-SELECT-002                                      | —                  | #43   | selecting a second participant without a background click destroys the prior detail chart (no Chart.js leak) |
