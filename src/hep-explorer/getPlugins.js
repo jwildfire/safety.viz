@@ -307,7 +307,11 @@ export function quadrantPlugin(instance) {
       // Corner labels with live percents (HEP-QUAD-003), which a reviewer can
       // turn off when they are reading the cloud rather than the regions
       // (HEP-QUAD-007).
-      if (state.quadrantLabels === 'hidden') {
+      // Playback also hides them (HEP-ANIM-006): the percents belong to the
+      // peak-vs-peak classification, which is NOT what the moving cloud shows,
+      // so leaving them up during a play-through would label the animation with
+      // numbers that do not describe it.
+      if (state.quadrantLabels === 'hidden' || (state.animation && state.animation.playing)) {
         ctx.restore();
         return;
       }

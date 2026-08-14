@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>safety.viz nep-explorer demo page</title>
+  </head>
+  <body>
+    <h1 id="nep-explorer-heading">safety.viz Nephrotoxicity Explorer demo</h1>
+    <p>
+      Demo and Playwright harness page for the nep-explorer module (#120). Loads the committed IIFE
+      bundle against a small deterministic creatinine cohort, engineered so every KDIGO zone is
+      populated exactly once or twice: a no-stage cloud, a Stage-1 participant by fold change and
+      another by absolute change alone, Stage 2, Stage 3, a participant whose maximum reaches 4.0
+      mg/dL on a Stage-1 fold change, a participant whose creatinine only falls, one whose records
+      mix mg/dL and µmol/L, and two who cannot be plotted at all. Values are written in µmol/L
+      except where noted, so the per-record conversion is exercised rather than bypassed.
+    </p>
+    <div id="container"></div>
+    <!-- Bundle path tracks the package.json version; bump them together. -->
+    <script src="/dist/safety.viz-1.6.0/safety.viz.js"></script>
+    <script>
+      // Deterministic cohort: no Math.random(). Each archetype states the stage
+      // it is built to land in, so a failing assertion names the case.
+      const UMOL = 88.4;
+      const VISITS = [
+        { VISIT: 'Baseline', VISITNUM: 0 },
+        { VISIT: 'Week 2', VISITNUM: 4 },
+        { VISIT: 'Week 4', VISITNUM: 5 },
+        { VISIT: 'Week 8', VISITNUM: 8 }
+      ];
+
+      // [id, sex, arm, baseline mg/dL, the three post-baseline values in mg/dL]
+      const COHORT = [
+        ['N-1', 'F', 'Placebo', 0.8, [0.85, 0.92, 0.88]], // no stage
+        ['N-2', 'M', 'Placebo', 0.9, [0.95, 1.02, 0.98]], // no stage
+        ['N-3', 'F', 'Study Drug', 0.75, [0.8, 0.88, 0.82]], // no stage
+        ['F1-1', 'M', 'Study Drug', 0.9, [1.1, 1.55, 1.3]], // fold 1.72 -> Stage 1
+        ['D1-1', 'F', 'Study Drug', 2.5, [2.8, 3.2, 3.0]], // fold 1.28, delta 0.70 -> Stage 1
+        ['F2-1', 'M', 'Study Drug', 0.85, [1.4, 2.04, 1.7]], // fold 2.4 -> Stage 2
+        ['F3-1', 'F', 'Study Drug', 0.8, [1.6, 2.8, 2.2]], // fold 3.5 -> Stage 3
+        ['A1-1', 'M', 'Study Drug', 2.7, [3.4, 4.5, 4.1]], // fold 1.67 + >= 4.0 -> Stage 3
+        ['DN-1', 'F', 'Placebo', 2.6, [2.3, 1.9, 2.1]] // falls only -> Stage 0, delta < 0
+      ];
+
+      function row(id, sex, arm, visit, mgdl, unit) {
+        const useMgdl = unit === 'mg/dL';
+        return {
+          USUBJID: id,
+          SEX: sex,
+          ARM: arm,
+          SITE: 'Nephrology Research Unit',
+          TEST: 'Creatinine',
+          STRESU: unit || 'umol/L',
+          STRESN: useMgdl ? mgdl : Math.round(mgdl * UMOL * 100) / 100,
+          VISIT: visit.VISIT,
+          VISITNUM: visit.VISITNUM
+        };
+      }
+
+      const data = [];
+      COHORT.forEach(function (spec) {
+        const [id, sex, arm, baseline, post] = spec;
+        data.push(row(id, sex, arm, VISITS[0], baseline));
+        post.forEach(function (value, index) {
+          data.push(row(id, sex, arm, VISITS[index + 1], value));
+        });
+      });
+
+      // MIX-1's records disagree on unit and agree on meaning: baseline 1.0
+      // mg/dL, peak 265.2 µmol/L (= 3.0 mg/dL). A per-DATASET conversion would
+      // read this as a 265x rise; a per-record one reads 3.0x (NEP-UNIT-002).
+      data.push(row('MIX-1', 'F', 'Study Drug', VISITS[0], 1.0, 'mg/dL'));
+      data.push(row('MIX-1', 'F', 'Study Drug', VISITS[1], 1.4, 'mg/dL'));
+      data.push(row('MIX-1', 'F', 'Study Drug', VISITS[2], 3.0)); // µmol/L
+      data.push(row('MIX-1', 'F', 'Study Drug', VISITS[3], 2.2, 'mg/dL'));
+
+      // Two participants who cannot be plotted, and are counted and exportable
+      // rather than silently absent (NEP-DATA-005).
+      data.push({ ...row('BAD-1', 'M', 'Placebo', VISITS[0], 1.0), STRESN: '' });
+      data.push({ ...row('BAD-1', 'M', 'Placebo', VISITS[1], 1.0), STRESN: 'NA' });
+      data.push(row('ONE-1', 'F', 'Placebo', VISITS[0], 1.0));
+
+      // A non-creatinine measure, which this chart is simply not about.
+      data.push({
+        USUBJID: 'N-1',
+        SEX: 'F',
+        ARM: 'Placebo',
+        SITE: 'Nephrology Research Unit',
+        TEST: 'Sodium',
+        STRESU: 'mmol/L',
+        STRESN: 140,
+        VISIT: 'Baseline',
+        VISITNUM: 0
+      });
+
+      const instance = SafetyViz.nepExplorer('#container', {
+        filters: [
+          { value_col: 'SEX', label: 'Sex' },
+          { value_col: 'ARM', label: 'Treatment Group' },
+          // A column this data does not carry: the control is dropped with a
+          // console warning rather than rendered with one empty option.
+          { value_col: 'NOSUCHCOL', label: 'Absent Column' }
+        ]
+      });
+      window.__safetyNepExplorerInstance = instance;
+      instance.init(data);
+    </script>
+  </body>
+</html>

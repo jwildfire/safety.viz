@@ -1,0 +1,1872 @@
+{
+  "module": "nep-explorer",
+  "generatedAt": "2026-08-14T17:47:26.446Z",
+  "environment": {
+    "os": "linux 6.17.0-1022-azure",
+    "node": "v22.23.2",
+    "playwright": "1.61.1",
+    "chromium": "149.0.7827.55"
+  },
+  "run": {
+    "id": "31825573019",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/31825573019"
+  },
+  "records": [
+    {
+      "test": "a chart link navigates straight to that renderer demo (#71)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71],
+      "screenshots": []
+    },
+    {
+      "test": "built ae-explorer demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built ae-timelines demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built delta-delta demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built hep-explorer demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built hep-waterfall demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built histogram demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built nep-explorer demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built outlier-explorer demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built participant-profile demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built qt-explorer demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built results-over-time demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built shift-plot demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "demo page loads with no console errors (#1)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [1],
+      "screenshots": []
+    },
+    {
+      "test": "gallery shows one card per available renderer (#7)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "is keyboard operable: ArrowDown opens and focuses, Escape closes (#71)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71],
+      "screenshots": []
+    },
+    {
+      "test": "lists one chart link per available renderer, closed by default (#71)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71],
+      "screenshots": []
+    },
+    {
+      "test": "marks the current chart inside the dropdown on a renderer sub-page (#71)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71],
+      "screenshots": []
+    },
+    {
+      "test": "NEP-CFG-006: the filters narrow the plotted population and restate the summary (#120)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["NEP-CFG-006"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "NEP-DATA-005: unusable records and participants are counted with a download each (#120)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["NEP-DATA-005"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-DATA-005-dropped-record-notes.png"]
+    },
+    {
+      "test": "NEP-SCAT-001/NEP-STAGE-003: the >= 4.0 mg/dL participant carries a distinct mark (#120)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["NEP-SCAT-001", "NEP-STAGE-003"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-STAGE-003-absolute-rule-mark.png"]
+    },
+    {
+      "test": "NEP-SCAT-004: clicking a point selects it and dispatches participantsSelected (#120)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["NEP-SCAT-004"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-SCAT-004-participant-selected.png"]
+    },
+    {
+      "test": "NEP-STAGE-001/NEP-STAGE-004: each participant lands in the zone their staging names (#120)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["NEP-STAGE-001", "NEP-STAGE-004"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "NEP-TBL-001/NEP-TBL-002: the summary tabulates the fold, absolute and combined stagings (#120)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["NEP-TBL-001", "NEP-TBL-002"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-TBL-001-stage-summary-table.png"]
+    },
+    {
+      "test": "NEP-UNIT-002: a participant whose records mix mg/dL and µmol/L stages on the converted values (#120)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["NEP-UNIT-002"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "NEP-UNIT-003: the fold axis survives and every absolute claim is withheld (#120)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["NEP-UNIT-003"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-UNIT-003-unknown-unit-suppression.png"]
+    },
+    {
+      "test": "NEP-ZONE-001/NEP-ZONE-002: the stage zones paint worst-first behind the points (#120)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["NEP-ZONE-001", "NEP-ZONE-002"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-ZONE-001-stage-zones-scatter.png"]
+    },
+    {
+      "test": "NEP-ZONE-004: the zone labels can be hidden (#120)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["NEP-ZONE-004"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-ZONE-004-zone-labels-hidden.png"]
+    },
+    {
+      "test": "opens on hover and the top link still points at the gallery index (#71)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71],
+      "screenshots": []
+    },
+    {
+      "test": "buildApiModel API-XFORM-010: assembles the artifact with module, factory, methods, settings, data contract, and missing docs (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-010"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "buildApiModel API-XFORM-011: flags DEFAULT_SETTINGS keys absent from the settings typedef (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-011"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "buildEcgRecords anchors BASE and CHG on each participant baseline record (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "buildEcgRecords derives QTcF and QTcB from QT and RRR rather than the pilot parameters (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "buildEcgRecords drops non-analysis rows: the AVERAGE roll-up and non-supine postures (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "buildEcgRecords keeps each participant on its own baseline (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "buildEcgRecords passes heart rate through as recorded (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "buildEcgRecords refuses to build when the RR source contradicts the recorded heart rate (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "buildEcgRecords throws when a source parameter the derivation needs is absent (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "correctQt applies Bazett — QT divided by the square root of RR in seconds (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "correctQt applies Fridericia — QT divided by the cube root of RR in seconds (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "correctQt corrects upward above 60 bpm and downward below it (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer buildEvidenceSets splits records per module and duplicates shared scaffold records (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer buildRun builds GitHub Actions run provenance from the environment (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer compareEvidence flags status drift and test-set changes, ignoring screenshots (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer compareEvidence ignores provenance so --check never drifts on generatedAt/environment/run (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer moduleForFile routes test files to renderer modules by path (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer normalizePlaywright walks nested suites into browser-suite records (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer normalizeVitest maps assertion results to unit-suite records (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer parseTestName extracts requirement IDs and issue refs (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer parseTestName recognizes every renderer requirement-ID prefix, not just SH (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer provenance lives in dedicated top-level keys; the records array stays timestamp-free (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-001: the documented settings are exactly the DEFAULT_SETTINGS keys (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-001"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-002: every setting row has a type, default, and description (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-002"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-003: the factory is documented with params and a return value (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-003"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-004: every lifecycle method is documented with a description and return value (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-004"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-005: no missing-documentation entries remain across the public surface (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-005"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-006: the data contract derives from the schema and its settings map onto real setting names (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-006"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: existing blocks are unchanged renders a numbered list as an ordered list",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: existing blocks are unchanged still renders headings, bullets, and paragraphs",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: heading ids and the guide TOC adds no heading ids by default (coverage docs stay unchanged)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: heading ids and the guide TOC adds slug ids to headings when opted in",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: heading ids and the guide TOC disambiguates repeated headings",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: heading ids and the guide TOC extractHeadings ids match the ids mdBlock emits",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: heading ids and the guide TOC slugify lowercases and collapses non-alphanumerics",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: image figures accepts a single-quoted caption (Prettier normalizes titles to single quotes)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: image figures falls back to the alt text when no caption title is given",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: image figures renders a standalone image line as a captioned figure",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: image figures treats a mid-paragraph image inline, not as a broken link",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: pipe tables applies column alignment from the delimiter row",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: pipe tables does not mistake a bare horizontal rule for a table delimiter",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: pipe tables renders a GFM pipe table inside a scroll wrapper with header and body",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdInline: parenthesised link destinations applies the same rule to image destinations",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdInline: parenthesised link destinations does not swallow the text after the link",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdInline: parenthesised link destinations keeps a balanced-paren URL whole in the href",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdInline: parenthesised link destinations still stops at the closing paren for an ordinary destination",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdInline: parenthesised link destinations unwraps the angle-bracketed destination Prettier normalizes to",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer baseline resolution NEP-DATA-001: an explicit baseline flag outranks record order (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-DATA-001"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer baseline resolution NEP-DATA-002: a configured flag that no record carries still falls back rather than dropping the participant (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-DATA-002"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer baseline resolution NEP-DATA-002: with neither column the fallback keeps input order (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-DATA-002"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer baseline resolution NEP-DATA-002: with no flag configured the earliest record is the baseline, and the fallback is counted (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-DATA-002"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer baseline resolution NEP-DATA-002: without a study-day column the fallback orders on visit number (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-DATA-002"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer checkInputs NEP-CFG-008: the creatinine check follows a renamed measure (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-CFG-008"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer checkInputs NEP-DATA-006: a dataset with no creatinine is reported, not thrown (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-DATA-006"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer checkInputs NEP-DATA-006: every required mapped column is named when it is missing (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-DATA-006"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer configure NEP-CFG-001: DEFAULT_SETTINGS carries the BDS lab mapping the KDIGO scatter needs (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-CFG-001"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer configure NEP-CFG-002: baseline identification is an explicit setting pair, unset by default (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-CFG-002"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer configure NEP-CFG-003: the stage cut-points default to the KDIGO ladder and are configurable (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-CFG-003"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer configure NEP-CFG-004: fold cut-points are sorted and numified, and a bad ladder falls back (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-CFG-004"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer configure NEP-CFG-005: the units contract targets mg/dL with a configurable factor table (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-CFG-005"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer configure NEP-CFG-006: syncSettings normalizes the field-list settings and defaults the details (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-CFG-006"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer configure NEP-CFG-007: zone labels are a shown/hidden setting, defaulting to shown (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-CFG-007"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer configure NEP-CFG-008: the creatinine measure resolves through measure_values (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-CFG-008"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer configure NEP-UNIT-001: unit strings normalize across the three mu spellings, case and whitespace (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-UNIT-001"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer marks and tooltip NEP-SCAT-001: the >= 4.0 mg/dL rule gets a distinct mark, and the selected point a border (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-SCAT-001"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer marks and tooltip NEP-SCAT-002: a negative change keeps its sign and stays Stage 0 (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-SCAT-002"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer marks and tooltip NEP-SCAT-002: the tooltip carries the source lines, in the source order (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-SCAT-002"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer marks and tooltip NEP-SCAT-003: the study-day line degrades away rather than rendering blank (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-SCAT-003"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer marks and tooltip NEP-SCAT-004: selection styling thickens exactly one point (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-SCAT-004"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-SCAT-004-participant-selected.png"]
+    },
+    {
+      "test": "nep-explorer marks and tooltip NEP-UNIT-003: a suppressed delta stage is reported as unstageable, not as Stage 0 (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-UNIT-003"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-UNIT-003-unknown-unit-suppression.png"]
+    },
+    {
+      "test": "nep-explorer module export NEP-API-001: the public collection exposes the nepExplorer factory (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-API-001"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer scales NEP-ZONE-005: a custom ladder moves the floor with it (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-ZONE-005"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer scales NEP-ZONE-005: axis titles name the measure and, in the suppressed mode, the native unit (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-ZONE-005"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer scales NEP-ZONE-005: formatNumber trims trailing zeroes and guards non-finite values (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-ZONE-005"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer scales NEP-ZONE-005: the built scales carry the cut-point ticks (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-ZONE-005"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer scales NEP-ZONE-005: the delta axis keeps the trigger visible and extends below zero when the data goes there (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-ZONE-005"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer scales NEP-ZONE-005: the fold axis always reaches past the last cut-point (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-ZONE-005"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer stage zones NEP-UNIT-003: with the unit unresolved the absolute trigger is not drawn (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-UNIT-003"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-UNIT-003-unknown-unit-suppression.png"]
+    },
+    {
+      "test": "nep-explorer stage zones NEP-ZONE-001: a custom ladder moves the zone boundaries with it (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-ZONE-001"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-ZONE-001-stage-zones-scatter.png"]
+    },
+    {
+      "test": "nep-explorer stage zones NEP-ZONE-001: the zones are the L-shaped KDIGO geometry, not four nested rectangles (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-ZONE-001"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-ZONE-001-stage-zones-scatter.png"]
+    },
+    {
+      "test": "nep-explorer stage zones NEP-ZONE-001: zones clip to the visible domain and vanish when it excludes them (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-ZONE-001"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-ZONE-001-stage-zones-scatter.png"]
+    },
+    {
+      "test": "nep-explorer stage zones NEP-ZONE-002: zones paint worst-stage-first so points are always drawn on top (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-ZONE-002"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer stage zones NEP-ZONE-003: every zone is labelled once and colour is never the only cue (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-ZONE-003"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer staging NEP-STAGE-001: the fold ladder stages at 1.5 / 2 / 3, worst match first (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-STAGE-001"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer staging NEP-STAGE-001: the ladder is read worst-first, so an ascending source ordering cannot hide Stages 2 and 3 (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-STAGE-001"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer staging NEP-STAGE-002: the absolute-change axis carries one cut-point and produces Stage 1 only (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-STAGE-002"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer staging NEP-STAGE-003: the >= 4.0 mg/dL rule raises the stage to 3 whatever the fold change says (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-STAGE-003"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-STAGE-003-absolute-rule-mark.png"]
+    },
+    {
+      "test": "nep-explorer staging NEP-STAGE-004: the combined stage is the worse of the two axes (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-STAGE-004"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer structureData NEP-CFG-003: custom stage cut-points restage the same data (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-CFG-003"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer structureData NEP-CFG-006: filters constrain the plotted population on the active selections only (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-CFG-006"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer structureData NEP-DATA-002: the count of participants resolved by the baseline fallback is reported (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-DATA-002"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer structureData NEP-DATA-003: reduces each participant to one staged point at their maximum post-baseline value (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-DATA-003"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer structureData NEP-DATA-004: a participant whose creatinine only falls keeps a negative delta and is plotted (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-DATA-004"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer structureData NEP-DATA-005: unusable records and participants are counted and exportable, never silently dropped (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-DATA-005"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-DATA-005-dropped-record-notes.png"]
+    },
+    {
+      "test": "nep-explorer structureData NEP-SCAT-003: the point carries the visit and study day its maximum came from (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-SCAT-003"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer structureData NEP-STAGE-003: a participant reaching the absolute rule is Stage 3 on a Stage-1 fold change (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-STAGE-003"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-STAGE-003-absolute-rule-mark.png"]
+    },
+    {
+      "test": "nep-explorer structureData NEP-TBL-001: the summary reports N and % for the fold, delta and combined stagings (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-TBL-001"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-TBL-001-stage-summary-table.png"]
+    },
+    {
+      "test": "nep-explorer structureData NEP-TBL-002: every stage row is present even when empty (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-TBL-002"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer structureData NEP-TBL-003: an empty population summarizes to zeroes rather than dividing by zero (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-TBL-003"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer structureData NEP-UNIT-002: values convert to mg/dL per record, so one participant may mix known units (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-UNIT-002"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer structureData NEP-UNIT-003: a record with no unit at all also suppresses, rather than assuming mg/dL (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-UNIT-003"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-UNIT-003-unknown-unit-suppression.png"]
+    },
+    {
+      "test": "nep-explorer structureData NEP-UNIT-003: an unrecognized unit suppresses the absolute claims and keeps the fold axis (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-UNIT-003"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-UNIT-003-unknown-unit-suppression.png"]
+    },
+    {
+      "test": "nep-explorer structureData NEP-UNIT-003: one unrecognized record suppresses for the whole chart, and mixed native units drop (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-UNIT-003"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-UNIT-003-unknown-unit-suppression.png"]
+    },
+    {
+      "test": "renderGuidePage: composition renders a sticky TOC sidebar whose links anchor to the heading ids",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderGuidePage: composition renders authored figures from the guide markdown",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderGuidePage: composition renders the title, non-diagnostic caution, and the guide tab",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) exposes a railWrap slot with the sv-rail class",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) gives the rail a settable width and the root a positioning context for expand",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) hides the rail while it is empty via the shared stylesheet",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) honours [hidden] on the rail, which the module sets while it is idle",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) no longer carries the dock slot inside the main column (D4)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) puts the rail opposite the control sidebar, with the chart between them (D2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) stacks the rail below the main column under the shell breakpoint (D4)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "requirements-lib: freshness guard (#63) flags added and removed requirement IDs",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "requirements-lib: freshness guard (#63) flags changed requirement text",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "requirements-lib: freshness guard (#63) reports fresh when the committed set matches a fresh extraction",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "requirements-lib: matrix parsing (#63) ignores the header, separator, and non-requirement content",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "requirements-lib: matrix parsing (#63) keeps an escaped pipe inside a requirement cell as a single row",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "requirements-lib: matrix parsing (#63) maps each requirement ID to its reviewed text",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "requirements-lib: requirement set (#63) wraps the parsed map with module + matrix provenance",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "safety.viz scaffold SH-API-001: the collection exposes the histogram module factory (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-API-001"],
+      "issueRefs": [2],
+      "screenshots": []
+    },
+    {
+      "test": "safety.viz scaffold src/main.js exports the public module collection (#1)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [1],
+      "screenshots": []
+    },
+    {
+      "test": "shared view selector VIEW-SEL-001: renders one option button per view under a titled View section (#76)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["VIEW-SEL-001"],
+      "issueRefs": [76],
+      "screenshots": []
+    },
+    {
+      "test": "shared view selector VIEW-SEL-002: highlights only the active option via is-active + aria-pressed (#76)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["VIEW-SEL-002"],
+      "issueRefs": [76],
+      "screenshots": []
+    },
+    {
+      "test": "shared view selector VIEW-SEL-003: renders real, keyboard-operable button elements (#76)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["VIEW-SEL-003"],
+      "issueRefs": [76],
+      "screenshots": []
+    },
+    {
+      "test": "shared view selector VIEW-SEL-004: clicking a non-active option fires onChange with its value; the active option is a no-op (#76)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["VIEW-SEL-004"],
+      "issueRefs": [76],
+      "screenshots": []
+    },
+    {
+      "test": "shell: prototypeBanner renders a labelled note element with the default v1.5 copy (#97)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [97],
+      "screenshots": []
+    },
+    {
+      "test": "shell: prototypeBanner uses a caller-supplied note verbatim when given (#97)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [97],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: about page (#21) carries the OpenRBQM mirror and audience framing moved off the homepage (#29)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 29],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: about page (#21) credits the safetyGraphics project and every original RhoInc renderer (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: about page (#21) describes each original renderer alongside its credit link (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: about page (#21) tells the keynote / developer-diary story and links the roadmap hub (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page opens with a module-anatomy overview linking the architecture page (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders a sidebar table of contents linking every section and method (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders each lifecycle method with signature, params, and returns (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders the factory signature and parameters (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders the schema-derived data contract (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders the settings table with type, default, and description (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: architecture page (#21) explains the shared shell and module anatomy (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: architecture page (#21) names the committed bundle for the running version (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: architecture page (#21) walks the pipeline from data contract to R htmlwidget (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: coverage parsing parses the browser and unit tables plus the routing-status tail (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page carries the routing-status sections onto the page (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page falls back to requirement-ID matching when a browser row wording drifts from the spec name (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page joins browser rows to their evidence record with status chip and screenshot (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page links source matrix rows to the safety.agent matrix (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page matches unit rows to records through expanded requirement IDs (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page rewrites repo-relative coverage links to repository URLs (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page surfaces failing records with a fail status chip (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence report provenance (#21) degrades gracefully when provenance fields are absent (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence report provenance (#21) links result chips to the CI run when a run is recorded (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence report provenance (#21) presents a captioned visual-evidence gallery of the committed screenshots (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence report provenance (#21) renders generation date, environment, and CI run when evidence.json carries them (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence report provenance (#21) summarizes scope and results in a fact panel (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery experimentalBadge renders Prototype for a prototype, Experimental for experimental, nothing otherwise (#97)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [97],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery compresses the migration queue to a one-line strip after the cards (#29)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [29],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery leads with the two-sentence intro linking the keynote and safetyGraphics (#29)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [29],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery links available renderers to demo, evidence, and API pages with a hero thumbnail (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery lists every renderer: available as cards, queued in the status strip (#7) (#29)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 29],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery marks a prototype renderer with a Prototype badge on its card (#97)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [97],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery prefers a dedicated hero asset over the evidence baseline when configured (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery nav dropdown (#71) applies the mount-depth root prefix to every internal link (#71)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71, 71],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery nav dropdown (#71) lists one link per available renderer, data-driven from config (#71)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71, 71],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery nav dropdown (#71) renders a disclosure control wired to the chart menu (#71)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71, 71],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery nav dropdown (#71) shell substitutes the {{galleryNav}} token from the passed renderers (#71)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71, 71],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery queued renderers link their requirement matrices, not site pages (#7) (#29)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 29],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: requirement text (#63) degrades to IDs-only when no requirements map is supplied",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: requirement text (#63) escapes HTML in requirement text",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: requirement text (#63) renders the reviewed requirement text for a row’s source-matrix IDs",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: requirement text (#63) shows no requirement text for IDs the matrix does not enumerate",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: requirement-ID expansion expands double-dot ranges and slash shorthand into full IDs (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: shell tokens (#21) falls back to an empty description when none is given (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: shell tokens (#21) replaces version and description tokens across the shell (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site validation: evidence screenshots flags screenshots referenced in evidence.json but missing from the evidence set (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site validation: internal links flags internal links and asset references that do not resolve (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site validation: internal links passes a site whose internal links all resolve, ignoring external and fragment links (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "synthetic AKI demo cohort NEP-COHORT-001: the cohort is present, labelled synthetic, and carries the shared measure contract (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-COHORT-001"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "synthetic AKI demo cohort NEP-COHORT-002: every participant has a day-0 baseline and enough post-baseline visits to trace a path (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-COHORT-002"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "synthetic AKI demo cohort NEP-COHORT-003: creatinine is written in umol/L so the demo exercises the unit conversion (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-COHORT-003"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "synthetic AKI demo cohort NEP-COHORT-004: the cohort ships no baseline flag, so the demo runs on the D7 fallback (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-COHORT-004"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "synthetic AKI demo cohort NEP-COHORT-005: all four fold-change stages are populated (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-COHORT-005"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "synthetic AKI demo cohort NEP-COHORT-006: the delta axis carries Stage 1 and no-stage participants only (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-COHORT-006"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "synthetic AKI demo cohort NEP-COHORT-007: the fold and delta stagings disagree in both directions (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-COHORT-007"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "synthetic AKI demo cohort NEP-COHORT-008: the combined stage populates every zone the chart paints (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-COHORT-008"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "synthetic AKI demo cohort NEP-COHORT-009: participants trip the >= 4.0 mg/dL rule, including one the fold ladder alone would call Stage 1 (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-COHORT-009"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "synthetic AKI demo cohort NEP-COHORT-010: participants whose creatinine only falls are present, so the negative domain is visible (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-COHORT-010"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "synthetic AKI demo cohort NEP-COHORT-011: the injury signal skews to the active arm and both arms are populated (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-COHORT-011"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "synthetic AKI demo cohort NEP-COHORT-012: the injection leaves the pharmaverseadam population untouched (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-COHORT-012"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: factory API-XFORM-004: maps the documented module.exports doclet to the factory, named for its source file (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-004"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: factory API-XFORM-005: ignores the spurious undocumented global doclet jsdoc emits for the default export (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-005"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: methods table API-XFORM-001: extracts documented instance methods in source order with signature, params, and returns (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-001"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: methods table API-XFORM-002: brackets optional params in signatures and carries their defaults (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-002"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: methods table API-XFORM-003: excludes private and undocumented methods from the table (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-003"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: missing-doc detection API-XFORM-008: flags undocumented public methods and settings properties without descriptions (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-008"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: missing-doc detection API-XFORM-009: flags a missing factory when no documented default export exists (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-009"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: settings table API-XFORM-006: extracts settings rows from the typedef properties with display-ready types and defaults (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-006"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: settings table API-XFORM-007: normalizes non-string defaults (booleans, numbers, null) to display strings (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-007"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-001: carries the schema title and description onto the contract (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-001"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-002: flattens top-level and nested settings properties into dotted field rows (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-002"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-003: derives required flags from each level’s required array (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-003"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-004: carries types, defaults, and descriptions through from the schema (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-004"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-005: resolves local $defs references to their concrete type (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-005"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-006: every contract field carries a non-empty description (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-006"],
+      "issueRefs": [6],
+      "screenshots": []
+    }
+  ]
+}

@@ -1,15 +1,15 @@
 {
   "module": "participant-profile",
-  "generatedAt": "2026-07-26T02:24:23.094Z",
+  "generatedAt": "2026-08-14T17:47:26.446Z",
   "environment": {
-    "os": "linux 6.17.0-1020-azure",
-    "node": "v22.23.1",
+    "os": "linux 6.17.0-1022-azure",
+    "node": "v22.23.2",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "30184486512",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/30184486512"
+    "id": "31825573019",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/31825573019"
   },
   "records": [
     {
@@ -62,6 +62,14 @@
     },
     {
       "test": "built histogram demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built nep-explorer demo mounts the shared shell with no console errors (#7) (#17)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": [],
@@ -477,6 +485,14 @@
       "screenshots": []
     },
     {
+      "test": "buildProfileModel — participant header fields (PPRF-2, PPRF-HDR-001) computes P_ALT only when the caller opts in, as the {text_value, note} the header explains (#49)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HDR-001"],
+      "issueRefs": [49],
+      "screenshots": []
+    },
+    {
       "test": "buildProfileModel — participant header fields (PPRF-2, PPRF-HDR-001) computes the R Ratio (peak ALT xULN / peak ALP xULN) on the ULN scale",
       "suite": "unit",
       "status": "pass",
@@ -493,11 +509,19 @@
       "screenshots": []
     },
     {
-      "test": "buildProfileModel — participant header fields (PPRF-2, PPRF-HDR-001) passes P_ALT through from p_alt_col where a value exists, never computing it",
+      "test": "buildProfileModel — participant header fields (PPRF-2, PPRF-HDR-001) passes P_ALT through from p_alt_col where a value exists, and computes none by default",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["PPRF-HDR-001"],
       "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "buildProfileModel — participant header fields (PPRF-2, PPRF-HDR-001) prefers the caller’s own supplied P_ALT over the computed estimate (#49)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-HDR-001"],
+      "issueRefs": [49],
       "screenshots": []
     },
     {
@@ -741,6 +765,38 @@
       "screenshots": []
     },
     {
+      "test": "end-of-line measure annotations (PPRF-SPAG-004, #54) draws each line's short key at that line's last point",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "end-of-line measure annotations (PPRF-SPAG-004, #54) leaves annotations that already clear each other where their lines end",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "end-of-line measure annotations (PPRF-SPAG-004, #54) pushes colliding annotations apart so two lines ending together stay readable",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "end-of-line measure annotations (PPRF-SPAG-004, #54) skips a dataset with no drawn points rather than annotating nothing",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
       "test": "evidence normalizer buildEvidenceSets splits records per module and duplicates shared scaffold records (#20)",
       "suite": "unit",
       "status": "pass",
@@ -857,6 +913,38 @@
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["PPRF-TBL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "full names in the legend, short keys on the lines (PPRF-SPAG-004, #54) falls back to the short key when a series carries no full label",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "full names in the legend, short keys on the lines (PPRF-SPAG-004, #54) keeps the tooltip on the short key so the full name cannot crowd the readout",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "full names in the legend, short keys on the lines (PPRF-SPAG-004, #54) labels each dataset with the full measure name and keeps the short key beside it",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "full names in the legend, short keys on the lines (PPRF-SPAG-004, #54) names the measures in full in the canvas text alternative",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-SPAG-004"],
       "issueRefs": [],
       "screenshots": []
     },
@@ -1110,6 +1198,46 @@
     },
     {
       "test": "mdBlock: pipe tables renders a GFM pipe table inside a scroll wrapper with header and body",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdInline: parenthesised link destinations applies the same rule to image destinations",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdInline: parenthesised link destinations does not swallow the text after the link",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdInline: parenthesised link destinations keeps a balanced-paren URL whole in the href",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdInline: parenthesised link destinations still stops at the closing paren for an ordinary destination",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdInline: parenthesised link destinations unwraps the angle-bracketed destination Prettier normalizes to",
       "suite": "unit",
       "status": "pass",
       "requirementIds": [],

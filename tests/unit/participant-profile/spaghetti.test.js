@@ -38,8 +38,14 @@ vi.mock('chart.js', () => {
   };
 });
 
-const { visibleSeries, spaghettiDatasets, cutLinePlugin, renderSpaghetti } =
-  await import('../../../src/participant-profile/spaghetti.js');
+const {
+  visibleSeries,
+  spaghettiDatasets,
+  cutLinePlugin,
+  renderSpaghetti,
+  annotationPlacements,
+  measureAnnotationPlugin
+} = await import('../../../src/participant-profile/spaghetti.js');
 
 const series = [
   {
@@ -117,7 +123,10 @@ describe('spaghettiDatasets (PPRF-3, PPRF-SPAG-001)', () => {
   it('builds one line dataset per series with day x-values', () => {
     const datasets = spaghettiDatasets(series.slice(0, 2));
     expect(datasets).toHaveLength(2);
-    expect(datasets[0].label).toBe('ALT');
+    // The legend label is the measure's full name since #290; the short key
+    // travels on svKey (PPRF-SPAG-004).
+    expect(datasets[0].label).toBe('Aminotransferase, alanine (ALT)');
+    expect(datasets[0].svKey).toBe('ALT');
     expect(datasets[0].data).toEqual([
       { x: 0, y: 0.875 },
       { x: 30, y: 4 },
@@ -189,7 +198,7 @@ describe('renderSpaghetti (PPRF-3, PPRF-SPAG-001)', () => {
     const chart = renderSpaghetti(host, model, {});
     expect(built).toHaveLength(1);
     expect(chart.config.type).toBe('line');
-    expect(chart.data.datasets.map((dataset) => dataset.label)).toEqual(['ALT', 'TB']);
+    expect(chart.data.datasets.map((dataset) => dataset.svKey)).toEqual(['ALT', 'TB']);
     expect(chart.options.scales.y.title.text).toBe('Standardized Result [xULN]');
     expect(chart.options.scales.x.title.text).toBe('Study Day');
     expect(host.querySelector('canvas')).not.toBeNull();
@@ -207,7 +216,7 @@ describe('renderSpaghetti (PPRF-3, PPRF-SPAG-001)', () => {
   it('re-renders extras when the state shows them', () => {
     const host = document.querySelector('#host');
     const chart = renderSpaghetti(host, model, { showExtras: true });
-    expect(chart.data.datasets.map((dataset) => dataset.label)).toEqual([
+    expect(chart.data.datasets.map((dataset) => dataset.svKey)).toEqual([
       'ALT',
       'TB',
       'Creatinine'
@@ -281,8 +290,9 @@ describe('cut lines on keyboard focus (PPRF-3/8, PPRF-SPAG-002, PPRF-ACC-001)', 
     const canvas = host.querySelector('canvas');
     expect(canvas.tabIndex).toBe(0);
     expect(canvas.getAttribute('role')).toBe('img');
-    expect(canvas.getAttribute('aria-label')).toContain('ALT');
-    expect(canvas.getAttribute('aria-label')).toContain('TB');
+    // Named in full since #290 (PPRF-SPAG-004).
+    expect(canvas.getAttribute('aria-label')).toContain('Aminotransferase, alanine (ALT)');
+    expect(canvas.getAttribute('aria-label')).toContain('Total Bilirubin');
   });
 });
 
@@ -321,5 +331,122 @@ describe('tooltip visit context and raw/adjusted pairing (PPRF-3, PPRF-SPAG-001)
     const [dataset] = chart.data.datasets;
     const { label } = chart.options.plugins.tooltip.callbacks;
     expect(label({ dataset, dataIndex: 1, parsed: { x: 30, y: 4 } })).toBe('ALT: 4.00');
+  });
+});
+
+// #290 (sv#54): the legend named the lines by their short keys, so a reader who
+// did not already know the abbreviations had nothing to read them against. The
+// upstream resolution — keep the legend, name the measures in it in full, and
+// annotate the lines themselves with the short keys — is what these pin.
+describe('full names in the legend, short keys on the lines (PPRF-SPAG-004, #54)', () => {
+  it('labels each dataset with the full measure name and keeps the short key beside it', () => {
+    const datasets = spaghettiDatasets(series.slice(0, 2));
+    expect(datasets.map((dataset) => dataset.label)).toEqual([
+      'Aminotransferase, alanine (ALT)',
+      'Total Bilirubin'
+    ]);
+    expect(datasets.map((dataset) => dataset.svKey)).toEqual(['ALT', 'TB']);
+  });
+
+  it('falls back to the short key when a series carries no full label', () => {
+    const [dataset] = spaghettiDatasets([{ key: 'ALP', color: '#333', cut: 1, points: [] }]);
+    expect(dataset.label).toBe('ALP');
+  });
+
+  it('keeps the tooltip on the short key so the full name cannot crowd the readout', () => {
+    const chart = renderSpaghetti(
+      document.querySelector('#host'),
+      { series, yLabel: 'Standardized Result [xULN]' },
+      {}
+    );
+    const [dataset] = chart.data.datasets;
+    const { label } = chart.options.plugins.tooltip.callbacks;
+    expect(label({ dataset, dataIndex: 1, parsed: { x: 30, y: 4 } })).toBe('ALT: 4.00');
+  });
+
+  it('names the measures in full in the canvas text alternative', () => {
+    const host = document.querySelector('#host');
+    renderSpaghetti(host, { series, yLabel: 'Standardized Result [xULN]' }, {});
+    const alt = host.querySelector('canvas').getAttribute('aria-label');
+    expect(alt).toContain('Aminotransferase, alanine (ALT)');
+    expect(alt).toContain('Total Bilirubin');
+  });
+});
+
+describe('end-of-line measure annotations (PPRF-SPAG-004, #54)', () => {
+  function fakeChart(placements) {
+    const calls = [];
+    const ctx = new Proxy(
+      {},
+      {
+        get(target, prop) {
+          if (prop === 'calls') return calls;
+          if (prop === 'measureText') return (text) => ({ width: text.length * 6 });
+          return (...args) => calls.push([prop, ...args]);
+        },
+        set() {
+          return true;
+        }
+      }
+    );
+    return {
+      data: { datasets: spaghettiDatasets(series.slice(0, 2)) },
+      getDatasetMeta: (index) => ({ data: placements[index] || [] }),
+      chartArea: { left: 10, right: 310, top: 0, bottom: 200 },
+      ctx,
+      calls
+    };
+  }
+
+  it("draws each line's short key at that line's last point", () => {
+    const chart = fakeChart([
+      [
+        { x: 20, y: 150 },
+        { x: 200, y: 40 }
+      ],
+      [
+        { x: 20, y: 160 },
+        { x: 180, y: 120 }
+      ]
+    ]);
+    measureAnnotationPlugin().afterDatasetsDraw(chart);
+    const drawn = chart.calls.filter(([name]) => name === 'fillText').map(([, text]) => text);
+    expect(drawn.sort()).toEqual(['ALT', 'TB']);
+  });
+
+  it('skips a dataset with no drawn points rather than annotating nothing', () => {
+    const chart = fakeChart([
+      [
+        { x: 20, y: 150 },
+        { x: 200, y: 40 }
+      ],
+      []
+    ]);
+    measureAnnotationPlugin().afterDatasetsDraw(chart);
+    const drawn = chart.calls.filter(([name]) => name === 'fillText').map(([, text]) => text);
+    expect(drawn).toEqual(['ALT']);
+  });
+
+  it('pushes colliding annotations apart so two lines ending together stay readable', () => {
+    const placed = annotationPlacements(
+      [
+        { key: 'ALT', x: 200, y: 100 },
+        { key: 'TB', x: 200, y: 102 }
+      ],
+      12
+    );
+    expect(placed.map((entry) => entry.key)).toEqual(['ALT', 'TB']);
+    expect(placed[1].y - placed[0].y).toBeGreaterThanOrEqual(12);
+  });
+
+  it('leaves annotations that already clear each other where their lines end', () => {
+    const placed = annotationPlacements(
+      [
+        { key: 'ALT', x: 200, y: 40 },
+        { key: 'TB', x: 180, y: 120 }
+      ],
+      12
+    );
+    expect(placed.map((entry) => entry.y)).toEqual([40, 120]);
   });
 });

@@ -82,7 +82,18 @@ export function renderHeader(participant, settings, { onClear } = {}) {
       valueEl.setAttribute('role', 'button');
       valueEl.setAttribute('tabindex', '0');
       const show = () => {
+        // textContent, never innerHTML: the note is plain prose by contract
+        // (src/hep-core/palt.js), and the citation is appended as a real link
+        // rather than trusting markup into this component (#49).
         footnote.textContent = participant.pAlt.note;
+        const reference = participant.pAlt.reference;
+        if (reference && reference.url) {
+          const link = createElement('a', 'sv-profile-footnote-link', reference.label);
+          link.setAttribute('href', reference.url);
+          link.setAttribute('target', '_blank');
+          link.setAttribute('rel', 'noopener');
+          footnote.append(' ', link);
+        }
       };
       valueEl.onclick = show;
       valueEl.onkeydown = (event) => {

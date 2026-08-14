@@ -46,6 +46,19 @@ export const VIEW_MODES = [
 /** Axis-type options for the Axis Type control (HEP-CTRL-006). */
 export const AXIS_TYPES = ['linear', 'log'];
 
+/**
+ * Log-base options for the Log Base control (HEP-CTRL-017), offered only while
+ * the Axis Type is `log`. Base 10 is the conventional decade axis; base 2 puts
+ * a gridline at every doubling, which is the reading clinicians ask for on
+ * fold-change data — "each unit increase is an X-fold increase on the original
+ * scale" (SafetyGraphics/hep-explorer#112).
+ * @type {Array<{value: number, label: string}>}
+ */
+export const LOG_BASES = [
+  { value: 10, label: 'log10 (decades)' },
+  { value: 2, label: 'log2 (doublings)' }
+];
+
 /** Point-size options for the Point Size control: uniform radius or rRatio-scaled (HEP-CTRL-007). */
 export const POINT_SIZE_OPTIONS = ['Uniform', 'rRatio'];
 
@@ -92,11 +105,13 @@ export { MEASURE_KEYS, cutFor } from '../hep-core/rows.js';
  * @property {Object} [imputation_methods] Below-LLOQ handling per measure key: `data-driven` (limit = the smallest positive recorded value), `user-defined` (limit from imputation_values), or `drop` (remove non-positive records). Defaults to `data-driven` for ALT, AST, TB and ALP, matching the original renderer (HEP-IMPUTE-001).
  * @property {?Object} [imputation_values=null] Per-measure lower limits of quantitation, used by the `user-defined` method (HEP-IMPUTE-001).
  * @property {string} [quadrant_labels='shown'] Whether the scatter draws the four quadrant corner labels: `shown` or `hidden` (HEP-QUAD-007).
+ * @property {number} [log_base=10] Gridline base for a logarithmic axis: 10 (decades) or 2 (doublings). Only in force while the Axis Type is `log`; the axis POSITIONS are unchanged by it, the gridlines and their labels are not (HEP-CTRL-017).
  * @property {string} [marginals='box_rug'] Marginal distributions drawn beside the eDISH scatter: `box_rug` (marginal box plots and axis rugs), `box`, `rug`, or `none` (HEP-MARG-001, HEP-MARG-002, HEP-MARG-003).
  * @property {number} [visit_window=30] Timing window (days): points whose peak-X and peak-Y days are within this many days render filled, else hollow (HEP-CTRL-008, HEP-DISPLAY-005).
  * @property {boolean} [profile=true] Mount the shared participant-profile module (header, labs-over-time spaghetti, measure table) in the shell's rail slot beside the chart, driven by every selection path via the participantsSelected event; false restores the pre-#98 behaviour of no drill-down block (#98, PPRF-7; obot.roadmap#75 moved the mount from the dock to the rail).
  * @property {?Array<string|Object>} [profile_details=null] Demographic columns for the railed profile's header, as names or { value_col, label } specs; null falls back to the caller's own `details` value. Use this when `details` is configured for the linked listing rather than demographics (#98, PPRF-2).
  * @property {?string} [participantProfileURL=null] Optional link-out URL for the railed profile's header, templated by every literal `{id}` token (#98, PPRF-2, closes #53).
+ * @property {boolean} [calculate_palt=false] Opt in to computing the P_ALT hepatocyte-loss estimate (Chung et al., PMID 30303523) from each participant's ALT trajectory when `p_alt_col` supplies none; shown in the railed profile's header with the arithmetic behind it (HEP-PALT-001). Off by default because the estimate assumes ALT in IU/L and a study-day axis dense enough for a trapezoidal AUC.
  * @property {?string} [p_alt_col=null] Optional column carrying a pre-computed P_ALT shown in the railed profile's header; passed through where present, never computed client-side (#98, PPRF-2).
  * @property {number[]} [measureBounds=[0.01, 0.99]] Population-extent quantiles for the railed profile's sparkline / inset guides (#98, PPRF-4; parity with the original renderer's measureBounds).
  * @property {boolean} [r_ratio_filter=true] Whether to render the R-Ratio range filter control (HEP-CTRL-010).
@@ -164,12 +179,14 @@ export const DEFAULT_SETTINGS = {
   },
   imputation_values: null,
   quadrant_labels: 'shown',
+  log_base: 10,
   marginals: 'box_rug',
   visit_window: 30,
   profile: true,
   profile_details: null,
   participantProfileURL: null,
   p_alt_col: null,
+  calculate_palt: false,
   measureBounds: [0.01, 0.99],
   r_ratio_filter: true,
   r_ratio: [0, null],

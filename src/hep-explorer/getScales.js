@@ -81,11 +81,83 @@ export function edishDomain(values, cut, type = 'linear') {
 }
 
 /**
+ * The eDISH domain actually drawn for one axis: the derived domain
+ * (edishDomain), with each bound replaced by the user's override when there is
+ * one (HEP-AXIS-001..004, #238). Overrides live in the shared limit contract of
+ * src/axis-limits.js — `null` means automatic, so an unedited bound keeps
+ * re-deriving as the measure, filters and scale change.
+ *
+ * Two things an override may not do, because either would draw a lie:
+ * push a log axis to a non-positive floor, or invert the domain. Either is
+ * declined in favour of the derived domain — the crossed-pair case is normally
+ * caught earlier by applyLimitEdit's swap, and this is the backstop for the
+ * paths that do not go through an input.
+ * @param {number[]} values The standardized values on the axis.
+ * @param {number} cut The active Hy's-Law cutpoint for the axis.
+ * @param {string} type 'linear' or 'log'.
+ * @param {?Object} limits The axis's limit state ({ lower, upper }); null/absent = fully automatic.
+ * @returns {number[]} The [min, max] domain to draw.
+ */
+export function resolveEdishDomain(values, cut, type, limits) {
+  const derived = edishDomain(values, cut, type);
+  const override = (value, fallback) => (Number.isFinite(value) ? value : fallback);
+  let lower = override(limits && limits.lower, derived[0]);
+  const upper = override(limits && limits.upper, derived[1]);
+  if (type === 'log' && !(lower > 0)) lower = derived[0];
+  if (!(upper > lower)) return derived;
+  return [lower, upper];
+}
+
+// Guards the floating-point edge of the power-of-base search: Math.log(0.1) /
+// Math.log(10) is -0.9999999999999998, so a naive ceil() drops the decade the
+// domain actually starts on.
+const LOG_EPSILON = 1e-9;
+
+/**
+ * The powers of `base` that fall inside a log domain — the gridlines the Log
+ * Base control selects (HEP-CTRL-017). Position on a log axis is
+ * base-independent (log_b(x) differs from log10(x) only by a constant factor),
+ * so choosing a base does not rescale the plot; it chooses WHICH multiples the
+ * gridlines land on. Base 2 puts one at every doubling.
+ *
+ * Returns [] — meaning "leave Chart.js its own ticks" — for a domain a log axis
+ * cannot take, and for one too narrow to carry two powers of the base: a single
+ * gridline is a worse axis than the default one.
+ * @param {number[]} domain The [min, max] domain in force.
+ * @param {number} [base=10] The log base (10 or 2).
+ * @returns {number[]} The tick values, ascending, or [] to decline.
+ */
+export function logTicks(domain, base = 10) {
+  const [min, max] = domain || [];
+  if (!(min > 0) || !(max > min) || !(base > 1)) return [];
+  const power = (value) => Math.log(value) / Math.log(base);
+  const first = Math.ceil(power(min) - LOG_EPSILON);
+  const last = Math.floor(power(max) + LOG_EPSILON);
+  if (!(last > first)) return [];
+  const ticks = [];
+  for (let exponent = first; exponent <= last; exponent += 1) ticks.push(base ** exponent);
+  return ticks;
+}
+
+/**
+ * Format a log-axis tick at the precision the value needs (HEP-CTRL-017):
+ * `1024`, `0.125`, `1` — never exponent notation, which reads as a different
+ * quantity to a reviewer scanning fold-change gridlines.
+ * @param {number} value The tick value.
+ * @returns {string} The tick label, or '' when not finite.
+ */
+export function formatLogTick(value) {
+  if (!Number.isFinite(value)) return '';
+  return Number(value.toPrecision(6)).toString();
+}
+
+/**
  * Chart.js scale configs for both axes, titled by the selected measures in the
  * active display units and switched between linear and logarithmic per
  * state.axisType (HEP-CHART-002, HEP-CTRL-006). A logarithmic axis clamps its
- * min above 0 so Chart.js does not reject a 0 lower bound.
- * @param {Object} state The live instance state ({ measureX, measureY, display, axisType }).
+ * min above 0 so Chart.js does not reject a 0 lower bound, and takes its
+ * gridlines from state.logBase when that base spans the domain (HEP-CTRL-017).
+ * @param {Object} state The live instance state ({ measureX, measureY, display, axisType, logBase }).
  * @param {number[]} xDomain The [min, max] x-domain from edishDomain.
  * @param {number[]} yDomain The [min, max] y-domain from edishDomain.
  * @param {Object} [measureValues] The settings.measure_values map, so the axes
@@ -94,15 +166,27 @@ export function edishDomain(values, cut, type = 'linear') {
  */
 export function buildScales(state, xDomain, yDomain, measureValues) {
   const type = state.axisType === 'log' ? 'logarithmic' : 'linear';
+  const base = Number(state.logBase) > 1 ? Number(state.logBase) : 10;
   const axis = (domain, label) => {
     const min = type === 'logarithmic' && !(domain[0] > 0) ? undefined : domain[0];
-    return {
+    const scale = {
       type,
       min,
       max: domain[1],
       title: { display: true, text: label },
       grid: { color: 'rgba(148, 163, 184, 0.25)' }
     };
+    if (type !== 'logarithmic') return scale;
+    const ticks = logTicks([min, domain[1]], base);
+    if (!ticks.length) return scale;
+    // afterBuildTicks is Chart.js's documented seam for replacing a scale's
+    // computed ticks, and the only one that moves the GRIDLINES rather than
+    // just their labels — which is the whole point of choosing a base.
+    scale.afterBuildTicks = (built) => {
+      built.ticks = ticks.map((value) => ({ value }));
+    };
+    scale.ticks = { callback: (value) => formatLogTick(value) };
+    return scale;
   };
   return {
     x: axis(xDomain, axisLabel(state.measureX, state.display, measureValues)),

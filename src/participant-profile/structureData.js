@@ -11,6 +11,7 @@ import { computeRRatio, cutFor, displayField, dayThenIndex } from '../hep-core/r
 import { buildHepSubjects } from '../hep-core/subjects.js';
 import { SEVERITY_ORDER } from '../hep-core/quadrants.js';
 import { median, quantile } from '../hep-core/stats.js';
+import { calculatePalt } from '../hep-core/palt.js';
 import { measureColorScale, templateProfileURL } from './configure.js';
 
 /** The y-axis label for the active display mode (PPRF-3). */
@@ -116,10 +117,17 @@ export function buildProfileModel(cleanRows, id, settings, state) {
     value: first[spec.value_col]
   }));
 
+  // A value the caller's own statistical programming supplied always wins; the
+  // client-side estimate is the opt-in fallback (PPRF-2, HEP-PALT-001), and it
+  // arrives as the {text_value, note} object the header renders with the
+  // click-to-explain footnote.
   let pAlt = null;
   if (settings.p_alt_col) {
     const raw = first[settings.p_alt_col];
     pAlt = raw === undefined || raw === null || raw === '' ? null : raw;
+  }
+  if (pAlt === null && settings.calculate_palt) {
+    pAlt = calculatePalt(participantRows, settings);
   }
 
   const participant = {

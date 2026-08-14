@@ -793,6 +793,105 @@ test.describe('safety.viz hep-explorer module', () => {
     await captureEvidence(page, 'HEP-CTRL-006', 'log-axes');
   });
 
+  test('HEP-CTRL-017: the log base picker appears with the log axis and moves the gridlines to every doubling (#54)', async ({
+    page
+  }) => {
+    const axisType = page
+      .locator('.sv-control', { has: page.locator('label:text-is("Axis Type")') })
+      .locator('select');
+    const logBase = page.locator('.sv-control', { has: page.locator('label:text-is("Log Base")') });
+
+    // On a linear axis the control names nothing, so it is not offered.
+    await expect(logBase).toHaveCount(0);
+
+    await axisType.selectOption('log');
+    await expect(logBase).toHaveCount(1);
+    await logBase.locator('select').selectOption('2');
+
+    const ticks = await page.evaluate(() => {
+      const chart = window.__safetyHepExplorerInstance.chart;
+      return {
+        x: chart.scales.x.ticks.map((tick) => tick.value),
+        y: chart.scales.y.ticks.map((tick) => tick.value),
+        xType: chart.scales.x.type
+      };
+    });
+    // Every gridline is a power of two, and there is more than one of them.
+    expect(ticks.xType).toBe('logarithmic');
+    expect(ticks.x.length).toBeGreaterThan(1);
+    for (const value of [...ticks.x, ...ticks.y]) {
+      expect(Number.isInteger(Math.round(Math.log2(value) * 1e6) / 1e6)).toBe(true);
+    }
+    await captureEvidence(page, 'HEP-CTRL-017', 'log-base-doublings');
+
+    // Returning to a linear axis withdraws the control again (HEP-CTRL-017).
+    await axisType.selectOption('linear');
+    await expect(logBase).toHaveCount(0);
+  });
+
+  test('HEP-AXIS-001/002/003/004: each axis carries editable limits that seed from the domain in force (#54)', async ({
+    page
+  }) => {
+    const section = (axis) =>
+      page.locator('.sv-control-section', {
+        has: page.locator(`.sv-section-title:text-is("${axis}-axis Limits")`)
+      });
+    const box = (axis, label) =>
+      section(axis)
+        .locator('.sv-control', { has: page.locator(`label:text-is("${label}")`) })
+        .locator('input');
+
+    const domain = () =>
+      page.evaluate(() => {
+        const chart = window.__safetyHepExplorerInstance.chart;
+        return { xMin: chart.scales.x.min, xMax: chart.scales.x.max, yMax: chart.scales.y.max };
+      });
+
+    // HEP-AXIS-001: never blank — every box shows the limit actually in force.
+    const derived = await domain();
+    for (const axis of ['X', 'Y']) {
+      for (const label of ['Lower', 'Upper']) {
+        await expect(box(axis, label)).not.toHaveValue('');
+      }
+    }
+    expect(Number(await box('X', 'Upper').inputValue())).toBeCloseTo(derived.xMax, 1);
+
+    // HEP-AXIS-002: an edit becomes an override and the chart follows it.
+    await box('X', 'Upper').fill('12');
+    await box('X', 'Upper').blur();
+    expect((await domain()).xMax).toBe(12);
+    // The OTHER axis stayed automatic — limits are per axis, not per chart.
+    expect((await domain()).yMax).toBeCloseTo(derived.yMax, 6);
+
+    // Captured with a live override in force and the cloud still on the plot:
+    // the widened x-axis and the box that says why it is widened.
+    await captureEvidence(page, 'HEP-AXIS-001', 'axis-limits');
+
+    // HEP-AXIS-004: a bound typed across the displayed opposite one is swapped,
+    // never sent to the chart inverted.
+    await box('X', 'Lower').fill('20');
+    await box('X', 'Lower').blur();
+    const swapped = await domain();
+    expect(swapped.xMin).toBeLessThan(swapped.xMax);
+
+    // HEP-AXIS-003: Reset Limits returns THAT axis to automatic and refills.
+    await section('X').locator('button.sv-reset-limits').click();
+    const reset = await domain();
+    expect(reset.xMax).toBeCloseTo(derived.xMax, 6);
+    expect(Number(await box('X', 'Upper').inputValue())).toBeCloseTo(derived.xMax, 1);
+
+    // HEP-AXIS-002: a measure change returns both axes to automatic, since a
+    // limit typed for one measure says nothing about another.
+    await box('Y', 'Upper').fill('9');
+    await box('Y', 'Upper').blur();
+    expect((await domain()).yMax).toBe(9);
+    await page
+      .locator('.sv-control', { has: page.locator('label:text-is("X-axis Measure")') })
+      .locator('select')
+      .selectOption('ALP');
+    expect((await domain()).yMax).not.toBe(9);
+  });
+
   test('HEP-CHART-004: point tooltips list participant, R Ratio, peaks with days, and the day difference (#43)', async ({
     page
   }) => {
@@ -866,6 +965,201 @@ test.describe('safety.viz hep-explorer module', () => {
     expect(result.renderReturns).toBeUndefined();
     expect(result.chartCountBeforeDestroy).toBeGreaterThan(0);
     expect(result.containerText).toBe('');
+  });
+  test('HEP-ANIM-001/HEP-ANIM-003/HEP-ANIM-006/HEP-ANIM-007: the study-day playback bar scrubs the cloud through time and resets back to the peaks (#46)', async ({
+    page
+  }) => {
+    // The bar renders under the plot, spanning the study-day range the fixture
+    // carries (day 1 through the day-112 record) (HEP-ANIM-001).
+    const bar = page.locator('.hep-animation-bar');
+    await expect(bar).toBeVisible();
+    const slider = page.locator('.hep-animation-slider');
+    await expect(slider).toHaveAttribute('min', '1');
+    await expect(slider).toHaveAttribute('max', '112');
+    await expect(page.locator('.hep-animation-label')).toHaveText('Showing peak values (all days)');
+
+    // The static scatter is the peak-vs-peak reduction: SUBJ-001 sits at its
+    // ALT peak of 4xULN.
+    const peakX = await page.evaluate(() => {
+      const chart = window.__safetyHepExplorerInstance.chart;
+      const index = window.__safetyHepExplorerInstance.points.findIndex(
+        (point) => String(point.id) === 'SUBJ-001'
+      );
+      return chart.data.datasets[0].data[index].x;
+    });
+    expect(peakX).toBeCloseTo(4, 5);
+
+    // Scrub to day 1: every point falls back to its FIRST result, so SUBJ-001
+    // shows its baseline ALT of 40/40 = 1xULN, not its peak (HEP-ANIM-003).
+    await slider.fill('1');
+    await slider.dispatchEvent('input');
+    await expect(page.locator('.hep-animation-label')).toHaveText('Showing data from: Day 1');
+    const dayOne = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      const index = instance.points.findIndex((point) => String(point.id) === 'SUBJ-001');
+      return {
+        x: instance.chart.data.datasets[0].data[index].x,
+        y: instance.chart.data.datasets[0].data[index].y,
+        day: instance.state.animation.day
+      };
+    });
+    expect(dayOne.x).toBeCloseTo(1, 5);
+    expect(dayOne.y).toBeCloseTo(1, 5);
+    expect(dayOne.day).toBe(1);
+
+    // Day 28 advances the same participant to its peak week-4 draw.
+    await slider.fill('28');
+    await slider.dispatchEvent('input');
+    const dayTwentyEight = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      const index = instance.points.findIndex((point) => String(point.id) === 'SUBJ-001');
+      return instance.chart.data.datasets[0].data[index];
+    });
+    expect(dayTwentyEight.x).toBeCloseTo(4, 5);
+    expect(dayTwentyEight.y).toBeCloseTo(2.5, 5);
+
+    await captureEvidence(page, 'HEP-ANIM-001', 'study-day-playback');
+
+    // Reset returns to the peak-vs-peak scatter every other control describes
+    // (HEP-ANIM-007), clearing the trails with it.
+    await page.locator('.hep-animation-reset').click();
+    await expect(page.locator('.hep-animation-label')).toHaveText('Showing peak values (all days)');
+    const afterReset = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      const index = instance.points.findIndex((point) => String(point.id) === 'SUBJ-001');
+      return {
+        x: instance.chart.data.datasets[0].data[index].x,
+        day: instance.state.animation.day,
+        trails: instance.chart.data.datasets[2].data.length
+      };
+    });
+    expect(afterReset.x).toBeCloseTo(4, 5);
+    expect(afterReset.day).toBeNull();
+    expect(afterReset.trails).toBe(0);
+  });
+
+  test('HEP-ANIM-004/HEP-ANIM-005/HEP-ANIM-008: the play control runs the animation, leaves motion trails, and yields to a scrub (#46)', async ({
+    page
+  }) => {
+    const play = page.locator('.hep-animation-play');
+    await expect(play).toHaveAttribute('aria-pressed', 'false');
+    await play.click();
+    await expect(play).toHaveAttribute('aria-pressed', 'true');
+    await expect(play).toHaveText('■');
+
+    // Points move, and the segments they travelled accumulate in the trail
+    // dataset (HEP-ANIM-004).
+    await page.waitForFunction(
+      () => window.__safetyHepExplorerInstance.chart.data.datasets[2].data.length > 0
+    );
+    // While playing, the quadrant percents — which describe the PEAK
+    // classification, not the moving cloud — are suppressed (HEP-ANIM-006).
+    expect(
+      await page.evaluate(() => window.__safetyHepExplorerInstance.state.animation.playing)
+    ).toBe(true);
+
+    // Stopping leaves the cloud where it stopped and restores the button.
+    await play.click();
+    await expect(play).toHaveAttribute('aria-pressed', 'false');
+    await expect(play).toHaveText('▶');
+    const stopped = await page.evaluate(() => window.__safetyHepExplorerInstance.state.animation);
+    expect(stopped.playing).toBe(false);
+    expect(stopped.day).toBeGreaterThan(0);
+
+    // Scrubbing the slider while playing stops the play-through rather than
+    // fighting it for the day, and lands on the day the reader asked for
+    // (HEP-ANIM-008).
+    await play.click();
+    await expect(play).toHaveAttribute('aria-pressed', 'true');
+    const slider = page.locator('.hep-animation-slider');
+    await slider.fill('56');
+    await slider.dispatchEvent('input');
+    await expect(play).toHaveAttribute('aria-pressed', 'false');
+    const scrubbed = await page.evaluate(() => window.__safetyHepExplorerInstance.state.animation);
+    expect(scrubbed.playing).toBe(false);
+    expect(scrubbed.day).toBe(56);
+    // ...and it stays there: a still-running timer would move it off 56.
+    await page.waitForTimeout(300);
+    expect(await page.evaluate(() => window.__safetyHepExplorerInstance.state.animation.day)).toBe(
+      56
+    );
+
+    // A play-through left running across a redraw would write into a destroyed
+    // chart: changing a control stops it (HEP-ANIM-005).
+    await play.click();
+    await page
+      .locator('.sv-controls .sv-control', { has: page.locator('label:text-is("Axis Type")') })
+      .locator('select')
+      .selectOption('log');
+    await expect(page.locator('.hep-animation-play')).toHaveAttribute('aria-pressed', 'false');
+    expect(
+      await page.evaluate(() => window.__safetyHepExplorerInstance.state.animation.day)
+    ).toBeNull();
+  });
+
+  test('HEP-PALT-001/HEP-PALT-003: the opted-in P_ALT estimate is shown in the profile header with the arithmetic behind it (#49)', async ({
+    page
+  }) => {
+    // Off by default: no client-side estimate appears unless the caller asks
+    // for one (HEP-PALT-002 — the estimate carries unit and sampling
+    // assumptions only the data owner can confirm).
+    await page.evaluate(() => window.__safetyHepExplorerInstance.selectParticipant('SUBJ-001'));
+    await expect(page.locator('.sv-rail .sv-profile-id')).toHaveText('Participant SUBJ-001');
+    await expect(page.locator('.sv-rail .sv-profile-palt')).toHaveCount(0);
+
+    await page.evaluate(() =>
+      window.__safetyHepExplorerInstance.setSettings({ calculate_palt: true })
+    );
+    await page.evaluate(() => window.__safetyHepExplorerInstance.selectParticipant('SUBJ-001'));
+    const palt = page.locator('.sv-rail .sv-profile-palt');
+    await expect(palt).toHaveCount(1);
+    await expect(palt).toContainText(/\d+\.\d{2}/);
+
+    // Clicking the figure shows the arithmetic that produced it, not just the
+    // number (HEP-PALT-003).
+    await palt.locator('.sv-profile-detail-value').click();
+    const footnote = page.locator('.sv-rail .sv-profile-footnote');
+    await expect(footnote).toContainText('ALT AUC');
+    await expect(footnote).toContainText('IU/L');
+    await expect(footnote.locator('a')).toHaveAttribute(
+      'href',
+      'https://pubmed.ncbi.nlm.nih.gov/30303523/'
+    );
+
+    await captureEvidence(page, 'HEP-PALT-001', 'palt-estimate');
+  });
+
+  test('HEP-SELECT-008: the selected participant’s measure table draws a sparkline per row and expands it into a full chart (#48)', async ({
+    page
+  }) => {
+    await page.evaluate(() => window.__safetyHepExplorerInstance.selectParticipant('SUBJ-001'));
+    await expect(page.locator('.sv-rail .sv-profile-id')).toHaveText('Participant SUBJ-001');
+
+    // One sparkline per measure row, each with plotted geometry rather than an
+    // empty frame (#48 — the original's lab summary table with spark lines).
+    const rows = page.locator('.sv-rail .sv-profile-measure-row');
+    await expect(rows).toHaveCount(3);
+    await expect(page.locator('.sv-rail .sv-profile-spark svg')).toHaveCount(3);
+    const sparkPaths = await page.evaluate(() =>
+      [...document.querySelectorAll('.sv-rail .sv-profile-spark svg')].map(
+        (svg) => svg.querySelectorAll('path, polyline, circle').length
+      )
+    );
+    expect(sparkPaths.every((count) => count > 0)).toBe(true);
+
+    // Clicking a sparkline expands that measure into a full drill-down chart
+    // beneath its row, and clicking again collapses it.
+    const toggle = page.locator('.sv-rail .sv-profile-spark-toggle').first();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.locator('.sv-rail .sv-profile-inset-row canvas')).toHaveCount(1);
+
+    await captureEvidence(page, 'HEP-SELECT-008', 'measure-sparkline-drilldown');
+
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.locator('.sv-rail .sv-profile-inset-row')).toHaveCount(0);
   });
 });
 

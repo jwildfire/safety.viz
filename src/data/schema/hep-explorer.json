@@ -146,6 +146,11 @@
           },
           "description": "Per-measure Hy's-Law cutpoints keyed by measure then display mode; a `defaults` entry back-fills any measure without its own cuts (HEP-QUAD-001)."
         },
+        "calculate_palt": {
+          "type": "boolean",
+          "default": false,
+          "description": "Opt in to computing the P_ALT hepatocyte-loss estimate (ALT AUC x peak ALT^0.18 / 10^5; Chung et al., PMID 30303523) from each participant's ALT trajectory when no pre-computed value is mapped. Off by default: the estimate assumes ALT in IU/L and a study-day axis dense enough for a trapezoidal AUC (HEP-PALT-001, HEP-PALT-002)."
+        },
         "visit_window": {
           "type": "number",
           "default": 30,

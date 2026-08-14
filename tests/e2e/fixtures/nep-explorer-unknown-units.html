@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>safety.viz nep-explorer unknown-unit demo page</title>
+  </head>
+  <body>
+    <h1 id="nep-explorer-heading">safety.viz Nephrotoxicity Explorer — unrecognized unit</h1>
+    <p>
+      Playwright harness for the refuse-to-guess path (#120, NEP-UNIT-003). The same cohort shape as
+      the main fixture, reported in a unit the factor table does not carry. The fold-change axis is
+      a ratio and stays exact; every absolute claim — the 0.3 mg/dL zone arm, the ≥ 4.0 mg/dL rule
+      and the absolute-change staging — is withheld, and the chart says so. This branch cannot be
+      reached from a demo whose units are all known, which is exactly why it has its own page.
+    </p>
+    <div id="container"></div>
+    <!-- Bundle path tracks the package.json version; bump them together. -->
+    <script src="/dist/safety.viz-1.6.0/safety.viz.js"></script>
+    <script>
+      const VISITS = [
+        { VISIT: 'Baseline', VISITNUM: 0 },
+        { VISIT: 'Week 2', VISITNUM: 4 },
+        { VISIT: 'Week 4', VISITNUM: 5 }
+      ];
+      // Values in an unrecognized unit. The ratios are the same ones the main
+      // fixture stages, so the fold axis can be asserted to be unaffected.
+      const COHORT = [
+        ['U-1', 90, [95, 100]], // fold 1.11 -> no stage
+        ['U-2', 90, [120, 158]], // fold 1.76 -> Stage 1
+        ['U-3', 85, [150, 205]], // fold 2.41 -> Stage 2
+        ['U-4', 80, [160, 280]], // fold 3.50 -> Stage 3
+        ['U-5', 260, [230, 190]] // falls only -> no stage, delta < 0
+      ];
+
+      const data = [];
+      COHORT.forEach(function (spec) {
+        const [id, baseline, post] = spec;
+        [baseline].concat(post).forEach(function (value, index) {
+          data.push({
+            USUBJID: id,
+            SEX: index % 2 ? 'M' : 'F',
+            ARM: 'Study Drug',
+            TEST: 'Creatinine',
+            STRESU: 'arb. units',
+            STRESN: value,
+            VISIT: VISITS[index].VISIT,
+            VISITNUM: VISITS[index].VISITNUM
+          });
+        });
+      });
+
+      const instance = SafetyViz.nepExplorer('#container', {});
+      window.__safetyNepExplorerInstance = instance;
+      instance.init(data);
+    </script>
+  </body>
+</html>
