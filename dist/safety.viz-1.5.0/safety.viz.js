@@ -27,6 +27,7 @@ var SafetyViz = (() => {
     hepExplorer: () => hepExplorer,
     hepWaterfall: () => hepWaterfall,
     histogram: () => histogram,
+    nepExplorer: () => nepExplorer,
     outlierExplorer: () => outlierExplorer,
     participantProfile: () => participantProfile,
     qtExplorer: () => qtExplorer,
@@ -30469,6 +30470,1140 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     return new SafetyHepWaterfall(element, settings);
   }
 
+  // src/nep-explorer/configure.js
+  var UMOL_PER_MGDL = 88.4;
+  var KDIGO_STAGES = Object.freeze({
+    fold: Object.freeze([1.5, 2, 3]),
+    delta: 0.3,
+    absolute: 4
+  });
+  var DEFAULT_SETTINGS12 = {
+    id_col: "USUBJID",
+    measure_col: "TEST",
+    value_col: "STRESN",
+    unit_col: "STRESU",
+    baseline_col: null,
+    baseline_value: "Y",
+    visit_col: "VISIT",
+    visitn_col: "VISITNUM",
+    studyday_col: "DY",
+    measure_values: { CREAT: "Creatinine" },
+    arm_col: "ARM",
+    stages: KDIGO_STAGES,
+    units: {
+      target: "mg/dL",
+      // Keys are normalized before lookup, so one entry covers umol/L, µmol/L,
+      // μmol/L and every casing of each.
+      factors: { "mg/dl": 1, "umol/l": 1 / UMOL_PER_MGDL }
+    },
+    filters: [],
+    details: null,
+    zone_labels: "shown",
+    width: "100%",
+    height: 460
+  };
+  function normalizeUnit(unit) {
+    if (unit === void 0 || unit === null) return "";
+    return String(unit).trim().toLowerCase().replace(/[µμ]/g, "u");
+  }
+  function arrayify10(value) {
+    if (value === void 0 || value === null) return [];
+    return Array.isArray(value) ? value : [value];
+  }
+  function fieldSpec10(value, fallbackLabel) {
+    if (typeof value === "string") return { value_col: value, label: fallbackLabel || value };
+    return { value_col: value.value_col, label: value.label || value.value_col };
+  }
+  function syncStages(stages) {
+    const supplied = stages && typeof stages === "object" ? stages : {};
+    const fold = arrayify10(supplied.fold).map(Number).filter(Number.isFinite);
+    const delta = Number(supplied.delta);
+    const absolute = Number(supplied.absolute);
+    return {
+      fold: fold.length === 3 ? [...fold].sort((a, b) => a - b) : [...KDIGO_STAGES.fold],
+      delta: Number.isFinite(delta) ? delta : KDIGO_STAGES.delta,
+      absolute: Number.isFinite(absolute) ? absolute : KDIGO_STAGES.absolute
+    };
+  }
+  function syncUnits(units) {
+    const supplied = units && typeof units === "object" ? units : {};
+    const factors = {};
+    const source = supplied.factors && typeof supplied.factors === "object" ? supplied.factors : DEFAULT_SETTINGS12.units.factors;
+    Object.entries(source).forEach(([unit, factor]) => {
+      const key = normalizeUnit(unit);
+      const value = Number(factor);
+      if (key && Number.isFinite(value) && value > 0) factors[key] = value;
+    });
+    return {
+      target: typeof supplied.target === "string" && supplied.target ? supplied.target : "mg/dL",
+      factors: Object.keys(factors).length ? factors : { ...DEFAULT_SETTINGS12.units.factors }
+    };
+  }
+  function syncSettings12(settings) {
+    const synced = { ...DEFAULT_SETTINGS12, ...settings };
+    synced.stages = syncStages(settings ? settings.stages : void 0);
+    synced.units = syncUnits(settings ? settings.units : void 0);
+    synced.measure_values = { ...DEFAULT_SETTINGS12.measure_values, ...synced.measure_values || {} };
+    synced.zone_labels = synced.zone_labels === "hidden" ? "hidden" : "shown";
+    synced.filters = arrayify10(synced.filters).map((filter) => fieldSpec10(filter)).filter((filter) => filter.value_col);
+    const suppliedDetails = arrayify10(synced.details).map((detail) => fieldSpec10(detail)).filter((detail) => detail.value_col);
+    const merged = [
+      { value_col: synced.id_col, label: "Participant ID" },
+      ...synced.filters.filter((filter) => filter.value_col !== synced.id_col)
+    ];
+    suppliedDetails.forEach((detail) => {
+      if (!merged.some((existing) => existing.value_col === detail.value_col)) merged.push(detail);
+    });
+    synced.details = merged;
+    return synced;
+  }
+
+  // src/data/schema/nep-explorer.json
+  var nep_explorer_default = {
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    $id: "https://raw.githubusercontent.com/jwildfire/safety.viz/main/src/data/schema/nep-explorer.json",
+    title: "safety.viz nep-explorer data contract",
+    description: "Long-format laboratory data: one record per participant per measure per visit (NEP-DATA-001). Column names are supplied by the settings mapping. The nep-explorer reads the serum-creatinine records only, resolves each participant's baseline (an explicit baseline flag when configured, otherwise the earliest record), converts every record to mg/dL through the per-record unit table, and reduces each participant to one point: their maximum post-baseline fold change against their maximum post-baseline absolute change, staged on the KDIGO acute-kidney-injury criteria. Phase 1 requires only id, measure, value, unit and a way to find baseline \u2014 a deliberately small contract, so the scatter ports to a study carrying nothing but a chemistry panel. Records that cannot be plotted are counted and exported rather than dropped silently (NEP-DATA-005).",
+    type: "object",
+    required: ["data", "settings"],
+    properties: {
+      data: {
+        type: "array",
+        minItems: 1,
+        items: { type: "object" },
+        description: "d3.csv()-style records; every row carries the participant, measure, result, unit and visit columns named in settings, one row per participant per measure per visit."
+      },
+      settings: {
+        type: "object",
+        description: "Column mappings and rendering options; merged onto the module's DEFAULT_SETTINGS, so only overrides need to be supplied.",
+        required: ["id_col", "measure_col", "value_col"],
+        properties: {
+          id_col: {
+            type: "string",
+            default: "USUBJID",
+            description: "Participant identifier column; required in data. One point per participant, and the key the participantsSelected event carries (NEP-CFG-001, NEP-SCAT-004)."
+          },
+          measure_col: {
+            type: "string",
+            default: "TEST",
+            description: "Column holding the measure name; required in data. Matched against measure_values.CREAT to select the creatinine records (NEP-CFG-008)."
+          },
+          value_col: {
+            type: "string",
+            default: "STRESN",
+            description: "Column holding the numeric result; required in data. Missing or non-numeric results are dropped with a counted, exportable note (NEP-DATA-005)."
+          },
+          unit_col: {
+            type: ["string", "null"],
+            default: "STRESU",
+            description: "Column holding the result unit, resolved PER RECORD against the units factor table. When any record's unit is absent or unrecognized the module refuses to guess: the fold axis stays (it is a ratio), and the absolute cut-line, the >= 4.0 mg/dL rule and the delta staging are suppressed with a note (NEP-UNIT-002, NEP-UNIT-003)."
+          },
+          baseline_col: {
+            type: ["string", "null"],
+            default: null,
+            description: "Optional baseline-flag column (e.g. ABLFL). When supplied, the participant's first record whose value equals baseline_value is the baseline; otherwise, and for a participant with no flagged record, the earliest record is used \u2014 by study day, then visit number, then input order (NEP-DATA-001, NEP-DATA-002)."
+          },
+          baseline_value: {
+            type: "string",
+            default: "Y",
+            description: "The value of baseline_col that marks the baseline record (NEP-CFG-002)."
+          },
+          visit_col: {
+            type: "string",
+            default: "VISIT",
+            description: `Categorical visit column; the tooltip's "maximum at visit" line and the baseline fallback's ordering (NEP-SCAT-003).`
+          },
+          visitn_col: {
+            type: ["string", "null"],
+            default: "VISITNUM",
+            description: "Optional numeric visit column ordering the records; falls back to input order when absent."
+          },
+          studyday_col: {
+            type: ["string", "null"],
+            default: "DY",
+            description: `Optional numeric study-day column: the baseline fallback's first sort key and the tooltip's "maximum on study day" line. Absent from the vendored demo extract, so the line degrades silently rather than rendering blank (NEP-SCAT-003).`
+          },
+          measure_values: {
+            type: "object",
+            default: { CREAT: "Creatinine" },
+            description: "Map of the short measure key to this data's full measure name. Phase 1 reads CREAT only; the map grows to the profile panel in Phase 2 (NEP-CFG-008)."
+          },
+          arm_col: {
+            type: ["string", "null"],
+            default: "ARM",
+            description: "Treatment-arm column carried on each point for the tooltip; ignored when absent from the data."
+          },
+          stages: {
+            type: "object",
+            description: "The staging cut-points, defaulting to the KDIGO acute-kidney-injury criteria (NEP-CFG-003, NEP-STAGE-001..004). Supplied members merge onto the defaults.",
+            properties: {
+              fold: {
+                type: "array",
+                items: { type: "number" },
+                minItems: 3,
+                maxItems: 3,
+                default: [1.5, 2, 3],
+                description: "The ascending fold-change (value / baseline) cut-points for Stages 1, 2 and 3. Sorted ascending on merge: the R source paints its chart from a descending ladder and stages its table from an ascending one, and the two disagree."
+              },
+              delta: {
+                type: "number",
+                default: 0.3,
+                description: "The single absolute-change cut-point KDIGO defines (mg/dL). It produces Stage 1 only \u2014 there is no KDIGO Stage 2 or 3 on absolute change (NEP-STAGE-002)."
+              },
+              absolute: {
+                type: "number",
+                default: 4,
+                description: "The Stage-3 rule on the VALUE reached (mg/dL). A property of the participant, not a region of the plane, so it is drawn as a mark property rather than a zone (NEP-STAGE-003)."
+              }
+            }
+          },
+          units: {
+            type: "object",
+            description: "The mg/dL contract (NEP-UNIT-002). The fold axis is a ratio and unit-free; the absolute axis and both absolute cut-points are not.",
+            properties: {
+              target: {
+                type: "string",
+                default: "mg/dL",
+                description: "The unit the absolute axis and the cut-points are expressed in."
+              },
+              factors: {
+                type: "object",
+                additionalProperties: { type: "number" },
+                default: { "mg/dl": 1, "umol/l": 0.011312217194570135 },
+                description: "Multiplier from each source unit to the target. Keys are normalized on merge \u2014 trimmed, lower-cased, with \xB5/\u03BC/u folded \u2014 so one entry covers every spelling and casing. Sponsor-specific factors vary, which nepExplorer warns about itself, so this is a setting rather than a constant (NEP-UNIT-001)."
+              }
+            }
+          },
+          filters: {
+            $ref: "#/$defs/fieldList",
+            description: "Optional filter columns rendered as controls (NEP-CFG-006)."
+          },
+          details: {
+            oneOf: [{ $ref: "#/$defs/fieldList" }, { type: "null" }],
+            default: null,
+            description: "Participant-detail columns shown with the selected participant; null defaults to the participant ID plus the filter columns."
+          },
+          zone_labels: {
+            type: "string",
+            enum: ["shown", "hidden"],
+            default: "shown",
+            description: "Whether the scatter draws the stage-zone labels (NEP-ZONE-004)."
+          }
+        }
+      }
+    },
+    $defs: {
+      fieldList: {
+        type: "array",
+        items: {
+          anyOf: [
+            { type: "string" },
+            {
+              type: "object",
+              required: ["value_col"],
+              properties: {
+                value_col: { type: "string" },
+                label: { type: "string" }
+              }
+            }
+          ]
+        }
+      }
+    }
+  };
+
+  // src/nep-explorer/checkInputs.js
+  var REQUIRED_COLUMN_SETTINGS12 = nep_explorer_default.properties.settings.required;
+  function checkInputs12(data, settings) {
+    const rows = Array.isArray(data) ? data : [];
+    const missing = REQUIRED_COLUMN_SETTINGS12.map((key) => settings[key]).filter(
+      (col) => !rows.some((row) => row[col] !== void 0)
+    );
+    if (missing.length) {
+      throw new Error(`Required variable(s) missing: ${missing.join(", ")}`);
+    }
+  }
+  function hasCreatinine(data, settings) {
+    const measure = settings.measure_values && settings.measure_values.CREAT;
+    if (!measure) return false;
+    return (Array.isArray(data) ? data : []).some(
+      (row) => String(row[settings.measure_col]) === String(measure)
+    );
+  }
+
+  // src/nep-explorer/structureData.js
+  var DROP_REASON_COLUMN = "__nep_dropReason";
+  var REASON_NON_NUMERIC = "Missing or non-numeric creatinine result";
+  var REASON_NO_USABLE = "No usable creatinine result";
+  var REASON_NO_POST_BASELINE = "No post-baseline creatinine record";
+  var REASON_MIXED_UNITS = "Records use more than one unit and cannot be compared";
+  function unique9(values) {
+    return [
+      ...new Set(values.filter((value) => value !== void 0 && value !== null && value !== ""))
+    ];
+  }
+  function foldStage(fold, cuts) {
+    if (!Number.isFinite(fold)) return null;
+    const [one, two, three] = cuts;
+    if (fold >= three) return 3;
+    if (fold >= two) return 2;
+    if (fold >= one) return 1;
+    return 0;
+  }
+  function deltaStage(delta, trigger) {
+    if (delta === null || !Number.isFinite(delta)) return null;
+    return delta >= trigger ? 1 : 0;
+  }
+  function combinedStage(fold, delta, absoluteRule) {
+    if (absoluteRule) return 3;
+    const stages = [fold, delta].filter((stage) => stage !== null && stage !== void 0);
+    if (!stages.length) return null;
+    return Math.max(...stages);
+  }
+  function resolveUnit2(raw, units) {
+    const key = normalizeUnit(raw);
+    const factor = key && Object.prototype.hasOwnProperty.call(units.factors, key) ? units.factors[key] : null;
+    return { key, factor };
+  }
+  function resolveBaseline(records, settings) {
+    if (!records || !records.length) return null;
+    if (settings.baseline_col) {
+      const flagged = records.find(
+        (row) => String(row[settings.baseline_col]) === String(settings.baseline_value ?? "Y")
+      );
+      if (flagged) return { record: flagged, fallback: false };
+    }
+    const key = (row, column) => {
+      if (!column) return null;
+      const value = Number(row[column]);
+      return Number.isFinite(value) ? value : null;
+    };
+    const ordered = records.map((row, index) => ({ row, index })).sort((a, b) => {
+      const days = [key(a.row, settings.studyday_col), key(b.row, settings.studyday_col)];
+      if (days[0] !== null && days[1] !== null && days[0] !== days[1]) return days[0] - days[1];
+      const visits = [key(a.row, settings.visitn_col), key(b.row, settings.visitn_col)];
+      if (visits[0] !== null && visits[1] !== null && visits[0] !== visits[1])
+        return visits[0] - visits[1];
+      return a.index - b.index;
+    });
+    return { record: ordered[0].row, fallback: true };
+  }
+  function cleanData8(rawData, settings) {
+    const measure = settings.measure_values && settings.measure_values.CREAT;
+    const rows = [];
+    const droppedRows = [];
+    (Array.isArray(rawData) ? rawData : []).forEach((row, index) => {
+      if (String(row[settings.measure_col]) !== String(measure)) return;
+      const raw = row[settings.value_col];
+      const value = Number(raw);
+      if (raw === "" || raw === null || raw === void 0 || !Number.isFinite(value)) {
+        droppedRows.push({ ...row, [DROP_REASON_COLUMN]: REASON_NON_NUMERIC });
+        return;
+      }
+      const unit = resolveUnit2(settings.unit_col ? row[settings.unit_col] : null, settings.units);
+      rows.push({
+        ...row,
+        __nep_index: index,
+        __nep_raw: value,
+        __nep_unitKey: unit.key,
+        __nep_factor: unit.factor
+      });
+    });
+    return { rows, droppedRows };
+  }
+  function buildParticipants2(rows, settings) {
+    const unitsResolved = rows.every((row) => row.__nep_factor !== null);
+    const nativeUnit = unitsResolved ? settings.units.target : unique9(
+      rows.filter((row) => row.__nep_factor === null).map((row) => settings.unit_col ? row[settings.unit_col] : "")
+    )[0] || "(unit not recorded)";
+    const byId = /* @__PURE__ */ new Map();
+    rows.forEach((row) => {
+      const id = row[settings.id_col];
+      if (!byId.has(id)) byId.set(id, []);
+      byId.get(id).push(row);
+    });
+    const metaCols = unique9([
+      ...settings.filters.map((filter) => filter.value_col),
+      ...settings.details.map((detail) => detail.value_col),
+      settings.arm_col,
+      settings.id_col
+    ]);
+    const points = [];
+    const droppedParticipants = [];
+    let baselineFallbacks = 0;
+    byId.forEach((participantRows, id) => {
+      if (!unitsResolved && unique9(participantRows.map((row) => row.__nep_unitKey)).length > 1) {
+        droppedParticipants.push({ id, reason: REASON_MIXED_UNITS });
+        return;
+      }
+      const valueOf = (row) => unitsResolved ? row.__nep_raw * row.__nep_factor : row.__nep_raw;
+      const resolved = resolveBaseline(participantRows, settings);
+      if (!resolved) {
+        droppedParticipants.push({ id, reason: REASON_NO_USABLE });
+        return;
+      }
+      const baselineRow = resolved.record;
+      const baseline = valueOf(baselineRow);
+      const post = participantRows.filter((row) => row !== baselineRow);
+      if (!post.length) {
+        droppedParticipants.push({ id, reason: REASON_NO_POST_BASELINE });
+        return;
+      }
+      if (resolved.fallback) baselineFallbacks += 1;
+      let maxRow = post[0];
+      post.forEach((row) => {
+        if (valueOf(row) > valueOf(maxRow)) maxRow = row;
+      });
+      const max = valueOf(maxRow);
+      const fold = baseline > 0 ? max / baseline : NaN;
+      const delta = max - baseline;
+      const absoluteRule = unitsResolved && max >= settings.stages.absolute;
+      const fStage = foldStage(fold, settings.stages.fold);
+      const dStage = unitsResolved ? deltaStage(delta, settings.stages.delta) : null;
+      const day2 = settings.studyday_col ? Number(maxRow[settings.studyday_col]) : NaN;
+      const meta = {};
+      metaCols.forEach((col) => {
+        meta[col] = baselineRow[col] === void 0 ? "" : String(baselineRow[col]);
+      });
+      points.push({
+        id,
+        baseline,
+        baselineVisit: baselineRow[settings.visit_col] ?? "",
+        baselineFallback: resolved.fallback,
+        max,
+        maxVisit: maxRow[settings.visit_col] ?? "",
+        maxDay: Number.isFinite(day2) ? day2 : null,
+        fold,
+        delta,
+        foldStage: fStage,
+        deltaStage: dStage,
+        stage: combinedStage(fStage, dStage, absoluteRule),
+        absoluteRule,
+        unit: unitsResolved ? settings.units.target : nativeUnit,
+        arm: settings.arm_col ? baselineRow[settings.arm_col] ?? "" : "",
+        meta
+      });
+    });
+    droppedParticipants.sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+    return {
+      points,
+      droppedParticipants,
+      baselineFallbacks,
+      unitsResolved,
+      nativeUnit
+    };
+  }
+  function structureData(rawData, settings) {
+    const { rows, droppedRows } = cleanData8(rawData, settings);
+    const built = buildParticipants2(rows, settings);
+    const plotted = new Set(built.points.map((point) => point.id));
+    const accounted = new Set(built.droppedParticipants.map((entry) => entry.id));
+    const missing = unique9(droppedRows.map((row) => row[settings.id_col])).filter(
+      (id) => !plotted.has(id) && !accounted.has(id)
+    );
+    const droppedParticipants = [
+      ...built.droppedParticipants,
+      ...missing.map((id) => ({ id, reason: REASON_NO_USABLE }))
+    ].sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+    return { ...built, droppedRows, droppedParticipants };
+  }
+  function applyFilters9(points, filters) {
+    return points.filter(
+      (point) => Object.entries(filters || {}).every(
+        ([key, value]) => !value || String(point.meta[key]) === String(value)
+      )
+    );
+  }
+  function stageSummary(points) {
+    const rows = points || [];
+    const total = rows.length;
+    const cell2 = (n) => ({ n, percent: total ? n / total * 100 : 0 });
+    const count2 = (key, stage) => rows.filter((point) => point[key] === stage).length;
+    return {
+      total,
+      rows: [0, 1, 2, 3].map((stage) => ({
+        stage,
+        fold: cell2(count2("foldStage", stage)),
+        delta: stage <= 1 ? cell2(count2("deltaStage", stage)) : { n: null, percent: null },
+        combined: cell2(count2("stage", stage))
+      }))
+    };
+  }
+
+  // src/nep-explorer/getScales.js
+  function formatNumber7(value, digits = 2) {
+    if (!Number.isFinite(value)) return "";
+    return Number(value.toFixed(digits)).toString();
+  }
+  function foldAxisLabel(measure) {
+    return `Maximum fold change in ${measure} (\xD7 baseline)`;
+  }
+  function deltaAxisLabel(measure, unit) {
+    return `Maximum absolute change in ${measure} (${unit})`;
+  }
+  function foldDomain(values, cuts) {
+    const nums = (values || []).filter(Number.isFinite);
+    const floor = cuts[cuts.length - 1] + 0.5;
+    const observed = nums.length ? Math.max(...nums) * 1.05 : 0;
+    return [0, Math.max(floor, observed)];
+  }
+  function deltaDomain2(values, trigger) {
+    const nums = (values || []).filter(Number.isFinite);
+    const lo = Math.min(0, ...nums);
+    const hi = Math.max(trigger * 1.35, ...nums);
+    const pad = (hi - lo) * 0.08 || 0.05;
+    return [lo - pad, hi + pad];
+  }
+  function withCutTicks(cuts, domain, format) {
+    return (axis) => {
+      const present = new Set(axis.ticks.map((tick) => tick.value));
+      cuts.forEach((cut) => {
+        if (cut < domain[0] || cut > domain[1] || present.has(cut)) return;
+        axis.ticks.push({ value: cut, label: format(cut), major: true });
+      });
+      axis.ticks.sort((a, b) => a.value - b.value);
+    };
+  }
+  function buildScales6({
+    foldDomain: xDomain,
+    deltaDomain: yDomain,
+    cuts,
+    deltaTrigger,
+    measure,
+    unit
+  }) {
+    return {
+      x: {
+        type: "linear",
+        min: xDomain[0],
+        max: xDomain[1],
+        title: { display: true, text: foldAxisLabel(measure) },
+        grid: { color: "rgba(148, 163, 184, 0.25)" },
+        afterBuildTicks: withCutTicks(cuts, xDomain, (cut) => `${formatNumber7(cut)}\xD7`)
+      },
+      y: {
+        type: "linear",
+        min: yDomain[0],
+        max: yDomain[1],
+        title: { display: true, text: deltaAxisLabel(measure, unit) },
+        grid: { color: "rgba(148, 163, 184, 0.25)" },
+        afterBuildTicks: withCutTicks(
+          [deltaTrigger],
+          yDomain,
+          (cut) => `${formatNumber7(cut)} ${unit}`
+        )
+      }
+    };
+  }
+
+  // src/nep-explorer/getPlugins.js
+  var STAGE_COLORS = {
+    0: "#94a3b8",
+    1: "#f5c14b",
+    2: "#e8873c",
+    3: "#c8372d"
+  };
+  var ZONE_OPACITY = 0.16;
+  var SELECTION_COLOR3 = "#111827";
+  function hexToRgba5(hex2, opacity) {
+    const clean = hex2.replace("#", "");
+    const r = parseInt(clean.slice(0, 2), 16);
+    const g = parseInt(clean.slice(2, 4), 16);
+    const b = parseInt(clean.slice(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  }
+  function stageLabel(stage) {
+    if (stage === null || stage === void 0) return "Not staged";
+    return stage === 0 ? "No stage" : `Stage ${stage}`;
+  }
+  function stageZones(cuts, deltaTrigger, xDomain, yDomain) {
+    const [xMin, xMax] = xDomain;
+    const [yMin, yMax] = yDomain;
+    const [one, two, three] = cuts;
+    const band = (stage, x0, x1, y0, y1, label) => {
+      const left = Math.max(xMin, x0);
+      const right = Math.min(xMax, x1);
+      const bottom = Math.max(yMin, y0);
+      const top = Math.min(yMax, y1);
+      if (!(right > left) || !(top > bottom)) return null;
+      return {
+        stage,
+        label: label ?? null,
+        x0: left,
+        x1: right,
+        y0: bottom,
+        y1: top,
+        fill: hexToRgba5(STAGE_COLORS[stage], ZONE_OPACITY)
+      };
+    };
+    const zones = [
+      band(3, three, Infinity, -Infinity, Infinity, "Stage 3"),
+      band(2, two, three, -Infinity, Infinity, "Stage 2"),
+      band(1, one, two, -Infinity, Infinity, "Stage 1")
+    ];
+    if (Number.isFinite(deltaTrigger)) {
+      zones.push(band(1, -Infinity, one, deltaTrigger, Infinity, null));
+    }
+    return zones.filter(Boolean);
+  }
+  function markStyles(points, selectedIndex) {
+    const rows = points || [];
+    const borders = selectionBorders2(rows.length, selectedIndex);
+    return {
+      background: rows.map((point) => hexToRgba5(STAGE_COLORS[point.stage ?? 0], 0.8)),
+      border: borders.colors,
+      borderWidth: borders.widths,
+      radius: rows.map((point) => point.absoluteRule ? 8 : 5),
+      hoverRadius: rows.map((point) => point.absoluteRule ? 10 : 7),
+      pointStyle: rows.map((point) => point.absoluteRule ? "triangle" : "circle")
+    };
+  }
+  function selectionBorders2(count2, selectedIndex) {
+    return {
+      colors: Array.from(
+        { length: count2 },
+        (_, index) => index === selectedIndex ? SELECTION_COLOR3 : "rgba(51, 65, 85, 0.65)"
+      ),
+      widths: Array.from({ length: count2 }, (_, index) => index === selectedIndex ? 3 : 1)
+    };
+  }
+  function formatSigned2(value, digits = 2) {
+    if (!Number.isFinite(value)) return "";
+    const text = formatNumber7(Math.abs(value), digits);
+    return value < 0 ? `\u2212${text}` : `+${text}`;
+  }
+  function pointTooltip3(point, settings, measure) {
+    const unit = point.unit;
+    const staged = (stage) => stage === null || stage === void 0 ? "not staged \u2014 unit not recognized" : stageLabel(stage);
+    const lines = [
+      `Participant: ${point.id}`,
+      `KDIGO stage: ${stageLabel(point.stage)}`,
+      `Fold change: ${formatNumber7(point.fold)}\xD7 baseline (${staged(point.foldStage)})`,
+      `Absolute change: ${formatSigned2(point.delta)} ${unit} (${staged(point.deltaStage)})`,
+      `Baseline ${measure}: ${formatNumber7(point.baseline)} ${unit} (${point.baselineVisit})`,
+      `Maximum ${measure}: ${formatNumber7(point.max)} ${unit} (${point.maxVisit})`
+    ];
+    if (point.maxDay !== null && point.maxDay !== void 0)
+      lines.push(`Maximum on study day: ${point.maxDay}`);
+    if (point.absoluteRule)
+      lines.push(
+        `Maximum reached ${formatNumber7(settings.stages.absolute)} ${settings.units.target}: Stage 3 by the absolute-value rule`
+      );
+    return lines;
+  }
+  function stageZonesPlugin(instance) {
+    return {
+      id: `nep-stage-zones-${Math.random().toString(36).slice(2)}`,
+      beforeDatasetsDraw(chart) {
+        chart.$nepZones = null;
+        const { ctx, chartArea, scales } = chart;
+        if (!scales.x || !scales.y) return;
+        const settings = instance.settings;
+        const trigger = instance.unitsResolved ? settings.stages.delta : null;
+        const zones = stageZones(
+          settings.stages.fold,
+          trigger,
+          [scales.x.min, scales.x.max],
+          [scales.y.min, scales.y.max]
+        );
+        const painted = zones.map((zone) => {
+          const left = scales.x.getPixelForValue(zone.x0);
+          const right = scales.x.getPixelForValue(zone.x1);
+          const top = scales.y.getPixelForValue(zone.y1);
+          const bottom = scales.y.getPixelForValue(zone.y0);
+          return { ...zone, left, right, top, bottom };
+        });
+        chart.$nepZones = painted;
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(chartArea.left, chartArea.top, chartArea.width, chartArea.height);
+        ctx.clip();
+        painted.forEach((zone) => {
+          ctx.fillStyle = zone.fill;
+          ctx.fillRect(zone.left, zone.top, zone.right - zone.left, zone.bottom - zone.top);
+        });
+        ctx.strokeStyle = "rgba(100, 116, 139, 0.55)";
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        painted.forEach((zone) => {
+          if (zone.x0 > scales.x.min) {
+            ctx.beginPath();
+            ctx.moveTo(zone.left, zone.top);
+            ctx.lineTo(zone.left, zone.bottom);
+            ctx.stroke();
+          }
+          if (zone.y0 > scales.y.min) {
+            ctx.beginPath();
+            ctx.moveTo(zone.left, zone.bottom);
+            ctx.lineTo(zone.right, zone.bottom);
+            ctx.stroke();
+          }
+        });
+        if (settings.zone_labels !== "hidden") {
+          ctx.setLineDash([]);
+          ctx.fillStyle = "rgba(51, 65, 85, 0.9)";
+          ctx.font = "11px system-ui, sans-serif";
+          ctx.textBaseline = "bottom";
+          ctx.textAlign = "left";
+          painted.forEach((zone) => {
+            if (!zone.label) return;
+            ctx.fillText(zone.label, zone.left + 4, chartArea.bottom - 6);
+          });
+        }
+        ctx.restore();
+      }
+    };
+  }
+
+  // src/nep-explorer.js
+  Chart.register(ScatterController, PointElement, LinearScale, plugin_tooltip);
+  var DROPPED_PARTICIPANT_COLUMNS2 = ["id", "reason"];
+  var STYLE_ID4 = "safety-viz-nep-explorer-styles";
+  var MODULE_CSS3 = `
+.safety-nep-explorer .nep-summary-title{font-size:.95rem;margin:0 0 .5rem}
+.safety-nep-explorer .nep-table-scroll{overflow-x:auto}
+.safety-nep-explorer .nep-summary{width:auto;border-collapse:collapse;font-size:.85rem;background:#fff;min-width:30rem;max-width:44rem}
+.safety-nep-explorer .nep-summary th,.safety-nep-explorer .nep-summary td{border-bottom:1px solid #e3e8ee;padding:.4rem .6rem;text-align:right;font-variant-numeric:tabular-nums}
+.safety-nep-explorer .nep-summary thead th{border-bottom:2px solid #d8dee4;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f;text-align:center;white-space:nowrap}
+.safety-nep-explorer .nep-summary tbody th{text-align:left;font-weight:600}
+.safety-nep-explorer .nep-summary td.nep-na{color:#9aa5b1}
+.safety-nep-explorer .nep-summary-note{margin:.5rem 0 0;font-size:.78rem;line-height:1.4;color:#52616f;max-width:52rem}
+.safety-nep-explorer .hep-csv-link{color:#1f5fa8;text-decoration:underline;cursor:pointer}
+`;
+  function applyStyles() {
+    if (typeof document === "undefined" || document.getElementById(STYLE_ID4)) return;
+    const style = document.createElement("style");
+    style.id = STYLE_ID4;
+    style.textContent = MODULE_CSS3;
+    document.head.append(style);
+  }
+  var SafetyNepExplorer = class {
+    constructor(element = "body", settings = {}) {
+      this.element = typeof element === "string" ? document.querySelector(element) : element;
+      if (!this.element) throw new Error(`Safety Nep Explorer target not found: ${element}`);
+      this.settings = syncSettings12(settings);
+      this.rawData = [];
+      this.allPoints = [];
+      this.points = [];
+      this.droppedRows = [];
+      this.droppedParticipants = [];
+      this.baselineFallbacks = 0;
+      this.unitsResolved = true;
+      this.nativeUnit = this.settings.units.target;
+      this.hasMeasure = true;
+      this.summary = null;
+      this.charts = [];
+      this.chart = null;
+      this.participantsSelected = [];
+      this.state = { filters: {}, zoneLabels: this.settings.zone_labels, selectedId: null };
+      this.renderShell();
+    }
+    /**
+     * Build the static DOM shell the chart and summary table render into.
+     * @private
+     */
+    renderShell() {
+      Object.assign(
+        this,
+        renderShell(this.element, {
+          moduleClass: "safety-nep-explorer",
+          onToggle: () => this.resize()
+        })
+      );
+      applyStyles();
+    }
+    /**
+     * Load data and render: an alias for setData that keeps the two-step
+     * create-then-init call shape working.
+     * @param {Object[]} data Long-format lab records matching the nep-explorer data contract.
+     * @returns {SafetyNepExplorer} The instance, for chaining.
+     */
+    init(data) {
+      this.setData(data);
+      return this;
+    }
+    /**
+     * Replace the bound data and re-render. The data is validated against the
+     * settings mapping (throwing, and rendering the message into the target
+     * element, when required columns are missing), reduced to one staged point
+     * per participant, and the controls are rebuilt from the new data.
+     * @param {Object[]} data Long-format lab records matching the nep-explorer data contract.
+     * @returns {SafetyNepExplorer} The instance, for chaining.
+     */
+    setData(data) {
+      this.rawData = Array.isArray(data) ? data : [];
+      this.validateAndCleanData();
+      this.buildControls();
+      this.render();
+      return this;
+    }
+    /**
+     * Merge setting overrides onto the current settings, re-normalize, rebuild
+     * the controls, and re-render.
+     * @param {NepExplorerSettings} settings Setting overrides to merge.
+     * @returns {SafetyNepExplorer} The instance, for chaining.
+     */
+    setSettings(settings) {
+      if ("zone_labels" in settings) this.state.zoneLabels = settings.zone_labels;
+      this.settings = syncSettings12({ ...this.settings, ...settings });
+      this.settings.zone_labels = this.state.zoneLabels;
+      if (this.rawData.length) this.validateAndCleanData();
+      this.buildControls();
+      this.render();
+      return this;
+    }
+    /**
+     * Validate the raw data against the settings mapping and run the whole
+     * per-setData reduction once: creatinine records → one staged participant per
+     * point, plus the drop accounting and the unit mode.
+     * @private
+     */
+    validateAndCleanData() {
+      try {
+        checkInputs12(this.rawData, this.settings);
+      } catch (error) {
+        this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+        throw error;
+      }
+      this.hasMeasure = hasCreatinine(this.rawData, this.settings);
+      const structured = structureData(this.rawData, this.settings);
+      this.allPoints = structured.points;
+      this.droppedRows = structured.droppedRows;
+      this.droppedParticipants = structured.droppedParticipants;
+      this.baselineFallbacks = structured.baselineFallbacks;
+      this.unitsResolved = structured.unitsResolved;
+      this.nativeUnit = structured.nativeUnit;
+    }
+    /**
+     * The creatinine measure's display name.
+     * @private
+     */
+    measureLabel() {
+      return this.settings.measure_values.CREAT;
+    }
+    /**
+     * Rebuild the filter and display controls from data + state.
+     * @private
+     */
+    buildControls() {
+      this.controls.innerHTML = "";
+      const { addSection, addControl } = controlBuilders(this.controls);
+      const filterSpecs = this.settings.filters.filter((filter) => {
+        const exists = this.rawData.some((row) => row[filter.value_col] !== void 0);
+        if (!exists)
+          console.warn(
+            `The [ ${filter.label} ] filter has been removed because the variable does not exist.`
+          );
+        return exists;
+      });
+      if (filterSpecs.length) {
+        const filterParent = addSection("Filters");
+        filterSpecs.forEach((filter) => {
+          const select = addControl(filter.label, document.createElement("select"), filterParent);
+          option(select, "__all__", "All", !this.state.filters[filter.value_col]);
+          unique9(this.allPoints.map((point) => point.meta[filter.value_col])).sort().forEach(
+            (value) => option(select, value, value, this.state.filters[filter.value_col] === value)
+          );
+          select.onchange = () => {
+            this.state.filters[filter.value_col] = select.value === "__all__" ? null : select.value;
+            this.render();
+          };
+        });
+      }
+      const displayParent = addSection("Display");
+      const zoneLabels = document.createElement("input");
+      zoneLabels.type = "checkbox";
+      zoneLabels.checked = this.state.zoneLabels !== "hidden";
+      zoneLabels.onchange = () => {
+        this.state.zoneLabels = zoneLabels.checked ? "shown" : "hidden";
+        this.settings.zone_labels = this.state.zoneLabels;
+        this.render();
+      };
+      const inline = createElement("div", "sv-control-inline");
+      inline.append(zoneLabels, document.createTextNode("Show"));
+      addControl("Stage zone labels", inline, displayParent);
+    }
+    /**
+     * Redraw everything from the current data, settings and control state.
+     * @returns {void}
+     */
+    render() {
+      this.destroyCharts();
+      this.listingWrap.innerHTML = "";
+      this.footnote.textContent = "";
+      this.state.selectedId = null;
+      this.participantsSelected = [];
+      this.mainAnnotation.textContent = "Click a point to see details.";
+      this.points = applyFilters9(this.allPoints, this.state.filters);
+      this.summary = stageSummary(this.points);
+      this.updateNotes();
+      if (!this.points.length) {
+        this.mainAnnotation.textContent = this.hasMeasure ? "No participants to plot for the current selection." : `No ${this.measureLabel()} records in this dataset.`;
+        return;
+      }
+      this.drawScatter();
+      this.renderSummary();
+    }
+    /**
+     * The status line above the chart: how many participants are plotted, the
+     * unit-suppression notice, the baseline-fallback count, and the counted +
+     * exportable drops (NEP-DATA-005).
+     *
+     * Every one of these is a count with a link behind it where a link is
+     * possible. "23 results removed" is exactly the sort of line that gets read
+     * past; the export turns it into something checkable against the source.
+     * @private
+     */
+    updateNotes() {
+      this.notes.innerHTML = "";
+      const total = this.allPoints.length;
+      const shown = this.points.length;
+      const percent = total ? (shown / total * 100).toFixed(1) : "0.0";
+      this.notes.append(
+        createElement(
+          "span",
+          null,
+          `${shown} of ${total} participant${total === 1 ? "" : "s"} shown (${percent}%).`
+        )
+      );
+      if (!this.unitsResolved) {
+        this.notes.append(
+          createElement(
+            "span",
+            "sv-warning",
+            `Unit "${this.nativeUnit}" not recognized \u2014 fold change is still exact, but the absolute-change staging and the ${formatNumber7(this.settings.stages.absolute)} ${this.settings.units.target} rule are suppressed.`
+          )
+        );
+      }
+      if (this.baselineFallbacks) {
+        this.notes.append(
+          createElement(
+            "span",
+            null,
+            `${this.baselineFallbacks} participant${this.baselineFallbacks === 1 ? "" : "s"} used the earliest record as baseline (no baseline flag configured).`
+          )
+        );
+      }
+      if (this.droppedRows.length) {
+        const note = createElement("span", "sv-warning");
+        note.append(
+          document.createTextNode(
+            `${this.droppedRows.length} missing or non-numeric result${this.droppedRows.length === 1 ? "" : "s"} removed. `
+          ),
+          csvDownloadLink(
+            () => toCsv(this.droppedRows, this.droppedRowColumns()),
+            "nep-explorer-dropped-records",
+            "Download records"
+          )
+        );
+        this.notes.append(note);
+      }
+      if (this.droppedParticipants.length) {
+        const note = createElement("span", "sv-warning");
+        note.append(
+          document.createTextNode(
+            `${this.droppedParticipants.length} participant${this.droppedParticipants.length === 1 ? "" : "s"} could not be plotted. `
+          ),
+          csvDownloadLink(
+            () => toCsv(this.droppedParticipants, DROPPED_PARTICIPANT_COLUMNS2),
+            "nep-explorer-dropped-participants",
+            "Download participants"
+          )
+        );
+        this.notes.append(note);
+      }
+    }
+    /**
+     * The dropped-row export's columns: the reason first, because it is why the
+     * reviewer opened the file, then the source columns as they arrived. The
+     * module's own derived `__nep_*` working is left out.
+     * @private
+     */
+    droppedRowColumns() {
+      if (!this.droppedRows.length) return [];
+      const source = Object.keys(this.droppedRows[0]).filter(
+        (column) => !column.startsWith("__nep_")
+      );
+      return [DROP_REASON_COLUMN, ...source];
+    }
+    /**
+     * Draw the Chart.js scatter with the stage zones, tooltips and point
+     * selection.
+     * @private
+     */
+    drawScatter() {
+      const points = this.points;
+      const measure = this.measureLabel();
+      const unit = this.unitsResolved ? this.settings.units.target : this.nativeUnit;
+      const data = points.map((point) => ({ x: point.fold, y: point.delta }));
+      const styles = markStyles(points, -1);
+      const xDomain = foldDomain(
+        points.map((point) => point.fold),
+        this.settings.stages.fold
+      );
+      const yDomain = deltaDomain2(
+        points.map((point) => point.delta),
+        this.unitsResolved ? this.settings.stages.delta : 0
+      );
+      const chart = new Chart(this.canvas.getContext("2d"), {
+        type: "scatter",
+        data: {
+          datasets: [
+            {
+              label: "Participants",
+              data,
+              pointBackgroundColor: styles.background,
+              pointBorderColor: styles.border,
+              pointBorderWidth: styles.borderWidth,
+              pointRadius: styles.radius,
+              pointHoverRadius: styles.hoverRadius,
+              pointStyle: styles.pointStyle
+            }
+          ]
+        },
+        options: {
+          maintainAspectRatio: false,
+          responsive: true,
+          layout: { padding: 6 },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                title: () => "",
+                label: (ctx) => pointTooltip3(points[ctx.dataIndex], this.settings, measure)
+              }
+            }
+          },
+          scales: buildScales6({
+            foldDomain: xDomain,
+            deltaDomain: yDomain,
+            cuts: this.settings.stages.fold,
+            deltaTrigger: this.unitsResolved ? this.settings.stages.delta : NaN,
+            measure,
+            unit
+          }),
+          onHover: (event, active) => {
+            const target = event?.native?.target;
+            if (target) target.style.cursor = active.length ? "pointer" : "default";
+          },
+          onClick: (event, active) => {
+            if (active.length) this.selectPoint(active[0].index);
+            else if (this.state.selectedId != null) this.clearSelection();
+          }
+        },
+        plugins: [stageZonesPlugin(this)]
+      });
+      chart.$nepPoints = points;
+      this.chart = chart;
+      this.charts.push(chart);
+    }
+    /**
+     * The stage summary table (NEP-TBL-001): Stage 0-3 down the side, then N and
+     * % for the fold staging, the absolute-change staging, and the combined stage
+     * the zones show.
+     * @private
+     */
+    renderSummary() {
+      const summary = this.summary;
+      const unit = this.unitsResolved ? this.settings.units.target : this.nativeUnit;
+      const cell2 = (value) => value.n === null ? '<td class="nep-na">\u2014</td><td class="nep-na">\u2014</td>' : `<td>${value.n}</td><td>${value.percent.toFixed(1)}%</td>`;
+      const rows = summary.rows.map(
+        (row) => `<tr><th scope="row">${stageLabel(row.stage)}</th>` + cell2(row.fold) + cell2(row.delta) + cell2(row.combined) + "</tr>"
+      ).join("");
+      const suppressed = this.unitsResolved ? "" : `<p class="nep-summary-note sv-warning">Absolute-change staging is suppressed: the unit "${this.nativeUnit}" is not recognized.</p>`;
+      this.listingWrap.innerHTML = `<h3 class="nep-summary-title">KDIGO stage summary (n = ${summary.total})</h3><div class="nep-table-scroll"><table class="nep-summary"><thead><tr><th rowspan="2" scope="col">Stage</th><th colspan="2" scope="colgroup">Fold change</th><th colspan="2" scope="colgroup">Absolute change (${unit})</th><th colspan="2" scope="colgroup">KDIGO stage</th></tr><tr><th scope="col">N</th><th scope="col">%</th><th scope="col">N</th><th scope="col">%</th><th scope="col">N</th><th scope="col">%</th></tr></thead><tbody>${rows}</tbody></table></div><p class="nep-summary-note">The first two column pairs are separate marginal distributions, not a cross-tabulation; the third is the combined stage the zones show \u2014 the worse of the two axes, raised to Stage 3 for any participant whose maximum reached ${formatNumber7(this.settings.stages.absolute)} ${this.settings.units.target}. KDIGO defines no Stage 2 or Stage 3 on absolute change, so those cells are marked \u2014.</p>` + suppressed;
+    }
+    /**
+     * Select a scatter point: highlight it, note the participant, and dispatch
+     * the selection on the shell root — the seam the Phase-2 patient profile
+     * mounts onto (NEP-SCAT-004).
+     * @private
+     */
+    selectPoint(index) {
+      const point = this.points[index];
+      if (!point) return;
+      this.state.selectedId = point.id;
+      this.restyle(index);
+      const details = this.settings.details.filter((detail) => detail.value_col !== this.settings.id_col).map((detail) => `${detail.label}: ${point.meta[detail.value_col]}`).filter((text) => !/: $/.test(text));
+      this.mainAnnotation.textContent = `${point.id} \u2014 ${stageLabel(point.stage)}`;
+      this.footnote.textContent = [
+        `${point.id}: baseline ${formatNumber7(point.baseline)} ${point.unit} (${point.baselineVisit}), maximum ${formatNumber7(point.max)} ${point.unit} (${point.maxVisit}), ${formatNumber7(point.fold)}\xD7 baseline.`,
+        ...details
+      ].join(" ");
+      this.dispatchSelection([point.id]);
+    }
+    /**
+     * Clear the point selection: restore the marks, reset the annotation, and
+     * dispatch the empty selection so external listeners follow.
+     * @returns {void}
+     */
+    clearSelection() {
+      this.state.selectedId = null;
+      this.restyle(-1);
+      this.mainAnnotation.textContent = "Click a point to see details.";
+      this.footnote.textContent = "";
+      this.dispatchSelection([]);
+    }
+    /**
+     * Reapply the per-point mark styling for a selection index.
+     * @private
+     */
+    restyle(index) {
+      if (!this.chart) return;
+      const styles = markStyles(this.points, index);
+      const dataset = this.chart.data.datasets[0];
+      dataset.pointBorderColor = styles.border;
+      dataset.pointBorderWidth = styles.borderWidth;
+      this.chart.$nepSelectedIndex = index >= 0 ? index : null;
+      this.chart.update();
+    }
+    /**
+     * Dispatch the custom participantsSelected event on the shell root with the
+     * selected IDs — the house selection payload (NEP-SCAT-004). Phase 1 wires
+     * this even though the patient profile is not built yet, because it is the
+     * seam Phase 2 mounts onto.
+     * @private
+     */
+    dispatchSelection(ids) {
+      this.participantsSelected = ids;
+      if (this.root) {
+        this.root.dispatchEvent(
+          new CustomEvent("participantsSelected", { detail: { data: ids }, bubbles: true })
+        );
+      }
+    }
+    /**
+     * Resize the live chart to its container. For host layouts that change the
+     * container size without a window resize — e.g. the R htmlwidget bindings.
+     * @returns {void}
+     */
+    resize() {
+      this.charts.forEach((chart) => chart.resize());
+    }
+    /**
+     * Destroy the live Chart.js instance without touching the shell.
+     * @private
+     */
+    destroyCharts() {
+      this.charts.forEach((chart) => chart.destroy());
+      this.charts = [];
+      this.chart = null;
+    }
+    /**
+     * Tear the explorer down: destroy the Chart.js instance and empty the target
+     * element. The instance cannot be reused afterwards — create a new one via
+     * the factory instead.
+     * @returns {void}
+     */
+    destroy() {
+      this.destroyCharts();
+      this.element.innerHTML = "";
+    }
+  };
+  function nepExplorer(element = "body", settings = {}) {
+    return new SafetyNepExplorer(element, settings);
+  }
+
   // src/main.js
   var main_default = {
     histogram,
@@ -30481,7 +31616,8 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     aeExplorer,
     qtExplorer,
     hepWaterfall,
-    participantProfile
+    participantProfile,
+    nepExplorer
   };
   return __toCommonJS(main_exports);
 })();

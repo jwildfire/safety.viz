@@ -1,5 +1,5 @@
 {
-  "module": "ae-explorer",
+  "module": "nep-explorer",
   "generatedAt": "2026-08-14T17:47:26.446Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
@@ -18,158 +18,6 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [71],
-      "screenshots": []
-    },
-    {
-      "test": "AE-CFG-004/AE-REG-041/AE-REG-043/AE-REG-044: the group re-mapping control offers the current column and redraws on change (#60)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["AE-CFG-004", "AE-REG-041", "AE-REG-043", "AE-REG-044"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "AE-CFG-006/AE-USER-019: the per-arm columns sit under a Groups super-header and color-match their rate dots (#60)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["AE-CFG-006", "AE-USER-019"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "AE-DATA-001: placeholder rows keep AE-free participants in the group denominators (#60)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["AE-DATA-001"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "AE-DATA-003/AE-API-001: default-column data renders the hierarchical summary table from the factory with an empty settings object (#60)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["AE-DATA-003", "AE-API-001"],
-      "issueRefs": [60],
-      "screenshots": ["AE-DATA-003-default-table.png"]
-    },
-    {
-      "test": "AE-REG-006/AE-USER-002/AE-USER-003/AE-USER-018/AE-REG-018: event filters narrow the counted events without changing denominators, and carry explanatory badges (#60)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["AE-REG-006", "AE-USER-002", "AE-USER-003", "AE-USER-018", "AE-REG-018"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "AE-REG-008: participant mode counts each participant once — arm A palpitations reads 25.0 despite two records (#60)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["AE-REG-008"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "AE-REG-014: filters with no matching events show the exact no-results error (#60)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["AE-REG-014"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "AE-USER-001/AE-REG-007/AE-REG-012/AE-REG-013: the numeric prevalence filter hides rows below the threshold as it is typed (#60)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["AE-USER-001", "AE-REG-007", "AE-REG-012", "AE-REG-013"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "AE-USER-006/AE-REG-009/AE-REG-033/AE-REG-035: the summarize-by toggle switches both numerators and denominators to the event basis (#60)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["AE-USER-006", "AE-REG-009", "AE-REG-033", "AE-REG-035"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "AE-USER-007/AE-REG-003/AE-REG-004: search shows only matching categories, highlighted, with a match count (#60)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["AE-USER-007", "AE-REG-003", "AE-REG-004"],
-      "issueRefs": [60],
-      "screenshots": ["AE-REG-003-search-highlight.png"]
-    },
-    {
-      "test": "AE-USER-008/AE-REG-005: clearing the search resets the table, and a no-match term leaves it unchanged (#60)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["AE-USER-008", "AE-REG-005"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "AE-USER-012/AE-REG-016: the rate plot draws one group-colored dot per group with the percentage on hover (#60)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["AE-USER-012", "AE-REG-016"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "AE-USER-013/AE-USER-011/AE-REG-017: difference diamonds compare each group pair, revealing intervals and cell counts on hover (#60)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["AE-USER-013", "AE-USER-011", "AE-REG-017"],
-      "issueRefs": [60],
-      "screenshots": ["AE-REG-017-diff-hover.png"]
-    },
-    {
-      "test": "AE-USER-014/AE-USER-015/AE-REG-001/AE-REG-002: the category toggle expands and collapses the nested preferred terms (#60)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["AE-USER-014", "AE-USER-015", "AE-REG-001", "AE-REG-002"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "AE-USER-016/AE-REG-019/AE-REG-022: clicking a category opens the details listing with the record count in the header (#60)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["AE-USER-016", "AE-REG-019", "AE-REG-022"],
-      "issueRefs": [60],
-      "screenshots": ["AE-USER-016-details-view.png"]
-    },
-    {
-      "test": "AE-USER-017/AE-REG-020/AE-REG-021: the details view reports the active filters and Return to the Summary View restores the table (#60)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["AE-USER-017", "AE-REG-020", "AE-REG-021"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "AE-USER-019/AE-REG-037/AE-REG-039: group configuration drives the Total and Difference columns (#60)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["AE-USER-019", "AE-REG-037", "AE-REG-039"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "AE-USER-020/AE-CFG-009/AE-REG-026/AE-REG-027/AE-REG-028/AE-REG-029/AE-REG-030: validation mode offers the summarized CSV named major-minor-basis with the filtered data (#60)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": [
-        "AE-USER-020",
-        "AE-CFG-009",
-        "AE-REG-026",
-        "AE-REG-027",
-        "AE-REG-028",
-        "AE-REG-029",
-        "AE-REG-030"
-      ],
-      "issueRefs": [60],
       "screenshots": []
     },
     {
@@ -309,355 +157,91 @@
       "screenshots": []
     },
     {
+      "test": "NEP-CFG-006: the filters narrow the plotted population and restate the summary (#120)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["NEP-CFG-006"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "NEP-DATA-005: unusable records and participants are counted with a download each (#120)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["NEP-DATA-005"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-DATA-005-dropped-record-notes.png"]
+    },
+    {
+      "test": "NEP-SCAT-001/NEP-STAGE-003: the >= 4.0 mg/dL participant carries a distinct mark (#120)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["NEP-SCAT-001", "NEP-STAGE-003"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-STAGE-003-absolute-rule-mark.png"]
+    },
+    {
+      "test": "NEP-SCAT-004: clicking a point selects it and dispatches participantsSelected (#120)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["NEP-SCAT-004"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-SCAT-004-participant-selected.png"]
+    },
+    {
+      "test": "NEP-STAGE-001/NEP-STAGE-004: each participant lands in the zone their staging names (#120)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["NEP-STAGE-001", "NEP-STAGE-004"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "NEP-TBL-001/NEP-TBL-002: the summary tabulates the fold, absolute and combined stagings (#120)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["NEP-TBL-001", "NEP-TBL-002"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-TBL-001-stage-summary-table.png"]
+    },
+    {
+      "test": "NEP-UNIT-002: a participant whose records mix mg/dL and µmol/L stages on the converted values (#120)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["NEP-UNIT-002"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "NEP-UNIT-003: the fold axis survives and every absolute claim is withheld (#120)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["NEP-UNIT-003"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-UNIT-003-unknown-unit-suppression.png"]
+    },
+    {
+      "test": "NEP-ZONE-001/NEP-ZONE-002: the stage zones paint worst-first behind the points (#120)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["NEP-ZONE-001", "NEP-ZONE-002"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-ZONE-001-stage-zones-scatter.png"]
+    },
+    {
+      "test": "NEP-ZONE-004: the zone labels can be hidden (#120)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["NEP-ZONE-004"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-ZONE-004-zone-labels-hidden.png"]
+    },
+    {
       "test": "opens on hover and the top link still points at the gallery index (#71)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [71],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer checkInputs AE-CFG-003: remapped columns are validated under their new names (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-CFG-003"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer checkInputs AE-DATA-001: a single error names every missing required column (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-DATA-001"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer checkInputs AE-DATA-001: empty data still reports the missing mapped columns (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-DATA-001"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer checkInputs AE-DATA-003: default-column data passes with no settings (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-DATA-003"],
-      "issueRefs": [60],
-      "screenshots": ["AE-DATA-003-default-table.png"]
-    },
-    {
-      "test": "ae-explorer configure AE-CFG-001/AE-DATA-003: every setting has a default, so an empty settings object maps the ADaM ADAE columns (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-CFG-001", "AE-DATA-003"],
-      "issueRefs": [60],
-      "screenshots": ["AE-DATA-003-default-table.png"]
-    },
-    {
-      "test": "ae-explorer configure AE-CFG-002/AE-CFG-003: caller overrides win over any default, remapping the variables (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-CFG-002", "AE-CFG-003"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer configure AE-CFG-005/AE-CFG-006: groups and colors pass through as arrays (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-CFG-005", "AE-CFG-006"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer configure AE-CFG-007/AE-CFG-008/AE-REG-046: defaults-style options and plot_settings merge key-by-key onto their defaults (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-CFG-007", "AE-CFG-008", "AE-REG-046"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer configure AE-DATA-001: the placeholder flag column follows a remapped major_col unless set explicitly (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-DATA-001"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer configure AE-REG-033/AE-REG-035: summarize_by accepts participant and event and falls back on anything else (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-REG-033", "AE-REG-035"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer configure AE-REG-037: group_cols false leaves a Total-only table and suppresses the Difference column (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-REG-037"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer configure AE-REG-037: hiding both the group and Total columns is a configuration error (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-REG-037"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer configure AE-USER-002/AE-USER-003/AE-USER-004/AE-USER-005: filters default to the four ADAE event filters (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-USER-002", "AE-USER-003", "AE-USER-004", "AE-USER-005"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer configure AE-USER-018/AE-REG-031: custom filter specs normalize with type and start preserved (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-USER-018", "AE-REG-031"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer configure AE-USER-019: a single shown group suppresses the Total and Difference columns (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-USER-019"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer getPlugins AE-CFG-006: groups color in configured order and the Total column always renders gray (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-CFG-006"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer getPlugins AE-REG-016: rate dots title with the group and its percentage (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-REG-016"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer getPlugins AE-REG-027/AE-REG-028/AE-REG-029: the CSV downloads as major-minor-summary basis (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-REG-027", "AE-REG-028", "AE-REG-029"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer getPlugins AE-REG-040: the default palette carries no yellow for any group position (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-REG-040"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer getPlugins AE-USER-010/AE-REG-015: group cells title with numerator over denominator (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-USER-010", "AE-REG-015"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer getPlugins AE-USER-011/AE-REG-017: difference marks title with both groups compared and the difference (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-USER-011", "AE-REG-017"],
-      "issueRefs": [60],
-      "screenshots": ["AE-REG-017-diff-hover.png"]
-    },
-    {
-      "test": "ae-explorer getPlugins AE-USER-020/AE-REG-030: the summarized CSV carries one row per category per group as currently summarized (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-USER-020", "AE-REG-030"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer getScales a degenerate extent still yields a drawable scale (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer getScales AE-REG-046: margins inset the rate axis exactly as configured (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-REG-046"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer getScales AE-USER-012: the percent scale maps 0..max onto the margin-inset plot width (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-USER-012"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer getScales AE-USER-013: the difference scale is symmetric around zero over the observed extent (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-USER-013"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer getScales percentages format to one decimal (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer structureData AE-CFG-005: groups derive sorted from the data, and configured levels missing from the data drop with a warning (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-CFG-005"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer structureData AE-CFG-005: more groups than max_groups throws (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-CFG-005"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer structureData AE-DATA-001: blank and NA System Organ Class rows flag as placeholders (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-DATA-001"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer structureData AE-DATA-001: placeholder participants count toward group denominators but never as events (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-DATA-001"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer structureData AE-REG-006: event filters narrow the events counted without touching denominators (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-REG-006"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer structureData AE-REG-008: participant mode counts distinct participants per category over the group denominator (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-REG-008"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer structureData AE-REG-009: event mode counts records over the group event totals (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-REG-009"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer structureData AE-USER-001/AE-REG-007: rows hide only when every group rate is below the prevalence threshold (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-USER-001", "AE-REG-007"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer structureData AE-USER-006: the overall any-adverse-event summary uses the same participant basis (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-USER-006"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer structureData AE-USER-007: search matches System Organ Class and Preferred Term labels case-insensitively with a match count (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-USER-007"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer structureData AE-USER-012: every group gets a cell — categories absent from a group produce zero-count shells (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-USER-012"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer structureData AE-USER-013: one difference per group pair, keyed to both groups (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-USER-013"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer structureData AE-USER-013: the group difference is the unpooled Wald interval on the difference in proportions (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-USER-013"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer structureData AE-USER-018: participant filters narrow the population and its denominators — placeholders included (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["AE-USER-018"],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer structureData rates round to one decimal the way the original does (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [60],
-      "screenshots": []
-    },
-    {
-      "test": "ae-explorer structureData rows sort by descending peak group prevalence, ties alphabetical (#60)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [60],
       "screenshots": []
     },
     {
@@ -1035,6 +619,454 @@
       "requirementIds": [],
       "issueRefs": [],
       "screenshots": []
+    },
+    {
+      "test": "nep-explorer baseline resolution NEP-DATA-001: an explicit baseline flag outranks record order (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-DATA-001"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer baseline resolution NEP-DATA-002: a configured flag that no record carries still falls back rather than dropping the participant (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-DATA-002"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer baseline resolution NEP-DATA-002: with neither column the fallback keeps input order (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-DATA-002"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer baseline resolution NEP-DATA-002: with no flag configured the earliest record is the baseline, and the fallback is counted (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-DATA-002"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer baseline resolution NEP-DATA-002: without a study-day column the fallback orders on visit number (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-DATA-002"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer checkInputs NEP-CFG-008: the creatinine check follows a renamed measure (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-CFG-008"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer checkInputs NEP-DATA-006: a dataset with no creatinine is reported, not thrown (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-DATA-006"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer checkInputs NEP-DATA-006: every required mapped column is named when it is missing (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-DATA-006"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer configure NEP-CFG-001: DEFAULT_SETTINGS carries the BDS lab mapping the KDIGO scatter needs (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-CFG-001"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer configure NEP-CFG-002: baseline identification is an explicit setting pair, unset by default (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-CFG-002"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer configure NEP-CFG-003: the stage cut-points default to the KDIGO ladder and are configurable (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-CFG-003"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer configure NEP-CFG-004: fold cut-points are sorted and numified, and a bad ladder falls back (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-CFG-004"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer configure NEP-CFG-005: the units contract targets mg/dL with a configurable factor table (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-CFG-005"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer configure NEP-CFG-006: syncSettings normalizes the field-list settings and defaults the details (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-CFG-006"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer configure NEP-CFG-007: zone labels are a shown/hidden setting, defaulting to shown (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-CFG-007"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer configure NEP-CFG-008: the creatinine measure resolves through measure_values (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-CFG-008"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer configure NEP-UNIT-001: unit strings normalize across the three mu spellings, case and whitespace (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-UNIT-001"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer marks and tooltip NEP-SCAT-001: the >= 4.0 mg/dL rule gets a distinct mark, and the selected point a border (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-SCAT-001"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer marks and tooltip NEP-SCAT-002: a negative change keeps its sign and stays Stage 0 (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-SCAT-002"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer marks and tooltip NEP-SCAT-002: the tooltip carries the source lines, in the source order (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-SCAT-002"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer marks and tooltip NEP-SCAT-003: the study-day line degrades away rather than rendering blank (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-SCAT-003"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer marks and tooltip NEP-SCAT-004: selection styling thickens exactly one point (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-SCAT-004"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-SCAT-004-participant-selected.png"]
+    },
+    {
+      "test": "nep-explorer marks and tooltip NEP-UNIT-003: a suppressed delta stage is reported as unstageable, not as Stage 0 (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-UNIT-003"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-UNIT-003-unknown-unit-suppression.png"]
+    },
+    {
+      "test": "nep-explorer module export NEP-API-001: the public collection exposes the nepExplorer factory (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-API-001"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer scales NEP-ZONE-005: a custom ladder moves the floor with it (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-ZONE-005"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer scales NEP-ZONE-005: axis titles name the measure and, in the suppressed mode, the native unit (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-ZONE-005"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer scales NEP-ZONE-005: formatNumber trims trailing zeroes and guards non-finite values (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-ZONE-005"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer scales NEP-ZONE-005: the built scales carry the cut-point ticks (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-ZONE-005"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer scales NEP-ZONE-005: the delta axis keeps the trigger visible and extends below zero when the data goes there (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-ZONE-005"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer scales NEP-ZONE-005: the fold axis always reaches past the last cut-point (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-ZONE-005"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer stage zones NEP-UNIT-003: with the unit unresolved the absolute trigger is not drawn (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-UNIT-003"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-UNIT-003-unknown-unit-suppression.png"]
+    },
+    {
+      "test": "nep-explorer stage zones NEP-ZONE-001: a custom ladder moves the zone boundaries with it (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-ZONE-001"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-ZONE-001-stage-zones-scatter.png"]
+    },
+    {
+      "test": "nep-explorer stage zones NEP-ZONE-001: the zones are the L-shaped KDIGO geometry, not four nested rectangles (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-ZONE-001"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-ZONE-001-stage-zones-scatter.png"]
+    },
+    {
+      "test": "nep-explorer stage zones NEP-ZONE-001: zones clip to the visible domain and vanish when it excludes them (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-ZONE-001"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-ZONE-001-stage-zones-scatter.png"]
+    },
+    {
+      "test": "nep-explorer stage zones NEP-ZONE-002: zones paint worst-stage-first so points are always drawn on top (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-ZONE-002"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer stage zones NEP-ZONE-003: every zone is labelled once and colour is never the only cue (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-ZONE-003"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer staging NEP-STAGE-001: the fold ladder stages at 1.5 / 2 / 3, worst match first (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-STAGE-001"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer staging NEP-STAGE-001: the ladder is read worst-first, so an ascending source ordering cannot hide Stages 2 and 3 (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-STAGE-001"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer staging NEP-STAGE-002: the absolute-change axis carries one cut-point and produces Stage 1 only (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-STAGE-002"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer staging NEP-STAGE-003: the >= 4.0 mg/dL rule raises the stage to 3 whatever the fold change says (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-STAGE-003"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-STAGE-003-absolute-rule-mark.png"]
+    },
+    {
+      "test": "nep-explorer staging NEP-STAGE-004: the combined stage is the worse of the two axes (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-STAGE-004"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer structureData NEP-CFG-003: custom stage cut-points restage the same data (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-CFG-003"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer structureData NEP-CFG-006: filters constrain the plotted population on the active selections only (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-CFG-006"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer structureData NEP-DATA-002: the count of participants resolved by the baseline fallback is reported (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-DATA-002"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer structureData NEP-DATA-003: reduces each participant to one staged point at their maximum post-baseline value (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-DATA-003"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer structureData NEP-DATA-004: a participant whose creatinine only falls keeps a negative delta and is plotted (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-DATA-004"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer structureData NEP-DATA-005: unusable records and participants are counted and exportable, never silently dropped (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-DATA-005"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-DATA-005-dropped-record-notes.png"]
+    },
+    {
+      "test": "nep-explorer structureData NEP-SCAT-003: the point carries the visit and study day its maximum came from (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-SCAT-003"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer structureData NEP-STAGE-003: a participant reaching the absolute rule is Stage 3 on a Stage-1 fold change (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-STAGE-003"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-STAGE-003-absolute-rule-mark.png"]
+    },
+    {
+      "test": "nep-explorer structureData NEP-TBL-001: the summary reports N and % for the fold, delta and combined stagings (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-TBL-001"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-TBL-001-stage-summary-table.png"]
+    },
+    {
+      "test": "nep-explorer structureData NEP-TBL-002: every stage row is present even when empty (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-TBL-002"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer structureData NEP-TBL-003: an empty population summarizes to zeroes rather than dividing by zero (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-TBL-003"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer structureData NEP-UNIT-002: values convert to mg/dL per record, so one participant may mix known units (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-UNIT-002"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "nep-explorer structureData NEP-UNIT-003: a record with no unit at all also suppresses, rather than assuming mg/dL (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-UNIT-003"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-UNIT-003-unknown-unit-suppression.png"]
+    },
+    {
+      "test": "nep-explorer structureData NEP-UNIT-003: an unrecognized unit suppresses the absolute claims and keeps the fold axis (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-UNIT-003"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-UNIT-003-unknown-unit-suppression.png"]
+    },
+    {
+      "test": "nep-explorer structureData NEP-UNIT-003: one unrecognized record suppresses for the whole chart, and mixed native units drop (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-UNIT-003"],
+      "issueRefs": [120],
+      "screenshots": ["NEP-UNIT-003-unknown-unit-suppression.png"]
     },
     {
       "test": "renderGuidePage: composition renders a sticky TOC sidebar whose links anchor to the heading ids",
@@ -1618,6 +1650,102 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "synthetic AKI demo cohort NEP-COHORT-001: the cohort is present, labelled synthetic, and carries the shared measure contract (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-COHORT-001"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "synthetic AKI demo cohort NEP-COHORT-002: every participant has a day-0 baseline and enough post-baseline visits to trace a path (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-COHORT-002"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "synthetic AKI demo cohort NEP-COHORT-003: creatinine is written in umol/L so the demo exercises the unit conversion (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-COHORT-003"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "synthetic AKI demo cohort NEP-COHORT-004: the cohort ships no baseline flag, so the demo runs on the D7 fallback (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-COHORT-004"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "synthetic AKI demo cohort NEP-COHORT-005: all four fold-change stages are populated (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-COHORT-005"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "synthetic AKI demo cohort NEP-COHORT-006: the delta axis carries Stage 1 and no-stage participants only (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-COHORT-006"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "synthetic AKI demo cohort NEP-COHORT-007: the fold and delta stagings disagree in both directions (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-COHORT-007"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "synthetic AKI demo cohort NEP-COHORT-008: the combined stage populates every zone the chart paints (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-COHORT-008"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "synthetic AKI demo cohort NEP-COHORT-009: participants trip the >= 4.0 mg/dL rule, including one the fold ladder alone would call Stage 1 (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-COHORT-009"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "synthetic AKI demo cohort NEP-COHORT-010: participants whose creatinine only falls are present, so the negative domain is visible (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-COHORT-010"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "synthetic AKI demo cohort NEP-COHORT-011: the injury signal skews to the active arm and both arms are populated (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-COHORT-011"],
+      "issueRefs": [120],
+      "screenshots": []
+    },
+    {
+      "test": "synthetic AKI demo cohort NEP-COHORT-012: the injection leaves the pharmaverseadam population untouched (#120)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-COHORT-012"],
+      "issueRefs": [120],
       "screenshots": []
     },
     {

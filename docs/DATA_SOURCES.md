@@ -3,12 +3,12 @@
 safety.viz demos and evidence run on four example datasets vendored under
 [`site/data/`](../site/data):
 
-| File              | Shape                                            | Used by                                                                                                                       |
-| ----------------- | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| `adbds.csv`       | One row per lab / vital-sign measurement (BDS)   | Histogram, Outlier Explorer, Paneled Outlier Explorer, Results Over Time, Shift Plot, Delta-Delta, Hep Explorer, Web Codebook |
-| `adae.csv`        | One row per adverse event                        | AE Explorer, AE Timelines                                                                                                     |
-| `adeg.csv`        | One row per ECG interval measurement (QT/QTc/HR) | QT Safety Explorer                                                                                                            |
-| `adbds-abnbl.csv` | One row per liver-test measurement (BDS)         | Hep Waterfall                                                                                                                 |
+| File              | Shape                                            | Used by                                                                                                                                                          |
+| ----------------- | ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `adbds.csv`       | One row per lab / vital-sign measurement (BDS)   | Histogram, Outlier Explorer, Paneled Outlier Explorer, Results Over Time, Shift Plot, Delta-Delta, Hep Explorer, Nep Explorer, Participant Profile, Web Codebook |
+| `adae.csv`        | One row per adverse event                        | AE Explorer, AE Timelines                                                                                                                                        |
+| `adeg.csv`        | One row per ECG interval measurement (QT/QTc/HR) | QT Safety Explorer                                                                                                                                               |
+| `adbds-abnbl.csv` | One row per liver-test measurement (BDS)         | Hep Waterfall                                                                                                                                                    |
 
 All are **generated**, not hand-maintained. The first three are built from
 pharmaverseadam by [`scripts/build-demo-data.mjs`](../scripts/build-demo-data.mjs);
@@ -22,6 +22,19 @@ node scripts/build-demo-data.mjs
 its own generator; see
 [Synthetic abnormal-baseline cohort](#synthetic-abnormal-baseline-cohort-hep-waterfall-93)
 below.
+
+`adbds.csv` is the pharmaverseadam build **plus two synthetic cohorts appended
+after it** — the chronic-liver-disease population the composite plot needs
+([`CLD-*`](#synthetic-composite-plot-cohort-hep-explorer-67)) and the
+acute-kidney-injury population the KDIGO scatter needs
+([`AKI-*`](#synthetic-acute-kidney-injury-cohort-nep-explorer-120)). Both
+injectors are idempotent, so the full rebuild is:
+
+```bash
+node scripts/build-demo-data.mjs
+node scripts/build-hep-composite-cohort.mjs
+node scripts/build-nep-aki-cohort.mjs
+```
 
 ## Source: pharmaverseadam (CDISC Pilot 01)
 
@@ -156,6 +169,94 @@ Placebo`) appended by [`scripts/build-hep-composite-cohort.mjs`](../scripts/buil
 - The synthetic rows are clearly labeled and confined to the four liver analytes;
   they add a realistic abnormal-baseline subgroup to the otherwise baseline-normal
   demo population.
+
+## Synthetic acute-kidney-injury cohort (nep-explorer #120)
+
+`site/data/adbds.csv` also carries a **synthetic acute-kidney-injury cohort** —
+46 participants, 368 rows, `USUBJID` prefix `AKI-`, `SITE`
+`Nephrology Research Unit`, arms `AKI: Study Drug` / `AKI: Placebo` — appended by
+[`scripts/build-nep-aki-cohort.mjs`](../scripts/build-nep-aki-cohort.mjs). It is
+not derived from any real subject.
+
+It exists because the **KDIGO creatinine scatter** (nep-explorer, [#120](https://github.com/jwildfire/safety.viz/issues/120);
+design [obot.roadmap#35](https://jwildfire.github.io/obot.roadmap/requirements/design/35_design.html))
+cannot be _demonstrated_ on the pilot population, however correctly it is
+implemented. Measured over the pharmaverseadam rows: **208** participants have a
+baseline plus a post-baseline creatinine, the maximum fold change anywhere is
+**1.45×**, **zero** reach the 1.5× Stage-1 line, and only 9 clear the 0.3 mg/dL
+absolute trigger. Every point lands in the white no-stage box, the three coloured
+stage zones stay empty, and the summary table reads 208 / 0 / 0 / 0.
+
+Decision **D8** on the design chose injection into the shared extract over a
+nep-specific `adnep.csv`, on the `CLD-` mechanism above: it is the house
+approach, it is what [#89](https://github.com/jwildfire/safety.viz/issues/89)
+DEMO-3 asks for across every under-fed demo, and it keeps DEMO-4's _one versioned
+extract_ intact. The accepted cost is that injecting rows regenerates canonical
+evidence baselines for every `adbds.csv` consumer.
+
+The cohort is a **chart-driven spec**, not a plausible-population one. It is
+built to contain:
+
+- **Creatinine in `umol/L`**, like every other lab in the file, so the demo runs
+  _through_ the module's per-record mg/dL conversion (1 mg/dL = 88.4 µmol/L)
+  rather than around it — that path is the one place a silent staging error can
+  hide. One unit spelling for the measure across the whole file, so no other
+  renderer's display of creatinine changes.
+- **All four fold-change stages populated** — 19 / 12 / 8 / 7 across Stage 0–3 —
+  with enough participants per stage that the summary table's percentages mean
+  something. On the combined stage the zones show, that reads 15 / 14 / 8 / 9.
+- **Four participants who reach ≥ 4.0 mg/dL**, the KDIGO Stage-3 rule on the
+  value reached (design D5). No real dataset here can supply one: the RhoInc
+  renderer-specific set's maximum creatinine is 1.93 mg/dL. **Two of the four**
+  are built so their fold change alone is only Stage 1 — a high (chronic-kidney-
+  disease) baseline with a modest proportional rise — so the demo shows the rule,
+  and not the zone under the point, doing the staging.
+- **Three participants whose creatinine only falls**, whose maximum post-baseline
+  value is still below their own baseline (delta −0.18 to −0.30 mg/dL). The R
+  source's `scale_y_continuous(limits = c(0, max))` drops that population off the
+  plot unannounced — 21 of 110 in the RhoInc data — and design D6 keeps them by
+  extending the domain below zero.
+- **Fold and delta stagings that disagree in both directions**: four participants
+  are Stage 1 on the absolute axis only (a CKD baseline where a modest
+  proportional rise is a large absolute one), and two are Stage 1 on the fold axis
+  only. The second case needs a baseline below ~0.6 mg/dL — a low-muscle-mass
+  participant — because KDIGO's two Stage-1 criteria are not nested; both are
+  present so the summary table's three columns are three genuinely different
+  distributions rather than one repeated.
+- **No baseline flag.** `adbds.csv` has no such column, so the demo runs on
+  design D7's earliest-record fallback — the path most real studies take too.
+- **Eight visits per participant** (`Baseline` plus seven on-treatment), using the
+  pilot's own visit labels and numbers verbatim, so the injection adds no new
+  visit to the other renderers that read this file. Peaks rotate across the
+  on-treatment visits rather than all landing on one.
+
+**Deterministic and idempotent.** A fixed-seed mulberry32 PRNG drives all jitter,
+so re-running reproduces byte-identical rows; the generator strips any existing
+`AKI-*` rows before appending, so it is safe to re-run after
+`scripts/build-demo-data.mjs` and after the composite-cohort injector. The
+generator additionally **fails the build** when a generated participant does not
+land in the stage its archetype promises — the cohort's whole purpose is which
+zones it populates, so a jitter band that drifted across a cut-point would
+otherwise produce a demo that renders perfectly and demonstrates the wrong thing.
+Regenerate with:
+
+```bash
+node scripts/build-nep-aki-cohort.mjs
+```
+
+The invariants above are asserted against the committed CSV by
+[`tests/unit/nep-explorer/cohort.test.js`](../tests/unit/nep-explorer/cohort.test.js)
+(`NEP-COHORT-001`…`012`), including a guard that the pharmaverseadam and `CLD-`
+row counts are untouched — the cohort **adds** rows, it does not edit the source
+extract. As with the ALT waterfall's cohort tests, these live under the module's
+own directory rather than a `demo-data/` one: the evidence pipeline routes
+`tests/unit/<module>/**` to that module and duplicates everything else into
+_every_ module's evidence page.
+
+The demo population is **simulated injury**. The cohort buys a chart that
+exercises every zone, and a single shared extract, at the price of a flagship
+kidney demo in which no participant is real; the nep-explorer guide page says so
+plainly, as the hepatic composite view does.
 
 ## Synthetic abnormal-baseline cohort (hep-waterfall #93)
 

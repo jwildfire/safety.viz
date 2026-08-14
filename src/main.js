@@ -3,7 +3,7 @@
 // more than one module. Modules: histogram (#2), shift-plot (#14),
 // delta-delta (#25), results-over-time (#27), outlier-explorer (#24),
 // ae-timelines (#26), hep-explorer (#43), ae-explorer (#60), qt-explorer (#68),
-// hep-waterfall (#93), participant-profile (#98).
+// hep-waterfall (#93), participant-profile (#98), nep-explorer (#120).
 import histogram from './histogram.js';
 import shiftPlot from './shift-plot.js';
 import deltaDelta from './delta-delta.js';
@@ -15,6 +15,7 @@ import aeExplorer from './ae-explorer.js';
 import qtExplorer from './qt-explorer.js';
 import hepWaterfall from './hep-waterfall.js';
 import participantProfile from './participant-profile.js';
+import nepExplorer from './nep-explorer.js';
 
 export {
   histogram,
@@ -27,7 +28,8 @@ export {
   aeExplorer,
   qtExplorer,
   hepWaterfall,
-  participantProfile
+  participantProfile,
+  nepExplorer
 };
 export default {
   histogram,
@@ -40,5 +42,6 @@ export default {
   aeExplorer,
   qtExplorer,
   hepWaterfall,
-  participantProfile
+  participantProfile,
+  nepExplorer
 };
