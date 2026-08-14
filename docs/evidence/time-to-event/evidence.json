@@ -1,13 +1,16 @@
 {
   "module": "time-to-event",
-  "generatedAt": "2026-08-14T23:32:42.797Z",
+  "generatedAt": "2026-08-14T23:37:04.351Z",
   "environment": {
-    "os": "darwin 23.6.0",
-    "node": "v24.14.0",
+    "os": "linux 6.17.0-1022-azure",
+    "node": "v22.23.2",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": null,
+  "run": {
+    "id": "31850929587",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/31850929587"
+  },
   "records": [
     {
       "test": "a chart link navigates straight to that renderer demo (#71)",
@@ -175,7 +178,7 @@
       "status": "pass",
       "requirementIds": ["TTE-CURV-001", "TTE-CURV-005", "TTE-STAT-001"],
       "issueRefs": [128],
-      "screenshots": []
+      "screenshots": ["TTE-CURV-001-km-curves-incidence.png"]
     },
     {
       "test": "TTE-CURV-002: censor tick marks sit on the curve at each censored time (#128)",
@@ -199,7 +202,7 @@
       "status": "pass",
       "requirementIds": ["TTE-CURV-004", "TTE-USER-002"],
       "issueRefs": [128],
-      "screenshots": []
+      "screenshots": ["TTE-CURV-004-survival-orientation.png"]
     },
     {
       "test": "TTE-DATA-002: unusable rows are counted with an exportable record list (#128)",
@@ -215,7 +218,7 @@
       "status": "pass",
       "requirementIds": ["TTE-DEMO-001"],
       "issueRefs": [128],
-      "screenshots": []
+      "screenshots": ["TTE-DEMO-001-demo-page.png"]
     },
     {
       "test": "TTE-GUIDE-001: the notes state the pointwise bands and the 1 − KM competing-risks limitation (#128)",
@@ -239,7 +242,7 @@
       "status": "pass",
       "requirementIds": ["TTE-RISK-001", "TTE-RISK-002"],
       "issueRefs": [128],
-      "screenshots": []
+      "screenshots": ["TTE-RISK-001-risk-table.png"]
     },
     {
       "test": "TTE-RISK-003: hiding a group via the legend drops its curve, marks, band and rows together (#128)",
@@ -255,7 +258,7 @@
       "status": "pass",
       "requirementIds": ["TTE-USER-001"],
       "issueRefs": [128],
-      "screenshots": []
+      "screenshots": ["TTE-USER-001-sparse-endpoint-all-censored-group.png"]
     },
     {
       "test": "TTE-USER-003: the CI toggle removes the band (#128)",
@@ -263,7 +266,7 @@
       "status": "pass",
       "requirementIds": ["TTE-USER-003"],
       "issueRefs": [128],
-      "screenshots": []
+      "screenshots": ["TTE-USER-003-ci-band-off.png"]
     },
     {
       "test": "TTE-USER-004: a configured filter constrains the analysis rows (#128)",
@@ -311,7 +314,7 @@
       "status": "pass",
       "requirementIds": ["TTE-CURV-004"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["TTE-CURV-004-survival-orientation.png"]
     },
     {
       "test": "axisTicks degrades to a single interval when there is no time extent (#128)",
@@ -1271,7 +1274,7 @@
       "status": "pass",
       "requirementIds": ["TTE-RISK-001"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["TTE-RISK-001-risk-table.png"]
     },
     {
       "test": "riskTableHeight grows with the group count and is never zero (#128)",
