@@ -226,3 +226,127 @@ export function buildEcgRecords(sourceRecords, { log = () => {}, warn = () => {}
 
   return { columns: EG_COLUMNS, records: attachEgBaseline(records, { warn }) };
 }
+
+// ---- ADTTE / time-to-event contract ---------------------------------------
+// The time-to-event demo dataset (safety.viz#128; design obot.roadmap
+// requirements/design/161_design.html §5). pharmaverseadam ships no safety ADTTE
+// (its adtte_onco is OS/PFS on a simulated oncology arm set), so the derivation
+// lives here, mirroring what admiral's own ADTTE template does with this same
+// study: time to first qualifying treatment-emergent AE, censored at end of
+// study for participants without one. Day 1 = TRTSDT (the source's ASTDY
+// convention), so a censored participant's AVAL is EOSDT − TRTSDT + 1.
+//
+// The renderer never re-derives any of this: which events qualify and how the
+// censoring date is chosen are analysis-dataset decisions (design D1), and this
+// build script is the demo's "data owner".
+
+export const TTE_COLUMNS = [
+  'USUBJID',
+  'ARM',
+  'PARAMCD',
+  'PARAM',
+  'AVAL',
+  'CNSR',
+  'EVNTDESC',
+  'CNSDTDSC'
+];
+
+// Dermatologic basket: the skin SOC, plus the application-site reactions that
+// MedDRA files under General Disorders — the study drug is a transdermal patch,
+// and application-site events are its actual dermatologic safety signal.
+const DERM_SOC = 'SKIN AND SUBCUTANEOUS TISSUE DISORDERS';
+export const isDermEvent = (rec) =>
+  clean(rec.AEBODSYS) === DERM_SOC || clean(rec.AEDECOD).startsWith('APPLICATION SITE ');
+
+export const TTE_PARAMS = [
+  { paramcd: 'TTDE', param: 'Time to First Dermatologic Event', qualifies: isDermEvent },
+  {
+    paramcd: 'TTSAE',
+    param: 'Time to First Serious Adverse Event',
+    qualifies: (rec) => clean(rec.AESER) === 'Y'
+  },
+  {
+    paramcd: 'TTAE',
+    param: 'Time to First Treatment-Emergent Adverse Event',
+    qualifies: () => true
+  }
+];
+
+const CENSOR_DESC = 'END OF STUDY';
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+const dateOrNull = (v) => {
+  if (isBlank(v)) return null;
+  const t = Date.parse(`${v}T00:00:00Z`);
+  return Number.isFinite(t) ? t : null;
+};
+
+/**
+ * Derive the ADTTE demo records from source-shaped adae + adsl rows.
+ * One record per safety participant (SAFFL='Y' with a usable TRTSDT) per
+ * TTE_PARAMS endpoint. Events take the earliest qualifying treatment-emergent
+ * ASTDY >= 1 (ties broken by numeric AESEQ so input order never matters);
+ * event-free participants censor at EOSDT − TRTSDT + 1, falling back to TRTEDT,
+ * and are dropped with a warning when neither date exists.
+ */
+export function buildTteRecords(aeRecords, adslRecords, { warn = () => {} } = {}) {
+  const population = adslRecords.filter(
+    (r) => clean(r.SAFFL) === 'Y' && dateOrNull(r.TRTSDT) !== null
+  );
+
+  // Usable treatment-emergent AE rows per participant, presorted by day then AESEQ.
+  const aeById = new Map();
+  for (const rec of aeRecords) {
+    if (clean(rec.TRTEMFL) !== 'Y' || !isNum(rec.ASTDY)) continue;
+    const day = Number(rec.ASTDY);
+    if (!(day >= 1)) continue;
+    const id = clean(rec.USUBJID);
+    if (!aeById.has(id)) aeById.set(id, []);
+    aeById.get(id).push({ day, seq: isNum(rec.AESEQ) ? Number(rec.AESEQ) : Infinity, rec });
+  }
+  for (const rows of aeById.values()) rows.sort((a, b) => a.day - b.day || a.seq - b.seq);
+
+  const records = [];
+  const dropped = [];
+  for (const param of TTE_PARAMS) {
+    for (const subj of population) {
+      const id = clean(subj.USUBJID);
+      const arm = clean(subj.TRT01A) || clean(subj.ARM);
+      const first = (aeById.get(id) || []).find(({ rec }) => param.qualifies(rec));
+      if (first) {
+        records.push({
+          USUBJID: id,
+          ARM: arm,
+          PARAMCD: param.paramcd,
+          PARAM: param.param,
+          AVAL: first.day,
+          CNSR: 0,
+          EVNTDESC: clean(first.rec.AEDECOD),
+          CNSDTDSC: ''
+        });
+        continue;
+      }
+      const start = dateOrNull(subj.TRTSDT);
+      const end = dateOrNull(subj.EOSDT) ?? dateOrNull(subj.TRTEDT);
+      if (end === null) {
+        dropped.push(`${id} (${param.paramcd})`);
+        continue;
+      }
+      records.push({
+        USUBJID: id,
+        ARM: arm,
+        PARAMCD: param.paramcd,
+        PARAM: param.param,
+        AVAL: Math.round((end - start) / MS_PER_DAY) + 1,
+        CNSR: 1,
+        EVNTDESC: '',
+        CNSDTDSC: CENSOR_DESC
+      });
+    }
+  }
+  if (dropped.length)
+    warn(
+      `  WARNING: ${dropped.length} censored participant-endpoint rows had no EOSDT/TRTEDT and were dropped: ${dropped.join(', ')}`
+    );
+
+  return { columns: TTE_COLUMNS, records };
+}

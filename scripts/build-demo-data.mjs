@@ -5,6 +5,8 @@
 //   site/data/adae.csv  — one row per adverse event
 //   site/data/adeg.csv  — one row per ECG interval measurement (QT / QTc / HR), the
 //                         demo dataset for the QT Safety Explorer
+//   site/data/adtte.csv — one row per participant per time-to-event endpoint (ADTTE
+//                         shape), the demo dataset for the Time-to-Event Explorer
 //
 // This script (re)builds all three from **pharmaverseadam** (https://github.com/pharmaverse/pharmaverseadam),
 // the pharmaverse consortium's ADaM test data derived from the CDISC SDTM/ADaM Pilot 01
@@ -18,7 +20,7 @@
 // The ECG file is `adeg` projected to a QT measure contract (QTcF / QTcB / HR, each with
 // its analysis value, source-derived baseline, and change-from-baseline) — see buildEg.
 //
-// Usage:  node scripts/build-demo-data.mjs [--source-dir <dir>] [--out-dir <dir>]
+// Usage:  node scripts/build-demo-data.mjs [--source-dir <dir>] [--out-dir <dir>] [--only bds,ae,eg,tte]
 //   Fetches the source CSVs from raw.githubusercontent.com by default (cached under
 //   node's tmp), or reads them from --source-dir if provided
 //   (adlb.csv/advs.csv/adae.csv/adsl.csv/adeg.csv).
@@ -36,14 +38,15 @@ import { pipeline } from 'node:stream/promises';
 import { Readable } from 'node:stream';
 // Value helpers and the ECG derivation live in demo-data-lib.mjs so they can be
 // unit-tested without running this script (which downloads ~200 MB of source).
-import { buildEcgRecords, clean, isBlank, isNum, num } from './demo-data-lib.mjs';
+import { buildEcgRecords, buildTteRecords, clean, isBlank, isNum, num } from './demo-data-lib.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(__dirname, '..');
 
 const PHARMAVERSEADAM_BASE =
   'https://raw.githubusercontent.com/pharmaverse/pharmaverseadam/main/inst/extdata';
-const SOURCE_FILES = ['adlb.csv', 'advs.csv', 'adae.csv', 'adsl.csv', 'adeg.csv'];
+// Source files are declared per output in OUTPUTS below, so `--only` fetches
+// just what the requested outputs need.
 
 // Curated measure panel for the demo BDS. The full pilot carries 55 measures
 // (incl. sparse cell-morphology / qualitative-urinalysis labs); the demo keeps a
@@ -90,10 +93,11 @@ const ALLOWED = new Set(MEASURE_ALLOWLIST);
 
 // ---- tiny arg parser ------------------------------------------------------
 function parseArgs(argv) {
-  const args = { sourceDir: null, outDir: join(REPO_ROOT, 'site', 'data') };
+  const args = { sourceDir: null, outDir: join(REPO_ROOT, 'site', 'data'), only: null };
   for (let i = 0; i < argv.length; i += 1) {
     if (argv[i] === '--source-dir') args.sourceDir = argv[(i += 1)];
     else if (argv[i] === '--out-dir') args.outDir = argv[(i += 1)];
+    else if (argv[i] === '--only') args.only = argv[(i += 1)].split(',').map((s) => s.trim());
   }
   return args;
 }
@@ -321,41 +325,87 @@ function buildEg(adegText) {
 }
 
 // ---- main -----------------------------------------------------------------
-async function main() {
-  const { sourceDir, outDir } = parseArgs(process.argv.slice(2));
-  console.log('Loading pharmaverseadam source datasets…');
-  const [adlbText, advsText, adaeText, adslText, adegText] = await Promise.all(
-    SOURCE_FILES.map((f) => loadSource(f, sourceDir))
-  );
-
-  const bds = buildBds(adlbText, advsText);
-  const ae = buildAe(adaeText, adslText);
-  const eg = buildEg(adegText);
-
-  await mkdir(outDir, { recursive: true });
-  await writeFile(join(outDir, 'adbds.csv'), toCsv(bds.columns, bds.records));
-  await writeFile(join(outDir, 'adae.csv'), toCsv(ae.columns, ae.records));
-  await writeFile(join(outDir, 'adeg.csv'), toCsv(eg.columns, eg.records));
-
-  const measures = new Set(bds.records.map((r) => r.TEST));
-  const subjects = new Set(bds.records.map((r) => r.USUBJID));
-  const arms = new Set(bds.records.map((r) => r.ARM));
-  console.log(
-    `\nadbds.csv: ${bds.records.length} rows · ${subjects.size} participants · ` +
-      `${measures.size} measures · arms {${[...arms].join(', ')}}`
-  );
-  console.log(
-    `adae.csv : ${ae.records.length - ae.placeholders} events + ${ae.placeholders} ` +
+// Each output declares the source files it needs so `--only` (e.g. `--only tte`)
+// fetches and rebuilds just that output — regenerating adbds.csv outside a full
+// rebuild would drop the synthetic cohorts the cohort scripts append to it.
+const OUTPUTS = {
+  bds: {
+    file: 'adbds.csv',
+    sources: ['adlb.csv', 'advs.csv'],
+    build: (src) => buildBds(src['adlb.csv'], src['advs.csv']),
+    report: (bds) => {
+      const measures = new Set(bds.records.map((r) => r.TEST));
+      const subjects = new Set(bds.records.map((r) => r.USUBJID));
+      const arms = new Set(bds.records.map((r) => r.ARM));
+      return (
+        `adbds.csv: ${bds.records.length} rows · ${subjects.size} participants · ` +
+        `${measures.size} measures · arms {${[...arms].join(', ')}}`
+      );
+    }
+  },
+  ae: {
+    file: 'adae.csv',
+    sources: ['adae.csv', 'adsl.csv'],
+    build: (src) => buildAe(src['adae.csv'], src['adsl.csv']),
+    report: (ae) =>
+      `adae.csv : ${ae.records.length - ae.placeholders} events + ${ae.placeholders} ` +
       `placeholder rows · ${new Set(ae.records.map((r) => r.USUBJID)).size} participants · ` +
       `${new Set(ae.records.map((r) => r.AEBODSYS).filter(Boolean)).size} body systems`
-  );
-  const egSubjects = new Set(eg.records.map((r) => r.USUBJID));
-  const egParams = new Set(eg.records.map((r) => r.TEST));
-  const egArms = new Set(eg.records.map((r) => r.ARM));
-  console.log(
-    `adeg.csv : ${eg.records.length} rows · ${egSubjects.size} participants · ` +
-      `${egParams.size} parameters {${[...egParams].join(', ')}} · arms {${[...egArms].join(', ')}}`
-  );
+  },
+  eg: {
+    file: 'adeg.csv',
+    sources: ['adeg.csv'],
+    build: (src) => buildEg(src['adeg.csv']),
+    report: (eg) => {
+      const egSubjects = new Set(eg.records.map((r) => r.USUBJID));
+      const egParams = new Set(eg.records.map((r) => r.TEST));
+      const egArms = new Set(eg.records.map((r) => r.ARM));
+      return (
+        `adeg.csv : ${eg.records.length} rows · ${egSubjects.size} participants · ` +
+        `${egParams.size} parameters {${[...egParams].join(', ')}} · arms {${[...egArms].join(', ')}}`
+      );
+    }
+  },
+  tte: {
+    file: 'adtte.csv',
+    sources: ['adae.csv', 'adsl.csv'],
+    build: (src) =>
+      buildTteRecords(toRecords(src['adae.csv']), toRecords(src['adsl.csv']), {
+        warn: (msg) => console.warn(msg)
+      }),
+    report: (tte) => {
+      const ids = new Set(tte.records.map((r) => r.USUBJID));
+      const byParam = tte.records
+        .filter((r) => r.CNSR === 0)
+        .reduce((acc, r) => acc.set(r.PARAMCD, (acc.get(r.PARAMCD) || 0) + 1), new Map());
+      const events = [...byParam].map(([p, n]) => `${p} ${n}`).join(', ');
+      return `adtte.csv: ${tte.records.length} rows · ${ids.size} participants · events {${events}}`;
+    }
+  }
+};
+
+async function main() {
+  const { sourceDir, outDir, only } = parseArgs(process.argv.slice(2));
+  const requested = only || Object.keys(OUTPUTS);
+  const unknown = requested.filter((name) => !OUTPUTS[name]);
+  if (unknown.length)
+    throw new Error(
+      `unknown --only output(s): ${unknown.join(', ')} (valid: ${Object.keys(OUTPUTS).join(', ')})`
+    );
+
+  console.log('Loading pharmaverseadam source datasets…');
+  const needed = [...new Set(requested.flatMap((name) => OUTPUTS[name].sources))];
+  const texts = await Promise.all(needed.map((f) => loadSource(f, sourceDir)));
+  const src = Object.fromEntries(needed.map((f, i) => [f, texts[i]]));
+
+  await mkdir(outDir, { recursive: true });
+  console.log('');
+  for (const name of requested) {
+    const output = OUTPUTS[name];
+    const built = output.build(src);
+    await writeFile(join(outDir, output.file), toCsv(built.columns, built.records));
+    console.log(output.report(built));
+  }
 }
 
 main().catch((err) => {

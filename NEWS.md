@@ -6,7 +6,12 @@ functionality-first account of what a user can now do. The GitHub release publis
 from the section here when the release-candidate PR (dev -> main) merges and is tagged.
 -->
 
-# safety.viz v1.6.1 (Upcoming)
+# safety.viz v1.7.0 (Upcoming)
+
+<!-- Was seeded as v1.6.1 (Upcoming); renamed to v1.7.0 when the Time-to-Event
+Explorer landed — a new renderer is a minor bump. The RC settles the final number. -->
+
+- **Time-to-Event Explorer** — a new renderer for Kaplan–Meier safety displays ([obot.roadmap#161](https://github.com/jwildfire/obot.roadmap/issues/161), [#128](https://github.com/jwildfire/safety.viz/issues/128), PR [#129](https://github.com/jwildfire/safety.viz/pull/129)). Step curves by treatment group with censoring tick marks, **pointwise 95% confidence bands** (Greenwood variance, log-log transform — the `survival::survfit` default family, cross-validated against it to 1e-10 on the demo data), and the **at-risk / cumulative-events strip table** the FDA ST&F guide mandates beneath every time-to-event plot — all derived from one estimator pass, so the table cannot disagree with the curve. Consumes an ADTTE-shaped analysis dataset (the clinical derivation of "first qualifying event" stays upstream with the data owner); default display is **cumulative incidence (1 − KM)** with the estimator always named on the axis, and the in-app notes plus the clinical guide state plainly that 1 − KM overestimates absolute risk when competing events are present. Demo endpoints derived from pharmaverseadam `adae` + `adsl` (`site/data/adtte.csv`): time to first dermatologic event, first serious AE (deliberately sparse — the honest wide-band case), and first any TEAE. Marked **Experimental** pending @jwildfire's review of design decisions D1–D6. [Try it live](https://jwildfire.github.io/safety.viz/time-to-event/index.html).
 
 - **NEWS.md becomes the running release log** — this file, introduced with the v1.6.0 notes as its first section; unreleased work now accumulates under a `(Upcoming)` heading per the program-wide convention ([#125](https://github.com/jwildfire/safety.viz/pull/125), convention: [obot.roadmap#155](https://github.com/jwildfire/obot.roadmap/discussions/155)).
 

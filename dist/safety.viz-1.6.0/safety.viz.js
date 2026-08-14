@@ -32,7 +32,8 @@ var SafetyViz = (() => {
     participantProfile: () => participantProfile,
     qtExplorer: () => qtExplorer,
     resultsOverTime: () => resultsOverTime,
-    shiftPlot: () => shiftPlot
+    shiftPlot: () => shiftPlot,
+    timeToEvent: () => timeToEvent
   });
 
   // node_modules/@kurkle/color/dist/color.esm.js
@@ -31604,6 +31605,1033 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     return new SafetyNepExplorer(element, settings);
   }
 
+  // src/time-to-event/configure.js
+  var DEFAULT_SETTINGS13 = {
+    id_col: "USUBJID",
+    group_col: "ARM",
+    param_col: "PARAM",
+    paramcd_col: "PARAMCD",
+    param_value: null,
+    time_col: "AVAL",
+    censor_col: "CNSR",
+    event_desc_col: "EVNTDESC",
+    censor_desc_col: "CNSDTDSC",
+    direction: "incidence",
+    ci: true,
+    time_unit: "day",
+    filters: [],
+    width: "100%",
+    height: 560
+  };
+  function arrayify11(value) {
+    if (value === void 0 || value === null) return [];
+    return Array.isArray(value) ? value : [value];
+  }
+  function fieldSpec11(value, fallbackLabel) {
+    if (typeof value === "string") return { value_col: value, label: fallbackLabel || value };
+    return { value_col: value.value_col, label: value.label || value.value_col };
+  }
+  function syncSettings13(settings) {
+    const synced = { ...DEFAULT_SETTINGS13, ...settings };
+    synced.direction = synced.direction === "survival" ? "survival" : "incidence";
+    synced.ci = synced.ci === void 0 ? true : Boolean(synced.ci);
+    synced.param_value = synced.param_value == null ? null : String(synced.param_value);
+    synced.time_unit = typeof synced.time_unit === "string" && synced.time_unit ? synced.time_unit : "day";
+    synced.filters = arrayify11(synced.filters).map((filter) => fieldSpec11(filter)).filter((filter) => filter.value_col);
+    return synced;
+  }
+
+  // src/data/schema/time-to-event.json
+  var time_to_event_default = {
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    $id: "https://raw.githubusercontent.com/jwildfire/safety.viz/main/src/data/schema/time-to-event.json",
+    title: "safety.viz time-to-event data contract",
+    description: "ADTTE-shaped analysis data: one record per participant per time-to-event endpoint (TTE-DATA-001). Column names are supplied by the settings mapping. The module computes the Kaplan-Meier product-limit estimator, Greenwood variance and log-log pointwise 95% bounds from the (time, censor) pairs; which events qualify, the earliest-qualifying-event rule and the censoring date hierarchy are properties of the analysis dataset, prepared upstream by the data owner (design D1) - the renderer never re-derives them. Records that cannot be used are counted and exported rather than dropped silently (TTE-DATA-002).",
+    type: "object",
+    required: ["data", "settings"],
+    properties: {
+      data: {
+        type: "array",
+        minItems: 1,
+        items: { type: "object" },
+        description: "d3.csv()-style records; every row carries the participant, time and censor columns named in settings, one row per participant per endpoint."
+      },
+      settings: {
+        type: "object",
+        description: "Column mappings and rendering options; merged onto the module's DEFAULT_SETTINGS, so only overrides need to be supplied.",
+        required: ["id_col", "time_col", "censor_col"],
+        properties: {
+          id_col: {
+            type: "string",
+            default: "USUBJID",
+            description: "Participant identifier column; required in data. One row per participant per endpoint, and the key the participantsSelected event carries (TTE-CFG-001)."
+          },
+          group_col: {
+            type: ["string", "null"],
+            default: "ARM",
+            description: "Curve grouping column (treatment arm). Optional: when the data has no such column, one pooled curve is drawn (TTE-DATA-004)."
+          },
+          param_col: {
+            type: ["string", "null"],
+            default: "PARAM",
+            description: "Endpoint label column, feeding the endpoint picker. Optional: a dataset without endpoint columns is treated as one unnamed endpoint."
+          },
+          paramcd_col: {
+            type: ["string", "null"],
+            default: "PARAMCD",
+            description: "Endpoint short-code column; param_value selects against it."
+          },
+          param_value: {
+            type: ["string", "null"],
+            default: null,
+            description: "The endpoint (paramcd) shown initially; null shows the first endpoint in data order."
+          },
+          time_col: {
+            type: "string",
+            default: "AVAL",
+            description: "Time in days since the analysis time origin (day 1 = first dose, per the upstream derivation); required in data. Missing, non-numeric or non-positive times exclude the row with a counted, exportable reason (TTE-DATA-002)."
+          },
+          censor_col: {
+            type: "string",
+            default: "CNSR",
+            description: "ADaM censor flag; required in data. 0 = event, any integer >= 1 = censored; anything else excludes the row with a counted reason (TTE-DATA-002)."
+          },
+          event_desc_col: {
+            type: ["string", "null"],
+            default: "EVNTDESC",
+            description: "Optional event description (e.g. the qualifying preferred term), shown in event tooltips."
+          },
+          censor_desc_col: {
+            type: ["string", "null"],
+            default: "CNSDTDSC",
+            description: "Optional censoring description (e.g. END OF STUDY), shown in censor-mark tooltips."
+          },
+          direction: {
+            type: "string",
+            enum: ["incidence", "survival"],
+            default: "incidence",
+            description: "Display orientation: cumulative incidence (1 - KM, rising - the safety convention and the FDA ST&F figures' orientation, D2) or survival (falling). The y-axis names the estimator either way (TTE-CURV-004)."
+          },
+          ci: {
+            type: "boolean",
+            default: true,
+            description: "Whether to draw the pointwise 95% confidence band (Greenwood variance, log-log transform, matching survival::survfit conf.type='log-log'; D3). The band is pointwise, not simultaneous, and is labelled as such (TTE-CURV-003)."
+          },
+          time_unit: {
+            type: "string",
+            default: "day",
+            description: "Axis label unit; display only - the module never rescales times."
+          },
+          filters: {
+            type: "array",
+            default: [],
+            items: {
+              oneOf: [
+                { type: "string" },
+                {
+                  type: "object",
+                  required: ["value_col"],
+                  properties: {
+                    value_col: { type: "string" },
+                    label: { type: "string" }
+                  }
+                }
+              ]
+            },
+            description: "Filter controls over the analysis rows: column names or { value_col, label } specs. A filter whose column is absent from the data is dropped with a console warning."
+          },
+          width: {
+            type: "string",
+            default: "100%",
+            description: "Widget width, carried for the R widget bindings; the shell always spans its container."
+          },
+          height: {
+            type: "number",
+            default: 560,
+            description: "Chart-area height in pixels, including the in-canvas at-risk / cumulative-events table."
+          }
+        }
+      }
+    }
+  };
+
+  // src/time-to-event/checkInputs.js
+  var REQUIRED_COLUMN_SETTINGS13 = time_to_event_default.properties.settings.required;
+  function checkInputs13(data, settings) {
+    const rows = Array.isArray(data) ? data : [];
+    const columns = REQUIRED_COLUMN_SETTINGS13.map((key) => settings[key]);
+    const missing = columns.filter((col) => !rows.some((row) => row[col] !== void 0));
+    if (missing.length) {
+      throw new Error(`Required variable(s) missing: ${missing.join(", ")}`);
+    }
+  }
+
+  // src/time-to-event/km.js
+  var Z95 = 1.959963984540054;
+  function kmEstimate(observations) {
+    const sorted = [...observations].sort((a, b) => a.time - b.time);
+    const times = sorted.map((o) => o.time);
+    const total = sorted.length;
+    const maxTime = total ? times[total - 1] : 0;
+    const byTime = /* @__PURE__ */ new Map();
+    for (const o of sorted) {
+      if (!byTime.has(o.time)) byTime.set(o.time, { events: [], censored: [] });
+      byTime.get(o.time)[o.event ? "events" : "censored"].push(o.id ?? "");
+    }
+    const points = [];
+    const censorTimes = [];
+    let atRisk = total;
+    let surv = 1;
+    let greenwoodSum = 0;
+    let greenwoodDefined = true;
+    for (const [time, group] of byTime) {
+      const d = group.events.length;
+      if (d > 0) {
+        surv *= 1 - d / atRisk;
+        let se = null;
+        let lo = null;
+        let hi = null;
+        if (atRisk - d === 0) greenwoodDefined = false;
+        else greenwoodSum += d / (atRisk * (atRisk - d));
+        if (greenwoodDefined && surv > 0 && surv < 1) {
+          const varS = surv * surv * greenwoodSum;
+          se = Math.sqrt(varS);
+          const sdTheta = Math.sqrt(varS) / Math.abs(surv * Math.log(surv));
+          lo = Math.pow(surv, Math.exp(Z95 * sdTheta));
+          hi = Math.pow(surv, Math.exp(-Z95 * sdTheta));
+        }
+        points.push({
+          time,
+          atRisk,
+          events: d,
+          censored: group.censored.length,
+          surv,
+          se,
+          lo,
+          hi,
+          ids: group.events
+        });
+      }
+      if (group.censored.length)
+        censorTimes.push({ time, count: group.censored.length, surv, ids: group.censored });
+      atRisk -= d + group.censored.length;
+    }
+    const eventTimes = points.map((p) => p.time);
+    const cumEvents = [];
+    let running = 0;
+    for (const p of points) {
+      running += p.events;
+      cumEvents.push(running);
+    }
+    return {
+      points,
+      censorTimes,
+      total,
+      maxTime,
+      riskTableAt(ticks) {
+        return ticks.map((t) => {
+          let loIdx = 0;
+          let hiIdx = times.length;
+          while (loIdx < hiIdx) {
+            const mid = loIdx + hiIdx >> 1;
+            if (times[mid] < t) loIdx = mid + 1;
+            else hiIdx = mid;
+          }
+          let e = 0;
+          for (let i = 0; i < eventTimes.length && eventTimes[i] <= t; i += 1) e = cumEvents[i];
+          return { time: t, atRisk: times.length - loIdx, cumEvents: e };
+        });
+      }
+    };
+  }
+
+  // src/time-to-event/structureData.js
+  var DROP_REASON_COLUMN2 = "__tte_dropReason";
+  var POOLED_GROUP = "All participants";
+  var UNNAMED_PARAM = "Time to event";
+  function unique10(values) {
+    return [...new Set(values)];
+  }
+  function paramsPresent(rows, settings) {
+    const hasParamcd = rows.some((row) => row[settings.paramcd_col] !== void 0);
+    const hasParam = rows.some((row) => row[settings.param_col] !== void 0);
+    if (!hasParamcd && !hasParam) return [{ paramcd: null, param: UNNAMED_PARAM }];
+    const seen = /* @__PURE__ */ new Map();
+    for (const row of rows) {
+      const paramcd = hasParamcd ? String(row[settings.paramcd_col] ?? "") : null;
+      const param = hasParam ? String(row[settings.param_col] ?? "") : String(paramcd);
+      const key = paramcd ?? param;
+      if (!seen.has(key)) seen.set(key, { paramcd: paramcd ?? param, param: param || paramcd });
+    }
+    return [...seen.values()];
+  }
+  function parseCensor(raw) {
+    const value = Number(raw);
+    if (!Number.isFinite(value) || !Number.isInteger(value) || value < 0) return null;
+    return value === 0;
+  }
+  function cleanData9(rows, settings) {
+    const observations = [];
+    const droppedRows = [];
+    const seen = /* @__PURE__ */ new Set();
+    const drop = (row, reason) => droppedRows.push({ ...row, [DROP_REASON_COLUMN2]: reason });
+    for (const row of rows) {
+      const id = row[settings.id_col];
+      if (id === void 0 || id === null || id === "") {
+        drop(row, `missing participant id (${settings.id_col})`);
+        continue;
+      }
+      const time = Number(row[settings.time_col]);
+      if (row[settings.time_col] === "" || row[settings.time_col] == null || !Number.isFinite(time)) {
+        drop(row, `missing or non-numeric time (${settings.time_col})`);
+        continue;
+      }
+      if (time <= 0) {
+        drop(row, `non-positive time (${settings.time_col} = ${row[settings.time_col]})`);
+        continue;
+      }
+      const event = parseCensor(row[settings.censor_col]);
+      if (event === null) {
+        drop(
+          row,
+          `unparseable censor flag (${settings.censor_col} = ${row[settings.censor_col]}; expected 0 = event, >= 1 = censored)`
+        );
+        continue;
+      }
+      if (seen.has(id)) {
+        drop(row, `duplicate row for participant ${id} \u2014 first row kept`);
+        continue;
+      }
+      seen.add(id);
+      observations.push({
+        id: String(id),
+        group: settings.group_col && row[settings.group_col] !== void 0 ? String(row[settings.group_col]) : null,
+        time,
+        event,
+        eventDesc: settings.event_desc_col && row[settings.event_desc_col] ? String(row[settings.event_desc_col]) : "",
+        censorDesc: settings.censor_desc_col && row[settings.censor_desc_col] ? String(row[settings.censor_desc_col]) : "",
+        row
+      });
+    }
+    return { observations, droppedRows };
+  }
+  function structureData2(rawData, settings, paramcd) {
+    const rows = Array.isArray(rawData) ? rawData : [];
+    const hasParamcd = rows.some((row) => row[settings.paramcd_col] !== void 0);
+    const endpointRows = paramcd == null || !hasParamcd ? rows : rows.filter((row) => String(row[settings.paramcd_col] ?? "") === paramcd);
+    const { observations, droppedRows } = cleanData9(endpointRows, settings);
+    const grouped = /* @__PURE__ */ new Map();
+    for (const observation of observations) {
+      const name = observation.group ?? POOLED_GROUP;
+      if (!grouped.has(name)) grouped.set(name, []);
+      grouped.get(name).push(observation);
+    }
+    const groups = [...grouped.entries()].map(([name, members]) => ({
+      name,
+      observations: members,
+      estimate: kmEstimate(members)
+    }));
+    return {
+      groups,
+      droppedRows,
+      total: observations.length,
+      maxTime: groups.reduce((max, group) => Math.max(max, group.estimate.maxTime), 0)
+    };
+  }
+  function applyFilters10(rows, filters) {
+    const active = Object.entries(filters || {}).filter(([, value]) => value != null);
+    if (!active.length) return rows;
+    return rows.filter((row) => active.every(([column, value]) => String(row[column]) === value));
+  }
+
+  // src/time-to-event/getScales.js
+  var STEP_LADDER = [1, 2, 5];
+  var MAX_INTERVALS = 7;
+  function axisTicks2(maxTime) {
+    const extent = Number.isFinite(maxTime) && maxTime > 0 ? maxTime : 1;
+    let step = 1;
+    for (let decade = 1; ; decade *= 10) {
+      for (const base of STEP_LADDER) {
+        step = base * decade;
+        if (Math.ceil(extent / step) <= MAX_INTERVALS) {
+          const max = Math.ceil(extent / step) * step;
+          const ticks = [];
+          for (let t = 0; t <= max; t += step) ticks.push(t);
+          return { step, max, ticks };
+        }
+      }
+    }
+  }
+  function displayValue(surv, direction) {
+    return direction === "incidence" ? 1 - surv : surv;
+  }
+  function bandValues(point, direction) {
+    if (point.lo == null || point.hi == null) return { lo: null, hi: null };
+    if (direction !== "incidence") return { lo: point.lo, hi: point.hi };
+    return { lo: 1 - point.hi, hi: 1 - point.lo };
+  }
+  function yAxisTitle(direction) {
+    return direction === "incidence" ? "Cumulative incidence (1 \u2212 KM)" : "Event-free probability (KM)";
+  }
+  function xAxisTitle(timeUnit) {
+    return `Time since first dose (${timeUnit}s)`;
+  }
+  function formatPercent3(value) {
+    return `${Math.round(value * 100)}%`;
+  }
+  function formatPercent1(value) {
+    return `${(value * 100).toFixed(1)}%`;
+  }
+  function buildScales7({ maxTime, direction, timeUnit }) {
+    const { step, max } = axisTicks2(maxTime);
+    return {
+      x: {
+        type: "linear",
+        min: 0,
+        max,
+        ticks: { stepSize: step, maxRotation: 0, color: "#52616f" },
+        grid: { color: "rgba(148, 163, 184, 0.18)" },
+        title: { display: true, text: xAxisTitle(timeUnit), color: "#334155" }
+      },
+      y: {
+        type: "linear",
+        min: 0,
+        max: 1,
+        ticks: { stepSize: 0.25, callback: (value) => formatPercent3(value), color: "#52616f" },
+        grid: { color: "rgba(148, 163, 184, 0.18)" },
+        title: { display: true, text: yAxisTitle(direction), color: "#334155" }
+      }
+    };
+  }
+
+  // src/time-to-event/getPlugins.js
+  var GROUP_COLORS3 = ["#1f78b4", "#e31a1c", "#ff7f00", "#6a3d9a", "#33a02c", "#c2185b"];
+  var GROUP_DASHES = [[], [6, 4], [2, 3], [8, 3, 2, 3], [4, 4], [10, 4]];
+  function groupStyle(index) {
+    return {
+      color: GROUP_COLORS3[index % GROUP_COLORS3.length],
+      dash: GROUP_DASHES[index % GROUP_DASHES.length]
+    };
+  }
+  function hexToRgba6(hex2, alpha2) {
+    const clean = hex2.replace("#", "");
+    const r = parseInt(clean.slice(0, 2), 16);
+    const g = parseInt(clean.slice(2, 4), 16);
+    const b = parseInt(clean.slice(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha2})`;
+  }
+  function curveVertices(estimate, direction) {
+    const vertices = [{ x: 0, y: displayValue(1, direction), kind: "origin", point: null }];
+    for (const point of estimate.points)
+      vertices.push({ x: point.time, y: displayValue(point.surv, direction), kind: "event", point });
+    const last = estimate.points[estimate.points.length - 1];
+    const lastY = last ? displayValue(last.surv, direction) : displayValue(1, direction);
+    if (estimate.maxTime > (last ? last.time : 0))
+      vertices.push({ x: estimate.maxTime, y: lastY, kind: "terminal", point: null });
+    return vertices;
+  }
+  function bandRects(estimate, direction) {
+    const rects = [];
+    const points = estimate.points;
+    for (let i = 0; i < points.length; i += 1) {
+      const { lo, hi } = bandValues(points[i], direction);
+      if (lo == null || hi == null) continue;
+      const x1 = i + 1 < points.length ? points[i + 1].time : Math.max(estimate.maxTime, points[i].time);
+      rects.push({ x0: points[i].time, x1, lo, hi });
+    }
+    return rects;
+  }
+  function riskRows(groups, ticks) {
+    const tables = groups.map((group) => ({
+      name: group.name,
+      rows: group.estimate.riskTableAt(ticks)
+    }));
+    return [
+      {
+        label: "No. at risk",
+        groups: tables.map((table) => ({
+          name: table.name,
+          counts: table.rows.map((row) => row.atRisk)
+        }))
+      },
+      {
+        label: "Cumulative events",
+        groups: tables.map((table) => ({
+          name: table.name,
+          counts: table.rows.map((row) => row.cumEvents)
+        }))
+      }
+    ];
+  }
+  var RISK_HEADER_PX = 16;
+  var RISK_ROW_PX = 14;
+  var RISK_STRIP_GAP_PX = 6;
+  var RISK_TOP_GAP_PX = 46;
+  function riskTableHeight(groupCount) {
+    const strip = RISK_HEADER_PX + groupCount * RISK_ROW_PX;
+    return RISK_TOP_GAP_PX + 2 * strip + RISK_STRIP_GAP_PX;
+  }
+  function pointTooltip4(point, { groupName, direction, timeUnit }) {
+    const unit = timeUnit.charAt(0).toUpperCase() + timeUnit.slice(1);
+    const value = displayValue(point.surv, direction);
+    const { lo, hi } = bandValues(point, direction);
+    const lines = [
+      `${unit} ${point.time} \u2014 ${groupName}`,
+      `${direction === "incidence" ? "Cumulative incidence (1 \u2212 KM)" : "Event-free probability (KM)"}: ${formatPercent1(value)}`
+    ];
+    if (lo != null && hi != null)
+      lines.push(`Pointwise 95% CI: ${formatPercent1(lo)} \u2013 ${formatPercent1(hi)}`);
+    lines.push(
+      `${point.events} event${point.events === 1 ? "" : "s"} of ${point.atRisk} at risk` + (point.censored ? `; ${point.censored} censored here` : "")
+    );
+    return lines;
+  }
+  function censorTooltip(mark, { groupName, timeUnit, censorDescs }) {
+    const unit = timeUnit.charAt(0).toUpperCase() + timeUnit.slice(1);
+    const lines = [
+      `${unit} ${mark.time} \u2014 ${groupName}`,
+      `${mark.count} participant${mark.count === 1 ? "" : "s"} censored`
+    ];
+    const reasons = [...new Set((censorDescs || []).filter(Boolean))];
+    if (reasons.length) lines.push(reasons.join("; "));
+    return lines;
+  }
+  function ciBandPlugin() {
+    return {
+      id: "tteCiBand",
+      beforeDatasetsDraw(chart) {
+        const groups = chart.$tteGroups || [];
+        const { ctx, chartArea } = chart;
+        const drawn = [];
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(
+          chartArea.left,
+          chartArea.top,
+          chartArea.right - chartArea.left,
+          chartArea.bottom - chartArea.top
+        );
+        ctx.clip();
+        for (const group of groups) {
+          if (!group.ci || !chart.isDatasetVisible(group.curveIndex)) continue;
+          ctx.fillStyle = hexToRgba6(group.color, 0.14);
+          for (const rect of group.bandRects) {
+            const x0 = chart.scales.x.getPixelForValue(rect.x0);
+            const x1 = chart.scales.x.getPixelForValue(rect.x1);
+            const yLo = chart.scales.y.getPixelForValue(rect.lo);
+            const yHi = chart.scales.y.getPixelForValue(rect.hi);
+            ctx.fillRect(x0, yHi, x1 - x0, yLo - yHi);
+            drawn.push({ group: group.name, ...rect });
+          }
+        }
+        ctx.restore();
+        chart.$tteBand = drawn;
+      }
+    };
+  }
+  function riskTablePlugin(context) {
+    return {
+      id: "tteRiskTable",
+      afterDraw(chart) {
+        const allGroups = chart.$tteGroups || [];
+        const groups = allGroups.filter((group) => chart.isDatasetVisible(group.curveIndex));
+        if (!groups.length) {
+          chart.$tteRiskTable = [];
+          return;
+        }
+        const ticks = context.ticks();
+        const strips = riskRows(
+          groups.map((group) => ({ name: group.name, estimate: group.estimate })),
+          ticks
+        );
+        const { ctx, chartArea } = chart;
+        const xScale = chart.scales.x;
+        const stripHeight = RISK_HEADER_PX + strips[0].groups.length * RISK_ROW_PX;
+        let y = chart.height - (2 * stripHeight + RISK_STRIP_GAP_PX) - 4;
+        const drawn = [];
+        ctx.save();
+        ctx.font = '11px -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif';
+        ctx.textBaseline = "top";
+        for (const strip of strips) {
+          ctx.fillStyle = "#334155";
+          ctx.textAlign = "left";
+          ctx.fillText(strip.label, 4, y);
+          y += RISK_HEADER_PX;
+          strip.groups.forEach((row, rowIndex) => {
+            const color2 = groups[rowIndex].color;
+            ctx.fillStyle = color2;
+            ctx.textAlign = "left";
+            ctx.fillText(truncate(ctx, row.name, Math.max(40, chartArea.left - 8)), 4, y);
+            ctx.textAlign = "center";
+            row.counts.forEach((count2, tickIndex) => {
+              const x = xScale.getPixelForValue(ticks[tickIndex]);
+              if (x >= chartArea.left - 1 && x <= chartArea.right + 1) {
+                ctx.fillText(String(count2), x, y);
+                drawn.push({ strip: strip.label, group: row.name, time: ticks[tickIndex], count: count2 });
+              }
+            });
+            y += RISK_ROW_PX;
+          });
+          y += RISK_STRIP_GAP_PX;
+        }
+        ctx.restore();
+        chart.$tteRiskTable = drawn;
+      }
+    };
+  }
+  function truncate(ctx, text, width) {
+    if (ctx.measureText(text).width <= width) return text;
+    let out = text;
+    while (out.length > 1 && ctx.measureText(`${out}\u2026`).width > width) out = out.slice(0, -1);
+    return `${out}\u2026`;
+  }
+
+  // src/time-to-event.js
+  Chart.register(LineController, LineElement, PointElement, LinearScale, plugin_tooltip, plugin_legend);
+  var SafetyTimeToEvent = class {
+    constructor(element = "body", settings = {}) {
+      this.element = typeof element === "string" ? document.querySelector(element) : element;
+      if (!this.element) throw new Error(`Safety Time-to-Event target not found: ${element}`);
+      this.settings = syncSettings13(settings);
+      this.rawData = [];
+      this.params = [];
+      this.structured = null;
+      this.chart = null;
+      this.participantsSelected = [];
+      this.state = {
+        filters: {},
+        paramcd: this.settings.param_value,
+        direction: this.settings.direction,
+        ci: this.settings.ci,
+        selected: null
+      };
+      Object.assign(
+        this,
+        renderShell(this.element, {
+          moduleClass: "safety-time-to-event",
+          onToggle: () => this.resize()
+        })
+      );
+      this.chartWrap.style.height = `${this.settings.height}px`;
+    }
+    /**
+     * Load data and render: an alias for setData that keeps the two-step
+     * create-then-init call shape working.
+     * @param {Object[]} data ADTTE-shaped records matching the time-to-event data contract.
+     * @returns {SafetyTimeToEvent} The instance, for chaining.
+     */
+    init(data) {
+      this.setData(data);
+      return this;
+    }
+    /**
+     * Replace the bound data and re-render. The data is validated against the
+     * settings mapping (throwing, and rendering the message into the target
+     * element, when required columns are missing) and the endpoint list and
+     * controls are rebuilt from it.
+     * @param {Object[]} data ADTTE-shaped records matching the time-to-event data contract.
+     * @returns {SafetyTimeToEvent} The instance, for chaining.
+     */
+    setData(data) {
+      this.rawData = Array.isArray(data) ? data : [];
+      try {
+        checkInputs13(this.rawData, this.settings);
+      } catch (error) {
+        this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+        throw error;
+      }
+      this.params = paramsPresent(this.rawData, this.settings);
+      if (this.state.paramcd == null || !this.params.some((param) => param.paramcd === this.state.paramcd)) {
+        this.state.paramcd = this.params.length ? this.params[0].paramcd : null;
+      }
+      this.buildControls();
+      this.render();
+      return this;
+    }
+    /**
+     * Merge setting overrides onto the current settings, re-normalize, rebuild
+     * the controls, and re-render.
+     * @param {TimeToEventSettings} settings Setting overrides to merge.
+     * @returns {SafetyTimeToEvent} The instance, for chaining.
+     */
+    setSettings(settings) {
+      this.settings = syncSettings13({ ...this.settings, ...settings });
+      if ("direction" in settings) this.state.direction = this.settings.direction;
+      if ("ci" in settings) this.state.ci = this.settings.ci;
+      if ("param_value" in settings) this.state.paramcd = this.settings.param_value;
+      this.chartWrap.style.height = `${this.settings.height}px`;
+      if (this.rawData.length) {
+        this.params = paramsPresent(this.rawData, this.settings);
+        if (!this.params.some((param) => param.paramcd === this.state.paramcd))
+          this.state.paramcd = this.params.length ? this.params[0].paramcd : null;
+      }
+      this.buildControls();
+      this.render();
+      return this;
+    }
+    /**
+     * The active endpoint's display label.
+     * @private
+     */
+    paramLabel() {
+      const param = this.params.find((entry) => entry.paramcd === this.state.paramcd);
+      return param ? param.param : "Time to event";
+    }
+    /**
+     * Rebuild the endpoint, display and filter controls from data + state.
+     * @private
+     */
+    buildControls() {
+      this.controls.innerHTML = "";
+      const { addSection, addControl } = controlBuilders(this.controls);
+      if (this.params.length > 1) {
+        const endpointParent = addSection("Endpoint");
+        const select = addControl(
+          "Time-to-event endpoint",
+          document.createElement("select"),
+          endpointParent
+        );
+        this.params.forEach(
+          (param) => option(select, param.paramcd, param.param, param.paramcd === this.state.paramcd)
+        );
+        select.onchange = () => {
+          this.state.paramcd = select.value;
+          this.state.selected = null;
+          this.render();
+        };
+      }
+      const filterSpecs = this.settings.filters.filter((filter) => {
+        const exists = this.rawData.some((row) => row[filter.value_col] !== void 0);
+        if (!exists)
+          console.warn(
+            `The [ ${filter.label} ] filter has been removed because the variable does not exist.`
+          );
+        return exists;
+      });
+      if (filterSpecs.length) {
+        const filterParent = addSection("Filters");
+        filterSpecs.forEach((filter) => {
+          const select = addControl(filter.label, document.createElement("select"), filterParent);
+          option(select, "__all__", "All", !this.state.filters[filter.value_col]);
+          unique10(this.rawData.map((row) => row[filter.value_col]).filter((v) => v !== void 0)).map(String).sort().forEach(
+            (value) => option(select, value, value, this.state.filters[filter.value_col] === value)
+          );
+          select.onchange = () => {
+            this.state.filters[filter.value_col] = select.value === "__all__" ? null : select.value;
+            this.render();
+          };
+        });
+      }
+      const displayParent = addSection("Display");
+      const direction = addControl("Orientation", document.createElement("select"), displayParent);
+      option(
+        direction,
+        "incidence",
+        "Cumulative incidence (1 \u2212 KM)",
+        this.state.direction === "incidence"
+      );
+      option(
+        direction,
+        "survival",
+        "Event-free probability (KM)",
+        this.state.direction === "survival"
+      );
+      direction.onchange = () => {
+        this.state.direction = direction.value === "survival" ? "survival" : "incidence";
+        this.render();
+      };
+      const ci = document.createElement("input");
+      ci.type = "checkbox";
+      ci.checked = this.state.ci;
+      ci.onchange = () => {
+        this.state.ci = ci.checked;
+        this.render();
+      };
+      const inline = createElement("div", "sv-control-inline");
+      inline.append(ci, document.createTextNode("Show"));
+      addControl("Pointwise 95% CI band", inline, displayParent);
+    }
+    /**
+     * Redraw everything from the current data, settings and control state.
+     * @returns {void}
+     */
+    render() {
+      this.destroyChart();
+      this.footnote.textContent = "";
+      this.state.selected = null;
+      this.participantsSelected = [];
+      this.mainAnnotation.textContent = "";
+      const filtered = applyFilters10(this.rawData, this.state.filters);
+      this.structured = structureData2(filtered, this.settings, this.state.paramcd);
+      this.updateNotes();
+      if (!this.structured.total) {
+        this.mainAnnotation.textContent = "No usable time-to-event records for the current selection.";
+        return;
+      }
+      this.mainAnnotation.textContent = "Click an event step to select its participants.";
+      this.drawChart();
+    }
+    /**
+     * The status line above the chart: the endpoint, the population, the event
+     * accounting, the estimator honesty note (TTE-GUIDE-001), and the counted +
+     * exportable drops (TTE-DATA-002).
+     * @private
+     */
+    updateNotes() {
+      this.notes.innerHTML = "";
+      const { groups, total, droppedRows } = this.structured;
+      const events = groups.reduce(
+        (sum, group) => sum + group.estimate.points.reduce((s, p) => s + p.events, 0),
+        0
+      );
+      this.notes.append(
+        createElement(
+          "span",
+          null,
+          `${this.paramLabel()}: ${total} participant${total === 1 ? "" : "s"} in ${groups.length} group${groups.length === 1 ? "" : "s"}; ${events} event${events === 1 ? "" : "s"}, ${total - events} censored.`
+        )
+      );
+      this.notes.append(
+        createElement(
+          "span",
+          null,
+          "Bands are pointwise 95% CIs (Greenwood, log-log) \u2014 not simultaneous. 1 \u2212 KM can overestimate absolute risk when competing events (death, discontinuation) are present; see the clinical guide."
+        )
+      );
+      if (droppedRows.length) {
+        const note = createElement("span", "sv-warning");
+        note.append(
+          document.createTextNode(
+            `${droppedRows.length} unusable row${droppedRows.length === 1 ? "" : "s"} removed. `
+          ),
+          csvDownloadLink(
+            () => toCsv(droppedRows, this.droppedRowColumns()),
+            "time-to-event-dropped-records",
+            "Download records"
+          )
+        );
+        this.notes.append(note);
+      }
+    }
+    /**
+     * The dropped-row export's columns: the reason first, then the source columns.
+     * @private
+     */
+    droppedRowColumns() {
+      if (!this.structured.droppedRows.length) return [];
+      const source = Object.keys(this.structured.droppedRows[0]).filter(
+        (column) => column !== DROP_REASON_COLUMN2
+      );
+      return [DROP_REASON_COLUMN2, ...source];
+    }
+    /**
+     * Draw the Chart.js step curves, censor marks, CI band and risk table.
+     * @private
+     */
+    drawChart() {
+      const { groups, maxTime } = this.structured;
+      const direction = this.state.direction;
+      const ticks = axisTicks2(maxTime);
+      const datasets = [];
+      const tteGroups = [];
+      groups.forEach((group, index) => {
+        const style = groupStyle(index);
+        const vertices = curveVertices(group.estimate, direction);
+        const curveIndex = datasets.length;
+        datasets.push({
+          label: group.name,
+          data: vertices.map((vertex) => ({ x: vertex.x, y: vertex.y })),
+          borderColor: style.color,
+          backgroundColor: style.color,
+          borderDash: style.dash,
+          borderWidth: 2,
+          stepped: "after",
+          fill: false,
+          pointRadius: vertices.map((vertex) => vertex.kind === "event" ? 2.5 : 0),
+          pointHoverRadius: vertices.map((vertex) => vertex.kind === "event" ? 5 : 0),
+          pointHitRadius: vertices.map((vertex) => vertex.kind === "event" ? 8 : 0),
+          pointBackgroundColor: style.color,
+          pointBorderColor: style.color,
+          $tteKind: "curve",
+          $tteVertices: vertices,
+          $tteGroupName: group.name
+        });
+        const censorIndex = datasets.length;
+        datasets.push({
+          label: `${group.name} \u2014 censored`,
+          data: group.estimate.censorTimes.map((mark) => ({
+            x: mark.time,
+            y: displayValue(mark.surv, direction)
+          })),
+          showLine: false,
+          pointStyle: "line",
+          rotation: 90,
+          pointRadius: 5,
+          pointHoverRadius: 7,
+          pointHitRadius: 6,
+          pointBorderWidth: 1.5,
+          pointBorderColor: style.color,
+          pointBackgroundColor: style.color,
+          borderColor: style.color,
+          $tteKind: "censor",
+          $tteMarks: group.estimate.censorTimes,
+          $tteGroupName: group.name,
+          $tteObservations: group.observations
+        });
+        tteGroups.push({
+          name: group.name,
+          color: style.color,
+          estimate: group.estimate,
+          bandRects: bandRects(group.estimate, direction),
+          ci: this.state.ci,
+          curveIndex,
+          censorIndex
+        });
+      });
+      const module = this;
+      const chart = new Chart(this.canvas.getContext("2d"), {
+        type: "line",
+        data: { datasets },
+        options: {
+          maintainAspectRatio: false,
+          responsive: true,
+          layout: { padding: { top: 6, right: 12, bottom: riskTableHeight(groups.length) } },
+          interaction: { mode: "nearest", intersect: true },
+          plugins: {
+            legend: {
+              display: true,
+              position: "top",
+              // Left-aligned so the legend never collides with the shell's
+              // top-right annotation overlay.
+              align: "start",
+              labels: {
+                usePointStyle: false,
+                // One legend entry per group: the censor datasets follow their
+                // group's visibility rather than appearing as separate items.
+                filter: (item, data) => data.datasets[item.datasetIndex].$tteKind === "curve"
+              },
+              onClick: (event, item, legend) => {
+                const chartRef = legend.chart;
+                const group = (chartRef.$tteGroups || []).find(
+                  (entry) => entry.curveIndex === item.datasetIndex
+                );
+                const visible = chartRef.isDatasetVisible(item.datasetIndex);
+                chartRef.setDatasetVisibility(item.datasetIndex, !visible);
+                if (group) chartRef.setDatasetVisibility(group.censorIndex, !visible);
+                chartRef.update();
+              }
+            },
+            tooltip: {
+              callbacks: {
+                title: () => "",
+                label: (ctx) => {
+                  const dataset = ctx.dataset;
+                  if (dataset.$tteKind === "curve") {
+                    const vertex = dataset.$tteVertices[ctx.dataIndex];
+                    if (vertex.kind === "event")
+                      return pointTooltip4(vertex.point, {
+                        groupName: dataset.$tteGroupName,
+                        direction,
+                        timeUnit: this.settings.time_unit
+                      });
+                    return `${dataset.$tteGroupName}: ${formatPercent1(vertex.y)} at ${this.settings.time_unit} ${vertex.x}`;
+                  }
+                  const mark = dataset.$tteMarks[ctx.dataIndex];
+                  const censorDescs = dataset.$tteObservations.filter((observation) => !observation.event && observation.time === mark.time).map((observation) => observation.censorDesc);
+                  return censorTooltip(mark, {
+                    groupName: dataset.$tteGroupName,
+                    timeUnit: this.settings.time_unit,
+                    censorDescs
+                  });
+                }
+              }
+            }
+          },
+          scales: buildScales7({ maxTime, direction, timeUnit: this.settings.time_unit }),
+          onHover: (event, active) => {
+            const target = event?.native?.target;
+            if (target) target.style.cursor = active.length ? "pointer" : "default";
+          },
+          onClick: (event, active) => {
+            if (active.length) module.selectElement(active[0]);
+            else if (module.state.selected) module.clearSelection();
+          }
+        },
+        plugins: [ciBandPlugin(), riskTablePlugin({ ticks: () => ticks.ticks })]
+      });
+      chart.$tteGroups = tteGroups;
+      this.chart = chart;
+    }
+    /**
+     * Select a clicked chart element: an event step dispatches the ids whose
+     * event occurred at that time (D6) — the profile drill-down seam every
+     * explorer keeps open.
+     * @private
+     */
+    selectElement(element) {
+      const dataset = this.chart.data.datasets[element.datasetIndex];
+      if (dataset.$tteKind !== "curve") return;
+      const vertex = dataset.$tteVertices[element.index];
+      if (!vertex || vertex.kind !== "event") return;
+      this.state.selected = { group: dataset.$tteGroupName, time: vertex.point.time };
+      const ids = vertex.point.ids;
+      this.footnote.textContent = `${dataset.$tteGroupName}, ${this.settings.time_unit} ${vertex.point.time}: ${ids.length} participant${ids.length === 1 ? "" : "s"} with an event \u2014 ${ids.join(", ")}`;
+      this.dispatchSelection(ids);
+    }
+    /**
+     * Clear the event-step selection and dispatch the empty selection so external
+     * listeners follow.
+     * @returns {void}
+     */
+    clearSelection() {
+      this.state.selected = null;
+      this.footnote.textContent = "";
+      this.dispatchSelection([]);
+    }
+    /**
+     * Dispatch the custom participantsSelected event on the shell root with the
+     * selected IDs — the house selection payload.
+     * @private
+     */
+    dispatchSelection(ids) {
+      this.participantsSelected = ids;
+      if (this.root) {
+        this.root.dispatchEvent(
+          new CustomEvent("participantsSelected", { detail: { data: ids }, bubbles: true })
+        );
+      }
+    }
+    /**
+     * Resize the live chart to its container. For host layouts that change the
+     * container size without a window resize — e.g. the R htmlwidget bindings.
+     * @returns {void}
+     */
+    resize() {
+      if (this.chart) this.chart.resize();
+    }
+    /**
+     * Destroy the live Chart.js instance without touching the shell.
+     * @private
+     */
+    destroyChart() {
+      if (this.chart) this.chart.destroy();
+      this.chart = null;
+    }
+    /**
+     * Tear the explorer down: destroy the Chart.js instance and empty the target
+     * element. The instance cannot be reused afterwards — create a new one via
+     * the factory instead.
+     * @returns {void}
+     */
+    destroy() {
+      this.destroyChart();
+      this.element.innerHTML = "";
+    }
+  };
+  function timeToEvent(element = "body", settings = {}) {
+    return new SafetyTimeToEvent(element, settings);
+  }
+
   // src/main.js
   var main_default = {
     histogram,
@@ -31617,7 +32645,8 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     qtExplorer,
     hepWaterfall,
     participantProfile,
-    nepExplorer
+    nepExplorer,
+    timeToEvent
   };
   return __toCommonJS(main_exports);
 })();

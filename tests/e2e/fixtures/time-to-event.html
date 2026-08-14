@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>safety.viz time-to-event demo page</title>
+  </head>
+  <body>
+    <h1 id="time-to-event-heading">safety.viz Time-to-Event Explorer demo</h1>
+    <p>
+      Demo and Playwright harness page for the time-to-event module (#128). Loads the committed IIFE
+      bundle against a small deterministic ADTTE fixture, engineered so every display path is
+      exercised and every number is hand-checkable: a tied double event, an event and a censoring
+      sharing a day, a curve that extends flat past its last event, a sparse second endpoint whose
+      study-drug group is entirely censored (the flat-line case), three unusable rows (bad time, bad
+      censor flag, duplicate participant), and a SEX column for the filter control.
+    </p>
+    <div id="container"></div>
+    <!-- Bundle path tracks the package.json version; bump them together. -->
+    <script src="/dist/safety.viz-1.6.0/safety.viz.js"></script>
+    <script>
+      // Deterministic fixture: no Math.random(). Hand-computed expectations
+      // (asserted in tests/e2e/time-to-event.spec.js):
+      //
+      // TTDE / Placebo, n=8: events 5,5,10; censored 10,15,20,25,25.
+      //   S(5) = 1 - 2/8 = 0.75; S(10): risk {10e,10c,15,20,25,25}=6, d=1 -> 0.625.
+      //   The day-10 censoring shares the event day: still at risk there.
+      // TTDE / Study Drug, n=6: events 3,8,18; censored 12,30,30.
+      //   S(3)=5/6; S(8)=5/6*4/5=2/3; S(18): risk {18,30,30}=3 -> 2/3*2/3=4/9.
+      //   maxTime 30 > last event 18: the curve extends flat to 30.
+      // TTSAE / Placebo: one event (day 12 of 3); Study Drug: all 3 censored ->
+      //   a flat all-censored curve, drawn honestly at S=1.
+      const ROWS = [];
+      function tte(id, arm, paramcd, param, aval, cnsr, evnt, cnsdt, sex) {
+        ROWS.push({
+          USUBJID: id,
+          ARM: arm,
+          PARAMCD: paramcd,
+          PARAM: param,
+          AVAL: String(aval),
+          CNSR: String(cnsr),
+          EVNTDESC: evnt || '',
+          CNSDTDSC: cnsdt || '',
+          SEX: sex
+        });
+      }
+      const TTDE = ['TTDE', 'Time to First Dermatologic Event'];
+      const TTSAE = ['TTSAE', 'Time to First Serious Adverse Event'];
+
+      // Placebo, TTDE.
+      tte('P-1', 'Placebo', ...TTDE, 5, 0, 'RASH', '', 'F');
+      tte('P-2', 'Placebo', ...TTDE, 5, 0, 'PRURITUS', '', 'M');
+      tte('P-3', 'Placebo', ...TTDE, 10, 0, 'ERYTHEMA', '', 'F');
+      tte('P-4', 'Placebo', ...TTDE, 10, 1, '', 'END OF STUDY', 'M');
+      tte('P-5', 'Placebo', ...TTDE, 15, 1, '', 'END OF STUDY', 'F');
+      tte('P-6', 'Placebo', ...TTDE, 20, 1, '', 'END OF STUDY', 'M');
+      tte('P-7', 'Placebo', ...TTDE, 25, 1, '', 'END OF STUDY', 'F');
+      tte('P-8', 'Placebo', ...TTDE, 25, 1, '', 'END OF STUDY', 'M');
+      // Study Drug, TTDE.
+      tte('D-1', 'Study Drug', ...TTDE, 3, 0, 'DERMATITIS', '', 'F');
+      tte('D-2', 'Study Drug', ...TTDE, 8, 0, 'RASH', '', 'M');
+      tte('D-3', 'Study Drug', ...TTDE, 12, 1, '', 'WITHDREW CONSENT', 'F');
+      tte('D-4', 'Study Drug', ...TTDE, 18, 0, 'BLISTER', '', 'M');
+      tte('D-5', 'Study Drug', ...TTDE, 30, 1, '', 'END OF STUDY', 'F');
+      tte('D-6', 'Study Drug', ...TTDE, 30, 1, '', 'END OF STUDY', 'M');
+      // TTSAE: sparse; the study-drug group is entirely censored.
+      tte('P-1', 'Placebo', ...TTSAE, 12, 0, 'SEPSIS', '', 'F');
+      tte('P-2', 'Placebo', ...TTSAE, 25, 1, '', 'END OF STUDY', 'M');
+      tte('P-3', 'Placebo', ...TTSAE, 25, 1, '', 'END OF STUDY', 'F');
+      tte('D-1', 'Study Drug', ...TTSAE, 30, 1, '', 'END OF STUDY', 'F');
+      tte('D-2', 'Study Drug', ...TTSAE, 30, 1, '', 'END OF STUDY', 'M');
+      tte('D-3', 'Study Drug', ...TTSAE, 30, 1, '', 'END OF STUDY', 'F');
+      // Unusable rows: counted, named, exportable — never silent (TTE-DATA-002/003).
+      tte('X-1', 'Placebo', ...TTDE, 'NA', 0, '', '', 'F'); // bad time
+      tte('X-2', 'Placebo', ...TTDE, 9, 'maybe', '', '', 'M'); // bad censor flag
+      tte('P-1', 'Placebo', ...TTDE, 40, 0, 'RASH', '', 'F'); // duplicate participant
+
+      const instance = SafetyViz.timeToEvent('#container', {
+        filters: [{ value_col: 'SEX', label: 'Sex' }]
+      });
+      window.__safetyTimeToEventInstance = instance;
+      instance.init(ROWS);
+    </script>
+  </body>
+</html>

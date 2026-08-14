@@ -1,5 +1,5 @@
 {
-  "module": "hep-waterfall",
+  "module": "time-to-event",
   "generatedAt": "2026-08-14T23:37:04.351Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
@@ -141,166 +141,6 @@
       "screenshots": []
     },
     {
-      "test": "HWF-AXIS-002/HWF-AXIS-003/HWF-AXIS-004: mirrored absolute-unit axes and a single-value reference line (#93)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["HWF-AXIS-002", "HWF-AXIS-003", "HWF-AXIS-004"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "HWF-BAR-001/HWF-BAR-002/HWF-BAR-003/HWF-BAR-004/HWF-ORDER-001/HWF-ORDER-002/HWF-ORDER-003: one floating bar per participant from baseline to on-treatment maximum, under a continuous baseline trace (#93)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": [
-        "HWF-BAR-001",
-        "HWF-BAR-002",
-        "HWF-BAR-003",
-        "HWF-BAR-004",
-        "HWF-ORDER-001",
-        "HWF-ORDER-002",
-        "HWF-ORDER-003"
-      ],
-      "issueRefs": [93],
-      "screenshots": ["HWF-BAR-001-waterfall-default.png"]
-    },
-    {
-      "test": "HWF-BOX-001/HWF-BOX-002/HWF-BOX-003: a summary panel flanks each arm, pinned to the main chart domain (#93)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["HWF-BOX-001", "HWF-BOX-002", "HWF-BOX-003"],
-      "issueRefs": [93],
-      "screenshots": ["HWF-BOX-001-flanking-summary-panels.png"]
-    },
-    {
-      "test": "HWF-BOX-005: hovering a summary box reads out every statistic it draws (#83)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["HWF-BOX-005"],
-      "issueRefs": [83],
-      "screenshots": ["HWF-BOX-005-summary-box-hover.png"]
-    },
-    {
-      "test": "HWF-BOX-005: the summary boxes are reachable from the keyboard (#83)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["HWF-BOX-005"],
-      "issueRefs": [83],
-      "screenshots": ["HWF-BOX-005-summary-box-hover.png"]
-    },
-    {
-      "test": "HWF-BOX-006/HWF-BOX-007: the panels name their marks, their slots and their arms (#83)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["HWF-BOX-006", "HWF-BOX-007"],
-      "issueRefs": [83],
-      "screenshots": ["HWF-BOX-006-panel-labels-and-anatomy-key.png"]
-    },
-    {
-      "test": "HWF-CFG-001: the chart carries a prototype banner naming the v1.5 evaluation (#97)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["HWF-CFG-001"],
-      "issueRefs": [97],
-      "screenshots": []
-    },
-    {
-      "test": "HWF-COLOR-001/HWF-COLOR-002/HWF-COLOR-004: blue placebo, bronze active, green for new-onset jaundice in either arm, with the precedence stated (#93)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["HWF-COLOR-001", "HWF-COLOR-002", "HWF-COLOR-004"],
-      "issueRefs": [93],
-      "screenshots": ["HWF-COLOR-002-jaundice-precedence.png"]
-    },
-    {
-      "test": "HWF-COLOR-003: the arm divider splits the plot at the seam and captions each half with its arm and n (#93)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["HWF-COLOR-003"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "HWF-CTRL-001: changing the plotted measure redraws in that measure and its own units (#93)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["HWF-CTRL-001"],
-      "issueRefs": [93],
-      "screenshots": ["HWF-CTRL-001-control-panel.png"]
-    },
-    {
-      "test": "HWF-CTRL-001: the jaundice threshold reclassifies which bars are green (#93)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["HWF-CTRL-001"],
-      "issueRefs": [93],
-      "screenshots": ["HWF-CTRL-001-control-panel.png"]
-    },
-    {
-      "test": "HWF-CTRL-001/HWF-CTRL-002: the control panel exposes the display settings and the arm mapping (#93)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["HWF-CTRL-001", "HWF-CTRL-002"],
-      "issueRefs": [93],
-      "screenshots": ["HWF-CTRL-001-control-panel.png"]
-    },
-    {
-      "test": "HWF-CTRL-003: a filter restricts the plotted cohort and the counts follow it (#93)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["HWF-CTRL-003"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "HWF-CTRL-004: reset restores every control-derived setting and redraws the full cohort (#93)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["HWF-CTRL-004"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "HWF-DATA-003: turning the Table-1 cohort rule off admits the excluded participants and says so (#93)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["HWF-DATA-003"],
-      "issueRefs": [93],
-      "screenshots": ["HWF-DATA-003-cohort-exclusion-notes.png"]
-    },
-    {
-      "test": "HWF-DATA-003/HWF-DATA-005/HWF-DATA-008: both cohort exclusions and the dropped records are reported separately in the notes (#93)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["HWF-DATA-003", "HWF-DATA-005", "HWF-DATA-008"],
-      "issueRefs": [93],
-      "screenshots": ["HWF-DATA-003-cohort-exclusion-notes.png"]
-    },
-    {
-      "test": "HWF-DATA-007: two units for the plotted measure suppress the chart with a warning naming them (#93)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["HWF-DATA-007"],
-      "issueRefs": [93],
-      "screenshots": ["HWF-DATA-007-mixed-unit-warning.png"]
-    },
-    {
-      "test": "HWF-SELECT-001: the bar tooltip names the participant, arm, both values, the change and the jaundice status (#93)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["HWF-SELECT-001"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "HWF-SELECT-002/HWF-SELECT-003: clicking a bar highlights the participant, opens the listing, and dispatches participantsSelected (#93)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["HWF-SELECT-002", "HWF-SELECT-003"],
-      "issueRefs": [93],
-      "screenshots": ["HWF-SELECT-002-participant-selection.png"]
-    },
-    {
       "test": "is keyboard operable: ArrowDown opens and focuses, Escape closes (#71)",
       "suite": "browser",
       "status": "pass",
@@ -333,91 +173,187 @@
       "screenshots": []
     },
     {
-      "test": "abnormal-baseline hepatic demo cohort HWF-COHORT-001: every ABL- participant has a day-0 baseline for all four analytes (#93)",
-      "suite": "unit",
+      "test": "TTE-CURV-001/TTE-CURV-005/TTE-STAT-001: the step curves carry the hand-computed product-limit values and extend flat to the last observed time (#128)",
+      "suite": "browser",
       "status": "pass",
-      "requirementIds": ["HWF-COHORT-001"],
-      "issueRefs": [93],
+      "requirementIds": ["TTE-CURV-001", "TTE-CURV-005", "TTE-STAT-001"],
+      "issueRefs": [128],
+      "screenshots": ["TTE-CURV-001-km-curves-incidence.png"]
+    },
+    {
+      "test": "TTE-CURV-002: censor tick marks sit on the curve at each censored time (#128)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["TTE-CURV-002"],
+      "issueRefs": [128],
       "screenshots": []
     },
     {
-      "test": "abnormal-baseline hepatic demo cohort HWF-COHORT-002: the file carries the shared measure contract and is labelled synthetic (#93)",
-      "suite": "unit",
+      "test": "TTE-CURV-003/TTE-STAT-004: the pointwise band is drawn from the same estimate and gaps where undefined (#128)",
+      "suite": "browser",
       "status": "pass",
-      "requirementIds": ["HWF-COHORT-002"],
-      "issueRefs": [93],
+      "requirementIds": ["TTE-CURV-003", "TTE-STAT-004"],
+      "issueRefs": [128],
       "screenshots": []
     },
     {
-      "test": "abnormal-baseline hepatic demo cohort HWF-COHORT-003: exactly two arms, one placebo and one active, of 40 participants each (#93)",
-      "suite": "unit",
+      "test": "TTE-CURV-004/TTE-USER-002: the axis names the estimator and the orientation toggle flips the curves (#128)",
+      "suite": "browser",
       "status": "pass",
-      "requirementIds": ["HWF-COHORT-003"],
-      "issueRefs": [93],
+      "requirementIds": ["TTE-CURV-004", "TTE-USER-002"],
+      "issueRefs": [128],
+      "screenshots": ["TTE-CURV-004-survival-orientation.png"]
+    },
+    {
+      "test": "TTE-DATA-002: unusable rows are counted with an exportable record list (#128)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["TTE-DATA-002"],
+      "issueRefs": [128],
       "screenshots": []
     },
     {
-      "test": "abnormal-baseline hepatic demo cohort HWF-COHORT-004: ALT carries a single cohort-wide upper limit of normal and a single unit (#93)",
-      "suite": "unit",
+      "test": "TTE-DEMO-001: the built demo renders the derived adtte.csv with three endpoints (#128)",
+      "suite": "browser",
       "status": "pass",
-      "requirementIds": ["HWF-COHORT-004"],
-      "issueRefs": [93],
+      "requirementIds": ["TTE-DEMO-001"],
+      "issueRefs": [128],
+      "screenshots": ["TTE-DEMO-001-demo-page.png"]
+    },
+    {
+      "test": "TTE-GUIDE-001: the notes state the pointwise bands and the 1 − KM competing-risks limitation (#128)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["TTE-GUIDE-001"],
+      "issueRefs": [128],
       "screenshots": []
     },
     {
-      "test": "abnormal-baseline hepatic demo cohort HWF-COHORT-005: the plotted sub-population clears the baseline-bilirubin rule with margin (#93)",
-      "suite": "unit",
+      "test": "TTE-GUIDE-002: the built clinical guide states the estimator's limits (#128)",
+      "suite": "browser",
       "status": "pass",
-      "requirementIds": ["HWF-COHORT-005"],
-      "issueRefs": [93],
+      "requirementIds": ["TTE-GUIDE-002"],
+      "issueRefs": [128],
       "screenshots": []
     },
     {
-      "test": "abnormal-baseline hepatic demo cohort HWF-COHORT-006: an excluded sub-population gives the Table-1 exclusion something to report (#93)",
-      "suite": "unit",
+      "test": "TTE-RISK-001/TTE-RISK-002: the strip table shows at-risk and cumulative events at the axis ticks (#128)",
+      "suite": "browser",
       "status": "pass",
-      "requirementIds": ["HWF-COHORT-006"],
-      "issueRefs": [93],
+      "requirementIds": ["TTE-RISK-001", "TTE-RISK-002"],
+      "issueRefs": [128],
+      "screenshots": ["TTE-RISK-001-risk-table.png"]
+    },
+    {
+      "test": "TTE-RISK-003: hiding a group via the legend drops its curve, marks, band and rows together (#128)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["TTE-RISK-003"],
+      "issueRefs": [128],
       "screenshots": []
     },
     {
-      "test": "abnormal-baseline hepatic demo cohort HWF-COHORT-007: exactly six active and one placebo participant develop new-onset jaundice (#93)",
-      "suite": "unit",
+      "test": "TTE-USER-001: the endpoint picker switches endpoints, including an all-censored group drawn flat (#128)",
+      "suite": "browser",
       "status": "pass",
-      "requirementIds": ["HWF-COHORT-007"],
-      "issueRefs": [93],
+      "requirementIds": ["TTE-USER-001"],
+      "issueRefs": [128],
+      "screenshots": ["TTE-USER-001-sparse-endpoint-all-censored-group.png"]
+    },
+    {
+      "test": "TTE-USER-003: the CI toggle removes the band (#128)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["TTE-USER-003"],
+      "issueRefs": [128],
+      "screenshots": ["TTE-USER-003-ci-band-off.png"]
+    },
+    {
+      "test": "TTE-USER-004: a configured filter constrains the analysis rows (#128)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["TTE-USER-004"],
+      "issueRefs": [128],
       "screenshots": []
     },
     {
-      "test": "abnormal-baseline hepatic demo cohort HWF-COHORT-008: the active arm is skewed toward ALT decreases and the placebo arm is not (#93)",
-      "suite": "unit",
+      "test": "TTE-USER-007: an all-unusable selection renders the empty state, not an empty confident chart (#128)",
+      "suite": "browser",
       "status": "pass",
-      "requirementIds": ["HWF-COHORT-008"],
-      "issueRefs": [93],
+      "requirementIds": ["TTE-USER-007"],
+      "issueRefs": [128],
       "screenshots": []
     },
     {
-      "test": "abnormal-baseline hepatic demo cohort HWF-COHORT-009: a declining participant declines at every on-treatment visit (#93)",
-      "suite": "unit",
+      "test": "TTE-USER-008: clicking an event step dispatches participantsSelected with that step's ids (#128)",
+      "suite": "browser",
       "status": "pass",
-      "requirementIds": ["HWF-COHORT-009"],
-      "issueRefs": [93],
+      "requirementIds": ["TTE-USER-008"],
+      "issueRefs": [128],
       "screenshots": []
     },
     {
-      "test": "abnormal-baseline hepatic demo cohort HWF-COHORT-010: baseline ALT spans 1-8xULN smoothly across the plotted cohort (#93)",
+      "test": "applyFilters keeps rows matching every active filter and ignores null filters (#128)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["HWF-COHORT-010"],
-      "issueRefs": [93],
+      "requirementIds": [],
+      "issueRefs": [128],
       "screenshots": []
     },
     {
-      "test": "abnormal-baseline hepatic demo cohort HWF-COHORT-011: eight active participants carry a peak ALT of 3-6x their own baseline (#93)",
+      "test": "axis titles the x-axis names the time unit (#128)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["HWF-COHORT-011"],
-      "issueRefs": [93],
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "axis titles the y-axis always names the estimator (TTE-CURV-004, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-CURV-004"],
+      "issueRefs": [],
+      "screenshots": ["TTE-CURV-004-survival-orientation.png"]
+    },
+    {
+      "test": "axisTicks degrades to a single interval when there is no time extent (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "axisTicks produces 1/2/5-decade steps from zero, covering the maximum time (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "bandRects builds one step rectangle per defined interval, extending the last to the curve end (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "bandRects flips the band in incidence orientation (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "bandRects skips points with undefined bounds rather than extrapolating (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
       "screenshots": []
     },
     {
@@ -493,6 +429,14 @@
       "screenshots": []
     },
     {
+      "test": "buildScales spans x over the generated ticks and y over [0, 1] with percent labels (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
       "test": "buildTteRecords breaks earliest-day ties by numeric AESEQ so the derivation is order-independent (#128)",
       "suite": "unit",
       "status": "pass",
@@ -557,6 +501,46 @@
       "screenshots": []
     },
     {
+      "test": "checkInputs passes when id, time and censor columns are present; group and endpoint stay optional (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "checkInputs throws naming every missing required column in one error (TTE-DATA-001, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-DATA-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "cleanData drops and names rows with missing id, unusable time, or unparseable censor (TTE-DATA-002, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-DATA-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "cleanData keeps one row per participant, dropping later duplicates with a named reason (TTE-DATA-003, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-DATA-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "cleanData parses usable rows: positive numeric time, ADaM censor semantics (0 = event, ≥1 = censored) (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
       "test": "committed adtte.csv carries 254 safety participants × 3 endpoints with the measured event counts (TTE-DEMO-002, #128)",
       "suite": "unit",
       "status": "pass",
@@ -594,6 +578,62 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "curveVertices flips the y values in incidence orientation (D2, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "curveVertices omits the terminal vertex when the last event is the largest time (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "curveVertices starts at (0, origin), steps at each event, and extends flat to the largest observed time (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "DEFAULT_SETTINGS carries the ADTTE mapping: id, group, endpoint, time and censor columns (TTE-CFG-001, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-CFG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "DEFAULT_SETTINGS defaults to cumulative-incidence orientation with the band on (D2, D3, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "displayValue / bandValues incidence orientation shows 1 − S with the bounds swapped (D2, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "displayValue / bandValues undefined bounds stay undefined in both orientations (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
       "screenshots": []
     },
     {
@@ -677,571 +717,11 @@
       "screenshots": []
     },
     {
-      "test": "hep-waterfall checkInputs HWF-DATA-001: names every missing required variable in one error (#93)",
+      "test": "groupStyle assigns colors and dash patterns in fixed order — identity, never rank (TTE-CURV-006, #128)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["HWF-DATA-001"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall checkInputs HWF-DATA-005: the arm column is required, so arms are never silently pooled (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-DATA-005"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall configure.syncSettings HWF-CFG-001: fills every default and normalizes field lists (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-CFG-001"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall configure.syncSettings HWF-CFG-002: measure, thresholds and the cohort toggle are coerced (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-CFG-002"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall configure.syncSettings HWF-CFG-003: placebo_arm and active_arms normalize to a resolved side map (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-CFG-003"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall configure.syncSettings HWF-CFG-004: uln_display accepts band, per_subject and none (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-CFG-004"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall configure.syncSettings HWF-CFG-005: summary accepts baseline_peak and peak (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-CFG-005"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall controls HWF-CTRL-001: the panel exposes measure, jaundice threshold, cohort toggle, ULN display and summary (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-CTRL-001"],
-      "issueRefs": [93],
-      "screenshots": ["HWF-CTRL-001-control-panel.png"]
-    },
-    {
-      "test": "hep-waterfall controls HWF-CTRL-002: the arm mapping control lists every arm value present in the data (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-CTRL-002"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall controls HWF-CTRL-003: configured filters restrict the cohort and update the counts (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-CTRL-003"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall controls HWF-CTRL-004: reset restores every setting-derived control and re-renders (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-CTRL-004"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall flanking-panel hover (HWF-BOX-005) HWF-BOX-005: a missing or empty box yields no tooltip (#83)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-BOX-005"],
-      "issueRefs": [83],
-      "screenshots": ["HWF-BOX-005-summary-box-hover.png"]
-    },
-    {
-      "test": "hep-waterfall flanking-panel hover (HWF-BOX-005) HWF-BOX-005: the hit test resolves the box under the pointer and nothing outside one (#83)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-BOX-005"],
-      "issueRefs": [83],
-      "screenshots": ["HWF-BOX-005-summary-box-hover.png"]
-    },
-    {
-      "test": "hep-waterfall flanking-panel hover (HWF-BOX-005) HWF-BOX-005: the hover plugin backs the active box only, under the marks (#83)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-BOX-005"],
-      "issueRefs": [83],
-      "screenshots": ["HWF-BOX-005-summary-box-hover.png"]
-    },
-    {
-      "test": "hep-waterfall flanking-panel hover (HWF-BOX-005) HWF-BOX-005: the tooltip names the arm, the box and every drawn statistic (#83)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-BOX-005"],
-      "issueRefs": [83],
-      "screenshots": ["HWF-BOX-005-summary-box-hover.png"]
-    },
-    {
-      "test": "hep-waterfall flanking-panel hover and labelling HWF-BOX-005: hovering a box opens the tooltip and closes it on leave (#83)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-BOX-005"],
-      "issueRefs": [83],
-      "screenshots": ["HWF-BOX-005-summary-box-hover.png"]
-    },
-    {
-      "test": "hep-waterfall flanking-panel hover and labelling HWF-BOX-005: the hover survives a re-render and never doubles its listeners (#83)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-BOX-005"],
-      "issueRefs": [83],
-      "screenshots": ["HWF-BOX-005-summary-box-hover.png"]
-    },
-    {
-      "test": "hep-waterfall flanking-panel hover and labelling HWF-BOX-005: the panels are reachable and steppable from the keyboard (#83)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-BOX-005"],
-      "issueRefs": [83],
-      "screenshots": ["HWF-BOX-005-summary-box-hover.png"]
-    },
-    {
-      "test": "hep-waterfall flanking-panel hover and labelling HWF-BOX-006: each flank labels its slots and titles itself with the arm and n (#83)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-BOX-006"],
-      "issueRefs": [83],
-      "screenshots": ["HWF-BOX-006-panel-labels-and-anatomy-key.png"]
-    },
-    {
-      "test": "hep-waterfall flanking-panel hover and labelling HWF-BOX-006: the legend carries the box anatomy key and names both boxes (#83)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-BOX-006"],
-      "issueRefs": [83],
-      "screenshots": ["HWF-BOX-006-panel-labels-and-anatomy-key.png"]
-    },
-    {
-      "test": "hep-waterfall flanking-panel hover and labelling HWF-BOX-007: each flank canvas carries an accessible summary of its boxes (#83)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-BOX-007"],
-      "issueRefs": [83],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall flanking-panel labelling (HWF-BOX-006, HWF-BOX-007) HWF-BOX-006: the anatomy key names every mark the panels draw (#83)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-BOX-006", "HWF-BOX-007"],
-      "issueRefs": [83],
-      "screenshots": ["HWF-BOX-006-panel-labels-and-anatomy-key.png"]
-    },
-    {
-      "test": "hep-waterfall flanking-panel labelling (HWF-BOX-006, HWF-BOX-007) HWF-BOX-006: the slot labels distinguish baseline from maximum on-treatment (#83)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-BOX-006", "HWF-BOX-007"],
-      "issueRefs": [83],
-      "screenshots": ["HWF-BOX-006-panel-labels-and-anatomy-key.png"]
-    },
-    {
-      "test": "hep-waterfall flanking-panel labelling (HWF-BOX-006, HWF-BOX-007) HWF-BOX-007: the panel description reads the arm and both boxes as numbers (#83)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-BOX-006", "HWF-BOX-007"],
-      "issueRefs": [83],
-      "screenshots": ["HWF-BOX-006-panel-labels-and-anatomy-key.png"]
-    },
-    {
-      "test": "hep-waterfall getPlugins colour HWF-COLOR-001: placebo bars are blue and active bars are bronze (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-COLOR-001"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall getPlugins colour HWF-COLOR-002: new-onset jaundice is green in EITHER arm (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-COLOR-002"],
-      "issueRefs": [93],
-      "screenshots": ["HWF-COLOR-002-jaundice-precedence.png"]
-    },
-    {
-      "test": "hep-waterfall getPlugins colour HWF-COLOR-004: the legend states that jaundice outranks the arm colour (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-COLOR-004"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall getPlugins.armDividerPlugin HWF-COLOR-003: a one-sided cohort draws no rule but still labels its arm (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-COLOR-003"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall getPlugins.armDividerPlugin HWF-COLOR-003: a vertical rule marks the seam and each half is labelled with its n (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-COLOR-003"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall getPlugins.ulnBandPlugin HWF-AXIS-004: a varying reference range renders as a band labelled with its range (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-AXIS-004"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall getPlugins.ulnBandPlugin HWF-AXIS-004: an unusable reference range draws nothing rather than a phantom line (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-AXIS-004"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall getPlugins.ulnBandPlugin HWF-AXIS-004: one cohort-wide reference range renders as a single labelled line (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-AXIS-004"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall getPlugins.ulnBandPlugin HWF-AXIS-004: per_subject traces each participant reference range and none draws nothing (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-AXIS-004"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall getPlugins.waterfallTooltip HWF-SELECT-001: a decline reads as a signed fall and no jaundice line (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-SELECT-001"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall getPlugins.waterfallTooltip HWF-SELECT-001: the tooltip names the participant, arm, both values and the change (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-SELECT-001"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall getScales.formatNumber HWF-AXIS-003: values format without spurious precision (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-AXIS-003"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall getScales.mirroredScales HWF-AXIS-002: the right axis takes its min and max from the same domain call (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-AXIS-002"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall getScales.mirroredScales HWF-AXIS-003: both axis titles name the measure and its unit (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-AXIS-003"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall getScales.mirroredScales HWF-BOX-002: the flanking panels share the main chart vertical domain (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-BOX-002"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall getScales.resolveUnit HWF-DATA-006: an unmapped or empty unit column falls back to U/L (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-DATA-006"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall getScales.resolveUnit HWF-DATA-006: the axis unit is the modal unit of the plotted measure (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-DATA-006"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall getScales.resolveUnit HWF-DATA-007: mixed units across participants are reported as mixed (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-DATA-007"],
-      "issueRefs": [93],
-      "screenshots": ["HWF-DATA-007-mixed-unit-warning.png"]
-    },
-    {
-      "test": "hep-waterfall getScales.waterfallDomain HWF-AXIS-001: an empty or non-finite sample still yields a usable domain (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-AXIS-001"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall getScales.waterfallDomain HWF-AXIS-001: the domain is in the absolute measurement units (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-AXIS-001"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall getScales.waterfallDomain HWF-AXIS-001: the reference range is kept inside the domain (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-AXIS-001"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall layout and panels HWF-BOX-001: a summary panel flanks each side, placebo left and active right (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-BOX-001"],
-      "issueRefs": [93],
-      "screenshots": ["HWF-BOX-001-flanking-summary-panels.png"]
-    },
-    {
-      "test": "hep-waterfall layout and panels HWF-DATA-003/005/008: both exclusions and the dropped records are reported in the notes (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-DATA-003"],
-      "issueRefs": [93],
-      "screenshots": ["HWF-DATA-003-cohort-exclusion-notes.png"]
-    },
-    {
-      "test": "hep-waterfall layout and panels HWF-DATA-007: mixed units for the plotted measure suppress the chart with a warning (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-DATA-007"],
-      "issueRefs": [93],
-      "screenshots": ["HWF-DATA-007-mixed-unit-warning.png"]
-    },
-    {
-      "test": "hep-waterfall lifecycle HWF-API-002: init, setData and setSettings re-render and return the instance (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-API-002"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall lifecycle HWF-API-003: resize re-measures every chart and destroy tears them all down (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-API-003"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall module export HWF-API-001: the public collection exposes the hepWaterfall factory (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-API-001"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall selection HWF-SELECT-002: clicking a bar highlights the participant and opens the listing (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-SELECT-002"],
-      "issueRefs": [93],
-      "screenshots": ["HWF-SELECT-002-participant-selection.png"]
-    },
-    {
-      "test": "hep-waterfall selection HWF-SELECT-003: selection dispatches participantsSelected with the ids (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-SELECT-003"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall structureData.applyFilters HWF-CTRL-003: an active filter restricts the plotted cohort (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-CTRL-003"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall structureData.boxSpecs HWF-BOX-003: baseline_peak stages a baseline box and a peak box per arm (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-BOX-003"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall structureData.boxSpecs HWF-BOX-004: box statistics are the shared R-7 interpolated quantiles (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-BOX-004"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall structureData.buildWaterfall HWF-DATA-001: every plotted participant carries a baseline and an on-treatment maximum in absolute units (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-DATA-001"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall structureData.buildWaterfall HWF-DATA-001: the reduction is the shared hep-core one, so ALT matches buildHepSubjects (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-DATA-001"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall structureData.buildWaterfall HWF-DATA-002: the on-treatment maximum excludes the baseline record BY IDENTITY (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-DATA-002"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall structureData.buildWaterfall HWF-DATA-003: baseline-bilirubin exclusions are counted and reported separately (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-DATA-003"],
-      "issueRefs": [93],
-      "screenshots": ["HWF-DATA-003-cohort-exclusion-notes.png"]
-    },
-    {
-      "test": "hep-waterfall structureData.buildWaterfall HWF-DATA-004: new-onset jaundice needs a normal baseline AND an on-treatment exceedance (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-DATA-004"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall structureData.buildWaterfall HWF-DATA-005: undesignated arms are excluded and counted apart from the bilirubin rule (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-DATA-005"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall structureData.buildWaterfall HWF-DATA-008: records dropped for a missing reference range are reported, not dropped silently (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-DATA-008"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall structureData.orderWaterfall HWF-ORDER-001: placebo participants run left to right by ascending baseline (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-ORDER-001"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall structureData.orderWaterfall HWF-ORDER-002: active participants follow by descending baseline, meeting at the seam (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-ORDER-002"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall structureData.orderWaterfall HWF-ORDER-003: the baseline trace is unimodal with its mode at the arm boundary (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-ORDER-003"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall structureData.orderWaterfall HWF-ORDER-004: ties break on participant id, so repeated renders order identically (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-ORDER-004"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall structureData.waterfallDatasets HWF-BAR-001: one floating bar per participant, spanning baseline to on-treatment maximum (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-BAR-001"],
-      "issueRefs": [93],
-      "screenshots": ["HWF-BAR-001-waterfall-default.png"]
-    },
-    {
-      "test": "hep-waterfall structureData.waterfallDatasets HWF-BAR-002: bars point up on a rise and down on a fall (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-BAR-002"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall structureData.waterfallDatasets HWF-BAR-003: one continuous black line traces every participant baseline (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-BAR-003"],
-      "issueRefs": [93],
-      "screenshots": []
-    },
-    {
-      "test": "hep-waterfall structureData.waterfallDatasets HWF-BAR-004: the trace is drawn above the bars (#93)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["HWF-BAR-004"],
-      "issueRefs": [93],
+      "requirementIds": ["TTE-CURV-006"],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -1297,6 +777,190 @@
       "suite": "unit",
       "status": "pass",
       "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "kmEstimate — degenerate inputs an all-censored group stays at S = 1 with no confidence band (TTE-STAT-006, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-STAT-006"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "kmEstimate — degenerate inputs an empty group returns an empty estimate rather than throwing (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "kmEstimate — degenerate inputs the band gaps from the point where the risk set is exhausted mid-curve (TTE-STAT-003, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-STAT-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "kmEstimate — Freireich 6-MP arm (classic textbook values) processes ties with censorings still at risk at the tied time (TTE-STAT-002, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-STAT-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "kmEstimate — Freireich 6-MP arm (classic textbook values) reproduces the Greenwood SE at day 13 (TTE-STAT-003, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-STAT-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "kmEstimate — Freireich 6-MP arm (classic textbook values) reproduces the published survival estimates (TTE-STAT-002, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-STAT-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "kmEstimate — Freireich 6-MP arm (classic textbook values) the curve ends flat at the largest censored time (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "kmEstimate — tiny exact example bounds are log-log and absent where the transform is undefined (S = 0) (TTE-STAT-003, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-STAT-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "kmEstimate — tiny exact example collects censor marks with the survival level in force (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "kmEstimate — tiny exact example computes the Greenwood standard error (TTE-STAT-003, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-STAT-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "kmEstimate — tiny exact example computes the product-limit survival at each distinct event time (TTE-STAT-002, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-STAT-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "kmEstimate — tiny exact example derives the risk table from the same pass: at-risk means observed time ≥ t (TTE-STAT-005, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-STAT-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "kmEstimate — tiny exact example reports totals and the largest observed time (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "kmEstimate — tiny exact example retains the event ids at each event time for selection dispatch (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "kmEstimate vs survival::survfit on the demo adtte.csv TTE-STAT-004: agrees with survfit for TTAE / Placebo (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-STAT-004"],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "kmEstimate vs survival::survfit on the demo adtte.csv TTE-STAT-004: agrees with survfit for TTAE / Xanomeline High Dose (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-STAT-004"],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "kmEstimate vs survival::survfit on the demo adtte.csv TTE-STAT-004: agrees with survfit for TTAE / Xanomeline Low Dose (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-STAT-004"],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "kmEstimate vs survival::survfit on the demo adtte.csv TTE-STAT-004: agrees with survfit for TTDE / Placebo (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-STAT-004"],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "kmEstimate vs survival::survfit on the demo adtte.csv TTE-STAT-004: agrees with survfit for TTDE / Xanomeline High Dose (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-STAT-004"],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "kmEstimate vs survival::survfit on the demo adtte.csv TTE-STAT-004: agrees with survfit for TTDE / Xanomeline Low Dose (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-STAT-004"],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "kmEstimate vs survival::survfit on the demo adtte.csv TTE-STAT-004: agrees with survfit for TTSAE / Placebo (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-STAT-004"],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "kmEstimate vs survival::survfit on the demo adtte.csv TTE-STAT-004: agrees with survfit for TTSAE / Xanomeline High Dose (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-STAT-004"],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "kmEstimate vs survival::survfit on the demo adtte.csv TTE-STAT-004: agrees with survfit for TTSAE / Xanomeline Low Dose (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-STAT-004"],
       "issueRefs": [128],
       "screenshots": []
     },
@@ -1453,6 +1117,22 @@
       "screenshots": []
     },
     {
+      "test": "paramsPresent lists distinct endpoints in data order (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "paramsPresent treats a dataset with no endpoint columns as one unnamed endpoint (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
       "test": "renderGuidePage: composition renders a sticky TOC sidebar whose links anchor to the heading ids",
       "suite": "unit",
       "status": "pass",
@@ -1586,6 +1266,22 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "riskRows assembles the at-risk and cumulative-events strips from the estimates (TTE-RISK-001, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-RISK-001"],
+      "issueRefs": [],
+      "screenshots": ["TTE-RISK-001-risk-table.png"]
+    },
+    {
+      "test": "riskTableHeight grows with the group count and is never zero (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
       "screenshots": []
     },
     {
@@ -2037,6 +1733,94 @@
       "screenshots": []
     },
     {
+      "test": "structureData carries the per-observation descriptors for tooltips (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "structureData falls back to one pooled group when the group column is absent (TTE-DATA-004, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-DATA-004"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "structureData reports the drop accounting across the selected endpoint (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "structureData splits the selected endpoint by group, in data order, and estimates each (TTE-STAT-001, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-STAT-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "syncSettings coerces the ci flag to a boolean, defaulting on (TTE-CFG-003, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-CFG-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "syncSettings merges overrides onto the defaults (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "syncSettings normalizes filters to { value_col, label } and drops empty specs (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "syncSettings passes param_value through untouched, defaulting to null (first endpoint in data order) (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "syncSettings validates direction: survival is kept, anything else falls back to incidence (TTE-CFG-002, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-CFG-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "tooltips a censor tooltip names the count and the reason (TTE-USER-006, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-USER-006"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "tooltips an event tooltip names the time, the step, and the interval as pointwise (TTE-USER-005, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-USER-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
       "test": "transformDoclets: factory API-XFORM-004: maps the documented module.exports doclet to the factory, named for its source file (#6)",
       "suite": "unit",
       "status": "pass",
@@ -2154,6 +1938,14 @@
       "status": "pass",
       "requirementIds": ["API-SCHEMA-006"],
       "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "unique preserves first-seen order (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
       "screenshots": []
     }
   ]
