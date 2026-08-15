@@ -1,6 +1,6 @@
 {
   "module": "outlier-explorer",
-  "generatedAt": "2026-08-14T17:47:26.446Z",
+  "generatedAt": "2026-08-15T09:05:28.855Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.2",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "31825573019",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/31825573019"
+    "id": "31876074666",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/31876074666"
   },
   "records": [
     {
@@ -110,6 +110,14 @@
     },
     {
       "test": "built shift-plot demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built time-to-event demo mounts the shared shell with no console errors (#7) (#17)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": [],
@@ -320,6 +328,46 @@
       "screenshots": []
     },
     {
+      "test": "buildAdslRecords derives EOSDY = EOSDT − TRTSDT + 1 and carries the end-of-study status (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "buildAdslRecords excludes non-safety participants and participants with no treatment start (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "buildAdslRecords falls back to TRTEDT when EOSDT is missing, and keeps a blank EOSDY with a warning when neither exists (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "buildAdslRecords takes the group from the subject-level actual treatment (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "buildAdslRecords writes one row per safety participant in adsl input order, in the declared columns (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
       "test": "buildApiModel API-XFORM-010: assembles the artifact with module, factory, methods, settings, data contract, and missing docs (#6)",
       "suite": "unit",
       "status": "pass",
@@ -389,6 +437,22 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "committed adsl.csv carries the 254 safety participants across the three arms (TTE-DEMO-002, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-DEMO-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "committed adsl.csv every EOSDY is a positive integer day within the measured 1–213 range, with a status for each (TTE-DEMO-002, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-DEMO-002"],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -1293,6 +1357,38 @@
       "status": "pass",
       "requirementIds": ["VIEW-SEL-004"],
       "issueRefs": [76],
+      "screenshots": []
+    },
+    {
+      "test": "shell: multiSelect emits the selected values on change, and null when every value is selected (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "shell: multiSelect reflects a partial selection: matching boxes checked, master indeterminate, summary counted (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "shell: multiSelect renders one checkbox per value plus the All master row, all checked when selected is null (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "shell: multiSelect the All master row selects everything (null) or nothing (empty array) (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
       "screenshots": []
     },
     {

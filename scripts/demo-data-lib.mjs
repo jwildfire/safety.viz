@@ -226,3 +226,53 @@ export function buildEcgRecords(sourceRecords, { log = () => {}, warn = () => {}
 
   return { columns: EG_COLUMNS, records: attachEgBaseline(records, { warn }) };
 }
+
+// ---- ADSL / population contract -------------------------------------------
+// The population demo dataset for the Time-to-Event Explorer (safety.viz#128;
+// design obot.roadmap requirements/design/161_design.html §5 as revised by the
+// sv#131 review). The renderer composes the endpoint live from filters over the
+// event dataset (adae.csv), so what the demo needs from adsl is the analysis
+// denominator: one row per safety participant with the treatment group and the
+// follow-up-end study day the renderer censors event-free participants at.
+// Day 1 = TRTSDT (the source's ASTDY convention), so EOSDY is
+// EOSDT − TRTSDT + 1, falling back to TRTEDT when EOSDT is missing; a
+// participant with neither date keeps a blank EOSDY (with a build warning) and
+// the renderer counts the exclusion downstream (TTE-DERIV-002). EOSSTT rides
+// along as the censoring description shown in censor-mark tooltips.
+
+export const ADSL_COLUMNS = ['USUBJID', 'ARM', 'EOSDY', 'EOSSTT'];
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+const dateOrNull = (v) => {
+  if (isBlank(v)) return null;
+  const t = Date.parse(`${v}T00:00:00Z`);
+  return Number.isFinite(t) ? t : null;
+};
+
+/**
+ * Derive the population demo records from source-shaped adsl rows: one record
+ * per safety participant (SAFFL='Y' with a usable TRTSDT), in adsl input order,
+ * with the actual-treatment group and the follow-up-end study day.
+ */
+export function buildAdslRecords(adslRecords, { warn = () => {} } = {}) {
+  const noEnd = [];
+  const records = adslRecords
+    .filter((r) => clean(r.SAFFL) === 'Y' && dateOrNull(r.TRTSDT) !== null)
+    .map((r) => {
+      const id = clean(r.USUBJID);
+      const start = dateOrNull(r.TRTSDT);
+      const end = dateOrNull(r.EOSDT) ?? dateOrNull(r.TRTEDT);
+      if (end === null) noEnd.push(id);
+      return {
+        USUBJID: id,
+        ARM: clean(r.TRT01A) || clean(r.ARM),
+        EOSDY: end === null ? '' : Math.round((end - start) / MS_PER_DAY) + 1,
+        EOSSTT: clean(r.EOSSTT)
+      };
+    });
+  if (noEnd.length)
+    warn(
+      `  WARNING: ${noEnd.length} participant(s) had no EOSDT/TRTEDT and keep a blank EOSDY: ${noEnd.join(', ')}`
+    );
+  return { columns: ADSL_COLUMNS, records };
+}

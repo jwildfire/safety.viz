@@ -6,6 +6,24 @@ functionality-first account of what a user can now do. The GitHub release publis
 from the section here when the release-candidate PR (dev -> main) merges and is tagged.
 -->
 
+# safety.viz v1.7.0 (Upcoming)
+
+**See it move:** the [annotated v1.7.0 demo](https://jwildfire.github.io/obot.roadmap/reports/sv-v1.7-demo/) walks the new chart with captures and try-it-yourself steps against the live demo.
+
+The gallery learns to answer "how long until…". A thirteenth renderer brings Kaplan–Meier time-to-event displays to the safety portfolio: step curves, confidence bands, and the at-risk table the FDA Safety Tables & Figures guide mandates beneath every time-to-event plot. No existing API is removed or renamed.
+
+## What's new
+
+- **Time-to-Event Explorer** — a new renderer for Kaplan–Meier safety displays ([obot.roadmap#161](https://github.com/jwildfire/obot.roadmap/issues/161), [#128](https://github.com/jwildfire/safety.viz/issues/128), PRs [#129](https://github.com/jwildfire/safety.viz/pull/129) and the sv#131 review rework). **You compose the endpoint yourself, from the event data**: flexible multiselect filters over the adverse events (body system, preferred term, seriousness, severity — configurable per study) define what counts as a qualifying event, and the chart shows time to each participant's first qualifying event, censored at end of follow-up from the population data. No endpoint list is hard-coded — the important events vary from study to study; configured one-click presets are a natural later release on the same filter state. Step curves by treatment group with censoring tick marks, **pointwise 95% confidence bands** (the `survival::survfit` default family, cross-validated against it), and the **at-risk / cumulative-events strip table** — all derived from one estimator pass, so the table cannot disagree with the curve, and drawn without intro animation so every frame the chart shows is an estimate, never a transition. It consumes ADAE-shaped event records plus an ADSL-shaped population extract, defaults to **cumulative incidence (1 − KM)** with the estimator always named on the axis, and states plainly — in-app and in the clinical guide — the fixed derivation rule and where that estimator overreads risk. Ships **Experimental** pending review of the design decisions. [Try it live](https://jwildfire.github.io/safety.viz/time-to-event/index.html).
+
+## Also in this release
+
+- **NEWS.md becomes the running release log** — this file; unreleased work now accumulates under a `(Upcoming)` heading per the program-wide convention ([#125](https://github.com/jwildfire/safety.viz/pull/125), [#127](https://github.com/jwildfire/safety.viz/pull/127), convention: [obot.roadmap#155](https://github.com/jwildfire/obot.roadmap/discussions/155)).
+- Evidence baselines for every module refreshed on the canonical Linux environment as part of the time-to-event landing.
+- Release prep: `dist/safety.viz-1.7.0/` vendored, e2e fixtures repointed to the new bundle.
+
+1 257 unit + 255 browser tests pass; `evidence:check`, `requirements:check`, `build:check-dist`, `prettier` and the site build all clean.
+
 # safety.viz v1.6.0
 
 **See it move:** the [annotated v1.6.0 demo](https://jwildfire.github.io/obot.roadmap/reports/sv-v1.6-demo/) walks each update with captures and try-it-yourself steps against the live gallery.
