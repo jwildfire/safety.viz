@@ -5,8 +5,9 @@
 //   site/data/adae.csv  — one row per adverse event
 //   site/data/adeg.csv  — one row per ECG interval measurement (QT / QTc / HR), the
 //                         demo dataset for the QT Safety Explorer
-//   site/data/adtte.csv — one row per participant per time-to-event endpoint (ADTTE
-//                         shape), the demo dataset for the Time-to-Event Explorer
+//   site/data/adsl.csv  — one row per safety participant (id, arm, follow-up-end
+//                         study day, end-of-study status): the population half of
+//                         the Time-to-Event Explorer demo (events come from adae.csv)
 //
 // This script (re)builds all three from **pharmaverseadam** (https://github.com/pharmaverse/pharmaverseadam),
 // the pharmaverse consortium's ADaM test data derived from the CDISC SDTM/ADaM Pilot 01
@@ -20,11 +21,11 @@
 // The ECG file is `adeg` projected to a QT measure contract (QTcF / QTcB / HR, each with
 // its analysis value, source-derived baseline, and change-from-baseline) — see buildEg.
 //
-// Usage:  node scripts/build-demo-data.mjs [--source-dir <dir>] [--out-dir <dir>] [--only bds,ae,eg,tte]
+// Usage:  node scripts/build-demo-data.mjs [--source-dir <dir>] [--out-dir <dir>] [--only bds,ae,eg,adsl]
 //   Fetches the source CSVs from raw.githubusercontent.com by default (cached under
 //   node's tmp), or reads them from --source-dir if provided
 //   (adlb.csv/advs.csv/adae.csv/adsl.csv/adeg.csv).
-//   Writes adbds.csv + adae.csv + adeg.csv to --out-dir (default: site/data).
+//   Writes adbds.csv + adae.csv + adeg.csv + adsl.csv to --out-dir (default: site/data).
 //
 // The generated CSVs are committed to the repo; rerun this script to refresh them.
 
@@ -38,7 +39,7 @@ import { pipeline } from 'node:stream/promises';
 import { Readable } from 'node:stream';
 // Value helpers and the ECG derivation live in demo-data-lib.mjs so they can be
 // unit-tested without running this script (which downloads ~200 MB of source).
-import { buildEcgRecords, buildTteRecords, clean, isBlank, isNum, num } from './demo-data-lib.mjs';
+import { buildAdslRecords, buildEcgRecords, clean, isBlank, isNum, num } from './demo-data-lib.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(__dirname, '..');
@@ -366,20 +367,18 @@ const OUTPUTS = {
       );
     }
   },
-  tte: {
-    file: 'adtte.csv',
-    sources: ['adae.csv', 'adsl.csv'],
+  adsl: {
+    file: 'adsl.csv',
+    sources: ['adsl.csv'],
     build: (src) =>
-      buildTteRecords(toRecords(src['adae.csv']), toRecords(src['adsl.csv']), {
-        warn: (msg) => console.warn(msg)
-      }),
-    report: (tte) => {
-      const ids = new Set(tte.records.map((r) => r.USUBJID));
-      const byParam = tte.records
-        .filter((r) => r.CNSR === 0)
-        .reduce((acc, r) => acc.set(r.PARAMCD, (acc.get(r.PARAMCD) || 0) + 1), new Map());
-      const events = [...byParam].map(([p, n]) => `${p} ${n}`).join(', ');
-      return `adtte.csv: ${tte.records.length} rows · ${ids.size} participants · events {${events}}`;
+      buildAdslRecords(toRecords(src['adsl.csv']), { warn: (msg) => console.warn(msg) }),
+    report: (adsl) => {
+      const arms = new Set(adsl.records.map((r) => r.ARM));
+      const days = adsl.records.map((r) => Number(r.EOSDY)).filter(Number.isFinite);
+      return (
+        `adsl.csv : ${adsl.records.length} participants · arms {${[...arms].join(', ')}} · ` +
+        `EOSDY ${Math.min(...days)}–${Math.max(...days)}`
+      );
     }
   }
 };

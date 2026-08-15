@@ -8,77 +8,104 @@
     <h1 id="time-to-event-heading">safety.viz Time-to-Event Explorer demo</h1>
     <p>
       Demo and Playwright harness page for the time-to-event module (#128). Loads the committed IIFE
-      bundle against a small deterministic ADTTE fixture, engineered so every display path is
-      exercised and every number is hand-checkable: a tied double event, an event and a censoring
-      sharing a day, a curve that extends flat past its last event, a sparse second endpoint whose
-      study-drug group is entirely censored (the flat-line case), three unusable rows (bad time, bad
-      censor flag, duplicate participant), and a SEX column for the filter control.
+      bundle against a small deterministic events + population fixture, engineered so every display
+      path is exercised and every number is hand-checkable: a tied double event, an event and a
+      censoring sharing a day, a curve that extends flat past its last event, a serious-only filter
+      selection whose study-drug group is entirely censored (the flat-line case), unusable rows in
+      both datasets (bad event day, unknown participant, duplicate population row, missing follow-up
+      day), and a SEX column for the population filter control.
     </p>
     <div id="container"></div>
     <!-- Bundle path tracks the package.json version; bump them together. -->
     <script src="/dist/safety.viz-1.7.0/safety.viz.js"></script>
     <script>
       // Deterministic fixture: no Math.random(). Hand-computed expectations
-      // (asserted in tests/e2e/time-to-event.spec.js):
+      // (asserted in tests/e2e/time-to-event.spec.js).
       //
-      // TTDE / Placebo, n=8: events 5,5,10; censored 10,15,20,25,25.
+      // Default view (all events qualify — time to first event of any kind):
+      // Placebo, n=8: first events 5,5,10 (P-1,P-2,P-3); censored at EOSDY
+      //   10,15,20,25,25 (P-4..P-8).
       //   S(5) = 1 - 2/8 = 0.75; S(10): risk {10e,10c,15,20,25,25}=6, d=1 -> 0.625.
-      //   The day-10 censoring shares the event day: still at risk there.
-      // TTDE / Study Drug, n=6: events 3,8,18; censored 12,30,30.
+      //   The day-10 censoring (P-4) shares the event day: still at risk there.
+      // Study Drug, n=6: first events 3,8,18 (D-1,D-2,D-4); censored 12,30,30
+      //   (D-3 WITHDREW CONSENT, D-5, D-6).
       //   S(3)=5/6; S(8)=5/6*4/5=2/3; S(18): risk {18,30,30}=3 -> 2/3*2/3=4/9.
       //   maxTime 30 > last event 18: the curve extends flat to 30.
-      // TTSAE / Placebo: one event (day 12 of 3); Study Drug: all 3 censored ->
+      // P-1 also has a serious infection on day 12 — later than the day-5 rash,
+      // so it never changes the default first-event derivation (TTE-DERIV-001).
+      //
+      // Serious-only view (Serious multiselect = {Y}, TTE-FILT-001):
+      // Placebo: one event (P-1, day 12; at risk {12e,15,20,25,25,25,25}=7 ->
+      //   S=6/7); everyone else censors at EOSDY. Study Drug: all censored ->
       //   a flat all-censored curve, drawn honestly at S=1.
-      const ROWS = [];
-      function tte(id, arm, paramcd, param, aval, cnsr, evnt, cnsdt, sex) {
-        ROWS.push({
+      const EVENTS = [];
+      function ae(id, astdy, bodsys, decod, ser, sev) {
+        EVENTS.push({
+          USUBJID: id,
+          ASTDY: String(astdy),
+          AEBODSYS: bodsys,
+          AEDECOD: decod,
+          AESER: ser,
+          AESEV: sev
+        });
+      }
+      const SKIN = 'SKIN AND SUBCUTANEOUS TISSUE DISORDERS';
+      const INF = 'INFECTIONS AND INFESTATIONS';
+
+      // Placebo first events.
+      ae('P-1', 5, SKIN, 'RASH', 'N', 'MILD');
+      ae('P-2', 5, SKIN, 'PRURITUS', 'N', 'MILD');
+      ae('P-3', 10, SKIN, 'ERYTHEMA', 'N', 'MODERATE');
+      // P-1's later events: a same-participant repeat and the serious infection.
+      ae('P-1', 40, SKIN, 'RASH', 'N', 'MILD');
+      ae('P-1', 12, INF, 'SEPSIS', 'Y', 'SEVERE');
+      // Study Drug first events.
+      ae('D-1', 3, SKIN, 'DERMATITIS', 'N', 'MILD');
+      ae('D-2', 8, SKIN, 'RASH', 'N', 'MODERATE');
+      ae('D-4', 18, SKIN, 'BLISTER', 'N', 'MILD');
+      // Unusable event rows: counted, named, exportable — never silent (TTE-DATA-002).
+      ae('P-2', 'NA', SKIN, 'RASH', 'N', 'MILD'); // bad event day
+      ae('X-9', 7, SKIN, 'RASH', 'N', 'MILD'); // participant not in the population
+
+      const POPULATION = [];
+      function subj(id, arm, eosdy, eosstt, sex) {
+        POPULATION.push({
           USUBJID: id,
           ARM: arm,
-          PARAMCD: paramcd,
-          PARAM: param,
-          AVAL: String(aval),
-          CNSR: String(cnsr),
-          EVNTDESC: evnt || '',
-          CNSDTDSC: cnsdt || '',
+          EOSDY: String(eosdy),
+          EOSSTT: eosstt,
           SEX: sex
         });
       }
-      const TTDE = ['TTDE', 'Time to First Dermatologic Event'];
-      const TTSAE = ['TTSAE', 'Time to First Serious Adverse Event'];
-
-      // Placebo, TTDE.
-      tte('P-1', 'Placebo', ...TTDE, 5, 0, 'RASH', '', 'F');
-      tte('P-2', 'Placebo', ...TTDE, 5, 0, 'PRURITUS', '', 'M');
-      tte('P-3', 'Placebo', ...TTDE, 10, 0, 'ERYTHEMA', '', 'F');
-      tte('P-4', 'Placebo', ...TTDE, 10, 1, '', 'END OF STUDY', 'M');
-      tte('P-5', 'Placebo', ...TTDE, 15, 1, '', 'END OF STUDY', 'F');
-      tte('P-6', 'Placebo', ...TTDE, 20, 1, '', 'END OF STUDY', 'M');
-      tte('P-7', 'Placebo', ...TTDE, 25, 1, '', 'END OF STUDY', 'F');
-      tte('P-8', 'Placebo', ...TTDE, 25, 1, '', 'END OF STUDY', 'M');
-      // Study Drug, TTDE.
-      tte('D-1', 'Study Drug', ...TTDE, 3, 0, 'DERMATITIS', '', 'F');
-      tte('D-2', 'Study Drug', ...TTDE, 8, 0, 'RASH', '', 'M');
-      tte('D-3', 'Study Drug', ...TTDE, 12, 1, '', 'WITHDREW CONSENT', 'F');
-      tte('D-4', 'Study Drug', ...TTDE, 18, 0, 'BLISTER', '', 'M');
-      tte('D-5', 'Study Drug', ...TTDE, 30, 1, '', 'END OF STUDY', 'F');
-      tte('D-6', 'Study Drug', ...TTDE, 30, 1, '', 'END OF STUDY', 'M');
-      // TTSAE: sparse; the study-drug group is entirely censored.
-      tte('P-1', 'Placebo', ...TTSAE, 12, 0, 'SEPSIS', '', 'F');
-      tte('P-2', 'Placebo', ...TTSAE, 25, 1, '', 'END OF STUDY', 'M');
-      tte('P-3', 'Placebo', ...TTSAE, 25, 1, '', 'END OF STUDY', 'F');
-      tte('D-1', 'Study Drug', ...TTSAE, 30, 1, '', 'END OF STUDY', 'F');
-      tte('D-2', 'Study Drug', ...TTSAE, 30, 1, '', 'END OF STUDY', 'M');
-      tte('D-3', 'Study Drug', ...TTSAE, 30, 1, '', 'END OF STUDY', 'F');
-      // Unusable rows: counted, named, exportable — never silent (TTE-DATA-002/003).
-      tte('X-1', 'Placebo', ...TTDE, 'NA', 0, '', '', 'F'); // bad time
-      tte('X-2', 'Placebo', ...TTDE, 9, 'maybe', '', '', 'M'); // bad censor flag
-      tte('P-1', 'Placebo', ...TTDE, 40, 0, 'RASH', '', 'F'); // duplicate participant
+      subj('P-1', 'Placebo', 25, 'END OF STUDY', 'F');
+      subj('P-2', 'Placebo', 25, 'END OF STUDY', 'M');
+      subj('P-3', 'Placebo', 25, 'END OF STUDY', 'F');
+      subj('P-4', 'Placebo', 10, 'END OF STUDY', 'M');
+      subj('P-5', 'Placebo', 15, 'END OF STUDY', 'F');
+      subj('P-6', 'Placebo', 20, 'END OF STUDY', 'M');
+      subj('P-7', 'Placebo', 25, 'END OF STUDY', 'F');
+      subj('P-8', 'Placebo', 25, 'END OF STUDY', 'M');
+      subj('D-1', 'Study Drug', 30, 'END OF STUDY', 'F');
+      subj('D-2', 'Study Drug', 30, 'END OF STUDY', 'M');
+      subj('D-3', 'Study Drug', 12, 'WITHDREW CONSENT', 'F');
+      subj('D-4', 'Study Drug', 30, 'END OF STUDY', 'M');
+      subj('D-5', 'Study Drug', 30, 'END OF STUDY', 'F');
+      subj('D-6', 'Study Drug', 30, 'END OF STUDY', 'M');
+      // Unusable population rows: a duplicate (first row kept) and an event-free
+      // participant with no usable follow-up day (TTE-DATA-003, TTE-DERIV-002).
+      subj('P-1', 'Placebo', 99, 'END OF STUDY', 'F');
+      subj('X-2', 'Placebo', '', 'END OF STUDY', 'M');
 
       const instance = SafetyViz.timeToEvent('#container', {
+        event_filters: [
+          { value_col: 'AEBODSYS', label: 'Body System' },
+          { value_col: 'AESER', label: 'Serious' },
+          { value_col: 'AESEV', label: 'Severity' }
+        ],
         filters: [{ value_col: 'SEX', label: 'Sex' }]
       });
       window.__safetyTimeToEventInstance = instance;
-      instance.init(ROWS);
+      instance.init({ events: EVENTS, population: POPULATION });
     </script>
   </body>
 </html>

@@ -3,7 +3,7 @@
 # cross-validates src/time-to-event/km.js (safety.viz#128; design obot.roadmap
 # requirements/design/161_design.html §7).
 #
-# For every PARAMCD × ARM in the committed demo dataset site/data/adtte.csv this runs
+# For every PARAMCD × ARM in the frozen ADTTE-shaped input tests/unit/time-to-event/fixtures/adtte.csv this runs
 # the reference implementation — survfit(Surv(AVAL, CNSR == 0) ~ 1, conf.type =
 # "log-log"), i.e. the product-limit estimator with Greenwood variance and
 # complementary log-log pointwise 95% bounds — and writes each event time's
@@ -52,7 +52,7 @@ fixture <- list(
     r_version = R.version.string,
     survival_version = as.character(packageVersion("survival")),
     call = 'survfit(Surv(AVAL, CNSR == 0) ~ 1, conf.type = "log-log") per PARAMCD x ARM',
-    source = "site/data/adtte.csv"
+    source = "tests/unit/time-to-event/fixtures/adtte.csv"
   ),
   groups = groups
 )

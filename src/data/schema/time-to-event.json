@@ -2,81 +2,79 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/jwildfire/safety.viz/main/src/data/schema/time-to-event.json",
   "title": "safety.viz time-to-event data contract",
-  "description": "ADTTE-shaped analysis data: one record per participant per time-to-event endpoint (TTE-DATA-001). Column names are supplied by the settings mapping. The module computes the Kaplan-Meier product-limit estimator, Greenwood variance and log-log pointwise 95% bounds from the (time, censor) pairs; which events qualify, the earliest-qualifying-event rule and the censoring date hierarchy are properties of the analysis dataset, prepared upstream by the data owner (design D1) - the renderer never re-derives them. Records that cannot be used are counted and exported rather than dropped silently (TTE-DATA-002).",
+  "description": "Two datasets: event-level records (one row per event, e.g. an ADAE projection) and population records (one row per participant, e.g. an ADSL projection carrying the follow-up-end study day). The module composes the endpoint from the events passing the active multiselect filters (TTE-FILT-001), takes each participant's first qualifying event by onset day (TTE-DERIV-001), censors event-free participants at the population follow-up day (TTE-DERIV-002), and computes the Kaplan-Meier product-limit estimator, Greenwood variance and log-log pointwise 95% bounds from the derived observations. The derivation rule is fixed and stated in the clinical guide; records that cannot be used are counted and exported rather than dropped silently (TTE-DATA-002). Column names are supplied by the settings mapping.",
   "type": "object",
-  "required": ["data", "settings"],
+  "required": ["events", "population", "settings"],
   "properties": {
-    "data": {
+    "events": {
+      "type": "array",
+      "items": { "type": "object" },
+      "requiredSettings": ["id_col", "event_day_col"],
+      "description": "d3.csv()-style event records; every row carries the participant id and onset-day columns named in settings, plus any descriptor columns the event filters use (body system, preferred term, seriousness, severity, ...). Rows with a missing, non-numeric or non-positive day, or a participant absent from the population data, are excluded with a counted, exportable reason (TTE-DATA-002)."
+    },
+    "population": {
       "type": "array",
       "minItems": 1,
       "items": { "type": "object" },
-      "description": "d3.csv()-style records; every row carries the participant, time and censor columns named in settings, one row per participant per endpoint."
+      "requiredSettings": ["id_col", "fu_day_col"],
+      "description": "d3.csv()-style population records, one row per participant: the analysis denominator. Every row carries the participant id and follow-up-end day columns named in settings; the group column is optional (one pooled curve when absent, TTE-DATA-004). Later duplicate rows for a participant are excluded with a counted reason (TTE-DATA-003)."
     },
     "settings": {
       "type": "object",
       "description": "Column mappings and rendering options; merged onto the module's DEFAULT_SETTINGS, so only overrides need to be supplied.",
-      "required": ["id_col", "time_col", "censor_col"],
       "properties": {
         "id_col": {
           "type": "string",
           "default": "USUBJID",
-          "description": "Participant identifier column; required in data. One row per participant per endpoint, and the key the participantsSelected event carries (TTE-CFG-001)."
+          "description": "Participant identifier column, required in both datasets, and the key the participantsSelected event carries (TTE-CFG-001)."
         },
         "group_col": {
           "type": ["string", "null"],
           "default": "ARM",
-          "description": "Curve grouping column (treatment arm). Optional: when the data has no such column, one pooled curve is drawn (TTE-DATA-004)."
+          "description": "Population curve-grouping column (treatment arm). Optional: when the population has no such column, one pooled curve is drawn (TTE-DATA-004)."
         },
-        "param_col": {
-          "type": ["string", "null"],
-          "default": "PARAM",
-          "description": "Endpoint label column, feeding the endpoint picker. Optional: a dataset without endpoint columns is treated as one unnamed endpoint."
-        },
-        "paramcd_col": {
-          "type": ["string", "null"],
-          "default": "PARAMCD",
-          "description": "Endpoint short-code column; param_value selects against it."
-        },
-        "param_value": {
-          "type": ["string", "null"],
-          "default": null,
-          "description": "The endpoint (paramcd) shown initially; null shows the first endpoint in data order."
-        },
-        "time_col": {
+        "fu_day_col": {
           "type": "string",
-          "default": "AVAL",
-          "description": "Time in days since the analysis time origin (day 1 = first dose, per the upstream derivation); required in data. Missing, non-numeric or non-positive times exclude the row with a counted, exportable reason (TTE-DATA-002)."
-        },
-        "censor_col": {
-          "type": "string",
-          "default": "CNSR",
-          "description": "ADaM censor flag; required in data. 0 = event, any integer >= 1 = censored; anything else excludes the row with a counted reason (TTE-DATA-002)."
-        },
-        "event_desc_col": {
-          "type": ["string", "null"],
-          "default": "EVNTDESC",
-          "description": "Optional event description (e.g. the qualifying preferred term), shown in event tooltips."
+          "default": "EOSDY",
+          "description": "Population follow-up-end study day (day 1 = first dose): the censoring time for participants with no qualifying event (TTE-DERIV-002); required in population data. Event-free participants without a usable value are excluded with a counted reason."
         },
         "censor_desc_col": {
           "type": ["string", "null"],
-          "default": "CNSDTDSC",
-          "description": "Optional censoring description (e.g. END OF STUDY), shown in censor-mark tooltips."
+          "default": "EOSSTT",
+          "description": "Optional population censoring description (e.g. end-of-study status), shown in censor-mark tooltips."
         },
-        "direction": {
+        "event_day_col": {
           "type": "string",
-          "enum": ["incidence", "survival"],
-          "default": "incidence",
-          "description": "Display orientation: cumulative incidence (1 - KM, rising - the safety convention and the FDA ST&F figures' orientation, D2) or survival (falling). The y-axis names the estimator either way (TTE-CURV-004)."
+          "default": "ASTDY",
+          "description": "Event onset study day (day 1 = first dose); required in event data. Missing, non-numeric or non-positive days exclude the row with a counted, exportable reason (TTE-DATA-002)."
         },
-        "ci": {
-          "type": "boolean",
-          "default": true,
-          "description": "Whether to draw the pointwise 95% confidence band (Greenwood variance, log-log transform, matching survival::survfit conf.type='log-log'; D3). The band is pointwise, not simultaneous, and is labelled as such (TTE-CURV-003)."
+        "event_desc_col": {
+          "type": ["string", "null"],
+          "default": "AEDECOD",
+          "description": "Optional event description (e.g. the preferred term), shown in event tooltips for the qualifying event."
         },
-        "time_unit": {
+        "event_filters": {
+          "type": "array",
+          "default": ["AEBODSYS", "AEDECOD", "AESER", "AESEV"],
+          "items": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "object",
+                "required": ["value_col"],
+                "properties": {
+                  "value_col": { "type": "string" },
+                  "label": { "type": "string" }
+                }
+              }
+            ]
+          },
+          "description": "Multiselect filter controls over the event dataset — the endpoint composer (TTE-FILT-001): column names or { value_col, label } specs. Which columns get a filter is configurable; which values qualify is the reviewer's live choice, never hard-coded. A filter whose column is absent from the events is dropped with a console warning."
+        },
+        "endpoint_label": {
           "type": "string",
-          "default": "day",
-          "description": "Axis label unit; display only - the module never rescales times."
+          "default": "Time to first qualifying event",
+          "description": "Display name for the composed endpoint, used in the notes (TTE-FILT-003)."
         },
         "filters": {
           "type": "array",
@@ -94,7 +92,23 @@
               }
             ]
           },
-          "description": "Filter controls over the analysis rows: column names or { value_col, label } specs. A filter whose column is absent from the data is dropped with a console warning."
+          "description": "Single-select filter controls over the population rows: column names or { value_col, label } specs. A filter whose column is absent from the population is dropped with a console warning."
+        },
+        "direction": {
+          "type": "string",
+          "enum": ["incidence", "survival"],
+          "default": "incidence",
+          "description": "Display orientation: cumulative incidence (1 - KM, rising - the safety convention and the FDA ST&F figures' orientation, D2) or survival (falling). The y-axis names the estimator either way (TTE-CURV-004)."
+        },
+        "ci": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to draw the pointwise 95% confidence band (Greenwood variance, log-log transform, matching survival::survfit conf.type='log-log'; D3). The band is pointwise, not simultaneous, and is labelled as such (TTE-CURV-003)."
+        },
+        "time_unit": {
+          "type": "string",
+          "default": "day",
+          "description": "Axis label unit; display only - the module never rescales times."
         },
         "width": {
           "type": "string",

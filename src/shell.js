@@ -57,6 +57,77 @@ export function option(select, value, label, selected) {
   select.appendChild(opt);
 }
 
+/**
+ * Build a compact multiselect control: a collapsible checkbox list with an
+ * "All" master row and a live selection summary. State is expressed as either
+ * `null` (everything selected — no restriction) or an array of selected values
+ * (empty = nothing selected); `onChange` receives the next state in the same
+ * form. The control keeps its own summary text current, so callers re-render
+ * their output on change without rebuilding the control (which would collapse
+ * the open list under the user's pointer).
+ * @param {Object} config Multiselect configuration.
+ * @param {string[]} config.values The selectable values, in display order.
+ * @param {?string[]} config.selected The current selection: null = all values.
+ * @param {(selected: ?string[]) => void} config.onChange Called with the next selection state.
+ * @returns {HTMLDetailsElement} The detached control element.
+ */
+export function multiSelect({ values, selected, onChange }) {
+  const details = createElement('details', 'sv-multiselect');
+  const summary = createElement('summary');
+  details.append(summary);
+  const list = createElement('div', 'sv-ms-list');
+  details.append(list);
+
+  const current = () => (selected === null ? new Set(values) : new Set(selected));
+
+  const allLabel = createElement('label', 'sv-ms-option sv-ms-all');
+  const allBox = document.createElement('input');
+  allBox.type = 'checkbox';
+  allLabel.append(allBox, document.createTextNode('All'));
+  list.append(allLabel);
+
+  const boxes = values.map((value) => {
+    const label = createElement('label', 'sv-ms-option');
+    const box = document.createElement('input');
+    box.type = 'checkbox';
+    box.value = value;
+    label.append(box, document.createTextNode(value));
+    list.append(label);
+    return box;
+  });
+
+  const sync = () => {
+    const set = current();
+    boxes.forEach((box) => {
+      box.checked = set.has(box.value);
+    });
+    allBox.checked = set.size === values.length;
+    allBox.indeterminate = set.size > 0 && set.size < values.length;
+    summary.textContent =
+      set.size === values.length ? `All (${values.length})` : `${set.size} of ${values.length}`;
+  };
+
+  const emit = () => {
+    const picked = boxes.filter((box) => box.checked).map((box) => box.value);
+    selected = picked.length === values.length ? null : picked;
+    sync();
+    onChange(selected);
+  };
+
+  allBox.onchange = () => {
+    boxes.forEach((box) => {
+      box.checked = allBox.checked;
+    });
+    emit();
+  };
+  boxes.forEach((box) => {
+    box.onchange = emit;
+  });
+
+  sync();
+  return details;
+}
+
 const SHELL_STYLE_ID = 'safety-viz-shell-styles';
 
 const SHELL_STYLES = `
@@ -125,6 +196,16 @@ const SHELL_STYLES = `
 .sv-view-option:hover{border-color:#b8c0cc;background:#f6f8fa}
 .sv-view-option.is-active{border-color:#0b62a4;background:#eaf2fb;color:#0b3d63;font-weight:600;box-shadow:inset 0 0 0 1px #0b62a4}
 .sv-view-option:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
+.sv-multiselect{border:1px solid #b8c0cc;border-radius:6px;background:#fff}
+.sv-multiselect>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:.4rem;padding:.35rem .45rem;font-size:.85rem;cursor:pointer;border-radius:6px}
+.sv-multiselect>summary::-webkit-details-marker{display:none}
+.sv-multiselect>summary::after{content:"▾";font-size:.7rem;color:#52616f}
+.sv-multiselect[open]>summary::after{content:"▴"}
+.sv-multiselect>summary:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
+.sv-ms-list{max-height:10rem;overflow-y:auto;border-top:1px solid #e3e8ee;padding:.3rem .45rem}
+.sv-ms-option{display:flex;align-items:center;gap:.4rem;font-size:.8rem;font-weight:400;margin:.15rem 0;cursor:pointer}
+.sv-ms-option input[type=checkbox]{width:auto;margin:0;accent-color:#0b62a4;flex:0 0 auto}
+.sv-ms-option.sv-ms-all{font-weight:600;border-bottom:1px solid #e3e8ee;padding-bottom:.25rem;margin-bottom:.25rem}
 .sv-prototype{display:flex;align-items:baseline;gap:.5rem;margin:0 0 .6rem;padding:.4rem .6rem;border:1px solid #e6c98a;border-left:4px solid #d99a2b;border-radius:6px;background:#fdf6e6;color:#6b4e12;font-size:.8rem;line-height:1.35}
 .sv-prototype-tag{flex:0 0 auto;text-transform:uppercase;letter-spacing:.05em;font-weight:700;font-size:.68rem;padding:.08rem .4rem;border-radius:999px;background:#d99a2b;color:#fff}
 .sv-prototype-text{flex:1 1 auto}

@@ -1,6 +1,6 @@
 {
   "module": "time-to-event",
-  "generatedAt": "2026-08-14T23:37:04.351Z",
+  "generatedAt": "2026-08-15T09:05:28.855Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.2",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "31850929587",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/31850929587"
+    "id": "31876074666",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/31876074666"
   },
   "records": [
     {
@@ -173,18 +173,26 @@
       "screenshots": []
     },
     {
-      "test": "TTE-CURV-001/TTE-CURV-005/TTE-STAT-001: the step curves carry the hand-computed product-limit values and extend flat to the last observed time (#128)",
+      "test": "TTE-ANIM-001: the chart renders without intro animation, so the curves, band and risk table always share one truthful frame (#128, sv#131 review)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["TTE-CURV-001", "TTE-CURV-005", "TTE-STAT-001"],
+      "requirementIds": ["TTE-ANIM-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "TTE-CURV-001/TTE-CURV-005/TTE-STAT-001/TTE-DERIV-001: the step curves carry the hand-computed product-limit values from each participant’s first qualifying event and extend flat to the last observed time (#128)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["TTE-CURV-001", "TTE-CURV-005", "TTE-STAT-001", "TTE-DERIV-001"],
       "issueRefs": [128],
       "screenshots": ["TTE-CURV-001-km-curves-incidence.png"]
     },
     {
-      "test": "TTE-CURV-002: censor tick marks sit on the curve at each censored time (#128)",
+      "test": "TTE-CURV-002/TTE-DERIV-002: censor tick marks sit on the curve at each follow-up-end time (#128)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["TTE-CURV-002"],
+      "requirementIds": ["TTE-CURV-002", "TTE-DERIV-002"],
       "issueRefs": [128],
       "screenshots": []
     },
@@ -205,15 +213,15 @@
       "screenshots": ["TTE-CURV-004-survival-orientation.png"]
     },
     {
-      "test": "TTE-DATA-002: unusable rows are counted with an exportable record list (#128)",
+      "test": "TTE-DATA-002/TTE-DATA-003: unusable rows in both datasets are counted with exportable record lists (#128)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["TTE-DATA-002"],
+      "requirementIds": ["TTE-DATA-002", "TTE-DATA-003"],
       "issueRefs": [128],
       "screenshots": []
     },
     {
-      "test": "TTE-DEMO-001: the built demo renders the derived adtte.csv with three endpoints (#128)",
+      "test": "TTE-DEMO-001: the built demo composes the endpoint from the vendored adae + adsl extracts (#128)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["TTE-DEMO-001"],
@@ -221,7 +229,31 @@
       "screenshots": ["TTE-DEMO-001-demo-page.png"]
     },
     {
-      "test": "TTE-GUIDE-001: the notes state the pointwise bands and the 1 − KM competing-risks limitation (#128)",
+      "test": "TTE-FILT-001: a multiselect event filter recomposes the endpoint live, including an all-censored group drawn flat (#128, sv#131 review)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["TTE-FILT-001"],
+      "issueRefs": [],
+      "screenshots": ["TTE-FILT-001-serious-only-composed-endpoint.png"]
+    },
+    {
+      "test": "TTE-FILT-002: no active selection qualifies every event; an empty selection draws the honest all-censored display (#128)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["TTE-FILT-002"],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "TTE-FILT-003: the notes name the composed endpoint and the active filter selection (#128)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["TTE-FILT-003"],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "TTE-GUIDE-001: the notes state the derivation rule, the pointwise bands and the 1 − KM competing-risks limitation (#128)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["TTE-GUIDE-001"],
@@ -253,14 +285,6 @@
       "screenshots": []
     },
     {
-      "test": "TTE-USER-001: the endpoint picker switches endpoints, including an all-censored group drawn flat (#128)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["TTE-USER-001"],
-      "issueRefs": [128],
-      "screenshots": ["TTE-USER-001-sparse-endpoint-all-censored-group.png"]
-    },
-    {
       "test": "TTE-USER-003: the CI toggle removes the band (#128)",
       "suite": "browser",
       "status": "pass",
@@ -269,7 +293,7 @@
       "screenshots": ["TTE-USER-003-ci-band-off.png"]
     },
     {
-      "test": "TTE-USER-004: a configured filter constrains the analysis rows (#128)",
+      "test": "TTE-USER-004: a configured population filter constrains the denominator (#128)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["TTE-USER-004"],
@@ -291,6 +315,30 @@
       "requirementIds": ["TTE-USER-008"],
       "issueRefs": [128],
       "screenshots": []
+    },
+    {
+      "test": "applyEventFilters an empty selection qualifies no events (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "applyEventFilters keeps every row when no filter has an active selection (TTE-FILT-002, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-FILT-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "applyEventFilters keeps rows whose value is in the selected set — multiselect semantics (TTE-FILT-001, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-FILT-001"],
+      "issueRefs": [],
+      "screenshots": ["TTE-FILT-001-serious-only-composed-endpoint.png"]
     },
     {
       "test": "applyFilters keeps rows matching every active filter and ignores null filters (#128)",
@@ -350,6 +398,46 @@
     },
     {
       "test": "bandRects skips points with undefined bounds rather than extrapolating (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "buildAdslRecords derives EOSDY = EOSDT − TRTSDT + 1 and carries the end-of-study status (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "buildAdslRecords excludes non-safety participants and participants with no treatment start (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "buildAdslRecords falls back to TRTEDT when EOSDT is missing, and keeps a blank EOSDY with a warning when neither exists (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "buildAdslRecords takes the group from the subject-level actual treatment (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "buildAdslRecords writes one row per safety participant in adsl input order, in the declared columns (#128)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": [],
@@ -437,7 +525,7 @@
       "screenshots": []
     },
     {
-      "test": "buildTteRecords breaks earliest-day ties by numeric AESEQ so the derivation is order-independent (#128)",
+      "test": "checkInputs passes when the event day and population id + follow-up day are present; group stays optional (#128)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": [],
@@ -445,71 +533,7 @@
       "screenshots": []
     },
     {
-      "test": "buildTteRecords censors event-free participants at end of study: AVAL = EOSDT − TRTSDT + 1, CNSR 1 (#128)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [128],
-      "screenshots": []
-    },
-    {
-      "test": "buildTteRecords events: AVAL is the earliest qualifying ASTDY, CNSR 0, EVNTDESC the first qualifying term (#128)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [128],
-      "screenshots": []
-    },
-    {
-      "test": "buildTteRecords excludes non-safety participants and participants with no treatment start (#128)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [128],
-      "screenshots": []
-    },
-    {
-      "test": "buildTteRecords falls back to TRTEDT for a censored participant with no EOSDT, and drops with a warning when neither exists (#128)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [128],
-      "screenshots": []
-    },
-    {
-      "test": "buildTteRecords ignores non-treatment-emergent rows and rows with no usable positive ASTDY (#128)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [128],
-      "screenshots": []
-    },
-    {
-      "test": "buildTteRecords takes the group from the subject-level actual treatment, covering AE-free participants (#128)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [128],
-      "screenshots": []
-    },
-    {
-      "test": "buildTteRecords writes one row per safety participant per endpoint, in the declared column and param order (#128)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [128],
-      "screenshots": []
-    },
-    {
-      "test": "checkInputs passes when id, time and censor columns are present; group and endpoint stay optional (#128)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [128],
-      "screenshots": []
-    },
-    {
-      "test": "checkInputs throws naming every missing required column in one error (TTE-DATA-001, #128)",
+      "test": "checkInputs throws naming every missing required column per dataset in one error (TTE-DATA-001, #128)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["TTE-DATA-001"],
@@ -517,31 +541,15 @@
       "screenshots": []
     },
     {
-      "test": "cleanData drops and names rows with missing id, unusable time, or unparseable censor (TTE-DATA-002, #128)",
+      "test": "checkInputs throws when either dataset is missing entirely (TTE-DATA-001, #128)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["TTE-DATA-002"],
+      "requirementIds": ["TTE-DATA-001"],
       "issueRefs": [],
       "screenshots": []
     },
     {
-      "test": "cleanData keeps one row per participant, dropping later duplicates with a named reason (TTE-DATA-003, #128)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["TTE-DATA-003"],
-      "issueRefs": [],
-      "screenshots": []
-    },
-    {
-      "test": "cleanData parses usable rows: positive numeric time, ADaM censor semantics (0 = event, ≥1 = censored) (#128)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [128],
-      "screenshots": []
-    },
-    {
-      "test": "committed adtte.csv carries 254 safety participants × 3 endpoints with the measured event counts (TTE-DEMO-002, #128)",
+      "test": "committed adsl.csv carries the 254 safety participants across the three arms (TTE-DEMO-002, #128)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["TTE-DEMO-002"],
@@ -549,7 +557,7 @@
       "screenshots": []
     },
     {
-      "test": "committed adtte.csv every AVAL is a positive integer day and censor days stay within the measured 1–213 range (TTE-DEMO-002, #128)",
+      "test": "committed adsl.csv every EOSDY is a positive integer day within the measured 1–213 range, with a status for each (TTE-DEMO-002, #128)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["TTE-DEMO-002"],
@@ -605,7 +613,7 @@
       "screenshots": []
     },
     {
-      "test": "DEFAULT_SETTINGS carries the ADTTE mapping: id, group, endpoint, time and censor columns (TTE-CFG-001, #128)",
+      "test": "DEFAULT_SETTINGS carries the event mapping: onset day and event description columns (TTE-CFG-001, #128)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["TTE-CFG-001"],
@@ -613,10 +621,74 @@
       "screenshots": []
     },
     {
+      "test": "DEFAULT_SETTINGS carries the population mapping: id, group, follow-up day and censor description columns (TTE-CFG-001, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-CFG-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "DEFAULT_SETTINGS defaults the event filters to the ADAE descriptor columns (TTE-FILT-001, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-FILT-001"],
+      "issueRefs": [],
+      "screenshots": ["TTE-FILT-001-serious-only-composed-endpoint.png"]
+    },
+    {
       "test": "DEFAULT_SETTINGS defaults to cumulative-incidence orientation with the band on (D2, D3, #128)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "deriveObservations censors event-free participants at the follow-up day with the population censor description (TTE-DERIV-002, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-DERIV-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "deriveObservations drops event rows whose participant is not in the population data (TTE-DATA-002, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-DATA-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "deriveObservations drops event rows with a missing, non-numeric or non-positive day, with a named reason (TTE-DATA-002, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-DATA-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "deriveObservations drops event-free participants with an unusable follow-up day, with a named reason (TTE-DERIV-002, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-DERIV-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "deriveObservations drops population rows with a missing id or duplicate participant, keeping the first (TTE-DATA-003, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-DATA-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "deriveObservations takes each participant’s first qualifying event by day, ties broken by input order (TTE-DERIV-001, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-DERIV-001"],
       "issueRefs": [],
       "screenshots": []
     },
@@ -773,14 +845,6 @@
       "screenshots": []
     },
     {
-      "test": "isDermEvent qualifies the skin SOC and APPLICATION SITE preferred terms, nothing else (#128)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [128],
-      "screenshots": []
-    },
-    {
       "test": "kmEstimate — degenerate inputs an all-censored group stays at S = 1 with no confidence band (TTE-STAT-006, #128)",
       "suite": "unit",
       "status": "pass",
@@ -893,7 +957,7 @@
       "screenshots": []
     },
     {
-      "test": "kmEstimate vs survival::survfit on the demo adtte.csv TTE-STAT-004: agrees with survfit for TTAE / Placebo (#128)",
+      "test": "kmEstimate vs survival::survfit on the frozen adtte.csv fixture TTE-STAT-004: agrees with survfit for TTAE / Placebo (#128)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["TTE-STAT-004"],
@@ -901,7 +965,7 @@
       "screenshots": []
     },
     {
-      "test": "kmEstimate vs survival::survfit on the demo adtte.csv TTE-STAT-004: agrees with survfit for TTAE / Xanomeline High Dose (#128)",
+      "test": "kmEstimate vs survival::survfit on the frozen adtte.csv fixture TTE-STAT-004: agrees with survfit for TTAE / Xanomeline High Dose (#128)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["TTE-STAT-004"],
@@ -909,7 +973,7 @@
       "screenshots": []
     },
     {
-      "test": "kmEstimate vs survival::survfit on the demo adtte.csv TTE-STAT-004: agrees with survfit for TTAE / Xanomeline Low Dose (#128)",
+      "test": "kmEstimate vs survival::survfit on the frozen adtte.csv fixture TTE-STAT-004: agrees with survfit for TTAE / Xanomeline Low Dose (#128)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["TTE-STAT-004"],
@@ -917,7 +981,7 @@
       "screenshots": []
     },
     {
-      "test": "kmEstimate vs survival::survfit on the demo adtte.csv TTE-STAT-004: agrees with survfit for TTDE / Placebo (#128)",
+      "test": "kmEstimate vs survival::survfit on the frozen adtte.csv fixture TTE-STAT-004: agrees with survfit for TTDE / Placebo (#128)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["TTE-STAT-004"],
@@ -925,7 +989,7 @@
       "screenshots": []
     },
     {
-      "test": "kmEstimate vs survival::survfit on the demo adtte.csv TTE-STAT-004: agrees with survfit for TTDE / Xanomeline High Dose (#128)",
+      "test": "kmEstimate vs survival::survfit on the frozen adtte.csv fixture TTE-STAT-004: agrees with survfit for TTDE / Xanomeline High Dose (#128)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["TTE-STAT-004"],
@@ -933,7 +997,7 @@
       "screenshots": []
     },
     {
-      "test": "kmEstimate vs survival::survfit on the demo adtte.csv TTE-STAT-004: agrees with survfit for TTDE / Xanomeline Low Dose (#128)",
+      "test": "kmEstimate vs survival::survfit on the frozen adtte.csv fixture TTE-STAT-004: agrees with survfit for TTDE / Xanomeline Low Dose (#128)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["TTE-STAT-004"],
@@ -941,7 +1005,7 @@
       "screenshots": []
     },
     {
-      "test": "kmEstimate vs survival::survfit on the demo adtte.csv TTE-STAT-004: agrees with survfit for TTSAE / Placebo (#128)",
+      "test": "kmEstimate vs survival::survfit on the frozen adtte.csv fixture TTE-STAT-004: agrees with survfit for TTSAE / Placebo (#128)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["TTE-STAT-004"],
@@ -949,7 +1013,7 @@
       "screenshots": []
     },
     {
-      "test": "kmEstimate vs survival::survfit on the demo adtte.csv TTE-STAT-004: agrees with survfit for TTSAE / Xanomeline High Dose (#128)",
+      "test": "kmEstimate vs survival::survfit on the frozen adtte.csv fixture TTE-STAT-004: agrees with survfit for TTSAE / Xanomeline High Dose (#128)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["TTE-STAT-004"],
@@ -957,7 +1021,7 @@
       "screenshots": []
     },
     {
-      "test": "kmEstimate vs survival::survfit on the demo adtte.csv TTE-STAT-004: agrees with survfit for TTSAE / Xanomeline Low Dose (#128)",
+      "test": "kmEstimate vs survival::survfit on the frozen adtte.csv fixture TTE-STAT-004: agrees with survfit for TTSAE / Xanomeline Low Dose (#128)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["TTE-STAT-004"],
@@ -1114,22 +1178,6 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [],
-      "screenshots": []
-    },
-    {
-      "test": "paramsPresent lists distinct endpoints in data order (#128)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [128],
-      "screenshots": []
-    },
-    {
-      "test": "paramsPresent treats a dataset with no endpoint columns as one unnamed endpoint (#128)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [128],
       "screenshots": []
     },
     {
@@ -1330,6 +1378,38 @@
       "status": "pass",
       "requirementIds": ["VIEW-SEL-004"],
       "issueRefs": [76],
+      "screenshots": []
+    },
+    {
+      "test": "shell: multiSelect emits the selected values on change, and null when every value is selected (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "shell: multiSelect reflects a partial selection: matching boxes checked, master indeterminate, summary counted (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "shell: multiSelect renders one checkbox per value plus the All master row, all checked when selected is null (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "shell: multiSelect the All master row selects everything (null) or nothing (empty array) (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
       "screenshots": []
     },
     {
@@ -1733,15 +1813,7 @@
       "screenshots": []
     },
     {
-      "test": "structureData carries the per-observation descriptors for tooltips (#128)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [128],
-      "screenshots": []
-    },
-    {
-      "test": "structureData falls back to one pooled group when the group column is absent (TTE-DATA-004, #128)",
+      "test": "structureData falls back to one pooled group when the population has no group column (TTE-DATA-004, #128)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["TTE-DATA-004"],
@@ -1749,7 +1821,7 @@
       "screenshots": []
     },
     {
-      "test": "structureData reports the drop accounting across the selected endpoint (#128)",
+      "test": "structureData reports the drop accounting for both datasets (#128)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": [],
@@ -1757,7 +1829,7 @@
       "screenshots": []
     },
     {
-      "test": "structureData splits the selected endpoint by group, in data order, and estimates each (TTE-STAT-001, #128)",
+      "test": "structureData splits participants by group, in population order, and estimates each (TTE-STAT-001, #128)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["TTE-STAT-001"],
@@ -1773,6 +1845,14 @@
       "screenshots": []
     },
     {
+      "test": "syncSettings keeps the endpoint label a non-empty string (TTE-FILT-003, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-FILT-003"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
       "test": "syncSettings merges overrides onto the defaults (#128)",
       "suite": "unit",
       "status": "pass",
@@ -1781,15 +1861,15 @@
       "screenshots": []
     },
     {
-      "test": "syncSettings normalizes filters to { value_col, label } and drops empty specs (#128)",
+      "test": "syncSettings normalizes event filters to { value_col, label } and drops empty specs (TTE-FILT-001, #128)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [128],
-      "screenshots": []
+      "requirementIds": ["TTE-FILT-001"],
+      "issueRefs": [],
+      "screenshots": ["TTE-FILT-001-serious-only-composed-endpoint.png"]
     },
     {
-      "test": "syncSettings passes param_value through untouched, defaulting to null (first endpoint in data order) (#128)",
+      "test": "syncSettings normalizes population filters to { value_col, label }, defaulting to none (#128)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": [],

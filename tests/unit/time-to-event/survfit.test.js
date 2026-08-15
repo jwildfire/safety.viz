@@ -7,7 +7,7 @@ import { kmEstimate } from '../../../src/time-to-event/km.js';
 // Cross-validation of km.js against R's survival::survfit (#128, design §7): the
 // committed fixture fixtures/survfit-reference.json holds the reference estimate —
 // survfit(Surv(AVAL, CNSR == 0) ~ 1, conf.type = "log-log") — for every PARAMCD × ARM
-// of the demo adtte.csv, generated at full precision by scripts/build-tte-fixture.R
+// of the frozen ADTTE-shaped input fixtures/adtte.csv, generated at full precision by scripts/build-tte-fixture.R
 // (provenance header inside). This test replays the same inputs through kmEstimate and
 // asserts agreement, so the JS estimator is pinned to the reference implementation on
 // real-shaped data, not just the hand-computed textbook cases in km.test.js.
@@ -16,7 +16,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const fixture = JSON.parse(readFileSync(join(here, 'fixtures/survfit-reference.json'), 'utf8'));
 
 function loadAdtte() {
-  const [header, ...lines] = readFileSync(join(here, '../../../site/data/adtte.csv'), 'utf8')
+  const [header, ...lines] = readFileSync(join(here, 'fixtures/adtte.csv'), 'utf8')
     .trim()
     .split('\n');
   const cols = header.split(',');
@@ -26,7 +26,7 @@ function loadAdtte() {
   });
 }
 
-describe('kmEstimate vs survival::survfit on the demo adtte.csv', () => {
+describe('kmEstimate vs survival::survfit on the frozen adtte.csv fixture', () => {
   const rows = loadAdtte();
   expect(fixture.groups.length).toBeGreaterThan(0);
 
