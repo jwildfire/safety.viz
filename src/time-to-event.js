@@ -2,23 +2,28 @@
 // treatment group with censoring tick marks, a pointwise 95% confidence band, and
 // the at-risk / cumulative-events strip table beneath the time axis — the
 // interactive half of the KM family requirement (obot.roadmap#161, design
-// requirements/design/161_design.html).
+// requirements/design/161_design.html, as revised by the sv#131 review).
 //
-// The module consumes an ADTTE-shaped analysis dataset (one row per participant
-// per endpoint: id, group, PARAM/PARAMCD, AVAL, CNSR) and computes the estimator
-// itself in src/time-to-event/km.js — cross-validated against R
-// survival::survfit. Which events qualify and how censoring dates are chosen are
-// upstream analysis-dataset decisions (design D1); the renderer never re-derives
-// them. One estimator pass feeds the curves, the band, the censor marks and every
-// number in the risk table, so the table cannot disagree with the picture
-// (TTE-STAT-001). Default orientation is cumulative incidence, 1 − KM, with the
-// estimator named on the axis (D2) and the competing-risks limitation stated in
-// the notes (TTE-GUIDE-001).
+// The module consumes two datasets — event-level records (an ADAE-shaped
+// projection: one row per event with onset day and descriptor columns) and
+// population records (an ADSL-shaped projection: one row per participant with
+// treatment group and follow-up-end day) — and composes the endpoint live from
+// flexible multiselect filters over the events (TTE-FILT-001): time to first
+// event passing the active filters, censored at end of follow-up. The important
+// events vary from study to study, so no endpoint list is hard-coded; a later
+// release may add configured filter presets on top of this state (see
+// configure.js). The derivation rule is fixed and stated in the clinical guide;
+// the Kaplan–Meier estimation itself lives in src/time-to-event/km.js —
+// cross-validated against R survival::survfit. One estimator pass feeds the
+// curves, the band, the censor marks and every number in the risk table, so the
+// table cannot disagree with the picture (TTE-STAT-001). Default orientation is
+// cumulative incidence, 1 − KM, with the estimator named on the axis (D2) and
+// the competing-risks limitation stated in the notes (TTE-GUIDE-001).
 //
 // Follows the nep/hep orchestrator shape: a class + default-export factory, the
 // shared shell, and the fixed checkInputs → configure → structureData →
 // getScales/getPlugins → new Chart pipeline. Marked Experimental pending
-// @jwildfire's review of design decisions D1–D6.
+// @jwildfire's review of the design decisions.
 
 import {
   Chart,
@@ -30,13 +35,13 @@ import {
   Legend
 } from 'chart.js';
 
-import { controlBuilders, createElement, option, renderShell } from './shell.js';
+import { controlBuilders, createElement, multiSelect, option, renderShell } from './shell.js';
 import { syncSettings } from './time-to-event/configure.js';
 import { checkInputs } from './time-to-event/checkInputs.js';
 import {
+  applyEventFilters,
   applyFilters,
   DROP_REASON_COLUMN,
-  paramsPresent,
   structureData,
   unique
 } from './time-to-event/structureData.js';
@@ -58,24 +63,25 @@ Chart.register(LineController, LineElement, PointElement, LinearScale, Tooltip, 
 /**
  * Interactive Kaplan–Meier time-to-event explorer: step curves per group with
  * censor marks, a pointwise 95% band (Greenwood, log-log), an in-canvas at-risk /
- * cumulative-events table aligned under the time axis, an endpoint picker,
- * orientation and band toggles, configured filters, and event-step click
- * dispatching the shared participantsSelected event. Construct via the
- * timeToEvent() factory; the shell renders immediately and waits for data.
+ * cumulative-events table aligned under the time axis, multiselect event filters
+ * composing the endpoint live, population filters, orientation and band toggles,
+ * and event-step click dispatching the shared participantsSelected event.
+ * Construct via the timeToEvent() factory; the shell renders immediately and
+ * waits for data.
  */
 class SafetyTimeToEvent {
   constructor(element = 'body', settings = {}) {
     this.element = typeof element === 'string' ? document.querySelector(element) : element;
     if (!this.element) throw new Error(`Safety Time-to-Event target not found: ${element}`);
     this.settings = syncSettings(settings);
-    this.rawData = [];
-    this.params = [];
+    this.rawEvents = [];
+    this.rawPopulation = [];
     this.structured = null;
     this.chart = null;
     this.participantsSelected = [];
     this.state = {
+      eventFilters: {},
       filters: {},
-      paramcd: this.settings.param_value,
       direction: this.settings.direction,
       ci: this.settings.ci,
       selected: null
@@ -93,7 +99,7 @@ class SafetyTimeToEvent {
   /**
    * Load data and render: an alias for setData that keeps the two-step
    * create-then-init call shape working.
-   * @param {Object[]} data ADTTE-shaped records matching the time-to-event data contract.
+   * @param {{events: Object[], population: Object[]}} data Event-level and population records matching the time-to-event data contract.
    * @returns {SafetyTimeToEvent} The instance, for chaining.
    */
   init(data) {
@@ -102,28 +108,22 @@ class SafetyTimeToEvent {
   }
 
   /**
-   * Replace the bound data and re-render. The data is validated against the
-   * settings mapping (throwing, and rendering the message into the target
-   * element, when required columns are missing) and the endpoint list and
-   * controls are rebuilt from it.
-   * @param {Object[]} data ADTTE-shaped records matching the time-to-event data contract.
+   * Replace the bound data and re-render. Both datasets are validated against
+   * the settings mapping (throwing, and rendering the message into the target
+   * element, when required columns are missing) and the filter controls are
+   * rebuilt from the data.
+   * @param {{events: Object[], population: Object[]}} data Event-level and population records matching the time-to-event data contract.
    * @returns {SafetyTimeToEvent} The instance, for chaining.
    */
   setData(data) {
-    this.rawData = Array.isArray(data) ? data : [];
     try {
-      checkInputs(this.rawData, this.settings);
+      checkInputs(data, this.settings);
     } catch (error) {
       this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
       throw error;
     }
-    this.params = paramsPresent(this.rawData, this.settings);
-    if (
-      this.state.paramcd == null ||
-      !this.params.some((param) => param.paramcd === this.state.paramcd)
-    ) {
-      this.state.paramcd = this.params.length ? this.params[0].paramcd : null;
-    }
+    this.rawEvents = data.events;
+    this.rawPopulation = data.population;
     this.buildControls();
     this.render();
     return this;
@@ -139,54 +139,65 @@ class SafetyTimeToEvent {
     this.settings = syncSettings({ ...this.settings, ...settings });
     if ('direction' in settings) this.state.direction = this.settings.direction;
     if ('ci' in settings) this.state.ci = this.settings.ci;
-    if ('param_value' in settings) this.state.paramcd = this.settings.param_value;
+    if ('event_filters' in settings) this.state.eventFilters = {};
     this.chartWrap.style.height = `${this.settings.height}px`;
-    if (this.rawData.length) {
-      this.params = paramsPresent(this.rawData, this.settings);
-      if (!this.params.some((param) => param.paramcd === this.state.paramcd))
-        this.state.paramcd = this.params.length ? this.params[0].paramcd : null;
-    }
     this.buildControls();
     this.render();
     return this;
   }
 
   /**
-   * The active endpoint's display label.
+   * The configured event-filter specs whose column exists in the event data;
+   * missing columns are dropped with a console warning.
    * @private
    */
-  paramLabel() {
-    const param = this.params.find((entry) => entry.paramcd === this.state.paramcd);
-    return param ? param.param : 'Time to event';
+  eventFilterSpecs() {
+    return this.settings.event_filters.filter((filter) => {
+      const exists = this.rawEvents.some((row) => row[filter.value_col] !== undefined);
+      if (!exists)
+        console.warn(
+          `The [ ${filter.label} ] event filter has been removed because the variable does not exist.`
+        );
+      return exists;
+    });
   }
 
   /**
-   * Rebuild the endpoint, display and filter controls from data + state.
+   * Rebuild the endpoint-composing event filters, the population filters and
+   * the display controls from data + state.
    * @private
    */
   buildControls() {
     this.controls.innerHTML = '';
     const { addSection, addControl } = controlBuilders(this.controls);
 
-    if (this.params.length > 1) {
-      const endpointParent = addSection('Endpoint');
-      const select = addControl(
-        'Time-to-event endpoint',
-        document.createElement('select'),
-        endpointParent
-      );
-      this.params.forEach((param) =>
-        option(select, param.paramcd, param.param, param.paramcd === this.state.paramcd)
-      );
-      select.onchange = () => {
-        this.state.paramcd = select.value;
-        this.state.selected = null;
-        this.render();
-      };
+    // The endpoint composer (TTE-FILT-001): one multiselect per configured
+    // event-descriptor column. The controls persist across renders — only the
+    // chart and notes redraw on change — so an open list stays open under the
+    // user's pointer.
+    const specs = this.eventFilterSpecs();
+    if (specs.length) {
+      const eventParent = addSection('Event definition');
+      specs.forEach((filter) => {
+        const values = unique(
+          this.rawEvents.map((row) => row[filter.value_col]).filter((v) => v !== undefined)
+        )
+          .map(String)
+          .sort();
+        const control = multiSelect({
+          values,
+          selected: this.state.eventFilters[filter.value_col] ?? null,
+          onChange: (selected) => {
+            this.state.eventFilters[filter.value_col] = selected;
+            this.render();
+          }
+        });
+        addControl(filter.label, control, eventParent);
+      });
     }
 
     const filterSpecs = this.settings.filters.filter((filter) => {
-      const exists = this.rawData.some((row) => row[filter.value_col] !== undefined);
+      const exists = this.rawPopulation.some((row) => row[filter.value_col] !== undefined);
       if (!exists)
         console.warn(
           `The [ ${filter.label} ] filter has been removed because the variable does not exist.`
@@ -198,7 +209,9 @@ class SafetyTimeToEvent {
       filterSpecs.forEach((filter) => {
         const select = addControl(filter.label, document.createElement('select'), filterParent);
         option(select, '__all__', 'All', !this.state.filters[filter.value_col]);
-        unique(this.rawData.map((row) => row[filter.value_col]).filter((v) => v !== undefined))
+        unique(
+          this.rawPopulation.map((row) => row[filter.value_col]).filter((v) => v !== undefined)
+        )
           .map(String)
           .sort()
           .forEach((value) =>
@@ -253,13 +266,14 @@ class SafetyTimeToEvent {
     this.participantsSelected = [];
     this.mainAnnotation.textContent = '';
 
-    const filtered = applyFilters(this.rawData, this.state.filters);
-    this.structured = structureData(filtered, this.settings, this.state.paramcd);
+    const qualifying = applyEventFilters(this.rawEvents, this.state.eventFilters);
+    const population = applyFilters(this.rawPopulation, this.state.filters);
+    this.structured = structureData(qualifying, population, this.settings);
     this.updateNotes();
 
     if (!this.structured.total) {
       this.mainAnnotation.textContent =
-        'No usable time-to-event records for the current selection.';
+        'No usable time-to-event observations for the current selection.';
       return;
     }
     this.mainAnnotation.textContent = 'Click an event step to select its participants.';
@@ -267,14 +281,35 @@ class SafetyTimeToEvent {
   }
 
   /**
-   * The status line above the chart: the endpoint, the population, the event
-   * accounting, the estimator honesty note (TTE-GUIDE-001), and the counted +
-   * exportable drops (TTE-DATA-002).
+   * The composed endpoint's filter summary: what qualifies an event right now.
+   * @private
+   */
+  filterSummary() {
+    const active = this.eventFilterSpecs()
+      .map((filter) => {
+        const selected = this.state.eventFilters[filter.value_col];
+        if (selected == null) return null;
+        const total = unique(
+          this.rawEvents.map((row) => row[filter.value_col]).filter((v) => v !== undefined)
+        ).length;
+        return `${filter.label}: ${selected.length} of ${total} values`;
+      })
+      .filter(Boolean);
+    return active.length
+      ? `Qualifying events — ${active.join('; ')}.`
+      : 'All recorded events qualify.';
+  }
+
+  /**
+   * The status line above the chart: the composed endpoint and its filter
+   * state, the population, the event accounting, the estimator honesty note
+   * (TTE-GUIDE-001), and the counted + exportable drops for both datasets
+   * (TTE-DATA-002).
    * @private
    */
   updateNotes() {
     this.notes.innerHTML = '';
-    const { groups, total, droppedRows } = this.structured;
+    const { groups, total, droppedEvents, droppedPopulation } = this.structured;
     const events = groups.reduce(
       (sum, group) => sum + group.estimate.points.reduce((s, p) => s + p.events, 0),
       0
@@ -283,48 +318,60 @@ class SafetyTimeToEvent {
       createElement(
         'span',
         null,
-        `${this.paramLabel()}: ${total} participant${total === 1 ? '' : 's'} in ` +
+        `${this.settings.endpoint_label}: ${total} participant${total === 1 ? '' : 's'} in ` +
           `${groups.length} group${groups.length === 1 ? '' : 's'}; ${events} event${
             events === 1 ? '' : 's'
           }, ${total - events} censored.`
       )
     );
 
+    this.notes.append(createElement('span', null, this.filterSummary()));
+
     this.notes.append(
       createElement(
         'span',
         null,
-        'Bands are pointwise 95% CIs (Greenwood, log-log) — not simultaneous. 1 − KM can ' +
-          'overestimate absolute risk when competing events (death, discontinuation) are ' +
-          'present; see the clinical guide.'
+        'Time to first qualifying event, censored at end of follow-up. Bands are pointwise ' +
+          '95% CIs (Greenwood, log-log) — not simultaneous. 1 − KM can overestimate absolute ' +
+          'risk when competing events (death, discontinuation) are present; see the clinical guide.'
       )
     );
 
-    if (droppedRows.length) {
-      const note = createElement('span', 'sv-warning');
-      note.append(
-        document.createTextNode(
-          `${droppedRows.length} unusable row${droppedRows.length === 1 ? '' : 's'} removed. `
-        ),
-        csvDownloadLink(
-          () => toCsv(droppedRows, this.droppedRowColumns()),
-          'time-to-event-dropped-records',
-          'Download records'
-        )
-      );
-      this.notes.append(note);
-    }
+    this.appendDropNote(droppedEvents, 'unusable event row', 'time-to-event-dropped-events');
+    this.appendDropNote(
+      droppedPopulation,
+      'excluded participant row',
+      'time-to-event-excluded-participants'
+    );
   }
 
   /**
-   * The dropped-row export's columns: the reason first, then the source columns.
+   * Append one dataset's counted-drop note with its CSV export link.
    * @private
    */
-  droppedRowColumns() {
-    if (!this.structured.droppedRows.length) return [];
-    const source = Object.keys(this.structured.droppedRows[0]).filter(
-      (column) => column !== DROP_REASON_COLUMN
+  appendDropNote(droppedRows, noun, filename) {
+    if (!droppedRows.length) return;
+    const note = createElement('span', 'sv-warning');
+    note.append(
+      document.createTextNode(
+        `${droppedRows.length} ${noun}${droppedRows.length === 1 ? '' : 's'}. `
+      ),
+      csvDownloadLink(
+        () => toCsv(droppedRows, this.droppedRowColumns(droppedRows)),
+        filename,
+        'Download records'
+      )
     );
+    this.notes.append(note);
+  }
+
+  /**
+   * A dropped-row export's columns: the reason first, then the source columns.
+   * @private
+   */
+  droppedRowColumns(droppedRows) {
+    if (!droppedRows.length) return [];
+    const source = Object.keys(droppedRows[0]).filter((column) => column !== DROP_REASON_COLUMN);
     return [DROP_REASON_COLUMN, ...source];
   }
 
@@ -401,6 +448,13 @@ class SafetyTimeToEvent {
       options: {
         maintainAspectRatio: false,
         responsive: true,
+        // No intro animation: the transition frames would pair an interpolated
+        // step line with a confidence band and risk table already drawn at
+        // their final geometry — transient states that are not estimates of
+        // anything (the sv#131 review's "line moves, but CI is pre-rendered").
+        // Every re-render — and the live filters re-render constantly — shows
+        // one truthful frame instead.
+        animation: false,
         layout: { padding: { top: 6, right: 12, bottom: riskTableHeight(groups.length) } },
         interaction: { mode: 'nearest', intersect: true },
         plugins: {
@@ -549,8 +603,9 @@ class SafetyTimeToEvent {
 
 /**
  * Create a Kaplan–Meier time-to-event explorer inside a container element. The
- * control shell renders immediately; pass ADTTE-shaped records to setData (or
- * init) on the returned instance to validate the data and draw the curves.
+ * control shell renders immediately; pass `{ events, population }` records to
+ * setData (or init) on the returned instance to validate the data and draw the
+ * curves.
  * @param {string|HTMLElement} [element='body'] Container node, or a CSS selector for it.
  * @param {TimeToEventSettings} [settings={}] Setting overrides, merged onto DEFAULT_SETTINGS and normalized.
  * @returns {SafetyTimeToEvent} The live time-to-event instance.

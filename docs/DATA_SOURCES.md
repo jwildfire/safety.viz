@@ -3,13 +3,13 @@
 safety.viz demos and evidence run on five example datasets vendored under
 [`site/data/`](../site/data):
 
-| File              | Shape                                                      | Used by                                                                                                                                                          |
-| ----------------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `adbds.csv`       | One row per lab / vital-sign measurement (BDS)             | Histogram, Outlier Explorer, Paneled Outlier Explorer, Results Over Time, Shift Plot, Delta-Delta, Hep Explorer, Nep Explorer, Participant Profile, Web Codebook |
-| `adae.csv`        | One row per adverse event                                  | AE Explorer, AE Timelines                                                                                                                                        |
-| `adeg.csv`        | One row per ECG interval measurement (QT/QTc/HR)           | QT Safety Explorer                                                                                                                                               |
-| `adtte.csv`       | One row per participant per time-to-event endpoint (ADTTE) | Time-to-Event Explorer                                                                                                                                           |
-| `adbds-abnbl.csv` | One row per liver-test measurement (BDS)                   | Hep Waterfall                                                                                                                                                    |
+| File              | Shape                                                   | Used by                                                                                                                                                          |
+| ----------------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `adbds.csv`       | One row per lab / vital-sign measurement (BDS)          | Histogram, Outlier Explorer, Paneled Outlier Explorer, Results Over Time, Shift Plot, Delta-Delta, Hep Explorer, Nep Explorer, Participant Profile, Web Codebook |
+| `adae.csv`        | One row per adverse event                               | AE Explorer, AE Timelines, Time-to-Event Explorer (events)                                                                                                       |
+| `adeg.csv`        | One row per ECG interval measurement (QT/QTc/HR)        | QT Safety Explorer                                                                                                                                               |
+| `adsl.csv`        | One row per safety participant (id, arm, follow-up end) | Time-to-Event Explorer (population)                                                                                                                              |
+| `adbds-abnbl.csv` | One row per liver-test measurement (BDS)                | Hep Waterfall                                                                                                                                                    |
 
 All are **generated**, not hand-maintained. The first four are built from
 pharmaverseadam by [`scripts/build-demo-data.mjs`](../scripts/build-demo-data.mjs);
@@ -138,44 +138,37 @@ STRESU, STRESN, BASE, CHG, ABLFL`). Three parameters are kept for the QT Safety
   view and threshold, but its crossing rates should not be read as clinically
   typical.
 
-- **`adtte.csv` is derived here because pharmaverseadam ships no safety ADTTE
-  (#128).** Its `adtte_onco.csv` is overall/progression-free survival on a
-  simulated oncology arm set — the wrong story for a safety demo. The build
-  derives three time-to-first-event endpoints from `adae` + `adsl` over the
-  safety population (`SAFFL='Y'` with a usable `TRTSDT`, 254 participants),
-  mirroring admiral's own ADTTE template for this study
-  (design: [obot.roadmap#161 §5](https://jwildfire.github.io/obot.roadmap/requirements/design/161_design.html)):
-
-  - `TTDE` — Time to First Dermatologic Event: earliest treatment-emergent AE in
-    the skin SOC or with an `APPLICATION SITE *` preferred term (the study drug
-    is a transdermal patch; its application-site reactions code to the General
-    Disorders SOC). 156 events / 98 censored.
-  - `TTSAE` — Time to First Serious Adverse Event (`AESER='Y'`). 3 events / 251
-    censored — deliberately kept sparse: the wide, early-terminating confidence
-    band it produces is the honest display for a rare endpoint.
-  - `TTAE` — Time to First Treatment-Emergent Adverse Event. 217 events / 37
-    censored.
-
-  Day 1 = `TRTSDT` (the source's `ASTDY` convention). Event rows take the
-  earliest qualifying `ASTDY` (ties broken by numeric `AESEQ`); event-free
-  participants censor at end of study, `EOSDT − TRTSDT + 1` (range 1–213 days in
-  this source), falling back to `TRTEDT` when `EOSDT` is missing. `CNSR` uses
-  ADaM semantics (0 = event, 1 = censored); `EVNTDESC` carries the first
-  qualifying preferred term. Note the derivation censors at end of study
-  regardless of reason — including death (`DTHDT` is populated for some
-  participants) — so the demo is also the worked example of the 1 − KM
-  competing-risks caveat the Time-to-Event Explorer's clinical guide states.
-  The derivation is `buildTteRecords()` in
+- **`adsl.csv` is the Time-to-Event Explorer's population extract (#128, revised
+  by the sv#131 review).** The renderer composes its endpoint live from
+  multiselect filters over `adae.csv` — time to each participant's first
+  qualifying event — so what it needs from `adsl` is the analysis denominator:
+  one row per safety participant (`SAFFL='Y'` with a usable `TRTSDT`, 254
+  participants) with the actual-treatment arm, the follow-up-end study day, and
+  the end-of-study status. Day 1 = `TRTSDT` (the source's `ASTDY` convention),
+  so `EOSDY = EOSDT − TRTSDT + 1` (range 1–213 days in this source), falling
+  back to `TRTEDT` when `EOSDT` is missing; `EOSSTT` feeds the censor-mark
+  tooltips. Note the population censors at end of study regardless of reason —
+  including death (`DTHDT` is populated for some participants) — so the demo is
+  also the worked example of the 1 − KM competing-risks caveat the Time-to-Event
+  Explorer's clinical guide states. With every event qualifying the demo shows
+  time to first treatment-emergent AE (217 events / 37 censored); the serious-only
+  selection (3 events / 251 censored) is deliberately sparse — the wide,
+  early-terminating confidence band it produces is the honest display for a rare
+  endpoint. The derivation is `buildAdslRecords()` in
   [`scripts/demo-data-lib.mjs`](../scripts/demo-data-lib.mjs), unit-tested in
-  `tests/unit/demo-data/tte.test.js`, and the committed file is guarded there
-  against silent upstream drift (row counts, event counts, censor-day range).
-  Rebuild just this file with `node scripts/build-demo-data.mjs --only tte`.
+  `tests/unit/demo-data/adsl.test.js`, and the committed file is guarded there
+  against silent upstream drift (participant count, arms, follow-up-day range).
+  Rebuild just this file with `node scripts/build-demo-data.mjs --only adsl`.
+  (An earlier increment vendored a pre-derived `adtte.csv` with three fixed
+  endpoints; the sv#131 review replaced it with this live composition. The
+  frozen copy at `tests/unit/time-to-event/fixtures/adtte.csv` remains the
+  input for the `survival::survfit` cross-validation fixture.)
 
 Resulting sizes: `adbds.csv` ≈ 5.5 MB (≈ 56k rows, 254 participants, 28 measures);
 `adae.csv` ≈ 0.1 MB (1,122 treatment-emergent events + 37 placeholder rows,
 254 participants, 23 body systems); `adeg.csv` ≈ 0.5 MB (5,361 rows, 254
-participants, 3 ECG parameters); `adtte.csv` ≈ 40 KB (762 rows, 254
-participants, 3 endpoints).
+participants, 3 ECG parameters); `adsl.csv` ≈ 10 KB (254 rows, one per safety
+participant).
 
 ## Synthetic composite-plot cohort (hep-explorer #67)
 

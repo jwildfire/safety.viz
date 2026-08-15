@@ -1,6 +1,6 @@
 ## What the Time-to-Event Explorer shows
 
-An adverse-event table answers _how many_; this display answers _when_. For a chosen time-to-event endpoint — time to first adverse event of interest, time to first serious adverse event, time to discontinuation — it draws one **Kaplan–Meier** curve per treatment group: the estimated fraction of participants who have had the event by each study day, accounting correctly for participants whose follow-up ended before any event (censoring). Whether the curves separate early, late, or not at all is information no incidence table carries.
+An adverse-event table answers _how many_; this display answers _when_. You compose the endpoint yourself, with the **event filters**: the display shows time to each participant's **first qualifying event**, where "qualifying" is whatever the current filter selection says — every recorded event, serious events only, one body system, one preferred term. There is no pre-set endpoint list, because the events that matter vary from study to study. For the composed endpoint it draws one **Kaplan–Meier** curve per treatment group: the estimated fraction of participants who have had the event by each study day, accounting correctly for participants whose follow-up ended before any event (censoring). Whether the curves separate early, late, or not at all is information no incidence table carries.
 
 The display's parts:
 
@@ -27,15 +27,21 @@ The demo data is itself the worked example: participants without a qualifying ev
 
 **Read separation against the bands, remembering they are pointwise.** Bands that separate cleanly over a sustained interval are worth attention; a transient gap at one time point is what pointwise intervals produce by chance. Formal comparison (log-rank, hazard ratios) is analysis-dataset territory, deliberately not drawn here.
 
-**Sparse endpoints look like this on purpose.** The demo's serious-adverse-event endpoint has three events in 254 participants: a nearly flat curve with a wide band that ends early. That _is_ the honest display of a rare endpoint — a module that smoothed or extrapolated it would be lying. The band simply stops where the mathematics stops supporting it (before the first event, and wherever the estimate reaches 0 or the risk set is exhausted).
+**Sparse endpoints look like this on purpose.** Filter the demo to serious events only and you get three events in 254 participants: a nearly flat curve with a wide band that ends early. That _is_ the honest display of a rare endpoint — a module that smoothed or extrapolated it would be lying. The band simply stops where the mathematics stops supporting it (before the first event, and wherever the estimate reaches 0 or the risk set is exhausted).
 
 **The curve's flat right end is not "no more risk".** The curve extends flat to the last observed time and then stops. Beyond the last event time it is not evidence of safety — it is the absence of further information, usually visible as a cluster of censor marks.
 
 ## Where the numbers come from
 
-The module consumes an **ADTTE-shaped analysis dataset**: one row per participant per endpoint, with a time (`AVAL`, days from the analysis time origin) and an ADaM censor flag (`CNSR`: 0 = event, ≥ 1 = censored). Which events qualify, the earliest-qualifying-event rule, and the censoring date hierarchy are **decisions made upstream in that dataset by the data owner** — exactly as in regulated practice — and the renderer never re-derives them. What the renderer does compute (the estimator, the variance, the bands, the strip table) is pinned by unit tests to hand-computed textbook values and cross-validated against R's `survival::survfit` at full precision on the committed demo data.
+The module consumes two datasets. **Event records** (an ADAE-shaped projection): one row per event with the participant id, the onset study day, and the descriptor columns the filters use. **Population records** (an ADSL-shaped projection): one row per participant with the treatment group and the **follow-up-end study day**. The derivation rule is fixed and simple, and worth stating exactly:
 
-The demo's endpoints are derived from the CDISC Pilot 01 study (pharmaverseadam): time to first **dermatologic** event — the actual safety concern of that dermal-patch trial, and the endpoint where its arms genuinely separate — plus time to first serious adverse event and time to first any treatment-emergent adverse event. The derivation, including its censoring convention and its known limitations, is documented in `docs/DATA_SOURCES.md`.
+- A participant's observation is their **earliest qualifying event day** among the events passing the current filters (ties keep the first row in the data).
+- A participant with **no qualifying event** is censored at their follow-up-end day from the population data.
+- Nothing else: no imputation, no window rules, no competing-event handling.
+
+The split of responsibility follows from that rule. **Which events qualify** is your interactive choice, visible in the filter controls and stated in the notes on every render. **When each participant's follow-up ended** — the censoring date hierarchy, the clinically loaded decision — stays with the data owner, in the population dataset, exactly as in regulated practice. Two consequences to keep in mind: an event recorded _after_ the follow-up-end day still counts as an event (the module does not second-guess the data), and a filter selection is a **display definition, not an adjudicated endpoint** — a regulated analysis would fix the qualifying-event rule in the analysis dataset before anyone looked at curves. What the renderer computes (the derivation, the estimator, the variance, the bands, the strip table) is pinned by unit tests to hand-computed values and the estimator is cross-validated against R's `survival::survfit` at full precision.
+
+The demo runs on the CDISC Pilot 01 study (pharmaverseadam): the adverse events with their body systems, terms, seriousness and severity, and a population extract with each participant's end-of-study day. With every event qualifying, the display is time to first treatment-emergent adverse event; one filter selection away are the serious-only endpoint and the **dermatologic** basket — the actual safety concern of that dermal-patch trial, and the selection where its arms genuinely separate. The extracts and their derivation are documented in `docs/DATA_SOURCES.md`.
 
 ## What this module deliberately does not do (yet)
 
@@ -43,4 +49,4 @@ The demo's endpoints are derived from the CDISC Pilot 01 study (pharmaverseadam)
 - **Log-rank tests, hazard ratios, or any between-group inference** — analysis territory, not display territory.
 - **Median time-to-event annotation** — for safety endpoints the median is usually never reached, and a half-drawn annotation misleads more than it informs.
 - **Simultaneous confidence bands** — the drawn bands are pointwise and labelled as such.
-- **Deriving time-to-event from raw AE and disposition domains in the browser** — the censoring rules that requires are clinical decisions, kept with the data owner.
+- **Configured endpoint presets** — named filter selections that reproduce study-standard endpoints in one click. A natural later-release layer on the filter state; nothing about today's module hard-codes an endpoint.

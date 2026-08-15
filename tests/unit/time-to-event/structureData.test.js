@@ -2,165 +2,227 @@ import { describe, it, expect } from 'vitest';
 import { checkInputs } from '../../../src/time-to-event/checkInputs.js';
 import { syncSettings } from '../../../src/time-to-event/configure.js';
 import {
+  applyEventFilters,
   applyFilters,
-  cleanData,
+  deriveObservations,
   DROP_REASON_COLUMN,
-  paramsPresent,
   structureData,
   unique
 } from '../../../src/time-to-event/structureData.js';
 
-// Data reduction for the time-to-event module (#128, design §4): ADTTE rows →
-// per-group observation arrays → km.js estimates, with every exclusion counted and
-// named. TTE-DATA-*.
+// Data reduction for the time-to-event module (#128, design §4 as revised by the
+// sv#131 review): filtered event rows + population rows → one time-to-first-
+// qualifying-event observation per participant → km.js estimates, with every
+// exclusion counted and named. TTE-DERIV-*, TTE-DATA-*, TTE-FILT-*.
 
 const settings = syncSettings({});
 
-const row = ({
-  id,
-  arm = 'Placebo',
-  paramcd = 'TTDE',
-  param = 'Time to First Dermatologic Event',
-  aval = '10',
-  cnsr = '0',
-  evnt = 'RASH',
-  cnsdt = ''
-} = {}) => ({
+const event = ({ id, day = '10', soc = 'SKIN', pt = 'RASH', ser = 'N', sev = 'MILD' } = {}) => ({
+  USUBJID: id,
+  ASTDY: day,
+  AEBODSYS: soc,
+  AEDECOD: pt,
+  AESER: ser,
+  AESEV: sev
+});
+
+const participant = ({ id, arm = 'Placebo', eosdy = '30', eosstt = 'COMPLETED' } = {}) => ({
   USUBJID: id,
   ARM: arm,
-  PARAMCD: paramcd,
-  PARAM: param,
-  AVAL: aval,
-  CNSR: cnsr,
-  EVNTDESC: evnt,
-  CNSDTDSC: cnsdt
+  EOSDY: eosdy,
+  EOSSTT: eosstt
 });
 
 describe('checkInputs', () => {
-  it('throws naming every missing required column in one error (TTE-DATA-001, #128)', () => {
-    expect(() => checkInputs([{ USUBJID: 'a' }], settings)).toThrow(
-      /Required variable\(s\) missing: AVAL, CNSR/
+  it('throws naming every missing required column per dataset in one error (TTE-DATA-001, #128)', () => {
+    expect(() =>
+      checkInputs({ events: [{ USUBJID: 'a' }], population: [{ ARM: 'Placebo' }] }, settings)
+    ).toThrow(
+      /Required variable\(s\) missing: events\.ASTDY, population\.USUBJID, population\.EOSDY/
     );
   });
 
-  it('passes when id, time and censor columns are present; group and endpoint stay optional (#128)', () => {
-    expect(() => checkInputs([{ USUBJID: 'a', AVAL: '5', CNSR: '0' }], settings)).not.toThrow();
+  it('throws when either dataset is missing entirely (TTE-DATA-001, #128)', () => {
+    expect(() => checkInputs({ events: [event({ id: 'a' })] }, settings)).toThrow(/population/i);
+    expect(() => checkInputs([], settings)).toThrow(/events/i);
+  });
+
+  it('passes when the event day and population id + follow-up day are present; group stays optional (#128)', () => {
+    expect(() =>
+      checkInputs(
+        {
+          events: [{ USUBJID: 'a', ASTDY: '5' }],
+          population: [{ USUBJID: 'a', EOSDY: '30' }]
+        },
+        settings
+      )
+    ).not.toThrow();
   });
 });
 
-describe('paramsPresent', () => {
-  it('lists distinct endpoints in data order (#128)', () => {
-    const rows = [
-      row({ id: 'a', paramcd: 'TTDE', param: 'Time to First Dermatologic Event' }),
-      row({ id: 'a', paramcd: 'TTAE', param: 'Time to First TEAE' }),
-      row({ id: 'b', paramcd: 'TTDE', param: 'Time to First Dermatologic Event' })
-    ];
-    expect(paramsPresent(rows, settings)).toEqual([
-      { paramcd: 'TTDE', param: 'Time to First Dermatologic Event' },
-      { paramcd: 'TTAE', param: 'Time to First TEAE' }
+describe('applyEventFilters', () => {
+  const events = [
+    event({ id: 'a', soc: 'SKIN' }),
+    event({ id: 'b', soc: 'CARDIAC', ser: 'Y' }),
+    event({ id: 'c', soc: 'SKIN', sev: 'SEVERE' })
+  ];
+
+  it('keeps every row when no filter has an active selection (TTE-FILT-002, #128)', () => {
+    expect(applyEventFilters(events, {})).toHaveLength(3);
+    expect(applyEventFilters(events, { AEBODSYS: null })).toHaveLength(3);
+  });
+
+  it('keeps rows whose value is in the selected set — multiselect semantics (TTE-FILT-001, #128)', () => {
+    expect(applyEventFilters(events, { AEBODSYS: ['SKIN'] }).map((r) => r.USUBJID)).toEqual([
+      'a',
+      'c'
     ]);
+    expect(
+      applyEventFilters(events, { AEBODSYS: ['SKIN', 'CARDIAC'], AESER: ['Y'] }).map(
+        (r) => r.USUBJID
+      )
+    ).toEqual(['b']);
   });
 
-  it('treats a dataset with no endpoint columns as one unnamed endpoint (#128)', () => {
-    const rows = [{ USUBJID: 'a', AVAL: '5', CNSR: '0' }];
-    expect(paramsPresent(rows, settings)).toEqual([{ paramcd: null, param: 'Time to event' }]);
+  it('an empty selection qualifies no events (#128)', () => {
+    expect(applyEventFilters(events, { AEBODSYS: [] })).toHaveLength(0);
   });
 });
 
-describe('cleanData', () => {
-  it('parses usable rows: positive numeric time, ADaM censor semantics (0 = event, ≥1 = censored) (#128)', () => {
-    const { observations } = cleanData(
-      [row({ id: 'a', aval: '10', cnsr: '0' }), row({ id: 'b', aval: '21.0', cnsr: '2' })],
+describe('deriveObservations', () => {
+  it('takes each participant’s first qualifying event by day, ties broken by input order (TTE-DERIV-001, #128)', () => {
+    const { observations } = deriveObservations(
+      [
+        event({ id: 'a', day: '12', pt: 'LATER RASH' }),
+        event({ id: 'a', day: '4', pt: 'FIRST RASH' }),
+        event({ id: 'a', day: '4', pt: 'TIED SECOND' })
+      ],
+      [participant({ id: 'a' })],
       settings
     );
     expect(observations).toEqual([
-      expect.objectContaining({ id: 'a', time: 10, event: true }),
-      expect.objectContaining({ id: 'b', time: 21, event: false })
+      expect.objectContaining({ id: 'a', time: 4, event: true, eventDesc: 'FIRST RASH' })
     ]);
   });
 
-  it('drops and names rows with missing id, unusable time, or unparseable censor (TTE-DATA-002, #128)', () => {
-    const { observations, droppedRows } = cleanData(
-      [
-        row({ id: '', aval: '5' }),
-        row({ id: 'b', aval: '0' }),
-        row({ id: 'c', aval: '-3' }),
-        row({ id: 'd', aval: 'NA' }),
-        row({ id: 'e', cnsr: 'maybe' }),
-        row({ id: 'f', cnsr: '-1' }),
-        row({ id: 'ok' })
-      ],
+  it('censors event-free participants at the follow-up day with the population censor description (TTE-DERIV-002, #128)', () => {
+    const { observations } = deriveObservations(
+      [],
+      [participant({ id: 'a', eosdy: '42', eosstt: 'DISCONTINUED' })],
       settings
     );
-    expect(observations.map((o) => o.id)).toEqual(['ok']);
-    expect(droppedRows).toHaveLength(6);
-    for (const dropped of droppedRows) expect(dropped[DROP_REASON_COLUMN]).toBeTruthy();
+    expect(observations).toEqual([
+      expect.objectContaining({ id: 'a', time: 42, event: false, censorDesc: 'DISCONTINUED' })
+    ]);
   });
 
-  it('keeps one row per participant, dropping later duplicates with a named reason (TTE-DATA-003, #128)', () => {
-    const { observations, droppedRows } = cleanData(
-      [row({ id: 'a', aval: '10' }), row({ id: 'a', aval: '20' })],
+  it('drops event rows with a missing, non-numeric or non-positive day, with a named reason (TTE-DATA-002, #128)', () => {
+    const { observations, droppedEvents } = deriveObservations(
+      [
+        event({ id: 'a', day: '' }),
+        event({ id: 'a', day: 'NA' }),
+        event({ id: 'a', day: '0' }),
+        event({ id: 'a', day: '-3' }),
+        event({ id: 'a', day: '7' })
+      ],
+      [participant({ id: 'a' })],
+      settings
+    );
+    expect(observations[0]).toEqual(expect.objectContaining({ id: 'a', time: 7, event: true }));
+    expect(droppedEvents).toHaveLength(4);
+    for (const dropped of droppedEvents) expect(dropped[DROP_REASON_COLUMN]).toBeTruthy();
+  });
+
+  it('drops event rows whose participant is not in the population data (TTE-DATA-002, #128)', () => {
+    const { droppedEvents } = deriveObservations(
+      [event({ id: 'ghost' })],
+      [participant({ id: 'a' })],
+      settings
+    );
+    expect(droppedEvents).toHaveLength(1);
+    expect(droppedEvents[0][DROP_REASON_COLUMN]).toMatch(/not in the population/i);
+  });
+
+  it('drops population rows with a missing id or duplicate participant, keeping the first (TTE-DATA-003, #128)', () => {
+    const { observations, droppedPopulation } = deriveObservations(
+      [],
+      [
+        participant({ id: '' }),
+        participant({ id: 'a', eosdy: '10' }),
+        participant({ id: 'a', eosdy: '20' })
+      ],
       settings
     );
     expect(observations).toHaveLength(1);
     expect(observations[0].time).toBe(10);
-    expect(droppedRows).toHaveLength(1);
-    expect(droppedRows[0][DROP_REASON_COLUMN]).toMatch(/duplicate/i);
+    expect(droppedPopulation).toHaveLength(2);
+    expect(droppedPopulation[1][DROP_REASON_COLUMN]).toMatch(/duplicate/i);
+  });
+
+  it('drops event-free participants with an unusable follow-up day, with a named reason (TTE-DERIV-002, #128)', () => {
+    const { observations, droppedPopulation } = deriveObservations(
+      [event({ id: 'a', day: '5' })],
+      [participant({ id: 'a', eosdy: '' }), participant({ id: 'b', eosdy: 'NA' })],
+      settings
+    );
+    // A qualifying event does not need the follow-up day; an event-free participant does.
+    expect(observations).toEqual([expect.objectContaining({ id: 'a', event: true })]);
+    expect(droppedPopulation).toHaveLength(1);
+    expect(droppedPopulation[0][DROP_REASON_COLUMN]).toMatch(/follow-up/i);
   });
 });
 
 describe('structureData', () => {
-  const rows = [
-    // Placebo: events at 2 and 4, censored at 6.
-    row({ id: 'p1', aval: '2' }),
-    row({ id: 'p2', aval: '4' }),
-    row({ id: 'p3', aval: '6', cnsr: '1', evnt: '', cnsdt: 'END OF STUDY' }),
-    // High dose: event at 3, censored at 9.
-    row({ id: 'h1', arm: 'High', aval: '3' }),
-    row({ id: 'h2', arm: 'High', aval: '9', cnsr: '1', evnt: '', cnsdt: 'END OF STUDY' }),
-    // A second endpoint that must not leak into TTDE.
-    row({ id: 'p1', paramcd: 'TTAE', param: 'Time to First TEAE', aval: '1' })
+  const population = [
+    participant({ id: 'p1' }),
+    participant({ id: 'p2' }),
+    participant({ id: 'p3', eosdy: '25' }),
+    participant({ id: 'h1', arm: 'High' }),
+    participant({ id: 'h2', arm: 'High', eosdy: '9' })
+  ];
+  const events = [
+    event({ id: 'p1', day: '2' }),
+    event({ id: 'p2', day: '4' }),
+    event({ id: 'h1', day: '3' })
   ];
 
-  it('splits the selected endpoint by group, in data order, and estimates each (TTE-STAT-001, #128)', () => {
-    const structured = structureData(rows, settings, 'TTDE');
+  it('splits participants by group, in population order, and estimates each (TTE-STAT-001, #128)', () => {
+    const structured = structureData(events, population, settings);
     expect(structured.groups.map((g) => g.name)).toEqual(['Placebo', 'High']);
     const placebo = structured.groups[0];
     expect(placebo.estimate.total).toBe(3);
     expect(placebo.estimate.points.map((p) => p.time)).toEqual([2, 4]);
     expect(placebo.estimate.points[1].surv).toBeCloseTo(1 / 3, 12);
-    expect(structured.maxTime).toBe(9);
+    // The largest observed time: p3's censoring at 25 — participants with an
+    // event contribute their event day, not their follow-up day.
+    expect(structured.maxTime).toBe(25);
   });
 
-  it('falls back to one pooled group when the group column is absent (TTE-DATA-004, #128)', () => {
+  it('falls back to one pooled group when the population has no group column (TTE-DATA-004, #128)', () => {
     const bare = [
-      { USUBJID: 'a', AVAL: '5', CNSR: '0' },
-      { USUBJID: 'b', AVAL: '8', CNSR: '1' }
+      { USUBJID: 'a', EOSDY: '30' },
+      { USUBJID: 'b', EOSDY: '20' }
     ];
-    const structured = structureData(bare, settings, null);
+    const structured = structureData([{ USUBJID: 'a', ASTDY: '5' }], bare, settings);
     expect(structured.groups.map((g) => g.name)).toEqual(['All participants']);
     expect(structured.groups[0].estimate.total).toBe(2);
   });
 
-  it('carries the per-observation descriptors for tooltips (#128)', () => {
-    const structured = structureData(rows, settings, 'TTDE');
-    const p1 = structured.groups[0].observations.find((o) => o.id === 'p1');
-    expect(p1.eventDesc).toBe('RASH');
-    const p3 = structured.groups[0].observations.find((o) => o.id === 'p3');
-    expect(p3.censorDesc).toBe('END OF STUDY');
-  });
-
-  it('reports the drop accounting across the selected endpoint (#128)', () => {
-    const withBad = [...rows, row({ id: 'bad', aval: 'NA' })];
-    const structured = structureData(withBad, settings, 'TTDE');
-    expect(structured.droppedRows).toHaveLength(1);
+  it('reports the drop accounting for both datasets (#128)', () => {
+    const structured = structureData(
+      [...events, event({ id: 'p3', day: 'NA' })],
+      [...population, participant({ id: 'x', eosdy: '' })],
+      settings
+    );
+    expect(structured.droppedEvents).toHaveLength(1);
+    expect(structured.droppedPopulation).toHaveLength(1);
     expect(structured.total).toBe(5);
   });
 });
 
 describe('applyFilters', () => {
   it('keeps rows matching every active filter and ignores null filters (#128)', () => {
-    const rows = [row({ id: 'a' }), row({ id: 'b', arm: 'High' })];
+    const rows = [participant({ id: 'a' }), participant({ id: 'b', arm: 'High' })];
     expect(applyFilters(rows, { ARM: null })).toHaveLength(2);
     expect(applyFilters(rows, { ARM: 'High' }).map((r) => r.USUBJID)).toEqual(['b']);
   });

@@ -5,7 +5,7 @@
     "r_version": "R version 4.3.3 (2024-02-29)",
     "survival_version": "3.5.8",
     "call": "survfit(Surv(AVAL, CNSR == 0) ~ 1, conf.type = \"log-log\") per PARAMCD x ARM",
-    "source": "site/data/adtte.csv"
+    "source": "tests/unit/time-to-event/fixtures/adtte.csv"
   },
   "groups": [
     {

@@ -5,11 +5,13 @@ import { captureEvidence } from './evidence.js';
 // the TTE-* requirement IDs per the traceability convention in CONTRIBUTING.md;
 // see docs/time-to-event-coverage.md for the requirement-ID → test map.
 //
-// The fixture (fixtures/time-to-event.html) is hand-computed: Placebo TTDE
-// steps to 0.75 then 0.625 (a censoring shares day 10 with the third event and
-// stays in its risk set); Study Drug steps 5/6 → 2/3 → 4/9 and extends flat to
-// day 30; the TTSAE endpoint carries an entirely-censored group (the flat-line
-// honesty case) and three unusable rows exercise the counted-drop lane.
+// The fixture (fixtures/time-to-event.html) feeds the events + population
+// contract with hand-computed expectations: with every event qualifying,
+// Placebo steps to 0.75 then 0.625 (a censoring shares day 10 with the third
+// event and stays in its risk set); Study Drug steps 5/6 → 2/3 → 4/9 and
+// extends flat to day 30. Filtering to serious events only leaves one Placebo
+// event and an entirely-censored study-drug group (the flat-line honesty case),
+// and unusable rows in both datasets exercise the counted-drop lanes.
 
 const INSTANCE = 'window.__safetyTimeToEventInstance';
 
@@ -18,6 +20,18 @@ async function selectByLabel(page, label, value) {
     .locator('.sv-control', { has: page.locator(`label:text-is("${label}")`) })
     .locator('select');
   await select.selectOption(value);
+}
+
+// Toggle one value inside a labeled multiselect (opening it first — the
+// checkbox list is a collapsed <details>).
+async function setMultiValue(page, label, value, checked) {
+  const control = page.locator('.sv-control', {
+    has: page.locator(`label:text-is("${label}")`)
+  });
+  const details = control.locator('details.sv-multiselect');
+  if (!(await details.evaluate((node) => node.open))) await details.locator('summary').click();
+  const box = details.locator(`.sv-ms-option:not(.sv-ms-all) input[value="${value}"]`);
+  await box.setChecked(checked);
 }
 
 test.describe('safety.viz time-to-event module', () => {
@@ -39,7 +53,7 @@ test.describe('safety.viz time-to-event module', () => {
     expect(page._tteErrors).toEqual([]);
   });
 
-  test('TTE-CURV-001/TTE-CURV-005/TTE-STAT-001: the step curves carry the hand-computed product-limit values and extend flat to the last observed time (#128)', async ({
+  test('TTE-CURV-001/TTE-CURV-005/TTE-STAT-001/TTE-DERIV-001: the step curves carry the hand-computed product-limit values from each participant’s first qualifying event and extend flat to the last observed time (#128)', async ({
     page
   }) => {
     const vertices = await page.evaluate(() =>
@@ -50,7 +64,8 @@ test.describe('safety.viz time-to-event module', () => {
           steps: dataset.$tteVertices.map((vertex) => [vertex.x, vertex.y, vertex.kind])
         }))
     );
-    // Incidence orientation (the default): y = 1 − S.
+    // Incidence orientation (the default): y = 1 − S. P-1's later same-day-40
+    // repeat and day-12 serious event never displace the day-5 first event.
     expect(vertices[0].group).toBe('Placebo');
     expect(vertices[0].steps).toEqual([
       [0, 0, 'origin'],
@@ -68,7 +83,7 @@ test.describe('safety.viz time-to-event module', () => {
     await captureEvidence(page, 'TTE-CURV-001', 'km-curves-incidence');
   });
 
-  test('TTE-CURV-002: censor tick marks sit on the curve at each censored time (#128)', async ({
+  test('TTE-CURV-002/TTE-DERIV-002: censor tick marks sit on the curve at each follow-up-end time (#128)', async ({
     page
   }) => {
     const marks = await page.evaluate(() =>
@@ -81,6 +96,12 @@ test.describe('safety.viz time-to-event module', () => {
     );
     expect(marks[0]).toEqual({ group: 'Placebo', times: [10, 15, 20, 25] });
     expect(marks[1]).toEqual({ group: 'Study Drug', times: [12, 30] });
+    // The censoring description comes from the population row (TTE-DERIV-002).
+    const withdrew = await page.evaluate(() => {
+      const group = window.__safetyTimeToEventInstance.structured.groups[1];
+      return group.observations.find((observation) => observation.id === 'D-3').censorDesc;
+    });
+    expect(withdrew).toBe('WITHDREW CONSENT');
   });
 
   test('TTE-CURV-003/TTE-STAT-004: the pointwise band is drawn from the same estimate and gaps where undefined (#128)', async ({
@@ -109,6 +130,15 @@ test.describe('safety.viz time-to-event module', () => {
       expect(rect.lo).toBeCloseTo(expected[i][0], 10);
       expect(rect.hi).toBeCloseTo(expected[i][1], 10);
     });
+  });
+
+  test('TTE-ANIM-001: the chart renders without intro animation, so the curves, band and risk table always share one truthful frame (#128, sv#131 review)', async ({
+    page
+  }) => {
+    const animation = await page.evaluate(
+      () => window.__safetyTimeToEventInstance.chart.options.animation
+    );
+    expect(animation).toBe(false);
   });
 
   test('TTE-USER-003: the CI toggle removes the band (#128)', async ({ page }) => {
@@ -187,11 +217,19 @@ test.describe('safety.viz time-to-event module', () => {
     expect(state.bandGroups).toEqual(['Placebo']);
   });
 
-  test('TTE-USER-001: the endpoint picker switches endpoints, including an all-censored group drawn flat (#128)', async ({
+  test('TTE-FILT-001: a multiselect event filter recomposes the endpoint live, including an all-censored group drawn flat (#128, sv#131 review)', async ({
     page
   }) => {
-    await selectByLabel(page, 'Time-to-event endpoint', 'TTSAE');
-    await page.waitForFunction(() => window.__safetyTimeToEventInstance.state.paramcd === 'TTSAE');
+    // Serious events only: deselect N, keep Y.
+    await setMultiValue(page, 'Serious', 'N', false);
+    await page.waitForFunction(() => {
+      const structured = window.__safetyTimeToEventInstance.structured;
+      const events = structured.groups.reduce(
+        (n, group) => n + group.estimate.points.reduce((a, p) => a + p.events, 0),
+        0
+      );
+      return events === 1;
+    });
     const groups = await page.evaluate(() =>
       window.__safetyTimeToEventInstance.structured.groups.map((group) => ({
         name: group.name,
@@ -199,15 +237,67 @@ test.describe('safety.viz time-to-event module', () => {
         total: group.estimate.total
       }))
     );
+    // The whole population stays the denominator: participants whose only
+    // events no longer qualify censor at their follow-up day.
     expect(groups).toEqual([
-      { name: 'Placebo', events: 1, total: 3 },
-      { name: 'Study Drug', events: 0, total: 3 }
+      { name: 'Placebo', events: 1, total: 8 },
+      { name: 'Study Drug', events: 0, total: 6 }
     ]);
-    await expect(page.locator('.sv-notes')).toContainText('1 event, 5 censored');
-    await captureEvidence(page, 'TTE-USER-001', 'sparse-endpoint-all-censored-group');
+    const placeboStep = await page.evaluate(() => {
+      const group = window.__safetyTimeToEventInstance.structured.groups[0];
+      return group.estimate.points.map((point) => [point.time, point.surv]);
+    });
+    expect(placeboStep).toHaveLength(1);
+    expect(placeboStep[0][0]).toBe(12);
+    expect(placeboStep[0][1]).toBeCloseTo(6 / 7, 12);
+    await expect(page.locator('.sv-notes')).toContainText('1 event, 13 censored');
+    await captureEvidence(page, 'TTE-FILT-001', 'serious-only-composed-endpoint');
   });
 
-  test('TTE-USER-004: a configured filter constrains the analysis rows (#128)', async ({
+  test('TTE-FILT-002: no active selection qualifies every event; an empty selection draws the honest all-censored display (#128)', async ({
+    page
+  }) => {
+    // Deselect everything via the All master row.
+    const details = page
+      .locator('.sv-control', { has: page.locator('label:text-is("Serious")') })
+      .locator('details.sv-multiselect');
+    await details.locator('summary').click();
+    const all = details.locator('.sv-ms-all input');
+    await all.setChecked(false);
+    await page.waitForFunction(() => {
+      const structured = window.__safetyTimeToEventInstance.structured;
+      const events = structured.groups.reduce(
+        (n, group) => n + group.estimate.points.reduce((a, p) => a + p.events, 0),
+        0
+      );
+      return events === 0 && structured.total === 14;
+    });
+    const hasChart = await page.evaluate(() => !!window.__safetyTimeToEventInstance.chart);
+    expect(hasChart).toBe(true);
+    await expect(page.locator('.sv-notes')).toContainText('0 events, 14 censored');
+    // Back to everything: the default endpoint returns.
+    await all.setChecked(true);
+    await page.waitForFunction(() => {
+      const structured = window.__safetyTimeToEventInstance.structured;
+      const events = structured.groups.reduce(
+        (n, group) => n + group.estimate.points.reduce((a, p) => a + p.events, 0),
+        0
+      );
+      return events === 6;
+    });
+  });
+
+  test('TTE-FILT-003: the notes name the composed endpoint and the active filter selection (#128)', async ({
+    page
+  }) => {
+    const notes = page.locator('.sv-notes');
+    await expect(notes).toContainText('Time to first qualifying event');
+    await expect(notes).toContainText('All recorded events qualify.');
+    await setMultiValue(page, 'Serious', 'N', false);
+    await expect(notes).toContainText('Qualifying events — Serious: 1 of 2 values.');
+  });
+
+  test('TTE-USER-004: a configured population filter constrains the denominator (#128)', async ({
     page
   }) => {
     await selectByLabel(page, 'Sex', 'F');
@@ -218,25 +308,30 @@ test.describe('safety.viz time-to-event module', () => {
     expect(groups).toEqual([4, 3]); // P-1,3,5,7 and D-1,3,5
   });
 
-  test('TTE-DATA-002: unusable rows are counted with an exportable record list (#128)', async ({
+  test('TTE-DATA-002/TTE-DATA-003: unusable rows in both datasets are counted with exportable record lists (#128)', async ({
     page
   }) => {
-    await expect(page.locator('.sv-notes')).toContainText('3 unusable rows removed');
-    await expect(page.locator('.sv-notes .hep-csv-link, .sv-notes a')).toContainText(
-      'Download records'
-    );
-    const reasons = await page.evaluate(() =>
-      window.__safetyTimeToEventInstance.structured.droppedRows.map((row) => row.__tte_dropReason)
-    );
-    expect(reasons.join(' ')).toMatch(/non-numeric time/);
-    expect(reasons.join(' ')).toMatch(/censor flag/);
-    expect(reasons.join(' ')).toMatch(/duplicate/);
+    await expect(page.locator('.sv-notes')).toContainText('2 unusable event rows');
+    await expect(page.locator('.sv-notes')).toContainText('2 excluded participant rows');
+    await expect(page.locator('.sv-notes a').first()).toContainText('Download records');
+    const reasons = await page.evaluate(() => {
+      const structured = window.__safetyTimeToEventInstance.structured;
+      return {
+        events: structured.droppedEvents.map((row) => row.__tte_dropReason),
+        population: structured.droppedPopulation.map((row) => row.__tte_dropReason)
+      };
+    });
+    expect(reasons.events.join(' ')).toMatch(/non-numeric event day/);
+    expect(reasons.events.join(' ')).toMatch(/not in the population/);
+    expect(reasons.population.join(' ')).toMatch(/duplicate/);
+    expect(reasons.population.join(' ')).toMatch(/follow-up/);
   });
 
-  test('TTE-GUIDE-001: the notes state the pointwise bands and the 1 − KM competing-risks limitation (#128)', async ({
+  test('TTE-GUIDE-001: the notes state the derivation rule, the pointwise bands and the 1 − KM competing-risks limitation (#128)', async ({
     page
   }) => {
     const notes = page.locator('.sv-notes');
+    await expect(notes).toContainText('censored at end of follow-up');
     await expect(notes).toContainText('pointwise 95% CIs');
     await expect(notes).toContainText('not simultaneous');
     await expect(notes).toContainText('overestimate absolute risk when competing events');
@@ -276,7 +371,7 @@ test.describe('safety.viz time-to-event module', () => {
       instance.render();
     });
     await expect(page.locator('.sv-main-annotation')).toContainText(
-      'No usable time-to-event records'
+      'No usable time-to-event observations'
     );
     const hasChart = await page.evaluate(() => !!window.__safetyTimeToEventInstance.chart);
     expect(hasChart).toBe(false);
@@ -284,7 +379,7 @@ test.describe('safety.viz time-to-event module', () => {
 });
 
 test.describe('safety.viz time-to-event demo page', () => {
-  test('TTE-DEMO-001: the built demo renders the derived adtte.csv with three endpoints (#128)', async ({
+  test('TTE-DEMO-001: the built demo composes the endpoint from the vendored adae + adsl extracts (#128)', async ({
     page
   }) => {
     const errors = [];
@@ -293,15 +388,29 @@ test.describe('safety.viz time-to-event demo page', () => {
     await page.waitForFunction(
       () => window.__safetyTimeToEventInstance && window.__safetyTimeToEventInstance.chart
     );
-    const summary = await page.evaluate(() => ({
-      params: window.__safetyTimeToEventInstance.params.map((param) => param.paramcd),
-      total: window.__safetyTimeToEventInstance.structured.total,
-      groups: window.__safetyTimeToEventInstance.structured.groups.map((group) => group.name)
-    }));
-    expect(summary.params).toEqual(['TTDE', 'TTSAE', 'TTAE']);
+    const summary = await page.evaluate(() => {
+      const structured = window.__safetyTimeToEventInstance.structured;
+      return {
+        total: structured.total,
+        events: structured.groups.reduce(
+          (n, group) => n + group.estimate.points.reduce((a, p) => a + p.events, 0),
+          0
+        ),
+        groups: structured.groups.map((group) => group.name)
+      };
+    });
+    // The full safety population; with every event qualifying this is time to
+    // first TEAE — matching the retired build-time derivation exactly.
     expect(summary.total).toBe(254);
-    // Data order from the derived adtte.csv (adsl input order).
+    expect(summary.events).toBe(217);
+    // Data order from the vendored adsl.csv (adsl input order).
     expect(summary.groups).toEqual(['Placebo', 'Xanomeline High Dose', 'Xanomeline Low Dose']);
+    // The endpoint composer renders one multiselect per configured column.
+    await expect(
+      page
+        .locator('.sv-control', { has: page.locator('label:text-is("Body System")') })
+        .locator('details.sv-multiselect')
+    ).toBeVisible();
     expect(errors).toEqual([]);
     await captureEvidence(page, 'TTE-DEMO-001', 'demo-page');
   });

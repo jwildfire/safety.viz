@@ -14,7 +14,7 @@ The gallery learns to answer "how long until…". A thirteenth renderer brings K
 
 ## What's new
 
-- **Time-to-Event Explorer** — a new renderer for Kaplan–Meier safety displays ([obot.roadmap#161](https://github.com/jwildfire/obot.roadmap/issues/161), [#128](https://github.com/jwildfire/safety.viz/issues/128), PR [#129](https://github.com/jwildfire/safety.viz/pull/129)). Step curves by treatment group with censoring tick marks, **pointwise 95% confidence bands** (the `survival::survfit` default family, cross-validated against it), and the **at-risk / cumulative-events strip table** — all derived from one estimator pass, so the table cannot disagree with the curve. It consumes an ADTTE-shaped analysis dataset, defaults to **cumulative incidence (1 − KM)** with the estimator always named on the axis, and states plainly — in-app and in the clinical guide — where that estimator overreads risk. Ships **Experimental** pending review of design decisions D1–D6. [Try it live](https://jwildfire.github.io/safety.viz/time-to-event/index.html).
+- **Time-to-Event Explorer** — a new renderer for Kaplan–Meier safety displays ([obot.roadmap#161](https://github.com/jwildfire/obot.roadmap/issues/161), [#128](https://github.com/jwildfire/safety.viz/issues/128), PRs [#129](https://github.com/jwildfire/safety.viz/pull/129) and the sv#131 review rework). **You compose the endpoint yourself, from the event data**: flexible multiselect filters over the adverse events (body system, preferred term, seriousness, severity — configurable per study) define what counts as a qualifying event, and the chart shows time to each participant's first qualifying event, censored at end of follow-up from the population data. No endpoint list is hard-coded — the important events vary from study to study; configured one-click presets are a natural later release on the same filter state. Step curves by treatment group with censoring tick marks, **pointwise 95% confidence bands** (the `survival::survfit` default family, cross-validated against it), and the **at-risk / cumulative-events strip table** — all derived from one estimator pass, so the table cannot disagree with the curve, and drawn without intro animation so every frame the chart shows is an estimate, never a transition. It consumes ADAE-shaped event records plus an ADSL-shaped population extract, defaults to **cumulative incidence (1 − KM)** with the estimator always named on the axis, and states plainly — in-app and in the clinical guide — the fixed derivation rule and where that estimator overreads risk. Ships **Experimental** pending review of the design decisions. [Try it live](https://jwildfire.github.io/safety.viz/time-to-event/index.html).
 
 ## Also in this release
 
@@ -22,7 +22,7 @@ The gallery learns to answer "how long until…". A thirteenth renderer brings K
 - Evidence baselines for every module refreshed on the canonical Linux environment as part of the time-to-event landing.
 - Release prep: `dist/safety.viz-1.7.0/` vendored, e2e fixtures repointed to the new bundle.
 
-1 250 unit + 252 browser tests pass; `evidence:check`, `requirements:check`, `build:check-dist`, `prettier` and the site build all clean.
+1 257 unit + 255 browser tests pass; `evidence:check`, `requirements:check`, `build:check-dist`, `prettier` and the site build all clean.
 
 # safety.viz v1.6.0
 
