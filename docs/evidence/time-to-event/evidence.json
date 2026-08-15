@@ -1,13 +1,16 @@
 {
   "module": "time-to-event",
-  "generatedAt": "2026-08-15T08:57:55.616Z",
+  "generatedAt": "2026-08-15T09:05:28.855Z",
   "environment": {
-    "os": "darwin 23.6.0",
-    "node": "v24.14.0",
+    "os": "linux 6.17.0-1022-azure",
+    "node": "v22.23.2",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": null,
+  "run": {
+    "id": "31876074666",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/31876074666"
+  },
   "records": [
     {
       "test": "a chart link navigates straight to that renderer demo (#71)",
@@ -231,7 +234,7 @@
       "status": "pass",
       "requirementIds": ["TTE-FILT-001"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["TTE-FILT-001-serious-only-composed-endpoint.png"]
     },
     {
       "test": "TTE-FILT-002: no active selection qualifies every event; an empty selection draws the honest all-censored display (#128)",
@@ -335,7 +338,7 @@
       "status": "pass",
       "requirementIds": ["TTE-FILT-001"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["TTE-FILT-001-serious-only-composed-endpoint.png"]
     },
     {
       "test": "applyFilters keeps rows matching every active filter and ignores null filters (#128)",
@@ -631,7 +634,7 @@
       "status": "pass",
       "requirementIds": ["TTE-FILT-001"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["TTE-FILT-001-serious-only-composed-endpoint.png"]
     },
     {
       "test": "DEFAULT_SETTINGS defaults to cumulative-incidence orientation with the band on (D2, D3, #128)",
@@ -1863,7 +1866,7 @@
       "status": "pass",
       "requirementIds": ["TTE-FILT-001"],
       "issueRefs": [],
-      "screenshots": []
+      "screenshots": ["TTE-FILT-001-serious-only-composed-endpoint.png"]
     },
     {
       "test": "syncSettings normalizes population filters to { value_col, label }, defaulting to none (#128)",

@@ -1,13 +1,16 @@
 {
   "module": "histogram",
-  "generatedAt": "2026-08-15T08:57:55.616Z",
+  "generatedAt": "2026-08-15T09:05:28.855Z",
   "environment": {
-    "os": "darwin 23.6.0",
-    "node": "v24.14.0",
+    "os": "linux 6.17.0-1022-azure",
+    "node": "v22.23.2",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": null,
+  "run": {
+    "id": "31876074666",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/31876074666"
+  },
   "records": [
     {
       "test": "a chart link navigates straight to that renderer demo (#71)",
