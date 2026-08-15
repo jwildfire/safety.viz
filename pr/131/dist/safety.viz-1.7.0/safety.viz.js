@@ -12523,6 +12523,54 @@ var SafetyViz = (() => {
     opt.selected = selected;
     select.appendChild(opt);
   }
+  function multiSelect({ values, selected, onChange }) {
+    const details = createElement("details", "sv-multiselect");
+    const summary = createElement("summary");
+    details.append(summary);
+    const list = createElement("div", "sv-ms-list");
+    details.append(list);
+    const current = () => selected === null ? new Set(values) : new Set(selected);
+    const allLabel = createElement("label", "sv-ms-option sv-ms-all");
+    const allBox = document.createElement("input");
+    allBox.type = "checkbox";
+    allLabel.append(allBox, document.createTextNode("All"));
+    list.append(allLabel);
+    const boxes = values.map((value) => {
+      const label = createElement("label", "sv-ms-option");
+      const box = document.createElement("input");
+      box.type = "checkbox";
+      box.value = value;
+      label.append(box, document.createTextNode(value));
+      list.append(label);
+      return box;
+    });
+    const sync = () => {
+      const set2 = current();
+      boxes.forEach((box) => {
+        box.checked = set2.has(box.value);
+      });
+      allBox.checked = set2.size === values.length;
+      allBox.indeterminate = set2.size > 0 && set2.size < values.length;
+      summary.textContent = set2.size === values.length ? `All (${values.length})` : `${set2.size} of ${values.length}`;
+    };
+    const emit = () => {
+      const picked = boxes.filter((box) => box.checked).map((box) => box.value);
+      selected = picked.length === values.length ? null : picked;
+      sync();
+      onChange(selected);
+    };
+    allBox.onchange = () => {
+      boxes.forEach((box) => {
+        box.checked = allBox.checked;
+      });
+      emit();
+    };
+    boxes.forEach((box) => {
+      box.onchange = emit;
+    });
+    sync();
+    return details;
+  }
   var SHELL_STYLE_ID = "safety-viz-shell-styles";
   var SHELL_STYLES = `
 .sv-root{display:flex;align-items:flex-start;gap:1.25rem;width:100%;position:relative;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#1f2933;--sv-rail-width:520px}
@@ -12590,6 +12638,16 @@ var SafetyViz = (() => {
 .sv-view-option:hover{border-color:#b8c0cc;background:#f6f8fa}
 .sv-view-option.is-active{border-color:#0b62a4;background:#eaf2fb;color:#0b3d63;font-weight:600;box-shadow:inset 0 0 0 1px #0b62a4}
 .sv-view-option:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
+.sv-multiselect{border:1px solid #b8c0cc;border-radius:6px;background:#fff}
+.sv-multiselect>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:.4rem;padding:.35rem .45rem;font-size:.85rem;cursor:pointer;border-radius:6px}
+.sv-multiselect>summary::-webkit-details-marker{display:none}
+.sv-multiselect>summary::after{content:"\u25BE";font-size:.7rem;color:#52616f}
+.sv-multiselect[open]>summary::after{content:"\u25B4"}
+.sv-multiselect>summary:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
+.sv-ms-list{max-height:10rem;overflow-y:auto;border-top:1px solid #e3e8ee;padding:.3rem .45rem}
+.sv-ms-option{display:flex;align-items:center;gap:.4rem;font-size:.8rem;font-weight:400;margin:.15rem 0;cursor:pointer}
+.sv-ms-option input[type=checkbox]{width:auto;margin:0;accent-color:#0b62a4;flex:0 0 auto}
+.sv-ms-option.sv-ms-all{font-weight:600;border-bottom:1px solid #e3e8ee;padding-bottom:.25rem;margin-bottom:.25rem}
 .sv-prototype{display:flex;align-items:baseline;gap:.5rem;margin:0 0 .6rem;padding:.4rem .6rem;border:1px solid #e6c98a;border-left:4px solid #d99a2b;border-radius:6px;background:#fdf6e6;color:#6b4e12;font-size:.8rem;line-height:1.35}
 .sv-prototype-tag{flex:0 0 auto;text-transform:uppercase;letter-spacing:.05em;font-weight:700;font-size:.68rem;padding:.08rem .4rem;border-radius:999px;background:#d99a2b;color:#fff}
 .sv-prototype-text{flex:1 1 auto}
@@ -31609,17 +31667,16 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
   var DEFAULT_SETTINGS13 = {
     id_col: "USUBJID",
     group_col: "ARM",
-    param_col: "PARAM",
-    paramcd_col: "PARAMCD",
-    param_value: null,
-    time_col: "AVAL",
-    censor_col: "CNSR",
-    event_desc_col: "EVNTDESC",
-    censor_desc_col: "CNSDTDSC",
+    fu_day_col: "EOSDY",
+    censor_desc_col: "EOSSTT",
+    event_day_col: "ASTDY",
+    event_desc_col: "AEDECOD",
+    event_filters: ["AEBODSYS", "AEDECOD", "AESER", "AESEV"],
+    endpoint_label: "Time to first qualifying event",
+    filters: [],
     direction: "incidence",
     ci: true,
     time_unit: "day",
-    filters: [],
     width: "100%",
     height: 560
   };
@@ -31635,8 +31692,9 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     const synced = { ...DEFAULT_SETTINGS13, ...settings };
     synced.direction = synced.direction === "survival" ? "survival" : "incidence";
     synced.ci = synced.ci === void 0 ? true : Boolean(synced.ci);
-    synced.param_value = synced.param_value == null ? null : String(synced.param_value);
     synced.time_unit = typeof synced.time_unit === "string" && synced.time_unit ? synced.time_unit : "day";
+    synced.endpoint_label = typeof synced.endpoint_label === "string" && synced.endpoint_label ? synced.endpoint_label : DEFAULT_SETTINGS13.endpoint_label;
+    synced.event_filters = arrayify11(synced.event_filters).map((filter) => fieldSpec11(filter)).filter((filter) => filter.value_col);
     synced.filters = arrayify11(synced.filters).map((filter) => fieldSpec11(filter)).filter((filter) => filter.value_col);
     return synced;
   }
@@ -31646,81 +31704,79 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     $schema: "https://json-schema.org/draft/2020-12/schema",
     $id: "https://raw.githubusercontent.com/jwildfire/safety.viz/main/src/data/schema/time-to-event.json",
     title: "safety.viz time-to-event data contract",
-    description: "ADTTE-shaped analysis data: one record per participant per time-to-event endpoint (TTE-DATA-001). Column names are supplied by the settings mapping. The module computes the Kaplan-Meier product-limit estimator, Greenwood variance and log-log pointwise 95% bounds from the (time, censor) pairs; which events qualify, the earliest-qualifying-event rule and the censoring date hierarchy are properties of the analysis dataset, prepared upstream by the data owner (design D1) - the renderer never re-derives them. Records that cannot be used are counted and exported rather than dropped silently (TTE-DATA-002).",
+    description: "Two datasets: event-level records (one row per event, e.g. an ADAE projection) and population records (one row per participant, e.g. an ADSL projection carrying the follow-up-end study day). The module composes the endpoint from the events passing the active multiselect filters (TTE-FILT-001), takes each participant's first qualifying event by onset day (TTE-DERIV-001), censors event-free participants at the population follow-up day (TTE-DERIV-002), and computes the Kaplan-Meier product-limit estimator, Greenwood variance and log-log pointwise 95% bounds from the derived observations. The derivation rule is fixed and stated in the clinical guide; records that cannot be used are counted and exported rather than dropped silently (TTE-DATA-002). Column names are supplied by the settings mapping.",
     type: "object",
-    required: ["data", "settings"],
+    required: ["events", "population", "settings"],
     properties: {
-      data: {
+      events: {
+        type: "array",
+        items: { type: "object" },
+        requiredSettings: ["id_col", "event_day_col"],
+        description: "d3.csv()-style event records; every row carries the participant id and onset-day columns named in settings, plus any descriptor columns the event filters use (body system, preferred term, seriousness, severity, ...). Rows with a missing, non-numeric or non-positive day, or a participant absent from the population data, are excluded with a counted, exportable reason (TTE-DATA-002)."
+      },
+      population: {
         type: "array",
         minItems: 1,
         items: { type: "object" },
-        description: "d3.csv()-style records; every row carries the participant, time and censor columns named in settings, one row per participant per endpoint."
+        requiredSettings: ["id_col", "fu_day_col"],
+        description: "d3.csv()-style population records, one row per participant: the analysis denominator. Every row carries the participant id and follow-up-end day columns named in settings; the group column is optional (one pooled curve when absent, TTE-DATA-004). Later duplicate rows for a participant are excluded with a counted reason (TTE-DATA-003)."
       },
       settings: {
         type: "object",
         description: "Column mappings and rendering options; merged onto the module's DEFAULT_SETTINGS, so only overrides need to be supplied.",
-        required: ["id_col", "time_col", "censor_col"],
         properties: {
           id_col: {
             type: "string",
             default: "USUBJID",
-            description: "Participant identifier column; required in data. One row per participant per endpoint, and the key the participantsSelected event carries (TTE-CFG-001)."
+            description: "Participant identifier column, required in both datasets, and the key the participantsSelected event carries (TTE-CFG-001)."
           },
           group_col: {
             type: ["string", "null"],
             default: "ARM",
-            description: "Curve grouping column (treatment arm). Optional: when the data has no such column, one pooled curve is drawn (TTE-DATA-004)."
+            description: "Population curve-grouping column (treatment arm). Optional: when the population has no such column, one pooled curve is drawn (TTE-DATA-004)."
           },
-          param_col: {
-            type: ["string", "null"],
-            default: "PARAM",
-            description: "Endpoint label column, feeding the endpoint picker. Optional: a dataset without endpoint columns is treated as one unnamed endpoint."
-          },
-          paramcd_col: {
-            type: ["string", "null"],
-            default: "PARAMCD",
-            description: "Endpoint short-code column; param_value selects against it."
-          },
-          param_value: {
-            type: ["string", "null"],
-            default: null,
-            description: "The endpoint (paramcd) shown initially; null shows the first endpoint in data order."
-          },
-          time_col: {
+          fu_day_col: {
             type: "string",
-            default: "AVAL",
-            description: "Time in days since the analysis time origin (day 1 = first dose, per the upstream derivation); required in data. Missing, non-numeric or non-positive times exclude the row with a counted, exportable reason (TTE-DATA-002)."
-          },
-          censor_col: {
-            type: "string",
-            default: "CNSR",
-            description: "ADaM censor flag; required in data. 0 = event, any integer >= 1 = censored; anything else excludes the row with a counted reason (TTE-DATA-002)."
-          },
-          event_desc_col: {
-            type: ["string", "null"],
-            default: "EVNTDESC",
-            description: "Optional event description (e.g. the qualifying preferred term), shown in event tooltips."
+            default: "EOSDY",
+            description: "Population follow-up-end study day (day 1 = first dose): the censoring time for participants with no qualifying event (TTE-DERIV-002); required in population data. Event-free participants without a usable value are excluded with a counted reason."
           },
           censor_desc_col: {
             type: ["string", "null"],
-            default: "CNSDTDSC",
-            description: "Optional censoring description (e.g. END OF STUDY), shown in censor-mark tooltips."
+            default: "EOSSTT",
+            description: "Optional population censoring description (e.g. end-of-study status), shown in censor-mark tooltips."
           },
-          direction: {
+          event_day_col: {
             type: "string",
-            enum: ["incidence", "survival"],
-            default: "incidence",
-            description: "Display orientation: cumulative incidence (1 - KM, rising - the safety convention and the FDA ST&F figures' orientation, D2) or survival (falling). The y-axis names the estimator either way (TTE-CURV-004)."
+            default: "ASTDY",
+            description: "Event onset study day (day 1 = first dose); required in event data. Missing, non-numeric or non-positive days exclude the row with a counted, exportable reason (TTE-DATA-002)."
           },
-          ci: {
-            type: "boolean",
-            default: true,
-            description: "Whether to draw the pointwise 95% confidence band (Greenwood variance, log-log transform, matching survival::survfit conf.type='log-log'; D3). The band is pointwise, not simultaneous, and is labelled as such (TTE-CURV-003)."
+          event_desc_col: {
+            type: ["string", "null"],
+            default: "AEDECOD",
+            description: "Optional event description (e.g. the preferred term), shown in event tooltips for the qualifying event."
           },
-          time_unit: {
+          event_filters: {
+            type: "array",
+            default: ["AEBODSYS", "AEDECOD", "AESER", "AESEV"],
+            items: {
+              oneOf: [
+                { type: "string" },
+                {
+                  type: "object",
+                  required: ["value_col"],
+                  properties: {
+                    value_col: { type: "string" },
+                    label: { type: "string" }
+                  }
+                }
+              ]
+            },
+            description: "Multiselect filter controls over the event dataset \u2014 the endpoint composer (TTE-FILT-001): column names or { value_col, label } specs. Which columns get a filter is configurable; which values qualify is the reviewer's live choice, never hard-coded. A filter whose column is absent from the events is dropped with a console warning."
+          },
+          endpoint_label: {
             type: "string",
-            default: "day",
-            description: "Axis label unit; display only - the module never rescales times."
+            default: "Time to first qualifying event",
+            description: "Display name for the composed endpoint, used in the notes (TTE-FILT-003)."
           },
           filters: {
             type: "array",
@@ -31738,7 +31794,23 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
                 }
               ]
             },
-            description: "Filter controls over the analysis rows: column names or { value_col, label } specs. A filter whose column is absent from the data is dropped with a console warning."
+            description: "Single-select filter controls over the population rows: column names or { value_col, label } specs. A filter whose column is absent from the population is dropped with a console warning."
+          },
+          direction: {
+            type: "string",
+            enum: ["incidence", "survival"],
+            default: "incidence",
+            description: "Display orientation: cumulative incidence (1 - KM, rising - the safety convention and the FDA ST&F figures' orientation, D2) or survival (falling). The y-axis names the estimator either way (TTE-CURV-004)."
+          },
+          ci: {
+            type: "boolean",
+            default: true,
+            description: "Whether to draw the pointwise 95% confidence band (Greenwood variance, log-log transform, matching survival::survfit conf.type='log-log'; D3). The band is pointwise, not simultaneous, and is labelled as such (TTE-CURV-003)."
+          },
+          time_unit: {
+            type: "string",
+            default: "day",
+            description: "Axis label unit; display only - the module never rescales times."
           },
           width: {
             type: "string",
@@ -31756,11 +31828,22 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
   };
 
   // src/time-to-event/checkInputs.js
-  var REQUIRED_COLUMN_SETTINGS13 = time_to_event_default.properties.settings.required;
+  var DATASETS = ["events", "population"];
   function checkInputs13(data, settings) {
-    const rows = Array.isArray(data) ? data : [];
-    const columns = REQUIRED_COLUMN_SETTINGS13.map((key) => settings[key]);
-    const missing = columns.filter((col) => !rows.some((row) => row[col] !== void 0));
+    const missingDatasets = DATASETS.filter((name) => !Array.isArray(data?.[name]));
+    if (missingDatasets.length) {
+      throw new Error(
+        `Required dataset(s) missing: ${missingDatasets.join(", ")} \u2014 pass { events, population } arrays of records.`
+      );
+    }
+    const missing = [];
+    for (const name of DATASETS) {
+      const rows = data[name];
+      const required = time_to_event_default.properties[name].requiredSettings.map((key) => settings[key]);
+      for (const column of required) {
+        if (!rows.some((row) => row[column] !== void 0)) missing.push(`${name}.${column}`);
+      }
+    }
     if (missing.length) {
       throw new Error(`Required variable(s) missing: ${missing.join(", ")}`);
     }
@@ -31848,78 +31931,100 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
   // src/time-to-event/structureData.js
   var DROP_REASON_COLUMN2 = "__tte_dropReason";
   var POOLED_GROUP = "All participants";
-  var UNNAMED_PARAM = "Time to event";
   function unique10(values) {
     return [...new Set(values)];
   }
-  function paramsPresent(rows, settings) {
-    const hasParamcd = rows.some((row) => row[settings.paramcd_col] !== void 0);
-    const hasParam = rows.some((row) => row[settings.param_col] !== void 0);
-    if (!hasParamcd && !hasParam) return [{ paramcd: null, param: UNNAMED_PARAM }];
-    const seen = /* @__PURE__ */ new Map();
-    for (const row of rows) {
-      const paramcd = hasParamcd ? String(row[settings.paramcd_col] ?? "") : null;
-      const param = hasParam ? String(row[settings.param_col] ?? "") : String(paramcd);
-      const key = paramcd ?? param;
-      if (!seen.has(key)) seen.set(key, { paramcd: paramcd ?? param, param: param || paramcd });
-    }
-    return [...seen.values()];
+  function applyEventFilters(events, filters) {
+    const active = Object.entries(filters || {}).filter(([, values]) => values != null);
+    if (!active.length) return events;
+    const sets = active.map(([column, values]) => [column, new Set(values.map(String))]);
+    return events.filter((row) => sets.every(([column, set2]) => set2.has(String(row[column]))));
   }
-  function parseCensor(raw) {
-    const value = Number(raw);
-    if (!Number.isFinite(value) || !Number.isInteger(value) || value < 0) return null;
-    return value === 0;
+  function applyFilters10(rows, filters) {
+    const active = Object.entries(filters || {}).filter(([, value]) => value != null);
+    if (!active.length) return rows;
+    return rows.filter((row) => active.every(([column, value]) => String(row[column]) === value));
   }
-  function cleanData9(rows, settings) {
-    const observations = [];
-    const droppedRows = [];
-    const seen = /* @__PURE__ */ new Set();
-    const drop = (row, reason) => droppedRows.push({ ...row, [DROP_REASON_COLUMN2]: reason });
-    for (const row of rows) {
+  function deriveObservations(events, population, settings) {
+    const droppedEvents = [];
+    const droppedPopulation = [];
+    const dropEvent = (row, reason) => droppedEvents.push({ ...row, [DROP_REASON_COLUMN2]: reason });
+    const dropParticipant = (row, reason) => droppedPopulation.push({ ...row, [DROP_REASON_COLUMN2]: reason });
+    const participants = /* @__PURE__ */ new Map();
+    for (const row of population) {
       const id = row[settings.id_col];
       if (id === void 0 || id === null || id === "") {
-        drop(row, `missing participant id (${settings.id_col})`);
+        dropParticipant(row, `missing participant id (${settings.id_col})`);
         continue;
       }
-      const time = Number(row[settings.time_col]);
-      if (row[settings.time_col] === "" || row[settings.time_col] == null || !Number.isFinite(time)) {
-        drop(row, `missing or non-numeric time (${settings.time_col})`);
+      const key = String(id);
+      if (participants.has(key)) {
+        dropParticipant(row, `duplicate row for participant ${key} \u2014 first row kept`);
         continue;
       }
-      if (time <= 0) {
-        drop(row, `non-positive time (${settings.time_col} = ${row[settings.time_col]})`);
+      participants.set(key, { row, first: null });
+    }
+    for (const row of events) {
+      const id = String(row[settings.id_col] ?? "");
+      const entry = participants.get(id);
+      if (!entry) {
+        dropEvent(row, `participant ${id || "(missing id)"} not in the population data`);
         continue;
       }
-      const event = parseCensor(row[settings.censor_col]);
-      if (event === null) {
-        drop(
-          row,
-          `unparseable censor flag (${settings.censor_col} = ${row[settings.censor_col]}; expected 0 = event, >= 1 = censored)`
+      const raw = row[settings.event_day_col];
+      const day2 = Number(raw);
+      if (raw === "" || raw == null || !Number.isFinite(day2)) {
+        dropEvent(row, `missing or non-numeric event day (${settings.event_day_col})`);
+        continue;
+      }
+      if (day2 <= 0) {
+        dropEvent(row, `non-positive event day (${settings.event_day_col} = ${raw})`);
+        continue;
+      }
+      if (!entry.first || day2 < entry.first.day) entry.first = { day: day2, row };
+    }
+    const observations = [];
+    for (const [id, entry] of participants) {
+      const group = settings.group_col && entry.row[settings.group_col] !== void 0 ? String(entry.row[settings.group_col]) : null;
+      if (entry.first) {
+        observations.push({
+          id,
+          group,
+          time: entry.first.day,
+          event: true,
+          eventDesc: settings.event_desc_col && entry.first.row[settings.event_desc_col] ? String(entry.first.row[settings.event_desc_col]) : "",
+          censorDesc: "",
+          row: entry.row
+        });
+        continue;
+      }
+      const raw = entry.row[settings.fu_day_col];
+      const fuDay = Number(raw);
+      if (raw === "" || raw == null || !Number.isFinite(fuDay) || fuDay <= 0) {
+        dropParticipant(
+          entry.row,
+          `no qualifying event and no usable follow-up day (${settings.fu_day_col} = ${raw ?? ""})`
         );
         continue;
       }
-      if (seen.has(id)) {
-        drop(row, `duplicate row for participant ${id} \u2014 first row kept`);
-        continue;
-      }
-      seen.add(id);
       observations.push({
-        id: String(id),
-        group: settings.group_col && row[settings.group_col] !== void 0 ? String(row[settings.group_col]) : null,
-        time,
-        event,
-        eventDesc: settings.event_desc_col && row[settings.event_desc_col] ? String(row[settings.event_desc_col]) : "",
-        censorDesc: settings.censor_desc_col && row[settings.censor_desc_col] ? String(row[settings.censor_desc_col]) : "",
-        row
+        id,
+        group,
+        time: fuDay,
+        event: false,
+        eventDesc: "",
+        censorDesc: settings.censor_desc_col && entry.row[settings.censor_desc_col] ? String(entry.row[settings.censor_desc_col]) : "",
+        row: entry.row
       });
     }
-    return { observations, droppedRows };
+    return { observations, droppedEvents, droppedPopulation };
   }
-  function structureData2(rawData, settings, paramcd) {
-    const rows = Array.isArray(rawData) ? rawData : [];
-    const hasParamcd = rows.some((row) => row[settings.paramcd_col] !== void 0);
-    const endpointRows = paramcd == null || !hasParamcd ? rows : rows.filter((row) => String(row[settings.paramcd_col] ?? "") === paramcd);
-    const { observations, droppedRows } = cleanData9(endpointRows, settings);
+  function structureData2(events, population, settings) {
+    const { observations, droppedEvents, droppedPopulation } = deriveObservations(
+      Array.isArray(events) ? events : [],
+      Array.isArray(population) ? population : [],
+      settings
+    );
     const grouped = /* @__PURE__ */ new Map();
     for (const observation of observations) {
       const name = observation.group ?? POOLED_GROUP;
@@ -31933,15 +32038,11 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     }));
     return {
       groups,
-      droppedRows,
+      droppedEvents,
+      droppedPopulation,
       total: observations.length,
       maxTime: groups.reduce((max, group) => Math.max(max, group.estimate.maxTime), 0)
     };
-  }
-  function applyFilters10(rows, filters) {
-    const active = Object.entries(filters || {}).filter(([, value]) => value != null);
-    if (!active.length) return rows;
-    return rows.filter((row) => active.every(([column, value]) => String(row[column]) === value));
   }
 
   // src/time-to-event/getScales.js
@@ -32193,14 +32294,14 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       this.element = typeof element === "string" ? document.querySelector(element) : element;
       if (!this.element) throw new Error(`Safety Time-to-Event target not found: ${element}`);
       this.settings = syncSettings13(settings);
-      this.rawData = [];
-      this.params = [];
+      this.rawEvents = [];
+      this.rawPopulation = [];
       this.structured = null;
       this.chart = null;
       this.participantsSelected = [];
       this.state = {
+        eventFilters: {},
         filters: {},
-        paramcd: this.settings.param_value,
         direction: this.settings.direction,
         ci: this.settings.ci,
         selected: null
@@ -32217,7 +32318,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     /**
      * Load data and render: an alias for setData that keeps the two-step
      * create-then-init call shape working.
-     * @param {Object[]} data ADTTE-shaped records matching the time-to-event data contract.
+     * @param {{events: Object[], population: Object[]}} data Event-level and population records matching the time-to-event data contract.
      * @returns {SafetyTimeToEvent} The instance, for chaining.
      */
     init(data) {
@@ -32225,25 +32326,22 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       return this;
     }
     /**
-     * Replace the bound data and re-render. The data is validated against the
-     * settings mapping (throwing, and rendering the message into the target
-     * element, when required columns are missing) and the endpoint list and
-     * controls are rebuilt from it.
-     * @param {Object[]} data ADTTE-shaped records matching the time-to-event data contract.
+     * Replace the bound data and re-render. Both datasets are validated against
+     * the settings mapping (throwing, and rendering the message into the target
+     * element, when required columns are missing) and the filter controls are
+     * rebuilt from the data.
+     * @param {{events: Object[], population: Object[]}} data Event-level and population records matching the time-to-event data contract.
      * @returns {SafetyTimeToEvent} The instance, for chaining.
      */
     setData(data) {
-      this.rawData = Array.isArray(data) ? data : [];
       try {
-        checkInputs13(this.rawData, this.settings);
+        checkInputs13(data, this.settings);
       } catch (error) {
         this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
         throw error;
       }
-      this.params = paramsPresent(this.rawData, this.settings);
-      if (this.state.paramcd == null || !this.params.some((param) => param.paramcd === this.state.paramcd)) {
-        this.state.paramcd = this.params.length ? this.params[0].paramcd : null;
-      }
+      this.rawEvents = data.events;
+      this.rawPopulation = data.population;
       this.buildControls();
       this.render();
       return this;
@@ -32258,50 +32356,55 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       this.settings = syncSettings13({ ...this.settings, ...settings });
       if ("direction" in settings) this.state.direction = this.settings.direction;
       if ("ci" in settings) this.state.ci = this.settings.ci;
-      if ("param_value" in settings) this.state.paramcd = this.settings.param_value;
+      if ("event_filters" in settings) this.state.eventFilters = {};
       this.chartWrap.style.height = `${this.settings.height}px`;
-      if (this.rawData.length) {
-        this.params = paramsPresent(this.rawData, this.settings);
-        if (!this.params.some((param) => param.paramcd === this.state.paramcd))
-          this.state.paramcd = this.params.length ? this.params[0].paramcd : null;
-      }
       this.buildControls();
       this.render();
       return this;
     }
     /**
-     * The active endpoint's display label.
+     * The configured event-filter specs whose column exists in the event data;
+     * missing columns are dropped with a console warning.
      * @private
      */
-    paramLabel() {
-      const param = this.params.find((entry) => entry.paramcd === this.state.paramcd);
-      return param ? param.param : "Time to event";
+    eventFilterSpecs() {
+      return this.settings.event_filters.filter((filter) => {
+        const exists = this.rawEvents.some((row) => row[filter.value_col] !== void 0);
+        if (!exists)
+          console.warn(
+            `The [ ${filter.label} ] event filter has been removed because the variable does not exist.`
+          );
+        return exists;
+      });
     }
     /**
-     * Rebuild the endpoint, display and filter controls from data + state.
+     * Rebuild the endpoint-composing event filters, the population filters and
+     * the display controls from data + state.
      * @private
      */
     buildControls() {
       this.controls.innerHTML = "";
       const { addSection, addControl } = controlBuilders(this.controls);
-      if (this.params.length > 1) {
-        const endpointParent = addSection("Endpoint");
-        const select = addControl(
-          "Time-to-event endpoint",
-          document.createElement("select"),
-          endpointParent
-        );
-        this.params.forEach(
-          (param) => option(select, param.paramcd, param.param, param.paramcd === this.state.paramcd)
-        );
-        select.onchange = () => {
-          this.state.paramcd = select.value;
-          this.state.selected = null;
-          this.render();
-        };
+      const specs = this.eventFilterSpecs();
+      if (specs.length) {
+        const eventParent = addSection("Event definition");
+        specs.forEach((filter) => {
+          const values = unique10(
+            this.rawEvents.map((row) => row[filter.value_col]).filter((v) => v !== void 0)
+          ).map(String).sort();
+          const control = multiSelect({
+            values,
+            selected: this.state.eventFilters[filter.value_col] ?? null,
+            onChange: (selected) => {
+              this.state.eventFilters[filter.value_col] = selected;
+              this.render();
+            }
+          });
+          addControl(filter.label, control, eventParent);
+        });
       }
       const filterSpecs = this.settings.filters.filter((filter) => {
-        const exists = this.rawData.some((row) => row[filter.value_col] !== void 0);
+        const exists = this.rawPopulation.some((row) => row[filter.value_col] !== void 0);
         if (!exists)
           console.warn(
             `The [ ${filter.label} ] filter has been removed because the variable does not exist.`
@@ -32313,7 +32416,9 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
         filterSpecs.forEach((filter) => {
           const select = addControl(filter.label, document.createElement("select"), filterParent);
           option(select, "__all__", "All", !this.state.filters[filter.value_col]);
-          unique10(this.rawData.map((row) => row[filter.value_col]).filter((v) => v !== void 0)).map(String).sort().forEach(
+          unique10(
+            this.rawPopulation.map((row) => row[filter.value_col]).filter((v) => v !== void 0)
+          ).map(String).sort().forEach(
             (value) => option(select, value, value, this.state.filters[filter.value_col] === value)
           );
           select.onchange = () => {
@@ -32361,25 +32466,42 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       this.state.selected = null;
       this.participantsSelected = [];
       this.mainAnnotation.textContent = "";
-      const filtered = applyFilters10(this.rawData, this.state.filters);
-      this.structured = structureData2(filtered, this.settings, this.state.paramcd);
+      const qualifying = applyEventFilters(this.rawEvents, this.state.eventFilters);
+      const population = applyFilters10(this.rawPopulation, this.state.filters);
+      this.structured = structureData2(qualifying, population, this.settings);
       this.updateNotes();
       if (!this.structured.total) {
-        this.mainAnnotation.textContent = "No usable time-to-event records for the current selection.";
+        this.mainAnnotation.textContent = "No usable time-to-event observations for the current selection.";
         return;
       }
       this.mainAnnotation.textContent = "Click an event step to select its participants.";
       this.drawChart();
     }
     /**
-     * The status line above the chart: the endpoint, the population, the event
-     * accounting, the estimator honesty note (TTE-GUIDE-001), and the counted +
-     * exportable drops (TTE-DATA-002).
+     * The composed endpoint's filter summary: what qualifies an event right now.
+     * @private
+     */
+    filterSummary() {
+      const active = this.eventFilterSpecs().map((filter) => {
+        const selected = this.state.eventFilters[filter.value_col];
+        if (selected == null) return null;
+        const total = unique10(
+          this.rawEvents.map((row) => row[filter.value_col]).filter((v) => v !== void 0)
+        ).length;
+        return `${filter.label}: ${selected.length} of ${total} values`;
+      }).filter(Boolean);
+      return active.length ? `Qualifying events \u2014 ${active.join("; ")}.` : "All recorded events qualify.";
+    }
+    /**
+     * The status line above the chart: the composed endpoint and its filter
+     * state, the population, the event accounting, the estimator honesty note
+     * (TTE-GUIDE-001), and the counted + exportable drops for both datasets
+     * (TTE-DATA-002).
      * @private
      */
     updateNotes() {
       this.notes.innerHTML = "";
-      const { groups, total, droppedRows } = this.structured;
+      const { groups, total, droppedEvents, droppedPopulation } = this.structured;
       const events = groups.reduce(
         (sum, group) => sum + group.estimate.points.reduce((s, p) => s + p.events, 0),
         0
@@ -32388,40 +32510,50 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
         createElement(
           "span",
           null,
-          `${this.paramLabel()}: ${total} participant${total === 1 ? "" : "s"} in ${groups.length} group${groups.length === 1 ? "" : "s"}; ${events} event${events === 1 ? "" : "s"}, ${total - events} censored.`
+          `${this.settings.endpoint_label}: ${total} participant${total === 1 ? "" : "s"} in ${groups.length} group${groups.length === 1 ? "" : "s"}; ${events} event${events === 1 ? "" : "s"}, ${total - events} censored.`
         )
       );
+      this.notes.append(createElement("span", null, this.filterSummary()));
       this.notes.append(
         createElement(
           "span",
           null,
-          "Bands are pointwise 95% CIs (Greenwood, log-log) \u2014 not simultaneous. 1 \u2212 KM can overestimate absolute risk when competing events (death, discontinuation) are present; see the clinical guide."
+          "Time to first qualifying event, censored at end of follow-up. Bands are pointwise 95% CIs (Greenwood, log-log) \u2014 not simultaneous. 1 \u2212 KM can overestimate absolute risk when competing events (death, discontinuation) are present; see the clinical guide."
         )
       );
-      if (droppedRows.length) {
-        const note = createElement("span", "sv-warning");
-        note.append(
-          document.createTextNode(
-            `${droppedRows.length} unusable row${droppedRows.length === 1 ? "" : "s"} removed. `
-          ),
-          csvDownloadLink(
-            () => toCsv(droppedRows, this.droppedRowColumns()),
-            "time-to-event-dropped-records",
-            "Download records"
-          )
-        );
-        this.notes.append(note);
-      }
+      this.appendDropNote(droppedEvents, "unusable event row", "time-to-event-dropped-events");
+      this.appendDropNote(
+        droppedPopulation,
+        "excluded participant row",
+        "time-to-event-excluded-participants"
+      );
     }
     /**
-     * The dropped-row export's columns: the reason first, then the source columns.
+     * Append one dataset's counted-drop note with its CSV export link.
      * @private
      */
-    droppedRowColumns() {
-      if (!this.structured.droppedRows.length) return [];
-      const source = Object.keys(this.structured.droppedRows[0]).filter(
-        (column) => column !== DROP_REASON_COLUMN2
+    appendDropNote(droppedRows, noun, filename) {
+      if (!droppedRows.length) return;
+      const note = createElement("span", "sv-warning");
+      note.append(
+        document.createTextNode(
+          `${droppedRows.length} ${noun}${droppedRows.length === 1 ? "" : "s"}. `
+        ),
+        csvDownloadLink(
+          () => toCsv(droppedRows, this.droppedRowColumns(droppedRows)),
+          filename,
+          "Download records"
+        )
       );
+      this.notes.append(note);
+    }
+    /**
+     * A dropped-row export's columns: the reason first, then the source columns.
+     * @private
+     */
+    droppedRowColumns(droppedRows) {
+      if (!droppedRows.length) return [];
+      const source = Object.keys(droppedRows[0]).filter((column) => column !== DROP_REASON_COLUMN2);
       return [DROP_REASON_COLUMN2, ...source];
     }
     /**
@@ -32495,6 +32627,13 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
         options: {
           maintainAspectRatio: false,
           responsive: true,
+          // No intro animation: the transition frames would pair an interpolated
+          // step line with a confidence band and risk table already drawn at
+          // their final geometry — transient states that are not estimates of
+          // anything (the sv#131 review's "line moves, but CI is pre-rendered").
+          // Every re-render — and the live filters re-render constantly — shows
+          // one truthful frame instead.
+          animation: false,
           layout: { padding: { top: 6, right: 12, bottom: riskTableHeight(groups.length) } },
           interaction: { mode: "nearest", intersect: true },
           plugins: {
