@@ -142,6 +142,14 @@ Released — until its entry on the
 - [ ] **API reference**: JSDoc on the whole public surface —
       `npm run docs:api` fails on gaps — plus the schema-derived data
       contract.
+- [ ] **R widget**: the renderer's `gsm.safety` widget is delivered — or its
+      delivery is a **filed, milestoned requirement** on the hub, named in the
+      renderer's own requirement from the start (@jwildfire, 2026-08-15:
+      "Every renderer gets an R widget"; hub
+      [obot.roadmap#164](https://github.com/jwildfire/obot.roadmap/issues/164)).
+      An informal "widget follows later" does not satisfy this pillar;
+      gsm.safety's `safety-viz-parity` CI enforces it against every release,
+      with `.github/parity-allowlist.yaml` there holding the cited deferrals.
 
 `npm run site` must build clean (it validates internal links and screenshot
 references), and the renderer's requirement moves to Released on the hub board
