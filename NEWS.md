@@ -8,7 +8,11 @@ from the section here when the release-candidate PR (dev -> main) merges and is 
 
 # safety.viz v1.8.0 (Upcoming)
 
-Nothing yet — merged-but-unreleased work lands here.
+Nothing user-facing yet.
+
+## Also in this release
+
+- The renderer done-gate gains a fourth pillar — a renderer is not done until its `gsm.safety` R widget is delivered or filed as a milestoned requirement ([#132](https://github.com/jwildfire/safety.viz/pull/132), rule: [obot.roadmap#164](https://github.com/jwildfire/obot.roadmap/issues/164)). Contributor-facing; no change to any chart.
 
 # safety.viz v1.7.0
 
