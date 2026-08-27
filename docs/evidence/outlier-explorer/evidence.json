@@ -1,6 +1,6 @@
 {
   "module": "outlier-explorer",
-  "generatedAt": "2026-08-27T04:11:50.817Z",
+  "generatedAt": "2026-08-27T04:17:23.184Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.2",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "33038622664",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/33038622664"
+    "id": "33038928755",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/33038928755"
   },
   "records": [
     {
@@ -1216,6 +1216,46 @@
       "screenshots": []
     },
     {
+      "test": "outlier-explorer: the measures whitelist SOE-MEAS-001: a whitelist offers exactly the listed measures, in the listed order (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-MEAS-001"],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer: the measures whitelist SOE-MEAS-001: no whitelist offers every measure in the data, alphabetically (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-MEAS-001"],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer: the measures whitelist SOE-MEAS-001: setSettings re-resolves the control against the new whitelist (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-MEAS-001"],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer: the measures whitelist SOE-MEAS-002: a configured measure absent from the data is dropped with a warning (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-MEAS-002"],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer: the measures whitelist SOE-MEAS-002: a whitelist matching nothing falls back to every measure (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-MEAS-002"],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
       "test": "renderGuidePage: composition renders a sticky TOC sidebar whose links anchor to the heading ids",
       "suite": "unit",
       "status": "pass",
@@ -1293,6 +1333,14 @@
       "status": "pass",
       "requirementIds": ["PPRF-RAIL-001"],
       "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "repo hygiene no source or test file carries a machine-specific absolute path (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
       "screenshots": []
     },
     {
