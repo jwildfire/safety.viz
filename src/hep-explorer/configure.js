@@ -96,6 +96,9 @@ export { MEASURE_KEYS, cutFor } from '../hep-core/rows.js';
  * @property {string} [baseline_value='Y'] The value of baseline_col that marks the baseline record (HEP-CORE-003).
  * @property {number} [jaundice_uln=2] New-onset-jaundice threshold on the total-bilirubin ×ULN scale: flagged when baseline is at or below it and the on-treatment maximum exceeds it. Defaults to the composite plot's bilirubin cutpoint so the flag and the quadrants stay mutually consistent (HEP-CORE-006).
  * @property {boolean} [hide_unchanged=false] Migration view: suppress the diagonal (no-migration) ribbons; the hidden participant count stays in the notes and the cross tables (HEP-MIG-013).
+ * @property {boolean} [unscheduled_visits=true] Include records taken at an unscheduled visit — matched by unscheduled_visit_values, else by unscheduled_visit_pattern, against visit_col — in the baseline and peak reduction. Defaults to TRUE, diverging deliberately from results-over-time's `false`: an unscheduled draw in a hepatic study is often the draw a suspected injury prompted, so excluding it by default would hide the very peak that caused the visit. Turning it off re-derives every baseline and peak from the scheduled records alone, and a participant left with no retained record leaves the chart (HEP-CTRL-018, HEP-DATA-013).
+ * @property {string} [unscheduled_visit_pattern='/unscheduled|early termination/i'] Regular expression, in /source/flags string form, identifying an unscheduled visit; parity with results-over-time's setting of the same name (HEP-DATA-013).
+ * @property {?Array<string>} [unscheduled_visit_values=null] Explicit list of unscheduled visit names; takes precedence over unscheduled_visit_pattern when set (HEP-DATA-013).
  * @property {Object} [measure_values] Map of the short measure key (ALT/AST/TB/ALP) to the full TEST string in the data; controls present the short keys but resolve rows via these strings (HEP-DATA-002).
  * @property {string} [x_default='ALT'] Measure plotted on the x-axis on first render (HEP-CTRL-001).
  * @property {string} [y_default='TB'] Measure plotted on the y-axis on first render (HEP-CTRL-002).
@@ -155,6 +158,9 @@ export const DEFAULT_SETTINGS = {
   // jaundice flag and a Cholestasis/Hy's-Law classification can never disagree.
   jaundice_uln: 2,
   hide_unchanged: false,
+  unscheduled_visits: true,
+  unscheduled_visit_pattern: '/unscheduled|early termination/i',
+  unscheduled_visit_values: null,
   measure_values: {
     ALT: 'Aminotransferase, alanine (ALT)',
     AST: 'Aminotransferase, aspartate (AST)',

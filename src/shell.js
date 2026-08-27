@@ -151,6 +151,9 @@ const SHELL_STYLES = `
 .sv-control-row{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
 .sv-control-row .sv-control{margin:0}
 .sv-control-inline{display:flex;align-items:center;gap:.4rem;font-size:.85rem}
+.sv-reset{width:100%;margin-top:.75rem;padding:.35rem .45rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.82rem;cursor:pointer}
+.sv-reset:hover{border-color:#8f9aa8;background:#f6f8fa}
+.sv-reset:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
 .sv-main{flex:1 1 auto;min-width:0}
 .sv-notes{display:flex;flex-wrap:wrap;gap:.25rem 1.25rem;font-size:.85rem;color:#52616f;margin:0 0 .6rem}
 .sv-warning{color:#9a3412}
@@ -321,10 +324,15 @@ export function renderShell(element, { moduleClass = '', onToggle } = {}) {
 /**
  * Control-builder helpers bound to a shell's controls container. Signatures
  * match how modules build controls: sections group related controls under a
- * heading, rows place two controls side by side, and addControl wraps a
- * labeled input (into the controls container by default).
+ * heading, rows place two controls side by side, addControl wraps a labeled
+ * input (into the controls container by default), and addReset appends the
+ * full-width "Reset chart" button at the foot of the sidebar, below every
+ * section. The reset builder exists because nine issues across seven of the
+ * legacy trackers asked for a way back to the starting view, and the four
+ * hand-rolled reset buttons already in the library had drifted into four
+ * different shapes (#136, obot.roadmap#33).
  * @param {HTMLElement} controls The shell's controls container.
- * @returns {{addSection: Function, addRow: Function, addControl: Function}} The bound helpers.
+ * @returns {{addSection: Function, addRow: Function, addControl: Function, addReset: Function}} The bound helpers.
  */
 export function controlBuilders(controls) {
   return {
@@ -345,6 +353,13 @@ export function controlBuilders(controls) {
       wrap.append(lab, input);
       parent.append(wrap);
       return input;
+    },
+    addReset(onReset, label = 'Reset chart') {
+      const button = createElement('button', 'sv-reset', label);
+      button.type = 'button';
+      button.onclick = onReset;
+      controls.append(button);
+      return button;
     }
   };
 }

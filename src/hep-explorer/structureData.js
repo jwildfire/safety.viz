@@ -30,6 +30,7 @@ import {
   computeRRatio,
   participantMeasureSeries,
   measureSummary,
+  partitionUnscheduledRows,
   displayField,
   dayThenIndex
 } from '../hep-core/rows.js';
@@ -69,7 +70,8 @@ export {
   participantPeak,
   computeRRatio,
   participantMeasureSeries,
-  measureSummary
+  measureSummary,
+  partitionUnscheduledRows
 };
 
 /**

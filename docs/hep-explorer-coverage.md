@@ -90,6 +90,7 @@ pending; each row lists the module IDs its test covers.
 | HEP-ACC-001/002/003 (ribbon role/name/keys, svg role and summary)                          | —                                                      | #92   | `migration-view.test.js`    |
 | HEP-DOC-001 (the Clinical guide links its R / nR primary sources)                          | —                                                      | #54   | `guide.test.js`             |
 | HEP-FILT-001..004 (shared filter contract)                                                 | HEP-FILT-001, HEP-FILT-002, HEP-FILT-003, HEP-FILT-004 | #136  | `../shared/filters.test.js` |
+| HEP-CTRL-018, HEP-DATA-013 (unscheduled visits)                                            | HEP-CTRL-018, HEP-DATA-013                             | #136  | `unscheduled.test.js`       |
 
 ## Source-matrix routing status
 
