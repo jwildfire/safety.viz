@@ -18,6 +18,7 @@
  * @property {Array<string|Object>} [groups=[]] Group-by options for the small-multiple charts; a "None" option is always offered first.
  * @property {?Array<string|Object>} [details=null] Columns for the linked participant listing; when null, defaults to participant ID, the filter columns, result, normal limits, and unit.
  * @property {?string} [start_value=null] Measure selected on first render. When null (the default) the histogram opens on the all-measures overview — one small-multiple histogram per measure, click one to drill in. A measure absent from the data falls back to the overview with a console warning.
+ * @property {?string[]} [measures=null] Ordered whitelist of measures the Measure control offers: only these appear, and in this order. Entries match the label the control shows (the measure name with its unit appended where `unit_col` is mapped), falling back to the bare `measure_col` value, which picks up every unit variant of that measure. null or [] offers every measure in the data, alphabetically — the behaviour before this setting existed. Configured measures absent from the data are dropped with a console warning; when none of them is present the control falls back to every measure in the data rather than going blank (SH-MEAS-001, SH-MEAS-002).
  * @property {string} [bin_algorithm="Scott's normal reference rule"] Binning algorithm applied on first render; one of the ALGORITHMS options. Setting an explicit bin quantity or width in the UI switches it to "Custom".
  * @property {boolean} [normal_range=true] Offer the Show Normal Range control (visible only for measures with normal-range data).
  * @property {boolean} [display_normal_range=false] Draw the normal-range overlay on first render. The pilot's camelCase alias displayNormalRange is still honored.
@@ -53,6 +54,7 @@ export const DEFAULT_SETTINGS = {
   groups: [],
   details: null,
   start_value: null,
+  measures: null,
   bin_algorithm: "Scott's normal reference rule",
   normal_range: true,
   display_normal_range: false,
@@ -115,6 +117,8 @@ export function fieldSpec(value, fallbackLabel) {
  */
 export function syncSettings(settings) {
   const synced = { ...DEFAULT_SETTINGS, ...settings };
+
+  synced.measures = arrayify(synced.measures);
   synced.filters = arrayify(synced.filters)
     .map(fieldSpec)
     .filter((d) => d.value_col);

@@ -5,8 +5,11 @@
 // pure functions so the delta math is unit-testable against hand-computed
 // fixtures.
 
+import { presentMeasures, resolveMeasureList } from '../measure-list.js';
+
 // Visit-role colors reused by the sparkline (SDD-REG-023): filled blue for
 // baseline visits, filled orange for comparison visits, empty gray otherwise.
+
 export const BASELINE_COLOR = '#2563eb';
 export const COMPARISON_COLOR = '#ea580c';
 export const OTHER_COLOR = '#9ca3af';
@@ -41,9 +44,14 @@ export function cleanData(rawData, settings) {
   return { rows, removed };
 }
 
-// Sorted distinct measure names present in the cleaned data (SDD-CFG-004).
+// The measures the X and Y pickers offer (SDD-CFG-004, SDD-MEAS-001/002): the
+// configured `measures` whitelist in its own order, or every measure in the
+// cleaned data alphabetically when it is unset.
 export function getMeasures(rows, settings) {
-  return unique(rows.map((row) => row[settings.measure_col])).sort();
+  return resolveMeasureList(
+    presentMeasures(rows, settings, (row) => row[settings.measure_col]),
+    settings.measures
+  );
 }
 
 // Distinct visit labels ordered by the numeric visit column when present,

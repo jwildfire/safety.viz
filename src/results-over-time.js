@@ -18,6 +18,7 @@ import {
 } from 'chart.js';
 
 import { controlBuilders, createElement, option, renderShell } from './shell.js';
+import { presentMeasures, resolveMeasureList } from './measure-list.js';
 import { applyLimitEdit, clearAxisLimits, seedLimitInput, syncAxisLimits } from './axis-limits.js';
 import { Y_SCALES, syncSettings } from './results-over-time/configure.js';
 import { checkInputs } from './results-over-time/checkInputs.js';
@@ -73,6 +74,7 @@ class SafetyResultsOverTime {
     this.settings = syncSettings(settings);
     this.rawData = [];
     this.cleanData = [];
+    this.availableMeasures = [];
     this.filteredData = [];
     this.charts = [];
     this.boxSpecs = [];
@@ -176,6 +178,10 @@ class SafetyResultsOverTime {
     this.removedRecords = removed;
     if (removed) console.warn(`${removed} missing or non-numeric results have been removed.`);
     this.allVisits = computeVisitOrder(this.cleanData, this.settings);
+    this.availableMeasures = resolveMeasureList(
+      presentMeasures(this.cleanData, this.settings, measureLabel),
+      this.settings.measures
+    );
     const measures = this.measures();
     if (this.state.measure && !measures.includes(this.state.measure)) {
       console.warn(
@@ -186,11 +192,13 @@ class SafetyResultsOverTime {
   }
 
   /**
-   * Sorted distinct measure labels present in the cleaned data.
+   * The measure labels the Measure control offers: the configured `measures`
+   * whitelist in its own order, or every measure in the cleaned data
+   * alphabetically when it is unset (#136).
    * @private
    */
   measures() {
-    return unique(this.cleanData.map((row) => measureLabel(row, this.settings))).sort();
+    return this.availableMeasures;
   }
 
   /**

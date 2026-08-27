@@ -19,6 +19,7 @@
  * @property {string} [visitn_col='VISITNUM'] Numeric visit column used to order the visit selectors and the linked-table sparklines; ignored when absent (SDD-CFG-008).
  * @property {?string} [measure_x=null] Measure plotted on the x-axis; falls back to the first measure in the data when absent (SDD-CFG-009, SDD-CFG-010).
  * @property {?string} [measure_y=null] Measure plotted on the y-axis; falls back to the second measure in the data when absent (SDD-CFG-011).
+ * @property {?string[]} [measures=null] Ordered whitelist of measures the X and Y pickers offer: only these appear, and in this order, and the default X/Y selections become its first two entries. null or [] offers every measure in the data, alphabetically — the behaviour before this setting existed. Configured measures absent from the data are dropped with a console warning; when none of them is present the pickers fall back to every measure in the data (SDD-MEAS-001, SDD-MEAS-002).
  * @property {string[]} [baseline_visits=[]] Baseline visit(s); multiple selected visits are averaged. Falls back to the first visit in the data (SDD-CFG-012, SDD-FUNC-001).
  * @property {string[]} [comparison_visits=[]] Comparison visit(s); multiple selected visits are averaged. Falls back to the last visit in the data (SDD-CFG-013, SDD-FUNC-001).
  * @property {boolean} [add_regression_line=true] Draw a simple linear regression line with an equation and R² note on first render (SDD-REG-026).
@@ -49,6 +50,7 @@ export const DEFAULT_SETTINGS = {
   visitn_col: 'VISITNUM',
   measure_x: null,
   measure_y: null,
+  measures: null,
   baseline_visits: [],
   comparison_visits: [],
   add_regression_line: true,
@@ -94,6 +96,8 @@ export function fieldSpec(value, fallbackLabel) {
  */
 export function syncSettings(settings) {
   const synced = { ...DEFAULT_SETTINGS, ...settings };
+
+  synced.measures = arrayify(synced.measures);
   synced.filters = arrayify(synced.filters)
     .map((filter) => fieldSpec(filter))
     .filter((filter) => filter.value_col);

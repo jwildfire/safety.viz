@@ -39,20 +39,21 @@ matching its behavior, under
 
 ## Unit evidence (Vitest — `tests/unit/outlier-explorer/`)
 
-| Requirement ID                       | Source matrix rows                                              | Issue | Test file               |
-| ------------------------------------ | --------------------------------------------------------------- | ----- | ----------------------- |
-| SOE-CFG-004/005/006/013/014          | SOE-CFG-004, SOE-CFG-005, SOE-CFG-006, SOE-CFG-013, SOE-CFG-014 | #24   | `configure.test.js`     |
-| SOE-CFG-007/008/009 (defaults)       | SOE-CFG-007, SOE-CFG-008, SOE-CFG-009                           | #24   | `configure.test.js`     |
-| SOE-FUNC-004/SOE-REG-048             | SOE-FUNC-004, SOE-REG-048                                       | #24   | `configure.test.js`     |
-| SOE-REG-037/038, SOE-REG-029/031     | SOE-REG-037, SOE-REG-038, SOE-REG-029, SOE-REG-031              | #24   | `structureData.test.js` |
-| SOE-FUNC-004/SOE-REG-028 (axis)      | SOE-FUNC-004, SOE-REG-028                                       | #24   | `structureData.test.js` |
-| SOE-FUNC-007/SOE-CFG-007/008 (stats) | SOE-FUNC-007, SOE-CFG-007, SOE-CFG-008, SOE-REG-025             | #24   | `structureData.test.js` |
-| SOE-FUNC-005/006, SOE-REG-004/033    | SOE-FUNC-005, SOE-FUNC-006, SOE-REG-004, SOE-REG-033            | #24   | `getScales.test.js`     |
-| SOE-REG-028 (x-scale)                | SOE-REG-028                                                     | #24   | `getScales.test.js`     |
-| SOE-REG-011/049, SOE-CFG-006         | SOE-REG-011, SOE-REG-049, SOE-CFG-006                           | #24   | `getPlugins.test.js`    |
-| SOE-DATA-001/003 (schema)            | SOE-DATA-001, SOE-DATA-003                                      | #24   | `checkInputs.test.js`   |
-| SOE-API-001 (module export)          | —                                                               | #24   | `export.test.js`        |
-| SOE-AXIS-001/002/003/004             | SOE-AXIS-001, SOE-AXIS-002, SOE-AXIS-003, SOE-AXIS-004          | #85   | `axis-limits.test.js`   |
+| Requirement ID                        | Source matrix rows                                              | Issue | Test file               |
+| ------------------------------------- | --------------------------------------------------------------- | ----- | ----------------------- |
+| SOE-CFG-004/005/006/013/014           | SOE-CFG-004, SOE-CFG-005, SOE-CFG-006, SOE-CFG-013, SOE-CFG-014 | #24   | `configure.test.js`     |
+| SOE-CFG-007/008/009 (defaults)        | SOE-CFG-007, SOE-CFG-008, SOE-CFG-009                           | #24   | `configure.test.js`     |
+| SOE-FUNC-004/SOE-REG-048              | SOE-FUNC-004, SOE-REG-048                                       | #24   | `configure.test.js`     |
+| SOE-REG-037/038, SOE-REG-029/031      | SOE-REG-037, SOE-REG-038, SOE-REG-029, SOE-REG-031              | #24   | `structureData.test.js` |
+| SOE-FUNC-004/SOE-REG-028 (axis)       | SOE-FUNC-004, SOE-REG-028                                       | #24   | `structureData.test.js` |
+| SOE-FUNC-007/SOE-CFG-007/008 (stats)  | SOE-FUNC-007, SOE-CFG-007, SOE-CFG-008, SOE-REG-025             | #24   | `structureData.test.js` |
+| SOE-FUNC-005/006, SOE-REG-004/033     | SOE-FUNC-005, SOE-FUNC-006, SOE-REG-004, SOE-REG-033            | #24   | `getScales.test.js`     |
+| SOE-REG-028 (x-scale)                 | SOE-REG-028                                                     | #24   | `getScales.test.js`     |
+| SOE-REG-011/049, SOE-CFG-006          | SOE-REG-011, SOE-REG-049, SOE-CFG-006                           | #24   | `getPlugins.test.js`    |
+| SOE-DATA-001/003 (schema)             | SOE-DATA-001, SOE-DATA-003                                      | #24   | `checkInputs.test.js`   |
+| SOE-API-001 (module export)           | —                                                               | #24   | `export.test.js`        |
+| SOE-AXIS-001/002/003/004              | SOE-AXIS-001, SOE-AXIS-002, SOE-AXIS-003, SOE-AXIS-004          | #85   | `axis-limits.test.js`   |
+| SOE-MEAS-001/002 (measures whitelist) | SOE-MEAS-001, SOE-MEAS-002                                      | #136  | `measure-list.test.js`  |
 
 ## Source-matrix routing status
 

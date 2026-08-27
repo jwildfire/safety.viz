@@ -49,6 +49,8 @@
     "SDD-CFG-013": "Measure to be shown on the y-axis of the delta-delta plot",
     "SDD-CFG-014": "an array of variables and metadata that will appear in the controls as data filters",
     "SDD-CFG-015": "an array of variables and metadata that will appear in the data listing",
-    "SDD-API-001": "a factory to create a custom [Webcharts chart](https://github.com/RhoInc/Webcharts/wiki/Chart) object"
+    "SDD-API-001": "a factory to create a custom [Webcharts chart](https://github.com/RhoInc/Webcharts/wiki/Chart) object",
+    "SDD-MEAS-001": "The `measures` setting is an ordered whitelist: the X and Y Measure pickers offers exactly the listed measures, in the listed order. Entries match the label the control shows, falling back to the bare measure name. When the setting is unset the control offers every measure in the data, alphabetically.",
+    "SDD-MEAS-002": "A configured measure absent from the data is dropped from the X and Y Measure pickers with a console warning naming it; when none of the configured measures is present the control falls back to every measure in the data rather than rendering empty."
   }
 }

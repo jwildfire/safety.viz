@@ -40,6 +40,7 @@ export const NORMAL_RANGE_METHODS = ['None', 'LLN-ULN', 'Standard Deviation', 'Q
  * @property {number} [normal_range_quantile_high=0.95] Upper quantile for the Quantiles method (SOE-CFG-009).
  * @property {Array<string|Object>} [time_cols=[]] Time-axis options: { value_col, label, type: 'linear'|'ordinal', order_col } specs. When empty, a derived "Measurement" sequence axis is used. More than one option renders the X-axis toggle (SOE-FUNC-004).
  * @property {?string} [start_value=null] Measure selected on first render; falls back to the first measure (with a console warning) when absent from the data.
+ * @property {?string[]} [measures=null] Ordered whitelist of measures the Measure control offers: only these appear, and in this order. Entries match the label the control shows (the measure name with its unit appended where `unit_col` is mapped), falling back to the bare `measure_col` value, which picks up every unit variant of that measure. null or [] offers every measure in the data, alphabetically — the behaviour before this setting existed. Configured measures absent from the data are dropped with a console warning; when none of them is present the control falls back to every measure in the data rather than going blank (SOE-MEAS-001, SOE-MEAS-002).
  * @property {Array<string|Object>} [filters=[]] Filter controls: column names or { value_col, label, start } specs. A filter with a start value is initialized to it and offers no "All" option (SOE-REG-051..053).
  * @property {Array<string|Object>} [groups=[]] Color-by options; a "None" option is always offered first (SOE-REG-048).
  * @property {string} [group_by='oe_none'] Column the marks are colored by on first render; 'oe_none' disables grouping.
@@ -77,6 +78,7 @@ export const DEFAULT_SETTINGS = {
   normal_range_quantile_high: 0.95,
   time_cols: [],
   start_value: null,
+  measures: null,
   filters: [],
   groups: [],
   group_by: GROUP_NONE,
@@ -142,6 +144,8 @@ export function timeSpec(value) {
  */
 export function syncSettings(settings) {
   const synced = { ...DEFAULT_SETTINGS, ...settings };
+
+  synced.measures = arrayify(synced.measures);
 
   synced.filters = arrayify(synced.filters)
     .map((value) => fieldSpec(value))

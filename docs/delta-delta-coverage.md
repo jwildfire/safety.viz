@@ -36,22 +36,23 @@ measurement at a visit) to one point per participant: **change in measure X**
 
 ## Unit evidence (Vitest — `tests/unit/delta-delta/`)
 
-| Requirement ID                     | Source matrix rows                                              | Issue | Test file               |
-| ---------------------------------- | --------------------------------------------------------------- | ----- | ----------------------- |
-| SDD-CFG-004..008                   | SDD-CFG-004, SDD-CFG-005, SDD-CFG-006, SDD-CFG-007, SDD-CFG-008 | #25   | `configure.test.js`     |
-| SDD-CFG-009..013                   | SDD-CFG-009, SDD-CFG-010, SDD-CFG-011, SDD-CFG-012, SDD-CFG-013 | #25   | `configure.test.js`     |
-| SDD-CFG-014/SDD-CFG-015            | SDD-CFG-014, SDD-CFG-015                                        | #25   | `configure.test.js`     |
-| SDD-REG-003 (delta math)           | SDD-REG-003                                                     | #25   | `structureData.test.js` |
-| SDD-FUNC-001/SDD-REG-004 (average) | SDD-FUNC-001, SDD-REG-004                                       | #25   | `structureData.test.js` |
-| SDD-REG-008 (removal)              | SDD-REG-008                                                     | #25   | `structureData.test.js` |
-| SDD-REG-019/022/023/025            | SDD-REG-019, SDD-REG-022, SDD-REG-023, SDD-REG-025              | #25   | `structureData.test.js` |
-| SDD-REG-006 (filters)              | SDD-REG-006                                                     | #25   | `structureData.test.js` |
-| SDD-REG-021/022 (format/color)     | SDD-REG-021, SDD-REG-022                                        | #25   | `getScales.test.js`     |
-| SDD-REG-015 (axis padding)         | SDD-REG-015                                                     | #25   | `getScales.test.js`     |
-| SDD-REG-026 (regression)           | SDD-REG-026                                                     | #25   | `getPlugins.test.js`    |
-| SDD-FUNC-004 (count text)          | SDD-FUNC-004                                                    | #25   | `getPlugins.test.js`    |
-| SDD-REG-012 (selection)            | SDD-REG-012                                                     | #25   | `getPlugins.test.js`    |
-| SDD-DATA-001/SDD-REG-010 (guard)   | SDD-DATA-001, SDD-REG-010                                       | #25   | `checkInputs.test.js`   |
+| Requirement ID                        | Source matrix rows                                              | Issue | Test file               |
+| ------------------------------------- | --------------------------------------------------------------- | ----- | ----------------------- |
+| SDD-CFG-004..008                      | SDD-CFG-004, SDD-CFG-005, SDD-CFG-006, SDD-CFG-007, SDD-CFG-008 | #25   | `configure.test.js`     |
+| SDD-CFG-009..013                      | SDD-CFG-009, SDD-CFG-010, SDD-CFG-011, SDD-CFG-012, SDD-CFG-013 | #25   | `configure.test.js`     |
+| SDD-CFG-014/SDD-CFG-015               | SDD-CFG-014, SDD-CFG-015                                        | #25   | `configure.test.js`     |
+| SDD-REG-003 (delta math)              | SDD-REG-003                                                     | #25   | `structureData.test.js` |
+| SDD-FUNC-001/SDD-REG-004 (average)    | SDD-FUNC-001, SDD-REG-004                                       | #25   | `structureData.test.js` |
+| SDD-REG-008 (removal)                 | SDD-REG-008                                                     | #25   | `structureData.test.js` |
+| SDD-REG-019/022/023/025               | SDD-REG-019, SDD-REG-022, SDD-REG-023, SDD-REG-025              | #25   | `structureData.test.js` |
+| SDD-REG-006 (filters)                 | SDD-REG-006                                                     | #25   | `structureData.test.js` |
+| SDD-REG-021/022 (format/color)        | SDD-REG-021, SDD-REG-022                                        | #25   | `getScales.test.js`     |
+| SDD-REG-015 (axis padding)            | SDD-REG-015                                                     | #25   | `getScales.test.js`     |
+| SDD-REG-026 (regression)              | SDD-REG-026                                                     | #25   | `getPlugins.test.js`    |
+| SDD-FUNC-004 (count text)             | SDD-FUNC-004                                                    | #25   | `getPlugins.test.js`    |
+| SDD-REG-012 (selection)               | SDD-REG-012                                                     | #25   | `getPlugins.test.js`    |
+| SDD-DATA-001/SDD-REG-010 (guard)      | SDD-DATA-001, SDD-REG-010                                       | #25   | `checkInputs.test.js`   |
+| SDD-MEAS-001/002 (measures whitelist) | SDD-MEAS-001, SDD-MEAS-002                                      | #136  | `measure-list.test.js`  |
 
 ## Railed participant profile (#99, PPRF-12)
 

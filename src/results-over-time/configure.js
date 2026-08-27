@@ -20,6 +20,7 @@
  * @property {Array<string|Object>} [filters=[]] Filter controls: column names or { value_col, label } specs. Filters whose column is absent from the data are dropped with a console warning.
  * @property {Array<string|Object>} [groups=[]] Group-by options; a "None" option is always offered first. The selected group splits each visit into side-by-side box plots.
  * @property {?string} [start_value=null] Measure selected on first render; falls back to the first measure (with a console warning) when absent from the data.
+ * @property {?string[]} [measures=null] Ordered whitelist of measures the Measure control offers: only these appear, and in this order. Entries match the label the control shows (the measure name with its unit appended where `unit_col` is mapped), falling back to the bare `measure_col` value, which picks up every unit variant of that measure. null or [] offers every measure in the data, alphabetically — the behaviour before this setting existed. Configured measures absent from the data are dropped with a console warning; when none of them is present the control falls back to every measure in the data rather than going blank (SROT-MEAS-001, SROT-MEAS-002).
  * @property {string} [group_by='srot_none'] Column the box plots are grouped by on first render; 'srot_none' disables grouping. Unknown columns are added to the group options as-is.
  * @property {boolean} [boxplots=true] Draw the box-and-whisker marks on first render.
  * @property {boolean} [outliers=true] Overlay the results outside the 5th/95th percentiles as outlier points on first render.
@@ -48,6 +49,7 @@ export const DEFAULT_SETTINGS = {
   filters: [],
   groups: [],
   start_value: null,
+  measures: null,
   group_by: 'srot_none',
   boxplots: true,
   outliers: true,
@@ -94,6 +96,8 @@ export function fieldSpec(value, fallbackLabel) {
  */
 export function syncSettings(settings) {
   const synced = { ...DEFAULT_SETTINGS, ...settings };
+
+  synced.measures = arrayify(synced.measures);
   synced.filters = arrayify(synced.filters)
     .map((value) => fieldSpec(value))
     .filter((spec) => spec.value_col);
