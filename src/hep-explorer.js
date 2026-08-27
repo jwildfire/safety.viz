@@ -55,6 +55,7 @@ import {
   assignSequence,
   cleanData,
   deriveBaseline,
+  partitionUnscheduledRows,
   maxRRatio,
   unique,
   visitPathSeries
@@ -64,6 +65,7 @@ import { clearAxisLimits } from './axis-limits.js';
 import { CLINICAL_CAUTION } from './hep-explorer/getPlugins.js';
 import { imputeBelowLloq } from './hep-explorer/imputation.js';
 import { availableDisplays } from './hep-explorer/availability.js';
+import { hasUnscheduledVisits } from './unscheduled-visits.js';
 import { profileRail } from './participant-profile.js';
 import { TRACE_HEADER_HINT, createSelection } from './hep-explorer/selection.js';
 import { applyModuleStyles } from './hep-explorer/styles.js';
@@ -71,6 +73,7 @@ import scatterView from './hep-explorer/views/scatter.js';
 import migrationView from './hep-explorer/views/migration.js';
 import compositeView from './hep-explorer/views/composite.js';
 import { renderListing } from './histogram/listing.js';
+import { initFilterState, renderFilterControl } from './filters.js';
 
 Chart.register(
   ScatterController,
@@ -122,6 +125,8 @@ class SafetyHepExplorer {
     this.settings = syncSettings(settings);
     this.rawData = [];
     this.cleanRows = [];
+    this.unscheduledRecords = 0;
+    this.hasUnscheduled = false;
     this.removedRecords = 0;
     this.droppedParticipants = 0;
     this.droppedRows = [];
@@ -210,13 +215,17 @@ class SafetyHepExplorer {
       quadrantLabels: this.settings.quadrant_labels,
       visitWindow: this.settings.visit_window,
       groupBy: this.settings.group_by,
-      filters: {},
+      filters: initFilterState(this.settings.filters),
       rRatio: [...this.settings.r_ratio],
       cuts: JSON.parse(JSON.stringify(this.settings.cuts)),
       // Migration-view controls (HEP-MIG-013, HEP-ARM-003): suppress the
       // no-migration diagonal, and narrow the right-hand side to one active arm.
       hideUnchanged: this.settings.hide_unchanged,
       activeArms: this.settings.active_arms,
+      // Unscheduled-visit inclusion (HEP-CTRL-018). Unlike results-over-time's
+      // display-only toggle, turning this off RE-DERIVES every baseline and
+      // peak from the scheduled records alone, so it re-runs the clean pass.
+      unscheduledVisits: this.settings.unscheduled_visits,
       // Study-day playback (HEP-ANIM-*): the day the cloud is positioned on
       // (null = the static peak-vs-peak scatter), and whether the play-through
       // is running. Lives on state — not on the view — because the quadrant
@@ -511,6 +520,8 @@ class SafetyHepExplorer {
     if ('group_by' in settings) this.state.groupBy = this.settings.group_by;
     if ('cuts' in settings) this.state.cuts = JSON.parse(JSON.stringify(this.settings.cuts));
     if ('r_ratio' in settings) this.state.rRatio = [...this.settings.r_ratio];
+    if ('unscheduled_visits' in settings)
+      this.state.unscheduledVisits = this.settings.unscheduled_visits;
     if ('details' in settings) this.profileDetails = this.settings.details;
     this.state.filters = {};
     if (this.rawData.length) this.validateAndCleanData();
@@ -541,20 +552,32 @@ class SafetyHepExplorer {
     this.droppedRows = [...dropped, ...imputation.dropped];
     this.imputedRecords = imputation.imputed;
     this.imputationLimits = imputation.limits;
-    deriveBaseline(imputation.rows, this.settings);
+    // Unscheduled-visit exclusion (HEP-DATA-013) runs AFTER imputation — so the
+    // drop-reason export and the data-driven LLOQ limits still describe the
+    // whole dataset the user supplied — and BEFORE the baseline is derived,
+    // because the baseline is day-0-else-earliest: a retained unscheduled
+    // record would otherwise anchor a ×Baseline column the reader has asked the
+    // chart to ignore. SafetyGraphics/hep-explorer#229.
+    const partition = partitionUnscheduledRows(imputation.rows, this.settings);
+    const retained = this.state.unscheduledVisits ? imputation.rows : partition.scheduled;
+    this.unscheduledRecords = this.state.unscheduledVisits ? 0 : partition.unscheduled.length;
+    this.hasUnscheduled =
+      partition.unscheduled.length > 0 ||
+      hasUnscheduledVisits(imputation.rows, this.settings.visit_col, this.settings);
+    deriveBaseline(retained, this.settings);
     // Number each participant × measure record in input order, the timing
     // fallback used when the data carries no usable study day (HEP-DATA-004).
-    assignSequence(imputation.rows, this.settings);
-    this.cleanRows = imputation.rows;
+    assignSequence(retained, this.settings);
+    this.cleanRows = retained;
     this.removedRecords = removed + imputation.dropped.length;
     // Precompute the data-derived R-Ratio maximum so the R-Ratio range filter's
     // max input seeds correctly on the first buildControls, before render()
     // populates this.allPoints (HEP-CTRL-010).
-    this.rRatioMax = maxRRatio(imputation.rows, this.settings);
+    this.rRatioMax = maxRRatio(retained, this.settings);
     // A display the data cannot support is withdrawn rather than left to draw
     // an empty plot, and a state already pointing at it falls back to one that
     // works (HEP-DISPLAY-006).
-    this.displayAvailability = availableDisplays(imputation.rows);
+    this.displayAvailability = availableDisplays(retained);
     if (
       this.displayAvailability.modes.length &&
       !this.displayAvailability.modes.includes(this.state.display)
@@ -671,6 +694,29 @@ class SafetyHepExplorer {
     // scatter; none for the composite plot).
     view.contributeControls(this, { addSection, addRow, addControl, settingsParent });
 
+    // Unscheduled visits (HEP-CTRL-018) — shared across every view, because it
+    // changes the row set they all reduce from. Rendered only when the data
+    // actually carries an unscheduled visit, so an unmapped or absent visit
+    // column leaves the panel exactly as it was.
+    if (this.hasUnscheduled) {
+      const unscheduled = addControl(
+        'Unscheduled visits',
+        document.createElement('input'),
+        settingsParent
+      );
+      unscheduled.type = 'checkbox';
+      unscheduled.className = 'hep-unscheduled-visits';
+      unscheduled.checked = Boolean(this.state.unscheduledVisits);
+      unscheduled.onchange = () => {
+        this.state.unscheduledVisits = unscheduled.checked;
+        // Baselines and peaks are derived from the row set, so this re-runs the
+        // whole clean pass rather than only redrawing.
+        this.validateAndCleanData();
+        this.buildControls();
+        this.render();
+      };
+    }
+
     // Group / color-by — dropped when only the None option (HEP-CTRL-009). In
     // the composite view this drives the by-arm concern/benefit summary.
     if (this.settings.groups.length > 1) {
@@ -691,22 +737,20 @@ class SafetyHepExplorer {
     if (filterSpecs.length || showRRatio) {
       const filterParent = addSection('Filters');
       filterSpecs.forEach((filter) => {
-        const select = addControl(filter.label, document.createElement('select'), filterParent);
-        option(select, '__all__', 'All', !this.state.filters[filter.value_col]);
-        unique(this.cleanRows.map((row) => row[filter.value_col]))
-          .sort()
-          .forEach((value) =>
-            option(
-              select,
-              value,
-              value,
-              String(this.state.filters[filter.value_col]) === String(value)
-            )
-          );
-        select.onchange = () => {
-          this.state.filters[filter.value_col] = select.value === '__all__' ? null : select.value;
-          this.render();
-        };
+        const values = unique(this.cleanRows.map((row) => row[filter.value_col])).sort();
+        addControl(
+          filter.label,
+          renderFilterControl({
+            spec: filter,
+            values: values,
+            selected: this.state.filters[filter.value_col],
+            onChange: (next) => {
+              this.state.filters[filter.value_col] = next;
+              this.render();
+            }
+          }),
+          filterParent
+        );
       });
       if (showRRatio) view.contributeFilters(this, { addRow, addControl }, filterParent);
     }
@@ -716,7 +760,7 @@ class SafetyHepExplorer {
     // (HEP-SELECT-001, HEP-COMP-007).
     this.compositeSelectSection = addSection('Participants');
 
-    // Reset Chart (HEP-CTRL-012).
+    // Reset Chart (HEP-CTRL-019).
     const reset = addControl(' ', document.createElement('button'), this.controls);
     reset.type = 'button';
     reset.textContent = 'Reset Chart';
@@ -729,7 +773,7 @@ class SafetyHepExplorer {
   /**
    * Reset the cutpoints, display mode, axis type, point size, filters, and
    * R-Ratio range to their initial values, then rebuild and redraw
-   * (HEP-CTRL-012).
+   * (HEP-CTRL-019).
    * @private
    */
   resetChart() {
@@ -745,6 +789,11 @@ class SafetyHepExplorer {
     this.state.rRatio = [...this.settings.r_ratio];
     this.state.hideUnchanged = this.settings.hide_unchanged;
     this.state.activeArms = this.settings.active_arms;
+    // Restoring the checkbox is not enough: the row set it governs has to be
+    // re-derived, or Reset Chart would show "included" over excluded rows
+    // (HEP-CTRL-018).
+    this.state.unscheduledVisits = this.settings.unscheduled_visits;
+    if (this.rawData.length) this.validateAndCleanData();
     this.buildControls();
     this.render();
   }

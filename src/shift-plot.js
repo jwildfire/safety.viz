@@ -7,10 +7,18 @@
 // Webcharts/d3 internals. Internals follow the histogram module flow
 // (checkInputs → configure → structureData → getScales/getPlugins → new Chart).
 
-import { Chart, ScatterController, PointElement, LinearScale, Tooltip, Legend } from 'chart.js';
+import {
+  Chart,
+  ScatterController,
+  PointElement,
+  LinearScale,
+  LogarithmicScale,
+  Tooltip,
+  Legend
+} from 'chart.js';
 
 import { controlBuilders, createElement, option, renderShell } from './shell.js';
-import { syncSettings } from './shift-plot/configure.js';
+import { AXIS_TYPES, syncSettings } from './shift-plot/configure.js';
 import { checkInputs } from './shift-plot/checkInputs.js';
 import {
   applyFilters,
@@ -37,8 +45,10 @@ import {
   syncProfileRail,
   unmountProfileRail
 } from './profile-host.js';
+import { initFilterState, renderFilterControl } from './filters.js';
+import { presentMeasures, resolveMeasureList } from './measure-list.js';
 
-Chart.register(ScatterController, PointElement, LinearScale, Tooltip, Legend);
+Chart.register(ScatterController, PointElement, LinearScale, LogarithmicScale, Tooltip, Legend);
 
 const INITIAL_FOOTNOTE = 'Click and drag across the points to list the selected participants.';
 
@@ -58,6 +68,7 @@ class SafetyShiftPlot {
     this.settings = syncSettings(settings);
     this.rawData = [];
     this.cleanData = [];
+    this.availableMeasures = [];
     this.chartPairs = [];
     this.currentTableData = [];
     this.listingSearch = '';
@@ -76,17 +87,48 @@ class SafetyShiftPlot {
     this.profileFeed = null;
     this.profileKey = null;
     this.profileRows = [];
-    this.state = {
+    this.state = this.seedState();
+    this.renderShell();
+    mountProfileRail(this, () => this.profileSettings());
+  }
+
+  /**
+   * The opening control state: every settings-derived default, before the
+   * data-driven normalisers (the measure fallback and resolveVisits) run.
+   * Called from the constructor and from reseed(), so the Reset chart control
+   * and the first render agree by construction (SSP-CTRL-004, #136).
+   * @private
+   */
+  seedState() {
+    return {
       measure: this.settings.start_value,
       baselineVisits: this.settings.baseline_visits,
       comparisonVisits: this.settings.comparison_visits,
       baselineStat: this.settings.baseline_stat,
       comparisonStat: this.settings.comparison_stat,
-      filters: {},
+      filters: initFilterState(this.settings.filters),
+      axisType: this.settings.axis_type,
       domain: null
     };
-    this.renderShell();
-    mountProfileRail(this, () => this.profileSettings());
+  }
+
+  /**
+   * Restore the opening state for the Reset chart control (SSP-CTRL-004,
+   * #136): the settings-derived seed, then the two normalisers that run after
+   * it on first load — the measure fallback and the baseline/comparison visit
+   * resolution (SSP-CFG-004/005). All three of `start_value`,
+   * `baseline_visits` and `comparison_visits` default to null, so skipping
+   * them would hand back a blank chart with two empty visit controls.
+   * `domain: null` needs no normalisation — render() recomputes it. Does NOT
+   * re-clean the data: nothing about the data changed.
+   * @private
+   */
+  reseed() {
+    this.state = this.seedState();
+    if (this.cleanData.length) {
+      this.resolveMeasure();
+      this.resolveVisits();
+    }
   }
 
   /**
@@ -208,8 +250,13 @@ class SafetyShiftPlot {
    */
   setSettings(settings) {
     this.settings = syncSettings({ ...this.settings, ...settings });
+    // Re-clean so a changed measure whitelist re-resolves the control and
+    // re-validates the selected measure; every sibling renderer already does
+    // this from setSettings, and shift-plot alone did not (#136).
+    if (this.rawData.length) this.validateAndCleanData();
     this.state.baselineStat = this.settings.baseline_stat;
     this.state.comparisonStat = this.settings.comparison_stat;
+    this.state.axisType = this.settings.axis_type;
     if (settings.baseline_visits !== undefined)
       this.state.baselineVisits = this.settings.baseline_visits;
     if (settings.comparison_visits !== undefined)
@@ -238,6 +285,23 @@ class SafetyShiftPlot {
     this.cleanData = rows;
     this.removedRecords = removed;
     if (removed) console.warn(`${removed} missing or non-numeric results have been removed.`);
+    this.availableMeasures = resolveMeasureList(
+      presentMeasures(this.cleanData, this.settings, measureLabel),
+      this.settings.measures
+    );
+    this.resolveMeasure();
+    this.resolveVisits();
+  }
+
+  /**
+   * Pin the selected measure to one the data actually carries, warning when a
+   * configured measure is absent (SSP-CTRL-001, SSP-MEAS-002). Runs after the
+   * settings-derived seed on both paths that produce an opening state —
+   * validateAndCleanData and reseed — because `start_value` defaults to null
+   * and the opening measure is therefore data-derived, not settings-derived.
+   * @private
+   */
+  resolveMeasure() {
     const measures = this.measures();
     if (this.state.measure && !measures.includes(this.state.measure)) {
       console.warn(
@@ -245,15 +309,16 @@ class SafetyShiftPlot {
       );
     }
     this.state.measure = measures.includes(this.state.measure) ? this.state.measure : measures[0];
-    this.resolveVisits();
   }
 
   /**
-   * Sorted distinct measure labels present in the cleaned data.
+   * The measure labels the Measure control offers: the configured `measures`
+   * whitelist in its own order, or every measure in the cleaned data
+   * alphabetically when it is unset (#136).
    * @private
    */
   measures() {
-    return unique(this.cleanData.map((row) => measureLabel(row, this.settings))).sort();
+    return this.availableMeasures;
   }
 
   /**
@@ -288,13 +353,21 @@ class SafetyShiftPlot {
    */
   buildControls() {
     this.controls.innerHTML = '';
-    const { addSection, addControl } = controlBuilders(this.controls);
+    const { addSection, addControl, addReset } = controlBuilders(this.controls);
     const visits = this.visits();
 
     const measure = addControl('Measure', document.createElement('select'));
     this.measures().forEach((value) => option(measure, value, value, value === this.state.measure));
     measure.onchange = () => {
       this.state.measure = measure.value;
+      this.render();
+    };
+
+    const axisSection = addSection('Axis');
+    const axisType = addControl('Axis Type', document.createElement('select'), axisSection);
+    AXIS_TYPES.forEach((value) => option(axisType, value, value, value === this.state.axisType));
+    axisType.onchange = () => {
+      this.state.axisType = axisType.value;
       this.render();
     };
 
@@ -340,19 +413,31 @@ class SafetyShiftPlot {
     if (filterSpecs.length) {
       const filterParent = addSection('Filters');
       filterSpecs.forEach((filter) => {
-        const select = addControl(filter.label, document.createElement('select'), filterParent);
-        option(select, '__all__', 'All', !this.state.filters[filter.value_col]);
-        unique(this.cleanData.map((row) => row[filter.value_col]))
-          .sort()
-          .forEach((value) =>
-            option(select, value, value, this.state.filters[filter.value_col] === value)
-          );
-        select.onchange = () => {
-          this.state.filters[filter.value_col] = select.value === '__all__' ? null : select.value;
-          this.render();
-        };
+        const values = unique(this.cleanData.map((row) => row[filter.value_col])).sort();
+        addControl(
+          filter.label,
+          renderFilterControl({
+            spec: filter,
+            values,
+            selected: this.state.filters[filter.value_col],
+            onChange: (next) => {
+              this.state.filters[filter.value_col] = next;
+              this.render();
+            }
+          }),
+          filterParent
+        );
       });
     }
+
+    // Reset chart (SSP-CTRL-004, #136): the whole-chart way back to the
+    // opening view. Appended straight to the controls container as the LAST
+    // statement of buildControls so it sits full-width below every section.
+    addReset(() => {
+      this.reseed();
+      this.buildControls();
+      this.render();
+    });
   }
 
   /**
@@ -407,9 +492,23 @@ class SafetyShiftPlot {
     // empty in the same preamble (#99, PPRF-SSP-003).
     resetProfileRail(this);
     this.notes.innerHTML = '';
-    this.chartPairs = this.computePairs();
-    this.state.domain = computeDomain(this.chartPairs);
-    this.updateNotes();
+    // A logarithmic axis has no room for 0 or a negative value, so a pair
+    // whose baseline OR comparison value is non-positive is REMOVED rather
+    // than clamped — moving a participant's result would be a lie on a
+    // clinical chart. The removal is counted and reported in the note
+    // (SSP-SCALE-003), following results-over-time's precedent. The pair is
+    // dropped when EITHER coordinate is non-positive, because one domain
+    // governs both axes.
+    let pairs = this.computePairs();
+    let nonPositive = 0;
+    if (this.state.axisType === 'log') {
+      const positive = pairs.filter((pair) => pair.x > 0 && pair.y > 0);
+      nonPositive = pairs.length - positive.length;
+      pairs = positive;
+    }
+    this.chartPairs = pairs;
+    this.state.domain = computeDomain(this.chartPairs, this.state.axisType);
+    this.updateNotes(nonPositive);
     if (!this.chartPairs.length) {
       this.footnote.textContent =
         'No participant has both a baseline and a comparison value for the current selection.';
@@ -451,7 +550,7 @@ class SafetyShiftPlot {
             }
           }
         },
-        scales: buildScales(this.state.domain, this.state.measure)
+        scales: buildScales(this.state.domain, this.state.measure, this.state.axisType)
       },
       plugins: [identityLinePlugin(this), brushBoxPlugin()]
     });
@@ -625,11 +724,15 @@ class SafetyShiftPlot {
   }
 
   /**
-   * Refresh the shown/total participant counts and the removed-record note
-   * (SSP-COUNT-001, SSP-REG-005/020).
+   * Refresh the shown/total participant counts and the removed-record notes
+   * (SSP-COUNT-001, SSP-REG-005/020). The shown count is chartPairs.length, so
+   * pairs dropped for the log scale leave it automatically honest; the
+   * nonPositive count explains where they went (SSP-SCALE-003).
+   * @param {number} [nonPositive=0] Pairs removed because a coordinate was
+   *   zero or negative under the log scale.
    * @private
    */
-  updateNotes() {
+  updateNotes(nonPositive = 0) {
     const totalParticipants = unique(this.cleanData.map((row) => row[this.settings.id_col])).length;
     const shownParticipants = this.chartPairs.length;
     const pct = totalParticipants
@@ -638,7 +741,10 @@ class SafetyShiftPlot {
     const removedNote = this.removedRecords
       ? `<span class="sv-warning">${this.removedRecords} missing or non-numeric results removed.</span>`
       : '';
-    this.notes.innerHTML = `<span>${shownParticipants} of ${totalParticipants} participants shown (${pct}%).</span>${removedNote}`;
+    const nonPositiveNote = nonPositive
+      ? `<span class="sv-warning">${nonPositive} participant pair${nonPositive > 1 ? 's' : ''} with a nonpositive value removed for the log scale.</span>`
+      : '';
+    this.notes.innerHTML = `<span>${shownParticipants} of ${totalParticipants} participants shown (${pct}%).</span>${removedNote}${nonPositiveNote}`;
   }
 
   /**

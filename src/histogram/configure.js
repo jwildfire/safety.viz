@@ -14,10 +14,11 @@
  * @property {string} [unit_col='STRESU'] Unit column, appended to the measure name in labels when present.
  * @property {string} [normal_col_low='STNRLO'] Lower-limit-of-normal column; with normal_col_high, feeds the normal-range overlay. The control hides for measures without normal-range data (SH-FUNC-004C).
  * @property {string} [normal_col_high='STNRHI'] Upper-limit-of-normal column; see normal_col_low.
- * @property {Array<string|Object>} [filters=[]] Filter controls: column names or { value_col, label } specs. Filters whose column is absent from the data are dropped with a console warning.
+ * @property {Array<string|Object>} [filters=[]] Filter controls: column names or { value_col, label } specs. Filters whose column is absent from the data are dropped with a console warning. Filter specs take `{ value_col, label, start, all, multiple }`: `start` is the opening selection (an array for a `multiple` filter, and a start of `0` or `false` is a real value, not an absent one); `all` controls the "All" option and defaults to true, or to false when a start is given — pass `all: true` to keep All alongside a start, `all: false` to require a selection; `multiple: true` renders a checkbox multiselect whose state is null (everything) or an array of values (#136).
  * @property {Array<string|Object>} [groups=[]] Group-by options for the small-multiple charts; a "None" option is always offered first.
  * @property {?Array<string|Object>} [details=null] Columns for the linked participant listing; when null, defaults to participant ID, the filter columns, result, normal limits, and unit.
  * @property {?string} [start_value=null] Measure selected on first render. When null (the default) the histogram opens on the all-measures overview — one small-multiple histogram per measure, click one to drill in. A measure absent from the data falls back to the overview with a console warning.
+ * @property {?string[]} [measures=null] Ordered whitelist of measures the Measure control offers: only these appear, and in this order. Entries match the label the control shows (the measure name with its unit appended where `unit_col` is mapped), falling back to the bare `measure_col` value, which picks up every unit variant of that measure. null or [] offers every measure in the data, alphabetically — the behaviour before this setting existed. Configured measures absent from the data are dropped with a console warning; when none of them is present the control falls back to every measure in the data rather than going blank (SH-MEAS-001, SH-MEAS-002).
  * @property {string} [bin_algorithm="Scott's normal reference rule"] Binning algorithm applied on first render; one of the ALGORITHMS options. Setting an explicit bin quantity or width in the UI switches it to "Custom".
  * @property {boolean} [normal_range=true] Offer the Show Normal Range control (visible only for measures with normal-range data).
  * @property {boolean} [display_normal_range=false] Draw the normal-range overlay on first render. The pilot's camelCase alias displayNormalRange is still honored.
@@ -42,6 +43,8 @@
  * overrides onto these.
  * @type {HistogramSettings}
  */
+import { normalizeFilterSpec } from '../filters.js';
+
 export const DEFAULT_SETTINGS = {
   measure_col: 'TEST',
   value_col: 'STRESN',
@@ -53,6 +56,7 @@ export const DEFAULT_SETTINGS = {
   groups: [],
   details: null,
   start_value: null,
+  measures: null,
   bin_algorithm: "Scott's normal reference rule",
   normal_range: true,
   display_normal_range: false,
@@ -115,8 +119,10 @@ export function fieldSpec(value, fallbackLabel) {
  */
 export function syncSettings(settings) {
   const synced = { ...DEFAULT_SETTINGS, ...settings };
+
+  synced.measures = arrayify(synced.measures);
   synced.filters = arrayify(synced.filters)
-    .map(fieldSpec)
+    .map((value) => normalizeFilterSpec(value))
     .filter((d) => d.value_col);
   const defaultGroup = { value_col: 'sh_none', label: 'None' };
   synced.groups = [
@@ -137,7 +143,9 @@ export function syncSettings(settings) {
   if (!synced.details.length) {
     synced.details = [
       { value_col: synced.id_col, label: 'Participant ID' },
-      ...synced.filters,
+      // Listing columns, not filters: take only the column and its label, so the
+      // filter contract's start/all/multiple keys do not leak into the listing.
+      ...synced.filters.map((filter) => fieldSpec(filter)),
       { value_col: synced.value_col, label: 'Result' },
       { value_col: synced.normal_col_low, label: 'Lower Limit of Normal' },
       { value_col: synced.normal_col_high, label: 'Upper Limit of Normal' },

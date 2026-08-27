@@ -53,21 +53,24 @@ schemes appear:
 
 ## Unit evidence (Vitest — `tests/unit/histogram/`)
 
-| Requirement ID               | Source matrix rows                                 | Issue | Test file                  |
-| ---------------------------- | -------------------------------------------------- | ----- | -------------------------- |
-| SH-CFG-004..009 (defaults)   | SH-CFG-004..009                                    | #2    | `configure.test.js`        |
-| SH-CFG-010/011, SH-CHART-004 | SH-CFG-010, SH-CFG-011                             | #2    | `configure.test.js`        |
-| SH-CFG-013/014               | SH-CFG-013, SH-CFG-014                             | #2    | `configure.test.js`        |
-| SH-DATA-001/002              | SH-CFG-005                                         | #2    | `structureData.test.js`    |
-| SH-CTRL-002/005/006          | SH-FUNC-004C (detection)                           | #2    | `structureData.test.js`    |
-| SH-CTRL-006 (original QC)    | —                                                  | #19   | `binning.test.js`          |
-| SH-CTRL-005/007              | SH-FUNC-005A, SH-FUNC-005B                         | #2    | `getScales.test.js`        |
-| SH-AXIS-001/002/003/004      | SH-AXIS-001, SH-AXIS-002, SH-AXIS-003, SH-AXIS-004 | #85   | `axis-limits.test.js`      |
-| SH-CHART-002/005             | SH-FUNC-011 (colors)                               | #2    | `getPlugins.test.js`       |
-| SH-LIST-002/003/004          | —                                                  | #2    | `listing.test.js`          |
-| SH-DATA-001/003 (schema)     | SH-DATA-001                                        | #2    | `checkInputs.test.js`      |
-| SH-API-001 (module export)   | —                                                  | #2    | `../main.test.js`          |
-| PPRF-SH-001/002/003          | PPRF-SH-001..003 (participant-profile matrix)      | #99   | `profile-adoption.test.js` |
+| Requirement ID                            | Source matrix rows                                 | Issue | Test file                  |
+| ----------------------------------------- | -------------------------------------------------- | ----- | -------------------------- |
+| SH-CFG-004..009 (defaults)                | SH-CFG-004..009                                    | #2    | `configure.test.js`        |
+| SH-CFG-010/011, SH-CHART-004              | SH-CFG-010, SH-CFG-011                             | #2    | `configure.test.js`        |
+| SH-CFG-013/014                            | SH-CFG-013, SH-CFG-014                             | #2    | `configure.test.js`        |
+| SH-DATA-001/002                           | SH-CFG-005                                         | #2    | `structureData.test.js`    |
+| SH-CTRL-002/005/006                       | SH-FUNC-004C (detection)                           | #2    | `structureData.test.js`    |
+| SH-CTRL-006 (original QC)                 | —                                                  | #19   | `binning.test.js`          |
+| SH-CTRL-005/007                           | SH-FUNC-005A, SH-FUNC-005B                         | #2    | `getScales.test.js`        |
+| SH-AXIS-001/002/003/004                   | SH-AXIS-001, SH-AXIS-002, SH-AXIS-003, SH-AXIS-004 | #85   | `axis-limits.test.js`      |
+| SH-CHART-002/005                          | SH-FUNC-011 (colors)                               | #2    | `getPlugins.test.js`       |
+| SH-LIST-002/003/004                       | —                                                  | #2    | `listing.test.js`          |
+| SH-DATA-001/003 (schema)                  | SH-DATA-001                                        | #2    | `checkInputs.test.js`      |
+| SH-API-001 (module export)                | —                                                  | #2    | `../main.test.js`          |
+| PPRF-SH-001/002/003                       | PPRF-SH-001..003 (participant-profile matrix)      | #99   | `profile-adoption.test.js` |
+| SH-MEAS-001/002 (measures whitelist)      | SH-MEAS-001, SH-MEAS-002                           | #136  | `measure-list.test.js`     |
+| SH-FILT-001..004 (shared filter contract) | SH-FILT-001, SH-FILT-002, SH-FILT-003, SH-FILT-004 | #136  | `filters.test.js`          |
+| SH-CTRL-009 (whole-chart reset)           | —                                                  | #136  | `reset.test.js`            |
 
 ## Railed participant profile (#99, PPRF-SH)
 

@@ -5,6 +5,8 @@
 // the first result per visit, then collapse each visit set to one value with
 // the configured statistic) without depending on its d3/Webcharts internals.
 
+import { filterMatches } from '../filters.js';
+
 export function unique(values) {
   return [
     ...new Set(values.filter((value) => value !== undefined && value !== null && value !== ''))
@@ -96,7 +98,7 @@ export function listVisits(rows, settings) {
 
 export function applyFilters(rows, filters) {
   return rows.filter((row) =>
-    Object.entries(filters).every(([key, value]) => !value || String(row[key]) === String(value))
+    Object.entries(filters || {}).every(([key, value]) => filterMatches(row[key], value))
   );
 }
 
@@ -174,14 +176,32 @@ export function computeShiftPairs({
 }
 
 /**
- * The shared, square-ish data domain the scatter and identity line span: the
- * combined extent of every x and y value with 5% padding (a single point, or
- * a zero-spread set, falls back to ±1). Sharing one domain across both axes
- * keeps the identity line at 45° (SSP-CHART-002).
+ * The shared, square-ish data domain the scatter and identity line span.
+ *
+ * On a linear scale: the combined extent of every x and y value with 5%
+ * padding (a single point, or a zero-spread set, falls back to ±1). On a log
+ * scale the same 5% is applied MULTIPLICATIVELY, over the strictly positive
+ * values only, so the lower bound can never reach zero — a logarithmic axis
+ * has no room for 0 or a negative number, and an additively padded lower bound
+ * goes negative on any wide-range measure (Alkaline Phosphatase in the demo
+ * data spans 27..624, whose linear pad lands at -2.85), which would render a
+ * blank chart with the identity line vanished (SSP-SCALE-002).
+ *
+ * Sharing one domain across both axes keeps the identity line at 45°
+ * (SSP-CHART-002).
  * @param {Object[]} pairs Pair records from computeShiftPairs.
+ * @param {string} [type='linear'] Axis scale type: 'linear' or 'log'.
  * @returns {[number, number]} The [min, max] domain applied to both axes.
  */
-export function computeDomain(pairs) {
+export function computeDomain(pairs, type = 'linear') {
+  if (type === 'log') {
+    const positives = pairs.flatMap((pair) => [pair.x, pair.y]).filter((value) => value > 0);
+    if (!positives.length) return [0.1, 1];
+    const min = Math.min(...positives);
+    const max = Math.max(...positives);
+    const factor = max > min ? (max / min) ** 0.05 : 1.05;
+    return [min / factor, max * factor];
+  }
   if (!pairs.length) return [0, 1];
   const values = pairs.flatMap((pair) => [pair.x, pair.y]);
   const min = Math.min(...values);

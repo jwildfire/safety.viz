@@ -4,6 +4,7 @@
 // are shared with the histogram module.
 
 import { arrayify, fieldSpec } from '../histogram/configure.js';
+import { normalizeFilterSpec } from '../filters.js';
 
 /**
  * Rendering and data-mapping settings for the ae-timelines module. Every key
@@ -20,7 +21,7 @@ import { arrayify, fieldSpec } from '../histogram/configure.js';
  * @property {string} [term_col='AETERM'] Verbatim adverse-event term column; required in the data (AET-CFG-004). Records with blank terms are removed with a console warning.
  * @property {Object} [color] Event color stratification (AET-CFG-005): value_col (default 'AESEV'; required in the data, but remappable), label ('Severity/Intensity'), values (expected levels in legend order: MILD, MODERATE, SEVERE), and colors (assigned by domain position; N/A always renders gray).
  * @property {?Object} [highlight] Distinct marking for notable events (AET-CFG-007) — serious events by default: value_col ('AESER'), label ('Serious Event'), value ('Y', AET-CFG-008), detail_col (optional tooltip/listing detail, AET-CFG-009), and attributes ({ stroke, 'stroke-width' } mark style, AET-CFG-010). Pass null to disable highlighting.
- * @property {?Array<string|Object>} [filters=null] Filter controls (AET-CFG-011): column names or { value_col, label } specs. When null, defaults to serious event, severity, and participant identifier; filters whose column is absent or single-valued are dropped with a console warning.
+ * @property {?Array<string|Object>} [filters=null] Filter controls (AET-CFG-011): column names or { value_col, label } specs. When null, defaults to serious event, severity, and participant identifier; filters whose column is absent or single-valued are dropped with a console warning. Filter specs take `{ value_col, label, start, all, multiple }`: `start` is the opening selection (an array for a `multiple` filter, and a start of `0` or `false` is a real value, not an absent one); `all` controls the "All" option and defaults to true, or to false when a start is given — pass `all: true` to keep All alongside a start, `all: false` to require a selection; `multiple: true` renders a checkbox multiselect whose state is null (everything) or an array of values (#136).
  * @property {boolean} [profile=true] Mount the railed participant profile beside the chart (obot.roadmap#75 decision D9); false opts out of the drill-down entirely.
  * @property {Array<string|Object>} [profile_details=[]] Header demographics for the participant profile: column names or { value_col, label } specs. Distinct from `details`, which lists the detail-view columns.
  * @property {?Array<string|Object>} [details=null] Columns for the participant detail listing (AET-CFG-012). Custom columns append after the defaults (sequence, start/stop day, term, severity, seriousness), deduplicated by column.
@@ -105,7 +106,7 @@ export function syncSettings(settings) {
         };
 
   const customFilters = arrayify(synced.filters)
-    .map((value) => fieldSpec(value))
+    .map((value) => normalizeFilterSpec(value))
     .filter((filter) => filter.value_col);
   synced.filters = customFilters.length
     ? customFilters
@@ -115,7 +116,7 @@ export function syncSettings(settings) {
           : []),
         { value_col: synced.color.value_col, label: synced.color.label },
         { value_col: synced.id_col, label: 'Participant Identifier' }
-      ];
+      ].map((filter) => normalizeFilterSpec(filter));
 
   const defaultDetails = [
     { value_col: synced.seq_col, label: 'Sequence Number' },
@@ -134,7 +135,11 @@ export function syncSettings(settings) {
           }
         ]
       : []),
-    ...synced.filters.filter((filter) => filter.value_col !== synced.id_col)
+    // Listing columns, not filters: take only the column and its label, so the
+    // filter contract's start/all/multiple keys do not leak into the listing.
+    ...synced.filters
+      .filter((filter) => filter.value_col !== synced.id_col)
+      .map((filter) => fieldSpec(filter))
   ];
   const details = [...defaultDetails, ...arrayify(synced.details).map((value) => fieldSpec(value))];
   const seen = new Set();

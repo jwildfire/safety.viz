@@ -18,6 +18,7 @@ import {
 } from 'chart.js';
 
 import { controlBuilders, createElement, option, renderShell } from './shell.js';
+import { presentMeasures, resolveMeasureList } from './measure-list.js';
 import { applyLimitEdit, clearAxisLimits, seedLimitInput, syncAxisLimits } from './axis-limits.js';
 import { Y_SCALES, syncSettings } from './results-over-time/configure.js';
 import { checkInputs } from './results-over-time/checkInputs.js';
@@ -43,6 +44,7 @@ import {
   outlierTooltip,
   summaryTooltip
 } from './results-over-time/getPlugins.js';
+import { initFilterState, renderFilterControl } from './filters.js';
 
 Chart.register(
   ScatterController,
@@ -73,12 +75,26 @@ class SafetyResultsOverTime {
     this.settings = syncSettings(settings);
     this.rawData = [];
     this.cleanData = [];
+    this.availableMeasures = [];
     this.filteredData = [];
     this.charts = [];
     this.boxSpecs = [];
-    this.state = {
+    this.state = this.seedState();
+    this.renderShell();
+  }
+
+  /**
+   * The opening control state, derived from settings alone. Built once in the
+   * constructor and again by {@link reseed} behind the Reset chart control
+   * (SROT-CTRL-001, #136), so "the state the chart opens in" has one
+   * definition rather than one per caller.
+   * @returns {Object} A fresh state object.
+   * @private
+   */
+  seedState() {
+    return {
       measure: this.settings.start_value,
-      filters: {},
+      filters: initFilterState(this.settings.filters),
       groupBy: this.settings.group_by,
       // Y-axis limits (#85): `lower`/`upper` hold USER OVERRIDES only (null =
       // auto), `axisDomain` the [lower, upper] the last render resolved — what
@@ -92,7 +108,19 @@ class SafetyResultsOverTime {
       visitsWithoutData: this.settings.visits_without_data,
       unscheduledVisits: this.settings.unscheduled_visits
     };
-    this.renderShell();
+  }
+
+  /**
+   * Return to the opening state (SROT-CTRL-001, #136): re-seed from settings,
+   * then re-run the data-driven measure resolution the seed cannot do on its
+   * own — `start_value` defaults to null, so a bare re-seed would leave the
+   * chart with no measure and nothing to draw. The bound data is untouched,
+   * so this deliberately does NOT re-run validateAndCleanData.
+   * @private
+   */
+  reseed() {
+    this.state = this.seedState();
+    if (this.cleanData.length) this.resolveMeasure();
   }
 
   /**
@@ -176,6 +204,21 @@ class SafetyResultsOverTime {
     this.removedRecords = removed;
     if (removed) console.warn(`${removed} missing or non-numeric results have been removed.`);
     this.allVisits = computeVisitOrder(this.cleanData, this.settings);
+    this.availableMeasures = resolveMeasureList(
+      presentMeasures(this.cleanData, this.settings, measureLabel),
+      this.settings.measures
+    );
+    this.resolveMeasure();
+  }
+
+  /**
+   * Pin the selected measure to one present in the data, falling back to the
+   * first with a console warning (SROT-FUNC-001 / SROT-REG-024). Runs after
+   * cleaning and again on reset, where it is what stops a null `start_value`
+   * from emptying the chart (SROT-CTRL-001).
+   * @private
+   */
+  resolveMeasure() {
     const measures = this.measures();
     if (this.state.measure && !measures.includes(this.state.measure)) {
       console.warn(
@@ -186,11 +229,13 @@ class SafetyResultsOverTime {
   }
 
   /**
-   * Sorted distinct measure labels present in the cleaned data.
+   * The measure labels the Measure control offers: the configured `measures`
+   * whitelist in its own order, or every measure in the cleaned data
+   * alphabetically when it is unset (#136).
    * @private
    */
   measures() {
-    return unique(this.cleanData.map((row) => measureLabel(row, this.settings))).sort();
+    return this.availableMeasures;
   }
 
   /**
@@ -216,7 +261,7 @@ class SafetyResultsOverTime {
    */
   buildControls() {
     this.controls.innerHTML = '';
-    const { addSection, addRow, addControl } = controlBuilders(this.controls);
+    const { addSection, addRow, addControl, addReset } = controlBuilders(this.controls);
 
     const measure = addControl('Measure', document.createElement('select'));
     this.measures().forEach((value) => option(measure, value, value, value === this.state.measure));
@@ -245,17 +290,20 @@ class SafetyResultsOverTime {
     });
     const filterParent = filterSpecs.length ? addSection('Filters') : this.controls;
     filterSpecs.forEach((filter) => {
-      const select = addControl(filter.label, document.createElement('select'), filterParent);
-      option(select, '__all__', 'All', !this.state.filters[filter.value_col]);
-      unique(this.cleanData.map((row) => row[filter.value_col]))
-        .sort()
-        .forEach((value) =>
-          option(select, value, value, this.state.filters[filter.value_col] === value)
-        );
-      select.onchange = () => {
-        this.state.filters[filter.value_col] = select.value === '__all__' ? null : select.value;
-        this.render();
-      };
+      const values = unique(this.cleanData.map((row) => row[filter.value_col])).sort();
+      addControl(
+        filter.label,
+        renderFilterControl({
+          spec: filter,
+          values,
+          selected: this.state.filters[filter.value_col],
+          onChange: (next) => {
+            this.state.filters[filter.value_col] = next;
+            this.render();
+          }
+        }),
+        filterParent
+      );
     });
 
     const yParent = addSection('Y-axis Limits');
@@ -291,6 +339,15 @@ class SafetyResultsOverTime {
     this.addToggle(displayParent, addControl, 'Outliers', 'outliers');
     this.addToggle(displayParent, addControl, 'Visits without data', 'visitsWithoutData');
     this.addToggle(displayParent, addControl, 'Unscheduled visits', 'unscheduledVisits');
+
+    // Last statement of buildControls: addReset appends to the controls
+    // container itself, so the button sits full-width below every section
+    // (SROT-CTRL-001, #136).
+    addReset(() => {
+      this.reseed();
+      this.buildControls();
+      this.render();
+    });
   }
 
   /**

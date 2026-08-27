@@ -5,6 +5,7 @@
 // module.
 
 import { arrayify, fieldSpec } from '../histogram/configure.js';
+import { normalizeFilterSpec } from '../filters.js';
 
 /**
  * Rendering and data-mapping settings for the ae-explorer module. Every key
@@ -18,9 +19,9 @@ import { arrayify, fieldSpec } from '../histogram/configure.js';
  * @property {string} [major_col='AEBODSYS'] Major category column — the MedDRA System Organ Class; required in the data. One expandable table section per level, and the default placeholder-flag column (AE-CFG-003).
  * @property {string} [minor_col='AEDECOD'] Minor category column — the MedDRA Preferred Term; required in the data. One nested row per level under its System Organ Class.
  * @property {string} [group_col='ARM'] Treatment group column; required in the data. One rate column per level, up to max_groups.
- * @property {?Array<string>} [groups=null] Group levels to show as columns (AE-CFG-005). Null derives every level found in group_col, sorted; configured levels missing from the data are dropped with a console warning. A single group hides the Total and Difference columns (AE-USER-019).
+ * @property {?Array<string>} [groups=null] Group levels to show as columns (AE-CFG-005). Null derives every level found in group_col, sorted; configured levels missing from the data are dropped with a console warning. A single group hides the Difference column, and hides the Total column too when the per-group columns are drawn (AE-USER-019).
  * @property {Array<string>} [colors] Group colors assigned by column order (AE-CFG-006); the Total column always renders gray, and the default palette carries no yellow (AE-REG-040).
- * @property {?Array<string|Object>} [filters=null] Filter controls (AE-USER-018): column names or { value_col, label, type, start } specs. Type 'event' narrows the events counted; type 'participant' narrows the analysis population and its denominators (AE-REG-006). Defaults to the four ADAE event filters — seriousness, severity, relationship, outcome; filters whose column is absent or single-valued are dropped with a console warning.
+ * @property {?Array<string|Object>} [filters=null] Filter controls (AE-USER-018): column names or { value_col, label, type, start } specs. Type 'event' narrows the events counted; type 'participant' narrows the analysis population and its denominators (AE-REG-006). Defaults to the four ADAE event filters — seriousness, severity, relationship, outcome; filters whose column is absent or single-valued are dropped with a console warning. Filter specs take `{ value_col, label, start, all, multiple }`: `start` is the opening selection (an array for a `multiple` filter, and a start of `0` or `false` is a real value, not an absent one); `all` controls the "All" option and defaults to true, or to false when a start is given — pass `all: true` to keep All alongside a start, `all: false` to require a selection; `multiple: true` renders a checkbox multiselect whose state is null (everything) or an array of values (#136).
  * @property {boolean} [profile=true] Mount the railed participant profile beside the table (obot.roadmap#75 decision D9); false opts out of the drill-down entirely.
  * @property {Array<string|Object>} [profile_details=[]] Header demographics for the participant profile: column names or { value_col, label } specs. Distinct from `details`, which lists the drill-down columns.
  * @property {?Object} [profile_ae=null] Overrides for the AE mapping the profile reads (severity, seriousness, study days) where this renderer's own settings do not name those columns.
@@ -29,7 +30,7 @@ import { arrayify, fieldSpec } from '../histogram/configure.js';
  * @property {Object} [placeholder_flag] How placeholder rows for AE-free participants are identified (AE-DATA-001): value_col (null follows major_col) and the values marking a placeholder (blank and 'NA' by default).
  * @property {number} [max_prevalence=0] Initial minimum-prevalence filter value in percent (AE-USER-001).
  * @property {number} [max_groups=6] Most group columns the table will draw; more levels than this throws.
- * @property {boolean} [total_col=true] Draw the all-groups Total column; suppressed automatically when only one group shows (AE-REG-037).
+ * @property {boolean} [total_col=true] Draw the all-groups Total column; suppressed automatically when only one group shows alongside the per-group columns, and kept whatever the group count when group_cols is false, because it is then the table's only count column (AE-REG-037, AE-REG-047).
  * @property {boolean} [group_cols=true] Draw the per-group rate columns; disabling leaves a Total-only table and suppresses the Difference column (AE-REG-037).
  * @property {boolean} [diff_col=true] Draw the Difference Between Groups column (AE-USER-013); needs two or more shown groups.
  * @property {boolean} [pref_terms=false] Start with every Preferred Term row expanded instead of collapsed.
@@ -107,10 +108,9 @@ const DEFAULT_FILTERS = [
  * @private
  */
 function filterSpec(value) {
-  const spec = fieldSpec(value);
+  const spec = normalizeFilterSpec(value);
   const type = value && value.type === 'participant' ? 'participant' : 'event';
-  const start = (value && value.start) || null;
-  return { ...spec, type, start };
+  return { ...spec, type };
 }
 
 /**
@@ -167,10 +167,11 @@ export function syncSettings(settings) {
 /**
  * Which of the group, Total, and Difference columns the table draws, from
  * the shown group count and the column settings — the original's
- * setDefaults auto-adjustments: a single group suppresses Total and
- * Difference (AE-USER-019), group_cols false suppresses Difference
- * (AE-REG-037), and hiding both the group and Total columns is a
- * configuration error.
+ * setDefaults auto-adjustments: a single group suppresses Difference, and
+ * suppresses Total as well when the group columns are drawn (AE-USER-019);
+ * group_cols false suppresses Difference and keeps Total at any group count,
+ * because Total is then the only count column (AE-REG-037, AE-REG-047); and
+ * hiding both the group and Total columns is a configuration error.
  * @param {number} groupCount Number of groups the table will show.
  * @param {AEExplorerSettings} settings The synced settings.
  * @returns {{groupCols: boolean, totalCol: boolean, diffCol: boolean}} The column plan.
@@ -183,7 +184,12 @@ export function columnPlan(groupCount, settings) {
     );
   }
   const groupCols = settings.group_cols;
-  const totalCol = settings.total_col && groupCount > 1;
+  // A single group makes the Total redundant with that group's own column — but
+  // only when the group columns are actually drawn. With group_cols off the
+  // Total is the table's only count column, so it has to survive the
+  // single-group suppression or the table renders no numbers at all
+  // (RhoInc/aeexplorer#148).
+  const totalCol = settings.total_col && (groupCount > 1 || !groupCols);
   const diffCol = settings.diff_col && groupCols && groupCount > 1;
   return { groupCols, totalCol, diffCol };
 }

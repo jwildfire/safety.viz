@@ -9,8 +9,12 @@ import {
   csvName,
   diffTitle,
   dotTitle,
+  emptyState,
+  NO_MATCH_MESSAGE,
   summaryCsv
 } from '../../../src/ae-explorer/getPlugins.js';
+import { flagPlaceholders } from '../../../src/ae-explorer/structureData.js';
+import { AE_ROWS } from './fixtures.js';
 
 describe('ae-explorer getPlugins', () => {
   it('AE-CFG-006: groups color in configured order and the Total column always renders gray (#60)', () => {
@@ -65,5 +69,71 @@ describe('ae-explorer getPlugins', () => {
     expect(lines).toContain('"Cardiac disorders","","A",2,4,50');
     expect(lines).toContain('"Cardiac disorders","Palpitations","A",1,4,25');
     expect(lines).toHaveLength(3);
+  });
+
+  // An empty summary table used to say one thing for three different
+  // clinical situations (RhoInc/aeexplorer#153: "Currently can't distinguish
+  // between the absence of AEs and the absence of subjects.").
+  describe('empty states', () => {
+    const settings = syncSettings({});
+    const flagged = flagPlaceholders(AE_ROWS, settings);
+    const placeholders = flagged.filter((row) => row.__ae_placeholder);
+    const recorded = flagged.filter((row) => !row.__ae_placeholder);
+
+    it('AE-USER-021: a table with events to draw is not an empty state (#136)', () => {
+      expect(
+        emptyState({ populationRows: flagged, eventRows: recorded, allRows: flagged }, settings)
+      ).toBeNull();
+    });
+
+    it('AE-USER-021: an empty population reports no matching participants against the full denominator (#136)', () => {
+      const empty = emptyState({ populationRows: [], eventRows: [], allRows: flagged }, settings);
+      expect(empty.kind).toBe('no-participants');
+      expect(empty.text).toBe(
+        'No participants are in the current selection: none of the 7 participants in the data match the participant filters. Widen a participant filter to see results.'
+      );
+    });
+
+    it('AE-USER-022: a population of placeholder rows only reports an event-free study (#136)', () => {
+      const empty = emptyState(
+        { populationRows: placeholders, eventRows: [], allRows: placeholders },
+        settings
+      );
+      expect(empty.kind).toBe('no-events-in-study');
+      expect(empty.text).toBe(
+        'No adverse events have been recorded in this study: all 2 participants are event-free.'
+      );
+    });
+
+    it('AE-USER-022: a filtered selection of AE-free participants reports its own participant count (#136)', () => {
+      const one = emptyState(
+        { populationRows: placeholders.slice(0, 1), eventRows: [], allRows: flagged },
+        settings
+      );
+      expect(one.kind).toBe('no-events-for-selection');
+      expect(one.text).toBe(
+        'No adverse events have been recorded for the 1 participant in the current selection.'
+      );
+      const two = emptyState(
+        { populationRows: placeholders, eventRows: [], allRows: flagged },
+        settings
+      );
+      expect(two.kind).toBe('no-events-for-selection');
+      expect(two.text).toBe(
+        'No adverse events have been recorded for the 2 participants in the current selection.'
+      );
+    });
+
+    it('AE-REG-014: events excluded by the active event filters keep the original wording (#136)', () => {
+      const empty = emptyState(
+        { populationRows: flagged, eventRows: [], allRows: flagged },
+        settings
+      );
+      expect(empty.kind).toBe('filtered-out');
+      expect(empty.text).toBe(NO_MATCH_MESSAGE);
+      expect(NO_MATCH_MESSAGE).toBe(
+        'Error: No AEs found for the current filters. Update the filters to see results.'
+      );
+    });
   });
 });

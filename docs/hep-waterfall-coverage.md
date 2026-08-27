@@ -51,21 +51,22 @@ synthetic demo cohort must keep for the figure to be demonstrable at all).
 
 ## Unit evidence (Vitest — `tests/unit/hep-waterfall/`)
 
-| Requirement ID                                                                         | Source matrix rows      | Issue | Test file               |
-| -------------------------------------------------------------------------------------- | ----------------------- | ----- | ----------------------- |
-| HWF-CFG-001..005 (defaults, thresholds, arm designation, the two enum settings)        | HWF-CFG-001..005        | #93   | `configure.test.js`     |
-| HWF-DATA-001, HWF-DATA-005 (schema required columns, arm required)                     | HWF-DATA-001, -005      | #93   | `checkInputs.test.js`   |
-| HWF-DATA-001/002/003/004/005/008 (the shared reduction, cohort rules, counted drops)   | HWF-DATA-001..005, -008 | #93   | `structureData.test.js` |
-| HWF-ORDER-001/002/003/004 (the mountain, and the mandatory identifier tie-break)       | HWF-ORDER-001..004      | #93   | `structureData.test.js` |
-| HWF-BAR-001/002/003/004 (floating-bar pairs, direction, the trace and its draw order)  | HWF-BAR-001..004        | #93   | `structureData.test.js` |
-| HWF-BOX-003/004, HWF-CTRL-003 (staged box specs, R-7 statistics, filters)              | HWF-BOX-003, -004       | #93   | `structureData.test.js` |
-| HWF-AXIS-001/002/003, HWF-BOX-002, HWF-DATA-006/007 (domain, mirroring, units)         | HWF-AXIS-001..003       | #93   | `getScales.test.js`     |
-| HWF-COLOR-001..004, HWF-AXIS-004, HWF-SELECT-001 (palette, divider, band, tooltip)     | HWF-COLOR-001..004      | #93   | `getPlugins.test.js`    |
-| HWF-BOX-005/006/007 (the hit test, the tooltip text, the anatomy key, the description) | HWF-BOX-005..007        | #83   | `getPlugins.test.js`    |
-| HWF-API-002, HWF-API-003, HWF-BOX-001, HWF-CTRL-001..004, HWF-SELECT-002/003           | HWF-API-002, -003       | #93   | `render.test.js`        |
-| HWF-BOX-005/006/007 (hover wiring, slot labels, panel titles, the accessible label)    | HWF-BOX-005..007        | #83   | `render.test.js`        |
-| HWF-API-001 (module export)                                                            | HWF-API-001             | #93   | `export.test.js`        |
-| HWF-COHORT-001..011 (the synthetic demo cohort's invariants)                           | HWF-COHORT-001..011     | #93   | `abnbl.test.js`         |
+| Requirement ID                                                                         | Source matrix rows                                     | Issue | Test file                   |
+| -------------------------------------------------------------------------------------- | ------------------------------------------------------ | ----- | --------------------------- |
+| HWF-CFG-001..005 (defaults, thresholds, arm designation, the two enum settings)        | HWF-CFG-001..005                                       | #93   | `configure.test.js`         |
+| HWF-DATA-001, HWF-DATA-005 (schema required columns, arm required)                     | HWF-DATA-001, -005                                     | #93   | `checkInputs.test.js`       |
+| HWF-DATA-001/002/003/004/005/008 (the shared reduction, cohort rules, counted drops)   | HWF-DATA-001..005, -008                                | #93   | `structureData.test.js`     |
+| HWF-ORDER-001/002/003/004 (the mountain, and the mandatory identifier tie-break)       | HWF-ORDER-001..004                                     | #93   | `structureData.test.js`     |
+| HWF-BAR-001/002/003/004 (floating-bar pairs, direction, the trace and its draw order)  | HWF-BAR-001..004                                       | #93   | `structureData.test.js`     |
+| HWF-BOX-003/004, HWF-CTRL-003 (staged box specs, R-7 statistics, filters)              | HWF-BOX-003, -004                                      | #93   | `structureData.test.js`     |
+| HWF-AXIS-001/002/003, HWF-BOX-002, HWF-DATA-006/007 (domain, mirroring, units)         | HWF-AXIS-001..003                                      | #93   | `getScales.test.js`         |
+| HWF-COLOR-001..004, HWF-AXIS-004, HWF-SELECT-001 (palette, divider, band, tooltip)     | HWF-COLOR-001..004                                     | #93   | `getPlugins.test.js`        |
+| HWF-BOX-005/006/007 (the hit test, the tooltip text, the anatomy key, the description) | HWF-BOX-005..007                                       | #83   | `getPlugins.test.js`        |
+| HWF-API-002, HWF-API-003, HWF-BOX-001, HWF-CTRL-001..004, HWF-SELECT-002/003           | HWF-API-002, -003                                      | #93   | `render.test.js`            |
+| HWF-BOX-005/006/007 (hover wiring, slot labels, panel titles, the accessible label)    | HWF-BOX-005..007                                       | #83   | `render.test.js`            |
+| HWF-API-001 (module export)                                                            | HWF-API-001                                            | #93   | `export.test.js`            |
+| HWF-COHORT-001..011 (the synthetic demo cohort's invariants)                           | HWF-COHORT-001..011                                    | #93   | `abnbl.test.js`             |
+| HWF-FILT-001..004 (shared filter contract)                                             | HWF-FILT-001, HWF-FILT-002, HWF-FILT-003, HWF-FILT-004 | #136  | `../shared/filters.test.js` |
 
 ## Source-matrix routing status
 

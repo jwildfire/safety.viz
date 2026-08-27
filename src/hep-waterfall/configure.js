@@ -18,6 +18,8 @@
 // Requirement group: HWF-CFG-*.
 
 /** The four liver measures the waterfall can plot; the paper uses ALT. */
+import { normalizeFilterSpec } from '../filters.js';
+
 export const MEASURE_KEYS = ['ALT', 'AST', 'TB', 'ALP'];
 
 /**
@@ -64,7 +66,7 @@ export const SUMMARY_MODES = ['baseline_peak', 'peak'];
  * @property {boolean} [apply_tb_cohort=true] Whether to apply that Table-1 exclusion; turning it off admits baseline-jaundiced participants and says so in the notes (HWF-DATA-003).
  * @property {string} [uln_display='band'] How the reference range is drawn: 'band', 'per_subject', or 'none' (HWF-CFG-004, HWF-AXIS-004).
  * @property {string} [summary='baseline_peak'] What the flanking panels show: 'baseline_peak' (a baseline box and a peak box per arm) or 'peak' (HWF-CFG-005, HWF-BOX-003).
- * @property {Array<string|Object>} [filters=[]] Filter controls: column names or { value_col, label } specs (HWF-CTRL-003).
+ * @property {Array<string|Object>} [filters=[]] Filter controls: column names or { value_col, label } specs (HWF-CTRL-003). Filter specs take `{ value_col, label, start, all, multiple }`: `start` is the opening selection (an array for a `multiple` filter, and a start of `0` or `false` is a real value, not an absent one); `all` controls the "All" option and defaults to true, or to false when a start is given — pass `all: true` to keep All alongside a start, `all: false` to require a selection; `multiple: true` renders a checkbox multiselect whose state is null (everything) or an array of values (#136).
  * @property {?Array<string|Object>} [details=null] Columns for the linked participant listing; when null, defaults derive from the measure/day/value mappings (HWF-SELECT-002).
  * @property {number} [page_size=10] Rows per page in the linked participant listing.
  * @property {string} [width='100%'] Widget width, carried over for the R widget bindings; the shell always spans its container.
@@ -163,7 +165,7 @@ export function syncSettings(settings = {}) {
   const synced = { ...DEFAULT_SETTINGS, ...settings };
 
   synced.filters = arrayify(synced.filters)
-    .map((value) => fieldSpec(value))
+    .map((value) => normalizeFilterSpec(value))
     .filter((spec) => spec.value_col);
   synced.details = arrayify(synced.details)
     .map((value) => fieldSpec(value))

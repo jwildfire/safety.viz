@@ -49,6 +49,13 @@
     "SDD-CFG-013": "Measure to be shown on the y-axis of the delta-delta plot",
     "SDD-CFG-014": "an array of variables and metadata that will appear in the controls as data filters",
     "SDD-CFG-015": "an array of variables and metadata that will appear in the data listing",
-    "SDD-API-001": "a factory to create a custom [Webcharts chart](https://github.com/RhoInc/Webcharts/wiki/Chart) object"
+    "SDD-API-001": "a factory to create a custom [Webcharts chart](https://github.com/RhoInc/Webcharts/wiki/Chart) object",
+    "SDD-MEAS-001": "The `measures` setting is an ordered whitelist: the X and Y Measure pickers offers exactly the listed measures, in the listed order. Entries match the label the control shows, falling back to the bare measure name. When the setting is unset the control offers every measure in the data, alphabetically.",
+    "SDD-MEAS-002": "A configured measure absent from the data is dropped from the X and Y Measure pickers with a console warning naming it; when none of the configured measures is present the control falls back to every measure in the data rather than rendering empty.",
+    "SDD-FILT-001": "A filter spec accepts `start`, `all` and `multiple` alongside `value_col` and `label`, and means the same thing here as in every other renderer. A spec that declares only `value_col` and `label` behaves exactly as it did before: a single-value dropdown whose first option is \"All\".",
+    "SDD-FILT-002": "`start` names the value the filter opens on, and suppresses the \"All\" option unless the spec also passes `all: true`. A start of `0` or `false` is a real column value, not an absent start.",
+    "SDD-FILT-003": "`all: false` removes the \"All\" option so a value is always selected. The key is read as written and is never truthiness-tested, because `false` is the value that does something.",
+    "SDD-FILT-004": "`multiple: true` renders a checkbox multiselect instead of a dropdown, and the rows shown are those matching ANY selected value. Its state is null (everything selected, no restriction) or an array of values.",
+    "SDD-CTRL-001": "A reset control at the foot of the control panel restores every settings-derived control to its configured default, re-derives the data-driven measure and visit defaults, clears the point selection, the docked profile and the linked listing, and re-renders."
   }
 }

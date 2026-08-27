@@ -320,6 +320,18 @@ function updateNotes(host) {
     host.notes.append(note);
   }
 
+  // A reader's own choice, not a data problem, so a plain span rather than the
+  // warning style the removed-record note carries (HEP-CTRL-018).
+  if (host.unscheduledRecords) {
+    host.notes.append(
+      createElement(
+        'span',
+        null,
+        `${host.unscheduledRecords} records at unscheduled visits excluded.`
+      )
+    );
+  }
+
   if (host.droppedParticipants) {
     const dropReason =
       host.state.display === 'relative_baseline'

@@ -92,3 +92,54 @@ export function summaryCsv(majors, groups) {
   });
   return lines.join('\n') + '\n';
 }
+
+/**
+ * The empty-table message the original renderer used for every empty state
+ * (AE-REG-014). Kept verbatim: the requirement pins the wording, and it is
+ * now the message for the one case that wording actually describes — events
+ * excluded by the active event filters.
+ */
+export const NO_MATCH_MESSAGE =
+  'Error: No AEs found for the current filters. Update the filters to see results.';
+
+/**
+ * Which kind of empty the summary table is, and the message that says so.
+ * An empty event set collapses three different clinical situations — no
+ * participants in the selection, participants with no adverse events
+ * recorded, and events removed by the event filters — which the original
+ * renderer reported with one message (AE-USER-021, AE-USER-022). Evaluated
+ * population-first: with no participants there is no denominator to speak
+ * about, and an event-free population is a statement about the data rather
+ * than the filters, so the filter wording is the residual.
+ * @param {Object} rows The current row sets.
+ * @param {Object[]} rows.populationRows The populationData() result (placeholders included).
+ * @param {Object[]} rows.eventRows The eventData() result.
+ * @param {Object[]} rows.allRows Every flagged row bound to the module.
+ * @param {import('./configure.js').AEExplorerSettings} settings The synced settings.
+ * @returns {?{kind: string, text: string}} The empty state, or null when there are rows to draw.
+ */
+export function emptyState({ populationRows, eventRows, allRows }, settings) {
+  if (eventRows.length) return null;
+  const participants = (rows) =>
+    new Set(rows.map((row) => String(row[settings.id_col] ?? ''))).size;
+  const enrolled = participants(allRows);
+  const shown = participants(populationRows);
+  if (!populationRows.length) {
+    return {
+      kind: 'no-participants',
+      text: `No participants are in the current selection: none of the ${enrolled} participants in the data match the participant filters. Widen a participant filter to see results.`
+    };
+  }
+  if (!populationRows.some((row) => !row.__ae_placeholder)) {
+    return shown === enrolled
+      ? {
+          kind: 'no-events-in-study',
+          text: `No adverse events have been recorded in this study: all ${enrolled} participants are event-free.`
+        }
+      : {
+          kind: 'no-events-for-selection',
+          text: `No adverse events have been recorded for the ${shown} participant${shown === 1 ? '' : 's'} in the current selection.`
+        };
+  }
+  return { kind: 'filtered-out', text: NO_MATCH_MESSAGE };
+}

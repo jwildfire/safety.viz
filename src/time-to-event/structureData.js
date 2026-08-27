@@ -16,6 +16,7 @@
 // nep-explorer accounting pattern.
 
 import { kmEstimate } from './km.js';
+import { filterMatches } from '../filters.js';
 
 /** The one internal column the dropped-row exports keep, because it is the answer. */
 export const DROP_REASON_COLUMN = '__tte_dropReason';
@@ -58,7 +59,7 @@ export function applyEventFilters(events, filters) {
 export function applyFilters(rows, filters) {
   const active = Object.entries(filters || {}).filter(([, value]) => value != null);
   if (!active.length) return rows;
-  return rows.filter((row) => active.every(([column, value]) => String(row[column]) === value));
+  return rows.filter((row) => active.every(([column, value]) => filterMatches(row[column], value)));
 }
 
 /**

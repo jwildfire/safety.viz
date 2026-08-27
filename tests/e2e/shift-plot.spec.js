@@ -79,6 +79,58 @@ test.describe('safety.viz shift-plot module', () => {
     expect(axes.domain[1]).toBe(axes.xMax);
   });
 
+  test('SSP-SCALE-001/SSP-SCALE-004: the axis-type toggle switches both axes to log and keeps the shared domain (#136)', async ({
+    page
+  }) => {
+    expect(await page.evaluate(() => window.__safetyShiftPlotInstance.chart.scales.x.type)).toBe(
+      'linear'
+    );
+
+    await control(page, 'Axis Type').selectOption('log');
+
+    const axes = await page.evaluate(() => {
+      const instance = window.__safetyShiftPlotInstance;
+      const chart = instance.chart;
+      return {
+        xType: chart.scales.x.type,
+        yType: chart.scales.y.type,
+        xMin: chart.scales.x.min,
+        yMin: chart.scales.y.min,
+        xMax: chart.scales.x.max,
+        yMax: chart.scales.y.max,
+        domain: instance.state.domain,
+        points: chart.data.datasets[0].data.length
+      };
+    });
+    // Both axes together — the identity line needs one shared domain, so the
+    // scale type can never differ between them.
+    expect(axes.xType).toBe('logarithmic');
+    expect(axes.yType).toBe('logarithmic');
+    expect(axes.xMin).toBe(axes.yMin);
+    expect(axes.xMax).toBe(axes.yMax);
+    expect(axes.domain[0]).toBe(axes.xMin);
+    expect(axes.domain[1]).toBe(axes.xMax);
+    // A logarithmic axis never reaches zero, so the padded lower bound must
+    // stay strictly positive or the identity line's getPixelForValue returns
+    // NaN and the chart draws blank (SSP-SCALE-002).
+    expect(axes.xMin).toBeGreaterThan(0);
+    // The fixture's Albumin values are all positive, so nothing is dropped and
+    // the participant note is unchanged (SSP-SCALE-004).
+    expect(axes.points).toBe(12);
+    await expect(page.locator('.sv-notes')).toContainText('12 of 15 participants shown (80.0%)');
+    await expect(page.locator('.sv-notes')).not.toContainText('nonpositive');
+    await captureEvidence(page, 'SSP-SCALE-001', 'log-axes');
+
+    // And back: the toggle is reversible, restoring the linear domain.
+    await control(page, 'Axis Type').selectOption('linear');
+    const back = await page.evaluate(() => {
+      const chart = window.__safetyShiftPlotInstance.chart;
+      return { xType: chart.scales.x.type, yType: chart.scales.y.type };
+    });
+    expect(back.xType).toBe('linear');
+    expect(back.yType).toBe('linear');
+  });
+
   test('SSP-COUNT-001/SSP-REG-005: the participant note reports shown-of-total participants (#14)', async ({
     page
   }) => {

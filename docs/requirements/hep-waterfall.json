@@ -58,6 +58,10 @@
     "HWF-COHORT-008": "More active-arm than placebo-arm participants show a maximum on-treatment ALT below their own baseline.",
     "HWF-COHORT-009": "A participant designated as declining declines at every on-treatment visit, so the maximum on-treatment value is genuinely below baseline rather than an artefact of one visit.",
     "HWF-COHORT-010": "Baseline ALT across the plotted cohort spans 1x to 8x the upper limit of normal with no gap large enough to break the baseline trace into steps.",
-    "HWF-COHORT-011": "Eight active-arm participants carry a maximum on-treatment ALT of three to six times their own baseline."
+    "HWF-COHORT-011": "Eight active-arm participants carry a maximum on-treatment ALT of three to six times their own baseline.",
+    "HWF-FILT-001": "A filter spec accepts `start`, `all` and `multiple` alongside `value_col` and `label`, and means the same thing here as in every other renderer. A spec that declares only `value_col` and `label` behaves exactly as it did before: a single-value dropdown whose first option is \"All\".",
+    "HWF-FILT-002": "`start` names the value the filter opens on, and suppresses the \"All\" option unless the spec also passes `all: true`. A start of `0` or `false` is a real column value, not an absent start.",
+    "HWF-FILT-003": "`all: false` removes the \"All\" option so a value is always selected. The key is read as written and is never truthiness-tested, because `false` is the value that does something.",
+    "HWF-FILT-004": "`multiple: true` renders a checkbox multiselect instead of a dropdown, and the rows shown are those matching ANY selected value. Its state is null (everything selected, no restriction) or an array of values."
   }
 }

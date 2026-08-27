@@ -18,7 +18,7 @@
 
 import { Chart, ScatterController, PointElement, LinearScale, Tooltip } from 'chart.js';
 
-import { controlBuilders, createElement, option, renderShell } from './shell.js';
+import { controlBuilders, createElement, renderShell } from './shell.js';
 import { syncSettings } from './nep-explorer/configure.js';
 import { checkInputs, hasCreatinine } from './nep-explorer/checkInputs.js';
 import {
@@ -36,6 +36,7 @@ import {
   stageZonesPlugin
 } from './nep-explorer/getPlugins.js';
 import { csvDownloadLink, toCsv } from './hep-explorer/dropped.js';
+import { initFilterState, renderFilterControl } from './filters.js';
 
 Chart.register(ScatterController, PointElement, LinearScale, Tooltip);
 
@@ -99,8 +100,31 @@ class SafetyNepExplorer {
     this.charts = [];
     this.chart = null;
     this.participantsSelected = [];
-    this.state = { filters: {}, zoneLabels: this.settings.zone_labels, selectedId: null };
+    // The zone-labels choice is carried on BOTH state and settings (the
+    // checkbox handler and setSettings keep the two in step, so a host reading
+    // back settings sees what the user chose). That makes this.settings the
+    // wrong place to re-seed from — it holds the current choice, not the
+    // configured one — so the configured value is snapshotted here and
+    // seedState() reads the snapshot (NEP-CTRL-001).
+    this.initialZoneLabels = this.settings.zone_labels;
+    this.state = this.seedState();
     this.renderShell();
+  }
+
+  /**
+   * The opening control state, derived from the settings alone: the configured
+   * filter start values and the configured stage-zone-label choice. Nothing
+   * here depends on the bound data, so the "Reset chart" control
+   * (NEP-CTRL-001) can rebuild it at any point in the session.
+   * @returns {Object} A fresh control state.
+   * @private
+   */
+  seedState() {
+    return {
+      filters: initFilterState(this.settings.filters),
+      zoneLabels: this.initialZoneLabels,
+      selectedId: null
+    };
   }
 
   /**
@@ -152,7 +176,13 @@ class SafetyNepExplorer {
    * @returns {SafetyNepExplorer} The instance, for chaining.
    */
   setSettings(settings) {
-    if ('zone_labels' in settings) this.state.zoneLabels = settings.zone_labels;
+    // An explicit override reconfigures the control, so it moves the reset
+    // baseline with it (NEP-CTRL-001); without an override the user's own
+    // choice is preserved, exactly as before.
+    if ('zone_labels' in settings) {
+      this.state.zoneLabels = settings.zone_labels;
+      this.initialZoneLabels = settings.zone_labels;
+    }
     this.settings = syncSettings({ ...this.settings, ...settings });
     this.settings.zone_labels = this.state.zoneLabels;
     if (this.rawData.length) this.validateAndCleanData();
@@ -198,7 +228,7 @@ class SafetyNepExplorer {
    */
   buildControls() {
     this.controls.innerHTML = '';
-    const { addSection, addControl } = controlBuilders(this.controls);
+    const { addSection, addControl, addReset } = controlBuilders(this.controls);
 
     const filterSpecs = this.settings.filters.filter((filter) => {
       // Tested against the RAW records, not the built points: buildParticipants
@@ -215,17 +245,20 @@ class SafetyNepExplorer {
     if (filterSpecs.length) {
       const filterParent = addSection('Filters');
       filterSpecs.forEach((filter) => {
-        const select = addControl(filter.label, document.createElement('select'), filterParent);
-        option(select, '__all__', 'All', !this.state.filters[filter.value_col]);
-        unique(this.allPoints.map((point) => point.meta[filter.value_col]))
-          .sort()
-          .forEach((value) =>
-            option(select, value, value, this.state.filters[filter.value_col] === value)
-          );
-        select.onchange = () => {
-          this.state.filters[filter.value_col] = select.value === '__all__' ? null : select.value;
-          this.render();
-        };
+        const values = unique(this.allPoints.map((point) => point.meta[filter.value_col])).sort();
+        addControl(
+          filter.label,
+          renderFilterControl({
+            spec: filter,
+            values: values,
+            selected: this.state.filters[filter.value_col],
+            onChange: (next) => {
+              this.state.filters[filter.value_col] = next;
+              this.render();
+            }
+          }),
+          filterParent
+        );
       });
     }
 
@@ -241,6 +274,17 @@ class SafetyNepExplorer {
     const inline = createElement('div', 'sv-control-inline');
     inline.append(zoneLabels, document.createTextNode('Show'));
     addControl('Stage zone labels', inline, displayParent);
+
+    // The way back to the opening view (NEP-CTRL-001), at the foot of the
+    // sidebar below every section. settings.zone_labels is written back
+    // alongside the state exactly as the checkbox handler above does it, so
+    // the two never drift apart.
+    addReset(() => {
+      this.state = this.seedState();
+      this.settings.zone_labels = this.state.zoneLabels;
+      this.buildControls();
+      this.render();
+    });
   }
 
   /**

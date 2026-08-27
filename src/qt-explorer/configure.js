@@ -10,6 +10,8 @@
 // QT-CAT-*, QT-DATA-*).
 
 /** The three views the renderer switches between (QT-CTRL-001). */
+import { normalizeFilterSpec } from '../filters.js';
+
 export const VIEWS = [
   { value: 'central', label: 'Central tendency' },
   { value: 'outlier', label: 'Outlier scatter' },
@@ -33,6 +35,44 @@ export const DISPLAY_MODES = [
   { value: 'delta', label: 'Δ (change from baseline)' },
   { value: 'deltadelta', label: 'ΔΔ (placebo-corrected)' }
 ];
+
+/**
+ * The standing caution the chart carries wherever it renders (QT-CAUTION-001).
+ * The clinical guide already says this; the widget travels without the guide,
+ * so it has to say it too. Mounted once into the module shell rather than
+ * appended to a view's footnote, because every view blanks and rewrites its
+ * footnote on each render — and blanks it outright on the heart-rate
+ * (QTc-only) paths, which is exactly when a reader is furthest from a
+ * validated analysis.
+ * @type {string}
+ */
+export const CLINICAL_CAUTION =
+  'Exploratory tool — not validated for clinical use. Confirm any signal with the validated ICH-E14 analyses.';
+
+/**
+ * The unblinding warning (QT-CAUTION-002). Every view of this chart is coloured
+ * and legended by treatment arm, so simply opening it discloses assignment.
+ * Shown only when the bound data actually carries more than one arm, so a
+ * single-arm or already-pooled extract does not warn about a disclosure that
+ * has not happened.
+ * @type {string}
+ */
+export const UNBLINDING_CAUTION =
+  'Treatment assignment is shown: every view colours and labels participants by arm. Reading or sharing arm-labelled results can unblind an ongoing study — confirm this view is permitted by the study’s blinding plan.';
+
+/**
+ * Whether the unblinding warning applies to the bound data (QT-CAUTION-002):
+ * true only when more than one non-empty arm value is present.
+ * @param {string[]} arms The arms resolved from the cleaned rows.
+ * @returns {boolean} True when the data discloses more than one treatment arm.
+ */
+export function showsUnblindingCaution(arms) {
+  if (!Array.isArray(arms)) return false;
+  const named = arms.filter(
+    (arm) => arm !== undefined && arm !== null && String(arm).trim() !== ''
+  );
+  return named.length > 1;
+}
 
 /** Sentinel timepoint: each participant's worst post-baseline reading (QT-OUT-002). */
 export const TIMEPOINT_MAX = '__qt_max';
@@ -61,7 +101,7 @@ export const TIMEPOINT_MAX = '__qt_max';
  * @property {number[]} [change_thresholds=[30,60]] Change-from-baseline cut-lines (msec) — scatter horizontals + categorical change rows (QT-OUT-003, QT-CAT-003).
  * @property {number} [reference_threshold=10] Central-tendency reference line (msec): the ICH-E14 threshold of concern (QT-CT-003).
  * @property {number} [ci_level=0.9] Confidence level for the CI on the mean change and the mean difference; the ICH-E14 metric reads its upper bound (QT-CT-005).
- * @property {Array<string|Object>} [filters=[]] Filter controls: column names or { value_col, label } specs (QT-CTRL-003).
+ * @property {Array<string|Object>} [filters=[]] Filter controls: column names or { value_col, label } specs (QT-CTRL-003). Filter specs take `{ value_col, label, start, all, multiple }`: `start` is the opening selection (an array for a `multiple` filter, and a start of `0` or `false` is a real value, not an absent one); `all` controls the "All" option and defaults to true, or to false when a start is given — pass `all: true` to keep All alongside a start, `all: false` to require a selection; `multiple: true` renders a checkbox multiselect whose state is null (everything) or an array of values (#136).
  * @property {boolean} [profile=true] Dock the shared participant-profile module in the shell's profile slot, fed by the outlier-scatter point click via the participantsSelected event; the ECG parameters render as key measures in observed milliseconds with the first absolute threshold as the QTc cut (#99, PPRF-QT-001/002).
  * @property {?Array<string|Object>} [profile_details=null] Demographic columns for the docked profile's header, as names or { value_col, label } specs; null shows none (#99, PPRF-QT-001).
  * @property {?string} [participantProfileURL=null] Optional link-out URL for the docked profile's header, templated by every literal `{id}` token (#99, PPRF-QT-001).
@@ -136,7 +176,7 @@ export function syncSettings(settings) {
   const synced = { ...DEFAULT_SETTINGS, ...settings };
 
   synced.filters = arrayify(synced.filters)
-    .map((value) => fieldSpec(value))
+    .map((value) => normalizeFilterSpec(value))
     .filter((d) => d.value_col);
 
   synced.measures = arrayify(synced.measures);

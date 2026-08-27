@@ -30,6 +30,7 @@ import {
   resolveMeasureRows
 } from '../hep-explorer/structureData.js';
 import { TRACE_COLOR, barColors } from './getPlugins.js';
+import { filterMatches } from '../filters.js';
 
 /**
  * Clean the raw records and derive the per-row columns the reduction reads:
@@ -119,7 +120,7 @@ export function applyFilters(subjects, filters) {
   );
   if (!active.length) return [...(subjects || [])];
   return (subjects || []).filter((subject) =>
-    active.every(([col, value]) => String(subject.raw ? subject.raw[col] : '') === String(value))
+    active.every(([col, value]) => filterMatches(subject.raw ? subject.raw[col] : '', value))
   );
 }
 

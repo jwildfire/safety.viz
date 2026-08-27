@@ -30,9 +30,11 @@ import {
   computeRRatio,
   participantMeasureSeries,
   measureSummary,
+  partitionUnscheduledRows,
   displayField,
   dayThenIndex
 } from '../hep-core/rows.js';
+import { filterMatches } from '../filters.js';
 
 export function unique(values) {
   return [
@@ -68,7 +70,8 @@ export {
   participantPeak,
   computeRRatio,
   participantMeasureSeries,
-  measureSummary
+  measureSummary,
+  partitionUnscheduledRows
 };
 
 /**
@@ -195,9 +198,7 @@ export function buildPoints(cleanRows, settings, state) {
  */
 export function applyFilters(points, filters) {
   return points.filter((point) =>
-    Object.entries(filters).every(
-      ([key, value]) => !value || String(point.raw[key]) === String(value)
-    )
+    Object.entries(filters || {}).every(([key, value]) => filterMatches(point.raw[key], value))
   );
 }
 

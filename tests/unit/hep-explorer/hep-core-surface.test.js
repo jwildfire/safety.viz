@@ -46,6 +46,7 @@ const ROWS_EXPORTS = [
   'measureSummary',
   'participantMeasureSeries',
   'participantPeak',
+  'partitionUnscheduledRows',
   'resolveMeasureRows'
 ];
 

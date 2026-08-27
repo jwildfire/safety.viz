@@ -37,8 +37,8 @@ describe('outlier-explorer configure', () => {
       filters: [{ value_col: 'ARM', label: 'Treatment Group', start: 'Placebo' }, 'SEX']
     });
     expect(settings.filters).toEqual([
-      { value_col: 'ARM', label: 'Treatment Group', start: 'Placebo' },
-      { value_col: 'SEX', label: 'SEX' }
+      { value_col: 'ARM', label: 'Treatment Group', start: 'Placebo', all: false, multiple: false },
+      { value_col: 'SEX', label: 'SEX', start: null, all: true, multiple: false }
     ]);
   });
 

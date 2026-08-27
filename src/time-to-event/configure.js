@@ -35,7 +35,7 @@
  * @property {?string} [event_desc_col='AEDECOD'] Optional event description column, shown in event tooltips for the qualifying event.
  * @property {Array<string|Object>} [event_filters=['AEBODSYS','AEDECOD','AESER','AESEV']] Multiselect filter controls over the event dataset — the endpoint composer (TTE-FILT-001): column names or { value_col, label } specs. A filter whose column is absent from the events is dropped with a console warning.
  * @property {string} [endpoint_label='Time to first qualifying event'] Display name for the composed endpoint, used in the notes.
- * @property {Array<string|Object>} [filters=[]] Population filter controls (single-select): column names or { value_col, label } specs.
+ * @property {Array<string|Object>} [filters=[]] Population filter controls (single-select): column names or { value_col, label } specs. Filter specs take `{ value_col, label, start, all, multiple }`: `start` is the opening selection (an array for a `multiple` filter, and a start of `0` or `false` is a real value, not an absent one); `all` controls the "All" option and defaults to true, or to false when a start is given — pass `all: true` to keep All alongside a start, `all: false` to require a selection; `multiple: true` renders a checkbox multiselect whose state is null (everything) or an array of values (#136).
  * @property {string} [direction='incidence'] `incidence` (1 − KM, rising — the safety default, D2) or `survival` (falling). Anything else falls back to incidence.
  * @property {boolean} [ci=true] Whether to draw the pointwise 95% confidence band (D3).
  * @property {string} [time_unit='day'] Axis label unit; display only, no rescaling.
@@ -50,6 +50,8 @@
  * configuration.
  * @type {TimeToEventSettings}
  */
+import { normalizeFilterSpec } from '../filters.js';
+
 export const DEFAULT_SETTINGS = {
   id_col: 'USUBJID',
   group_col: 'ARM',
@@ -106,7 +108,7 @@ export function syncSettings(settings) {
     .map((filter) => fieldSpec(filter))
     .filter((filter) => filter.value_col);
   synced.filters = arrayify(synced.filters)
-    .map((filter) => fieldSpec(filter))
+    .map((filter) => normalizeFilterSpec(filter))
     .filter((filter) => filter.value_col);
   return synced;
 }

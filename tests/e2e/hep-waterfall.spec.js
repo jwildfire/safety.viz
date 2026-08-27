@@ -622,7 +622,11 @@ test.describe('safety.viz hep-waterfall module', () => {
     expect(state.ids).toEqual(ORDER);
     expect(state.summary).toBe('baseline_peak');
     expect(state.ulnDisplay).toBe('band');
-    expect(state.filters).toEqual({});
+    // Every configured filter is back to no restriction. Since #136 the seeded
+    // state names each filter explicitly rather than leaving the object empty,
+    // so a filter that declares a `start` can come back to its start value
+    // instead of silently to All — assert the meaning, not the old shape.
+    expect(Object.values(state.filters).every((value) => value === null)).toBe(true);
     expect(state.boxes).toBe(2);
   });
 

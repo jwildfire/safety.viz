@@ -17,8 +17,15 @@ plus heart rate; QTcI, PR/QRS/JT, per-subject drill-down, QT-RR hysteresis, the
 guided ICH-E14 workflow, and a moxifloxacin positive-control arm are deferred to
 Phase 2 (the CDISC Pilot ADEG carries none of them). A reviewed source
 requirement matrix (`qt-explorer.md` in the requirements repo) is not yet
-published, so the source-matrix column is pending; each row lists the module IDs
-its test covers.
+published for the Phase-1 rows, so their source-matrix column is pending; each
+row lists the module IDs its test covers.
+
+Two later additions ([#136](https://github.com/jwildfire/safety.viz/issues/136))
+close legacy review asks against the original renderer: `QT-CT-008` prints the
+central-tendency values and CI bounds the band already draws, and
+`QT-CAUTION-*` mounts the standing not-for-clinical-use caution and the
+conditional unblinding warning once into the module shell, where no view can
+blank them.
 
 ## Browser evidence (Playwright — `tests/e2e/qt-explorer.spec.js`)
 
@@ -27,29 +34,35 @@ its test covers.
 | QT-CTRL-001, QT-CTRL-002, QT-CTRL-003 | —                                                     | #68   | renders the view, correction, statistic, display, and filter controls                              |
 | QT-CT-002, QT-CT-003, QT-CT-006       | —                                                     | #68   | central tendency draws per-arm lines, a CI band, the reference line and the peak marker            |
 | QT-CT-004, QT-CT-005                  | —                                                     | #68   | ΔΔ drops placebo and reports the ICH-E14 metric above the reference                                |
+| QT-CT-008                             | QT-CT-008                                             | #136  | central tendency prints the plotted values and CI bounds beneath the chart                         |
 | QT-OUT-002, QT-OUT-003, QT-OUT-004    | —                                                     | #68   | the outlier scatter draws absolute diagonals, the zero line, and per-arm marks                     |
 | QT-OUT-003                            | —                                                     | #68   | a specific visit adds the change-from-baseline lines                                               |
 | QT-CAT-001, QT-CAT-002, QT-CAT-003    | —                                                     | #68   | the categorical view hides the chart and tabulates by-arm exceedance                               |
 | QT-CT-007                             | —                                                     | #68   | heart rate is offered in central tendency without the QTc reference line                           |
 | QT-OUT-007                            | —                                                     | #68   | heart rate shows a QTc-only note in the outlier view                                               |
+| QT-CAUTION-001, QT-CAUTION-002        | QT-CAUTION-001, QT-CAUTION-002                        | #136  | the standing caution and the unblinding warning ride every view                                    |
 | QT-DATA-003                           | —                                                     | #68   | the removed-count path drops missing and non-numeric results                                       |
 | PPRF-QT-001, PPRF-QT-002              | PPRF-QT-001, PPRF-QT-002 (participant-profile matrix) | #99   | clicking an outlier-scatter point opens the railed profile in observed ms with the 450 cut on QTcF |
 | PPRF-QT-003, PPRF-QT-004              | PPRF-QT-003, PPRF-QT-004 (participant-profile matrix) | #99   | empty clicks and view switches clear the rail, which idles on non-scatter views                    |
 
 ## Unit evidence (Vitest — `tests/unit/qt-explorer/`)
 
-| Requirement ID                                                            | Source matrix rows                            | Issue | Test file                  |
-| ------------------------------------------------------------------------- | --------------------------------------------- | ----- | -------------------------- |
-| QT-CFG-001..007 (settings normalization, z table, placebo resolution)     | —                                             | #68   | `configure.test.js`        |
-| QT-DATA-005 (schema required columns)                                     | —                                             | #68   | `checkInputs.test.js`      |
-| QT-DATA-003/004/006, QT-STAT-001/002 (cleaning, change derivation, stats) | —                                             | #68   | `structureData.test.js`    |
-| QT-CT-001/002/004/005/006 (central-tendency series, ΔΔ, ICH-E14, peaks)   | —                                             | #68   | `structureData.test.js`    |
-| QT-OUT-001/002 (subject points, max post-baseline vs visit)               | —                                             | #68   | `structureData.test.js`    |
-| QT-CAT-001/002/003 (by-arm exceedance counts and percents)                | —                                             | #68   | `structureData.test.js`    |
-| QT-SCL-001..008 (correction suffix, axis titles, domains, arm marks)      | —                                             | #68   | `getScales.test.js`        |
-| QT-PLG-001/002/003 (color scale, rgba, scatter tooltip)                   | —                                             | #68   | `getPlugins.test.js`       |
-| QT-API-001 (module export)                                                | —                                             | #68   | `export.test.js`           |
-| PPRF-QT-001..004 (rail adoption, interval-measure mapping, clear paths)   | PPRF-QT-001..004 (participant-profile matrix) | #99   | `profile-adoption.test.js` |
+| Requirement ID                                                            | Source matrix rows                                 | Issue | Test file                               |
+| ------------------------------------------------------------------------- | -------------------------------------------------- | ----- | --------------------------------------- |
+| QT-CFG-001..007 (settings normalization, z table, placebo resolution)     | —                                                  | #68   | `configure.test.js`                     |
+| QT-DATA-005 (schema required columns)                                     | —                                                  | #68   | `checkInputs.test.js`                   |
+| QT-DATA-003/004/006, QT-STAT-001/002 (cleaning, change derivation, stats) | —                                                  | #68   | `structureData.test.js`                 |
+| QT-CT-001/002/004/005/006 (central-tendency series, ΔΔ, ICH-E14, peaks)   | —                                                  | #68   | `structureData.test.js`                 |
+| QT-CT-008 (printed central-tendency values table)                         | QT-CT-008                                          | #136  | `central-table.test.js`                 |
+| QT-OUT-001/002 (subject points, max post-baseline vs visit)               | —                                                  | #68   | `structureData.test.js`                 |
+| QT-CAT-001/002/003 (by-arm exceedance counts and percents)                | —                                                  | #68   | `structureData.test.js`                 |
+| QT-SCL-001..008 (correction suffix, axis titles, domains, arm marks)      | —                                                  | #68   | `getScales.test.js`                     |
+| QT-PLG-001/002/003 (color scale, rgba, scatter tooltip)                   | —                                                  | #68   | `getPlugins.test.js`                    |
+| QT-API-001 (module export)                                                | —                                                  | #68   | `export.test.js`                        |
+| QT-CAUTION-001, QT-CAUTION-002 (standing caution, unblinding gate)        | QT-CAUTION-001, QT-CAUTION-002                     | #136  | `configure.test.js`, `cautions.test.js` |
+| PPRF-QT-001..004 (rail adoption, interval-measure mapping, clear paths)   | PPRF-QT-001..004 (participant-profile matrix)      | #99   | `profile-adoption.test.js`              |
+| QT-FILT-001..004 (shared filter contract)                                 | QT-FILT-001, QT-FILT-002, QT-FILT-003, QT-FILT-004 | #136  | `../shared/filters.test.js`             |
+| QT-CTRL-004 (whole-chart reset, back to the central view)                 | QT-CTRL-004                                        | #136  | `reset.test.js`                         |
 
 ## Railed participant profile (#99, PPRF-QT)
 

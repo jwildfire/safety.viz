@@ -4,6 +4,8 @@
 // onPreprocess/defineMeasureData pipeline (RhoInc/safety-results-over-time) —
 // the same d3.quantile (R-7) statistics — to plain, unit-testable functions.
 
+import { filterMatches } from '../filters.js';
+
 /**
  * Distinct, non-empty values in first-seen order.
  * @param {Array} values Values to dedupe.
@@ -112,7 +114,7 @@ export function measureLabel(row, settings) {
  */
 export function applyFilters(rows, filters) {
   return rows.filter((row) =>
-    Object.entries(filters).every(([key, value]) => !value || String(row[key]) === String(value))
+    Object.entries(filters || {}).every(([key, value]) => filterMatches(row[key], value))
   );
 }
 
@@ -230,29 +232,11 @@ export function flagOutliers(rows, statsByVisitGroup, settings, groupCol) {
 }
 
 /**
- * Parse an unscheduled-visit pattern string. Accepts the /source/flags form
- * used by the original renderer's settings, or a plain source string.
- * @param {string} pattern The pattern string.
- * @returns {RegExp} The compiled expression.
+ * `parseUnscheduledPattern` and `isUnscheduledVisit` moved VERBATIM to
+ * `src/unscheduled-visits.js` (#136) so hep-explorer can consume them without
+ * importing this renderer's file. This pure re-export keeps the original
+ * import path valid, so no caller or test changed. `export … from` creates no
+ * local binding — safe here, and only here, because neither function is called
+ * anywhere inside this file; the sole consumer is src/results-over-time.js.
  */
-export function parseUnscheduledPattern(pattern) {
-  const match = /^\/(.*)\/([a-z]*)$/i.exec(String(pattern));
-  return match ? new RegExp(match[1], match[2]) : new RegExp(String(pattern));
-}
-
-/**
- * Whether a visit is unscheduled: an explicit unscheduled_visit_values list
- * takes precedence over the unscheduled_visit_pattern.
- * @param {string} visit The visit name.
- * @param {ResultsOverTimeSettings} settings The unscheduled-visit settings.
- * @returns {boolean} True when the visit is unscheduled.
- */
-export function isUnscheduledVisit(visit, settings) {
-  if (Array.isArray(settings.unscheduled_visit_values)) {
-    return settings.unscheduled_visit_values.map(String).includes(String(visit));
-  }
-  if (settings.unscheduled_visit_pattern) {
-    return parseUnscheduledPattern(settings.unscheduled_visit_pattern).test(String(visit));
-  }
-  return false;
-}
+export { isUnscheduledVisit, parseUnscheduledPattern } from '../unscheduled-visits.js';

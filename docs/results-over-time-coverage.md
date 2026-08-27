@@ -45,6 +45,9 @@ Playwright).
 | SROT-REG-015/016/017/020                      | SROT-REG-015, SROT-REG-016, SROT-REG-017, SROT-REG-020     | #27   | `getScales.test.js`                             |
 | SROT-REG-003/011/014/015                      | SROT-REG-003, SROT-REG-011, SROT-REG-014, SROT-REG-015     | #27   | `getPlugins.test.js`                            |
 | SROT-AXIS-001/002/003/004                     | SROT-AXIS-001, SROT-AXIS-002, SROT-AXIS-003, SROT-AXIS-004 | #85   | `axis-limits.test.js`                           |
+| SROT-MEAS-001/002 (measures whitelist)        | SROT-MEAS-001, SROT-MEAS-002                               | #136  | `measure-list.test.js`                          |
+| SROT-FILT-001..004 (shared filter contract)   | SROT-FILT-001, SROT-FILT-002, SROT-FILT-003, SROT-FILT-004 | #136  | `../shared/filters.test.js`                     |
+| SROT-CTRL-001 (whole-chart reset)             | —                                                          | #136  | `reset.test.js`                                 |
 
 ## Source-matrix routing status (58 rows)
 

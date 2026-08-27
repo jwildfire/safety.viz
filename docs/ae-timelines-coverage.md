@@ -28,18 +28,20 @@ behavior) by judgment, since every source row is still typed `planned`.
 
 ## Unit evidence (Vitest — `tests/unit/ae-timelines/`)
 
-| Requirement ID                                     | Source matrix rows                      | Issue | Test file               |
-| -------------------------------------------------- | --------------------------------------- | ----- | ----------------------- |
-| AET-DATA-001/004 (ADaM defaults)                   | AET-DATA-001, AET-DATA-004              | #26   | `configure.test.js`     |
-| AET-CFG-005..012 (settings sync)                   | AET-CFG-005..012                        | #26   | `configure.test.js`     |
-| AET-FUNC-002/003/004/005 (default filters)         | AET-FUNC-002..005                       | #26   | `configure.test.js`     |
-| AET-CFG-004, AET-DATA-003/006 (validation)         | AET-CFG-004, AET-DATA-003, AET-DATA-006 | #26   | `checkInputs.test.js`   |
-| AET-DATA-001, AET-FUNC-007 (cleaning + population) | AET-DATA-001, AET-FUNC-007              | #26   | `structureData.test.js` |
-| AET-FUNC-003 (color domain + N/A)                  | AET-FUNC-003                            | #26   | `structureData.test.js` |
-| AET-FUNC-006 (sort orders)                         | AET-FUNC-006, AET-REG-003               | #26   | `structureData.test.js` |
-| AET-FUNC-002, AET-CFG-008 (serious flag)           | AET-FUNC-002, AET-CFG-008               | #26   | `structureData.test.js` |
-| AET-FUNC-008 (study-day domain + axes)             | AET-FUNC-008, AET-REG-001               | #26   | `getScales.test.js`     |
-| AET-FUNC-008, AET-CFG-009 (tooltips + datasets)    | AET-FUNC-008, AET-REG-004, AET-CFG-009  | #26   | `getPlugins.test.js`    |
+| Requirement ID                                     | Source matrix rows                                     | Issue | Test file                                                                                                          |
+| -------------------------------------------------- | ------------------------------------------------------ | ----- | ------------------------------------------------------------------------------------------------------------------ |
+| AET-DATA-001/004 (ADaM defaults)                   | AET-DATA-001, AET-DATA-004                             | #26   | `configure.test.js`                                                                                                |
+| AET-CFG-005..012 (settings sync)                   | AET-CFG-005..012                                       | #26   | `configure.test.js`                                                                                                |
+| AET-FUNC-002/003/004/005 (default filters)         | AET-FUNC-002..005                                      | #26   | `configure.test.js`                                                                                                |
+| AET-CFG-004, AET-DATA-003/006 (validation)         | AET-CFG-004, AET-DATA-003, AET-DATA-006                | #26   | `checkInputs.test.js`                                                                                              |
+| AET-DATA-001, AET-FUNC-007 (cleaning + population) | AET-DATA-001, AET-FUNC-007                             | #26   | `structureData.test.js`                                                                                            |
+| AET-FUNC-003 (color domain + N/A)                  | AET-FUNC-003                                           | #26   | `structureData.test.js`                                                                                            |
+| AET-FUNC-006 (sort orders)                         | AET-FUNC-006, AET-REG-003                              | #26   | `structureData.test.js`                                                                                            |
+| AET-FUNC-002, AET-CFG-008 (serious flag)           | AET-FUNC-002, AET-CFG-008                              | #26   | `structureData.test.js`                                                                                            |
+| AET-FUNC-008 (study-day domain + axes)             | AET-FUNC-008, AET-REG-001                              | #26   | `getScales.test.js`                                                                                                |
+| AET-FUNC-008, AET-CFG-009 (tooltips + datasets)    | AET-FUNC-008, AET-REG-004, AET-CFG-009                 | #26   | `getPlugins.test.js`                                                                                               |
+| AET-FILT-001..004 (shared filter contract)         | AET-FILT-001, AET-FILT-002, AET-FILT-003, AET-FILT-004 | #136  | `../shared/filters.test.js`                                                                                        |
+| AET-CTRL-001                                       | AET-CTRL-001                                           | #136  | `reset.test.js` — the reset control sits last, restores the sort order and the filters, and closes the detail view |
 
 ## Source-matrix routing status (43 rows)
 

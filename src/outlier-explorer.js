@@ -22,6 +22,7 @@ import {
 } from 'chart.js';
 
 import { controlBuilders, createElement, option, renderShell } from './shell.js';
+import { presentMeasures, resolveMeasureList } from './measure-list.js';
 import { applyLimitEdit, clearAxisLimits, seedLimitInput, syncAxisLimits } from './axis-limits.js';
 import { GROUP_NONE, NORMAL_RANGE_METHODS, syncSettings } from './outlier-explorer/configure.js';
 import { checkInputs } from './outlier-explorer/checkInputs.js';
@@ -60,6 +61,7 @@ import {
   syncProfileRail,
   unmountProfileRail
 } from './profile-host.js';
+import { initFilterState, renderFilterControl } from './filters.js';
 
 Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip);
 
@@ -78,6 +80,7 @@ class SafetyOutlierExplorer {
     this.settings = syncSettings(settings);
     this.rawData = [];
     this.cleanData = [];
+    this.availableMeasures = [];
     this.filteredData = [];
     this.currentTableData = [];
     this.listingSearch = '';
@@ -94,7 +97,22 @@ class SafetyOutlierExplorer {
     this.profileFeed = null;
     this.profileKey = null;
     this.profileRows = [];
-    this.state = {
+    this.state = this.seedState();
+    this.initFilterState();
+    this.renderShell();
+    mountProfileRail(this, () => this.profileSettings());
+  }
+
+  /**
+   * The opening control state: every settings-derived default, before the
+   * data-driven normalisers (the filter `start` values and the measure
+   * fallback) run. Called from the constructor and from reseed(), so the
+   * Reset chart control and the first render agree by construction
+   * (SOE-CTRL-002, #136).
+   * @private
+   */
+  seedState() {
+    return {
       measure: this.settings.start_value,
       filters: {},
       timeIndex: 0,
@@ -112,9 +130,22 @@ class SafetyOutlierExplorer {
       normalRange: null,
       selectedId: null
     };
+  }
+
+  /**
+   * Restore the opening state for the Reset chart control (SOE-CTRL-002,
+   * #136): the settings-derived seed, then the two normalisers that run after
+   * it on first load — the filter `start` values (SOE-REG-051/053) and the
+   * data-driven measure. Skipping either would put the measure back to the
+   * `start_value` default of null (blanking the chart) and a start filter back
+   * to "All". Deliberately does NOT re-clean the data: nothing about the data
+   * changed, so an O(rows) re-clean on a control click would be waste.
+   * @private
+   */
+  reseed() {
+    this.state = this.seedState();
     this.initFilterState();
-    this.renderShell();
-    mountProfileRail(this, () => this.profileSettings());
+    if (this.cleanData.length) this.resolveMeasure();
   }
 
   /**
@@ -169,12 +200,7 @@ class SafetyOutlierExplorer {
    * @private
    */
   initFilterState() {
-    this.state.filters = {};
-    this.settings.filters.forEach((filter) => {
-      if (filter.start !== undefined && filter.start !== null && filter.start !== '') {
-        this.state.filters[filter.value_col] = String(filter.start);
-      }
-    });
+    this.state.filters = initFilterState(this.settings.filters);
   }
 
   /**
@@ -271,6 +297,22 @@ class SafetyOutlierExplorer {
     this.cleanData = rows;
     this.removedRecords = removed;
     if (removed) console.warn(`${removed} missing or non-numeric results have been removed.`);
+    this.availableMeasures = resolveMeasureList(
+      presentMeasures(this.cleanData, this.settings, measureLabel),
+      this.settings.measures
+    );
+    this.resolveMeasure();
+  }
+
+  /**
+   * Pin the selected measure to one the data actually carries, warning when a
+   * configured measure is absent (SOE-FUNC-001, SOE-MEAS-002). Runs after the
+   * settings-derived seed on both paths that produce an opening state —
+   * validateAndCleanData and reseed — because `start_value` defaults to null
+   * and the opening measure is therefore data-derived, not settings-derived.
+   * @private
+   */
+  resolveMeasure() {
     const measures = this.measures();
     if (this.state.measure && !measures.includes(this.state.measure)) {
       console.warn(
@@ -281,11 +323,13 @@ class SafetyOutlierExplorer {
   }
 
   /**
-   * Sorted distinct measure labels present in the cleaned data.
+   * The measure labels the Measure control offers: the configured `measures`
+   * whitelist in its own order, or every measure in the cleaned data
+   * alphabetically when it is unset (#136).
    * @private
    */
   measures() {
-    return unique(this.cleanData.map((row) => measureLabel(row, this.settings))).sort();
+    return this.availableMeasures;
   }
 
   /**
@@ -323,7 +367,7 @@ class SafetyOutlierExplorer {
    */
   buildControls() {
     this.controls.innerHTML = '';
-    const { addSection, addRow, addControl } = controlBuilders(this.controls);
+    const { addSection, addRow, addControl, addReset } = controlBuilders(this.controls);
 
     const measure = addControl('Measure', document.createElement('select'));
     this.measures().forEach((value) => option(measure, value, value, value === this.state.measure));
@@ -342,25 +386,24 @@ class SafetyOutlierExplorer {
       return exists;
     });
     const filterParent = filterSpecs.length ? addSection('Filters') : this.controls;
+    // A filter with a start value offers no "All" option unless the spec asks
+    // for one back (SOE-REG-052, now the shared contract's rule for every
+    // renderer rather than this one's local behaviour).
     filterSpecs.forEach((filter) => {
-      const select = addControl(filter.label, document.createElement('select'), filterParent);
-      const hasStart = filter.start !== undefined && filter.start !== null && filter.start !== '';
-      // A filter with a start value offers no "All" option (SOE-REG-052).
-      if (!hasStart) option(select, '__all__', 'All', !this.state.filters[filter.value_col]);
-      unique(this.cleanData.map((row) => row[filter.value_col]))
-        .sort()
-        .forEach((value) =>
-          option(
-            select,
-            value,
-            value,
-            String(this.state.filters[filter.value_col]) === String(value)
-          )
-        );
-      select.onchange = () => {
-        this.state.filters[filter.value_col] = select.value === '__all__' ? null : select.value;
-        this.render();
-      };
+      const values = unique(this.cleanData.map((row) => row[filter.value_col])).sort();
+      addControl(
+        filter.label,
+        renderFilterControl({
+          spec: filter,
+          values,
+          selected: this.state.filters[filter.value_col],
+          onChange: (next) => {
+            this.state.filters[filter.value_col] = next;
+            this.render();
+          }
+        }),
+        filterParent
+      );
     });
 
     if (this.settings.time_cols.length > 1) {
@@ -460,6 +503,17 @@ class SafetyOutlierExplorer {
       this.state.groupBy = group.value;
       this.render();
     };
+
+    // Reset chart (SOE-CTRL-002, #136): the whole-chart way back to the
+    // opening view, distinct from the Y-axis section's Reset Limits, which
+    // clears the axis overrides and nothing else. Appended straight to the
+    // controls container as the LAST statement of buildControls so it sits
+    // full-width below every section.
+    addReset(() => {
+      this.reseed();
+      this.buildControls();
+      this.render();
+    });
   }
 
   /**

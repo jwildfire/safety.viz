@@ -44,6 +44,11 @@
     "AET-CFG-014": "an array of variables for each value combination of which a mark is drawn",
     "AET-API-001": "a factory to create a custom [Webcharts chart](https://github.com/RhoInc/Webcharts/wiki/Chart) object",
     "AET-API-003": "The custom `participantsSelected` event is dispatched to the overall chart wrapper (`chart.wrap`) whenever the details for a given participant are viewed (or cleared) by clicking on the y-axis labels in the chart. The event has a custom `data` property holding an array with the selected ID when a new participant is selected (`[\"123-456-7\"]`) or an empty array when participant details are cleared.",
-    "AET-REQ-003": "More information is available in the project's [wiki](https://github.com/RhoInc/aeexplorer/wiki):"
+    "AET-REQ-003": "More information is available in the project's [wiki](https://github.com/RhoInc/aeexplorer/wiki):",
+    "AET-FILT-001": "A filter spec accepts `start`, `all` and `multiple` alongside `value_col` and `label`, and means the same thing here as in every other renderer. A spec that declares only `value_col` and `label` behaves exactly as it did before: a single-value dropdown whose first option is \"All\".",
+    "AET-FILT-002": "`start` names the value the filter opens on, and suppresses the \"All\" option unless the spec also passes `all: true`. A start of `0` or `false` is a real column value, not an absent start.",
+    "AET-FILT-003": "`all: false` removes the \"All\" option so a value is always selected. The key is read as written and is never truthiness-tested, because `false` is the value that does something.",
+    "AET-FILT-004": "`multiple: true` renders a checkbox multiselect instead of a dropdown, and the rows shown are those matching ANY selected value. Its state is null (everything selected, no restriction) or an array of values.",
+    "AET-CTRL-001": "A reset control at the foot of the control panel returns the chart to its opening view: every filter and the participant sort order return to their configured defaults, any open participant detail view closes, the record listing empties and pages back to the first page, and the timelines are redrawn for the whole cohort."
   }
 }

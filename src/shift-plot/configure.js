@@ -14,6 +14,15 @@
 export const STATS = ['mean', 'min', 'max', 'first'];
 
 /**
+ * Scale options offered by the Axis Type control; valid values for the
+ * axis_type setting. The choice always applies to BOTH axes, because the
+ * module has one domain shared by the pair — that shared domain is what keeps
+ * the identity line meaning y = x (SSP-SCALE-001).
+ * @type {string[]}
+ */
+export const AXIS_TYPES = ['linear', 'log'];
+
+/**
  * Rendering and data-mapping settings for the shift-plot module. Every key
  * has a default in DEFAULT_SETTINGS; callers pass only the overrides they need
  * and syncSettings fills in the rest.
@@ -28,9 +37,11 @@ export const STATS = ['mean', 'min', 'max', 'first'];
  * @property {?Array<string>} [comparison_visits=null] Visit label(s) plotted on the y-axis; when null every visit after the baseline is selected on first render (SSP-CFG-005).
  * @property {string} [baseline_stat='mean'] Statistic collapsing a participant's several baseline-visit results to one value; one of STATS.
  * @property {string} [comparison_stat='mean'] Statistic collapsing a participant's several comparison-visit results to one value; one of STATS.
- * @property {Array<string|Object>} [filters=[]] Filter controls: column names or { value_col, label } specs. Filters whose column is absent from the data are dropped with a console warning.
+ * @property {Array<string|Object>} [filters=[]] Filter controls: column names or { value_col, label } specs. Filters whose column is absent from the data are dropped with a console warning. Filter specs take `{ value_col, label, start, all, multiple }`: `start` is the opening selection (an array for a `multiple` filter, and a start of `0` or `false` is a real value, not an absent one); `all` controls the "All" option and defaults to true, or to false when a start is given — pass `all: true` to keep All alongside a start, `all: false` to require a selection; `multiple: true` renders a checkbox multiselect whose state is null (everything) or an array of values (#136).
  * @property {?Array<string|Object>} [details=null] Columns for the linked participant listing; when null, defaults to participant ID, baseline, comparison, change, and percent change (SSP-REQ-005).
  * @property {?string} [start_value=null] Measure selected on first render; falls back to the first measure (with a console warning) when absent from the data.
+ * @property {?string[]} [measures=null] Ordered whitelist of measures the Measure control offers: only these appear, and in this order. null or [] offers every measure in the data, alphabetically — the behaviour before this setting existed. Configured measures absent from the data are dropped with a console warning; when none of them is present the control falls back to every measure in the data rather than going blank (SSP-MEAS-001, SSP-MEAS-002).
+ * @property {string} [axis_type='linear'] Initial scale for both axes, one of AXIS_TYPES ('linear' or 'log'); the Axis Type control switches them together because the two axes share one domain. On the log scale a participant pair with a zero or negative baseline or comparison value is removed and counted in the note above the chart (SSP-SCALE-001/003).
  * @property {string} [width='100%'] Widget width, carried over for the R widget bindings; the current shell always spans its container.
  * @property {number} [height=460] Chart-area height in pixels, carried over for the R widget bindings; the current shell fixes the chart area at 460px.
  * @property {number} [page_size=10] Rows per page in the linked participant listing.
@@ -62,6 +73,8 @@ export const DEFAULT_SETTINGS = {
   filters: [],
   details: null,
   start_value: null,
+  measures: null,
+  axis_type: 'linear',
   width: '100%',
   height: 460,
   page_size: 10,
@@ -96,13 +109,16 @@ export function fieldSpec(value, fallbackLabel) {
  * Merge caller settings onto DEFAULT_SETTINGS and normalize them: filter and
  * detail field lists become { value_col, label } arrays, baseline/comparison
  * visits become string arrays (or null when unset), the stats fall back to
- * 'mean' when not one of STATS, and the listing details default from the
- * baseline/comparison mapping when none are supplied.
+ * 'mean' when not one of STATS, axis_type falls back to 'linear' when not one
+ * of AXIS_TYPES, and the listing details default from the baseline/comparison
+ * mapping when none are supplied.
  * @param {ShiftPlotSettings} settings Caller overrides; pass {} for the defaults.
  * @returns {ShiftPlotSettings} The merged, normalized settings.
  */
 export function syncSettings(settings) {
   const synced = { ...DEFAULT_SETTINGS, ...settings };
+
+  synced.measures = arrayify(synced.measures);
   synced.filters = arrayify(synced.filters)
     .map((filter) => fieldSpec(filter))
     .filter((filter) => filter.value_col);
@@ -111,6 +127,7 @@ export function syncSettings(settings) {
     synced.comparison_visits == null ? null : arrayify(synced.comparison_visits);
   synced.baseline_stat = STATS.includes(synced.baseline_stat) ? synced.baseline_stat : 'mean';
   synced.comparison_stat = STATS.includes(synced.comparison_stat) ? synced.comparison_stat : 'mean';
+  synced.axis_type = AXIS_TYPES.includes(synced.axis_type) ? synced.axis_type : 'linear';
   synced.details = arrayify(synced.details)
     .map((detail) => fieldSpec(detail))
     .filter((detail) => detail.value_col);

@@ -5597,9 +5597,9 @@ var SafetyViz = (() => {
   }
   function createAttachObserver(chart, type, listener) {
     const canvas = chart.canvas;
-    const observer = new MutationObserver((entries) => {
+    const observer = new MutationObserver((entries2) => {
       let trigger = false;
-      for (const entry of entries) {
+      for (const entry of entries2) {
         trigger = trigger || nodeListContains(entry.addedNodes, canvas);
         trigger = trigger && !nodeListContains(entry.removedNodes, canvas);
       }
@@ -5615,9 +5615,9 @@ var SafetyViz = (() => {
   }
   function createDetachObserver(chart, type, listener) {
     const canvas = chart.canvas;
-    const observer = new MutationObserver((entries) => {
+    const observer = new MutationObserver((entries2) => {
       let trigger = false;
-      for (const entry of entries) {
+      for (const entry of entries2) {
         trigger = trigger || nodeListContains(entry.removedNodes, canvas);
         trigger = trigger && !nodeListContains(entry.addedNodes, canvas);
       }
@@ -5670,8 +5670,8 @@ var SafetyViz = (() => {
         listener();
       }
     }, window);
-    const observer = new ResizeObserver((entries) => {
-      const entry = entries[0];
+    const observer = new ResizeObserver((entries2) => {
+      const entry = entries2[0];
       const width = entry.contentRect.width;
       const height = entry.contentRect.height;
       if (width === 0 && height === 0) {
@@ -12593,6 +12593,9 @@ var SafetyViz = (() => {
 .sv-control-row{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
 .sv-control-row .sv-control{margin:0}
 .sv-control-inline{display:flex;align-items:center;gap:.4rem;font-size:.85rem}
+.sv-reset{width:100%;margin-top:.75rem;padding:.35rem .45rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.82rem;cursor:pointer}
+.sv-reset:hover{border-color:#8f9aa8;background:#f6f8fa}
+.sv-reset:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
 .sv-main{flex:1 1 auto;min-width:0}
 .sv-notes{display:flex;flex-wrap:wrap;gap:.25rem 1.25rem;font-size:.85rem;color:#52616f;margin:0 0 .6rem}
 .sv-warning{color:#9a3412}
@@ -12738,6 +12741,13 @@ var SafetyViz = (() => {
         wrap.append(lab, input);
         parent.append(wrap);
         return input;
+      },
+      addReset(onReset, label = "Reset chart") {
+        const button = createElement("button", "sv-reset", label);
+        button.type = "button";
+        button.onclick = onReset;
+        controls.append(button);
+        return button;
       }
     };
   }
@@ -12761,6 +12771,54 @@ var SafetyViz = (() => {
     });
     section.append(list);
     return section;
+  }
+
+  // src/measure-list.js
+  function entries(configured) {
+    if (configured === void 0 || configured === null || configured === "") return [];
+    return Array.isArray(configured) ? configured : [configured];
+  }
+  function resolveMeasureList(present, configured, { warn = true } = {}) {
+    const labels = (present || []).map((measure) => measure.label);
+    const sorted = [...labels].sort();
+    const configuredEntries = entries(configured);
+    if (!configuredEntries.length) return sorted;
+    const chosen = [];
+    const missing = [];
+    configuredEntries.forEach((entry) => {
+      const byLabel = labels.filter((label) => label === entry);
+      const matched = byLabel.length ? byLabel : present.filter((measure) => measure.name === entry).map((measure) => measure.label);
+      if (!matched.length) {
+        if (!missing.includes(entry)) missing.push(entry);
+        return;
+      }
+      matched.forEach((label) => {
+        if (!chosen.includes(label)) chosen.push(label);
+      });
+    });
+    if (warn && missing.length) {
+      const plural = missing.length > 1;
+      console.warn(
+        `The configured measure${plural ? "s" : ""} [ ${missing.join(", ")} ] ${plural ? "do" : "does"} not exist in the data and ${plural ? "have" : "has"} been removed from the Measure control.`
+      );
+    }
+    if (!chosen.length) {
+      if (warn && labels.length)
+        console.warn(
+          "No configured measure exists in the data. Falling back to every measure in the data."
+        );
+      return sorted;
+    }
+    return chosen;
+  }
+  function presentMeasures(rows, settings, label) {
+    const seen = /* @__PURE__ */ new Map();
+    (rows || []).forEach((row) => {
+      const text = label(row, settings);
+      if (text === void 0 || text === null || text === "") return;
+      if (!seen.has(text)) seen.set(text, { label: text, name: row[settings.measure_col] });
+    });
+    return [...seen.values()];
   }
 
   // src/axis-limits.js
@@ -12804,6 +12862,66 @@ var SafetyViz = (() => {
     state.axisDomain = null;
   }
 
+  // src/filters.js
+  var ALL_VALUE = "__all__";
+  function hasStart(start) {
+    if (start === void 0 || start === null || start === "") return false;
+    if (Array.isArray(start)) return start.length > 0;
+    return true;
+  }
+  function normalizeFilterSpec(value, fallbackLabel) {
+    if (typeof value === "string") {
+      return {
+        value_col: value,
+        label: fallbackLabel || value,
+        start: null,
+        all: true,
+        multiple: false
+      };
+    }
+    const spec = { ...value, value_col: value.value_col, label: value.label || value.value_col };
+    const multiple = spec.multiple === true;
+    const started = hasStart(spec.start);
+    let start = null;
+    if (started) {
+      const raw = Array.isArray(spec.start) ? spec.start : [spec.start];
+      start = multiple ? raw.map(String) : String(raw[0]);
+    }
+    const all = spec.all === void 0 ? !started : spec.all !== false;
+    return { ...spec, start, all, multiple };
+  }
+  function initFilterState(specs) {
+    const state = {};
+    (specs || []).forEach((spec) => {
+      state[spec.value_col] = spec.start === void 0 ? null : spec.start;
+    });
+    return state;
+  }
+  function filterMatches(rowValue, selection) {
+    if (selection === null || selection === void 0 || selection === "") return true;
+    if (Array.isArray(selection))
+      return selection.some((value) => String(value) === String(rowValue));
+    return String(rowValue) === String(selection);
+  }
+  function renderFilterControl({ spec, values, selected, onChange }) {
+    if (spec.multiple) {
+      return multiSelect({
+        values: values.map(String),
+        selected: Array.isArray(selected) ? selected.map(String) : null,
+        onChange
+      });
+    }
+    const select = document.createElement("select");
+    select.dataset.filter = spec.value_col;
+    const unset = selected === null || selected === void 0 || selected === "";
+    if (spec.all) option(select, ALL_VALUE, "All", unset);
+    values.forEach(
+      (value) => option(select, value, value, !unset && String(selected) === String(value))
+    );
+    select.onchange = () => onChange(select.value === ALL_VALUE ? null : select.value);
+    return select;
+  }
+
   // src/histogram/configure.js
   var DEFAULT_SETTINGS = {
     measure_col: "TEST",
@@ -12816,6 +12934,7 @@ var SafetyViz = (() => {
     groups: [],
     details: null,
     start_value: null,
+    measures: null,
     bin_algorithm: "Scott's normal reference rule",
     normal_range: true,
     display_normal_range: false,
@@ -12853,7 +12972,8 @@ var SafetyViz = (() => {
   }
   function syncSettings(settings) {
     const synced = { ...DEFAULT_SETTINGS, ...settings };
-    synced.filters = arrayify(synced.filters).map(fieldSpec).filter((d) => d.value_col);
+    synced.measures = arrayify(synced.measures);
+    synced.filters = arrayify(synced.filters).map((value) => normalizeFilterSpec(value)).filter((d) => d.value_col);
     const defaultGroup = { value_col: "sh_none", label: "None" };
     synced.groups = [
       defaultGroup,
@@ -12867,7 +12987,9 @@ var SafetyViz = (() => {
     if (!synced.details.length) {
       synced.details = [
         { value_col: synced.id_col, label: "Participant ID" },
-        ...synced.filters,
+        // Listing columns, not filters: take only the column and its label, so the
+        // filter contract's start/all/multiple keys do not leak into the listing.
+        ...synced.filters.map((filter) => fieldSpec(filter)),
         { value_col: synced.value_col, label: "Result" },
         { value_col: synced.normal_col_low, label: "Lower Limit of Normal" },
         { value_col: synced.normal_col_high, label: "Upper Limit of Normal" },
@@ -13042,7 +13164,7 @@ var SafetyViz = (() => {
   }
   function applyFilters(rows, filters) {
     return rows.filter(
-      (row) => Object.entries(filters).every(([key, value]) => !value || String(row[key]) === String(value))
+      (row) => Object.entries(filters || {}).every(([key, value]) => filterMatches(row[key], value))
     );
   }
   function shimazakiShinomotoBins(values, span) {
@@ -13162,19 +13284,19 @@ var SafetyViz = (() => {
     return Math.max(1e-4, Math.min(0.9999, Math.exp(-0.5 * jb)));
   }
   function approximateGroupP(groups) {
-    const entries = Object.entries(groups).map(([key, vals]) => [key, vals.map(Number).filter(Number.isFinite)]).filter(([, vals]) => vals.length);
-    if (entries.length < 2) return NaN;
-    const all = entries.flatMap(([, vals]) => vals);
+    const entries2 = Object.entries(groups).map(([key, vals]) => [key, vals.map(Number).filter(Number.isFinite)]).filter(([, vals]) => vals.length);
+    if (entries2.length < 2) return NaN;
+    const all = entries2.flatMap(([, vals]) => vals);
     const grand = mean(all);
-    const between = entries.reduce(
+    const between = entries2.reduce(
       (sum, [, vals]) => sum + vals.length * Math.pow(mean(vals) - grand, 2),
       0
     );
-    const within = entries.reduce(
+    const within = entries2.reduce(
       (sum, [, vals]) => sum + vals.reduce((inner, v) => inner + Math.pow(v - mean(vals), 2), 0),
       0
     );
-    const f = between / Math.max(1, entries.length - 1) / (within / Math.max(1, all.length - entries.length) || Number.EPSILON);
+    const f = between / Math.max(1, entries2.length - 1) / (within / Math.max(1, all.length - entries2.length) || Number.EPSILON);
     return Math.max(1e-4, Math.min(0.9999, Math.exp(-0.5 * f)));
   }
   function statisticalAnnotation(label, pValue, testName, url) {
@@ -13407,6 +13529,27 @@ var SafetyViz = (() => {
     };
   }
 
+  // src/unscheduled-visits.js
+  function parseUnscheduledPattern(pattern) {
+    const match = /^\/(.*)\/([a-z]*)$/i.exec(String(pattern));
+    return match ? new RegExp(match[1], match[2]) : new RegExp(String(pattern));
+  }
+  function isUnscheduledVisit(visit, settings) {
+    if (Array.isArray(settings.unscheduled_visit_values)) {
+      return settings.unscheduled_visit_values.map(String).includes(String(visit));
+    }
+    if (settings.unscheduled_visit_pattern) {
+      return parseUnscheduledPattern(settings.unscheduled_visit_pattern).test(String(visit));
+    }
+    return false;
+  }
+  function hasUnscheduledVisits(rows, visitCol, settings) {
+    if (!visitCol) return false;
+    return (rows || []).some(
+      (row) => row[visitCol] !== void 0 && row[visitCol] !== null && row[visitCol] !== "" && isUnscheduledVisit(row[visitCol], settings)
+    );
+  }
+
   // src/hep-core/rows.js
   var MEASURE_KEYS = ["ALT", "AST", "TB", "ALP"];
   function cutFor(cuts, measureKey, display) {
@@ -13485,6 +13628,17 @@ var SafetyViz = (() => {
   }
   function hasStudyDay(rows) {
     return rows.some((row) => Number.isFinite(row.__hep_day));
+  }
+  function partitionUnscheduledRows(rows, settings) {
+    const visitCol = settings.visit_col;
+    const scheduled = [];
+    const unscheduled = [];
+    (rows || []).forEach((row) => {
+      const visit = visitCol ? row[visitCol] : void 0;
+      const isUnscheduled = visit !== void 0 && visit !== null && visit !== "" && isUnscheduledVisit(visit, settings);
+      (isUnscheduled ? unscheduled : scheduled).push(row);
+    });
+    return { scheduled, unscheduled };
   }
   function deriveBaseline(rows, settings) {
     const groups = /* @__PURE__ */ new Map();
@@ -13683,6 +13837,9 @@ var SafetyViz = (() => {
     // jaundice flag and a Cholestasis/Hy's-Law classification can never disagree.
     jaundice_uln: 2,
     hide_unchanged: false,
+    unscheduled_visits: true,
+    unscheduled_visit_pattern: "/unscheduled|early termination/i",
+    unscheduled_visit_values: null,
     measure_values: {
       ALT: "Aminotransferase, alanine (ALT)",
       AST: "Aminotransferase, aspartate (AST)",
@@ -13738,7 +13895,7 @@ var SafetyViz = (() => {
   }
   function syncSettings3(settings) {
     const synced = { ...DEFAULT_SETTINGS3, ...settings };
-    synced.filters = arrayify3(synced.filters).map((value) => fieldSpec3(value)).filter((d) => d.value_col);
+    synced.filters = arrayify3(synced.filters).map((value) => normalizeFilterSpec(value)).filter((d) => d.value_col);
     const defaultGroup = { value_col: GROUP_NONE, label: "None" };
     synced.groups = [
       defaultGroup,
@@ -14093,11 +14250,11 @@ var SafetyViz = (() => {
       byMeasure.get(value).push(row);
     });
     const keyOrder = Object.keys(settings.measure_values || {});
-    const entries = [...byMeasure.entries()].map(([value, rows]) => {
+    const entries2 = [...byMeasure.entries()].map(([value, rows]) => {
       const { key, isKey } = resolve2(value);
       return { key, label: value, isKey, rows };
     });
-    return entries.sort((a, b) => {
+    return entries2.sort((a, b) => {
       if (a.isKey !== b.isKey) return a.isKey ? -1 : 1;
       if (a.isKey) return keyOrder.indexOf(a.key) - keyOrder.indexOf(b.key);
       return 0;
@@ -14786,9 +14943,9 @@ var SafetyViz = (() => {
       }
     };
   }
-  function annotationPlacements(entries, gap = ANNOTATION_GAP) {
+  function annotationPlacements(entries2, gap = ANNOTATION_GAP) {
     let last = -Infinity;
-    return entries.slice().sort((a, b) => a.y - b.y).map((entry) => {
+    return entries2.slice().sort((a, b) => a.y - b.y).map((entry) => {
       const y = Math.max(entry.y, last + gap);
       last = y;
       return { ...entry, y };
@@ -14798,27 +14955,27 @@ var SafetyViz = (() => {
     return {
       id: "sv-profile-measure-annotation",
       afterDatasetsDraw(chart) {
-        const entries = [];
+        const entries2 = [];
         chart.data.datasets.forEach((dataset, index) => {
           const meta = chart.getDatasetMeta ? chart.getDatasetMeta(index) : null;
           const drawn = meta && meta.data || [];
           const last = drawn[drawn.length - 1];
           if (!last || !Number.isFinite(last.x) || !Number.isFinite(last.y)) return;
-          entries.push({
+          entries2.push({
             key: dataset.svKey || dataset.label,
             x: last.x,
             y: last.y,
             color: dataset.borderColor
           });
         });
-        if (!entries.length) return;
+        if (!entries2.length) return;
         const { left, right, top, bottom } = chart.chartArea;
         const ctx = chart.ctx;
         ctx.save();
         ctx.font = ANNOTATION_FONT;
         ctx.textAlign = "right";
         ctx.textBaseline = "bottom";
-        annotationPlacements(entries).forEach((entry) => {
+        annotationPlacements(entries2).forEach((entry) => {
           ctx.fillStyle = entry.color;
           const width = ctx.measureText ? ctx.measureText(entry.key).width : 0;
           const x = Math.min(Math.max(entry.x, left + width), right);
@@ -16189,6 +16346,7 @@ var SafetyViz = (() => {
       this.settings = syncSettings(settings);
       this.rawData = [];
       this.cleanData = [];
+      this.availableMeasures = [];
       this.filteredData = [];
       this.currentTableData = [];
       this.listingSearch = "";
@@ -16201,9 +16359,23 @@ var SafetyViz = (() => {
       this.profileKey = null;
       this.profileRows = [];
       this.listingSelectedId = null;
-      this.state = {
+      this.state = this.seedState();
+      this.renderShell();
+      this.onListingRowClick = (row) => this.selectParticipant(row[this.settings.id_col]);
+      mountProfileRail(this, () => this.profileSettings());
+    }
+    /**
+     * The opening control state, derived from settings alone. Built once in the
+     * constructor and again by {@link reseed} behind the Reset chart control
+     * (SH-CTRL-009, #136), so "the state the chart opens in" has one definition
+     * rather than one per caller.
+     * @returns {Object} A fresh state object.
+     * @private
+     */
+    seedState() {
+      return {
         measure: this.settings.start_value,
-        filters: {},
+        filters: initFilterState(this.settings.filters),
         groupBy: this.settings.group_by,
         // X-axis limits (#85): `lower`/`upper` hold USER OVERRIDES only (null =
         // auto), `axisDomain` the [lower, upper] the last render resolved — what
@@ -16219,9 +16391,19 @@ var SafetyViz = (() => {
         annotateBoundaries: this.settings.annotate_bin_boundaries,
         selectedId: null
       };
-      this.renderShell();
-      this.onListingRowClick = (row) => this.selectParticipant(row[this.settings.id_col]);
-      mountProfileRail(this, () => this.profileSettings());
+    }
+    /**
+     * Return to the opening state (SH-CTRL-009, #136): re-seed from settings,
+     * then re-run the data-driven measure resolution the seed cannot do on its
+     * own — a `start_value` naming a measure absent from the data has to fall
+     * back to the all-measures overview again, not come back as a selection
+     * with no records. The bound data is untouched, so this deliberately does
+     * NOT re-run validateAndCleanData.
+     * @private
+     */
+    reseed() {
+      this.state = this.seedState();
+      if (this.cleanData.length) this.resolveMeasure();
     }
     /**
      * The settings handed to the railed participant-profile module (#99,
@@ -16340,6 +16522,21 @@ var SafetyViz = (() => {
       this.cleanData = rows;
       this.removedRecords = removed;
       if (removed) console.warn(`${removed} missing or non-numeric results have been removed.`);
+      this.availableMeasures = resolveMeasureList(
+        presentMeasures(this.cleanData, this.settings, measureLabel),
+        this.settings.measures
+      );
+      this.resolveMeasure();
+    }
+    /**
+     * Pin the selected measure to one present in the data, falling back to the
+     * all-measures overview with a console warning (SH-OVW-001). Runs after
+     * cleaning and again on reset, where it is what stops an absent
+     * `start_value` from coming back as an empty single-measure view
+     * (SH-CTRL-009).
+     * @private
+     */
+    resolveMeasure() {
       const measures = this.measures();
       if (this.state.measure != null && !measures.includes(this.state.measure)) {
         console.warn(
@@ -16369,11 +16566,13 @@ var SafetyViz = (() => {
       this.render();
     }
     /**
-     * Sorted distinct measure labels present in the cleaned data.
+     * The measure labels the Measure control offers: the configured `measures`
+     * whitelist in its own order, or every measure in the cleaned data
+     * alphabetically when it is unset (#136).
      * @private
      */
     measures() {
-      return unique(this.cleanData.map((row) => measureLabel(row, this.settings))).sort();
+      return this.availableMeasures;
     }
     /**
      * Rebuild the measure/filter/bin/normal-range/group controls from data + state.
@@ -16381,7 +16580,7 @@ var SafetyViz = (() => {
      */
     buildControls() {
       this.controls.innerHTML = "";
-      const { addSection, addRow, addControl } = controlBuilders(this.controls);
+      const { addSection, addRow, addControl, addReset } = controlBuilders(this.controls);
       const measure = addControl("Measure", document.createElement("select"));
       option(measure, OVERVIEW, "All Measures", this.isOverview());
       this.measures().forEach((value) => option(measure, value, value, value === this.state.measure));
@@ -16398,15 +16597,20 @@ var SafetyViz = (() => {
       });
       const filterParent = filterSpecs.length ? addSection("Filters") : this.controls;
       filterSpecs.forEach((filter) => {
-        const select = addControl(filter.label, document.createElement("select"), filterParent);
-        option(select, "__all__", "All", !this.state.filters[filter.value_col]);
-        unique(this.cleanData.map((row) => row[filter.value_col])).sort().forEach(
-          (value) => option(select, value, value, this.state.filters[filter.value_col] === value)
+        const values = unique(this.cleanData.map((row) => row[filter.value_col])).sort();
+        addControl(
+          filter.label,
+          renderFilterControl({
+            spec: filter,
+            values,
+            selected: this.state.filters[filter.value_col],
+            onChange: (next) => {
+              this.state.filters[filter.value_col] = next;
+              this.render();
+            }
+          }),
+          filterParent
         );
-        select.onchange = () => {
-          this.state.filters[filter.value_col] = select.value === "__all__" ? null : select.value;
-          this.render();
-        };
       });
       const xAxisParent = addSection("X-axis Limits");
       this.xAxisSection = xAxisParent;
@@ -16508,6 +16712,11 @@ var SafetyViz = (() => {
         (section) => section.classList.toggle("sv-hidden", this.isOverview())
       );
       this.updateNormalRangeControl();
+      addReset(() => {
+        this.reseed();
+        this.buildControls();
+        this.render();
+      });
     }
     /**
      * Hides the normal-range control for measures without normal data (SH-FUNC-004C).
@@ -16986,6 +17195,7 @@ var SafetyViz = (() => {
 
   // src/shift-plot/configure.js
   var STATS = ["mean", "min", "max", "first"];
+  var AXIS_TYPES2 = ["linear", "log"];
   var DEFAULT_SETTINGS4 = {
     measure_col: "TEST",
     value_col: "STRESN",
@@ -17000,6 +17210,8 @@ var SafetyViz = (() => {
     filters: [],
     details: null,
     start_value: null,
+    measures: null,
+    axis_type: "linear",
     width: "100%",
     height: 460,
     page_size: 10,
@@ -17021,11 +17233,13 @@ var SafetyViz = (() => {
   }
   function syncSettings4(settings) {
     const synced = { ...DEFAULT_SETTINGS4, ...settings };
+    synced.measures = arrayify4(synced.measures);
     synced.filters = arrayify4(synced.filters).map((filter) => fieldSpec4(filter)).filter((filter) => filter.value_col);
     synced.baseline_visits = synced.baseline_visits == null ? null : arrayify4(synced.baseline_visits);
     synced.comparison_visits = synced.comparison_visits == null ? null : arrayify4(synced.comparison_visits);
     synced.baseline_stat = STATS.includes(synced.baseline_stat) ? synced.baseline_stat : "mean";
     synced.comparison_stat = STATS.includes(synced.comparison_stat) ? synced.comparison_stat : "mean";
+    synced.axis_type = AXIS_TYPES2.includes(synced.axis_type) ? synced.axis_type : "linear";
     synced.details = arrayify4(synced.details).map((detail) => fieldSpec4(detail)).filter((detail) => detail.value_col);
     if (!synced.details.length) {
       synced.details = [
@@ -17220,7 +17434,7 @@ var SafetyViz = (() => {
   }
   function applyFilters2(rows, filters) {
     return rows.filter(
-      (row) => Object.entries(filters).every(([key, value]) => !value || String(row[key]) === String(value))
+      (row) => Object.entries(filters || {}).every(([key, value]) => filterMatches(row[key], value))
     );
   }
   function computeShiftPairs({
@@ -17272,7 +17486,15 @@ var SafetyViz = (() => {
     });
     return pairs;
   }
-  function computeDomain(pairs) {
+  function computeDomain(pairs, type = "linear") {
+    if (type === "log") {
+      const positives = pairs.flatMap((pair) => [pair.x, pair.y]).filter((value) => value > 0);
+      if (!positives.length) return [0.1, 1];
+      const min2 = Math.min(...positives);
+      const max2 = Math.max(...positives);
+      const factor = max2 > min2 ? (max2 / min2) ** 0.05 : 1.05;
+      return [min2 / factor, max2 * factor];
+    }
     if (!pairs.length) return [0, 1];
     const values = pairs.flatMap((pair) => [pair.x, pair.y]);
     const min = Math.min(...values);
@@ -17282,18 +17504,19 @@ var SafetyViz = (() => {
   }
 
   // src/shift-plot/getScales.js
-  function buildScales2(domain, measure) {
+  function buildScales2(domain, measure, type = "linear") {
     const suffix = measure ? ` \u2014 ${measure}` : "";
+    const scaleType = type === "log" ? "logarithmic" : "linear";
     return {
       x: {
-        type: "linear",
+        type: scaleType,
         min: domain[0],
         max: domain[1],
         title: { display: true, text: `Baseline Value${suffix}` },
         ticks: { maxRotation: 0 }
       },
       y: {
-        type: "linear",
+        type: scaleType,
         min: domain[0],
         max: domain[1],
         title: { display: true, text: `Comparison Value${suffix}` }
@@ -17359,7 +17582,7 @@ var SafetyViz = (() => {
   }
 
   // src/shift-plot.js
-  Chart.register(ScatterController, PointElement, LinearScale, plugin_tooltip, plugin_legend);
+  Chart.register(ScatterController, PointElement, LinearScale, LogarithmicScale, plugin_tooltip, plugin_legend);
   var INITIAL_FOOTNOTE = "Click and drag across the points to list the selected participants.";
   var SafetyShiftPlot = class {
     constructor(element = "body", settings = {}) {
@@ -17368,6 +17591,7 @@ var SafetyViz = (() => {
       this.settings = syncSettings4(settings);
       this.rawData = [];
       this.cleanData = [];
+      this.availableMeasures = [];
       this.chartPairs = [];
       this.currentTableData = [];
       this.listingSearch = "";
@@ -17379,17 +17603,46 @@ var SafetyViz = (() => {
       this.profileFeed = null;
       this.profileKey = null;
       this.profileRows = [];
-      this.state = {
+      this.state = this.seedState();
+      this.renderShell();
+      mountProfileRail(this, () => this.profileSettings());
+    }
+    /**
+     * The opening control state: every settings-derived default, before the
+     * data-driven normalisers (the measure fallback and resolveVisits) run.
+     * Called from the constructor and from reseed(), so the Reset chart control
+     * and the first render agree by construction (SSP-CTRL-004, #136).
+     * @private
+     */
+    seedState() {
+      return {
         measure: this.settings.start_value,
         baselineVisits: this.settings.baseline_visits,
         comparisonVisits: this.settings.comparison_visits,
         baselineStat: this.settings.baseline_stat,
         comparisonStat: this.settings.comparison_stat,
-        filters: {},
+        filters: initFilterState(this.settings.filters),
+        axisType: this.settings.axis_type,
         domain: null
       };
-      this.renderShell();
-      mountProfileRail(this, () => this.profileSettings());
+    }
+    /**
+     * Restore the opening state for the Reset chart control (SSP-CTRL-004,
+     * #136): the settings-derived seed, then the two normalisers that run after
+     * it on first load — the measure fallback and the baseline/comparison visit
+     * resolution (SSP-CFG-004/005). All three of `start_value`,
+     * `baseline_visits` and `comparison_visits` default to null, so skipping
+     * them would hand back a blank chart with two empty visit controls.
+     * `domain: null` needs no normalisation — render() recomputes it. Does NOT
+     * re-clean the data: nothing about the data changed.
+     * @private
+     */
+    reseed() {
+      this.state = this.seedState();
+      if (this.cleanData.length) {
+        this.resolveMeasure();
+        this.resolveVisits();
+      }
     }
     /**
      * The settings handed to the railed participant-profile module (#99,
@@ -17498,8 +17751,10 @@ var SafetyViz = (() => {
      */
     setSettings(settings) {
       this.settings = syncSettings4({ ...this.settings, ...settings });
+      if (this.rawData.length) this.validateAndCleanData();
       this.state.baselineStat = this.settings.baseline_stat;
       this.state.comparisonStat = this.settings.comparison_stat;
+      this.state.axisType = this.settings.axis_type;
       if (settings.baseline_visits !== void 0)
         this.state.baselineVisits = this.settings.baseline_visits;
       if (settings.comparison_visits !== void 0)
@@ -17527,6 +17782,22 @@ var SafetyViz = (() => {
       this.cleanData = rows;
       this.removedRecords = removed;
       if (removed) console.warn(`${removed} missing or non-numeric results have been removed.`);
+      this.availableMeasures = resolveMeasureList(
+        presentMeasures(this.cleanData, this.settings, measureLabel2),
+        this.settings.measures
+      );
+      this.resolveMeasure();
+      this.resolveVisits();
+    }
+    /**
+     * Pin the selected measure to one the data actually carries, warning when a
+     * configured measure is absent (SSP-CTRL-001, SSP-MEAS-002). Runs after the
+     * settings-derived seed on both paths that produce an opening state —
+     * validateAndCleanData and reseed — because `start_value` defaults to null
+     * and the opening measure is therefore data-derived, not settings-derived.
+     * @private
+     */
+    resolveMeasure() {
       const measures = this.measures();
       if (this.state.measure && !measures.includes(this.state.measure)) {
         console.warn(
@@ -17534,14 +17805,15 @@ var SafetyViz = (() => {
         );
       }
       this.state.measure = measures.includes(this.state.measure) ? this.state.measure : measures[0];
-      this.resolveVisits();
     }
     /**
-     * Sorted distinct measure labels present in the cleaned data.
+     * The measure labels the Measure control offers: the configured `measures`
+     * whitelist in its own order, or every measure in the cleaned data
+     * alphabetically when it is unset (#136).
      * @private
      */
     measures() {
-      return unique2(this.cleanData.map((row) => measureLabel2(row, this.settings))).sort();
+      return this.availableMeasures;
     }
     /**
      * Ordered distinct visit labels present in the cleaned data.
@@ -17573,12 +17845,19 @@ var SafetyViz = (() => {
      */
     buildControls() {
       this.controls.innerHTML = "";
-      const { addSection, addControl } = controlBuilders(this.controls);
+      const { addSection, addControl, addReset } = controlBuilders(this.controls);
       const visits = this.visits();
       const measure = addControl("Measure", document.createElement("select"));
       this.measures().forEach((value) => option(measure, value, value, value === this.state.measure));
       measure.onchange = () => {
         this.state.measure = measure.value;
+        this.render();
+      };
+      const axisSection = addSection("Axis");
+      const axisType = addControl("Axis Type", document.createElement("select"), axisSection);
+      AXIS_TYPES2.forEach((value) => option(axisType, value, value, value === this.state.axisType));
+      axisType.onchange = () => {
+        this.state.axisType = axisType.value;
         this.render();
       };
       const visitSection = addSection("Visits");
@@ -17621,17 +17900,27 @@ var SafetyViz = (() => {
       if (filterSpecs.length) {
         const filterParent = addSection("Filters");
         filterSpecs.forEach((filter) => {
-          const select = addControl(filter.label, document.createElement("select"), filterParent);
-          option(select, "__all__", "All", !this.state.filters[filter.value_col]);
-          unique2(this.cleanData.map((row) => row[filter.value_col])).sort().forEach(
-            (value) => option(select, value, value, this.state.filters[filter.value_col] === value)
+          const values = unique2(this.cleanData.map((row) => row[filter.value_col])).sort();
+          addControl(
+            filter.label,
+            renderFilterControl({
+              spec: filter,
+              values,
+              selected: this.state.filters[filter.value_col],
+              onChange: (next) => {
+                this.state.filters[filter.value_col] = next;
+                this.render();
+              }
+            }),
+            filterParent
           );
-          select.onchange = () => {
-            this.state.filters[filter.value_col] = select.value === "__all__" ? null : select.value;
-            this.render();
-          };
         });
       }
+      addReset(() => {
+        this.reseed();
+        this.buildControls();
+        this.render();
+      });
     }
     /**
      * Cleaned rows for the selected measure.
@@ -17680,9 +17969,16 @@ var SafetyViz = (() => {
       this.footnote.textContent = INITIAL_FOOTNOTE;
       resetProfileRail(this);
       this.notes.innerHTML = "";
-      this.chartPairs = this.computePairs();
-      this.state.domain = computeDomain(this.chartPairs);
-      this.updateNotes();
+      let pairs = this.computePairs();
+      let nonPositive = 0;
+      if (this.state.axisType === "log") {
+        const positive = pairs.filter((pair) => pair.x > 0 && pair.y > 0);
+        nonPositive = pairs.length - positive.length;
+        pairs = positive;
+      }
+      this.chartPairs = pairs;
+      this.state.domain = computeDomain(this.chartPairs, this.state.axisType);
+      this.updateNotes(nonPositive);
       if (!this.chartPairs.length) {
         this.footnote.textContent = "No participant has both a baseline and a comparison value for the current selection.";
         return;
@@ -17722,7 +18018,7 @@ var SafetyViz = (() => {
               }
             }
           },
-          scales: buildScales2(this.state.domain, this.state.measure)
+          scales: buildScales2(this.state.domain, this.state.measure, this.state.axisType)
         },
         plugins: [identityLinePlugin(this), brushBoxPlugin()]
       });
@@ -17883,16 +18179,21 @@ var SafetyViz = (() => {
       );
     }
     /**
-     * Refresh the shown/total participant counts and the removed-record note
-     * (SSP-COUNT-001, SSP-REG-005/020).
+     * Refresh the shown/total participant counts and the removed-record notes
+     * (SSP-COUNT-001, SSP-REG-005/020). The shown count is chartPairs.length, so
+     * pairs dropped for the log scale leave it automatically honest; the
+     * nonPositive count explains where they went (SSP-SCALE-003).
+     * @param {number} [nonPositive=0] Pairs removed because a coordinate was
+     *   zero or negative under the log scale.
      * @private
      */
-    updateNotes() {
+    updateNotes(nonPositive = 0) {
       const totalParticipants = unique2(this.cleanData.map((row) => row[this.settings.id_col])).length;
       const shownParticipants = this.chartPairs.length;
       const pct = totalParticipants ? (shownParticipants / totalParticipants * 100).toFixed(1) : "0.0";
       const removedNote = this.removedRecords ? `<span class="sv-warning">${this.removedRecords} missing or non-numeric results removed.</span>` : "";
-      this.notes.innerHTML = `<span>${shownParticipants} of ${totalParticipants} participants shown (${pct}%).</span>${removedNote}`;
+      const nonPositiveNote = nonPositive ? `<span class="sv-warning">${nonPositive} participant pair${nonPositive > 1 ? "s" : ""} with a nonpositive value removed for the log scale.</span>` : "";
+      this.notes.innerHTML = `<span>${shownParticipants} of ${totalParticipants} participants shown (${pct}%).</span>${removedNote}${nonPositiveNote}`;
     }
     /**
      * Resize the live chart to its container. For host layouts that change the
@@ -17939,6 +18240,7 @@ var SafetyViz = (() => {
     visitn_col: "VISITNUM",
     measure_x: null,
     measure_y: null,
+    measures: null,
     baseline_visits: [],
     comparison_visits: [],
     add_regression_line: true,
@@ -17965,13 +18267,16 @@ var SafetyViz = (() => {
   }
   function syncSettings5(settings) {
     const synced = { ...DEFAULT_SETTINGS5, ...settings };
-    synced.filters = arrayify5(synced.filters).map((filter) => fieldSpec5(filter)).filter((filter) => filter.value_col);
+    synced.measures = arrayify5(synced.measures);
+    synced.filters = arrayify5(synced.filters).map((filter) => normalizeFilterSpec(filter)).filter((filter) => filter.value_col);
     synced.baseline_visits = arrayify5(synced.baseline_visits);
     synced.comparison_visits = arrayify5(synced.comparison_visits);
     const suppliedDetails = arrayify5(synced.details).map((detail) => fieldSpec5(detail)).filter((detail) => detail.value_col);
     const defaultDetails = [
       { value_col: synced.id_col, label: "Participant ID" },
-      ...synced.filters.filter((filter) => filter.value_col !== synced.id_col)
+      // Listing columns, not filters: take only the column and its label, so the
+      // filter contract's start/all/multiple keys do not leak into the listing.
+      ...synced.filters.filter((filter) => filter.value_col !== synced.id_col).map((filter) => fieldSpec5(filter))
     ];
     const merged = [...defaultDetails];
     suppliedDetails.forEach((detail) => {
@@ -18113,7 +18418,10 @@ var SafetyViz = (() => {
     return nums.reduce((sum, value) => sum + value, 0) / nums.length;
   }
   function getMeasures(rows, settings) {
-    return unique3(rows.map((row) => row[settings.measure_col])).sort();
+    return resolveMeasureList(
+      presentMeasures(rows, settings, (row) => row[settings.measure_col]),
+      settings.measures
+    );
   }
   function getVisits(rows, settings) {
     const hasVisitN = settings.visitn_col && rows.some((row) => row[settings.visitn_col] !== void 0);
@@ -18210,8 +18518,8 @@ var SafetyViz = (() => {
   }
   function applyFilters3(participants, filters) {
     return participants.filter(
-      (participant) => Object.entries(filters).every(
-        ([key, value]) => !value || String(participant.meta[key]) === String(value)
+      (participant) => Object.entries(filters || {}).every(
+        ([key, value]) => filterMatches(participant.meta[key], value)
       )
     );
   }
@@ -18386,17 +18694,42 @@ var SafetyViz = (() => {
       this.profileFeed = null;
       this.profileKey = null;
       this.profileRows = [];
-      this.state = {
+      this.state = this.seedState();
+      this.renderShell();
+      mountProfileRail(this, () => this.profileSettings());
+    }
+    /**
+     * The opening control state, derived from the settings alone (SDD-CTRL-001).
+     * Only HALF the seed: resolveStateDefaults fills the measure and visit
+     * selections from the data afterwards, because measure_x/measure_y default
+     * to null and the visit lists to []. The visit arrays are COPIED so nothing
+     * downstream can write the caller's settings arrays through the state.
+     * @returns {Object} A fresh control state.
+     * @private
+     */
+    seedState() {
+      return {
         measureX: this.settings.measure_x,
         measureY: this.settings.measure_y,
         baseline: [...this.settings.baseline_visits],
         comparison: [...this.settings.comparison_visits],
-        filters: {},
+        filters: initFilterState(this.settings.filters),
         addRegressionLine: this.settings.add_regression_line,
         selectedId: null
       };
-      this.renderShell();
-      mountProfileRail(this, () => this.profileSettings());
+    }
+    /**
+     * Return the control state to its opening value the way the constructor and
+     * setData do: re-seed from the settings, then re-run the data-driven
+     * defaults so the measure and visit pickers land where they opened rather
+     * than on the unset settings (SDD-CTRL-001, #136). Cheap enough for a
+     * control click — resolveStateDefaults reads the cached measure/visit lists
+     * and never re-cleans the data.
+     * @private
+     */
+    reseed() {
+      this.state = this.seedState();
+      if (this.cleanRows.length) this.resolveStateDefaults();
     }
     /**
      * The settings handed to the railed participant-profile module (#99,
@@ -18573,7 +18906,7 @@ var SafetyViz = (() => {
      */
     buildControls() {
       this.controls.innerHTML = "";
-      const { addSection, addControl } = controlBuilders(this.controls);
+      const { addSection, addControl, addReset } = controlBuilders(this.controls);
       const visitParent = addSection("Visits");
       const baseline = addControl("Baseline visit(s)", document.createElement("select"), visitParent);
       baseline.multiple = true;
@@ -18627,15 +18960,20 @@ var SafetyViz = (() => {
       if (filterSpecs.length) {
         const filterParent = addSection("Filters");
         filterSpecs.forEach((filter) => {
-          const select = addControl(filter.label, document.createElement("select"), filterParent);
-          option(select, "__all__", "All", !this.state.filters[filter.value_col]);
-          unique3(this.cleanRows.map((row) => row[filter.value_col])).sort().forEach(
-            (value) => option(select, value, value, this.state.filters[filter.value_col] === value)
+          const values = unique3(this.cleanRows.map((row) => row[filter.value_col])).sort();
+          addControl(
+            filter.label,
+            renderFilterControl({
+              spec: filter,
+              values,
+              selected: this.state.filters[filter.value_col],
+              onChange: (next) => {
+                this.state.filters[filter.value_col] = next;
+                this.render();
+              }
+            }),
+            filterParent
           );
-          select.onchange = () => {
-            this.state.filters[filter.value_col] = select.value === "__all__" ? null : select.value;
-            this.render();
-          };
         });
       }
       const displayParent = addSection("Display");
@@ -18649,6 +18987,11 @@ var SafetyViz = (() => {
       const inline = createElement("div", "sv-control-inline");
       inline.append(regression, document.createTextNode("Show"));
       addControl("Regression Line", inline, displayParent);
+      addReset(() => {
+        this.reseed();
+        this.buildControls();
+        this.render();
+      });
     }
     /**
      * Cleaned rows for the current selection after the active filters, flattened
@@ -18859,6 +19202,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     filters: [],
     groups: [],
     start_value: null,
+    measures: null,
     group_by: "srot_none",
     boxplots: true,
     outliers: true,
@@ -18881,7 +19225,8 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
   }
   function syncSettings6(settings) {
     const synced = { ...DEFAULT_SETTINGS6, ...settings };
-    synced.filters = arrayify6(synced.filters).map((value) => fieldSpec6(value)).filter((spec) => spec.value_col);
+    synced.measures = arrayify6(synced.measures);
+    synced.filters = arrayify6(synced.filters).map((value) => normalizeFilterSpec(value)).filter((spec) => spec.value_col);
     const defaultGroup = { value_col: "srot_none", label: "None" };
     synced.groups = [
       defaultGroup,
@@ -19033,7 +19378,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
   }
   function applyFilters4(rows, filters) {
     return rows.filter(
-      (row) => Object.entries(filters).every(([key, value]) => !value || String(row[key]) === String(value))
+      (row) => Object.entries(filters || {}).every(([key, value]) => filterMatches(row[key], value))
     );
   }
   function computeVisitOrder(rows, settings) {
@@ -19094,19 +19439,6 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       row.__srot_outlier = settings.outliers && stats ? row.__srot_value < stats.q5 || row.__srot_value > stats.q95 : false;
     }
     return rows;
-  }
-  function parseUnscheduledPattern(pattern) {
-    const match = /^\/(.*)\/([a-z]*)$/i.exec(String(pattern));
-    return match ? new RegExp(match[1], match[2]) : new RegExp(String(pattern));
-  }
-  function isUnscheduledVisit(visit, settings) {
-    if (Array.isArray(settings.unscheduled_visit_values)) {
-      return settings.unscheduled_visit_values.map(String).includes(String(visit));
-    }
-    if (settings.unscheduled_visit_pattern) {
-      return parseUnscheduledPattern(settings.unscheduled_visit_pattern).test(String(visit));
-    }
-    return false;
   }
 
   // src/results-over-time/getScales.js
@@ -19262,12 +19594,25 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       this.settings = syncSettings6(settings);
       this.rawData = [];
       this.cleanData = [];
+      this.availableMeasures = [];
       this.filteredData = [];
       this.charts = [];
       this.boxSpecs = [];
-      this.state = {
+      this.state = this.seedState();
+      this.renderShell();
+    }
+    /**
+     * The opening control state, derived from settings alone. Built once in the
+     * constructor and again by {@link reseed} behind the Reset chart control
+     * (SROT-CTRL-001, #136), so "the state the chart opens in" has one
+     * definition rather than one per caller.
+     * @returns {Object} A fresh state object.
+     * @private
+     */
+    seedState() {
+      return {
         measure: this.settings.start_value,
-        filters: {},
+        filters: initFilterState(this.settings.filters),
         groupBy: this.settings.group_by,
         // Y-axis limits (#85): `lower`/`upper` hold USER OVERRIDES only (null =
         // auto), `axisDomain` the [lower, upper] the last render resolved — what
@@ -19281,7 +19626,18 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
         visitsWithoutData: this.settings.visits_without_data,
         unscheduledVisits: this.settings.unscheduled_visits
       };
-      this.renderShell();
+    }
+    /**
+     * Return to the opening state (SROT-CTRL-001, #136): re-seed from settings,
+     * then re-run the data-driven measure resolution the seed cannot do on its
+     * own — `start_value` defaults to null, so a bare re-seed would leave the
+     * chart with no measure and nothing to draw. The bound data is untouched,
+     * so this deliberately does NOT re-run validateAndCleanData.
+     * @private
+     */
+    reseed() {
+      this.state = this.seedState();
+      if (this.cleanData.length) this.resolveMeasure();
     }
     /**
      * Build the static DOM shell the chart renders into.
@@ -19360,6 +19716,20 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       this.removedRecords = removed;
       if (removed) console.warn(`${removed} missing or non-numeric results have been removed.`);
       this.allVisits = computeVisitOrder(this.cleanData, this.settings);
+      this.availableMeasures = resolveMeasureList(
+        presentMeasures(this.cleanData, this.settings, measureLabel3),
+        this.settings.measures
+      );
+      this.resolveMeasure();
+    }
+    /**
+     * Pin the selected measure to one present in the data, falling back to the
+     * first with a console warning (SROT-FUNC-001 / SROT-REG-024). Runs after
+     * cleaning and again on reset, where it is what stops a null `start_value`
+     * from emptying the chart (SROT-CTRL-001).
+     * @private
+     */
+    resolveMeasure() {
       const measures = this.measures();
       if (this.state.measure && !measures.includes(this.state.measure)) {
         console.warn(
@@ -19369,11 +19739,13 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       this.state.measure = measures.includes(this.state.measure) ? this.state.measure : measures[0];
     }
     /**
-     * Sorted distinct measure labels present in the cleaned data.
+     * The measure labels the Measure control offers: the configured `measures`
+     * whitelist in its own order, or every measure in the cleaned data
+     * alphabetically when it is unset (#136).
      * @private
      */
     measures() {
-      return unique4(this.cleanData.map((row) => measureLabel3(row, this.settings))).sort();
+      return this.availableMeasures;
     }
     /**
      * Cleaned rows for the selected measure.
@@ -19396,7 +19768,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
      */
     buildControls() {
       this.controls.innerHTML = "";
-      const { addSection, addRow, addControl } = controlBuilders(this.controls);
+      const { addSection, addRow, addControl, addReset } = controlBuilders(this.controls);
       const measure = addControl("Measure", document.createElement("select"));
       this.measures().forEach((value) => option(measure, value, value, value === this.state.measure));
       measure.onchange = () => {
@@ -19422,15 +19794,20 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       });
       const filterParent = filterSpecs.length ? addSection("Filters") : this.controls;
       filterSpecs.forEach((filter) => {
-        const select = addControl(filter.label, document.createElement("select"), filterParent);
-        option(select, "__all__", "All", !this.state.filters[filter.value_col]);
-        unique4(this.cleanData.map((row) => row[filter.value_col])).sort().forEach(
-          (value) => option(select, value, value, this.state.filters[filter.value_col] === value)
+        const values = unique4(this.cleanData.map((row) => row[filter.value_col])).sort();
+        addControl(
+          filter.label,
+          renderFilterControl({
+            spec: filter,
+            values,
+            selected: this.state.filters[filter.value_col],
+            onChange: (next) => {
+              this.state.filters[filter.value_col] = next;
+              this.render();
+            }
+          }),
+          filterParent
         );
-        select.onchange = () => {
-          this.state.filters[filter.value_col] = select.value === "__all__" ? null : select.value;
-          this.render();
-        };
       });
       const yParent = addSection("Y-axis Limits");
       const yRow = addRow(yParent);
@@ -19461,6 +19838,11 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       this.addToggle(displayParent, addControl, "Outliers", "outliers");
       this.addToggle(displayParent, addControl, "Visits without data", "visitsWithoutData");
       this.addToggle(displayParent, addControl, "Unscheduled visits", "unscheduledVisits");
+      addReset(() => {
+        this.reseed();
+        this.buildControls();
+        this.render();
+      });
     }
     /**
      * Add a labeled checkbox bound to a boolean state key.
@@ -19753,6 +20135,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     normal_range_quantile_high: 0.95,
     time_cols: [],
     start_value: null,
+    measures: null,
     filters: [],
     groups: [],
     group_by: GROUP_NONE2,
@@ -19791,7 +20174,8 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
   }
   function syncSettings7(settings) {
     const synced = { ...DEFAULT_SETTINGS7, ...settings };
-    synced.filters = arrayify7(synced.filters).map((value) => fieldSpec7(value)).filter((d) => d.value_col);
+    synced.measures = arrayify7(synced.measures);
+    synced.filters = arrayify7(synced.filters).map((value) => normalizeFilterSpec(value)).filter((d) => d.value_col);
     const defaultGroup = { value_col: GROUP_NONE2, label: "None" };
     synced.groups = [
       defaultGroup,
@@ -19990,7 +20374,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
   }
   function applyFilters5(rows, filters) {
     return rows.filter(
-      (row) => Object.entries(filters).every(([key, value]) => !value || String(row[key]) === String(value))
+      (row) => Object.entries(filters || {}).every(([key, value]) => filterMatches(row[key], value))
     );
   }
   function assignSequence2(rows, idCol) {
@@ -20212,6 +20596,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       this.settings = syncSettings7(settings);
       this.rawData = [];
       this.cleanData = [];
+      this.availableMeasures = [];
       this.filteredData = [];
       this.currentTableData = [];
       this.listingSearch = "";
@@ -20223,7 +20608,21 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       this.profileFeed = null;
       this.profileKey = null;
       this.profileRows = [];
-      this.state = {
+      this.state = this.seedState();
+      this.initFilterState();
+      this.renderShell();
+      mountProfileRail(this, () => this.profileSettings());
+    }
+    /**
+     * The opening control state: every settings-derived default, before the
+     * data-driven normalisers (the filter `start` values and the measure
+     * fallback) run. Called from the constructor and from reseed(), so the
+     * Reset chart control and the first render agree by construction
+     * (SOE-CTRL-002, #136).
+     * @private
+     */
+    seedState() {
+      return {
         measure: this.settings.start_value,
         filters: {},
         timeIndex: 0,
@@ -20241,9 +20640,21 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
         normalRange: null,
         selectedId: null
       };
+    }
+    /**
+     * Restore the opening state for the Reset chart control (SOE-CTRL-002,
+     * #136): the settings-derived seed, then the two normalisers that run after
+     * it on first load — the filter `start` values (SOE-REG-051/053) and the
+     * data-driven measure. Skipping either would put the measure back to the
+     * `start_value` default of null (blanking the chart) and a start filter back
+     * to "All". Deliberately does NOT re-clean the data: nothing about the data
+     * changed, so an O(rows) re-clean on a control click would be waste.
+     * @private
+     */
+    reseed() {
+      this.state = this.seedState();
       this.initFilterState();
-      this.renderShell();
-      mountProfileRail(this, () => this.profileSettings());
+      if (this.cleanData.length) this.resolveMeasure();
     }
     /**
      * The settings handed to the railed participant-profile module (#99,
@@ -20289,12 +20700,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
      * @private
      */
     initFilterState() {
-      this.state.filters = {};
-      this.settings.filters.forEach((filter) => {
-        if (filter.start !== void 0 && filter.start !== null && filter.start !== "") {
-          this.state.filters[filter.value_col] = String(filter.start);
-        }
-      });
+      this.state.filters = initFilterState(this.settings.filters);
     }
     /**
      * Build the static DOM shell the chart, legend, and listing render into.
@@ -20381,6 +20787,21 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       this.cleanData = rows;
       this.removedRecords = removed;
       if (removed) console.warn(`${removed} missing or non-numeric results have been removed.`);
+      this.availableMeasures = resolveMeasureList(
+        presentMeasures(this.cleanData, this.settings, measureLabel4),
+        this.settings.measures
+      );
+      this.resolveMeasure();
+    }
+    /**
+     * Pin the selected measure to one the data actually carries, warning when a
+     * configured measure is absent (SOE-FUNC-001, SOE-MEAS-002). Runs after the
+     * settings-derived seed on both paths that produce an opening state —
+     * validateAndCleanData and reseed — because `start_value` defaults to null
+     * and the opening measure is therefore data-derived, not settings-derived.
+     * @private
+     */
+    resolveMeasure() {
       const measures = this.measures();
       if (this.state.measure && !measures.includes(this.state.measure)) {
         console.warn(
@@ -20390,11 +20811,13 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       this.state.measure = measures.includes(this.state.measure) ? this.state.measure : measures[0];
     }
     /**
-     * Sorted distinct measure labels present in the cleaned data.
+     * The measure labels the Measure control offers: the configured `measures`
+     * whitelist in its own order, or every measure in the cleaned data
+     * alphabetically when it is unset (#136).
      * @private
      */
     measures() {
-      return unique5(this.cleanData.map((row) => measureLabel4(row, this.settings))).sort();
+      return this.availableMeasures;
     }
     /**
      * The active time-axis column spec.
@@ -20428,7 +20851,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
      */
     buildControls() {
       this.controls.innerHTML = "";
-      const { addSection, addRow, addControl } = controlBuilders(this.controls);
+      const { addSection, addRow, addControl, addReset } = controlBuilders(this.controls);
       const measure = addControl("Measure", document.createElement("select"));
       this.measures().forEach((value) => option(measure, value, value, value === this.state.measure));
       measure.onchange = () => {
@@ -20446,21 +20869,20 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       });
       const filterParent = filterSpecs.length ? addSection("Filters") : this.controls;
       filterSpecs.forEach((filter) => {
-        const select = addControl(filter.label, document.createElement("select"), filterParent);
-        const hasStart = filter.start !== void 0 && filter.start !== null && filter.start !== "";
-        if (!hasStart) option(select, "__all__", "All", !this.state.filters[filter.value_col]);
-        unique5(this.cleanData.map((row) => row[filter.value_col])).sort().forEach(
-          (value) => option(
-            select,
-            value,
-            value,
-            String(this.state.filters[filter.value_col]) === String(value)
-          )
+        const values = unique5(this.cleanData.map((row) => row[filter.value_col])).sort();
+        addControl(
+          filter.label,
+          renderFilterControl({
+            spec: filter,
+            values,
+            selected: this.state.filters[filter.value_col],
+            onChange: (next) => {
+              this.state.filters[filter.value_col] = next;
+              this.render();
+            }
+          }),
+          filterParent
         );
-        select.onchange = () => {
-          this.state.filters[filter.value_col] = select.value === "__all__" ? null : select.value;
-          this.render();
-        };
       });
       if (this.settings.time_cols.length > 1) {
         const xParent = addSection("X-axis");
@@ -20555,6 +20977,11 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
         this.state.groupBy = group.value;
         this.render();
       };
+      addReset(() => {
+        this.reseed();
+        this.buildControls();
+        this.render();
+      });
     }
     /**
      * The current y-axis stepper increment, ~1/15 of the default measure range
@@ -20943,12 +21370,12 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
         ...(settings.highlight || {}).attributes || {}
       }
     };
-    const customFilters = arrayify(synced.filters).map((value) => fieldSpec(value)).filter((filter) => filter.value_col);
+    const customFilters = arrayify(synced.filters).map((value) => normalizeFilterSpec(value)).filter((filter) => filter.value_col);
     synced.filters = customFilters.length ? customFilters : [
       ...synced.highlight ? [{ value_col: synced.highlight.value_col, label: synced.highlight.label }] : [],
       { value_col: synced.color.value_col, label: synced.color.label },
       { value_col: synced.id_col, label: "Participant Identifier" }
-    ];
+    ].map((filter) => normalizeFilterSpec(filter));
     const defaultDetails = [
       { value_col: synced.seq_col, label: "Sequence Number" },
       { value_col: synced.stdy_col, label: "Start Day" },
@@ -20962,7 +21389,9 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
           label: `${synced.highlight.label} Details`
         }
       ] : [],
-      ...synced.filters.filter((filter) => filter.value_col !== synced.id_col)
+      // Listing columns, not filters: take only the column and its label, so the
+      // filter contract's start/all/multiple keys do not leak into the listing.
+      ...synced.filters.filter((filter) => filter.value_col !== synced.id_col).map((filter) => fieldSpec(filter))
     ];
     const details = [...defaultDetails, ...arrayify(synced.details).map((value) => fieldSpec(value))];
     const seen = /* @__PURE__ */ new Set();
@@ -21353,13 +21782,24 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       this.detailChart = null;
       this.selectedParticipant = null;
       this.participantsSelected = [];
-      this.state = {
-        filters: {},
-        sort: this.settings.sort_participants
-      };
+      this.state = this.seedState();
       this.renderShell();
       this.profileRows = [];
       mountProfileRail(this, () => this.profileSettings(), { target: this.element });
+    }
+    /**
+     * The opening control state, derived from the settings alone: the configured
+     * filter start values and the configured participant sort order. Nothing here
+     * depends on the bound data, so the "Reset chart" control (AET-CTRL-001) can
+     * rebuild it at any point in the session.
+     * @returns {Object} A fresh control state.
+     * @private
+     */
+    seedState() {
+      return {
+        filters: initFilterState(this.settings.filters),
+        sort: this.settings.sort_participants
+      };
     }
     /**
      * The settings handed to the railed participant-profile module: this
@@ -21492,7 +21932,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
      */
     buildControls() {
       this.controls.innerHTML = "";
-      const { addSection, addControl } = controlBuilders(this.controls);
+      const { addSection, addControl, addReset } = controlBuilders(this.controls);
       const domain = colorDomain(this.cleanRows, this.settings.color);
       const filterSpecs = this.settings.filters.filter((filter) => {
         const values = unique(this.cleanRows.map((row) => row[filter.value_col]));
@@ -21512,17 +21952,21 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       });
       const filterParent = filterSpecs.length ? addSection("Filters") : this.controls;
       filterSpecs.forEach((filter) => {
-        const select = addControl(filter.label, document.createElement("select"), filterParent);
-        option(select, "__all__", "All", !this.state.filters[filter.value_col]);
         const values = unique(this.cleanRows.map((row) => row[filter.value_col]));
         const ordered = filter.value_col === this.settings.color.value_col ? domain.filter((value) => values.includes(value)) : values.sort();
-        ordered.forEach(
-          (value) => option(select, value, value, this.state.filters[filter.value_col] === value)
+        addControl(
+          filter.label,
+          renderFilterControl({
+            spec: filter,
+            values: ordered,
+            selected: this.state.filters[filter.value_col],
+            onChange: (next) => {
+              this.state.filters[filter.value_col] = next;
+              this.render();
+            }
+          }),
+          filterParent
         );
-        select.onchange = () => {
-          this.state.filters[filter.value_col] = select.value === "__all__" ? null : select.value;
-          this.render();
-        };
       });
       const sortParent = addSection("Sorting");
       const sort = addControl("Sort Participant IDs", document.createElement("select"), sortParent);
@@ -21531,6 +21975,11 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
         this.state.sort = sort.value;
         this.render();
       };
+      addReset(() => {
+        this.state = this.seedState();
+        this.buildControls();
+        this.render();
+      });
     }
     /**
      * Cleaned records after the active filters.
@@ -22337,9 +22786,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
   }
   function applyFilters6(points, filters) {
     return points.filter(
-      (point) => Object.entries(filters).every(
-        ([key, value]) => !value || String(point.raw[key]) === String(value)
-      )
+      (point) => Object.entries(filters || {}).every(([key, value]) => filterMatches(point.raw[key], value))
     );
   }
   function classifyQuadrants(points, xCut, yCut) {
@@ -22378,14 +22825,14 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       if (Number.isFinite(row.__hep_day)) return `d:${row.__hep_day}`;
       return `s:${Number.isFinite(row.__hep_seq) ? row.__hep_seq : row.__hep_index}`;
     };
-    const entries = /* @__PURE__ */ new Map();
+    const entries2 = /* @__PURE__ */ new Map();
     const ingest = (rows, axis) => {
       rows.forEach((row) => {
         const key = keyOf(row);
-        if (!entries.has(key)) {
-          entries.set(key, { x: NaN, y: NaN, day: NaN, seq: NaN, visit: null, order: Infinity });
+        if (!entries2.has(key)) {
+          entries2.set(key, { x: NaN, y: NaN, day: NaN, seq: NaN, visit: null, order: Infinity });
         }
-        const entry = entries.get(key);
+        const entry = entries2.get(key);
         entry[axis] = row[field];
         if (Number.isFinite(row.__hep_day)) entry.day = row.__hep_day;
         if (Number.isFinite(row.__hep_seq)) {
@@ -22399,7 +22846,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     };
     ingest(xRows, "x");
     ingest(yRows, "y");
-    return [...entries.values()].filter((entry) => Number.isFinite(entry.x) && Number.isFinite(entry.y)).sort((a, b) => {
+    return [...entries2.values()].filter((entry) => Number.isFinite(entry.x) && Number.isFinite(entry.y)).sort((a, b) => {
       const da = Number.isFinite(a.day) ? a.day : Number.MAX_SAFE_INTEGER;
       const db = Number.isFinite(b.day) ? b.day : Number.MAX_SAFE_INTEGER;
       return da - db || a.order - b.order;
@@ -23231,6 +23678,15 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
         );
       }
       host.notes.append(note);
+    }
+    if (host.unscheduledRecords) {
+      host.notes.append(
+        createElement(
+          "span",
+          null,
+          `${host.unscheduledRecords} records at unscheduled visits excluded.`
+        )
+      );
     }
     if (host.droppedParticipants) {
       const dropReason2 = host.state.display === "relative_baseline" ? `missing ${host.state.measureX}/${host.state.measureY} peak or baseline` : `missing ${host.state.measureX}/${host.state.measureY} peak`;
@@ -25315,6 +25771,8 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       this.settings = syncSettings3(settings);
       this.rawData = [];
       this.cleanRows = [];
+      this.unscheduledRecords = 0;
+      this.hasUnscheduled = false;
       this.removedRecords = 0;
       this.droppedParticipants = 0;
       this.droppedRows = [];
@@ -25375,13 +25833,17 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
         quadrantLabels: this.settings.quadrant_labels,
         visitWindow: this.settings.visit_window,
         groupBy: this.settings.group_by,
-        filters: {},
+        filters: initFilterState(this.settings.filters),
         rRatio: [...this.settings.r_ratio],
         cuts: JSON.parse(JSON.stringify(this.settings.cuts)),
         // Migration-view controls (HEP-MIG-013, HEP-ARM-003): suppress the
         // no-migration diagonal, and narrow the right-hand side to one active arm.
         hideUnchanged: this.settings.hide_unchanged,
         activeArms: this.settings.active_arms,
+        // Unscheduled-visit inclusion (HEP-CTRL-018). Unlike results-over-time's
+        // display-only toggle, turning this off RE-DERIVES every baseline and
+        // peak from the scheduled records alone, so it re-runs the clean pass.
+        unscheduledVisits: this.settings.unscheduled_visits,
         // Study-day playback (HEP-ANIM-*): the day the cloud is positioned on
         // (null = the static peak-vs-peak scatter), and whether the play-through
         // is running. Lives on state — not on the view — because the quadrant
@@ -25620,6 +26082,8 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       if ("group_by" in settings) this.state.groupBy = this.settings.group_by;
       if ("cuts" in settings) this.state.cuts = JSON.parse(JSON.stringify(this.settings.cuts));
       if ("r_ratio" in settings) this.state.rRatio = [...this.settings.r_ratio];
+      if ("unscheduled_visits" in settings)
+        this.state.unscheduledVisits = this.settings.unscheduled_visits;
       if ("details" in settings) this.profileDetails = this.settings.details;
       this.state.filters = {};
       if (this.rawData.length) this.validateAndCleanData();
@@ -25646,12 +26110,16 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       this.droppedRows = [...dropped, ...imputation.dropped];
       this.imputedRecords = imputation.imputed;
       this.imputationLimits = imputation.limits;
-      deriveBaseline(imputation.rows, this.settings);
-      assignSequence(imputation.rows, this.settings);
-      this.cleanRows = imputation.rows;
+      const partition = partitionUnscheduledRows(imputation.rows, this.settings);
+      const retained = this.state.unscheduledVisits ? imputation.rows : partition.scheduled;
+      this.unscheduledRecords = this.state.unscheduledVisits ? 0 : partition.unscheduled.length;
+      this.hasUnscheduled = partition.unscheduled.length > 0 || hasUnscheduledVisits(imputation.rows, this.settings.visit_col, this.settings);
+      deriveBaseline(retained, this.settings);
+      assignSequence(retained, this.settings);
+      this.cleanRows = retained;
       this.removedRecords = removed + imputation.dropped.length;
-      this.rRatioMax = maxRRatio(imputation.rows, this.settings);
-      this.displayAvailability = availableDisplays(imputation.rows);
+      this.rRatioMax = maxRRatio(retained, this.settings);
+      this.displayAvailability = availableDisplays(retained);
       if (this.displayAvailability.modes.length && !this.displayAvailability.modes.includes(this.state.display)) {
         this.state.display = this.displayAvailability.modes[0];
       }
@@ -25740,6 +26208,22 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       this.buildViewControl(addSection);
       const settingsParent = addSection("Settings");
       view.contributeControls(this, { addSection, addRow, addControl, settingsParent });
+      if (this.hasUnscheduled) {
+        const unscheduled = addControl(
+          "Unscheduled visits",
+          document.createElement("input"),
+          settingsParent
+        );
+        unscheduled.type = "checkbox";
+        unscheduled.className = "hep-unscheduled-visits";
+        unscheduled.checked = Boolean(this.state.unscheduledVisits);
+        unscheduled.onchange = () => {
+          this.state.unscheduledVisits = unscheduled.checked;
+          this.validateAndCleanData();
+          this.buildControls();
+          this.render();
+        };
+      }
       if (this.settings.groups.length > 1) {
         const group = addControl("Group", document.createElement("select"), settingsParent);
         this.settings.groups.forEach(
@@ -25755,20 +26239,20 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       if (filterSpecs.length || showRRatio) {
         const filterParent = addSection("Filters");
         filterSpecs.forEach((filter) => {
-          const select = addControl(filter.label, document.createElement("select"), filterParent);
-          option(select, "__all__", "All", !this.state.filters[filter.value_col]);
-          unique6(this.cleanRows.map((row) => row[filter.value_col])).sort().forEach(
-            (value) => option(
-              select,
-              value,
-              value,
-              String(this.state.filters[filter.value_col]) === String(value)
-            )
+          const values = unique6(this.cleanRows.map((row) => row[filter.value_col])).sort();
+          addControl(
+            filter.label,
+            renderFilterControl({
+              spec: filter,
+              values,
+              selected: this.state.filters[filter.value_col],
+              onChange: (next) => {
+                this.state.filters[filter.value_col] = next;
+                this.render();
+              }
+            }),
+            filterParent
           );
-          select.onchange = () => {
-            this.state.filters[filter.value_col] = select.value === "__all__" ? null : select.value;
-            this.render();
-          };
         });
         if (showRRatio) view.contributeFilters(this, { addRow, addControl }, filterParent);
       }
@@ -25783,7 +26267,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     /**
      * Reset the cutpoints, display mode, axis type, point size, filters, and
      * R-Ratio range to their initial values, then rebuild and redraw
-     * (HEP-CTRL-012).
+     * (HEP-CTRL-019).
      * @private
      */
     resetChart() {
@@ -25799,6 +26283,8 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       this.state.rRatio = [...this.settings.r_ratio];
       this.state.hideUnchanged = this.settings.hide_unchanged;
       this.state.activeArms = this.settings.active_arms;
+      this.state.unscheduledVisits = this.settings.unscheduled_visits;
+      if (this.rawData.length) this.validateAndCleanData();
       this.buildControls();
       this.render();
     }
@@ -26049,10 +26535,9 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     { value_col: "AEOUT", label: "Outcome" }
   ];
   function filterSpec(value) {
-    const spec = fieldSpec(value);
+    const spec = normalizeFilterSpec(value);
     const type = value && value.type === "participant" ? "participant" : "event";
-    const start = value && value.start || null;
-    return { ...spec, type, start };
+    return { ...spec, type };
   }
   function syncSettings9(settings) {
     const synced = { ...DEFAULT_SETTINGS9, ...settings };
@@ -26088,7 +26573,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       );
     }
     const groupCols = settings.group_cols;
-    const totalCol = settings.total_col && groupCount > 1;
+    const totalCol = settings.total_col && (groupCount > 1 || !groupCols);
     const diffCol = settings.diff_col && groupCols && groupCount > 1;
     return { groupCols, totalCol, diffCol };
   }
@@ -26533,10 +27018,32 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     });
     return lines.join("\n") + "\n";
   }
+  var NO_MATCH_MESSAGE = "Error: No AEs found for the current filters. Update the filters to see results.";
+  function emptyState({ populationRows, eventRows, allRows }, settings) {
+    if (eventRows.length) return null;
+    const participants = (rows) => new Set(rows.map((row) => String(row[settings.id_col] ?? ""))).size;
+    const enrolled = participants(allRows);
+    const shown = participants(populationRows);
+    if (!populationRows.length) {
+      return {
+        kind: "no-participants",
+        text: `No participants are in the current selection: none of the ${enrolled} participants in the data match the participant filters. Widen a participant filter to see results.`
+      };
+    }
+    if (!populationRows.some((row) => !row.__ae_placeholder)) {
+      return shown === enrolled ? {
+        kind: "no-events-in-study",
+        text: `No adverse events have been recorded in this study: all ${enrolled} participants are event-free.`
+      } : {
+        kind: "no-events-for-selection",
+        text: `No adverse events have been recorded for the ${shown} participant${shown === 1 ? "" : "s"} in the current selection.`
+      };
+    }
+    return { kind: "filtered-out", text: NO_MATCH_MESSAGE };
+  }
 
   // src/ae-explorer.js
   var SVG_NS3 = "http://www.w3.org/2000/svg";
-  var NO_MATCH_MESSAGE = "Error: No AEs found for the current filters. Update the filters to see results.";
   var SUMMARY_FOOTNOTE = "Click a category to view the underlying records. Hover a rate for counts.";
   var FILTER_TYPE_NOTES = {
     event: "Event filter: narrows the events counted without changing the group denominators.",
@@ -26573,6 +27080,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
 .safety-ae-explorer .ae-search-note{font-size:.8rem;color:#52616f;margin-top:.25rem}
 .safety-ae-explorer sup.ae-filter-type{cursor:help;color:#0b62a4;margin-left:.25em}
 .safety-ae-explorer .ae-error{color:#9a3412;padding:1rem 0}
+.safety-ae-explorer .ae-empty{color:#52616f;padding:1rem 0}
 .safety-ae-explorer .ae-detail-note{font-size:.85rem;color:#52616f;margin:.35rem 0 .6rem}
 `;
   var AEExplorer = class {
@@ -26762,11 +27270,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
      * @private
      */
     seedFilterState() {
-      this.state.filters = {};
-      this.settings.filters.forEach((spec) => {
-        const start = Array.isArray(spec.start) ? spec.start[0] : spec.start;
-        if (start != null) this.state.filters[spec.value_col] = String(start);
-      });
+      this.state.filters = initFilterState(this.settings.filters);
       this.state.searchTerm = "";
     }
     /**
@@ -26833,24 +27337,24 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
         return true;
       });
       this.activeFilterSpecs.forEach((spec) => {
-        const select = document.createElement("select");
-        select.dataset.filter = spec.value_col;
-        const active = this.state.filters[spec.value_col];
-        option(select, "__all__", "All", active == null);
         const source = spec.type === "participant" ? this.cleanRows : eventRows;
         const values = [
           ...new Set(source.map((row) => String(row[spec.value_col] ?? "")).filter(Boolean))
         ].sort();
-        values.forEach((value) => option(select, value, value, active === value));
-        const wrap = addControl(spec.label, select, filterSection);
+        const control = renderFilterControl({
+          spec,
+          values,
+          selected: this.state.filters[spec.value_col],
+          onChange: (next) => {
+            this.state.filters[spec.value_col] = next;
+            this.render();
+          }
+        });
+        const wrap = addControl(spec.label, control, filterSection);
         const label = wrap.parentElement.querySelector("label");
         const sup = createElement("sup", "ae-filter-type", spec.type === "participant" ? "P" : "E");
         sup.title = FILTER_TYPE_NOTES[spec.type];
         label.append(sup);
-        select.onchange = () => {
-          this.state.filters[spec.value_col] = select.value === "__all__" ? null : select.value;
-          this.render();
-        };
       });
       this.buildVariableControls(addSection);
       if (this.settings.validation) {
@@ -26917,20 +27421,32 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
      * state: closes any open details view, recomputes the roll-up, and
      * rebuilds the table with the prevalence and search visibility applied.
      * Called automatically by the controls and the data/settings setters;
-     * call it directly only after mutating state by hand.
+     * call it directly only after mutating state by hand. When nothing is
+     * left to draw, the table is replaced by a message naming which kind of
+     * empty it is (AE-USER-021, AE-USER-022).
      * @returns {void}
      */
     render() {
       this.closeDetail();
-      const { groups, events, counts } = this.computeData();
+      const { groups, population, events, counts } = this.computeData();
       this.groups = groups;
       this.counts = counts;
       this.plan = columnPlan(groups.length, this.settings);
       this.table = crossTab(events, this.settings, groups, counts, this.state.summarizeBy);
       this.currentEvents = events;
       this.tableWrap.innerHTML = "";
-      if (!events.length) {
-        this.tableWrap.append(createElement("div", "ae-error", NO_MATCH_MESSAGE));
+      const empty = emptyState(
+        { populationRows: population, eventRows: events, allRows: this.cleanRows },
+        this.settings
+      );
+      if (empty) {
+        const notice = createElement(
+          "div",
+          empty.kind === "filtered-out" ? "ae-error" : "ae-empty",
+          empty.text
+        );
+        notice.dataset.emptyState = empty.kind;
+        this.tableWrap.append(notice);
         this.updateSearchNote(null);
         return;
       }
@@ -27551,6 +28067,15 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     { value: "delta", label: "\u0394 (change from baseline)" },
     { value: "deltadelta", label: "\u0394\u0394 (placebo-corrected)" }
   ];
+  var CLINICAL_CAUTION2 = "Exploratory tool \u2014 not validated for clinical use. Confirm any signal with the validated ICH-E14 analyses.";
+  var UNBLINDING_CAUTION = "Treatment assignment is shown: every view colours and labels participants by arm. Reading or sharing arm-labelled results can unblind an ongoing study \u2014 confirm this view is permitted by the study\u2019s blinding plan.";
+  function showsUnblindingCaution(arms) {
+    if (!Array.isArray(arms)) return false;
+    const named = arms.filter(
+      (arm) => arm !== void 0 && arm !== null && String(arm).trim() !== ""
+    );
+    return named.length > 1;
+  }
   var TIMEPOINT_MAX = "__qt_max";
   var DEFAULT_SETTINGS10 = {
     id_col: "USUBJID",
@@ -27588,7 +28113,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
   }
   function syncSettings10(settings) {
     const synced = { ...DEFAULT_SETTINGS10, ...settings };
-    synced.filters = arrayify8(synced.filters).map((value) => fieldSpec8(value)).filter((d) => d.value_col);
+    synced.filters = arrayify8(synced.filters).map((value) => normalizeFilterSpec(value)).filter((d) => d.value_col);
     synced.measures = arrayify8(synced.measures);
     synced.qtc_measures = arrayify8(synced.qtc_measures);
     synced.absolute_thresholds = arrayify8(synced.absolute_thresholds).map(Number).filter((n) => Number.isFinite(n)).sort((a, b) => a - b);
@@ -27722,7 +28247,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       ([, value]) => value !== void 0 && value !== null && value !== ""
     );
     if (!active.length) return rows;
-    return rows.filter((row) => active.every(([col, value]) => String(row[col]) === String(value)));
+    return rows.filter((row) => active.every(([col, value]) => filterMatches(row[col], value)));
   }
   function centralTendencySeries(measureRows2, options) {
     const {
@@ -28178,8 +28703,10 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
 .safety-qt-explorer .qt-table th.qt-num,.safety-qt-explorer .qt-table td.qt-num,.safety-qt-explorer .qt-ich td.qt-num{text-align:right;font-variant-numeric:tabular-nums}
 .safety-qt-explorer .qt-table th{border-bottom:2px solid #d8dee4;font-size:.75rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f;white-space:nowrap}
 .safety-qt-explorer .qt-table caption,.safety-qt-explorer .qt-ich caption{caption-side:top;text-align:left;font-weight:600;margin-bottom:.35rem}
+.safety-qt-explorer .qt-table{margin:.7rem 0 0}
 .safety-qt-explorer .qt-flag{color:#9a3412;font-weight:600}
 .safety-qt-explorer .qt-empty{display:none}
+.safety-qt-explorer .qt-caution{margin-top:.5rem;font-size:.8rem;color:#8a4b00}
 `;
   function applyQtStyles() {
     if (typeof document === "undefined" || document.getElementById(QT_STYLE_ID)) return;
@@ -28204,17 +28731,52 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       this.profileFeed = null;
       this.profileKey = null;
       this.profileRows = [];
-      this.state = {
+      this.state = this.seedState();
+      this.renderShellDom();
+      mountProfileRail(this, () => this.profileSettings());
+    }
+    /**
+     * The opening control state, derived from the settings alone (QT-CTRL-004).
+     * `view` is part of the seed, so a whole-chart reset returns the reader to
+     * the central-tendency view. Only HALF the seed: resolveMeasure pins the
+     * correction to one the bound data actually carries afterwards.
+     * @returns {Object} A fresh control state.
+     * @private
+     */
+    seedState() {
+      return {
         view: "central",
         measure: this.settings.start_measure,
         statistic: "mean",
         mode: "delta",
         timepoint: TIMEPOINT_MAX,
-        filters: {},
+        filters: initFilterState(this.settings.filters),
         selectedId: null
       };
-      this.renderShellDom();
-      mountProfileRail(this, () => this.profileSettings());
+    }
+    /**
+     * Pin the selected correction to one present in the bound data, so a
+     * configured start_measure the extract does not carry never strands the
+     * chart on an empty selection (QT-CTRL-002).
+     * @private
+     */
+    resolveMeasure() {
+      if (!this.availableMeasures.includes(this.state.measure)) {
+        this.state.measure = this.availableMeasures[0];
+      }
+    }
+    /**
+     * Return the control state to its opening value: re-seed from the settings,
+     * then re-run the available-measure pin so the Correction control lands
+     * where it opened rather than on a correction the data lacks (QT-CTRL-004,
+     * #136). The stale-filter prune needs no re-run — the seed's filters come
+     * straight from the configured specs. Cheap enough for a control click:
+     * availableMeasures is already cached, and the data is not re-cleaned.
+     * @private
+     */
+    reseed() {
+      this.state = this.seedState();
+      if (this.cleanRows.length) this.resolveMeasure();
     }
     /**
      * The settings handed to the railed participant-profile module (#99,
@@ -28300,6 +28862,10 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       this.ichWrap = createElement("div", "qt-ich qt-empty");
       this.chartWrap.after(this.ichWrap);
       this.ichWrap.after(this.tableWrap);
+      this.cautionEl = createElement("div", "qt-caution sv-warning", CLINICAL_CAUTION2);
+      this.unblindingEl = createElement("div", "qt-caution qt-caution-unblinding sv-warning");
+      this.unblindingEl.hidden = true;
+      this.main.append(this.cautionEl, this.unblindingEl);
     }
     /**
      * Load data and render — an alias for setData keeping the two-step
@@ -28378,13 +28944,24 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       const measures = measuresPresent(rows);
       const available = this.settings.measures.filter((m) => measures.includes(m));
       this.availableMeasures = available.length ? available : measures;
-      if (!this.availableMeasures.includes(this.state.measure)) {
-        this.state.measure = this.availableMeasures[0];
-      }
+      this.resolveMeasure();
       const configured = new Set(this.settings.filters.map((f) => f.value_col));
       for (const col of Object.keys(this.state.filters)) {
-        const present = rows.some((row) => String(row[col]) === String(this.state.filters[col]));
-        if (!configured.has(col) || !present) delete this.state.filters[col];
+        const selection = this.state.filters[col];
+        if (!configured.has(col)) {
+          delete this.state.filters[col];
+          continue;
+        }
+        if (Array.isArray(selection)) {
+          const kept = selection.filter(
+            (value) => rows.some((row) => String(row[col]) === String(value))
+          );
+          if (kept.length) this.state.filters[col] = kept;
+          else delete this.state.filters[col];
+          continue;
+        }
+        if (!rows.some((row) => String(row[col]) === String(selection)))
+          delete this.state.filters[col];
       }
     }
     /**
@@ -28410,7 +28987,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     /** Build the sidebar controls for the active view. @private */
     buildControls() {
       this.controls.innerHTML = "";
-      const { addSection, addControl } = controlBuilders(this.controls);
+      const { addSection, addControl, addReset } = controlBuilders(this.controls);
       this.buildViewControl(addSection);
       const section = addSection("Display");
       const measureSelect = addControl("Correction", document.createElement("select"), section);
@@ -28459,18 +29036,27 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       if (this.settings.filters.length) {
         const filterSection = addSection("Filters");
         this.settings.filters.forEach((filter) => {
-          const select = addControl(filter.label, document.createElement("select"), filterSection);
-          option(select, "", "All", !this.state.filters[filter.value_col]);
-          unique8(this.cleanRows.map((row) => row[filter.value_col])).map(String).sort().forEach(
-            (value) => option(select, value, value, this.state.filters[filter.value_col] === value)
+          const values = unique8(this.cleanRows.map((row) => row[filter.value_col])).map(String).sort();
+          addControl(
+            filter.label,
+            renderFilterControl({
+              spec: filter,
+              values,
+              selected: this.state.filters[filter.value_col],
+              onChange: (next) => {
+                this.state.filters[filter.value_col] = next;
+                this.render();
+              }
+            }),
+            filterSection
           );
-          select.onchange = () => {
-            if (select.value) this.state.filters[filter.value_col] = select.value;
-            else delete this.state.filters[filter.value_col];
-            this.render();
-          };
         });
       }
+      addReset(() => {
+        this.reseed();
+        this.buildControls();
+        this.render();
+      });
     }
     /** Post-baseline visit labels for the current measure. @private */
     postBaselineVisits() {
@@ -28494,6 +29080,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       this.state.selectedId = null;
       this.participantsSelected = [];
       resetProfileRail(this);
+      this.updateCautions();
       this.legendEl.classList.add("qt-empty");
       this.noteEl.classList.add("qt-empty");
       this.tableWrap.classList.add("qt-empty");
@@ -28512,6 +29099,18 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       if (this.state.view === "central") this.renderCentral();
       else if (this.state.view === "outlier") this.renderOutlier();
       else this.renderCategorical();
+    }
+    /**
+     * Keep the standing cautions current (QT-CAUTION-001, QT-CAUTION-002). The
+     * not-for-clinical-use caution is permanent and is never touched here; the
+     * unblinding warning appears only when the bound data actually carries more
+     * than one treatment arm.
+     * @private
+     */
+    updateCautions() {
+      const unblinding = showsUnblindingCaution(this.arms);
+      this.unblindingEl.textContent = unblinding ? UNBLINDING_CAUTION : "";
+      this.unblindingEl.hidden = !unblinding;
     }
     /** Show a "select a QTc correction" note and hide chart/table (HR, QTc-only views). @private */
     showQtcOnlyNote() {
@@ -28674,6 +29273,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       this.charts.push(this.chart);
       this.drawLegend(seriesArms);
       this.drawIchCallout(tendency, isQtc);
+      this.drawCentralTable(tendency, measure);
       this.setCentralFootnote(measure, isQtc);
     }
     /** ICH-E14 metric callout (mean + ΔΔ + QTc only). @private */
@@ -28713,6 +29313,71 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       table.append(tbody);
       this.ichWrap.append(table);
     }
+    /**
+     * Print the plotted central-tendency values beneath the chart (QT-CT-008):
+     * one row per visit and arm carrying the sample size, the plotted statistic,
+     * and the two-sided CI bounds the band draws. Built from the SAME
+     * centralTendencySeries result the chart consumes, so the printed numbers can
+     * never disagree with the graphic — and it therefore inherits the active
+     * correction, statistic, display mode, and filters for free. Median mode
+     * carries no CI (lo/hi NaN), which formatSigned prints as "NA".
+     * @param {{mode: string, statistic: string, visitOrder: string[], series: Array<{arm: string, points: Object[]}>}} tendency The centralTendencySeries result.
+     * @param {string} measure The active measure.
+     * @private
+     */
+    drawCentralTable(tendency, measure) {
+      if (!tendency.series.length) return;
+      const pct = Math.round(this.settings.ci_level * 100);
+      const isDd = tendency.mode === "deltadelta";
+      const prefix = isDd ? "\u0394\u0394" : "\u0394";
+      const statLabel = tendency.statistic === "median" ? "median" : "mean";
+      const unit = measureUnit(measure, this.settings.qtc_measures);
+      const byVisit = new Map(tendency.visitOrder.map((visit) => [visit, []]));
+      tendency.series.forEach(({ arm, points }) => {
+        points.forEach((point) => {
+          if (byVisit.has(point.visit)) byVisit.get(point.visit).push({ arm, point });
+        });
+      });
+      this.tableWrap.classList.remove("qt-empty");
+      this.tableWrap.innerHTML = "";
+      const table = createElement("table", "qt-ct-table");
+      table.append(
+        createElement(
+          "caption",
+          null,
+          `${prefix} ${measure} \u2014 ${statLabel} change by visit and arm with the two-sided ${pct}% CI` + (isDd ? " (n is the active arm; placebo is the reference)" : "")
+        )
+      );
+      const thead = document.createElement("thead");
+      const hr = document.createElement("tr");
+      [
+        ["Visit", false],
+        ["Arm", false],
+        ["n", true],
+        [`${prefix} ${statLabel} (${unit})`, true],
+        [`${pct}% CI low`, true],
+        [`${pct}% CI high`, true]
+      ].forEach(
+        ([label, numeric]) => hr.append(createElement("th", numeric ? "qt-num" : null, label))
+      );
+      thead.append(hr);
+      table.append(thead);
+      const tbody = document.createElement("tbody");
+      tendency.visitOrder.forEach((visit) => {
+        (byVisit.get(visit) || []).forEach(({ arm, point }) => {
+          const tr = document.createElement("tr");
+          tr.append(createElement("td", null, String(visit)));
+          tr.append(createElement("td", null, String(arm)));
+          tr.append(createElement("td", "qt-num", String(point.n)));
+          tr.append(createElement("td", "qt-num", formatSigned(point.value)));
+          tr.append(createElement("td", "qt-num", formatSigned(point.lo)));
+          tr.append(createElement("td", "qt-num", formatSigned(point.hi)));
+          tbody.append(tr);
+        });
+      });
+      table.append(tbody);
+      this.tableWrap.append(table);
+    }
     /** Central-tendency footnote: method + mode caveats. @private */
     setCentralFootnote(measure, isQtc) {
       const parts = [];
@@ -28729,7 +29394,6 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       if (!isQtc) {
         parts.push("Heart rate has no ICH-E14 QTc reference; read alongside the QTc corrections.");
       }
-      parts.push("Exploratory tool \u2014 confirm signals with validated ICH-E14 analyses.");
       this.footnote.textContent = parts.join(" ");
     }
     // ---- Outlier scatter (QT-OUT-*) -----------------------------------------
@@ -28836,8 +29500,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       this.drawLegend(armsWithPoints);
       const footParts = [
         `${points.length} participants.`,
-        isMax ? "Each point is a participant\u2019s maximum post-baseline value; change-from-baseline lines are shown only in per-visit mode \u2014 see the categorical table for change-threshold counts." : "Each point is the selected visit\u2019s reading; diagonals are absolute-QTc thresholds, horizontals are change-from-baseline thresholds.",
-        "Exploratory tool \u2014 confirm signals with validated ICH-E14 analyses."
+        isMax ? "Each point is a participant\u2019s maximum post-baseline value; change-from-baseline lines are shown only in per-visit mode \u2014 see the categorical table for change-threshold counts." : "Each point is the selected visit\u2019s reading; diagonals are absolute-QTc thresholds, horizontals are change-from-baseline thresholds."
       ];
       this.footnote.textContent = footParts.join(" ");
     }
@@ -28900,7 +29563,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       table.append(tbody);
       this.tableWrap.append(table);
       this.drawLegend(classification.arms);
-      this.footnote.textContent = "Absolute rows use each participant\u2019s maximum post-baseline value; change rows use the maximum post-baseline change (they may fall at different visits). Exploratory tool \u2014 confirm signals with validated ICH-E14 analyses.";
+      this.footnote.textContent = "Absolute rows use each participant\u2019s maximum post-baseline value; change rows use the maximum post-baseline change (they may fall at different visits).";
     }
     /**
      * Select one participant from the outlier scatter (#99, PPRF-QT-001): set
@@ -29219,7 +29882,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
   }
   function syncSettings11(settings = {}) {
     const synced = { ...DEFAULT_SETTINGS11, ...settings };
-    synced.filters = arrayify9(synced.filters).map((value) => fieldSpec9(value)).filter((spec) => spec.value_col);
+    synced.filters = arrayify9(synced.filters).map((value) => normalizeFilterSpec(value)).filter((spec) => spec.value_col);
     synced.details = arrayify9(synced.details).map((value) => fieldSpec9(value)).filter((spec) => spec.value_col);
     synced.measure_values = {
       ...DEFAULT_SETTINGS11.measure_values,
@@ -29614,7 +30277,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     );
     if (!active.length) return [...subjects || []];
     return (subjects || []).filter(
-      (subject) => active.every(([col, value]) => String(subject.raw ? subject.raw[col] : "") === String(value))
+      (subject) => active.every(([col, value]) => filterMatches(subject.raw ? subject.raw[col] : "", value))
     );
   }
   function buildWaterfall(cleanRows, settings, { removed = 0, filters = {} } = {}) {
@@ -29838,7 +30501,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
         summary: this.settings.summary,
         placeboArm: this.settings.placebo_arm,
         activeArm: active && active.length === 1 ? active[0] : "",
-        filters: {},
+        filters: initFilterState(this.settings.filters),
         selectedIds: []
       };
     }
@@ -30178,16 +30841,20 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       if (filterSpecs.length) {
         const filterSection = addSection("Filters");
         filterSpecs.forEach((filter) => {
-          const select = addControl(filter.label, document.createElement("select"), filterSection);
-          option(select, "", "All", !this.state.filters[filter.value_col]);
-          unique6(this.cleanRows.map((row) => row[filter.value_col])).map(String).sort().forEach(
-            (value) => option(select, value, value, this.state.filters[filter.value_col] === value)
+          const values = unique6(this.cleanRows.map((row) => row[filter.value_col])).map(String).sort();
+          addControl(
+            filter.label,
+            renderFilterControl({
+              spec: filter,
+              values,
+              selected: this.state.filters[filter.value_col],
+              onChange: (next) => {
+                this.state.filters[filter.value_col] = next;
+                this.render();
+              }
+            }),
+            filterSection
           );
-          select.onchange = () => {
-            if (select.value) this.state.filters[filter.value_col] = select.value;
-            else delete this.state.filters[filter.value_col];
-            this.render();
-          };
         });
       }
       const reset = createElement("button", "hwf-reset", "Reset chart");
@@ -30604,11 +31271,13 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     synced.units = syncUnits(settings ? settings.units : void 0);
     synced.measure_values = { ...DEFAULT_SETTINGS12.measure_values, ...synced.measure_values || {} };
     synced.zone_labels = synced.zone_labels === "hidden" ? "hidden" : "shown";
-    synced.filters = arrayify10(synced.filters).map((filter) => fieldSpec10(filter)).filter((filter) => filter.value_col);
+    synced.filters = arrayify10(synced.filters).map((filter) => normalizeFilterSpec(filter)).filter((filter) => filter.value_col);
     const suppliedDetails = arrayify10(synced.details).map((detail) => fieldSpec10(detail)).filter((detail) => detail.value_col);
     const merged = [
       { value_col: synced.id_col, label: "Participant ID" },
-      ...synced.filters.filter((filter) => filter.value_col !== synced.id_col)
+      // Listing columns, not filters: take only the column and its label, so the
+      // filter contract's start/all/multiple keys do not leak into the listing.
+      ...synced.filters.filter((filter) => filter.value_col !== synced.id_col).map((filter) => fieldSpec10(filter))
     ];
     suppliedDetails.forEach((detail) => {
       if (!merged.some((existing) => existing.value_col === detail.value_col)) merged.push(detail);
@@ -30968,9 +31637,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
   }
   function applyFilters9(points, filters) {
     return points.filter(
-      (point) => Object.entries(filters || {}).every(
-        ([key, value]) => !value || String(point.meta[key]) === String(value)
-      )
+      (point) => Object.entries(filters || {}).every(([key, value]) => filterMatches(point.meta[key], value))
     );
   }
   function stageSummary(points) {
@@ -31254,8 +31921,24 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       this.charts = [];
       this.chart = null;
       this.participantsSelected = [];
-      this.state = { filters: {}, zoneLabels: this.settings.zone_labels, selectedId: null };
+      this.initialZoneLabels = this.settings.zone_labels;
+      this.state = this.seedState();
       this.renderShell();
+    }
+    /**
+     * The opening control state, derived from the settings alone: the configured
+     * filter start values and the configured stage-zone-label choice. Nothing
+     * here depends on the bound data, so the "Reset chart" control
+     * (NEP-CTRL-001) can rebuild it at any point in the session.
+     * @returns {Object} A fresh control state.
+     * @private
+     */
+    seedState() {
+      return {
+        filters: initFilterState(this.settings.filters),
+        zoneLabels: this.initialZoneLabels,
+        selectedId: null
+      };
     }
     /**
      * Build the static DOM shell the chart and summary table render into.
@@ -31303,7 +31986,10 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
      * @returns {SafetyNepExplorer} The instance, for chaining.
      */
     setSettings(settings) {
-      if ("zone_labels" in settings) this.state.zoneLabels = settings.zone_labels;
+      if ("zone_labels" in settings) {
+        this.state.zoneLabels = settings.zone_labels;
+        this.initialZoneLabels = settings.zone_labels;
+      }
       this.settings = syncSettings12({ ...this.settings, ...settings });
       this.settings.zone_labels = this.state.zoneLabels;
       if (this.rawData.length) this.validateAndCleanData();
@@ -31346,7 +32032,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
      */
     buildControls() {
       this.controls.innerHTML = "";
-      const { addSection, addControl } = controlBuilders(this.controls);
+      const { addSection, addControl, addReset } = controlBuilders(this.controls);
       const filterSpecs = this.settings.filters.filter((filter) => {
         const exists = this.rawData.some((row) => row[filter.value_col] !== void 0);
         if (!exists)
@@ -31358,15 +32044,20 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       if (filterSpecs.length) {
         const filterParent = addSection("Filters");
         filterSpecs.forEach((filter) => {
-          const select = addControl(filter.label, document.createElement("select"), filterParent);
-          option(select, "__all__", "All", !this.state.filters[filter.value_col]);
-          unique9(this.allPoints.map((point) => point.meta[filter.value_col])).sort().forEach(
-            (value) => option(select, value, value, this.state.filters[filter.value_col] === value)
+          const values = unique9(this.allPoints.map((point) => point.meta[filter.value_col])).sort();
+          addControl(
+            filter.label,
+            renderFilterControl({
+              spec: filter,
+              values,
+              selected: this.state.filters[filter.value_col],
+              onChange: (next) => {
+                this.state.filters[filter.value_col] = next;
+                this.render();
+              }
+            }),
+            filterParent
           );
-          select.onchange = () => {
-            this.state.filters[filter.value_col] = select.value === "__all__" ? null : select.value;
-            this.render();
-          };
         });
       }
       const displayParent = addSection("Display");
@@ -31381,6 +32072,12 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       const inline = createElement("div", "sv-control-inline");
       inline.append(zoneLabels, document.createTextNode("Show"));
       addControl("Stage zone labels", inline, displayParent);
+      addReset(() => {
+        this.state = this.seedState();
+        this.settings.zone_labels = this.state.zoneLabels;
+        this.buildControls();
+        this.render();
+      });
     }
     /**
      * Redraw everything from the current data, settings and control state.
@@ -31695,7 +32392,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     synced.time_unit = typeof synced.time_unit === "string" && synced.time_unit ? synced.time_unit : "day";
     synced.endpoint_label = typeof synced.endpoint_label === "string" && synced.endpoint_label ? synced.endpoint_label : DEFAULT_SETTINGS13.endpoint_label;
     synced.event_filters = arrayify11(synced.event_filters).map((filter) => fieldSpec11(filter)).filter((filter) => filter.value_col);
-    synced.filters = arrayify11(synced.filters).map((filter) => fieldSpec11(filter)).filter((filter) => filter.value_col);
+    synced.filters = arrayify11(synced.filters).map((filter) => normalizeFilterSpec(filter)).filter((filter) => filter.value_col);
     return synced;
   }
 
@@ -31943,7 +32640,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
   function applyFilters10(rows, filters) {
     const active = Object.entries(filters || {}).filter(([, value]) => value != null);
     if (!active.length) return rows;
-    return rows.filter((row) => active.every(([column, value]) => String(row[column]) === value));
+    return rows.filter((row) => active.every(([column, value]) => filterMatches(row[column], value)));
   }
   function deriveObservations(events, population, settings) {
     const droppedEvents = [];
@@ -32299,13 +32996,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       this.structured = null;
       this.chart = null;
       this.participantsSelected = [];
-      this.state = {
-        eventFilters: {},
-        filters: {},
-        direction: this.settings.direction,
-        ci: this.settings.ci,
-        selected: null
-      };
+      this.state = this.seedState();
       Object.assign(
         this,
         renderShell(this.element, {
@@ -32314,6 +33005,24 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
         })
       );
       this.chartWrap.style.height = `${this.settings.height}px`;
+    }
+    /**
+     * The opening control state, derived from the settings alone: an empty
+     * endpoint composer, the configured population-filter start values, and the
+     * configured orientation and confidence band. Nothing here depends on the
+     * bound data, so the "Reset chart" control (TTE-CTRL-001) can rebuild it at
+     * any point in the session.
+     * @returns {Object} A fresh control state.
+     * @private
+     */
+    seedState() {
+      return {
+        eventFilters: {},
+        filters: initFilterState(this.settings.filters),
+        direction: this.settings.direction,
+        ci: this.settings.ci,
+        selected: null
+      };
     }
     /**
      * Load data and render: an alias for setData that keeps the two-step
@@ -32384,7 +33093,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
      */
     buildControls() {
       this.controls.innerHTML = "";
-      const { addSection, addControl } = controlBuilders(this.controls);
+      const { addSection, addControl, addReset } = controlBuilders(this.controls);
       const specs = this.eventFilterSpecs();
       if (specs.length) {
         const eventParent = addSection("Event definition");
@@ -32414,17 +33123,22 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       if (filterSpecs.length) {
         const filterParent = addSection("Filters");
         filterSpecs.forEach((filter) => {
-          const select = addControl(filter.label, document.createElement("select"), filterParent);
-          option(select, "__all__", "All", !this.state.filters[filter.value_col]);
-          unique10(
+          const values = unique10(
             this.rawPopulation.map((row) => row[filter.value_col]).filter((v) => v !== void 0)
-          ).map(String).sort().forEach(
-            (value) => option(select, value, value, this.state.filters[filter.value_col] === value)
+          ).map(String).sort();
+          addControl(
+            filter.label,
+            renderFilterControl({
+              spec: filter,
+              values,
+              selected: this.state.filters[filter.value_col],
+              onChange: (next) => {
+                this.state.filters[filter.value_col] = next;
+                this.render();
+              }
+            }),
+            filterParent
           );
-          select.onchange = () => {
-            this.state.filters[filter.value_col] = select.value === "__all__" ? null : select.value;
-            this.render();
-          };
         });
       }
       const displayParent = addSection("Display");
@@ -32455,6 +33169,11 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       const inline = createElement("div", "sv-control-inline");
       inline.append(ci, document.createTextNode("Show"));
       addControl("Pointwise 95% CI band", inline, displayParent);
+      addReset(() => {
+        this.state = this.seedState();
+        this.buildControls();
+        this.render();
+      });
     }
     /**
      * Redraw everything from the current data, settings and control state.
