@@ -48,6 +48,7 @@
     "AET-FILT-001": "A filter spec accepts `start`, `all` and `multiple` alongside `value_col` and `label`, and means the same thing here as in every other renderer. A spec that declares only `value_col` and `label` behaves exactly as it did before: a single-value dropdown whose first option is \"All\".",
     "AET-FILT-002": "`start` names the value the filter opens on, and suppresses the \"All\" option unless the spec also passes `all: true`. A start of `0` or `false` is a real column value, not an absent start.",
     "AET-FILT-003": "`all: false` removes the \"All\" option so a value is always selected. The key is read as written and is never truthiness-tested, because `false` is the value that does something.",
-    "AET-FILT-004": "`multiple: true` renders a checkbox multiselect instead of a dropdown, and the rows shown are those matching ANY selected value. Its state is null (everything selected, no restriction) or an array of values."
+    "AET-FILT-004": "`multiple: true` renders a checkbox multiselect instead of a dropdown, and the rows shown are those matching ANY selected value. Its state is null (everything selected, no restriction) or an array of values.",
+    "AET-CTRL-001": "A reset control at the foot of the control panel returns the chart to its opening view: every filter and the participant sort order return to their configured defaults, any open participant detail view closes, the record listing empties and pages back to the first page, and the timelines are redrawn for the whole cohort."
   }
 }

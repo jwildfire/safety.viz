@@ -760,7 +760,7 @@ class SafetyHepExplorer {
     // (HEP-SELECT-001, HEP-COMP-007).
     this.compositeSelectSection = addSection('Participants');
 
-    // Reset Chart (HEP-CTRL-012).
+    // Reset Chart (HEP-CTRL-019).
     const reset = addControl(' ', document.createElement('button'), this.controls);
     reset.type = 'button';
     reset.textContent = 'Reset Chart';
@@ -773,7 +773,7 @@ class SafetyHepExplorer {
   /**
    * Reset the cutpoints, display mode, axis type, point size, filters, and
    * R-Ratio range to their initial values, then rebuild and redraw
-   * (HEP-CTRL-012).
+   * (HEP-CTRL-019).
    * @private
    */
   resetChart() {

@@ -41,6 +41,7 @@
     "TTE-GUIDE-002": "The clinical guide states the estimator's assumptions and limits plainly: the competing-risks overestimation worked through the demo's own censored deaths, the uninformative-censoring assumption, the pointwise-vs-simultaneous distinction, the sparse-endpoint display, and the right-tail at-risk caveat.",
     "TTE-DEMO-001": "The built demo page composes the endpoint from the vendored `adae.csv` + `adsl.csv` — 254 safety participants, three arms, 217 first events with every event qualifying — through the committed bundle with no console errors.",
     "TTE-DEMO-002": "The committed population extract is guarded against silent upstream drift: 254 safety participants across the three arms, every follow-up day a positive integer in the measured 1–213 range, each with an end-of-study status.",
-    "TTE-FILT-004": "`multiple: true` renders a checkbox multiselect instead of a dropdown, and the rows shown are those matching ANY selected value. Its state is null (everything selected, no restriction) or an array of values."
+    "TTE-FILT-004": "`multiple: true` renders a checkbox multiselect instead of a dropdown, and the rows shown are those matching ANY selected value. Its state is null (everything selected, no restriction) or an array of values.",
+    "TTE-CTRL-001": "A reset control at the foot of the control panel returns the chart to its opening view: the endpoint composer's event filters, the population filters, the orientation and the confidence-band toggle all return to their configured defaults, the selection is cleared, and the chart is rebuilt from a clean teardown."
   }
 }

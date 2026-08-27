@@ -61,6 +61,7 @@ pending; each row lists the module IDs its test covers.
 | HEP-ARM-005                                         | —                  | #92   | the Migration option is disabled with an explanation when no arm column is mapped                            |
 | HEP-MIG-017                                         | —                  | #92   | hovering a ribbon highlights it with both endpoint nodes and opens an HTML tooltip                           |
 | HEP-ARM-007                                         | —                  | #92   | arm designation scopes the migration cohort only, not the scatter or composite views                         |
+| HEP-CTRL-019 (Reset Chart)                          | HEP-CTRL-019       | #136  | reset restores the controls, preserving the view and measures                                                |
 
 ## Unit evidence (Vitest — `tests/unit/hep-explorer/`)
 

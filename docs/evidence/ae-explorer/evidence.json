@@ -1,16 +1,13 @@
 {
   "module": "ae-explorer",
-  "generatedAt": "2026-08-15T09:05:28.855Z",
+  "generatedAt": "2026-08-27T04:06:16.081Z",
   "environment": {
-    "os": "linux 6.17.0-1022-azure",
-    "node": "v22.23.2",
+    "os": "darwin 23.6.0",
+    "node": "v24.14.0",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": {
-    "id": "31876074666",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/31876074666"
-  },
+  "run": null,
   "records": [
     {
       "test": "a chart link navigates straight to that renderer demo (#71)",
@@ -170,6 +167,22 @@
         "AE-REG-030"
       ],
       "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "AE-USER-021: participant filters that exclude everyone say so and name the participant denominator (#136)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["AE-USER-021"],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "AE-USER-022: a study whose participants have no adverse events recorded says so rather than blaming the filters (#136)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["AE-USER-022"],
+      "issueRefs": [136],
       "screenshots": []
     },
     {
@@ -421,6 +434,22 @@
       "screenshots": []
     },
     {
+      "test": "ae-explorer configure AE-REG-047: a single shown group keeps the Total column when the group columns are off (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-REG-047"],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "ae-explorer configure AE-REG-047/AE-USER-019: every legal column configuration draws at least one count column (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-REG-047", "AE-USER-019"],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
       "test": "ae-explorer configure AE-USER-002/AE-USER-003/AE-USER-004/AE-USER-005: filters default to the four ADAE event filters (#60)",
       "suite": "unit",
       "status": "pass",
@@ -498,6 +527,46 @@
       "status": "pass",
       "requirementIds": ["AE-USER-020", "AE-REG-030"],
       "issueRefs": [60],
+      "screenshots": []
+    },
+    {
+      "test": "ae-explorer getPlugins empty states AE-REG-014: events excluded by the active event filters keep the original wording (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-REG-014"],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "ae-explorer getPlugins empty states AE-USER-021: a table with events to draw is not an empty state (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-USER-021"],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "ae-explorer getPlugins empty states AE-USER-021: an empty population reports no matching participants against the full denominator (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-USER-021"],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "ae-explorer getPlugins empty states AE-USER-022: a filtered selection of AE-free participants reports its own participant count (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-USER-022"],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "ae-explorer getPlugins empty states AE-USER-022: a population of placeholder rows only reports an event-free study (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-USER-022"],
+      "issueRefs": [136],
       "screenshots": []
     },
     {
@@ -1282,6 +1351,254 @@
       "status": "pass",
       "requirementIds": ["VIEW-SEL-004"],
       "issueRefs": [76],
+      "screenshots": []
+    },
+    {
+      "test": "shared: filterMatches FILT-005: a scalar selection compares as a string, so 1 matches \"1\" (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: filterMatches FILT-005: an array selection is membership, and an empty array matches nothing (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: filterMatches FILT-005: no selection places no restriction — null, undefined and empty string all pass (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: initFilterState FILT-002: no specs is an empty state, and a nullish spec list does not throw (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: initFilterState FILT-002: the opening state is the start values, and null where there is no start (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: normalizeFilterSpec FILT-001: a bare column name is a filter with an All option and one selection (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: normalizeFilterSpec FILT-001: a spec object keeps its extra keys and defaults the label to the column (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: normalizeFilterSpec FILT-002: a start of 0 or false is a real column value, not an absent start (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: normalizeFilterSpec FILT-002: a start value is the opening selection, and suppresses All unless All is asked for (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: normalizeFilterSpec FILT-002: an empty string, null or empty array is no start at all (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: normalizeFilterSpec FILT-003: all:false is honoured — it is never truthiness-tested (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: normalizeFilterSpec FILT-004: a single-value filter given an array start takes the first entry (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: normalizeFilterSpec FILT-004: multiple takes an array start, and a scalar start becomes a one-value array (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: renderFilterControl FILT-001: a plain filter renders a select whose first option is All (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: renderFilterControl FILT-001: choosing All reports no selection, and choosing a value reports it (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: renderFilterControl FILT-003: all:false renders the same select with no All option (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: renderFilterControl FILT-004: a multiple filter opens on its start values (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: renderFilterControl FILT-004: a multiple filter renders the shared multiselect and reports an array (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: resolveMeasureList MEAS-001: a bare string is accepted as a one-entry whitelist (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: resolveMeasureList MEAS-001: a repeated entry is offered once, in its first position (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: resolveMeasureList MEAS-001: a whitelist entry matches the bare measure name as well as the displayed label (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: resolveMeasureList MEAS-001: a whitelist subsets the control and keeps its own order, not the alphabet (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: resolveMeasureList MEAS-001: an unset whitelist offers every measure in the data, alphabetically (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: resolveMeasureList MEAS-001: no measures in the data resolves to an empty control, configured or not (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: resolveMeasureList MEAS-001: one bare name matching several unit variants offers them all, in that slot (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: resolveMeasureList MEAS-002: a configured measure absent from the data is dropped, and named in a warning (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: resolveMeasureList MEAS-002: a whitelist matching nothing falls back to every measure rather than blanking the control (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: resolveMeasureList MEAS-002: warnings are suppressible so a per-render caller does not spam the console (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shell: addReset RESET-001: activating it calls the handler once (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shell: addReset RESET-001: the label can be overridden without changing the class (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shell: addReset RESET-001: the reset control is a full-width button at the foot of the sidebar (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
       "screenshots": []
     },
     {

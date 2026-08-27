@@ -62,6 +62,7 @@ blank them.
 | QT-CAUTION-001, QT-CAUTION-002 (standing caution, unblinding gate)        | QT-CAUTION-001, QT-CAUTION-002                     | #136  | `configure.test.js`, `cautions.test.js` |
 | PPRF-QT-001..004 (rail adoption, interval-measure mapping, clear paths)   | PPRF-QT-001..004 (participant-profile matrix)      | #99   | `profile-adoption.test.js`              |
 | QT-FILT-001..004 (shared filter contract)                                 | QT-FILT-001, QT-FILT-002, QT-FILT-003, QT-FILT-004 | #136  | `../shared/filters.test.js`             |
+| QT-CTRL-004 (whole-chart reset, back to the central view)                 | QT-CTRL-004                                        | #136  | `reset.test.js`                         |
 
 ## Railed participant profile (#99, PPRF-QT)
 

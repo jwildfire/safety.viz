@@ -54,6 +54,7 @@ measurement at a visit) to one point per participant: **change in measure X**
 | SDD-DATA-001/SDD-REG-010 (guard)           | SDD-DATA-001, SDD-REG-010                                       | #25   | `checkInputs.test.js`       |
 | SDD-MEAS-001/002 (measures whitelist)      | SDD-MEAS-001, SDD-MEAS-002                                      | #136  | `measure-list.test.js`      |
 | SDD-FILT-001..004 (shared filter contract) | SDD-FILT-001, SDD-FILT-002, SDD-FILT-003, SDD-FILT-004          | #136  | `../shared/filters.test.js` |
+| SDD-CTRL-001 (whole-chart reset)           | SDD-CTRL-001                                                    | #136  | `reset.test.js`             |
 
 ## Railed participant profile (#99, PPRF-12)
 

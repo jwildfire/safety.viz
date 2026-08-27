@@ -55,6 +55,7 @@
     "QT-FILT-001": "A filter spec accepts `start`, `all` and `multiple` alongside `value_col` and `label`, and means the same thing here as in every other renderer. A spec that declares only `value_col` and `label` behaves exactly as it did before: a single-value dropdown whose first option is \"All\".",
     "QT-FILT-002": "`start` names the value the filter opens on, and suppresses the \"All\" option unless the spec also passes `all: true`. A start of `0` or `false` is a real column value, not an absent start.",
     "QT-FILT-003": "`all: false` removes the \"All\" option so a value is always selected. The key is read as written and is never truthiness-tested, because `false` is the value that does something.",
-    "QT-FILT-004": "`multiple: true` renders a checkbox multiselect instead of a dropdown, and the rows shown are those matching ANY selected value. Its state is null (everything selected, no restriction) or an array of values."
+    "QT-FILT-004": "`multiple: true` renders a checkbox multiselect instead of a dropdown, and the rows shown are those matching ANY selected value. Its state is null (everything selected, no restriction) or an array of values.",
+    "QT-CTRL-004": "A reset control at the foot of the control panel restores every settings-derived control to its configured default, re-pins the correction to one the bound data carries, clears the scatter selection and the docked profile, and re-renders. Reset is a WHOLE-chart reset: it also returns the reader to the central-tendency view, rather than resetting the controls within whichever view is open."
   }
 }

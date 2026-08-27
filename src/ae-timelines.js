@@ -64,10 +64,7 @@ class AETimelines {
     this.detailChart = null;
     this.selectedParticipant = null;
     this.participantsSelected = [];
-    this.state = {
-      filters: initFilterState(this.settings.filters),
-      sort: this.settings.sort_participants
-    };
+    this.state = this.seedState();
     this.renderShell();
     // The participant profile in the rail (obot.roadmap#75 decision D9). The AE
     // renderers were deferred in #45 because the profile had no AE domain;
@@ -76,6 +73,21 @@ class AETimelines {
     // as the AE story alone.
     this.profileRows = [];
     mountProfileRail(this, () => this.profileSettings(), { target: this.element });
+  }
+
+  /**
+   * The opening control state, derived from the settings alone: the configured
+   * filter start values and the configured participant sort order. Nothing here
+   * depends on the bound data, so the "Reset chart" control (AET-CTRL-001) can
+   * rebuild it at any point in the session.
+   * @returns {Object} A fresh control state.
+   * @private
+   */
+  seedState() {
+    return {
+      filters: initFilterState(this.settings.filters),
+      sort: this.settings.sort_participants
+    };
   }
 
   /**
@@ -221,7 +233,7 @@ class AETimelines {
    */
   buildControls() {
     this.controls.innerHTML = '';
-    const { addSection, addControl } = controlBuilders(this.controls);
+    const { addSection, addControl, addReset } = controlBuilders(this.controls);
 
     const domain = colorDomain(this.cleanRows, this.settings.color);
     const filterSpecs = this.settings.filters.filter((filter) => {
@@ -271,6 +283,15 @@ class AETimelines {
       this.state.sort = sort.value;
       this.render();
     };
+
+    // The way back to the opening view (AET-CTRL-001), at the foot of the
+    // sidebar below every section. render() closes any open participant detail
+    // view and empties the listing, so the reset leaves the timelines showing.
+    addReset(() => {
+      this.state = this.seedState();
+      this.buildControls();
+      this.render();
+    });
   }
 
   /**

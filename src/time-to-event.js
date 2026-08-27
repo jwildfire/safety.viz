@@ -80,13 +80,7 @@ class SafetyTimeToEvent {
     this.structured = null;
     this.chart = null;
     this.participantsSelected = [];
-    this.state = {
-      eventFilters: {},
-      filters: initFilterState(this.settings.filters),
-      direction: this.settings.direction,
-      ci: this.settings.ci,
-      selected: null
-    };
+    this.state = this.seedState();
     Object.assign(
       this,
       renderShell(this.element, {
@@ -95,6 +89,25 @@ class SafetyTimeToEvent {
       })
     );
     this.chartWrap.style.height = `${this.settings.height}px`;
+  }
+
+  /**
+   * The opening control state, derived from the settings alone: an empty
+   * endpoint composer, the configured population-filter start values, and the
+   * configured orientation and confidence band. Nothing here depends on the
+   * bound data, so the "Reset chart" control (TTE-CTRL-001) can rebuild it at
+   * any point in the session.
+   * @returns {Object} A fresh control state.
+   * @private
+   */
+  seedState() {
+    return {
+      eventFilters: {},
+      filters: initFilterState(this.settings.filters),
+      direction: this.settings.direction,
+      ci: this.settings.ci,
+      selected: null
+    };
   }
 
   /**
@@ -170,7 +183,7 @@ class SafetyTimeToEvent {
    */
   buildControls() {
     this.controls.innerHTML = '';
-    const { addSection, addControl } = controlBuilders(this.controls);
+    const { addSection, addControl, addReset } = controlBuilders(this.controls);
 
     // The endpoint composer (TTE-FILT-001): one multiselect per configured
     // event-descriptor column. The controls persist across renders — only the
@@ -258,6 +271,16 @@ class SafetyTimeToEvent {
     const inline = createElement('div', 'sv-control-inline');
     inline.append(ci, document.createTextNode('Show'));
     addControl('Pointwise 95% CI band', inline, displayParent);
+
+    // The way back to the opening view (TTE-CTRL-001), at the foot of the
+    // sidebar below every section. The buildControls() call is load-bearing
+    // here, not decorative: the multiselects hold their own DOM state and are
+    // only ever re-seeded from this.state by a rebuild.
+    addReset(() => {
+      this.state = this.seedState();
+      this.buildControls();
+      this.render();
+    });
   }
 
   /**

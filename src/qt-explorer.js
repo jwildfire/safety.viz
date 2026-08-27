@@ -134,7 +134,21 @@ class SafetyQtExplorer {
     this.profileFeed = null;
     this.profileKey = null;
     this.profileRows = [];
-    this.state = {
+    this.state = this.seedState();
+    this.renderShellDom();
+    mountProfileRail(this, () => this.profileSettings());
+  }
+
+  /**
+   * The opening control state, derived from the settings alone (QT-CTRL-004).
+   * `view` is part of the seed, so a whole-chart reset returns the reader to
+   * the central-tendency view. Only HALF the seed: resolveMeasure pins the
+   * correction to one the bound data actually carries afterwards.
+   * @returns {Object} A fresh control state.
+   * @private
+   */
+  seedState() {
+    return {
       view: 'central',
       measure: this.settings.start_measure,
       statistic: 'mean',
@@ -143,8 +157,32 @@ class SafetyQtExplorer {
       filters: initFilterState(this.settings.filters),
       selectedId: null
     };
-    this.renderShellDom();
-    mountProfileRail(this, () => this.profileSettings());
+  }
+
+  /**
+   * Pin the selected correction to one present in the bound data, so a
+   * configured start_measure the extract does not carry never strands the
+   * chart on an empty selection (QT-CTRL-002).
+   * @private
+   */
+  resolveMeasure() {
+    if (!this.availableMeasures.includes(this.state.measure)) {
+      this.state.measure = this.availableMeasures[0];
+    }
+  }
+
+  /**
+   * Return the control state to its opening value: re-seed from the settings,
+   * then re-run the available-measure pin so the Correction control lands
+   * where it opened rather than on a correction the data lacks (QT-CTRL-004,
+   * #136). The stale-filter prune needs no re-run — the seed's filters come
+   * straight from the configured specs. Cheap enough for a control click:
+   * availableMeasures is already cached, and the data is not re-cleaned.
+   * @private
+   */
+  reseed() {
+    this.state = this.seedState();
+    if (this.cleanRows.length) this.resolveMeasure();
   }
 
   /**
@@ -335,9 +373,7 @@ class SafetyQtExplorer {
     const measures = measuresPresent(rows);
     const available = this.settings.measures.filter((m) => measures.includes(m));
     this.availableMeasures = available.length ? available : measures;
-    if (!this.availableMeasures.includes(this.state.measure)) {
-      this.state.measure = this.availableMeasures[0];
-    }
+    this.resolveMeasure();
     // Prune stale filter selections: drop filters no longer configured, or whose
     // value is absent from the new data, so an invisible filter can never keep
     // constraining the views to nothing (QT-CTRL-003).
@@ -388,7 +424,7 @@ class SafetyQtExplorer {
   /** Build the sidebar controls for the active view. @private */
   buildControls() {
     this.controls.innerHTML = '';
-    const { addSection, addControl } = controlBuilders(this.controls);
+    const { addSection, addControl, addReset } = controlBuilders(this.controls);
     this.buildViewControl(addSection);
     const section = addSection('Display');
 
@@ -464,6 +500,18 @@ class SafetyQtExplorer {
         );
       });
     }
+
+    // The whole-chart reset, appended to the controls container itself so it
+    // sits full-width below the View, Display and Filters sections
+    // (QT-CTRL-004, #136). Must stay the LAST statement of buildControls. The
+    // render() preamble clears the scatter selection, the docked profile and
+    // the live charts, so re-seeding the state and re-rendering is the whole
+    // of the reset; the standing cautions are chrome, not state, and survive.
+    addReset(() => {
+      this.reseed();
+      this.buildControls();
+      this.render();
+    });
   }
 
   /** Post-baseline visit labels for the current measure. @private */

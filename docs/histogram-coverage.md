@@ -70,6 +70,7 @@ schemes appear:
 | PPRF-SH-001/002/003                       | PPRF-SH-001..003 (participant-profile matrix)      | #99   | `profile-adoption.test.js` |
 | SH-MEAS-001/002 (measures whitelist)      | SH-MEAS-001, SH-MEAS-002                           | #136  | `measure-list.test.js`     |
 | SH-FILT-001..004 (shared filter contract) | SH-FILT-001, SH-FILT-002, SH-FILT-003, SH-FILT-004 | #136  | `filters.test.js`          |
+| SH-CTRL-009 (whole-chart reset)           | —                                                  | #136  | `reset.test.js`            |
 
 ## Railed participant profile (#99, PPRF-SH)
 

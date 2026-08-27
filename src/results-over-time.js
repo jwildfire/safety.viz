@@ -79,7 +79,20 @@ class SafetyResultsOverTime {
     this.filteredData = [];
     this.charts = [];
     this.boxSpecs = [];
-    this.state = {
+    this.state = this.seedState();
+    this.renderShell();
+  }
+
+  /**
+   * The opening control state, derived from settings alone. Built once in the
+   * constructor and again by {@link reseed} behind the Reset chart control
+   * (SROT-CTRL-001, #136), so "the state the chart opens in" has one
+   * definition rather than one per caller.
+   * @returns {Object} A fresh state object.
+   * @private
+   */
+  seedState() {
+    return {
       measure: this.settings.start_value,
       filters: initFilterState(this.settings.filters),
       groupBy: this.settings.group_by,
@@ -95,7 +108,19 @@ class SafetyResultsOverTime {
       visitsWithoutData: this.settings.visits_without_data,
       unscheduledVisits: this.settings.unscheduled_visits
     };
-    this.renderShell();
+  }
+
+  /**
+   * Return to the opening state (SROT-CTRL-001, #136): re-seed from settings,
+   * then re-run the data-driven measure resolution the seed cannot do on its
+   * own — `start_value` defaults to null, so a bare re-seed would leave the
+   * chart with no measure and nothing to draw. The bound data is untouched,
+   * so this deliberately does NOT re-run validateAndCleanData.
+   * @private
+   */
+  reseed() {
+    this.state = this.seedState();
+    if (this.cleanData.length) this.resolveMeasure();
   }
 
   /**
@@ -183,6 +208,17 @@ class SafetyResultsOverTime {
       presentMeasures(this.cleanData, this.settings, measureLabel),
       this.settings.measures
     );
+    this.resolveMeasure();
+  }
+
+  /**
+   * Pin the selected measure to one present in the data, falling back to the
+   * first with a console warning (SROT-FUNC-001 / SROT-REG-024). Runs after
+   * cleaning and again on reset, where it is what stops a null `start_value`
+   * from emptying the chart (SROT-CTRL-001).
+   * @private
+   */
+  resolveMeasure() {
     const measures = this.measures();
     if (this.state.measure && !measures.includes(this.state.measure)) {
       console.warn(
@@ -225,7 +261,7 @@ class SafetyResultsOverTime {
    */
   buildControls() {
     this.controls.innerHTML = '';
-    const { addSection, addRow, addControl } = controlBuilders(this.controls);
+    const { addSection, addRow, addControl, addReset } = controlBuilders(this.controls);
 
     const measure = addControl('Measure', document.createElement('select'));
     this.measures().forEach((value) => option(measure, value, value, value === this.state.measure));
@@ -303,6 +339,15 @@ class SafetyResultsOverTime {
     this.addToggle(displayParent, addControl, 'Outliers', 'outliers');
     this.addToggle(displayParent, addControl, 'Visits without data', 'visitsWithoutData');
     this.addToggle(displayParent, addControl, 'Unscheduled visits', 'unscheduledVisits');
+
+    // Last statement of buildControls: addReset appends to the controls
+    // container itself, so the button sits full-width below every section
+    // (SROT-CTRL-001, #136).
+    addReset(() => {
+      this.reseed();
+      this.buildControls();
+      this.render();
+    });
   }
 
   /**

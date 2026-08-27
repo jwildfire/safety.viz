@@ -97,7 +97,22 @@ class SafetyOutlierExplorer {
     this.profileFeed = null;
     this.profileKey = null;
     this.profileRows = [];
-    this.state = {
+    this.state = this.seedState();
+    this.initFilterState();
+    this.renderShell();
+    mountProfileRail(this, () => this.profileSettings());
+  }
+
+  /**
+   * The opening control state: every settings-derived default, before the
+   * data-driven normalisers (the filter `start` values and the measure
+   * fallback) run. Called from the constructor and from reseed(), so the
+   * Reset chart control and the first render agree by construction
+   * (SOE-CTRL-002, #136).
+   * @private
+   */
+  seedState() {
+    return {
       measure: this.settings.start_value,
       filters: {},
       timeIndex: 0,
@@ -115,9 +130,22 @@ class SafetyOutlierExplorer {
       normalRange: null,
       selectedId: null
     };
+  }
+
+  /**
+   * Restore the opening state for the Reset chart control (SOE-CTRL-002,
+   * #136): the settings-derived seed, then the two normalisers that run after
+   * it on first load — the filter `start` values (SOE-REG-051/053) and the
+   * data-driven measure. Skipping either would put the measure back to the
+   * `start_value` default of null (blanking the chart) and a start filter back
+   * to "All". Deliberately does NOT re-clean the data: nothing about the data
+   * changed, so an O(rows) re-clean on a control click would be waste.
+   * @private
+   */
+  reseed() {
+    this.state = this.seedState();
     this.initFilterState();
-    this.renderShell();
-    mountProfileRail(this, () => this.profileSettings());
+    if (this.cleanData.length) this.resolveMeasure();
   }
 
   /**
@@ -273,6 +301,18 @@ class SafetyOutlierExplorer {
       presentMeasures(this.cleanData, this.settings, measureLabel),
       this.settings.measures
     );
+    this.resolveMeasure();
+  }
+
+  /**
+   * Pin the selected measure to one the data actually carries, warning when a
+   * configured measure is absent (SOE-FUNC-001, SOE-MEAS-002). Runs after the
+   * settings-derived seed on both paths that produce an opening state —
+   * validateAndCleanData and reseed — because `start_value` defaults to null
+   * and the opening measure is therefore data-derived, not settings-derived.
+   * @private
+   */
+  resolveMeasure() {
     const measures = this.measures();
     if (this.state.measure && !measures.includes(this.state.measure)) {
       console.warn(
@@ -327,7 +367,7 @@ class SafetyOutlierExplorer {
    */
   buildControls() {
     this.controls.innerHTML = '';
-    const { addSection, addRow, addControl } = controlBuilders(this.controls);
+    const { addSection, addRow, addControl, addReset } = controlBuilders(this.controls);
 
     const measure = addControl('Measure', document.createElement('select'));
     this.measures().forEach((value) => option(measure, value, value, value === this.state.measure));
@@ -463,6 +503,17 @@ class SafetyOutlierExplorer {
       this.state.groupBy = group.value;
       this.render();
     };
+
+    // Reset chart (SOE-CTRL-002, #136): the whole-chart way back to the
+    // opening view, distinct from the Y-axis section's Reset Limits, which
+    // clears the axis overrides and nothing else. Appended straight to the
+    // controls container as the LAST statement of buildControls so it sits
+    // full-width below every section.
+    addReset(() => {
+      this.reseed();
+      this.buildControls();
+      this.render();
+    });
   }
 
   /**

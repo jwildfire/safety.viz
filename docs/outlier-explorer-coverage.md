@@ -55,6 +55,7 @@ matching its behavior, under
 | SOE-AXIS-001/002/003/004                   | SOE-AXIS-001, SOE-AXIS-002, SOE-AXIS-003, SOE-AXIS-004          | #85   | `axis-limits.test.js`       |
 | SOE-MEAS-001/002 (measures whitelist)      | SOE-MEAS-001, SOE-MEAS-002                                      | #136  | `measure-list.test.js`      |
 | SOE-FILT-001..004 (shared filter contract) | SOE-FILT-001, SOE-FILT-002, SOE-FILT-003, SOE-FILT-004          | #136  | `../shared/filters.test.js` |
+| SOE-CTRL-002 (whole-chart reset)           | SOE-CTRL-002                                                    | #136  | `reset.test.js`             |
 
 ## Source-matrix routing status
 

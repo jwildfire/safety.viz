@@ -95,7 +95,31 @@ class SafetyHistogram {
     this.profileKey = null;
     this.profileRows = [];
     this.listingSelectedId = null;
-    this.state = {
+    this.state = this.seedState();
+    this.renderShell();
+    /**
+     * Listing-row activation callback (#99, PPRF-SH-002). Its presence opts
+     * the SHARED listing renderer into clickable/keyboard-focusable rows —
+     * consumers that never set it (outlier-explorer, shift-plot) keep the
+     * pre-#99 listing untouched. The default focuses the clicked row's
+     * participant into the railed profile via selectParticipant.
+     * @param {Object} row The clicked listing record.
+     * @returns {void}
+     */
+    this.onListingRowClick = (row) => this.selectParticipant(row[this.settings.id_col]);
+    mountProfileRail(this, () => this.profileSettings());
+  }
+
+  /**
+   * The opening control state, derived from settings alone. Built once in the
+   * constructor and again by {@link reseed} behind the Reset chart control
+   * (SH-CTRL-009, #136), so "the state the chart opens in" has one definition
+   * rather than one per caller.
+   * @returns {Object} A fresh state object.
+   * @private
+   */
+  seedState() {
+    return {
       measure: this.settings.start_value,
       filters: initFilterState(this.settings.filters),
       groupBy: this.settings.group_by,
@@ -113,18 +137,20 @@ class SafetyHistogram {
       annotateBoundaries: this.settings.annotate_bin_boundaries,
       selectedId: null
     };
-    this.renderShell();
-    /**
-     * Listing-row activation callback (#99, PPRF-SH-002). Its presence opts
-     * the SHARED listing renderer into clickable/keyboard-focusable rows —
-     * consumers that never set it (outlier-explorer, shift-plot) keep the
-     * pre-#99 listing untouched. The default focuses the clicked row's
-     * participant into the railed profile via selectParticipant.
-     * @param {Object} row The clicked listing record.
-     * @returns {void}
-     */
-    this.onListingRowClick = (row) => this.selectParticipant(row[this.settings.id_col]);
-    mountProfileRail(this, () => this.profileSettings());
+  }
+
+  /**
+   * Return to the opening state (SH-CTRL-009, #136): re-seed from settings,
+   * then re-run the data-driven measure resolution the seed cannot do on its
+   * own — a `start_value` naming a measure absent from the data has to fall
+   * back to the all-measures overview again, not come back as a selection
+   * with no records. The bound data is untouched, so this deliberately does
+   * NOT re-run validateAndCleanData.
+   * @private
+   */
+  reseed() {
+    this.state = this.seedState();
+    if (this.cleanData.length) this.resolveMeasure();
   }
 
   /**
@@ -263,6 +289,18 @@ class SafetyHistogram {
       presentMeasures(this.cleanData, this.settings, measureLabel),
       this.settings.measures
     );
+    this.resolveMeasure();
+  }
+
+  /**
+   * Pin the selected measure to one present in the data, falling back to the
+   * all-measures overview with a console warning (SH-OVW-001). Runs after
+   * cleaning and again on reset, where it is what stops an absent
+   * `start_value` from coming back as an empty single-measure view
+   * (SH-CTRL-009).
+   * @private
+   */
+  resolveMeasure() {
     const measures = this.measures();
     if (this.state.measure != null && !measures.includes(this.state.measure)) {
       console.warn(
@@ -311,7 +349,7 @@ class SafetyHistogram {
   buildControls() {
     this.controls.innerHTML = '';
 
-    const { addSection, addRow, addControl } = controlBuilders(this.controls);
+    const { addSection, addRow, addControl, addReset } = controlBuilders(this.controls);
 
     const measure = addControl('Measure', document.createElement('select'));
     option(measure, OVERVIEW, 'All Measures', this.isOverview());
@@ -465,6 +503,17 @@ class SafetyHistogram {
     );
 
     this.updateNormalRangeControl();
+
+    // Last statement of buildControls: addReset appends to the controls
+    // container itself, so the button sits full-width below every section and
+    // stays visible in the overview, where the per-measure sections hide
+    // (SH-CTRL-009, #136). The X-axis section keeps its own Reset Limits
+    // (SH-AXIS-003) — that one is an axis control, this one is the whole chart.
+    addReset(() => {
+      this.reseed();
+      this.buildControls();
+      this.render();
+    });
   }
 
   /**

@@ -87,7 +87,20 @@ class SafetyShiftPlot {
     this.profileFeed = null;
     this.profileKey = null;
     this.profileRows = [];
-    this.state = {
+    this.state = this.seedState();
+    this.renderShell();
+    mountProfileRail(this, () => this.profileSettings());
+  }
+
+  /**
+   * The opening control state: every settings-derived default, before the
+   * data-driven normalisers (the measure fallback and resolveVisits) run.
+   * Called from the constructor and from reseed(), so the Reset chart control
+   * and the first render agree by construction (SSP-CTRL-004, #136).
+   * @private
+   */
+  seedState() {
+    return {
       measure: this.settings.start_value,
       baselineVisits: this.settings.baseline_visits,
       comparisonVisits: this.settings.comparison_visits,
@@ -97,8 +110,25 @@ class SafetyShiftPlot {
       axisType: this.settings.axis_type,
       domain: null
     };
-    this.renderShell();
-    mountProfileRail(this, () => this.profileSettings());
+  }
+
+  /**
+   * Restore the opening state for the Reset chart control (SSP-CTRL-004,
+   * #136): the settings-derived seed, then the two normalisers that run after
+   * it on first load — the measure fallback and the baseline/comparison visit
+   * resolution (SSP-CFG-004/005). All three of `start_value`,
+   * `baseline_visits` and `comparison_visits` default to null, so skipping
+   * them would hand back a blank chart with two empty visit controls.
+   * `domain: null` needs no normalisation — render() recomputes it. Does NOT
+   * re-clean the data: nothing about the data changed.
+   * @private
+   */
+  reseed() {
+    this.state = this.seedState();
+    if (this.cleanData.length) {
+      this.resolveMeasure();
+      this.resolveVisits();
+    }
   }
 
   /**
@@ -259,6 +289,19 @@ class SafetyShiftPlot {
       presentMeasures(this.cleanData, this.settings, measureLabel),
       this.settings.measures
     );
+    this.resolveMeasure();
+    this.resolveVisits();
+  }
+
+  /**
+   * Pin the selected measure to one the data actually carries, warning when a
+   * configured measure is absent (SSP-CTRL-001, SSP-MEAS-002). Runs after the
+   * settings-derived seed on both paths that produce an opening state —
+   * validateAndCleanData and reseed — because `start_value` defaults to null
+   * and the opening measure is therefore data-derived, not settings-derived.
+   * @private
+   */
+  resolveMeasure() {
     const measures = this.measures();
     if (this.state.measure && !measures.includes(this.state.measure)) {
       console.warn(
@@ -266,7 +309,6 @@ class SafetyShiftPlot {
       );
     }
     this.state.measure = measures.includes(this.state.measure) ? this.state.measure : measures[0];
-    this.resolveVisits();
   }
 
   /**
@@ -311,7 +353,7 @@ class SafetyShiftPlot {
    */
   buildControls() {
     this.controls.innerHTML = '';
-    const { addSection, addControl } = controlBuilders(this.controls);
+    const { addSection, addControl, addReset } = controlBuilders(this.controls);
     const visits = this.visits();
 
     const measure = addControl('Measure', document.createElement('select'));
@@ -387,6 +429,15 @@ class SafetyShiftPlot {
         );
       });
     }
+
+    // Reset chart (SSP-CTRL-004, #136): the whole-chart way back to the
+    // opening view. Appended straight to the controls container as the LAST
+    // statement of buildControls so it sits full-width below every section.
+    addReset(() => {
+      this.reseed();
+      this.buildControls();
+      this.render();
+    });
   }
 
   /**

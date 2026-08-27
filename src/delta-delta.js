@@ -74,7 +74,22 @@ class SafetyDeltaDelta {
     this.profileFeed = null;
     this.profileKey = null;
     this.profileRows = [];
-    this.state = {
+    this.state = this.seedState();
+    this.renderShell();
+    mountProfileRail(this, () => this.profileSettings());
+  }
+
+  /**
+   * The opening control state, derived from the settings alone (SDD-CTRL-001).
+   * Only HALF the seed: resolveStateDefaults fills the measure and visit
+   * selections from the data afterwards, because measure_x/measure_y default
+   * to null and the visit lists to []. The visit arrays are COPIED so nothing
+   * downstream can write the caller's settings arrays through the state.
+   * @returns {Object} A fresh control state.
+   * @private
+   */
+  seedState() {
+    return {
       measureX: this.settings.measure_x,
       measureY: this.settings.measure_y,
       baseline: [...this.settings.baseline_visits],
@@ -83,8 +98,20 @@ class SafetyDeltaDelta {
       addRegressionLine: this.settings.add_regression_line,
       selectedId: null
     };
-    this.renderShell();
-    mountProfileRail(this, () => this.profileSettings());
+  }
+
+  /**
+   * Return the control state to its opening value the way the constructor and
+   * setData do: re-seed from the settings, then re-run the data-driven
+   * defaults so the measure and visit pickers land where they opened rather
+   * than on the unset settings (SDD-CTRL-001, #136). Cheap enough for a
+   * control click — resolveStateDefaults reads the cached measure/visit lists
+   * and never re-cleans the data.
+   * @private
+   */
+  reseed() {
+    this.state = this.seedState();
+    if (this.cleanRows.length) this.resolveStateDefaults();
   }
 
   /**
@@ -284,7 +311,7 @@ class SafetyDeltaDelta {
    */
   buildControls() {
     this.controls.innerHTML = '';
-    const { addSection, addControl } = controlBuilders(this.controls);
+    const { addSection, addControl, addReset } = controlBuilders(this.controls);
 
     const visitParent = addSection('Visits');
     const baseline = addControl('Baseline visit(s)', document.createElement('select'), visitParent);
@@ -371,6 +398,17 @@ class SafetyDeltaDelta {
     const inline = createElement('div', 'sv-control-inline');
     inline.append(regression, document.createTextNode('Show'));
     addControl('Regression Line', inline, displayParent);
+
+    // The whole-chart reset, appended to the controls container itself so it
+    // sits full-width below every section (SDD-CTRL-001, #136). Must stay the
+    // LAST statement of buildControls. The render() preamble clears the point
+    // selection, the docked profile and the live charts, so re-seeding the
+    // state and re-rendering is the whole of the reset.
+    addReset(() => {
+      this.reseed();
+      this.buildControls();
+      this.render();
+    });
   }
 
   /**
