@@ -41,8 +41,7 @@ vi.mock('chart.js', () => {
   };
 });
 
-const { default: factory } =
-  await import('/Users/jwildfire/Documents/obot2/safety.viz/.claude/worktrees/legacy33/src/histogram.js');
+const { default: factory } = await import('../../../src/histogram.js');
 
 const BASE = {};
 

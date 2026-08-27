@@ -41,8 +41,7 @@ vi.mock('chart.js', () => {
   };
 });
 
-const { default: factory } =
-  await import('/Users/jwildfire/Documents/obot2/safety.viz/.claude/worktrees/legacy33/src/results-over-time.js');
+const { default: factory } = await import('../../../src/results-over-time.js');
 
 const BASE = {};
 
