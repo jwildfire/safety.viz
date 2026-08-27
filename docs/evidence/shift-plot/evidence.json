@@ -1,13 +1,16 @@
 {
   "module": "shift-plot",
-  "generatedAt": "2026-08-27T04:06:16.081Z",
+  "generatedAt": "2026-08-27T04:11:50.817Z",
   "environment": {
-    "os": "darwin 23.6.0",
-    "node": "v24.14.0",
+    "os": "linux 6.17.0-1022-azure",
+    "node": "v22.23.2",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": null,
+  "run": {
+    "id": "33038622664",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/33038622664"
+  },
   "records": [
     {
       "test": "a chart link navigates straight to that renderer demo (#71)",
@@ -306,7 +309,7 @@
       "status": "pass",
       "requirementIds": ["SSP-SCALE-001", "SSP-SCALE-004"],
       "issueRefs": [136],
-      "screenshots": []
+      "screenshots": ["SSP-SCALE-001-log-axes.png"]
     },
     {
       "test": "buildAdslRecords derives EOSDY = EOSDT − TRTSDT + 1 and carries the end-of-study status (#128)",
@@ -1226,7 +1229,7 @@
       "status": "pass",
       "requirementIds": ["SSP-SCALE-001"],
       "issueRefs": [136],
-      "screenshots": []
+      "screenshots": ["SSP-SCALE-001-log-axes.png"]
     },
     {
       "test": "shift-plot axis-type toggle (SSP-SCALE) SSP-SCALE-001: choosing log switches both chart axes together, never one alone (#136)",
@@ -1234,7 +1237,7 @@
       "status": "pass",
       "requirementIds": ["SSP-SCALE-001"],
       "issueRefs": [136],
-      "screenshots": []
+      "screenshots": ["SSP-SCALE-001-log-axes.png"]
     },
     {
       "test": "shift-plot axis-type toggle (SSP-SCALE) SSP-SCALE-001: the axis_type setting seeds the control and setSettings updates it (#136)",
@@ -1242,7 +1245,7 @@
       "status": "pass",
       "requirementIds": ["SSP-SCALE-001"],
       "issueRefs": [136],
-      "screenshots": []
+      "screenshots": ["SSP-SCALE-001-log-axes.png"]
     },
     {
       "test": "shift-plot axis-type toggle (SSP-SCALE) SSP-SCALE-002: the shared domain stays strictly positive under the log scale (#136)",
@@ -1362,7 +1365,7 @@
       "status": "pass",
       "requirementIds": ["SSP-SCALE-001"],
       "issueRefs": [136],
-      "screenshots": []
+      "screenshots": ["SSP-SCALE-001-log-axes.png"]
     },
     {
       "test": "shift-plot dispatch target (PPRF-SSP-004, SSP-API-003) PPRF-SSP-004: is idempotent under repeated identical dispatches",
@@ -1402,7 +1405,7 @@
       "status": "pass",
       "requirementIds": ["SSP-SCALE-001"],
       "issueRefs": [136],
-      "screenshots": []
+      "screenshots": ["SSP-SCALE-001-log-axes.png"]
     },
     {
       "test": "shift-plot getScales SSP-SCALE-001: the log axis type applies to both axes together, never to one alone (#136)",
@@ -1410,7 +1413,7 @@
       "status": "pass",
       "requirementIds": ["SSP-SCALE-001"],
       "issueRefs": [136],
-      "screenshots": []
+      "screenshots": ["SSP-SCALE-001-log-axes.png"]
     },
     {
       "test": "shift-plot participant-profile adoption (PPRF-SSP-002) PPRF-SSP-002: a single-point brush shows the full profile with no stepper AND keeps the listing",
@@ -1678,46 +1681,6 @@
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["SSP-SCALE-002"],
-      "issueRefs": [136],
-      "screenshots": []
-    },
-    {
-      "test": "shift-plot: the measures whitelist SSP-MEAS-001: a whitelist offers exactly the listed measures, in the listed order (#136)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SSP-MEAS-001"],
-      "issueRefs": [136],
-      "screenshots": []
-    },
-    {
-      "test": "shift-plot: the measures whitelist SSP-MEAS-001: no whitelist offers every measure in the data, alphabetically (#136)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SSP-MEAS-001"],
-      "issueRefs": [136],
-      "screenshots": []
-    },
-    {
-      "test": "shift-plot: the measures whitelist SSP-MEAS-001: setSettings re-resolves the control against the new whitelist (#136)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SSP-MEAS-001"],
-      "issueRefs": [136],
-      "screenshots": []
-    },
-    {
-      "test": "shift-plot: the measures whitelist SSP-MEAS-002: a configured measure absent from the data is dropped with a warning (#136)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SSP-MEAS-002"],
-      "issueRefs": [136],
-      "screenshots": []
-    },
-    {
-      "test": "shift-plot: the measures whitelist SSP-MEAS-002: a whitelist matching nothing falls back to every measure (#136)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SSP-MEAS-002"],
       "issueRefs": [136],
       "screenshots": []
     },

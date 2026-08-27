@@ -1,13 +1,16 @@
 {
   "module": "histogram",
-  "generatedAt": "2026-08-27T04:06:16.081Z",
+  "generatedAt": "2026-08-27T04:11:50.817Z",
   "environment": {
-    "os": "darwin 23.6.0",
-    "node": "v24.14.0",
+    "os": "linux 6.17.0-1022-azure",
+    "node": "v22.23.2",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": null,
+  "run": {
+    "id": "33038622664",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/33038622664"
+  },
   "records": [
     {
       "test": "a chart link navigates straight to that renderer demo (#71)",
@@ -1209,46 +1212,6 @@
       "status": "pass",
       "requirementIds": ["SH-AXIS-002"],
       "issueRefs": [85],
-      "screenshots": []
-    },
-    {
-      "test": "histogram: the measures whitelist SH-MEAS-001: a whitelist offers exactly the listed measures, in the listed order (#136)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-MEAS-001"],
-      "issueRefs": [136],
-      "screenshots": []
-    },
-    {
-      "test": "histogram: the measures whitelist SH-MEAS-001: no whitelist offers every measure in the data, alphabetically (#136)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-MEAS-001"],
-      "issueRefs": [136],
-      "screenshots": []
-    },
-    {
-      "test": "histogram: the measures whitelist SH-MEAS-001: setSettings re-resolves the control against the new whitelist (#136)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-MEAS-001"],
-      "issueRefs": [136],
-      "screenshots": []
-    },
-    {
-      "test": "histogram: the measures whitelist SH-MEAS-002: a configured measure absent from the data is dropped with a warning (#136)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-MEAS-002"],
-      "issueRefs": [136],
-      "screenshots": []
-    },
-    {
-      "test": "histogram: the measures whitelist SH-MEAS-002: a whitelist matching nothing falls back to every measure (#136)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-MEAS-002"],
-      "issueRefs": [136],
       "screenshots": []
     },
     {
