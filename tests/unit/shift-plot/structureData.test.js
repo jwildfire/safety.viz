@@ -81,7 +81,7 @@ describe('shift-plot structureData', () => {
     ]);
   });
 
-  it('SSP-REQ-005/SSP-REG-019: pairs baseline against comparison per participant with change and percent change (#14)', () => {
+  it('SSP-CHART-001/SSP-REQ-005/SSP-REG-019: pairs baseline against comparison per participant with change and percent change (#14)', () => {
     const pairs = pairsFor();
     // S4 (baseline only) and S5 (comparison only) drop out — a participant
     // needs a value at both a baseline and a comparison visit to plot.
@@ -140,6 +140,43 @@ describe('shift-plot structureData', () => {
     expect(domain[0]).toBeCloseTo(7.4, 10);
     expect(domain[1]).toBeCloseTo(20.6, 10);
     expect(computeDomain([])).toEqual([0, 1]);
+  });
+
+  it('SSP-SCALE-002: the log domain pads multiplicatively and stays strictly positive (#136)', () => {
+    const pairs = [
+      { x: 1, y: 10 },
+      { x: 100, y: 50 }
+    ];
+    const [lower, upper] = computeDomain(pairs, 'log');
+    expect(lower).toBeGreaterThan(0);
+    expect(lower).toBeLessThan(1);
+    expect(upper).toBeGreaterThan(100);
+    // Same padding at each end measured in log space, so the identity line
+    // still bisects the plotting area under the transform.
+    expect(Math.log10(upper / 100)).toBeCloseTo(Math.log10(1 / lower), 10);
+  });
+
+  it('SSP-SCALE-002: a range whose additive pad would go negative keeps a positive log lower bound (#136)', () => {
+    // Alkaline Phosphatase in the demo data spans roughly 27..624, where the
+    // linear 5% pad puts the lower bound at -2.85 — a blank log axis.
+    const pairs = [{ x: 27, y: 624 }];
+    expect(computeDomain(pairs, 'linear')[0]).toBeLessThan(0);
+    expect(computeDomain(pairs, 'log')[0]).toBeGreaterThan(0);
+  });
+
+  it('SSP-SCALE-002: a log domain with no positive value falls back instead of producing NaN (#136)', () => {
+    expect(computeDomain([{ x: 0, y: -3 }], 'log')).toEqual([0.1, 1]);
+    expect(computeDomain([], 'log')).toEqual([0.1, 1]);
+  });
+
+  it('SSP-SCALE-002: a zero-spread positive set is padded in log space, not by ±1 (#136)', () => {
+    const [lower, upper] = computeDomain([{ x: 5, y: 5 }], 'log');
+    expect(lower).toBeGreaterThan(0);
+    // The linear branch's ±1 fallback is asymmetric in log space; the log
+    // branch's ×1.05 / ÷1.05 fallback is symmetric.
+    expect(Math.log10(upper / 5)).toBeCloseTo(Math.log10(5 / lower), 10);
+    expect(lower).toBeCloseTo(5 / 1.05, 10);
+    expect(upper).toBeCloseTo(5 * 1.05, 10);
   });
 
   it('SSP-CTRL-003: active filters subset rows by stringified equality (#14)', () => {

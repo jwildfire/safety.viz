@@ -30,14 +30,14 @@ import {
   csvName,
   diffTitle,
   dotTitle,
+  emptyState,
   summaryCsv
 } from './ae-explorer/getPlugins.js';
 import { renderListing } from './histogram/listing.js';
 import { mountProfileRail, syncProfileRail, unmountProfileRail } from './profile-host.js';
+import { initFilterState, renderFilterControl } from './filters.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
-const NO_MATCH_MESSAGE =
-  'Error: No AEs found for the current filters. Update the filters to see results.';
 const SUMMARY_FOOTNOTE =
   'Click a category to view the underlying records. Hover a rate for counts.';
 const FILTER_TYPE_NOTES = {
@@ -76,6 +76,7 @@ const MODULE_STYLES = `
 .safety-ae-explorer .ae-search-note{font-size:.8rem;color:#52616f;margin-top:.25rem}
 .safety-ae-explorer sup.ae-filter-type{cursor:help;color:#0b62a4;margin-left:.25em}
 .safety-ae-explorer .ae-error{color:#9a3412;padding:1rem 0}
+.safety-ae-explorer .ae-empty{color:#52616f;padding:1rem 0}
 .safety-ae-explorer .ae-detail-note{font-size:.85rem;color:#52616f;margin:.35rem 0 .6rem}
 `;
 
@@ -299,11 +300,7 @@ class AEExplorer {
    * @private
    */
   seedFilterState() {
-    this.state.filters = {};
-    this.settings.filters.forEach((spec) => {
-      const start = Array.isArray(spec.start) ? spec.start[0] : spec.start;
-      if (start != null) this.state.filters[spec.value_col] = String(start);
-    });
+    this.state.filters = initFilterState(this.settings.filters);
     this.state.searchTerm = '';
   }
 
@@ -375,24 +372,24 @@ class AEExplorer {
       return true;
     });
     this.activeFilterSpecs.forEach((spec) => {
-      const select = document.createElement('select');
-      select.dataset.filter = spec.value_col;
-      const active = this.state.filters[spec.value_col];
-      option(select, '__all__', 'All', active == null);
       const source = spec.type === 'participant' ? this.cleanRows : eventRows;
       const values = [
         ...new Set(source.map((row) => String(row[spec.value_col] ?? '')).filter(Boolean))
       ].sort();
-      values.forEach((value) => option(select, value, value, active === value));
-      const wrap = addControl(spec.label, select, filterSection);
+      const control = renderFilterControl({
+        spec,
+        values,
+        selected: this.state.filters[spec.value_col],
+        onChange: (next) => {
+          this.state.filters[spec.value_col] = next;
+          this.render();
+        }
+      });
+      const wrap = addControl(spec.label, control, filterSection);
       const label = wrap.parentElement.querySelector('label');
       const sup = createElement('sup', 'ae-filter-type', spec.type === 'participant' ? 'P' : 'E');
       sup.title = FILTER_TYPE_NOTES[spec.type];
       label.append(sup);
-      select.onchange = () => {
-        this.state.filters[spec.value_col] = select.value === '__all__' ? null : select.value;
-        this.render();
-      };
     });
 
     this.buildVariableControls(addSection);
@@ -464,20 +461,32 @@ class AEExplorer {
    * state: closes any open details view, recomputes the roll-up, and
    * rebuilds the table with the prevalence and search visibility applied.
    * Called automatically by the controls and the data/settings setters;
-   * call it directly only after mutating state by hand.
+   * call it directly only after mutating state by hand. When nothing is
+   * left to draw, the table is replaced by a message naming which kind of
+   * empty it is (AE-USER-021, AE-USER-022).
    * @returns {void}
    */
   render() {
     this.closeDetail();
-    const { groups, events, counts } = this.computeData();
+    const { groups, population, events, counts } = this.computeData();
     this.groups = groups;
     this.counts = counts;
     this.plan = columnPlan(groups.length, this.settings);
     this.table = crossTab(events, this.settings, groups, counts, this.state.summarizeBy);
     this.currentEvents = events;
     this.tableWrap.innerHTML = '';
-    if (!events.length) {
-      this.tableWrap.append(createElement('div', 'ae-error', NO_MATCH_MESSAGE));
+    const empty = emptyState(
+      { populationRows: population, eventRows: events, allRows: this.cleanRows },
+      this.settings
+    );
+    if (empty) {
+      const notice = createElement(
+        'div',
+        empty.kind === 'filtered-out' ? 'ae-error' : 'ae-empty',
+        empty.text
+      );
+      notice.dataset.emptyState = empty.kind;
+      this.tableWrap.append(notice);
       this.updateSearchNote(null);
       return;
     }

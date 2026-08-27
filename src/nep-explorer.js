@@ -18,7 +18,7 @@
 
 import { Chart, ScatterController, PointElement, LinearScale, Tooltip } from 'chart.js';
 
-import { controlBuilders, createElement, option, renderShell } from './shell.js';
+import { controlBuilders, createElement, renderShell } from './shell.js';
 import { syncSettings } from './nep-explorer/configure.js';
 import { checkInputs, hasCreatinine } from './nep-explorer/checkInputs.js';
 import {
@@ -36,6 +36,7 @@ import {
   stageZonesPlugin
 } from './nep-explorer/getPlugins.js';
 import { csvDownloadLink, toCsv } from './hep-explorer/dropped.js';
+import { initFilterState, renderFilterControl } from './filters.js';
 
 Chart.register(ScatterController, PointElement, LinearScale, Tooltip);
 
@@ -99,7 +100,11 @@ class SafetyNepExplorer {
     this.charts = [];
     this.chart = null;
     this.participantsSelected = [];
-    this.state = { filters: {}, zoneLabels: this.settings.zone_labels, selectedId: null };
+    this.state = {
+      filters: initFilterState(this.settings.filters),
+      zoneLabels: this.settings.zone_labels,
+      selectedId: null
+    };
     this.renderShell();
   }
 
@@ -215,17 +220,20 @@ class SafetyNepExplorer {
     if (filterSpecs.length) {
       const filterParent = addSection('Filters');
       filterSpecs.forEach((filter) => {
-        const select = addControl(filter.label, document.createElement('select'), filterParent);
-        option(select, '__all__', 'All', !this.state.filters[filter.value_col]);
-        unique(this.allPoints.map((point) => point.meta[filter.value_col]))
-          .sort()
-          .forEach((value) =>
-            option(select, value, value, this.state.filters[filter.value_col] === value)
-          );
-        select.onchange = () => {
-          this.state.filters[filter.value_col] = select.value === '__all__' ? null : select.value;
-          this.render();
-        };
+        const values = unique(this.allPoints.map((point) => point.meta[filter.value_col])).sort();
+        addControl(
+          filter.label,
+          renderFilterControl({
+            spec: filter,
+            values: values,
+            selected: this.state.filters[filter.value_col],
+            onChange: (next) => {
+              this.state.filters[filter.value_col] = next;
+              this.render();
+            }
+          }),
+          filterParent
+        );
       });
     }
 

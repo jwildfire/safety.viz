@@ -1,6 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import safetyViz from '../../../src/main.js';
-import { DEFAULT_SETTINGS, STATS, syncSettings } from '../../../src/shift-plot/configure.js';
+import {
+  AXIS_TYPES,
+  DEFAULT_SETTINGS,
+  STATS,
+  syncSettings
+} from '../../../src/shift-plot/configure.js';
 
 // Settings defaults + merge for the shift-plot module (#14). Requirement keys
 // reference the safety.agent matrix via docs/shift-plot-coverage.md.
@@ -41,6 +46,15 @@ describe('shift-plot configure', () => {
     ]);
     expect(syncSettings({ baseline_stat: 'median' }).baseline_stat).toBe('mean');
     expect(syncSettings({ comparison_stat: 'max' }).comparison_stat).toBe('max');
+  });
+
+  it('SSP-SCALE-001: axis_type defaults to linear, accepts log, and rejects anything else (#136)', () => {
+    expect(AXIS_TYPES).toEqual(['linear', 'log']);
+    expect(DEFAULT_SETTINGS.axis_type).toBe('linear');
+    expect(syncSettings({}).axis_type).toBe('linear');
+    expect(syncSettings({ axis_type: 'log' }).axis_type).toBe('log');
+    expect(syncSettings({ axis_type: 'logarithmic' }).axis_type).toBe('linear');
+    expect(syncSettings({ axis_type: null }).axis_type).toBe('linear');
   });
 
   it('SSP-REQ-005: details default to id, baseline, comparison, change, and percent change (#14)', () => {

@@ -189,6 +189,87 @@ test.describe('safety.viz ae-explorer module', () => {
     await expect(page.locator('.ae-error')).toHaveText(
       'Error: No AEs found for the current filters. Update the filters to see results.'
     );
+    await expect(page.locator('.ae-error')).toHaveAttribute('data-empty-state', 'filtered-out');
+  });
+
+  test('AE-USER-021: participant filters that exclude everyone say so and name the participant denominator (#136)', async ({
+    page
+  }) => {
+    await page.evaluate(() => {
+      const chart = window.__aeExplorerInstance;
+      chart.setSettings({
+        filters: [
+          { value_col: 'SEX', label: 'Sex', type: 'participant' },
+          { value_col: 'RACE', label: 'Race', type: 'participant' }
+        ]
+      });
+      chart.setData([
+        {
+          USUBJID: 'P1',
+          ARM: 'A',
+          SEX: 'F',
+          RACE: 'WHITE',
+          AEBODSYS: 'Cardiac disorders',
+          AEDECOD: 'Palpitations'
+        },
+        {
+          USUBJID: 'P2',
+          ARM: 'B',
+          SEX: 'M',
+          RACE: 'BLACK',
+          AEBODSYS: 'Gastrointestinal disorders',
+          AEDECOD: 'Nausea'
+        }
+      ]);
+    });
+    await selectFilter(page, 'Sex', 'F');
+    await selectFilter(page, 'Race', 'BLACK');
+    await expect(page.locator('.ae-empty')).toHaveAttribute('data-empty-state', 'no-participants');
+    await expect(page.locator('.ae-empty')).toHaveText(
+      'No participants are in the current selection: none of the 2 participants in the data match the participant filters. Widen a participant filter to see results.'
+    );
+    await expect(page.locator('.ae-error')).toHaveCount(0);
+  });
+
+  test('AE-USER-022: a study whose participants have no adverse events recorded says so rather than blaming the filters (#136)', async ({
+    page
+  }) => {
+    await page.evaluate(() =>
+      window.__aeExplorerInstance.setData([
+        {
+          USUBJID: 'P1',
+          ARM: 'A',
+          SEX: 'F',
+          RACE: 'WHITE',
+          AEBODSYS: '',
+          AEDECOD: '',
+          AESEV: '',
+          AESER: '',
+          AEREL: '',
+          AEOUT: ''
+        },
+        {
+          USUBJID: 'P2',
+          ARM: 'B',
+          SEX: 'M',
+          RACE: 'BLACK',
+          AEBODSYS: 'NA',
+          AEDECOD: 'NA',
+          AESEV: 'NA',
+          AESER: 'NA',
+          AEREL: 'NA',
+          AEOUT: 'NA'
+        }
+      ])
+    );
+    await expect(page.locator('.ae-empty')).toHaveAttribute(
+      'data-empty-state',
+      'no-events-in-study'
+    );
+    await expect(page.locator('.ae-empty')).toHaveText(
+      'No adverse events have been recorded in this study: all 2 participants are event-free.'
+    );
+    await expect(page.locator('.ae-error')).toHaveCount(0);
   });
 
   test('AE-USER-016/AE-REG-019/AE-REG-022: clicking a category opens the details listing with the record count in the header (#60)', async ({

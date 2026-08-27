@@ -29,10 +29,13 @@ import {
 } from './shell.js';
 import { checkInputs } from './qt-explorer/checkInputs.js';
 import {
+  CLINICAL_CAUTION,
   DISPLAY_MODES,
   STATISTICS,
   TIMEPOINT_MAX,
+  UNBLINDING_CAUTION,
   VIEWS,
+  showsUnblindingCaution,
   syncSettings
 } from './qt-explorer/configure.js';
 import {
@@ -56,6 +59,7 @@ import {
   formatNumber,
   formatSigned,
   isQtcMeasure,
+  measureUnit,
   paddedDomain,
   scatterAxisTitles
 } from './qt-explorer/getScales.js';
@@ -74,6 +78,7 @@ import {
   syncProfileRail,
   unmountProfileRail
 } from './profile-host.js';
+import { initFilterState, renderFilterControl } from './filters.js';
 
 Chart.register(ScatterController, PointElement, LineElement, LinearScale, Tooltip, Legend);
 
@@ -88,8 +93,10 @@ const QT_STYLES = `
 .safety-qt-explorer .qt-table th.qt-num,.safety-qt-explorer .qt-table td.qt-num,.safety-qt-explorer .qt-ich td.qt-num{text-align:right;font-variant-numeric:tabular-nums}
 .safety-qt-explorer .qt-table th{border-bottom:2px solid #d8dee4;font-size:.75rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f;white-space:nowrap}
 .safety-qt-explorer .qt-table caption,.safety-qt-explorer .qt-ich caption{caption-side:top;text-align:left;font-weight:600;margin-bottom:.35rem}
+.safety-qt-explorer .qt-table{margin:.7rem 0 0}
 .safety-qt-explorer .qt-flag{color:#9a3412;font-weight:600}
 .safety-qt-explorer .qt-empty{display:none}
+.safety-qt-explorer .qt-caution{margin-top:.5rem;font-size:.8rem;color:#8a4b00}
 `;
 
 function applyQtStyles() {
@@ -133,7 +140,7 @@ class SafetyQtExplorer {
       statistic: 'mean',
       mode: 'delta',
       timepoint: TIMEPOINT_MAX,
-      filters: {},
+      filters: initFilterState(this.settings.filters),
       selectedId: null
     };
     this.renderShellDom();
@@ -230,6 +237,14 @@ class SafetyQtExplorer {
     this.ichWrap = createElement('div', 'qt-ich qt-empty');
     this.chartWrap.after(this.ichWrap);
     this.ichWrap.after(this.tableWrap);
+    // The standing cautions (QT-CAUTION-001, QT-CAUTION-002): rendered ONCE
+    // into the shell and never rewritten by a view. The footnote every view
+    // owns is blanked in the render preamble and again on the heart-rate
+    // QTc-only paths, so it is not a place a permanent warning can live.
+    this.cautionEl = createElement('div', 'qt-caution sv-warning', CLINICAL_CAUTION);
+    this.unblindingEl = createElement('div', 'qt-caution qt-caution-unblinding sv-warning');
+    this.unblindingEl.hidden = true;
+    this.main.append(this.cautionEl, this.unblindingEl);
   }
 
   /**
@@ -328,8 +343,24 @@ class SafetyQtExplorer {
     // constraining the views to nothing (QT-CTRL-003).
     const configured = new Set(this.settings.filters.map((f) => f.value_col));
     for (const col of Object.keys(this.state.filters)) {
-      const present = rows.some((row) => String(row[col]) === String(this.state.filters[col]));
-      if (!configured.has(col) || !present) delete this.state.filters[col];
+      // A `multiple` filter holds an array, so the staleness test is per value
+      // rather than whole-selection equality; a selection that has lost some of
+      // its values keeps the ones the data still carries (#136).
+      const selection = this.state.filters[col];
+      if (!configured.has(col)) {
+        delete this.state.filters[col];
+        continue;
+      }
+      if (Array.isArray(selection)) {
+        const kept = selection.filter((value) =>
+          rows.some((row) => String(row[col]) === String(value))
+        );
+        if (kept.length) this.state.filters[col] = kept;
+        else delete this.state.filters[col];
+        continue;
+      }
+      if (!rows.some((row) => String(row[col]) === String(selection)))
+        delete this.state.filters[col];
     }
   }
 
@@ -415,19 +446,22 @@ class SafetyQtExplorer {
     if (this.settings.filters.length) {
       const filterSection = addSection('Filters');
       this.settings.filters.forEach((filter) => {
-        const select = addControl(filter.label, document.createElement('select'), filterSection);
-        option(select, '', 'All', !this.state.filters[filter.value_col]);
-        unique(this.cleanRows.map((row) => row[filter.value_col]))
+        const values = unique(this.cleanRows.map((row) => row[filter.value_col]))
           .map(String)
-          .sort()
-          .forEach((value) =>
-            option(select, value, value, this.state.filters[filter.value_col] === value)
-          );
-        select.onchange = () => {
-          if (select.value) this.state.filters[filter.value_col] = select.value;
-          else delete this.state.filters[filter.value_col];
-          this.render();
-        };
+          .sort();
+        addControl(
+          filter.label,
+          renderFilterControl({
+            spec: filter,
+            values: values,
+            selected: this.state.filters[filter.value_col],
+            onChange: (next) => {
+              this.state.filters[filter.value_col] = next;
+              this.render();
+            }
+          }),
+          filterSection
+        );
       });
     }
   }
@@ -462,6 +496,7 @@ class SafetyQtExplorer {
     this.state.selectedId = null;
     this.participantsSelected = [];
     resetProfileRail(this);
+    this.updateCautions();
     this.legendEl.classList.add('qt-empty');
     this.noteEl.classList.add('qt-empty');
     this.tableWrap.classList.add('qt-empty');
@@ -482,6 +517,19 @@ class SafetyQtExplorer {
     if (this.state.view === 'central') this.renderCentral();
     else if (this.state.view === 'outlier') this.renderOutlier();
     else this.renderCategorical();
+  }
+
+  /**
+   * Keep the standing cautions current (QT-CAUTION-001, QT-CAUTION-002). The
+   * not-for-clinical-use caution is permanent and is never touched here; the
+   * unblinding warning appears only when the bound data actually carries more
+   * than one treatment arm.
+   * @private
+   */
+  updateCautions() {
+    const unblinding = showsUnblindingCaution(this.arms);
+    this.unblindingEl.textContent = unblinding ? UNBLINDING_CAUTION : '';
+    this.unblindingEl.hidden = !unblinding;
   }
 
   /** Show a "select a QTc correction" note and hide chart/table (HR, QTc-only views). @private */
@@ -664,6 +712,7 @@ class SafetyQtExplorer {
 
     this.drawLegend(seriesArms);
     this.drawIchCallout(tendency, isQtc);
+    this.drawCentralTable(tendency, measure);
     this.setCentralFootnote(measure, isQtc);
   }
 
@@ -705,6 +754,77 @@ class SafetyQtExplorer {
     this.ichWrap.append(table);
   }
 
+  /**
+   * Print the plotted central-tendency values beneath the chart (QT-CT-008):
+   * one row per visit and arm carrying the sample size, the plotted statistic,
+   * and the two-sided CI bounds the band draws. Built from the SAME
+   * centralTendencySeries result the chart consumes, so the printed numbers can
+   * never disagree with the graphic — and it therefore inherits the active
+   * correction, statistic, display mode, and filters for free. Median mode
+   * carries no CI (lo/hi NaN), which formatSigned prints as "NA".
+   * @param {{mode: string, statistic: string, visitOrder: string[], series: Array<{arm: string, points: Object[]}>}} tendency The centralTendencySeries result.
+   * @param {string} measure The active measure.
+   * @private
+   */
+  drawCentralTable(tendency, measure) {
+    if (!tendency.series.length) return;
+    const pct = Math.round(this.settings.ci_level * 100);
+    const isDd = tendency.mode === 'deltadelta';
+    const prefix = isDd ? 'ΔΔ' : 'Δ';
+    const statLabel = tendency.statistic === 'median' ? 'median' : 'mean';
+    const unit = measureUnit(measure, this.settings.qtc_measures);
+
+    // Visit-major rows (each visit's arms adjacent) so the table reads the same
+    // way as the chart, left to right.
+    const byVisit = new Map(tendency.visitOrder.map((visit) => [visit, []]));
+    tendency.series.forEach(({ arm, points }) => {
+      points.forEach((point) => {
+        if (byVisit.has(point.visit)) byVisit.get(point.visit).push({ arm, point });
+      });
+    });
+
+    this.tableWrap.classList.remove('qt-empty');
+    this.tableWrap.innerHTML = '';
+    const table = createElement('table', 'qt-ct-table');
+    table.append(
+      createElement(
+        'caption',
+        null,
+        `${prefix} ${measure} — ${statLabel} change by visit and arm with the two-sided ${pct}% CI` +
+          (isDd ? ' (n is the active arm; placebo is the reference)' : '')
+      )
+    );
+    const thead = document.createElement('thead');
+    const hr = document.createElement('tr');
+    [
+      ['Visit', false],
+      ['Arm', false],
+      ['n', true],
+      [`${prefix} ${statLabel} (${unit})`, true],
+      [`${pct}% CI low`, true],
+      [`${pct}% CI high`, true]
+    ].forEach(([label, numeric]) =>
+      hr.append(createElement('th', numeric ? 'qt-num' : null, label))
+    );
+    thead.append(hr);
+    table.append(thead);
+    const tbody = document.createElement('tbody');
+    tendency.visitOrder.forEach((visit) => {
+      (byVisit.get(visit) || []).forEach(({ arm, point }) => {
+        const tr = document.createElement('tr');
+        tr.append(createElement('td', null, String(visit)));
+        tr.append(createElement('td', null, String(arm)));
+        tr.append(createElement('td', 'qt-num', String(point.n)));
+        tr.append(createElement('td', 'qt-num', formatSigned(point.value)));
+        tr.append(createElement('td', 'qt-num', formatSigned(point.lo)));
+        tr.append(createElement('td', 'qt-num', formatSigned(point.hi)));
+        tbody.append(tr);
+      });
+    });
+    table.append(tbody);
+    this.tableWrap.append(table);
+  }
+
   /** Central-tendency footnote: method + mode caveats. @private */
   setCentralFootnote(measure, isQtc) {
     const parts = [];
@@ -721,7 +841,6 @@ class SafetyQtExplorer {
     if (!isQtc) {
       parts.push('Heart rate has no ICH-E14 QTc reference; read alongside the QTc corrections.');
     }
-    parts.push('Exploratory tool — confirm signals with validated ICH-E14 analyses.');
     this.footnote.textContent = parts.join(' ');
   }
 
@@ -838,8 +957,7 @@ class SafetyQtExplorer {
       `${points.length} participants.`,
       isMax
         ? 'Each point is a participant’s maximum post-baseline value; change-from-baseline lines are shown only in per-visit mode — see the categorical table for change-threshold counts.'
-        : 'Each point is the selected visit’s reading; diagonals are absolute-QTc thresholds, horizontals are change-from-baseline thresholds.',
-      'Exploratory tool — confirm signals with validated ICH-E14 analyses.'
+        : 'Each point is the selected visit’s reading; diagonals are absolute-QTc thresholds, horizontals are change-from-baseline thresholds.'
     ];
     this.footnote.textContent = footParts.join(' ');
   }
@@ -906,7 +1024,7 @@ class SafetyQtExplorer {
 
     this.drawLegend(classification.arms);
     this.footnote.textContent =
-      'Absolute rows use each participant’s maximum post-baseline value; change rows use the maximum post-baseline change (they may fall at different visits). Exploratory tool — confirm signals with validated ICH-E14 analyses.';
+      'Absolute rows use each participant’s maximum post-baseline value; change rows use the maximum post-baseline change (they may fall at different visits).';
   }
 
   /**

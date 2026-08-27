@@ -33,6 +33,7 @@ import {
   syncProfileRail,
   unmountProfileRail
 } from './profile-host.js';
+import { initFilterState, renderFilterControl } from './filters.js';
 
 Chart.register(ScatterController, PointElement, LinearScale, Tooltip);
 
@@ -78,7 +79,7 @@ class SafetyDeltaDelta {
       measureY: this.settings.measure_y,
       baseline: [...this.settings.baseline_visits],
       comparison: [...this.settings.comparison_visits],
-      filters: {},
+      filters: initFilterState(this.settings.filters),
       addRegressionLine: this.settings.add_regression_line,
       selectedId: null
     };
@@ -342,17 +343,20 @@ class SafetyDeltaDelta {
     if (filterSpecs.length) {
       const filterParent = addSection('Filters');
       filterSpecs.forEach((filter) => {
-        const select = addControl(filter.label, document.createElement('select'), filterParent);
-        option(select, '__all__', 'All', !this.state.filters[filter.value_col]);
-        unique(this.cleanRows.map((row) => row[filter.value_col]))
-          .sort()
-          .forEach((value) =>
-            option(select, value, value, this.state.filters[filter.value_col] === value)
-          );
-        select.onchange = () => {
-          this.state.filters[filter.value_col] = select.value === '__all__' ? null : select.value;
-          this.render();
-        };
+        const values = unique(this.cleanRows.map((row) => row[filter.value_col])).sort();
+        addControl(
+          filter.label,
+          renderFilterControl({
+            spec: filter,
+            values,
+            selected: this.state.filters[filter.value_col],
+            onChange: (next) => {
+              this.state.filters[filter.value_col] = next;
+              this.render();
+            }
+          }),
+          filterParent
+        );
       });
     }
 

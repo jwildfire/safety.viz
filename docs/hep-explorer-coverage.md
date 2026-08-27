@@ -64,31 +64,32 @@ pending; each row lists the module IDs its test covers.
 
 ## Unit evidence (Vitest — `tests/unit/hep-explorer/`)
 
-| Requirement ID                                                                             | Source matrix rows | Issue | Test file                |
-| ------------------------------------------------------------------------------------------ | ------------------ | ----- | ------------------------ |
-| HEP-CTRL-001/002/006/007/008/009/010/011 (defaults, control specs)                         | —                  | #43   | `configure.test.js`      |
-| HEP-QUAD-001, HEP-DATA-001/002, HEP-DISPLAY-001, HEP-SELECT-006 (cuts back-fill, mappings) | —                  | #43   | `configure.test.js`      |
-| HEP-DATA-005 (schema required columns)                                                     | —                  | #43   | `checkInputs.test.js`    |
-| HEP-DATA-002/003/004 (measure resolution, cleaning)                                        | —                  | #43   | `structureData.test.js`  |
-| HEP-DISPLAY-001/002/003/004/006 (×ULN, ×Baseline, peaks, R-Ratio)                          | —                  | #43   | `structureData.test.js`  |
-| HEP-CHART-001, HEP-CTRL-008/009/011 (points, timing, group, filters)                       | —                  | #43   | `structureData.test.js`  |
-| HEP-QUAD-004 (quadrant classification counts/percents)                                     | —                  | #43   | `structureData.test.js`  |
-| HEP-QUAD-006 (which cut-line the pointer holds, what a drag to a pixel means)              | —                  | #45   | `cutDrag.test.js`        |
-| HEP-ANIM-001..005 (day range, frames, position at a day, trails, duration)                 | —                  | #46   | `animation.test.js`      |
-| HEP-PALT-001/002/003 (AUC × peak^0.18 / 1e5, when it declines, the shown note)             | —                  | #49   | `palt.test.js`           |
-| HEP-SELECT-002/003/005 (drill-down series)                                                 | —                  | #43   | `structureData.test.js`  |
-| HEP-CHART-002/003/004, HEP-CTRL-006, HEP-DISPLAY-001 (domains, log, labels)                | —                  | #43   | `getScales.test.js`      |
-| HEP-CTRL-017, HEP-AXIS-004 (log-base gridlines; limit overrides a chart may not draw)      | —                  | #54   | `getScales.test.js`      |
-| HEP-CHART-004, HEP-CTRL-009, HEP-QUAD-002, HEP-SELECT-001 (tooltip, palette, plugin)       | —                  | #43   | `getPlugins.test.js`     |
-| HEP-API-001 (module export)                                                                | —                  | #43   | `export.test.js`         |
-| HEP-COMP-001/002/003/004/005/006 (classification, migration, concern matrix, by-arm)       | —                  | #67   | `composite.test.js`      |
-| HEP-MIG-001..009, HEP-MIG-012/013/016 (Sankey geometry: stacking, shared scale, paths)     | —                  | #92   | `sankeyLayout.test.js`   |
-| HEP-MIG-004/008/010/011/013/014/015 (painting, labels, hover, tooltip, geometry stash)     | —                  | #92   | `migration-view.test.js` |
-| HEP-XTAB-001..006 (per-arm cross tables, shading, ribbon/cell parity, composite untouched) | —                  | #92   | `migration-view.test.js` |
-| HEP-STEP-001/002/003/005 (selection, hand-off footnote, Hy's-Law caution)                  | —                  | #92   | `migration-view.test.js` |
-| HEP-ARM-003/004/005/006, HEP-DATA-012 (arm scoping, degradation, exclusion notes)          | —                  | #92   | `migration-view.test.js` |
-| HEP-ACC-001/002/003 (ribbon role/name/keys, svg role and summary)                          | —                  | #92   | `migration-view.test.js` |
-| HEP-DOC-001 (the Clinical guide links its R / nR primary sources)                          | —                  | #54   | `guide.test.js`          |
+| Requirement ID                                                                             | Source matrix rows                                     | Issue | Test file                   |
+| ------------------------------------------------------------------------------------------ | ------------------------------------------------------ | ----- | --------------------------- |
+| HEP-CTRL-001/002/006/007/008/009/010/011 (defaults, control specs)                         | —                                                      | #43   | `configure.test.js`         |
+| HEP-QUAD-001, HEP-DATA-001/002, HEP-DISPLAY-001, HEP-SELECT-006 (cuts back-fill, mappings) | —                                                      | #43   | `configure.test.js`         |
+| HEP-DATA-005 (schema required columns)                                                     | —                                                      | #43   | `checkInputs.test.js`       |
+| HEP-DATA-002/003/004 (measure resolution, cleaning)                                        | —                                                      | #43   | `structureData.test.js`     |
+| HEP-DISPLAY-001/002/003/004/006 (×ULN, ×Baseline, peaks, R-Ratio)                          | —                                                      | #43   | `structureData.test.js`     |
+| HEP-CHART-001, HEP-CTRL-008/009/011 (points, timing, group, filters)                       | —                                                      | #43   | `structureData.test.js`     |
+| HEP-QUAD-004 (quadrant classification counts/percents)                                     | —                                                      | #43   | `structureData.test.js`     |
+| HEP-QUAD-006 (which cut-line the pointer holds, what a drag to a pixel means)              | —                                                      | #45   | `cutDrag.test.js`           |
+| HEP-ANIM-001..005 (day range, frames, position at a day, trails, duration)                 | —                                                      | #46   | `animation.test.js`         |
+| HEP-PALT-001/002/003 (AUC × peak^0.18 / 1e5, when it declines, the shown note)             | —                                                      | #49   | `palt.test.js`              |
+| HEP-SELECT-002/003/005 (drill-down series)                                                 | —                                                      | #43   | `structureData.test.js`     |
+| HEP-CHART-002/003/004, HEP-CTRL-006, HEP-DISPLAY-001 (domains, log, labels)                | —                                                      | #43   | `getScales.test.js`         |
+| HEP-CTRL-017, HEP-AXIS-004 (log-base gridlines; limit overrides a chart may not draw)      | —                                                      | #54   | `getScales.test.js`         |
+| HEP-CHART-004, HEP-CTRL-009, HEP-QUAD-002, HEP-SELECT-001 (tooltip, palette, plugin)       | —                                                      | #43   | `getPlugins.test.js`        |
+| HEP-API-001 (module export)                                                                | —                                                      | #43   | `export.test.js`            |
+| HEP-COMP-001/002/003/004/005/006 (classification, migration, concern matrix, by-arm)       | —                                                      | #67   | `composite.test.js`         |
+| HEP-MIG-001..009, HEP-MIG-012/013/016 (Sankey geometry: stacking, shared scale, paths)     | —                                                      | #92   | `sankeyLayout.test.js`      |
+| HEP-MIG-004/008/010/011/013/014/015 (painting, labels, hover, tooltip, geometry stash)     | —                                                      | #92   | `migration-view.test.js`    |
+| HEP-XTAB-001..006 (per-arm cross tables, shading, ribbon/cell parity, composite untouched) | —                                                      | #92   | `migration-view.test.js`    |
+| HEP-STEP-001/002/003/005 (selection, hand-off footnote, Hy's-Law caution)                  | —                                                      | #92   | `migration-view.test.js`    |
+| HEP-ARM-003/004/005/006, HEP-DATA-012 (arm scoping, degradation, exclusion notes)          | —                                                      | #92   | `migration-view.test.js`    |
+| HEP-ACC-001/002/003 (ribbon role/name/keys, svg role and summary)                          | —                                                      | #92   | `migration-view.test.js`    |
+| HEP-DOC-001 (the Clinical guide links its R / nR primary sources)                          | —                                                      | #54   | `guide.test.js`             |
+| HEP-FILT-001..004 (shared filter contract)                                                 | HEP-FILT-001, HEP-FILT-002, HEP-FILT-003, HEP-FILT-004 | #136  | `../shared/filters.test.js` |
 
 ## Source-matrix routing status
 

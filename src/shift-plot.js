@@ -7,10 +7,18 @@
 // Webcharts/d3 internals. Internals follow the histogram module flow
 // (checkInputs → configure → structureData → getScales/getPlugins → new Chart).
 
-import { Chart, ScatterController, PointElement, LinearScale, Tooltip, Legend } from 'chart.js';
+import {
+  Chart,
+  ScatterController,
+  PointElement,
+  LinearScale,
+  LogarithmicScale,
+  Tooltip,
+  Legend
+} from 'chart.js';
 
 import { controlBuilders, createElement, option, renderShell } from './shell.js';
-import { syncSettings } from './shift-plot/configure.js';
+import { AXIS_TYPES, syncSettings } from './shift-plot/configure.js';
 import { checkInputs } from './shift-plot/checkInputs.js';
 import {
   applyFilters,
@@ -37,8 +45,9 @@ import {
   syncProfileRail,
   unmountProfileRail
 } from './profile-host.js';
+import { initFilterState, renderFilterControl } from './filters.js';
 
-Chart.register(ScatterController, PointElement, LinearScale, Tooltip, Legend);
+Chart.register(ScatterController, PointElement, LinearScale, LogarithmicScale, Tooltip, Legend);
 
 const INITIAL_FOOTNOTE = 'Click and drag across the points to list the selected participants.';
 
@@ -82,7 +91,8 @@ class SafetyShiftPlot {
       comparisonVisits: this.settings.comparison_visits,
       baselineStat: this.settings.baseline_stat,
       comparisonStat: this.settings.comparison_stat,
-      filters: {},
+      filters: initFilterState(this.settings.filters),
+      axisType: this.settings.axis_type,
       domain: null
     };
     this.renderShell();
@@ -210,6 +220,7 @@ class SafetyShiftPlot {
     this.settings = syncSettings({ ...this.settings, ...settings });
     this.state.baselineStat = this.settings.baseline_stat;
     this.state.comparisonStat = this.settings.comparison_stat;
+    this.state.axisType = this.settings.axis_type;
     if (settings.baseline_visits !== undefined)
       this.state.baselineVisits = this.settings.baseline_visits;
     if (settings.comparison_visits !== undefined)
@@ -298,6 +309,14 @@ class SafetyShiftPlot {
       this.render();
     };
 
+    const axisSection = addSection('Axis');
+    const axisType = addControl('Axis Type', document.createElement('select'), axisSection);
+    AXIS_TYPES.forEach((value) => option(axisType, value, value, value === this.state.axisType));
+    axisType.onchange = () => {
+      this.state.axisType = axisType.value;
+      this.render();
+    };
+
     const visitSection = addSection('Visits');
     const baseline = addControl(
       'Baseline visit(s)',
@@ -340,17 +359,20 @@ class SafetyShiftPlot {
     if (filterSpecs.length) {
       const filterParent = addSection('Filters');
       filterSpecs.forEach((filter) => {
-        const select = addControl(filter.label, document.createElement('select'), filterParent);
-        option(select, '__all__', 'All', !this.state.filters[filter.value_col]);
-        unique(this.cleanData.map((row) => row[filter.value_col]))
-          .sort()
-          .forEach((value) =>
-            option(select, value, value, this.state.filters[filter.value_col] === value)
-          );
-        select.onchange = () => {
-          this.state.filters[filter.value_col] = select.value === '__all__' ? null : select.value;
-          this.render();
-        };
+        const values = unique(this.cleanData.map((row) => row[filter.value_col])).sort();
+        addControl(
+          filter.label,
+          renderFilterControl({
+            spec: filter,
+            values,
+            selected: this.state.filters[filter.value_col],
+            onChange: (next) => {
+              this.state.filters[filter.value_col] = next;
+              this.render();
+            }
+          }),
+          filterParent
+        );
       });
     }
   }
@@ -407,9 +429,23 @@ class SafetyShiftPlot {
     // empty in the same preamble (#99, PPRF-SSP-003).
     resetProfileRail(this);
     this.notes.innerHTML = '';
-    this.chartPairs = this.computePairs();
-    this.state.domain = computeDomain(this.chartPairs);
-    this.updateNotes();
+    // A logarithmic axis has no room for 0 or a negative value, so a pair
+    // whose baseline OR comparison value is non-positive is REMOVED rather
+    // than clamped — moving a participant's result would be a lie on a
+    // clinical chart. The removal is counted and reported in the note
+    // (SSP-SCALE-003), following results-over-time's precedent. The pair is
+    // dropped when EITHER coordinate is non-positive, because one domain
+    // governs both axes.
+    let pairs = this.computePairs();
+    let nonPositive = 0;
+    if (this.state.axisType === 'log') {
+      const positive = pairs.filter((pair) => pair.x > 0 && pair.y > 0);
+      nonPositive = pairs.length - positive.length;
+      pairs = positive;
+    }
+    this.chartPairs = pairs;
+    this.state.domain = computeDomain(this.chartPairs, this.state.axisType);
+    this.updateNotes(nonPositive);
     if (!this.chartPairs.length) {
       this.footnote.textContent =
         'No participant has both a baseline and a comparison value for the current selection.';
@@ -451,7 +487,7 @@ class SafetyShiftPlot {
             }
           }
         },
-        scales: buildScales(this.state.domain, this.state.measure)
+        scales: buildScales(this.state.domain, this.state.measure, this.state.axisType)
       },
       plugins: [identityLinePlugin(this), brushBoxPlugin()]
     });
@@ -625,11 +661,15 @@ class SafetyShiftPlot {
   }
 
   /**
-   * Refresh the shown/total participant counts and the removed-record note
-   * (SSP-COUNT-001, SSP-REG-005/020).
+   * Refresh the shown/total participant counts and the removed-record notes
+   * (SSP-COUNT-001, SSP-REG-005/020). The shown count is chartPairs.length, so
+   * pairs dropped for the log scale leave it automatically honest; the
+   * nonPositive count explains where they went (SSP-SCALE-003).
+   * @param {number} [nonPositive=0] Pairs removed because a coordinate was
+   *   zero or negative under the log scale.
    * @private
    */
-  updateNotes() {
+  updateNotes(nonPositive = 0) {
     const totalParticipants = unique(this.cleanData.map((row) => row[this.settings.id_col])).length;
     const shownParticipants = this.chartPairs.length;
     const pct = totalParticipants
@@ -638,7 +678,10 @@ class SafetyShiftPlot {
     const removedNote = this.removedRecords
       ? `<span class="sv-warning">${this.removedRecords} missing or non-numeric results removed.</span>`
       : '';
-    this.notes.innerHTML = `<span>${shownParticipants} of ${totalParticipants} participants shown (${pct}%).</span>${removedNote}`;
+    const nonPositiveNote = nonPositive
+      ? `<span class="sv-warning">${nonPositive} participant pair${nonPositive > 1 ? 's' : ''} with a nonpositive value removed for the log scale.</span>`
+      : '';
+    this.notes.innerHTML = `<span>${shownParticipants} of ${totalParticipants} participants shown (${pct}%).</span>${removedNote}${nonPositiveNote}`;
   }
 
   /**

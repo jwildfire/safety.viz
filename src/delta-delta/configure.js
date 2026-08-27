@@ -23,7 +23,7 @@
  * @property {string[]} [baseline_visits=[]] Baseline visit(s); multiple selected visits are averaged. Falls back to the first visit in the data (SDD-CFG-012, SDD-FUNC-001).
  * @property {string[]} [comparison_visits=[]] Comparison visit(s); multiple selected visits are averaged. Falls back to the last visit in the data (SDD-CFG-013, SDD-FUNC-001).
  * @property {boolean} [add_regression_line=true] Draw a simple linear regression line with an equation and R² note on first render (SDD-REG-026).
- * @property {Array<string|Object>} [filters=[]] Filter controls: column names or { value_col, label } specs. Filters whose column is absent from the data are dropped with a console warning (SDD-CFG-014, SDD-REG-007).
+ * @property {Array<string|Object>} [filters=[]] Filter controls: column names or { value_col, label } specs. Filters whose column is absent from the data are dropped with a console warning (SDD-CFG-014, SDD-REG-007). Filter specs take `{ value_col, label, start, all, multiple }`: `start` is the opening selection (an array for a `multiple` filter, and a start of `0` or `false` is a real value, not an absent one); `all` controls the "All" option and defaults to true, or to false when a start is given — pass `all: true` to keep All alongside a start, `all: false` to require a selection; `multiple: true` renders a checkbox multiselect whose state is null (everything) or an array of values (#136).
  * @property {?Array<string|Object>} [details=null] Participant-detail columns shown above the linked measure table; when null, defaults to the participant ID and the filter columns (SDD-CFG-015).
  * @property {string} [width='100%'] Widget width, carried over for the R widget bindings; the current shell always spans its container.
  * @property {number} [height=460] Chart-area height in pixels, carried over for the R widget bindings; the current shell fixes the chart area at 460px.
@@ -42,6 +42,8 @@
  * overrides onto these.
  * @type {DeltaDeltaSettings}
  */
+import { normalizeFilterSpec } from '../filters.js';
+
 export const DEFAULT_SETTINGS = {
   measure_col: 'TEST',
   value_col: 'STRESN',
@@ -99,7 +101,7 @@ export function syncSettings(settings) {
 
   synced.measures = arrayify(synced.measures);
   synced.filters = arrayify(synced.filters)
-    .map((filter) => fieldSpec(filter))
+    .map((filter) => normalizeFilterSpec(filter))
     .filter((filter) => filter.value_col);
   synced.baseline_visits = arrayify(synced.baseline_visits);
   synced.comparison_visits = arrayify(synced.comparison_visits);
@@ -108,7 +110,11 @@ export function syncSettings(settings) {
     .filter((detail) => detail.value_col);
   const defaultDetails = [
     { value_col: synced.id_col, label: 'Participant ID' },
-    ...synced.filters.filter((filter) => filter.value_col !== synced.id_col)
+    // Listing columns, not filters: take only the column and its label, so the
+    // filter contract's start/all/multiple keys do not leak into the listing.
+    ...synced.filters
+      .filter((filter) => filter.value_col !== synced.id_col)
+      .map((filter) => fieldSpec(filter))
   ];
   const merged = [...defaultDetails];
   suppliedDetails.forEach((detail) => {

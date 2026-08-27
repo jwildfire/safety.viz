@@ -8,6 +8,7 @@
 // the library. Requirement IDs use the condensed QT-* scheme.
 
 import { zForCi, resolvePlaceboArm } from './configure.js';
+import { filterMatches } from '../filters.js';
 
 /**
  * Distinct, non-empty values in first-seen order.
@@ -200,7 +201,7 @@ export function applyFilters(rows, filterState) {
     ([, value]) => value !== undefined && value !== null && value !== ''
   );
   if (!active.length) return rows;
-  return rows.filter((row) => active.every(([col, value]) => String(row[col]) === String(value)));
+  return rows.filter((row) => active.every(([col, value]) => filterMatches(row[col], value)));
 }
 
 /**

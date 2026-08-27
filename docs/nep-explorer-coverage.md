@@ -55,21 +55,22 @@ it is evidenced rather than assumed.
 
 ## Unit evidence (Vitest — `tests/unit/nep-explorer/`)
 
-| Requirement ID                                                               | Source matrix rows         | Issue | Test file               |
-| ---------------------------------------------------------------------------- | -------------------------- | ----- | ----------------------- |
-| NEP-CFG-001..008 (mapping, baseline pair, stage ladder, units, zone labels)  | NEP-CFG-001..008           | #120  | `configure.test.js`     |
-| NEP-UNIT-001 (µ/μ/u folding, case and whitespace)                            | NEP-UNIT-001               | #120  | `configure.test.js`     |
-| NEP-STAGE-001..004 (fold ladder, 0.3 mg/dL trigger, ≥ 4 rule, combined)      | NEP-STAGE-001..004         | #120  | `structureData.test.js` |
-| NEP-DATA-001..005 (baseline + fallback count, maxima, negatives, drops)      | NEP-DATA-001..005          | #120  | `structureData.test.js` |
-| NEP-UNIT-002, NEP-UNIT-003 (per-record conversion, suppression, mixed units) | NEP-UNIT-002, NEP-UNIT-003 | #120  | `structureData.test.js` |
-| NEP-TBL-001..003 (three N/% pairs, empty rows, empty population)             | NEP-TBL-001..003           | #120  | `structureData.test.js` |
-| NEP-SCAT-003 (maximum visit and study day, degrading without a day column)   | NEP-SCAT-003               | #120  | `structureData.test.js` |
-| NEP-ZONE-005 (axis floors, cut-point ticks, number formatting)               | NEP-ZONE-005               | #120  | `getScales.test.js`     |
-| NEP-ZONE-001..003 (L geometry, paint order, ramp and labels)                 | NEP-ZONE-001..003          | #120  | `getPlugins.test.js`    |
-| NEP-SCAT-001, NEP-SCAT-002, NEP-SCAT-004 (marks, tooltip lines, selection)   | NEP-SCAT-001, 002, 004     | #120  | `getPlugins.test.js`    |
-| NEP-DATA-006 (required columns; a creatinine-free dataset is reported)       | NEP-DATA-006               | #120  | `export.test.js`        |
-| NEP-API-001 (module export)                                                  | NEP-API-001                | #120  | `export.test.js`        |
-| NEP-COHORT-001..012 (the synthetic AKI demo cohort's data shape)             | NEP-COHORT-001..012        | #120  | `cohort.test.js`        |
+| Requirement ID                                                               | Source matrix rows                                     | Issue | Test file                   |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------ | ----- | --------------------------- |
+| NEP-CFG-001..008 (mapping, baseline pair, stage ladder, units, zone labels)  | NEP-CFG-001..008                                       | #120  | `configure.test.js`         |
+| NEP-UNIT-001 (µ/μ/u folding, case and whitespace)                            | NEP-UNIT-001                                           | #120  | `configure.test.js`         |
+| NEP-STAGE-001..004 (fold ladder, 0.3 mg/dL trigger, ≥ 4 rule, combined)      | NEP-STAGE-001..004                                     | #120  | `structureData.test.js`     |
+| NEP-DATA-001..005 (baseline + fallback count, maxima, negatives, drops)      | NEP-DATA-001..005                                      | #120  | `structureData.test.js`     |
+| NEP-UNIT-002, NEP-UNIT-003 (per-record conversion, suppression, mixed units) | NEP-UNIT-002, NEP-UNIT-003                             | #120  | `structureData.test.js`     |
+| NEP-TBL-001..003 (three N/% pairs, empty rows, empty population)             | NEP-TBL-001..003                                       | #120  | `structureData.test.js`     |
+| NEP-SCAT-003 (maximum visit and study day, degrading without a day column)   | NEP-SCAT-003                                           | #120  | `structureData.test.js`     |
+| NEP-ZONE-005 (axis floors, cut-point ticks, number formatting)               | NEP-ZONE-005                                           | #120  | `getScales.test.js`         |
+| NEP-ZONE-001..003 (L geometry, paint order, ramp and labels)                 | NEP-ZONE-001..003                                      | #120  | `getPlugins.test.js`        |
+| NEP-SCAT-001, NEP-SCAT-002, NEP-SCAT-004 (marks, tooltip lines, selection)   | NEP-SCAT-001, 002, 004                                 | #120  | `getPlugins.test.js`        |
+| NEP-DATA-006 (required columns; a creatinine-free dataset is reported)       | NEP-DATA-006                                           | #120  | `export.test.js`            |
+| NEP-API-001 (module export)                                                  | NEP-API-001                                            | #120  | `export.test.js`            |
+| NEP-COHORT-001..012 (the synthetic AKI demo cohort's data shape)             | NEP-COHORT-001..012                                    | #120  | `cohort.test.js`            |
+| NEP-FILT-001..004 (shared filter contract)                                   | NEP-FILT-001, NEP-FILT-002, NEP-FILT-003, NEP-FILT-004 | #136  | `../shared/filters.test.js` |
 
 ## The demo cohort (D8, #89 DEMO-6)
 

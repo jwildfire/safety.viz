@@ -69,6 +69,40 @@ test.describe('safety.viz qt-explorer module', () => {
     expect(central.peaks[0].visit).toBe('Week 8');
   });
 
+  test('QT-CT-008: central tendency prints the plotted values and CI bounds beneath the chart (#136)', async ({
+    page
+  }) => {
+    // The chart stays visible — the table sits beneath the band rather than
+    // replacing it (contrast the categorical view).
+    await expect(page.locator('.sv-chart-wrap')).not.toHaveCSS('display', 'none');
+    const header = await page.locator('table.qt-ct-table thead th').allTextContents();
+    expect(header).toEqual(['Visit', 'Arm', 'n', 'Δ mean (ms)', '90% CI low', '90% CI high']);
+    const rows = await page.locator('table.qt-ct-table tbody tr').allTextContents();
+    // 5 visits × 3 arms.
+    expect(rows).toHaveLength(15);
+    // The printed numbers come from the same series the chart is built from.
+    const plotted = await page.evaluate(() => {
+      const instance = window.__safetyQtExplorerInstance;
+      return instance.chart.$qtCentral.bands.length;
+    });
+    expect(plotted).toBeGreaterThanOrEqual(2);
+    // ΔΔ prints the placebo-corrected difference and drops the placebo arm.
+    await selectByLabel(page, 'Display type', 'deltadelta');
+    const ddHeader = await page.locator('table.qt-ct-table thead th').allTextContents();
+    expect(ddHeader[3]).toBe('ΔΔ mean (ms)');
+    const ddRows = await page.locator('table.qt-ct-table tbody tr').allTextContents();
+    expect(ddRows.join(' ')).not.toContain('Placebo');
+    // Median mode carries no CI.
+    await selectByLabel(page, 'Display type', 'delta');
+    await selectByLabel(page, 'Statistic', 'median');
+    const medHeader = await page.locator('table.qt-ct-table thead th').allTextContents();
+    expect(medHeader[3]).toBe('Δ median (ms)');
+    const medRows = await page.locator('table.qt-ct-table tbody tr').allTextContents();
+    expect(medRows.every((row) => row.includes('NA'))).toBe(true);
+    await selectByLabel(page, 'Statistic', 'mean');
+    await captureEvidence(page, 'QT-CT-008', 'central-tendency-table');
+  });
+
   test('QT-CT-004/QT-CT-005: ΔΔ drops placebo and reports the ICH-E14 metric above the reference (#68)', async ({
     page
   }) => {
@@ -158,6 +192,45 @@ test.describe('safety.viz qt-explorer module', () => {
     await expect(page.locator('.qt-note')).toBeVisible();
     await expect(page.locator('.qt-note')).toContainText('QTc corrections');
     await expect(page.locator('.sv-chart-wrap')).toHaveCSS('display', 'none');
+  });
+
+  test('QT-CAUTION-001/QT-CAUTION-002: the standing caution and the unblinding warning ride every view (#136)', async ({
+    page
+  }) => {
+    const caution = page.locator('.safety-qt-explorer .qt-caution').first();
+    const unblinding = page.locator('.safety-qt-explorer .qt-caution-unblinding');
+    // Default Central tendency view.
+    await expect(caution).toBeVisible();
+    await expect(caution).toContainText('not validated for clinical use');
+    // The fixture cohort carries Placebo plus two Xanomeline arms, so the
+    // unblinding gate is true.
+    await expect(unblinding).toBeVisible();
+    await expect(unblinding).toContainText('unblind');
+
+    await selectView(page, 'Outlier scatter');
+    await expect(caution).toBeVisible();
+    await expect(unblinding).toBeVisible();
+    await selectView(page, 'Categorical');
+    await expect(caution).toBeVisible();
+    await expect(unblinding).toBeVisible();
+
+    // The path that blanks the view-owned footnote outright — the reason the
+    // caution cannot live there. The QTc-only note shows, the footnote empties,
+    // and the caution survives on both QTc-only views.
+    await selectByLabel(page, 'Correction', 'Heart Rate');
+    await expect(page.locator('.qt-note')).toBeVisible();
+    await expect(page.locator('.sv-footnote')).toHaveText('');
+    await expect(caution).toBeVisible();
+    await expect(unblinding).toBeVisible();
+    await selectView(page, 'Outlier scatter');
+    await expect(page.locator('.qt-note')).toBeVisible();
+    await expect(page.locator('.sv-footnote')).toHaveText('');
+    await expect(caution).toBeVisible();
+    await expect(unblinding).toBeVisible();
+
+    await selectByLabel(page, 'Correction', 'QTcF');
+    await selectView(page, 'Central tendency');
+    await captureEvidence(page, 'QT-CAUTION-001', 'standing-caution');
   });
 
   test('QT-DATA-003: the participant note / removed-count path leaves no page errors (#68)', async ({

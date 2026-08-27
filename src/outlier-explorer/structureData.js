@@ -4,6 +4,7 @@
 // the two renderers read the same.
 
 import { OE_SEQ } from './configure.js';
+import { filterMatches } from '../filters.js';
 
 export function unique(values) {
   return [
@@ -73,7 +74,7 @@ export function measureLabel(row, settings) {
 
 export function applyFilters(rows, filters) {
   return rows.filter((row) =>
-    Object.entries(filters).every(([key, value]) => !value || String(row[key]) === String(value))
+    Object.entries(filters || {}).every(([key, value]) => filterMatches(row[key], value))
   );
 }
 

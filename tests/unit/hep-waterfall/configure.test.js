@@ -20,8 +20,8 @@ describe('hep-waterfall configure.syncSettings', () => {
     expect(synced.measure_col).toBe('TEST');
     expect(synced.normal_col_high).toBe('STNRHI');
     expect(synced.filters).toEqual([
-      { value_col: 'SEX', label: 'SEX' },
-      { value_col: 'RACE', label: 'Race' }
+      { value_col: 'SEX', label: 'SEX', start: null, all: true, multiple: false },
+      { value_col: 'RACE', label: 'Race', start: null, all: true, multiple: false }
     ]);
     expect(synced.details).toEqual([{ value_col: 'USUBJID', label: 'USUBJID' }]);
     // Every default survives a partial override.

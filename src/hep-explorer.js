@@ -71,6 +71,7 @@ import scatterView from './hep-explorer/views/scatter.js';
 import migrationView from './hep-explorer/views/migration.js';
 import compositeView from './hep-explorer/views/composite.js';
 import { renderListing } from './histogram/listing.js';
+import { initFilterState, renderFilterControl } from './filters.js';
 
 Chart.register(
   ScatterController,
@@ -210,7 +211,7 @@ class SafetyHepExplorer {
       quadrantLabels: this.settings.quadrant_labels,
       visitWindow: this.settings.visit_window,
       groupBy: this.settings.group_by,
-      filters: {},
+      filters: initFilterState(this.settings.filters),
       rRatio: [...this.settings.r_ratio],
       cuts: JSON.parse(JSON.stringify(this.settings.cuts)),
       // Migration-view controls (HEP-MIG-013, HEP-ARM-003): suppress the
@@ -691,22 +692,20 @@ class SafetyHepExplorer {
     if (filterSpecs.length || showRRatio) {
       const filterParent = addSection('Filters');
       filterSpecs.forEach((filter) => {
-        const select = addControl(filter.label, document.createElement('select'), filterParent);
-        option(select, '__all__', 'All', !this.state.filters[filter.value_col]);
-        unique(this.cleanRows.map((row) => row[filter.value_col]))
-          .sort()
-          .forEach((value) =>
-            option(
-              select,
-              value,
-              value,
-              String(this.state.filters[filter.value_col]) === String(value)
-            )
-          );
-        select.onchange = () => {
-          this.state.filters[filter.value_col] = select.value === '__all__' ? null : select.value;
-          this.render();
-        };
+        const values = unique(this.cleanRows.map((row) => row[filter.value_col])).sort();
+        addControl(
+          filter.label,
+          renderFilterControl({
+            spec: filter,
+            values: values,
+            selected: this.state.filters[filter.value_col],
+            onChange: (next) => {
+              this.state.filters[filter.value_col] = next;
+              this.render();
+            }
+          }),
+          filterParent
+        );
       });
       if (showRRatio) view.contributeFilters(this, { addRow, addControl }, filterParent);
     }

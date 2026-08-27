@@ -47,6 +47,10 @@
     "NEP-COHORT-009": "The cohort contains participants who reach ≥ 4.0 mg/dL, including participants whose fold change alone would only be Stage 1.",
     "NEP-COHORT-010": "The cohort contains participants whose creatinine only falls, whose maximum post-baseline value is clearly below their own baseline.",
     "NEP-COHORT-011": "Both arms are populated and the injury signal skews to the active arm.",
-    "NEP-COHORT-012": "The injection ADDS rows and leaves the pharmaverseadam and chronic-liver-disease populations byte-for-byte untouched; the generator is deterministic and idempotent, and fails the build when a generated participant misses the stage its archetype promises."
+    "NEP-COHORT-012": "The injection ADDS rows and leaves the pharmaverseadam and chronic-liver-disease populations byte-for-byte untouched; the generator is deterministic and idempotent, and fails the build when a generated participant misses the stage its archetype promises.",
+    "NEP-FILT-001": "A filter spec accepts `start`, `all` and `multiple` alongside `value_col` and `label`, and means the same thing here as in every other renderer. A spec that declares only `value_col` and `label` behaves exactly as it did before: a single-value dropdown whose first option is \"All\".",
+    "NEP-FILT-002": "`start` names the value the filter opens on, and suppresses the \"All\" option unless the spec also passes `all: true`. A start of `0` or `false` is a real column value, not an absent start.",
+    "NEP-FILT-003": "`all: false` removes the \"All\" option so a value is always selected. The key is read as written and is never truthiness-tested, because `false` is the value that does something.",
+    "NEP-FILT-004": "`multiple: true` renders a checkbox multiselect instead of a dropdown, and the rows shown are those matching ANY selected value. Its state is null (everything selected, no restriction) or an array of values."
   }
 }

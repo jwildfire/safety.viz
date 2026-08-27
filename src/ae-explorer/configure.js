@@ -5,6 +5,7 @@
 // module.
 
 import { arrayify, fieldSpec } from '../histogram/configure.js';
+import { normalizeFilterSpec } from '../filters.js';
 
 /**
  * Rendering and data-mapping settings for the ae-explorer module. Every key
@@ -20,7 +21,7 @@ import { arrayify, fieldSpec } from '../histogram/configure.js';
  * @property {string} [group_col='ARM'] Treatment group column; required in the data. One rate column per level, up to max_groups.
  * @property {?Array<string>} [groups=null] Group levels to show as columns (AE-CFG-005). Null derives every level found in group_col, sorted; configured levels missing from the data are dropped with a console warning. A single group hides the Difference column, and hides the Total column too when the per-group columns are drawn (AE-USER-019).
  * @property {Array<string>} [colors] Group colors assigned by column order (AE-CFG-006); the Total column always renders gray, and the default palette carries no yellow (AE-REG-040).
- * @property {?Array<string|Object>} [filters=null] Filter controls (AE-USER-018): column names or { value_col, label, type, start } specs. Type 'event' narrows the events counted; type 'participant' narrows the analysis population and its denominators (AE-REG-006). Defaults to the four ADAE event filters — seriousness, severity, relationship, outcome; filters whose column is absent or single-valued are dropped with a console warning.
+ * @property {?Array<string|Object>} [filters=null] Filter controls (AE-USER-018): column names or { value_col, label, type, start } specs. Type 'event' narrows the events counted; type 'participant' narrows the analysis population and its denominators (AE-REG-006). Defaults to the four ADAE event filters — seriousness, severity, relationship, outcome; filters whose column is absent or single-valued are dropped with a console warning. Filter specs take `{ value_col, label, start, all, multiple }`: `start` is the opening selection (an array for a `multiple` filter, and a start of `0` or `false` is a real value, not an absent one); `all` controls the "All" option and defaults to true, or to false when a start is given — pass `all: true` to keep All alongside a start, `all: false` to require a selection; `multiple: true` renders a checkbox multiselect whose state is null (everything) or an array of values (#136).
  * @property {boolean} [profile=true] Mount the railed participant profile beside the table (obot.roadmap#75 decision D9); false opts out of the drill-down entirely.
  * @property {Array<string|Object>} [profile_details=[]] Header demographics for the participant profile: column names or { value_col, label } specs. Distinct from `details`, which lists the drill-down columns.
  * @property {?Object} [profile_ae=null] Overrides for the AE mapping the profile reads (severity, seriousness, study days) where this renderer's own settings do not name those columns.
@@ -107,10 +108,9 @@ const DEFAULT_FILTERS = [
  * @private
  */
 function filterSpec(value) {
-  const spec = fieldSpec(value);
+  const spec = normalizeFilterSpec(value);
   const type = value && value.type === 'participant' ? 'participant' : 'event';
-  const start = (value && value.start) || null;
-  return { ...spec, type, start };
+  return { ...spec, type };
 }
 
 /**

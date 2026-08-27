@@ -44,6 +44,7 @@ import {
   outlierTooltip,
   summaryTooltip
 } from './results-over-time/getPlugins.js';
+import { initFilterState, renderFilterControl } from './filters.js';
 
 Chart.register(
   ScatterController,
@@ -80,7 +81,7 @@ class SafetyResultsOverTime {
     this.boxSpecs = [];
     this.state = {
       measure: this.settings.start_value,
-      filters: {},
+      filters: initFilterState(this.settings.filters),
       groupBy: this.settings.group_by,
       // Y-axis limits (#85): `lower`/`upper` hold USER OVERRIDES only (null =
       // auto), `axisDomain` the [lower, upper] the last render resolved — what
@@ -253,17 +254,20 @@ class SafetyResultsOverTime {
     });
     const filterParent = filterSpecs.length ? addSection('Filters') : this.controls;
     filterSpecs.forEach((filter) => {
-      const select = addControl(filter.label, document.createElement('select'), filterParent);
-      option(select, '__all__', 'All', !this.state.filters[filter.value_col]);
-      unique(this.cleanData.map((row) => row[filter.value_col]))
-        .sort()
-        .forEach((value) =>
-          option(select, value, value, this.state.filters[filter.value_col] === value)
-        );
-      select.onchange = () => {
-        this.state.filters[filter.value_col] = select.value === '__all__' ? null : select.value;
-        this.render();
-      };
+      const values = unique(this.cleanData.map((row) => row[filter.value_col])).sort();
+      addControl(
+        filter.label,
+        renderFilterControl({
+          spec: filter,
+          values,
+          selected: this.state.filters[filter.value_col],
+          onChange: (next) => {
+            this.state.filters[filter.value_col] = next;
+            this.render();
+          }
+        }),
+        filterParent
+      );
     });
 
     const yParent = addSection('Y-axis Limits');

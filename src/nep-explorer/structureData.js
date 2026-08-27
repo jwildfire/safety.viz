@@ -10,6 +10,7 @@
 // (the ladders and the >= 4.0 mg/dL rule), NEP-TBL-* (the summary).
 
 import { normalizeUnit } from './configure.js';
+import { filterMatches } from '../filters.js';
 
 /** The one internal column the dropped-row export keeps, because it is the answer. */
 export const DROP_REASON_COLUMN = '__nep_dropReason';
@@ -317,9 +318,7 @@ export function structureData(rawData, settings) {
  */
 export function applyFilters(points, filters) {
   return points.filter((point) =>
-    Object.entries(filters || {}).every(
-      ([key, value]) => !value || String(point.meta[key]) === String(value)
-    )
+    Object.entries(filters || {}).every(([key, value]) => filterMatches(point.meta[key], value))
   );
 }
 

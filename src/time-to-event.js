@@ -57,6 +57,7 @@ import {
   riskTablePlugin
 } from './time-to-event/getPlugins.js';
 import { csvDownloadLink, toCsv } from './hep-explorer/dropped.js';
+import { initFilterState, renderFilterControl } from './filters.js';
 
 Chart.register(LineController, LineElement, PointElement, LinearScale, Tooltip, Legend);
 
@@ -81,7 +82,7 @@ class SafetyTimeToEvent {
     this.participantsSelected = [];
     this.state = {
       eventFilters: {},
-      filters: {},
+      filters: initFilterState(this.settings.filters),
       direction: this.settings.direction,
       ci: this.settings.ci,
       selected: null
@@ -207,20 +208,24 @@ class SafetyTimeToEvent {
     if (filterSpecs.length) {
       const filterParent = addSection('Filters');
       filterSpecs.forEach((filter) => {
-        const select = addControl(filter.label, document.createElement('select'), filterParent);
-        option(select, '__all__', 'All', !this.state.filters[filter.value_col]);
-        unique(
+        const values = unique(
           this.rawPopulation.map((row) => row[filter.value_col]).filter((v) => v !== undefined)
         )
           .map(String)
-          .sort()
-          .forEach((value) =>
-            option(select, value, value, this.state.filters[filter.value_col] === value)
-          );
-        select.onchange = () => {
-          this.state.filters[filter.value_col] = select.value === '__all__' ? null : select.value;
-          this.render();
-        };
+          .sort();
+        addControl(
+          filter.label,
+          renderFilterControl({
+            spec: filter,
+            values: values,
+            selected: this.state.filters[filter.value_col],
+            onChange: (next) => {
+              this.state.filters[filter.value_col] = next;
+              this.render();
+            }
+          }),
+          filterParent
+        );
       });
     }
 

@@ -31,6 +31,7 @@ import {
 import { buildScales, dayDomain } from './ae-timelines/getScales.js';
 import { buildDatasets, timelineMarksPlugin, tooltipLines } from './ae-timelines/getPlugins.js';
 import { renderListing } from './histogram/listing.js';
+import { initFilterState, renderFilterControl } from './filters.js';
 
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
@@ -64,7 +65,7 @@ class AETimelines {
     this.selectedParticipant = null;
     this.participantsSelected = [];
     this.state = {
-      filters: {},
+      filters: initFilterState(this.settings.filters),
       sort: this.settings.sort_participants
     };
     this.renderShell();
@@ -241,8 +242,6 @@ class AETimelines {
     });
     const filterParent = filterSpecs.length ? addSection('Filters') : this.controls;
     filterSpecs.forEach((filter) => {
-      const select = addControl(filter.label, document.createElement('select'), filterParent);
-      option(select, '__all__', 'All', !this.state.filters[filter.value_col]);
       const values = unique(this.cleanRows.map((row) => row[filter.value_col]));
       // The color filter lists its options in legend order, like the
       // original's sortLegendFilter; other filters sort alphabetically.
@@ -250,13 +249,19 @@ class AETimelines {
         filter.value_col === this.settings.color.value_col
           ? domain.filter((value) => values.includes(value))
           : values.sort();
-      ordered.forEach((value) =>
-        option(select, value, value, this.state.filters[filter.value_col] === value)
+      addControl(
+        filter.label,
+        renderFilterControl({
+          spec: filter,
+          values: ordered,
+          selected: this.state.filters[filter.value_col],
+          onChange: (next) => {
+            this.state.filters[filter.value_col] = next;
+            this.render();
+          }
+        }),
+        filterParent
       );
-      select.onchange = () => {
-        this.state.filters[filter.value_col] = select.value === '__all__' ? null : select.value;
-        this.render();
-      };
     });
 
     const sortParent = addSection('Sorting');

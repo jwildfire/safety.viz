@@ -147,6 +147,10 @@
     "HEP-DEFER-003": "Marginal distribution box plots and axis rugs are drawn alongside the x- and y-axes to summarize the univariate ALT and TB distributions.",
     "HEP-DEFER-004": "The participant lab summary table renders per-measure sparklines and supports drill-down from a sparkline into that measure's detail.",
     "HEP-DEFER-005": "An exposure (EX) track overlays drug-exposure intervals in the participant detail and reports a P_ALT (probability of ALT elevation) estimate.",
-    "HEP-DEFER-006": "CSV downloads are offered for dropped records and participants, and below-LLOQ values are imputed during data cleaning."
+    "HEP-DEFER-006": "CSV downloads are offered for dropped records and participants, and below-LLOQ values are imputed during data cleaning.",
+    "HEP-FILT-001": "A filter spec accepts `start`, `all` and `multiple` alongside `value_col` and `label`, and means the same thing here as in every other renderer. A spec that declares only `value_col` and `label` behaves exactly as it did before: a single-value dropdown whose first option is \"All\".",
+    "HEP-FILT-002": "`start` names the value the filter opens on, and suppresses the \"All\" option unless the spec also passes `all: true`. A start of `0` or `false` is a real column value, not an absent start.",
+    "HEP-FILT-003": "`all: false` removes the \"All\" option so a value is always selected. The key is read as written and is never truthiness-tested, because `false` is the value that does something.",
+    "HEP-FILT-004": "`multiple: true` renders a checkbox multiselect instead of a dropdown, and the rows shown are those matching ANY selected value. Its state is null (everything selected, no restriction) or an array of values."
   }
 }

@@ -24,10 +24,12 @@ describe('histogram configure', () => {
       filters: [{ value_col: 'SEX', label: 'Sex' }, { value_col: 'RACE' }]
     });
     expect(settings.filters).toEqual([
-      { value_col: 'SEX', label: 'Sex' },
-      { value_col: 'RACE', label: 'RACE' }
+      { value_col: 'SEX', label: 'Sex', start: null, all: true, multiple: false },
+      { value_col: 'RACE', label: 'RACE', start: null, all: true, multiple: false }
     ]);
-    expect(syncSettings({ filters: 'SEX' }).filters).toEqual([{ value_col: 'SEX', label: 'SEX' }]);
+    expect(syncSettings({ filters: 'SEX' }).filters).toEqual([
+      { value_col: 'SEX', label: 'SEX', start: null, all: true, multiple: false }
+    ]);
   });
 
   it('SH-CFG-011: details default to id, filters, result, normal limits, and unit when unset (#2)', () => {

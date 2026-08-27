@@ -6,6 +6,7 @@
 // fixtures.
 
 import { presentMeasures, resolveMeasureList } from '../measure-list.js';
+import { filterMatches } from '../filters.js';
 
 // Visit-role colors reused by the sparkline (SDD-REG-023): filled blue for
 // baseline visits, filled orange for comparison visits, empty gray otherwise.
@@ -176,8 +177,8 @@ export function plottablePoints(participants) {
 // SDD-REG-006); an unset filter (null) matches everything.
 export function applyFilters(participants, filters) {
   return participants.filter((participant) =>
-    Object.entries(filters).every(
-      ([key, value]) => !value || String(participant.meta[key]) === String(value)
+    Object.entries(filters || {}).every(([key, value]) =>
+      filterMatches(participant.meta[key], value)
     )
   );
 }

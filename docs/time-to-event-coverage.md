@@ -57,33 +57,34 @@ than re-deriving expectations.
 
 ## Unit evidence (Vitest — `tests/unit/time-to-event/`, `tests/unit/demo-data/adsl.test.js`, `tests/unit/shell/multiSelect.test.js`)
 
-| Requirement ID | Source matrix rows | Issue | Test                                                                                          |
-| -------------- | ------------------ | ----- | --------------------------------------------------------------------------------------------- |
-| TTE-CFG-001    | TTE-CFG-001        | #128  | `configure.test.js` — the default settings carry the events + population mapping              |
-| TTE-CFG-002    | TTE-CFG-002        | #128  | `configure.test.js` — direction validated, incidence fallback                                 |
-| TTE-CFG-003    | TTE-CFG-003        | #128  | `configure.test.js` — ci coerced to a boolean, defaulting on                                  |
-| TTE-DATA-001   | TTE-DATA-001       | #128  | `structureData.test.js` — one error naming every missing dataset and column                   |
-| TTE-DATA-002   | TTE-DATA-002       | #128  | `structureData.test.js` — bad-day / unknown-participant event rows dropped with named reasons |
-| TTE-FILT-001   | TTE-FILT-001       | #128  | `structureData.test.js` — multiselect semantics; `multiSelect.test.js` — the shared control   |
-| TTE-FILT-002   | TTE-FILT-002       | #128  | `structureData.test.js` — no selection qualifies all, empty selection qualifies none          |
-| TTE-FILT-003   | TTE-FILT-003       | #128  | `configure.test.js` — the endpoint label survives normalization                               |
-| TTE-DERIV-001  | TTE-DERIV-001      | #128  | `structureData.test.js` — first qualifying event by day, ties by input order                  |
-| TTE-DERIV-002  | TTE-DERIV-002      | #128  | `structureData.test.js` — censoring at the follow-up day with the population description      |
-| TTE-DATA-003   | TTE-DATA-003       | #128  | `structureData.test.js` — duplicate population rows dropped with a named reason               |
-| TTE-DATA-004   | TTE-DATA-004       | #128  | `structureData.test.js` — pooled group when the group column is absent                        |
-| TTE-STAT-001   | TTE-STAT-001       | #128  | `structureData.test.js` — one km.js pass per group feeds the structured result                |
-| TTE-STAT-002   | TTE-STAT-002       | #128  | `km.test.js` — product-limit values, tie conventions, Freireich 6-MP textbook case            |
-| TTE-STAT-003   | TTE-STAT-003       | #128  | `km.test.js` — Greenwood SE, log-log bounds, absent where undefined                           |
-| TTE-STAT-004   | TTE-STAT-004       | #128  | `survfit.test.js` — agreement with survival::survfit to 1e-10 per endpoint × arm              |
-| TTE-STAT-005   | TTE-STAT-005       | #128  | `km.test.js` — risk-table numbers from the same pass                                          |
-| TTE-STAT-006   | TTE-STAT-006       | #128  | `km.test.js` — all-censored group stays at S = 1 with no band                                 |
-| TTE-CURV-005   | TTE-CURV-005       | #128  | `getPlugins.test.js` — the terminal vertex extends the curve flat                             |
-| TTE-CURV-006   | TTE-CURV-006       | #128  | `getPlugins.test.js` — fixed-order colors and dash patterns                                   |
-| TTE-RISK-001   | TTE-RISK-001       | #128  | `getPlugins.test.js` — the two strips assembled from the estimates                            |
-| TTE-RISK-002   | TTE-RISK-002       | #128  | `getScales.test.js` — the 1/2/5-decade tick generator the table aligns to                     |
-| TTE-USER-005   | TTE-USER-005       | #128  | `getPlugins.test.js` — event tooltip with the pointwise interval                              |
-| TTE-USER-006   | TTE-USER-006       | #128  | `getPlugins.test.js` — censor tooltip with count and reasons                                  |
-| TTE-DEMO-002   | TTE-DEMO-002       | #128  | `adsl.test.js` — EOSDY derivation rules plus the committed-file drift guard                   |
+| Requirement ID                             | Source matrix rows                                     | Issue | Test                                                                                          |
+| ------------------------------------------ | ------------------------------------------------------ | ----- | --------------------------------------------------------------------------------------------- |
+| TTE-CFG-001                                | TTE-CFG-001                                            | #128  | `configure.test.js` — the default settings carry the events + population mapping              |
+| TTE-CFG-002                                | TTE-CFG-002                                            | #128  | `configure.test.js` — direction validated, incidence fallback                                 |
+| TTE-CFG-003                                | TTE-CFG-003                                            | #128  | `configure.test.js` — ci coerced to a boolean, defaulting on                                  |
+| TTE-DATA-001                               | TTE-DATA-001                                           | #128  | `structureData.test.js` — one error naming every missing dataset and column                   |
+| TTE-DATA-002                               | TTE-DATA-002                                           | #128  | `structureData.test.js` — bad-day / unknown-participant event rows dropped with named reasons |
+| TTE-FILT-001                               | TTE-FILT-001                                           | #128  | `structureData.test.js` — multiselect semantics; `multiSelect.test.js` — the shared control   |
+| TTE-FILT-002                               | TTE-FILT-002                                           | #128  | `structureData.test.js` — no selection qualifies all, empty selection qualifies none          |
+| TTE-FILT-003                               | TTE-FILT-003                                           | #128  | `configure.test.js` — the endpoint label survives normalization                               |
+| TTE-DERIV-001                              | TTE-DERIV-001                                          | #128  | `structureData.test.js` — first qualifying event by day, ties by input order                  |
+| TTE-DERIV-002                              | TTE-DERIV-002                                          | #128  | `structureData.test.js` — censoring at the follow-up day with the population description      |
+| TTE-DATA-003                               | TTE-DATA-003                                           | #128  | `structureData.test.js` — duplicate population rows dropped with a named reason               |
+| TTE-DATA-004                               | TTE-DATA-004                                           | #128  | `structureData.test.js` — pooled group when the group column is absent                        |
+| TTE-STAT-001                               | TTE-STAT-001                                           | #128  | `structureData.test.js` — one km.js pass per group feeds the structured result                |
+| TTE-STAT-002                               | TTE-STAT-002                                           | #128  | `km.test.js` — product-limit values, tie conventions, Freireich 6-MP textbook case            |
+| TTE-STAT-003                               | TTE-STAT-003                                           | #128  | `km.test.js` — Greenwood SE, log-log bounds, absent where undefined                           |
+| TTE-STAT-004                               | TTE-STAT-004                                           | #128  | `survfit.test.js` — agreement with survival::survfit to 1e-10 per endpoint × arm              |
+| TTE-STAT-005                               | TTE-STAT-005                                           | #128  | `km.test.js` — risk-table numbers from the same pass                                          |
+| TTE-STAT-006                               | TTE-STAT-006                                           | #128  | `km.test.js` — all-censored group stays at S = 1 with no band                                 |
+| TTE-CURV-005                               | TTE-CURV-005                                           | #128  | `getPlugins.test.js` — the terminal vertex extends the curve flat                             |
+| TTE-CURV-006                               | TTE-CURV-006                                           | #128  | `getPlugins.test.js` — fixed-order colors and dash patterns                                   |
+| TTE-RISK-001                               | TTE-RISK-001                                           | #128  | `getPlugins.test.js` — the two strips assembled from the estimates                            |
+| TTE-RISK-002                               | TTE-RISK-002                                           | #128  | `getScales.test.js` — the 1/2/5-decade tick generator the table aligns to                     |
+| TTE-USER-005                               | TTE-USER-005                                           | #128  | `getPlugins.test.js` — event tooltip with the pointwise interval                              |
+| TTE-USER-006                               | TTE-USER-006                                           | #128  | `getPlugins.test.js` — censor tooltip with count and reasons                                  |
+| TTE-DEMO-002                               | TTE-DEMO-002                                           | #128  | `adsl.test.js` — EOSDY derivation rules plus the committed-file drift guard                   |
+| TTE-FILT-001..004 (shared filter contract) | TTE-FILT-001, TTE-FILT-002, TTE-FILT-003, TTE-FILT-004 | #136  | `../shared/filters.test.js`                                                                   |
 
 ## Known gaps, stated
 

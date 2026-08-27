@@ -64,9 +64,23 @@ describe('ae-explorer configure', () => {
       ]
     });
     expect(filters).toEqual([
-      { value_col: 'AESER', label: 'Srs?', type: 'event', start: ['Y'] },
-      { value_col: 'SEX', label: 'SEX', type: 'participant', start: null },
-      { value_col: 'RACE', label: 'RACE', type: 'event', start: null }
+      {
+        value_col: 'AESER',
+        label: 'Srs?',
+        type: 'event',
+        start: 'Y',
+        all: false,
+        multiple: false
+      },
+      {
+        value_col: 'SEX',
+        label: 'SEX',
+        type: 'participant',
+        start: null,
+        all: true,
+        multiple: false
+      },
+      { value_col: 'RACE', label: 'RACE', type: 'event', start: null, all: true, multiple: false }
     ]);
   });
 

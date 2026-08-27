@@ -90,6 +90,7 @@ import {
 } from './hep-waterfall/getPlugins.js';
 import { unique } from './hep-explorer/structureData.js';
 import { renderListing } from './histogram/listing.js';
+import { initFilterState, renderFilterControl } from './filters.js';
 
 Chart.register(
   BarController,
@@ -181,7 +182,7 @@ class SafetyHepWaterfall {
       summary: this.settings.summary,
       placeboArm: this.settings.placebo_arm,
       activeArm: active && active.length === 1 ? active[0] : '',
-      filters: {},
+      filters: initFilterState(this.settings.filters),
       selectedIds: []
     };
   }
@@ -567,19 +568,22 @@ class SafetyHepWaterfall {
     if (filterSpecs.length) {
       const filterSection = addSection('Filters');
       filterSpecs.forEach((filter) => {
-        const select = addControl(filter.label, document.createElement('select'), filterSection);
-        option(select, '', 'All', !this.state.filters[filter.value_col]);
-        unique(this.cleanRows.map((row) => row[filter.value_col]))
+        const values = unique(this.cleanRows.map((row) => row[filter.value_col]))
           .map(String)
-          .sort()
-          .forEach((value) =>
-            option(select, value, value, this.state.filters[filter.value_col] === value)
-          );
-        select.onchange = () => {
-          if (select.value) this.state.filters[filter.value_col] = select.value;
-          else delete this.state.filters[filter.value_col];
-          this.render();
-        };
+          .sort();
+        addControl(
+          filter.label,
+          renderFilterControl({
+            spec: filter,
+            values: values,
+            selected: this.state.filters[filter.value_col],
+            onChange: (next) => {
+              this.state.filters[filter.value_col] = next;
+              this.render();
+            }
+          }),
+          filterSection
+        );
       });
     }
 

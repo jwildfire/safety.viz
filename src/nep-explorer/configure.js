@@ -24,6 +24,8 @@
 //   about this itself — so the factor table is a setting.
 
 /** Micromoles per litre in 1 mg/dL of creatinine (design §4). */
+import { normalizeFilterSpec } from '../filters.js';
+
 export const UMOL_PER_MGDL = 88.4;
 
 /**
@@ -62,7 +64,7 @@ export const KDIGO_STAGES = Object.freeze({
  * @property {?string} [arm_col='ARM'] Treatment-arm column, carried on each point for the tooltip and the filters.
  * @property {{fold: number[], delta: number, absolute: number}} [stages=KDIGO_STAGES] The staging cut-points (D4): the three fold-change cut-points, the single absolute-change Stage-1 trigger, and the Stage-3 rule on the value reached.
  * @property {{target: string, factors: Object<string, number>}} [units] The mg/dL contract (design §4): the target unit and the per-unit multiplier table. Factor keys are normalized (lower-cased, µ/μ/u folded) on merge, so lookups never guess.
- * @property {Array<string|Object>} [filters=[]] Filter controls: column names or { value_col, label } specs (NEP-CFG-006).
+ * @property {Array<string|Object>} [filters=[]] Filter controls: column names or { value_col, label } specs (NEP-CFG-006). Filter specs take `{ value_col, label, start, all, multiple }`: `start` is the opening selection (an array for a `multiple` filter, and a start of `0` or `false` is a real value, not an absent one); `all` controls the "All" option and defaults to true, or to false when a start is given — pass `all: true` to keep All alongside a start, `all: false` to require a selection; `multiple: true` renders a checkbox multiselect whose state is null (everything) or an array of values (#136).
  * @property {?Array<string|Object>} [details=null] Participant-detail columns shown with the selected participant; defaults to the participant ID plus the filter columns.
  * @property {string} [zone_labels='shown'] Whether the scatter draws the stage-zone labels: `shown` or `hidden` (NEP-ZONE-004).
  * @property {string} [width='100%'] Widget width, carried for the R widget bindings; the current shell always spans its container.
@@ -193,7 +195,7 @@ export function syncSettings(settings) {
   synced.measure_values = { ...DEFAULT_SETTINGS.measure_values, ...(synced.measure_values || {}) };
   synced.zone_labels = synced.zone_labels === 'hidden' ? 'hidden' : 'shown';
   synced.filters = arrayify(synced.filters)
-    .map((filter) => fieldSpec(filter))
+    .map((filter) => normalizeFilterSpec(filter))
     .filter((filter) => filter.value_col);
 
   const suppliedDetails = arrayify(synced.details)
@@ -201,7 +203,11 @@ export function syncSettings(settings) {
     .filter((detail) => detail.value_col);
   const merged = [
     { value_col: synced.id_col, label: 'Participant ID' },
-    ...synced.filters.filter((filter) => filter.value_col !== synced.id_col)
+    // Listing columns, not filters: take only the column and its label, so the
+    // filter contract's start/all/multiple keys do not leak into the listing.
+    ...synced.filters
+      .filter((filter) => filter.value_col !== synced.id_col)
+      .map((filter) => fieldSpec(filter))
   ];
   suppliedDetails.forEach((detail) => {
     if (!merged.some((existing) => existing.value_col === detail.value_col)) merged.push(detail);

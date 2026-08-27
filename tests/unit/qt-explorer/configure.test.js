@@ -1,7 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import {
+  CLINICAL_CAUTION,
   DEFAULT_SETTINGS,
+  UNBLINDING_CAUTION,
   syncSettings,
+  showsUnblindingCaution,
   zForCi,
   resolvePlaceboArm,
   TIMEPOINT_MAX,
@@ -13,8 +16,8 @@ describe('qt-explorer configure.syncSettings', () => {
     const s = syncSettings({ filters: ['SEX', { value_col: 'RACE', label: 'Race' }] });
     expect(s.id_col).toBe('USUBJID');
     expect(s.filters).toEqual([
-      { value_col: 'SEX', label: 'SEX' },
-      { value_col: 'RACE', label: 'Race' }
+      { value_col: 'SEX', label: 'SEX', start: null, all: true, multiple: false },
+      { value_col: 'RACE', label: 'Race', start: null, all: true, multiple: false }
     ]);
   });
   it('QT-CFG-002: sorts and numifies threshold lists', () => {
@@ -61,5 +64,28 @@ describe('qt-explorer configure.resolvePlaceboArm', () => {
     expect(resolvePlaceboArm(['Xanomeline', 'Placebo'], null)).toBe('Placebo');
     expect(resolvePlaceboArm(['Drug A', 'Drug B'], null)).toBeNull();
     expect(resolvePlaceboArm(['Drug', 'Placebo'], 'Missing')).toBe('Placebo');
+  });
+});
+
+describe('qt-explorer standing cautions', () => {
+  it('QT-CAUTION-001: the standing caution names the tool exploratory and not validated for clinical use (#136)', () => {
+    expect(CLINICAL_CAUTION).toMatch(/exploratory/i);
+    expect(CLINICAL_CAUTION).toMatch(/not validated for clinical use/i);
+    expect(CLINICAL_CAUTION).toMatch(/ICH-?\s?E14/i);
+  });
+
+  it('QT-CAUTION-002: the unblinding warning names treatment assignment and the blinding plan (#136)', () => {
+    expect(UNBLINDING_CAUTION).toMatch(/unblind/i);
+    expect(UNBLINDING_CAUTION).toMatch(/treatment assignment/i);
+    expect(UNBLINDING_CAUTION).toMatch(/blinding plan/i);
+  });
+
+  it('QT-CAUTION-002: the unblinding warning applies only when more than one arm is present (#136)', () => {
+    expect(showsUnblindingCaution([])).toBe(false);
+    expect(showsUnblindingCaution(['Placebo'])).toBe(false);
+    expect(showsUnblindingCaution(['Placebo', 'Xanomeline High Dose'])).toBe(true);
+    expect(showsUnblindingCaution(['Placebo', '  '])).toBe(false);
+    expect(showsUnblindingCaution(undefined)).toBe(false);
+    expect(showsUnblindingCaution(null)).toBe(false);
   });
 });

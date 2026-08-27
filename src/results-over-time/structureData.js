@@ -4,6 +4,8 @@
 // onPreprocess/defineMeasureData pipeline (RhoInc/safety-results-over-time) —
 // the same d3.quantile (R-7) statistics — to plain, unit-testable functions.
 
+import { filterMatches } from '../filters.js';
+
 /**
  * Distinct, non-empty values in first-seen order.
  * @param {Array} values Values to dedupe.
@@ -112,7 +114,7 @@ export function measureLabel(row, settings) {
  */
 export function applyFilters(rows, filters) {
   return rows.filter((row) =>
-    Object.entries(filters).every(([key, value]) => !value || String(row[key]) === String(value))
+    Object.entries(filters || {}).every(([key, value]) => filterMatches(row[key], value))
   );
 }
 

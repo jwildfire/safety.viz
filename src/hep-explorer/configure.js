@@ -9,6 +9,8 @@
 // HEP-QUAD-*, HEP-DATA-*).
 
 /** The "no grouping" sentinel value for the color-by control (HEP-CTRL-009). */
+import { normalizeFilterSpec } from '../filters.js';
+
 export const GROUP_NONE = 'hep_none';
 
 /**
@@ -116,7 +118,7 @@ export { MEASURE_KEYS, cutFor } from '../hep-core/rows.js';
  * @property {number[]} [measureBounds=[0.01, 0.99]] Population-extent quantiles for the railed profile's sparkline / inset guides (#98, PPRF-4; parity with the original renderer's measureBounds).
  * @property {boolean} [r_ratio_filter=true] Whether to render the R-Ratio range filter control (HEP-CTRL-010).
  * @property {number[]} [r_ratio=[0,null]] Initial R-Ratio [min, max] range; a null max is resolved from the data on first render (HEP-CTRL-010).
- * @property {Array<string|Object>} [filters=[]] Filter controls: column names or { value_col, label } specs. Filters whose column is absent from the data are dropped with a console warning (HEP-CTRL-011).
+ * @property {Array<string|Object>} [filters=[]] Filter controls: column names or { value_col, label } specs. Filters whose column is absent from the data are dropped with a console warning (HEP-CTRL-011). Filter specs take `{ value_col, label, start, all, multiple }`: `start` is the opening selection (an array for a `multiple` filter, and a start of `0` or `false` is a real value, not an absent one); `all` controls the "All" option and defaults to true, or to false when a start is given — pass `all: true` to keep All alongside a start, `all: false` to require a selection; `multiple: true` renders a checkbox multiselect whose state is null (everything) or an array of values (#136).
  * @property {Array<string|Object>} [groups=[]] Color-by options; a "None" option is always offered first (HEP-CTRL-009).
  * @property {string} [group_by='hep_none'] Column the points are colored by on first render; 'hep_none' disables grouping.
  * @property {?Array<string|Object>} [details=null] Columns for the linked participant listing; when null, defaults derive from the measure/day/value mappings (HEP-SELECT-006).
@@ -231,7 +233,7 @@ export function syncSettings(settings) {
   const synced = { ...DEFAULT_SETTINGS, ...settings };
 
   synced.filters = arrayify(synced.filters)
-    .map((value) => fieldSpec(value))
+    .map((value) => normalizeFilterSpec(value))
     .filter((d) => d.value_col);
 
   const defaultGroup = { value_col: GROUP_NONE, label: 'None' };

@@ -61,6 +61,7 @@ import {
   syncProfileRail,
   unmountProfileRail
 } from './profile-host.js';
+import { initFilterState, renderFilterControl } from './filters.js';
 
 Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip);
 
@@ -171,12 +172,7 @@ class SafetyOutlierExplorer {
    * @private
    */
   initFilterState() {
-    this.state.filters = {};
-    this.settings.filters.forEach((filter) => {
-      if (filter.start !== undefined && filter.start !== null && filter.start !== '') {
-        this.state.filters[filter.value_col] = String(filter.start);
-      }
-    });
+    this.state.filters = initFilterState(this.settings.filters);
   }
 
   /**
@@ -350,25 +346,24 @@ class SafetyOutlierExplorer {
       return exists;
     });
     const filterParent = filterSpecs.length ? addSection('Filters') : this.controls;
+    // A filter with a start value offers no "All" option unless the spec asks
+    // for one back (SOE-REG-052, now the shared contract's rule for every
+    // renderer rather than this one's local behaviour).
     filterSpecs.forEach((filter) => {
-      const select = addControl(filter.label, document.createElement('select'), filterParent);
-      const hasStart = filter.start !== undefined && filter.start !== null && filter.start !== '';
-      // A filter with a start value offers no "All" option (SOE-REG-052).
-      if (!hasStart) option(select, '__all__', 'All', !this.state.filters[filter.value_col]);
-      unique(this.cleanData.map((row) => row[filter.value_col]))
-        .sort()
-        .forEach((value) =>
-          option(
-            select,
-            value,
-            value,
-            String(this.state.filters[filter.value_col]) === String(value)
-          )
-        );
-      select.onchange = () => {
-        this.state.filters[filter.value_col] = select.value === '__all__' ? null : select.value;
-        this.render();
-      };
+      const values = unique(this.cleanData.map((row) => row[filter.value_col])).sort();
+      addControl(
+        filter.label,
+        renderFilterControl({
+          spec: filter,
+          values,
+          selected: this.state.filters[filter.value_col],
+          onChange: (next) => {
+            this.state.filters[filter.value_col] = next;
+            this.render();
+          }
+        }),
+        filterParent
+      );
     });
 
     if (this.settings.time_cols.length > 1) {

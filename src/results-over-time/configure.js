@@ -17,7 +17,7 @@
  * @property {string} [time_col='VISIT'] Column holding the visit name; required in the data. Distinct visits become the x-axis categories.
  * @property {string} [time_order_col='VISITNUM'] Optional numeric column ordering the visits along the x-axis; falls back to alphanumeric visit order when absent.
  * @property {string} [time_label='Visit'] Axis label for the time (visit) dimension.
- * @property {Array<string|Object>} [filters=[]] Filter controls: column names or { value_col, label } specs. Filters whose column is absent from the data are dropped with a console warning.
+ * @property {Array<string|Object>} [filters=[]] Filter controls: column names or { value_col, label } specs. Filters whose column is absent from the data are dropped with a console warning. Filter specs take `{ value_col, label, start, all, multiple }`: `start` is the opening selection (an array for a `multiple` filter, and a start of `0` or `false` is a real value, not an absent one); `all` controls the "All" option and defaults to true, or to false when a start is given — pass `all: true` to keep All alongside a start, `all: false` to require a selection; `multiple: true` renders a checkbox multiselect whose state is null (everything) or an array of values (#136).
  * @property {Array<string|Object>} [groups=[]] Group-by options; a "None" option is always offered first. The selected group splits each visit into side-by-side box plots.
  * @property {?string} [start_value=null] Measure selected on first render; falls back to the first measure (with a console warning) when absent from the data.
  * @property {?string[]} [measures=null] Ordered whitelist of measures the Measure control offers: only these appear, and in this order. Entries match the label the control shows (the measure name with its unit appended where `unit_col` is mapped), falling back to the bare `measure_col` value, which picks up every unit variant of that measure. null or [] offers every measure in the data, alphabetically — the behaviour before this setting existed. Configured measures absent from the data are dropped with a console warning; when none of them is present the control falls back to every measure in the data rather than going blank (SROT-MEAS-001, SROT-MEAS-002).
@@ -38,6 +38,8 @@
  * caller overrides onto these.
  * @type {ResultsOverTimeSettings}
  */
+import { normalizeFilterSpec } from '../filters.js';
+
 export const DEFAULT_SETTINGS = {
   id_col: 'USUBJID',
   measure_col: 'TEST',
@@ -99,7 +101,7 @@ export function syncSettings(settings) {
 
   synced.measures = arrayify(synced.measures);
   synced.filters = arrayify(synced.filters)
-    .map((value) => fieldSpec(value))
+    .map((value) => normalizeFilterSpec(value))
     .filter((spec) => spec.value_col);
   const defaultGroup = { value_col: 'srot_none', label: 'None' };
   synced.groups = [
