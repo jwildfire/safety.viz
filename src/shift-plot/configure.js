@@ -40,6 +40,7 @@ export const AXIS_TYPES = ['linear', 'log'];
  * @property {Array<string|Object>} [filters=[]] Filter controls: column names or { value_col, label } specs. Filters whose column is absent from the data are dropped with a console warning. Filter specs take `{ value_col, label, start, all, multiple }`: `start` is the opening selection (an array for a `multiple` filter, and a start of `0` or `false` is a real value, not an absent one); `all` controls the "All" option and defaults to true, or to false when a start is given — pass `all: true` to keep All alongside a start, `all: false` to require a selection; `multiple: true` renders a checkbox multiselect whose state is null (everything) or an array of values (#136).
  * @property {?Array<string|Object>} [details=null] Columns for the linked participant listing; when null, defaults to participant ID, baseline, comparison, change, and percent change (SSP-REQ-005).
  * @property {?string} [start_value=null] Measure selected on first render; falls back to the first measure (with a console warning) when absent from the data.
+ * @property {?string[]} [measures=null] Ordered whitelist of measures the Measure control offers: only these appear, and in this order. null or [] offers every measure in the data, alphabetically — the behaviour before this setting existed. Configured measures absent from the data are dropped with a console warning; when none of them is present the control falls back to every measure in the data rather than going blank (SSP-MEAS-001, SSP-MEAS-002).
  * @property {string} [axis_type='linear'] Initial scale for both axes, one of AXIS_TYPES ('linear' or 'log'); the Axis Type control switches them together because the two axes share one domain. On the log scale a participant pair with a zero or negative baseline or comparison value is removed and counted in the note above the chart (SSP-SCALE-001/003).
  * @property {string} [width='100%'] Widget width, carried over for the R widget bindings; the current shell always spans its container.
  * @property {number} [height=460] Chart-area height in pixels, carried over for the R widget bindings; the current shell fixes the chart area at 460px.
@@ -72,6 +73,7 @@ export const DEFAULT_SETTINGS = {
   filters: [],
   details: null,
   start_value: null,
+  measures: null,
   axis_type: 'linear',
   width: '100%',
   height: 460,
@@ -115,6 +117,8 @@ export function fieldSpec(value, fallbackLabel) {
  */
 export function syncSettings(settings) {
   const synced = { ...DEFAULT_SETTINGS, ...settings };
+
+  synced.measures = arrayify(synced.measures);
   synced.filters = arrayify(synced.filters)
     .map((filter) => fieldSpec(filter))
     .filter((filter) => filter.value_col);

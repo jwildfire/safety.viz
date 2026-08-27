@@ -46,6 +46,7 @@ import {
   unmountProfileRail
 } from './profile-host.js';
 import { initFilterState, renderFilterControl } from './filters.js';
+import { presentMeasures, resolveMeasureList } from './measure-list.js';
 
 Chart.register(ScatterController, PointElement, LinearScale, LogarithmicScale, Tooltip, Legend);
 
@@ -67,6 +68,7 @@ class SafetyShiftPlot {
     this.settings = syncSettings(settings);
     this.rawData = [];
     this.cleanData = [];
+    this.availableMeasures = [];
     this.chartPairs = [];
     this.currentTableData = [];
     this.listingSearch = '';
@@ -218,6 +220,10 @@ class SafetyShiftPlot {
    */
   setSettings(settings) {
     this.settings = syncSettings({ ...this.settings, ...settings });
+    // Re-clean so a changed measure whitelist re-resolves the control and
+    // re-validates the selected measure; every sibling renderer already does
+    // this from setSettings, and shift-plot alone did not (#136).
+    if (this.rawData.length) this.validateAndCleanData();
     this.state.baselineStat = this.settings.baseline_stat;
     this.state.comparisonStat = this.settings.comparison_stat;
     this.state.axisType = this.settings.axis_type;
@@ -249,6 +255,10 @@ class SafetyShiftPlot {
     this.cleanData = rows;
     this.removedRecords = removed;
     if (removed) console.warn(`${removed} missing or non-numeric results have been removed.`);
+    this.availableMeasures = resolveMeasureList(
+      presentMeasures(this.cleanData, this.settings, measureLabel),
+      this.settings.measures
+    );
     const measures = this.measures();
     if (this.state.measure && !measures.includes(this.state.measure)) {
       console.warn(
@@ -260,11 +270,13 @@ class SafetyShiftPlot {
   }
 
   /**
-   * Sorted distinct measure labels present in the cleaned data.
+   * The measure labels the Measure control offers: the configured `measures`
+   * whitelist in its own order, or every measure in the cleaned data
+   * alphabetically when it is unset (#136).
    * @private
    */
   measures() {
-    return unique(this.cleanData.map((row) => measureLabel(row, this.settings))).sort();
+    return this.availableMeasures;
   }
 
   /**

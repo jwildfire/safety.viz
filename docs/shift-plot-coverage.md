@@ -53,6 +53,7 @@ matrix row → failing test → minimal implementation.
 | SSP-DATA-001/SSP-DATA-003                  | SSP-DATA-001, SSP-DATA-003                             | #14   | `checkInputs.test.js`                                            |
 | PPRF-SSP-001..004                          | PPRF-SSP-001..004 (participant-profile matrix)         | #99   | `profile-adoption.test.js`                                       |
 | SSP-FILT-001..004 (shared filter contract) | SSP-FILT-001, SSP-FILT-002, SSP-FILT-003, SSP-FILT-004 | #136  | `../shared/filters.test.js`                                      |
+| SSP-MEAS-001/002 (measures whitelist)      | SSP-MEAS-001, SSP-MEAS-002                             | #136  | `measure-list.test.js`                                           |
 
 ## Source-matrix routing status (45 rows)
 
