@@ -114,6 +114,32 @@ describe('ae-explorer configure', () => {
     );
   });
 
+  it('AE-REG-047: a single shown group keeps the Total column when the group columns are off (#136)', () => {
+    const plan = columnPlan(1, syncSettings({ group_cols: false }));
+    expect(plan).toEqual({ groupCols: false, totalCol: true, diffCol: false });
+  });
+
+  it('AE-REG-047/AE-USER-019: every legal column configuration draws at least one count column (#136)', () => {
+    for (const groupCount of [1, 2, 3]) {
+      for (const groupCols of [true, false]) {
+        for (const totalCol of [true, false]) {
+          const settings = syncSettings({
+            group_cols: groupCols,
+            total_col: totalCol,
+            diff_col: true
+          });
+          if (!groupCols && !totalCol) {
+            expect(() => columnPlan(groupCount, settings)).toThrow(/group/i);
+            continue;
+          }
+          const plan = columnPlan(groupCount, settings);
+          expect(plan.groupCols || plan.totalCol).toBe(true);
+          expect(plan.diffCol).toBe(groupCols && groupCount > 1);
+        }
+      }
+    }
+  });
+
   it('AE-CFG-005/AE-CFG-006: groups and colors pass through as arrays (#60)', () => {
     const settings = syncSettings({ groups: ['Placebo'], colors: ['#000'] });
     expect(settings.groups).toEqual(['Placebo']);

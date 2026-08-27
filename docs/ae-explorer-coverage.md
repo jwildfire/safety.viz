@@ -42,6 +42,7 @@ behavior) by judgment, since every source row is still typed `planned`.
 | AE-CFG-007/008, AE-REG-046                       | AE-CFG-007, AE-CFG-008, AE-REG-046                           | #60   | `configure.test.js`     |
 | AE-REG-033/035 (summary bases)                   | AE-REG-033, AE-REG-035                                       | #60   | `configure.test.js`     |
 | AE-USER-019, AE-REG-037 (column plan)            | AE-USER-019, AE-REG-037, AE-REG-039                          | #60   | `configure.test.js`     |
+| AE-REG-047 (single group, no group columns)      | AE-REG-047, AE-USER-019                                      | #136  | `configure.test.js`     |
 | AE-CFG-005/006 (groups + colors)                 | AE-CFG-005, AE-CFG-006                                       | #60   | `configure.test.js`     |
 | AE-DATA-001/003, AE-CFG-003 (guard)              | AE-DATA-001, AE-DATA-003, AE-CFG-003                         | #60   | `checkInputs.test.js`   |
 | AE-DATA-001 (placeholder model)                  | AE-DATA-001                                                  | #60   | `structureData.test.js` |
@@ -56,12 +57,12 @@ behavior) by judgment, since every source row is still typed `planned`.
 | AE-USER-010/011, AE-REG-015/016/017 (hover text) | AE-USER-010, AE-USER-011, AE-REG-015, AE-REG-016, AE-REG-017 | #60   | `getPlugins.test.js`    |
 | AE-REG-027..030, AE-USER-020 (CSV)               | AE-REG-027, AE-REG-028, AE-REG-029, AE-REG-030, AE-USER-020  | #60   | `getPlugins.test.js`    |
 
-## Source-matrix routing status (74 rows)
+## Source-matrix routing status (75 rows)
 
-- **Covered (63 rows):** AE-USER-001..020 (see modernization notes below for
+- **Covered (64 rows):** AE-USER-001..020 (see modernization notes below for
   AE-USER-009 and AE-USER-020), AE-REG-001..009, AE-REG-012..022,
   AE-REG-024*, AE-REG-026..031, AE-REG-033/035/037/039/040/041/042*/043/044,
-  AE-REG-046, AE-DATA-001/003, AE-CFG-001..009, and AE-API-001 are evidenced
+  AE-REG-046, AE-REG-047, AE-DATA-001/003, AE-CFG-001..009, and AE-API-001 are evidenced
   by the tables above. Every source row is still typed `planned` in the
   matrix; re-typing covered rows (`planned` → `unit`/`browser`) with links
   back to these tests is a follow-up in `requirements/aeexplorer.md`.
