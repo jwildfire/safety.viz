@@ -24,6 +24,10 @@ npm ci
 and commit the regenerated bundle alongside it. CI's drift check fails the
 build otherwise.
 
+## How a pull request merges
+
+Branch rulesets run the merge. An increment pull request targets `dev`, opens non-draft with auto-merge enabled, and GitHub lands it once CI is green — nobody is asked to review it. A release candidate targets `main` and merges only on @jwildfire's approving review, which `main`'s ruleset requires. The rules themselves are the obot program's GitHub-flows standard, applied from the hub's `scripts/github-flows.sh`.
+
 ## Traceability convention
 
 Test names are keyed to requirement IDs from the
