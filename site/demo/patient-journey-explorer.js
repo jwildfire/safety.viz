@@ -143,7 +143,7 @@
       '<p>Drafted from the same rows the chart holds, every sentence citing its source rows and ' +
       'labelled <em>Draft — AI generated</em> until a reviewer accepts it. The participant summary ' +
       'sits above the lanes; anchor an adverse event to draft its context at the top of the panel; ' +
-      'lab, dose and disposition narratives are drafted on demand from their lanes. Co-occurrence is ' +
+      'lab, dose and disposition narratives are drafted on request from the tray beneath the lanes. Co-occurrence is ' +
       'not causation, and the validator rejects causal, diagnostic and treatment language.</p>' +
       '<div class="sv-pje-demo-ai-row">' +
       '<label><input type="radio" name="pje-ai-provider" value="stub" checked /> Offline stub adapter ' +
