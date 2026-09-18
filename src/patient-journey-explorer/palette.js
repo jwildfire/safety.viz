@@ -127,11 +127,17 @@ export const PJE_PALETTE = {
 // these. The glyph names are the `$pjeMarks[].glyph` vocabulary of design §6.4,
 // which is what the browser suite asserts against.
 export const PJE_GLYPHS = {
+  // H / L are the one-letter aliases labs.js and draw.js already read as
+  // high / low; ABNORMAL is the direction-unknown glyph every other non-normal
+  // indicator falls back to, so an abnormal point never wears the normal ring.
   labFlag: {
     HIGH: 'triangle-up',
+    H: 'triangle-up',
     LOW: 'triangle-down',
+    L: 'triangle-down',
     HH: 'triangle-up-double',
     LL: 'triangle-down-double',
+    ABNORMAL: 'diamond',
     NORMAL: 'circle-open'
   },
   doseChange: {

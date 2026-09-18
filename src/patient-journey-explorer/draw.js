@@ -15,12 +15,14 @@
 // (D16): a hard cap, an arrow over an open-ended mask (`ongoing`), a dotted
 // fade (`unrecorded`).
 //
-// Three side-channels are recorded on the chart, in canvas (CSS) pixels, and
+// Four side-channels are recorded on the chart, in canvas (CSS) pixels, and
 // they are the whole contract with keyboard.js and the browser suite (PC-13,
 // RF-9): `chart.$pjeMarks` (one entry per drawn mark and per reference rule,
 // in draw order), `chart.$pjeBand` (the lab reference rectangles, [] off the
-// labs lane) and `chart.$pjeWindow` (the context-window band's bounds and
-// pixel box, or null when nothing is anchored).
+// labs lane), `chart.$pjeWindow` (the context-window band's bounds and pixel
+// box, or null when nothing is anchored) and `chart.$pjeLabels` (every text
+// label painted in the plot — disposition names, ULN / LLN, the same-day count
+// badge — with its pixel box, so a test can assert that none overlap).
 
 import { PJE_DEEMPHASIS, PJE_MARKS } from './palette.js';
 import { MIN_BAR_WIDTH, withAlpha } from './getPlugins.js';
@@ -180,8 +182,9 @@ function seriousRing(ctx, left, top, width, height, escalate, surface) {
 
 /**
  * A lab point glyph by `$pjeMarks.glyph`: open circle (normal), triangle up /
- * down (high / low), doubled triangle with an escalation ring (HH / LL), a dot
- * when no indicator was recorded.
+ * down (high / low), doubled triangle with an escalation ring (HH / LL), a
+ * filled diamond for an abnormal indicator with no direction (`ABNORMAL`), a
+ * dot when no indicator was recorded.
  * @private
  */
 function labGlyph(ctx, cx, cy, size, glyph, color, surface, escalate) {
@@ -189,6 +192,17 @@ function labGlyph(ctx, cx, cy, size, glyph, color, surface, escalate) {
   ctx.fillStyle = color;
   ctx.strokeStyle = color;
   switch (glyph) {
+    case 'diamond': {
+      const h = size / 2 + 0.5;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - h);
+      ctx.lineTo(cx + h, cy);
+      ctx.lineTo(cx, cy + h);
+      ctx.lineTo(cx - h, cy);
+      ctx.closePath();
+      ctx.fill();
+      break;
+    }
     case 'triangle-up':
       trianglePath(ctx, cx, cy, size, true);
       ctx.fill();
@@ -284,6 +298,66 @@ function truncate(ctx, text, width) {
 }
 
 /**
+ * Text with a surface-coloured halo, so a label painted over a trace or a
+ * point stays legible (the halo is 3px, the trace 2px).
+ * @private
+ */
+function haloText(ctx, text, x, y, surface) {
+  ctx.save();
+  ctx.lineJoin = 'round';
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = surface;
+  ctx.strokeText(text, x, y);
+  ctx.restore();
+  ctx.fillText(text, x, y);
+}
+
+/**
+ * The pixel box of a text label at the current font, from its anchor point
+ * and alignment, for `chart.$pjeLabels`.
+ * @private
+ */
+function labelBox(ctx, text, x, y, align, baseline, lineHeight = 11) {
+  const width = ctx.measureText(text).width;
+  const left = align === 'right' ? x - width : align === 'center' ? x - width / 2 : x;
+  const top =
+    baseline === 'bottom' ? y - lineHeight : baseline === 'middle' ? y - lineHeight / 2 : y;
+  return { text, x: left, y: top, width, height: lineHeight };
+}
+
+/**
+ * How many trace points and segments of a labs chart fall inside a pixel box.
+ * @private
+ */
+function traceHits(chart, box) {
+  let hits = 0;
+  const inside = (px, py) =>
+    px >= box.x - 4 &&
+    px <= box.x + box.width + 4 &&
+    py >= box.y - 4 &&
+    py <= box.y + box.height + 4;
+  chart.data.datasets.forEach((dataset, datasetIndex) => {
+    const meta = chart.getDatasetMeta(datasetIndex);
+    if (!meta || meta.hidden) return;
+    let previous = null;
+    for (const el of meta.data) {
+      const p = el.getProps(['x', 'y'], true);
+      if (!finite(p.x) || !finite(p.y)) continue;
+      if (inside(p.x, p.y)) hits += 1;
+      if (previous) {
+        // Sample the segment at its midpoint and quarter points.
+        for (const t of [0.25, 0.5, 0.75]) {
+          if (inside(previous.x + (p.x - previous.x) * t, previous.y + (p.y - previous.y) * t))
+            hits += 1;
+        }
+      }
+      previous = p;
+    }
+  });
+  return hits;
+}
+
+/**
  * The Chart.js plugin for one lane chart. `beforeDatasetsDraw` paints beneath
  * the marks (the context-window band, the lab reference band, the day-1 and
  * disposition rules); `afterDatasetsDraw` paints over them (end caps, hatching,
@@ -323,8 +397,10 @@ export function lanePlugin(context) {
       const { ctx, chartArea: area, scales } = chart;
       const x = scales && scales.x;
       const rules = [];
+      const labels = [];
       chart.$pjeBand = [];
       chart.$pjeWindow = null;
+      chart.$pjeLabels = labels;
       if (!area || !x) {
         chart.$pjeRules = rules;
         return;
@@ -395,15 +471,40 @@ export function lanePlugin(context) {
             uln: run.uln
           });
         });
+        // The limit labels: both when the band is tall enough for two lines,
+        // the upper limit alone when it is tall enough for one, painted with a
+        // halo on whichever edge of the plot the trace leaves clearer — the
+        // last point sits at the right edge, exactly where a right-aligned
+        // label would cover it (UX-9).
         const last = drawn[drawn.length - 1];
-        if (last && last.height >= 14) {
+        const first = drawn[0];
+        if (last && first && last.height >= 14) {
           ctx.font = FONT;
           ctx.fillStyle = theme.inkSecondary;
-          ctx.textAlign = 'right';
-          ctx.textBaseline = 'top';
-          ctx.fillText(`ULN ${last.uln}`, area.right - 3, last.y + 1);
-          ctx.textBaseline = 'bottom';
-          ctx.fillText(`LLN ${last.lln}`, area.right - 3, last.y + last.height - 1);
+          const both = last.height >= 26;
+          const candidates = (run, align) => {
+            const px = align === 'right' ? area.right - 3 : area.left + 3;
+            const uln = { text: `ULN ${run.uln}`, x: px, y: run.y + 1, baseline: 'top' };
+            const lln = {
+              text: `LLN ${run.lln}`,
+              x: px,
+              y: run.y + run.height - 1,
+              baseline: 'bottom'
+            };
+            return (both ? [uln, lln] : [uln]).map((label) => ({
+              ...label,
+              align,
+              box: labelBox(ctx, label.text, label.x, label.y, align, label.baseline)
+            }));
+          };
+          const right = candidates(last, 'right');
+          const left = candidates(first, 'left');
+          const score = (list) => list.reduce((sum, label) => sum + traceHits(chart, label.box), 0);
+          // Painted in afterDatasetsDraw, over the trace and the reference
+          // rules, with the halo keeping the text legible.
+          chart.$pjeLimitLabels = score(left) < score(right) ? left : right;
+        } else {
+          chart.$pjeLimitLabels = [];
         }
         chart.$pjeBand = drawn;
       }
@@ -447,6 +548,7 @@ export function lanePlugin(context) {
       const { ctx, chartArea: area, scales } = chart;
       const x = scales && scales.x;
       const marks = [...(chart.$pjeRules || [])];
+      const labels = chart.$pjeLabels || (chart.$pjeLabels = []);
       if (!area || !x) {
         chart.$pjeMarks = marks;
         return;
@@ -454,26 +556,62 @@ export function lanePlugin(context) {
       ctx.save();
       clipToArea(ctx, area, 4);
 
-      // Same-day disposition records (COMPLETED and FINAL LAB VISIT both on
-      // day 184 for the demo's opening participant) would paint their labels
-      // over one another in the single-row lane: merge each pixel column's
-      // labels into one line, drawn once beside the first record.
-      const dispositionLabels = new Map();
-      if (laneKey === 'disposition') {
+      // Same-day records in the one-row lanes paint on the same pixel. For
+      // disposition (COMPLETED and FINAL LAB VISIT both on day 184 for the
+      // demo's opening participant) each pixel column's labels merge into one
+      // line drawn once beside the first record; for medical history (eight
+      // screening records on one day is the pilot's normal case) a count
+      // badge says how many records the one ring stands for. The overlay
+      // (keyboard.js) enumerates the group on the button that wins the pointer.
+      const sameDay = new Map();
+      if (laneKey === 'disposition' || laneKey === 'medicalHistory') {
         chart.data.datasets.forEach((dataset, datasetIndex) => {
           const meta = chart.getDatasetMeta(datasetIndex);
           if (!meta || meta.hidden) return;
           dataset.data.forEach((point, i) => {
             const el = meta.data[i];
             const label = point && point.event && point.event.label;
-            if (!el || !label || point.emphasis === 'dim') return;
+            if (!el || !label) return;
             const px = el.getProps(['x'], true).x;
             if (!finite(px)) return;
             const key = Math.round(px);
-            const group = dispositionLabels.get(key) || { first: point, labels: [] };
+            const group = sameDay.get(key) || { first: point, labels: [], px: key, dim: true };
             group.labels.push(String(label));
-            dispositionLabels.set(key, group);
+            if (point.emphasis !== 'dim') group.dim = false;
+            sameDay.set(key, group);
           });
+        });
+      }
+      // Disposition labels are laid out left to right so no label runs back
+      // over the one painted before it: a label goes to the right of its dot
+      // when there is room before the next dot, else to the left of it in the
+      // room the previous label left free, else nowhere (the tooltip and the
+      // accessible name still carry it) — UX-5.
+      const dispositionText = new Map();
+      if (laneKey === 'disposition') {
+        ctx.font = FONT;
+        const groups = [...sameDay.values()]
+          .filter((group) => !group.dim)
+          .sort((a, b) => a.px - b.px);
+        let occupiedRight = area.left;
+        groups.forEach((group, index) => {
+          const text = group.labels.join(' · ');
+          const px = group.px;
+          const nextPx = index + 1 < groups.length ? groups[index + 1].px : Infinity;
+          const rightRoom = Math.min(area.right - 8, nextPx - 6) - (px + 7);
+          let placed = null;
+          if (rightRoom > 40) {
+            const shown = truncate(ctx, text, rightRoom);
+            placed = { text: shown, x: px + 7, align: 'left' };
+            occupiedRight = px + 7 + ctx.measureText(shown).width;
+          } else {
+            const leftRoom = px - 7 - Math.max(area.left + 1, occupiedRight + 4);
+            if (leftRoom >= 20) {
+              placed = { text: truncate(ctx, text, leftRoom), x: px - 7, align: 'right' };
+            }
+            occupiedRight = Math.max(occupiedRight, px + 4);
+          }
+          if (placed) dispositionText.set(px, placed);
         });
       }
 
@@ -602,20 +740,31 @@ export function lanePlugin(context) {
             ctx.arc(p.x, p.y, PJE_MARKS.mhDotRadius, 0, Math.PI * 2);
             ctx.fillStyle = dim ? withAlpha(theme.ds, DIM_FILL) : theme.ds;
             ctx.fill();
-            const group = dispositionLabels.get(Math.round(p.x));
-            if (!dim && group && group.first === point) {
-              const text = group.labels.join(' · ');
+            const group = sameDay.get(Math.round(p.x));
+            const placed = group && group.first === point ? dispositionText.get(group.px) : null;
+            if (placed) {
               ctx.font = FONT;
               ctx.fillStyle = theme.inkSecondary;
               ctx.textBaseline = 'middle';
-              const room = area.right - p.x - 8;
-              if (room > 40) {
-                ctx.textAlign = 'left';
-                ctx.fillText(truncate(ctx, text, room), p.x + 7, p.y);
-              } else {
-                ctx.textAlign = 'right';
-                ctx.fillText(truncate(ctx, text, p.x - area.left - 8), p.x - 7, p.y);
-              }
+              ctx.textAlign = placed.align;
+              ctx.fillText(placed.text, placed.x, p.y);
+              labels.push({
+                kind: 'disposition',
+                ...labelBox(ctx, placed.text, placed.x, p.y, placed.align, 'middle')
+              });
+            }
+          }
+          if (laneKey === 'medicalHistory') {
+            const group = sameDay.get(Math.round(p.x));
+            if (group && group.labels.length > 1 && group.first === point) {
+              const text = `×${group.labels.length}`;
+              ctx.font = FONT_BOLD;
+              ctx.fillStyle = dim ? withAlpha(theme.mh, DIM_STROKE) : theme.mh;
+              ctx.textBaseline = 'middle';
+              ctx.textAlign = 'left';
+              const bx = p.x + PJE_MARKS.mhDotRadius + 3;
+              haloText(ctx, text, bx, p.y, surface);
+              labels.push({ kind: 'count', ...labelBox(ctx, text, bx, p.y, 'left', 'middle') });
             }
           }
           marks.push({
@@ -634,6 +783,19 @@ export function lanePlugin(context) {
           });
         });
       });
+
+      // The lab limit labels, over the trace and the rules (placed in
+      // beforeDatasetsDraw on the clearer side of the plot).
+      if (laneKey === 'labs' && Array.isArray(chart.$pjeLimitLabels)) {
+        ctx.font = FONT;
+        ctx.fillStyle = theme.inkSecondary;
+        for (const label of chart.$pjeLimitLabels) {
+          ctx.textAlign = label.align;
+          ctx.textBaseline = label.baseline;
+          haloText(ctx, label.text, label.x, label.y, surface);
+          labels.push({ kind: 'limit', ...label.box });
+        }
+      }
 
       // The anchor rule on every lane, and the pill on the anchored lane.
       const anchorElapsed = anchor ? toElapsed(anchor.day) : null;

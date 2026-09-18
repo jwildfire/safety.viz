@@ -31,7 +31,7 @@ import {
   LANE_BY_DOMAIN,
   normalizeDomain
 } from './normalize.js';
-import { referenceDate, resolveEventDate, toElapsed } from './getScales.js';
+import { referenceDate, resolveEventDate, toElapsed, toStudyDay } from './getScales.js';
 import { buildLabSeries, isAbnormalByFlag, labTestOrder, matchesConfiguredTest } from './labs.js';
 
 /** Days before every other domain's minimum beyond which a con-med start is clamped, not honoured (D10). */
@@ -195,15 +195,41 @@ function clampable(event, settings) {
 }
 
 /**
- * The shared ELAPSED-day domain over every placeable day (design §5.4): starts,
+ * The shared ELAPSED-day domain the lanes draw over (design §5.4): starts,
  * closed ends and point days, with clampable starts more than PRE_STUDY_CLAMP
  * days before every other domain's minimum left out, the minimum held at or
- * below study day -14, and a zero-width result padded a day either side.
+ * below study day -14, and the maximum padded by ONE elapsed day so the last
+ * day's cell is inside the plot — a closed bar is drawn through the end of its
+ * end day (lanes.js) and a point on the last day would otherwise sit half
+ * outside the chart area. `recordExtent` gives the unpadded study-day range.
  * @param {Object[]} events The subject's EventRecords (pre-filter).
  * @param {import('./configure.js').PatientJourneyExplorerSettings} settings The synced settings.
- * @returns {?[number, number]} The elapsed domain, or null when nothing is placeable.
+ * @returns {?[number, number]} The elapsed drawing domain, or null when nothing is placeable.
  */
 export function sharedDomain(events, settings) {
+  const extent = elapsedExtent(events, settings);
+  if (!extent) return null;
+  const [min, max] = extent;
+  return [min, max + 1];
+}
+
+/**
+ * The subject's placeable extent in STUDY days, unpadded, for consumers that
+ * report the record's range (pjeSubjectSelected's `domainDays`).
+ * @param {Object[]} events The subject's EventRecords (pre-filter).
+ * @param {import('./configure.js').PatientJourneyExplorerSettings} settings The synced settings.
+ * @returns {?[number, number]} `[firstDay, lastDay]`, or null when nothing is placeable.
+ */
+export function recordExtent(events, settings) {
+  const extent = elapsedExtent(events, settings);
+  return extent ? [toStudyDay(extent[0]), toStudyDay(extent[1])] : null;
+}
+
+/**
+ * The unpadded elapsed extent behind sharedDomain and recordExtent.
+ * @private
+ */
+function elapsedExtent(events, settings) {
   const placeable = arrayify(events).filter(
     (event) => event && typeof event === 'object' && event.placeable !== false
   );
@@ -225,9 +251,7 @@ export function sharedDomain(events, settings) {
       .filter((day) => day >= floor)
   ];
   if (!candidates.length) return null;
-  const min = Math.min(DOMAIN_MIN_DAY, ...candidates);
-  const max = Math.max(...candidates);
-  return min === max ? [min - 1, max + 1] : [min, max];
+  return [Math.min(DOMAIN_MIN_DAY, ...candidates), Math.max(...candidates)];
 }
 
 /**
@@ -460,8 +484,8 @@ function rowKeyOf(laneKey, event) {
  * filters, and every honesty count.
  * @param {Object<string, Object[]>} domains The per-domain raw rows (normalizeInput).
  * @param {import('./configure.js').PatientJourneyExplorerSettings} settings The synced settings.
- * @param {{subject?: ?string, filters?: Object, lanes?: Object<string, boolean>, mode?: string}} [state] The render state: the selected subject (null = first), the filter selections, per-lane enablement overrides, and the display mode.
- * @returns {Object} The structured record: `subjects`, `subject`, `mode`, `refDate`, `events` (post-filter, enabled lanes, lane then day order), `allEvents` (pre-filter, dose changes included), `byLane` (post-filter, sorted), `lanes` (per-lane `{ key, enabled, supplied, rows, rowCount, drawn, truncated, sortRule, unplaceable }`), `labSeries`, `labTestsMissing`, `domain`, `filters`, `dropped`, `droppedCounts`, `flagged`, `flaggedCounts`, `unplaceable`, `unplaceableCounts`, `truncatedByLane`, `counts`.
+ * @param {{subject?: ?string, filters?: Object, lanes?: Object<string, boolean>, mode?: string, filterSpecs?: Object[]}} [state] The render state: the selected subject (null = first), the filter selections, per-lane enablement overrides, the display mode, and the live filter specs when the caller already resolved them (liveFilters).
+ * @returns {Object} The structured record: `subjects`, `subject`, `mode`, `refDate`, `events` (post-filter, enabled lanes, lane then day order), `allEvents` (pre-filter, dose changes and unconfigured-test labs included), `byLane` (post-filter, sorted), `lanes` (per-lane `{ key, enabled, supplied, rows, rowCount, drawn, truncated, sortRule, unplaceable }`), `labSeries`, `labTestsMissing`, `unconfiguredLabs` (lab records for tests outside `lb_tests`: counted and in the drawer, never drawn), `domain` (the padded elapsed drawing domain), `extent` (the unpadded study-day range), `filters`, `dropped`, `droppedCounts`, `flagged`, `flaggedCounts`, `unplaceable`, `unplaceableCounts`, `truncatedByLane`, `counts`.
  */
 export function structureData(domains, settings, state = {}) {
   const normalized = normalizeAll(domains, settings);
@@ -472,24 +496,39 @@ export function structureData(domains, settings, state = {}) {
   const subject = wanted.find((id) => id && subjects.includes(id)) ?? subjects[0] ?? null;
   const refDate = subject === null ? null : (normalized.refDates.get(subject) ?? null);
 
-  const subjectEvents = normalized.events.filter(
-    (event) =>
-      event.subject === subject && (event.domain !== 'LB' || matchesConfiguredTest(event, settings))
-  );
+  // A lab for a test outside `lb_tests` stays in the record — counted, in the
+  // source drawer, named in the labs lane's footer — but is never drawn,
+  // anchored, window-counted, or part of the shared domain: it carries
+  // `flags.unconfiguredTest` and is left out of everything downstream of
+  // `allEvents` (PJE-DATA-003: nothing leaves the record silently).
+  const subjectEvents = normalized.events
+    .filter((event) => event.subject === subject)
+    .map((event) =>
+      event.domain === 'LB' && !matchesConfiguredTest(event, settings)
+        ? { ...event, flags: { ...event.flags, unconfiguredTest: true } }
+        : event
+    );
+  const drawable = (event) => !event.flags?.unconfiguredTest;
   const doseChanges = deriveDoseChanges(
     subjectEvents.filter((event) => event.domain === 'EX'),
     settings
   );
   const base = [...subjectEvents, ...doseChanges];
-  const domain = sharedDomain(base, settings);
+  const domain = sharedDomain(base.filter(drawable), settings);
+  const extent = recordExtent(base.filter(drawable), settings);
   const allEvents = base.map((event) => {
     if (!domain || event.kind !== 'interval' || event.placeable === false) return event;
     const startE = toElapsed(event.start);
     return startE !== null && startE < domain[0] ? { ...event, clippedStart: true } : event;
   });
+  const unconfiguredLabs = allEvents.filter((event) => !drawable(event));
 
-  const filters = liveFilters(settings?.filters, domains);
-  const filtered = applyFilters(allEvents, state?.filters, settings, filters);
+  // The live filter specs: the orchestrator resolves them once per data load
+  // (and warns once, PJE-FILT-004); a caller without that resolves them here.
+  const filters = Array.isArray(state?.filterSpecs)
+    ? state.filterSpecs
+    : liveFilters(settings?.filters, domains);
+  const filtered = applyFilters(allEvents.filter(drawable), state?.filters, settings, filters);
   const enabled = (lane) =>
     state?.lanes && typeof state.lanes[lane] === 'boolean'
       ? state.lanes[lane]
@@ -511,7 +550,7 @@ export function structureData(domains, settings, state = {}) {
     const truncated = rows.length - drawnRows.length;
     truncatedByLane[lane] = truncated;
     unplaceable[lane] = allEvents.filter(
-      (event) => event.lane === lane && event.placeable === false
+      (event) => event.lane === lane && event.placeable === false && drawable(event)
     );
     const domainCode = DOMAIN_BY_LANE[lane];
     lanes[lane] = {
@@ -528,7 +567,10 @@ export function structureData(domains, settings, state = {}) {
   }
 
   const allLabs = allEvents.filter((event) => event.domain === 'LB');
-  const labSeries = buildLabSeries(byLane.labs, domain, settings, { baselineEvents: allLabs });
+  const configuredLabs = allLabs.filter(drawable);
+  const labSeries = buildLabSeries(byLane.labs, domain, settings, {
+    baselineEvents: configuredLabs
+  });
   const labTestsMissing = allLabs.length ? labTestOrder(allLabs, settings).missing : [];
 
   const events = filtered
@@ -562,7 +604,9 @@ export function structureData(domains, settings, state = {}) {
     lanes,
     labSeries,
     labTestsMissing,
+    unconfiguredLabs,
     domain,
+    extent,
     filters,
     dropped: normalized.dropped,
     droppedCounts: normalized.droppedCounts,

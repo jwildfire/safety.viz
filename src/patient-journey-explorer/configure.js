@@ -85,7 +85,7 @@ import { normalizeFilterSpec } from '../filters.js';
  * @property {string} [mh_cat_col='MHCAT'] Medical-history category column, shown as the record's category.
  * @property {string|string[]} [mh_day_col='MHDY'] Medical-history collection study day (the screening visit), the mark's position under the default `mh_day_source` (D18).
  * @property {string} [mh_day_source='collection'] Which day places a medical-history mark: `'collection'` (`mh_day_col`, the day it was recorded) or `'onset'` (`mh_onset_stdy_col`); anything else falls back to `'collection'` with a warning.
- * @property {string} [mh_onset_stdy_col='ASTDY'] Medical-history onset study day column; the tooltip's onset text by default, and the mark position under `mh_day_source: 'onset'`.
+ * @property {string|string[]} [mh_onset_stdy_col=['ASTDY', 'MHSTDY']] Medical-history onset study day, as a column name or a fallback chain resolved per row (the ADaM `ASTDY`, then the SDTM `MHSTDY`, so the plan's vocabulary places too — D15); the tooltip's onset text by default, and the mark position under `mh_day_source: 'onset'`.
  * @property {string} [mh_strtpt_col='MHSTRTPT'] Medical-history onset relative-timing column (`BEFORE`, …), the tooltip's onset text when no onset day or date resolves.
  * @property {string} [mh_enrtpt_col='MHENRTPT'] Medical-history end relative-timing column; `ONGOING` adds "still present" to the tooltip.
  * @property {string} [mh_onset_dtc_col='MHSTDTC'] Medical-history onset date column (`--DTC`), shown as recorded in the onset text.
@@ -108,7 +108,7 @@ import { normalizeFilterSpec } from '../filters.js';
  * @property {number} [max_rows_per_lane=12] Rows drawn per categorical lane before the remainder is counted in prose, in the lane's documented sort order (PJE-LANE-010). The plan's `maxRowsPerLane` is an alias.
  * @property {number} [lab_height=96] Pixels per lab small multiple. The plan's `labHeight` is an alias.
  * @property {number} [lab_height_min=64] Floor for `lab_height` when `fit_to_height` scales the stack down.
- * @property {number} [height=720] Pixel height of the lane column; taller stacks scroll and say so (PJE-LANE-009, D21).
+ * @property {number} [height=760] Pixel height of the lane column; taller stacks scroll and say so (PJE-LANE-009, D21). 760 is the height at which the Definition-of-Done participant (four lab tests, nine con-meds, a screening-history lane) fits at the row and lab floors; 720 left it 16px short.
  * @property {boolean} [fit_to_height=true] Scale row and lab heights (down to their floors) so the opening stack fits `height` before the column scrolls (D21).
  * @property {string} [width='100%'] Widget width, applied as the container element's style width; carried for the R widget binding.
  * @property {number} [page_size=10] Rows per page in the source-row drawer's tables.
@@ -209,7 +209,7 @@ export const DEFAULT_SETTINGS = {
   mh_cat_col: 'MHCAT',
   mh_day_col: 'MHDY',
   mh_day_source: 'collection',
-  mh_onset_stdy_col: 'ASTDY',
+  mh_onset_stdy_col: ['ASTDY', 'MHSTDY'],
   mh_strtpt_col: 'MHSTRTPT',
   mh_enrtpt_col: 'MHENRTPT',
   mh_onset_dtc_col: 'MHSTDTC',
@@ -266,7 +266,7 @@ export const DEFAULT_SETTINGS = {
   max_rows_per_lane: 12,
   lab_height: 96,
   lab_height_min: 64,
-  height: 720,
+  height: 760,
   fit_to_height: true,
   width: '100%',
   page_size: 10
@@ -315,6 +315,7 @@ const CHAIN_KEYS = [
   'lb_day_col',
   'cm_stdy_col',
   'cm_endy_col',
+  'mh_onset_stdy_col',
   'ds_stdy_col'
 ];
 const DAY_PATTERN_TARGETS = {
@@ -423,6 +424,30 @@ function syncLanes(input, synced, raw) {
   }
   for (const key of LANE_KEYS) lanes[key].enabled = Boolean(lanes[key].enabled);
   return lanes;
+}
+
+/**
+ * Every lane must belong to a configured group, or planLanes never draws it
+ * while its sidebar toggle stays live. A lane naming an unknown group (a typo,
+ * a trailing space, or a custom `lane_groups` list that dropped the default
+ * group) warns and falls back: to its default group when that group is
+ * configured, otherwise to the first configured group, so the lane is drawn
+ * either way and `lane_groups` stays exactly as the caller set it.
+ * @private
+ */
+function syncLaneGroupMembership(lanes, groups) {
+  const keys = groups.map((group) => group.key);
+  for (const key of LANE_KEYS) {
+    const lane = lanes[key];
+    lane.group = typeof lane.group === 'string' ? lane.group.trim() : '';
+    if (keys.includes(lane.group)) continue;
+    const preferred = DEFAULT_SETTINGS.lanes[key].group;
+    const fallback = keys.includes(preferred) ? preferred : keys[0];
+    warn(
+      `lanes.${key}.group "${lane.group}" is not a lane_groups key; the lane was placed in "${fallback}".`
+    );
+    lane.group = fallback;
+  }
 }
 
 /**
@@ -544,6 +569,7 @@ export function syncSettings(settings) {
 
   synced.lanes = syncLanes(aliased.lanes, synced, aliased);
   synced.lane_groups = syncLaneGroups(synced.lane_groups);
+  syncLaneGroupMembership(synced.lanes, synced.lane_groups);
 
   for (const key of CHAIN_KEYS) synced[key] = stringList(synced[key]);
   synced.time = syncTime(aliased.time, synced);

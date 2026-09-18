@@ -489,6 +489,27 @@ describe('committed pje-*.csv extracts', () => {
     });
   }
 
+  it("PJE-DEMO-001: the guide's data caveats are the extracts' own numbers — 71% of con-med courses have no end date, 83% are UNCODED, and the lab indicator carries only NORMAL, HIGH and LOW (#142)", () => {
+    // docs/guides/patient-journey-explorer.md quotes these; a figure nobody
+    // re-measures propagates, so the guide's numbers fail here if the
+    // extracts change.
+    const cm = readExtract('pje-cm.csv').records;
+    const blankEnd = cm.filter((r) => r.AENDY === '').length;
+    expect(Math.round((100 * blankEnd) / cm.length)).toBe(71);
+    const uncoded = cm.filter((r) => r.CMCLAS === 'UNCODED').length;
+    expect(Math.round((100 * uncoded) / cm.length)).toBe(83);
+    const lb = readExtract('pje-lb.csv').records;
+    expect(new Set(lb.map((r) => r.LBNRIND))).toEqual(new Set(['NORMAL', 'HIGH', 'LOW']));
+    // The demo names the onset column the extract ships (MHONSDY), so the
+    // 17% of history rows that carry an onset day are read, not ignored.
+    const mh = readExtract('pje-mh.csv').records;
+    expect(mh[0]).toHaveProperty('MHONSDY');
+    expect(mh.some((r) => r.MHONSDY !== '')).toBe(true);
+    const demo = readFileSync(join(ROOT, 'site', 'demo', 'patient-journey-explorer.js'), 'utf8');
+    expect(demo).toContain("mh_onset_stdy_col: 'MHONSDY'");
+    expect(demo).not.toMatch(/height:\s*\d+/);
+  });
+
   it('PJE-DEMO-001: the six files together cover exactly the 254 safety participants (#142)', () => {
     const union = new Set();
     for (const file of Object.keys(EXPECTED))

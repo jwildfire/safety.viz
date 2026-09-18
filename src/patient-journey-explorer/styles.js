@@ -49,6 +49,14 @@ function moduleCss() {
 /* --- the lane stack inside the shell's chart card (design §6.1) ------------ */
 .sv-root.safety-patient-journey{--sv-rail-width:360px}
 .safety-patient-journey .sv-chart-wrap{height:auto;padding:.75rem .75rem .5rem;background:var(--pje-surface);color:var(--pje-ink-primary)}
+/* The shell pins its annotation to the card's top-right corner, which here is
+   the first lane group — the pill covered the group header and the end of the
+   exposure bar. The lanes fill the card, so the hint sits in flow beneath the
+   axis strip instead, where it also links to the panel on a stacked layout. */
+.safety-patient-journey .sv-main-annotation{position:static;display:flex;flex-wrap:wrap;align-items:center;gap:.35rem .6rem;margin:.5rem 0 0;padding:.3rem .5rem;font-size:.78rem;color:var(--pje-ink-secondary)}
+.safety-patient-journey .sv-main-annotation:empty{display:none}
+.sv-pje-annotation-link{border:0;background:none;padding:0;font:inherit;color:var(--pje-focus-ring);text-decoration:underline;cursor:pointer}
+.sv-pje-annotation-link:focus-visible{outline:2px solid var(--pje-focus-ring);outline-offset:1px}
 .sv-pje-lanes{position:relative;overflow-y:auto;overflow-x:hidden}
 .sv-pje-note{margin:.5rem 0;font-size:.85rem;color:var(--pje-ink-secondary)}
 .sv-pje-group{margin:0 0 .3rem}
@@ -62,7 +70,7 @@ function moduleCss() {
 .sv-pje-canvas{display:block;width:100%;height:100%}
 .sv-pje-lane-label{position:absolute;left:0;top:0;bottom:0;width:${L}px;box-sizing:border-box;padding:0 .5rem 0 0;display:flex;flex-direction:column;justify-content:center;font-size:.74rem;line-height:1.2;color:var(--pje-ink-secondary);pointer-events:none;overflow:hidden;z-index:1}
 .sv-pje-lane-label strong{color:var(--pje-ink-primary);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sv-pje-lane-label small{font-size:.68rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sv-pje-lane-label small{font-size:.68rem;line-height:1.15;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}
 .sv-pje-lane-empty{position:absolute;left:${L}px;right:${R}px;top:0;bottom:0;display:flex;align-items:center;font-size:.78rem;color:var(--pje-ink-secondary)}
 .sv-pje-lane-foot{margin:.05rem 0 .3rem ${L}px;font-size:.72rem;color:var(--pje-ink-secondary)}
 
@@ -100,7 +108,7 @@ function moduleCss() {
 /* --- the anchor context panel in the shell rail (design §6.6) -------------- */
 .sv-pje-panel{display:flex;flex-direction:column;min-height:0;height:100%;font-size:.82rem;color:var(--pje-ink-primary)}
 .sv-pje-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:.6rem;padding:.55rem .7rem;border-bottom:1px solid var(--pje-border);background:var(--pje-panel);flex:0 0 auto}
-.sv-pje-panel-title{margin:0;font-size:.95rem;font-weight:700}
+.sv-pje-panel-title{margin:0;font-family:inherit;font-size:.95rem;font-weight:700}
 .sv-pje-panel-title:focus{outline:none}
 .sv-pje-panel-sub{margin:.1rem 0 0;font-size:.75rem;color:var(--pje-ink-secondary)}
 .sv-pje-panel-actions{display:flex;gap:.35rem;flex:0 0 auto}
@@ -110,8 +118,8 @@ function moduleCss() {
 .sv-pje-btn:disabled{opacity:.5;cursor:default}
 .sv-pje-panel-body{flex:1 1 auto;min-height:0;overflow-y:auto;padding:.6rem .7rem}
 .sv-pje-section{margin:0 0 .8rem}
-.sv-pje-section h3{margin:0 0 .3rem;font-size:.82rem;font-weight:700}
-.sv-pje-section h4{margin:.45rem 0 .2rem;font-size:.74rem;font-weight:600;color:var(--pje-ink-secondary)}
+.sv-pje-section h3{margin:0 0 .3rem;font-family:inherit;font-size:.82rem;font-weight:700}
+.sv-pje-section h4{margin:.45rem 0 .2rem;font-family:inherit;font-size:.74rem;font-weight:600;color:var(--pje-ink-secondary)}
 .sv-pje-section-note{margin:0 0 .3rem;font-size:.72rem;color:var(--pje-ink-secondary)}
 .sv-pje-honesty{margin:.15rem 0 .3rem;font-size:.74rem;color:var(--pje-warning)}
 .sv-pje-empty{margin:.1rem 0;font-size:.76rem;color:var(--pje-ink-secondary);font-style:italic}
@@ -126,7 +134,7 @@ function moduleCss() {
 .sv-pje-drawer>summary{cursor:pointer;font-size:.85rem;font-weight:600;padding:.3rem 0}
 .sv-pje-drawer>summary:focus-visible{outline:2px solid var(--pje-focus-ring);outline-offset:1px}
 .sv-pje-drawer-domain{margin:.5rem 0 .9rem}
-.sv-pje-drawer-domain h3{margin:0 0 .3rem;font-size:.8rem}
+.sv-pje-drawer-domain h3{margin:0 0 .3rem;font-family:inherit;font-size:.8rem}
 .sv-pje-drawer-scroll{overflow-x:auto}
 .sv-pje-drawer table{font-size:.76rem}
 .sv-pje-drawer th{cursor:default}

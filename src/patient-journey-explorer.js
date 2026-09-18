@@ -51,10 +51,10 @@ import {
   windowBounds
 } from './patient-journey-explorer/anchor.js';
 import {
+  anchoredTicks,
   axisTicks,
   formatTick,
-  toElapsed,
-  toStudyDay
+  toElapsed
 } from './patient-journey-explorer/getScales.js';
 import {
   laneAriaLabel,
@@ -123,6 +123,8 @@ const LANE_DOMAIN = {
 const TALLER_NOTE =
   "This participant's journey is taller than the panel; scroll or turn off a lane.";
 const NO_DAY_NOTE = 'No study day resolves for this participant, so the journey cannot be drawn.';
+const NO_LANE_NOTE = 'Every lane is turned off. Turn on a lane to see marks.';
+const SELECT_HINT = 'Select any mark to anchor time on it.';
 
 let instanceCounter = 0;
 
@@ -137,10 +139,12 @@ const raf =
 
 /**
  * Coerce a context-window width the way syncSettings does: a non-negative
- * integer, or the fallback when not finite.
+ * integer, or the fallback when blank or not finite. A cleared number field
+ * sends '' — that restores the configured width, never a ±0 window.
  * @private
  */
 function coerceWindowDays(value, fallback) {
+  if (value === null || value === undefined || value === '') return fallback;
   const n = Number(value);
   return Number.isFinite(n) ? Math.max(0, Math.floor(n)) : fallback;
 }
@@ -187,7 +191,10 @@ class SafetyPatientJourneyExplorer {
     this.liveFilterSpecs = [];
     this.drawer = null;
     this.hoveredEvent = null;
+    this.footnoteEvent = null;
     this.suppressTooltip = false;
+    this.sourceLinkWarned = false;
+    this.lastEffectiveMode = null;
     this.destroyed = false;
     this.state = this.seedState();
 
@@ -221,9 +228,15 @@ class SafetyPatientJourneyExplorer {
     this.mainAnnotation.textContent = 'Bind data with init() to draw a journey.';
 
     this.overlay = new MarkOverlay({
-      describe: (event) => laneAriaLabel(event, this.settings, this.display()),
+      describe: (event, sameDay) => this.describeMark(event, sameDay),
       isAnchored: (id) => this.state.anchorId === id,
-      onActivate: (id) => (this.state.anchorId === id ? this.anchor(null) : this.anchor(id)),
+      onActivate: (id) => {
+        if (this.state.anchorId === id) this.anchor(null);
+        else {
+          this.anchor(id);
+          this.revealPanel();
+        }
+      },
       onJump: (id) => {
         const event = this.findEvent(id);
         if (event) this.jumpToSource(event.sourceAnchorId);
@@ -311,15 +324,40 @@ class SafetyPatientJourneyExplorer {
   }
 
   /**
+   * The mode the axis, tooltips and panel actually show: the user's
+   * preference (`state.mode`) when a reference date resolves for the current
+   * subject, else day mode. The preference is kept, so calendar dates return
+   * when a subject that has a reference date is selected again; the title,
+   * the ticks, the select and getTimeMode() all read this, never the raw
+   * preference, so "Calendar date" is never printed over study-day numbers.
+   * @private
+   */
+  effectiveMode() {
+    if (this.state.mode !== 'date') return 'day';
+    return this.structured && this.structured.refDate ? 'date' : 'day';
+  }
+
+  /**
    * The display options every text builder takes: the mode and the subject's
    * reference date.
    * @private
    */
   display() {
     return {
-      mode: this.state.mode,
+      mode: this.effectiveMode(),
       refDate: this.structured && this.structured.refDate ? this.structured.refDate.date : null
     };
+  }
+
+  /**
+   * The accessible name of a mark: the event's sentence, plus the other
+   * records stacked on the same day when the mark stands for several.
+   * @private
+   */
+  describeMark(event, sameDay = []) {
+    const base = laneAriaLabel(event, this.settings, this.display());
+    if (!sameDay.length) return base;
+    return `${base} Also on this day, ${plural(sameDay.length, 'more record')} at this mark: ${sameDay.join(', ')}. Use the arrow keys to reach each one.`;
   }
 
   /**
@@ -366,14 +404,21 @@ class SafetyPatientJourneyExplorer {
     try {
       checkInputs(domains, this.settings);
     } catch (error) {
-      this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+      // The message is inserted as text: it embeds settings values (column
+      // names) and must never become markup in the host page.
+      this.element.replaceChildren(createElement('div', 'sv-warning', error.message));
       throw error;
     }
+    // A failed init above replaced the element's contents with the warning;
+    // a later init with usable data puts the shell back before drawing into it.
+    if (!this.element.contains(this.root)) this.element.replaceChildren(this.root);
     this.domains = domains;
     this.inputDropped = dropped;
     this.state.anchorId = null;
     this.anchoredEvent = null;
     this.context = null;
+    this.clearFootnote();
+    this.sourceLinkWarned = false;
     this.subjectList = subjectIndex(domains, this.settings);
     this.liveFilterSpecs = liveFilters(this.settings.filters, domains);
     this.buildControls();
@@ -411,6 +456,7 @@ class SafetyPatientJourneyExplorer {
     if (!this.domains) return this;
     this.withFocusRestore(() => {
       this.liveFilterSpecs = liveFilters(this.settings.filters, this.domains);
+      this.sourceLinkWarned = false;
       this.buildControls();
       this.render();
     });
@@ -443,13 +489,28 @@ class SafetyPatientJourneyExplorer {
    * Restore keyboard focus onto the recreated control carrying the captured
    * key (PPRF-8 pattern). The tooltip is not re-shown by a restored focus: the
    * footnote still carries the mark's text, and Escape then means "clear the
-   * anchor", not "dismiss the tooltip".
+   * anchor", not "dismiss the tooltip". When the control is gone or disabled
+   * — the panel's Clear button after clearing, a mark whose lane was turned
+   * off or whose subject changed — focus goes to the nearest sensible stop
+   * instead of dropping to the document body: the previously anchored mark,
+   * the lane's own tab stop, the sidebar Clear control, or the subject list.
    * @private
    */
-  restoreFocus(key) {
+  restoreFocus(key, { fallbackMarkId = null } = {}) {
     if (!key) return;
-    const target = this.root.querySelector(`[data-sv-focus="${key}"]`);
-    if (!target || target.disabled || typeof target.focus !== 'function') return;
+    const usable = (el) => el && !el.disabled && typeof el.focus === 'function';
+    let target = this.root.querySelector(`[data-sv-focus="${key}"]`);
+    if (!usable(target)) {
+      const candidates = [];
+      if (fallbackMarkId) candidates.push(`[data-sv-focus="mark-${fallbackMarkId}"]`);
+      if (key.startsWith('mark-')) candidates.push('.sv-pje-mark[tabindex="0"]');
+      if (key === 'clear-anchor' || key === 'clear-anchor-control' || key === 'reset') {
+        candidates.push('.sv-pje-mark[tabindex="0"]', '[data-sv-focus="subject"]');
+      }
+      candidates.push('[data-sv-focus="subject"]');
+      target = candidates.map((selector) => this.root.querySelector(selector)).find(usable) || null;
+    }
+    if (!target) return;
     this.suppressTooltip = true;
     try {
       target.focus({ preventScroll: true });
@@ -621,11 +682,15 @@ class SafetyPatientJourneyExplorer {
     this.syncDateOption();
 
     // 6. Reset.
-    addReset(() => {
-      this.state = this.seedState();
-      this.buildControls();
-      this.render();
+    const reset = addReset(() => {
+      this.withFocusRestore(() => {
+        this.state = this.seedState();
+        this.clearFootnote();
+        this.buildControls();
+        this.render();
+      });
     });
+    reset.setAttribute('data-sv-focus', 'reset');
   }
 
   /**
@@ -663,7 +728,7 @@ class SafetyPatientJourneyExplorer {
       : hasRef
         ? ''
         : 'No reference date resolves for this participant, so calendar dates cannot be shown.';
-    this.modeSelect.value = this.state.mode;
+    this.modeSelect.value = this.effectiveMode();
   }
 
   /**
@@ -705,6 +770,7 @@ class SafetyPatientJourneyExplorer {
   render() {
     if (!this.domains) return;
     const focusKey = this.captureFocus();
+    const previousAnchorId = this.anchoredEvent ? this.anchoredEvent.id : null;
     this.destroyCharts();
     this.hideTooltip();
     const settings = this.effectiveSettings();
@@ -712,11 +778,20 @@ class SafetyPatientJourneyExplorer {
       subject: this.state.subject,
       filters: this.state.filters,
       lanes: this.state.lanes,
-      mode: this.state.mode
+      mode: this.state.mode,
+      filterSpecs: this.liveFilterSpecs
     });
+    this.structured.mode = this.effectiveMode();
     this.subject = this.structured.subject;
     this.state.subject = this.subject;
     this.participantsSelected = this.subject === null ? [] : [this.subject];
+    if (this.state.mode === 'date' && this.effectiveMode() === 'day') {
+      if (this.lastEffectiveMode !== 'day') {
+        warn(
+          `no reference date resolves for participant ${this.subject}; showing study days until one does.`
+        );
+      }
+    }
 
     const anchored = this.state.anchorId ? this.findEvent(this.state.anchorId) : null;
     if (this.state.anchorId && (!anchored || anchored.placeable === false)) {
@@ -735,19 +810,94 @@ class SafetyPatientJourneyExplorer {
       this.bounds = null;
     }
 
+    // The footnote mirrors the last hovered mark; it is cleared when that mark
+    // is no longer part of what is drawn (another subject, its lane off, a
+    // filter) and rewritten when the anchor changed, so its "+N days from
+    // anchor" fragment never goes stale.
+    if (this.footnoteEvent) {
+      const stillShown = this.structured.events.some((event) => event.id === this.footnoteEvent.id);
+      if (!stillShown) this.clearFootnote();
+      else if ((this.anchoredEvent ? this.anchoredEvent.id : null) !== previousAnchorId) {
+        this.writeFootnote(this.footnoteEvent);
+      }
+    }
+
     this.updateNotes();
     // The panel first: showing or hiding the rail changes the main column's
     // width, and the lane charts must be sized to the layout they will live in.
     this.renderPanel();
     this.buildLanes();
     this.renderSourceDrawer();
-    this.mainAnnotation.textContent = this.structured.domain
-      ? this.anchoredEvent
-        ? ''
-        : 'Select any mark to anchor time on it.'
-      : '';
+    this.renderAnnotation();
     this.syncControls();
-    this.restoreFocus(focusKey);
+    this.restoreFocus(focusKey, { fallbackMarkId: previousAnchorId });
+    const effective = this.effectiveMode();
+    if (this.lastEffectiveMode !== null && this.lastEffectiveMode !== effective) {
+      this.emit('pjeTimeModeChanged', {
+        mode: effective,
+        refDate: this.structured.refDate ? this.structured.refDate.date : null
+      });
+    }
+    this.lastEffectiveMode = effective;
+  }
+
+  /**
+   * The line beneath the axis strip: the anchoring hint when nothing is
+   * anchored, or the anchor's four counts with a control that brings the
+   * context panel into view — on a stacked (phone) layout the panel renders
+   * below the lanes, the footnote and the drawer, and a tap on a mark would
+   * otherwise show nothing beyond the highlight.
+   * @private
+   */
+  renderAnnotation() {
+    this.mainAnnotation.innerHTML = '';
+    if (!this.structured.domain) return;
+    if (!this.anchoredEvent) {
+      const anyLane = LANE_KEYS.some((key) => this.state.lanes[key]);
+      this.mainAnnotation.textContent = anyLane ? SELECT_HINT : '';
+      return;
+    }
+    const c = this.context.counts;
+    this.mainAnnotation.append(
+      createElement(
+        'span',
+        null,
+        `Anchored on ${this.anchoredEvent.label}: ${plural(c.conMeds, 'con-med')} active, ` +
+          `${plural(c.abnormalLabs, 'abnormal lab')}, ${plural(c.doseChanges, 'dose change')}, ` +
+          `${plural(c.priorEvents, 'earlier or same-day event')} with this term.`
+      )
+    );
+    const show = createElement('button', 'sv-pje-annotation-link', 'Show the context panel');
+    show.type = 'button';
+    show.setAttribute('data-sv-focus', 'show-panel');
+    show.onclick = () => this.revealPanel(true);
+    this.mainAnnotation.append(show);
+  }
+
+  /**
+   * Bring the context panel into view when the layout has stacked it below
+   * the main column and it is entirely off-screen (a phone), or always when
+   * asked for explicitly.
+   * @private
+   */
+  revealPanel(always = false) {
+    if (!this.context || this.railWrap.hidden) return;
+    if (typeof this.railWrap.scrollIntoView !== 'function') return;
+    if (!always) {
+      if (
+        typeof window === 'undefined' ||
+        typeof this.railWrap.getBoundingClientRect !== 'function'
+      )
+        return;
+      const rail = this.railWrap.getBoundingClientRect();
+      const main = this.main.getBoundingClientRect();
+      const stacked = rail.top >= main.bottom - 1;
+      const offScreen = rail.top >= (window.innerHeight || 0);
+      if (!stacked || !offScreen) return;
+    }
+    this.railWrap.scrollIntoView({ block: 'start' });
+    const title = this.railWrap.querySelector('.sv-pje-panel-title');
+    if (title && typeof title.focus === 'function' && always) title.focus({ preventScroll: true });
   }
 
   /**
@@ -834,6 +984,13 @@ class SafetyPatientJourneyExplorer {
       return;
     }
     const groups = planLanes(structured, this.settings, this.state);
+    if (!groups.length) {
+      this.lanesEl.append(createElement('p', 'sv-pje-note', NO_LANE_NOTE));
+      this.stackHeight = this.lanesEl.scrollHeight;
+      this.overlay.sync([]);
+      this.renderAxis();
+      return;
+    }
     const { rowHeight, labHeight } = fitHeights(groups, this.settings);
     const referenceDays = structured.allEvents
       .filter(
@@ -875,6 +1032,8 @@ class SafetyPatientJourneyExplorer {
         if (lane.test) laneEl.dataset.test = lane.test;
         if (lane.chartKey) laneEl.dataset.chartKey = lane.chartKey;
         laneEl.style.height = `${laneHeightPx(lane, rowHeight, labHeight)}px`;
+        // The gutter ellipsises long labels; the full text rides on the lane.
+        laneEl.title = [lane.label, lane.title || lane.sublabel].filter(Boolean).join(' — ');
         const label = createElement('div', 'sv-pje-lane-label');
         label.append(createElement('strong', null, lane.label));
         if (lane.sublabel) label.append(createElement('small', null, lane.sublabel));
@@ -937,25 +1096,19 @@ class SafetyPatientJourneyExplorer {
    */
   renderAxis() {
     const domain = this.structured.domain;
+    if (!domain) return;
     const anchorDay = this.anchoredEvent ? this.anchoredEvent.day : null;
     const title = this.anchoredEvent
       ? ANCHOR_AXIS_TITLE
-      : this.state.mode === 'date'
+      : this.effectiveMode() === 'date'
         ? 'Calendar date'
         : 'Study day';
     this.axisEl.append(createElement('div', 'sv-pje-axis-title', title));
     const track = createElement('div', 'sv-pje-axis-track');
-    let ticks = axisTicks(domain);
-    if (anchorDay !== null) {
-      const anchorElapsed = toElapsed(anchorDay);
-      const span = domain[1] - domain[0];
-      if (anchorElapsed !== null && span > 0) {
-        const position = ((anchorElapsed - domain[0]) / span) * 100;
-        ticks = ticks.filter((tick) => Math.abs(tick.position - position) >= 4);
-        ticks.push({ value: anchorDay, elapsed: anchorElapsed, position, anchor: true });
-        ticks.sort((a, b) => a.elapsed - b.elapsed);
-      }
-    }
+    // Anchored, the ticks are round offsets from the anchor (−30 · 0 · +30),
+    // not the study-day ticks relabelled (−16 · 0 · +43): PJE-ANCH-004.
+    const anchorElapsed = anchorDay === null ? null : toElapsed(anchorDay);
+    const ticks = anchorElapsed === null ? axisTicks(domain) : anchoredTicks(domain, anchorElapsed);
     const display = this.display();
     for (const tick of ticks) {
       const label = createElement(
@@ -991,17 +1144,16 @@ class SafetyPatientJourneyExplorer {
       this.setExpanded(false);
       return;
     }
-    // What the lanes will draw is data (structureData's per-lane `drawn`), so
-    // the panel can reconcile its counts before the charts exist.
-    const drawnIds = new Set(
-      Object.values(this.structured.lanes).flatMap((lane) =>
-        lane.enabled ? lane.drawn.map((event) => event.id) : []
-      )
-    );
+    // What the lanes will draw is data (structureData's per-lane `drawn` and
+    // `byLane`), so the panel can reconcile its whole-record lists against the
+    // timeline before the charts exist, and say why a record is not on it.
+    const drawState = (event) => this.drawState(event);
+    const anchorState = drawState(this.anchoredEvent);
     renderPanel(this.railWrap, this.context, {
       settings: this.effectiveSettings(),
       ...this.display(),
-      drawnIds,
+      drawState,
+      anchorHidden: anchorState === 'drawn' || anchorState === 'row cap' ? null : anchorState,
       labPool: this.structured.allEvents.filter((event) => event.domain === 'LB'),
       expanded: this.root.classList.contains('sv-rail-expanded'),
       onClear: () => this.anchor(null),
@@ -1009,6 +1161,23 @@ class SafetyPatientJourneyExplorer {
       onJump: (anchorId) => this.jumpToSource(anchorId)
     });
     this.railWrap.hidden = false;
+  }
+
+  /**
+   * Whether an event of the current subject is on the timeline, and if not,
+   * why: its lane is off, a filter removed it, or the row cap left it undrawn.
+   * @param {?Object} event An EventRecord of the current subject.
+   * @returns {'drawn'|'lane off'|'filtered out'|'row cap'} The state.
+   * @private
+   */
+  drawState(event) {
+    if (!event || !this.structured) return 'filtered out';
+    const lane = this.structured.lanes[event.lane];
+    if (!lane || !lane.enabled) return 'lane off';
+    if (!(this.structured.byLane[event.lane] || []).some((e) => e.id === event.id))
+      return 'filtered out';
+    if (!lane.drawn.some((e) => e.id === event.id)) return 'row cap';
+    return 'drawn';
   }
 
   /**
@@ -1034,8 +1203,10 @@ class SafetyPatientJourneyExplorer {
   renderSourceDrawer() {
     const wasOpen = Boolean(this.drawer && this.drawer.element.open);
     this.drawer = renderSourceDrawer(this.listingWrap, this.structured, this.settings, {
-      open: wasOpen
+      open: wasOpen,
+      warn: !this.sourceLinkWarned
     });
+    this.sourceLinkWarned = true;
   }
 
   /**
@@ -1054,24 +1225,9 @@ class SafetyPatientJourneyExplorer {
    * @private
    */
   showTooltip(event, button, via) {
-    const lines = tooltipLines(event, this.effectiveSettings(), {
-      ...this.display(),
-      anchor: this.anchoredEvent
-    });
+    const lines = this.tooltipText(event, button);
     this.hoveredEvent = event;
-    this.footnote.innerHTML = '';
-    this.footnote.append(
-      createElement(
-        'span',
-        'sv-pje-footnote-text',
-        lines.filter((line) => line !== GESTURE_LINE).join(' · ')
-      )
-    );
-    const open = createElement('button', 'sv-pje-open-source', 'Open source record');
-    open.type = 'button';
-    open.setAttribute('data-sv-focus', 'open-source');
-    open.onclick = () => this.jumpToSource(event.sourceAnchorId);
-    this.footnote.append(open);
+    this.writeFootnote(event, lines);
     if (via === 'focus' && this.suppressTooltip) return;
     this.tooltipVia = via;
     this.tooltipEl.textContent = lines.join('\n');
@@ -1083,6 +1239,64 @@ class SafetyPatientJourneyExplorer {
     left = Math.max(4, Math.min(left, wrap.width - width - 4));
     this.tooltipEl.style.left = `${Math.round(left)}px`;
     this.tooltipEl.style.top = `${Math.round(box.bottom - wrap.top + 6)}px`;
+  }
+
+  /**
+   * The tooltip lines of a mark, with the records stacked on the same day
+   * (from the overlay's `data-same-day`) named before the gesture line.
+   * @private
+   */
+  tooltipText(event, button) {
+    const lines = tooltipLines(event, this.effectiveSettings(), {
+      ...this.display(),
+      anchor: this.anchoredEvent
+    });
+    const stacked = button && button.dataset ? button.dataset.sameDay : '';
+    if (stacked) {
+      const n = Number(button.dataset.sameDayCount) || stacked.split('; ').length;
+      lines.splice(
+        lines.length - 1,
+        0,
+        `and ${plural(n, 'more record')} on this day: ${stacked.split('; ').join(', ')}`
+      );
+    }
+    return lines;
+  }
+
+  /**
+   * Write a mark's text into the footnote with the Open source record button.
+   * @private
+   */
+  writeFootnote(event, lines) {
+    const text =
+      lines ||
+      tooltipLines(event, this.effectiveSettings(), {
+        ...this.display(),
+        anchor: this.anchoredEvent
+      });
+    this.footnoteEvent = event;
+    this.footnote.innerHTML = '';
+    this.footnote.append(
+      createElement(
+        'span',
+        'sv-pje-footnote-text',
+        text.filter((line) => line !== GESTURE_LINE).join(' · ')
+      )
+    );
+    const open = createElement('button', 'sv-pje-open-source', 'Open source record');
+    open.type = 'button';
+    open.setAttribute('data-sv-focus', 'open-source');
+    open.onclick = () => this.jumpToSource(event.sourceAnchorId);
+    this.footnote.append(open);
+  }
+
+  /**
+   * Empty the footnote: the mark it described is no longer on the page.
+   * @private
+   */
+  clearFootnote() {
+    this.footnoteEvent = null;
+    if (this.footnote) this.footnote.innerHTML = '';
   }
 
   /**
@@ -1105,6 +1319,14 @@ class SafetyPatientJourneyExplorer {
    */
   handleEscape(event) {
     if (event.key !== 'Escape') return;
+    // Escape in a text field keeps its native meaning (clear the search, leave
+    // the number field), unless a tooltip is up.
+    const target = event.target;
+    const textEntry =
+      target &&
+      ((target.tagName === 'INPUT' && !/^(checkbox|radio|button|submit)$/i.test(target.type)) ||
+        target.tagName === 'TEXTAREA');
+    if (textEntry && this.tooltipEl.hidden) return;
     if (!this.tooltipEl.hidden) {
       this.hideTooltip();
     } else if (this.state.anchorId) {
@@ -1185,13 +1407,14 @@ class SafetyPatientJourneyExplorer {
       this.emit('pjeContextChanged', null);
     }
     this.state.subject = id;
+    this.clearFootnote();
     this.render();
-    const { counts, domain } = this.structured;
+    const { counts, extent } = this.structured;
     this.emit('pjeSubjectSelected', {
       subject: this.subject,
       previous,
       counts: { ...counts },
-      domainDays: domain ? [toStudyDay(domain[0]), toStudyDay(domain[1])] : null
+      domainDays: extent ? [extent[0], extent[1]] : null
     });
     this.emit('participantsSelected', { data: [this.subject] });
     this.announce(
@@ -1239,7 +1462,7 @@ class SafetyPatientJourneyExplorer {
       `Anchored on ${this.anchoredEvent.label}, day ${this.anchoredEvent.day}. ` +
         `Window day ${this.context.window.startDay} to day ${this.context.window.endDay}. ` +
         `${plural(c.conMeds, 'con-med')} active, ${plural(c.abnormalLabs, 'abnormal lab')}, ` +
-        `${plural(c.doseChanges, 'dose change')}, ${plural(c.priorEvents, 'prior event')} with this term.`
+        `${plural(c.doseChanges, 'dose change')}, ${plural(c.priorEvents, 'earlier or same-day event')} with this term.`
     );
     return this;
   }
@@ -1293,10 +1516,6 @@ class SafetyPatientJourneyExplorer {
     if (next === this.state.mode) return this;
     this.state.mode = next;
     this.render();
-    this.emit('pjeTimeModeChanged', {
-      mode: next,
-      refDate: this.structured.refDate ? this.structured.refDate.date : null
-    });
     return this;
   }
 
@@ -1386,7 +1605,7 @@ class SafetyPatientJourneyExplorer {
    * @returns {string} `'day'` or `'date'`.
    */
   getTimeMode() {
-    return this.state.mode;
+    return this.effectiveMode();
   }
 
   /**
@@ -1533,7 +1752,7 @@ class SafetyPatientJourneyExplorer {
    * @type {string}
    */
   get timeMode() {
-    return this.state.mode;
+    return this.effectiveMode();
   }
 }
 

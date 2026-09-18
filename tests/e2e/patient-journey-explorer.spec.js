@@ -350,7 +350,9 @@ test.describe('safety.viz patient-journey-explorer module', () => {
     expect(footer).toContain(`${remainder} more`);
     // Anchored, the panel reconciles its counts against what was drawn.
     await page.evaluate((id) => window.__safetyPatientJourneyInstance.anchor(id), exp.anchorId);
-    await expect(page.locator('.sv-rail')).toContainText('not drawn on the timeline (row cap)');
+    await expect(page.locator('.sv-rail')).toContainText(
+      /not drawn on the timeline \(\d+ row cap\)/
+    );
     const truncated = await page.evaluate(
       () => window.__safetyPatientJourneyInstance.getContext().notEvaluated.truncatedByLane.conMeds
     );
@@ -473,7 +475,11 @@ test.describe('safety.viz patient-journey-explorer module', () => {
       `Dose changes in the window (${exp.counts.doseChanges})`
     );
     await expect(rail.locator('[data-section="priorEvents"] h3')).toHaveText(
-      `Prior adverse events with the same preferred term (${exp.counts.priorEvents})`
+      `Earlier or same-day adverse events with the same preferred term (${exp.counts.priorEvents})`
+    );
+    // Each listed record says how far before the anchor it started.
+    await expect(rail.locator('[data-section="priorEvents"] .sv-pje-item').first()).toContainText(
+      `${exp.anchorDay - exp.priorEvent.day} days before the anchor`
     );
     // The listed records are the fixture's.
     for (const name of exp.conMedsActive)
@@ -856,7 +862,7 @@ test.describe('safety.viz patient-journey-explorer module', () => {
     await expect(live).toContainText(`${exp.counts.conMeds} con-med`);
     await expect(live).toContainText(`${exp.counts.abnormalLabs} abnormal lab`);
     await expect(live).toContainText(`${exp.counts.doseChanges} dose change`);
-    await expect(live).toContainText(`${exp.counts.priorEvents} prior event`);
+    await expect(live).toContainText(`${exp.counts.priorEvents} earlier or same-day event`);
   });
 
   test('PJE-KEY-004: focus is restored after a filter rebuild (#142)', async ({ page }) => {
@@ -1011,5 +1017,62 @@ test.describe('safety.viz patient-journey-explorer module', () => {
     // The library's muted ink (#7b8b96, 3.51:1) resolves nowhere in the module.
     expect(failures.colors).not.toContain('rgb(123, 139, 150)');
     await captureEvidence(page, 'PJE-ACC-003', 'contrast');
+  });
+  test('PJE-PANEL-001: at phone width the source drawer never widens the page, no painted labels overlap, and anchoring a mark brings the context panel into view (#142)', async ({
+    page
+  }) => {
+    const exp = await expectations(page);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.evaluate(
+      () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+    );
+    const pageWidth = () => page.evaluate(() => document.documentElement.scrollWidth);
+    expect(await pageWidth()).toBeLessThanOrEqual(390);
+    // The drawer's wide tables scroll inside it; the column does not grow.
+    await page.locator('details.sv-pje-drawer > summary').click();
+    expect(await pageWidth()).toBeLessThanOrEqual(390);
+    await page.locator('details.sv-pje-drawer > summary').click();
+    // No two labels a lane painted (disposition names, ULN / LLN, a count
+    // badge) intersect, on any lane.
+    const overlaps = await page.evaluate(() =>
+      [...window.__safetyPatientJourneyInstance.laneCharts.entries()].flatMap(([key, chart]) => {
+        const labels = chart.$pjeLabels || [];
+        const out = [];
+        for (let i = 0; i < labels.length; i += 1) {
+          for (let j = i + 1; j < labels.length; j += 1) {
+            const a = labels[i];
+            const b = labels[j];
+            const apart =
+              a.x + a.width <= b.x ||
+              b.x + b.width <= a.x ||
+              a.y + a.height <= b.y ||
+              b.y + b.height <= a.y;
+            if (!apart) out.push([key, a.text, b.text]);
+          }
+        }
+        return out;
+      })
+    );
+    expect(overlaps).toEqual([]);
+    // Tapping a mark: the panel is stacked below the lanes on this width and
+    // is scrolled into view, and the line under the axis says what was found.
+    const mark = markButton(page, exp.anchorId);
+    await mark.scrollIntoViewIfNeeded();
+    await mark.click();
+    await page.waitForFunction(
+      (id) => window.__safetyPatientJourneyInstance.anchoredEvent?.id === id,
+      exp.anchorId
+    );
+    const rail = await page.evaluate(() => {
+      const box = document.querySelector('.sv-rail').getBoundingClientRect();
+      return { top: box.top, innerHeight: window.innerHeight };
+    });
+    expect(rail.top).toBeGreaterThanOrEqual(-1);
+    expect(rail.top).toBeLessThan(rail.innerHeight);
+    await expect(page.locator('.sv-main-annotation')).toContainText(
+      `Anchored on ${exp.anchorLabel}`
+    );
+    await expect(page.locator('.sv-main-annotation')).toContainText('Show the context panel');
+    expect(await pageWidth()).toBeLessThanOrEqual(390);
   });
 });

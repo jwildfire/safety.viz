@@ -12617,9 +12617,9 @@ var SHELL_STYLES = `
 .sv-prototype-tag{flex:0 0 auto;text-transform:uppercase;letter-spacing:.05em;font-weight:700;font-size:.68rem;padding:.08rem .4rem;border-radius:999px;background:#d99a2b;color:#fff}
 .sv-prototype-text{flex:1 1 auto}
 @media (max-width:900px){
-.sv-root{flex-direction:column}
-.sv-sidebar{position:static;flex:1 1 auto;width:100%;max-height:none}
-.sv-rail{position:static;flex:1 1 auto;width:100%;max-height:none}
+.sv-root{flex-direction:column;align-items:stretch}
+.sv-sidebar{position:static;flex:1 1 auto;width:100%;box-sizing:border-box;max-height:none}
+.sv-rail{position:static;flex:1 1 auto;width:100%;box-sizing:border-box;max-height:none}
 .sv-rail-expanded .sv-rail{position:static}
 .sv-rail-expanded .sv-main,.sv-rail-expanded .sv-sidebar{filter:none}
 .sv-controls{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:0 1.25rem;align-items:start}
@@ -33535,7 +33535,7 @@ var DEFAULT_SETTINGS14 = {
   mh_cat_col: "MHCAT",
   mh_day_col: "MHDY",
   mh_day_source: "collection",
-  mh_onset_stdy_col: "ASTDY",
+  mh_onset_stdy_col: ["ASTDY", "MHSTDY"],
   mh_strtpt_col: "MHSTRTPT",
   mh_enrtpt_col: "MHENRTPT",
   mh_onset_dtc_col: "MHSTDTC",
@@ -33586,7 +33586,7 @@ var DEFAULT_SETTINGS14 = {
   max_rows_per_lane: 12,
   lab_height: 96,
   lab_height_min: 64,
-  height: 720,
+  height: 760,
   fit_to_height: true,
   width: "100%",
   page_size: 10
@@ -33624,6 +33624,7 @@ var CHAIN_KEYS = [
   "lb_day_col",
   "cm_stdy_col",
   "cm_endy_col",
+  "mh_onset_stdy_col",
   "ds_stdy_col"
 ];
 var DAY_PATTERN_TARGETS = {
@@ -33713,6 +33714,20 @@ function syncLanes(input, synced, raw) {
   for (const key of LANE_KEYS) lanes[key].enabled = Boolean(lanes[key].enabled);
   return lanes;
 }
+function syncLaneGroupMembership(lanes, groups) {
+  const keys = groups.map((group) => group.key);
+  for (const key of LANE_KEYS) {
+    const lane = lanes[key];
+    lane.group = typeof lane.group === "string" ? lane.group.trim() : "";
+    if (keys.includes(lane.group)) continue;
+    const preferred = DEFAULT_SETTINGS14.lanes[key].group;
+    const fallback = keys.includes(preferred) ? preferred : keys[0];
+    warn(
+      `lanes.${key}.group "${lane.group}" is not a lane_groups key; the lane was placed in "${fallback}".`
+    );
+    lane.group = fallback;
+  }
+}
 function syncLaneGroups(input) {
   const groups = arrayify(input).map((group) => {
     if (!isObject2(group) || typeof group.key !== "string" || !group.key.trim()) return null;
@@ -33789,6 +33804,7 @@ function syncSettings14(settings) {
   const synced = { ...DEFAULT_SETTINGS14, ...aliased };
   synced.lanes = syncLanes(aliased.lanes, synced, aliased);
   synced.lane_groups = syncLaneGroups(synced.lane_groups);
+  syncLaneGroupMembership(synced.lanes, synced.lane_groups);
   for (const key of CHAIN_KEYS) synced[key] = stringList(synced[key]);
   synced.time = syncTime(aliased.time, synced);
   synced.filters = syncFilters(synced.filters);
@@ -34168,9 +34184,9 @@ var patient_journey_explorer_default = {
           description: "Which day places a medical-history mark: 'collection' (mh_day_col, the day it was recorded) or 'onset' (mh_onset_stdy_col); anything else falls back to 'collection' with a warning."
         },
         mh_onset_stdy_col: {
-          type: "string",
-          default: "ASTDY",
-          description: "Medical-history onset study day column; the tooltip's onset text by default, and the mark position under mh_day_source 'onset'."
+          type: ["string", "array"],
+          default: ["ASTDY", "MHSTDY"],
+          description: "Medical-history onset study day, as a column name or a fallback chain resolved per row (the ADaM ASTDY, then the SDTM MHSTDY, so the plan's vocabulary places too \u2014 D15); the tooltip's onset text by default, and the mark position under mh_day_source 'onset'."
         },
         mh_strtpt_col: {
           type: "string",
@@ -34303,8 +34319,8 @@ var patient_journey_explorer_default = {
         },
         height: {
           type: "number",
-          default: 720,
-          description: "Pixel height of the lane column; taller stacks scroll and say so (PJE-LANE-009, D21)."
+          default: 760,
+          description: "Pixel height of the lane column; taller stacks scroll and say so (PJE-LANE-009, D21). 760 is the height at which the Definition-of-Done participant fits at the row and lab floors."
         },
         fit_to_height: {
           type: "boolean",
@@ -34460,6 +34476,31 @@ function axisTicks3(domain, target = 6) {
   if (lo <= 0 && hi >= 0) values.add(1);
   return [...values].map((value) => ({ value, elapsed: toElapsed(value) })).filter((tick) => tick.elapsed !== null && tick.elapsed >= lo && tick.elapsed <= hi).sort((a, b) => a.elapsed - b.elapsed).map((tick) => ({ ...tick, position: (tick.elapsed - lo) / span * 100 }));
 }
+function anchoredTicks(domain, anchorElapsed, target = 8) {
+  if (!usableDomain(domain) || !Number.isFinite(anchorElapsed)) return axisTicks3(domain, target);
+  const [lo, hi] = domain;
+  const span = hi - lo;
+  if (span <= 0) return axisTicks3(domain, target);
+  const intervals = Math.max(1, Number(target) || 6);
+  let step = STEP_LADDER2[STEP_LADDER2.length - 1];
+  for (const candidate of STEP_LADDER2) {
+    if (span / candidate <= intervals) {
+      step = candidate;
+      break;
+    }
+  }
+  while (span / step > intervals) step *= 10;
+  const offsets = /* @__PURE__ */ new Set([0]);
+  for (let k = Math.ceil((lo - anchorElapsed) / step); k * step <= hi - anchorElapsed; k += 1) {
+    offsets.add(k * step);
+  }
+  return [...offsets].map((offset) => anchorElapsed + offset).filter((elapsed) => elapsed >= lo && elapsed <= hi).sort((a, b) => a - b).map((elapsed) => ({
+    value: toStudyDay(elapsed),
+    elapsed,
+    anchor: elapsed === anchorElapsed,
+    position: (elapsed - lo) / span * 100
+  }));
+}
 function laneLayout() {
   return { padding: { left: 0, right: PLOT_GUTTER_RIGHT2, top: 2, bottom: 2 } };
 }
@@ -34524,12 +34565,17 @@ function parseNumber(value) {
   const n = Number(typeof value === "string" ? value.trim() : value);
   return Number.isFinite(n) ? n : null;
 }
-function resolveNumber(row, chain) {
+function resolveDay(row, chain) {
+  let zero = false;
   for (const column of arrayify(chain).map(String)) {
     const value = parseNumber(row[column]);
-    if (value !== null) return { value, column };
+    if (value !== null && toElapsed(value) !== null) return { value, column, zero: false };
+    if (value === 0) zero = true;
   }
-  return { value: null, column: null };
+  return { value: null, column: null, zero };
+}
+function endBeforeStart(event) {
+  return Boolean(event) && Array.isArray(event.flagged) && event.flagged.some((flag) => /precedes start/.test(String(flag)));
 }
 function resolveText(row, chain) {
   for (const column of arrayify(chain).map(String)) {
@@ -34604,8 +34650,8 @@ function droppedRowColumns2(rows) {
   return [DROP_REASON_COLUMN3, DROP_DOMAIN_COLUMN, ...source];
 }
 function resolveInterval(row, settings, prefix, endChainKey) {
-  const startRes = resolveNumber(row, settings[`${prefix}_stdy_col`]);
-  const endRes = resolveNumber(row, settings[endChainKey]);
+  const startRes = resolveDay(row, settings[`${prefix}_stdy_col`]);
+  const endRes = resolveDay(row, settings[endChainKey]);
   const outCol = settings[`${prefix}_out_col`];
   const outcome = outCol ? text(row[outCol]) : "";
   const ongoingValues = settings[`${prefix}_ongoing_values`] || [];
@@ -34625,7 +34671,7 @@ function resolveInterval(row, settings, prefix, endChainKey) {
       endState = outcome && ongoingValues.includes(outcome.toUpperCase()) ? "ongoing" : "unrecorded";
     }
   }
-  return { start, end, endState, dayCol: startRes.column, outcome, flag };
+  return { start, end, endState, dayCol: startRes.column, dayZero: startRes.zero, outcome, flag };
 }
 function severityFlag(value, settings) {
   const key = upper(value);
@@ -34690,7 +34736,7 @@ function deriveFields(row, domain, settings) {
           reason: `non-numeric result (${s.lb_value_col} = "${text(row[s.lb_value_col])}")`
         };
       }
-      const dayRes = resolveNumber(row, s.lb_day_col);
+      const dayRes = resolveDay(row, s.lb_day_col);
       const unit = text(row[s.lb_unit_col]);
       const lln = parseNumber(row[s.lb_lo_col]);
       const uln = parseNumber(row[s.lb_hi_col]);
@@ -34701,6 +34747,7 @@ function deriveFields(row, domain, settings) {
         end: null,
         endState: "closed",
         dayCol: dayRes.column,
+        dayZero: dayRes.zero,
         rawDate: resolveText(row, s.lb_dtc_col),
         label: [String(value), unit].filter(Boolean).join(" "),
         detail: `${test}${range}`,
@@ -34734,8 +34781,8 @@ function deriveFields(row, domain, settings) {
         return { reason: `missing medical-history term (${s.mh_term_col}, ${s.mh_decod_col})` };
       }
       const onsetSource = s.mh_day_source === "onset";
-      const collection = resolveNumber(row, s.mh_day_col);
-      const onset = resolveNumber(row, s.mh_onset_stdy_col);
+      const collection = resolveDay(row, s.mh_day_col);
+      const onset = resolveDay(row, s.mh_onset_stdy_col);
       const onsetDtc = resolveText(row, s.mh_onset_dtc_col);
       const placed = onsetSource ? onset : collection;
       const strtpt = text(row[s.mh_strtpt_col]);
@@ -34747,6 +34794,7 @@ function deriveFields(row, domain, settings) {
         end: null,
         endState: "closed",
         dayCol: placed.column,
+        dayZero: placed.zero,
         rawDate: onsetSource ? onsetDtc : "",
         label: decod || term,
         detail: `recorded day ${collection.value === null ? "not recorded" : collection.value}; onset ${onsetText}` + (stillPresent ? "; still present" : ""),
@@ -34757,7 +34805,7 @@ function deriveFields(row, domain, settings) {
       const decod = text(row[s.ds_decod_col]);
       if (!decod) return { reason: `missing disposition decode (${s.ds_decod_col})` };
       const term = text(row[s.ds_term_col]);
-      const dayRes = resolveNumber(row, s.ds_stdy_col);
+      const dayRes = resolveDay(row, s.ds_stdy_col);
       const cat = text(row[s.ds_cat_col]);
       const cats = s.ds_reference_cats || [];
       return {
@@ -34766,6 +34814,7 @@ function deriveFields(row, domain, settings) {
         end: null,
         endState: "closed",
         dayCol: dayRes.column,
+        dayZero: dayRes.zero,
         rawDate: resolveText(row, s.ds_dtc_col),
         label: decod,
         detail: term && term !== decod ? term : "",
@@ -34796,7 +34845,7 @@ function normalizeDomain3(rows, domain, settings) {
       dropped.push(droppedCopy(row, fields ? fields.reason : "unknown domain", domain));
       return;
     }
-    const { flag, flags: domainFlags, ...rest } = fields;
+    const { flag, flags: domainFlags, dayZero, ...rest } = fields;
     const start = rest.start;
     const record = {
       id: `${domain}-${index}`,
@@ -34809,7 +34858,7 @@ function normalizeDomain3(rows, domain, settings) {
       endState: rest.endState,
       open: rest.endState !== "closed",
       day: start,
-      placeable: start !== null,
+      placeable: toElapsed(start) !== null,
       clippedStart: false,
       dayCol: rest.dayCol,
       date: null,
@@ -34835,6 +34884,7 @@ function normalizeDomain3(rows, domain, settings) {
         abnormalReason: "",
         derived: false,
         direction: null,
+        dayZero: Boolean(dayZero) && start === null,
         ...domainFlags
       },
       flagged: flag ? [flag] : [],
@@ -35157,6 +35207,16 @@ function clampable(event, settings) {
   return event.domain === "MH" && settings?.mh_day_source === "onset";
 }
 function sharedDomain(events, settings) {
+  const extent = elapsedExtent(events, settings);
+  if (!extent) return null;
+  const [min, max] = extent;
+  return [min, max + 1];
+}
+function recordExtent(events, settings) {
+  const extent = elapsedExtent(events, settings);
+  return extent ? [toStudyDay(extent[0]), toStudyDay(extent[1])] : null;
+}
+function elapsedExtent(events, settings) {
   const placeable = arrayify(events).filter(
     (event) => event && typeof event === "object" && event.placeable !== false
   );
@@ -35175,9 +35235,7 @@ function sharedDomain(events, settings) {
     ...placeable.filter((event) => clampable(event, settings)).flatMap(daysOf).filter((day2) => day2 >= floor)
   ];
   if (!candidates.length) return null;
-  const min = Math.min(DOMAIN_MIN_DAY, ...candidates);
-  const max = Math.max(...candidates);
-  return min === max ? [min - 1, max + 1] : [min, max];
+  return [Math.min(DOMAIN_MIN_DAY, ...candidates), Math.max(...candidates)];
 }
 function filterPasses(event, spec, selection, settings) {
   const cell2 = event.source && typeof event.source === "object" ? event.source[spec.value_col] : void 0;
@@ -35338,22 +35396,25 @@ function structureData3(domains, settings, state = {}) {
   );
   const subject = wanted.find((id) => id && subjects.includes(id)) ?? subjects[0] ?? null;
   const refDate = subject === null ? null : normalized.refDates.get(subject) ?? null;
-  const subjectEvents = normalized.events.filter(
-    (event) => event.subject === subject && (event.domain !== "LB" || matchesConfiguredTest(event, settings))
+  const subjectEvents = normalized.events.filter((event) => event.subject === subject).map(
+    (event) => event.domain === "LB" && !matchesConfiguredTest(event, settings) ? { ...event, flags: { ...event.flags, unconfiguredTest: true } } : event
   );
+  const drawable = (event) => !event.flags?.unconfiguredTest;
   const doseChanges = deriveDoseChanges(
     subjectEvents.filter((event) => event.domain === "EX"),
     settings
   );
   const base = [...subjectEvents, ...doseChanges];
-  const domain = sharedDomain(base, settings);
+  const domain = sharedDomain(base.filter(drawable), settings);
+  const extent = recordExtent(base.filter(drawable), settings);
   const allEvents = base.map((event) => {
     if (!domain || event.kind !== "interval" || event.placeable === false) return event;
     const startE = toElapsed(event.start);
     return startE !== null && startE < domain[0] ? { ...event, clippedStart: true } : event;
   });
-  const filters = liveFilters(settings?.filters, domains);
-  const filtered = applyFilters11(allEvents, state?.filters, settings, filters);
+  const unconfiguredLabs = allEvents.filter((event) => !drawable(event));
+  const filters = Array.isArray(state?.filterSpecs) ? state.filterSpecs : liveFilters(settings?.filters, domains);
+  const filtered = applyFilters11(allEvents.filter(drawable), state?.filters, settings, filters);
   const enabled = (lane) => state?.lanes && typeof state.lanes[lane] === "boolean" ? state.lanes[lane] : Boolean(settings?.lanes?.[lane]?.enabled);
   const cap = Number(settings?.max_rows_per_lane);
   const rowCap = Number.isFinite(cap) && cap > 0 ? Math.floor(cap) : Infinity;
@@ -35371,7 +35432,7 @@ function structureData3(domains, settings, state = {}) {
     const truncated = rows.length - drawnRows.length;
     truncatedByLane[lane] = truncated;
     unplaceable[lane] = allEvents.filter(
-      (event) => event.lane === lane && event.placeable === false
+      (event) => event.lane === lane && event.placeable === false && drawable(event)
     );
     const domainCode2 = DOMAIN_BY_LANE[lane];
     lanes[lane] = {
@@ -35387,7 +35448,10 @@ function structureData3(domains, settings, state = {}) {
     };
   }
   const allLabs = allEvents.filter((event) => event.domain === "LB");
-  const labSeries = buildLabSeries(byLane.labs, domain, settings, { baselineEvents: allLabs });
+  const configuredLabs = allLabs.filter(drawable);
+  const labSeries = buildLabSeries(byLane.labs, domain, settings, {
+    baselineEvents: configuredLabs
+  });
   const labTestsMissing = allLabs.length ? labTestOrder(allLabs, settings).missing : [];
   const events = filtered.filter((event) => enabled(event.lane)).sort(
     (a, b) => LANE_KEYS.indexOf(a.lane) - LANE_KEYS.indexOf(b.lane) || nullsLast(dayOrNull(a), dayOrNull(b)) || (a.sourceIndex ?? 0) - (b.sourceIndex ?? 0)
@@ -35413,7 +35477,9 @@ function structureData3(domains, settings, state = {}) {
     lanes,
     labSeries,
     labTestsMissing,
+    unconfiguredLabs,
     domain,
+    extent,
     filters,
     dropped: normalized.dropped,
     droppedCounts: normalized.droppedCounts,
@@ -35467,8 +35533,10 @@ function elapsedEnd(event) {
     const e = toElapsed(event.end);
     return e === null ? toElapsed(event.start) : e;
   }
+  if (endBeforeStart(event)) return toElapsed(event.start);
   return Infinity;
 }
+var endUnrecorded = (event) => event.endState === "unrecorded" && !endBeforeStart(event);
 function inWindow(event, bounds, settings) {
   if (!event || typeof event !== "object" || event.placeable === false) return false;
   if (!usableBounds(bounds)) return false;
@@ -35496,8 +35564,7 @@ function conMedsActiveAt(cmEvents, day2, settings) {
     if (startE <= dayE && elapsedEnd(event) >= dayE) active.push(event);
   }
   active.sort(byStartThenLabel);
-  const endUnrecorded = active.filter((event) => event.endState === "unrecorded").length;
-  return { active, withoutStart, endUnrecorded };
+  return { active, withoutStart, endUnrecorded: active.filter(endUnrecorded).length };
 }
 function conMedsStartingLater(cmEvents, bounds, anchorDay) {
   const anchorE = toElapsed(anchorDay);
@@ -35565,19 +35632,20 @@ function buildContext(structured, anchorEvent, settings) {
   if (!bounds) return null;
   const byLane = structured.byLane && typeof structured.byLane === "object" ? structured.byLane : {};
   const allEvents = list(structured.allEvents);
-  const labPool = allEvents.filter((event) => event.domain === "LB");
-  const active = conMedsActiveAt(byLane.conMeds, anchorEvent.day, settings);
-  const conMedsLater = conMedsStartingLater(byLane.conMeds, bounds, anchorEvent.day);
-  const abnormalLabs = abnormalLabsInWindow(byLane.labs, bounds, settings, {
+  const record = (lane) => allEvents.length ? allEvents.filter((event) => event.lane === lane && !event.flags?.unconfiguredTest) : list(byLane[lane]);
+  const labPool = record("labs");
+  const active = conMedsActiveAt(record("conMeds"), anchorEvent.day, settings);
+  const conMedsLater = conMedsStartingLater(record("conMeds"), bounds, anchorEvent.day);
+  const abnormalLabs = abnormalLabsInWindow(labPool, bounds, settings, {
     baselineEvents: labPool.length ? labPool : void 0
   });
-  const doseChanges = doseChangesInWindow(byLane.doseChanges, bounds);
-  const priorEvents = priorSameTerm(byLane.adverseEvents, anchorEvent, settings);
+  const doseChanges = doseChangesInWindow(record("doseChanges"), bounds);
+  const priorEvents = priorSameTerm(record("adverseEvents"), anchorEvent, settings);
   const inWindowEvents = list(structured.events).filter(
     (event) => inWindow(event, bounds, settings)
   );
   const aeEndUnrecorded = inWindowEvents.filter(
-    (event) => event.domain === "AE" && event.endState === "unrecorded"
+    (event) => event.domain === "AE" && endUnrecorded(event)
   ).length;
   const unplaceableByDomain = {};
   for (const domain of DOMAIN_CODES2) {
@@ -35717,11 +35785,17 @@ var PJE_PALETTE = {
   }
 };
 var PJE_GLYPHS = {
+  // H / L are the one-letter aliases labs.js and draw.js already read as
+  // high / low; ABNORMAL is the direction-unknown glyph every other non-normal
+  // indicator falls back to, so an abnormal point never wears the normal ring.
   labFlag: {
     HIGH: "triangle-up",
+    H: "triangle-up",
     LOW: "triangle-down",
+    L: "triangle-down",
     HH: "triangle-up-double",
     LL: "triangle-down-double",
+    ABNORMAL: "diamond",
     NORMAL: "circle-open"
   },
   doseChange: {
@@ -35790,7 +35864,6 @@ var SEVERITY_KEYS = ["MILD", "MODERATE", "SEVERE"];
 var finite4 = (value) => typeof value === "number" && Number.isFinite(value);
 var isEvent = (event) => Boolean(event) && typeof event === "object";
 var upper5 = (value) => value === null || value === void 0 ? "" : String(value).trim().toUpperCase();
-var endBeforeStart = (event) => Array.isArray(event.flagged) && event.flagged.some((flag) => /precedes start/.test(String(flag)));
 var domainCode = (event) => event.flags?.derived ? "DOSE" : event.domain;
 var usableDomain2 = (domain) => Array.isArray(domain) && domain.length === 2 && domain.every(finite4);
 function humanize(value) {
@@ -35836,7 +35909,7 @@ function severityStyle(event, theme, settings) {
     missing
   };
 }
-function glyphFor(event) {
+function glyphFor(event, settings) {
   if (!isEvent(event)) return "dot";
   if (event.flags?.derived) {
     return PJE_GLYPHS.doseChange[upper5(event.flags.direction)] || "caret-up";
@@ -35849,8 +35922,9 @@ function glyphFor(event) {
       return "bar";
     case "LB": {
       const flag = upper5(event.flags?.abnormal);
-      if (!flag) return "dot";
-      return PJE_GLYPHS.labFlag[flag] || PJE_GLYPHS.labFlag.NORMAL;
+      if (!flag || flag === "NA") return "dot";
+      if (flag === upper5(settings?.lb_normal_value ?? "NORMAL")) return PJE_GLYPHS.labFlag.NORMAL;
+      return PJE_GLYPHS.labFlag[flag] || PJE_GLYPHS.labFlag.ABNORMAL;
     }
     case "MH":
       return "circle-open";
@@ -35868,7 +35942,7 @@ function markGeometry(event, { lane, domain, settings, theme } = {}) {
   const start = toElapsed(event.kind === "interval" ? event.start : event.day);
   if (start === null) return null;
   const hasDomain = usableDomain2(domain);
-  const glyph = glyphFor(event);
+  const glyph = glyphFor(event, settings);
   const endCap = endCapFor(event);
   let x0 = start;
   let x1 = start;
@@ -35934,6 +36008,7 @@ function spanLabel(event, options = {}) {
     const outcome = String(event.outcome ?? "").trim().toLowerCase();
     return `${start} to ongoing${outcome ? ` (${outcome})` : ""}`;
   }
+  if (endBeforeStart(event)) return `${start}, end day precedes start; shown as a single day`;
   return `${start}, end not recorded`;
 }
 function ratioLine(event) {
@@ -35960,6 +36035,11 @@ function domainLine(event) {
   }
   return parts.join(" \xB7 ");
 }
+function detailLine(event) {
+  const detail = String(event.detail ?? "").trim();
+  if (event.flags?.derived && detail === String(event.flags.direction ?? "")) return "";
+  return detail;
+}
 function titleLine(event) {
   if (event.domain === "LB" && event.test) return `${event.test} ${event.label}`.trim();
   return String(event.label ?? "");
@@ -35981,10 +36061,10 @@ function tooltipLines3(event, settings, { mode, refDate, anchor } = {}) {
   }
   const category = String(event.category ?? "").trim();
   if (category && !title.includes(category)) lines.push(category);
-  const detail = String(event.detail ?? "").trim();
+  const detail = detailLine(event);
   if (detail) lines.push(detail);
   const rawDate = String(event.rawDate ?? "").trim();
-  if (rawDate && !isFullDate(rawDate)) lines.push(`recorded as ${rawDate}`);
+  if (rawDate && !isFullDate(rawDate)) lines.push(`start date recorded as ${rawDate} (partial)`);
   if (event.dateConflict && rawDate) {
     lines.push(`recorded date ${rawDate} disagrees with day ${event.day}`);
   }
@@ -36098,7 +36178,7 @@ function buildLaneDatasets(lane, events, { domain, settings, theme, bounds } = {
         x,
         y: event.value,
         event,
-        glyph: glyphFor(event),
+        glyph: glyphFor(event, settings),
         endCap: "closed",
         emphasis: emphasisOf(event, bounds, settings),
         nrind: upper5(event.flags?.abnormal),
@@ -36129,7 +36209,7 @@ function buildLaneDatasets(lane, events, { domain, settings, theme, bounds } = {
         x,
         y: lane,
         event,
-        glyph: glyphFor(event),
+        glyph: glyphFor(event, settings),
         endCap: "closed",
         emphasis: emphasisOf(event, bounds, settings),
         reference: lane === "disposition" ? Boolean(event.flags?.reference) : false
@@ -36167,6 +36247,14 @@ function moduleCss() {
 /* --- the lane stack inside the shell's chart card (design \xA76.1) ------------ */
 .sv-root.safety-patient-journey{--sv-rail-width:360px}
 .safety-patient-journey .sv-chart-wrap{height:auto;padding:.75rem .75rem .5rem;background:var(--pje-surface);color:var(--pje-ink-primary)}
+/* The shell pins its annotation to the card's top-right corner, which here is
+   the first lane group \u2014 the pill covered the group header and the end of the
+   exposure bar. The lanes fill the card, so the hint sits in flow beneath the
+   axis strip instead, where it also links to the panel on a stacked layout. */
+.safety-patient-journey .sv-main-annotation{position:static;display:flex;flex-wrap:wrap;align-items:center;gap:.35rem .6rem;margin:.5rem 0 0;padding:.3rem .5rem;font-size:.78rem;color:var(--pje-ink-secondary)}
+.safety-patient-journey .sv-main-annotation:empty{display:none}
+.sv-pje-annotation-link{border:0;background:none;padding:0;font:inherit;color:var(--pje-focus-ring);text-decoration:underline;cursor:pointer}
+.sv-pje-annotation-link:focus-visible{outline:2px solid var(--pje-focus-ring);outline-offset:1px}
 .sv-pje-lanes{position:relative;overflow-y:auto;overflow-x:hidden}
 .sv-pje-note{margin:.5rem 0;font-size:.85rem;color:var(--pje-ink-secondary)}
 .sv-pje-group{margin:0 0 .3rem}
@@ -36180,7 +36268,7 @@ function moduleCss() {
 .sv-pje-canvas{display:block;width:100%;height:100%}
 .sv-pje-lane-label{position:absolute;left:0;top:0;bottom:0;width:${L}px;box-sizing:border-box;padding:0 .5rem 0 0;display:flex;flex-direction:column;justify-content:center;font-size:.74rem;line-height:1.2;color:var(--pje-ink-secondary);pointer-events:none;overflow:hidden;z-index:1}
 .sv-pje-lane-label strong{color:var(--pje-ink-primary);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sv-pje-lane-label small{font-size:.68rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sv-pje-lane-label small{font-size:.68rem;line-height:1.15;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}
 .sv-pje-lane-empty{position:absolute;left:${L}px;right:${R}px;top:0;bottom:0;display:flex;align-items:center;font-size:.78rem;color:var(--pje-ink-secondary)}
 .sv-pje-lane-foot{margin:.05rem 0 .3rem ${L}px;font-size:.72rem;color:var(--pje-ink-secondary)}
 
@@ -36218,7 +36306,7 @@ function moduleCss() {
 /* --- the anchor context panel in the shell rail (design \xA76.6) -------------- */
 .sv-pje-panel{display:flex;flex-direction:column;min-height:0;height:100%;font-size:.82rem;color:var(--pje-ink-primary)}
 .sv-pje-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:.6rem;padding:.55rem .7rem;border-bottom:1px solid var(--pje-border);background:var(--pje-panel);flex:0 0 auto}
-.sv-pje-panel-title{margin:0;font-size:.95rem;font-weight:700}
+.sv-pje-panel-title{margin:0;font-family:inherit;font-size:.95rem;font-weight:700}
 .sv-pje-panel-title:focus{outline:none}
 .sv-pje-panel-sub{margin:.1rem 0 0;font-size:.75rem;color:var(--pje-ink-secondary)}
 .sv-pje-panel-actions{display:flex;gap:.35rem;flex:0 0 auto}
@@ -36228,8 +36316,8 @@ function moduleCss() {
 .sv-pje-btn:disabled{opacity:.5;cursor:default}
 .sv-pje-panel-body{flex:1 1 auto;min-height:0;overflow-y:auto;padding:.6rem .7rem}
 .sv-pje-section{margin:0 0 .8rem}
-.sv-pje-section h3{margin:0 0 .3rem;font-size:.82rem;font-weight:700}
-.sv-pje-section h4{margin:.45rem 0 .2rem;font-size:.74rem;font-weight:600;color:var(--pje-ink-secondary)}
+.sv-pje-section h3{margin:0 0 .3rem;font-family:inherit;font-size:.82rem;font-weight:700}
+.sv-pje-section h4{margin:.45rem 0 .2rem;font-family:inherit;font-size:.74rem;font-weight:600;color:var(--pje-ink-secondary)}
 .sv-pje-section-note{margin:0 0 .3rem;font-size:.72rem;color:var(--pje-ink-secondary)}
 .sv-pje-honesty{margin:.15rem 0 .3rem;font-size:.74rem;color:var(--pje-warning)}
 .sv-pje-empty{margin:.1rem 0;font-size:.76rem;color:var(--pje-ink-secondary);font-style:italic}
@@ -36244,7 +36332,7 @@ function moduleCss() {
 .sv-pje-drawer>summary{cursor:pointer;font-size:.85rem;font-weight:600;padding:.3rem 0}
 .sv-pje-drawer>summary:focus-visible{outline:2px solid var(--pje-focus-ring);outline-offset:1px}
 .sv-pje-drawer-domain{margin:.5rem 0 .9rem}
-.sv-pje-drawer-domain h3{margin:0 0 .3rem;font-size:.8rem}
+.sv-pje-drawer-domain h3{margin:0 0 .3rem;font-family:inherit;font-size:.8rem}
 .sv-pje-drawer-scroll{overflow-x:auto}
 .sv-pje-drawer table{font-size:.76rem}
 .sv-pje-drawer th{cursor:default}
@@ -36372,6 +36460,17 @@ function labGlyph(ctx, cx, cy, size, glyph, color2, surface, escalate) {
   ctx.fillStyle = color2;
   ctx.strokeStyle = color2;
   switch (glyph) {
+    case "diamond": {
+      const h = size / 2 + 0.5;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - h);
+      ctx.lineTo(cx + h, cy);
+      ctx.lineTo(cx, cy + h);
+      ctx.lineTo(cx - h, cy);
+      ctx.closePath();
+      ctx.fill();
+      break;
+    }
     case "triangle-up":
       trianglePath(ctx, cx, cy, size, true);
       ctx.fill();
@@ -36447,6 +36546,43 @@ function truncate2(ctx, text3, width) {
   while (out.length > 1 && ctx.measureText(`${out}\u2026`).width > width) out = out.slice(0, -1);
   return `${out}\u2026`;
 }
+function haloText(ctx, text3, x, y, surface) {
+  ctx.save();
+  ctx.lineJoin = "round";
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = surface;
+  ctx.strokeText(text3, x, y);
+  ctx.restore();
+  ctx.fillText(text3, x, y);
+}
+function labelBox(ctx, text3, x, y, align, baseline, lineHeight = 11) {
+  const width = ctx.measureText(text3).width;
+  const left = align === "right" ? x - width : align === "center" ? x - width / 2 : x;
+  const top = baseline === "bottom" ? y - lineHeight : baseline === "middle" ? y - lineHeight / 2 : y;
+  return { text: text3, x: left, y: top, width, height: lineHeight };
+}
+function traceHits(chart, box) {
+  let hits = 0;
+  const inside = (px, py) => px >= box.x - 4 && px <= box.x + box.width + 4 && py >= box.y - 4 && py <= box.y + box.height + 4;
+  chart.data.datasets.forEach((dataset, datasetIndex) => {
+    const meta = chart.getDatasetMeta(datasetIndex);
+    if (!meta || meta.hidden) return;
+    let previous = null;
+    for (const el of meta.data) {
+      const p = el.getProps(["x", "y"], true);
+      if (!finite5(p.x) || !finite5(p.y)) continue;
+      if (inside(p.x, p.y)) hits += 1;
+      if (previous) {
+        for (const t of [0.25, 0.5, 0.75]) {
+          if (inside(previous.x + (p.x - previous.x) * t, previous.y + (p.y - previous.y) * t))
+            hits += 1;
+        }
+      }
+      previous = p;
+    }
+  });
+  return hits;
+}
 function lanePlugin(context) {
   const {
     laneKey,
@@ -36466,8 +36602,10 @@ function lanePlugin(context) {
       const { ctx, chartArea: area, scales } = chart;
       const x = scales && scales.x;
       const rules = [];
+      const labels = [];
       chart.$pjeBand = [];
       chart.$pjeWindow = null;
+      chart.$pjeLabels = labels;
       if (!area || !x) {
         chart.$pjeRules = rules;
         return;
@@ -36532,14 +36670,32 @@ function lanePlugin(context) {
           });
         });
         const last = drawn[drawn.length - 1];
-        if (last && last.height >= 14) {
+        const first = drawn[0];
+        if (last && first && last.height >= 14) {
           ctx.font = FONT;
           ctx.fillStyle = theme.inkSecondary;
-          ctx.textAlign = "right";
-          ctx.textBaseline = "top";
-          ctx.fillText(`ULN ${last.uln}`, area.right - 3, last.y + 1);
-          ctx.textBaseline = "bottom";
-          ctx.fillText(`LLN ${last.lln}`, area.right - 3, last.y + last.height - 1);
+          const both = last.height >= 26;
+          const candidates = (run, align) => {
+            const px = align === "right" ? area.right - 3 : area.left + 3;
+            const uln = { text: `ULN ${run.uln}`, x: px, y: run.y + 1, baseline: "top" };
+            const lln = {
+              text: `LLN ${run.lln}`,
+              x: px,
+              y: run.y + run.height - 1,
+              baseline: "bottom"
+            };
+            return (both ? [uln, lln] : [uln]).map((label) => ({
+              ...label,
+              align,
+              box: labelBox(ctx, label.text, label.x, label.y, align, label.baseline)
+            }));
+          };
+          const right = candidates(last, "right");
+          const left = candidates(first, "left");
+          const score = (list2) => list2.reduce((sum, label) => sum + traceHits(chart, label.box), 0);
+          chart.$pjeLimitLabels = score(left) < score(right) ? left : right;
+        } else {
+          chart.$pjeLimitLabels = [];
         }
         chart.$pjeBand = drawn;
       }
@@ -36579,28 +36735,55 @@ function lanePlugin(context) {
       const { ctx, chartArea: area, scales } = chart;
       const x = scales && scales.x;
       const marks = [...chart.$pjeRules || []];
+      const labels = chart.$pjeLabels || (chart.$pjeLabels = []);
       if (!area || !x) {
         chart.$pjeMarks = marks;
         return;
       }
       ctx.save();
       clipToArea(ctx, area, 4);
-      const dispositionLabels = /* @__PURE__ */ new Map();
-      if (laneKey === "disposition") {
+      const sameDay = /* @__PURE__ */ new Map();
+      if (laneKey === "disposition" || laneKey === "medicalHistory") {
         chart.data.datasets.forEach((dataset, datasetIndex) => {
           const meta = chart.getDatasetMeta(datasetIndex);
           if (!meta || meta.hidden) return;
           dataset.data.forEach((point, i) => {
             const el = meta.data[i];
             const label = point && point.event && point.event.label;
-            if (!el || !label || point.emphasis === "dim") return;
+            if (!el || !label) return;
             const px = el.getProps(["x"], true).x;
             if (!finite5(px)) return;
             const key = Math.round(px);
-            const group = dispositionLabels.get(key) || { first: point, labels: [] };
+            const group = sameDay.get(key) || { first: point, labels: [], px: key, dim: true };
             group.labels.push(String(label));
-            dispositionLabels.set(key, group);
+            if (point.emphasis !== "dim") group.dim = false;
+            sameDay.set(key, group);
           });
+        });
+      }
+      const dispositionText = /* @__PURE__ */ new Map();
+      if (laneKey === "disposition") {
+        ctx.font = FONT;
+        const groups = [...sameDay.values()].filter((group) => !group.dim).sort((a, b) => a.px - b.px);
+        let occupiedRight = area.left;
+        groups.forEach((group, index) => {
+          const text3 = group.labels.join(" \xB7 ");
+          const px = group.px;
+          const nextPx = index + 1 < groups.length ? groups[index + 1].px : Infinity;
+          const rightRoom = Math.min(area.right - 8, nextPx - 6) - (px + 7);
+          let placed = null;
+          if (rightRoom > 40) {
+            const shown = truncate2(ctx, text3, rightRoom);
+            placed = { text: shown, x: px + 7, align: "left" };
+            occupiedRight = px + 7 + ctx.measureText(shown).width;
+          } else {
+            const leftRoom = px - 7 - Math.max(area.left + 1, occupiedRight + 4);
+            if (leftRoom >= 20) {
+              placed = { text: truncate2(ctx, text3, leftRoom), x: px - 7, align: "right" };
+            }
+            occupiedRight = Math.max(occupiedRight, px + 4);
+          }
+          if (placed) dispositionText.set(px, placed);
         });
       }
       chart.data.datasets.forEach((dataset, datasetIndex) => {
@@ -36715,20 +36898,31 @@ function lanePlugin(context) {
             ctx.arc(p.x, p.y, PJE_MARKS.mhDotRadius, 0, Math.PI * 2);
             ctx.fillStyle = dim ? withAlpha2(theme.ds, DIM_FILL) : theme.ds;
             ctx.fill();
-            const group = dispositionLabels.get(Math.round(p.x));
-            if (!dim && group && group.first === point) {
-              const text3 = group.labels.join(" \xB7 ");
+            const group = sameDay.get(Math.round(p.x));
+            const placed = group && group.first === point ? dispositionText.get(group.px) : null;
+            if (placed) {
               ctx.font = FONT;
               ctx.fillStyle = theme.inkSecondary;
               ctx.textBaseline = "middle";
-              const room = area.right - p.x - 8;
-              if (room > 40) {
-                ctx.textAlign = "left";
-                ctx.fillText(truncate2(ctx, text3, room), p.x + 7, p.y);
-              } else {
-                ctx.textAlign = "right";
-                ctx.fillText(truncate2(ctx, text3, p.x - area.left - 8), p.x - 7, p.y);
-              }
+              ctx.textAlign = placed.align;
+              ctx.fillText(placed.text, placed.x, p.y);
+              labels.push({
+                kind: "disposition",
+                ...labelBox(ctx, placed.text, placed.x, p.y, placed.align, "middle")
+              });
+            }
+          }
+          if (laneKey === "medicalHistory") {
+            const group = sameDay.get(Math.round(p.x));
+            if (group && group.labels.length > 1 && group.first === point) {
+              const text3 = `\xD7${group.labels.length}`;
+              ctx.font = FONT_BOLD;
+              ctx.fillStyle = dim ? withAlpha2(theme.mh, DIM_STROKE) : theme.mh;
+              ctx.textBaseline = "middle";
+              ctx.textAlign = "left";
+              const bx = p.x + PJE_MARKS.mhDotRadius + 3;
+              haloText(ctx, text3, bx, p.y, surface);
+              labels.push({ kind: "count", ...labelBox(ctx, text3, bx, p.y, "left", "middle") });
             }
           }
           marks.push({
@@ -36747,6 +36941,16 @@ function lanePlugin(context) {
           });
         });
       });
+      if (laneKey === "labs" && Array.isArray(chart.$pjeLimitLabels)) {
+        ctx.font = FONT;
+        ctx.fillStyle = theme.inkSecondary;
+        for (const label of chart.$pjeLimitLabels) {
+          ctx.textAlign = label.align;
+          ctx.textBaseline = label.baseline;
+          haloText(ctx, label.text, label.x, label.y, surface);
+          labels.push({ kind: "limit", ...label.box });
+        }
+      }
       const anchorElapsed = anchor ? toElapsed(anchor.day) : null;
       if (anchor && finite5(anchorElapsed) && anchorElapsed >= x.min && anchorElapsed <= x.max) {
         const px = Math.round(x.getPixelForValue(anchorElapsed));
@@ -36868,12 +37072,12 @@ var LANE_REGISTRY = {
   }
 };
 var BAR_LANES2 = ["exposure", "adverseEvents", "conMeds"];
-var GROUP_HEADER_PX = 30;
+var GROUP_HEADER_PX = 35;
 var LANE_GAP_PX = 2;
 var FOOTER_PX = 18;
 var SINGLE_ROW_FACTOR = 1.5;
 var FILTERED_EMPTY = "No records match the current filters.";
-function laneFooters(info, registry2) {
+function laneFooters(info, registry2, laneKey) {
   const footers = [];
   if (info.truncated > 0) {
     footers.push(
@@ -36881,16 +37085,33 @@ function laneFooters(info, registry2) {
     );
   }
   if (info.unplaceable.length) {
-    const labels = [...new Set(info.unplaceable.map((event) => String(event.label ?? "")))];
-    footers.push(`No start day recorded, so not on the timeline: ${labels.join(", ")}.`);
+    const nameOf = (event) => laneKey === "labs" ? String(event.test ?? event.label ?? "") : String(event.label ?? "");
+    const zero = info.unplaceable.filter((event) => event.flags?.dayZero);
+    const rest = info.unplaceable.filter((event) => !zero.includes(event));
+    if (rest.length) {
+      const labels = [...new Set(rest.map(nameOf))];
+      footers.push(`No start day recorded, so not on the timeline: ${labels.join(", ")}.`);
+    }
+    if (zero.length) {
+      const labels = [...new Set(zero.map(nameOf))];
+      footers.push(`Study day 0 is not a valid day, so not on the timeline: ${labels.join(", ")}.`);
+    }
   }
   return footers;
 }
 function emptyText(laneKey, structured, registry2) {
   const has = structured.allEvents.some((event) => event.lane === laneKey);
   if (!has) return registry2.empty;
-  const postFilter = (structured.byLane[laneKey] || []).length > 0;
-  return postFilter ? registry2.empty : FILTERED_EMPTY;
+  const postFilter = structured.byLane[laneKey] || [];
+  if (!postFilter.length) {
+    if (laneKey === "labs" && (structured.unconfiguredLabs || []).length) {
+      const n = structured.unconfiguredLabs.length;
+      return `No records for the configured tests; ${n} other lab result${n === 1 ? " is" : "s are"} in Source records.`;
+    }
+    return FILTERED_EMPTY;
+  }
+  const noun = laneKey === "labs" ? "lab result" : registry2.noun;
+  return `No ${noun} has a usable study day; see below.`;
 }
 function planLanes(structured, settings, state) {
   const enabled = (key) => typeof state?.lanes?.[key] === "boolean" ? state.lanes[key] : Boolean(settings.lanes[key]?.enabled);
@@ -36919,7 +37140,13 @@ function planLanes(structured, settings, state) {
       if (key === "labs") {
         const drawnTests = info.rows;
         const series = structured.labSeries.filter((entry) => drawnTests.includes(entry.test));
-        const footers2 = laneFooters(info, registry2);
+        const footers2 = laneFooters(info, registry2, key);
+        const other = (structured.unconfiguredLabs || []).length;
+        if (other > 0 && series.length) {
+          footers2.push(
+            `${other} lab result${other === 1 ? "" : "s"} for tests not in lb_tests ${other === 1 ? "is" : "are"} not drawn \u2014 see Source records.`
+          );
+        }
         if (structured.labTestsMissing.length) {
           footers2.unshift(`No records for: ${structured.labTestsMissing.join(", ")}.`);
         }
@@ -36941,7 +37168,10 @@ function planLanes(structured, settings, state) {
             kind: "chart",
             chartKey: `labs:${entry.test}`,
             test: entry.test,
-            sublabel: entry.unit ? `${entry.test} (${entry.unit})` : entry.test,
+            // The short code fits the 132px gutter; the full name rides on
+            // the lane's title and the overlay's accessible name.
+            sublabel: entry.unit ? `${entry.testCode || entry.test} (${entry.unit})` : entry.testCode || entry.test,
+            title: entry.unit ? `${entry.test} (${entry.unit})` : entry.test,
             series: entry,
             rows: null,
             events: entry.points.map((point) => point.event),
@@ -36950,7 +37180,7 @@ function planLanes(structured, settings, state) {
         });
         continue;
       }
-      const footers = laneFooters(info, registry2);
+      const footers = laneFooters(info, registry2, key);
       if (!info.drawn.length) {
         lanes.push({
           key,
@@ -37107,7 +37337,7 @@ function chronological(a, b) {
 var MarkOverlay = class {
   /**
    * @param {Object} handlers The orchestrator's callbacks.
-   * @param {(event: Object) => string} handlers.describe The accessible name of a mark.
+   * @param {(event: Object, sameDay: string[]) => string} handlers.describe The accessible name of a mark, given the labels of the other records stacked on the same day (empty for a lone mark).
    * @param {(eventId: string) => boolean} handlers.isAnchored Whether an event is the current anchor.
    * @param {(eventId: string, button: HTMLButtonElement) => void} handlers.onActivate Click / Enter / Space on a mark.
    * @param {(eventId: string) => void} handlers.onJump Shift+Enter on a mark.
@@ -37177,11 +37407,58 @@ var MarkOverlay = class {
         buttons = marks.map((mark) => this.buildButton(mark));
         overlayEl.append(...buttons);
       }
+      this.stackSameDay(buttons);
       const wanted = this.activeByLane.get(chartKey);
       const active = buttons.find((button) => button.dataset.eventId === wanted) || buttons[0];
       buttons.forEach((button) => button.setAttribute("tabindex", button === active ? "0" : "-1"));
       if (active) this.activeByLane.set(chartKey, active.dataset.eventId);
     }
+  }
+  /**
+   * Buttons that sit on the identical box (same-day records in a one-row
+   * lane: the eight screening-history records of the pilot's opening
+   * participant) would otherwise let the LAST one win every pointer while the
+   * FIRST one is the lane's tab stop. The first (chronological) button is
+   * raised above the others so pointer and keyboard land on the same record,
+   * and it carries the group on `data-same-day` (the other records' labels)
+   * and `data-same-day-count` so its tooltip and accessible name can say
+   * "and N more on this day" — the records are all still reachable by arrow
+   * key and in the source drawer.
+   * @private
+   */
+  stackSameDay(buttons) {
+    const groups = /* @__PURE__ */ new Map();
+    for (const button of buttons) {
+      const key = `${button.style.left}|${button.style.top}`;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(button);
+    }
+    for (const group of groups.values()) {
+      group.forEach((button, index) => {
+        button.style.zIndex = index === 0 && group.length > 1 ? "1" : "";
+        if (index === 0 && group.length > 1) {
+          button.dataset.sameDayCount = String(group.length - 1);
+          button.dataset.sameDay = group.slice(1).map((other) => other.dataset.label || "").join("; ");
+        } else {
+          delete button.dataset.sameDayCount;
+          delete button.dataset.sameDay;
+        }
+      });
+    }
+    for (const button of buttons) {
+      const others = button.dataset.sameDay;
+      button.setAttribute(
+        "aria-label",
+        this.handlers.describe(this.eventOf(button), others ? others.split("; ") : [])
+      );
+    }
+  }
+  /**
+   * The event behind a button, from the entry that built it.
+   * @private
+   */
+  eventOf(button) {
+    return button.$pjeEvent || null;
   }
   /**
    * Position a mark button over its painted mark with at least a MIN_HIT_PX
@@ -37191,10 +37468,12 @@ var MarkOverlay = class {
    */
   placeButton(button, mark) {
     const { event } = mark;
+    button.$pjeEvent = event;
     button.dataset.day = Number.isFinite(event.day) ? String(event.day) : "";
+    button.dataset.label = String(event.label ?? "");
     button.dataset.glyph = mark.glyph;
     button.dataset.emphasis = mark.emphasis;
-    button.setAttribute("aria-label", this.handlers.describe(event));
+    button.setAttribute("aria-label", this.handlers.describe(event, []));
     button.setAttribute("aria-pressed", String(Boolean(this.handlers.isAnchored(event.id))));
     const width = Math.max(mark.width, MIN_HIT_PX);
     const height = Math.max(mark.height, MIN_HIT_PX);
@@ -37350,6 +37629,11 @@ var MarkOverlay = class {
 var CAUSATION_SENTENCE = "Co-occurrence is not causation. This panel lists what was recorded around the anchor; it does not assess relatedness.";
 var plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
 var lowerDay = (text3) => text3.replace(/^Day\b/, "day");
+var BASELINE_RULE = {
+  flag: "the flagged baseline record",
+  day: "the last value on or before the baseline day",
+  earliest: "the earliest value"
+};
 function itemButton({ title, detail, anchorId, onJump }) {
   const li = document.createElement("li");
   const button = createElement("button", "sv-pje-item");
@@ -37362,7 +37646,7 @@ function itemButton({ title, detail, anchorId, onJump }) {
   li.append(button);
   return li;
 }
-function itemList(parent, items, { emptyText: emptyText2, describe, drawnIds, onJump }) {
+function itemList(parent, items, { emptyText: emptyText2, describe, drawState, onJump }) {
   if (!items.length) {
     parent.append(createElement("p", "sv-pje-empty", emptyText2));
     return;
@@ -37373,13 +37657,20 @@ function itemList(parent, items, { emptyText: emptyText2, describe, drawnIds, on
     list2.append(itemButton({ title, detail, anchorId: event.sourceAnchorId, onJump }));
   }
   parent.append(list2);
-  const notDrawn = items.filter((event) => !drawnIds.has(event.id)).length;
+  const reasons = /* @__PURE__ */ new Map();
+  for (const event of items) {
+    const state = drawState(event);
+    if (state === "drawn") continue;
+    reasons.set(state, (reasons.get(state) || 0) + 1);
+  }
+  const notDrawn = [...reasons.values()].reduce((sum, n) => sum + n, 0);
   if (notDrawn > 0) {
+    const why = [...reasons.entries()].map(([reason, n]) => `${n} ${reason}`).join(", ");
     parent.append(
       createElement(
         "p",
         "sv-pje-honesty",
-        `${notDrawn} of these ${items.length} ${notDrawn === 1 ? "is" : "are"} not drawn on the timeline (row cap).`
+        `${notDrawn} of these ${items.length} ${notDrawn === 1 ? "is" : "are"} not drawn on the timeline (${why}).`
       )
     );
   }
@@ -37392,10 +37683,21 @@ function endUnrecordedSentence(unrecorded, total) {
   if (unrecorded === total) {
     return `None of these ${total} has a recorded end date; they are shown as active because nothing records them stopping.`;
   }
-  return `${unrecorded} of these ${total} have no recorded end date; they are shown as active because nothing records them stopping.`;
+  return `${unrecorded} of these ${total} ${unrecorded === 1 ? "has" : "have"} no recorded end date; ${unrecorded === 1 ? "it is" : "they are"} shown as active because nothing records ${unrecorded === 1 ? "it" : "them"} stopping.`;
 }
 function renderPanel(host, context, options) {
-  const { settings, mode, refDate, drawnIds, labPool, expanded, onClear, onExpand, onJump } = options;
+  const {
+    settings,
+    mode,
+    refDate,
+    drawState,
+    anchorHidden = null,
+    labPool,
+    expanded,
+    onClear,
+    onExpand,
+    onJump
+  } = options;
   const display = { mode, refDate };
   host.innerHTML = "";
   const panel = createElement("div", "sv-pje-panel");
@@ -37422,13 +37724,22 @@ function renderPanel(host, context, options) {
   head.append(heading, actions);
   panel.append(head);
   const body = createElement("div", "sv-pje-panel-body");
+  if (anchorHidden) {
+    body.append(
+      createElement(
+        "p",
+        "sv-pje-honesty",
+        `The anchored event is not on the timeline right now (${anchorHidden}); the lists below are unchanged, because they describe the whole record.`
+      )
+    );
+  }
   const section = (text3, className = "sv-pje-section") => {
     const el = createElement("section", className);
     el.append(createElement("h3", null, text3));
     body.append(el);
     return el;
   };
-  const common = { drawnIds, onJump };
+  const common = { drawState, onJump };
   const cm = section(`Con-meds active at the anchor (${context.counts.conMeds})`);
   cm.dataset.section = "conMeds";
   const withoutStart = context.notEvaluated.conMedsWithoutStart;
@@ -37497,8 +37808,9 @@ function renderPanel(host, context, options) {
         const baseline = baselineFor(event.test);
         if (baseline && Number.isFinite(baseline.value) && baseline.value > 0) {
           const multiple = event.value / baseline.value;
+          const rule = BASELINE_RULE[baseline.rule] || baseline.rule;
           parts.push(
-            `${multiple.toFixed(multiple >= 10 ? 0 : 1)} \xD7 baseline (${baseline.value}${event.unit ? ` ${event.unit}` : ""}, ${lowerDay(dayLabel(baseline.day, display))})`
+            `${multiple.toFixed(multiple >= 10 ? 0 : 1)} \xD7 baseline (${baseline.value}${event.unit ? ` ${event.unit}` : ""}, ${lowerDay(dayLabel(baseline.day, display))}; baseline is ${rule})`
           );
         }
       }
@@ -37519,20 +37831,27 @@ function renderPanel(host, context, options) {
     })
   });
   const prior = section(
-    `Prior adverse events with the same preferred term (${context.counts.priorEvents})`
+    `Earlier or same-day adverse events with the same preferred term (${context.counts.priorEvents})`
   );
   prior.dataset.section = "priorEvents";
   prior.append(
-    createElement("p", "sv-pje-section-note", "Any time before the anchor, not only in the window.")
+    createElement(
+      "p",
+      "sv-pje-section-note",
+      "Any time up to the anchor, not only in the window; each row says how many days before the anchor it started."
+    )
   );
   itemList(prior, context.priorEvents, {
     ...common,
-    emptyText: "No prior adverse events with this preferred term.",
+    emptyText: "No earlier or same-day adverse events with this preferred term.",
     describe: (event) => {
+      const offset = relativeDay(event.day, context.anchor.day);
+      const before = offset === null ? null : offset === 0 ? "same day as the anchor" : `${plural(-offset, "day")} before the anchor`;
       const parts = [
         spanLabel(event, display),
+        before,
         event.flags.severity ? event.flags.severity.label : "severity not recorded"
-      ];
+      ].filter(Boolean);
       if (event.flags.serious) parts.push("SAE");
       return { title: event.label, detail: parts.join(" \xB7 ") };
     }
@@ -37634,7 +37953,7 @@ function domainRows(structured, domain) {
     source: event.source && typeof event.source === "object" ? event.source : {}
   })).sort((a, b) => a.sourceIndex - b.sourceIndex);
 }
-function renderSourceDrawer(host, structured, settings, { open = false } = {}) {
+function renderSourceDrawer(host, structured, settings, { open = false, warn: warn3 = true } = {}) {
   host.innerHTML = "";
   const pageSize = Math.max(1, Number(settings.page_size) || 10);
   const template = settings.source_url_template;
@@ -37730,7 +38049,7 @@ function renderSourceDrawer(host, structured, settings, { open = false } = {}) {
     state.pager.append(tools);
   }
   summary.textContent = `Source records (${total})`;
-  if (missingLinks.size) {
+  if (missingLinks.size && warn3) {
     console.warn(
       `patient-journey-explorer: source_url_template names a column some ${[...missingLinks].join(
         ", "
@@ -37806,12 +38125,15 @@ var LANE_DOMAIN = {
 };
 var TALLER_NOTE = "This participant's journey is taller than the panel; scroll or turn off a lane.";
 var NO_DAY_NOTE = "No study day resolves for this participant, so the journey cannot be drawn.";
+var NO_LANE_NOTE = "Every lane is turned off. Turn on a lane to see marks.";
+var SELECT_HINT = "Select any mark to anchor time on it.";
 var instanceCounter = 0;
 var warn2 = (message) => console.warn(`patient-journey-explorer: ${message}`);
 var plural2 = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
 var upper6 = (value) => value === null || value === void 0 ? "" : String(value).trim().toUpperCase();
 var raf = typeof requestAnimationFrame === "function" ? (fn) => requestAnimationFrame(fn) : (fn) => setTimeout(fn, 16);
 function coerceWindowDays(value, fallback) {
+  if (value === null || value === void 0 || value === "") return fallback;
   const n = Number(value);
   return Number.isFinite(n) ? Math.max(0, Math.floor(n)) : fallback;
 }
@@ -37837,7 +38159,10 @@ var SafetyPatientJourneyExplorer = class {
     this.liveFilterSpecs = [];
     this.drawer = null;
     this.hoveredEvent = null;
+    this.footnoteEvent = null;
     this.suppressTooltip = false;
+    this.sourceLinkWarned = false;
+    this.lastEffectiveMode = null;
     this.destroyed = false;
     this.state = this.seedState();
     Object.assign(
@@ -37866,9 +38191,15 @@ var SafetyPatientJourneyExplorer = class {
     this.railWrap.hidden = true;
     this.mainAnnotation.textContent = "Bind data with init() to draw a journey.";
     this.overlay = new MarkOverlay({
-      describe: (event) => laneAriaLabel(event, this.settings, this.display()),
+      describe: (event, sameDay) => this.describeMark(event, sameDay),
       isAnchored: (id) => this.state.anchorId === id,
-      onActivate: (id) => this.state.anchorId === id ? this.anchor(null) : this.anchor(id),
+      onActivate: (id) => {
+        if (this.state.anchorId === id) this.anchor(null);
+        else {
+          this.anchor(id);
+          this.revealPanel();
+        }
+      },
       onJump: (id) => {
         const event = this.findEvent(id);
         if (event) this.jumpToSource(event.sourceAnchorId);
@@ -37941,15 +38272,38 @@ var SafetyPatientJourneyExplorer = class {
     this.theme = resolveTheme(this.root, this.themeMode());
   }
   /**
+   * The mode the axis, tooltips and panel actually show: the user's
+   * preference (`state.mode`) when a reference date resolves for the current
+   * subject, else day mode. The preference is kept, so calendar dates return
+   * when a subject that has a reference date is selected again; the title,
+   * the ticks, the select and getTimeMode() all read this, never the raw
+   * preference, so "Calendar date" is never printed over study-day numbers.
+   * @private
+   */
+  effectiveMode() {
+    if (this.state.mode !== "date") return "day";
+    return this.structured && this.structured.refDate ? "date" : "day";
+  }
+  /**
    * The display options every text builder takes: the mode and the subject's
    * reference date.
    * @private
    */
   display() {
     return {
-      mode: this.state.mode,
+      mode: this.effectiveMode(),
       refDate: this.structured && this.structured.refDate ? this.structured.refDate.date : null
     };
+  }
+  /**
+   * The accessible name of a mark: the event's sentence, plus the other
+   * records stacked on the same day when the mark stands for several.
+   * @private
+   */
+  describeMark(event, sameDay = []) {
+    const base = laneAriaLabel(event, this.settings, this.display());
+    if (!sameDay.length) return base;
+    return `${base} Also on this day, ${plural2(sameDay.length, "more record")} at this mark: ${sameDay.join(", ")}. Use the arrow keys to reach each one.`;
   }
   /**
    * The settings the pure logic sees this render: the synced settings with the
@@ -37992,14 +38346,17 @@ var SafetyPatientJourneyExplorer = class {
     try {
       checkInputs14(domains, this.settings);
     } catch (error) {
-      this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+      this.element.replaceChildren(createElement("div", "sv-warning", error.message));
       throw error;
     }
+    if (!this.element.contains(this.root)) this.element.replaceChildren(this.root);
     this.domains = domains;
     this.inputDropped = dropped;
     this.state.anchorId = null;
     this.anchoredEvent = null;
     this.context = null;
+    this.clearFootnote();
+    this.sourceLinkWarned = false;
     this.subjectList = subjectIndex(domains, this.settings);
     this.liveFilterSpecs = liveFilters(this.settings.filters, domains);
     this.buildControls();
@@ -38036,6 +38393,7 @@ var SafetyPatientJourneyExplorer = class {
     if (!this.domains) return this;
     this.withFocusRestore(() => {
       this.liveFilterSpecs = liveFilters(this.settings.filters, this.domains);
+      this.sourceLinkWarned = false;
       this.buildControls();
       this.render();
     });
@@ -38065,13 +38423,28 @@ var SafetyPatientJourneyExplorer = class {
    * Restore keyboard focus onto the recreated control carrying the captured
    * key (PPRF-8 pattern). The tooltip is not re-shown by a restored focus: the
    * footnote still carries the mark's text, and Escape then means "clear the
-   * anchor", not "dismiss the tooltip".
+   * anchor", not "dismiss the tooltip". When the control is gone or disabled
+   * — the panel's Clear button after clearing, a mark whose lane was turned
+   * off or whose subject changed — focus goes to the nearest sensible stop
+   * instead of dropping to the document body: the previously anchored mark,
+   * the lane's own tab stop, the sidebar Clear control, or the subject list.
    * @private
    */
-  restoreFocus(key) {
+  restoreFocus(key, { fallbackMarkId = null } = {}) {
     if (!key) return;
-    const target = this.root.querySelector(`[data-sv-focus="${key}"]`);
-    if (!target || target.disabled || typeof target.focus !== "function") return;
+    const usable2 = (el) => el && !el.disabled && typeof el.focus === "function";
+    let target = this.root.querySelector(`[data-sv-focus="${key}"]`);
+    if (!usable2(target)) {
+      const candidates = [];
+      if (fallbackMarkId) candidates.push(`[data-sv-focus="mark-${fallbackMarkId}"]`);
+      if (key.startsWith("mark-")) candidates.push('.sv-pje-mark[tabindex="0"]');
+      if (key === "clear-anchor" || key === "clear-anchor-control" || key === "reset") {
+        candidates.push('.sv-pje-mark[tabindex="0"]', '[data-sv-focus="subject"]');
+      }
+      candidates.push('[data-sv-focus="subject"]');
+      target = candidates.map((selector) => this.root.querySelector(selector)).find(usable2) || null;
+    }
+    if (!target) return;
     this.suppressTooltip = true;
     try {
       target.focus({ preventScroll: true });
@@ -38225,11 +38598,15 @@ var SafetyPatientJourneyExplorer = class {
     modeSelect.onchange = () => this.setTimeMode(modeSelect.value);
     this.modeSelect = modeSelect;
     this.syncDateOption();
-    addReset(() => {
-      this.state = this.seedState();
-      this.buildControls();
-      this.render();
+    const reset = addReset(() => {
+      this.withFocusRestore(() => {
+        this.state = this.seedState();
+        this.clearFootnote();
+        this.buildControls();
+        this.render();
+      });
     });
+    reset.setAttribute("data-sv-focus", "reset");
   }
   /**
    * Refill the subject list from the search text: case-insensitive substring,
@@ -38261,7 +38638,7 @@ var SafetyPatientJourneyExplorer = class {
     const hasRef = Boolean(this.structured && this.structured.refDate);
     dateOption.disabled = !allowed || !hasRef;
     dateOption.title = !allowed ? "Calendar dates are not enabled for this chart." : hasRef ? "" : "No reference date resolves for this participant, so calendar dates cannot be shown.";
-    this.modeSelect.value = this.state.mode;
+    this.modeSelect.value = this.effectiveMode();
   }
   /**
    * Mirror the control state into the sidebar controls without rebuilding
@@ -38300,6 +38677,7 @@ var SafetyPatientJourneyExplorer = class {
   render() {
     if (!this.domains) return;
     const focusKey = this.captureFocus();
+    const previousAnchorId = this.anchoredEvent ? this.anchoredEvent.id : null;
     this.destroyCharts();
     this.hideTooltip();
     const settings = this.effectiveSettings();
@@ -38307,11 +38685,20 @@ var SafetyPatientJourneyExplorer = class {
       subject: this.state.subject,
       filters: this.state.filters,
       lanes: this.state.lanes,
-      mode: this.state.mode
+      mode: this.state.mode,
+      filterSpecs: this.liveFilterSpecs
     });
+    this.structured.mode = this.effectiveMode();
     this.subject = this.structured.subject;
     this.state.subject = this.subject;
     this.participantsSelected = this.subject === null ? [] : [this.subject];
+    if (this.state.mode === "date" && this.effectiveMode() === "day") {
+      if (this.lastEffectiveMode !== "day") {
+        warn2(
+          `no reference date resolves for participant ${this.subject}; showing study days until one does.`
+        );
+      }
+    }
     const anchored = this.state.anchorId ? this.findEvent(this.state.anchorId) : null;
     if (this.state.anchorId && (!anchored || anchored.placeable === false)) {
       this.state.anchorId = null;
@@ -38324,13 +38711,80 @@ var SafetyPatientJourneyExplorer = class {
       this.anchoredEvent = null;
       this.bounds = null;
     }
+    if (this.footnoteEvent) {
+      const stillShown = this.structured.events.some((event) => event.id === this.footnoteEvent.id);
+      if (!stillShown) this.clearFootnote();
+      else if ((this.anchoredEvent ? this.anchoredEvent.id : null) !== previousAnchorId) {
+        this.writeFootnote(this.footnoteEvent);
+      }
+    }
     this.updateNotes();
     this.renderPanel();
     this.buildLanes();
     this.renderSourceDrawer();
-    this.mainAnnotation.textContent = this.structured.domain ? this.anchoredEvent ? "" : "Select any mark to anchor time on it." : "";
+    this.renderAnnotation();
     this.syncControls();
-    this.restoreFocus(focusKey);
+    this.restoreFocus(focusKey, { fallbackMarkId: previousAnchorId });
+    const effective = this.effectiveMode();
+    if (this.lastEffectiveMode !== null && this.lastEffectiveMode !== effective) {
+      this.emit("pjeTimeModeChanged", {
+        mode: effective,
+        refDate: this.structured.refDate ? this.structured.refDate.date : null
+      });
+    }
+    this.lastEffectiveMode = effective;
+  }
+  /**
+   * The line beneath the axis strip: the anchoring hint when nothing is
+   * anchored, or the anchor's four counts with a control that brings the
+   * context panel into view — on a stacked (phone) layout the panel renders
+   * below the lanes, the footnote and the drawer, and a tap on a mark would
+   * otherwise show nothing beyond the highlight.
+   * @private
+   */
+  renderAnnotation() {
+    this.mainAnnotation.innerHTML = "";
+    if (!this.structured.domain) return;
+    if (!this.anchoredEvent) {
+      const anyLane = LANE_KEYS.some((key) => this.state.lanes[key]);
+      this.mainAnnotation.textContent = anyLane ? SELECT_HINT : "";
+      return;
+    }
+    const c = this.context.counts;
+    this.mainAnnotation.append(
+      createElement(
+        "span",
+        null,
+        `Anchored on ${this.anchoredEvent.label}: ${plural2(c.conMeds, "con-med")} active, ${plural2(c.abnormalLabs, "abnormal lab")}, ${plural2(c.doseChanges, "dose change")}, ${plural2(c.priorEvents, "earlier or same-day event")} with this term.`
+      )
+    );
+    const show = createElement("button", "sv-pje-annotation-link", "Show the context panel");
+    show.type = "button";
+    show.setAttribute("data-sv-focus", "show-panel");
+    show.onclick = () => this.revealPanel(true);
+    this.mainAnnotation.append(show);
+  }
+  /**
+   * Bring the context panel into view when the layout has stacked it below
+   * the main column and it is entirely off-screen (a phone), or always when
+   * asked for explicitly.
+   * @private
+   */
+  revealPanel(always = false) {
+    if (!this.context || this.railWrap.hidden) return;
+    if (typeof this.railWrap.scrollIntoView !== "function") return;
+    if (!always) {
+      if (typeof window === "undefined" || typeof this.railWrap.getBoundingClientRect !== "function")
+        return;
+      const rail = this.railWrap.getBoundingClientRect();
+      const main = this.main.getBoundingClientRect();
+      const stacked = rail.top >= main.bottom - 1;
+      const offScreen = rail.top >= (window.innerHeight || 0);
+      if (!stacked || !offScreen) return;
+    }
+    this.railWrap.scrollIntoView({ block: "start" });
+    const title = this.railWrap.querySelector(".sv-pje-panel-title");
+    if (title && typeof title.focus === "function" && always) title.focus({ preventScroll: true });
   }
   /**
    * The status line above the lanes: the subject summary, the study-wide
@@ -38408,6 +38862,13 @@ var SafetyPatientJourneyExplorer = class {
       return;
     }
     const groups = planLanes(structured, this.settings, this.state);
+    if (!groups.length) {
+      this.lanesEl.append(createElement("p", "sv-pje-note", NO_LANE_NOTE));
+      this.stackHeight = this.lanesEl.scrollHeight;
+      this.overlay.sync([]);
+      this.renderAxis();
+      return;
+    }
     const { rowHeight, labHeight } = fitHeights(groups, this.settings);
     const referenceDays = structured.allEvents.filter(
       (event) => event.domain === "DS" && event.placeable !== false && event.flags?.reference
@@ -38441,6 +38902,7 @@ var SafetyPatientJourneyExplorer = class {
         if (lane.test) laneEl.dataset.test = lane.test;
         if (lane.chartKey) laneEl.dataset.chartKey = lane.chartKey;
         laneEl.style.height = `${laneHeightPx(lane, rowHeight, labHeight)}px`;
+        laneEl.title = [lane.label, lane.title || lane.sublabel].filter(Boolean).join(" \u2014 ");
         const label = createElement("div", "sv-pje-lane-label");
         label.append(createElement("strong", null, lane.label));
         if (lane.sublabel) label.append(createElement("small", null, lane.sublabel));
@@ -38500,21 +38962,13 @@ var SafetyPatientJourneyExplorer = class {
    */
   renderAxis() {
     const domain = this.structured.domain;
+    if (!domain) return;
     const anchorDay = this.anchoredEvent ? this.anchoredEvent.day : null;
-    const title = this.anchoredEvent ? ANCHOR_AXIS_TITLE : this.state.mode === "date" ? "Calendar date" : "Study day";
+    const title = this.anchoredEvent ? ANCHOR_AXIS_TITLE : this.effectiveMode() === "date" ? "Calendar date" : "Study day";
     this.axisEl.append(createElement("div", "sv-pje-axis-title", title));
     const track = createElement("div", "sv-pje-axis-track");
-    let ticks = axisTicks3(domain);
-    if (anchorDay !== null) {
-      const anchorElapsed = toElapsed(anchorDay);
-      const span = domain[1] - domain[0];
-      if (anchorElapsed !== null && span > 0) {
-        const position = (anchorElapsed - domain[0]) / span * 100;
-        ticks = ticks.filter((tick) => Math.abs(tick.position - position) >= 4);
-        ticks.push({ value: anchorDay, elapsed: anchorElapsed, position, anchor: true });
-        ticks.sort((a, b) => a.elapsed - b.elapsed);
-      }
-    }
+    const anchorElapsed = anchorDay === null ? null : toElapsed(anchorDay);
+    const ticks = anchorElapsed === null ? axisTicks3(domain) : anchoredTicks(domain, anchorElapsed);
     const display = this.display();
     for (const tick of ticks) {
       const label = createElement(
@@ -38548,15 +39002,13 @@ var SafetyPatientJourneyExplorer = class {
       this.setExpanded(false);
       return;
     }
-    const drawnIds = new Set(
-      Object.values(this.structured.lanes).flatMap(
-        (lane) => lane.enabled ? lane.drawn.map((event) => event.id) : []
-      )
-    );
+    const drawState = (event) => this.drawState(event);
+    const anchorState = drawState(this.anchoredEvent);
     renderPanel(this.railWrap, this.context, {
       settings: this.effectiveSettings(),
       ...this.display(),
-      drawnIds,
+      drawState,
+      anchorHidden: anchorState === "drawn" || anchorState === "row cap" ? null : anchorState,
       labPool: this.structured.allEvents.filter((event) => event.domain === "LB"),
       expanded: this.root.classList.contains("sv-rail-expanded"),
       onClear: () => this.anchor(null),
@@ -38564,6 +39016,22 @@ var SafetyPatientJourneyExplorer = class {
       onJump: (anchorId) => this.jumpToSource(anchorId)
     });
     this.railWrap.hidden = false;
+  }
+  /**
+   * Whether an event of the current subject is on the timeline, and if not,
+   * why: its lane is off, a filter removed it, or the row cap left it undrawn.
+   * @param {?Object} event An EventRecord of the current subject.
+   * @returns {'drawn'|'lane off'|'filtered out'|'row cap'} The state.
+   * @private
+   */
+  drawState(event) {
+    if (!event || !this.structured) return "filtered out";
+    const lane = this.structured.lanes[event.lane];
+    if (!lane || !lane.enabled) return "lane off";
+    if (!(this.structured.byLane[event.lane] || []).some((e) => e.id === event.id))
+      return "filtered out";
+    if (!lane.drawn.some((e) => e.id === event.id)) return "row cap";
+    return "drawn";
   }
   /**
    * Expand the rail over the chart card, or collapse it back.
@@ -38587,8 +39055,10 @@ var SafetyPatientJourneyExplorer = class {
   renderSourceDrawer() {
     const wasOpen = Boolean(this.drawer && this.drawer.element.open);
     this.drawer = renderSourceDrawer(this.listingWrap, this.structured, this.settings, {
-      open: wasOpen
+      open: wasOpen,
+      warn: !this.sourceLinkWarned
     });
+    this.sourceLinkWarned = true;
   }
   /**
    * Jump to a source row: page the drawer to it, open it, scroll the row into
@@ -38605,24 +39075,9 @@ var SafetyPatientJourneyExplorer = class {
    * @private
    */
   showTooltip(event, button, via) {
-    const lines = tooltipLines3(event, this.effectiveSettings(), {
-      ...this.display(),
-      anchor: this.anchoredEvent
-    });
+    const lines = this.tooltipText(event, button);
     this.hoveredEvent = event;
-    this.footnote.innerHTML = "";
-    this.footnote.append(
-      createElement(
-        "span",
-        "sv-pje-footnote-text",
-        lines.filter((line) => line !== GESTURE_LINE).join(" \xB7 ")
-      )
-    );
-    const open = createElement("button", "sv-pje-open-source", "Open source record");
-    open.type = "button";
-    open.setAttribute("data-sv-focus", "open-source");
-    open.onclick = () => this.jumpToSource(event.sourceAnchorId);
-    this.footnote.append(open);
+    this.writeFootnote(event, lines);
     if (via === "focus" && this.suppressTooltip) return;
     this.tooltipVia = via;
     this.tooltipEl.textContent = lines.join("\n");
@@ -38634,6 +39089,59 @@ var SafetyPatientJourneyExplorer = class {
     left = Math.max(4, Math.min(left, wrap.width - width - 4));
     this.tooltipEl.style.left = `${Math.round(left)}px`;
     this.tooltipEl.style.top = `${Math.round(box.bottom - wrap.top + 6)}px`;
+  }
+  /**
+   * The tooltip lines of a mark, with the records stacked on the same day
+   * (from the overlay's `data-same-day`) named before the gesture line.
+   * @private
+   */
+  tooltipText(event, button) {
+    const lines = tooltipLines3(event, this.effectiveSettings(), {
+      ...this.display(),
+      anchor: this.anchoredEvent
+    });
+    const stacked = button && button.dataset ? button.dataset.sameDay : "";
+    if (stacked) {
+      const n = Number(button.dataset.sameDayCount) || stacked.split("; ").length;
+      lines.splice(
+        lines.length - 1,
+        0,
+        `and ${plural2(n, "more record")} on this day: ${stacked.split("; ").join(", ")}`
+      );
+    }
+    return lines;
+  }
+  /**
+   * Write a mark's text into the footnote with the Open source record button.
+   * @private
+   */
+  writeFootnote(event, lines) {
+    const text3 = lines || tooltipLines3(event, this.effectiveSettings(), {
+      ...this.display(),
+      anchor: this.anchoredEvent
+    });
+    this.footnoteEvent = event;
+    this.footnote.innerHTML = "";
+    this.footnote.append(
+      createElement(
+        "span",
+        "sv-pje-footnote-text",
+        text3.filter((line) => line !== GESTURE_LINE).join(" \xB7 ")
+      )
+    );
+    const open = createElement("button", "sv-pje-open-source", "Open source record");
+    open.type = "button";
+    open.setAttribute("data-sv-focus", "open-source");
+    open.onclick = () => this.jumpToSource(event.sourceAnchorId);
+    this.footnote.append(open);
+  }
+  /**
+   * Empty the footnote: the mark it described is no longer on the page.
+   * @private
+   */
+  clearFootnote() {
+    this.footnoteEvent = null;
+    if (this.footnote) this.footnote.innerHTML = "";
   }
   /**
    * Hide the tooltip; the footnote keeps the last mark's text. With `via`, only
@@ -38654,6 +39162,9 @@ var SafetyPatientJourneyExplorer = class {
    */
   handleEscape(event) {
     if (event.key !== "Escape") return;
+    const target = event.target;
+    const textEntry = target && (target.tagName === "INPUT" && !/^(checkbox|radio|button|submit)$/i.test(target.type) || target.tagName === "TEXTAREA");
+    if (textEntry && this.tooltipEl.hidden) return;
     if (!this.tooltipEl.hidden) {
       this.hideTooltip();
     } else if (this.state.anchorId) {
@@ -38730,13 +39241,14 @@ var SafetyPatientJourneyExplorer = class {
       this.emit("pjeContextChanged", null);
     }
     this.state.subject = id;
+    this.clearFootnote();
     this.render();
-    const { counts, domain } = this.structured;
+    const { counts, extent } = this.structured;
     this.emit("pjeSubjectSelected", {
       subject: this.subject,
       previous,
       counts: { ...counts },
-      domainDays: domain ? [toStudyDay(domain[0]), toStudyDay(domain[1])] : null
+      domainDays: extent ? [extent[0], extent[1]] : null
     });
     this.emit("participantsSelected", { data: [this.subject] });
     this.announce(
@@ -38776,7 +39288,7 @@ var SafetyPatientJourneyExplorer = class {
     this.emit("pjeContextChanged", this.context);
     const c = this.context.counts;
     this.announce(
-      `Anchored on ${this.anchoredEvent.label}, day ${this.anchoredEvent.day}. Window day ${this.context.window.startDay} to day ${this.context.window.endDay}. ${plural2(c.conMeds, "con-med")} active, ${plural2(c.abnormalLabs, "abnormal lab")}, ${plural2(c.doseChanges, "dose change")}, ${plural2(c.priorEvents, "prior event")} with this term.`
+      `Anchored on ${this.anchoredEvent.label}, day ${this.anchoredEvent.day}. Window day ${this.context.window.startDay} to day ${this.context.window.endDay}. ${plural2(c.conMeds, "con-med")} active, ${plural2(c.abnormalLabs, "abnormal lab")}, ${plural2(c.doseChanges, "dose change")}, ${plural2(c.priorEvents, "earlier or same-day event")} with this term.`
     );
     return this;
   }
@@ -38828,10 +39340,6 @@ var SafetyPatientJourneyExplorer = class {
     if (next === this.state.mode) return this;
     this.state.mode = next;
     this.render();
-    this.emit("pjeTimeModeChanged", {
-      mode: next,
-      refDate: this.structured.refDate ? this.structured.refDate.date : null
-    });
     return this;
   }
   /**
@@ -38916,7 +39424,7 @@ var SafetyPatientJourneyExplorer = class {
    * @returns {string} `'day'` or `'date'`.
    */
   getTimeMode() {
-    return this.state.mode;
+    return this.effectiveMode();
   }
   /**
    * Register a listener for one of the module events (pjeSubjectSelected,
@@ -39050,7 +39558,7 @@ var SafetyPatientJourneyExplorer = class {
    * @type {string}
    */
   get timeMode() {
-    return this.state.mode;
+    return this.effectiveMode();
   }
 };
 function patientJourneyExplorer(element = "body", settings = {}) {

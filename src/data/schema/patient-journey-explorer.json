@@ -340,9 +340,9 @@
           "description": "Which day places a medical-history mark: 'collection' (mh_day_col, the day it was recorded) or 'onset' (mh_onset_stdy_col); anything else falls back to 'collection' with a warning."
         },
         "mh_onset_stdy_col": {
-          "type": "string",
-          "default": "ASTDY",
-          "description": "Medical-history onset study day column; the tooltip's onset text by default, and the mark position under mh_day_source 'onset'."
+          "type": ["string", "array"],
+          "default": ["ASTDY", "MHSTDY"],
+          "description": "Medical-history onset study day, as a column name or a fallback chain resolved per row (the ADaM ASTDY, then the SDTM MHSTDY, so the plan's vocabulary places too — D15); the tooltip's onset text by default, and the mark position under mh_day_source 'onset'."
         },
         "mh_strtpt_col": {
           "type": "string",
@@ -475,8 +475,8 @@
         },
         "height": {
           "type": "number",
-          "default": 720,
-          "description": "Pixel height of the lane column; taller stacks scroll and say so (PJE-LANE-009, D21)."
+          "default": 760,
+          "description": "Pixel height of the lane column; taller stacks scroll and say so (PJE-LANE-009, D21). 760 is the height at which the Definition-of-Done participant fits at the row and lab floors."
         },
         "fit_to_height": {
           "type": "boolean",

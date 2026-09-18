@@ -195,8 +195,17 @@ describe('severityStyle / glyphFor / endCapFor (PJE-ACC-002, D16, D23)', () => {
     expect(glyphFor(lb({ LBNRIND: 'HH' }))).toBe('triangle-up-double');
     expect(glyphFor(lb({ LBNRIND: 'LL' }))).toBe('triangle-down-double');
     expect(glyphFor(lb({ LBNRIND: 'NORMAL' }))).toBe('circle-open');
-    expect(glyphFor(lb({ LBNRIND: 'ABNORMAL' }))).toBe('circle-open');
     expect(glyphFor(lb({ LBNRIND: '' }))).toBe('dot');
+    // H / L are the one-letter high / low aliases; an abnormal indicator with
+    // no direction draws the diamond, never the normal ring (PJE-ACC-002).
+    expect(glyphFor(lb({ LBNRIND: 'H' }))).toBe('triangle-up');
+    expect(glyphFor(lb({ LBNRIND: 'L' }))).toBe('triangle-down');
+    expect(glyphFor(lb({ LBNRIND: 'ABNORMAL' }))).toBe('diamond');
+    expect(glyphFor(lb({ LBNRIND: 'ABN' }))).toBe('diamond');
+    // The configured normal value is what reads as normal.
+    const nSettings = syncSettings({ lb_normal_value: 'N' });
+    expect(glyphFor(lb({ LBNRIND: 'N' }), nSettings)).toBe('circle-open');
+    expect(glyphFor(lb({ LBNRIND: 'N' }))).toBe('diamond');
     const changes = deriveDoseChanges(
       ex([
         { EXDOSE: 54, ASTDY: 1, AENDY: 16 },
@@ -222,8 +231,12 @@ describe('severityStyle / glyphFor / endCapFor (PJE-ACC-002, D16, D23)', () => {
     expect(endCapFor(ae({ AENDY: '', AEOUT: 'NOT RECOVERED/NOT RESOLVED' }))).toBe('arrow');
     expect(endCapFor(ae({ AENDY: '', AEOUT: '' }))).toBe('fade');
     expect(endCapFor(cm())).toBe('fade');
-    // An end before the start is a zero-length mark (design §5.1 rule 3), so it caps closed.
+    // An end before the start is a zero-length mark (design §5.1 rule 3), so it caps closed,
+    // and its span says so rather than claiming the end was never recorded.
     expect(endCapFor(ae({ AENDY: 3 }))).toBe('closed');
+    expect(spanLabel(ae({ AENDY: 3 }), { mode: 'day', refDate: REF })).toBe(
+      'Day 30, end day precedes start; shown as a single day'
+    );
     expect(endCapFor(lb())).toBe('closed');
   });
 });
@@ -470,11 +483,10 @@ describe('tooltipLines (design §6.5)', () => {
       { EXDOSE: 81, ASTDY: 17, AENDY: 100 }
     ]);
     const [change] = deriveDoseChanges(exs, settings);
-    expect(tooltipLines(change, settings, { mode: 'day', refDate: REF }).slice(0, 3)).toEqual([
-      '54 → 81 mg',
-      'Dose change · increase',
-      'Day 17'
-    ]);
+    const changeLines = tooltipLines(change, settings, { mode: 'day', refDate: REF });
+    expect(changeLines.slice(0, 3)).toEqual(['54 → 81 mg', 'Dose change · increase', 'Day 17']);
+    // The direction word is on the kind line once, not again as the detail.
+    expect(changeLines.filter((line) => line === 'increase')).toEqual([]);
     expect(tooltipLines(exs[0], settings, { mode: 'day', refDate: REF }).slice(0, 3)).toEqual([
       'XANOMELINE',
       'Exposure',
@@ -496,10 +508,10 @@ describe('tooltipLines (design §6.5)', () => {
   it('PJE-TIME-003: a partial recorded date is shown as recorded; PJE-TIME-004: a disagreeing full date is named (#142)', () => {
     expect(
       tooltipLines(cm({ CMSTDTC: '2011' }), settings, { mode: 'day', refDate: REF })
-    ).toContain('recorded as 2011');
+    ).toContain('start date recorded as 2011 (partial)');
     expect(
       tooltipLines(cm({ CMSTDTC: '2013-12' }), settings, { mode: 'date', refDate: REF })
-    ).toContain('recorded as 2013-12');
+    ).toContain('start date recorded as 2013-12 (partial)');
     const conflict = ae({ AESTDTC: '2014-06-01' });
     expect(conflict.dateConflict).toBe(true);
     expect(tooltipLines(conflict, settings, { mode: 'day', refDate: REF })).toContain(

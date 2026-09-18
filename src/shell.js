@@ -213,9 +213,9 @@ const SHELL_STYLES = `
 .sv-prototype-tag{flex:0 0 auto;text-transform:uppercase;letter-spacing:.05em;font-weight:700;font-size:.68rem;padding:.08rem .4rem;border-radius:999px;background:#d99a2b;color:#fff}
 .sv-prototype-text{flex:1 1 auto}
 @media (max-width:900px){
-.sv-root{flex-direction:column}
-.sv-sidebar{position:static;flex:1 1 auto;width:100%;max-height:none}
-.sv-rail{position:static;flex:1 1 auto;width:100%;max-height:none}
+.sv-root{flex-direction:column;align-items:stretch}
+.sv-sidebar{position:static;flex:1 1 auto;width:100%;box-sizing:border-box;max-height:none}
+.sv-rail{position:static;flex:1 1 auto;width:100%;box-sizing:border-box;max-height:none}
 .sv-rail-expanded .sv-rail{position:static}
 .sv-rail-expanded .sv-main,.sv-rail-expanded .sv-sidebar{filter:none}
 .sv-controls{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:0 1.25rem;align-items:start}

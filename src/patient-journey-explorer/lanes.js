@@ -94,8 +94,15 @@ export const LANE_REGISTRY = {
 
 const BAR_LANES = ['exposure', 'adverseEvents', 'conMeds'];
 
-/** Vertical chrome (px): a group header, the gap under a lane, one footer line. */
-export const GROUP_HEADER_PX = 30;
+/**
+ * Vertical chrome (px): a group header, the gap under a lane, one footer line.
+ * The header is the toggle (28.2px at a 16px root font) plus its 4px margin
+ * and the 4.8px group margin below the last lane, less the 2px lane gap that
+ * margin collapses with: 35px, measured on the rendered DOM (styles.js). An
+ * estimate under the DOM makes the fit miss by a few pixels per group and
+ * prints the "taller than the panel" note for a stack that should have fit.
+ */
+export const GROUP_HEADER_PX = 35;
 export const LANE_GAP_PX = 2;
 export const FOOTER_PX = 18;
 const SINGLE_ROW_FACTOR = 1.5;
@@ -103,10 +110,13 @@ const FILTERED_EMPTY = 'No records match the current filters.';
 
 /**
  * The prose footers of one lane: the row-cap remainder with the lane's sort
- * rule (PJE-LANE-010) and the unplaceable records by label (PJE-LANE-008).
+ * rule (PJE-LANE-010) and the unplaceable records (PJE-LANE-008) — by label,
+ * or by test name for labs, where the label is the value and says nothing
+ * about which record it is. A day of 0 is named as such: it was recorded, it
+ * is just not a day (CDISC has no day 0).
  * @private
  */
-function laneFooters(info, registry) {
+function laneFooters(info, registry, laneKey) {
   const footers = [];
   if (info.truncated > 0) {
     footers.push(
@@ -114,22 +124,43 @@ function laneFooters(info, registry) {
     );
   }
   if (info.unplaceable.length) {
-    const labels = [...new Set(info.unplaceable.map((event) => String(event.label ?? '')))];
-    footers.push(`No start day recorded, so not on the timeline: ${labels.join(', ')}.`);
+    const nameOf = (event) =>
+      laneKey === 'labs' ? String(event.test ?? event.label ?? '') : String(event.label ?? '');
+    const zero = info.unplaceable.filter((event) => event.flags?.dayZero);
+    const rest = info.unplaceable.filter((event) => !zero.includes(event));
+    if (rest.length) {
+      const labels = [...new Set(rest.map(nameOf))];
+      footers.push(`No start day recorded, so not on the timeline: ${labels.join(', ')}.`);
+    }
+    if (zero.length) {
+      const labels = [...new Set(zero.map(nameOf))];
+      footers.push(`Study day 0 is not a valid day, so not on the timeline: ${labels.join(', ')}.`);
+    }
   }
   return footers;
 }
 
 /**
- * The empty-state text of a lane with nothing to draw: the participant has no
- * records in it, or every record was filtered out.
+ * The empty-state text of a lane with nothing to draw, in three states that
+ * must not be confused: the participant has no records in it; records exist
+ * but every one was filtered out; records exist but none has a usable day
+ * (the footer beneath names them). Labs have a fourth: records exist but none
+ * is for a configured test.
  * @private
  */
 function emptyText(laneKey, structured, registry) {
   const has = structured.allEvents.some((event) => event.lane === laneKey);
   if (!has) return registry.empty;
-  const postFilter = (structured.byLane[laneKey] || []).length > 0;
-  return postFilter ? registry.empty : FILTERED_EMPTY;
+  const postFilter = structured.byLane[laneKey] || [];
+  if (!postFilter.length) {
+    if (laneKey === 'labs' && (structured.unconfiguredLabs || []).length) {
+      const n = structured.unconfiguredLabs.length;
+      return `No records for the configured tests; ${n} other lab result${n === 1 ? ' is' : 's are'} in Source records.`;
+    }
+    return FILTERED_EMPTY;
+  }
+  const noun = laneKey === 'labs' ? 'lab result' : registry.noun;
+  return `No ${noun} has a usable study day; see below.`;
 }
 
 /**
@@ -173,7 +204,13 @@ export function planLanes(structured, settings, state) {
       if (key === 'labs') {
         const drawnTests = info.rows;
         const series = structured.labSeries.filter((entry) => drawnTests.includes(entry.test));
-        const footers = laneFooters(info, registry);
+        const footers = laneFooters(info, registry, key);
+        const other = (structured.unconfiguredLabs || []).length;
+        if (other > 0 && series.length) {
+          footers.push(
+            `${other} lab result${other === 1 ? '' : 's'} for tests not in lb_tests ${other === 1 ? 'is' : 'are'} not drawn — see Source records.`
+          );
+        }
         if (structured.labTestsMissing.length) {
           footers.unshift(`No records for: ${structured.labTestsMissing.join(', ')}.`);
         }
@@ -195,7 +232,12 @@ export function planLanes(structured, settings, state) {
             kind: 'chart',
             chartKey: `labs:${entry.test}`,
             test: entry.test,
-            sublabel: entry.unit ? `${entry.test} (${entry.unit})` : entry.test,
+            // The short code fits the 132px gutter; the full name rides on
+            // the lane's title and the overlay's accessible name.
+            sublabel: entry.unit
+              ? `${entry.testCode || entry.test} (${entry.unit})`
+              : entry.testCode || entry.test,
+            title: entry.unit ? `${entry.test} (${entry.unit})` : entry.test,
             series: entry,
             rows: null,
             events: entry.points.map((point) => point.event),
@@ -204,7 +246,7 @@ export function planLanes(structured, settings, state) {
         });
         continue;
       }
-      const footers = laneFooters(info, registry);
+      const footers = laneFooters(info, registry, key);
       if (!info.drawn.length) {
         lanes.push({
           key,

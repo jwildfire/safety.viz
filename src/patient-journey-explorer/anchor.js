@@ -20,10 +20,19 @@
 // is never asserted active (absence of a start cannot prove presence); a
 // con-med whose end was never recorded IS counted active — excluding it would
 // print "(0)" on the Definition-of-Done screen, which is differently wrong —
-// but is counted separately so the panel can say so.
+// but is counted separately so the panel can say so. A record whose recorded
+// end PRECEDED its start is neither: it is a flagged data error that ends on
+// its start day for membership, exactly as it is drawn (PJE-DATA-008).
+//
+// The four context queries run over the subject's WHOLE record (pre-filter,
+// every lane), because the panel presents them as facts about the record —
+// "con-meds active at the anchor", "prior events with this term" — and a
+// display filter must not silently change them. Only `inWindow` is scoped to
+// what is shown (design §4.3: the enabled lanes, post-filter).
 
 import { toElapsed, toStudyDay } from './getScales.js';
 import { isAbnormalByChange, isAbnormalByFlag, labBaseline } from './labs.js';
+import { endBeforeStart } from './normalize.js';
 
 // getScales.js needed the elapsed helpers first (the x scale is built over
 // elapsed days) and cannot import this file; they are re-exported here so the
@@ -51,7 +60,7 @@ const DOMAIN_CODES = ['AE', 'LB', 'EX', 'CM', 'MH', 'DS'];
  * @property {import('./normalize.js').EventRecord[]} conMedsLater Con-meds starting inside the window but after the anchor day.
  * @property {import('./normalize.js').EventRecord[]} abnormalLabs Abnormal labs in the window, each a copy with `flags.abnormalReason` set to `'flag'`, `'change'` or `'both'`.
  * @property {import('./normalize.js').EventRecord[]} doseChanges Dose changes in the window.
- * @property {import('./normalize.js').EventRecord[]} priorEvents Prior adverse events with the anchor's preferred term, over the whole record, most recent first.
+ * @property {import('./normalize.js').EventRecord[]} priorEvents Earlier or same-day adverse events with the anchor's preferred term, over the whole record, most recent first (a same-day record with a smaller source index counts as prior, design §5.7).
  * @property {import('./normalize.js').EventRecord[]} inWindow Everything in the window across the enabled lanes (post-filter), in lane order then day order.
  * @property {{conMeds: number, conMedsLater: number, abnormalLabs: number, doseChanges: number, priorEvents: number, inWindow: number}} counts The length of each list above.
  * @property {{conMedsWithoutStart: number, conMedsEndUnrecorded: number, aeEndUnrecorded: number, unplaceableByDomain: Object<string, number>, truncatedByLane: Object<string, number>}} notEvaluated The honesty counters: con-meds with no start (not asserted active), con-meds counted active whose end was never recorded, adverse events in the window whose end is neither recorded nor ongoing, records kept but not drawn per domain, and rows kept but not drawn per lane (row cap).
@@ -120,6 +129,8 @@ export function windowBounds(anchorDay, days) {
  * The elapsed end of an interval for membership: a closed end, else +Infinity.
  * Both `ongoing` and `unrecorded` run to infinity — the difference between
  * them is how they are labelled and counted, not whether they are candidates.
+ * A record whose end preceded its start ends on its start day (PJE-DATA-008):
+ * the single-day mark it is drawn as, never an open interval.
  * @private
  */
 function elapsedEnd(event) {
@@ -127,8 +138,16 @@ function elapsedEnd(event) {
     const e = toElapsed(event.end);
     return e === null ? toElapsed(event.start) : e;
   }
+  if (endBeforeStart(event)) return toElapsed(event.start);
   return Infinity;
 }
+
+/**
+ * Whether an event's end is genuinely unrecorded — blank, with nothing
+ * asserting continuation — as opposed to recorded but invalid.
+ * @private
+ */
+const endUnrecorded = (event) => event.endState === 'unrecorded' && !endBeforeStart(event);
 
 /**
  * Window membership in elapsed space: intervals match by overlap, points and
@@ -180,8 +199,7 @@ export function conMedsActiveAt(cmEvents, day, settings) {
     if (startE <= dayE && elapsedEnd(event) >= dayE) active.push(event);
   }
   active.sort(byStartThenLabel);
-  const endUnrecorded = active.filter((event) => event.endState === 'unrecorded').length;
-  return { active, withoutStart, endUnrecorded };
+  return { active, withoutStart, endUnrecorded: active.filter(endUnrecorded).length };
 }
 
 /**
@@ -305,10 +323,13 @@ export function priorSameTerm(aeEvents, anchorEvent, settings) {
 
 /**
  * Build the ContextBundle for an anchor (design §4.3): the four queries over
- * the structured subject record, everything in the window across the enabled
- * lanes, the counts and every honesty counter. Returns null when there is no
- * anchor, the anchor is unplaceable, or there is nothing structured.
- * @param {Object} structured The structureData result (needs `subject`, `byLane`, `events`, `allEvents`; reads `mode`, `unplaceableCounts`, `truncatedByLane` when present).
+ * the subject's WHOLE record (`allEvents`, pre-filter, every lane — a display
+ * filter or a lane toggle never changes what the panel presents as a fact
+ * about the record), everything in the window across the enabled lanes
+ * (`events`, post-filter), the counts and every honesty counter. Returns null
+ * when there is no anchor, the anchor is unplaceable, or there is nothing
+ * structured.
+ * @param {Object} structured The structureData result (needs `subject`, `events`, `allEvents`; reads `byLane` as a fallback when `allEvents` is absent, and `mode`, `unplaceableCounts`, `truncatedByLane` when present).
  * @param {?Object} anchorEvent The anchored EventRecord.
  * @param {import('./configure.js').PatientJourneyExplorerSettings} settings The synced settings.
  * @returns {?ContextBundle} The bundle, or null.
@@ -324,20 +345,27 @@ export function buildContext(structured, anchorEvent, settings) {
   const byLane =
     structured.byLane && typeof structured.byLane === 'object' ? structured.byLane : {};
   const allEvents = list(structured.allEvents);
-  const labPool = allEvents.filter((event) => event.domain === 'LB');
+  // The whole record, split by lane. A lab for a test outside `lb_tests` is in
+  // the record (counted, in the drawer) but is not part of the labs lane's
+  // series, so it is not a candidate for the abnormal-labs query either.
+  const record = (lane) =>
+    allEvents.length
+      ? allEvents.filter((event) => event.lane === lane && !event.flags?.unconfiguredTest)
+      : list(byLane[lane]);
+  const labPool = record('labs');
 
-  const active = conMedsActiveAt(byLane.conMeds, anchorEvent.day, settings);
-  const conMedsLater = conMedsStartingLater(byLane.conMeds, bounds, anchorEvent.day);
-  const abnormalLabs = abnormalLabsInWindow(byLane.labs, bounds, settings, {
+  const active = conMedsActiveAt(record('conMeds'), anchorEvent.day, settings);
+  const conMedsLater = conMedsStartingLater(record('conMeds'), bounds, anchorEvent.day);
+  const abnormalLabs = abnormalLabsInWindow(labPool, bounds, settings, {
     baselineEvents: labPool.length ? labPool : undefined
   });
-  const doseChanges = doseChangesInWindow(byLane.doseChanges, bounds);
-  const priorEvents = priorSameTerm(byLane.adverseEvents, anchorEvent, settings);
+  const doseChanges = doseChangesInWindow(record('doseChanges'), bounds);
+  const priorEvents = priorSameTerm(record('adverseEvents'), anchorEvent, settings);
   const inWindowEvents = list(structured.events).filter((event) =>
     inWindow(event, bounds, settings)
   );
   const aeEndUnrecorded = inWindowEvents.filter(
-    (event) => event.domain === 'AE' && event.endState === 'unrecorded'
+    (event) => event.domain === 'AE' && endUnrecorded(event)
   ).length;
 
   const unplaceableByDomain = {};

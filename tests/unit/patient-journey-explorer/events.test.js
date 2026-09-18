@@ -465,3 +465,177 @@ describe('listener removal and teardown (PJE-EVT-003)', () => {
     expect(built.length).toBe(chartsBefore);
   });
 });
+
+describe('the 2026-09-18 verification fixes (PJE-CFG-004, PJE-TIME-001, PJE-DATA-004, PJE-KEY-002, PJE-LANE-003, PJE-FILT-004, PJE-KEY-004)', () => {
+  it('PJE-CFG-004: a cleared context-window field restores the configured width rather than collapsing the window to the anchor day (#142)', () => {
+    const instance = mount({ context_window_days: 20 });
+    instance.anchor('AE-1');
+    instance.setContextWindowDays(5);
+    expect(instance.getContext().window.days).toBe(5);
+    instance.setContextWindowDays('');
+    expect(instance.getContext().window.days).toBe(20);
+    expect(document.querySelector('[data-sv-focus="window-days"]').value).toBe('20');
+    instance.setContextWindowDays(null);
+    expect(instance.getContext().window.days).toBe(20);
+    instance.setContextWindowDays('0');
+    expect(instance.getContext().window.days).toBe(0);
+  });
+
+  it('PJE-TIME-001: date mode with no reference date shows study days everywhere — title, select, getTimeMode — and keeps the preference for a subject that has one (#142)', () => {
+    const instance = mount({ time: { mode: 'date' } }, makeData({ refDate: null }));
+    expect(instance.getTimeMode()).toBe('day');
+    expect(instance.timeMode).toBe('day');
+    expect(document.querySelector('.sv-pje-axis-title').textContent).toBe('Study day');
+    expect(document.querySelector('[data-sv-focus="time-mode"]').value).toBe('day');
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('showing study days'));
+
+    const withRef = mount({ time: { mode: 'date' } });
+    const received = listen('pjeTimeModeChanged');
+    expect(withRef.getTimeMode()).toBe('date');
+    expect(document.querySelector('.sv-pje-axis-title').textContent).toBe('Calendar date');
+    // S2 has no reference date: the display falls back, says so once, and
+    // the mode event fires; selecting S1 again brings the dates back.
+    withRef.selectSubject('S2');
+    expect(withRef.getTimeMode()).toBe('day');
+    expect(document.querySelector('.sv-pje-axis-title').textContent).toBe('Study day');
+    expect(document.querySelector('[data-sv-focus="time-mode"]').value).toBe('day');
+    expect(received.map((detail) => detail.mode)).toEqual(['day']);
+    withRef.selectSubject('S1');
+    expect(withRef.getTimeMode()).toBe('date');
+    expect(received.map((detail) => detail.mode)).toEqual(['day', 'date']);
+  });
+
+  it('PJE-DATA-004: after init() throws on invalid data, a later init() with valid data draws into the shell again, in the host element (#142)', () => {
+    const instance = patientJourneyExplorer('#host');
+    expect(() => instance.init({ ae: [{ USUBJID: 'S1', AETERM: 'x' }] })).toThrow(
+      /Required variable/
+    );
+    const host = document.querySelector('#host');
+    expect(host.querySelector('.sv-warning').textContent).toContain('ae.ASTDY|AESTDY');
+    expect(host.querySelector('.sv-warning').innerHTML).not.toContain('<');
+    instance.init(makeData());
+    expect(host.contains(instance.root)).toBe(true);
+    expect(host.querySelectorAll('.sv-pje-lane').length).toBeGreaterThan(0);
+    expect(host.querySelector('.sv-warning')).toBeNull();
+  });
+
+  it('PJE-DATA-004: the checkInputs message is inserted as text, never as markup (#142)', () => {
+    const instance = patientJourneyExplorer('#host', {
+      domain_col: '<img src=x onerror="window.__xss=1">'
+    });
+    expect(() => instance.init([])).toThrow();
+    expect(document.querySelectorAll('#host img')).toHaveLength(0);
+    expect(document.querySelector('#host .sv-warning').textContent).toContain('<img');
+  });
+
+  it('PJE-KEY-002: Escape inside the subject search or the window field keeps its native meaning and does not clear the anchor (#142)', () => {
+    const instance = mount();
+    instance.anchor('AE-1');
+    const search = document.querySelector('.sv-pje-subject-search');
+    search.focus();
+    search.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    expect(instance.anchoredEvent.id).toBe('AE-1');
+    const days = document.querySelector('[data-sv-focus="window-days"]');
+    days.focus();
+    days.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    expect(instance.anchoredEvent.id).toBe('AE-1');
+    // Anywhere else in the shell, Escape clears the anchor as documented.
+    instance.root.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    expect(instance.anchoredEvent).toBeNull();
+  });
+
+  it('PJE-LANE-003: with every lane turned off the stack says so and the anchoring hint is not shown (#142)', () => {
+    const instance = mount();
+    for (const key of Object.keys(instance.settings.lanes)) instance.setLaneEnabled(key, false);
+    expect(document.querySelector('.sv-pje-lanes').textContent).toContain(
+      'Every lane is turned off'
+    );
+    expect(document.querySelector('.sv-main-annotation').textContent).toBe('');
+    instance.setLaneEnabled('exposure', true);
+    expect(document.querySelector('.sv-pje-lanes').textContent).not.toContain(
+      'Every lane is turned off'
+    );
+    expect(document.querySelector('.sv-main-annotation').textContent).toContain('Select any mark');
+  });
+
+  it('PJE-FILT-004: the absent-column filter warning and the source_url_template warning are printed once per data load, not once per interaction (#142)', () => {
+    const instance = mount({
+      filters: [{ domain: 'AE', value_col: 'NOPE', label: 'Nope' }],
+      source_url_template: 'https://x/{domain}/{NOPE}'
+    });
+    const filterWarnings = () =>
+      warnSpy.mock.calls.filter((call) => /\[ Nope \] filter/.test(String(call[0]))).length;
+    const linkWarnings = () =>
+      warnSpy.mock.calls.filter((call) => /source_url_template/.test(String(call[0]))).length;
+    expect(filterWarnings()).toBe(1);
+    expect(linkWarnings()).toBe(1);
+    instance.anchor('AE-1');
+    instance.setLaneEnabled('labs', false);
+    instance.setContextWindowDays(10);
+    instance.anchor(null);
+    expect(filterWarnings()).toBe(1);
+    expect(linkWarnings()).toBe(1);
+    instance.init(makeData());
+    expect(filterWarnings()).toBe(2);
+    expect(linkWarnings()).toBe(2);
+  });
+
+  it('PJE-KEY-004: clearing the anchor from its own button, or resetting, never drops focus to the document body (#142)', () => {
+    const instance = mount();
+    instance.anchor('AE-1');
+    const clear = document.querySelector('[data-sv-focus="clear-anchor"]');
+    clear.focus();
+    clear.click();
+    expect(instance.anchoredEvent).toBeNull();
+    expect(document.activeElement).not.toBe(document.body);
+    expect(instance.root.contains(document.activeElement)).toBe(true);
+    const reset = document.querySelector('[data-sv-focus="reset"]');
+    reset.focus();
+    reset.click();
+    expect(document.activeElement.getAttribute('data-sv-focus')).toBe('reset');
+  });
+
+  it('PJE-SUBJ-003: the footnote is cleared when its mark leaves the page — another subject, its lane off — and rewritten when the anchor changes (#142)', () => {
+    const instance = mount();
+    const event = instance.findEvent('AE-1');
+    const fakeButton = {
+      getBoundingClientRect: () => ({ left: 0, top: 0, width: 24, height: 24, bottom: 24 }),
+      dataset: {}
+    };
+    instance.showTooltip(event, fakeButton, 'hover');
+    instance.hideTooltip('hover');
+    const footnote = document.querySelector('.sv-footnote');
+    expect(footnote.textContent).toContain('RASH');
+    expect(footnote.querySelector('.sv-pje-open-source')).not.toBeNull();
+    instance.anchor('AE-0');
+    expect(footnote.textContent).toContain('days from anchor');
+    instance.anchor(null);
+    expect(footnote.textContent).not.toContain('from anchor');
+    instance.setLaneEnabled('adverseEvents', false);
+    expect(footnote.textContent).toBe('');
+    instance.setLaneEnabled('adverseEvents', true);
+    instance.showTooltip(event, fakeButton, 'hover');
+    instance.selectSubject('S2');
+    expect(footnote.textContent).toBe('');
+    expect(footnote.querySelector('.sv-pje-open-source')).toBeNull();
+  });
+
+  it('PJE-CTX-001: a lane turned off or a filter never changes the context lists; the panel says why a listed record is not drawn and that the anchor is hidden (#142)', () => {
+    const instance = mount();
+    instance.anchor('AE-1');
+    const before = instance.getContext().counts;
+    instance.setFilter('AESER', 'Y');
+    const after = instance.getContext().counts;
+    expect(after.priorEvents).toBe(before.priorEvents);
+    expect(after.conMeds).toBe(before.conMeds);
+    const rail = document.querySelector('.sv-rail');
+    expect(rail.textContent).toContain(
+      '1 of these 1 is not drawn on the timeline (1 filtered out)'
+    );
+    instance.setFilter('AESER', null);
+    instance.setLaneEnabled('adverseEvents', false);
+    expect(instance.getContext().counts.priorEvents).toBe(before.priorEvents);
+    expect(rail.textContent).toContain('not on the timeline right now (lane off)');
+    expect(rail.textContent).toContain('(1 lane off)');
+  });
+});

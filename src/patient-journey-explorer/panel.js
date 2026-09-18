@@ -4,13 +4,16 @@
 // qualifies, so a number never reads as more than the data supports.
 //
 // Every list row is a real button that jumps to the raw source row in the
-// drawer (PJE-SRC-001). When a lane's row cap left some of a list's records
-// undrawn, the section says so, so the panel count and the visible bar count
-// are reconciled in the UI rather than left to disagree.
+// drawer (PJE-SRC-001). The lists are facts about the WHOLE record; when some
+// of a list's records are not on the timeline — its lane is off, a filter
+// removed them, or the row cap left them undrawn — the section says so and
+// why, so the panel count and the visible bar count are reconciled in the UI
+// rather than left to disagree.
 
 import { createElement } from '../shell.js';
 import { DOMAIN_LABELS, dayLabel, ratioLine, spanLabel } from './getPlugins.js';
 import { labBaseline } from './labs.js';
+import { relativeDay } from './anchor.js';
 
 /** The standing sentence at the foot of the panel. */
 export const CAUSATION_SENTENCE =
@@ -18,6 +21,11 @@ export const CAUSATION_SENTENCE =
 
 const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
 const lowerDay = (text) => text.replace(/^Day\b/, 'day');
+const BASELINE_RULE = {
+  flag: 'the flagged baseline record',
+  day: 'the last value on or before the baseline day',
+  earliest: 'the earliest value'
+};
 
 /**
  * One list row: a button naming the record, its detail line, and the source
@@ -38,11 +46,12 @@ function itemButton({ title, detail, anchorId, onJump }) {
 }
 
 /**
- * A list of records, or its explicit empty state, plus the row-cap
- * reconciliation line when some listed records are not drawn (PC-17).
+ * A list of records, or its explicit empty state, plus the reconciliation
+ * line when some listed records are not on the timeline, naming why (PC-17):
+ * the lane is off, a filter removed them, or the row cap left them undrawn.
  * @private
  */
-function itemList(parent, items, { emptyText, describe, drawnIds, onJump }) {
+function itemList(parent, items, { emptyText, describe, drawState, onJump }) {
   if (!items.length) {
     parent.append(createElement('p', 'sv-pje-empty', emptyText));
     return;
@@ -53,13 +62,20 @@ function itemList(parent, items, { emptyText, describe, drawnIds, onJump }) {
     list.append(itemButton({ title, detail, anchorId: event.sourceAnchorId, onJump }));
   }
   parent.append(list);
-  const notDrawn = items.filter((event) => !drawnIds.has(event.id)).length;
+  const reasons = new Map();
+  for (const event of items) {
+    const state = drawState(event);
+    if (state === 'drawn') continue;
+    reasons.set(state, (reasons.get(state) || 0) + 1);
+  }
+  const notDrawn = [...reasons.values()].reduce((sum, n) => sum + n, 0);
   if (notDrawn > 0) {
+    const why = [...reasons.entries()].map(([reason, n]) => `${n} ${reason}`).join(', ');
     parent.append(
       createElement(
         'p',
         'sv-pje-honesty',
-        `${notDrawn} of these ${items.length} ${notDrawn === 1 ? 'is' : 'are'} not drawn on the timeline (row cap).`
+        `${notDrawn} of these ${items.length} ${notDrawn === 1 ? 'is' : 'are'} not drawn on the timeline (${why}).`
       )
     );
   }
@@ -78,7 +94,7 @@ function endUnrecordedSentence(unrecorded, total) {
   if (unrecorded === total) {
     return `None of these ${total} has a recorded end date; they are shown as active because nothing records them stopping.`;
   }
-  return `${unrecorded} of these ${total} have no recorded end date; they are shown as active because nothing records them stopping.`;
+  return `${unrecorded} of these ${total} ${unrecorded === 1 ? 'has' : 'have'} no recorded end date; ${unrecorded === 1 ? 'it is' : 'they are'} shown as active because nothing records ${unrecorded === 1 ? 'it' : 'them'} stopping.`;
 }
 
 /**
@@ -92,7 +108,8 @@ function endUnrecordedSentence(unrecorded, total) {
  * @param {import('./configure.js').PatientJourneyExplorerSettings} options.settings The synced settings.
  * @param {string} options.mode The display mode (`'day'` or `'date'`).
  * @param {?string} options.refDate The subject's reference date, or null.
- * @param {Set<string>} options.drawnIds The ids of every event drawn on the timeline.
+ * @param {(event: Object) => 'drawn'|'lane off'|'filtered out'|'row cap'} options.drawState Whether an event is on the timeline, and if not, why.
+ * @param {?string} [options.anchorHidden] Why the anchored event itself is not on the timeline (`'lane off'` or `'filtered out'`), or null when it is drawn.
  * @param {Object[]} options.labPool The subject's lab EventRecords (for the baseline ratio).
  * @param {boolean} options.expanded Whether the rail is expanded.
  * @param {() => void} options.onClear Clear-anchor handler.
@@ -101,8 +118,18 @@ function endUnrecordedSentence(unrecorded, total) {
  * @returns {HTMLElement} The panel element.
  */
 export function renderPanel(host, context, options) {
-  const { settings, mode, refDate, drawnIds, labPool, expanded, onClear, onExpand, onJump } =
-    options;
+  const {
+    settings,
+    mode,
+    refDate,
+    drawState,
+    anchorHidden = null,
+    labPool,
+    expanded,
+    onClear,
+    onExpand,
+    onJump
+  } = options;
   const display = { mode, refDate };
   host.innerHTML = '';
   const panel = createElement('div', 'sv-pje-panel');
@@ -132,13 +159,22 @@ export function renderPanel(host, context, options) {
   panel.append(head);
 
   const body = createElement('div', 'sv-pje-panel-body');
+  if (anchorHidden) {
+    body.append(
+      createElement(
+        'p',
+        'sv-pje-honesty',
+        `The anchored event is not on the timeline right now (${anchorHidden}); the lists below are unchanged, because they describe the whole record.`
+      )
+    );
+  }
   const section = (text, className = 'sv-pje-section') => {
     const el = createElement('section', className);
     el.append(createElement('h3', null, text));
     body.append(el);
     return el;
   };
-  const common = { drawnIds, onJump };
+  const common = { drawState, onJump };
 
   // 1. Con-meds active at the anchor, then those starting later in the window.
   const cm = section(`Con-meds active at the anchor (${context.counts.conMeds})`);
@@ -212,8 +248,9 @@ export function renderPanel(host, context, options) {
         const baseline = baselineFor(event.test);
         if (baseline && Number.isFinite(baseline.value) && baseline.value > 0) {
           const multiple = event.value / baseline.value;
+          const rule = BASELINE_RULE[baseline.rule] || baseline.rule;
           parts.push(
-            `${multiple.toFixed(multiple >= 10 ? 0 : 1)} × baseline (${baseline.value}${event.unit ? ` ${event.unit}` : ''}, ${lowerDay(dayLabel(baseline.day, display))})`
+            `${multiple.toFixed(multiple >= 10 ? 0 : 1)} × baseline (${baseline.value}${event.unit ? ` ${event.unit}` : ''}, ${lowerDay(dayLabel(baseline.day, display))}; baseline is ${rule})`
           );
         }
       }
@@ -236,22 +273,38 @@ export function renderPanel(host, context, options) {
     })
   });
 
-  // 4. Prior adverse events with the same preferred term, over the whole record.
+  // 4. Earlier or same-day adverse events with the same preferred term, over
+  //    the whole record. A same-day record (a duplicate, or a co-occurring
+  //    record of the same term) is listed with an offset of "same day" rather
+  //    than read as a recurrence — in the pilot most non-zero counts here are
+  //    same-day pairs, so the heading and every row say which it is.
   const prior = section(
-    `Prior adverse events with the same preferred term (${context.counts.priorEvents})`
+    `Earlier or same-day adverse events with the same preferred term (${context.counts.priorEvents})`
   );
   prior.dataset.section = 'priorEvents';
   prior.append(
-    createElement('p', 'sv-pje-section-note', 'Any time before the anchor, not only in the window.')
+    createElement(
+      'p',
+      'sv-pje-section-note',
+      'Any time up to the anchor, not only in the window; each row says how many days before the anchor it started.'
+    )
   );
   itemList(prior, context.priorEvents, {
     ...common,
-    emptyText: 'No prior adverse events with this preferred term.',
+    emptyText: 'No earlier or same-day adverse events with this preferred term.',
     describe: (event) => {
+      const offset = relativeDay(event.day, context.anchor.day);
+      const before =
+        offset === null
+          ? null
+          : offset === 0
+            ? 'same day as the anchor'
+            : `${plural(-offset, 'day')} before the anchor`;
       const parts = [
         spanLabel(event, display),
+        before,
         event.flags.severity ? event.flags.severity.label : 'severity not recorded'
-      ];
+      ].filter(Boolean);
       if (event.flags.serious) parts.push('SAE');
       return { title: event.label, detail: parts.join(' · ') };
     }

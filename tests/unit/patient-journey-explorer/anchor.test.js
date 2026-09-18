@@ -128,9 +128,15 @@ describe('inWindow (PJE-ANCH-002)', () => {
     const closed = ae({ ASTDY: 5, AENDY: 10 });
     expect(closed.endState).toBe('closed');
     expect(inWindow(closed, bounds, settings)).toBe(false);
+    // An end before the start is a flagged data error, not an open interval
+    // (PJE-DATA-008): it is in the window only when its START day is — as a
+    // single day, exactly as it is drawn.
     const flagged = ae({ ASTDY: 25, AENDY: 3 });
     expect(flagged.endState).toBe('unrecorded');
     expect(inWindow(flagged, bounds, settings)).toBe(true);
+    const flaggedBefore = ae({ ASTDY: 5, AENDY: 3 });
+    expect(inWindow(flaggedBefore, bounds, settings)).toBe(false);
+    expect(inWindow(flaggedBefore, windowBounds(5, 0), settings)).toBe(true);
   });
 
   it('PJE-ANCH-002: a point exactly on either bound matches, and one just outside does not (#142)', () => {

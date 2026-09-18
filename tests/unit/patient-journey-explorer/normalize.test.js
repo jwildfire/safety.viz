@@ -6,6 +6,7 @@ import {
   DROP_REASON_COLUMN,
   detectDomain,
   droppedRowColumns,
+  endBeforeStart,
   normalizeDomain,
   normalizeInput
 } from '../../../src/patient-journey-explorer/normalize.js';
@@ -23,7 +24,7 @@ afterEach(() => {
   warn.mockRestore();
 });
 
-const settings = () => syncSettings({});
+const settings = (overrides = {}) => syncSettings(overrides);
 
 const ae = (extra = {}) => ({
   USUBJID: 'P1',
@@ -213,7 +214,8 @@ describe('normalizeDomain — the shared record shape', () => {
       abnormal: '',
       abnormalReason: '',
       derived: false,
-      direction: null
+      direction: null,
+      dayZero: false
     });
     expect(event.open).toBe(false);
     expect(JSON.stringify(row)).toBe(JSON.stringify(ae()));
@@ -287,6 +289,60 @@ describe('normalizeDomain — the shared record shape', () => {
     }
   });
 
+  it("PJE-LANE-008: study day 0 is not a day — a record whose only day is 0 (or '-0') is kept, unplaceable, and flagged dayZero (#142)", () => {
+    for (const day of ['0', '-0', 0, -0, ' 0 ']) {
+      const { events, dropped } = normalizeDomain([ae({ ASTDY: day })], 'AE', settings());
+      expect(dropped, String(day)).toEqual([]);
+      expect(events[0].placeable, String(day)).toBe(false);
+      expect(events[0].start, String(day)).toBeNull();
+      expect(events[0].day, String(day)).toBeNull();
+      expect(events[0].dayCol, String(day)).toBeNull();
+      expect(events[0].flags.dayZero, String(day)).toBe(true);
+    }
+    // A 0 in the first column of a chain does not shadow a usable day later in it.
+    const { events } = normalizeDomain([ae({ ASTDY: 0, AESTDY: 12 })], 'AE', settings());
+    expect([events[0].start, events[0].dayCol, events[0].placeable]).toEqual([12, 'AESTDY', true]);
+    expect(events[0].flags.dayZero).toBe(false);
+    // The same rule on every point domain.
+    const lb = normalizeDomain(
+      [{ USUBJID: 'P1', LBTEST: 'ALT', LBSTRESN: 1, LBDY: 0 }],
+      'LB',
+      settings()
+    ).events[0];
+    expect([lb.placeable, lb.flags.dayZero]).toEqual([false, true]);
+    const ds = normalizeDomain(
+      [{ USUBJID: 'P1', DSDECOD: 'RANDOMIZED', DSCAT: 'PROTOCOL MILESTONE', DSSTDY: 0 }],
+      'DS',
+      settings()
+    ).events[0];
+    expect([ds.placeable, ds.flags.dayZero]).toEqual([false, true]);
+  });
+
+  it("PJE-DATA-007: the plan's SDTM MHSTDY places a medical-history row under mh_day_source: onset, through the default onset chain (D15) (#142)", () => {
+    const s = settings({ mh_day_source: 'onset' });
+    const { events } = normalizeDomain(
+      [
+        { USUBJID: 'P1', MHTERM: 'ASTHMA', MHSTDY: -10 },
+        { USUBJID: 'P1', MHTERM: 'GOUT', ASTDY: -20, MHSTDY: -30 }
+      ],
+      'MH',
+      s
+    );
+    expect(events.map((event) => [event.start, event.dayCol, event.placeable])).toEqual([
+      [-10, 'MHSTDY', true],
+      [-20, 'ASTDY', true]
+    ]);
+    // Under the default collection-day source the onset column never places
+    // the mark (D18): the row is kept, unplaceable, with its onset in the text.
+    const collection = normalizeDomain(
+      [{ USUBJID: 'P1', MHTERM: 'ASTHMA', MHSTDY: -10 }],
+      'MH',
+      settings()
+    ).events[0];
+    expect(collection.placeable).toBe(false);
+    expect(collection.detail).toContain('onset day -10');
+  });
+
   it('PJE-DATA-007: the day chain resolves per row, left to right, and records the resolving column (#142)', () => {
     const rows = [ae({ ASTDY: 'NA', AESTDY: 12 }), ae({ ASTDY: 5, AESTDY: 9 }), ae({ ASTDY: '7' })];
     const { events } = normalizeDomain(rows, 'AE', settings());
@@ -354,6 +410,8 @@ describe('normalizeDomain — interval end handling (D16)', () => {
     expect(flagged[0][DROP_DOMAIN_COLUMN]).toBe('AE');
     expect(flagged[0].AETERM).toBe('Erythema');
     expect(events[0].flagged).toEqual(['end day AENDY (20) precedes start day (30)']);
+    expect(endBeforeStart(events[0])).toBe(true);
+    expect(endBeforeStart(normalizeDomain([ae()], 'AE', settings()).events[0])).toBe(false);
   });
 
   it('a zero-length event (end === start) stays a closed interval (#142)', () => {

@@ -47,7 +47,7 @@ function chronological(a, b) {
 export class MarkOverlay {
   /**
    * @param {Object} handlers The orchestrator's callbacks.
-   * @param {(event: Object) => string} handlers.describe The accessible name of a mark.
+   * @param {(event: Object, sameDay: string[]) => string} handlers.describe The accessible name of a mark, given the labels of the other records stacked on the same day (empty for a lone mark).
    * @param {(eventId: string) => boolean} handlers.isAnchored Whether an event is the current anchor.
    * @param {(eventId: string, button: HTMLButtonElement) => void} handlers.onActivate Click / Enter / Space on a mark.
    * @param {(eventId: string) => void} handlers.onJump Shift+Enter on a mark.
@@ -126,11 +126,63 @@ export class MarkOverlay {
         buttons = marks.map((mark) => this.buildButton(mark));
         overlayEl.append(...buttons);
       }
+      this.stackSameDay(buttons);
       const wanted = this.activeByLane.get(chartKey);
       const active = buttons.find((button) => button.dataset.eventId === wanted) || buttons[0];
       buttons.forEach((button) => button.setAttribute('tabindex', button === active ? '0' : '-1'));
       if (active) this.activeByLane.set(chartKey, active.dataset.eventId);
     }
+  }
+
+  /**
+   * Buttons that sit on the identical box (same-day records in a one-row
+   * lane: the eight screening-history records of the pilot's opening
+   * participant) would otherwise let the LAST one win every pointer while the
+   * FIRST one is the lane's tab stop. The first (chronological) button is
+   * raised above the others so pointer and keyboard land on the same record,
+   * and it carries the group on `data-same-day` (the other records' labels)
+   * and `data-same-day-count` so its tooltip and accessible name can say
+   * "and N more on this day" — the records are all still reachable by arrow
+   * key and in the source drawer.
+   * @private
+   */
+  stackSameDay(buttons) {
+    const groups = new Map();
+    for (const button of buttons) {
+      const key = `${button.style.left}|${button.style.top}`;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(button);
+    }
+    for (const group of groups.values()) {
+      group.forEach((button, index) => {
+        button.style.zIndex = index === 0 && group.length > 1 ? '1' : '';
+        if (index === 0 && group.length > 1) {
+          button.dataset.sameDayCount = String(group.length - 1);
+          button.dataset.sameDay = group
+            .slice(1)
+            .map((other) => other.dataset.label || '')
+            .join('; ');
+        } else {
+          delete button.dataset.sameDayCount;
+          delete button.dataset.sameDay;
+        }
+      });
+    }
+    for (const button of buttons) {
+      const others = button.dataset.sameDay;
+      button.setAttribute(
+        'aria-label',
+        this.handlers.describe(this.eventOf(button), others ? others.split('; ') : [])
+      );
+    }
+  }
+
+  /**
+   * The event behind a button, from the entry that built it.
+   * @private
+   */
+  eventOf(button) {
+    return button.$pjeEvent || null;
   }
 
   /**
@@ -141,10 +193,12 @@ export class MarkOverlay {
    */
   placeButton(button, mark) {
     const { event } = mark;
+    button.$pjeEvent = event;
     button.dataset.day = Number.isFinite(event.day) ? String(event.day) : '';
+    button.dataset.label = String(event.label ?? '');
     button.dataset.glyph = mark.glyph;
     button.dataset.emphasis = mark.emphasis;
-    button.setAttribute('aria-label', this.handlers.describe(event));
+    button.setAttribute('aria-label', this.handlers.describe(event, []));
     button.setAttribute('aria-pressed', String(Boolean(this.handlers.isAnchored(event.id))));
     const width = Math.max(mark.width, MIN_HIT_PX);
     const height = Math.max(mark.height, MIN_HIT_PX);

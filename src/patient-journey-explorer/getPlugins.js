@@ -21,6 +21,7 @@ import { dayToDate, isFullDate, toElapsed } from './getScales.js';
 import { PJE_DEEMPHASIS, PJE_GLYPHS, PJE_MARKS } from './palette.js';
 import { inWindow, relativeDay } from './anchor.js';
 import { referenceRatio } from './labs.js';
+import { endBeforeStart } from './normalize.js';
 
 /** Human label per domain code (`DOSE` is the derived dose-change record). */
 export const DOMAIN_LABELS = {
@@ -52,8 +53,6 @@ const finite = (value) => typeof value === 'number' && Number.isFinite(value);
 const isEvent = (event) => Boolean(event) && typeof event === 'object';
 const upper = (value) =>
   value === null || value === undefined ? '' : String(value).trim().toUpperCase();
-const endBeforeStart = (event) =>
-  Array.isArray(event.flagged) && event.flagged.some((flag) => /precedes start/.test(String(flag)));
 const domainCode = (event) => (event.flags?.derived ? 'DOSE' : event.domain);
 const usableDomain = (domain) =>
   Array.isArray(domain) && domain.length === 2 && domain.every(finite);
@@ -132,10 +131,15 @@ export function severityStyle(event, theme, settings) {
  * The `$pjeMarks[].glyph` vocabulary for an event: bars for intervals (hatched
  * when an adverse event has no severity), the lab glyph by indicator, the
  * caret by dose direction, a hollow circle for history, a dot for disposition.
+ * A lab indicator the palette does not name is still abnormal when it is not
+ * the configured normal value (`ABNORMAL`, a site's own code): it draws the
+ * direction-unknown glyph, never the normal circle, so shape keeps carrying
+ * abnormality (PJE-ACC-002). A blank indicator is unknown, not abnormal: a dot.
  * @param {Object} event An EventRecord.
+ * @param {import('./configure.js').PatientJourneyExplorerSettings} [settings] The synced settings (`lb_normal_value`; `NORMAL` when absent).
  * @returns {string} The glyph name.
  */
-export function glyphFor(event) {
+export function glyphFor(event, settings) {
   if (!isEvent(event)) return 'dot';
   if (event.flags?.derived) {
     return PJE_GLYPHS.doseChange[upper(event.flags.direction)] || 'caret-up';
@@ -148,8 +152,9 @@ export function glyphFor(event) {
       return 'bar';
     case 'LB': {
       const flag = upper(event.flags?.abnormal);
-      if (!flag) return 'dot';
-      return PJE_GLYPHS.labFlag[flag] || PJE_GLYPHS.labFlag.NORMAL;
+      if (!flag || flag === 'NA') return 'dot';
+      if (flag === upper(settings?.lb_normal_value ?? 'NORMAL')) return PJE_GLYPHS.labFlag.NORMAL;
+      return PJE_GLYPHS.labFlag[flag] || PJE_GLYPHS.labFlag.ABNORMAL;
     }
     case 'MH':
       return 'circle-open';
@@ -184,7 +189,7 @@ export function markGeometry(event, { lane, domain, settings, theme } = {}) {
   const start = toElapsed(event.kind === 'interval' ? event.start : event.day);
   if (start === null) return null;
   const hasDomain = usableDomain(domain);
-  const glyph = glyphFor(event);
+  const glyph = glyphFor(event, settings);
   const endCap = endCapFor(event);
   let x0 = start;
   let x1 = start;
@@ -252,9 +257,10 @@ function startLabel(event, options) {
 
 /**
  * The event's span in the active mode (design §6.5): `Day 30 to day 115`,
- * `Day 30 to ongoing (<outcome>)`, `Day 30, end not recorded`, a bare day for a
- * point, or `No study day recorded` for an unplaceable record. The terminal
- * phrase comes from `endState`, never from a bare missing value.
+ * `Day 30 to ongoing (<outcome>)`, `Day 30, end not recorded`, `Day 30, end
+ * day precedes start; shown as a single day` for the flagged data error, a
+ * bare day for a point, or `No study day recorded` for an unplaceable record.
+ * The terminal phrase comes from `endState`, never from a bare missing value.
  * @param {Object} event An EventRecord.
  * @param {{mode?: string, refDate?: ?string}} [options] The display mode and reference date.
  * @returns {string} The span text.
@@ -276,6 +282,7 @@ export function spanLabel(event, options = {}) {
       .toLowerCase();
     return `${start} to ongoing${outcome ? ` (${outcome})` : ''}`;
   }
+  if (endBeforeStart(event)) return `${start}, end day precedes start; shown as a single day`;
   return `${start}, end not recorded`;
 }
 
@@ -321,6 +328,17 @@ function domainLine(event) {
 }
 
 /**
+ * The detail line, except where it would repeat the kind line: a dose
+ * change's detail is its direction word, already on the line above.
+ * @private
+ */
+function detailLine(event) {
+  const detail = String(event.detail ?? '').trim();
+  if (event.flags?.derived && detail === String(event.flags.direction ?? '')) return '';
+  return detail;
+}
+
+/**
  * The tooltip's first line: the label, prefixed with the test name for labs.
  * @private
  */
@@ -334,7 +352,7 @@ function titleLine(event) {
  * severity · relatedness; the span; `SAE` for a serious event; `severity not
  * recorded` for a blank severity; the `× ULN` / `× LLN` ratio for a lab; the
  * `+N days from anchor` line only when anchored; the category; the detail;
- * `recorded as <partial date>`; the date-conflict sentence; the column that
+ * `start date recorded as <partial date> (partial)`; the date-conflict sentence; the column that
  * placed the mark (D15); and the gesture line.
  * @param {Object} event An EventRecord.
  * @param {import('./configure.js').PatientJourneyExplorerSettings} settings The synced settings.
@@ -359,10 +377,10 @@ export function tooltipLines(event, settings, { mode, refDate, anchor } = {}) {
   }
   const category = String(event.category ?? '').trim();
   if (category && !title.includes(category)) lines.push(category);
-  const detail = String(event.detail ?? '').trim();
+  const detail = detailLine(event);
   if (detail) lines.push(detail);
   const rawDate = String(event.rawDate ?? '').trim();
-  if (rawDate && !isFullDate(rawDate)) lines.push(`recorded as ${rawDate}`);
+  if (rawDate && !isFullDate(rawDate)) lines.push(`start date recorded as ${rawDate} (partial)`);
   if (event.dateConflict && rawDate) {
     lines.push(`recorded date ${rawDate} disagrees with day ${event.day}`);
   }
@@ -527,7 +545,7 @@ export function buildLaneDatasets(lane, events, { domain, settings, theme, bound
           x,
           y: event.value,
           event,
-          glyph: glyphFor(event),
+          glyph: glyphFor(event, settings),
           endCap: 'closed',
           emphasis: emphasisOf(event, bounds, settings),
           nrind: upper(event.flags?.abnormal),
@@ -562,7 +580,7 @@ export function buildLaneDatasets(lane, events, { domain, settings, theme, bound
           x,
           y: lane,
           event,
-          glyph: glyphFor(event),
+          glyph: glyphFor(event, settings),
           endCap: 'closed',
           emphasis: emphasisOf(event, bounds, settings),
           reference: lane === 'disposition' ? Boolean(event.flags?.reference) : false

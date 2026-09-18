@@ -130,7 +130,7 @@ describe('DEFAULT_SETTINGS', () => {
     expect(DEFAULT_SETTINGS.mh_cat_col).toBe('MHCAT');
     expect(DEFAULT_SETTINGS.mh_day_col).toBe('MHDY');
     expect(DEFAULT_SETTINGS.mh_day_source).toBe('collection');
-    expect(DEFAULT_SETTINGS.mh_onset_stdy_col).toBe('ASTDY');
+    expect(DEFAULT_SETTINGS.mh_onset_stdy_col).toEqual(['ASTDY', 'MHSTDY']);
     expect(DEFAULT_SETTINGS.mh_strtpt_col).toBe('MHSTRTPT');
     expect(DEFAULT_SETTINGS.mh_enrtpt_col).toBe('MHENRTPT');
     expect(DEFAULT_SETTINGS.mh_onset_dtc_col).toBe('MHSTDTC');
@@ -150,7 +150,7 @@ describe('DEFAULT_SETTINGS', () => {
     expect(DEFAULT_SETTINGS.max_rows_per_lane).toBe(12);
     expect(DEFAULT_SETTINGS.lab_height).toBe(96);
     expect(DEFAULT_SETTINGS.lab_height_min).toBe(64);
-    expect(DEFAULT_SETTINGS.height).toBe(720);
+    expect(DEFAULT_SETTINGS.height).toBe(760);
     expect(DEFAULT_SETTINGS.fit_to_height).toBe(true);
     expect(DEFAULT_SETTINGS.width).toBe('100%');
     expect(DEFAULT_SETTINGS.page_size).toBe(10);
@@ -402,6 +402,30 @@ describe('lanes and lane groups (PJE-CFG-003)', () => {
 });
 
 describe('coercion (PJE-CFG-004 and merge rules)', () => {
+  it('PJE-CFG-003: a lane naming a group that is not a lane_groups key warns and falls back — to its default group, else the first configured group (#142)', () => {
+    const typo = syncSettings({ lanes: { exposure: { group: 'nowhere' } } });
+    expect(typo.lanes.exposure.group).toBe('treatment');
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('lanes.exposure.group "nowhere"'));
+    const spaced = syncSettings({ lanes: { exposure: { group: 'treatment ' } } });
+    expect(spaced.lanes.exposure.group).toBe('treatment');
+    // A custom list keeps exactly the groups the caller set; lanes whose
+    // default group is gone land in the first configured group, warned.
+    const custom = syncSettings({ lane_groups: [{ key: 'events' }] });
+    expect(custom.lane_groups.map((group) => group.key)).toEqual(['events']);
+    expect(custom.lanes.exposure.group).toBe('events');
+    expect(custom.lanes.conMeds.group).toBe('events');
+    expect(custom.lanes.adverseEvents.group).toBe('events');
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('lanes.exposure.group "treatment" is not a lane_groups key')
+    );
+  });
+
+  it('PJE-CFG-003: a lane_groups list that drops a default group leaves no lane orphaned — every lane belongs to a configured group (#142)', () => {
+    const synced = syncSettings({ lane_groups: [{ key: 'context', collapsed: 1 }] });
+    const keys = synced.lane_groups.map((group) => group.key);
+    for (const lane of Object.values(synced.lanes)) expect(keys).toContain(lane.group);
+  });
+
   it('PJE-CFG-004: context_window_days coerces to a non-negative integer defaulting to 30; zero is legal (#142)', () => {
     expect(syncSettings({ context_window_days: '30' }).context_window_days).toBe(30);
     expect(syncSettings({ context_window_days: -5 }).context_window_days).toBe(0);

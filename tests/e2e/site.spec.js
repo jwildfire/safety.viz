@@ -204,7 +204,7 @@ test.describe('docs site', () => {
       await expect(rail.locator('[data-section="abnormalLabs"]')).toContainText('1.06 × ULN');
       await expect(rail.locator('[data-section="doseChanges"]')).toContainText('54 → 81');
       await expect(rail.locator('[data-section="priorEvents"] h3')).toHaveText(
-        `Prior adverse events with the same preferred term (${COUNTS.priorEvents})`
+        `Earlier or same-day adverse events with the same preferred term (${COUNTS.priorEvents})`
       );
       await expect(rail.locator('[data-section="priorEvents"] .sv-pje-empty')).toHaveCount(1);
 
@@ -228,6 +228,61 @@ test.describe('docs site', () => {
         });
       }
       expect(errors).toEqual([]);
+    });
+
+    test("PJE-KEY-001: the seeded participant's eight same-day history records share one mark whose pointer target names the others, and the journey fits the default height (#142)", async ({
+      page
+    }) => {
+      await page.goto('/_site/patient-journey-explorer/index.html');
+      await page.waitForFunction(() => window.__safetyPatientJourneyInstance?.laneCharts?.size);
+      // The pointer lands on the same (first, chronological) record the
+      // keyboard tab stop starts on, and that button enumerates the rest.
+      await page
+        .locator('.sv-pje-lane[data-lane="medicalHistory"] .sv-pje-mark')
+        .first()
+        .scrollIntoViewIfNeeded();
+      const stacked = await page.evaluate(() => {
+        const buttons = [
+          ...document.querySelectorAll('.sv-pje-lane[data-lane="medicalHistory"] .sv-pje-mark')
+        ];
+        const boxes = buttons.map((b) => b.getBoundingClientRect());
+        const hits = boxes.map((box) => {
+          const el = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+          return el && el.closest('.sv-pje-mark') ? el.closest('.sv-pje-mark') : null;
+        });
+        const winner = hits[0];
+        return {
+          count: buttons.length,
+          allSame: hits.every((hit) => hit === winner),
+          winnerIsTabStop: winner ? winner.getAttribute('tabindex') === '0' : false,
+          winnerLabel: winner ? winner.getAttribute('aria-label') : '',
+          winnerCount: winner ? Number(winner.dataset.sameDayCount) : 0,
+          badge: [
+            ...window.__safetyPatientJourneyInstance.laneCharts.get('medicalHistory').$pjeLabels
+          ].map((label) => label.text)
+        };
+      });
+      expect(stacked.count).toBe(8);
+      expect(stacked.allSame).toBe(true);
+      expect(stacked.winnerIsTabStop).toBe(true);
+      expect(stacked.winnerCount).toBe(7);
+      expect(stacked.winnerLabel).toContain('7 more records at this mark');
+      expect(stacked.badge).toContain('×8');
+      // The Definition-of-Done participant fits the DEFAULT height (D21/D32):
+      // the demo passes none.
+      const fit = await page.evaluate(() => {
+        const lanes = document.querySelector('.sv-pje-lanes');
+        const instance = window.__safetyPatientJourneyInstance;
+        return {
+          scrollHeight: lanes.scrollHeight,
+          clientHeight: lanes.clientHeight,
+          stackHeight: instance.stackHeight,
+          height: instance.settings.height
+        };
+      });
+      expect(fit.height).toBe(760);
+      expect(fit.scrollHeight).toBeLessThanOrEqual(fit.clientHeight + 1);
+      expect(fit.stackHeight).toBeLessThanOrEqual(fit.height);
     });
   });
 });

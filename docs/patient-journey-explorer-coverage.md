@@ -81,7 +81,7 @@ rather than reading pixels or private state. The pilot-data numbers live only in
 | PJE-CFG-002    | PJE-CFG-002        | #142  | `configure.test.js` — the full alias accept and reject lists; the plan's literal settings object yields three live filters and a day column per domain     |
 | PJE-CFG-003    | PJE-CFG-003        | #142  | `configure.test.js` — partial lane override back-fills, a null lane disables, an unknown lane warns and is dropped                                         |
 | PJE-CFG-004    | PJE-CFG-004        | #142  | `configure.test.js` — the window coercion table, zero legal                                                                                                |
-| PJE-SUBJ-003   | PJE-SUBJ-003       | #142  | `configure.test.js` — `selectSubject` with an unknown id leaves the subject unchanged and warns once                                                       |
+| PJE-SUBJ-003   | PJE-SUBJ-003       | #142  | `events.test.js` — `selectSubject` with an unknown id leaves the subject unchanged and warns once; a known id selects it and clears the anchor first       |
 | PJE-DATA-001   | PJE-DATA-001       | #142  | `normalize.test.js` — both input forms produce an identical domain map; case-insensitive keys and values, `ADAE` → AE                                      |
 | PJE-DATA-002   | PJE-DATA-002       | #142  | `normalize.test.js` — an unknown or blank domain value drops the row with its reason text                                                                  |
 | PJE-DATA-004   | PJE-DATA-004       | #142  | `checkInputs.test.js` — one error naming every missing column per supplied domain; the all-empty message                                                   |
@@ -116,7 +116,8 @@ rather than reading pixels or private state. The pilot-data numbers live only in
   same day. The matrix rows carrying them say so; the module ships marked
   Experimental until his review of the whole.
 - **The demo study cannot exercise every branch.** It carries only 3 serious
-  adverse events, 81% of its con-meds are `UNCODED`, its medical-history verbatim
+  adverse events, 83% of its con-med courses are `UNCODED` (81% of the raw
+  per-visit rows), its medical-history verbatim
   terms are scrubbed placeholders, no con-med carries an ongoing indicator (so
   every blank-ended con-med is "end not recorded"), and no lab result carries an
   `HH` / `LL` tier. Each of those branches is evidenced by the synthetic fixture
@@ -125,3 +126,25 @@ rather than reading pixels or private state. The pilot-data numbers live only in
   cohort similarity, cross-study aggregation, a QT/ECG lane, a dark-mode toggle
   (the tokens ship, the switch does not), a "zoom to window" control, and the R
   widget binding ([obot.roadmap#350](https://github.com/jwildfire/obot.roadmap/issues/350)).
+- **OS dark mode applies only under `data-theme="auto"`.** Both dark token
+  blocks ship (`:root[data-theme="dark"]` forces dark; the
+  `prefers-color-scheme: dark` block is gated on `:root[data-theme="auto"]`),
+  and the `matchMedia` change listener re-resolves the theme, but a dark-OS
+  visitor to the light-only site sees a light card: following the OS without
+  the attribute would put a dark chart inside a light page. Recorded as
+  decision D31 in the design's §14 (2026-09-18 verification pass).
+- **The default `height` is 760, not the 720 the design's D21 computed.** The
+  design's stack arithmetic omitted the 35px group headers, the 2px lane gaps
+  and the 18px footers; at those, the Definition-of-Done participant measures
+  736px at the row and lab floors, so 720 scrolled by 16px and the demo carried
+  an undocumented `height: 760` override. The default is now 760, the demo
+  passes no height, and PJE-LANE-009 asserts the fit on the synthetic fixture
+  while the demo-page spec asserts it on the seeded participant (D32).
+- **The verification pass of 2026-09-18** also made the four context lists
+  whole-record facts (a display filter never changes them; the panel names why
+  a listed record is not drawn), padded the drawing domain by one day so the
+  last day's cell is inside the plot, treated study day 0 and an end before
+  the start as what they are (unplaceable; a single day), kept labs for tests
+  outside `lb_tests` in the record (counted, in the drawer, named in the
+  footer) rather than dropping them silently, and gave the axis round
+  days-from-anchor ticks. Each is pinned by a test named in the tables above.

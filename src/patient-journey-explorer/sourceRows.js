@@ -142,10 +142,10 @@ function domainRows(structured, domain) {
  * @param {HTMLElement} host The listing element (the shell's listingWrap).
  * @param {Object} structured The structureData result.
  * @param {import('./configure.js').PatientJourneyExplorerSettings} settings The synced settings.
- * @param {{open?: boolean}} [options] `open`: whether the drawer starts open (default false).
+ * @param {{open?: boolean, warn?: boolean}} [options] `open`: whether the drawer starts open (default false); `warn`: whether to log the missing-column warning for `source_url_template` (default true; the orchestrator passes false after the first render of a data load so the warning is printed once, not once per interaction).
  * @returns {{element: HTMLDetailsElement, count: number, jumpTo: (anchorId: string) => boolean, open: () => void}} The drawer controller: `jumpTo` pages to the row, then scrolls, focuses and flashes it.
  */
-export function renderSourceDrawer(host, structured, settings, { open = false } = {}) {
+export function renderSourceDrawer(host, structured, settings, { open = false, warn = true } = {}) {
   host.innerHTML = '';
   const pageSize = Math.max(1, Number(settings.page_size) || 10);
   const template = settings.source_url_template;
@@ -246,7 +246,7 @@ export function renderSourceDrawer(host, structured, settings, { open = false } 
   }
 
   summary.textContent = `Source records (${total})`;
-  if (missingLinks.size) {
+  if (missingLinks.size && warn) {
     console.warn(
       `patient-journey-explorer: source_url_template names a column some ${[...missingLinks].join(
         ', '

@@ -18,7 +18,7 @@
 // mark and flagged, never converted into an open interval (PJE-DATA-008).
 
 import { arrayify } from '../histogram/configure.js';
-import { datePart, resolveEventDate } from './getScales.js';
+import { datePart, resolveEventDate, toElapsed } from './getScales.js';
 
 /** Column added to every dropped or flagged row copy: why the row left the chart. */
 export const DROP_REASON_COLUMN = '__pje_dropReason';
@@ -83,7 +83,7 @@ const DERIVED_PREFIX = '__pje_';
  * @property {?string} testCode LB only: the test code.
  * @property {?number} lln LB only: lower limit of normal.
  * @property {?number} uln LB only: upper limit of normal.
- * @property {Object} flags `{ severity: {key,label,rank}|null, serious, related, abnormal, abnormalReason, derived, direction, reference? }`.
+ * @property {Object} flags `{ severity: {key,label,rank}|null, serious, related, abnormal, abnormalReason, derived, direction, dayZero, reference?, unconfiguredTest? }` — `dayZero` when the only day recorded was the impossible day 0; `unconfiguredTest` (labs, set by structureData) when the test is outside `lb_tests`.
  * @property {string[]} flagged Data-quality flags raised for this record (end before start), empty normally.
  * @property {Object} source The exact raw object the host passed.
  * @property {number} sourceIndex The row's index within its domain array.
@@ -108,15 +108,37 @@ function parseNumber(value) {
 }
 
 /**
- * First column in a chain whose cell parses to a finite number.
+ * First column in a chain whose cell parses to a USABLE study day: finite and
+ * not 0 (CDISC has no day 0, design §5.6). A cell of 0 is treated like a blank
+ * so a later column in the chain can still place the row; a row whose only day
+ * is 0 comes out unplaceable and is named as such (PJE-LANE-008).
  * @private
  */
-function resolveNumber(row, chain) {
+function resolveDay(row, chain) {
+  let zero = false;
   for (const column of arrayify(chain).map(String)) {
     const value = parseNumber(row[column]);
-    if (value !== null) return { value, column };
+    if (value !== null && toElapsed(value) !== null) return { value, column, zero: false };
+    if (value === 0) zero = true;
   }
-  return { value: null, column: null };
+  return { value: null, column: null, zero };
+}
+
+/**
+ * Whether a record's recorded end day preceded its start day — the flagged
+ * data error of design §5.1 rule 3. Such a record is kept, drawn as a
+ * single-day mark, and treated as ending on its start day for window
+ * membership and the active-at-anchor rule (PJE-DATA-008); it is never an
+ * open-ended interval, whatever its `endState` says about the missing end.
+ * @param {Object} event An EventRecord.
+ * @returns {boolean} True when the record carries the end-before-start flag.
+ */
+export function endBeforeStart(event) {
+  return (
+    Boolean(event) &&
+    Array.isArray(event.flagged) &&
+    event.flagged.some((flag) => /precedes start/.test(String(flag)))
+  );
 }
 
 /**
@@ -230,8 +252,8 @@ export function droppedRowColumns(rows) {
  * @private
  */
 function resolveInterval(row, settings, prefix, endChainKey) {
-  const startRes = resolveNumber(row, settings[`${prefix}_stdy_col`]);
-  const endRes = resolveNumber(row, settings[endChainKey]);
+  const startRes = resolveDay(row, settings[`${prefix}_stdy_col`]);
+  const endRes = resolveDay(row, settings[endChainKey]);
   const outCol = settings[`${prefix}_out_col`];
   const outcome = outCol ? text(row[outCol]) : '';
   const ongoingValues = settings[`${prefix}_ongoing_values`] || [];
@@ -252,7 +274,7 @@ function resolveInterval(row, settings, prefix, endChainKey) {
         outcome && ongoingValues.includes(outcome.toUpperCase()) ? 'ongoing' : 'unrecorded';
     }
   }
-  return { start, end, endState, dayCol: startRes.column, outcome, flag };
+  return { start, end, endState, dayCol: startRes.column, dayZero: startRes.zero, outcome, flag };
 }
 
 /**
@@ -336,7 +358,7 @@ function deriveFields(row, domain, settings) {
           reason: `non-numeric result (${s.lb_value_col} = "${text(row[s.lb_value_col])}")`
         };
       }
-      const dayRes = resolveNumber(row, s.lb_day_col);
+      const dayRes = resolveDay(row, s.lb_day_col);
       const unit = text(row[s.lb_unit_col]);
       const lln = parseNumber(row[s.lb_lo_col]);
       const uln = parseNumber(row[s.lb_hi_col]);
@@ -347,6 +369,7 @@ function deriveFields(row, domain, settings) {
         end: null,
         endState: 'closed',
         dayCol: dayRes.column,
+        dayZero: dayRes.zero,
         rawDate: resolveText(row, s.lb_dtc_col),
         label: [String(value), unit].filter(Boolean).join(' '),
         detail: `${test}${range}`,
@@ -380,8 +403,8 @@ function deriveFields(row, domain, settings) {
         return { reason: `missing medical-history term (${s.mh_term_col}, ${s.mh_decod_col})` };
       }
       const onsetSource = s.mh_day_source === 'onset';
-      const collection = resolveNumber(row, s.mh_day_col);
-      const onset = resolveNumber(row, s.mh_onset_stdy_col);
+      const collection = resolveDay(row, s.mh_day_col);
+      const onset = resolveDay(row, s.mh_onset_stdy_col);
       const onsetDtc = resolveText(row, s.mh_onset_dtc_col);
       const placed = onsetSource ? onset : collection;
       const strtpt = text(row[s.mh_strtpt_col]);
@@ -402,6 +425,7 @@ function deriveFields(row, domain, settings) {
         end: null,
         endState: 'closed',
         dayCol: placed.column,
+        dayZero: placed.zero,
         rawDate: onsetSource ? onsetDtc : '',
         label: decod || term,
         detail:
@@ -414,7 +438,7 @@ function deriveFields(row, domain, settings) {
       const decod = text(row[s.ds_decod_col]);
       if (!decod) return { reason: `missing disposition decode (${s.ds_decod_col})` };
       const term = text(row[s.ds_term_col]);
-      const dayRes = resolveNumber(row, s.ds_stdy_col);
+      const dayRes = resolveDay(row, s.ds_stdy_col);
       const cat = text(row[s.ds_cat_col]);
       const cats = s.ds_reference_cats || [];
       return {
@@ -423,6 +447,7 @@ function deriveFields(row, domain, settings) {
         end: null,
         endState: 'closed',
         dayCol: dayRes.column,
+        dayZero: dayRes.zero,
         rawDate: resolveText(row, s.ds_dtc_col),
         label: decod,
         detail: term && term !== decod ? term : '',
@@ -464,7 +489,7 @@ export function normalizeDomain(rows, domain, settings) {
       dropped.push(droppedCopy(row, fields ? fields.reason : 'unknown domain', domain));
       return;
     }
-    const { flag, flags: domainFlags, ...rest } = fields;
+    const { flag, flags: domainFlags, dayZero, ...rest } = fields;
     const start = rest.start;
     const record = {
       id: `${domain}-${index}`,
@@ -477,7 +502,7 @@ export function normalizeDomain(rows, domain, settings) {
       endState: rest.endState,
       open: rest.endState !== 'closed',
       day: start,
-      placeable: start !== null,
+      placeable: toElapsed(start) !== null,
       clippedStart: false,
       dayCol: rest.dayCol,
       date: null,
@@ -503,6 +528,7 @@ export function normalizeDomain(rows, domain, settings) {
         abnormalReason: '',
         derived: false,
         direction: null,
+        dayZero: Boolean(dayZero) && start === null,
         ...domainFlags
       },
       flagged: flag ? [flag] : [],

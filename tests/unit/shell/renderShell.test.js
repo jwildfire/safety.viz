@@ -64,7 +64,15 @@ describe('renderShell rail slot (PPRF-RAIL-001)', () => {
       style.textContent.indexOf('@media (max-width:900px)')
     );
     expect(responsive).toContain(
-      '.sv-rail{position:static;flex:1 1 auto;width:100%;max-height:none}'
+      '.sv-rail{position:static;flex:1 1 auto;width:100%;box-sizing:border-box;max-height:none}'
+    );
+    // The stacked column stretches its children to the container's width:
+    // otherwise a wide table inside .sv-main sizes the column to its content
+    // and the page scrolls sideways on a phone; and the sidebar's padding
+    // fits inside its 100% width rather than adding to it.
+    expect(responsive).toContain('.sv-root{flex-direction:column;align-items:stretch}');
+    expect(responsive).toContain(
+      '.sv-sidebar{position:static;flex:1 1 auto;width:100%;box-sizing:border-box;max-height:none}'
     );
   });
 });

@@ -102,6 +102,21 @@ describe('conMedsActiveAt (PJE-CTX-001, D8, D16)', () => {
     expect(result.endUnrecorded).toBe(1);
   });
 
+  it('PJE-CTX-001: a con-med whose recorded end precedes its start is active only on its start day and is not counted as end-unrecorded (PJE-DATA-008) (#142)', () => {
+    const [invalid] = cmEvents([{ ASTDY: 100, AENDY: 50 }]);
+    expect(invalid.endState).toBe('unrecorded');
+    expect(invalid.flagged).toHaveLength(1);
+    expect(conMedsActiveAt([invalid], 300)).toEqual({
+      active: [],
+      withoutStart: 0,
+      endUnrecorded: 0
+    });
+    const onDay = conMedsActiveAt([invalid], 100);
+    expect(onDay.active.map((e) => e.id)).toEqual(['CM-0']);
+    expect(onDay.endUnrecorded).toBe(0);
+    expect(conMedsActiveAt([invalid], 101).active).toEqual([]);
+  });
+
   it('PJE-CTX-001: a con-med with no usable start day is never asserted active and is counted in withoutStart (#142)', () => {
     const cms = cmEvents([{ ASTDY: '', AENDY: 40 }, { ASTDY: 'NA' }, { ASTDY: 1 }]);
     const result = conMedsActiveAt(cms, 30, settings);
@@ -416,6 +431,29 @@ describe('buildContext (PJE-PANEL-001, PJE-EVT-001)', () => {
     });
     expect(typeof bundle.generatedAt).toBe('string');
     expect(Number.isNaN(Date.parse(bundle.generatedAt))).toBe(false);
+  });
+
+  it('PJE-CTX-004: the four lists are facts about the whole record — an active display filter that narrows byLane changes neither the prior events nor the active con-meds (#142)', () => {
+    const data = structured();
+    const anchor = data.byLane.adverseEvents[0];
+    const unfiltered = buildContext(data, anchor, settings);
+    // A serious-only AE filter and a con-med class filter applied: byLane and
+    // events shrink, allEvents (the record) does not.
+    const filtered = {
+      ...data,
+      byLane: { ...data.byLane, adverseEvents: [anchor], conMeds: [] },
+      events: data.events.filter((e) => e.lane !== 'adverseEvents' || e.id === anchor.id)
+    };
+    const bundle = buildContext(filtered, anchor, settings);
+    expect(bundle.priorEvents.map((e) => e.id)).toEqual(unfiltered.priorEvents.map((e) => e.id));
+    expect(bundle.counts.priorEvents).toBe(1);
+    expect(bundle.counts.conMeds).toBe(unfiltered.counts.conMeds);
+    expect(bundle.counts.conMedsLater).toBe(unfiltered.counts.conMedsLater);
+    expect(bundle.counts.abnormalLabs).toBe(unfiltered.counts.abnormalLabs);
+    expect(bundle.notEvaluated.conMedsWithoutStart).toBe(1);
+    // Only inWindow follows what is shown.
+    expect(bundle.inWindow.map((e) => e.id)).toEqual(['AE-0', 'LB-1', 'DOSE-1']);
+    expect(bundle.counts.inWindow).toBe(3);
   });
 
   it('PJE-ANCH-002: the window honours the configured context_window_days, including zero (#142)', () => {

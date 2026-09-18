@@ -10,6 +10,7 @@ import {
   applyFilters,
   laneSortKey,
   liveFilters,
+  recordExtent,
   sharedDomain,
   structureData,
   subjectIndex
@@ -272,36 +273,40 @@ describe('sharedDomain (PJE-LANE-004, D10, D18)', () => {
 
   it('PJE-LANE-004: the domain is an ELAPSED pair over every placeable day, with the minimum clamped to at most study day -14 (#142)', () => {
     const data = subjectRows('P1', { cm: [], mh: [] });
-    expect(sharedDomain(events(data), settings())).toEqual([-14, 183]);
+    expect(sharedDomain(events(data), settings())).toEqual([-14, 184]);
     const late = subjectRows('P1', { cm: [], mh: [], lb: [], ds: [] });
-    expect(sharedDomain(events(late), settings())).toEqual([-14, 183]);
+    expect(sharedDomain(events(late), settings())).toEqual([-14, 184]);
+    // The drawing domain is padded one elapsed day past the last day so that
+    // day's cell is inside the plot; the reported extent is the record's own.
+    expect(recordExtent(events(data), settings())).toEqual([-14, 184]);
   });
 
   it('PJE-LANE-004: a con-med starting more than PRE_STUDY_CLAMP days before every other domain does not extend the domain (#142)', () => {
     expect(PRE_STUDY_CLAMP).toBe(60);
     const data = subjectRows('P1', { mh: [] });
-    expect(sharedDomain(events(data), settings())).toEqual([-14, 183]);
+    expect(sharedDomain(events(data), settings())).toEqual([-14, 184]);
     const near = subjectRows('P1', {
       mh: [],
       cm: [{ USUBJID: 'P1', CMTRT: 'RECENT', ASTDY: -40, AENDY: '' }]
     });
-    expect(sharedDomain(events(near), settings())).toEqual([-40, 183]);
+    expect(sharedDomain(events(near), settings())).toEqual([-40, 184]);
     const only = { cm: [{ USUBJID: 'P1', CMTRT: 'ALONE', ASTDY: -9894, AENDY: -9000 }] };
-    expect(sharedDomain(events(only), settings())).toEqual([-9894, -9000]);
+    expect(sharedDomain(events(only), settings())).toEqual([-9894, -8999]);
   });
 
   it('PJE-LANE-004: medical history is not clamped under the default collection-day source, and is clamped under mh_day_source: onset (#142)', () => {
     const data = subjectRows('P1', { cm: [] });
-    expect(sharedDomain(events(data), settings())).toEqual([-37, 183]);
+    expect(sharedDomain(events(data), settings())).toEqual([-37, 184]);
     const onset = settings({ mh_day_source: 'onset' });
-    expect(sharedDomain(events(data, onset), onset)).toEqual([-14, 183]);
+    expect(sharedDomain(events(data, onset), onset)).toEqual([-14, 184]);
   });
 
-  it('PJE-LANE-004: a zero-width domain is padded a day either side, and nothing placeable yields null (#142)', () => {
+  it('PJE-LANE-004: a single day still yields a one-day-wide domain, and nothing placeable yields null (#142)', () => {
     const one = { lb: [{ USUBJID: 'P1', LBTEST: 'ALT', LBSTRESN: 1, LBDY: 30 }] };
-    expect(sharedDomain(events(one), settings())).toEqual([-14, 29]);
+    expect(sharedDomain(events(one), settings())).toEqual([-14, 30]);
     const single = { lb: [{ USUBJID: 'P1', LBTEST: 'ALT', LBSTRESN: 1, LBDY: -20 }] };
-    expect(sharedDomain(events(single), settings())).toEqual([-21, -19]);
+    expect(sharedDomain(events(single), settings())).toEqual([-20, -19]);
+    expect(recordExtent(events(single), settings())).toEqual([-20, -20]);
     const none = { ae: [{ USUBJID: 'P1', AETERM: 'x', ASTDY: '' }] };
     expect(sharedDomain(events(none), settings())).toBeNull();
     expect(sharedDomain([], settings())).toBeNull();
@@ -421,16 +426,41 @@ describe('structureData (PJE-LANE-008/010, PJE-DATA-003)', () => {
     for (const events of Object.values(structured.byLane)) {
       for (const event of events) expect(event.subject).toBe('P1');
     }
-    expect(structured.counts).toEqual({ EX: 2, AE: 5, LB: 3, CM: 5, MH: 1, DS: 2 });
+    // Every lab row is counted — the Glucose row is not a configured test, so
+    // it is in the record (the drawer, the count) but never drawn.
+    expect(structured.counts).toEqual({ EX: 2, AE: 5, LB: 4, CM: 5, MH: 1, DS: 2 });
     expect(structured.labTestsMissing).toEqual([
       'Aspartate Aminotransferase',
       'Alkaline Phosphatase'
     ]);
   });
 
+  it('PJE-DATA-003: a lab for a test outside lb_tests stays in the record — counted, in allEvents, named — but is never drawn, filtered, anchored, window-counted or part of the domain (#142)', () => {
+    const structured = structureData(domainsOf(data()), settings(), state());
+    expect(structured.unconfiguredLabs.map((e) => e.test)).toEqual(['Glucose']);
+    expect(structured.unconfiguredLabs[0].flags.unconfiguredTest).toBe(true);
+    expect(structured.allEvents.filter((e) => e.domain === 'LB')).toHaveLength(4);
+    expect(structured.byLane.labs.map((e) => e.test)).not.toContain('Glucose');
+    expect(structured.events.map((e) => e.test)).not.toContain('Glucose');
+    expect(structured.labSeries.map((s) => s.test)).not.toContain('Glucose');
+    expect(structured.lanes.labs.rows).not.toContain('Glucose');
+    // A far-off unconfigured lab day does not stretch the shared axis.
+    const far = subjectRows('P1', {
+      cm: [],
+      mh: [],
+      lb: [{ USUBJID: 'P1', LBTEST: 'Glucose', LBSTRESN: 5, LBDY: 900 }]
+    });
+    expect(structureData(domainsOf(far), settings(), state()).domain).toEqual([-14, 184]);
+    // With lb_tests empty every test is configured and Glucose draws.
+    const all = structureData(domainsOf(data()), settings({ lb_tests: [] }), state());
+    expect(all.unconfiguredLabs).toEqual([]);
+    expect(all.byLane.labs.map((e) => e.test)).toContain('Glucose');
+  });
+
   it('PJE-LANE-004: the shared domain is an elapsed pair, the clamped con-med is flagged clippedStart, and events carry the subject reference date (#142)', () => {
     const structured = structureData(domainsOf(data()), settings(), state());
-    expect(structured.domain).toEqual([-37, 183]);
+    expect(structured.domain).toEqual([-37, 184]);
+    expect(structured.extent).toEqual([-37, 184]);
     expect(structured.refDate).toEqual({ date: '2013-12-16', rule: 'ref_col' });
     const ancient = structured.byLane.conMeds.find((e) => e.label === 'ANCIENT');
     expect(ancient.clippedStart).toBe(true);

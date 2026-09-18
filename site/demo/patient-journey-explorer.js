@@ -82,13 +82,12 @@
       files.forEach(function (domain, i) {
         data[domain] = parseCsv(texts[i]);
       });
-      // Four lab tests plus the screening-history lane put the opening
-      // participant's stack at 736px at the row floors, 16px over the
-      // 720px default; a slightly taller panel keeps the whole journey on
-      // one screen without scrolling (PJE-LANE-009).
+      // The extract ships the medical-history onset day as MHONSDY
+      // (docs/DATA_SOURCES.md); the module's default chain reads ASTDY then
+      // MHSTDY, so the demo names the column or the day would go unread.
       const instance = SafetyViz.patientJourneyExplorer('#container', {
         subject: '01-716-1447',
-        height: 760,
+        mh_onset_stdy_col: 'MHONSDY',
         lb_tests: [
           'Alanine Aminotransferase',
           'Aspartate Aminotransferase',

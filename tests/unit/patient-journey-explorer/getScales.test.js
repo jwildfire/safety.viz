@@ -3,6 +3,7 @@ import { syncSettings } from '../../../src/patient-journey-explorer/configure.js
 import {
   PLOT_GUTTER_LEFT,
   PLOT_GUTTER_RIGHT,
+  anchoredTicks,
   axisTicks,
   buildScales,
   dateDiffDays,
@@ -210,6 +211,31 @@ describe('axisTicks', () => {
   it('degrades to the endpoints for an unusable domain (#142)', () => {
     expect(axisTicks(null)).toEqual([]);
     expect(axisTicks([5, 5])).toEqual([{ value: 6, elapsed: 5, position: 0 }]);
+  });
+
+  it('PJE-ANCH-004: anchored ticks are round offsets from the anchor — 0 always, then multiples of the step — not the study-day ticks shifted (#142)', () => {
+    const domain = [toElapsed(-14), toElapsed(184)];
+    const labelsFor = (anchorDay) =>
+      anchoredTicks(domain, toElapsed(anchorDay)).map((tick) =>
+        formatTick(tick.value, { mode: 'day', anchorDay })
+      );
+    // Anchor on day 17 (elapsed 16): the demo's HYPERHIDROSIS read -16 · 0 · +43 · +103 · +163.
+    expect(labelsFor(17)).toEqual(['-30', '0', '+30', '+60', '+90', '+120', '+150']);
+    expect(labelsFor(30)).toEqual(['-30', '0', '+30', '+60', '+90', '+120', '+150']);
+    const ticks = anchoredTicks(domain, toElapsed(30));
+    expect(ticks.find((tick) => tick.anchor).value).toBe(30);
+    for (const tick of ticks) {
+      expect(tick.elapsed).toBe(toElapsed(tick.value));
+      expect(tick.position).toBeGreaterThanOrEqual(0);
+      expect(tick.position).toBeLessThanOrEqual(100);
+    }
+    // A short journey steps in weeks; the offsets are still round.
+    expect(
+      anchoredTicks([toElapsed(-14), toElapsed(40)], toElapsed(10)).map((tick) =>
+        formatTick(tick.value, { mode: 'day', anchorDay: 10 })
+      )
+    ).toEqual(['-21', '-14', '-7', '0', '+7', '+14', '+21', '+28']);
+    expect(anchoredTicks(null, 5)).toEqual([]);
   });
 });
 

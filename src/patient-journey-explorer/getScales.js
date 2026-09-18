@@ -249,6 +249,49 @@ export function axisTicks(domain, target = 6) {
 }
 
 /**
+ * Ticks for the axis strip while ANCHORED (PJE-ANCH-004): round offsets from
+ * the anchor in elapsed space — multiples of the same step ladder, always
+ * including 0 — so the relabelled axis reads `−30 · 0 · +30 · +60` rather than
+ * the study-day ticks arithmetically shifted to `−16 · 0 · +43 · +103`. The
+ * day-1 tick is not carried over: its offset is an arbitrary number, and the
+ * day-1 rule is still drawn on every lane. Positions are percentages of the
+ * same domain, so the lanes and the strip still agree.
+ * @param {?[number, number]} domain The shared ELAPSED-day domain.
+ * @param {number} anchorElapsed The anchor's elapsed day.
+ * @param {number} [target=8] The target number of intervals (a little finer than the study-day strip, so a ±30 window gets 30-day ticks over a six-month journey).
+ * @returns {Array<{value: number, elapsed: number, position: number, anchor: boolean}>} The ticks, ascending; `value` is the study day each tick labels.
+ */
+export function anchoredTicks(domain, anchorElapsed, target = 8) {
+  if (!usableDomain(domain) || !Number.isFinite(anchorElapsed)) return axisTicks(domain, target);
+  const [lo, hi] = domain;
+  const span = hi - lo;
+  if (span <= 0) return axisTicks(domain, target);
+  const intervals = Math.max(1, Number(target) || 6);
+  let step = STEP_LADDER[STEP_LADDER.length - 1];
+  for (const candidate of STEP_LADDER) {
+    if (span / candidate <= intervals) {
+      step = candidate;
+      break;
+    }
+  }
+  while (span / step > intervals) step *= 10;
+  const offsets = new Set([0]);
+  for (let k = Math.ceil((lo - anchorElapsed) / step); k * step <= hi - anchorElapsed; k += 1) {
+    offsets.add(k * step);
+  }
+  return [...offsets]
+    .map((offset) => anchorElapsed + offset)
+    .filter((elapsed) => elapsed >= lo && elapsed <= hi)
+    .sort((a, b) => a - b)
+    .map((elapsed) => ({
+      value: toStudyDay(elapsed),
+      elapsed,
+      anchor: elapsed === anchorElapsed,
+      position: ((elapsed - lo) / span) * 100
+    }));
+}
+
+/**
  * The Chart.js layout block every lane shares: zero left padding (the y scale
  * is pinned to PLOT_GUTTER_LEFT instead) and the same right padding.
  * @returns {{padding: {left: number, right: number, top: number, bottom: number}}} The layout block.
