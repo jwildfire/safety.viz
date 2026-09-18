@@ -11,3 +11,14 @@ _api/
 # would break the byte-for-byte audit trail back to the reviewed originals.
 requirements/*.md
 !requirements/README.md
+
+# Eval run output (safety.viz#146): generated JSON and Markdown reports, already
+# gitignored. Formatting them would fail `npm run format:check` for anyone who
+# has run the harness locally.
+tests/evals/reports/*.json
+tests/evals/reports/*.md
+!tests/evals/reports/README.md
+
+# Generated from skills/patient-journey-narratives/ by scripts/narratives/build-skills.mjs
+# (#146); its bytes are the compiler's, and a test pins them to a fresh compile.
+src/patientJourneyNarratives/skills.generated.js

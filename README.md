@@ -124,10 +124,12 @@ src/
 └── data/schema/          # JSON Schema data contracts, one per chart
 site/                     # documentation-site sources (gallery, demos, shell)
 docs/                     # requirement-coverage docs + evidence data
+skills/                   # prompt skills for the AI narrative layer, compiled into src/
 scripts/                  # build, site, API-reference, and evidence tooling
 tests/
 ├── unit/                 # Vitest specs
-└── e2e/                  # Playwright specs + fixtures
+├── e2e/                  # Playwright specs + fixtures
+└── evals/                # narrative evaluation harness + golden set
 dist/                     # committed, versioned esbuild bundles
 ```
 

@@ -2,6 +2,7 @@ import { build } from 'esbuild';
 import { readFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import { buildSkillsModule } from './narratives/build-skills.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const rootDir = path.resolve(__dirname, '..');
@@ -12,6 +13,9 @@ export const distDirFor = (version) => path.join(rootDir, 'dist', `safety.viz-${
 // Emits the two bundles the design settles on: an IIFE build (global `SafetyViz`,
 // doubles as the UMD-style asset widgets load via <script>) and an ESM build.
 export async function buildAll(outDir) {
+  // The narrative skills folder compiles into one module the bundle imports
+  // (#146); a stale compile would otherwise ship silently.
+  buildSkillsModule();
   mkdirSync(outDir, { recursive: true });
 
   const common = {

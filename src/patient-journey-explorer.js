@@ -73,6 +73,11 @@ import {
 import { MarkOverlay, createLiveRegion } from './patient-journey-explorer/keyboard.js';
 import { renderPanel } from './patient-journey-explorer/panel.js';
 import { renderSourceDrawer } from './patient-journey-explorer/sourceRows.js';
+import { cardTitle, renderNarrativeCard } from './patient-journey-explorer/narratives.js';
+import { createDataService } from './patientJourneyNarratives/dataService.js';
+import { createScope } from './patientJourneyNarratives/index.js';
+import { normalizeRowId } from './patientJourneyNarratives/tools/index.js';
+import { NARRATIVE_KINDS, SLUG_BY_SLOT } from './patientJourneyNarratives/kinds.js';
 
 // Only what the lanes use: no Legend (lane labels replace it), no Tooltip
 // (the overlay makes the canvas unreachable — one DOM tooltip instead, RF-6),
@@ -95,12 +100,14 @@ const EVENT_NAMES = [
   'pjeLaneToggled',
   'pjeFilterChanged',
   'pjeTimeModeChanged',
+  'pjeNarrativeAction',
   'participantsSelected'
 ];
 const CALLBACK_BY_EVENT = {
   pjeSubjectSelected: (settings, detail) => settings.on_select_subject?.(detail.subject, detail),
   pjeEventAnchored: (settings, detail) => settings.on_anchor_event?.(detail.anchor, detail.context),
-  pjeContextChanged: (settings, detail) => settings.on_context_change?.(detail)
+  pjeContextChanged: (settings, detail) => settings.on_context_change?.(detail),
+  pjeNarrativeAction: (settings, detail) => settings.on_narrative_action?.(detail)
 };
 const DOMAIN_NOUNS = {
   EX: 'exposure record',
@@ -199,6 +206,9 @@ class SafetyPatientJourneyExplorer {
     this.suppressTooltip = false;
     this.sourceLinkWarned = false;
     this.lastEffectiveMode = null;
+    this.narrativeEntries = new Map();
+    this.narrativeSeq = 0;
+    this.citedMarkId = null;
     this.destroyed = false;
     this.state = this.seedState();
 
@@ -223,9 +233,18 @@ class SafetyPatientJourneyExplorer {
     this.cueEl = createElement('div', 'sv-pje-cue');
     this.cueEl.setAttribute('role', 'note');
     this.cueEl.hidden = true;
+    // The participant-summary narrative card sits above the cue and the lanes
+    // (#146, PJE-NARR-009); empty until a slot is bound and a draft arrives.
+    this.narrativeBannerEl = createElement('div', 'sv-pje-narrative-banner');
+    this.chartWrap.insertBefore(this.narrativeBannerEl, this.mainAnnotation);
     this.chartWrap.insertBefore(this.cueEl, this.mainAnnotation);
     this.chartWrap.insertBefore(this.lanesEl, this.mainAnnotation);
     this.chartWrap.insertBefore(this.axisEl, this.mainAnnotation);
+    // The on-demand narrative tray beneath the axis strip (#146, PJE-NARR-014):
+    // its controls and cards live outside the lane stack so the stack's height
+    // budget (D21) is untouched.
+    this.narrativeTrayEl = createElement('div', 'sv-pje-ai-tray');
+    this.chartWrap.insertBefore(this.narrativeTrayEl, this.mainAnnotation);
     this.tooltipEl = createElement('div', 'sv-pje-tooltip');
     this.tooltipEl.setAttribute('role', 'tooltip');
     this.tooltipEl.hidden = true;
@@ -426,6 +445,7 @@ class SafetyPatientJourneyExplorer {
     this.anchoredEvent = null;
     this.context = null;
     this.clearFootnote();
+    this.narrativeEntries.clear();
     this.sourceLinkWarned = false;
     this.subjectList = subjectIndex(domains, this.settings);
     this.liveFilterSpecs = liveFilters(this.settings.filters, domains);
@@ -459,6 +479,8 @@ class SafetyPatientJourneyExplorer {
     if ('time' in overrides) this.state.mode = this.settings.time.mode;
     if ('filters' in overrides) this.state.filters = initFilterState(this.settings.filters);
     if ('subject' in overrides && this.settings.subject) this.state.subject = this.settings.subject;
+    // New slot functions mean a new generator: drafts from the old one are dropped.
+    if ('narratives' in overrides) this.narrativeEntries.clear();
     this.lanesEl.style.maxHeight = `${this.settings.height}px`;
     this.element.style.width = this.settings.width;
     if (!this.domains) return this;
@@ -831,10 +853,17 @@ class SafetyPatientJourneyExplorer {
     }
 
     this.updateNotes();
+    this.citedMarkId = null;
+    this.syncNarratives();
     // The panel first: showing or hiding the rail changes the main column's
     // width, and the lane charts must be sized to the layout they will live in.
     this.renderPanel();
     this.buildLanes();
+    // The cards after the lanes: a citation chip says whether its mark is on
+    // the timeline, which only the rebuilt overlay can answer.
+    this.renderNarrativeBanner();
+    this.mountPanelNarrative();
+    this.renderNarrativeTray();
     this.renderSourceDrawer();
     this.renderAnnotation();
     this.renderCue();
@@ -1197,6 +1226,459 @@ class SafetyPatientJourneyExplorer {
       onJump: (anchorId) => this.jumpToSource(anchorId)
     });
     this.railWrap.hidden = false;
+    this.mountPanelNarrative();
+  }
+
+  // ---------------------------------------------------------------------------
+  // AI narratives (#146, obot.roadmap#351, PJE-NARR-009 … 014). The orchestrator
+  // owns the entries — which narrative is requested for the current subject,
+  // its draft, the scope hash at request time — and narratives.js draws the
+  // cards. A slot with no function bound requests nothing and renders nothing.
+  // ---------------------------------------------------------------------------
+
+  /**
+   * The bound slot function for a narrative kind, or null.
+   * @private
+   */
+  narrativeSlot(slot) {
+    const slots = this.settings.narratives;
+    return slots && typeof slots[slot] === 'function' ? slots[slot] : null;
+  }
+
+  /**
+   * The scope helper over this instance's live record: the same grounding
+   * tool and hash the runtime uses, so a draft's `input_hash` and the
+   * renderer's staleness check agree (PJE-NARR-012).
+   * @private
+   */
+  narrativeScope() {
+    return createScope(
+      createDataService({
+        domains: this.domains || {},
+        settings: this.settings,
+        structured: (subject) =>
+          this.structured && this.structured.subject === subject ? this.structured : null
+      })
+    );
+  }
+
+  /**
+   * The run() inputs of a slot for a key (the anchor id or the lab test).
+   * @private
+   */
+  narrativeInputs(slot, key) {
+    const subject = this.subject;
+    switch (slot) {
+      case 'eventContext':
+        return { subject, anchor_row_id: key, window_days: this.state.windowDays };
+      case 'labTrajectory':
+        return { subject, test: key };
+      default:
+        return { subject };
+    }
+  }
+
+  /**
+   * Request a narrative from its slot function and keep the entry; the card
+   * shows a pending state until the promise settles. A later request for the
+   * same slot and key supersedes an earlier one still in flight.
+   * @private
+   */
+  requestNarrative(slot, key = null) {
+    const fn = this.narrativeSlot(slot);
+    if (!fn || !this.subject) return null;
+    const inputs = this.narrativeInputs(slot, key);
+    const slug = SLUG_BY_SLOT[slot];
+    let hash = null;
+    try {
+      hash = this.narrativeScope().scopeHash(slug, inputs);
+    } catch (error) {
+      warn(`could not hash the ${slug} scope: ${error && error.message}`);
+    }
+    const id = `${this.uid}-ai-${(this.narrativeSeq += 1)}`;
+    const labelEvent = slot === 'eventContext' ? this.findEvent(key) : null;
+    const entry = {
+      id,
+      slot,
+      kind: slug,
+      subject: this.subject,
+      key: key === null || key === undefined ? null : String(key),
+      label: labelEvent ? labelEvent.label : slot === 'labTrajectory' ? String(key) : null,
+      inputs,
+      hash,
+      status: 'loading',
+      draft: null,
+      stale: false,
+      expanded: slot !== 'subjectSummary',
+      collapsible: slot === 'subjectSummary',
+      editing: false,
+      error: null
+    };
+    this.narrativeEntries.set(`${slot}|${entry.key ?? ''}`, entry);
+    const args =
+      slot === 'eventContext'
+        ? [this.subject, key, { windowDays: this.state.windowDays, hash }]
+        : slot === 'labTrajectory'
+          ? [this.subject, key, { hash }]
+          : [this.subject, { hash }];
+    Promise.resolve()
+      .then(() => fn(...args))
+      .then((draft) => {
+        if (this.destroyed || this.narrativeEntries.get(`${slot}|${entry.key ?? ''}`) !== entry)
+          return;
+        if (!draft || typeof draft !== 'object' || !Array.isArray(draft.sentences)) {
+          throw new Error('the narrative slot did not return a draft');
+        }
+        entry.draft = draft;
+        entry.status = 'ready';
+        entry.error = null;
+        this.refreshNarrativeCards();
+        this.announce(`AI narrative ready: ${cardTitle(entry)}.`);
+      })
+      .catch((error) => {
+        if (this.destroyed || this.narrativeEntries.get(`${slot}|${entry.key ?? ''}`) !== entry)
+          return;
+        entry.status = 'error';
+        entry.error = `The narrative could not be drafted: ${error && error.message ? error.message : error}`;
+        warn(
+          `the ${slug} narrative slot failed: ${error && error.message ? error.message : error}`
+        );
+        this.refreshNarrativeCards();
+      });
+    return entry;
+  }
+
+  /**
+   * Reconcile the narrative entries with the render state: drop another
+   * subject's entries and a stale anchor's card, request the participant
+   * summary and the anchored event's context when their slots are bound,
+   * re-request the event context when the window width changed (emitting a
+   * regenerate action), and recompute staleness for every ready entry.
+   * @private
+   */
+  syncNarratives() {
+    const entries = this.narrativeEntries;
+    for (const [key, entry] of [...entries]) {
+      if (entry.subject !== this.subject) entries.delete(key);
+    }
+    if (!this.settings.narratives || !this.subject) {
+      entries.clear();
+      return;
+    }
+    if (this.narrativeSlot('subjectSummary') && !entries.has('subjectSummary|')) {
+      this.requestNarrative('subjectSummary');
+    }
+    const anchorId = this.anchoredEvent ? this.anchoredEvent.id : null;
+    for (const [key, entry] of [...entries]) {
+      if (entry.slot === 'eventContext' && entry.key !== anchorId) entries.delete(key);
+    }
+    if (anchorId && this.narrativeSlot('eventContext')) {
+      const existing = entries.get(`eventContext|${anchorId}`);
+      if (!existing) this.requestNarrative('eventContext', anchorId);
+      else if (existing.inputs.window_days !== this.state.windowDays) {
+        this.emitNarrativeAction('regenerate', existing, { reason: 'window' });
+        this.requestNarrative('eventContext', anchorId);
+      }
+    }
+    let scope = null;
+    for (const entry of entries.values()) {
+      if (entry.status !== 'ready' || !entry.hash) continue;
+      try {
+        scope = scope || this.narrativeScope();
+        entry.stale = scope.scopeHash(entry.kind, entry.inputs) !== entry.hash;
+      } catch {
+        entry.stale = false;
+      }
+    }
+  }
+
+  /**
+   * The card handlers narratives.js calls back into.
+   * @private
+   */
+  narrativeHandlers() {
+    return {
+      describe: (rowId) => {
+        const id = normalizeRowId(rowId);
+        const event = this.findEvent(id);
+        // A lab record's label is its value; the chip names the test too.
+        const label = !event
+          ? id
+          : event.domain === 'LB' && event.test
+            ? `${event.test} ${event.label}`
+            : event.label;
+        return { label, onTimeline: Boolean(this.markButton(id)) };
+      },
+      onCite: (rowId, options) => this.citeRow(rowId, options),
+      onAction: (type, entry) => this.handleNarrativeAction(type, entry),
+      onToggle: (entry, expanded) => {
+        entry.expanded = expanded;
+        this.withFocusRestore(() => this.refreshNarrativeCards());
+      },
+      onEditSave: (entry, sentences) => {
+        entry.editing = false;
+        entry.draft = { ...entry.draft, sentences, status: 'edited' };
+        this.emitNarrativeAction('edit', entry, { editedSentences: sentences });
+        this.withFocusRestore(() => this.refreshNarrativeCards());
+      }
+    };
+  }
+
+  /**
+   * Draw one entry's card.
+   * @private
+   */
+  narrativeCard(entry) {
+    return renderNarrativeCard(entry, this.narrativeHandlers());
+  }
+
+  /**
+   * The mark button for an event id, or null when it is not on the timeline.
+   * @private
+   */
+  markButton(id) {
+    return this.lanesEl.querySelector(
+      `.sv-pje-mark[data-event-id="${String(id).replace(/"/g, '')}"]`
+    );
+  }
+
+  /**
+   * Light the cited mark on the timeline and move keyboard focus to it, or
+   * open the row's source record when the mark is not drawn (its lane is off,
+   * a filter removed it, the row cap) or when asked to jump (PJE-NARR-011).
+   * @param {string} rowId The cited row id (`AE-7`).
+   * @param {Object} [options] Options: `jump` (boolean) opens the source record instead of lighting the mark.
+   * @returns {SafetyPatientJourneyExplorer} The instance, for chaining.
+   */
+  citeRow(rowId, { jump = false } = {}) {
+    const id = normalizeRowId(rowId);
+    const button = this.markButton(id);
+    const event = this.findEvent(id);
+    if (jump || !button) {
+      if (event) this.jumpToSource(event.sourceAnchorId);
+      if (!button)
+        this.announce(
+          `${event ? event.label : id} is not on the timeline; opened its source record.`
+        );
+      return this;
+    }
+    this.clearCitedMark();
+    button.classList.add('is-cited');
+    this.citedMarkId = id;
+    if (typeof button.scrollIntoView === 'function') button.scrollIntoView({ block: 'nearest' });
+    this.overlay.focusMark(button);
+    this.announce(`Cited: ${event ? event.label : id}.`);
+    return this;
+  }
+
+  /**
+   * Remove the citation highlight.
+   * @private
+   */
+  clearCitedMark() {
+    if (!this.citedMarkId) return;
+    for (const lit of this.lanesEl.querySelectorAll('.sv-pje-mark.is-cited'))
+      lit.classList.remove('is-cited');
+    this.citedMarkId = null;
+  }
+
+  /**
+   * A reviewer action on a card: accept, reject and regenerate emit and leave
+   * the draft as it is (the host application decides what accepting means and
+   * passes the accepted draft back through refreshNarrative); edit opens the
+   * in-place form; regenerate also re-requests the draft.
+   * @private
+   */
+  handleNarrativeAction(type, entry) {
+    if (type === 'edit') {
+      entry.editing = true;
+      this.withFocusRestore(() => this.refreshNarrativeCards());
+      return;
+    }
+    if (type === 'cancel-edit') {
+      entry.editing = false;
+      this.withFocusRestore(() => this.refreshNarrativeCards());
+      return;
+    }
+    if (type === 'regenerate') {
+      this.emitNarrativeAction('regenerate', entry, { reason: entry.stale ? 'stale' : 'manual' });
+      this.withFocusRestore(() => {
+        this.requestNarrative(entry.slot, entry.key);
+        this.refreshNarrativeCards();
+      });
+      return;
+    }
+    if (type === 'accept' || type === 'reject') this.emitNarrativeAction(type, entry);
+  }
+
+  /**
+   * Emit a narrative action on the three channels (PJE-NARR-013).
+   * @private
+   */
+  emitNarrativeAction(type, entry, extra = {}) {
+    this.emit('pjeNarrativeAction', {
+      type,
+      kind: entry.kind,
+      subject: entry.subject,
+      row_id: entry.key,
+      draft: entry.draft,
+      ...extra
+    });
+  }
+
+  /**
+   * Replace a narrative's draft with one the host passes back — the accepted
+   * copy, an edited copy, or a fresh generation — and redraw its card. The
+   * draft is matched by kind, subject and key (the anchor row id or the lab
+   * test); an unmatched draft warns and changes nothing.
+   * @param {Object} draft A narrative draft (with `status: 'accepted'` to mark it accepted).
+   * @returns {SafetyPatientJourneyExplorer} The instance, for chaining.
+   */
+  refreshNarrative(draft) {
+    if (!draft || typeof draft !== 'object') return this;
+    const slot = NARRATIVE_KINDS[draft.kind];
+    const key =
+      draft.kind === 'event-context'
+        ? normalizeRowId(draft.anchor && draft.anchor.row_id)
+        : draft.kind === 'lab-trajectory'
+          ? String(draft.test ?? '')
+          : null;
+    const entry = this.narrativeEntries.get(`${slot}|${key ?? ''}`);
+    if (!entry || String(entry.subject) !== String(draft.subject)) {
+      warn(
+        `refreshNarrative: no ${draft.kind} card for ${draft.subject}${key ? ` / ${key}` : ''}.`
+      );
+      return this;
+    }
+    entry.draft = draft;
+    entry.status = 'ready';
+    entry.error = null;
+    entry.editing = false;
+    this.withFocusRestore(() => this.refreshNarrativeCards());
+    return this;
+  }
+
+  /**
+   * Redraw every mounted narrative card from the entries: the banner above
+   * the lanes, the card at the top of the panel body, the lane slots.
+   * @private
+   */
+  refreshNarrativeCards() {
+    this.renderNarrativeBanner();
+    this.mountPanelNarrative();
+    this.renderNarrativeTray();
+  }
+
+  /**
+   * The participant-summary card above the lanes (PJE-NARR-009).
+   * @private
+   */
+  renderNarrativeBanner() {
+    this.narrativeBannerEl.innerHTML = '';
+    const entry = this.narrativeEntries.get('subjectSummary|');
+    if (entry) this.narrativeBannerEl.append(this.narrativeCard(entry));
+  }
+
+  /**
+   * The event-context card at the top of the panel body (PJE-NARR-010).
+   * @private
+   */
+  mountPanelNarrative() {
+    const body = this.railWrap.querySelector('.sv-pje-panel-body');
+    if (!body) return;
+    for (const old of body.querySelectorAll(':scope > .sv-pje-ai')) old.remove();
+    const anchorId = this.anchoredEvent ? this.anchoredEvent.id : null;
+    const entry = anchorId ? this.narrativeEntries.get(`eventContext|${anchorId}`) : null;
+    if (entry) body.prepend(this.narrativeCard(entry));
+  }
+
+  /**
+   * The on-demand narratives one request at a time (PJE-NARR-014): every
+   * available kind — the dose journey when exposure rows exist, one lab test
+   * per drawn small multiple, the disposition when its rows exist — is a
+   * control in the tray beneath the axis strip until it is requested; then
+   * its card sits in the tray with the others. A slot with no function bound
+   * offers nothing.
+   * @private
+   */
+  narrativeTrayOffers() {
+    if (!this.structured || !this.structured.domain) return [];
+    const offers = [];
+    const lanes = this.structured.lanes || {};
+    if (this.narrativeSlot('doseJourney') && lanes.exposure && lanes.exposure.drawn.length) {
+      offers.push({ slot: 'doseJourney', key: '', label: 'Dose journey' });
+    }
+    if (this.narrativeSlot('labTrajectory') && lanes.labs) {
+      for (const test of lanes.labs.rows) {
+        offers.push({ slot: 'labTrajectory', key: String(test), label: String(test) });
+      }
+    }
+    if (this.narrativeSlot('disposition') && lanes.disposition && lanes.disposition.drawn.length) {
+      offers.push({ slot: 'disposition', key: '', label: 'Disposition' });
+    }
+    return offers;
+  }
+
+  /**
+   * Draw the tray: the request controls for the kinds not yet drafted, then
+   * the drafted cards.
+   * @private
+   */
+  renderNarrativeTray() {
+    const tray = this.narrativeTrayEl;
+    tray.innerHTML = '';
+    const offers = this.narrativeTrayOffers();
+    if (!offers.length) return;
+    const pending = offers.filter(
+      (offer) => !this.narrativeEntries.has(`${offer.slot}|${offer.key}`)
+    );
+    if (pending.length) {
+      const head = createElement('div', 'sv-pje-ai-tray-head');
+      head.setAttribute('role', 'group');
+      head.setAttribute('aria-label', 'Draft an AI narrative');
+      head.append(
+        createElement('span', 'sv-pje-ai-label', 'AI narrative'),
+        createElement('span', 'sv-pje-ai-tray-hint', 'Draft on request:')
+      );
+      for (const offer of pending) {
+        const button = createElement('button', 'sv-pje-btn sv-pje-ai-request-btn', offer.label);
+        button.type = 'button';
+        button.dataset.slot = offer.slot;
+        button.dataset.key = offer.key;
+        button.setAttribute('data-sv-focus', `ai-request-${offer.slot}-${offer.key}`);
+        button.title = `Draft the ${offer.label} narrative from the recorded rows`;
+        button.onclick = () => {
+          this.requestNarrative(offer.slot, offer.key || null);
+          this.withFocusRestore(() => this.refreshNarrativeCards());
+        };
+        head.append(button);
+      }
+      tray.append(head);
+    }
+    for (const offer of offers) {
+      const entry = this.narrativeEntries.get(`${offer.slot}|${offer.key}`);
+      if (entry) tray.append(this.narrativeCard(entry));
+    }
+  }
+
+  /**
+   * The narrative entries for the current subject: kind, key, status, draft,
+   * stale flag and scope hash. A read model for hosts and tests.
+   * @type {Object[]}
+   */
+  get narratives() {
+    return [...this.narrativeEntries.values()].map((entry) => ({
+      kind: entry.kind,
+      slot: entry.slot,
+      subject: entry.subject,
+      key: entry.key,
+      status: entry.status,
+      draft: entry.draft,
+      stale: entry.stale,
+      hash: entry.hash,
+      expanded: entry.expanded,
+      error: entry.error
+    }));
   }
 
   /**
@@ -1363,6 +1845,7 @@ class SafetyPatientJourneyExplorer {
       ((target.tagName === 'INPUT' && !/^(checkbox|radio|button|submit)$/i.test(target.type)) ||
         target.tagName === 'TEXTAREA');
     if (textEntry && this.tooltipEl.hidden) return;
+    this.clearCitedMark();
     if (!this.tooltipEl.hidden) {
       this.hideTooltip();
     } else if (this.state.anchorId) {
@@ -1647,7 +2130,7 @@ class SafetyPatientJourneyExplorer {
   /**
    * Register a listener for one of the module events (pjeSubjectSelected,
    * pjeEventAnchored, pjeContextChanged, pjeLaneToggled, pjeFilterChanged,
-   * pjeTimeModeChanged, participantsSelected); the handler receives the
+   * pjeTimeModeChanged, pjeNarrativeAction, participantsSelected); the handler receives the
    * event's detail.
    * @param {string} name The event name.
    * @param {Function} handler The listener.
@@ -1721,6 +2204,7 @@ class SafetyPatientJourneyExplorer {
     if (this.root) this.root.removeEventListener('keydown', this.rootKeyHandler);
     this.overlay.detach();
     this.listeners.clear();
+    this.narrativeEntries.clear();
     this.destroyed = true;
     this.structured = null;
     this.anchoredEvent = null;

@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "disposition narrative skill",
+  "definitions": {
+    "Input": {
+      "type": "object",
+      "required": ["subject"],
+      "additionalProperties": false,
+      "properties": { "subject": { "type": "string", "minLength": 1 } }
+    },
+    "Sentence": {
+      "type": "object",
+      "required": ["text", "citations", "confidence"],
+      "additionalProperties": false,
+      "properties": {
+        "text": { "type": "string", "minLength": 1, "maxLength": 400 },
+        "citations": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 12,
+          "items": { "type": "string", "pattern": "^[A-Z]+[-:][0-9]+$" }
+        },
+        "confidence": { "type": "string", "enum": ["high", "medium", "low"] }
+      }
+    },
+    "Draft": {
+      "type": "object",
+      "required": ["kind", "subject", "summary", "sentences", "flags"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "type": "string", "const": "disposition" },
+        "subject": { "type": "string" },
+        "summary": { "type": "string", "maxLength": 240 },
+        "sentences": {
+          "type": "array",
+          "maxItems": 4,
+          "items": { "$ref": "#/definitions/Sentence" }
+        },
+        "flags": { "type": "array", "items": { "type": "string", "maxLength": 60 } }
+      }
+    },
+    "Output": {
+      "type": "object",
+      "required": ["kind", "subject", "summary", "sentences", "flags", "provenance", "status"],
+      "properties": {
+        "status": { "type": "string", "const": "draft" },
+        "provenance": { "$ref": "#/definitions/Provenance" }
+      }
+    },
+    "Provenance": {
+      "type": "object",
+      "required": ["model", "skill", "input_hash", "generated_at", "tool_calls"],
+      "properties": {
+        "model": { "type": "string" },
+        "skill": { "type": "string", "pattern": "^[a-z-]+@[0-9]+\\.[0-9]+\\.[0-9]+$" },
+        "input_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+        "generated_at": { "type": "string" },
+        "tool_calls": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

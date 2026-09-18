@@ -46,6 +46,13 @@ jobs:
       - name: Run unit tests
         run: npm test
 
+      # The AI narrative layer's eval gate (#146): the golden set against the
+      # offline stub adapter under the rule-based judge, no secret needed.
+      # Thresholds per skill live in tests/evals/patient-journey-narratives/
+      # thresholds.json; a skill version bump must clear them here.
+      - name: Narrative eval gate (stub adapter)
+        run: npm run eval:narratives -- --adapter stub --judge rules
+
       - name: Build docs site (link + evidence validation)
         run: npm run site
 

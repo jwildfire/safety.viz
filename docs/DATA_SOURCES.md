@@ -216,6 +216,16 @@ in [`scripts/demo-data-lib.mjs`](../scripts/demo-data-lib.mjs)) are
 unit-tested there on hand-made rows. Rebuild with
 `node scripts/build-demo-data.mjs --only pje`.
 
+These six files have a second consumer. The AI narrative layer's evaluation
+harness ([safety.viz#146](https://github.com/jwildfire/safety.viz/issues/146))
+builds its golden set on exactly these extracts, loading them through
+[`tests/evals/patient-journey-narratives/demo-data.mjs`](../tests/evals/patient-journey-narratives/demo-data.mjs)
+with the demo page's own parser and settings, so a narrative case and the demo
+page describe the same rows. Rebuilding the extracts therefore moves the golden
+set's expected facts as well as the demo: regenerate the golden files
+(`node tests/evals/patient-journey-narratives/build-golden.mjs`) and re-run
+`npm run eval:narratives` in the same change.
+
 ### Source: pharmaversesdtm (disposition)
 
 pharmaverseadam ships **no ADaM DS dataset**, and without disposition the
