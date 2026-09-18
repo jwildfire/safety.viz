@@ -1,6 +1,6 @@
 {
   "module": "patient-journey-explorer",
-  "generatedAt": "2026-09-18T16:58:10.090Z",
+  "generatedAt": "2026-09-18T17:48:12.012Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.2",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "35371494282",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/35371494282"
+    "id": "35376414437",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/35376414437"
   },
   "records": [
     {
@@ -371,6 +371,54 @@
       "requirementIds": ["PJE-LANE-010"],
       "issueRefs": [142],
       "screenshots": []
+    },
+    {
+      "test": "PJE-NARR-009: the participant-summary card sits above the lanes as a labelled blurb that expands to the full cited draft, and an unbound slot renders nothing (#146)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-009"],
+      "issueRefs": [146],
+      "screenshots": ["PJE-NARR-009-summary-card.png"]
+    },
+    {
+      "test": "PJE-NARR-010: anchoring an adverse event drafts its context at the top of the panel body, every sentence prefixed with the draft chip, and a refusal renders the catalog text (#146)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-010"],
+      "issueRefs": [146],
+      "screenshots": ["PJE-NARR-010-event-card.png"]
+    },
+    {
+      "test": "PJE-NARR-011: a citation chip lights the cited mark and moves focus to it; a cited row not on the timeline opens its source record instead (#146)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-011"],
+      "issueRefs": [146],
+      "screenshots": ["PJE-NARR-011-citation-lit.png"]
+    },
+    {
+      "test": "PJE-NARR-012: a window change regenerates the event narrative with a regenerate action; a filter that changes the window rows greys the card and offers Regenerate (#146)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-012"],
+      "issueRefs": [146],
+      "screenshots": ["PJE-NARR-012-stale-card.png"]
+    },
+    {
+      "test": "PJE-NARR-013: Accept, Reject, Edit and Regenerate emit on_narrative_action on all three channels with the draft, and an accepted draft passed back flips the chips (#146)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-013"],
+      "issueRefs": [146],
+      "screenshots": ["PJE-NARR-013-accepted-card.png"]
+    },
+    {
+      "test": "PJE-NARR-014: lab, dose and disposition narratives are drafted on request from the tray beneath the lanes and render there, and a subject change drops every card (#146)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-014"],
+      "issueRefs": [146],
+      "screenshots": ["PJE-NARR-014-tray-cards.png"]
     },
     {
       "test": "PJE-PANEL-001: at phone width the source drawer never widens the page, no painted labels overlap, and anchoring a mark brings the context panel into view (#142)",
@@ -1449,6 +1497,38 @@
       "screenshots": []
     },
     {
+      "test": "deterministic hashing (PJE-NARR-017) PJE-NARR-017: canonicalJson sorts object keys at every level and keeps array order (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-017"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "deterministic hashing (PJE-NARR-017) PJE-NARR-017: inputHash is sha256: plus the digest of the canonical JSON (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-017"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "deterministic hashing (PJE-NARR-017) PJE-NARR-017: sha256Hex agrees with node:crypto across block boundaries and on non-ASCII input (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-017"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "deterministic hashing (PJE-NARR-017) PJE-NARR-017: sha256Hex matches the published digests for \"abc\" and the empty string (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-017"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
       "test": "docs/DATA_SOURCES.md provenance PJE-DEMO-001: lists all six extracts in the file table (#142)",
       "suite": "unit",
       "status": "pass",
@@ -1473,6 +1553,46 @@
       "screenshots": []
     },
     {
+      "test": "dropped sentences, the cap and cleaning (PJE-NARR-005) PJE-NARR-005: a sentence whose citation is not in scope is dropped with the reason, and the rest of the draft survives (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-005"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "dropped sentences, the cap and cleaning (PJE-NARR-005) PJE-NARR-005: a submission longer than the skill’s sentence cap does not reach the reviewer (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-005"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "dropped sentences, the cap and cleaning (PJE-NARR-005) PJE-NARR-005: citations are normalised and de-duplicated, flags are trimmed and status is forced to draft (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-005"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "dropped sentences, the cap and cleaning (PJE-NARR-005) PJE-NARR-005: forbiddenMatch returns the matched construct, or null, and takes a pattern override (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-005"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "dropped sentences, the cap and cleaning (PJE-NARR-005) PJE-NARR-005: sentences past the cap are truncated and each extra one is dropped with the cap as its reason (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-005"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
       "test": "elapsed helpers (re-exported from getScales.js) PJE-ANCH-005: toElapsed and toStudyDay round-trip every day in {-30,-5,-1,1,5,30} and skip day 0 (#142)",
       "suite": "unit",
       "status": "pass",
@@ -1486,6 +1606,30 @@
       "status": "pass",
       "requirementIds": ["PJE-ANCH-005"],
       "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "every tool returns the chart’s own rows (PJE-NARR-002) PJE-NARR-002: each of the six tools returns structured rows whose row_id is an event id of the chart’s record (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-002"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "every tool returns the chart’s own rows (PJE-NARR-002) PJE-NARR-002: get_events filters by seriousness, preferred term, test, day range and max, and reports what it truncated (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-002"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "every tool returns the chart’s own rows (PJE-NARR-002) PJE-NARR-002: toolDefinitions returns one { name, description, input_schema } per known tool, in the order asked (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-002"],
+      "issueRefs": [146],
       "screenshots": []
     },
     {
@@ -1583,6 +1727,86 @@
       "requirementIds": ["PJE-TIME-001"],
       "issueRefs": [142],
       "screenshots": ["PJE-TIME-001-date-mode.png"]
+    },
+    {
+      "test": "get_context_window agrees with the chart (PJE-NARR-002) PJE-NARR-002: days_from_anchor is the elapsed-day offset relativeDay() computes, across first dose (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-002"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "get_context_window agrees with the chart (PJE-NARR-002) PJE-NARR-002: on the demo anchor the tool returns buildContext’s lists and counts, row for row (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-002"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "grounding, hashing and the draft cache (PJE-NARR-003) PJE-NARR-003: cache: false calls the adapter every time (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-003"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "grounding, hashing and the draft cache (PJE-NARR-003) PJE-NARR-003: input_hash is sha256: plus 64 hex and equals inputHash({ skill, version, inputs, grounding }) (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-003"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "grounding, hashing and the draft cache (PJE-NARR-003) PJE-NARR-003: the cache key carries the adapter name and model, so two generators sharing a store never serve each other’s drafts (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-003"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "grounding, hashing and the draft cache (PJE-NARR-003) PJE-NARR-003: the grounding tool runs first, without the model, and its rows are the ones the first message carries (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-003"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "grounding, hashing and the draft cache (PJE-NARR-003) PJE-NARR-003: the same inputs hit the cache and return the identical draft; a different window is a different hash and a new call (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-003"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "hard failures (PJE-NARR-005) PJE-NARR-005: a forbidden phrase is a hard error naming the match, in a sentence and in the summary alike (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-005"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "hard failures (PJE-NARR-005) PJE-NARR-005: a kind or subject that is not the one requested is a hard error (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-005"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "hard failures (PJE-NARR-005) PJE-NARR-005: a schema violation is a hard error and no draft comes back (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-005"],
+      "issueRefs": [146],
+      "screenshots": []
     },
     {
       "test": "histogram API documentation completeness API-COMPLETE-001: the documented settings are exactly the DEFAULT_SETTINGS keys (#6)",
@@ -2361,6 +2585,46 @@
       "screenshots": []
     },
     {
+      "test": "patient-journey narrative evals PJE-NARR-015: build-golden derives the committed case files deterministically (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-015"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "patient-journey narrative evals PJE-NARR-015: every metric the report prints is gated or explicitly not (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-015"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "patient-journey narrative evals PJE-NARR-015: the fact matcher and the name check hold at their edges (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-015"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "patient-journey narrative evals PJE-NARR-015: the golden set holds at least 30 cases across the five skills and the stub adapter clears every threshold under the rules judge (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-015"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "patient-journey narrative evals PJE-NARR-015: the graders fail a draft that invents a name, a number, a citation or a causal claim (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-015"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
       "test": "patient-journey-explorer checkInputs PJE-DATA-004: a missing id column in the AE domain is named as ae.USUBJID (#142)",
       "suite": "unit",
       "status": "pass",
@@ -2473,6 +2737,54 @@
       "screenshots": []
     },
     {
+      "test": "PJE-NARR-009: the narratives slots (#146) PJE-NARR-009: a slot that rejects renders an error card, and a slot returning junk is reported (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-009"],
+      "issueRefs": [146, 146],
+      "screenshots": ["PJE-NARR-009-summary-card.png"]
+    },
+    {
+      "test": "PJE-NARR-009: the narratives slots (#146) PJE-NARR-009: binding the stub drafts the participant summary above the lanes, collapsed to its blurb, and the tray offers the on-request kinds (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-009"],
+      "issueRefs": [146, 146],
+      "screenshots": ["PJE-NARR-009-summary-card.png"]
+    },
+    {
+      "test": "PJE-NARR-009: the narratives slots (#146) PJE-NARR-009: with no slot bound nothing is requested and nothing renders (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-009"],
+      "issueRefs": [146, 146],
+      "screenshots": ["PJE-NARR-009-summary-card.png"]
+    },
+    {
+      "test": "PJE-NARR-012 / PJE-NARR-013: the event card, staleness and actions (#146) PJE-NARR-012: a subject change drops the cards and a camelCase onNarrativeAction alias is honoured (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-012", "PJE-NARR-013"],
+      "issueRefs": [146, 146],
+      "screenshots": ["PJE-NARR-012-stale-card.png", "PJE-NARR-013-accepted-card.png"]
+    },
+    {
+      "test": "PJE-NARR-012 / PJE-NARR-013: the event card, staleness and actions (#146) PJE-NARR-012: the event card is grounded on the live window; a window change re-requests with a regenerate action and a filter that changes the rows marks it stale (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-012", "PJE-NARR-013"],
+      "issueRefs": [146, 146],
+      "screenshots": ["PJE-NARR-012-stale-card.png", "PJE-NARR-013-accepted-card.png"]
+    },
+    {
+      "test": "PJE-NARR-012 / PJE-NARR-013: the event card, staleness and actions (#146) PJE-NARR-013: accept, reject, edit and regenerate emit on the callback, the listener and the DOM event with the draft, and refreshNarrative flips an accepted draft (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-012", "PJE-NARR-013"],
+      "issueRefs": [146, 146],
+      "screenshots": ["PJE-NARR-012-stale-card.png", "PJE-NARR-013-accepted-card.png"]
+    },
+    {
       "test": "planLanes empty states (PJE-LANE-007, PJE-LANE-008) PJE-DATA-003: labs for tests outside lb_tests are named in the footer when the lane draws, and in the empty text when it does not (#142)",
       "suite": "unit",
       "status": "pass",
@@ -2582,6 +2894,46 @@
       "status": "pass",
       "requirementIds": ["PJE-EVT-001"],
       "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "provenance completeness (PJE-NARR-007) PJE-NARR-007: a stub draft carries model, skill@version, input hash, ISO timestamp, the tool calls in order, adapter, usage, attempts and an empty dropped list (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-007"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "provenance completeness (PJE-NARR-007) PJE-NARR-007: an unknown skill throws, and inputs that miss the skill’s Input schema throw before any call (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-007"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "provenance completeness (PJE-NARR-007) PJE-NARR-007: the finished draft validates against the skill’s definitions.Output (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-007"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "provenance completeness (PJE-NARR-007) PJE-NARR-007: usage sums the provider’s token counters across every call of a generation (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-007"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "quoted record wording (PJE-NARR-005) PJE-NARR-005: forbidden wording inside a double-quoted span is the record's claim and passes; the same words unquoted fail (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-005"],
+      "issueRefs": [146],
       "screenshots": []
     },
     {
@@ -2846,6 +3198,22 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "row-id helpers (PJE-NARR-002) PJE-NARR-002: collectRowIds finds row_id, row_ids, source_row_id and previous_row_id at any depth, normalised (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-002"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "row-id helpers (PJE-NARR-002) PJE-NARR-002: normalizeRowId turns the colon spelling into the chart’s dash form (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-002"],
+      "issueRefs": [146],
       "screenshots": []
     },
     {
@@ -3963,6 +4331,38 @@
       "screenshots": ["PJE-TIME-001-date-mode.png"]
     },
     {
+      "test": "the Claude adapter (PJE-NARR-008) PJE-NARR-008: a non-2xx response throws an Error carrying the status and the API’s message; a refusal passes through with its stop_details (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-008"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "the Claude adapter (PJE-NARR-008) PJE-NARR-008: an effort model gets output_config.effort and no temperature; an explicit temperature replaces it (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-008"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "the Claude adapter (PJE-NARR-008) PJE-NARR-008: it POSTs the Messages API with the version and key headers and a body carrying model, max_tokens, system, messages and tools (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-008"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "the Claude adapter (PJE-NARR-008) PJE-NARR-008: the credential comes from an awaited getToken(), and baseUrl and extra headers let a consumer app proxy the call (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-008"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
       "test": "the click-any-mark notice (PJE-ANCH-006) PJE-ANCH-006: a notice above the lanes says clicking any mark shows its associated events, names the anchor once one is set, and hides with every lane off (#145)",
       "suite": "unit",
       "status": "pass",
@@ -3987,11 +4387,155 @@
       "screenshots": ["PJE-LANE-006-dose-change.png", "PJE-LANE-009-one-screen.png"]
     },
     {
+      "test": "the forbidden block rejects the claims this tool does not make (PJE-NARR-017) PJE-NARR-017: every canonical forbidden sentence is matched, and the match names the construct that fired (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-017"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "the forbidden block rejects the claims this tool does not make (PJE-NARR-017) PJE-NARR-017: every hedged sentence the style guide asks for passes (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-017"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "the forbidden block rejects the claims this tool does not make (PJE-NARR-017) PJE-NARR-017: the block matches whole words only, so ordinary safety prose is not caught by a substring (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-017"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "the front-matter subset and the forbidden block (PJE-NARR-001) PJE-NARR-001: every line of the style guide’s forbidden block compiles as a case-insensitive regex, and the committed list is that block (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-001"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "the front-matter subset and the forbidden block (PJE-NARR-001) PJE-NARR-001: parseFrontMatter reads scalars and one-level lists, strips trailing comments and returns the trimmed body (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-001"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "the lab, dose and source-row tools (PJE-NARR-002) PJE-NARR-002: get_dose_history returns the exposure records and the derived changes, each change naming its source and previous exposure rows (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-002"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "the lab, dose and source-row tools (PJE-NARR-002) PJE-NARR-002: get_lab_series returns the baseline with its rule, the peak, and each point’s ratios and abnormality rules (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-002"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "the lab, dose and source-row tools (PJE-NARR-002) PJE-NARR-002: get_source_row returns the host’s raw row unchanged, beside the chart’s projection of it (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-002"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "the OpenAI adapter (PJE-NARR-008) PJE-NARR-008: fromChatChoice turns tool_calls back into tool_use blocks with parsed arguments and maps every finish_reason (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-008"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "the OpenAI adapter (PJE-NARR-008) PJE-NARR-008: it requires a model id and POSTs Chat Completions with a Bearer header (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-008"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "the OpenAI adapter (PJE-NARR-008) PJE-NARR-008: toChatMessages turns the runtime’s blocks into system, user, assistant(tool_calls) and tool messages (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-008"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
       "test": "the shared selection event (PJE-EVT-002) PJE-EVT-002: selecting a subject dispatches participantsSelected on the shell root with { detail: { data: [id] } } (#142)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["PJE-EVT-002"],
       "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "the skills folder compiles (PJE-NARR-001) PJE-NARR-001: every skill carries a semver version, a grounding tool that exists in TOOLS, declared tools that exist, and Input/Draft/Output definitions (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-001"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "the skills folder compiles (PJE-NARR-001) PJE-NARR-001: the committed module carries the shared prompt, style guide, refusal catalog and forbidden list, and a folder on disk for every skill it names (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-001"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "the skills folder compiles (PJE-NARR-001) PJE-NARR-001: the committed skills.generated.js is renderSkillsModule(compileSkills()) byte for byte and is listed in .prettierignore (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-001"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "the stub adapter (PJE-NARR-008) PJE-NARR-008: a request the stub cannot read comes back as text rather than a bad draft (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-008"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "the stub adapter (PJE-NARR-008) PJE-NARR-008: every citation in every stub draft for the five skills resolves, and no sentence carries a forbidden construct (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-008"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "the stub adapter (PJE-NARR-008) PJE-NARR-008: the stub is deterministic — two runs of the same inputs produce the same draft (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-008"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "the stub adapter (PJE-NARR-008) PJE-NARR-008: the stub makes exactly one extra tool call before submit_draft, so the runtime’s tool loop runs on every skill (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-008"],
+      "issueRefs": [146],
       "screenshots": []
     },
     {
@@ -4016,6 +4560,46 @@
       "status": "pass",
       "requirementIds": ["PJE-EVT-001"],
       "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "the tool loop is fenced (PJE-NARR-004) PJE-NARR-004: a declared tool called past maxToolCalls comes back as a tool-call-cap error naming the cap (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-004"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "the tool loop is fenced (PJE-NARR-004) PJE-NARR-004: a row a tool returned mid-run joins the citation scope; a row nobody fetched does not (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-004"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "the tool loop is fenced (PJE-NARR-004) PJE-NARR-004: a tool the skill does not declare comes back as an is_error tool-not-available result, and the run still finishes (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-004"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "tools refuse rather than throw (PJE-NARR-002) PJE-NARR-002: an unknown subject, anchor, test, row or tool comes back as an { error } object and never throws (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-002"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "tools refuse rather than throw (PJE-NARR-002) PJE-NARR-002: runTool injects the generation’s subject into any tool that takes one (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-002"],
+      "issueRefs": [146],
       "screenshots": []
     },
     {
@@ -4200,6 +4784,86 @@
       "status": "pass",
       "requirementIds": ["API-SCHEMA-006"],
       "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "validation feedback and refusals (PJE-NARR-006) PJE-NARR-006: a cancelled draft carries the catalog’s empty summary, not the generic withheld text (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-006"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "validation feedback and refusals (PJE-NARR-006) PJE-NARR-006: a draft returned as text JSON instead of a submit_draft call is accepted and validated the same way (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-006"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "validation feedback and refusals (PJE-NARR-006) PJE-NARR-006: a forbidden phrase is fed back once and the clean second submission is the draft that ships (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-006"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "validation feedback and refusals (PJE-NARR-006) PJE-NARR-006: a lab test the record does not hold refuses with refused:insufficient-data, unread by the model (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-006"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "validation feedback and refusals (PJE-NARR-006) PJE-NARR-006: a refusal stop reason refuses with refused:provider-refusal and keeps the provider’s stop_details (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-006"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "validation feedback and refusals (PJE-NARR-006) PJE-NARR-006: an aborted signal refuses with refused:cancelled before the provider is called (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-006"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "validation feedback and refusals (PJE-NARR-006) PJE-NARR-006: an adapter that throws refuses with refused:provider-error and keeps the message (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-006"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "validation feedback and refusals (PJE-NARR-006) PJE-NARR-006: an anchor that does not resolve refuses before the model is addressed at all (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-006"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "validation feedback and refusals (PJE-NARR-006) PJE-NARR-006: plain prose twice, with no draft anywhere in it, refuses with refused:validation (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-006"],
+      "issueRefs": [146],
+      "screenshots": []
+    },
+    {
+      "test": "validation feedback and refusals (PJE-NARR-006) PJE-NARR-006: two bad submissions refuse with refused:validation and the errors in provenance (#146)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-NARR-006"],
+      "issueRefs": [146],
       "screenshots": []
     },
     {
