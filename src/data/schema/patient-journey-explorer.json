@@ -1,0 +1,525 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/jwildfire/safety.viz/main/src/data/schema/patient-journey-explorer.json",
+  "title": "safety.viz patient-journey-explorer data contract",
+  "description": "One subject's safety record across six CDISC domains — exposure (EX), adverse events (AE), labs (LB), concomitant medications (CM), medical history (MH) and disposition (DS) — drawn as stacked lanes on one shared study-day axis. Data arrives either as an object of per-domain arrays (keys matched case-insensitively: { ae, lb, ex, cm, mh, ds }) or as one merged array whose rows carry a domain column named by settings.domain_col (PJE-DATA-001). No domain is individually required: any one is enough to draw a partial journey, and absent domains render an explanatory empty lane (PJE-DATA-005). Column names are supplied by the settings mapping; day columns accept an ordered fallback chain resolved per row (PJE-DATA-007). Rows that cannot be used are dropped with a named, counted, exportable reason (PJE-DATA-003); rows with no usable study day are kept and named in prose rather than dropped (PJE-LANE-008). This schema documents the contract and names, per domain, the settings keys whose columns must be present (requiredSettings); it validates no rows — row-level rules are the module's own drop table.",
+  "type": "object",
+  "required": ["settings"],
+  "properties": {
+    "ex": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/exRow" },
+      "requiredSettings": ["id_col", "ex_stdy_col"],
+      "description": "Exposure records (an ADEX or EX projection), one row per dosing record: the participant id, the treatment name (ex_trt_col), the dose and unit (ex_dose_col, ex_dosu_col), the start and end study days (ex_stdy_col, ex_endy_col — fallback chains, ASTDY/EXSTDY and AENDY/EXENDY by default) and optionally the start date (ex_stdtc_col). The exposure lane draws one bar segment per record; consecutive records with different doses derive the dose-change events (PJE-DERIV-001, PJE-LANE-006). A row with both treatment and dose blank is dropped with a named reason; a row with no usable start day is kept but not drawn."
+    },
+    "ae": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/aeRow" },
+      "requiredSettings": ["id_col", "ae_stdy_col"],
+      "description": "Adverse-event records (an ADAE or AE projection), one row per event: the participant id, the verbatim and preferred terms (ae_term_col, ae_decod_col), the body system (ae_soc_col), onset and resolution study days (ae_stdy_col, ae_endy_col — ASTDY/AESTDY and AENDY/AEENDY by default), severity, seriousness and relatedness (ae_sev_col, ae_ser_col, ae_rel_col), the outcome (ae_out_col, which decides whether a blank end day means ongoing or simply not recorded, D16) and optionally the onset date (ae_stdtc_col). Anchoring an event opens the ±N-day context window (PJE-ANCH-001). A row with both terms blank is dropped with a named reason; an end day before the start day is kept as a single-day mark and counted (PJE-DATA-008)."
+    },
+    "lb": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/lbRow" },
+      "requiredSettings": ["id_col", "lb_test_col", "lb_value_col", "lb_day_col"],
+      "description": "Lab records (an ADLB or LB projection), one row per result: the participant id, the test name and code (lb_test_col, lb_testcd_col — lb_tests matches either), the numeric result and unit (lb_value_col, lb_unit_col), the reference range (lb_lo_col, lb_hi_col), the normal-range indicator (lb_nrind_col), the study day (lb_day_col — LBDY/ADY by default), the analysis-baseline flag (lb_baseline_flag_col, consulted first when resolving a test's baseline, D17) and optionally the collection date (lb_dtc_col). Each configured test draws as a small multiple with its reference band (PJE-LANE-005); a point is abnormal by flag when the indicator is present and not normal, or by change when it is at least lb_change_factor times, or at most 1/lb_change_factor of, the baseline (PJE-CTX-002). A row with a blank test name or a non-numeric result is dropped with a named reason."
+    },
+    "cm": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/cmRow" },
+      "requiredSettings": ["id_col", "cm_trt_col"],
+      "description": "Concomitant-medication records (an ADCM or CM projection), one row per medication course: the participant id, the medication name (cm_trt_col), its class (cm_class_col; the uncoded value is kept as its own selectable bucket, PJE-FILT-003), optional dose and route (cm_dose_col, cm_route_col), start and end study days (cm_stdy_col, cm_endy_col — ASTDY/CMSTDY and AENDY/CMENDY by default), optionally an ongoing indicator (cm_out_col; none by default, so a blank end day is 'end not recorded' rather than asserted ongoing) and the start date (cm_stdtc_col). Con-meds active at an anchor are those started on or before it and not ended before it; one with no usable start day is never asserted active and is counted as not evaluated (PJE-CTX-001). A row with a blank name is dropped with a named reason."
+    },
+    "mh": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/mhRow" },
+      "requiredSettings": ["id_col"],
+      "description": "Medical-history records (an ADMH or MH projection), one row per condition: the participant id, the verbatim and decoded terms (mh_term_col, mh_decod_col — the decode is preferred as the label because verbatim terms are often scrubbed), the category (mh_cat_col), the collection study day (mh_day_col, the screening visit, where the mark is drawn by default, D18), the onset study day, date and relative-timing text (mh_onset_stdy_col, mh_onset_dtc_col, mh_strtpt_col — named in the tooltip) and the end relative-timing text (mh_enrtpt_col; ONGOING adds 'still present'). Set mh_day_source to 'onset' to place marks at onset instead. A row with both terms blank is dropped with a named reason."
+    },
+    "ds": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/dsRow" },
+      "requiredSettings": ["id_col", "ds_decod_col"],
+      "description": "Disposition records (a DS projection), one row per disposition event or milestone: the participant id, the decoded and verbatim terms (ds_decod_col, ds_term_col), the category (ds_cat_col), the study day (ds_stdy_col) and optionally the date (ds_dtc_col). Every row draws a mark in the disposition lane; only rows whose category is in ds_reference_cats (DISPOSITION EVENT by default) draw the full-height dashed rule across every lane (D19). A row with a blank decode is dropped with a named reason."
+    },
+    "settings": {
+      "type": "object",
+      "description": "Column mappings and rendering options; merged onto the module's DEFAULT_SETTINGS, so only overrides need to be supplied. Column settings are flat, snake_case and domain-prefixed; the plan's camelCase spellings (contextWindowDays, onAnchorEvent, sourceUrlTemplate, lane-level severityCol/seriousCol/tests, filters[].col, time.day_col/date_col) are accepted as aliases and normalized with a console warning each (PJE-CFG-002).",
+      "properties": {
+        "id_col": {
+          "type": "string",
+          "default": "USUBJID",
+          "description": "Participant identifier column, present in every domain; the subject picker lists its distinct values across all domains and the participantsSelected event carries it (PJE-SUBJ-001, PJE-EVT-002)."
+        },
+        "domain_col": {
+          "type": "string",
+          "default": "DOMAIN",
+          "description": "For the merged-array input form, the column whose value names each row's domain (AE, LB, EX, CM, MH, DS, or the ADaM spellings ADAE …, case-insensitively); rows with any other value are dropped with a named reason (PJE-DATA-002)."
+        },
+        "subject": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "The subject to open on; null opens on the first subject in sorted order (PJE-SUBJ-001)."
+        },
+        "time": {
+          "type": "object",
+          "description": "Time-axis configuration: mode ('day' or 'date', the opening display), ref_date_col ('TRTSDT', the column holding the date of study day 1, read from any row of any domain) and allow_date_mode (true; when false the calendar-date control is not offered). The plan's day_col / date_col keys are accepted as generic --DY / --DTC patterns expanded per domain (PJE-TIME-001, PJE-TIME-002).",
+          "properties": {
+            "mode": {
+              "type": "string",
+              "enum": ["day", "date"],
+              "default": "day",
+              "description": "The opening display mode: study day, or calendar date (only when allow_date_mode is true and a reference date resolves for the subject). The scale stays linear in days in both modes; date mode relabels ticks, tooltips and panel text (D7)."
+            },
+            "ref_date_col": {
+              "type": "string",
+              "default": "TRTSDT",
+              "description": "Column holding the date of study day 1 (first dose), read from any row of any domain and preferred over deriving the reference from a recorded --DTC date plus its study day (D30)."
+            },
+            "allow_date_mode": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether the calendar-date display is offered at all; false forces mode to 'day'."
+            }
+          }
+        },
+        "context_window_days": {
+          "type": "number",
+          "default": 30,
+          "description": "Half-width of the anchor context window in elapsed days, inclusive on both sides; coerced to a non-negative integer, and 0 means the anchor day only (PJE-CFG-004, PJE-ANCH-002)."
+        },
+        "ex_trt_col": {
+          "type": "string",
+          "default": "EXTRT",
+          "description": "Exposure treatment name column; the exposure lane draws one row per distinct value and each record's label and category come from it."
+        },
+        "ex_dose_col": {
+          "type": "string",
+          "default": "EXDOSE",
+          "description": "Exposure dose column; consecutive records with different numeric doses derive the dose-change events (PJE-DERIV-001). A record with both treatment and dose blank is dropped."
+        },
+        "ex_dosu_col": {
+          "type": "string",
+          "default": "EXDOSU",
+          "description": "Exposure dose unit column, appended to the dose in tooltips and dose-change labels."
+        },
+        "ex_stdy_col": {
+          "type": ["string", "array"],
+          "default": ["ASTDY", "EXSTDY"],
+          "description": "Exposure start study day, as a column name or a fallback chain resolved per row; required in exposure data. A record with no usable start day is kept but not drawn (PJE-LANE-008)."
+        },
+        "ex_endy_col": {
+          "type": ["string", "array"],
+          "default": ["AENDY", "EXENDY"],
+          "description": "Exposure end study day, as a column name or a fallback chain; a blank end is 'end not recorded' (exposure has no outcome column)."
+        },
+        "ex_stdtc_col": {
+          "type": "string",
+          "default": "EXSTDTC",
+          "description": "Exposure start date column (--DTC), shown as recorded; a full date labels the record in date mode and a partial one never positions it (PJE-TIME-003)."
+        },
+        "ae_term_col": {
+          "type": "string",
+          "default": "AETERM",
+          "description": "Adverse-event verbatim term column; the tooltip's secondary line when it differs from the decoded term, and the label when the decode is blank. A record with both blank is dropped."
+        },
+        "ae_decod_col": {
+          "type": "string",
+          "default": "AEDECOD",
+          "description": "Adverse-event preferred term column: the mark label, and the key the 'prior events with the same preferred term' context list matches on (PJE-CTX-004)."
+        },
+        "ae_soc_col": {
+          "type": "string",
+          "default": "AEBODSYS",
+          "description": "Adverse-event body-system column, shown as the record's category."
+        },
+        "ae_stdy_col": {
+          "type": ["string", "array"],
+          "default": ["ASTDY", "AESTDY"],
+          "description": "Adverse-event onset study day, as a column name or a fallback chain; required in adverse-event data."
+        },
+        "ae_endy_col": {
+          "type": ["string", "array"],
+          "default": ["AENDY", "AEENDY"],
+          "description": "Adverse-event resolution study day, as a column name or a fallback chain. A blank end is 'ongoing' only when ae_out_col says so, otherwise 'end not recorded'; an end before the start is kept as a single-day mark and counted (PJE-DATA-008)."
+        },
+        "ae_sev_col": {
+          "type": "string",
+          "default": "AESEV",
+          "description": "Adverse-event severity column, ranked by ae_severity_values; drawn as bar height and border weight at one opaque fill, and a blank value draws a hatched mark named 'severity not recorded' (PJE-ACC-002)."
+        },
+        "ae_ser_col": {
+          "type": "string",
+          "default": "AESER",
+          "description": "Adverse-event seriousness column, compared with ae_serious_value; serious events get a filled start dot, an escalation ring and an SAE tag."
+        },
+        "ae_rel_col": {
+          "type": "string",
+          "default": "AEREL",
+          "description": "Adverse-event relatedness column, shown in the tooltip as recorded."
+        },
+        "ae_stdtc_col": {
+          "type": "string",
+          "default": "AESTDTC",
+          "description": "Adverse-event onset date column (--DTC), shown as recorded (PJE-TIME-003, PJE-TIME-004)."
+        },
+        "ae_severity_values": {
+          "type": "array",
+          "default": ["MILD", "MODERATE", "SEVERE"],
+          "description": "Severity levels in ascending rank; a value outside the list keeps rank 0 and draws at the moderate height. An empty list falls back to the default."
+        },
+        "ae_serious_value": {
+          "type": "string",
+          "default": "Y",
+          "description": "The ae_ser_col value (case-insensitive) that marks a serious event (PJE-FILT-001)."
+        },
+        "ae_out_col": {
+          "type": ["string", "null"],
+          "default": "AEOUT",
+          "description": "Adverse-event outcome column, read only when the end day is blank: the event is 'ongoing' when this cell is one of ae_ongoing_values, and 'end not recorded' otherwise (D16)."
+        },
+        "ae_ongoing_values": {
+          "type": "array",
+          "default": ["NOT RECOVERED/NOT RESOLVED", "RECOVERING/RESOLVING", "ONGOING", "N"],
+          "description": "Outcome values (upper-cased, trimmed) that assert an event is still running when its end day is blank."
+        },
+        "lb_test_col": {
+          "type": "string",
+          "default": "LBTEST",
+          "description": "Lab test name column; required in lab data. A record with a blank name is dropped; lb_tests matches this column or lb_testcd_col, case-insensitively."
+        },
+        "lb_testcd_col": {
+          "type": "string",
+          "default": "LBTESTCD",
+          "description": "Lab test code column; lb_tests entries match either the name or the code, so 'Alanine Aminotransferase' and 'ALT' select the same series."
+        },
+        "lb_value_col": {
+          "type": "string",
+          "default": "LBSTRESN",
+          "description": "Lab numeric result column; required in lab data. A non-numeric result is dropped with a named reason."
+        },
+        "lb_lo_col": {
+          "type": "string",
+          "default": "LBSTNRLO",
+          "description": "Lab lower limit of normal column; with lb_hi_col draws the reference band and the × LLN ratio (PJE-LANE-005)."
+        },
+        "lb_hi_col": {
+          "type": "string",
+          "default": "LBSTNRHI",
+          "description": "Lab upper limit of normal column; with lb_lo_col draws the reference band and the × ULN ratio."
+        },
+        "lb_day_col": {
+          "type": ["string", "array"],
+          "default": ["LBDY", "ADY"],
+          "description": "Lab study day, as a column name or a fallback chain; required in lab data."
+        },
+        "lb_nrind_col": {
+          "type": "string",
+          "default": "LBNRIND",
+          "description": "Lab normal-range indicator column: a present value other than lb_normal_value marks the point abnormal by flag (PJE-CTX-002); HIGH/LOW pick the glyph and HH/LL add the escalation ring."
+        },
+        "lb_unit_col": {
+          "type": "string",
+          "default": "LBSTRESU",
+          "description": "Lab result unit column, appended to values in labels and the panel."
+        },
+        "lb_dtc_col": {
+          "type": "string",
+          "default": "LBDTC",
+          "description": "Lab collection date column (--DTC), shown as recorded."
+        },
+        "lb_tests": {
+          "type": "array",
+          "default": [
+            "Alanine Aminotransferase",
+            "Aspartate Aminotransferase",
+            "Bilirubin",
+            "Alkaline Phosphatase"
+          ],
+          "description": "The lab tests drawn as small multiples, in this order, matched case-insensitively against the test name or code; an empty list means every test present. The plan's labTests and lane-level tests are aliases."
+        },
+        "lb_normal_value": {
+          "type": "string",
+          "default": "NORMAL",
+          "description": "The lb_nrind_col value meaning within range; any other non-blank value is abnormal by flag, and a blank value is not abnormal."
+        },
+        "lb_baseline_flag_col": {
+          "type": ["string", "null"],
+          "default": "ABLFL",
+          "description": "Analysis-baseline flag column, consulted first when resolving a test's baseline (D17); null skips the flag rule."
+        },
+        "lb_baseline_flag_value": {
+          "type": "string",
+          "default": "Y",
+          "description": "The lb_baseline_flag_col value marking the baseline record."
+        },
+        "lb_baseline_day": {
+          "type": "number",
+          "default": 1,
+          "description": "Fallback baseline rule: the last value on or before this study day, used only when no flagged record exists (PJE-DERIV-002)."
+        },
+        "lb_change_factor": {
+          "type": "number",
+          "default": 2,
+          "description": "Symmetric change rule: a value at least this many times, or at most 1/this of, the baseline is abnormal by change (D28). Must exceed 1."
+        },
+        "cm_trt_col": {
+          "type": "string",
+          "default": "CMTRT",
+          "description": "Con-med name column; required in con-med data. A record with a blank name is dropped with a named reason."
+        },
+        "cm_class_col": {
+          "type": "string",
+          "default": "CMCLAS",
+          "description": "Con-med class column (ATC class), the record's category and the multiselect filter's values; cm_uncoded_value is kept as its own bucket (PJE-FILT-003)."
+        },
+        "cm_dose_col": {
+          "type": "string",
+          "default": "CMDOSE",
+          "description": "Con-med dose column, shown with the route as the tooltip's secondary line when present."
+        },
+        "cm_route_col": {
+          "type": "string",
+          "default": "CMROUTE",
+          "description": "Con-med route column, shown with the dose as the tooltip's secondary line when present."
+        },
+        "cm_stdy_col": {
+          "type": ["string", "array"],
+          "default": ["ASTDY", "CMSTDY"],
+          "description": "Con-med start study day, as a column name or a fallback chain. A con-med with no usable start is kept, not drawn, and never asserted active at an anchor (PJE-CTX-001)."
+        },
+        "cm_endy_col": {
+          "type": ["string", "array"],
+          "default": ["AENDY", "CMENDY"],
+          "description": "Con-med end study day, as a column name or a fallback chain; a blank end is 'end not recorded' unless cm_out_col says ongoing."
+        },
+        "cm_stdtc_col": {
+          "type": "string",
+          "default": "CMSTDTC",
+          "description": "Con-med start date column (--DTC), shown as recorded."
+        },
+        "cm_uncoded_value": {
+          "type": "string",
+          "default": "UNCODED",
+          "description": "The cm_class_col value meaning 'not coded', kept as an ordinary selectable class."
+        },
+        "cm_out_col": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "Con-med ongoing-indicator column (CMENRTPT, CMONGO, …), read only when the end day is blank; null (the default — the pilot data has none) makes every blank end 'end not recorded' (D16)."
+        },
+        "cm_ongoing_values": {
+          "type": "array",
+          "default": ["ONGOING", "Y", "CONTINUING"],
+          "description": "Values of cm_out_col (upper-cased, trimmed) that assert a con-med is still running when its end day is blank."
+        },
+        "mh_term_col": {
+          "type": "string",
+          "default": "MHTERM",
+          "description": "Medical-history verbatim term column; the label when the decode is blank. A record with both blank is dropped with a named reason."
+        },
+        "mh_decod_col": {
+          "type": "string",
+          "default": "MHDECOD",
+          "description": "Medical-history decoded term column, the mark label when present."
+        },
+        "mh_cat_col": {
+          "type": "string",
+          "default": "MHCAT",
+          "description": "Medical-history category column, shown as the record's category."
+        },
+        "mh_day_col": {
+          "type": ["string", "array"],
+          "default": "MHDY",
+          "description": "Medical-history collection study day (the screening visit), the mark's position under the default mh_day_source (D18)."
+        },
+        "mh_day_source": {
+          "type": "string",
+          "enum": ["collection", "onset"],
+          "default": "collection",
+          "description": "Which day places a medical-history mark: 'collection' (mh_day_col, the day it was recorded) or 'onset' (mh_onset_stdy_col); anything else falls back to 'collection' with a warning."
+        },
+        "mh_onset_stdy_col": {
+          "type": "string",
+          "default": "ASTDY",
+          "description": "Medical-history onset study day column; the tooltip's onset text by default, and the mark position under mh_day_source 'onset'."
+        },
+        "mh_strtpt_col": {
+          "type": "string",
+          "default": "MHSTRTPT",
+          "description": "Medical-history onset relative-timing column (BEFORE, …), the tooltip's onset text when no onset day or date resolves."
+        },
+        "mh_enrtpt_col": {
+          "type": "string",
+          "default": "MHENRTPT",
+          "description": "Medical-history end relative-timing column; ONGOING adds 'still present' to the tooltip."
+        },
+        "mh_onset_dtc_col": {
+          "type": "string",
+          "default": "MHSTDTC",
+          "description": "Medical-history onset date column (--DTC), shown as recorded in the onset text."
+        },
+        "ds_decod_col": {
+          "type": "string",
+          "default": "DSDECOD",
+          "description": "Disposition decoded term column, the mark label; required in disposition data. A record with a blank decode is dropped with a named reason."
+        },
+        "ds_term_col": {
+          "type": "string",
+          "default": "DSTERM",
+          "description": "Disposition verbatim term column, the tooltip's secondary line when it differs from the decode."
+        },
+        "ds_cat_col": {
+          "type": "string",
+          "default": "DSCAT",
+          "description": "Disposition category column (DISPOSITION EVENT, PROTOCOL MILESTONE, …), the record's category and the key ds_reference_cats matches (D19)."
+        },
+        "ds_stdy_col": {
+          "type": ["string", "array"],
+          "default": "DSSTDY",
+          "description": "Disposition study day, as a column name or a fallback chain."
+        },
+        "ds_dtc_col": {
+          "type": "string",
+          "default": "DSSTDTC",
+          "description": "Disposition date column (--DTC), shown as recorded."
+        },
+        "ds_reference_cats": {
+          "type": "array",
+          "default": ["DISPOSITION EVENT"],
+          "description": "Disposition categories (upper-cased, trimmed) whose rows draw a full-height dashed rule across every lane; every disposition row still draws its own mark. An empty list draws a rule for every row, which is legal but noisy and warned once."
+        },
+        "lanes": {
+          "type": "object",
+          "description": "Per-lane display configuration keyed by lane (exposure, doseChanges, adverseEvents, labs, conMeds, medicalHistory, disposition), each { enabled, label, group } merged key by key onto the default; null disables a lane, an unknown lane key is dropped with a warning (PJE-CFG-003). Lane-level severityCol, seriousCol and tests are lifted to ae_sev_col, ae_ser_col and lb_tests; domain, derivedFrom and smallMultiple are accepted and ignored."
+        },
+        "lane_groups": {
+          "type": "array",
+          "default": [
+            { "key": "treatment", "label": "Treatment", "collapsed": false },
+            { "key": "events", "label": "Events and labs", "collapsed": false },
+            { "key": "context", "label": "Context", "collapsed": false }
+          ],
+          "description": "Collapsible lane groups in stack order, each { key, label, collapsed }; a group with no enabled lane is dropped at render time (PJE-LANE-003). The plan's laneGroups is an alias."
+        },
+        "filters": {
+          "type": "array",
+          "default": [
+            {
+              "domain": "AE",
+              "value_col": "AESER",
+              "label": "Serious only",
+              "type": "flag",
+              "flag_value": "Y"
+            },
+            {
+              "domain": "LB",
+              "value_col": "LBNRIND",
+              "label": "Abnormal labs only",
+              "type": "flag",
+              "flag_value": "__abnormal__"
+            },
+            { "domain": "CM", "value_col": "CMCLAS", "label": "ATC class", "multiple": true }
+          ],
+          "description": "Sidebar filter specs, each with a domain (the only domain the filter applies to) and the shared filter contract keys: type 'flag' with a flag_value renders a checkbox (the special flag_value '__abnormal__' keeps only labs failing the abnormality rule), multiple true renders the shell multiselect, and the rest follow { value_col, label, start, all }. Specs without a value_col (or the plan's col alias) or without a recognized domain are dropped with a warning; a filter whose column is absent from its domain's data is dropped at render time with the library's standard warning (PJE-FILT-001 … PJE-FILT-004)."
+        },
+        "source_url_template": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "Optional external link template for every source row, e.g. 'https://edc.example/{domain}/{USUBJID}/{AESEQ}': {domain} is the domain code and {COLUMN} the row's URI-encoded value; a row lacking a named column gets no link. null renders no link (PJE-SRC-002). The plan's sourceUrlTemplate is an alias."
+        },
+        "source_url_label": {
+          "type": "string",
+          "default": "Open source record",
+          "description": "Link text for the external source link."
+        },
+        "on_select_subject": {
+          "type": ["null"],
+          "default": null,
+          "description": "Callback (subjectId, detail) when the subject changes; kept only when a function. The plan's onSelectSubject is an alias (PJE-EVT-001)."
+        },
+        "on_anchor_event": {
+          "type": ["null"],
+          "default": null,
+          "description": "Callback (event, context) when a mark is anchored or the anchor is cleared (both null on clear). The plan's onAnchorEvent is an alias."
+        },
+        "on_context_change": {
+          "type": ["null"],
+          "default": null,
+          "description": "Callback (context) whenever the context bundle changes while anchored, and with null when cleared. The plan's onContextChange is an alias."
+        },
+        "row_height": {
+          "type": "number",
+          "default": 26,
+          "description": "Pixels per row inside a categorical lane; a positive integer. The plan's rowHeight is an alias."
+        },
+        "row_height_min": {
+          "type": "number",
+          "default": 18,
+          "description": "Floor for row_height when fit_to_height scales the stack down."
+        },
+        "max_rows_per_lane": {
+          "type": "number",
+          "default": 12,
+          "description": "Rows drawn per categorical lane before the remainder is counted in prose, in the lane's documented sort order (PJE-LANE-010). The plan's maxRowsPerLane is an alias."
+        },
+        "lab_height": {
+          "type": "number",
+          "default": 96,
+          "description": "Pixels per lab small multiple. The plan's labHeight is an alias."
+        },
+        "lab_height_min": {
+          "type": "number",
+          "default": 64,
+          "description": "Floor for lab_height when fit_to_height scales the stack down."
+        },
+        "height": {
+          "type": "number",
+          "default": 720,
+          "description": "Pixel height of the lane column; taller stacks scroll and say so (PJE-LANE-009, D21)."
+        },
+        "fit_to_height": {
+          "type": "boolean",
+          "default": true,
+          "description": "Scale row and lab heights (down to their floors) so the opening stack fits height before the column scrolls (D21)."
+        },
+        "width": {
+          "type": "string",
+          "default": "100%",
+          "description": "Widget width, applied as the container element's style width; carried for the R widget binding."
+        },
+        "page_size": {
+          "type": "number",
+          "default": 10,
+          "description": "Rows per page in the source-row drawer's tables."
+        }
+      }
+    }
+  },
+  "$defs": {
+    "exRow": {
+      "type": "object",
+      "description": "One exposure record as passed to init: the participant id, treatment name, dose and unit, start and end study days and optionally the start date, under the columns named by the ex_* settings. Retained by reference and shown verbatim in the source drawer (PJE-DATA-006, PJE-SRC-001)."
+    },
+    "aeRow": {
+      "type": "object",
+      "description": "One adverse-event record as passed to init: the participant id, verbatim and preferred terms, body system, onset and resolution study days, severity, seriousness, relatedness, outcome and optionally the onset date, under the columns named by the ae_* settings. Retained by reference and shown verbatim in the source drawer."
+    },
+    "lbRow": {
+      "type": "object",
+      "description": "One lab result as passed to init: the participant id, test name and code, numeric result and unit, reference range, normal-range indicator, study day, baseline flag and optionally the collection date, under the columns named by the lb_* settings. Retained by reference and shown verbatim in the source drawer."
+    },
+    "cmRow": {
+      "type": "object",
+      "description": "One concomitant-medication record as passed to init: the participant id, medication name, class, optional dose and route, start and end study days, optional ongoing indicator and start date, under the columns named by the cm_* settings. Retained by reference and shown verbatim in the source drawer."
+    },
+    "mhRow": {
+      "type": "object",
+      "description": "One medical-history record as passed to init: the participant id, verbatim and decoded terms, category, collection study day, onset study day, date and relative-timing text, and end relative-timing text, under the columns named by the mh_* settings. Retained by reference and shown verbatim in the source drawer."
+    },
+    "dsRow": {
+      "type": "object",
+      "description": "One disposition record as passed to init: the participant id, decoded and verbatim terms, category, study day and optionally the date, under the columns named by the ds_* settings. Retained by reference and shown verbatim in the source drawer."
+    }
+  }
+}

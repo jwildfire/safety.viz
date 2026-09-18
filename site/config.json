@@ -168,6 +168,22 @@
       "guideCaution": "A drug-induced QT-prolongation conclusion requires the validated ICH-E14 analyses; this graphic flags signals for review, it does not confirm them.",
       "data": "adeg.csv",
       "heroAsset": "qt-explorer-hero.png"
+    },
+    {
+      "module": "patient-journey-explorer",
+      "title": "Patient Journey Explorer",
+      "status": "available",
+      "experimental": true,
+      "blurb": "One participant’s whole safety record on a single study-day axis — exposure and dose changes, adverse events, labs, con-meds, medical history and disposition as stacked lanes; anchor time on any event to see the con-meds, abnormal labs and dose changes that co-occurred inside the context window, each linking back to its source row.",
+      "hero": "PJE-ANCH-001-anchored.png",
+      "heroAsset": "patient-journey-explorer-hero.png",
+      "heroSelector": ".sv-pje-lanes",
+      "guideCaution": "Co-occurrence is not causation: this view lists what was recorded around an anchor, it does not assess relatedness. A con-med with no start day is not asserted active, a con-med whose end was never recorded is shown as active and labelled as such, and an adverse event with no end day is only called ongoing when its outcome says so.",
+      "matrix": "patient-journey-explorer.md",
+      "guide": "patient-journey-explorer.md",
+      "guideTagline": "How to read one participant's journey, what anchoring does, and what the context panel does and does not claim.",
+      "data": ["pje-ex.csv", "pje-ae.csv", "pje-lb.csv", "pje-cm.csv", "pje-mh.csv", "pje-ds.csv"],
+      "related": ["ae-timelines", "participant-profile", "hep-explorer"]
     }
   ]
 }

@@ -30,6 +30,7 @@ var SafetyViz = (() => {
     nepExplorer: () => nepExplorer,
     outlierExplorer: () => outlierExplorer,
     participantProfile: () => participantProfile,
+    patientJourneyExplorer: () => patientJourneyExplorer,
     qtExplorer: () => qtExplorer,
     resultsOverTime: () => resultsOverTime,
     shiftPlot: () => shiftPlot,
@@ -1808,9 +1809,9 @@ var SafetyViz = (() => {
     ctx.fillRect(opts.left, opts.top, opts.width, opts.height);
     ctx.fillStyle = oldColor;
   }
-  function renderText(ctx, text, x, y, font, opts = {}) {
-    const lines = isArray(text) ? text : [
-      text
+  function renderText(ctx, text3, x, y, font, opts = {}) {
+    const lines = isArray(text3) ? text3 : [
+      text3
     ];
     const stroke = opts.strokeWidth > 0 && opts.strokeColor !== "";
     let i, line;
@@ -10109,11 +10110,11 @@ var SafetyViz = (() => {
   }
   function doesNotFitWithAlign(xAlign, chart, options, size) {
     const { x, width } = size;
-    const caret = options.caretSize + options.caretPadding;
-    if (xAlign === "left" && x + width + caret > chart.width) {
+    const caret2 = options.caretSize + options.caretPadding;
+    if (xAlign === "left" && x + width + caret2 > chart.width) {
       return true;
     }
-    if (xAlign === "right" && x - width - caret < 0) {
+    if (xAlign === "right" && x - width - caret2 < 0) {
       return true;
     }
   }
@@ -12501,10 +12502,10 @@ var SafetyViz = (() => {
   };
 
   // src/shell.js
-  function createElement(tag, className, text) {
+  function createElement(tag, className, text3) {
     const element = document.createElement(tag);
     if (className) element.className = className;
-    if (text !== void 0) element.textContent = text;
+    if (text3 !== void 0) element.textContent = text3;
     return element;
   }
   function prototypeBanner(note) {
@@ -12512,8 +12513,8 @@ var SafetyViz = (() => {
     banner.setAttribute("role", "note");
     const tag = createElement("span", "sv-prototype-tag", "Prototype");
     banner.append(tag);
-    const text = note || "This chart is a prototype under evaluation for the v1.5 release \u2014 its behaviour and settings may change before it is finalized.";
-    banner.append(createElement("span", "sv-prototype-text", text));
+    const text3 = note || "This chart is a prototype under evaluation for the v1.5 release \u2014 its behaviour and settings may change before it is finalized.";
+    banner.append(createElement("span", "sv-prototype-text", text3));
     return banner;
   }
   function option(select, value, label, selected) {
@@ -12527,21 +12528,21 @@ var SafetyViz = (() => {
     const details = createElement("details", "sv-multiselect");
     const summary = createElement("summary");
     details.append(summary);
-    const list = createElement("div", "sv-ms-list");
-    details.append(list);
+    const list2 = createElement("div", "sv-ms-list");
+    details.append(list2);
     const current = () => selected === null ? new Set(values) : new Set(selected);
     const allLabel = createElement("label", "sv-ms-option sv-ms-all");
     const allBox = document.createElement("input");
     allBox.type = "checkbox";
     allLabel.append(allBox, document.createTextNode("All"));
-    list.append(allLabel);
+    list2.append(allLabel);
     const boxes = values.map((value) => {
       const label = createElement("label", "sv-ms-option");
       const box = document.createElement("input");
       box.type = "checkbox";
       box.value = value;
       label.append(box, document.createTextNode(value));
-      list.append(label);
+      list2.append(label);
       return box;
     });
     const sync = () => {
@@ -12753,7 +12754,7 @@ var SafetyViz = (() => {
   }
   function renderViewSelector(addSection, { options, active, onChange, title = "View" }) {
     const section = addSection(title);
-    const list = createElement("div", "sv-view-list");
+    const list2 = createElement("div", "sv-view-list");
     options.forEach(({ value, label }) => {
       const isActive3 = value === active;
       const optionButton = createElement(
@@ -12767,9 +12768,9 @@ var SafetyViz = (() => {
         if (value === active) return;
         onChange(value);
       };
-      list.append(optionButton);
+      list2.append(optionButton);
     });
-    section.append(list);
+    section.append(list2);
     return section;
   }
 
@@ -12778,7 +12779,7 @@ var SafetyViz = (() => {
     if (configured === void 0 || configured === null || configured === "") return [];
     return Array.isArray(configured) ? configured : [configured];
   }
-  function resolveMeasureList(present, configured, { warn = true } = {}) {
+  function resolveMeasureList(present, configured, { warn: warn3 = true } = {}) {
     const labels = (present || []).map((measure) => measure.label);
     const sorted = [...labels].sort();
     const configuredEntries = entries(configured);
@@ -12796,14 +12797,14 @@ var SafetyViz = (() => {
         if (!chosen.includes(label)) chosen.push(label);
       });
     });
-    if (warn && missing.length) {
-      const plural = missing.length > 1;
+    if (warn3 && missing.length) {
+      const plural3 = missing.length > 1;
       console.warn(
-        `The configured measure${plural ? "s" : ""} [ ${missing.join(", ")} ] ${plural ? "do" : "does"} not exist in the data and ${plural ? "have" : "has"} been removed from the Measure control.`
+        `The configured measure${plural3 ? "s" : ""} [ ${missing.join(", ")} ] ${plural3 ? "do" : "does"} not exist in the data and ${plural3 ? "have" : "has"} been removed from the Measure control.`
       );
     }
     if (!chosen.length) {
-      if (warn && labels.length)
+      if (warn3 && labels.length)
         console.warn(
           "No configured measure exists in the data. Falling back to every measure in the data."
         );
@@ -12814,9 +12815,9 @@ var SafetyViz = (() => {
   function presentMeasures(rows, settings, label) {
     const seen = /* @__PURE__ */ new Map();
     (rows || []).forEach((row) => {
-      const text = label(row, settings);
-      if (text === void 0 || text === null || text === "") return;
-      if (!seen.has(text)) seen.set(text, { label: text, name: row[settings.measure_col] });
+      const text3 = label(row, settings);
+      if (text3 === void 0 || text3 === null || text3 === "") return;
+      if (!seen.has(text3)) seen.set(text3, { label: text3, name: row[settings.measure_col] });
     });
     return [...seen.values()];
   }
@@ -12849,9 +12850,9 @@ var SafetyViz = (() => {
     state[key] = Number.isFinite(value) ? value : null;
     const domain = state.axisDomain || [];
     const lower = state.lower == null ? domain[0] : state.lower;
-    const upper = state.upper == null ? domain[1] : state.upper;
-    if (Number.isFinite(lower) && Number.isFinite(upper) && lower >= upper) {
-      state.lower = upper;
+    const upper7 = state.upper == null ? domain[1] : state.upper;
+    if (Number.isFinite(lower) && Number.isFinite(upper7) && lower >= upper7) {
+      state.lower = upper7;
       state.upper = lower;
     }
     return state;
@@ -13127,8 +13128,8 @@ var SafetyViz = (() => {
   }
   function precision(values) {
     const decimals = values.map((value) => {
-      const text = String(value);
-      return text.includes(".") ? text.split(".")[1].length : 0;
+      const text3 = String(value);
+      return text3.includes(".") ? text3.split(".")[1].length : 0;
     });
     return Math.min(4, Math.max(0, ...decimals));
   }
@@ -13229,8 +13230,8 @@ var SafetyViz = (() => {
     width = range / quantity;
     const bins = Array.from({ length: quantity }, (_, index) => {
       const lower = min + index * width;
-      const upper = index === quantity - 1 ? max : min + (index + 1) * width;
-      return { index, lower, upper, records: [] };
+      const upper7 = index === quantity - 1 ? max : min + (index + 1) * width;
+      return { index, lower, upper: upper7, records: [] };
     });
     values.forEach((value, idx) => {
       bins[binIndex(value, min, width, bins.length)].records.push(idx);
@@ -13250,9 +13251,9 @@ var SafetyViz = (() => {
       state.upper = tmp;
     }
   }
-  function resolveDomain(values, lower, upper) {
+  function resolveDomain(values, lower, upper7) {
     const defaultDomain = [Math.min(...values), Math.max(...values)];
-    return [lower == null ? defaultDomain[0] : lower, upper == null ? defaultDomain[1] : upper];
+    return [lower == null ? defaultDomain[0] : lower, upper7 == null ? defaultDomain[1] : upper7];
   }
   function buildTickLabels(bins, digits, annotateBoundaries) {
     return bins.map(
@@ -13300,9 +13301,9 @@ var SafetyViz = (() => {
     return Math.max(1e-4, Math.min(0.9999, Math.exp(-0.5 * f)));
   }
   function statisticalAnnotation(label, pValue, testName, url) {
-    const text = `${label}: p=${formatPValue(pValue)}`;
+    const text3 = `${label}: p=${formatPValue(pValue)}`;
     const annotation = createElement("div", "sv-annotation");
-    const value = createElement("span", null, text);
+    const value = createElement("span", null, text3);
     value.title = `${testName}. Caution: This graphic has been thoroughly tested, but is not validated.`;
     const link = createElement("a", "sv-info", "\u24D8");
     link.href = url;
@@ -14212,11 +14213,11 @@ var SafetyViz = (() => {
       auc += meanValue * hours;
     }
     const value = auc * Math.pow(peak, PEAK_EXPONENT) / SCALE;
-    const text = f2(value);
-    const note = `NOTE: For this participant, P_ALT was calculated as ALT AUC \xD7 Peak ALT^${PEAK_EXPONENT} / 10^5 = ${f2(auc)} \xD7 ${f2(peak)}^${PEAK_EXPONENT} / 10^5 = ${text}. The AUC is trapezoidal over study day \xD7 24 hours, and the estimate assumes ALT is reported in IU/L \u2014 if your results are in other units this figure does not apply. P_ALT predicts the percentage hepatocyte loss from the maximum value and the AUC of serum ALT observed during a DILI event (Chung et al., PMID 30303523). It is an estimate, not a measurement, and is not validated for clinical use.`;
+    const text3 = f2(value);
+    const note = `NOTE: For this participant, P_ALT was calculated as ALT AUC \xD7 Peak ALT^${PEAK_EXPONENT} / 10^5 = ${f2(auc)} \xD7 ${f2(peak)}^${PEAK_EXPONENT} / 10^5 = ${text3}. The AUC is trapezoidal over study day \xD7 24 hours, and the estimate assumes ALT is reported in IU/L \u2014 if your results are in other units this figure does not apply. P_ALT predicts the percentage hepatocyte loss from the maximum value and the AUC of serum ALT observed during a DILI event (Chung et al., PMID 30303523). It is an estimate, not a measurement, and is not validated for clinical use.`;
     return {
       value,
-      text_value: text,
+      text_value: text3,
       note,
       reference: {
         label: "A Rapid Method to Estimate Hepatocyte Loss Due to Drug-Induced Liver Injury",
@@ -14416,12 +14417,12 @@ var SafetyViz = (() => {
   function format2(value) {
     return Number.isFinite(value) ? value.toFixed(2) : "";
   }
-  function appendDetail(list, label, value, className) {
+  function appendDetail(list2, label, value, className) {
     const li = createElement("li", className || null);
     li.append(createElement("div", "sv-profile-detail-label", label));
     const valueEl = createElement("div", "sv-profile-detail-value", value);
     li.append(valueEl);
-    list.append(li);
+    list2.append(li);
     return valueEl;
   }
   function renderHeader(participant, settings, { onClear } = {}) {
@@ -14444,17 +14445,17 @@ var SafetyViz = (() => {
     };
     titleRow.append(clear);
     header.append(titleRow);
-    const list = createElement("ul", "sv-profile-details");
+    const list2 = createElement("ul", "sv-profile-details");
     (participant.details || []).forEach((detail) => {
       const value = detail.value === void 0 || detail.value === null ? "" : String(detail.value);
-      appendDetail(list, detail.label, value);
+      appendDetail(list2, detail.label, value);
     });
-    appendDetail(list, "R Ratio", format2(participant.rRatio));
+    appendDetail(list2, "R Ratio", format2(participant.rRatio));
     const footnote = createElement("p", "sv-profile-footnote", "");
     if (participant.pAlt !== void 0 && participant.pAlt !== null && participant.pAlt !== "") {
       const isNote = typeof participant.pAlt === "object";
-      const text = isNote ? String(participant.pAlt.text_value) : String(participant.pAlt);
-      const valueEl = appendDetail(list, "P_ALT", text, "sv-profile-palt");
+      const text3 = isNote ? String(participant.pAlt.text_value) : String(participant.pAlt);
+      const valueEl = appendDetail(list2, "P_ALT", text3, "sv-profile-palt");
       if (isNote && participant.pAlt.note) {
         valueEl.setAttribute("role", "button");
         valueEl.setAttribute("tabindex", "0");
@@ -14478,7 +14479,7 @@ var SafetyViz = (() => {
         };
       }
     }
-    header.append(list, footnote);
+    header.append(list2, footnote);
     return header;
   }
 
@@ -14507,9 +14508,9 @@ var SafetyViz = (() => {
   var SEVERITY_COLORS = ["#fab219", "#ec835a", "#d03b3b"];
   var NOT_RECORDED_COLOR = "#c3c2b7";
   function defaultLabel(value) {
-    const text = String(value);
-    if (!/^[A-Za-z][A-Za-z\s-]*$/.test(text)) return text;
-    return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+    const text3 = String(value);
+    if (!/^[A-Za-z][A-Za-z\s-]*$/.test(text3)) return text3;
+    return text3.charAt(0).toUpperCase() + text3.slice(1).toLowerCase();
   }
   function syncAeSettings(settings = {}) {
     const synced = { ...AE_DEFAULT_SETTINGS, ...settings };
@@ -14592,8 +14593,8 @@ var SafetyViz = (() => {
     });
   }
   function summarizeAe(events, settings) {
-    const list = Array.isArray(events) ? events : [];
-    const worst = list.reduce(
+    const list2 = Array.isArray(events) ? events : [];
+    const worst = list2.reduce(
       (acc, event) => event.__ae_severity.rank > acc.rank ? event.__ae_severity : acc,
       { ...NOT_RECORDED, color: NOT_RECORDED_COLOR }
     );
@@ -14604,19 +14605,19 @@ var SafetyViz = (() => {
     })).reverse().concat([{ key: null, label: NOT_RECORDED.label, rank: 0 }]);
     const mix = levels.map((level) => ({
       ...level,
-      color: level.rank === 0 ? NOT_RECORDED_COLOR : (list.find((event) => event.__ae_severity.rank === level.rank) || {}).__ae_severity?.color || NOT_RECORDED_COLOR,
-      count: list.filter((event) => event.__ae_severity.rank === level.rank).length
+      color: level.rank === 0 ? NOT_RECORDED_COLOR : (list2.find((event) => event.__ae_severity.rank === level.rank) || {}).__ae_severity?.color || NOT_RECORDED_COLOR,
+      count: list2.filter((event) => event.__ae_severity.rank === level.rank).length
     })).filter((entry) => entry.count > 0);
     const counts = /* @__PURE__ */ new Map();
-    list.forEach((event) => {
+    list2.forEach((event) => {
       const name = event.__ae_soc || "Not recorded";
       counts.set(name, (counts.get(name) || 0) + 1);
     });
     const bodySystems = [...counts.entries()].map(([name, count2]) => ({ name, count: count2 })).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
     return {
-      total: list.length,
-      serious: list.filter((event) => event.__ae_serious).length,
-      openEnded: list.filter((event) => event.__ae_open).length,
+      total: list2.length,
+      serious: list2.filter((event) => event.__ae_serious).length,
+      openEnded: list2.filter((event) => event.__ae_open).length,
       worst,
       mix,
       bodySystems
@@ -14734,16 +14735,16 @@ var SafetyViz = (() => {
   function renderBodySystems(summary, limit = 4) {
     const wrap = createElement("div", "sv-profile-ae-soc-wrap");
     wrap.append(createElement("div", "sv-profile-ae-track-label", "Body systems"));
-    const list = createElement("ul", "sv-profile-ae-soc");
+    const list2 = createElement("ul", "sv-profile-ae-soc");
     summary.bodySystems.slice(0, limit).forEach((entry) => {
       const item = createElement("li");
       item.append(
         createElement("span", "sv-profile-ae-soc-name", entry.name),
         createElement("span", "sv-profile-ae-soc-count", String(entry.count))
       );
-      list.append(item);
+      list2.append(item);
     });
-    wrap.append(list);
+    wrap.append(list2);
     const rest = summary.bodySystems.length - limit;
     if (rest > 0) {
       wrap.append(
@@ -14835,14 +14836,14 @@ var SafetyViz = (() => {
     const section = createElement("section", "sv-profile-ae");
     section.setAttribute("aria-label", "Adverse events");
     section.append(createElement("h3", "sv-profile-ae-title", "Adverse events"));
-    const list = Array.isArray(events) ? events : [];
-    if (!list.length) {
+    const list2 = Array.isArray(events) ? events : [];
+    if (!list2.length) {
       section.append(
         createElement("p", "sv-profile-ae-empty", "No adverse events recorded for this participant.")
       );
       return section;
     }
-    const summary = summarizeAe(list, settings);
+    const summary = summarizeAe(list2, settings);
     section.append(renderTiles(summary));
     section.append(renderMix(summary));
     if (!domain) {
@@ -14861,7 +14862,7 @@ var SafetyViz = (() => {
           "Timeline, on the labs chart\u2019s study-day axis"
         )
       );
-      section.append(renderTimeline(list, domain, settings));
+      section.append(renderTimeline(list2, domain, settings));
     }
     section.append(renderBodySystems(summary));
     return section;
@@ -15150,9 +15151,9 @@ var SafetyViz = (() => {
       [SPARK_OFFSET, SPARK_WIDTH - SPARK_OFFSET]
     );
     const y = linear(sparkDomain(measure), [SPARK_HEIGHT - SPARK_OFFSET, SPARK_OFFSET]);
-    const upper = spark.filter((point) => Number.isFinite(point.uln)).map((point) => [x(point.day), y(point.uln)]);
+    const upper7 = spark.filter((point) => Number.isFinite(point.uln)).map((point) => [x(point.day), y(point.uln)]);
     const lower = spark.filter((point) => Number.isFinite(point.lln)).map((point) => [x(point.day), y(point.lln)]).reverse();
-    const band = upper.concat(lower);
+    const band = upper7.concat(lower);
     if (band.length) {
       svg.append(
         svgElement("polygon", {
@@ -15217,9 +15218,9 @@ var SafetyViz = (() => {
         const { x, y } = chart.scales;
         const { left, right } = chart.chartArea;
         const ctx = chart.ctx;
-        const upper = measure.spark.filter((point) => Number.isFinite(point.uln)).map((point) => [x.getPixelForValue(point.day), y.getPixelForValue(point.uln)]);
+        const upper7 = measure.spark.filter((point) => Number.isFinite(point.uln)).map((point) => [x.getPixelForValue(point.day), y.getPixelForValue(point.uln)]);
         const lower = measure.spark.filter((point) => Number.isFinite(point.lln)).map((point) => [x.getPixelForValue(point.day), y.getPixelForValue(point.lln)]).reverse();
-        const band = upper.concat(lower);
+        const band = upper7.concat(lower);
         if (band.length) {
           ctx.save();
           ctx.fillStyle = "#eee";
@@ -15510,7 +15511,7 @@ var SafetyViz = (() => {
     strip.append(toggle);
     if (!listOpen || !Array.isArray(ranked)) return strip;
     const wrap = createElement("div", "sv-profile-cohort");
-    const list = createElement("ol", "sv-profile-cohort-list");
+    const list2 = createElement("ol", "sv-profile-cohort-list");
     ranked.forEach((entry) => {
       const item = createElement("li");
       const button = createElement("button", "sv-profile-cohort-item", entry.id);
@@ -15521,9 +15522,9 @@ var SafetyViz = (() => {
         if (!entry.current && onStep) onStep(entry.index);
       };
       item.append(button);
-      list.append(item);
+      list2.append(item);
     });
-    wrap.append(list);
+    wrap.append(list2);
     const shell = createElement("div", "sv-profile-stepper-wrap");
     shell.append(strip, wrap);
     return shell;
@@ -15938,8 +15939,8 @@ var SafetyViz = (() => {
      * @returns {SafetyParticipantProfile} The instance, for chaining.
      */
     setSelected(ids) {
-      const list = (Array.isArray(ids) ? ids : []).map(String);
-      if (list.length) this.show(list);
+      const list2 = (Array.isArray(ids) ? ids : []).map(String);
+      if (list2.length) this.show(list2);
       else this.clear();
       return this;
     }
@@ -15953,9 +15954,9 @@ var SafetyViz = (() => {
      */
     show(ids, cleanRows) {
       if (cleanRows !== void 0) this.cleanRows = Array.isArray(cleanRows) ? cleanRows : [];
-      const list = (Array.isArray(ids) ? ids : []).map(String);
-      if (!list.length) return this.clear();
-      const ranked = rankParticipants(this.cleanRows, list, this.settings);
+      const list2 = (Array.isArray(ids) ? ids : []).map(String);
+      if (!list2.length) return this.clear();
+      const ranked = rankParticipants(this.cleanRows, list2, this.settings);
       const sameCohort = ranked.length === this.state.ids.length && ranked.every((id, index) => String(id) === String(this.state.ids[index]));
       this.state.ids = ranked;
       this.state.index = sameCohort ? Math.min(this.state.index, ranked.length - 1) : 0;
@@ -16625,16 +16626,16 @@ var SafetyViz = (() => {
         this.render();
       };
       this.lowerInput = lower;
-      const upper = addControl("Upper", document.createElement("input"), xAxisRow);
-      upper.type = "number";
-      upper.step = "any";
-      upper.value = seedLimitInput(this.state, "upper");
-      upper.onchange = () => {
-        applyLimitEdit(this.state, "upper", upper.value);
+      const upper7 = addControl("Upper", document.createElement("input"), xAxisRow);
+      upper7.type = "number";
+      upper7.step = "any";
+      upper7.value = seedLimitInput(this.state, "upper");
+      upper7.onchange = () => {
+        applyLimitEdit(this.state, "upper", upper7.value);
         normalizeDomain(this.state);
         this.render();
       };
-      this.upperInput = upper;
+      this.upperInput = upper7;
       const reset = createElement("button", "sv-reset-limits", "Reset Limits");
       reset.type = "button";
       reset.onclick = () => {
@@ -19453,9 +19454,9 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       state.upper = tmp;
     }
   }
-  function resolveYDomain(values, lower, upper) {
+  function resolveYDomain(values, lower, upper7) {
     const extent = [Math.min(...values), Math.max(...values)];
-    return [lower == null ? extent[0] : lower, upper == null ? extent[1] : upper];
+    return [lower == null ? extent[0] : lower, upper7 == null ? extent[1] : upper7];
   }
   function yPrecision(domain) {
     const range = domain[1] - domain[0];
@@ -20466,9 +20467,9 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     const pad = (max - min || Math.abs(max) || 1) * 0.04;
     return [min - pad, max + pad];
   }
-  function resolveYDomain2(values, lower, upper) {
+  function resolveYDomain2(values, lower, upper7) {
     const domain = defaultYDomain(values);
-    return [lower == null ? domain[0] : lower, upper == null ? domain[1] : upper];
+    return [lower == null ? domain[0] : lower, upper7 == null ? domain[1] : upper7];
   }
   function normalizeYDomain(state) {
     if (Number.isFinite(state.lower) && Number.isFinite(state.upper) && state.lower >= state.upper) {
@@ -20908,16 +20909,16 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
         this.render();
       };
       this.lowerInput = lower;
-      const upper = addControl("Upper", document.createElement("input"), yRow);
-      upper.type = "number";
-      upper.step = String(step);
-      upper.value = seedLimitInput(this.state, "upper");
-      upper.onchange = () => {
-        applyLimitEdit(this.state, "upper", upper.value);
+      const upper7 = addControl("Upper", document.createElement("input"), yRow);
+      upper7.type = "number";
+      upper7.step = String(step);
+      upper7.value = seedLimitInput(this.state, "upper");
+      upper7.onchange = () => {
+        applyLimitEdit(this.state, "upper", upper7.value);
         normalizeYDomain(this.state);
         this.render();
       };
-      this.upperInput = upper;
+      this.upperInput = upper7;
       const reset = addControl("\xA0", document.createElement("button"), yParent);
       reset.type = "button";
       reset.textContent = "Reset Limits";
@@ -22450,10 +22451,10 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     const derived = edishDomain(values, cut, type);
     const override = (value, fallback) => Number.isFinite(value) ? value : fallback;
     let lower = override(limits && limits.lower, derived[0]);
-    const upper = override(limits && limits.upper, derived[1]);
+    const upper7 = override(limits && limits.upper, derived[1]);
     if (type === "log" && !(lower > 0)) lower = derived[0];
-    if (!(upper > lower)) return derived;
-    return [lower, upper];
+    if (!(upper7 > lower)) return derived;
+    return [lower, upper7];
   }
   var LOG_EPSILON = 1e-9;
   function logTicks(domain, base = 10) {
@@ -23093,19 +23094,19 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
        */
       updateTraceHeader(hoverId, selected) {
         if (!host.compositeHeaderEl) return;
-        let text;
+        let text3;
         let active = true;
         if (hoverId != null) {
-          text = api.annotationText(hoverId, selected.includes(String(hoverId)));
+          text3 = api.annotationText(hoverId, selected.includes(String(hoverId)));
         } else if (selected.length === 1) {
-          text = api.annotationText(selected[0], true);
+          text3 = api.annotationText(selected[0], true);
         } else if (selected.length > 1) {
-          text = `${selected.length} participants selected.`;
+          text3 = `${selected.length} participants selected.`;
         } else {
-          text = TRACE_HEADER_HINT;
+          text3 = TRACE_HEADER_HINT;
           active = false;
         }
-        host.compositeHeaderEl.textContent = text;
+        host.compositeHeaderEl.textContent = text3;
         host.compositeHeaderEl.classList.toggle("is-active", active);
       },
       /**
@@ -24426,7 +24427,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
       const side = sideOf(subject, sides);
       if (buckets.has(side)) buckets.get(side).push(subject);
     });
-    return new Map([...buckets].map(([side, list]) => [side, migrationMatrix(list)]));
+    return new Map([...buckets].map(([side, list2]) => [side, migrationMatrix(list2)]));
   }
   function migrationCells(subjects, sides) {
     const staged = /* @__PURE__ */ new Map();
@@ -24510,9 +24511,9 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
     };
   }
   function normalizeCells(cells) {
-    const list = cells instanceof Map ? [...cells.values()] : Array.isArray(cells) ? cells : cells && typeof cells === "object" ? Object.values(cells) : [];
+    const list2 = cells instanceof Map ? [...cells.values()] : Array.isArray(cells) ? cells : cells && typeof cells === "object" ? Object.values(cells) : [];
     const normalized = [];
-    list.forEach((cell2) => {
+    list2.forEach((cell2) => {
       if (!cell2 || !SIDES2.includes(cell2.side)) return;
       if (!SEVERITY_ORDER.includes(cell2.pre) || !SEVERITY_ORDER.includes(cell2.post)) return;
       const ids = Array.isArray(cell2.ids) ? cell2.ids : [];
@@ -24633,9 +24634,9 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
         (side) => SEVERITY_ORDER.reduce((total, quadrant) => total + tally.outer[side][quadrant], 0)
       )
     );
-    const usable = Math.max(0, height - 2 * PAD - GAP_TOTAL);
+    const usable2 = Math.max(0, height - 2 * PAD - GAP_TOTAL);
     const denominator = Math.max(centreTotal, sideTotal);
-    const unit = denominator > 0 ? usable / denominator : 0;
+    const unit = denominator > 0 ? usable2 / denominator : 0;
     const { nodes, tops } = buildNodes(tally, columns, unit);
     const nodeById = new Map(nodes.map((node) => [node.id, node]));
     const cursors = new Map(tops);
@@ -24780,10 +24781,10 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
 ${ribbon.pre} \u2192 ${ribbon.post}
 ${CONCERN_PHRASE[ribbon.concern]}`;
   }
-  function showTip(host, event, text) {
+  function showTip(host, event, text3) {
     const tip = host.migrationTipEl;
     if (!tip) return;
-    tip.textContent = text;
+    tip.textContent = text3;
     tip.classList.add("is-visible");
     const bounds = host.migrationWrap.getBoundingClientRect();
     const x = (event.clientX ?? bounds.left) - bounds.left;
@@ -24936,7 +24937,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       );
       const centred = node.column === "centre";
       const counts = centred ? `${node.counts.placebo} / ${node.counts.active}` : String(node.count);
-      const text = svgEl("text", {
+      const text3 = svgEl("text", {
         class: `hep-sankey-node-label${node.stub ? " is-stub" : ""}${centred ? " is-centre" : ""}`,
         "data-node": node.id,
         x: centred ? (columns.centre[0] + columns.centre[1]) / 2 : node.column === "left" ? node.x1 + 8 : node.x0 - 8,
@@ -24944,8 +24945,8 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
         "text-anchor": centred ? "middle" : node.column === "left" ? "start" : "end",
         "dominant-baseline": "middle"
       });
-      text.textContent = `${node.quadrant} ${counts}`;
-      group.append(text);
+      text3.textContent = `${node.quadrant} ${counts}`;
+      group.append(text3);
     });
   }
   function paintRibbons(host, group, ribbons) {
@@ -25019,15 +25020,15 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       ["active", SANKEY_WIDTH, "end", `${SIDE_TITLE.active} \u2014 peak on-treatment`]
     ];
     headers.forEach(([key, x, anchor, label]) => {
-      const text = svgEl("text", {
+      const text3 = svgEl("text", {
         class: "hep-sankey-col-label",
         "data-column": key,
         x,
         y: -22,
         "text-anchor": anchor
       });
-      text.textContent = label;
-      group.append(text);
+      text3.textContent = label;
+      group.append(text3);
     });
     paintTiers(group, layout.nodes);
     paintRibbons(host, group, layout.ribbons);
@@ -26907,12 +26908,12 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     const diff = p1 - p2;
     const se = Math.sqrt(p1 * (1 - p1) / (tot1 || 1) + p2 * (1 - p2) / (tot2 || 1));
     const lower = diff - 1.96 * se;
-    const upper = diff + 1.96 * se;
+    const upper7 = diff + 1.96 * se;
     return {
       diff: diff * 100,
       lower: lower * 100,
-      upper: upper * 100,
-      sig: lower > 0 || upper < 0 ? 1 : 0
+      upper: upper7 * 100,
+      sig: lower > 0 || upper7 < 0 ? 1 : 0
     };
   }
   function addDifferences(cells, groups) {
@@ -27632,14 +27633,14 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       svg.append(line);
       const anchors = ["start", "middle", "end"];
       [d0, (d0 + d1) / 2, d1].forEach((value, index) => {
-        const text = document.createElementNS(SVG_NS3, "text");
-        text.setAttribute("x", scale.x(value));
-        text.setAttribute("y", 15);
-        text.setAttribute("text-anchor", anchors[index]);
-        text.setAttribute("font-size", "9");
-        text.setAttribute("fill", "#52616f");
-        text.textContent = format(value);
-        svg.append(text);
+        const text3 = document.createElementNS(SVG_NS3, "text");
+        text3.setAttribute("x", scale.x(value));
+        text3.setAttribute("y", 15);
+        text3.setAttribute("text-anchor", anchors[index]);
+        text3.setAttribute("font-size", "9");
+        text3.setAttribute("fill", "#52616f");
+        text3.textContent = format(value);
+        svg.append(text3);
       });
       return svg;
     }
@@ -27704,18 +27705,18 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
      * highlight style (AE-REG-003).
      * @private
      */
-    setLabelText(label, text, matched) {
+    setLabelText(label, text3, matched) {
       label.textContent = "";
       const term = this.state.searchTerm;
-      const index = matched ? text.toLowerCase().indexOf(term.toLowerCase()) : -1;
+      const index = matched ? text3.toLowerCase().indexOf(term.toLowerCase()) : -1;
       if (index < 0) {
-        label.textContent = text;
+        label.textContent = text3;
         return;
       }
       label.append(
-        document.createTextNode(text.slice(0, index)),
-        createElement("span", "ae-search-match", text.slice(index, index + term.length)),
-        document.createTextNode(text.slice(index + term.length))
+        document.createTextNode(text3.slice(0, index)),
+        createElement("span", "ae-search-match", text3.slice(index, index + term.length)),
+        document.createTextNode(text3.slice(index + term.length))
       );
     }
     /**
@@ -28391,14 +28392,14 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       denominators[entry.arm] += 1;
       allDenom += 1;
     }
-    const buildRow = (kind, threshold, pick) => {
+    const buildRow = (kind, threshold, pick2) => {
       const byArm = {};
       let allCount = 0;
       arms.forEach((arm) => {
         byArm[arm] = 0;
       });
       for (const entry of extremes.values()) {
-        if (pick(entry) > threshold) {
+        if (pick2(entry) > threshold) {
           if (byArm[entry.arm] === void 0) byArm[entry.arm] = 0;
           byArm[entry.arm] += 1;
           allCount += 1;
@@ -30117,10 +30118,10 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
           ctx.stroke();
           ctx.setLineDash([]);
         } else {
-          const upper = clamp(yOf(range.max));
+          const upper7 = clamp(yOf(range.max));
           const lower = clamp(yOf(range.min));
           ctx.fillStyle = "rgba(148, 163, 184, 0.22)";
-          ctx.fillRect(left, upper, right - left, lower - upper);
+          ctx.fillRect(left, upper7, right - left, lower - upper7);
         }
         ctx.fillStyle = DIVIDER_COLOR;
         ctx.font = "11px system-ui, -apple-system, sans-serif";
@@ -31795,8 +31796,8 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
   }
   function formatSigned2(value, digits = 2) {
     if (!Number.isFinite(value)) return "";
-    const text = formatNumber7(Math.abs(value), digits);
-    return value < 0 ? `\u2212${text}` : `+${text}`;
+    const text3 = formatNumber7(Math.abs(value), digits);
+    return value < 0 ? `\u2212${text3}` : `+${text3}`;
   }
   function pointTooltip3(point, settings, measure) {
     const unit = point.unit;
@@ -32280,7 +32281,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       if (!point) return;
       this.state.selectedId = point.id;
       this.restyle(index);
-      const details = this.settings.details.filter((detail) => detail.value_col !== this.settings.id_col).map((detail) => `${detail.label}: ${point.meta[detail.value_col]}`).filter((text) => !/: $/.test(text));
+      const details = this.settings.details.filter((detail) => detail.value_col !== this.settings.id_col).map((detail) => `${detail.label}: ${point.meta[detail.value_col]}`).filter((text3) => !/: $/.test(text3));
       this.mainAnnotation.textContent = `${point.id} \u2014 ${stageLabel(point.stage)}`;
       this.footnote.textContent = [
         `${point.id}: baseline ${formatNumber7(point.baseline)} ${point.unit} (${point.baselineVisit}), maximum ${formatNumber7(point.max)} ${point.unit} (${point.maxVisit}), ${formatNumber7(point.fold)}\xD7 baseline.`,
@@ -32977,9 +32978,9 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       }
     };
   }
-  function truncate(ctx, text, width) {
-    if (ctx.measureText(text).width <= width) return text;
-    let out = text;
+  function truncate(ctx, text3, width) {
+    if (ctx.measureText(text3).width <= width) return text3;
+    let out = text3;
     while (out.length > 1 && ctx.measureText(`${out}\u2026`).width > width) out = out.slice(0, -1);
     return `${out}\u2026`;
   }
@@ -33490,6 +33491,5611 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     return new SafetyTimeToEvent(element, settings);
   }
 
+  // src/patient-journey-explorer/configure.js
+  var LANE_KEYS = [
+    "exposure",
+    "doseChanges",
+    "adverseEvents",
+    "labs",
+    "conMeds",
+    "medicalHistory",
+    "disposition"
+  ];
+  var DEFAULT_SETTINGS14 = {
+    // ---- identity / input form ----
+    id_col: "USUBJID",
+    domain_col: "DOMAIN",
+    subject: null,
+    // ---- time ----
+    time: {
+      mode: "day",
+      ref_date_col: "TRTSDT",
+      allow_date_mode: true
+    },
+    context_window_days: 30,
+    // ---- exposure (EX) ----
+    ex_trt_col: "EXTRT",
+    ex_dose_col: "EXDOSE",
+    ex_dosu_col: "EXDOSU",
+    ex_stdy_col: ["ASTDY", "EXSTDY"],
+    ex_endy_col: ["AENDY", "EXENDY"],
+    ex_stdtc_col: "EXSTDTC",
+    // ---- adverse events (AE) ----
+    ae_term_col: "AETERM",
+    ae_decod_col: "AEDECOD",
+    ae_soc_col: "AEBODSYS",
+    ae_stdy_col: ["ASTDY", "AESTDY"],
+    ae_endy_col: ["AENDY", "AEENDY"],
+    ae_sev_col: "AESEV",
+    ae_ser_col: "AESER",
+    ae_rel_col: "AEREL",
+    ae_stdtc_col: "AESTDTC",
+    ae_severity_values: ["MILD", "MODERATE", "SEVERE"],
+    ae_serious_value: "Y",
+    // Terminal state of an event whose end day is blank (D16): ongoing only
+    // when the outcome column says so, otherwise "end not recorded".
+    ae_out_col: "AEOUT",
+    ae_ongoing_values: ["NOT RECOVERED/NOT RESOLVED", "RECOVERING/RESOLVING", "ONGOING", "N"],
+    // ---- labs (LB) ----
+    lb_test_col: "LBTEST",
+    lb_testcd_col: "LBTESTCD",
+    lb_value_col: "LBSTRESN",
+    lb_lo_col: "LBSTNRLO",
+    lb_hi_col: "LBSTNRHI",
+    lb_day_col: ["LBDY", "ADY"],
+    lb_nrind_col: "LBNRIND",
+    lb_unit_col: "LBSTRESU",
+    lb_dtc_col: "LBDTC",
+    lb_tests: [
+      "Alanine Aminotransferase",
+      "Aspartate Aminotransferase",
+      "Bilirubin",
+      "Alkaline Phosphatase"
+    ],
+    lb_normal_value: "NORMAL",
+    lb_baseline_flag_col: "ABLFL",
+    lb_baseline_flag_value: "Y",
+    lb_baseline_day: 1,
+    lb_change_factor: 2,
+    // ---- con-meds (CM) ----
+    cm_trt_col: "CMTRT",
+    cm_class_col: "CMCLAS",
+    cm_dose_col: "CMDOSE",
+    cm_route_col: "CMROUTE",
+    cm_stdy_col: ["ASTDY", "CMSTDY"],
+    cm_endy_col: ["AENDY", "CMENDY"],
+    cm_stdtc_col: "CMSTDTC",
+    cm_uncoded_value: "UNCODED",
+    cm_out_col: null,
+    cm_ongoing_values: ["ONGOING", "Y", "CONTINUING"],
+    // ---- medical history (MH) ----
+    mh_term_col: "MHTERM",
+    mh_decod_col: "MHDECOD",
+    mh_cat_col: "MHCAT",
+    mh_day_col: "MHDY",
+    mh_day_source: "collection",
+    mh_onset_stdy_col: "ASTDY",
+    mh_strtpt_col: "MHSTRTPT",
+    mh_enrtpt_col: "MHENRTPT",
+    mh_onset_dtc_col: "MHSTDTC",
+    // ---- disposition (DS) ----
+    ds_decod_col: "DSDECOD",
+    ds_term_col: "DSTERM",
+    ds_cat_col: "DSCAT",
+    ds_stdy_col: "DSSTDY",
+    ds_dtc_col: "DSSTDTC",
+    ds_reference_cats: ["DISPOSITION EVENT"],
+    // ---- lanes ----
+    lanes: {
+      exposure: { enabled: true, label: "Exposure", group: "treatment" },
+      doseChanges: { enabled: true, label: "Dose changes", group: "treatment" },
+      adverseEvents: { enabled: true, label: "Adverse events", group: "events" },
+      labs: { enabled: true, label: "Labs", group: "events" },
+      conMeds: { enabled: true, label: "Con-meds", group: "context" },
+      medicalHistory: { enabled: true, label: "Medical history (at screening)", group: "context" },
+      disposition: { enabled: true, label: "Disposition", group: "context" }
+    },
+    lane_groups: [
+      { key: "treatment", label: "Treatment", collapsed: false },
+      { key: "events", label: "Events and labs", collapsed: false },
+      { key: "context", label: "Context", collapsed: false }
+    ],
+    // ---- filters ----
+    filters: [
+      { domain: "AE", value_col: "AESER", label: "Serious only", type: "flag", flag_value: "Y" },
+      {
+        domain: "LB",
+        value_col: "LBNRIND",
+        label: "Abnormal labs only",
+        type: "flag",
+        flag_value: "__abnormal__"
+      },
+      { domain: "CM", value_col: "CMCLAS", label: "ATC class", multiple: true }
+    ],
+    // ---- traceability ----
+    source_url_template: null,
+    source_url_label: "Open source record",
+    // ---- callbacks ----
+    on_select_subject: null,
+    on_anchor_event: null,
+    on_context_change: null,
+    // ---- layout ----
+    row_height: 26,
+    row_height_min: 18,
+    max_rows_per_lane: 12,
+    lab_height: 96,
+    lab_height_min: 64,
+    height: 720,
+    fit_to_height: true,
+    width: "100%",
+    page_size: 10
+  };
+  var DOMAIN_CODES = ["EX", "AE", "LB", "CM", "MH", "DS"];
+  var TOP_LEVEL_ALIASES = {
+    contextWindowDays: "context_window_days",
+    sourceUrlTemplate: "source_url_template",
+    onSelectSubject: "on_select_subject",
+    onAnchorEvent: "on_anchor_event",
+    onContextChange: "on_context_change",
+    labTests: "lb_tests",
+    idCol: "id_col",
+    domainCol: "domain_col",
+    rowHeight: "row_height",
+    pageSize: "page_size",
+    maxRowsPerLane: "max_rows_per_lane",
+    labHeight: "lab_height",
+    laneGroups: "lane_groups"
+  };
+  var LANE_LIFTED_ALIASES = {
+    severityCol: "ae_sev_col",
+    seriousCol: "ae_ser_col",
+    tests: "lb_tests"
+  };
+  var LANE_IGNORED_KEYS = ["domain", "derivedFrom", "smallMultiple"];
+  var LANE_DISPLAY_KEYS = ["enabled", "label", "group"];
+  var TIME_KEYS = ["mode", "ref_date_col", "allow_date_mode"];
+  var TIME_PATTERN_KEYS = ["day_col", "date_col"];
+  var CHAIN_KEYS = [
+    "ex_stdy_col",
+    "ex_endy_col",
+    "ae_stdy_col",
+    "ae_endy_col",
+    "lb_day_col",
+    "cm_stdy_col",
+    "cm_endy_col",
+    "ds_stdy_col"
+  ];
+  var DAY_PATTERN_TARGETS = {
+    EX: "ex_stdy_col",
+    AE: "ae_stdy_col",
+    LB: "lb_day_col",
+    CM: "cm_stdy_col",
+    MH: "mh_day_col",
+    DS: "ds_stdy_col"
+  };
+  var DATE_PATTERN_TARGETS = {
+    EX: "ex_stdtc_col",
+    AE: "ae_stdtc_col",
+    LB: "lb_dtc_col",
+    CM: "cm_stdtc_col",
+    MH: "mh_onset_dtc_col",
+    DS: "ds_dtc_col"
+  };
+  var UPPER_LISTS = ["ds_reference_cats", "ae_ongoing_values", "cm_ongoing_values"];
+  var POSITIVE_INTS = [
+    "row_height",
+    "row_height_min",
+    "lab_height",
+    "lab_height_min",
+    "height",
+    "max_rows_per_lane",
+    "page_size"
+  ];
+  var CALLBACKS = ["on_select_subject", "on_anchor_event", "on_context_change"];
+  var warn = (message) => console.warn(`patient-journey-explorer: ${message}`);
+  var isObject2 = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+  var stringList = (value) => arrayify(value).map(String);
+  var unique11 = (list2) => [...new Set(list2)];
+  function positiveInt(value, fallback) {
+    const n = Math.floor(Number(value));
+    return Number.isFinite(n) && n > 0 ? n : fallback;
+  }
+  function applyTopLevelAliases(raw) {
+    const out = {};
+    for (const [key, value] of Object.entries(raw)) {
+      const canonical = TOP_LEVEL_ALIASES[key];
+      if (!canonical) {
+        out[key] = value;
+        continue;
+      }
+      if (raw[canonical] !== void 0) continue;
+      warn(`setting "${key}" is an alias; use "${canonical}".`);
+      out[canonical] = value;
+    }
+    return out;
+  }
+  function syncLanes(input, synced, raw) {
+    const lanes = {};
+    for (const key of LANE_KEYS) lanes[key] = { ...DEFAULT_SETTINGS14.lanes[key] };
+    if (isObject2(input)) {
+      for (const [key, value] of Object.entries(input)) {
+        if (!LANE_KEYS.includes(key)) {
+          warn(`lanes.${key} is not a lane; the known lanes are ${LANE_KEYS.join(", ")}.`);
+          continue;
+        }
+        if (value === null) {
+          lanes[key].enabled = false;
+          continue;
+        }
+        if (!isObject2(value)) continue;
+        for (const [laneKey, laneValue] of Object.entries(value)) {
+          if (LANE_DISPLAY_KEYS.includes(laneKey)) {
+            if (laneKey === "enabled") lanes[key].enabled = laneValue;
+            else if (typeof laneValue === "string" && laneValue.trim())
+              lanes[key][laneKey] = laneValue;
+            continue;
+          }
+          const canonical = LANE_LIFTED_ALIASES[laneKey];
+          if (canonical) {
+            if (raw[canonical] === void 0) {
+              warn(`lanes.${key}.${laneKey} is an alias; use the top-level "${canonical}".`);
+              synced[canonical] = laneValue;
+            }
+            continue;
+          }
+          if (!LANE_IGNORED_KEYS.includes(laneKey)) {
+            warn(`lanes.${key}.${laneKey} is not a lane setting and was ignored.`);
+          }
+        }
+      }
+    }
+    for (const key of LANE_KEYS) lanes[key].enabled = Boolean(lanes[key].enabled);
+    return lanes;
+  }
+  function syncLaneGroups(input) {
+    const groups = arrayify(input).map((group) => {
+      if (!isObject2(group) || typeof group.key !== "string" || !group.key.trim()) return null;
+      const key = group.key.trim();
+      return {
+        key,
+        label: typeof group.label === "string" && group.label.trim() ? group.label : key,
+        collapsed: Boolean(group.collapsed)
+      };
+    }).filter(Boolean);
+    return groups.length ? groups : DEFAULT_SETTINGS14.lane_groups.map((group) => ({ ...group }));
+  }
+  function syncTime(input, synced) {
+    const time = { ...DEFAULT_SETTINGS14.time };
+    if (isObject2(input)) {
+      for (const [key, value] of Object.entries(input)) {
+        if (TIME_KEYS.includes(key)) {
+          time[key] = value;
+        } else if (TIME_PATTERN_KEYS.includes(key)) {
+          expandPattern(key, value, synced);
+        } else {
+          warn(
+            `time.${key} is not a time setting; the known keys are ${[...TIME_KEYS, ...TIME_PATTERN_KEYS].join(", ")}.`
+          );
+        }
+      }
+    }
+    time.allow_date_mode = Boolean(time.allow_date_mode);
+    time.mode = time.mode === "date" && time.allow_date_mode ? "date" : "day";
+    time.ref_date_col = typeof time.ref_date_col === "string" && time.ref_date_col.trim() ? time.ref_date_col : DEFAULT_SETTINGS14.time.ref_date_col;
+    return time;
+  }
+  function expandPattern(key, value, synced) {
+    if (typeof value !== "string" || !value.includes("--")) {
+      warn(`time.${key} must contain "--" (a generic pattern such as "--DY"); ignored.`);
+      return;
+    }
+    const targets = key === "day_col" ? DAY_PATTERN_TARGETS : DATE_PATTERN_TARGETS;
+    warn(`time.${key} is an alias; it expands "${value}" onto each domain's column chain.`);
+    for (const [domain, target] of Object.entries(targets)) {
+      const expanded = value.replace(/--/g, domain);
+      synced[target] = unique11([expanded, ...stringList(synced[target])]);
+    }
+  }
+  function syncFilters(input) {
+    return arrayify(input).map((spec) => {
+      if (typeof spec === "string") {
+        warn(`filter "${spec}" has no domain and was dropped; pass { domain, value_col }.`);
+        return null;
+      }
+      if (!isObject2(spec)) return null;
+      const { col, ...rest } = spec;
+      if (rest.value_col === void 0 && col !== void 0) {
+        warn(`filters[].col is an alias; use "value_col" (${spec.label || col}).`);
+        rest.value_col = col;
+      }
+      if (!rest.value_col) {
+        warn(`filter "${spec.label || "(unlabelled)"}" names no value_col and was dropped.`);
+        return null;
+      }
+      const domain = String(rest.domain ?? "").trim().toUpperCase();
+      if (!DOMAIN_CODES.includes(domain)) {
+        warn(
+          `filter "${rest.label || rest.value_col}" has no recognized domain (${DOMAIN_CODES.join(", ")}) and was dropped.`
+        );
+        return null;
+      }
+      return { ...normalizeFilterSpec(rest), domain };
+    }).filter(Boolean);
+  }
+  function syncSettings14(settings) {
+    const raw = isObject2(settings) ? settings : {};
+    const aliased = applyTopLevelAliases(raw);
+    const synced = { ...DEFAULT_SETTINGS14, ...aliased };
+    synced.lanes = syncLanes(aliased.lanes, synced, aliased);
+    synced.lane_groups = syncLaneGroups(synced.lane_groups);
+    for (const key of CHAIN_KEYS) synced[key] = stringList(synced[key]);
+    synced.time = syncTime(aliased.time, synced);
+    synced.filters = syncFilters(synced.filters);
+    const windowDays = synced.context_window_days;
+    synced.context_window_days = windowDays === null || windowDays === void 0 || windowDays === "" ? DEFAULT_SETTINGS14.context_window_days : Number.isFinite(Number(windowDays)) ? Math.max(0, Math.floor(Number(windowDays))) : DEFAULT_SETTINGS14.context_window_days;
+    synced.lb_tests = stringList(synced.lb_tests);
+    synced.ae_severity_values = stringList(synced.ae_severity_values);
+    if (!synced.ae_severity_values.length)
+      synced.ae_severity_values = [...DEFAULT_SETTINGS14.ae_severity_values];
+    const factor = Number(synced.lb_change_factor);
+    synced.lb_change_factor = Number.isFinite(factor) && factor > 1 ? factor : DEFAULT_SETTINGS14.lb_change_factor;
+    const baselineDay = Number(synced.lb_baseline_day);
+    synced.lb_baseline_day = Number.isFinite(baselineDay) ? Math.trunc(baselineDay) : DEFAULT_SETTINGS14.lb_baseline_day;
+    for (const key of CALLBACKS) synced[key] = typeof synced[key] === "function" ? synced[key] : null;
+    for (const key of POSITIVE_INTS) synced[key] = positiveInt(synced[key], DEFAULT_SETTINGS14[key]);
+    synced.fit_to_height = Boolean(synced.fit_to_height);
+    for (const key of UPPER_LISTS) {
+      synced[key] = stringList(synced[key]).map((value) => value.trim().toUpperCase()).filter(Boolean);
+    }
+    if (!synced.ds_reference_cats.length) {
+      warn("ds_reference_cats is empty, so every disposition row draws a cross-lane rule.");
+    }
+    if (synced.mh_day_source !== "onset") {
+      if (synced.mh_day_source !== "collection") {
+        warn(
+          `mh_day_source "${synced.mh_day_source}" is not 'collection' or 'onset'; using 'collection'.`
+        );
+      }
+      synced.mh_day_source = "collection";
+    }
+    synced.subject = synced.subject === null || synced.subject === void 0 || synced.subject === "" ? null : String(synced.subject);
+    synced.source_url_template = typeof synced.source_url_template === "string" && synced.source_url_template.trim() ? synced.source_url_template : null;
+    synced.source_url_label = typeof synced.source_url_label === "string" && synced.source_url_label.trim() ? synced.source_url_label : DEFAULT_SETTINGS14.source_url_label;
+    return synced;
+  }
+
+  // src/data/schema/patient-journey-explorer.json
+  var patient_journey_explorer_default = {
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    $id: "https://raw.githubusercontent.com/jwildfire/safety.viz/main/src/data/schema/patient-journey-explorer.json",
+    title: "safety.viz patient-journey-explorer data contract",
+    description: "One subject's safety record across six CDISC domains \u2014 exposure (EX), adverse events (AE), labs (LB), concomitant medications (CM), medical history (MH) and disposition (DS) \u2014 drawn as stacked lanes on one shared study-day axis. Data arrives either as an object of per-domain arrays (keys matched case-insensitively: { ae, lb, ex, cm, mh, ds }) or as one merged array whose rows carry a domain column named by settings.domain_col (PJE-DATA-001). No domain is individually required: any one is enough to draw a partial journey, and absent domains render an explanatory empty lane (PJE-DATA-005). Column names are supplied by the settings mapping; day columns accept an ordered fallback chain resolved per row (PJE-DATA-007). Rows that cannot be used are dropped with a named, counted, exportable reason (PJE-DATA-003); rows with no usable study day are kept and named in prose rather than dropped (PJE-LANE-008). This schema documents the contract and names, per domain, the settings keys whose columns must be present (requiredSettings); it validates no rows \u2014 row-level rules are the module's own drop table.",
+    type: "object",
+    required: ["settings"],
+    properties: {
+      ex: {
+        type: "array",
+        items: { $ref: "#/$defs/exRow" },
+        requiredSettings: ["id_col", "ex_stdy_col"],
+        description: "Exposure records (an ADEX or EX projection), one row per dosing record: the participant id, the treatment name (ex_trt_col), the dose and unit (ex_dose_col, ex_dosu_col), the start and end study days (ex_stdy_col, ex_endy_col \u2014 fallback chains, ASTDY/EXSTDY and AENDY/EXENDY by default) and optionally the start date (ex_stdtc_col). The exposure lane draws one bar segment per record; consecutive records with different doses derive the dose-change events (PJE-DERIV-001, PJE-LANE-006). A row with both treatment and dose blank is dropped with a named reason; a row with no usable start day is kept but not drawn."
+      },
+      ae: {
+        type: "array",
+        items: { $ref: "#/$defs/aeRow" },
+        requiredSettings: ["id_col", "ae_stdy_col"],
+        description: "Adverse-event records (an ADAE or AE projection), one row per event: the participant id, the verbatim and preferred terms (ae_term_col, ae_decod_col), the body system (ae_soc_col), onset and resolution study days (ae_stdy_col, ae_endy_col \u2014 ASTDY/AESTDY and AENDY/AEENDY by default), severity, seriousness and relatedness (ae_sev_col, ae_ser_col, ae_rel_col), the outcome (ae_out_col, which decides whether a blank end day means ongoing or simply not recorded, D16) and optionally the onset date (ae_stdtc_col). Anchoring an event opens the \xB1N-day context window (PJE-ANCH-001). A row with both terms blank is dropped with a named reason; an end day before the start day is kept as a single-day mark and counted (PJE-DATA-008)."
+      },
+      lb: {
+        type: "array",
+        items: { $ref: "#/$defs/lbRow" },
+        requiredSettings: ["id_col", "lb_test_col", "lb_value_col", "lb_day_col"],
+        description: "Lab records (an ADLB or LB projection), one row per result: the participant id, the test name and code (lb_test_col, lb_testcd_col \u2014 lb_tests matches either), the numeric result and unit (lb_value_col, lb_unit_col), the reference range (lb_lo_col, lb_hi_col), the normal-range indicator (lb_nrind_col), the study day (lb_day_col \u2014 LBDY/ADY by default), the analysis-baseline flag (lb_baseline_flag_col, consulted first when resolving a test's baseline, D17) and optionally the collection date (lb_dtc_col). Each configured test draws as a small multiple with its reference band (PJE-LANE-005); a point is abnormal by flag when the indicator is present and not normal, or by change when it is at least lb_change_factor times, or at most 1/lb_change_factor of, the baseline (PJE-CTX-002). A row with a blank test name or a non-numeric result is dropped with a named reason."
+      },
+      cm: {
+        type: "array",
+        items: { $ref: "#/$defs/cmRow" },
+        requiredSettings: ["id_col", "cm_trt_col"],
+        description: "Concomitant-medication records (an ADCM or CM projection), one row per medication course: the participant id, the medication name (cm_trt_col), its class (cm_class_col; the uncoded value is kept as its own selectable bucket, PJE-FILT-003), optional dose and route (cm_dose_col, cm_route_col), start and end study days (cm_stdy_col, cm_endy_col \u2014 ASTDY/CMSTDY and AENDY/CMENDY by default), optionally an ongoing indicator (cm_out_col; none by default, so a blank end day is 'end not recorded' rather than asserted ongoing) and the start date (cm_stdtc_col). Con-meds active at an anchor are those started on or before it and not ended before it; one with no usable start day is never asserted active and is counted as not evaluated (PJE-CTX-001). A row with a blank name is dropped with a named reason."
+      },
+      mh: {
+        type: "array",
+        items: { $ref: "#/$defs/mhRow" },
+        requiredSettings: ["id_col"],
+        description: "Medical-history records (an ADMH or MH projection), one row per condition: the participant id, the verbatim and decoded terms (mh_term_col, mh_decod_col \u2014 the decode is preferred as the label because verbatim terms are often scrubbed), the category (mh_cat_col), the collection study day (mh_day_col, the screening visit, where the mark is drawn by default, D18), the onset study day, date and relative-timing text (mh_onset_stdy_col, mh_onset_dtc_col, mh_strtpt_col \u2014 named in the tooltip) and the end relative-timing text (mh_enrtpt_col; ONGOING adds 'still present'). Set mh_day_source to 'onset' to place marks at onset instead. A row with both terms blank is dropped with a named reason."
+      },
+      ds: {
+        type: "array",
+        items: { $ref: "#/$defs/dsRow" },
+        requiredSettings: ["id_col", "ds_decod_col"],
+        description: "Disposition records (a DS projection), one row per disposition event or milestone: the participant id, the decoded and verbatim terms (ds_decod_col, ds_term_col), the category (ds_cat_col), the study day (ds_stdy_col) and optionally the date (ds_dtc_col). Every row draws a mark in the disposition lane; only rows whose category is in ds_reference_cats (DISPOSITION EVENT by default) draw the full-height dashed rule across every lane (D19). A row with a blank decode is dropped with a named reason."
+      },
+      settings: {
+        type: "object",
+        description: "Column mappings and rendering options; merged onto the module's DEFAULT_SETTINGS, so only overrides need to be supplied. Column settings are flat, snake_case and domain-prefixed; the plan's camelCase spellings (contextWindowDays, onAnchorEvent, sourceUrlTemplate, lane-level severityCol/seriousCol/tests, filters[].col, time.day_col/date_col) are accepted as aliases and normalized with a console warning each (PJE-CFG-002).",
+        properties: {
+          id_col: {
+            type: "string",
+            default: "USUBJID",
+            description: "Participant identifier column, present in every domain; the subject picker lists its distinct values across all domains and the participantsSelected event carries it (PJE-SUBJ-001, PJE-EVT-002)."
+          },
+          domain_col: {
+            type: "string",
+            default: "DOMAIN",
+            description: "For the merged-array input form, the column whose value names each row's domain (AE, LB, EX, CM, MH, DS, or the ADaM spellings ADAE \u2026, case-insensitively); rows with any other value are dropped with a named reason (PJE-DATA-002)."
+          },
+          subject: {
+            type: ["string", "null"],
+            default: null,
+            description: "The subject to open on; null opens on the first subject in sorted order (PJE-SUBJ-001)."
+          },
+          time: {
+            type: "object",
+            description: "Time-axis configuration: mode ('day' or 'date', the opening display), ref_date_col ('TRTSDT', the column holding the date of study day 1, read from any row of any domain) and allow_date_mode (true; when false the calendar-date control is not offered). The plan's day_col / date_col keys are accepted as generic --DY / --DTC patterns expanded per domain (PJE-TIME-001, PJE-TIME-002).",
+            properties: {
+              mode: {
+                type: "string",
+                enum: ["day", "date"],
+                default: "day",
+                description: "The opening display mode: study day, or calendar date (only when allow_date_mode is true and a reference date resolves for the subject). The scale stays linear in days in both modes; date mode relabels ticks, tooltips and panel text (D7)."
+              },
+              ref_date_col: {
+                type: "string",
+                default: "TRTSDT",
+                description: "Column holding the date of study day 1 (first dose), read from any row of any domain and preferred over deriving the reference from a recorded --DTC date plus its study day (D30)."
+              },
+              allow_date_mode: {
+                type: "boolean",
+                default: true,
+                description: "Whether the calendar-date display is offered at all; false forces mode to 'day'."
+              }
+            }
+          },
+          context_window_days: {
+            type: "number",
+            default: 30,
+            description: "Half-width of the anchor context window in elapsed days, inclusive on both sides; coerced to a non-negative integer, and 0 means the anchor day only (PJE-CFG-004, PJE-ANCH-002)."
+          },
+          ex_trt_col: {
+            type: "string",
+            default: "EXTRT",
+            description: "Exposure treatment name column; the exposure lane draws one row per distinct value and each record's label and category come from it."
+          },
+          ex_dose_col: {
+            type: "string",
+            default: "EXDOSE",
+            description: "Exposure dose column; consecutive records with different numeric doses derive the dose-change events (PJE-DERIV-001). A record with both treatment and dose blank is dropped."
+          },
+          ex_dosu_col: {
+            type: "string",
+            default: "EXDOSU",
+            description: "Exposure dose unit column, appended to the dose in tooltips and dose-change labels."
+          },
+          ex_stdy_col: {
+            type: ["string", "array"],
+            default: ["ASTDY", "EXSTDY"],
+            description: "Exposure start study day, as a column name or a fallback chain resolved per row; required in exposure data. A record with no usable start day is kept but not drawn (PJE-LANE-008)."
+          },
+          ex_endy_col: {
+            type: ["string", "array"],
+            default: ["AENDY", "EXENDY"],
+            description: "Exposure end study day, as a column name or a fallback chain; a blank end is 'end not recorded' (exposure has no outcome column)."
+          },
+          ex_stdtc_col: {
+            type: "string",
+            default: "EXSTDTC",
+            description: "Exposure start date column (--DTC), shown as recorded; a full date labels the record in date mode and a partial one never positions it (PJE-TIME-003)."
+          },
+          ae_term_col: {
+            type: "string",
+            default: "AETERM",
+            description: "Adverse-event verbatim term column; the tooltip's secondary line when it differs from the decoded term, and the label when the decode is blank. A record with both blank is dropped."
+          },
+          ae_decod_col: {
+            type: "string",
+            default: "AEDECOD",
+            description: "Adverse-event preferred term column: the mark label, and the key the 'prior events with the same preferred term' context list matches on (PJE-CTX-004)."
+          },
+          ae_soc_col: {
+            type: "string",
+            default: "AEBODSYS",
+            description: "Adverse-event body-system column, shown as the record's category."
+          },
+          ae_stdy_col: {
+            type: ["string", "array"],
+            default: ["ASTDY", "AESTDY"],
+            description: "Adverse-event onset study day, as a column name or a fallback chain; required in adverse-event data."
+          },
+          ae_endy_col: {
+            type: ["string", "array"],
+            default: ["AENDY", "AEENDY"],
+            description: "Adverse-event resolution study day, as a column name or a fallback chain. A blank end is 'ongoing' only when ae_out_col says so, otherwise 'end not recorded'; an end before the start is kept as a single-day mark and counted (PJE-DATA-008)."
+          },
+          ae_sev_col: {
+            type: "string",
+            default: "AESEV",
+            description: "Adverse-event severity column, ranked by ae_severity_values; drawn as bar height and border weight at one opaque fill, and a blank value draws a hatched mark named 'severity not recorded' (PJE-ACC-002)."
+          },
+          ae_ser_col: {
+            type: "string",
+            default: "AESER",
+            description: "Adverse-event seriousness column, compared with ae_serious_value; serious events get a filled start dot, an escalation ring and an SAE tag."
+          },
+          ae_rel_col: {
+            type: "string",
+            default: "AEREL",
+            description: "Adverse-event relatedness column, shown in the tooltip as recorded."
+          },
+          ae_stdtc_col: {
+            type: "string",
+            default: "AESTDTC",
+            description: "Adverse-event onset date column (--DTC), shown as recorded (PJE-TIME-003, PJE-TIME-004)."
+          },
+          ae_severity_values: {
+            type: "array",
+            default: ["MILD", "MODERATE", "SEVERE"],
+            description: "Severity levels in ascending rank; a value outside the list keeps rank 0 and draws at the moderate height. An empty list falls back to the default."
+          },
+          ae_serious_value: {
+            type: "string",
+            default: "Y",
+            description: "The ae_ser_col value (case-insensitive) that marks a serious event (PJE-FILT-001)."
+          },
+          ae_out_col: {
+            type: ["string", "null"],
+            default: "AEOUT",
+            description: "Adverse-event outcome column, read only when the end day is blank: the event is 'ongoing' when this cell is one of ae_ongoing_values, and 'end not recorded' otherwise (D16)."
+          },
+          ae_ongoing_values: {
+            type: "array",
+            default: ["NOT RECOVERED/NOT RESOLVED", "RECOVERING/RESOLVING", "ONGOING", "N"],
+            description: "Outcome values (upper-cased, trimmed) that assert an event is still running when its end day is blank."
+          },
+          lb_test_col: {
+            type: "string",
+            default: "LBTEST",
+            description: "Lab test name column; required in lab data. A record with a blank name is dropped; lb_tests matches this column or lb_testcd_col, case-insensitively."
+          },
+          lb_testcd_col: {
+            type: "string",
+            default: "LBTESTCD",
+            description: "Lab test code column; lb_tests entries match either the name or the code, so 'Alanine Aminotransferase' and 'ALT' select the same series."
+          },
+          lb_value_col: {
+            type: "string",
+            default: "LBSTRESN",
+            description: "Lab numeric result column; required in lab data. A non-numeric result is dropped with a named reason."
+          },
+          lb_lo_col: {
+            type: "string",
+            default: "LBSTNRLO",
+            description: "Lab lower limit of normal column; with lb_hi_col draws the reference band and the \xD7 LLN ratio (PJE-LANE-005)."
+          },
+          lb_hi_col: {
+            type: "string",
+            default: "LBSTNRHI",
+            description: "Lab upper limit of normal column; with lb_lo_col draws the reference band and the \xD7 ULN ratio."
+          },
+          lb_day_col: {
+            type: ["string", "array"],
+            default: ["LBDY", "ADY"],
+            description: "Lab study day, as a column name or a fallback chain; required in lab data."
+          },
+          lb_nrind_col: {
+            type: "string",
+            default: "LBNRIND",
+            description: "Lab normal-range indicator column: a present value other than lb_normal_value marks the point abnormal by flag (PJE-CTX-002); HIGH/LOW pick the glyph and HH/LL add the escalation ring."
+          },
+          lb_unit_col: {
+            type: "string",
+            default: "LBSTRESU",
+            description: "Lab result unit column, appended to values in labels and the panel."
+          },
+          lb_dtc_col: {
+            type: "string",
+            default: "LBDTC",
+            description: "Lab collection date column (--DTC), shown as recorded."
+          },
+          lb_tests: {
+            type: "array",
+            default: [
+              "Alanine Aminotransferase",
+              "Aspartate Aminotransferase",
+              "Bilirubin",
+              "Alkaline Phosphatase"
+            ],
+            description: "The lab tests drawn as small multiples, in this order, matched case-insensitively against the test name or code; an empty list means every test present. The plan's labTests and lane-level tests are aliases."
+          },
+          lb_normal_value: {
+            type: "string",
+            default: "NORMAL",
+            description: "The lb_nrind_col value meaning within range; any other non-blank value is abnormal by flag, and a blank value is not abnormal."
+          },
+          lb_baseline_flag_col: {
+            type: ["string", "null"],
+            default: "ABLFL",
+            description: "Analysis-baseline flag column, consulted first when resolving a test's baseline (D17); null skips the flag rule."
+          },
+          lb_baseline_flag_value: {
+            type: "string",
+            default: "Y",
+            description: "The lb_baseline_flag_col value marking the baseline record."
+          },
+          lb_baseline_day: {
+            type: "number",
+            default: 1,
+            description: "Fallback baseline rule: the last value on or before this study day, used only when no flagged record exists (PJE-DERIV-002)."
+          },
+          lb_change_factor: {
+            type: "number",
+            default: 2,
+            description: "Symmetric change rule: a value at least this many times, or at most 1/this of, the baseline is abnormal by change (D28). Must exceed 1."
+          },
+          cm_trt_col: {
+            type: "string",
+            default: "CMTRT",
+            description: "Con-med name column; required in con-med data. A record with a blank name is dropped with a named reason."
+          },
+          cm_class_col: {
+            type: "string",
+            default: "CMCLAS",
+            description: "Con-med class column (ATC class), the record's category and the multiselect filter's values; cm_uncoded_value is kept as its own bucket (PJE-FILT-003)."
+          },
+          cm_dose_col: {
+            type: "string",
+            default: "CMDOSE",
+            description: "Con-med dose column, shown with the route as the tooltip's secondary line when present."
+          },
+          cm_route_col: {
+            type: "string",
+            default: "CMROUTE",
+            description: "Con-med route column, shown with the dose as the tooltip's secondary line when present."
+          },
+          cm_stdy_col: {
+            type: ["string", "array"],
+            default: ["ASTDY", "CMSTDY"],
+            description: "Con-med start study day, as a column name or a fallback chain. A con-med with no usable start is kept, not drawn, and never asserted active at an anchor (PJE-CTX-001)."
+          },
+          cm_endy_col: {
+            type: ["string", "array"],
+            default: ["AENDY", "CMENDY"],
+            description: "Con-med end study day, as a column name or a fallback chain; a blank end is 'end not recorded' unless cm_out_col says ongoing."
+          },
+          cm_stdtc_col: {
+            type: "string",
+            default: "CMSTDTC",
+            description: "Con-med start date column (--DTC), shown as recorded."
+          },
+          cm_uncoded_value: {
+            type: "string",
+            default: "UNCODED",
+            description: "The cm_class_col value meaning 'not coded', kept as an ordinary selectable class."
+          },
+          cm_out_col: {
+            type: ["string", "null"],
+            default: null,
+            description: "Con-med ongoing-indicator column (CMENRTPT, CMONGO, \u2026), read only when the end day is blank; null (the default \u2014 the pilot data has none) makes every blank end 'end not recorded' (D16)."
+          },
+          cm_ongoing_values: {
+            type: "array",
+            default: ["ONGOING", "Y", "CONTINUING"],
+            description: "Values of cm_out_col (upper-cased, trimmed) that assert a con-med is still running when its end day is blank."
+          },
+          mh_term_col: {
+            type: "string",
+            default: "MHTERM",
+            description: "Medical-history verbatim term column; the label when the decode is blank. A record with both blank is dropped with a named reason."
+          },
+          mh_decod_col: {
+            type: "string",
+            default: "MHDECOD",
+            description: "Medical-history decoded term column, the mark label when present."
+          },
+          mh_cat_col: {
+            type: "string",
+            default: "MHCAT",
+            description: "Medical-history category column, shown as the record's category."
+          },
+          mh_day_col: {
+            type: ["string", "array"],
+            default: "MHDY",
+            description: "Medical-history collection study day (the screening visit), the mark's position under the default mh_day_source (D18)."
+          },
+          mh_day_source: {
+            type: "string",
+            enum: ["collection", "onset"],
+            default: "collection",
+            description: "Which day places a medical-history mark: 'collection' (mh_day_col, the day it was recorded) or 'onset' (mh_onset_stdy_col); anything else falls back to 'collection' with a warning."
+          },
+          mh_onset_stdy_col: {
+            type: "string",
+            default: "ASTDY",
+            description: "Medical-history onset study day column; the tooltip's onset text by default, and the mark position under mh_day_source 'onset'."
+          },
+          mh_strtpt_col: {
+            type: "string",
+            default: "MHSTRTPT",
+            description: "Medical-history onset relative-timing column (BEFORE, \u2026), the tooltip's onset text when no onset day or date resolves."
+          },
+          mh_enrtpt_col: {
+            type: "string",
+            default: "MHENRTPT",
+            description: "Medical-history end relative-timing column; ONGOING adds 'still present' to the tooltip."
+          },
+          mh_onset_dtc_col: {
+            type: "string",
+            default: "MHSTDTC",
+            description: "Medical-history onset date column (--DTC), shown as recorded in the onset text."
+          },
+          ds_decod_col: {
+            type: "string",
+            default: "DSDECOD",
+            description: "Disposition decoded term column, the mark label; required in disposition data. A record with a blank decode is dropped with a named reason."
+          },
+          ds_term_col: {
+            type: "string",
+            default: "DSTERM",
+            description: "Disposition verbatim term column, the tooltip's secondary line when it differs from the decode."
+          },
+          ds_cat_col: {
+            type: "string",
+            default: "DSCAT",
+            description: "Disposition category column (DISPOSITION EVENT, PROTOCOL MILESTONE, \u2026), the record's category and the key ds_reference_cats matches (D19)."
+          },
+          ds_stdy_col: {
+            type: ["string", "array"],
+            default: "DSSTDY",
+            description: "Disposition study day, as a column name or a fallback chain."
+          },
+          ds_dtc_col: {
+            type: "string",
+            default: "DSSTDTC",
+            description: "Disposition date column (--DTC), shown as recorded."
+          },
+          ds_reference_cats: {
+            type: "array",
+            default: ["DISPOSITION EVENT"],
+            description: "Disposition categories (upper-cased, trimmed) whose rows draw a full-height dashed rule across every lane; every disposition row still draws its own mark. An empty list draws a rule for every row, which is legal but noisy and warned once."
+          },
+          lanes: {
+            type: "object",
+            description: "Per-lane display configuration keyed by lane (exposure, doseChanges, adverseEvents, labs, conMeds, medicalHistory, disposition), each { enabled, label, group } merged key by key onto the default; null disables a lane, an unknown lane key is dropped with a warning (PJE-CFG-003). Lane-level severityCol, seriousCol and tests are lifted to ae_sev_col, ae_ser_col and lb_tests; domain, derivedFrom and smallMultiple are accepted and ignored."
+          },
+          lane_groups: {
+            type: "array",
+            default: [
+              { key: "treatment", label: "Treatment", collapsed: false },
+              { key: "events", label: "Events and labs", collapsed: false },
+              { key: "context", label: "Context", collapsed: false }
+            ],
+            description: "Collapsible lane groups in stack order, each { key, label, collapsed }; a group with no enabled lane is dropped at render time (PJE-LANE-003). The plan's laneGroups is an alias."
+          },
+          filters: {
+            type: "array",
+            default: [
+              {
+                domain: "AE",
+                value_col: "AESER",
+                label: "Serious only",
+                type: "flag",
+                flag_value: "Y"
+              },
+              {
+                domain: "LB",
+                value_col: "LBNRIND",
+                label: "Abnormal labs only",
+                type: "flag",
+                flag_value: "__abnormal__"
+              },
+              { domain: "CM", value_col: "CMCLAS", label: "ATC class", multiple: true }
+            ],
+            description: "Sidebar filter specs, each with a domain (the only domain the filter applies to) and the shared filter contract keys: type 'flag' with a flag_value renders a checkbox (the special flag_value '__abnormal__' keeps only labs failing the abnormality rule), multiple true renders the shell multiselect, and the rest follow { value_col, label, start, all }. Specs without a value_col (or the plan's col alias) or without a recognized domain are dropped with a warning; a filter whose column is absent from its domain's data is dropped at render time with the library's standard warning (PJE-FILT-001 \u2026 PJE-FILT-004)."
+          },
+          source_url_template: {
+            type: ["string", "null"],
+            default: null,
+            description: "Optional external link template for every source row, e.g. 'https://edc.example/{domain}/{USUBJID}/{AESEQ}': {domain} is the domain code and {COLUMN} the row's URI-encoded value; a row lacking a named column gets no link. null renders no link (PJE-SRC-002). The plan's sourceUrlTemplate is an alias."
+          },
+          source_url_label: {
+            type: "string",
+            default: "Open source record",
+            description: "Link text for the external source link."
+          },
+          on_select_subject: {
+            type: ["null"],
+            default: null,
+            description: "Callback (subjectId, detail) when the subject changes; kept only when a function. The plan's onSelectSubject is an alias (PJE-EVT-001)."
+          },
+          on_anchor_event: {
+            type: ["null"],
+            default: null,
+            description: "Callback (event, context) when a mark is anchored or the anchor is cleared (both null on clear). The plan's onAnchorEvent is an alias."
+          },
+          on_context_change: {
+            type: ["null"],
+            default: null,
+            description: "Callback (context) whenever the context bundle changes while anchored, and with null when cleared. The plan's onContextChange is an alias."
+          },
+          row_height: {
+            type: "number",
+            default: 26,
+            description: "Pixels per row inside a categorical lane; a positive integer. The plan's rowHeight is an alias."
+          },
+          row_height_min: {
+            type: "number",
+            default: 18,
+            description: "Floor for row_height when fit_to_height scales the stack down."
+          },
+          max_rows_per_lane: {
+            type: "number",
+            default: 12,
+            description: "Rows drawn per categorical lane before the remainder is counted in prose, in the lane's documented sort order (PJE-LANE-010). The plan's maxRowsPerLane is an alias."
+          },
+          lab_height: {
+            type: "number",
+            default: 96,
+            description: "Pixels per lab small multiple. The plan's labHeight is an alias."
+          },
+          lab_height_min: {
+            type: "number",
+            default: 64,
+            description: "Floor for lab_height when fit_to_height scales the stack down."
+          },
+          height: {
+            type: "number",
+            default: 720,
+            description: "Pixel height of the lane column; taller stacks scroll and say so (PJE-LANE-009, D21)."
+          },
+          fit_to_height: {
+            type: "boolean",
+            default: true,
+            description: "Scale row and lab heights (down to their floors) so the opening stack fits height before the column scrolls (D21)."
+          },
+          width: {
+            type: "string",
+            default: "100%",
+            description: "Widget width, applied as the container element's style width; carried for the R widget binding."
+          },
+          page_size: {
+            type: "number",
+            default: 10,
+            description: "Rows per page in the source-row drawer's tables."
+          }
+        }
+      }
+    },
+    $defs: {
+      exRow: {
+        type: "object",
+        description: "One exposure record as passed to init: the participant id, treatment name, dose and unit, start and end study days and optionally the start date, under the columns named by the ex_* settings. Retained by reference and shown verbatim in the source drawer (PJE-DATA-006, PJE-SRC-001)."
+      },
+      aeRow: {
+        type: "object",
+        description: "One adverse-event record as passed to init: the participant id, verbatim and preferred terms, body system, onset and resolution study days, severity, seriousness, relatedness, outcome and optionally the onset date, under the columns named by the ae_* settings. Retained by reference and shown verbatim in the source drawer."
+      },
+      lbRow: {
+        type: "object",
+        description: "One lab result as passed to init: the participant id, test name and code, numeric result and unit, reference range, normal-range indicator, study day, baseline flag and optionally the collection date, under the columns named by the lb_* settings. Retained by reference and shown verbatim in the source drawer."
+      },
+      cmRow: {
+        type: "object",
+        description: "One concomitant-medication record as passed to init: the participant id, medication name, class, optional dose and route, start and end study days, optional ongoing indicator and start date, under the columns named by the cm_* settings. Retained by reference and shown verbatim in the source drawer."
+      },
+      mhRow: {
+        type: "object",
+        description: "One medical-history record as passed to init: the participant id, verbatim and decoded terms, category, collection study day, onset study day, date and relative-timing text, and end relative-timing text, under the columns named by the mh_* settings. Retained by reference and shown verbatim in the source drawer."
+      },
+      dsRow: {
+        type: "object",
+        description: "One disposition record as passed to init: the participant id, decoded and verbatim terms, category, study day and optionally the date, under the columns named by the ds_* settings. Retained by reference and shown verbatim in the source drawer."
+      }
+    }
+  };
+
+  // src/patient-journey-explorer/getScales.js
+  var PLOT_GUTTER_LEFT2 = 132;
+  var PLOT_GUTTER_RIGHT2 = 16;
+  var MS_PER_DAY2 = 864e5;
+  var FULL_DATE = /^(\d{4})-(\d{2})-(\d{2})(?:T.*)?$/;
+  var STEP_LADDER2 = [1, 2, 5, 7, 14, 30, 60, 90, 180, 365, 730, 1825, 3650];
+  function toElapsed(day2) {
+    const n = Number(day2);
+    if (!Number.isFinite(n) || n === 0) return null;
+    return n > 0 ? n - 1 : n;
+  }
+  function toStudyDay(elapsed) {
+    return elapsed >= 0 ? elapsed + 1 : elapsed;
+  }
+  function isFullDate(value) {
+    if (typeof value !== "string") return false;
+    const match = FULL_DATE.exec(value.trim());
+    if (!match) return false;
+    const [, y, m, d] = match.map(Number);
+    const date = new Date(Date.UTC(y, m - 1, d));
+    return date.getUTCFullYear() === y && date.getUTCMonth() === m - 1 && date.getUTCDate() === d;
+  }
+  function datePart(value) {
+    return isFullDate(value) ? value.trim().slice(0, 10) : null;
+  }
+  var utc = (iso) => Date.UTC(Number(iso.slice(0, 4)), Number(iso.slice(5, 7)) - 1, Number(iso.slice(8, 10)));
+  function addDays(iso, days) {
+    return new Date(utc(iso) + days * MS_PER_DAY2).toISOString().slice(0, 10);
+  }
+  function dayToDate(day2, refDate) {
+    const ref = datePart(refDate);
+    const elapsed = toElapsed(day2);
+    if (!ref || elapsed === null) return null;
+    return addDays(ref, elapsed);
+  }
+  function referenceDate(events, settings) {
+    if (!Array.isArray(events)) return null;
+    const refCol = settings?.time?.ref_date_col;
+    if (refCol) {
+      for (const event of events) {
+        const cell2 = event?.source?.[refCol];
+        if (isFullDate(cell2)) return { date: datePart(cell2), rule: "ref_col" };
+      }
+    }
+    let earliest = null;
+    for (const event of events) {
+      if (!event || event.placeable === false || !Number.isFinite(event.day)) continue;
+      if (!isFullDate(event.rawDate)) continue;
+      if (!earliest || event.day < earliest.day) earliest = event;
+    }
+    if (!earliest) return null;
+    const elapsed = toElapsed(earliest.day);
+    if (elapsed === null) return null;
+    return { date: addDays(datePart(earliest.rawDate), -elapsed), rule: "derived" };
+  }
+  function resolveEventDate(event, refDate) {
+    const ref = datePart(refDate);
+    const own = datePart(event.rawDate);
+    const fromDay = ref && event.placeable !== false ? dayToDate(event.day, ref) : null;
+    let date = own || fromDay || null;
+    let dateConflict = false;
+    if (own && fromDay && own !== fromDay) {
+      date = fromDay;
+      dateConflict = true;
+    }
+    const endDate = ref && event.endState === "closed" && Number.isFinite(event.end) ? dayToDate(event.end, ref) : null;
+    return { ...event, date, endDate, dateConflict };
+  }
+  function formatTick(day2, { mode, refDate, anchorDay } = {}) {
+    const anchorElapsed = toElapsed(anchorDay);
+    const dayElapsed = toElapsed(day2);
+    if (anchorElapsed !== null && dayElapsed !== null) {
+      const offset = dayElapsed - anchorElapsed;
+      if (offset > 0) return `+${offset}`;
+      return String(offset);
+    }
+    if (mode === "date") {
+      const date = dayToDate(day2, refDate);
+      if (date) return date;
+    }
+    return String(day2);
+  }
+  function usableDomain(domain) {
+    return Array.isArray(domain) && domain.length === 2 && domain.every(Number.isFinite);
+  }
+  function axisTicks3(domain, target = 6) {
+    if (!usableDomain(domain)) return [];
+    const [lo, hi] = domain;
+    const span = hi - lo;
+    if (span <= 0) return [{ value: toStudyDay(lo), elapsed: lo, position: 0 }];
+    const intervals = Math.max(1, Number(target) || 6);
+    let step = STEP_LADDER2[STEP_LADDER2.length - 1];
+    for (const candidate of STEP_LADDER2) {
+      if (span / candidate <= intervals) {
+        step = candidate;
+        break;
+      }
+    }
+    while (span / step > intervals) step *= 10;
+    const loDay = toStudyDay(lo);
+    const hiDay = toStudyDay(hi);
+    const values = /* @__PURE__ */ new Set();
+    for (let k = Math.ceil(loDay / step); k * step <= hiDay; k += 1) {
+      if (k !== 0) values.add(k * step);
+    }
+    if (lo <= 0 && hi >= 0) values.add(1);
+    return [...values].map((value) => ({ value, elapsed: toElapsed(value) })).filter((tick) => tick.elapsed !== null && tick.elapsed >= lo && tick.elapsed <= hi).sort((a, b) => a.elapsed - b.elapsed).map((tick) => ({ ...tick, position: (tick.elapsed - lo) / span * 100 }));
+  }
+  function laneLayout() {
+    return { padding: { left: 0, right: PLOT_GUTTER_RIGHT2, top: 2, bottom: 2 } };
+  }
+  function buildScales8({ lane, domain, rows, valueDomain } = {}) {
+    const [min, max] = usableDomain(domain) ? domain : [0, 1];
+    const x = {
+      type: "linear",
+      min,
+      max,
+      display: false,
+      offset: false,
+      bounds: "data",
+      grid: { display: false },
+      ticks: { display: false }
+    };
+    const afterFit = (scale) => {
+      scale.width = PLOT_GUTTER_LEFT2;
+    };
+    const shared = { display: true, grid: { display: false }, ticks: { display: false }, afterFit };
+    if (lane === "labs") {
+      const [lo, hi] = usableDomain(valueDomain) ? valueDomain : [0, 1];
+      return { x, y: { type: "linear", min: lo, max: hi, ...shared } };
+    }
+    return {
+      x,
+      y: {
+        type: "category",
+        labels: Array.isArray(rows) ? rows.map(String) : [],
+        offset: true,
+        ...shared
+      }
+    };
+  }
+
+  // src/patient-journey-explorer/normalize.js
+  var DROP_REASON_COLUMN3 = "__pje_dropReason";
+  var DROP_DOMAIN_COLUMN = "__pje_domain";
+  var DOMAINS = ["EX", "AE", "LB", "CM", "MH", "DS"];
+  var LANE_BY_DOMAIN = {
+    EX: "exposure",
+    AE: "adverseEvents",
+    LB: "labs",
+    CM: "conMeds",
+    MH: "medicalHistory",
+    DS: "disposition"
+  };
+  var SYNONYMS = {
+    ADAE: "AE",
+    ADLB: "LB",
+    ADEX: "EX",
+    ADCM: "CM",
+    ADMH: "MH",
+    ADDS: "DS",
+    ADSL: "DS"
+  };
+  var DERIVED_PREFIX = "__pje_";
+  var isBlank = (value) => value === null || value === void 0 || typeof value === "string" && (value.trim() === "" || /^na$/i.test(value.trim()));
+  var text = (value) => isBlank(value) ? "" : String(value).trim();
+  var upper = (value) => text(value).toUpperCase();
+  function parseNumber(value) {
+    if (isBlank(value)) return null;
+    const n = Number(typeof value === "string" ? value.trim() : value);
+    return Number.isFinite(n) ? n : null;
+  }
+  function resolveNumber(row, chain) {
+    for (const column of arrayify(chain).map(String)) {
+      const value = parseNumber(row[column]);
+      if (value !== null) return { value, column };
+    }
+    return { value: null, column: null };
+  }
+  function resolveText(row, chain) {
+    for (const column of arrayify(chain).map(String)) {
+      if (!isBlank(row[column])) return String(row[column]).trim();
+    }
+    return "";
+  }
+  var titleCase = (value) => text(value).toLowerCase().replace(/(^|[\s/-])(\S)/g, (match, lead, char) => lead + char.toUpperCase());
+  function detectDomain(value) {
+    const code = upper(value);
+    if (DOMAINS.includes(code)) return code;
+    return SYNONYMS[code] || null;
+  }
+  var emptyDomains = () => Object.fromEntries(DOMAINS.map((domain) => [domain, []]));
+  var droppedCopy = (row, reason, domain) => ({
+    ...row && typeof row === "object" ? row : {},
+    [DROP_REASON_COLUMN3]: reason,
+    [DROP_DOMAIN_COLUMN]: domain
+  });
+  function normalizeInput(data, settings) {
+    const domains = emptyDomains();
+    const dropped = [];
+    if (Array.isArray(data)) {
+      const domainCol = settings?.domain_col ?? "DOMAIN";
+      for (const row of data) {
+        const cell2 = row && typeof row === "object" ? row[domainCol] : void 0;
+        const domain = detectDomain(cell2);
+        if (!domain) {
+          dropped.push(droppedCopy(row, `unrecognized domain "${text(cell2)}"`, ""));
+          continue;
+        }
+        domains[domain].push(row);
+      }
+      return { domains, dropped, form: "array" };
+    }
+    if (data && typeof data === "object") {
+      for (const [key, value] of Object.entries(data)) {
+        const domain = detectDomain(key);
+        if (!domain) {
+          console.warn(
+            `patient-journey-explorer: unknown domain key "${key}" was ignored; the known keys are ${DOMAINS.join(", ")}.`
+          );
+          continue;
+        }
+        if (!Array.isArray(value)) {
+          dropped.push(droppedCopy(null, `domain "${key}" is not an array`, domain));
+          continue;
+        }
+        if (domains[domain].length) {
+          console.warn(
+            `patient-journey-explorer: domain ${domain} was supplied twice ("${key}"); the later key was ignored.`
+          );
+          continue;
+        }
+        domains[domain] = value;
+      }
+    }
+    return { domains, dropped, form: "object" };
+  }
+  function droppedRowColumns2(rows) {
+    if (!Array.isArray(rows) || !rows.length) return [];
+    const seen = /* @__PURE__ */ new Set();
+    const source = [];
+    for (const row of rows) {
+      if (!row || typeof row !== "object") continue;
+      for (const key of Object.keys(row)) {
+        if (key.startsWith(DERIVED_PREFIX) || seen.has(key)) continue;
+        seen.add(key);
+        source.push(key);
+      }
+    }
+    return [DROP_REASON_COLUMN3, DROP_DOMAIN_COLUMN, ...source];
+  }
+  function resolveInterval(row, settings, prefix, endChainKey) {
+    const startRes = resolveNumber(row, settings[`${prefix}_stdy_col`]);
+    const endRes = resolveNumber(row, settings[endChainKey]);
+    const outCol = settings[`${prefix}_out_col`];
+    const outcome = outCol ? text(row[outCol]) : "";
+    const ongoingValues = settings[`${prefix}_ongoing_values`] || [];
+    const start = startRes.value;
+    let end = startRes.value === null ? null : endRes.value;
+    let endState;
+    let flag = null;
+    if (start !== null && end !== null && end >= start) {
+      endState = "closed";
+    } else {
+      if (start !== null && end !== null && end < start) {
+        flag = `end day ${endRes.column} (${end}) precedes start day (${start})`;
+        end = null;
+        endState = "unrecorded";
+      } else {
+        end = null;
+        endState = outcome && ongoingValues.includes(outcome.toUpperCase()) ? "ongoing" : "unrecorded";
+      }
+    }
+    return { start, end, endState, dayCol: startRes.column, outcome, flag };
+  }
+  function severityFlag(value, settings) {
+    const key = upper(value);
+    if (!key) return null;
+    const rank = settings.ae_severity_values.map((v) => v.toUpperCase()).indexOf(key) + 1;
+    return { key, label: titleCase(key), rank };
+  }
+  function deriveFields(row, domain, settings) {
+    const s = settings;
+    switch (domain) {
+      case "EX": {
+        const trt = text(row[s.ex_trt_col]);
+        const dose = parseNumber(row[s.ex_dose_col]);
+        if (!trt && isBlank(row[s.ex_dose_col])) {
+          return {
+            reason: `missing exposure treatment and dose (${s.ex_trt_col}, ${s.ex_dose_col})`
+          };
+        }
+        const unit = text(row[s.ex_dosu_col]);
+        const interval = resolveInterval(row, s, "ex", "ex_endy_col");
+        const doseText = [dose === null ? text(row[s.ex_dose_col]) : String(dose), unit].filter(Boolean).join(" ");
+        const dayText2 = interval.start === null ? "" : interval.end === null ? `from day ${interval.start}` : `days ${interval.start}\u2013${interval.end}`;
+        return {
+          kind: "interval",
+          ...interval,
+          rawDate: resolveText(row, s.ex_stdtc_col),
+          label: trt,
+          detail: [doseText, dayText2].filter(Boolean).join(" "),
+          category: trt,
+          value: dose,
+          unit
+        };
+      }
+      case "AE": {
+        const term = text(row[s.ae_term_col]);
+        const decod = text(row[s.ae_decod_col]);
+        if (!term && !decod) {
+          return { reason: `missing adverse-event term (${s.ae_term_col}, ${s.ae_decod_col})` };
+        }
+        const label = decod || term;
+        const interval = resolveInterval(row, s, "ae", "ae_endy_col");
+        return {
+          kind: "interval",
+          ...interval,
+          rawDate: resolveText(row, s.ae_stdtc_col),
+          label,
+          detail: term && term !== label ? term : "",
+          category: text(row[s.ae_soc_col]),
+          flags: {
+            severity: severityFlag(row[s.ae_sev_col], s),
+            serious: upper(row[s.ae_ser_col]) === String(s.ae_serious_value).toUpperCase(),
+            related: text(row[s.ae_rel_col])
+          }
+        };
+      }
+      case "LB": {
+        const test = text(row[s.lb_test_col]);
+        if (!test) return { reason: `missing lab test name (${s.lb_test_col})` };
+        const value = parseNumber(row[s.lb_value_col]);
+        if (value === null) {
+          return {
+            reason: `non-numeric result (${s.lb_value_col} = "${text(row[s.lb_value_col])}")`
+          };
+        }
+        const dayRes = resolveNumber(row, s.lb_day_col);
+        const unit = text(row[s.lb_unit_col]);
+        const lln = parseNumber(row[s.lb_lo_col]);
+        const uln = parseNumber(row[s.lb_hi_col]);
+        const range = lln !== null && uln !== null ? ` (${lln}\u2013${uln}${unit ? ` ${unit}` : ""})` : "";
+        return {
+          kind: "point",
+          start: dayRes.value,
+          end: null,
+          endState: "closed",
+          dayCol: dayRes.column,
+          rawDate: resolveText(row, s.lb_dtc_col),
+          label: [String(value), unit].filter(Boolean).join(" "),
+          detail: `${test}${range}`,
+          category: test,
+          test,
+          testCode: text(row[s.lb_testcd_col]),
+          value,
+          unit,
+          lln,
+          uln,
+          flags: { abnormal: upper(row[s.lb_nrind_col]) }
+        };
+      }
+      case "CM": {
+        const trt = text(row[s.cm_trt_col]);
+        if (!trt) return { reason: `missing con-med name (${s.cm_trt_col})` };
+        const interval = resolveInterval(row, s, "cm", "cm_endy_col");
+        return {
+          kind: "interval",
+          ...interval,
+          rawDate: resolveText(row, s.cm_stdtc_col),
+          label: trt,
+          detail: [text(row[s.cm_dose_col]), text(row[s.cm_route_col])].filter(Boolean).join(" "),
+          category: text(row[s.cm_class_col])
+        };
+      }
+      case "MH": {
+        const term = text(row[s.mh_term_col]);
+        const decod = text(row[s.mh_decod_col]);
+        if (!term && !decod) {
+          return { reason: `missing medical-history term (${s.mh_term_col}, ${s.mh_decod_col})` };
+        }
+        const onsetSource = s.mh_day_source === "onset";
+        const collection = resolveNumber(row, s.mh_day_col);
+        const onset = resolveNumber(row, s.mh_onset_stdy_col);
+        const onsetDtc = resolveText(row, s.mh_onset_dtc_col);
+        const placed = onsetSource ? onset : collection;
+        const strtpt = text(row[s.mh_strtpt_col]);
+        const onsetText = onset.value !== null ? `day ${onset.value}` : onsetDtc ? onsetDtc : strtpt ? strtpt.toUpperCase() === "BEFORE" ? "before study" : strtpt.toLowerCase() : "not recorded";
+        const stillPresent = upper(row[s.mh_enrtpt_col]) === "ONGOING";
+        return {
+          kind: "point",
+          start: placed.value,
+          end: null,
+          endState: "closed",
+          dayCol: placed.column,
+          rawDate: onsetSource ? onsetDtc : "",
+          label: decod || term,
+          detail: `recorded day ${collection.value === null ? "not recorded" : collection.value}; onset ${onsetText}` + (stillPresent ? "; still present" : ""),
+          category: text(row[s.mh_cat_col])
+        };
+      }
+      case "DS": {
+        const decod = text(row[s.ds_decod_col]);
+        if (!decod) return { reason: `missing disposition decode (${s.ds_decod_col})` };
+        const term = text(row[s.ds_term_col]);
+        const dayRes = resolveNumber(row, s.ds_stdy_col);
+        const cat = text(row[s.ds_cat_col]);
+        const cats = s.ds_reference_cats || [];
+        return {
+          kind: "rule",
+          start: dayRes.value,
+          end: null,
+          endState: "closed",
+          dayCol: dayRes.column,
+          rawDate: resolveText(row, s.ds_dtc_col),
+          label: decod,
+          detail: term && term !== decod ? term : "",
+          category: cat,
+          flags: { reference: cats.length === 0 || cats.includes(cat.toUpperCase()) }
+        };
+      }
+      default:
+        return null;
+    }
+  }
+  function normalizeDomain3(rows, domain, settings) {
+    const events = [];
+    const dropped = [];
+    const flagged = [];
+    if (!DOMAINS.includes(domain) || !Array.isArray(rows)) return { events, dropped, flagged };
+    const lane = LANE_BY_DOMAIN[domain];
+    const refCol = settings?.time?.ref_date_col;
+    rows.forEach((row, index) => {
+      const source = row && typeof row === "object" ? row : {};
+      const subject = text(source[settings.id_col]);
+      if (!subject) {
+        dropped.push(droppedCopy(row, `missing participant id (${settings.id_col})`, domain));
+        return;
+      }
+      const fields = deriveFields(source, domain, settings);
+      if (!fields || fields.reason) {
+        dropped.push(droppedCopy(row, fields ? fields.reason : "unknown domain", domain));
+        return;
+      }
+      const { flag, flags: domainFlags, ...rest } = fields;
+      const start = rest.start;
+      const record = {
+        id: `${domain}-${index}`,
+        domain,
+        lane,
+        subject,
+        kind: rest.kind,
+        start,
+        end: rest.end,
+        endState: rest.endState,
+        open: rest.endState !== "closed",
+        day: start,
+        placeable: start !== null,
+        clippedStart: false,
+        dayCol: rest.dayCol,
+        date: null,
+        endDate: null,
+        rawDate: rest.rawDate || "",
+        dateConflict: false,
+        refDate: datePart(source[refCol]),
+        label: rest.label,
+        detail: rest.detail || "",
+        category: rest.category || "",
+        value: rest.value === void 0 ? null : rest.value,
+        unit: rest.unit || "",
+        outcome: rest.outcome || "",
+        test: rest.test ?? null,
+        testCode: rest.testCode ?? null,
+        lln: rest.lln ?? null,
+        uln: rest.uln ?? null,
+        flags: {
+          severity: null,
+          serious: false,
+          related: "",
+          abnormal: "",
+          abnormalReason: "",
+          derived: false,
+          direction: null,
+          ...domainFlags
+        },
+        flagged: flag ? [flag] : [],
+        source: row,
+        sourceIndex: index,
+        sourceAnchorId: `pje-src-${domain}-${index}`
+      };
+      if (flag) flagged.push(droppedCopy(row, flag, domain));
+      events.push(resolveEventDate(record, record.refDate));
+    });
+    return { events, dropped, flagged };
+  }
+
+  // src/patient-journey-explorer/checkInputs.js
+  function checkInputs14(domains, settings) {
+    const present = DOMAINS.filter(
+      (domain) => Array.isArray(domains?.[domain]) && domains[domain].length > 0
+    );
+    if (!present.length) {
+      throw new Error(
+        `No usable data: pass at least one of { ae, lb, ex, cm, mh, ds } (or a merged array with a ${settings?.domain_col ?? "DOMAIN"} column).`
+      );
+    }
+    const missing = [];
+    for (const domain of present) {
+      const rows = domains[domain];
+      const property = patient_journey_explorer_default.properties[domain.toLowerCase()];
+      const required = (property?.requiredSettings || []).map(
+        (key) => arrayify(settings[key]).map(String)
+      );
+      for (const chain of required) {
+        if (!chain.length) continue;
+        const found = rows.some((row) => row && chain.some((column) => row[column] !== void 0));
+        if (!found) missing.push(`${domain.toLowerCase()}.${chain.join("|")}`);
+      }
+    }
+    if (missing.length) {
+      throw new Error(`Required variable(s) missing: ${missing.join(", ")}`);
+    }
+  }
+
+  // src/patient-journey-explorer/labs.js
+  var upper2 = (value) => value === null || value === void 0 ? "" : String(value).trim().toUpperCase();
+  var finite = (value) => typeof value === "number" && Number.isFinite(value);
+  var RATIO_EPSILON = 1e-9;
+  var HIGH_FLAGS = ["HIGH", "HH", "H"];
+  var LOW_FLAGS = ["LOW", "LL", "L"];
+  function eventOf(candidate) {
+    if (!candidate || typeof candidate !== "object") return null;
+    return candidate.event && typeof candidate.event === "object" ? candidate.event : candidate;
+  }
+  function usable(points) {
+    return arrayify(points).map(eventOf).filter(
+      (event) => event && event.placeable !== false && finite(event.day) && finite(event.value)
+    );
+  }
+  function pick(candidates, latest) {
+    let best = null;
+    for (const event of candidates) {
+      if (!best) {
+        best = event;
+        continue;
+      }
+      const better = latest ? event.day > best.day : event.day < best.day;
+      const tie = event.day === best.day && event.sourceIndex < best.sourceIndex;
+      if (better || tie) best = event;
+    }
+    return best;
+  }
+  function labBaseline(points, settings) {
+    const candidates = usable(points);
+    if (!candidates.length) return null;
+    const flagCol = settings?.lb_baseline_flag_col;
+    const flagValue = upper2(settings?.lb_baseline_flag_value ?? "Y");
+    let rule = "flag";
+    let chosen = null;
+    if (flagCol && flagValue) {
+      chosen = pick(
+        candidates.filter((event) => upper2(event.source?.[flagCol]) === flagValue),
+        true
+      );
+    }
+    if (!chosen) {
+      rule = "day";
+      const baselineDay = Number(settings?.lb_baseline_day);
+      const cutoff = Number.isFinite(baselineDay) ? baselineDay : 1;
+      chosen = pick(
+        candidates.filter((event) => event.day <= cutoff),
+        true
+      );
+    }
+    if (!chosen) {
+      rule = "earliest";
+      chosen = pick(candidates, false);
+    }
+    return { day: chosen.day, value: chosen.value, event: chosen, rule };
+  }
+  function isAbnormalByFlag(event, settings) {
+    const flag = upper2(event?.flags?.abnormal);
+    if (!flag || /^NA$/.test(flag)) return false;
+    return flag !== upper2(settings?.lb_normal_value ?? "NORMAL");
+  }
+  function isAbnormalByChange(event, baseline, settings) {
+    const value = event?.value;
+    const base = baseline?.value;
+    if (!finite(value) || !finite(base) || base <= 0) return false;
+    const factor = Number(settings?.lb_change_factor);
+    const f = Number.isFinite(factor) && factor > 1 ? factor : 2;
+    const ratio = value / base;
+    return ratio >= f - RATIO_EPSILON || ratio <= 1 / f + RATIO_EPSILON;
+  }
+  function referenceRatio(event) {
+    if (!event || !finite(event.value)) return null;
+    const flag = upper2(event.flags?.abnormal);
+    const { value, lln, uln } = event;
+    const high = HIGH_FLAGS.includes(flag) || finite(uln) && value > uln;
+    const low = !high && (LOW_FLAGS.includes(flag) || finite(lln) && value < lln);
+    if (high) return finite(uln) && uln !== 0 ? { ratio: value / uln, limit: "ULN" } : null;
+    if (low) return finite(lln) && lln !== 0 ? { ratio: value / lln, limit: "LLN" } : null;
+    return null;
+  }
+  function configuredTests(settings) {
+    return arrayify(settings?.lb_tests).map(upper2).filter(Boolean);
+  }
+  function matchesConfiguredTest(event, settings) {
+    if (!event || typeof event !== "object") return false;
+    const tests = configuredTests(settings);
+    if (!tests.length) return true;
+    return tests.includes(upper2(event.test)) || tests.includes(upper2(event.testCode));
+  }
+  function labTestOrder(labEvents, settings) {
+    const events = arrayify(labEvents).filter((event) => event && typeof event === "object");
+    const configured = arrayify(settings?.lb_tests).map(String).filter(Boolean);
+    const seen = [];
+    for (const event of events) {
+      const test = event.test ?? "";
+      if (test && !seen.includes(test)) seen.push(test);
+    }
+    if (!configured.length) return { tests: seen, missing: [] };
+    const tests = [];
+    const missing = [];
+    for (const entry of configured) {
+      const key = upper2(entry);
+      const match = events.find(
+        (event) => upper2(event.test) === key || upper2(event.testCode) === key
+      );
+      if (match && match.test && !tests.includes(match.test)) tests.push(match.test);
+      else if (!match) missing.push(entry);
+    }
+    if (!tests.length && events.length) {
+      console.warn(
+        `patient-journey-explorer: lb_tests (${configured.join(", ")}) matched no lab test name or code; the labs lane is empty.`
+      );
+    }
+    return { tests, missing };
+  }
+  function padRange(values) {
+    const finiteValues = values.filter(finite);
+    if (!finiteValues.length) return [0, 1];
+    const lo = Math.min(...finiteValues);
+    const hi = Math.max(...finiteValues);
+    const pad = hi === lo ? 1 : (hi - lo) * 0.05;
+    return [lo - pad, hi + pad];
+  }
+  function buildLabSeries(labEvents, domain, settings, { baselineEvents } = {}) {
+    const events = arrayify(labEvents).filter((event) => event && typeof event === "object");
+    if (!events.length) return [];
+    const baselinePool = Array.isArray(baselineEvents) ? baselineEvents : events;
+    const { tests } = labTestOrder(events, settings);
+    const shared = Array.isArray(domain) && domain.length === 2 && domain.every(finite) ? [...domain] : null;
+    return tests.map((test) => {
+      const own = events.filter((event) => event.test === test);
+      const points = own.filter((event) => event.placeable !== false && finite(event.day) && finite(event.value)).map((event) => ({
+        day: event.day,
+        elapsed: toElapsed(event.day),
+        value: event.value,
+        lln: finite(event.lln) ? event.lln : null,
+        uln: finite(event.uln) ? event.uln : null,
+        nrind: upper2(event.flags?.abnormal),
+        event
+      })).sort((a, b) => a.day - b.day || a.event.sourceIndex - b.event.sourceIndex);
+      const baseline = labBaseline(
+        baselinePool.filter((event) => event && event.test === test),
+        settings
+      );
+      const band = points.filter((point) => point.lln !== null && point.uln !== null).map((point) => ({ day: point.day, lln: point.lln, uln: point.uln }));
+      const unitSource = own.find((event) => event.unit);
+      return {
+        test,
+        testCode: own.find((event) => event.testCode)?.testCode ?? "",
+        unit: unitSource ? unitSource.unit : "",
+        points,
+        baseline,
+        domain: shared,
+        valueDomain: padRange([
+          ...points.map((point) => point.value),
+          ...points.map((point) => point.lln),
+          ...points.map((point) => point.uln),
+          baseline ? baseline.value : null
+        ]),
+        band
+      };
+    });
+  }
+
+  // src/patient-journey-explorer/structureData.js
+  var PRE_STUDY_CLAMP = 60;
+  var DOMAIN_MIN_DAY = -14;
+  var CAPPED_LANES = ["exposure", "adverseEvents", "labs", "conMeds"];
+  var LANE_SORT_RULES = {
+    exposure: "sorted by treatment name",
+    doseChanges: "",
+    adverseEvents: "sorted by severity, then onset",
+    labs: "in the configured test order",
+    conMeds: "sorted by start day, then name",
+    medicalHistory: "",
+    disposition: ""
+  };
+  var DOMAIN_BY_LANE = Object.fromEntries(
+    Object.entries(LANE_BY_DOMAIN).map(([domain, lane]) => [lane, domain])
+  );
+  DOMAIN_BY_LANE.doseChanges = "EX";
+  var finite2 = (value) => typeof value === "number" && Number.isFinite(value);
+  var isBlank2 = (value) => value === null || value === void 0 || typeof value === "string" && (value.trim() === "" || /^na$/i.test(value.trim()));
+  var text2 = (value) => isBlank2(value) ? "" : String(value).trim();
+  var upper3 = (value) => text2(value).toUpperCase();
+  var compareText = (a, b) => a === b ? 0 : a < b ? -1 : 1;
+  var dayOrNull = (event) => event.placeable === false ? null : event.day;
+  var nullsLast = (a, b) => {
+    const da = finite2(a) ? a : Infinity;
+    const db = finite2(b) ? b : Infinity;
+    return da - db;
+  };
+  var emptyByDomain = () => Object.fromEntries(DOMAINS.map((domain) => [domain, 0]));
+  var emptyByLane = () => Object.fromEntries(LANE_KEYS.map((lane) => [lane, 0]));
+  var rowCopy = (row, reason, domain) => ({
+    ...row && typeof row === "object" ? row : {},
+    [DROP_REASON_COLUMN3]: reason,
+    [DROP_DOMAIN_COLUMN]: domain
+  });
+  function subjectIndex(domains, settings) {
+    const idCol = settings?.id_col ?? "USUBJID";
+    const ids = /* @__PURE__ */ new Set();
+    for (const rows of Object.values(domains || {})) {
+      for (const row of arrayify(rows)) {
+        const id = row && typeof row === "object" ? text2(row[idCol]) : "";
+        if (id) ids.add(id);
+      }
+    }
+    return [...ids].sort();
+  }
+  function deriveDoseChanges(exEvents, settings) {
+    const candidates = arrayify(exEvents).filter(
+      (event) => event && typeof event === "object" && event.placeable !== false && finite2(event.start) && finite2(event.value)
+    ).sort((a, b) => a.start - b.start || a.sourceIndex - b.sourceIndex);
+    const changes = [];
+    for (let i = 1; i < candidates.length; i += 1) {
+      const prev = candidates[i - 1];
+      const next = candidates[i];
+      const from2 = Number(prev.value);
+      const to2 = Number(next.value);
+      if (from2 === to2) continue;
+      let direction = null;
+      if (to2 > from2 && from2 > 0) direction = "increase";
+      else if (to2 < from2 && to2 > 0) direction = "reduction";
+      else if (to2 === 0 && from2 > 0) direction = "interruption";
+      else if (from2 === 0 && to2 > 0) direction = "restart";
+      const unit = next.unit || prev.unit || "";
+      changes.push({
+        id: `DOSE-${next.sourceIndex}`,
+        domain: "EX",
+        lane: "doseChanges",
+        subject: next.subject,
+        kind: "point",
+        start: next.start,
+        end: null,
+        endState: "closed",
+        open: false,
+        day: next.start,
+        placeable: true,
+        clippedStart: false,
+        dayCol: next.dayCol,
+        date: next.date ?? null,
+        endDate: null,
+        rawDate: next.rawDate || "",
+        dateConflict: Boolean(next.dateConflict),
+        refDate: next.refDate ?? null,
+        label: `${from2} \u2192 ${to2}${unit ? ` ${unit}` : ""}`,
+        detail: direction || "",
+        category: next.category || "",
+        value: to2,
+        unit,
+        outcome: "",
+        test: null,
+        testCode: null,
+        lln: null,
+        uln: null,
+        flags: {
+          severity: null,
+          serious: false,
+          related: "",
+          abnormal: "",
+          abnormalReason: "",
+          derived: true,
+          direction
+        },
+        flagged: [],
+        previousValue: from2,
+        previousSource: prev.source,
+        previousSourceIndex: prev.sourceIndex,
+        source: next.source,
+        sourceIndex: next.sourceIndex,
+        sourceAnchorId: next.sourceAnchorId
+      });
+    }
+    return changes;
+  }
+  function clampable(event, settings) {
+    if (event.domain === "CM") return true;
+    return event.domain === "MH" && settings?.mh_day_source === "onset";
+  }
+  function sharedDomain(events, settings) {
+    const placeable = arrayify(events).filter(
+      (event) => event && typeof event === "object" && event.placeable !== false
+    );
+    const daysOf = (event) => {
+      const days = [toElapsed(event.start ?? event.day)];
+      if (event.kind === "interval" && event.endState === "closed" && finite2(event.end)) {
+        days.push(toElapsed(event.end));
+      }
+      return days.filter((day2) => day2 !== null);
+    };
+    const anchored = placeable.filter((event) => !clampable(event, settings)).flatMap(daysOf);
+    const otherMin = anchored.length ? Math.min(...anchored) : null;
+    const floor = otherMin === null ? -Infinity : otherMin - PRE_STUDY_CLAMP;
+    const candidates = [
+      ...anchored,
+      ...placeable.filter((event) => clampable(event, settings)).flatMap(daysOf).filter((day2) => day2 >= floor)
+    ];
+    if (!candidates.length) return null;
+    const min = Math.min(DOMAIN_MIN_DAY, ...candidates);
+    const max = Math.max(...candidates);
+    return min === max ? [min - 1, max + 1] : [min, max];
+  }
+  function filterPasses(event, spec, selection, settings) {
+    const cell2 = event.source && typeof event.source === "object" ? event.source[spec.value_col] : void 0;
+    if (spec.type === "flag") {
+      const flagValue = spec.flag_value ?? selection;
+      if (String(flagValue) === "__abnormal__") return isAbnormalByFlag(event, settings);
+      return upper3(cell2) === upper3(flagValue);
+    }
+    return filterMatches(cell2, selection);
+  }
+  function applyFilters11(events, filterState, settings, specs) {
+    const state = filterState && typeof filterState === "object" ? filterState : {};
+    const active = arrayify(specs ?? settings?.filters).filter((spec) => {
+      const selection = state[spec.value_col];
+      return selection !== null && selection !== void 0 && selection !== "";
+    });
+    const source = arrayify(events);
+    if (!active.length) return [...source];
+    return source.filter(
+      (event) => active.every(
+        (spec) => spec.domain !== event.domain || filterPasses(event, spec, state[spec.value_col], settings)
+      )
+    );
+  }
+  function liveFilters(specs, domains) {
+    return arrayify(specs).filter((spec) => {
+      const rows = arrayify(domains?.[spec.domain]);
+      const exists = rows.some(
+        (row) => row && typeof row === "object" && row[spec.value_col] !== void 0
+      );
+      if (!exists) {
+        console.warn(
+          `The [ ${spec.label} ] filter has been removed because the variable does not exist.`
+        );
+      }
+      return exists;
+    });
+  }
+  function laneSortKey(laneKey, settings, events) {
+    const byIndex = (a, b) => (a.sourceIndex ?? 0) - (b.sourceIndex ?? 0);
+    switch (laneKey) {
+      case "exposure":
+        return (a, b) => compareText(String(a.label ?? ""), String(b.label ?? "")) || nullsLast(dayOrNull(a), dayOrNull(b)) || byIndex(a, b);
+      case "adverseEvents":
+        return (a, b) => {
+          const ra = a.flags?.severity?.rank ?? -1;
+          const rb = b.flags?.severity?.rank ?? -1;
+          return rb - ra || nullsLast(dayOrNull(a), dayOrNull(b)) || byIndex(a, b);
+        };
+      case "labs": {
+        const order = labTestOrder(arrayify(events), settings).tests;
+        const configured = arrayify(settings?.lb_tests).map(upper3);
+        const rank = (event) => {
+          const named = order.indexOf(event.test);
+          if (named >= 0) return named;
+          const byName = configured.indexOf(upper3(event.test));
+          const byCode = configured.indexOf(upper3(event.testCode));
+          const idx = byName >= 0 ? byName : byCode;
+          return idx >= 0 ? idx : Infinity;
+        };
+        return (a, b) => {
+          const ra = rank(a);
+          const rb = rank(b);
+          if (ra !== rb) return ra === Infinity ? 1 : rb === Infinity ? -1 : ra - rb;
+          return compareText(String(a.test ?? ""), String(b.test ?? "")) || nullsLast(dayOrNull(a), dayOrNull(b)) || byIndex(a, b);
+        };
+      }
+      case "conMeds":
+        return (a, b) => nullsLast(dayOrNull(a), dayOrNull(b)) || compareText(String(a.label ?? ""), String(b.label ?? "")) || byIndex(a, b);
+      default:
+        return (a, b) => nullsLast(dayOrNull(a), dayOrNull(b)) || byIndex(a, b);
+    }
+  }
+  function normalizeAll(domains, settings) {
+    let events = [];
+    const dropped = [];
+    const flagged = [];
+    const droppedCounts = { total: 0, byDomain: emptyByDomain(), byReason: {} };
+    const flaggedCounts = { total: 0, endBeforeStart: 0, dateConflict: 0, byReason: {} };
+    for (const domain of DOMAINS) {
+      const result = normalizeDomain3(arrayify(domains?.[domain]), domain, settings);
+      events = events.concat(result.events);
+      for (const row of result.dropped) {
+        dropped.push(row);
+        droppedCounts.total += 1;
+        droppedCounts.byDomain[domain] += 1;
+        const reason = row[DROP_REASON_COLUMN3];
+        droppedCounts.byReason[reason] = (droppedCounts.byReason[reason] || 0) + 1;
+      }
+      for (const row of result.flagged) {
+        flagged.push(row);
+        flaggedCounts.endBeforeStart += 1;
+      }
+    }
+    const bySubject = /* @__PURE__ */ new Map();
+    for (const event of events) {
+      if (!bySubject.has(event.subject)) bySubject.set(event.subject, []);
+      bySubject.get(event.subject).push(event);
+    }
+    const refDates = /* @__PURE__ */ new Map();
+    const resolved = [];
+    for (const [subject, group] of bySubject) {
+      const ref = referenceDate(group, settings);
+      refDates.set(subject, ref);
+      for (const event of group) {
+        resolved.push(ref && event.refDate === null ? resolveEventDate(event, ref.date) : event);
+      }
+    }
+    for (const event of resolved) {
+      if (!event.dateConflict) continue;
+      flagged.push(
+        rowCopy(
+          event.source,
+          `recorded date ${event.rawDate} disagrees with day ${event.day}`,
+          event.domain
+        )
+      );
+      flaggedCounts.dateConflict += 1;
+    }
+    for (const row of flagged) {
+      flaggedCounts.total += 1;
+      const reason = row[DROP_REASON_COLUMN3];
+      flaggedCounts.byReason[reason] = (flaggedCounts.byReason[reason] || 0) + 1;
+    }
+    return { events: resolved, dropped, droppedCounts, flagged, flaggedCounts, refDates };
+  }
+  function laneRows(laneKey, placeable) {
+    switch (laneKey) {
+      case "exposure":
+        return [...new Set(placeable.map((event) => String(event.label ?? "")))];
+      case "adverseEvents":
+      case "conMeds":
+        return placeable.map((event) => event.id);
+      case "labs":
+        return [...new Set(placeable.map((event) => String(event.test ?? "")))];
+      default:
+        return [laneKey];
+    }
+  }
+  function rowKeyOf(laneKey, event) {
+    switch (laneKey) {
+      case "exposure":
+        return String(event.label ?? "");
+      case "adverseEvents":
+      case "conMeds":
+        return event.id;
+      case "labs":
+        return String(event.test ?? "");
+      default:
+        return laneKey;
+    }
+  }
+  function structureData3(domains, settings, state = {}) {
+    const normalized = normalizeAll(domains, settings);
+    const subjects = subjectIndex(domains, settings);
+    const wanted = [state?.subject, settings?.subject].map(
+      (id) => id === null || id === void 0 ? "" : String(id)
+    );
+    const subject = wanted.find((id) => id && subjects.includes(id)) ?? subjects[0] ?? null;
+    const refDate = subject === null ? null : normalized.refDates.get(subject) ?? null;
+    const subjectEvents = normalized.events.filter(
+      (event) => event.subject === subject && (event.domain !== "LB" || matchesConfiguredTest(event, settings))
+    );
+    const doseChanges = deriveDoseChanges(
+      subjectEvents.filter((event) => event.domain === "EX"),
+      settings
+    );
+    const base = [...subjectEvents, ...doseChanges];
+    const domain = sharedDomain(base, settings);
+    const allEvents = base.map((event) => {
+      if (!domain || event.kind !== "interval" || event.placeable === false) return event;
+      const startE = toElapsed(event.start);
+      return startE !== null && startE < domain[0] ? { ...event, clippedStart: true } : event;
+    });
+    const filters = liveFilters(settings?.filters, domains);
+    const filtered = applyFilters11(allEvents, state?.filters, settings, filters);
+    const enabled = (lane) => state?.lanes && typeof state.lanes[lane] === "boolean" ? state.lanes[lane] : Boolean(settings?.lanes?.[lane]?.enabled);
+    const cap = Number(settings?.max_rows_per_lane);
+    const rowCap = Number.isFinite(cap) && cap > 0 ? Math.floor(cap) : Infinity;
+    const byLane = {};
+    const lanes = {};
+    const unplaceable = {};
+    const truncatedByLane = emptyByLane();
+    for (const lane of LANE_KEYS) {
+      const laneEvents = filtered.filter((event) => event.lane === lane);
+      laneEvents.sort(laneSortKey(lane, settings, laneEvents));
+      byLane[lane] = laneEvents;
+      const placeable = laneEvents.filter((event) => event.placeable !== false);
+      const rows = laneRows(lane, placeable);
+      const drawnRows = CAPPED_LANES.includes(lane) ? rows.slice(0, rowCap) : rows;
+      const truncated = rows.length - drawnRows.length;
+      truncatedByLane[lane] = truncated;
+      unplaceable[lane] = allEvents.filter(
+        (event) => event.lane === lane && event.placeable === false
+      );
+      const domainCode2 = DOMAIN_BY_LANE[lane];
+      lanes[lane] = {
+        key: lane,
+        enabled: enabled(lane),
+        supplied: arrayify(domains?.[domainCode2]).length > 0,
+        rows: drawnRows,
+        rowCount: rows.length,
+        drawn: placeable.filter((event) => drawnRows.includes(rowKeyOf(lane, event))),
+        truncated,
+        sortRule: LANE_SORT_RULES[lane] ?? "",
+        unplaceable: unplaceable[lane]
+      };
+    }
+    const allLabs = allEvents.filter((event) => event.domain === "LB");
+    const labSeries = buildLabSeries(byLane.labs, domain, settings, { baselineEvents: allLabs });
+    const labTestsMissing = allLabs.length ? labTestOrder(allLabs, settings).missing : [];
+    const events = filtered.filter((event) => enabled(event.lane)).sort(
+      (a, b) => LANE_KEYS.indexOf(a.lane) - LANE_KEYS.indexOf(b.lane) || nullsLast(dayOrNull(a), dayOrNull(b)) || (a.sourceIndex ?? 0) - (b.sourceIndex ?? 0)
+    );
+    const unplaceableCounts = { byDomain: emptyByDomain(), byLane: emptyByLane() };
+    const counts = emptyByDomain();
+    for (const event of allEvents) {
+      if (event.flags?.derived) continue;
+      counts[event.domain] += 1;
+      if (event.placeable === false) {
+        unplaceableCounts.byDomain[event.domain] += 1;
+        unplaceableCounts.byLane[event.lane] += 1;
+      }
+    }
+    return {
+      subjects,
+      subject,
+      mode: state?.mode === "date" ? "date" : "day",
+      refDate,
+      events,
+      allEvents,
+      byLane,
+      lanes,
+      labSeries,
+      labTestsMissing,
+      domain,
+      filters,
+      dropped: normalized.dropped,
+      droppedCounts: normalized.droppedCounts,
+      flagged: normalized.flagged,
+      flaggedCounts: normalized.flaggedCounts,
+      unplaceable,
+      unplaceableCounts,
+      truncatedByLane,
+      counts
+    };
+  }
+
+  // src/patient-journey-explorer/anchor.js
+  var ANCHOR_AXIS_TITLE = "Days from anchor";
+  var DOMAIN_CODES2 = ["AE", "LB", "EX", "CM", "MH", "DS"];
+  var finite3 = (value) => typeof value === "number" && Number.isFinite(value);
+  var list = (value) => Array.isArray(value) ? value.filter((e) => e && typeof e === "object") : [];
+  var usableBounds = (bounds) => bounds && typeof bounds === "object" && finite3(bounds.elapsedStart) && finite3(bounds.elapsedEnd);
+  var upper4 = (value) => value === null || value === void 0 ? "" : String(value).trim().toUpperCase();
+  function byStartThenLabel(a, b) {
+    const da = finite3(a.start) ? a.start : Infinity;
+    const db = finite3(b.start) ? b.start : Infinity;
+    if (da !== db) return da - db;
+    const la = String(a.label ?? "");
+    const lb = String(b.label ?? "");
+    if (la !== lb) return la < lb ? -1 : 1;
+    return (a.sourceIndex ?? 0) - (b.sourceIndex ?? 0);
+  }
+  function relativeDay(day2, anchorDay) {
+    const e = toElapsed(day2);
+    const a = toElapsed(anchorDay);
+    if (e === null || a === null) return null;
+    return e - a;
+  }
+  function windowBounds(anchorDay, days) {
+    const e0 = toElapsed(anchorDay);
+    const n = Number(days);
+    if (e0 === null || !Number.isFinite(n)) return null;
+    const width = Math.max(0, Math.floor(n));
+    const elapsedStart = e0 - width;
+    const elapsedEnd2 = e0 + width;
+    return {
+      elapsedStart,
+      elapsedEnd: elapsedEnd2,
+      startDay: toStudyDay(elapsedStart),
+      endDay: toStudyDay(elapsedEnd2)
+    };
+  }
+  function elapsedEnd(event) {
+    if (event.endState === "closed" && finite3(event.end)) {
+      const e = toElapsed(event.end);
+      return e === null ? toElapsed(event.start) : e;
+    }
+    return Infinity;
+  }
+  function inWindow(event, bounds, settings) {
+    if (!event || typeof event !== "object" || event.placeable === false) return false;
+    if (!usableBounds(bounds)) return false;
+    if (event.kind === "interval") {
+      const startE = toElapsed(event.start);
+      if (startE === null) return false;
+      return startE <= bounds.elapsedEnd && elapsedEnd(event) >= bounds.elapsedStart;
+    }
+    const dayE = toElapsed(event.day);
+    if (dayE === null) return false;
+    return dayE >= bounds.elapsedStart && dayE <= bounds.elapsedEnd;
+  }
+  function conMedsActiveAt(cmEvents, day2, settings) {
+    const dayE = toElapsed(day2);
+    const events = list(cmEvents);
+    if (dayE === null) return { active: [], withoutStart: 0, endUnrecorded: 0 };
+    let withoutStart = 0;
+    const active = [];
+    for (const event of events) {
+      const startE = event.placeable === false ? null : toElapsed(event.start);
+      if (startE === null) {
+        withoutStart += 1;
+        continue;
+      }
+      if (startE <= dayE && elapsedEnd(event) >= dayE) active.push(event);
+    }
+    active.sort(byStartThenLabel);
+    const endUnrecorded = active.filter((event) => event.endState === "unrecorded").length;
+    return { active, withoutStart, endUnrecorded };
+  }
+  function conMedsStartingLater(cmEvents, bounds, anchorDay) {
+    const anchorE = toElapsed(anchorDay);
+    if (!usableBounds(bounds) || anchorE === null) return [];
+    return list(cmEvents).filter((event) => {
+      if (event.placeable === false) return false;
+      const startE = toElapsed(event.start);
+      return startE !== null && startE > anchorE && startE <= bounds.elapsedEnd;
+    }).sort(byStartThenLabel);
+  }
+  function abnormalLabsInWindow(labEvents, bounds, settings, { baselineEvents } = {}) {
+    const events = list(labEvents);
+    if (!usableBounds(bounds) || !events.length) return [];
+    const pool = Array.isArray(baselineEvents) ? list(baselineEvents) : events;
+    const baselines = /* @__PURE__ */ new Map();
+    const baselineFor = (test) => {
+      if (!baselines.has(test)) {
+        baselines.set(
+          test,
+          labBaseline(
+            pool.filter((event) => event.test === test),
+            settings
+          )
+        );
+      }
+      return baselines.get(test);
+    };
+    return events.filter((event) => inWindow(event, bounds, settings)).map((event) => {
+      const flag = isAbnormalByFlag(event, settings);
+      const change = isAbnormalByChange(event, baselineFor(event.test), settings);
+      if (!flag && !change) return null;
+      const abnormalReason = flag && change ? "both" : flag ? "flag" : "change";
+      return { ...event, flags: { ...event.flags, abnormalReason } };
+    }).filter(Boolean).sort(
+      (a, b) => a.day - b.day || String(a.test ?? "").localeCompare(String(b.test ?? "")) || a.sourceIndex - b.sourceIndex
+    );
+  }
+  function doseChangesInWindow(doseEvents, bounds) {
+    if (!usableBounds(bounds)) return [];
+    return list(doseEvents).filter((event) => inWindow(event, bounds)).sort((a, b) => a.day - b.day || a.sourceIndex - b.sourceIndex);
+  }
+  function termKey(event, settings) {
+    const source = event?.source && typeof event.source === "object" ? event.source : {};
+    const decod = upper4(source[settings?.ae_decod_col]);
+    return decod || upper4(source[settings?.ae_term_col]);
+  }
+  function priorSameTerm(aeEvents, anchorEvent, settings) {
+    if (!anchorEvent || typeof anchorEvent !== "object" || !finite3(anchorEvent.start)) return [];
+    const key = termKey(anchorEvent, settings);
+    if (!key) return [];
+    return list(aeEvents).filter((event) => {
+      if (event.id === anchorEvent.id || event.placeable === false || !finite3(event.start))
+        return false;
+      if (termKey(event, settings) !== key) return false;
+      return event.start < anchorEvent.start || event.start === anchorEvent.start && event.sourceIndex < anchorEvent.sourceIndex;
+    }).sort((a, b) => b.start - a.start || b.sourceIndex - a.sourceIndex);
+  }
+  function buildContext(structured, anchorEvent, settings) {
+    if (!structured || typeof structured !== "object") return null;
+    if (!anchorEvent || typeof anchorEvent !== "object" || anchorEvent.placeable === false)
+      return null;
+    const days = Number(settings?.context_window_days);
+    const width = Number.isFinite(days) ? Math.max(0, Math.floor(days)) : 30;
+    const bounds = windowBounds(anchorEvent.day, width);
+    if (!bounds) return null;
+    const byLane = structured.byLane && typeof structured.byLane === "object" ? structured.byLane : {};
+    const allEvents = list(structured.allEvents);
+    const labPool = allEvents.filter((event) => event.domain === "LB");
+    const active = conMedsActiveAt(byLane.conMeds, anchorEvent.day, settings);
+    const conMedsLater = conMedsStartingLater(byLane.conMeds, bounds, anchorEvent.day);
+    const abnormalLabs = abnormalLabsInWindow(byLane.labs, bounds, settings, {
+      baselineEvents: labPool.length ? labPool : void 0
+    });
+    const doseChanges = doseChangesInWindow(byLane.doseChanges, bounds);
+    const priorEvents = priorSameTerm(byLane.adverseEvents, anchorEvent, settings);
+    const inWindowEvents = list(structured.events).filter(
+      (event) => inWindow(event, bounds, settings)
+    );
+    const aeEndUnrecorded = inWindowEvents.filter(
+      (event) => event.domain === "AE" && event.endState === "unrecorded"
+    ).length;
+    const unplaceableByDomain = {};
+    for (const domain of DOMAIN_CODES2) {
+      unplaceableByDomain[domain] = Number(structured.unplaceableCounts?.byDomain?.[domain]) || 0;
+    }
+    const truncatedByLane = {};
+    for (const [lane, count2] of Object.entries(structured.truncatedByLane || {})) {
+      truncatedByLane[lane] = Number(count2) || 0;
+    }
+    return {
+      subject: structured.subject ?? anchorEvent.subject ?? null,
+      mode: (structured.mode ?? settings?.time?.mode) === "date" ? "date" : "day",
+      anchor: {
+        id: anchorEvent.id,
+        domain: anchorEvent.domain,
+        lane: anchorEvent.lane,
+        label: anchorEvent.label,
+        day: anchorEvent.day,
+        date: anchorEvent.date ?? null,
+        source: anchorEvent.source,
+        sourceIndex: anchorEvent.sourceIndex,
+        sourceAnchorId: anchorEvent.sourceAnchorId
+      },
+      window: { days: width, ...bounds },
+      conMeds: active.active,
+      conMedsLater,
+      abnormalLabs,
+      doseChanges,
+      priorEvents,
+      inWindow: inWindowEvents,
+      counts: {
+        conMeds: active.active.length,
+        conMedsLater: conMedsLater.length,
+        abnormalLabs: abnormalLabs.length,
+        doseChanges: doseChanges.length,
+        priorEvents: priorEvents.length,
+        inWindow: inWindowEvents.length
+      },
+      notEvaluated: {
+        conMedsWithoutStart: active.withoutStart,
+        conMedsEndUnrecorded: active.endUnrecorded,
+        aeEndUnrecorded,
+        unplaceableByDomain,
+        truncatedByLane
+      },
+      generatedAt: (/* @__PURE__ */ new Date()).toISOString()
+    };
+  }
+
+  // src/patient-journey-explorer/palette.js
+  var PJE_PALETTE = {
+    light: {
+      // surfaces & chrome
+      surface: "#ffffff",
+      // .sv-chart-wrap background
+      page: "#faf6f1",
+      // site.css --paper
+      panel: "#f6f8fa",
+      border: "#d8dee4",
+      grid: "#e1e0d9",
+      inkPrimary: "#1f2933",
+      inkSecondary: "#52616f",
+      // floor for ALL text under 24px — the library's muted ink fails AA
+      inkMuted: "#898781",
+      // non-text chrome only (window edges)
+      warning: "#9a3412",
+      // lanes 1/3/5 — categorical
+      ex: "#008300",
+      // exposure bar
+      ae: "#4a3aa7",
+      // adverse-event bar + start dot
+      cm: "#d55181",
+      // con-med bar
+      // lanes 2/4/6/7 — chrome ink
+      doseCaret: "#111827",
+      doseNotch: "#ffffff",
+      lbTrace: "#52616f",
+      mh: "#52616f",
+      ds: "#52616f",
+      // AE severity (D23): ONE opaque fill at every grade — an alpha ramp put MILD
+      // at 2.05:1 against white, under the 3:1 gate PJE-ACC-001 asserts. Severity
+      // is carried by bar height and border width instead; the alpha map is kept
+      // at 1 so a consumer reading it draws exactly what the gate measured.
+      aeSeverityAlpha: { MILD: 1, MODERATE: 1, SEVERE: 1 },
+      aeSeverityHeight: { MILD: 5, MODERATE: 7, SEVERE: 9 },
+      aeSeverityBorder: { MILD: 1, MODERATE: 1.5, SEVERE: 2 },
+      // labs — diverging arms + neutral midpoint
+      labHigh: "#eb6834",
+      labLow: "#0d366b",
+      labBand: "#f0efec",
+      // status
+      escalate: "#d03b3b",
+      // reference lines
+      ruleDay1: "#52616f",
+      ruleDisposition: "#52616f",
+      ruleAnchor: "#111827",
+      // context window
+      windowFill: "rgba(17, 24, 39, 0.06)",
+      windowEdge: "#898781",
+      // focus
+      focusRing: "#0b62a4",
+      focusSeparator: "#ffffff"
+    },
+    dark: {
+      surface: "#1a1a19",
+      page: "#0d0d0d",
+      panel: "#232320",
+      border: "#3a3a37",
+      grid: "#2c2c2a",
+      inkPrimary: "#f5f5f3",
+      inkSecondary: "#c3c2b7",
+      inkMuted: "#898781",
+      warning: "#f0b37e",
+      ex: "#008300",
+      ae: "#9085e9",
+      cm: "#d55181",
+      doseCaret: "#ffffff",
+      doseNotch: "#1a1a19",
+      lbTrace: "#c3c2b7",
+      mh: "#c3c2b7",
+      ds: "#c3c2b7",
+      aeSeverityAlpha: { MILD: 1, MODERATE: 1, SEVERE: 1 },
+      aeSeverityHeight: { MILD: 5, MODERATE: 7, SEVERE: 9 },
+      aeSeverityBorder: { MILD: 1, MODERATE: 1.5, SEVERE: 2 },
+      labHigh: "#d95926",
+      labLow: "#9ec5f4",
+      labBand: "#383835",
+      escalate: "#e66767",
+      ruleDay1: "#c3c2b7",
+      ruleDisposition: "#c3c2b7",
+      ruleAnchor: "#ffffff",
+      windowFill: "rgba(255, 255, 255, 0.08)",
+      windowEdge: "#898781",
+      focusRing: "#86b6ef",
+      // #0b62a4 is 2.73:1 on the dark surface and fails
+      focusSeparator: "#1a1a19"
+    }
+  };
+  var PJE_GLYPHS = {
+    labFlag: {
+      HIGH: "triangle-up",
+      LOW: "triangle-down",
+      HH: "triangle-up-double",
+      LL: "triangle-down-double",
+      NORMAL: "circle-open"
+    },
+    doseChange: {
+      INCREASE: "caret-up",
+      REDUCTION: "caret-down",
+      INTERRUPTION: "caret-pause",
+      RESTART: "caret-restart"
+    },
+    aeStartDot: { serious: "circle-filled", default: "circle-open" },
+    // An adverse event with no recorded severity draws a hatched bar at the
+    // MODERATE height and says so in its accessible name (PJE-ACC-002).
+    aeSeverityMissing: "hatch-bar"
+  };
+  var PJE_MARKS = {
+    exBarHeight: 12,
+    cmBarHeight: 8,
+    mhDotRadius: 4,
+    labGlyphSize: 9,
+    labGlyphSizeExtreme: 11,
+    barRadius: 4,
+    // rounded data-ends
+    surfaceGap: 2,
+    // between overlapping fills, and inside the escalation ring
+    lineWidth: 2,
+    escalateRingWidth: 2,
+    focusRingWidth: 2,
+    focusSeparatorWidth: 2
+  };
+  var PJE_DEEMPHASIS = {
+    fillAlpha: { ae: 0.4, ex: 0.55, cm: 0.55 },
+    strokeAlpha: 0.75
+  };
+  var propertyName = (key) => `--pje-${key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`;
+  function resolveTheme(root, mode) {
+    const prefersDark = typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const base = PJE_PALETTE[mode || (prefersDark ? "dark" : "light")] || PJE_PALETTE.light;
+    const out = { ...base };
+    if (!root || typeof window === "undefined" || typeof window.getComputedStyle !== "function")
+      return out;
+    const computed = window.getComputedStyle(root);
+    for (const key of Object.keys(base)) {
+      if (typeof base[key] !== "string") continue;
+      const value = String(computed.getPropertyValue(propertyName(key)) || "").trim();
+      if (value) out[key] = value;
+    }
+    return out;
+  }
+
+  // src/patient-journey-explorer/getPlugins.js
+  var DOMAIN_LABELS = {
+    EX: "Exposure",
+    DOSE: "Dose change",
+    AE: "Adverse event",
+    LB: "Lab result",
+    CM: "Con-med",
+    MH: "Medical history",
+    DS: "Disposition"
+  };
+  var MIN_BAR_WIDTH = 4;
+  var GESTURE_LINE = "Enter to anchor \xB7 Shift+Enter to open the source record";
+  var GESTURE_SENTENCE = "Press Enter to anchor time on this event, Shift and Enter to open its source record.";
+  var HUE_BY_LANE = { exposure: "ex", adverseEvents: "ae", conMeds: "cm" };
+  var BAR_LANES = ["exposure", "adverseEvents", "conMeds"];
+  var POINT_LANES = ["doseChanges", "medicalHistory", "disposition"];
+  var SEVERITY_KEYS = ["MILD", "MODERATE", "SEVERE"];
+  var finite4 = (value) => typeof value === "number" && Number.isFinite(value);
+  var isEvent = (event) => Boolean(event) && typeof event === "object";
+  var upper5 = (value) => value === null || value === void 0 ? "" : String(value).trim().toUpperCase();
+  var endBeforeStart = (event) => Array.isArray(event.flagged) && event.flagged.some((flag) => /precedes start/.test(String(flag)));
+  var domainCode = (event) => event.flags?.derived ? "DOSE" : event.domain;
+  var usableDomain2 = (domain) => Array.isArray(domain) && domain.length === 2 && domain.every(finite4);
+  function humanize(value) {
+    const text3 = String(value ?? "").trim();
+    if (!text3 || /[a-z]/.test(text3)) return text3;
+    return text3.charAt(0).toUpperCase() + text3.slice(1).toLowerCase();
+  }
+  function withAlpha2(color2, alpha2) {
+    const a = Math.min(1, Math.max(0, Number(alpha2)));
+    const text3 = String(color2 ?? "").trim();
+    const hex2 = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(text3);
+    if (hex2) {
+      let digits = hex2[1];
+      if (digits.length === 3) digits = digits.replace(/./g, (c) => c + c);
+      const [r, g, b] = [0, 2, 4].map((i) => parseInt(digits.slice(i, i + 2), 16));
+      return `rgba(${r}, ${g}, ${b}, ${Number.isFinite(a) ? a : 1})`;
+    }
+    const rgb = /^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*[\d.]+\s*)?\)$/i.exec(text3);
+    if (rgb) return `rgba(${rgb[1]}, ${rgb[2]}, ${rgb[3]}, ${Number.isFinite(a) ? a : 1})`;
+    return text3;
+  }
+  function severityStyle(event, theme, settings) {
+    const severity = event?.flags?.severity ?? null;
+    const missing = severity === null;
+    let bucket = "MODERATE";
+    if (severity) {
+      const key = upper5(severity.key);
+      if (SEVERITY_KEYS.includes(key)) bucket = key;
+      else if (severity.rank > 0) {
+        const count2 = Array.isArray(settings?.ae_severity_values) ? settings.ae_severity_values.length : 0;
+        bucket = severity.rank === 1 ? "MILD" : severity.rank === count2 ? "SEVERE" : "MODERATE";
+      }
+    }
+    const heights = theme?.aeSeverityHeight || {};
+    const borders = theme?.aeSeverityBorder || {};
+    const alphas = theme?.aeSeverityAlpha || {};
+    return {
+      key: severity ? severity.key : null,
+      height: finite4(heights[bucket]) ? heights[bucket] : 7,
+      borderWidth: finite4(borders[bucket]) ? borders[bucket] : 1.5,
+      alpha: finite4(alphas[bucket]) ? alphas[bucket] : 1,
+      glyph: missing ? PJE_GLYPHS.aeSeverityMissing : "bar",
+      missing
+    };
+  }
+  function glyphFor(event) {
+    if (!isEvent(event)) return "dot";
+    if (event.flags?.derived) {
+      return PJE_GLYPHS.doseChange[upper5(event.flags.direction)] || "caret-up";
+    }
+    switch (event.domain) {
+      case "AE":
+        return event.flags?.severity === null ? PJE_GLYPHS.aeSeverityMissing : "bar";
+      case "EX":
+      case "CM":
+        return "bar";
+      case "LB": {
+        const flag = upper5(event.flags?.abnormal);
+        if (!flag) return "dot";
+        return PJE_GLYPHS.labFlag[flag] || PJE_GLYPHS.labFlag.NORMAL;
+      }
+      case "MH":
+        return "circle-open";
+      default:
+        return "dot";
+    }
+  }
+  function endCapFor(event) {
+    if (!isEvent(event) || event.kind !== "interval") return "closed";
+    if (event.endState === "closed" || endBeforeStart(event)) return "closed";
+    return event.endState === "ongoing" ? "arrow" : "fade";
+  }
+  function markGeometry(event, { lane, domain, settings, theme } = {}) {
+    if (!isEvent(event) || event.placeable === false) return null;
+    const start = toElapsed(event.kind === "interval" ? event.start : event.day);
+    if (start === null) return null;
+    const hasDomain = usableDomain2(domain);
+    const glyph = glyphFor(event);
+    const endCap = endCapFor(event);
+    let x0 = start;
+    let x1 = start;
+    if (event.kind === "interval") {
+      if (event.clippedStart && hasDomain) x0 = Math.max(domain[0], start);
+      if (event.endState === "closed" && finite4(event.end)) x1 = toElapsed(event.end) ?? start;
+      else if (endBeforeStart(event)) x1 = start;
+      else x1 = hasDomain ? domain[1] : start;
+    }
+    let height;
+    switch (lane) {
+      case "exposure":
+        height = PJE_MARKS.exBarHeight;
+        break;
+      case "conMeds":
+        height = PJE_MARKS.cmBarHeight;
+        break;
+      case "adverseEvents":
+        height = severityStyle(event, theme, settings).height;
+        break;
+      case "labs":
+        height = /double$/.test(glyph) ? PJE_MARKS.labGlyphSizeExtreme : PJE_MARKS.labGlyphSize;
+        break;
+      case "doseChanges":
+        height = PJE_MARKS.labGlyphSize;
+        break;
+      default:
+        height = PJE_MARKS.mhDotRadius * 2;
+    }
+    return {
+      x0,
+      x1,
+      height,
+      minWidth: MIN_BAR_WIDTH,
+      endCap,
+      glyph,
+      clippedStart: Boolean(event.clippedStart)
+    };
+  }
+  function dayLabel(day2, { mode, refDate } = {}) {
+    if (!finite4(day2)) return "no study day";
+    if (mode === "date") {
+      const date = dayToDate(day2, refDate);
+      if (date) return date;
+    }
+    return `Day ${day2}`;
+  }
+  function startLabel(event, options) {
+    if (options.mode === "date" && event.date) return event.date;
+    return dayLabel(event.day, options);
+  }
+  function spanLabel(event, options = {}) {
+    if (!isEvent(event) || event.placeable === false || !finite4(event.day)) {
+      return "No study day recorded";
+    }
+    const start = startLabel(event, options);
+    if (event.kind !== "interval") return start;
+    if (event.endState === "closed" && finite4(event.end)) {
+      const endDate = options.mode === "date" ? event.endDate || dayToDate(event.end, options.refDate) : null;
+      return `${start} to ${endDate || `day ${event.end}`}`;
+    }
+    if (event.endState === "ongoing") {
+      const outcome = String(event.outcome ?? "").trim().toLowerCase();
+      return `${start} to ongoing${outcome ? ` (${outcome})` : ""}`;
+    }
+    return `${start}, end not recorded`;
+  }
+  function ratioLine(event) {
+    if (!isEvent(event) || event.domain !== "LB") return null;
+    const ratio = referenceRatio(event);
+    return ratio ? `${ratio.ratio.toFixed(2)} \xD7 ${ratio.limit}` : null;
+  }
+  function anchorLine(event, anchor) {
+    const offset = relativeDay(event.day, anchor?.day);
+    if (offset === null) return null;
+    const sign2 = offset >= 0 ? "+" : "";
+    return `${sign2}${offset} day${Math.abs(offset) === 1 ? "" : "s"} from anchor`;
+  }
+  function domainLine(event) {
+    const parts = [DOMAIN_LABELS[domainCode(event)] || event.domain];
+    if (event.domain === "AE" && !event.flags?.derived) {
+      if (event.flags?.severity) parts.push(event.flags.severity.label);
+      if (event.flags?.related) parts.push(`related: ${event.flags.related}`);
+    } else if (event.domain === "LB") {
+      const flag = upper5(event.flags?.abnormal);
+      parts.push(flag || "indicator not recorded");
+    } else if (event.flags?.derived && event.flags.direction) {
+      parts.push(event.flags.direction);
+    }
+    return parts.join(" \xB7 ");
+  }
+  function titleLine(event) {
+    if (event.domain === "LB" && event.test) return `${event.test} ${event.label}`.trim();
+    return String(event.label ?? "");
+  }
+  function tooltipLines3(event, settings, { mode, refDate, anchor } = {}) {
+    if (!isEvent(event)) return [];
+    const options = { mode, refDate };
+    const title = titleLine(event);
+    const lines = [title, domainLine(event), spanLabel(event, options)];
+    if (event.domain === "AE" && !event.flags?.derived) {
+      if (event.flags?.serious) lines.push("SAE");
+      if (event.flags?.severity === null) lines.push("severity not recorded");
+    }
+    const ratio = ratioLine(event);
+    if (ratio) lines.push(ratio);
+    if (anchor) {
+      const offset = anchorLine(event, anchor);
+      if (offset) lines.push(offset);
+    }
+    const category = String(event.category ?? "").trim();
+    if (category && !title.includes(category)) lines.push(category);
+    const detail = String(event.detail ?? "").trim();
+    if (detail) lines.push(detail);
+    const rawDate = String(event.rawDate ?? "").trim();
+    if (rawDate && !isFullDate(rawDate)) lines.push(`recorded as ${rawDate}`);
+    if (event.dateConflict && rawDate) {
+      lines.push(`recorded date ${rawDate} disagrees with day ${event.day}`);
+    }
+    if (event.placeable !== false && event.dayCol) lines.push(`placed by ${event.dayCol}`);
+    lines.push(GESTURE_LINE);
+    return lines;
+  }
+  function laneAriaLabel(event, settings, { mode, refDate } = {}) {
+    if (!isEvent(event)) return "";
+    const options = { mode, refDate };
+    const parts = [];
+    if (event.domain === "LB" && event.test) parts.push(`${event.test} ${event.label}`.trim());
+    else if (event.flags?.derived) parts.push(String(event.label ?? ""));
+    else parts.push(humanize(event.label));
+    parts.push((DOMAIN_LABELS[domainCode(event)] || event.domain).toLowerCase());
+    if (event.domain === "AE" && !event.flags?.derived) {
+      parts.push(
+        event.flags?.severity ? String(event.flags.severity.label).toLowerCase() : "severity not recorded"
+      );
+      if (event.flags?.serious) parts.push("serious (SAE)");
+      if (event.flags?.related) parts.push(`related: ${event.flags.related}`);
+    } else if (event.domain === "LB") {
+      const flag = upper5(event.flags?.abnormal);
+      if (flag) parts.push(flag);
+      const ratio = ratioLine(event);
+      if (ratio) parts.push(ratio);
+    } else if (event.flags?.derived && event.flags.direction) {
+      parts.push(event.flags.direction);
+    }
+    const span = spanLabel(event, options);
+    parts.push(span.replace(/^(Day|No)/, (word) => word.toLowerCase()));
+    return `${parts.join(", ")}. ${GESTURE_SENTENCE}`;
+  }
+  function emphasisOf(event, bounds, settings) {
+    if (!bounds) return "full";
+    return inWindow(event, bounds, settings) ? "full" : "dim";
+  }
+  function marksColors(hueKey, emphasis, theme) {
+    const hue2 = theme?.[hueKey] || "#000000";
+    if (emphasis !== "dim") return { fill: hue2, stroke: hue2 };
+    return {
+      fill: withAlpha2(hue2, PJE_DEEMPHASIS.fillAlpha[hueKey] ?? 0.5),
+      stroke: withAlpha2(hue2, PJE_DEEMPHASIS.strokeAlpha)
+    };
+  }
+  function barDataset(lane, thickness, entries2) {
+    const dataset = {
+      type: "bar",
+      label: lane,
+      indexAxis: "y",
+      grouped: false,
+      barThickness: thickness,
+      minBarLength: MIN_BAR_WIDTH,
+      borderSkipped: false,
+      borderRadius: PJE_MARKS.barRadius,
+      data: [],
+      backgroundColor: [],
+      borderColor: [],
+      borderWidth: []
+    };
+    for (const { point, fill, stroke, borderWidth } of entries2) {
+      dataset.data.push(point);
+      dataset.backgroundColor.push(fill);
+      dataset.borderColor.push(stroke);
+      dataset.borderWidth.push(borderWidth);
+    }
+    return dataset;
+  }
+  function buildLaneDatasets(lane, events, { domain, settings, theme, bounds } = {}) {
+    const drawable = (Array.isArray(events) ? events : []).filter(
+      (event) => isEvent(event) && event.placeable !== false
+    );
+    if (!drawable.length) return [];
+    const context = { lane, domain, settings, theme };
+    if (BAR_LANES.includes(lane)) {
+      const hueKey = HUE_BY_LANE[lane];
+      const groups = /* @__PURE__ */ new Map();
+      for (const event of drawable) {
+        const geometry = markGeometry(event, context);
+        if (!geometry) continue;
+        const emphasis = emphasisOf(event, bounds, settings);
+        const severity = lane === "adverseEvents" ? severityStyle(event, theme, settings) : null;
+        const { fill, stroke } = marksColors(hueKey, emphasis, theme);
+        const thickness = severity ? severity.height : geometry.height;
+        const point = {
+          x: [geometry.x0, geometry.x1],
+          y: lane === "exposure" ? String(event.label ?? "") : event.id,
+          event,
+          glyph: geometry.glyph,
+          endCap: geometry.endCap,
+          emphasis,
+          clippedStart: geometry.clippedStart,
+          height: thickness,
+          serious: Boolean(event.flags?.serious)
+        };
+        if (!groups.has(thickness)) groups.set(thickness, []);
+        groups.get(thickness).push({
+          point,
+          fill,
+          stroke,
+          borderWidth: severity ? severity.borderWidth : 0
+        });
+      }
+      return [...groups.keys()].sort((a, b) => a - b).map((thickness) => barDataset(lane, thickness, groups.get(thickness)));
+    }
+    if (lane === "labs") {
+      const points = drawable.filter((event) => finite4(event.value)).map((event) => {
+        const x = toElapsed(event.day);
+        if (x === null) return null;
+        return {
+          x,
+          y: event.value,
+          event,
+          glyph: glyphFor(event),
+          endCap: "closed",
+          emphasis: emphasisOf(event, bounds, settings),
+          nrind: upper5(event.flags?.abnormal),
+          ratio: ratioLine(event)
+        };
+      }).filter(Boolean).sort((a, b) => a.x - b.x || a.event.sourceIndex - b.event.sourceIndex);
+      if (!points.length) return [];
+      return [
+        {
+          type: "line",
+          label: points[0].event.test || "labs",
+          data: points,
+          borderColor: theme?.lbTrace,
+          borderWidth: PJE_MARKS.lineWidth,
+          pointRadius: 0,
+          pointHitRadius: 0,
+          tension: 0,
+          spanGaps: true,
+          fill: false
+        }
+      ];
+    }
+    if (POINT_LANES.includes(lane)) {
+      const points = drawable.map((event) => {
+        const x = toElapsed(event.day);
+        if (x === null) return null;
+        return {
+          x,
+          y: lane,
+          event,
+          glyph: glyphFor(event),
+          endCap: "closed",
+          emphasis: emphasisOf(event, bounds, settings),
+          reference: lane === "disposition" ? Boolean(event.flags?.reference) : false
+        };
+      }).filter(Boolean).sort((a, b) => a.x - b.x || a.event.sourceIndex - b.event.sourceIndex);
+      if (!points.length) return [];
+      return [
+        {
+          type: "scatter",
+          label: lane,
+          data: points,
+          pointRadius: 0,
+          pointHitRadius: 0,
+          showLine: false
+        }
+      ];
+    }
+    return [];
+  }
+
+  // src/patient-journey-explorer/styles.js
+  var STYLE_ID5 = "safety-viz-patient-journey-styles";
+  var propertyName2 = (key) => `--pje-${key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`;
+  function tokenBlock(mode) {
+    return Object.entries(PJE_PALETTE[mode]).filter(([, value]) => typeof value === "string").map(([key, value]) => `${propertyName2(key)}:${value}`).join(";");
+  }
+  function moduleCss() {
+    const L = PLOT_GUTTER_LEFT2;
+    const R = PLOT_GUTTER_RIGHT2;
+    return `
+.sv-pje-root{${tokenBlock("light")}}
+:root[data-theme=dark] .sv-pje-root{${tokenBlock("dark")}}
+@media (prefers-color-scheme:dark){:root[data-theme=auto] .sv-pje-root{${tokenBlock("dark")}}}
+
+/* --- the lane stack inside the shell's chart card (design \xA76.1) ------------ */
+.sv-root.safety-patient-journey{--sv-rail-width:360px}
+.safety-patient-journey .sv-chart-wrap{height:auto;padding:.75rem .75rem .5rem;background:var(--pje-surface);color:var(--pje-ink-primary)}
+.sv-pje-lanes{position:relative;overflow-y:auto;overflow-x:hidden}
+.sv-pje-note{margin:.5rem 0;font-size:.85rem;color:var(--pje-ink-secondary)}
+.sv-pje-group{margin:0 0 .3rem}
+.sv-pje-group-toggle{display:flex;align-items:center;gap:.4rem;width:100%;border:0;border-bottom:1px solid var(--pje-border);background:transparent;color:var(--pje-ink-secondary);font:inherit;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:.3rem 0 .25rem;margin:0 0 .25rem;cursor:pointer;text-align:left}
+.sv-pje-group-toggle::before{content:"\\25BE";font-size:.7rem}
+.sv-pje-group-toggle[aria-expanded=false]::before{content:"\\25B8"}
+.sv-pje-group-toggle:focus-visible{outline:2px solid var(--pje-focus-ring);outline-offset:1px}
+.sv-pje-group-body[hidden]{display:none}
+.sv-pje-lane{position:relative;box-sizing:border-box;margin:0 0 2px}
+.sv-pje-lane-canvas{position:absolute;inset:0}
+.sv-pje-canvas{display:block;width:100%;height:100%}
+.sv-pje-lane-label{position:absolute;left:0;top:0;bottom:0;width:${L}px;box-sizing:border-box;padding:0 .5rem 0 0;display:flex;flex-direction:column;justify-content:center;font-size:.74rem;line-height:1.2;color:var(--pje-ink-secondary);pointer-events:none;overflow:hidden;z-index:1}
+.sv-pje-lane-label strong{color:var(--pje-ink-primary);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sv-pje-lane-label small{font-size:.68rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sv-pje-lane-empty{position:absolute;left:${L}px;right:${R}px;top:0;bottom:0;display:flex;align-items:center;font-size:.78rem;color:var(--pje-ink-secondary)}
+.sv-pje-lane-foot{margin:.05rem 0 .3rem ${L}px;font-size:.72rem;color:var(--pje-ink-secondary)}
+
+/* --- the keyboard overlay: real buttons over the canvas (design \xA78) -------- */
+.sv-pje-marks{position:absolute;inset:0;pointer-events:none;z-index:2}
+.sv-pje-mark{position:absolute;box-sizing:border-box;margin:0;padding:0;border:0;background:transparent;pointer-events:auto;cursor:pointer;border-radius:3px}
+.sv-pje-mark:focus{outline:none}
+.sv-pje-mark:focus-visible{outline:2px solid var(--pje-focus-ring);outline-offset:2px;box-shadow:0 0 0 2px var(--pje-focus-separator)}
+
+/* --- the one shared axis strip, pinned below the stack (design \xA76.2) ------- */
+.sv-pje-axis{position:relative;margin:.35rem 0 0;padding:0 ${R}px 0 ${L}px;height:2.3rem}
+.sv-pje-axis-title{position:absolute;left:0;top:0;width:${L}px;box-sizing:border-box;padding:.35rem .5rem 0 0;font-size:.7rem;font-weight:600;color:var(--pje-ink-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sv-pje-axis-track{position:relative;height:100%;border-top:1px solid var(--pje-border)}
+.sv-pje-axis-tick{position:absolute;top:0;transform:translateX(-50%);padding-top:.35rem;font-size:.68rem;color:var(--pje-ink-secondary);font-variant-numeric:tabular-nums;white-space:nowrap}
+.sv-pje-axis-tick::before{content:"";position:absolute;left:50%;top:-1px;width:1px;height:4px;background:var(--pje-ink-secondary)}
+.sv-pje-axis-tick.is-anchor{font-weight:700;color:var(--pje-ink-primary)}
+.sv-pje-axis-tick.is-anchor::before{width:2px;background:var(--pje-rule-anchor)}
+
+/* --- the tooltip and the footnote line (design \xA76.5, \xA76.7) ----------------- */
+.sv-pje-tooltip{position:absolute;z-index:5;max-width:320px;padding:.4rem .55rem;border-radius:6px;background:var(--pje-ink-primary);color:var(--pje-surface);font-size:.76rem;line-height:1.35;pointer-events:none;white-space:pre-line;box-shadow:0 4px 14px rgba(31,41,51,.18)}
+.sv-pje-tooltip[hidden]{display:none}
+.sv-pje-footnote-text{margin-right:.5rem}
+.sv-pje-open-source{border:1px solid var(--pje-border);background:var(--pje-surface);color:var(--pje-ink-primary);border-radius:6px;font:inherit;font-size:.75rem;padding:.2rem .5rem;cursor:pointer}
+.sv-pje-open-source:hover{border-color:var(--pje-focus-ring)}
+.sv-pje-open-source:focus-visible{outline:2px solid var(--pje-focus-ring);outline-offset:1px}
+
+/* --- sidebar additions (design \xA77) ---------------------------------------- */
+.sv-pje-subject-list{width:100%;font:inherit;font-size:.82rem;margin-top:.35rem}
+.sv-pje-subject-count{margin:.25rem 0 0;font-size:.72rem;color:var(--pje-ink-secondary)}
+.sv-pje-sidebar-note{margin:.35rem 0 0;font-size:.72rem;color:var(--pje-ink-secondary)}
+.sv-pje-lane-toggle{display:flex;align-items:center;gap:.4rem;font-size:.8rem;font-weight:400;margin:.15rem 0;cursor:pointer}
+.sv-pje-lane-toggle input{width:auto;margin:0;accent-color:var(--pje-focus-ring)}
+.sv-pje-lane-toggle.is-disabled{color:var(--pje-ink-secondary);cursor:default}
+
+/* --- the anchor context panel in the shell rail (design \xA76.6) -------------- */
+.sv-pje-panel{display:flex;flex-direction:column;min-height:0;height:100%;font-size:.82rem;color:var(--pje-ink-primary)}
+.sv-pje-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:.6rem;padding:.55rem .7rem;border-bottom:1px solid var(--pje-border);background:var(--pje-panel);flex:0 0 auto}
+.sv-pje-panel-title{margin:0;font-size:.95rem;font-weight:700}
+.sv-pje-panel-title:focus{outline:none}
+.sv-pje-panel-sub{margin:.1rem 0 0;font-size:.75rem;color:var(--pje-ink-secondary)}
+.sv-pje-panel-actions{display:flex;gap:.35rem;flex:0 0 auto}
+.sv-pje-btn{border:1px solid var(--pje-border);background:var(--pje-surface);color:var(--pje-ink-primary);border-radius:6px;font:inherit;font-size:.75rem;padding:.3rem .5rem;cursor:pointer;white-space:nowrap}
+.sv-pje-btn:hover:not(:disabled){border-color:var(--pje-focus-ring)}
+.sv-pje-btn:focus-visible{outline:2px solid var(--pje-focus-ring);outline-offset:1px}
+.sv-pje-btn:disabled{opacity:.5;cursor:default}
+.sv-pje-panel-body{flex:1 1 auto;min-height:0;overflow-y:auto;padding:.6rem .7rem}
+.sv-pje-section{margin:0 0 .8rem}
+.sv-pje-section h3{margin:0 0 .3rem;font-size:.82rem;font-weight:700}
+.sv-pje-section h4{margin:.45rem 0 .2rem;font-size:.74rem;font-weight:600;color:var(--pje-ink-secondary)}
+.sv-pje-section-note{margin:0 0 .3rem;font-size:.72rem;color:var(--pje-ink-secondary)}
+.sv-pje-honesty{margin:.15rem 0 .3rem;font-size:.74rem;color:var(--pje-warning)}
+.sv-pje-empty{margin:.1rem 0;font-size:.76rem;color:var(--pje-ink-secondary);font-style:italic}
+.sv-pje-items{list-style:none;margin:0;padding:0}
+.sv-pje-item{display:block;width:100%;text-align:left;border:1px solid transparent;background:none;font:inherit;font-size:.78rem;line-height:1.3;padding:.25rem .4rem;border-radius:4px;cursor:pointer;color:var(--pje-ink-primary)}
+.sv-pje-item:hover{background:var(--pje-panel);border-color:var(--pje-border)}
+.sv-pje-item:focus-visible{outline:2px solid var(--pje-focus-ring);outline-offset:-2px}
+.sv-pje-item small{display:block;color:var(--pje-ink-secondary);font-size:.7rem}
+.sv-pje-panel-foot{margin:.5rem 0 0;padding-top:.5rem;border-top:1px solid var(--pje-border);font-size:.74rem;color:var(--pje-ink-secondary)}
+
+/* --- the source-row drawer (design \xA76.7) ---------------------------------- */
+.sv-pje-drawer>summary{cursor:pointer;font-size:.85rem;font-weight:600;padding:.3rem 0}
+.sv-pje-drawer>summary:focus-visible{outline:2px solid var(--pje-focus-ring);outline-offset:1px}
+.sv-pje-drawer-domain{margin:.5rem 0 .9rem}
+.sv-pje-drawer-domain h3{margin:0 0 .3rem;font-size:.8rem}
+.sv-pje-drawer-scroll{overflow-x:auto}
+.sv-pje-drawer table{font-size:.76rem}
+.sv-pje-drawer th{cursor:default}
+.sv-pje-drawer td{white-space:nowrap;max-width:18rem;overflow:hidden;text-overflow:ellipsis}
+.sv-pje-drawer a{color:var(--pje-focus-ring)}
+.sv-pje-drawer tbody tr:focus{outline:2px solid var(--pje-focus-ring);outline-offset:-2px}
+@media (prefers-reduced-motion:no-preference){.sv-pje-drawer tbody tr.is-flashed{background:#fff3c4;transition:background .2s ease}}
+
+/* --- the persistent live region (design \xA78) -------------------------------- */
+.sv-pje-live{position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+`;
+  }
+  function applyPjeStyles() {
+    if (typeof document === "undefined" || document.getElementById(STYLE_ID5)) return;
+    const style = document.createElement("style");
+    style.id = STYLE_ID5;
+    style.textContent = moduleCss();
+    document.head.append(style);
+  }
+
+  // src/patient-journey-explorer/draw.js
+  var HIGH_FLAGS2 = ["HIGH", "HH", "H"];
+  var LOW_FLAGS2 = ["LOW", "LL", "L"];
+  var DIM_FILL = 0.5;
+  var DIM_STROKE = PJE_DEEMPHASIS.strokeAlpha;
+  var CARET_BOX = 12;
+  var FONT = '10px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  var FONT_BOLD = `700 ${FONT}`;
+  var finite5 = (value) => typeof value === "number" && Number.isFinite(value);
+  function clipToArea(ctx, area, slack = 0) {
+    ctx.beginPath();
+    ctx.rect(area.left, area.top - slack, area.right - area.left, area.bottom - area.top + 2 * slack);
+    ctx.clip();
+  }
+  function roundPath(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    if (typeof ctx.roundRect === "function") ctx.roundRect(x, y, w, h, r);
+    else ctx.rect(x, y, w, h);
+  }
+  function trianglePath(ctx, cx, cy, size, up) {
+    const h = size / 2;
+    ctx.beginPath();
+    if (up) {
+      ctx.moveTo(cx, cy - h);
+      ctx.lineTo(cx + h, cy + h);
+      ctx.lineTo(cx - h, cy + h);
+    } else {
+      ctx.moveTo(cx, cy + h);
+      ctx.lineTo(cx + h, cy - h);
+      ctx.lineTo(cx - h, cy - h);
+    }
+    ctx.closePath();
+  }
+  function fadeMask(ctx, x, top, length, height, surface, toward) {
+    if (length <= 0) return;
+    const gradient = ctx.createLinearGradient(x, 0, x + length, 0);
+    gradient.addColorStop(0, withAlpha2(surface, toward === "right" ? 0 : 1));
+    gradient.addColorStop(1, withAlpha2(surface, toward === "right" ? 1 : 0));
+    ctx.fillStyle = gradient;
+    ctx.fillRect(x, top - 1, length, height + 2);
+  }
+  function arrowCap(ctx, left, top, width, height, fill, surface) {
+    const right = left + width;
+    const head = Math.min(12, Math.max(4, width / 2));
+    fadeMask(ctx, right - head - 16, top, 16, height, surface, "right");
+    ctx.fillStyle = surface;
+    ctx.fillRect(right - head - 1, top - 2, head + 2, height + 4);
+    ctx.fillStyle = fill;
+    ctx.beginPath();
+    ctx.moveTo(right - head, top - 2);
+    ctx.lineTo(right, top + height / 2);
+    ctx.lineTo(right - head, top + height + 2);
+    ctx.closePath();
+    ctx.fill();
+  }
+  function fadeCap(ctx, left, top, width, height, fill, surface) {
+    const right = left + width;
+    const length = Math.min(26, width * 0.6);
+    fadeMask(ctx, right - length, top, length, height, surface, "right");
+    const r = Math.max(1.2, Math.min(2, height / 4));
+    ctx.fillStyle = fill;
+    for (const dx of [16, 10, 4]) {
+      if (dx > width) continue;
+      ctx.beginPath();
+      ctx.arc(right - dx, top + height / 2, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  function hatch(ctx, left, top, width, height, surface) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(left, top, width, height);
+    ctx.clip();
+    ctx.strokeStyle = surface;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    for (let x = left - height; x < left + width + height; x += 4) {
+      ctx.moveTo(x, top + height);
+      ctx.lineTo(x + height, top);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+  function startDot(ctx, cx, cy, height, color2, surface, filled) {
+    const r = Math.max(2.5, height / 2 + 1);
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fillStyle = filled ? color2 : surface;
+    ctx.fill();
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = color2;
+    ctx.stroke();
+  }
+  function seriousRing(ctx, left, top, width, height, escalate, surface) {
+    ctx.lineWidth = PJE_MARKS.escalateRingWidth;
+    ctx.strokeStyle = surface;
+    roundPath(ctx, left - 1, top - 1, width + 2, height + 2, 3);
+    ctx.stroke();
+    ctx.strokeStyle = escalate;
+    roundPath(ctx, left - 3, top - 3, width + 6, height + 6, 5);
+    ctx.stroke();
+  }
+  function labGlyph(ctx, cx, cy, size, glyph, color2, surface, escalate) {
+    ctx.lineWidth = 1.5;
+    ctx.fillStyle = color2;
+    ctx.strokeStyle = color2;
+    switch (glyph) {
+      case "triangle-up":
+        trianglePath(ctx, cx, cy, size, true);
+        ctx.fill();
+        break;
+      case "triangle-down":
+        trianglePath(ctx, cx, cy, size, false);
+        ctx.fill();
+        break;
+      case "triangle-up-double":
+      case "triangle-down-double": {
+        const up = glyph === "triangle-up-double";
+        const small = size * 0.62;
+        trianglePath(ctx, cx, cy - size * 0.28, small, up);
+        ctx.fill();
+        trianglePath(ctx, cx, cy + size * 0.28, small, up);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(cx, cy, size * 0.85, 0, Math.PI * 2);
+        ctx.lineWidth = PJE_MARKS.escalateRingWidth;
+        ctx.strokeStyle = escalate;
+        ctx.stroke();
+        break;
+      }
+      case "circle-open":
+        ctx.beginPath();
+        ctx.arc(cx, cy, size / 2 - 0.75, 0, Math.PI * 2);
+        ctx.fillStyle = surface;
+        ctx.fill();
+        ctx.stroke();
+        break;
+      default:
+        ctx.beginPath();
+        ctx.arc(cx, cy, Math.max(1.5, size / 2 - 1.5), 0, Math.PI * 2);
+        ctx.fill();
+    }
+  }
+  function caret(ctx, cx, cy, glyph, color2) {
+    ctx.fillStyle = color2;
+    switch (glyph) {
+      case "caret-down":
+        trianglePath(ctx, cx, cy, 10, false);
+        ctx.fill();
+        break;
+      case "caret-pause":
+        ctx.fillRect(cx - 4.5, cy - 5, 3, 10);
+        ctx.fillRect(cx + 1.5, cy - 5, 3, 10);
+        break;
+      case "caret-restart":
+        ctx.beginPath();
+        ctx.moveTo(cx - 4, cy - 5);
+        ctx.lineTo(cx + 5, cy);
+        ctx.lineTo(cx - 4, cy + 5);
+        ctx.closePath();
+        ctx.fill();
+        break;
+      default:
+        trianglePath(ctx, cx, cy, 10, true);
+        ctx.fill();
+    }
+  }
+  function bandRuns(band) {
+    const runs = [];
+    for (const entry of [...band].sort((a, b) => a.day - b.day)) {
+      const last = runs[runs.length - 1];
+      if (last && last.lln === entry.lln && last.uln === entry.uln) continue;
+      runs.push({ day: entry.day, lln: entry.lln, uln: entry.uln });
+    }
+    return runs;
+  }
+  function truncate2(ctx, text3, width) {
+    if (ctx.measureText(text3).width <= width) return text3;
+    let out = text3;
+    while (out.length > 1 && ctx.measureText(`${out}\u2026`).width > width) out = out.slice(0, -1);
+    return `${out}\u2026`;
+  }
+  function lanePlugin(context) {
+    const {
+      laneKey,
+      test = null,
+      theme,
+      bounds = null,
+      anchor = null,
+      anchoredHere = false,
+      referenceDays = [],
+      doseChangeDays = [],
+      band = null
+    } = context;
+    const surface = theme.surface;
+    return {
+      id: "pjeLane",
+      beforeDatasetsDraw(chart) {
+        const { ctx, chartArea: area, scales } = chart;
+        const x = scales && scales.x;
+        const rules = [];
+        chart.$pjeBand = [];
+        chart.$pjeWindow = null;
+        if (!area || !x) {
+          chart.$pjeRules = rules;
+          return;
+        }
+        const height = area.bottom - area.top;
+        ctx.save();
+        clipToArea(ctx, area);
+        if (bounds && finite5(bounds.elapsedStart) && finite5(bounds.elapsedEnd)) {
+          const x0 = Math.max(area.left, x.getPixelForValue(bounds.elapsedStart));
+          const x1 = Math.min(area.right, x.getPixelForValue(bounds.elapsedEnd + 1));
+          if (x1 > x0) {
+            ctx.fillStyle = theme.windowFill;
+            ctx.fillRect(x0, area.top, x1 - x0, height);
+            ctx.strokeStyle = theme.windowEdge;
+            ctx.lineWidth = 1;
+            ctx.setLineDash([3, 3]);
+            for (const edge of [x0, x1]) {
+              ctx.beginPath();
+              ctx.moveTo(Math.round(edge) + 0.5, area.top);
+              ctx.lineTo(Math.round(edge) + 0.5, area.bottom);
+              ctx.stroke();
+            }
+            ctx.setLineDash([]);
+            if (anchoredHere && anchor && x1 - x0 >= 90) {
+              const days = bounds.elapsedEnd - (toElapsed(anchor.day) ?? bounds.elapsedEnd);
+              ctx.font = FONT;
+              ctx.fillStyle = theme.inkSecondary;
+              ctx.textBaseline = "bottom";
+              ctx.textAlign = "left";
+              ctx.fillText(`\u2212${days} d`, x0 + 3, area.bottom - 1);
+              ctx.textAlign = "right";
+              ctx.fillText(`+${days} d`, x1 - 3, area.bottom - 1);
+            }
+          }
+          chart.$pjeWindow = {
+            elapsedStart: bounds.elapsedStart,
+            elapsedEnd: bounds.elapsedEnd,
+            x: x0,
+            width: Math.max(0, x1 - x0)
+          };
+        }
+        if (laneKey === "labs" && Array.isArray(band) && band.length && scales.y) {
+          const runs = bandRuns(band);
+          const drawn = [];
+          runs.forEach((run, index) => {
+            const from2 = index === 0 ? area.left : x.getPixelForValue(toElapsed(run.day));
+            const to2 = index === runs.length - 1 ? area.right : x.getPixelForValue(toElapsed(runs[index + 1].day));
+            const yTop = scales.y.getPixelForValue(run.uln);
+            const yBottom = scales.y.getPixelForValue(run.lln);
+            const top = Math.min(yTop, yBottom);
+            const h = Math.abs(yBottom - yTop);
+            ctx.fillStyle = theme.labBand;
+            ctx.fillRect(from2, top, to2 - from2, h);
+            drawn.push({
+              test,
+              x: from2,
+              y: top,
+              width: to2 - from2,
+              height: h,
+              lln: run.lln,
+              uln: run.uln
+            });
+          });
+          const last = drawn[drawn.length - 1];
+          if (last && last.height >= 14) {
+            ctx.font = FONT;
+            ctx.fillStyle = theme.inkSecondary;
+            ctx.textAlign = "right";
+            ctx.textBaseline = "top";
+            ctx.fillText(`ULN ${last.uln}`, area.right - 3, last.y + 1);
+            ctx.textBaseline = "bottom";
+            ctx.fillText(`LLN ${last.lln}`, area.right - 3, last.y + last.height - 1);
+          }
+          chart.$pjeBand = drawn;
+        }
+        const rule = (elapsed, glyph, color2, width, dash) => {
+          if (!finite5(elapsed) || elapsed < x.min || elapsed > x.max) return;
+          const px = Math.round(x.getPixelForValue(elapsed)) + (width % 2 ? 0.5 : 0);
+          ctx.strokeStyle = color2;
+          ctx.lineWidth = width;
+          ctx.setLineDash(dash);
+          ctx.beginPath();
+          ctx.moveTo(px, area.top);
+          ctx.lineTo(px, area.bottom);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          rules.push({
+            id: glyph,
+            lane: laneKey,
+            test,
+            kind: "rule",
+            glyph,
+            emphasis: "full",
+            endCap: "closed",
+            x: px - width / 2,
+            y: area.top,
+            width,
+            height,
+            event: null
+          });
+        };
+        rule(0, "rule-day1", theme.ruleDay1, 1, []);
+        for (const day2 of referenceDays)
+          rule(day2, "rule-disposition", theme.ruleDisposition, 2, [6, 4]);
+        ctx.restore();
+        chart.$pjeRules = rules;
+      },
+      afterDatasetsDraw(chart) {
+        const { ctx, chartArea: area, scales } = chart;
+        const x = scales && scales.x;
+        const marks = [...chart.$pjeRules || []];
+        if (!area || !x) {
+          chart.$pjeMarks = marks;
+          return;
+        }
+        ctx.save();
+        clipToArea(ctx, area, 4);
+        const dispositionLabels = /* @__PURE__ */ new Map();
+        if (laneKey === "disposition") {
+          chart.data.datasets.forEach((dataset, datasetIndex) => {
+            const meta = chart.getDatasetMeta(datasetIndex);
+            if (!meta || meta.hidden) return;
+            dataset.data.forEach((point, i) => {
+              const el = meta.data[i];
+              const label = point && point.event && point.event.label;
+              if (!el || !label || point.emphasis === "dim") return;
+              const px = el.getProps(["x"], true).x;
+              if (!finite5(px)) return;
+              const key = Math.round(px);
+              const group = dispositionLabels.get(key) || { first: point, labels: [] };
+              group.labels.push(String(label));
+              dispositionLabels.set(key, group);
+            });
+          });
+        }
+        chart.data.datasets.forEach((dataset, datasetIndex) => {
+          const meta = chart.getDatasetMeta(datasetIndex);
+          if (!meta || meta.hidden) return;
+          dataset.data.forEach((point, i) => {
+            const el = meta.data[i];
+            const event = point && point.event;
+            if (!el || !event) return;
+            const dim = point.emphasis === "dim";
+            if (dataset.type === "bar") {
+              const p2 = el.getProps(["x", "y", "base", "height"], true);
+              const left = Math.min(p2.x, p2.base);
+              const width = Math.max(Math.abs(p2.x - p2.base), MIN_BAR_WIDTH);
+              const barHeight = p2.height;
+              const top = p2.y - barHeight / 2;
+              const fill = Array.isArray(dataset.backgroundColor) ? dataset.backgroundColor[i] : dataset.backgroundColor;
+              const stroke = Array.isArray(dataset.borderColor) ? dataset.borderColor[i] : dataset.borderColor;
+              if (point.clippedStart)
+                fadeMask(ctx, left, top, Math.min(18, width), barHeight, surface, "left");
+              if (point.endCap === "arrow") arrowCap(ctx, left, top, width, barHeight, fill, surface);
+              else if (point.endCap === "fade")
+                fadeCap(ctx, left, top, width, barHeight, fill, surface);
+              if (point.glyph === "hatch-bar") hatch(ctx, left, top, width, barHeight, surface);
+              if (laneKey === "exposure") {
+                for (const day2 of doseChangeDays) {
+                  const px = x.getPixelForValue(day2);
+                  if (px < left - 1 || px > left + width + 1) continue;
+                  ctx.fillStyle = theme.doseNotch;
+                  ctx.fillRect(px - 1, top - 1, 2, barHeight + 2);
+                }
+              }
+              if (laneKey === "adverseEvents") {
+                startDot(ctx, left, p2.y, barHeight, stroke, surface, Boolean(point.serious));
+                if (point.serious) {
+                  seriousRing(
+                    ctx,
+                    left,
+                    top,
+                    width,
+                    barHeight,
+                    dim ? withAlpha2(theme.escalate, DIM_STROKE) : theme.escalate,
+                    surface
+                  );
+                }
+              }
+              marks.push({
+                id: event.id,
+                lane: laneKey,
+                test: null,
+                kind: event.kind,
+                glyph: point.glyph,
+                emphasis: point.emphasis,
+                endCap: point.endCap,
+                x: left,
+                y: top,
+                width,
+                height: barHeight,
+                event
+              });
+              return;
+            }
+            const p = el.getProps(["x", "y"], true);
+            if (!finite5(p.x) || !finite5(p.y)) return;
+            if (laneKey === "labs") {
+              const size = /double$/.test(point.glyph) ? PJE_MARKS.labGlyphSizeExtreme : PJE_MARKS.labGlyphSize;
+              const base = HIGH_FLAGS2.includes(point.nrind) ? theme.labHigh : LOW_FLAGS2.includes(point.nrind) ? theme.labLow : theme.lbTrace;
+              labGlyph(
+                ctx,
+                p.x,
+                p.y,
+                size,
+                point.glyph,
+                dim ? withAlpha2(base, DIM_FILL) : base,
+                surface,
+                dim ? withAlpha2(theme.escalate, DIM_STROKE) : theme.escalate
+              );
+              marks.push({
+                id: event.id,
+                lane: laneKey,
+                test,
+                kind: "point",
+                glyph: point.glyph,
+                emphasis: point.emphasis,
+                endCap: "closed",
+                x: p.x - size / 2,
+                y: p.y - size / 2,
+                width: size,
+                height: size,
+                event
+              });
+              return;
+            }
+            if (laneKey === "doseChanges") {
+              caret(
+                ctx,
+                p.x,
+                p.y,
+                point.glyph,
+                dim ? withAlpha2(theme.doseCaret, DIM_FILL) : theme.doseCaret
+              );
+            } else if (laneKey === "medicalHistory") {
+              ctx.beginPath();
+              ctx.arc(p.x, p.y, PJE_MARKS.mhDotRadius, 0, Math.PI * 2);
+              ctx.fillStyle = surface;
+              ctx.fill();
+              ctx.lineWidth = 1.5;
+              ctx.strokeStyle = dim ? withAlpha2(theme.mh, DIM_STROKE) : theme.mh;
+              ctx.stroke();
+            } else {
+              ctx.beginPath();
+              ctx.arc(p.x, p.y, PJE_MARKS.mhDotRadius, 0, Math.PI * 2);
+              ctx.fillStyle = dim ? withAlpha2(theme.ds, DIM_FILL) : theme.ds;
+              ctx.fill();
+              const group = dispositionLabels.get(Math.round(p.x));
+              if (!dim && group && group.first === point) {
+                const text3 = group.labels.join(" \xB7 ");
+                ctx.font = FONT;
+                ctx.fillStyle = theme.inkSecondary;
+                ctx.textBaseline = "middle";
+                const room = area.right - p.x - 8;
+                if (room > 40) {
+                  ctx.textAlign = "left";
+                  ctx.fillText(truncate2(ctx, text3, room), p.x + 7, p.y);
+                } else {
+                  ctx.textAlign = "right";
+                  ctx.fillText(truncate2(ctx, text3, p.x - area.left - 8), p.x - 7, p.y);
+                }
+              }
+            }
+            marks.push({
+              id: event.id,
+              lane: laneKey,
+              test: null,
+              kind: event.kind,
+              glyph: point.glyph,
+              emphasis: point.emphasis,
+              endCap: "closed",
+              x: p.x - CARET_BOX / 2,
+              y: p.y - CARET_BOX / 2,
+              width: CARET_BOX,
+              height: CARET_BOX,
+              event
+            });
+          });
+        });
+        const anchorElapsed = anchor ? toElapsed(anchor.day) : null;
+        if (anchor && finite5(anchorElapsed) && anchorElapsed >= x.min && anchorElapsed <= x.max) {
+          const px = Math.round(x.getPixelForValue(anchorElapsed));
+          ctx.strokeStyle = theme.ruleAnchor;
+          ctx.lineWidth = 2;
+          ctx.setLineDash([]);
+          ctx.beginPath();
+          ctx.moveTo(px, area.top - 4);
+          ctx.lineTo(px, area.bottom + 4);
+          ctx.stroke();
+          marks.push({
+            id: "rule-anchor",
+            lane: laneKey,
+            test,
+            kind: "rule",
+            glyph: "rule-anchor",
+            emphasis: "full",
+            endCap: "closed",
+            x: px - 1,
+            y: area.top,
+            width: 2,
+            height: area.bottom - area.top,
+            event: null
+          });
+          if (anchoredHere) {
+            const own = marks.find((mark) => mark.event && mark.event.id === anchor.id);
+            ctx.font = FONT_BOLD;
+            const text3 = `Anchor \xB7 ${anchor.label}`;
+            const w = Math.min(ctx.measureText(text3).width + 10, area.right - area.left - 8);
+            const h = 14;
+            let py = own ? own.y - h - 3 : area.top + 2;
+            if (py < area.top) py = own ? own.y + own.height + 3 : area.top + 2;
+            if (py + h > area.bottom) py = Math.max(area.top, area.bottom - h);
+            let ax = px + 4;
+            if (ax + w > area.right) ax = Math.max(area.left, px - 4 - w);
+            ctx.strokeStyle = surface;
+            ctx.lineWidth = 3;
+            roundPath(ctx, ax, py, w, h, 3);
+            ctx.stroke();
+            ctx.fillStyle = theme.ruleAnchor;
+            roundPath(ctx, ax, py, w, h, 3);
+            ctx.fill();
+            ctx.fillStyle = surface;
+            ctx.textAlign = "left";
+            ctx.textBaseline = "middle";
+            ctx.fillText(truncate2(ctx, text3, w - 10), ax + 5, py + h / 2 + 0.5);
+          }
+        }
+        ctx.restore();
+        chart.$pjeMarks = marks;
+      }
+    };
+  }
+
+  // src/patient-journey-explorer/lanes.js
+  var LANE_REGISTRY = {
+    exposure: {
+      key: "exposure",
+      domain: "EX",
+      markKind: "bar",
+      single: false,
+      noun: "treatment",
+      domainWord: "exposure",
+      empty: "No exposure records for this participant."
+    },
+    doseChanges: {
+      key: "doseChanges",
+      domain: "EX",
+      markKind: "point",
+      single: true,
+      noun: "dose change",
+      domainWord: "exposure",
+      empty: "No dose changes derived for this participant."
+    },
+    adverseEvents: {
+      key: "adverseEvents",
+      domain: "AE",
+      markKind: "bar",
+      single: false,
+      noun: "event",
+      domainWord: "adverse-event",
+      empty: "No adverse events recorded for this participant."
+    },
+    labs: {
+      key: "labs",
+      domain: "LB",
+      markKind: "point",
+      single: false,
+      noun: "test",
+      domainWord: "lab",
+      empty: "No laboratory records for this participant."
+    },
+    conMeds: {
+      key: "conMeds",
+      domain: "CM",
+      markKind: "bar",
+      single: false,
+      noun: "con-med",
+      domainWord: "con-med",
+      empty: "No con-meds recorded for this participant."
+    },
+    medicalHistory: {
+      key: "medicalHistory",
+      domain: "MH",
+      markKind: "point",
+      single: true,
+      noun: "record",
+      domainWord: "medical-history",
+      empty: "No medical history recorded for this participant."
+    },
+    disposition: {
+      key: "disposition",
+      domain: "DS",
+      markKind: "rule",
+      single: true,
+      noun: "record",
+      domainWord: "disposition",
+      empty: "No disposition records for this participant."
+    }
+  };
+  var BAR_LANES2 = ["exposure", "adverseEvents", "conMeds"];
+  var GROUP_HEADER_PX = 30;
+  var LANE_GAP_PX = 2;
+  var FOOTER_PX = 18;
+  var SINGLE_ROW_FACTOR = 1.5;
+  var FILTERED_EMPTY = "No records match the current filters.";
+  function laneFooters(info, registry2) {
+    const footers = [];
+    if (info.truncated > 0) {
+      footers.push(
+        `${info.truncated} more ${registry2.noun}${info.truncated === 1 ? "" : "s"} not drawn, ${info.sortRule} \u2014 see Source records.`
+      );
+    }
+    if (info.unplaceable.length) {
+      const labels = [...new Set(info.unplaceable.map((event) => String(event.label ?? "")))];
+      footers.push(`No start day recorded, so not on the timeline: ${labels.join(", ")}.`);
+    }
+    return footers;
+  }
+  function emptyText(laneKey, structured, registry2) {
+    const has = structured.allEvents.some((event) => event.lane === laneKey);
+    if (!has) return registry2.empty;
+    const postFilter = (structured.byLane[laneKey] || []).length > 0;
+    return postFilter ? registry2.empty : FILTERED_EMPTY;
+  }
+  function planLanes(structured, settings, state) {
+    const enabled = (key) => typeof state?.lanes?.[key] === "boolean" ? state.lanes[key] : Boolean(settings.lanes[key]?.enabled);
+    const groups = [];
+    for (const group of settings.lane_groups) {
+      const keys = LANE_KEYS.filter(
+        (key) => settings.lanes[key]?.group === group.key && enabled(key)
+      );
+      if (!keys.length) continue;
+      const lanes = [];
+      for (const key of keys) {
+        const registry2 = LANE_REGISTRY[key];
+        const info = structured.lanes[key];
+        const label = settings.lanes[key]?.label || key;
+        if (!info || !info.supplied) {
+          lanes.push({
+            key,
+            label,
+            kind: "absent",
+            chartKey: null,
+            emptyText: `No ${registry2.domainWord} records were supplied.`,
+            footers: []
+          });
+          continue;
+        }
+        if (key === "labs") {
+          const drawnTests = info.rows;
+          const series = structured.labSeries.filter((entry) => drawnTests.includes(entry.test));
+          const footers2 = laneFooters(info, registry2);
+          if (structured.labTestsMissing.length) {
+            footers2.unshift(`No records for: ${structured.labTestsMissing.join(", ")}.`);
+          }
+          if (!series.length) {
+            lanes.push({
+              key,
+              label,
+              kind: "empty",
+              chartKey: null,
+              emptyText: emptyText(key, structured, registry2),
+              footers: footers2
+            });
+            continue;
+          }
+          series.forEach((entry, index) => {
+            lanes.push({
+              key,
+              label,
+              kind: "chart",
+              chartKey: `labs:${entry.test}`,
+              test: entry.test,
+              sublabel: entry.unit ? `${entry.test} (${entry.unit})` : entry.test,
+              series: entry,
+              rows: null,
+              events: entry.points.map((point) => point.event),
+              footers: index === series.length - 1 ? footers2 : []
+            });
+          });
+          continue;
+        }
+        const footers = laneFooters(info, registry2);
+        if (!info.drawn.length) {
+          lanes.push({
+            key,
+            label,
+            kind: "empty",
+            chartKey: null,
+            emptyText: emptyText(key, structured, registry2),
+            footers
+          });
+          continue;
+        }
+        lanes.push({
+          key,
+          label,
+          kind: "chart",
+          chartKey: key,
+          rows: registry2.single ? [key] : info.rows,
+          events: info.drawn,
+          footers
+        });
+      }
+      groups.push({
+        key: group.key,
+        label: group.label,
+        collapsed: Boolean(state?.groups?.[group.key] ?? group.collapsed),
+        lanes
+      });
+    }
+    return groups;
+  }
+  function laneHeightPx(lane, rowHeight, labHeight) {
+    if (lane.kind !== "chart") return Math.round(rowHeight * SINGLE_ROW_FACTOR);
+    if (lane.key === "labs") return labHeight;
+    if (LANE_REGISTRY[lane.key].single) return Math.round(rowHeight * SINGLE_ROW_FACTOR);
+    return lane.rows.length * rowHeight;
+  }
+  function stackHeight(groups, rowHeight, labHeight) {
+    let total = 0;
+    for (const group of groups) {
+      total += GROUP_HEADER_PX;
+      for (const lane of group.lanes) {
+        total += laneHeightPx(lane, rowHeight, labHeight) + LANE_GAP_PX + lane.footers.length * FOOTER_PX;
+      }
+    }
+    return total;
+  }
+  function fitHeights(groups, settings) {
+    const natural = stackHeight(groups, settings.row_height, settings.lab_height);
+    if (!settings.fit_to_height || natural <= settings.height) {
+      return {
+        rowHeight: settings.row_height,
+        labHeight: settings.lab_height,
+        natural,
+        planned: natural
+      };
+    }
+    const fixed = stackHeight(groups, 0, 0);
+    const variable = natural - fixed;
+    const factor = variable > 0 ? Math.max(0, (settings.height - fixed) / variable) : 1;
+    const rowHeight = Math.max(settings.row_height_min, Math.floor(settings.row_height * factor));
+    const labHeight = Math.max(settings.lab_height_min, Math.floor(settings.lab_height * factor));
+    return { rowHeight, labHeight, natural, planned: stackHeight(groups, rowHeight, labHeight) };
+  }
+  function flagCheckbox({ spec, checked, label, focusKey, onChange }) {
+    const wrap = createElement("label", "sv-control-inline");
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.checked = Boolean(checked);
+    input.dataset.filter = spec.value_col;
+    if (focusKey) input.setAttribute("data-sv-focus", focusKey);
+    input.onchange = () => onChange(input.checked);
+    wrap.append(input, document.createTextNode(label || spec.label));
+    return wrap;
+  }
+  function laneDatasets(laneKey, events, context) {
+    const datasets = buildLaneDatasets(laneKey, events, context);
+    if (!BAR_LANES2.includes(laneKey)) return datasets;
+    for (const dataset of datasets) {
+      for (const point of dataset.data) {
+        const event = point.event;
+        if (event && event.kind === "interval" && event.endState === "closed" && Number.isFinite(event.end) && Array.isArray(point.x)) {
+          point.x = [point.x[0], point.x[1] + 1];
+        }
+      }
+    }
+    return datasets;
+  }
+  function buildLaneChart({
+    canvas,
+    lane,
+    structured,
+    settings,
+    theme,
+    bounds = null,
+    anchor = null,
+    referenceDays = [],
+    doseChangeDays = []
+  }) {
+    const laneKey = lane.key;
+    const domain = structured.domain;
+    const datasets = laneDatasets(laneKey, lane.events, { domain, settings, theme, bounds });
+    const scales = buildScales8({
+      lane: laneKey,
+      domain,
+      rows: lane.rows,
+      valueDomain: lane.series ? lane.series.valueDomain : null
+    });
+    const isBar = BAR_LANES2.includes(laneKey);
+    const type = isBar ? "bar" : laneKey === "labs" ? "line" : "scatter";
+    const anchoredHere = Boolean(anchor && lane.events.some((event) => event.id === anchor.id));
+    return new Chart(canvas, {
+      type,
+      data: { datasets },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        events: [],
+        indexAxis: isBar ? "y" : "x",
+        layout: laneLayout(),
+        scales,
+        plugins: { legend: { display: false }, tooltip: { enabled: false } }
+      },
+      plugins: [
+        lanePlugin({
+          laneKey,
+          test: lane.test ?? null,
+          theme,
+          bounds,
+          anchor: anchor ? { id: anchor.id, day: anchor.day, label: anchor.label } : null,
+          anchoredHere,
+          referenceDays,
+          doseChangeDays: laneKey === "exposure" ? doseChangeDays : [],
+          band: lane.series ? lane.series.band : null
+        })
+      ]
+    });
+  }
+
+  // src/patient-journey-explorer/keyboard.js
+  var MIN_HIT_PX = 24;
+  var MARK = ".sv-pje-mark";
+  function createLiveRegion() {
+    const live = createElement("div", "sv-pje-live");
+    live.setAttribute("aria-live", "polite");
+    live.setAttribute("aria-atomic", "true");
+    return live;
+  }
+  function chronological(a, b) {
+    const da = Number.isFinite(a.event.day) ? a.event.day : Infinity;
+    const db = Number.isFinite(b.event.day) ? b.event.day : Infinity;
+    return da - db || (a.event.sourceIndex ?? 0) - (b.event.sourceIndex ?? 0);
+  }
+  var MarkOverlay = class {
+    /**
+     * @param {Object} handlers The orchestrator's callbacks.
+     * @param {(event: Object) => string} handlers.describe The accessible name of a mark.
+     * @param {(eventId: string) => boolean} handlers.isAnchored Whether an event is the current anchor.
+     * @param {(eventId: string, button: HTMLButtonElement) => void} handlers.onActivate Click / Enter / Space on a mark.
+     * @param {(eventId: string) => void} handlers.onJump Shift+Enter on a mark.
+     * @param {(event: Object, button: HTMLButtonElement, via: 'hover'|'focus') => void} handlers.onEnter Pointer enters or focus lands on a mark.
+     * @param {(via: 'hover'|'focus') => void} handlers.onLeave Pointer leaves or focus leaves a mark.
+     */
+    constructor(handlers) {
+      this.handlers = handlers;
+      this.entries = [];
+      this.activeByLane = /* @__PURE__ */ new Map();
+      this.stack = null;
+      this.keydownHandler = (event) => this.handleKeydown(event);
+      this.focusinHandler = (event) => {
+        const button = event.target && event.target.closest ? event.target.closest(MARK) : null;
+        if (button) this.setActive(button);
+      };
+    }
+    /**
+     * Install the delegated key and focus handlers on the lane stack.
+     * @param {HTMLElement} stack The `.sv-pje-lanes` element.
+     * @returns {void}
+     */
+    attach(stack) {
+      this.stack = stack;
+      stack.addEventListener("keydown", this.keydownHandler);
+      stack.addEventListener("focusin", this.focusinHandler);
+    }
+    /**
+     * Remove the handlers installed by attach.
+     * @returns {void}
+     */
+    detach() {
+      if (!this.stack) return;
+      this.stack.removeEventListener("keydown", this.keydownHandler);
+      this.stack.removeEventListener("focusin", this.focusinHandler);
+      this.stack = null;
+    }
+    /**
+     * Rebuild every lane's buttons from its chart's `$pjeMarks` (called after
+     * every render and every resize). Reference rules carry no event and get no
+     * button. The lane's active mark (its one tab stop) is remembered across
+     * rebuilds so a keyboard user returns to where they were.
+     * @param {Array<{chartKey: string, laneKey: string, label: string, laneEl: HTMLElement, overlayEl: HTMLElement, chart: Object}>} entries The live lanes, in stack order.
+     * @returns {void}
+     */
+    sync(entries2) {
+      this.entries = entries2;
+      for (const entry of entries2) {
+        const { overlayEl, chart, chartKey, label } = entry;
+        overlayEl.setAttribute("role", "group");
+        overlayEl.setAttribute("aria-label", `${label} marks`);
+        const marks = [];
+        const seen = /* @__PURE__ */ new Set();
+        for (const mark of (chart && chart.$pjeMarks || []).filter((mark2) => mark2.event).sort(chronological)) {
+          if (seen.has(mark.event.id)) continue;
+          seen.add(mark.event.id);
+          marks.push(mark);
+        }
+        const existing = this.buttons(overlayEl);
+        const sameSet = existing.length === marks.length && existing.every((button, index) => button.dataset.eventId === marks[index].event.id);
+        let buttons;
+        if (sameSet) {
+          buttons = existing;
+          marks.forEach((mark, index) => this.placeButton(existing[index], mark));
+        } else {
+          overlayEl.innerHTML = "";
+          buttons = marks.map((mark) => this.buildButton(mark));
+          overlayEl.append(...buttons);
+        }
+        const wanted = this.activeByLane.get(chartKey);
+        const active = buttons.find((button) => button.dataset.eventId === wanted) || buttons[0];
+        buttons.forEach((button) => button.setAttribute("tabindex", button === active ? "0" : "-1"));
+        if (active) this.activeByLane.set(chartKey, active.dataset.eventId);
+      }
+    }
+    /**
+     * Position a mark button over its painted mark with at least a MIN_HIT_PX
+     * square hit box around the same centre, and refresh the attributes that
+     * depend on the render (glyph, emphasis, accessible name, pressed state).
+     * @private
+     */
+    placeButton(button, mark) {
+      const { event } = mark;
+      button.dataset.day = Number.isFinite(event.day) ? String(event.day) : "";
+      button.dataset.glyph = mark.glyph;
+      button.dataset.emphasis = mark.emphasis;
+      button.setAttribute("aria-label", this.handlers.describe(event));
+      button.setAttribute("aria-pressed", String(Boolean(this.handlers.isAnchored(event.id))));
+      const width = Math.max(mark.width, MIN_HIT_PX);
+      const height = Math.max(mark.height, MIN_HIT_PX);
+      const left = mark.x + mark.width / 2 - width / 2;
+      const top = mark.y + mark.height / 2 - height / 2;
+      button.style.left = `${Math.round(left)}px`;
+      button.style.top = `${Math.round(top)}px`;
+      button.style.width = `${Math.round(width)}px`;
+      button.style.height = `${Math.round(height)}px`;
+    }
+    /**
+     * One mark button: the hit target, the focus target and the accessible
+     * name of a painted mark.
+     * @private
+     */
+    buildButton(mark) {
+      const { event } = mark;
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "sv-pje-mark";
+      button.dataset.eventId = event.id;
+      button.setAttribute("data-sv-focus", `mark-${event.id}`);
+      this.placeButton(button, mark);
+      button.addEventListener("click", () => this.handlers.onActivate(event.id, button));
+      button.addEventListener("mouseenter", () => this.handlers.onEnter(event, button, "hover"));
+      button.addEventListener("mouseleave", () => this.handlers.onLeave("hover"));
+      button.addEventListener("focus", () => this.handlers.onEnter(event, button, "focus"));
+      button.addEventListener("blur", () => this.handlers.onLeave("focus"));
+      return button;
+    }
+    /**
+     * The buttons of one overlay, in chronological (DOM) order.
+     * @private
+     */
+    buttons(overlayEl) {
+      return [...overlayEl.querySelectorAll(MARK)];
+    }
+    /**
+     * The entry a button belongs to.
+     * @private
+     */
+    entryOf(button) {
+      return this.entries.find((entry) => entry.overlayEl.contains(button)) || null;
+    }
+    /**
+     * Make a button its lane's tab stop.
+     * @private
+     */
+    setActive(button) {
+      const entry = this.entryOf(button);
+      if (!entry) return;
+      for (const other of this.buttons(entry.overlayEl)) {
+        other.setAttribute("tabindex", other === button ? "0" : "-1");
+      }
+      this.activeByLane.set(entry.chartKey, button.dataset.eventId);
+    }
+    /**
+     * The entries whose lane is visible (enabled, and inside an expanded group)
+     * and carries at least one mark.
+     * @private
+     */
+    visibleEntries() {
+      return this.entries.filter(
+        (entry) => !entry.laneEl.closest("[hidden]") && this.buttons(entry.overlayEl).length > 0
+      );
+    }
+    /**
+     * The mark in the adjacent visible lane whose day is closest to a day.
+     * @private
+     */
+    nearestInAdjacentLane(entry, day2, direction) {
+      const visible = this.visibleEntries();
+      let index = visible.indexOf(entry) + direction;
+      while (index >= 0 && index < visible.length) {
+        const candidates = this.buttons(visible[index].overlayEl);
+        if (candidates.length) {
+          let best = candidates[0];
+          let bestDistance = Infinity;
+          for (const candidate of candidates) {
+            const candidateDay = Number(candidate.dataset.day);
+            const distance = Number.isFinite(candidateDay) && Number.isFinite(day2) ? Math.abs(candidateDay - day2) : Infinity;
+            if (distance < bestDistance) {
+              best = candidate;
+              bestDistance = distance;
+            }
+          }
+          return best;
+        }
+        index += direction;
+      }
+      return null;
+    }
+    /**
+     * Focus a mark, making it its lane's tab stop.
+     * @param {HTMLButtonElement} button The mark button.
+     * @returns {void}
+     */
+    focusMark(button) {
+      if (!button) return;
+      this.setActive(button);
+      button.focus();
+    }
+    /**
+     * Arrow keys move chronologically within the lane (no wrap) and to the
+     * nearest mark in the adjacent lane; Home/End jump to the lane's ends;
+     * Shift+Enter jumps to the source row. Enter and Space are left to the
+     * button's native activation.
+     * @param {KeyboardEvent} event The keydown event.
+     * @returns {void}
+     */
+    handleKeydown(event) {
+      const button = event.target && event.target.closest ? event.target.closest(MARK) : null;
+      if (!button) return;
+      const entry = this.entryOf(button);
+      if (!entry) return;
+      if (event.key === "Enter" && event.shiftKey) {
+        event.preventDefault();
+        this.handlers.onJump(button.dataset.eventId);
+        return;
+      }
+      const list2 = this.buttons(entry.overlayEl);
+      const index = list2.indexOf(button);
+      const day2 = Number(button.dataset.day);
+      let target = null;
+      switch (event.key) {
+        case "ArrowRight":
+          target = list2[Math.min(index + 1, list2.length - 1)];
+          break;
+        case "ArrowLeft":
+          target = list2[Math.max(index - 1, 0)];
+          break;
+        case "Home":
+          target = list2[0];
+          break;
+        case "End":
+          target = list2[list2.length - 1];
+          break;
+        case "ArrowDown":
+          target = this.nearestInAdjacentLane(entry, day2, 1);
+          break;
+        case "ArrowUp":
+          target = this.nearestInAdjacentLane(entry, day2, -1);
+          break;
+        default:
+          return;
+      }
+      event.preventDefault();
+      if (target && target !== button) this.focusMark(target);
+    }
+  };
+
+  // src/patient-journey-explorer/panel.js
+  var CAUSATION_SENTENCE = "Co-occurrence is not causation. This panel lists what was recorded around the anchor; it does not assess relatedness.";
+  var plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
+  var lowerDay = (text3) => text3.replace(/^Day\b/, "day");
+  function itemButton({ title, detail, anchorId, onJump }) {
+    const li = document.createElement("li");
+    const button = createElement("button", "sv-pje-item");
+    button.type = "button";
+    button.setAttribute("data-source-anchor", anchorId);
+    button.append(document.createTextNode(title));
+    if (detail) button.append(createElement("small", null, detail));
+    button.title = "Open the source record";
+    button.onclick = () => onJump(anchorId);
+    li.append(button);
+    return li;
+  }
+  function itemList(parent, items, { emptyText: emptyText2, describe, drawnIds, onJump }) {
+    if (!items.length) {
+      parent.append(createElement("p", "sv-pje-empty", emptyText2));
+      return;
+    }
+    const list2 = createElement("ul", "sv-pje-items");
+    for (const event of items) {
+      const { title, detail } = describe(event);
+      list2.append(itemButton({ title, detail, anchorId: event.sourceAnchorId, onJump }));
+    }
+    parent.append(list2);
+    const notDrawn = items.filter((event) => !drawnIds.has(event.id)).length;
+    if (notDrawn > 0) {
+      parent.append(
+        createElement(
+          "p",
+          "sv-pje-honesty",
+          `${notDrawn} of these ${items.length} ${notDrawn === 1 ? "is" : "are"} not drawn on the timeline (row cap).`
+        )
+      );
+    }
+  }
+  function endUnrecordedSentence(unrecorded, total) {
+    if (unrecorded <= 0) return null;
+    if (total === 1) {
+      return "This con-med has no recorded end date; it is shown as active because nothing records it stopping.";
+    }
+    if (unrecorded === total) {
+      return `None of these ${total} has a recorded end date; they are shown as active because nothing records them stopping.`;
+    }
+    return `${unrecorded} of these ${total} have no recorded end date; they are shown as active because nothing records them stopping.`;
+  }
+  function renderPanel(host, context, options) {
+    const { settings, mode, refDate, drawnIds, labPool, expanded, onClear, onExpand, onJump } = options;
+    const display = { mode, refDate };
+    host.innerHTML = "";
+    const panel = createElement("div", "sv-pje-panel");
+    const head = createElement("div", "sv-pje-panel-head");
+    const heading = createElement("div");
+    const title = createElement("h2", "sv-pje-panel-title", `Anchor: ${context.anchor.label}`);
+    title.tabIndex = -1;
+    const when = [DOMAIN_LABELS[context.anchor.domain] || context.anchor.domain];
+    when.push(dayLabel(context.anchor.day, display));
+    if (mode !== "date" && context.anchor.date) when.push(context.anchor.date);
+    when.push(`\xB1${context.window.days} days`);
+    heading.append(title, createElement("p", "sv-pje-panel-sub", when.join(" \xB7 ")));
+    const actions = createElement("div", "sv-pje-panel-actions");
+    const expand = createElement("button", "sv-pje-btn", expanded ? "Collapse" : "Expand");
+    expand.type = "button";
+    expand.setAttribute("data-sv-focus", "rail-expand");
+    expand.setAttribute("aria-pressed", String(Boolean(expanded)));
+    expand.onclick = () => onExpand(!expanded);
+    const clear = createElement("button", "sv-pje-btn", "Clear anchor");
+    clear.type = "button";
+    clear.setAttribute("data-sv-focus", "clear-anchor");
+    clear.onclick = () => onClear();
+    actions.append(expand, clear);
+    head.append(heading, actions);
+    panel.append(head);
+    const body = createElement("div", "sv-pje-panel-body");
+    const section = (text3, className = "sv-pje-section") => {
+      const el = createElement("section", className);
+      el.append(createElement("h3", null, text3));
+      body.append(el);
+      return el;
+    };
+    const common = { drawnIds, onJump };
+    const cm = section(`Con-meds active at the anchor (${context.counts.conMeds})`);
+    cm.dataset.section = "conMeds";
+    const withoutStart = context.notEvaluated.conMedsWithoutStart;
+    if (withoutStart > 0) {
+      cm.append(
+        createElement(
+          "p",
+          "sv-pje-honesty",
+          `${plural(withoutStart, "con-med")} ${withoutStart === 1 ? "has" : "have"} no start day and ${withoutStart === 1 ? "was" : "were"} not evaluated.`
+        )
+      );
+    }
+    const unrecorded = endUnrecordedSentence(
+      context.notEvaluated.conMedsEndUnrecorded,
+      context.counts.conMeds
+    );
+    if (unrecorded) cm.append(createElement("p", "sv-pje-honesty", unrecorded));
+    const describeConMed = (event) => ({
+      title: event.label,
+      detail: [spanLabel(event, display), event.category].filter(Boolean).join(" \xB7 ")
+    });
+    itemList(cm, context.conMeds, {
+      ...common,
+      emptyText: "No con-meds were active at the anchor.",
+      describe: describeConMed
+    });
+    const later = createElement("div");
+    later.dataset.section = "conMedsLater";
+    later.append(
+      createElement("h4", null, `Started later in the window (${context.counts.conMedsLater})`)
+    );
+    itemList(later, context.conMedsLater, {
+      ...common,
+      emptyText: "None started later in the window.",
+      describe: describeConMed
+    });
+    cm.append(later);
+    const lb = section(`Abnormal labs in the window (${context.counts.abnormalLabs})`);
+    lb.dataset.section = "abnormalLabs";
+    const baselines = /* @__PURE__ */ new Map();
+    const baselineFor = (test) => {
+      if (!baselines.has(test)) {
+        baselines.set(
+          test,
+          labBaseline(
+            (labPool || []).filter((event) => event.test === test),
+            settings
+          )
+        );
+      }
+      return baselines.get(test);
+    };
+    itemList(lb, context.abnormalLabs, {
+      ...common,
+      emptyText: "No abnormal labs in the window.",
+      describe: (event) => {
+        const reason = event.flags.abnormalReason;
+        const parts = [lowerDay(dayLabel(event.day, display))];
+        const flag = String(event.flags.abnormal || "").trim();
+        if (reason === "flag" || reason === "both") {
+          const ratio = ratioLine(event);
+          parts.push(flag ? `flagged ${flag}` : "flagged");
+          parts.push(ratio || "no reference limit recorded");
+        }
+        if (reason === "change" || reason === "both") {
+          const baseline = baselineFor(event.test);
+          if (baseline && Number.isFinite(baseline.value) && baseline.value > 0) {
+            const multiple = event.value / baseline.value;
+            parts.push(
+              `${multiple.toFixed(multiple >= 10 ? 0 : 1)} \xD7 baseline (${baseline.value}${event.unit ? ` ${event.unit}` : ""}, ${lowerDay(dayLabel(baseline.day, display))})`
+            );
+          }
+        }
+        return {
+          title: `${event.test}: ${event.value}${event.unit ? ` ${event.unit}` : ""}`,
+          detail: parts.join(" \xB7 ")
+        };
+      }
+    });
+    const dose = section(`Dose changes in the window (${context.counts.doseChanges})`);
+    dose.dataset.section = "doseChanges";
+    itemList(dose, context.doseChanges, {
+      ...common,
+      emptyText: "No dose changes in the window.",
+      describe: (event) => ({
+        title: `${event.label}, ${lowerDay(dayLabel(event.day, display))}${event.flags.direction ? ` (${event.flags.direction})` : ""}`,
+        detail: event.category
+      })
+    });
+    const prior = section(
+      `Prior adverse events with the same preferred term (${context.counts.priorEvents})`
+    );
+    prior.dataset.section = "priorEvents";
+    prior.append(
+      createElement("p", "sv-pje-section-note", "Any time before the anchor, not only in the window.")
+    );
+    itemList(prior, context.priorEvents, {
+      ...common,
+      emptyText: "No prior adverse events with this preferred term.",
+      describe: (event) => {
+        const parts = [
+          spanLabel(event, display),
+          event.flags.severity ? event.flags.severity.label : "severity not recorded"
+        ];
+        if (event.flags.serious) parts.push("SAE");
+        return { title: event.label, detail: parts.join(" \xB7 ") };
+      }
+    });
+    const lines = [];
+    const aeUnrecorded = context.notEvaluated.aeEndUnrecorded;
+    if (aeUnrecorded > 0) {
+      lines.push(
+        `${plural(aeUnrecorded, "adverse event")} in the window ${aeUnrecorded === 1 ? "has" : "have"} no recorded end and ${aeUnrecorded === 1 ? "is" : "are"} not asserted ongoing.`
+      );
+    }
+    for (const [domain, count2] of Object.entries(context.notEvaluated.unplaceableByDomain || {})) {
+      if (!count2 || domain === "CM") continue;
+      const word = (DOMAIN_LABELS[domain] || domain).toLowerCase();
+      lines.push(
+        `${plural(count2, `${word} record`)} ${count2 === 1 ? "has" : "have"} no usable study day and ${count2 === 1 ? "was" : "were"} not evaluated.`
+      );
+    }
+    for (const [lane, count2] of Object.entries(context.notEvaluated.truncatedByLane || {})) {
+      if (!count2) continue;
+      const label = settings.lanes?.[lane]?.label || lane;
+      lines.push(`${plural(count2, "row")} of ${label} not drawn (row cap).`);
+    }
+    if (lines.length) {
+      const honesty = section("Not evaluated");
+      honesty.dataset.section = "notEvaluated";
+      const list2 = createElement("ul", "sv-pje-items");
+      for (const line of lines) {
+        const li = createElement("li", "sv-pje-honesty", line);
+        list2.append(li);
+      }
+      honesty.append(list2);
+    }
+    body.append(createElement("p", "sv-pje-panel-foot", CAUSATION_SENTENCE));
+    panel.append(body);
+    host.append(panel);
+    return panel;
+  }
+
+  // src/patient-journey-explorer/sourceRows.js
+  var TOKEN = /\{([^{}]+)\}/g;
+  var DERIVED_PREFIX2 = "__pje_";
+  function buildSourceUrl(row, domain, template, { warn: warn3 = true } = {}) {
+    if (typeof template !== "string" || !template) return null;
+    const source = row && typeof row === "object" ? row : {};
+    const missing = [];
+    const href = template.replace(TOKEN, (match, token) => {
+      if (token === "domain") return encodeURIComponent(String(domain ?? ""));
+      if (!Object.prototype.hasOwnProperty.call(source, token)) {
+        missing.push(token);
+        return match;
+      }
+      const value = source[token];
+      return encodeURIComponent(value === null || value === void 0 ? "" : String(value));
+    });
+    if (missing.length) {
+      if (warn3) {
+        console.warn(
+          `patient-journey-explorer: source_url_template names column(s) the ${domain} row does not carry (${missing.join(
+            ", "
+          )}); the link is omitted.`
+        );
+      }
+      return null;
+    }
+    return href;
+  }
+  function sourceColumns(rows) {
+    const columns = [];
+    const seen = /* @__PURE__ */ new Set();
+    for (const row of Array.isArray(rows) ? rows : []) {
+      if (!row || typeof row !== "object") continue;
+      for (const key of Object.keys(row)) {
+        if (key.startsWith(DERIVED_PREFIX2) || seen.has(key)) continue;
+        seen.add(key);
+        columns.push(key);
+      }
+    }
+    return columns;
+  }
+  var DOMAIN_ORDER = ["EX", "AE", "LB", "CM", "MH", "DS"];
+  var ANCHOR_ID = /^pje-src-([A-Z]+)-(\d+)$/;
+  var FLASH_MS = 1200;
+  function jumpToSource(target, scope = document) {
+    const row = typeof target === "string" ? scope.querySelector(`[id="${String(target).replace(/"/g, "")}"]`) : target;
+    if (!row) return false;
+    const details = row.closest ? row.closest("details") : null;
+    if (details && !details.open) details.open = true;
+    if (typeof row.scrollIntoView === "function") row.scrollIntoView({ block: "center" });
+    if (typeof row.focus === "function") row.focus({ preventScroll: true });
+    row.classList.add("is-flashed");
+    setTimeout(() => row.classList.remove("is-flashed"), FLASH_MS);
+    return true;
+  }
+  function domainRows(structured, domain) {
+    return structured.allEvents.filter((event) => event.domain === domain && !event.flags?.derived).map((event) => ({
+      id: event.sourceAnchorId,
+      sourceIndex: event.sourceIndex,
+      source: event.source && typeof event.source === "object" ? event.source : {}
+    })).sort((a, b) => a.sourceIndex - b.sourceIndex);
+  }
+  function renderSourceDrawer(host, structured, settings, { open = false } = {}) {
+    host.innerHTML = "";
+    const pageSize = Math.max(1, Number(settings.page_size) || 10);
+    const template = settings.source_url_template;
+    const tables = /* @__PURE__ */ new Map();
+    let total = 0;
+    const missingLinks = /* @__PURE__ */ new Set();
+    const details = createElement("details", "sv-pje-drawer");
+    details.open = Boolean(open);
+    const summary = createElement("summary");
+    details.append(summary);
+    for (const domain of DOMAIN_ORDER) {
+      const rows = domainRows(structured, domain);
+      if (!rows.length) continue;
+      total += rows.length;
+      const wrap = createElement("div", "sv-pje-drawer-domain");
+      wrap.dataset.domain = domain;
+      wrap.append(
+        createElement("h3", null, `${DOMAIN_LABELS[domain] || domain} records (${rows.length})`)
+      );
+      const columns = sourceColumns(rows.map((row) => row.source));
+      const scroll = createElement("div", "sv-pje-drawer-scroll");
+      const table = document.createElement("table");
+      const thead = document.createElement("thead");
+      const headRow = document.createElement("tr");
+      for (const column of columns) headRow.append(createElement("th", null, column));
+      if (template) headRow.append(createElement("th", null, "Link"));
+      thead.append(headRow);
+      const tbody = document.createElement("tbody");
+      table.append(thead, tbody);
+      scroll.append(table);
+      const pager = createElement("div", "sv-listing-actions");
+      wrap.append(scroll, pager);
+      details.append(wrap);
+      const state = { rows, page: 1, columns, tbody, pager, domain };
+      tables.set(domain, state);
+      renderTable(state);
+    }
+    function renderTable(state) {
+      const { visible, pages, page } = paginate(state.rows, state.page, pageSize);
+      state.page = page;
+      state.tbody.innerHTML = "";
+      for (const row of visible) {
+        const tr = document.createElement("tr");
+        tr.id = row.id;
+        tr.tabIndex = -1;
+        for (const column of state.columns) {
+          const value = row.source[column];
+          tr.append(
+            createElement("td", null, value === null || value === void 0 ? "" : String(value))
+          );
+        }
+        if (template) {
+          const cell2 = createElement("td");
+          const href = buildSourceUrl(row.source, state.domain, template, { warn: false });
+          if (href) {
+            const link = createElement("a", null, settings.source_url_label);
+            link.href = href;
+            link.target = "_blank";
+            link.rel = "noopener";
+            cell2.append(link);
+          } else {
+            missingLinks.add(state.domain);
+          }
+          tr.append(cell2);
+        }
+        state.tbody.append(tr);
+      }
+      state.pager.innerHTML = "";
+      if (pages <= 1) {
+        state.pager.hidden = true;
+        return;
+      }
+      state.pager.hidden = false;
+      const from2 = (page - 1) * pageSize + 1;
+      const to2 = Math.min(page * pageSize, state.rows.length);
+      state.pager.append(createElement("span", null, `${from2}\u2013${to2} of ${state.rows.length}`));
+      const tools = createElement("div", "sv-listing-tools");
+      const prev = createElement("button", null, "Previous");
+      prev.type = "button";
+      prev.disabled = page <= 1;
+      prev.onclick = () => {
+        state.page = Math.max(1, state.page - 1);
+        renderTable(state);
+      };
+      const next = createElement("button", null, "Next");
+      next.type = "button";
+      next.disabled = page >= pages;
+      next.onclick = () => {
+        state.page = Math.min(pages, state.page + 1);
+        renderTable(state);
+      };
+      tools.append(prev, next);
+      state.pager.append(tools);
+    }
+    summary.textContent = `Source records (${total})`;
+    if (missingLinks.size) {
+      console.warn(
+        `patient-journey-explorer: source_url_template names a column some ${[...missingLinks].join(
+          ", "
+        )} rows do not carry; those links are omitted.`
+      );
+    }
+    host.append(details);
+    return {
+      element: details,
+      count: total,
+      open() {
+        details.open = true;
+      },
+      jumpTo(anchorId) {
+        const match = ANCHOR_ID.exec(String(anchorId));
+        if (!match) return false;
+        const state = tables.get(match[1]);
+        if (!state) return false;
+        const position = state.rows.findIndex((row) => row.id === anchorId);
+        if (position < 0) return false;
+        const page = Math.floor(position / pageSize) + 1;
+        if (page !== state.page) {
+          state.page = page;
+          renderTable(state);
+        }
+        details.open = true;
+        return jumpToSource(anchorId, details);
+      }
+    };
+  }
+
+  // src/patient-journey-explorer.js
+  Chart.register(
+    BarController,
+    BarElement,
+    LineController,
+    LineElement,
+    PointElement,
+    ScatterController,
+    LinearScale,
+    CategoryScale
+  );
+  var EVENT_NAMES = [
+    "pjeSubjectSelected",
+    "pjeEventAnchored",
+    "pjeContextChanged",
+    "pjeLaneToggled",
+    "pjeFilterChanged",
+    "pjeTimeModeChanged",
+    "participantsSelected"
+  ];
+  var CALLBACK_BY_EVENT = {
+    pjeSubjectSelected: (settings, detail) => settings.on_select_subject?.(detail.subject, detail),
+    pjeEventAnchored: (settings, detail) => settings.on_anchor_event?.(detail.anchor, detail.context),
+    pjeContextChanged: (settings, detail) => settings.on_context_change?.(detail)
+  };
+  var DOMAIN_NOUNS = {
+    EX: "exposure record",
+    AE: "adverse event",
+    LB: "lab result",
+    CM: "con-med",
+    MH: "medical-history record",
+    DS: "disposition record"
+  };
+  var LANE_DOMAIN = {
+    exposure: "EX",
+    doseChanges: "EX",
+    adverseEvents: "AE",
+    labs: "LB",
+    conMeds: "CM",
+    medicalHistory: "MH",
+    disposition: "DS"
+  };
+  var TALLER_NOTE = "This participant's journey is taller than the panel; scroll or turn off a lane.";
+  var NO_DAY_NOTE = "No study day resolves for this participant, so the journey cannot be drawn.";
+  var instanceCounter = 0;
+  var warn2 = (message) => console.warn(`patient-journey-explorer: ${message}`);
+  var plural2 = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
+  var upper6 = (value) => value === null || value === void 0 ? "" : String(value).trim().toUpperCase();
+  var raf = typeof requestAnimationFrame === "function" ? (fn) => requestAnimationFrame(fn) : (fn) => setTimeout(fn, 16);
+  function coerceWindowDays(value, fallback) {
+    const n = Number(value);
+    return Number.isFinite(n) ? Math.max(0, Math.floor(n)) : fallback;
+  }
+  var SafetyPatientJourneyExplorer = class {
+    constructor(element = "body", settings = {}) {
+      this.element = typeof element === "string" ? document.querySelector(element) : element;
+      if (!this.element)
+        throw new Error(`Safety Patient Journey Explorer target not found: ${element}`);
+      this.settings = syncSettings14(settings);
+      this.uid = `pje-${instanceCounter += 1}`;
+      this.domains = null;
+      this.inputDropped = [];
+      this.structured = null;
+      this.subject = null;
+      this.anchoredEvent = null;
+      this.context = null;
+      this.bounds = null;
+      this.laneCharts = /* @__PURE__ */ new Map();
+      this.listeners = /* @__PURE__ */ new Map();
+      this.participantsSelected = [];
+      this.stackHeight = 0;
+      this.subjectList = [];
+      this.liveFilterSpecs = [];
+      this.drawer = null;
+      this.hoveredEvent = null;
+      this.suppressTooltip = false;
+      this.destroyed = false;
+      this.state = this.seedState();
+      Object.assign(
+        this,
+        renderShell(this.element, {
+          moduleClass: "safety-patient-journey",
+          onToggle: () => this.resize()
+        })
+      );
+      this.root.classList.add("sv-pje-root");
+      this.element.style.width = this.settings.width;
+      applyPjeStyles();
+      this.canvas.remove();
+      this.chartWrap.style.height = "auto";
+      this.lanesEl = createElement("div", "sv-pje-lanes");
+      this.lanesEl.style.maxHeight = `${this.settings.height}px`;
+      this.axisEl = createElement("div", "sv-pje-axis");
+      this.chartWrap.insertBefore(this.lanesEl, this.mainAnnotation);
+      this.chartWrap.insertBefore(this.axisEl, this.mainAnnotation);
+      this.tooltipEl = createElement("div", "sv-pje-tooltip");
+      this.tooltipEl.setAttribute("role", "tooltip");
+      this.tooltipEl.hidden = true;
+      this.chartWrap.append(this.tooltipEl);
+      this.liveRegion = createLiveRegion();
+      this.root.append(this.liveRegion);
+      this.railWrap.hidden = true;
+      this.mainAnnotation.textContent = "Bind data with init() to draw a journey.";
+      this.overlay = new MarkOverlay({
+        describe: (event) => laneAriaLabel(event, this.settings, this.display()),
+        isAnchored: (id) => this.state.anchorId === id,
+        onActivate: (id) => this.state.anchorId === id ? this.anchor(null) : this.anchor(id),
+        onJump: (id) => {
+          const event = this.findEvent(id);
+          if (event) this.jumpToSource(event.sourceAnchorId);
+        },
+        onEnter: (event, button, via) => this.showTooltip(event, button, via),
+        onLeave: (via) => this.hideTooltip(via)
+      });
+      this.overlay.attach(this.lanesEl);
+      this.rootKeyHandler = (event) => this.handleEscape(event);
+      this.root.addEventListener("keydown", this.rootKeyHandler);
+      this.resizeHandler = () => {
+        if (this.resizeFrame) return;
+        this.resizeFrame = raf(() => {
+          this.resizeFrame = null;
+          this.resize();
+        });
+      };
+      window.addEventListener("resize", this.resizeHandler);
+      this.stackObserver = typeof ResizeObserver === "function" ? new ResizeObserver(this.resizeHandler) : null;
+      if (this.stackObserver) this.stackObserver.observe(this.lanesEl);
+      this.themeQuery = typeof window.matchMedia === "function" ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+      this.themeHandler = () => {
+        this.resolveThemeTokens();
+        if (this.domains) this.render();
+      };
+      if (this.themeQuery && typeof this.themeQuery.addEventListener === "function") {
+        this.themeQuery.addEventListener("change", this.themeHandler);
+      }
+      this.resolveThemeTokens();
+    }
+    /**
+     * The opening control state, derived from the settings alone: the
+     * configured subject (null = first at render time), no anchor, the filter
+     * start values, the lane enablement and group collapse flags, the window
+     * width and the time mode. The Reset control rebuilds it at any point.
+     * @returns {Object} A fresh control state.
+     * @private
+     */
+    seedState() {
+      const lanes = {};
+      const groups = {};
+      for (const key of LANE_KEYS) lanes[key] = Boolean(this.settings.lanes[key]?.enabled);
+      for (const group of this.settings.lane_groups) groups[group.key] = Boolean(group.collapsed);
+      return {
+        subject: this.settings.subject,
+        anchorId: null,
+        filters: initFilterState(this.settings.filters),
+        lanes,
+        groups,
+        windowDays: this.settings.context_window_days,
+        mode: this.settings.time.mode
+      };
+    }
+    /**
+     * The active theme mode: the document's explicit `data-theme`, `auto` with
+     * the OS preference, else light (D12).
+     * @private
+     */
+    themeMode() {
+      const attr = document.documentElement.getAttribute("data-theme");
+      if (attr === "dark") return "dark";
+      if (attr === "auto" && this.themeQuery && this.themeQuery.matches) return "dark";
+      return "light";
+    }
+    /**
+     * Read the palette tokens back from the module stylesheet for the canvas.
+     * @private
+     */
+    resolveThemeTokens() {
+      this.theme = resolveTheme(this.root, this.themeMode());
+    }
+    /**
+     * The display options every text builder takes: the mode and the subject's
+     * reference date.
+     * @private
+     */
+    display() {
+      return {
+        mode: this.state.mode,
+        refDate: this.structured && this.structured.refDate ? this.structured.refDate.date : null
+      };
+    }
+    /**
+     * The settings the pure logic sees this render: the synced settings with the
+     * live window width from the control state.
+     * @private
+     */
+    effectiveSettings() {
+      return { ...this.settings, context_window_days: this.state.windowDays };
+    }
+    /**
+     * The current subject's EventRecord for an id (pre-filter, dose changes
+     * included), or null.
+     * @private
+     */
+    findEvent(id) {
+      if (!this.structured) return null;
+      return this.structured.allEvents.find((event) => event.id === String(id)) || null;
+    }
+    /**
+     * Load data and render: an alias for setData that keeps the two-step
+     * create-then-init call shape working.
+     * @param {Object|Object[]} data Per-domain arrays under `{ ex, ae, lb, cm, mh, ds }` keys (any case), or one merged array whose rows carry the domain column.
+     * @returns {SafetyPatientJourneyExplorer} The instance, for chaining.
+     */
+    init(data) {
+      this.setData(data);
+      return this;
+    }
+    /**
+     * Replace the bound data and re-render. The input is split into the six
+     * domains (either form), validated against the data contract (throwing, and
+     * rendering the message into the target element, when a present domain is
+     * missing a required column or no domain has rows), then the controls are
+     * rebuilt from the data and the journey drawn for the opening subject.
+     * @param {Object|Object[]} data Per-domain arrays under `{ ex, ae, lb, cm, mh, ds }` keys (any case), or one merged array whose rows carry the domain column.
+     * @returns {SafetyPatientJourneyExplorer} The instance, for chaining.
+     */
+    setData(data) {
+      const { domains, dropped } = normalizeInput(data, this.settings);
+      try {
+        checkInputs14(domains, this.settings);
+      } catch (error) {
+        this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+        throw error;
+      }
+      this.domains = domains;
+      this.inputDropped = dropped;
+      this.state.anchorId = null;
+      this.anchoredEvent = null;
+      this.context = null;
+      this.subjectList = subjectIndex(domains, this.settings);
+      this.liveFilterSpecs = liveFilters(this.settings.filters, domains);
+      this.buildControls();
+      this.render();
+      return this;
+    }
+    /**
+     * Merge setting overrides onto the current settings, re-normalize, re-adopt
+     * the state keys that mirror settings (the window width, lane enablement,
+     * time mode, filter start values, the configured subject), rebuild the
+     * controls, and re-render.
+     * @param {PatientJourneyExplorerSettings} settings Setting overrides to merge.
+     * @returns {SafetyPatientJourneyExplorer} The instance, for chaining.
+     */
+    setSettings(settings) {
+      const overrides2 = settings && typeof settings === "object" ? settings : {};
+      this.settings = syncSettings14({ ...this.settings, ...overrides2 });
+      if ("context_window_days" in overrides2 || "contextWindowDays" in overrides2) {
+        this.state.windowDays = this.settings.context_window_days;
+      }
+      if ("lanes" in overrides2) {
+        for (const key of LANE_KEYS)
+          this.state.lanes[key] = Boolean(this.settings.lanes[key]?.enabled);
+      }
+      if ("lane_groups" in overrides2 || "laneGroups" in overrides2) {
+        this.state.groups = {};
+        for (const group of this.settings.lane_groups) this.state.groups[group.key] = group.collapsed;
+      }
+      if ("time" in overrides2) this.state.mode = this.settings.time.mode;
+      if ("filters" in overrides2) this.state.filters = initFilterState(this.settings.filters);
+      if ("subject" in overrides2 && this.settings.subject) this.state.subject = this.settings.subject;
+      this.lanesEl.style.maxHeight = `${this.settings.height}px`;
+      this.element.style.width = this.settings.width;
+      if (!this.domains) return this;
+      this.withFocusRestore(() => {
+        this.liveFilterSpecs = liveFilters(this.settings.filters, this.domains);
+        this.buildControls();
+        this.render();
+      });
+      return this;
+    }
+    /**
+     * Run a rebuild with keyboard focus captured first and restored onto the
+     * recreated control afterwards (PJE-KEY-004).
+     * @private
+     */
+    withFocusRestore(fn) {
+      const key = this.captureFocus();
+      fn();
+      this.restoreFocus(key);
+    }
+    /**
+     * The `data-sv-focus` key of the focused control inside this instance, or
+     * null.
+     * @private
+     */
+    captureFocus() {
+      const active = typeof document !== "undefined" ? document.activeElement : null;
+      if (!active || !this.root.contains(active)) return null;
+      return active.getAttribute("data-sv-focus");
+    }
+    /**
+     * Restore keyboard focus onto the recreated control carrying the captured
+     * key (PPRF-8 pattern). The tooltip is not re-shown by a restored focus: the
+     * footnote still carries the mark's text, and Escape then means "clear the
+     * anchor", not "dismiss the tooltip".
+     * @private
+     */
+    restoreFocus(key) {
+      if (!key) return;
+      const target = this.root.querySelector(`[data-sv-focus="${key}"]`);
+      if (!target || target.disabled || typeof target.focus !== "function") return;
+      this.suppressTooltip = true;
+      try {
+        target.focus({ preventScroll: true });
+      } finally {
+        this.suppressTooltip = false;
+      }
+    }
+    /**
+     * Rebuild the sidebar (design §7): the subject search + list, the lane
+     * toggles, the filters, the anchor window and clear control, the time-axis
+     * mode, and the reset.
+     * @private
+     */
+    buildControls() {
+      this.controls.innerHTML = "";
+      const { addSection, addControl, addReset } = controlBuilders(this.controls);
+      const settings = this.settings;
+      const subjectSection = addSection("Subject");
+      const group = createElement("div", "sv-pje-subject");
+      group.setAttribute("role", "group");
+      group.setAttribute("aria-label", "Subject");
+      const listId = `${this.uid}-subject-list`;
+      const search = document.createElement("input");
+      search.type = "search";
+      search.className = "sv-pje-subject-search";
+      search.placeholder = "Filter subjects\u2026";
+      search.setAttribute("aria-label", "Filter subjects");
+      search.setAttribute("aria-controls", listId);
+      search.setAttribute("data-sv-focus", "subject-search");
+      const select = document.createElement("select");
+      select.id = listId;
+      select.size = 8;
+      select.className = "sv-pje-subject-list";
+      select.setAttribute("aria-label", "Subject");
+      select.setAttribute("data-sv-focus", "subject");
+      const count2 = createElement("p", "sv-pje-subject-count");
+      count2.setAttribute("aria-live", "polite");
+      this.subjectControl = { search, select, count: count2 };
+      search.oninput = () => this.syncSubjectControl();
+      select.onchange = () => {
+        if (select.value && select.value !== this.subject) this.selectSubject(select.value);
+      };
+      group.append(search, select, count2);
+      const subjectWrap = createElement("div", "sv-control");
+      subjectWrap.append(group);
+      subjectSection.append(subjectWrap);
+      this.syncSubjectControl();
+      const laneSection = addSection("Lanes");
+      const laneWrap = createElement("div", "sv-control");
+      this.laneToggles = {};
+      for (const key of LANE_KEYS) {
+        const label = createElement("label", "sv-pje-lane-toggle");
+        const input = document.createElement("input");
+        input.type = "checkbox";
+        input.checked = Boolean(this.state.lanes[key]);
+        input.setAttribute("data-sv-focus", `lane-${key}`);
+        const domain = key === "doseChanges" ? "EX" : LANE_DOMAIN[key];
+        const supplied = Boolean(this.domains && this.domains[domain] && this.domains[domain].length);
+        if (!supplied) {
+          input.disabled = true;
+          input.setAttribute("aria-disabled", "true");
+          label.classList.add("is-disabled");
+          label.title = `No ${DOMAIN_NOUNS[domain]} rows were supplied, so this lane has nothing to draw.`;
+        }
+        input.onchange = () => this.setLaneEnabled(key, input.checked);
+        label.append(input, document.createTextNode(settings.lanes[key]?.label || key));
+        laneWrap.append(label);
+        this.laneToggles[key] = input;
+      }
+      laneSection.append(laneWrap);
+      this.filterControls = {};
+      if (this.liveFilterSpecs.length) {
+        const filterSection = addSection("Filters");
+        for (const spec of this.liveFilterSpecs) {
+          const rows = this.domains && this.domains[spec.domain] || [];
+          if (spec.type === "flag") {
+            let label = spec.label;
+            if (String(spec.flag_value) !== "__abnormal__") {
+              const n = rows.filter(
+                (row) => row && upper6(row[spec.value_col]) === upper6(spec.flag_value)
+              ).length;
+              label = `${spec.label} (${n} in this study)`;
+            }
+            const control2 = flagCheckbox({
+              spec,
+              checked: this.state.filters[spec.value_col] != null,
+              label,
+              focusKey: `filter-${spec.value_col}`,
+              onChange: (checked) => this.updateFilter(spec.value_col, checked ? spec.flag_value ?? "Y" : null)
+            });
+            const wrap = createElement("div", "sv-control");
+            wrap.append(control2);
+            filterSection.append(wrap);
+            this.filterControls[spec.value_col] = control2.querySelector("input");
+            continue;
+          }
+          const values = [
+            ...new Set(
+              rows.map((row) => row ? row[spec.value_col] : void 0).filter((value) => value !== void 0 && value !== null && String(value) !== "").map(String)
+            )
+          ].sort();
+          const control = renderFilterControl({
+            spec,
+            values,
+            selected: this.state.filters[spec.value_col],
+            onChange: (next) => this.updateFilter(spec.value_col, next)
+          });
+          const focusTarget = control.tagName === "DETAILS" ? control.querySelector("summary") : control;
+          if (focusTarget) focusTarget.setAttribute("data-sv-focus", `filter-${spec.value_col}`);
+          addControl(spec.label, control, filterSection);
+          this.filterControls[spec.value_col] = control;
+          if (spec.domain === "CM" && spec.value_col === settings.cm_class_col && rows.length) {
+            const uncoded = rows.filter(
+              (row) => row && upper6(row[spec.value_col]) === upper6(settings.cm_uncoded_value)
+            ).length;
+            if (uncoded > 0) {
+              filterSection.append(
+                createElement(
+                  "p",
+                  "sv-pje-sidebar-note",
+                  `${Math.round(100 * uncoded / rows.length)}% of con-med records in this study are ${settings.cm_uncoded_value}.`
+                )
+              );
+            }
+          }
+        }
+      }
+      const anchorSection = addSection("Anchor");
+      const windowInput = document.createElement("input");
+      windowInput.type = "number";
+      windowInput.min = "0";
+      windowInput.step = "1";
+      windowInput.value = String(this.state.windowDays);
+      windowInput.setAttribute("data-sv-focus", "window-days");
+      windowInput.onchange = () => this.setContextWindowDays(windowInput.value);
+      addControl("Context window (days)", windowInput, anchorSection);
+      const clearButton = createElement("button", "sv-reset", "Clear anchor");
+      clearButton.type = "button";
+      clearButton.style.marginTop = ".25rem";
+      clearButton.setAttribute("data-sv-focus", "clear-anchor-control");
+      clearButton.disabled = !this.state.anchorId;
+      clearButton.onclick = () => this.anchor(null);
+      anchorSection.append(clearButton);
+      this.windowInput = windowInput;
+      this.clearButton = clearButton;
+      const displaySection = addSection("Display");
+      const modeSelect = addControl("Time axis", document.createElement("select"), displaySection);
+      modeSelect.setAttribute("data-sv-focus", "time-mode");
+      option(modeSelect, "day", "Study day", this.state.mode !== "date");
+      option(modeSelect, "date", "Calendar date", this.state.mode === "date");
+      modeSelect.onchange = () => this.setTimeMode(modeSelect.value);
+      this.modeSelect = modeSelect;
+      this.syncDateOption();
+      addReset(() => {
+        this.state = this.seedState();
+        this.buildControls();
+        this.render();
+      });
+    }
+    /**
+     * Refill the subject list from the search text: case-insensitive substring,
+     * the current subject always kept and marked.
+     * @private
+     */
+    syncSubjectControl() {
+      if (!this.subjectControl) return;
+      const { search, select, count: count2 } = this.subjectControl;
+      const query = String(search.value || "").toLowerCase();
+      const shown = this.subjectList.filter(
+        (id) => id === this.subject || !query || id.toLowerCase().includes(query)
+      );
+      select.innerHTML = "";
+      for (const id of shown) {
+        option(select, id, id === this.subject ? `${id} (current)` : id, id === this.subject);
+      }
+      if (this.subject && shown.includes(this.subject)) select.value = this.subject;
+      count2.textContent = `${plural2(this.subjectList.length, "subject")} \xB7 ${shown.length} shown`;
+    }
+    /**
+     * Enable the calendar-date option only when a reference date resolves.
+     * @private
+     */
+    syncDateOption() {
+      if (!this.modeSelect) return;
+      const dateOption = this.modeSelect.options[1];
+      const allowed = this.settings.time.allow_date_mode;
+      const hasRef = Boolean(this.structured && this.structured.refDate);
+      dateOption.disabled = !allowed || !hasRef;
+      dateOption.title = !allowed ? "Calendar dates are not enabled for this chart." : hasRef ? "" : "No reference date resolves for this participant, so calendar dates cannot be shown.";
+      this.modeSelect.value = this.state.mode;
+    }
+    /**
+     * Mirror the control state into the sidebar controls without rebuilding
+     * them (checkbox states, the window width, the clear button, the mode).
+     * @private
+     */
+    syncControls() {
+      if (this.laneToggles) {
+        for (const key of LANE_KEYS) {
+          if (this.laneToggles[key]) this.laneToggles[key].checked = Boolean(this.state.lanes[key]);
+        }
+      }
+      if (this.filterControls) {
+        for (const spec of this.liveFilterSpecs) {
+          const control = this.filterControls[spec.value_col];
+          if (!control) continue;
+          if (spec.type === "flag") control.checked = this.state.filters[spec.value_col] != null;
+          else if (control.tagName === "SELECT") {
+            const selection = this.state.filters[spec.value_col];
+            control.value = selection === null || selection === void 0 ? "__all__" : String(selection);
+          }
+        }
+      }
+      if (this.windowInput) this.windowInput.value = String(this.state.windowDays);
+      if (this.clearButton) this.clearButton.disabled = !this.state.anchorId;
+      this.syncDateOption();
+      this.syncSubjectControl();
+    }
+    /**
+     * Redraw everything from the current data, settings and control state:
+     * destroy the lane charts, restructure for the subject and filters, resolve
+     * the anchor and its context bundle, and rebuild the notes, the lane stack,
+     * the axis strip, the keyboard overlay, the panel and the source drawer.
+     * @returns {void}
+     */
+    render() {
+      if (!this.domains) return;
+      const focusKey = this.captureFocus();
+      this.destroyCharts();
+      this.hideTooltip();
+      const settings = this.effectiveSettings();
+      this.structured = structureData3(this.domains, settings, {
+        subject: this.state.subject,
+        filters: this.state.filters,
+        lanes: this.state.lanes,
+        mode: this.state.mode
+      });
+      this.subject = this.structured.subject;
+      this.state.subject = this.subject;
+      this.participantsSelected = this.subject === null ? [] : [this.subject];
+      const anchored = this.state.anchorId ? this.findEvent(this.state.anchorId) : null;
+      if (this.state.anchorId && (!anchored || anchored.placeable === false)) {
+        this.state.anchorId = null;
+      }
+      this.anchoredEvent = this.state.anchorId ? anchored : null;
+      this.context = this.anchoredEvent ? buildContext(this.structured, this.anchoredEvent, settings) : null;
+      this.bounds = this.anchoredEvent ? windowBounds(this.anchoredEvent.day, this.state.windowDays) : null;
+      if (!this.context) {
+        this.state.anchorId = null;
+        this.anchoredEvent = null;
+        this.bounds = null;
+      }
+      this.updateNotes();
+      this.renderPanel();
+      this.buildLanes();
+      this.renderSourceDrawer();
+      this.mainAnnotation.textContent = this.structured.domain ? this.anchoredEvent ? "" : "Select any mark to anchor time on it." : "";
+      this.syncControls();
+      this.restoreFocus(focusKey);
+    }
+    /**
+     * The status line above the lanes: the subject summary, the study-wide
+     * data-quality sentences (end before start, date conflicts) and the
+     * counted, exportable dropped rows (PJE-DATA-003).
+     * @private
+     */
+    updateNotes() {
+      this.notes.innerHTML = "";
+      const { counts, subjects, flaggedCounts } = this.structured;
+      const summary = this.subject ? `Participant ${this.subject} \xB7 ` + Object.keys(DOMAIN_NOUNS).map((domain) => plural2(counts[domain] || 0, DOMAIN_NOUNS[domain])).join(", ") + "." : "No participant selected.";
+      this.notes.append(createElement("span", null, summary));
+      this.notes.append(
+        createElement("span", null, `${plural2(subjects.length, "participant")} in the supplied data.`)
+      );
+      if (flaggedCounts.endBeforeStart > 0) {
+        const n = flaggedCounts.endBeforeStart;
+        this.notes.append(
+          createElement(
+            "span",
+            "sv-warning",
+            `${plural2(n, "record")} ${n === 1 ? "has" : "have"} an end date before ${n === 1 ? "its" : "their"} start date and ${n === 1 ? "is" : "are"} drawn as ${n === 1 ? "a single-day mark" : "single-day marks"}.`
+          )
+        );
+      }
+      if (flaggedCounts.dateConflict > 0) {
+        const n = flaggedCounts.dateConflict;
+        this.notes.append(
+          createElement(
+            "span",
+            "sv-warning",
+            `${plural2(n, "record")} ${n === 1 ? "has" : "have"} a recorded date that does not match ${n === 1 ? "its" : "their"} study day; the study day was used.`
+          )
+        );
+      }
+      this.appendDropNote();
+    }
+    /**
+     * The counted-drop note with its click-built CSV export (study-wide: a
+     * dropped row may have no usable id and so belong to no subject).
+     * @private
+     */
+    appendDropNote() {
+      const rows = this.droppedRows;
+      if (!rows.length) return;
+      const note = createElement("span", "sv-warning");
+      note.append(
+        document.createTextNode(
+          `${plural2(rows.length, "unusable record")} in the supplied data (all participants). `
+        ),
+        csvDownloadLink(
+          () => toCsv(rows, droppedRowColumns2(rows)),
+          "patient-journey-explorer-dropped-rows",
+          "Download records"
+        )
+      );
+      this.notes.append(note);
+    }
+    /**
+     * Build the lane stack and the axis strip for the current structured record
+     * (design §6.1): plan the groups and lanes, fit the row and lab heights to
+     * the panel (D21), build the DOM, create one chart per lane, sync the
+     * keyboard overlay, and record the achieved stack height.
+     * @private
+     */
+    buildLanes() {
+      this.lanesEl.innerHTML = "";
+      this.axisEl.innerHTML = "";
+      this.laneEntries = [];
+      const structured = this.structured;
+      if (!structured.domain) {
+        this.lanesEl.append(createElement("p", "sv-pje-note", NO_DAY_NOTE));
+        this.stackHeight = this.lanesEl.scrollHeight;
+        this.overlay.sync([]);
+        return;
+      }
+      const groups = planLanes(structured, this.settings, this.state);
+      const { rowHeight, labHeight } = fitHeights(groups, this.settings);
+      const referenceDays = structured.allEvents.filter(
+        (event) => event.domain === "DS" && event.placeable !== false && event.flags?.reference
+      ).map((event) => toElapsed(event.day)).filter((day2) => day2 !== null);
+      const doseChangeDays = (structured.byLane.doseChanges || []).filter((event) => event.placeable !== false).map((event) => toElapsed(event.day)).filter((day2) => day2 !== null);
+      const pending = [];
+      for (const group of groups) {
+        const groupEl = createElement("div", "sv-pje-group");
+        groupEl.dataset.group = group.key;
+        const bodyId = `${this.uid}-group-${group.key}`;
+        const toggle = createElement("button", "sv-pje-group-toggle", group.label);
+        toggle.type = "button";
+        toggle.setAttribute("aria-expanded", String(!group.collapsed));
+        toggle.setAttribute("aria-controls", bodyId);
+        toggle.setAttribute("data-sv-focus", `group-${group.key}`);
+        const body = createElement("div", "sv-pje-group-body");
+        body.id = bodyId;
+        body.hidden = group.collapsed;
+        toggle.onclick = () => {
+          const collapsed = !body.hidden;
+          this.state.groups[group.key] = collapsed;
+          body.hidden = collapsed;
+          toggle.setAttribute("aria-expanded", String(!collapsed));
+          this.resize();
+        };
+        groupEl.append(toggle, body);
+        this.lanesEl.append(groupEl);
+        for (const lane of group.lanes) {
+          const laneEl = createElement("div", "sv-pje-lane");
+          laneEl.dataset.lane = lane.key;
+          if (lane.test) laneEl.dataset.test = lane.test;
+          if (lane.chartKey) laneEl.dataset.chartKey = lane.chartKey;
+          laneEl.style.height = `${laneHeightPx(lane, rowHeight, labHeight)}px`;
+          const label = createElement("div", "sv-pje-lane-label");
+          label.append(createElement("strong", null, lane.label));
+          if (lane.sublabel) label.append(createElement("small", null, lane.sublabel));
+          laneEl.append(label);
+          if (lane.kind === "chart") {
+            const canvasWrap = createElement("div", "sv-pje-lane-canvas");
+            const canvas = createElement("canvas", "sv-pje-canvas");
+            canvas.setAttribute("role", "presentation");
+            canvasWrap.append(canvas);
+            const overlayEl = createElement("div", "sv-pje-marks");
+            laneEl.append(canvasWrap, overlayEl);
+            pending.push({ lane, laneEl, canvas, overlayEl });
+          } else {
+            laneEl.append(createElement("div", "sv-pje-lane-empty", lane.emptyText));
+          }
+          body.append(laneEl);
+          for (const footer of lane.footers) {
+            body.append(createElement("p", "sv-pje-lane-foot", footer));
+          }
+        }
+      }
+      for (const { lane, laneEl, canvas, overlayEl } of pending) {
+        const chart = buildLaneChart({
+          canvas,
+          lane,
+          structured,
+          settings: this.effectiveSettings(),
+          theme: this.theme,
+          bounds: this.bounds,
+          anchor: this.anchoredEvent,
+          referenceDays,
+          doseChangeDays
+        });
+        this.laneCharts.set(lane.chartKey, chart);
+        this.laneEntries.push({
+          chartKey: lane.chartKey,
+          laneKey: lane.key,
+          label: lane.test ? `${lane.label} ${lane.test}` : lane.label,
+          laneEl,
+          overlayEl,
+          chart
+        });
+      }
+      this.renderAxis();
+      this.syncOverlay();
+      this.stackHeight = this.lanesEl.scrollHeight;
+      if (this.stackHeight > this.lanesEl.clientHeight + 1 && this.lanesEl.clientHeight > 0) {
+        this.notes.append(createElement("span", null, TALLER_NOTE));
+      }
+    }
+    /**
+     * The one shared axis strip below the stack (design §6.2): ticks from
+     * axisTicks positioned by percentage inside the same gutters as the lanes,
+     * labelled in the active mode, relabelled as offsets when anchored with the
+     * anchor itself at 0 (PJE-ANCH-004).
+     * @private
+     */
+    renderAxis() {
+      const domain = this.structured.domain;
+      const anchorDay = this.anchoredEvent ? this.anchoredEvent.day : null;
+      const title = this.anchoredEvent ? ANCHOR_AXIS_TITLE : this.state.mode === "date" ? "Calendar date" : "Study day";
+      this.axisEl.append(createElement("div", "sv-pje-axis-title", title));
+      const track = createElement("div", "sv-pje-axis-track");
+      let ticks = axisTicks3(domain);
+      if (anchorDay !== null) {
+        const anchorElapsed = toElapsed(anchorDay);
+        const span = domain[1] - domain[0];
+        if (anchorElapsed !== null && span > 0) {
+          const position = (anchorElapsed - domain[0]) / span * 100;
+          ticks = ticks.filter((tick) => Math.abs(tick.position - position) >= 4);
+          ticks.push({ value: anchorDay, elapsed: anchorElapsed, position, anchor: true });
+          ticks.sort((a, b) => a.elapsed - b.elapsed);
+        }
+      }
+      const display = this.display();
+      for (const tick of ticks) {
+        const label = createElement(
+          "span",
+          `sv-pje-axis-tick${tick.anchor ? " is-anchor" : ""}`,
+          formatTick(tick.value, { ...display, anchorDay })
+        );
+        label.style.left = `${tick.position}%`;
+        if (tick.value === 1) label.title = "Day 1: first dose";
+        if (tick.anchor) label.title = `Anchor: ${this.anchoredEvent.label}, day ${anchorDay}`;
+        track.append(label);
+      }
+      this.axisEl.append(track);
+    }
+    /**
+     * Rebuild every lane's mark buttons from its chart's recorded marks.
+     * @private
+     */
+    syncOverlay() {
+      this.overlay.sync(this.laneEntries || []);
+    }
+    /**
+     * Render the anchor context panel into the rail, or hide the rail when
+     * nothing is anchored.
+     * @private
+     */
+    renderPanel() {
+      if (!this.context) {
+        this.railWrap.innerHTML = "";
+        this.railWrap.hidden = true;
+        this.setExpanded(false);
+        return;
+      }
+      const drawnIds = new Set(
+        Object.values(this.structured.lanes).flatMap(
+          (lane) => lane.enabled ? lane.drawn.map((event) => event.id) : []
+        )
+      );
+      renderPanel(this.railWrap, this.context, {
+        settings: this.effectiveSettings(),
+        ...this.display(),
+        drawnIds,
+        labPool: this.structured.allEvents.filter((event) => event.domain === "LB"),
+        expanded: this.root.classList.contains("sv-rail-expanded"),
+        onClear: () => this.anchor(null),
+        onExpand: (expanded) => this.setExpanded(expanded),
+        onJump: (anchorId) => this.jumpToSource(anchorId)
+      });
+      this.railWrap.hidden = false;
+    }
+    /**
+     * Expand the rail over the chart card, or collapse it back.
+     * @private
+     */
+    setExpanded(expanded) {
+      const next = Boolean(expanded);
+      const was = this.root.classList.contains("sv-rail-expanded");
+      this.root.classList.toggle("sv-rail-expanded", next);
+      const button = this.railWrap.querySelector('[data-sv-focus="rail-expand"]');
+      if (button) {
+        button.textContent = next ? "Collapse" : "Expand";
+        button.setAttribute("aria-pressed", String(next));
+      }
+      if (was !== next) this.resize();
+    }
+    /**
+     * Render the source-row drawer for the current subject.
+     * @private
+     */
+    renderSourceDrawer() {
+      const wasOpen = Boolean(this.drawer && this.drawer.element.open);
+      this.drawer = renderSourceDrawer(this.listingWrap, this.structured, this.settings, {
+        open: wasOpen
+      });
+    }
+    /**
+     * Jump to a source row: page the drawer to it, open it, scroll the row into
+     * view, focus and flash it (design §6.7).
+     * @private
+     */
+    jumpToSource(anchorId) {
+      if (!this.drawer) return false;
+      return this.drawer.jumpTo(anchorId);
+    }
+    /**
+     * Show the one DOM tooltip for a mark and mirror its text into the footnote
+     * with the Open source record button (RF-6, PC-4).
+     * @private
+     */
+    showTooltip(event, button, via) {
+      const lines = tooltipLines3(event, this.effectiveSettings(), {
+        ...this.display(),
+        anchor: this.anchoredEvent
+      });
+      this.hoveredEvent = event;
+      this.footnote.innerHTML = "";
+      this.footnote.append(
+        createElement(
+          "span",
+          "sv-pje-footnote-text",
+          lines.filter((line) => line !== GESTURE_LINE).join(" \xB7 ")
+        )
+      );
+      const open = createElement("button", "sv-pje-open-source", "Open source record");
+      open.type = "button";
+      open.setAttribute("data-sv-focus", "open-source");
+      open.onclick = () => this.jumpToSource(event.sourceAnchorId);
+      this.footnote.append(open);
+      if (via === "focus" && this.suppressTooltip) return;
+      this.tooltipVia = via;
+      this.tooltipEl.textContent = lines.join("\n");
+      this.tooltipEl.hidden = false;
+      const wrap = this.chartWrap.getBoundingClientRect();
+      const box = button.getBoundingClientRect();
+      const width = this.tooltipEl.offsetWidth || 0;
+      let left = box.left - wrap.left + box.width / 2 - width / 2;
+      left = Math.max(4, Math.min(left, wrap.width - width - 4));
+      this.tooltipEl.style.left = `${Math.round(left)}px`;
+      this.tooltipEl.style.top = `${Math.round(box.bottom - wrap.top + 6)}px`;
+    }
+    /**
+     * Hide the tooltip; the footnote keeps the last mark's text. With `via`, only
+     * the channel that showed the tooltip may hide it, so a pointer wandering
+     * off a mark never dismisses the tooltip a keyboard user is reading.
+     * @private
+     */
+    hideTooltip(via) {
+      if (via && this.tooltipVia && via !== this.tooltipVia) return;
+      this.tooltipEl.hidden = true;
+      this.tooltipVia = null;
+      this.hoveredEvent = null;
+    }
+    /**
+     * Escape, in order (design §6.6): dismiss the tooltip; else clear the
+     * anchor; else collapse the expanded rail; else do nothing.
+     * @private
+     */
+    handleEscape(event) {
+      if (event.key !== "Escape") return;
+      if (!this.tooltipEl.hidden) {
+        this.hideTooltip();
+      } else if (this.state.anchorId) {
+        this.anchor(null);
+      } else if (this.root.classList.contains("sv-rail-expanded")) {
+        this.setExpanded(false);
+      } else {
+        return;
+      }
+      event.stopPropagation();
+    }
+    /**
+     * Write to the persistent live region.
+     * @private
+     */
+    announce(text3) {
+      this.liveRegion.textContent = "";
+      this.liveRegion.textContent = text3;
+    }
+    /**
+     * Deliver one event on all three channels (design §3.6): the settings
+     * callback (inside a try/catch that logs and continues), the instance
+     * listeners, and a bubbling CustomEvent on the shell root.
+     * @private
+     */
+    emit(name, detail) {
+      if (this.destroyed) return;
+      const callback2 = CALLBACK_BY_EVENT[name];
+      if (callback2) {
+        try {
+          callback2(this.settings, detail);
+        } catch (error) {
+          warn2(`the ${name} callback threw and was ignored: ${error && error.message}`);
+        }
+      }
+      for (const handler of [...this.listeners.get(name) || []]) {
+        try {
+          handler(detail);
+        } catch (error) {
+          warn2(`a ${name} listener threw and was ignored: ${error && error.message}`);
+        }
+      }
+      if (this.root) {
+        this.root.dispatchEvent(new CustomEvent(name, { detail, bubbles: true }));
+      }
+    }
+    /**
+     * Emit the context bundle again when it changes while anchored.
+     * @private
+     */
+    emitContextIfAnchored() {
+      if (this.anchoredEvent) this.emit("pjeContextChanged", this.context);
+    }
+    /**
+     * Select a subject by id (string-compared). An unknown id changes nothing
+     * and warns. Any anchor is cleared first (with the null anchor and context
+     * events), then the journey is redrawn and pjeSubjectSelected plus the
+     * library's shared participantsSelected event are dispatched.
+     * @param {string|number} subjectId The participant id to select.
+     * @returns {SafetyPatientJourneyExplorer} The instance, for chaining.
+     */
+    selectSubject(subjectId) {
+      const id = String(subjectId);
+      if (!this.domains || !this.subjectList.includes(id)) {
+        warn2(`unknown subject "${id}"; the selection is unchanged.`);
+        return this;
+      }
+      const previous = this.subject;
+      if (this.state.anchorId) {
+        this.state.anchorId = null;
+        this.anchoredEvent = null;
+        this.context = null;
+        this.emit("pjeEventAnchored", { anchor: null, context: null });
+        this.emit("pjeContextChanged", null);
+      }
+      this.state.subject = id;
+      this.render();
+      const { counts, domain } = this.structured;
+      this.emit("pjeSubjectSelected", {
+        subject: this.subject,
+        previous,
+        counts: { ...counts },
+        domainDays: domain ? [toStudyDay(domain[0]), toStudyDay(domain[1])] : null
+      });
+      this.emit("participantsSelected", { data: [this.subject] });
+      this.announce(
+        `Subject ${this.subject}. ` + ["AE", "LB", "EX", "CM"].map((code) => plural2(counts[code] || 0, DOMAIN_NOUNS[code])).join(", ") + "."
+      );
+      return this;
+    }
+    /**
+     * Anchor time on an event by its normalized id (`'AE-7'`): rebuild the
+     * context bundle, redraw the highlight, the axis labels and the panel, and
+     * emit pjeEventAnchored and pjeContextChanged. `anchor(null)` clears the
+     * anchor and emits both with null. An id that is not a placeable event of
+     * the current subject warns and changes nothing.
+     * @param {?string} eventId The event id to anchor on, or null to clear.
+     * @returns {SafetyPatientJourneyExplorer} The instance, for chaining.
+     */
+    anchor(eventId) {
+      if (eventId === null || eventId === void 0) {
+        if (!this.state.anchorId) return this;
+        this.state.anchorId = null;
+        this.render();
+        this.emit("pjeEventAnchored", { anchor: null, context: null });
+        this.emit("pjeContextChanged", null);
+        this.announce("Anchor cleared.");
+        return this;
+      }
+      const id = String(eventId);
+      const event = this.findEvent(id);
+      if (!event || event.placeable === false) {
+        warn2(`"${id}" is not an anchorable event for participant ${this.subject}.`);
+        return this;
+      }
+      this.state.anchorId = id;
+      this.render();
+      if (!this.context) return this;
+      this.emit("pjeEventAnchored", { anchor: this.anchoredEvent, context: this.context });
+      this.emit("pjeContextChanged", this.context);
+      const c = this.context.counts;
+      this.announce(
+        `Anchored on ${this.anchoredEvent.label}, day ${this.anchoredEvent.day}. Window day ${this.context.window.startDay} to day ${this.context.window.endDay}. ${plural2(c.conMeds, "con-med")} active, ${plural2(c.abnormalLabs, "abnormal lab")}, ${plural2(c.doseChanges, "dose change")}, ${plural2(c.priorEvents, "prior event")} with this term.`
+      );
+      return this;
+    }
+    /**
+     * Toggle one lane. An unknown key warns and is a no-op. Emits
+     * pjeLaneToggled, and pjeContextChanged when anchored (the window's
+     * contents depend on the enabled lanes).
+     * @param {string} laneKey The lane key (`exposure`, `doseChanges`, `adverseEvents`, `labs`, `conMeds`, `medicalHistory`, `disposition`).
+     * @param {boolean} enabled Whether the lane is shown.
+     * @returns {SafetyPatientJourneyExplorer} The instance, for chaining.
+     */
+    setLaneEnabled(laneKey, enabled) {
+      if (!LANE_KEYS.includes(laneKey)) {
+        warn2(`"${laneKey}" is not a lane; the known lanes are ${LANE_KEYS.join(", ")}.`);
+        return this;
+      }
+      this.state.lanes[laneKey] = Boolean(enabled);
+      this.render();
+      this.emit("pjeLaneToggled", {
+        lane: laneKey,
+        enabled: this.state.lanes[laneKey],
+        lanes: { ...this.state.lanes }
+      });
+      this.emitContextIfAnchored();
+      this.announce(
+        `${this.settings.lanes[laneKey]?.label || laneKey} lane ${enabled ? "on" : "off"}.`
+      );
+      return this;
+    }
+    /**
+     * Switch the time axis between study days and calendar dates. `'date'` is
+     * refused (with a warning) when no reference date resolves for the subject
+     * or date mode is not allowed. Emits pjeTimeModeChanged.
+     * @param {string} mode `'day'` or `'date'`.
+     * @returns {SafetyPatientJourneyExplorer} The instance, for chaining.
+     */
+    setTimeMode(mode) {
+      const next = mode === "date" ? "date" : "day";
+      if (next === "date") {
+        if (!this.settings.time.allow_date_mode) {
+          warn2("calendar-date mode is not allowed by the settings (time.allow_date_mode).");
+          return this;
+        }
+        if (!this.structured || !this.structured.refDate) {
+          warn2(`no reference date resolves for participant ${this.subject}; staying in day mode.`);
+          return this;
+        }
+      }
+      if (next === this.state.mode) return this;
+      this.state.mode = next;
+      this.render();
+      this.emit("pjeTimeModeChanged", {
+        mode: next,
+        refDate: this.structured.refDate ? this.structured.refDate.date : null
+      });
+      return this;
+    }
+    /**
+     * Set the context-window half-width in elapsed days (coerced as in
+     * syncSettings; 0 means the anchor day only) and re-derive the bundle when
+     * anchored.
+     * @param {number|string} days The half-width in days.
+     * @returns {SafetyPatientJourneyExplorer} The instance, for chaining.
+     */
+    setContextWindowDays(days) {
+      this.state.windowDays = coerceWindowDays(days, this.settings.context_window_days);
+      this.render();
+      this.emitContextIfAnchored();
+      return this;
+    }
+    /**
+     * Set one filter programmatically, using the same grammar filterMatches
+     * accepts (null = no restriction, an array = membership, a scalar =
+     * equality; for a flag filter, its `flag_value` or null). An unknown column
+     * warns and is a no-op. Re-renders, re-derives the bundle when anchored and
+     * emits pjeFilterChanged.
+     * @param {string} valueCol The filter's `value_col`.
+     * @param {*} selection The next selection.
+     * @returns {SafetyPatientJourneyExplorer} The instance, for chaining.
+     */
+    setFilter(valueCol, selection) {
+      const spec = this.settings.filters.find((entry) => entry.value_col === valueCol);
+      if (!spec) {
+        warn2(`"${valueCol}" is not a configured filter column; nothing changed.`);
+        return this;
+      }
+      this.withFocusRestore(() => {
+        this.state.filters[valueCol] = selection === void 0 ? null : selection;
+        if (this.domains) this.buildControls();
+        this.render();
+      });
+      this.emit("pjeFilterChanged", {
+        value_col: valueCol,
+        selection: this.state.filters[valueCol],
+        filters: { ...this.state.filters }
+      });
+      this.emitContextIfAnchored();
+      return this;
+    }
+    /**
+     * A filter change from its own sidebar control: the same state change and
+     * events as setFilter without rebuilding the sidebar (the control keeps its
+     * own DOM under the user's pointer).
+     * @private
+     */
+    updateFilter(valueCol, selection) {
+      this.state.filters[valueCol] = selection === void 0 ? null : selection;
+      this.render();
+      this.emit("pjeFilterChanged", {
+        value_col: valueCol,
+        selection: this.state.filters[valueCol],
+        filters: { ...this.state.filters }
+      });
+      this.emitContextIfAnchored();
+      const spec = this.settings.filters.find((entry) => entry.value_col === valueCol);
+      if (spec) {
+        const shown = this.structured.events.filter((event) => event.domain === spec.domain).length;
+        const all = this.structured.allEvents.filter(
+          (event) => event.domain === spec.domain && !event.flags?.derived
+        ).length;
+        const active = selection !== null && selection !== void 0;
+        this.announce(
+          `${spec.label} ${active ? "on" : "off"}. ${shown} of ${plural2(all, DOMAIN_NOUNS[spec.domain] || "record")} shown.`
+        );
+      }
+    }
+    /**
+     * The current context bundle, or null when nothing is anchored. A read
+     * model: consumers must not mutate it.
+     * @returns {?ContextBundle} The bundle (the ContextBundle typedef in patient-journey-explorer/anchor.js), or null.
+     */
+    getContext() {
+      return this.context;
+    }
+    /**
+     * The active time-axis mode.
+     * @returns {string} `'day'` or `'date'`.
+     */
+    getTimeMode() {
+      return this.state.mode;
+    }
+    /**
+     * Register a listener for one of the module events (pjeSubjectSelected,
+     * pjeEventAnchored, pjeContextChanged, pjeLaneToggled, pjeFilterChanged,
+     * pjeTimeModeChanged, participantsSelected); the handler receives the
+     * event's detail.
+     * @param {string} name The event name.
+     * @param {Function} handler The listener.
+     * @returns {SafetyPatientJourneyExplorer} The instance, for chaining.
+     */
+    on(name, handler) {
+      if (!EVENT_NAMES.includes(name)) {
+        warn2(`"${name}" is not a module event; the known events are ${EVENT_NAMES.join(", ")}.`);
+        return this;
+      }
+      if (typeof handler !== "function") return this;
+      if (!this.listeners.has(name)) this.listeners.set(name, []);
+      this.listeners.get(name).push(handler);
+      return this;
+    }
+    /**
+     * Remove a listener, or every listener for the event when no handler is
+     * given.
+     * @param {string} name The event name.
+     * @param {Function} [handler] The listener to remove.
+     * @returns {SafetyPatientJourneyExplorer} The instance, for chaining.
+     */
+    off(name, handler) {
+      if (!this.listeners.has(name)) return this;
+      if (typeof handler !== "function") {
+        this.listeners.delete(name);
+        return this;
+      }
+      const kept = this.listeners.get(name).filter((entry) => entry !== handler);
+      if (kept.length) this.listeners.set(name, kept);
+      else this.listeners.delete(name);
+      return this;
+    }
+    /**
+     * Resize every live lane chart and re-sync the keyboard overlay geometry.
+     * For host layouts that change the container size without a window resize
+     * — e.g. the R htmlwidget binding.
+     * @returns {void}
+     */
+    resize() {
+      for (const chart of this.laneCharts.values()) chart.resize();
+      this.syncOverlay();
+    }
+    /**
+     * Destroy the live Chart.js instances and clear the map.
+     * @private
+     */
+    destroyCharts() {
+      for (const chart of this.laneCharts.values()) chart.destroy();
+      this.laneCharts.clear();
+      this.laneEntries = [];
+    }
+    /**
+     * Tear the explorer down: destroy the lane charts, remove the window-resize,
+     * theme and key listeners, drop every registered event listener, and empty
+     * the target element. The instance cannot be reused afterwards — create a
+     * new one via the factory instead.
+     * @returns {void}
+     */
+    destroy() {
+      this.destroyCharts();
+      window.removeEventListener("resize", this.resizeHandler);
+      if (this.stackObserver) this.stackObserver.disconnect();
+      if (this.themeQuery && typeof this.themeQuery.removeEventListener === "function") {
+        this.themeQuery.removeEventListener("change", this.themeHandler);
+      }
+      if (this.root) this.root.removeEventListener("keydown", this.rootKeyHandler);
+      this.overlay.detach();
+      this.listeners.clear();
+      this.destroyed = true;
+      this.structured = null;
+      this.anchoredEvent = null;
+      this.context = null;
+      this.element.innerHTML = "";
+    }
+    /**
+     * Every participant id present in any domain, sorted ascending.
+     * @type {string[]}
+     */
+    get subjects() {
+      return [...this.subjectList];
+    }
+    /**
+     * The current subject's normalized events, post-filter, in lane order then
+     * day order.
+     * @type {Object[]}
+     */
+    get events() {
+      return this.structured ? this.structured.events : [];
+    }
+    /**
+     * Every dropped source row — the input-form drops and the per-domain drops
+     * — each a copy carrying the reason and domain columns.
+     * @type {Object[]}
+     */
+    get droppedRows() {
+      return [...this.inputDropped, ...this.structured ? this.structured.dropped : []];
+    }
+    /**
+     * The dropped-row counts, study-wide: `{ total, byDomain, byReason }`.
+     * @type {Object}
+     */
+    get droppedCounts() {
+      const base = this.structured ? this.structured.droppedCounts : { total: 0, byDomain: {}, byReason: {} };
+      const counts = {
+        total: base.total + this.inputDropped.length,
+        byDomain: { ...base.byDomain },
+        byReason: { ...base.byReason }
+      };
+      for (const row of this.inputDropped) {
+        const reason = row[DROP_REASON_COLUMN3];
+        counts.byReason[reason] = (counts.byReason[reason] || 0) + 1;
+      }
+      return counts;
+    }
+    /**
+     * Rows kept but not drawn for the current subject: `{ byDomain, byLane }`.
+     * @type {Object}
+     */
+    get unplaceableCounts() {
+      return this.structured ? this.structured.unplaceableCounts : { byDomain: {}, byLane: {} };
+    }
+    /**
+     * The active time-axis mode, `'day'` or `'date'` (the getter behind
+     * getTimeMode).
+     * @type {string}
+     */
+    get timeMode() {
+      return this.state.mode;
+    }
+  };
+  function patientJourneyExplorer(element = "body", settings = {}) {
+    return new SafetyPatientJourneyExplorer(element, settings);
+  }
+
   // src/main.js
   var main_default = {
     histogram,
@@ -33504,7 +39110,8 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     hepWaterfall,
     participantProfile,
     nepExplorer,
-    timeToEvent
+    timeToEvent,
+    patientJourneyExplorer
   };
   return __toCommonJS(main_exports);
 })();

@@ -1,6 +1,6 @@
 # Demo data sources
 
-safety.viz demos and evidence run on five example datasets vendored under
+safety.viz demos and evidence run on eleven example datasets vendored under
 [`site/data/`](../site/data):
 
 | File              | Shape                                                   | Used by                                                                                                                                                          |
@@ -10,10 +10,17 @@ safety.viz demos and evidence run on five example datasets vendored under
 | `adeg.csv`        | One row per ECG interval measurement (QT/QTc/HR)        | QT Safety Explorer                                                                                                                                               |
 | `adsl.csv`        | One row per safety participant (id, arm, follow-up end) | Time-to-Event Explorer (population)                                                                                                                              |
 | `adbds-abnbl.csv` | One row per liver-test measurement (BDS)                | Hep Waterfall                                                                                                                                                    |
+| `pje-ex.csv`      | One row per dosing record (exposure)                    | Patient Journey Explorer                                                                                                                                         |
+| `pje-ae.csv`      | One row per treatment-emergent adverse event            | Patient Journey Explorer                                                                                                                                         |
+| `pje-lb.csv`      | One row per liver-panel lab result                      | Patient Journey Explorer                                                                                                                                         |
+| `pje-cm.csv`      | One row per concomitant-medication course               | Patient Journey Explorer                                                                                                                                         |
+| `pje-mh.csv`      | One row per medical-history record                      | Patient Journey Explorer                                                                                                                                         |
+| `pje-ds.csv`      | One row per disposition event (SDTM DS)                 | Patient Journey Explorer                                                                                                                                         |
 
-All are **generated**, not hand-maintained. The first four are built from
-pharmaverseadam by [`scripts/build-demo-data.mjs`](../scripts/build-demo-data.mjs);
-rerun it to refresh the committed CSVs:
+All are **generated**, not hand-maintained. The first four and the six `pje-*`
+files are built from pharmaverse sources by
+[`scripts/build-demo-data.mjs`](../scripts/build-demo-data.mjs); rerun it to
+refresh the committed CSVs (`--only pje` rebuilds just the six journey files):
 
 ```bash
 node scripts/build-demo-data.mjs
@@ -46,13 +53,22 @@ Alzheimer's trial randomized to Placebo / Xanomeline Low Dose / Xanomeline High
 Dose, with real MedDRA-coded adverse events and reference-range–bearing labs and
 vital signs.
 
-The generator reads five published CSVs from the package's `inst/extdata/`:
+The generator reads eight published CSVs from the package's `inst/extdata/`:
 
-- `adlb.csv` (ADaM lab chemistry + hematology) → BDS lab rows
+- `adlb.csv` (ADaM lab chemistry + hematology) → BDS lab rows, and the
+  liver-panel rows of `pje-lb.csv`
 - `advs.csv` (ADaM vital signs) → BDS vital-sign rows
-- `adae.csv` (ADaM adverse events) → AE rows
-- `adsl.csv` (ADaM subject-level) → AE placeholder rows for AE-free participants
+- `adae.csv` (ADaM adverse events) → AE rows, and `pje-ae.csv`
+- `adsl.csv` (ADaM subject-level) → AE placeholder rows for AE-free
+  participants, the population extract, and the safety-population join for
+  `pje-ds.csv`
 - `adeg.csv` (ADaM ECG intervals) → QT/QTc/HR rows
+- `adex.csv` (ADaM exposure) → `pje-ex.csv`
+- `adcm.csv` (ADaM concomitant medications) → `pje-cm.csv`
+- `admh.csv` (ADaM medical history) → `pje-mh.csv`
+
+plus one file from the sibling SDTM package, `ds.csv` → `pje-ds.csv` (see
+[Patient Journey Explorer extracts](#patient-journey-explorer-extracts-142)).
 
 ### Transform summary
 
@@ -169,6 +185,83 @@ Resulting sizes: `adbds.csv` ≈ 5.5 MB (≈ 56k rows, 254 participants, 28 meas
 254 participants, 23 body systems); `adeg.csv` ≈ 0.5 MB (5,361 rows, 254
 participants, 3 ECG parameters); `adsl.csv` ≈ 10 KB (254 rows, one per safety
 participant).
+
+## Patient Journey Explorer extracts (#142)
+
+The Patient Journey Explorer ([safety.viz#142](https://github.com/jwildfire/safety.viz/issues/142),
+requirement [obot.roadmap#349](https://github.com/jwildfire/obot.roadmap/issues/349))
+shows one participant's whole safety record across six domains, so it ships
+**six per-domain extracts** rather than one merged file (design D26: 32%
+smaller, self-describing headers, one data-contract section per file). Each
+file's header is exactly the module's default column names for that domain
+plus `TRTSDT`, so the demo needs no column overrides and calendar-date mode
+needs no ADSL join; `NA` is never written (blank instead). All six are
+restricted to the 254 safety participants. Together they add ≈ 1.1 MB:
+
+| File         | Source                       | Rows  | Size   | Key derivation                                                                                                                                                                                                                                                                |
+| ------------ | ---------------------------- | ----- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pje-ex.csv` | pharmaverseadam `adex.csv`   | 591   | 33 KB  | `PARAMCD = 'DOSE'` only — the file replicates each dosing record across five record-level parameters; days from `ASTDY`/`AENDY`                                                                                                                                               |
+| `pje-ae.csv` | pharmaverseadam `adae.csv`   | 1,122 | 168 KB | `TRTEMFL = 'Y'`; days from `ASTDY`/`AENDY`; `AEOUT` carried for the end-state rule                                                                                                                                                                                            |
+| `pje-lb.csv` | pharmaverseadam `adlb.csv`   | 6,639 | 560 KB | the BDS analysis filter (`DTYPE` blank, `ANL01FL = 'Y'` or `ABLFL = 'Y'`, numeric `AVAL`) restricted to the four-test liver panel, renamed `AVAL → LBSTRESN`, `ANRLO/ANRHI → LBSTNRLO/LBSTNRHI`, `ADY → LBDY`, `ADT → LBDTC`, `ANRIND ?? LBNRIND → LBNRIND`; `ABLFL` verbatim |
+| `pje-cm.csv` | pharmaverseadam `adcm.csv`   | 1,081 | 89 KB  | de-duplicated on (participant, `CMTRT`, `CMDECOD`, `ASTDY`, `AENDY`, `CMSTDTC`, `CMENDTC`, `CMDOSE`) keeping the lowest `CMSEQ` — the raw 7,510 rows repeat each medication once per collection visit                                                                         |
+| `pje-mh.csv` | pharmaverseadam `admh.csv`   | 1,818 | 175 KB | day = `MHDY`, the collection day (100% populated, −37…−2); onset `ASTDY` ships separately as `MHONSDY` (17% populated) and never places a mark                                                                                                                                |
+| `pje-ds.csv` | **pharmaversesdtm** `ds.csv` | 798   | 66 KB  | restricted to the safety population with `TRTSDT` joined from `adsl`; `DSSTDY` and `DSCAT` pass straight through (both real, populated columns in this file)                                                                                                                  |
+
+Header, row count, participant count, the absence of `NA`, and the three
+seeded participants' key values (`01-716-1447`, `01-705-1310`, `01-701-1203`)
+are guarded by
+[`tests/unit/patient-journey-explorer/demo-data.test.js`](../tests/unit/patient-journey-explorer/demo-data.test.js)
+(`PJE-DEMO-001`), and the six builders (`buildPjeExRecords` … `buildPjeDsRecords`
+in [`scripts/demo-data-lib.mjs`](../scripts/demo-data-lib.mjs)) are
+unit-tested there on hand-made rows. Rebuild with
+`node scripts/build-demo-data.mjs --only pje`.
+
+### Source: pharmaversesdtm (disposition)
+
+pharmaverseadam ships **no ADaM DS dataset**, and without disposition the
+journey has no discontinuation rule. `pje-ds.csv` is therefore taken from the
+sibling package **[pharmaversesdtm](https://github.com/pharmaverse/pharmaversesdtm)**
+(`inst/extdata/ds.csv`) — the SDTM side of the same CDISC Pilot 01 study, also
+licensed **Apache-2.0**
+([LICENSE](https://github.com/pharmaverse/pharmaversesdtm/blob/main/LICENSE)).
+This is the repository's first use of that package (design D24). The extract
+was taken at commit
+[`9c12f0c580e7223ec3cee280ecd3ab728f0718e6`](https://github.com/pharmaverse/pharmaversesdtm/commit/9c12f0c580e7223ec3cee280ecd3ab728f0718e6)
+(2026-01-31, the file's last change on `main`), whose `ds.csv` is byte-identical
+(SHA-256 `9c90933c42a0acaa4b98b3e37e24a3ce2238767e713f4d621ac41c3197d11f20`) to the
+copy in release tag `v1.5.0`. The source file holds 850 rows for 306 subjects
+including screen failures; the safety restriction keeps 798 rows for 254
+participants, three per participant in almost every case (`PROTOCOL MILESTONE`
+RANDOMIZED at day 1, one `DISPOSITION EVENT`, and an `OTHER EVENT` final lab
+visit). The module draws its cross-stack disposition rule only for the
+`DISPOSITION EVENT` rows (`ds_reference_cats`); the other categories still
+render marks and source rows.
+
+### What this demo data cannot show
+
+Three honest caveats, stated on the demo page and in the clinical guide because
+they make two controls look sparse by construction:
+
+- **81% of con-med records are `UNCODED`** (`CMCLAS`; 83% of the de-duplicated
+  courses), so the ATC-class filter is mostly one bucket. `UNCODED` is kept as an
+  ordinary selectable value rather than hidden.
+- **Medical-history verbatim terms are scrubbed** to `VERBATIM_nnnn` placeholders
+  (1,564 of 1,818 rows) while `MHDECOD` carries real text — except on the 254
+  `PRIMARY DIAGNOSIS` rows, where `MHDECOD` is blank and `MHTERM` is real. The
+  module labels from `MHDECOD` and falls back to `MHTERM`.
+- **The study has only 3 serious adverse events**, so the serious-only filter is
+  near-empty; the sidebar label carries that count. Relatedly, 438 of the 1,122
+  treatment-emergent events have no end day, and every one of them carries
+  `AEOUT = 'NOT RECOVERED/NOT RESOLVED'`, which is what lets the module call them
+  ongoing on evidence rather than by inference; the con-med file has no outcome
+  column at all, so every blank con-med end is shown as "end not recorded". The
+  lab indicator carries only `LOW`/`NORMAL`/`HIGH` — no `HH`/`LL` tier exists in
+  this study.
+
+Two data traps, recorded so they are not rediscovered: bilirubin is `BILI` /
+"Bilirubin" in **µmol/L** (not `TBILI`, not mg/dL); alkaline phosphatase's
+`PARAMCD` is `ALKPH` while its `LBTESTCD` is `ALP`; and ALT's upper limit varies
+by lab (32/34/35/43 U/L), so any "× ULN" figure is computed per record.
 
 ## Synthetic composite-plot cohort (hep-explorer #67)
 
@@ -363,7 +456,12 @@ churn their evidence baselines for a figure none of them draws.
 - **pharmaverseadam** is licensed **Apache-2.0**
   ([LICENSE](https://github.com/pharmaverse/pharmaverseadam/blob/main/LICENSE)).
   The CSVs under `site/data/` are a column-selected, row-filtered derivative of
-  its `adlb`/`advs`/`adae`/`adeg` datasets; this file provides the attribution.
+  its `adlb`/`advs`/`adae`/`adeg`/`adsl`/`adex`/`adcm`/`admh` datasets; this
+  file provides the attribution.
+- **pharmaversesdtm** is likewise licensed **Apache-2.0**
+  ([LICENSE](https://github.com/pharmaverse/pharmaversesdtm/blob/main/LICENSE));
+  `pje-ds.csv` is a row-filtered, column-selected derivative of its `ds`
+  dataset at the revision named above.
 - The underlying study data is the **CDISC SDTM/ADaM Pilot 01** reference study,
   redistributed by pharmaverse; the same study is also mirrored under a permissive
   license by [PHUSE](https://github.com/phuse-org/phuse-scripts).
