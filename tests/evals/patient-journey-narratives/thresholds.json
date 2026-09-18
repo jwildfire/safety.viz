@@ -1,0 +1,38 @@
+{
+  "_comment": "The CI gate of the AI narrative layer (safety.viz#146), keyed by skill slug and applied to the mean score across that skill's golden cases. faithfulness, coverage, style and refusals_correct are floors; hallucination is a ceiling (the fraction of sentences allowed to name something the record does not carry, which is none). A skill version bump in skills/patient-journey-narratives/<slug>/prompt.md must clear these numbers with the stub adapter under the rules judge before it merges: node tests/evals/patient-journey-narratives/run.mjs --adapter stub. Raise a floor only with a run that shows it holds; lower one only with the reason recorded in the pull request.",
+  "event-context": {
+    "faithfulness": 0.95,
+    "coverage": 0.9,
+    "hallucination": 0.0,
+    "style": 1.0,
+    "refusals_correct": 1.0
+  },
+  "subject-summary": {
+    "faithfulness": 0.95,
+    "coverage": 0.9,
+    "hallucination": 0.0,
+    "style": 1.0,
+    "refusals_correct": 1.0
+  },
+  "lab-trajectory": {
+    "faithfulness": 0.95,
+    "coverage": 0.9,
+    "hallucination": 0.0,
+    "style": 1.0,
+    "refusals_correct": 1.0
+  },
+  "dose-journey": {
+    "faithfulness": 0.95,
+    "coverage": 0.9,
+    "hallucination": 0.0,
+    "style": 1.0,
+    "refusals_correct": 1.0
+  },
+  "disposition": {
+    "faithfulness": 0.95,
+    "coverage": 0.9,
+    "hallucination": 0.0,
+    "style": 1.0,
+    "refusals_correct": 1.0
+  }
+}

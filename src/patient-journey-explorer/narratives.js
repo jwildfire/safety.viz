@@ -286,20 +286,3 @@ function editForm(entry, { onEditSave, onAction }) {
   form.append(actions);
   return form;
 }
-
-/**
- * The on-demand control shown on a lane before its narrative is requested.
- * @param {Object} spec `{ slot, label, focusKey }`.
- * @param {() => void} onRequest Click handler.
- * @returns {HTMLElement} The control.
- */
-export function renderNarrativeRequest(spec, onRequest) {
-  const wrap = createElement('div', 'sv-pje-ai-request');
-  const button = createElement('button', 'sv-pje-btn sv-pje-ai-request-btn', spec.label);
-  button.type = 'button';
-  button.dataset.slot = spec.slot;
-  button.setAttribute('data-sv-focus', spec.focusKey);
-  button.onclick = () => onRequest();
-  wrap.append(createElement('span', 'sv-pje-ai-label', CARD_LABEL), button);
-  return wrap;
-}

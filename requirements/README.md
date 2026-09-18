@@ -18,7 +18,7 @@ These matrices are the input to the evidence pages published with every release:
 | [participant-profile.md](participant-profile.md)           | participant-profile                |   68 |
 | [ae-timelines.md](ae-timelines.md)                         | ae-timelines                       |   43 |
 | [safety-shift-plot.md](safety-shift-plot.md)               | shift-plot                         |   39 |
-| [patient-journey-explorer.md](patient-journey-explorer.md) | patient-journey-explorer           |   61 |
+| [patient-journey-explorer.md](patient-journey-explorer.md) | patient-journey-explorer           |   78 |
 | [web-codebook.md](web-codebook.md)                         | web-codebook (planned)             |  223 |
 | [paneled-outlier-explorer.md](paneled-outlier-explorer.md) | paneled-outlier-explorer (planned) |  114 |
 

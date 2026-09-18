@@ -36,6 +36,26 @@ At the foot of the panel is a standing sentence: co-occurrence is not causation.
 
 Anchoring is offered on every placeable mark in every lane, not only on adverse events. The adverse-event case is the one the panel is designed around, but the same four lists are just as meaningful around a dose change or a disposition event.
 
+## AI narratives: drafts, citations, and what they do not claim
+
+The page can also **draft** what the record shows in prose. The drafts appear as light-blue cards labelled `AI narrative`: a participant summary above the lanes, an event-context card at the top of the panel whenever you anchor something, and — only when you ask for them, from the tray beneath the lanes — a card for a lab test, for the dose course, and for disposition. If your installation has not enabled the narrative layer, no card appears and nothing on this page changes; the mechanical chart above is the whole tool.
+
+**Everything a card says is a draft, and it stays a draft.** The summary card opens as a single line; "Show full narrative" expands it. Every sentence in an expanded card carries a `Draft — AI generated` chip before its first word. The chip does not come off because you read it — it comes off when a reviewer accepts the draft, and the chart itself never accepts anything. Accept, Reject, Edit and Regenerate hand the action to whatever application embeds this chart, and that application decides what accepting means and where the accepted text goes. The chart only reports what you did and shows the state handed back to it. Nothing is published, filed or stored by the chart.
+
+**Every sentence cites the rows it came from, and the rows are the ones on your screen.** After each sentence sits a row of small citation chips — `Erythema`, `AST 36`, `54 → 81 mg`. Click one and the mark it names lights up on the timeline and takes keyboard focus, so a claim can be checked against the picture in one click; Escape clears the highlight. If the cited row is not currently drawn — its lane is off, a filter removed it, or it fell past the lane's row cap — the chip is dashed, and clicking it opens that row's raw source record instead, saying so. Shift+click opens the source record for any citation.
+
+**The model reads the same lists you do, and it does not compute.** Before anything is generated, the tooling runs the same queries the context panel runs and hands the model those rows and nothing else — the con-meds active at the anchor, the abnormal labs in the window with their ratios, the dose changes, the same-term events, the lab points with their baseline and its rule. There is no document search and no free text behind it. The numbers in a narrative are the numbers the chart derived; the model's job is to say them in order, not to work them out. A sentence that cites a row the tooling did not return is removed before you see the card, and the removal is recorded in the card's provenance.
+
+**Some language is forbidden outright.** A validator rejects causal wording (caused, due to, led to, secondary to, attributable to, induced), named diagnoses the rows do not carry (including a Hy's-law call), treatment recommendations and judgements about care, prognosis and risk statements, claims of certainty (clearly, proves, confirms), and anything describing the person rather than the record — age, sex, location. What is left is the hedged vocabulary this page uses everywhere else: "temporally associated with", "occurred within N days of", "was active on day N", "no end date is recorded". The standing sentence at the foot of every card is the same one the panel carries: co-occurrence is not causation.
+
+**A card that cannot be honest refuses instead.** When there is nothing in scope to describe, when the anchored event cannot be found, when a request matches several records and no rule picks one, when the only available sentence would need a diagnosis or a causal claim, or when the drafting service fails or declines, the card says which of those happened in plain words — "Not enough recorded data to draft a narrative", "The draft did not pass validation and was withheld" — rather than showing an empty space or a guess. A refusal is a first-class result, complete with its provenance, so it can be reproduced and explained.
+
+**A narrative can go stale, and says so.** Each card remembers exactly which rows it was drafted from. Change the context window, change a filter, or change anything else that moves those rows, and the card greys, says the rows underneath it changed, and offers Regenerate. It is never silently discarded and never silently updated — you decide whether the change matters. Changing the participant clears every card, so a draft is never shown against someone else's record.
+
+At the foot of each card is a provenance line: the model, the skill and its version, when it was generated, how many data reads it made, and the leading characters of the hash of the rows it was grounded on. Two drafts of the same card can be told apart from that line alone.
+
+**On this demo site the narratives run offline.** The page ships with a deterministic stub that writes its sentences from the real rows, so every citation resolves and every number is the chart's own — which is what lets the public demo work with no account and no key. The "AI narratives" strip above the chart can switch to Claude with your own API key; that key stays in your browser tab and goes straight to the API, never to this site. Either way the cards behave identically: same citations, same chips, same validator, same refusals.
+
 ## "Days from anchor" counts elapsed days, not study-day differences
 
 CDISC study days have no day 0: the day before first dose is day −1 and the first dosing day is day 1. That numbering is kept on the axis and in every tooltip when nothing is anchored. But once you anchor, the offsets shown as "days from anchor" — and the ±N-day window itself — are computed in **elapsed days**, the continuous count a calendar would give, and therefore never equal a simple subtraction of two CDISC study-day numbers when the two days straddle first dose.
@@ -97,7 +117,7 @@ Every mark is a real button with a sentence for a name ("Erythema, adverse event
 
 ## What is not on this page
 
-- **Any narrative.** No summary of "why", no relatedness assessment, no similar-participant search. The panel is the mechanical substrate such a layer would read; the event surface hands it the whole context bundle without touching the page.
+- **Any assessment of "why".** The narrative cards describe what the record shows and cite the rows they describe; they do not assess relatedness, name a diagnosis, or reach for a cause — the validator rejects that language outright. No similar-participant search either. The panel remains the mechanical substrate, and the event surface hands the whole context bundle to any consumer without touching the page.
 - **Cross-participant comparison.** This is a participant picker, not a cohort stepper; the other renderers in the gallery are the population views.
 - **A QT / ECG lane**, and any lane beyond the seven.
 - **A "zoom to window" control.** Anchoring never re-ranges the axis; a zoom is a reasonable later addition.
@@ -105,4 +125,4 @@ Every mark is a real button with a sentence for a name ("Erythema, adverse event
 
 ## Source
 
-A new build, not a port: the Patient Journey Explorer has no RhoInc or SafetyGraphics predecessor. It is specified by [obot.roadmap#349](https://github.com/jwildfire/obot.roadmap/issues/349) and built under [safety.viz#142](https://github.com/jwildfire/safety.viz/issues/142). The demo extracts and their derivation are documented in `docs/DATA_SOURCES.md`.
+A new build, not a port: the Patient Journey Explorer has no RhoInc or SafetyGraphics predecessor. It is specified by [obot.roadmap#349](https://github.com/jwildfire/obot.roadmap/issues/349) and built under [safety.viz#142](https://github.com/jwildfire/safety.viz/issues/142); the AI narrative layer is specified by [obot.roadmap#351](https://github.com/jwildfire/obot.roadmap/issues/351) and built under [safety.viz#146](https://github.com/jwildfire/safety.viz/issues/146), with its prompts and style rules readable in the repository under `skills/patient-journey-narratives/`. The demo extracts and their derivation are documented in `docs/DATA_SOURCES.md`.

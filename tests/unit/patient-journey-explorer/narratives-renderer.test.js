@@ -199,10 +199,10 @@ describe('PJE-NARR-009: the narratives slots (#146)', () => {
   it('PJE-NARR-009: with no slot bound nothing is requested and nothing renders (#146)', () => {
     expect(instance.settings.narratives).toBeNull();
     expect(instance.narratives).toEqual([]);
-    expect(container.querySelectorAll('.sv-pje-ai, .sv-pje-ai-slot')).toHaveLength(0);
+    expect(container.querySelectorAll('.sv-pje-ai, .sv-pje-ai-request-btn')).toHaveLength(0);
   });
 
-  it('PJE-NARR-009: binding the stub drafts the participant summary above the lanes, collapsed to its blurb, and the lane slots appear (#146)', async () => {
+  it('PJE-NARR-009: binding the stub drafts the participant summary above the lanes, collapsed to its blurb, and the tray offers the on-request kinds (#146)', async () => {
     const generator = bindNarratives(instance, { provider: 'stub' });
     expect(Object.keys(instance.settings.narratives).sort()).toEqual([
       'disposition',
@@ -240,17 +240,18 @@ describe('PJE-NARR-009: the narratives slots (#146)', () => {
     expect(children.indexOf(banner)).toBeLessThan(
       children.indexOf(container.querySelector('.sv-pje-lanes'))
     );
-    const slots = [...container.querySelectorAll('.sv-pje-ai-slot')].map(
+    const offers = [...container.querySelectorAll('.sv-pje-ai-tray .sv-pje-ai-request-btn')].map(
       (el) => `${el.dataset.slot}:${el.dataset.key}`
     );
-    expect(slots).toEqual([
+    expect(offers).toEqual([
       'doseJourney:',
       'labTrajectory:Alanine Aminotransferase',
       'disposition:'
     ]);
+    expect(container.querySelectorAll('.sv-pje-lanes .sv-pje-ai-request-btn')).toHaveLength(0);
     generator.unbind();
     expect(instance.narratives).toEqual([]);
-    expect(container.querySelectorAll('.sv-pje-ai, .sv-pje-ai-slot')).toHaveLength(0);
+    expect(container.querySelectorAll('.sv-pje-ai, .sv-pje-ai-request-btn')).toHaveLength(0);
   });
 
   it('PJE-NARR-009: a slot that rejects renders an error card, and a slot returning junk is reported (#146)', async () => {

@@ -36,6 +36,10 @@ Applies to every skill in this folder. The output validator (`src/patientJourney
 - A sentence about a count cites the rows counted, or the anchor when the count came from the context-window tool.
 - Do not cite the same row twice in one sentence.
 
+## Quoting the record
+
+A recorded value that itself contains forbidden wording — a disposition term such as `PMD DECISION DUE TO AE'S`, a verbatim outcome — is quoted verbatim inside double quotation marks and attributed to the record ("the disposition record reads …"). The validator exempts double-quoted spans from the forbidden-phrase block, because the quoted words are the record's claim, not the model's. Never paraphrase such wording into your own sentence, and never quote to smuggle a claim the rows do not carry.
+
 ## Forbidden phrase patterns
 
 The validator compiles each line of the block below as a case-insensitive JavaScript regular expression and rejects a sentence that matches any of them.

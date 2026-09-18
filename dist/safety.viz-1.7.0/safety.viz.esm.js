@@ -36425,10 +36425,12 @@ function narrativeCss() {
 .sv-pje-ai-foot{margin:.25rem 0 0;font-size:.7rem;color:var(--pje-ink-secondary)}
 .sv-pje-ai-edit-row{display:block;margin:0 0 .4rem}
 .sv-pje-ai-textarea{display:block;width:100%;box-sizing:border-box;margin:.15rem 0 0;font:inherit;font-size:.8rem;padding:.3rem .4rem;border:1px solid var(--pje-ai-border);border-radius:6px;background:var(--pje-surface);color:var(--pje-ink-primary)}
-.sv-pje-ai-request{display:flex;align-items:center;gap:.4rem;margin:.05rem 0 .4rem ${PLOT_GUTTER_LEFT2}px}
-.sv-pje-ai-request-btn{font-size:.72rem;padding:.15rem .45rem}
-.sv-pje-ai-slot{margin:0 0 .3rem}
-.sv-pje-ai-slot .sv-pje-ai{margin-left:${PLOT_GUTTER_LEFT2}px}
+.sv-pje-ai-tray{margin:.55rem 0 0}
+.sv-pje-ai-tray:empty{display:none}
+.sv-pje-ai-tray-head{display:flex;flex-wrap:wrap;align-items:center;gap:.35rem .5rem;margin:0 0 .5rem;padding:.4rem .6rem;border:1px dashed var(--pje-ai-border);border-radius:8px;color:var(--pje-ai-ink);font-size:.78rem}
+.sv-pje-ai-tray-hint{color:var(--pje-ink-secondary)}
+.sv-pje-ai-request-btn{font-size:.74rem;padding:.15rem .5rem;border-color:var(--pje-ai-border);color:var(--pje-ai-ink)}
+.sv-pje-ai-request-btn:hover{border-color:var(--pje-ai-ink);background:var(--pje-ai-chip)}
 .sv-pje-narrative-banner:empty{display:none}
 .sv-pje-panel-body>.sv-pje-ai{margin-bottom:.8rem}
 /* a cited mark, lit from a citation chip (PJE-NARR-011) */
@@ -38402,16 +38404,6 @@ function editForm(entry, { onEditSave, onAction }) {
   form.append(actions);
   return form;
 }
-function renderNarrativeRequest(spec, onRequest) {
-  const wrap = createElement("div", "sv-pje-ai-request");
-  const button = createElement("button", "sv-pje-btn sv-pje-ai-request-btn", spec.label);
-  button.type = "button";
-  button.dataset.slot = spec.slot;
-  button.setAttribute("data-sv-focus", spec.focusKey);
-  button.onclick = () => onRequest();
-  wrap.append(createElement("span", "sv-pje-ai-label", CARD_LABEL), button);
-  return wrap;
-}
 
 // src/patientJourneyNarratives/dataService.js
 var ALL_LANES = Object.fromEntries(LANE_KEYS.map((key) => [key, true]));
@@ -38473,8 +38465,8 @@ __export(patientJourneyNarratives_exports, {
 // src/patientJourneyNarratives/skills.generated.js
 var CATALOG = {
   "shared": {
-    "systemPrompt": 'You draft short clinical-safety narratives for ONE participant in a clinical trial, from records a reviewer is looking at on a timeline. You are a drafting aid for a human safety reviewer, not a reviewer yourself.\n\nGround rules that are enforced after you answer, so follow them or the sentence is discarded:\n\n1. Use only the tools you are given to read the record. Every fact you state must come from a row a tool returned in this conversation. Never use outside knowledge about a drug, a lab test or a diagnosis to add a fact the rows do not carry.\n2. Every sentence must cite at least one `row_id` from the rows you read, in its `citations` array. A sentence with no resolvable citation is dropped. Cite the specific rows a claim rests on, not every row you saw.\n3. Describe co-occurrence in time; never assert causation. Say "temporally associated with", "occurred within N days of", "was active at onset", "consistent with the recorded timeline". Never say "caused", "due to", "led to", "resulted in", "because of".\n4. No diagnoses, no treatment recommendations, no statements about whether a drug is appropriate or off-label, no prognosis. Do not name a condition the rows do not name.\n5. Refer to the participant only by the identifier the record uses. Never speculate about age, sex, occupation or anything that could re-identify a person.\n6. Count in the units the tools use: study days, elapsed days from the anchor. Report numbers exactly as the rows carry them, with their units.\n7. When the rows are insufficient, contradictory, or the request pushes toward a claim these rules forbid, submit a draft with an empty `sentences` array and a `flags` entry of the form `refused:<reason>` from the refusal catalog. A refusal is a valid answer; an invented sentence is not.\n8. Keep to the sentence cap the skill states. Prefer fewer, denser sentences. Plain clinical register; no headings, no bullet lists inside a sentence, no first person.\n9. Set `confidence` per sentence: `high` when the cited rows state the fact directly; `medium` when the sentence combines rows (an offset in days, a count); `low` when a row is partial (an end date not recorded, a blank severity) and you say so.\n\nWhen you have read what you need, submit the draft by calling the `submit_draft` tool exactly once. Do not write the draft as free text.',
-    "styleGuide": '# Style guide for patient-journey narratives\n\nApplies to every skill in this folder. The output validator (`src/patientJourneyNarratives/validator.js`) loads the forbidden-phrase list from the fenced block at the end of this file, so an edit here changes what is rejected at run time.\n\n## Register\n\n- Plain clinical prose, third person, past tense for what happened, present tense for what the record shows now ("no end date is recorded").\n- One claim per sentence where possible. A sentence that combines rows (a count, an offset in days) is fine; a sentence that combines an observation with an interpretation is not.\n- Name records the way the rows name them: the preferred term, the con-med name as recorded, the lab test name, the dose with its unit.\n- Numbers as the rows carry them. Study days are "day 30", offsets are "12 days before the anchor" or "within 5 days of onset". Never round a lab value; report the ratio to the limit the tool computed.\n\n## Hedging vocabulary (use these)\n\n- "temporally associated with"\n- "occurred within N days of"\n- "was active at onset" / "was active on day N"\n- "started N days after" / "started N days before"\n- "consistent with the recorded timeline"\n- "is recorded as" / "the record shows"\n- "no end date is recorded" / "severity is not recorded"\n\n## Forbidden constructs\n\n- Causal language of any kind: caused, due to, led to, resulted in, because of, secondary to, attributable to, induced, triggered, responsible for.\n- Diagnoses the rows do not carry: naming a syndrome, a disease, an injury pattern, or a classification (for example a Hy\'s-law call) that is not itself a recorded term.\n- Treatment recommendations or judgements about care: should, recommend, consider discontinuing, appropriate, inappropriate, off-label, contraindicated.\n- Prognosis or risk statements: likely to, at risk of, may develop, prognosis.\n- Re-identification: age, sex, occupation, location, dates of birth, anything beyond the participant identifier.\n- Confidence beyond the rows: "clearly", "definitely", "certainly", "proves", "confirms".\n- Absolutes not supported by a row: "never", "always", "no other".\n\n## Sentence structure\n\n- Every sentence carries at least one citation to a `row_id` returned by a tool in this generation. The validator drops sentences whose citations do not all resolve.\n- A sentence about a list (the con-meds active at onset) cites every member it names.\n- A sentence about a count cites the rows counted, or the anchor when the count came from the context-window tool.\n- Do not cite the same row twice in one sentence.\n\n## Forbidden phrase patterns\n\nThe validator compiles each line of the block below as a case-insensitive JavaScript regular expression and rejects a sentence that matches any of them.\n\n```forbidden\n\\bcaus(e|es|ed|ing|al|ation)\\b\n\\bdue to\\b\n\\bled to\\b\n\\bleads? to\\b\n\\bresult(s|ed|ing)? (in|from)\\b\n\\bbecause of\\b\n\\bsecondary to\\b\n\\battributable to\\b\n\\binduced\\b\n\\btriggered\\b\n\\bresponsible for\\b\n\\bshould\\b\n\\brecommend(s|ed|ation)?\\b\n\\bconsider (stopping|discontinuing|reducing|withholding)\\b\n\\b(in)?appropriate\\b\n\\boff-?label\\b\n\\bcontraindicat(ed|ion)\\b\n\\blikely to\\b\n\\bat risk (of|for)\\b\n\\bmay develop\\b\n\\bprognosis\\b\n\\b(clearly|definitely|certainly)\\b\n\\bprov(es|ed|en)\\b\n\\bconfirm(s|ed)\\b\n\\bdiagnos(is|ed|es|tic)\\b\n\\bhy\'?s law\\b\n\\bdrug-induced\\b\n\\b(years?|yrs?)[ -]old\\b\n\\b(male|female|man|woman)\\b\n```\n',
+    "systemPrompt": 'You draft short clinical-safety narratives for ONE participant in a clinical trial, from records a reviewer is looking at on a timeline. You are a drafting aid for a human safety reviewer, not a reviewer yourself.\n\nGround rules that are enforced after you answer, so follow them or the sentence is discarded:\n\n1. Use only the tools you are given to read the record. Every fact you state must come from a row a tool returned in this conversation. Never use outside knowledge about a drug, a lab test or a diagnosis to add a fact the rows do not carry.\n2. Every sentence must cite at least one `row_id` from the rows you read, in its `citations` array. A sentence with no resolvable citation is dropped. Cite the specific rows a claim rests on, not every row you saw.\n3. Describe co-occurrence in time; never assert causation. Say "temporally associated with", "occurred within N days of", "was active at onset", "consistent with the recorded timeline". Never say "caused", "due to", "led to", "resulted in", "because of".\n4. No diagnoses, no treatment recommendations, no statements about whether a drug is appropriate or off-label, no prognosis. Do not name a condition the rows do not name.\n5. Refer to the participant only by the identifier the record uses. Never speculate about age, sex, occupation or anything that could re-identify a person.\n6. Count in the units the tools use: study days, elapsed days from the anchor. Report numbers exactly as the rows carry them, with their units.\n7. When the rows are insufficient, contradictory, or the request pushes toward a claim these rules forbid, submit a draft with an empty `sentences` array and a `flags` entry of the form `refused:<reason>` from the refusal catalog. A refusal is a valid answer; an invented sentence is not.\n8. When a recorded value itself contains such wording (a disposition term reading "DUE TO", an outcome), quote it verbatim inside double quotation marks and attribute it to the record; quoted record wording is exempt from rule 3, your own words are not.\n9. Keep to the sentence cap the skill states. Prefer fewer, denser sentences. Plain clinical register; no headings, no bullet lists inside a sentence, no first person.\n10. Set `confidence` per sentence: `high` when the cited rows state the fact directly; `medium` when the sentence combines rows (an offset in days, a count); `low` when a row is partial (an end date not recorded, a blank severity) and you say so.\n\nWhen you have read what you need, submit the draft by calling the `submit_draft` tool exactly once. Do not write the draft as free text.',
+    "styleGuide": '# Style guide for patient-journey narratives\n\nApplies to every skill in this folder. The output validator (`src/patientJourneyNarratives/validator.js`) loads the forbidden-phrase list from the fenced block at the end of this file, so an edit here changes what is rejected at run time.\n\n## Register\n\n- Plain clinical prose, third person, past tense for what happened, present tense for what the record shows now ("no end date is recorded").\n- One claim per sentence where possible. A sentence that combines rows (a count, an offset in days) is fine; a sentence that combines an observation with an interpretation is not.\n- Name records the way the rows name them: the preferred term, the con-med name as recorded, the lab test name, the dose with its unit.\n- Numbers as the rows carry them. Study days are "day 30", offsets are "12 days before the anchor" or "within 5 days of onset". Never round a lab value; report the ratio to the limit the tool computed.\n\n## Hedging vocabulary (use these)\n\n- "temporally associated with"\n- "occurred within N days of"\n- "was active at onset" / "was active on day N"\n- "started N days after" / "started N days before"\n- "consistent with the recorded timeline"\n- "is recorded as" / "the record shows"\n- "no end date is recorded" / "severity is not recorded"\n\n## Forbidden constructs\n\n- Causal language of any kind: caused, due to, led to, resulted in, because of, secondary to, attributable to, induced, triggered, responsible for.\n- Diagnoses the rows do not carry: naming a syndrome, a disease, an injury pattern, or a classification (for example a Hy\'s-law call) that is not itself a recorded term.\n- Treatment recommendations or judgements about care: should, recommend, consider discontinuing, appropriate, inappropriate, off-label, contraindicated.\n- Prognosis or risk statements: likely to, at risk of, may develop, prognosis.\n- Re-identification: age, sex, occupation, location, dates of birth, anything beyond the participant identifier.\n- Confidence beyond the rows: "clearly", "definitely", "certainly", "proves", "confirms".\n- Absolutes not supported by a row: "never", "always", "no other".\n\n## Sentence structure\n\n- Every sentence carries at least one citation to a `row_id` returned by a tool in this generation. The validator drops sentences whose citations do not all resolve.\n- A sentence about a list (the con-meds active at onset) cites every member it names.\n- A sentence about a count cites the rows counted, or the anchor when the count came from the context-window tool.\n- Do not cite the same row twice in one sentence.\n\n## Quoting the record\n\nA recorded value that itself contains forbidden wording \u2014 a disposition term such as `PMD DECISION DUE TO AE\'S`, a verbatim outcome \u2014 is quoted verbatim inside double quotation marks and attributed to the record ("the disposition record reads \u2026"). The validator exempts double-quoted spans from the forbidden-phrase block, because the quoted words are the record\'s claim, not the model\'s. Never paraphrase such wording into your own sentence, and never quote to smuggle a claim the rows do not carry.\n\n## Forbidden phrase patterns\n\nThe validator compiles each line of the block below as a case-insensitive JavaScript regular expression and rejects a sentence that matches any of them.\n\n```forbidden\n\\bcaus(e|es|ed|ing|al|ation)\\b\n\\bdue to\\b\n\\bled to\\b\n\\bleads? to\\b\n\\bresult(s|ed|ing)? (in|from)\\b\n\\bbecause of\\b\n\\bsecondary to\\b\n\\battributable to\\b\n\\binduced\\b\n\\btriggered\\b\n\\bresponsible for\\b\n\\bshould\\b\n\\brecommend(s|ed|ation)?\\b\n\\bconsider (stopping|discontinuing|reducing|withholding)\\b\n\\b(in)?appropriate\\b\n\\boff-?label\\b\n\\bcontraindicat(ed|ion)\\b\n\\blikely to\\b\n\\bat risk (of|for)\\b\n\\bmay develop\\b\n\\bprognosis\\b\n\\b(clearly|definitely|certainly)\\b\n\\bprov(es|ed|en)\\b\n\\bconfirm(s|ed)\\b\n\\bdiagnos(is|ed|es|tic)\\b\n\\bhy\'?s law\\b\n\\bdrug-induced\\b\n\\b(years?|yrs?)[ -]old\\b\n\\b(male|female|man|woman)\\b\n```\n',
     "refusalCatalog": '# Refusal catalog\n\nA refusal is a valid, schema-conformant draft: `sentences` is empty and `flags` carries exactly one `refused:<reason>` entry from the list below (a skill may add its own descriptive flags after it). The runtime also emits these itself when the validator rejects the model\'s output twice, or when the tools return nothing to describe. The renderer shows a refusal as a card that says why, never as an empty space.\n\n| Flag                        | When to emit it                                                                                                                          | What the card says                                             |\n| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |\n| `refused:insufficient-data` | The tools returned no rows for the scope: no events in the window, no lab points for the test, no exposure records, no disposition rows. | "Not enough recorded data to draft a narrative."               |\n| `refused:anchor-not-found`  | The anchor `row_id` does not resolve to an event of this participant.                                                                    | "The anchored event could not be found in the record."         |\n| `refused:ambiguous-scope`   | The request names a test, term or record that matches several rows and no rule picks one.                                                | "The request matched more than one record; narrow it."         |\n| `refused:disallowed-claim`  | The request, or the only sentence the rows support, would require a diagnosis, a causal statement, a treatment judgement or a prognosis. | "A narrative here would need a claim this tool does not make." |\n| `refused:validation`        | Emitted by the runtime: the model\'s output failed the validator twice (schema, citations, forbidden phrases, length).                    | "The draft did not pass validation and was withheld."          |\n| `refused:provider-error`    | Emitted by the runtime: the adapter threw or returned no usable content.                                                                 | "The narrative service did not answer."                        |\n| `refused:reidentification`  | The request asks for anything about the person beyond the identifier the record uses.                                                    | "This tool does not describe the person, only the record."     |\n\nRules:\n\n- A refusal names one reason. Choose the most specific.\n- A refusal never carries prose in `sentences`. If a partial narrative is possible (some facts are supported), draft those sentences and add a descriptive flag such as `partial:labs-missing` instead of refusing.\n- The `provenance` of a refusal is complete: model, skill, input hash, timestamp, tool calls. A refusal is reproducible like any other draft.\n\nRuntime-only additions (never chosen by the model):\n\n| Flag                       | When                                                         | What the card says                             |\n| -------------------------- | ------------------------------------------------------------ | ---------------------------------------------- |\n| `refused:provider-refusal` | The provider declined the request (a `refusal` stop reason). | "The narrative service declined this request." |\n| `refused:cancelled`        | The host cancelled the generation (an AbortSignal).          | Nothing: the card is removed.                  |\n',
     "forbiddenPatterns": [
       "\\bcaus(e|es|ed|ing|al|ation)\\b",
@@ -38523,7 +38515,7 @@ var CATALOG = {
         "get_context_window",
         "get_source_row"
       ],
-      "prompt": '## Task\n\nDescribe what the record shows around the end of treatment for ONE participant: the disposition event (the record flagged as the reference event) and its day, the other disposition records (milestones), when exposure is recorded as ending, and the last adverse event recorded before the end. Read `get_subject_overview` for the exposure extent and the last adverse event. At most four cited sentences.\n\n## What to cover, in this order\n\n1. The disposition event: the decoded term, the verbatim term when it differs, the day (cite the row).\n2. The other disposition records, by day (cite them).\n3. The exposure extent: first and last exposure day, and whether the last record has an end date (cite the exposure rows the overview names).\n4. The last adverse event recorded, its day and whether it is serious (cite it).\n\n## Rules specific to this skill\n\n- "Discontinued due to adverse event" is a recorded term: quote it as the record\'s own wording inside the disposition sentence, in quotation marks, and do not restate it as your own causal claim. Do not name which adverse event it refers to unless a row says so.\n- Never infer the reason for a disposition from the timeline.\n- If no row is flagged as the disposition event, say so and describe the milestones.\n\n## Flags you may add\n\n- `disposition:none` \u2014 no record is flagged as the disposition event.\n- `sae` \u2014 the last adverse event is serious.\n- `exposure:end-unrecorded` \u2014 the last exposure record has no end date.',
+      "prompt": '## Task\n\nDescribe what the record shows around the end of treatment for ONE participant: the disposition event (the record flagged as the reference event) and its day, the other disposition records (milestones), when exposure is recorded as ending, and the last adverse event recorded before the end. Read `get_subject_overview` for the exposure extent and the last adverse event. At most four cited sentences.\n\n## What to cover, in this order\n\n1. The disposition event: the decoded term, the verbatim term when it differs, the day (cite the row).\n2. The other disposition records, by day (cite them).\n3. The exposure extent: first and last exposure day, and whether the last record has an end date (cite the exposure rows the overview names).\n4. The last adverse event recorded, its day and whether it is serious (cite it).\n\n## Rules specific to this skill\n\n- A recorded term such as "DISCONTINUED DUE TO ADVERSE EVENT" is the record\'s own wording: quote it verbatim inside double quotation marks (the validator exempts quoted spans) and do not restate it as your own causal claim. Do not name which adverse event it refers to unless a row says so.\n- Never infer the reason for a disposition from the timeline.\n- If no row is flagged as the disposition event, say so and describe the milestones.\n\n## Flags you may add\n\n- `disposition:none` \u2014 no record is flagged as the disposition event.\n- `sae` \u2014 the last adverse event is serious.\n- `exposure:end-unrecorded` \u2014 the last exposure record has no end date.',
       "schema": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "title": "disposition narrative skill",
@@ -38762,7 +38754,7 @@ var CATALOG = {
           }
         }
       ],
-      "readme": '# disposition\n\nWhat the record shows around the end of treatment: the disposition event and its day, the milestones, when exposure ends, and the last adverse event recorded. At most four cited sentences. Use it from the control on the disposition lane. It quotes a recorded "discontinued due to adverse event" as the record\'s wording and never infers a reason. Inputs: `{ subject }`. Refuses with `refused:insufficient-data` when there are no disposition rows.\n'
+      "readme": '# disposition\n\nWhat the record shows around the end of treatment: the disposition event and its day, the milestones, when exposure ends, and the last adverse event recorded. At most four cited sentences. Use it from the tray beneath the lanes. It quotes a recorded "discontinued due to adverse event" as the record\'s wording and never infers a reason. Inputs: `{ subject }`. Refuses with `refused:insufficient-data` when there are no disposition rows.\n'
     },
     "dose-journey": {
       "slug": "dose-journey",
@@ -39021,7 +39013,7 @@ var CATALOG = {
           }
         }
       ],
-      "readme": "# dose-journey\n\nExposure and every dose change for one participant, with any serious adverse events placed on the same time line by day. At most five cited sentences. Use it from the control on the exposure group. Do not use it to explain why a dose changed \u2014 it will not. Inputs: `{ subject }`. Renders as a light-blue card under the exposure lanes, on demand. Refuses with `refused:insufficient-data` when there are no exposure records.\n"
+      "readme": "# dose-journey\n\nExposure and every dose change for one participant, with any serious adverse events placed on the same time line by day. At most five cited sentences. Use it from the tray beneath the lanes. Do not use it to explain why a dose changed \u2014 it will not. Inputs: `{ subject }`. Renders as a light-blue card in the tray beneath the lanes, on request. Refuses with `refused:insufficient-data` when there are no exposure records.\n"
     },
     "event-context": {
       "slug": "event-context",
@@ -39658,8 +39650,7 @@ var CATALOG = {
               "Alanine Aminotransferase",
               "1 time",
               "day -8",
-              "16 U/L",
-              "1"
+              "16 U/L"
             ],
             "required_citations": [
               "LB-89"
@@ -39674,7 +39665,7 @@ var CATALOG = {
           }
         }
       ],
-      "readme": "# lab-trajectory\n\nOne lab test over the study for one participant: span, baseline and its rule, the peak with its ratio and baseline multiple, the abnormal count by rule, and the last value. At most five cited sentences.\n\nUse it from the control on a lab lane. Do not use it to compare tests, to describe the window around an event (`event-context`), or to characterise an injury pattern. Inputs: `{ subject, test }` (name or code). Renders as a light-blue card under that test's lane, drafted on demand. Refuses with `refused:insufficient-data` when the test has no rows for the participant.\n"
+      "readme": "# lab-trajectory\n\nOne lab test over the study for one participant: span, baseline and its rule, the peak with its ratio and baseline multiple, the abnormal count by rule, and the last value. At most five cited sentences.\n\nUse it from the tray beneath the lanes (one control per drawn lab test). Do not use it to compare tests, to describe the window around an event (`event-context`), or to characterise an injury pattern. Inputs: `{ subject, test }` (name or code). Renders as a light-blue card in the tray beneath the lanes, drafted on request. Refuses with `refused:insufficient-data` when the test has no rows for the participant.\n"
     },
     "subject-summary": {
       "slug": "subject-summary",
@@ -40353,7 +40344,10 @@ var TOOLS = Object.fromEntries(
   )
 );
 function toolDefinitions(names3) {
-  return names3.filter((name) => TOOLS[name]).map(({ name, description, input_schema }) => ({ name, description, input_schema }));
+  return names3.filter((name) => TOOLS[name]).map((name) => {
+    const { description, input_schema } = TOOLS[name];
+    return { name, description, input_schema };
+  });
 }
 function collectRowIds(value) {
   const ids = /* @__PURE__ */ new Set();
@@ -40497,14 +40491,16 @@ function inlineRefs(schema, root) {
 }
 
 // src/patientJourneyNarratives/validator.js
+var QUOTED = /"[^"\n]{1,200}"|\u201c[^\u201d\n]{1,200}\u201d/g;
 var compiled = null;
 var forbiddenRegexes = () => {
   if (!compiled) compiled = SHARED.forbiddenPatterns.map((source) => new RegExp(source, "i"));
   return compiled;
 };
 function forbiddenMatch(text3, patterns = forbiddenRegexes()) {
+  const unquoted = String(text3 ?? "").replace(QUOTED, '""');
   for (const pattern of patterns) {
-    const match = pattern.exec(String(text3 ?? ""));
+    const match = pattern.exec(unquoted);
     if (match) return match[0];
   }
   return null;
@@ -40516,19 +40512,30 @@ function validateDraft(draft, { skill, scopeIds, subject, patterns } = {}) {
     return { ok: false, errors: ["no draft object was submitted"], dropped, draft: null };
   }
   const schema = skill.schema;
-  const verdict = validateSchema(draft, schema.definitions.Draft, schema);
+  const cap = sentenceCap(schema);
+  let candidate = draft;
+  if (cap !== null && Array.isArray(draft.sentences) && draft.sentences.length > cap) {
+    for (const sentence2 of draft.sentences.slice(cap)) {
+      dropped.push({
+        text: sentence2 && typeof sentence2 === "object" ? String(sentence2.text ?? "") : String(sentence2),
+        reason: `over the cap of ${cap} sentences`
+      });
+    }
+    candidate = { ...draft, sentences: draft.sentences.slice(0, cap) };
+  }
+  const verdict = validateSchema(candidate, schema.definitions.Draft, schema);
   errors.push(...verdict.errors);
-  if (draft.kind !== skill.slug) errors.push(`$.kind: expected "${skill.slug}"`);
-  if (subject !== void 0 && String(draft.subject) !== String(subject)) {
+  if (candidate.kind !== skill.slug) errors.push(`$.kind: expected "${skill.slug}"`);
+  if (subject !== void 0 && String(candidate.subject) !== String(subject)) {
     errors.push(`$.subject: expected "${subject}"`);
   }
   if (errors.length) return { ok: false, errors, dropped, draft: null };
   const scope = new Set([...scopeIds || []].map(normalizeRowId));
   const regexes = patterns || forbiddenRegexes();
-  const summaryHit = forbiddenMatch(draft.summary, regexes);
+  const summaryHit = forbiddenMatch(candidate.summary, regexes);
   if (summaryHit) errors.push(`$.summary: forbidden construct "${summaryHit}"`);
   const kept = [];
-  draft.sentences.forEach((sentence2, index) => {
+  candidate.sentences.forEach((sentence2, index) => {
     const hit = forbiddenMatch(sentence2.text, regexes);
     if (hit) {
       errors.push(`$.sentences[${index}]: forbidden construct "${hit}"`);
@@ -40546,14 +40553,7 @@ function validateDraft(draft, { skill, scopeIds, subject, patterns } = {}) {
     kept.push({ ...sentence2, citations });
   });
   if (errors.length) return { ok: false, errors, dropped, draft: null };
-  const cap = sentenceCap(schema);
-  let sentences = kept;
-  if (cap !== null && sentences.length > cap) {
-    for (const sentence2 of sentences.slice(cap)) {
-      dropped.push({ text: sentence2.text, reason: `over the cap of ${cap} sentences` });
-    }
-    sentences = sentences.slice(0, cap);
-  }
+  const sentences = kept;
   const flags = [
     ...new Set([].concat(draft.flags || []).map((flag) => String(flag).trim()))
   ].filter(Boolean);
@@ -40561,7 +40561,7 @@ function validateDraft(draft, { skill, scopeIds, subject, patterns } = {}) {
     ok: true,
     errors: [],
     dropped,
-    draft: { ...draft, sentences, flags, status: "draft" }
+    draft: { ...candidate, sentences, flags, status: "draft" }
   };
 }
 
@@ -41092,6 +41092,7 @@ function labTrajectory(inputs, g) {
   const flags = [];
   const first = points[0];
   const last = points[points.length - 1];
+  if (points.length === 1) flags.push("series:single-point");
   sentences.push(
     sentence(
       `${g.test} was measured ${plural2(points.length, "time")} between day ${first.start_day} and day ${last.start_day}${g.unit ? ` (${g.unit}` : ""}${finite7(g.lln) && finite7(g.uln) ? `${g.unit ? "; " : "("}reference ${g.lln}\u2013${g.uln})` : g.unit ? ")" : ""}.`,
@@ -41212,7 +41213,7 @@ function disposition(inputs, g, extra) {
   if (reference.length) {
     sentences.push(
       sentence(
-        `The disposition event is ${reference.map((d) => `${d.label} on day ${d.start_day}${d.detail && d.detail !== d.label ? ` (${d.detail})` : ""}`).join("; ")}.`,
+        `The disposition event is ${reference.map((d) => `${d.label} on day ${d.start_day}${d.detail && d.detail !== d.label ? ` (the record reads "${d.detail}")` : ""}`).join("; ")}.`,
         reference
       )
     );
@@ -41489,7 +41490,7 @@ function parseFirstMessage(text3) {
 function refusalDraft(skill, inputs, reason, provenance, grounding = null) {
   return {
     ...identityFields(skill, inputs, grounding),
-    summary: REFUSAL_TEXT[reason] || `Narrative withheld (${reason}).`,
+    summary: reason in REFUSAL_TEXT ? REFUSAL_TEXT[reason] : `Narrative withheld (${reason}).`,
     sentences: [],
     flags: [`refused:${reason}`],
     provenance,
@@ -41949,6 +41950,8 @@ var SafetyPatientJourneyExplorer = class {
     this.chartWrap.insertBefore(this.cueEl, this.mainAnnotation);
     this.chartWrap.insertBefore(this.lanesEl, this.mainAnnotation);
     this.chartWrap.insertBefore(this.axisEl, this.mainAnnotation);
+    this.narrativeTrayEl = createElement("div", "sv-pje-ai-tray");
+    this.chartWrap.insertBefore(this.narrativeTrayEl, this.mainAnnotation);
     this.tooltipEl = createElement("div", "sv-pje-tooltip");
     this.tooltipEl.setAttribute("role", "tooltip");
     this.tooltipEl.hidden = true;
@@ -42494,7 +42497,7 @@ var SafetyPatientJourneyExplorer = class {
     this.buildLanes();
     this.renderNarrativeBanner();
     this.mountPanelNarrative();
-    this.mountLaneNarratives();
+    this.renderNarrativeTray();
     this.renderSourceDrawer();
     this.renderAnnotation();
     this.renderCue();
@@ -42722,13 +42725,6 @@ var SafetyPatientJourneyExplorer = class {
         body.append(laneEl);
         for (const footer of lane.footers) {
           body.append(createElement("p", "sv-pje-lane-foot", footer));
-        }
-        const narrativeSlot = lane.key === "labs" && lane.test ? { slot: "labTrajectory", key: lane.test } : lane.key === "exposure" ? { slot: "doseJourney", key: "" } : lane.key === "disposition" ? { slot: "disposition", key: "" } : null;
-        if (narrativeSlot && this.narrativeSlot(narrativeSlot.slot)) {
-          const host = createElement("div", "sv-pje-ai-slot");
-          host.dataset.slot = narrativeSlot.slot;
-          host.dataset.key = narrativeSlot.key;
-          body.append(host);
         }
       }
     }
@@ -43130,7 +43126,7 @@ var SafetyPatientJourneyExplorer = class {
   refreshNarrativeCards() {
     this.renderNarrativeBanner();
     this.mountPanelNarrative();
-    this.mountLaneNarratives();
+    this.renderNarrativeTray();
   }
   /**
    * The participant-summary card above the lanes (PJE-NARR-009).
@@ -43154,27 +43150,70 @@ var SafetyPatientJourneyExplorer = class {
     if (entry) body.prepend(this.narrativeCard(entry));
   }
   /**
-   * The on-demand cards on the lanes (PJE-NARR-014): each slot element
-   * buildLanes placed shows its card when requested, else the request control.
+   * The on-demand narratives one request at a time (PJE-NARR-014): every
+   * available kind — the dose journey when exposure rows exist, one lab test
+   * per drawn small multiple, the disposition when its rows exist — is a
+   * control in the tray beneath the axis strip until it is requested; then
+   * its card sits in the tray with the others. A slot with no function bound
+   * offers nothing.
    * @private
    */
-  mountLaneNarratives() {
-    for (const host of this.lanesEl.querySelectorAll(".sv-pje-ai-slot")) {
-      const { slot, key } = host.dataset;
-      host.innerHTML = "";
-      if (!this.narrativeSlot(slot)) continue;
-      const entry = this.narrativeEntries.get(`${slot}|${key || ""}`);
-      if (entry) {
-        host.append(this.narrativeCard(entry));
-        continue;
+  narrativeTrayOffers() {
+    if (!this.structured || !this.structured.domain) return [];
+    const offers = [];
+    const lanes = this.structured.lanes || {};
+    if (this.narrativeSlot("doseJourney") && lanes.exposure && lanes.exposure.drawn.length) {
+      offers.push({ slot: "doseJourney", key: "", label: "Dose journey" });
+    }
+    if (this.narrativeSlot("labTrajectory") && lanes.labs) {
+      for (const test of lanes.labs.rows) {
+        offers.push({ slot: "labTrajectory", key: String(test), label: String(test) });
       }
-      const label = slot === "labTrajectory" ? `Draft the ${key} narrative` : slot === "doseJourney" ? "Draft the dose-journey narrative" : "Draft the disposition narrative";
-      host.append(
-        renderNarrativeRequest({ slot, label, focusKey: `ai-request-${slot}-${key || ""}` }, () => {
-          this.requestNarrative(slot, key || null);
-          this.withFocusRestore(() => this.refreshNarrativeCards());
-        })
+    }
+    if (this.narrativeSlot("disposition") && lanes.disposition && lanes.disposition.drawn.length) {
+      offers.push({ slot: "disposition", key: "", label: "Disposition" });
+    }
+    return offers;
+  }
+  /**
+   * Draw the tray: the request controls for the kinds not yet drafted, then
+   * the drafted cards.
+   * @private
+   */
+  renderNarrativeTray() {
+    const tray = this.narrativeTrayEl;
+    tray.innerHTML = "";
+    const offers = this.narrativeTrayOffers();
+    if (!offers.length) return;
+    const pending = offers.filter(
+      (offer) => !this.narrativeEntries.has(`${offer.slot}|${offer.key}`)
+    );
+    if (pending.length) {
+      const head = createElement("div", "sv-pje-ai-tray-head");
+      head.setAttribute("role", "group");
+      head.setAttribute("aria-label", "Draft an AI narrative");
+      head.append(
+        createElement("span", "sv-pje-ai-label", "AI narrative"),
+        createElement("span", "sv-pje-ai-tray-hint", "Draft on request:")
       );
+      for (const offer of pending) {
+        const button = createElement("button", "sv-pje-btn sv-pje-ai-request-btn", offer.label);
+        button.type = "button";
+        button.dataset.slot = offer.slot;
+        button.dataset.key = offer.key;
+        button.setAttribute("data-sv-focus", `ai-request-${offer.slot}-${offer.key}`);
+        button.title = `Draft the ${offer.label} narrative from the recorded rows`;
+        button.onclick = () => {
+          this.requestNarrative(offer.slot, offer.key || null);
+          this.withFocusRestore(() => this.refreshNarrativeCards());
+        };
+        head.append(button);
+      }
+      tray.append(head);
+    }
+    for (const offer of offers) {
+      const entry = this.narrativeEntries.get(`${offer.slot}|${offer.key}`);
+      if (entry) tray.append(this.narrativeCard(entry));
     }
   }
   /**

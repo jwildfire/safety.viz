@@ -73,11 +73,7 @@ import {
 import { MarkOverlay, createLiveRegion } from './patient-journey-explorer/keyboard.js';
 import { renderPanel } from './patient-journey-explorer/panel.js';
 import { renderSourceDrawer } from './patient-journey-explorer/sourceRows.js';
-import {
-  cardTitle,
-  renderNarrativeCard,
-  renderNarrativeRequest
-} from './patient-journey-explorer/narratives.js';
+import { cardTitle, renderNarrativeCard } from './patient-journey-explorer/narratives.js';
 import { createDataService } from './patientJourneyNarratives/dataService.js';
 import { createScope } from './patientJourneyNarratives/index.js';
 import { normalizeRowId } from './patientJourneyNarratives/tools/index.js';
@@ -244,6 +240,11 @@ class SafetyPatientJourneyExplorer {
     this.chartWrap.insertBefore(this.cueEl, this.mainAnnotation);
     this.chartWrap.insertBefore(this.lanesEl, this.mainAnnotation);
     this.chartWrap.insertBefore(this.axisEl, this.mainAnnotation);
+    // The on-demand narrative tray beneath the axis strip (#146, PJE-NARR-014):
+    // its controls and cards live outside the lane stack so the stack's height
+    // budget (D21) is untouched.
+    this.narrativeTrayEl = createElement('div', 'sv-pje-ai-tray');
+    this.chartWrap.insertBefore(this.narrativeTrayEl, this.mainAnnotation);
     this.tooltipEl = createElement('div', 'sv-pje-tooltip');
     this.tooltipEl.setAttribute('role', 'tooltip');
     this.tooltipEl.hidden = true;
@@ -862,7 +863,7 @@ class SafetyPatientJourneyExplorer {
     // the timeline, which only the rebuilt overlay can answer.
     this.renderNarrativeBanner();
     this.mountPanelNarrative();
-    this.mountLaneNarratives();
+    this.renderNarrativeTray();
     this.renderSourceDrawer();
     this.renderAnnotation();
     this.renderCue();
@@ -1116,22 +1117,6 @@ class SafetyPatientJourneyExplorer {
         body.append(laneEl);
         for (const footer of lane.footers) {
           body.append(createElement('p', 'sv-pje-lane-foot', footer));
-        }
-        // An on-demand narrative slot under the lanes that have one (#146,
-        // PJE-NARR-014): one lab test, the exposure course, the disposition.
-        const narrativeSlot =
-          lane.key === 'labs' && lane.test
-            ? { slot: 'labTrajectory', key: lane.test }
-            : lane.key === 'exposure'
-              ? { slot: 'doseJourney', key: '' }
-              : lane.key === 'disposition'
-                ? { slot: 'disposition', key: '' }
-                : null;
-        if (narrativeSlot && this.narrativeSlot(narrativeSlot.slot)) {
-          const host = createElement('div', 'sv-pje-ai-slot');
-          host.dataset.slot = narrativeSlot.slot;
-          host.dataset.key = narrativeSlot.key;
-          body.append(host);
         }
       }
     }
@@ -1581,7 +1566,7 @@ class SafetyPatientJourneyExplorer {
   refreshNarrativeCards() {
     this.renderNarrativeBanner();
     this.mountPanelNarrative();
-    this.mountLaneNarratives();
+    this.renderNarrativeTray();
   }
 
   /**
@@ -1608,32 +1593,71 @@ class SafetyPatientJourneyExplorer {
   }
 
   /**
-   * The on-demand cards on the lanes (PJE-NARR-014): each slot element
-   * buildLanes placed shows its card when requested, else the request control.
+   * The on-demand narratives one request at a time (PJE-NARR-014): every
+   * available kind — the dose journey when exposure rows exist, one lab test
+   * per drawn small multiple, the disposition when its rows exist — is a
+   * control in the tray beneath the axis strip until it is requested; then
+   * its card sits in the tray with the others. A slot with no function bound
+   * offers nothing.
    * @private
    */
-  mountLaneNarratives() {
-    for (const host of this.lanesEl.querySelectorAll('.sv-pje-ai-slot')) {
-      const { slot, key } = host.dataset;
-      host.innerHTML = '';
-      if (!this.narrativeSlot(slot)) continue;
-      const entry = this.narrativeEntries.get(`${slot}|${key || ''}`);
-      if (entry) {
-        host.append(this.narrativeCard(entry));
-        continue;
+  narrativeTrayOffers() {
+    if (!this.structured || !this.structured.domain) return [];
+    const offers = [];
+    const lanes = this.structured.lanes || {};
+    if (this.narrativeSlot('doseJourney') && lanes.exposure && lanes.exposure.drawn.length) {
+      offers.push({ slot: 'doseJourney', key: '', label: 'Dose journey' });
+    }
+    if (this.narrativeSlot('labTrajectory') && lanes.labs) {
+      for (const test of lanes.labs.rows) {
+        offers.push({ slot: 'labTrajectory', key: String(test), label: String(test) });
       }
-      const label =
-        slot === 'labTrajectory'
-          ? `Draft the ${key} narrative`
-          : slot === 'doseJourney'
-            ? 'Draft the dose-journey narrative'
-            : 'Draft the disposition narrative';
-      host.append(
-        renderNarrativeRequest({ slot, label, focusKey: `ai-request-${slot}-${key || ''}` }, () => {
-          this.requestNarrative(slot, key || null);
-          this.withFocusRestore(() => this.refreshNarrativeCards());
-        })
+    }
+    if (this.narrativeSlot('disposition') && lanes.disposition && lanes.disposition.drawn.length) {
+      offers.push({ slot: 'disposition', key: '', label: 'Disposition' });
+    }
+    return offers;
+  }
+
+  /**
+   * Draw the tray: the request controls for the kinds not yet drafted, then
+   * the drafted cards.
+   * @private
+   */
+  renderNarrativeTray() {
+    const tray = this.narrativeTrayEl;
+    tray.innerHTML = '';
+    const offers = this.narrativeTrayOffers();
+    if (!offers.length) return;
+    const pending = offers.filter(
+      (offer) => !this.narrativeEntries.has(`${offer.slot}|${offer.key}`)
+    );
+    if (pending.length) {
+      const head = createElement('div', 'sv-pje-ai-tray-head');
+      head.setAttribute('role', 'group');
+      head.setAttribute('aria-label', 'Draft an AI narrative');
+      head.append(
+        createElement('span', 'sv-pje-ai-label', 'AI narrative'),
+        createElement('span', 'sv-pje-ai-tray-hint', 'Draft on request:')
       );
+      for (const offer of pending) {
+        const button = createElement('button', 'sv-pje-btn sv-pje-ai-request-btn', offer.label);
+        button.type = 'button';
+        button.dataset.slot = offer.slot;
+        button.dataset.key = offer.key;
+        button.setAttribute('data-sv-focus', `ai-request-${offer.slot}-${offer.key}`);
+        button.title = `Draft the ${offer.label} narrative from the recorded rows`;
+        button.onclick = () => {
+          this.requestNarrative(offer.slot, offer.key || null);
+          this.withFocusRestore(() => this.refreshNarrativeCards());
+        };
+        head.append(button);
+      }
+      tray.append(head);
+    }
+    for (const offer of offers) {
+      const entry = this.narrativeEntries.get(`${offer.slot}|${offer.key}`);
+      if (entry) tray.append(this.narrativeCard(entry));
     }
   }
 

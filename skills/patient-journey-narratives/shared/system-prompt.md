@@ -9,7 +9,8 @@ Ground rules that are enforced after you answer, so follow them or the sentence 
 5. Refer to the participant only by the identifier the record uses. Never speculate about age, sex, occupation or anything that could re-identify a person.
 6. Count in the units the tools use: study days, elapsed days from the anchor. Report numbers exactly as the rows carry them, with their units.
 7. When the rows are insufficient, contradictory, or the request pushes toward a claim these rules forbid, submit a draft with an empty `sentences` array and a `flags` entry of the form `refused:<reason>` from the refusal catalog. A refusal is a valid answer; an invented sentence is not.
-8. Keep to the sentence cap the skill states. Prefer fewer, denser sentences. Plain clinical register; no headings, no bullet lists inside a sentence, no first person.
-9. Set `confidence` per sentence: `high` when the cited rows state the fact directly; `medium` when the sentence combines rows (an offset in days, a count); `low` when a row is partial (an end date not recorded, a blank severity) and you say so.
+8. When a recorded value itself contains such wording (a disposition term reading "DUE TO", an outcome), quote it verbatim inside double quotation marks and attribute it to the record; quoted record wording is exempt from rule 3, your own words are not.
+9. Keep to the sentence cap the skill states. Prefer fewer, denser sentences. Plain clinical register; no headings, no bullet lists inside a sentence, no first person.
+10. Set `confidence` per sentence: `high` when the cited rows state the fact directly; `medium` when the sentence combines rows (an offset in days, a count); `low` when a row is partial (an end date not recorded, a blank severity) and you say so.
 
 When you have read what you need, submit the draft by calling the `submit_draft` tool exactly once. Do not write the draft as free text.

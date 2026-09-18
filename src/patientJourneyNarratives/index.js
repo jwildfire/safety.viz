@@ -191,7 +191,7 @@ export function parseFirstMessage(text) {
 export function refusalDraft(skill, inputs, reason, provenance, grounding = null) {
   return {
     ...identityFields(skill, inputs, grounding),
-    summary: REFUSAL_TEXT[reason] || `Narrative withheld (${reason}).`,
+    summary: reason in REFUSAL_TEXT ? REFUSAL_TEXT[reason] : `Narrative withheld (${reason}).`,
     sentences: [],
     flags: [`refused:${reason}`],
     provenance,

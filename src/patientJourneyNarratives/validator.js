@@ -10,6 +10,7 @@ import { validateSchema, sentenceCap } from './schema.js';
 import { normalizeRowId } from './tools/index.js';
 import { SHARED } from './skills.generated.js';
 
+const QUOTED = /"[^"\n]{1,200}"|\u201c[^\u201d\n]{1,200}\u201d/g;
 let compiled = null;
 const forbiddenRegexes = () => {
   if (!compiled) compiled = SHARED.forbiddenPatterns.map((source) => new RegExp(source, 'i'));
@@ -23,8 +24,11 @@ const forbiddenRegexes = () => {
  * @returns {?string} The matched text.
  */
 export function forbiddenMatch(text, patterns = forbiddenRegexes()) {
+  // Recorded wording quoted verbatim ("PMD DECISION DUE TO AE'S") is the
+  // record's claim, not the model's: quoted spans are exempt (style guide).
+  const unquoted = String(text ?? '').replace(QUOTED, '""');
   for (const pattern of patterns) {
-    const match = pattern.exec(String(text ?? ''));
+    const match = pattern.exec(unquoted);
     if (match) return match[0];
   }
   return null;
@@ -47,21 +51,36 @@ export function validateDraft(draft, { skill, scopeIds, subject, patterns } = {}
     return { ok: false, errors: ['no draft object was submitted'], dropped, draft: null };
   }
   const schema = skill.schema;
-  const verdict = validateSchema(draft, schema.definitions.Draft, schema);
+  // The sentence cap is ENFORCED, not rejected (design §7): an overlong draft
+  // is truncated to the cap with every dropped sentence logged, before the
+  // schema (whose maxItems is the same cap) is checked.
+  const cap = sentenceCap(schema);
+  let candidate = draft;
+  if (cap !== null && Array.isArray(draft.sentences) && draft.sentences.length > cap) {
+    for (const sentence of draft.sentences.slice(cap)) {
+      dropped.push({
+        text:
+          sentence && typeof sentence === 'object' ? String(sentence.text ?? '') : String(sentence),
+        reason: `over the cap of ${cap} sentences`
+      });
+    }
+    candidate = { ...draft, sentences: draft.sentences.slice(0, cap) };
+  }
+  const verdict = validateSchema(candidate, schema.definitions.Draft, schema);
   errors.push(...verdict.errors);
-  if (draft.kind !== skill.slug) errors.push(`$.kind: expected "${skill.slug}"`);
-  if (subject !== undefined && String(draft.subject) !== String(subject)) {
+  if (candidate.kind !== skill.slug) errors.push(`$.kind: expected "${skill.slug}"`);
+  if (subject !== undefined && String(candidate.subject) !== String(subject)) {
     errors.push(`$.subject: expected "${subject}"`);
   }
   if (errors.length) return { ok: false, errors, dropped, draft: null };
 
   const scope = new Set([...(scopeIds || [])].map(normalizeRowId));
   const regexes = patterns || forbiddenRegexes();
-  const summaryHit = forbiddenMatch(draft.summary, regexes);
+  const summaryHit = forbiddenMatch(candidate.summary, regexes);
   if (summaryHit) errors.push(`$.summary: forbidden construct "${summaryHit}"`);
 
   const kept = [];
-  draft.sentences.forEach((sentence, index) => {
+  candidate.sentences.forEach((sentence, index) => {
     const hit = forbiddenMatch(sentence.text, regexes);
     if (hit) {
       errors.push(`$.sentences[${index}]: forbidden construct "${hit}"`);
@@ -80,14 +99,7 @@ export function validateDraft(draft, { skill, scopeIds, subject, patterns } = {}
   });
   if (errors.length) return { ok: false, errors, dropped, draft: null };
 
-  const cap = sentenceCap(schema);
-  let sentences = kept;
-  if (cap !== null && sentences.length > cap) {
-    for (const sentence of sentences.slice(cap)) {
-      dropped.push({ text: sentence.text, reason: `over the cap of ${cap} sentences` });
-    }
-    sentences = sentences.slice(0, cap);
-  }
+  const sentences = kept;
   const flags = [
     ...new Set([].concat(draft.flags || []).map((flag) => String(flag).trim()))
   ].filter(Boolean);
@@ -95,6 +107,6 @@ export function validateDraft(draft, { skill, scopeIds, subject, patterns } = {}
     ok: true,
     errors: [],
     dropped,
-    draft: { ...draft, sentences, flags, status: 'draft' }
+    draft: { ...candidate, sentences, flags, status: 'draft' }
   };
 }

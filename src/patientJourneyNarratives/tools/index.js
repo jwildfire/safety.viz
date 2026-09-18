@@ -515,7 +515,10 @@ export const TOOLS = Object.fromEntries(
 export function toolDefinitions(names) {
   return names
     .filter((name) => TOOLS[name])
-    .map(({ name, description, input_schema }) => ({ name, description, input_schema }));
+    .map((name) => {
+      const { description, input_schema } = TOOLS[name];
+      return { name, description, input_schema };
+    });
 }
 
 /**

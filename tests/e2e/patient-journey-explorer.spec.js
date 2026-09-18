@@ -1149,7 +1149,7 @@ test.describe('safety.viz patient-journey-explorer AI narratives (#146)', () => 
     // Unbind: no slot, no card, no request controls.
     await page.evaluate(() => window.__pjeGenerator.unbind());
     await expect(page.locator('.sv-pje-ai')).toHaveCount(0);
-    await expect(page.locator('.sv-pje-ai-slot')).toHaveCount(0);
+    await expect(page.locator('.sv-pje-ai-request-btn')).toHaveCount(0);
     expect(await page.evaluate(() => window.__safetyPatientJourneyInstance.narratives)).toEqual([]);
   });
 
@@ -1327,51 +1327,56 @@ test.describe('safety.viz patient-journey-explorer AI narratives (#146)', () => 
     await captureEvidence(page, 'PJE-NARR-013', 'accepted-card');
   });
 
-  test('PJE-NARR-014: lab, dose and disposition narratives are drafted on demand from their lane controls and render under the lane (#146)', async ({
+  test('PJE-NARR-014: lab, dose and disposition narratives are drafted on request from the tray beneath the lanes and render there, and a subject change drops every card (#146)', async ({
     page
   }) => {
-    const slots = page.locator('.sv-pje-ai-slot');
-    const keys = await slots.evaluateAll((nodes) =>
-      nodes.map((n) => `${n.dataset.slot}:${n.dataset.key}`)
-    );
-    expect(keys).toEqual([
+    const tray = page.locator('.sv-pje-ai-tray');
+    const offers = await tray
+      .locator('.sv-pje-ai-request-btn')
+      .evaluateAll((nodes) => nodes.map((n) => `${n.dataset.slot}:${n.dataset.key}`));
+    expect(offers).toEqual([
       'doseJourney:',
       'labTrajectory:Alanine Aminotransferase',
       'labTrajectory:Aspartate Aminotransferase',
       'disposition:'
     ]);
-    await expect(page.locator('.sv-pje-ai-slot .sv-pje-ai')).toHaveCount(0);
-    await page.locator('.sv-pje-ai-slot[data-slot="doseJourney"] .sv-pje-ai-request-btn').click();
-    await settle(page);
-    const dose = page.locator('.sv-pje-ai-slot[data-slot="doseJourney"] .sv-pje-ai');
-    await expect(dose).toContainText('On day 21 the dose changed from 50 to 100 mg (increase).');
-    // The slot sits inside the exposure lane's group, after the exposure lane.
+    // The tray sits below the axis strip, outside the lane stack, so the
+    // stack's height budget is untouched (site.spec PJE-KEY-001 holds).
     const placement = await page.evaluate(() => {
-      const slot = document.querySelector('.sv-pje-ai-slot[data-slot="doseJourney"]');
-      const lane = document.querySelector('.sv-pje-lane[data-lane="exposure"]');
-      return (
-        slot.previousElementSibling === lane ||
-        slot.compareDocumentPosition(lane) & Node.DOCUMENT_POSITION_PRECEDING
+      const children = [...document.querySelector('.sv-chart-wrap').children].map(
+        (el) => el.className.split(' ')[0]
       );
+      return {
+        axisBeforeTray: children.indexOf('sv-pje-axis') < children.indexOf('sv-pje-ai-tray'),
+        inStack: document.querySelectorAll(
+          '.sv-pje-lanes .sv-pje-ai, .sv-pje-lanes .sv-pje-ai-request-btn'
+        ).length
+      };
     });
-    expect(Boolean(placement)).toBe(true);
-    await page
-      .locator('.sv-pje-ai-slot[data-key="Alanine Aminotransferase"] .sv-pje-ai-request-btn')
-      .click();
+    expect(placement).toEqual({ axisBeforeTray: true, inStack: 0 });
+    await expect(tray.locator('.sv-pje-ai')).toHaveCount(0);
+    await tray.locator('.sv-pje-ai-request-btn[data-slot="doseJourney"]').click();
     await settle(page);
-    await expect(
-      page.locator('.sv-pje-ai-slot[data-key="Alanine Aminotransferase"] .sv-pje-ai')
-    ).toContainText('Alanine Aminotransferase was measured 3 times');
-    await page.locator('.sv-pje-ai-slot[data-slot="disposition"] .sv-pje-ai-request-btn').click();
+    const dose = tray.locator('.sv-pje-ai[data-kind="dose-journey"]');
+    await expect(dose).toContainText('On day 21 the dose changed from 50 to 100 mg (increase).');
+    // A drafted kind leaves the request row.
+    await expect(tray.locator('.sv-pje-ai-request-btn[data-slot="doseJourney"]')).toHaveCount(0);
+    await tray.locator('.sv-pje-ai-request-btn[data-key="Alanine Aminotransferase"]').click();
     await settle(page);
-    await expect(page.locator('.sv-pje-ai-slot[data-slot="disposition"] .sv-pje-ai')).toContainText(
+    await expect(tray.locator('.sv-pje-ai[data-kind="lab-trajectory"]')).toContainText(
+      'Alanine Aminotransferase was measured 3 times'
+    );
+    await tray.locator('.sv-pje-ai-request-btn[data-slot="disposition"]').click();
+    await settle(page);
+    await expect(tray.locator('.sv-pje-ai[data-kind="disposition"]')).toContainText(
       'The disposition event is COMPLETED on day 90'
     );
-    await captureEvidence(page, 'PJE-NARR-014', 'lane-cards');
+    await expect(tray.locator('.sv-pje-ai')).toHaveCount(3);
+    await captureEvidence(page, 'PJE-NARR-014', 'tray-cards');
     // Selecting another participant drops every card; the controls return.
     await page.evaluate(() => window.__safetyPatientJourneyInstance.selectSubject('PJE-2'));
     await settle(page);
-    await expect(page.locator('.sv-pje-ai-slot .sv-pje-ai')).toHaveCount(0);
+    await expect(tray.locator('.sv-pje-ai')).toHaveCount(0);
     expect(
       await page.evaluate(() =>
         window.__safetyPatientJourneyInstance.narratives.map((n) => `${n.kind}:${n.subject}`)

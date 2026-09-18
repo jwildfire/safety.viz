@@ -208,10 +208,12 @@ export function narrativeCss() {
 .sv-pje-ai-foot{margin:.25rem 0 0;font-size:.7rem;color:var(--pje-ink-secondary)}
 .sv-pje-ai-edit-row{display:block;margin:0 0 .4rem}
 .sv-pje-ai-textarea{display:block;width:100%;box-sizing:border-box;margin:.15rem 0 0;font:inherit;font-size:.8rem;padding:.3rem .4rem;border:1px solid var(--pje-ai-border);border-radius:6px;background:var(--pje-surface);color:var(--pje-ink-primary)}
-.sv-pje-ai-request{display:flex;align-items:center;gap:.4rem;margin:.05rem 0 .4rem ${PLOT_GUTTER_LEFT}px}
-.sv-pje-ai-request-btn{font-size:.72rem;padding:.15rem .45rem}
-.sv-pje-ai-slot{margin:0 0 .3rem}
-.sv-pje-ai-slot .sv-pje-ai{margin-left:${PLOT_GUTTER_LEFT}px}
+.sv-pje-ai-tray{margin:.55rem 0 0}
+.sv-pje-ai-tray:empty{display:none}
+.sv-pje-ai-tray-head{display:flex;flex-wrap:wrap;align-items:center;gap:.35rem .5rem;margin:0 0 .5rem;padding:.4rem .6rem;border:1px dashed var(--pje-ai-border);border-radius:8px;color:var(--pje-ai-ink);font-size:.78rem}
+.sv-pje-ai-tray-hint{color:var(--pje-ink-secondary)}
+.sv-pje-ai-request-btn{font-size:.74rem;padding:.15rem .5rem;border-color:var(--pje-ai-border);color:var(--pje-ai-ink)}
+.sv-pje-ai-request-btn:hover{border-color:var(--pje-ai-ink);background:var(--pje-ai-chip)}
 .sv-pje-narrative-banner:empty{display:none}
 .sv-pje-panel-body>.sv-pje-ai{margin-bottom:.8rem}
 /* a cited mark, lit from a citation chip (PJE-NARR-011) */

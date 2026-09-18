@@ -27,7 +27,7 @@ Describe what the record shows around the end of treatment for ONE participant: 
 
 ## Rules specific to this skill
 
-- "Discontinued due to adverse event" is a recorded term: quote it as the record's own wording inside the disposition sentence, in quotation marks, and do not restate it as your own causal claim. Do not name which adverse event it refers to unless a row says so.
+- A recorded term such as "DISCONTINUED DUE TO ADVERSE EVENT" is the record's own wording: quote it verbatim inside double quotation marks (the validator exempts quoted spans) and do not restate it as your own causal claim. Do not name which adverse event it refers to unless a row says so.
 - Never infer the reason for a disposition from the timeline.
 - If no row is flagged as the disposition event, say so and describe the milestones.
 

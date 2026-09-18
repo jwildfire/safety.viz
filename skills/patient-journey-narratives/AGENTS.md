@@ -16,13 +16,13 @@ shared/refusal-catalog.md    the refused:<reason> flags and what the card says f
 
 ## The five skills
 
-| Slug              | Scope                                         | Grounding tool              | Renders as                                 |
-| ----------------- | --------------------------------------------- | --------------------------- | ------------------------------------------ |
-| `event-context`   | one anchored event and its ±window            | `get_context_window`        | card at the top of the context panel       |
-| `subject-summary` | the whole journey of one participant          | `get_subject_overview`      | card above the lanes: blurb, expandable    |
-| `lab-trajectory`  | one lab test over the study                   | `get_lab_series`            | card under that test's lane, on demand     |
-| `dose-journey`    | exposure and every dose change                | `get_dose_history`          | card under the exposure group, on demand   |
-| `disposition`     | what the record shows around end of treatment | `get_events(DS)` + overview | card under the disposition lane, on demand |
+| Slug              | Scope                                         | Grounding tool              | Renders as                                     |
+| ----------------- | --------------------------------------------- | --------------------------- | ---------------------------------------------- |
+| `event-context`   | one anchored event and its ±window            | `get_context_window`        | card at the top of the context panel           |
+| `subject-summary` | the whole journey of one participant          | `get_subject_overview`      | card above the lanes: blurb, expandable        |
+| `lab-trajectory`  | one lab test over the study                   | `get_lab_series`            | card in the tray beneath the lanes, on request |
+| `dose-journey`    | exposure and every dose change                | `get_dose_history`          | card in the tray beneath the lanes, on request |
+| `disposition`     | what the record shows around end of treatment | `get_events(DS)` + overview | card in the tray beneath the lanes, on request |
 
 ## How a skill is invoked
 

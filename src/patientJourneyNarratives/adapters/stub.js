@@ -204,6 +204,7 @@ function labTrajectory(inputs, g) {
   const flags = [];
   const first = points[0];
   const last = points[points.length - 1];
+  if (points.length === 1) flags.push('series:single-point');
   sentences.push(
     sentence(
       `${g.test} was measured ${plural(points.length, 'time')} between day ${first.start_day} and day ${last.start_day}${g.unit ? ` (${g.unit}` : ''}${finite(g.lln) && finite(g.uln) ? `${g.unit ? '; ' : '('}reference ${g.lln}–${g.uln})` : g.unit ? ')' : ''}.`,
@@ -333,7 +334,7 @@ function disposition(inputs, g, extra) {
   if (reference.length) {
     sentences.push(
       sentence(
-        `The disposition event is ${reference.map((d) => `${d.label} on day ${d.start_day}${d.detail && d.detail !== d.label ? ` (${d.detail})` : ''}`).join('; ')}.`,
+        `The disposition event is ${reference.map((d) => `${d.label} on day ${d.start_day}${d.detail && d.detail !== d.label ? ` (the record reads "${d.detail}")` : ''}`).join('; ')}.`,
         reference
       )
     );
