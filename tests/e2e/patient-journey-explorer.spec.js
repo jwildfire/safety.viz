@@ -380,6 +380,10 @@ test.describe('safety.viz patient-journey-explorer module', () => {
   }) => {
     const exp = await expectations(page);
     const before = await chartScales(page);
+    // Before any anchor the notice above the lanes says the marks are clickable.
+    await expect(page.locator('.sv-pje-cue')).toContainText(
+      'Click any mark in the chart to show its associated events'
+    );
     await markButton(page, exp.anchorId).click();
     await page.waitForFunction(
       (id) =>
@@ -393,6 +397,7 @@ test.describe('safety.viz patient-journey-explorer module', () => {
       day: window.__safetyPatientJourneyInstance.anchoredEvent.day
     }));
     expect(anchored).toEqual({ id: exp.anchorId, label: exp.anchorLabel, day: exp.anchorDay });
+    await expect(page.locator('.sv-pje-cue')).toContainText(`Anchored on ${exp.anchorLabel}`);
     await expect(page.locator('.sv-pje-axis-title')).toHaveText('Days from anchor');
     // The anchor reads 0 on the axis strip.
     const ticks = await axisTicks(page);

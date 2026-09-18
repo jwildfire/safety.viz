@@ -124,7 +124,11 @@ const TALLER_NOTE =
   "This participant's journey is taller than the panel; scroll or turn off a lane.";
 const NO_DAY_NOTE = 'No study day resolves for this participant, so the journey cannot be drawn.';
 const NO_LANE_NOTE = 'Every lane is turned off. Turn on a lane to see marks.';
-const SELECT_HINT = 'Select any mark to anchor time on it.';
+const CUE_LEAD = 'Click any mark in the chart to show its associated events.';
+const CUE_DETAIL =
+  'Time anchors on that mark, and the panel beside the chart lists the con-meds, labs, dose changes and earlier same-term events recorded around it, each linked to its source row. Keyboard: Tab into a lane, arrow keys to move, Enter to select.';
+const CUE_ANCHORED_DETAIL =
+  'Click another mark to move the anchor; Escape or the Clear anchor control releases it.';
 
 let instanceCounter = 0;
 
@@ -216,6 +220,10 @@ class SafetyPatientJourneyExplorer {
     this.lanesEl = createElement('div', 'sv-pje-lanes');
     this.lanesEl.style.maxHeight = `${this.settings.height}px`;
     this.axisEl = createElement('div', 'sv-pje-axis');
+    this.cueEl = createElement('div', 'sv-pje-cue');
+    this.cueEl.setAttribute('role', 'note');
+    this.cueEl.hidden = true;
+    this.chartWrap.insertBefore(this.cueEl, this.mainAnnotation);
     this.chartWrap.insertBefore(this.lanesEl, this.mainAnnotation);
     this.chartWrap.insertBefore(this.axisEl, this.mainAnnotation);
     this.tooltipEl = createElement('div', 'sv-pje-tooltip');
@@ -829,6 +837,7 @@ class SafetyPatientJourneyExplorer {
     this.buildLanes();
     this.renderSourceDrawer();
     this.renderAnnotation();
+    this.renderCue();
     this.syncControls();
     this.restoreFocus(focusKey, { fallbackMarkId: previousAnchorId });
     const effective = this.effectiveMode();
@@ -842,21 +851,48 @@ class SafetyPatientJourneyExplorer {
   }
 
   /**
-   * The line beneath the axis strip: the anchoring hint when nothing is
-   * anchored, or the anchor's four counts with a control that brings the
-   * context panel into view — on a stacked (phone) layout the panel renders
-   * below the lanes, the footnote and the drawer, and a tap on a mark would
-   * otherwise show nothing beyond the highlight.
+   * The notice above the lane stack. Before any anchor it says that clicking
+   * any mark shows the events associated with it, and names the keyboard
+   * path; once a mark is anchored it says which one and how to move or
+   * release the anchor. Hidden when nothing is drawn or every lane is off, so
+   * the stack never opens on a prompt about marks that are not there.
+   * @private
+   */
+  renderCue() {
+    this.cueEl.innerHTML = '';
+    const anyLane = LANE_KEYS.some((key) => this.state.lanes[key]);
+    if (!this.structured.domain || !anyLane) {
+      this.cueEl.hidden = true;
+      return;
+    }
+    this.cueEl.hidden = false;
+    if (!this.anchoredEvent) {
+      this.cueEl.append(
+        createElement('strong', null, CUE_LEAD),
+        createElement('span', null, CUE_DETAIL)
+      );
+      return;
+    }
+    const event = this.anchoredEvent;
+    const when = Number.isFinite(event.day) ? ` (day ${event.day})` : '';
+    this.cueEl.append(
+      createElement('strong', null, `Anchored on ${event.label}${when}.`),
+      createElement('span', null, CUE_ANCHORED_DETAIL)
+    );
+  }
+
+  /**
+   * The line beneath the axis strip: empty until a mark is anchored (the
+   * notice above the lanes carries the hint), then the anchor's four counts
+   * with a control that brings the context panel into view — on a stacked
+   * (phone) layout the panel renders below the lanes, the footnote and the
+   * drawer, and a tap on a mark would otherwise show nothing beyond the
+   * highlight.
    * @private
    */
   renderAnnotation() {
     this.mainAnnotation.innerHTML = '';
-    if (!this.structured.domain) return;
-    if (!this.anchoredEvent) {
-      const anyLane = LANE_KEYS.some((key) => this.state.lanes[key]);
-      this.mainAnnotation.textContent = anyLane ? SELECT_HINT : '';
-      return;
-    }
+    if (!this.structured.domain || !this.anchoredEvent) return;
     const c = this.context.counts;
     this.mainAnnotation.append(
       createElement(

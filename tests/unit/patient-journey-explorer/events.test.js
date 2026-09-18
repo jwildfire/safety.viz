@@ -555,7 +555,8 @@ describe('the 2026-09-18 verification fixes (PJE-CFG-004, PJE-TIME-001, PJE-DATA
     expect(document.querySelector('.sv-pje-lanes').textContent).not.toContain(
       'Every lane is turned off'
     );
-    expect(document.querySelector('.sv-main-annotation').textContent).toContain('Select any mark');
+    expect(document.querySelector('.sv-pje-cue').hidden).toBe(false);
+    expect(document.querySelector('.sv-pje-cue').textContent).toContain('Click any mark');
   });
 
   it('PJE-FILT-004: the absent-column filter warning and the source_url_template warning are printed once per data load, not once per interaction (#142)', () => {
@@ -637,5 +638,32 @@ describe('the 2026-09-18 verification fixes (PJE-CFG-004, PJE-TIME-001, PJE-DATA
     expect(instance.getContext().counts.priorEvents).toBe(before.priorEvents);
     expect(rail.textContent).toContain('not on the timeline right now (lane off)');
     expect(rail.textContent).toContain('(1 lane off)');
+  });
+});
+
+describe('the click-any-mark notice (PJE-ANCH-006)', () => {
+  it('PJE-ANCH-006: a notice above the lanes says clicking any mark shows its associated events, names the anchor once one is set, and hides with every lane off (#145)', () => {
+    const instance = mount();
+    const cue = document.querySelector('.sv-pje-cue');
+    expect(cue).not.toBeNull();
+    expect(cue.hidden).toBe(false);
+    expect(cue.getAttribute('role')).toBe('note');
+    expect(cue.textContent).toContain('Click any mark in the chart to show its associated events');
+    expect(cue.textContent).toContain('Enter to select');
+    // It sits above the lane stack, not beneath the axis strip.
+    const lanes = document.querySelector('.sv-pje-lanes');
+    expect(cue.compareDocumentPosition(lanes) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // The line beneath the axis no longer repeats the hint.
+    expect(document.querySelector('.sv-main-annotation').textContent).toBe('');
+    instance.anchor('AE-1');
+    expect(cue.textContent).toContain(`Anchored on ${instance.anchoredEvent.label}`);
+    expect(cue.textContent).toContain('Click another mark');
+    expect(cue.textContent).not.toContain('Click any mark');
+    instance.anchor(null);
+    expect(cue.textContent).toContain('Click any mark');
+    for (const key of Object.keys(instance.settings.lanes)) instance.setLaneEnabled(key, false);
+    expect(cue.hidden).toBe(true);
+    instance.setLaneEnabled('exposure', true);
+    expect(cue.hidden).toBe(false);
   });
 });
