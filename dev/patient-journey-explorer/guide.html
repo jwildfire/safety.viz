@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="How to read one participant&#39;s journey, what anchoring does, and what the context panel does and does not claim." />
+    <title>Patient Journey Explorer clinical guide · safety.viz</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23271810'/%3E%3Crect x='2.5' y='8' width='3' height='5.5' fill='%23f97316'/%3E%3Crect x='6.5' y='3.5' width='3' height='10' fill='%23fb923c'/%3E%3Crect x='10.5' y='6' width='3' height='7.5' fill='%23f97316'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="../site.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="site-name" href="../index.html">
+        safety.viz
+        <span class="site-version">v1.7.0</span>
+      </a>
+      <nav class="site-nav" aria-label="Primary">
+        <div class="nav-group"><a href="../index.html">Gallery</a><button type="button" class="nav-disclosure" aria-expanded="false" aria-controls="gallery-menu" aria-label="Show charts"><span class="nav-caret" aria-hidden="true"></span></button><ul id="gallery-menu" class="nav-menu"><li><a href="../histogram/index.html">Safety Histogram</a></li><li><a href="../outlier-explorer/index.html">Safety Outlier Explorer</a></li><li><a href="../results-over-time/index.html">Safety Results Over Time</a></li><li><a href="../shift-plot/index.html">Safety Shift Plot</a></li><li><a href="../delta-delta/index.html">Safety Delta-Delta</a></li><li><a href="../hep-explorer/index.html">Hepatic Safety Explorer</a></li><li><a href="../hep-waterfall/index.html">Hepatic ALT Waterfall</a></li><li><a href="../participant-profile/index.html">Participant Profile</a></li><li><a href="../nep-explorer/index.html">Nephrotoxicity Explorer</a></li><li><a href="../time-to-event/index.html">Time-to-Event Explorer</a></li><li><a href="../ae-explorer/index.html">Adverse Event Explorer</a></li><li><a href="../ae-timelines/index.html">Adverse Event Timelines</a></li><li><a href="../qt-explorer/index.html">QT Safety Explorer</a></li><li><a href="../patient-journey-explorer/index.html">Patient Journey Explorer</a></li></ul></div>
+        <a href="../architecture.html">Architecture</a>
+        <a href="../about.html">About</a>
+        <a
+          href="https://github.com/jwildfire/safety.viz"
+          aria-label="GitHub"
+          title="GitHub"
+          style="display: inline-flex; align-items: center"
+          ><svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor" aria-hidden="true">
+            <title>GitHub</title>
+            <path
+              d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"
+            /></svg
+        ></a>
+        <a
+          href="https://jwildfire.github.io/obot.roadmap/"
+          aria-label="obot roadmap"
+          title="obot roadmap"
+          style="font-size: 1.05rem; line-height: 1; display: inline-flex; align-items: center"
+          ><span aria-hidden="true">🍊😺</span></a
+        >
+      </nav>
+    </header>
+    <main class="site-main"><h1>Patient Journey Explorer: clinical guide <span class="site-badge">Experimental</span></h1>
+<p class="tagline">How to read one participant&#39;s journey, what anchoring does, and what the context panel does and does not claim.</p>
+<nav class="page-tabs"><a href="index.html">Live demo</a><a class="current" aria-current="page" href="guide.html">Clinical guide</a><a href="evidence.html">Test evidence</a><a href="api.html">API reference</a></nav>
+<p class="guide-caution"><strong>Exploratory review aid, not a validated diagnostic tool.</strong> Co-occurrence is not causation: this view lists what was recorded around an anchor, it does not assess relatedness. A con-med with no start day is not asserted active, a con-med whose end was never recorded is shown as active and labelled as such, and an adverse event with no end day is only called ongoing when its outcome says so.</p>
+<div class="guide-layout"><nav class="guide-toc" aria-label="On this page"><h2>On this page</h2><ul><li><a href="#what-the-patient-journey-explorer-shows">What the Patient Journey Explorer shows</a></li><li><a href="#anchoring-and-what-the-context-panel-claims">Anchoring, and what the context panel claims</a></li><li><a href="#days-from-anchor-counts-elapsed-days-not-study-day-differences">&quot;Days from anchor&quot; counts elapsed days, not study-day differences</a></li><li><a href="#reading-the-labs-small-multiples">Reading the labs small multiples</a></li><li><a href="#three-kinds-of-end-never-two">Three kinds of end, never two</a></li><li><a href="#calendar-dates">Calendar dates</a></li><li><a href="#what-this-demo-s-data-cannot-show">What this demo&#39;s data cannot show</a></li><li><a href="#where-the-derivations-stop">Where the derivations stop</a></li><li><a href="#keyboard-and-screen-readers">Keyboard and screen readers</a></li><li><a href="#what-is-not-on-this-page">What is not on this page</a></li><li><a href="#source">Source</a></li></ul></nav><div class="guide-body"><h2 id="what-the-patient-journey-explorer-shows">What the Patient Journey Explorer shows</h2>
+<p>Most renderers in this gallery look across participants. This one, like Participant Profile, looks at <strong>one participant</strong> — and shows their whole safety record on a single study-day axis, so the question &quot;what else was going on when this happened?&quot; can be answered by looking rather than by joining six listings by hand. Pick a participant and the page draws stacked lanes on one shared timeline:</p>
+<ul><li><strong>Exposure</strong> — one bar per exposure record, labelled with the treatment, segmented wherever the dose changes.</li><li><strong>Dose changes</strong> — a caret above the exposure bar on the day a new dose begins: pointing up for an increase, down for a reduction, a pause mark for an interruption (dose to zero) and a restart mark for a resumption (zero back to a dose).</li><li><strong>Adverse events</strong> — one bar per event from onset to end. Bar height and border weight carry severity (mild, moderate, severe); a filled dot at the start and an <code>SAE</code> tag in the tooltip mark a serious event; an event with no recorded severity is drawn hatched and says so.</li><li><strong>Labs</strong> — one small sparkline per configured test (the demo shows the four-test liver panel), each with its reference range drawn as a band and each out-of-range point marked by shape as well as colour.</li><li><strong>Con-meds</strong> — one bar per concomitant medication course.</li><li><strong>Medical history (at screening)</strong> — one dot per history record at the day it was collected, which in this study is always before first dose.</li><li><strong>Disposition</strong> — a mark for every disposition record, and a dashed rule across every lane at the disposition event itself (completed, discontinued for an adverse event, and so on).</li></ul>
+<p>Three fixed reference lines run through every lane: day 1 (first dose), the disposition event, and — once you have anchored — the anchor day. Hovering or focusing any mark shows its tooltip; the same text is written into the footnote under the lanes so it stays readable after the tooltip closes. Every mark, and every item in the context panel, has a real control that jumps to the raw source row in the drawer beneath the lanes: the record exactly as it was passed in, nothing derived, nothing renamed.</p>
+<p>This tool is <strong>exploratory</strong>. It lists what was recorded around a moment in one participant&#39;s course; it does not assess relatedness, and a co-occurrence on this page is not evidence of causation.</p>
+<h2 id="anchoring-and-what-the-context-panel-claims">Anchoring, and what the context panel claims</h2>
+<p>Click any mark — or focus it and press Enter — and time anchors on it. Three things change and one thing does not:</p>
+<ul><li>The axis relabels to <strong>days from anchor</strong>, with the anchor at 0.</li><li>A shaded <strong>context window</strong> of ±N days (30 by default; the control in the sidebar changes it, and 0 is legal and means the anchor day only) is drawn under every lane, and marks outside it are dimmed. Dimmed marks keep their tooltip, their keyboard stop and their full-strength row in the source drawer; they are pushed back, not removed.</li><li>A <strong>side panel</strong> opens listing four things, each with a count and, where the count is zero, an explicit empty state.</li><li>The day range on screen <strong>does not change</strong>. The whole journey stays visible, because the before-and-after is the point; anchoring is a highlight, not a zoom.</li></ul>
+<p>The four lists are computed mechanically from the records, with no interpretation, and their definitions are exact:</p>
+<ol><li><strong>Con-meds active at the anchor</strong> — every con-med that started on or before the anchor day and did not end before it. A con-med with no usable start day is not on this list, because the absence of a start cannot prove presence; the panel says how many were set aside for that reason. Con-meds that start inside the window but after the anchor are listed separately underneath as &quot;started later in the window&quot;, so a treatment given in response to the event is visible as such.</li><li><strong>Abnormal labs in the window</strong> — every lab result inside the window whose normal-range indicator is present and not <code>NORMAL</code> (<code>HIGH</code>, <code>LOW</code>, <code>ABNORMAL</code>, <code>HH</code>, <code>LL</code> all qualify), or whose value is at least twice or at most half the participant&#39;s baseline for that test. Each row says which rule fired. A blank indicator is not treated as abnormal: unknown is not the same as abnormal.</li><li><strong>Dose changes in the window</strong> — every derived dose change whose day falls inside the window, with its direction and the day the new dose began.</li><li><strong>Earlier or same-day adverse events with the same preferred term</strong> — every event for this participant with the anchor&#39;s preferred term (falling back to the verbatim term when the preferred term is blank) that started before the anchor, or on the same day with an earlier record index, most recent first. Each row says how many days before the anchor it started, and a same-day record says &quot;same day&quot;: in this study most same-term pairs are same-day records (a duplicate, or a co-occurring record of the same term), not recurrences, so the heading and the rows say which is which rather than calling every one &quot;prior&quot;. This list is deliberately not limited to the window: it answers &quot;has this happened to them before?&quot;, and the answer is not confined to the last thirty days.</li></ol>
+<p>These four lists describe the <strong>whole record</strong>. A sidebar filter (serious only, abnormal labs only, a con-med class) or a lane turned off changes what is drawn, and the &quot;everything in the window&quot; count, but never the four lists or their counts; when a listed record is not on the timeline for one of those reasons, the panel says so and why (&quot;2 of these 7 are not drawn on the timeline (2 filtered out)&quot;), and when the anchored event itself is hidden the panel says that too.</p>
+<p>At the foot of the panel is a standing sentence: co-occurrence is not causation. This panel lists what was recorded around the anchor; it does not assess relatedness.</p>
+<p>Anchoring is offered on every placeable mark in every lane, not only on adverse events. The adverse-event case is the one the panel is designed around, but the same four lists are just as meaningful around a dose change or a disposition event.</p>
+<h2 id="days-from-anchor-counts-elapsed-days-not-study-day-differences">&quot;Days from anchor&quot; counts elapsed days, not study-day differences</h2>
+<p>CDISC study days have no day 0: the day before first dose is day −1 and the first dosing day is day 1. That numbering is kept on the axis and in every tooltip when nothing is anchored. But once you anchor, the offsets shown as &quot;days from anchor&quot; — and the ±N-day window itself — are computed in <strong>elapsed days</strong>, the continuous count a calendar would give, and therefore never equal a simple subtraction of two CDISC study-day numbers when the two days straddle first dose.</p>
+<p>The difference is exactly one day, and it matters for the window. An event at study day −5 with an anchor at study day 10 is <strong>14</strong> days before the anchor — the two calendar dates are 14 days apart — not the 15 that subtracting the study-day numbers gives. A ±30-day window around study day 10 runs from study day −21 to study day 40, which is 30 elapsed days on each side. If this module subtracted study days instead, every pre-dose offset would be overstated by one, the window would be a day wider before the anchor than after it, and the day-mode offsets would disagree with the calendar-date display by a day for every pre-treatment record. Those disagreements would sit exactly where a temporal-association judgement is made, so the module does not make them, and the unit tests pin the rule by checking that every offset equals the corresponding calendar difference.</p>
+<h2 id="reading-the-labs-small-multiples">Reading the labs small multiples</h2>
+<p>Each configured test gets its own strip on the shared axis, so a rise in one enzyme can be read against the events and con-meds directly above it. The shaded band is the reference range from the data (lower to upper limit of normal, per record — the limits vary by laboratory in this study and are never taken from a constant). Points are open circles when normal, an up-pointing triangle when the indicator says high and a down-pointing triangle when it says low; a doubled glyph with a ring marks an <code>HH</code> or <code>LL</code> result, which this demo&#39;s data does not contain.</p>
+<p>Every flagged result in the context panel prints its <strong>ratio to the limit it crossed</strong> — <code>4.03 × ULN</code> for a high value, <code>0.61 × LLN</code> for a low one — so a marginal flag cannot read as a large one. On the demo&#39;s opening participant the one abnormal lab in the window is an AST of 36 U/L, flagged high, at 1.06 × ULN; the ratio is there precisely so that &quot;1 abnormal lab&quot; is read at its real size.</p>
+<p>The <strong>baseline</strong> used by the twice-or-half rule is, in order: the record the data flags as the analysis baseline (<code>ABLFL</code>), when the data carries that flag; otherwise the last value on or before study day 1; otherwise the participant&#39;s earliest value for that test. The panel names which rule applied beside the multiple (&quot;2.0 × baseline (10 U/L, day −7; baseline is the flagged baseline record)&quot;). The fallback matters more than it looks: study day 1 is a dosing day, so &quot;on or before day 1&quot; can admit a post-dose sample when the flag is absent, and the guide would rather you knew that than trusted the number blindly.</p>
+<h2 id="three-kinds-of-end-never-two">Three kinds of end, never two</h2>
+<p>An interval record — an adverse event or a con-med — can end in one of three ways on this page, and the distinction is drawn, labelled and counted rather than collapsed:</p>
+<ul><li><strong>Closed</strong> — an end day is recorded. The bar stops there.</li><li><strong>Ongoing</strong> — no end day, but the record&#39;s outcome column says the event continues (for adverse events, <code>AEOUT</code> of &quot;not recovered/not resolved&quot; or &quot;recovering/resolving&quot;). The bar runs to the edge with an arrow cap and the tooltip says &quot;ongoing&quot; with the outcome.</li><li><strong>End not recorded</strong> — no end day and nothing that asserts continuation. The bar runs to the edge with a dotted fade, the tooltip says &quot;end not recorded&quot;, and the record is still counted as running for the purposes of the window and the active-at-anchor list.</li></ul>
+<p>That last case is the one to read carefully, because in this study it is most con-meds: the con-med data carries no ongoing indicator at all and 71% of the con-med courses on this page have no end date (91% of the raw per-visit rows, before the build collapsed them to one row per course). The module counts those records as active, because excluding them would print &quot;0 con-meds active&quot; and assert that nothing was co-administered, which the data does not support either. It also names the count: when every listed con-med has an unrecorded end the panel says, directly under the heading, &quot;None of these 7 has a recorded end date; they are shown as active because nothing records them stopping.&quot; When only some do, it says how many. Read the number and the sentence together.</p>
+<p>A record whose end day is earlier than its start day is a data error, not an open interval. It is kept, drawn as a single-day mark at its start, treated as a single day for the window and the active-at-anchor list, labelled &quot;end day precedes start; shown as a single day&quot;, and counted in a note above the lanes, so it can be found and fixed rather than quietly redrawn as ongoing.</p>
+<h2 id="calendar-dates">Calendar dates</h2>
+<p>The <strong>Time axis</strong> control switches the tick labels, the tooltips and the panel from study days to calendar dates. The underlying scale stays linear in days in both modes, which for these studies is also linear in dates, so nothing moves — only the labels change. Day 1 maps to the participant&#39;s reference date (<code>TRTSDT</code> when the data carries it; otherwise derived from the earliest record that has both a full date and a study day), day −1 to the day before it, with no day 0.</p>
+<p>A partial recorded date — a year, or a year and month — is shown in the tooltip exactly as recorded and is never used to position a mark; position always comes from the study day. When a record carries a full date that disagrees with its study day, the study day wins for both position and label, the tooltip names the disagreement, and the affected records are counted in a note above the lanes.</p>
+<h2 id="what-this-demo-s-data-cannot-show">What this demo&#39;s data cannot show</h2>
+<p>The demo runs on the CDISC Pilot 01 study (pharmaverseadam for five domains, pharmaversesdtm for disposition). It is real trial data with real gaps, and four of them shape what you will see:</p>
+<ul><li><strong>Only 3 serious adverse events</strong> in 254 participants, so the &quot;Serious only&quot; filter empties the adverse-event lane for almost everyone. The control&#39;s label carries the count.</li><li><strong>83% of the con-med courses on this page are <code>UNCODED</code></strong> (81% of the raw per-visit rows): their ATC class was never assigned. <code>UNCODED</code> is kept as its own selectable bucket in the class filter rather than hidden, and the sidebar says how large it is.</li><li><strong>Medical-history verbatim terms are scrubbed</strong> to placeholders like <code>VERBATIM_0308</code>, so the lane labels use the decoded term where one exists.</li><li><strong>No <code>HH</code> / <code>LL</code> lab tier</strong> — the indicator column carries only normal, high and low — so the escalation glyph and its ring, and the direction-unknown diamond an <code>ABNORMAL</code> indicator would draw, are implemented but never drawn on this page. Onset days for medical history are also sparsely populated (17%, shipped as <code>MHONSDY</code>), which is why the history lane plots the collection day and says &quot;at screening&quot;; the tooltip names the onset day where one exists.</li></ul>
+<p>The demo opens on participant <code>01-716-1447</code> because they are the one participant whose ±30-day window contains every kind of context at once. Anchor the ERYTHEMA event at day 30 and the panel shows <strong>7 con-meds active</strong> (all 7 with no recorded end date), <strong>2 more starting later in the window</strong> (two topical steroids, cortisone and Lidex, at day 43 — a visible response to the rash), <strong>1 abnormal lab</strong> (the 1.06 × ULN AST at day 27), <strong>1 dose change</strong> (54 → 81 mg at day 17) and <strong>0 prior adverse events</strong> with the same preferred term. The hyperhidrosis at day 17 is a different term, so it is a co-occurring event in the window, not a recurrence. Those five numbers are what the browser suite asserts against the built demo page.</p>
+<p>Two other participants are worth opening. <code>01-705-1310</code> carries the pilot&#39;s highest post-baseline ALT (129 U/L, 4.03 × ULN at day 55, rechecked at an unscheduled visit and resolved by day 83) and discontinued for an adverse event. <code>01-701-1203</code> is the uneventful placebo case: every liver lab normal, one same-day event, no dose change, and a con-med that started in 1986 — which is why the axis clamps a far-pre-study start rather than compressing the whole journey into a few pixels to honour it.</p>
+<h2 id="where-the-derivations-stop">Where the derivations stop</h2>
+<ul><li><strong>A dose change is a change in dose, not a gap in dosing.</strong> Consecutive exposure records with different doses produce a change dated to the day the new dose begins. Two records with the same dose separated by a gap produce nothing; the module reports dose changes, not exposure gaps.</li><li><strong>A con-med with no start day is never asserted active.</strong> It is drawn nowhere on the timeline, listed by name under the lane, counted in the panel as not evaluated, and shown in the source drawer.</li><li><strong>A record with no usable study day is kept, not dropped.</strong> It is named beneath its lane, listed in the drawer and counted in the context bundle, so the absence of a day is visible rather than silent. Rows that cannot be used at all — no participant id, no term, a non-numeric lab result — are dropped with a named reason, counted in the note above the lanes, and downloadable as a CSV led by the reason column.</li><li><strong>Lanes have a row cap.</strong> A lane with more rows than the cap (12 by default) draws a deterministic subset in the lane&#39;s stated order — adverse events by severity then onset, con-meds by start day then name — and says in prose how many are not drawn and which rule chose them. The panel&#39;s counts include the undrawn rows and say so.</li><li><strong>Medical history is plotted where it was collected</strong>, not where it began, because onset is rarely recorded in this study; the tooltip names the onset when one exists and the relative timing (&quot;before study&quot;) when it does not. A host with complete onset days can switch the lane to onset (<code>mh_day_source: &#39;onset&#39;</code>); the onset day is read from <code>ASTDY</code>, then the SDTM <code>MHSTDY</code>, and a host with another name for it sets <code>mh_onset_stdy_col</code>.</li><li><strong>A lab for a test outside the configured panel is kept, not drawn.</strong> It is counted in the participant summary, listed in the source drawer and named in the labs lane&#39;s footer (&quot;N lab results for tests not in lb_tests are not drawn&quot;); it never enters the lane, the shared axis or the context panel.</li><li><strong>Only the disposition event draws the cross-lane rule.</strong> Protocol milestones and other disposition records still draw a mark and appear in the drawer; they do not each get a dashed line through every lane.</li></ul>
+<h2 id="keyboard-and-screen-readers">Keyboard and screen readers</h2>
+<p>Every mark is a real button with a sentence for a name (&quot;Erythema, adverse event, moderate, day 30 to ongoing. Press Enter to anchor time on this event.&quot;). Tab moves between lanes, one stop each; arrow keys move along a lane chronologically and up or down to the nearest mark in the neighbouring lane; Home and End jump to the lane&#39;s ends; Enter or Space anchors and re-activating clears; Shift+Enter opens the source row; Escape closes the tooltip, then clears the anchor, then collapses the expanded panel, in that order. A polite live region announces the participant, the anchor and the context counts. Marks carry no encoding by colour alone: three hues distinguish exposure, adverse events and con-meds, and every other distinction — severity, seriousness, lab direction, dose direction, the three kinds of end — is carried by shape, height, weight or text.</p>
+<h2 id="what-is-not-on-this-page">What is not on this page</h2>
+<ul><li><strong>Any narrative.</strong> No summary of &quot;why&quot;, no relatedness assessment, no similar-participant search. The panel is the mechanical substrate such a layer would read; the event surface hands it the whole context bundle without touching the page.</li><li><strong>Cross-participant comparison.</strong> This is a participant picker, not a cohort stepper; the other renderers in the gallery are the population views.</li><li><strong>A QT / ECG lane</strong>, and any lane beyond the seven.</li><li><strong>A &quot;zoom to window&quot; control.</strong> Anchoring never re-ranges the axis; a zoom is a reasonable later addition.</li><li><strong>The R widget</strong> — a separate requirement (<a href="https://github.com/jwildfire/obot.roadmap/issues/350">obot.roadmap#350</a>).</li></ul>
+<h2 id="source">Source</h2>
+<p>A new build, not a port: the Patient Journey Explorer has no RhoInc or SafetyGraphics predecessor. It is specified by <a href="https://github.com/jwildfire/obot.roadmap/issues/349">obot.roadmap#349</a> and built under <a href="https://github.com/jwildfire/safety.viz/issues/142">safety.viz#142</a>. The demo extracts and their derivation are documented in <code>docs/DATA_SOURCES.md</code>.</p></div></div></main>
+    <footer class="site-footer">
+      <p>
+        safety.viz v1.7.0 — clinical safety graphics on one modern charting stack, migrated
+        from the <a href="https://github.com/SafetyGraphics">safetyGraphics</a> ecosystem originally
+        built by <a href="https://github.com/RhoInc">Rho, Inc.</a> (<a href="../about.html"
+          >credits</a
+        >).
+      </p>
+      <p>
+        Built in the open for the R/Pharma 2026 keynote — follow the
+        <a href="https://jwildfire.github.io/obot.roadmap/">obot roadmap</a> ·
+        <a href="https://github.com/jwildfire/safety.viz">source on GitHub</a> ·
+        <a href="https://github.com/jwildfire/safety.viz/releases">releases</a>.
+      </p>
+    </footer>
+    <script>
+      // Mark the nav link whose resolved URL is this page; works at any mount
+      // depth (site root, /dev/, /pr/N/). Renderer sub-pages match a chart link
+      // inside the Gallery dropdown, highlighting the current chart.
+      (function () {
+        var here = location.pathname.replace(/\/$/, '/index.html');
+        var links = document.querySelectorAll('.site-nav a');
+        for (var i = 0; i < links.length; i += 1) {
+          var href = links[i].getAttribute('href');
+          if (!href || href.indexOf('http') === 0) continue;
+          if (new URL(href, location.href).pathname === here) {
+            links[i].classList.add('current');
+            links[i].setAttribute('aria-current', 'page');
+            break;
+          }
+        }
+      })();
+
+      // Gallery dropdown (#71): progressive enhancement over the hover/focus CSS.
+      // The disclosure button toggles aria-expanded (which drives the menu open
+      // via CSS), supports keyboard access (Enter/Space toggle, Arrow keys to
+      // enter and move through items, Escape to close), and closes on outside
+      // click or when focus leaves the group. With JS off, hover/focus still
+      // reveal the menu and the Gallery link still works.
+      (function () {
+        var group = document.querySelector('.site-nav .nav-group');
+        if (!group) return;
+        var button = group.querySelector('.nav-disclosure');
+        var menu = group.querySelector('.nav-menu');
+        if (!button || !menu) return;
+        var items = Array.prototype.slice.call(menu.querySelectorAll('a'));
+
+        var isOpen = function () {
+          return button.getAttribute('aria-expanded') === 'true';
+        };
+        var setOpen = function (open) {
+          button.setAttribute('aria-expanded', open ? 'true' : 'false');
+        };
+        var focusItem = function (index) {
+          if (!items.length) return;
+          setOpen(true);
+          items[(index + items.length) % items.length].focus();
+        };
+
+        button.addEventListener('click', function () {
+          setOpen(!isOpen());
+        });
+        button.addEventListener('keydown', function (event) {
+          if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            focusItem(0);
+          } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            focusItem(items.length - 1);
+          } else if (event.key === 'Escape') {
+            setOpen(false);
+          }
+        });
+        menu.addEventListener('keydown', function (event) {
+          var index = items.indexOf(document.activeElement);
+          if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            focusItem(index + 1);
+          } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            focusItem(index - 1);
+          } else if (event.key === 'Home') {
+            event.preventDefault();
+            focusItem(0);
+          } else if (event.key === 'End') {
+            event.preventDefault();
+            focusItem(items.length - 1);
+          } else if (event.key === 'Escape') {
+            event.preventDefault();
+            setOpen(false);
+            button.focus();
+          }
+        });
+
+        // Close when focus leaves the group or on an outside pointer press.
+        group.addEventListener('focusout', function (event) {
+          if (!group.contains(event.relatedTarget)) setOpen(false);
+        });
+        document.addEventListener('click', function (event) {
+          if (!group.contains(event.target)) setOpen(false);
+        });
+      })();
+    </script>
+  </body>
+</html>
