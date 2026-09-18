@@ -1,0 +1,4238 @@
+{
+  "module": "patient-journey-explorer",
+  "generatedAt": "2026-09-18T15:59:05.270Z",
+  "environment": {
+    "os": "linux 6.17.0-1022-azure",
+    "node": "v22.23.2",
+    "playwright": "1.61.1",
+    "chromium": "149.0.7827.55"
+  },
+  "run": {
+    "id": "35365639441",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/35365639441"
+  },
+  "records": [
+    {
+      "test": "a chart link navigates straight to that renderer demo (#71)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71],
+      "screenshots": []
+    },
+    {
+      "test": "built ae-explorer demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built ae-timelines demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built delta-delta demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built hep-explorer demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built hep-waterfall demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built histogram demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built nep-explorer demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built outlier-explorer demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built participant-profile demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built patient-journey-explorer demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built qt-explorer demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built results-over-time demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built shift-plot demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "built time-to-event demo mounts the shared shell with no console errors (#7) (#17)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 17],
+      "screenshots": []
+    },
+    {
+      "test": "demo page loads with no console errors (#1)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [1],
+      "screenshots": []
+    },
+    {
+      "test": "gallery shows one card per available renderer (#7)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "is keyboard operable: ArrowDown opens and focuses, Escape closes (#71)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71],
+      "screenshots": []
+    },
+    {
+      "test": "lists one chart link per available renderer, closed by default (#71)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71],
+      "screenshots": []
+    },
+    {
+      "test": "marks the current chart inside the dropdown on a renderer sub-page (#71)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71],
+      "screenshots": []
+    },
+    {
+      "test": "opens on hover and the top link still points at the gallery index (#71)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71],
+      "screenshots": []
+    },
+    {
+      "test": "PJE-ACC-002: no encoding is colour-alone (#142)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PJE-ACC-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "PJE-ACC-003: module text meets AA at its rendered size (#142)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PJE-ACC-003"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-ACC-003-contrast.png"]
+    },
+    {
+      "test": "PJE-ANCH-001: clicking an adverse event anchors time on it and leaves the day domain unchanged (#142)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PJE-ANCH-001"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-ANCH-001-anchored.png"]
+    },
+    {
+      "test": "PJE-ANCH-003: in-window marks stay full strength and out-of-window marks de-emphasize (#142)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PJE-ANCH-003"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-ANCH-003-context-window.png"]
+    },
+    {
+      "test": "PJE-DATA-003: unusable rows are counted in the notes and exportable (#142)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PJE-DATA-003"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-DATA-003-dropped-rows.png"]
+    },
+    {
+      "test": "PJE-DATA-005: an absent domain renders an explanatory empty lane and a disabled toggle (#142)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PJE-DATA-005"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "PJE-DEMO-003: the seeded CDISC Pilot 01 participant's day-30 anchor produces the documented context (#142)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PJE-DEMO-003"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-DEMO-003-pilot-anchor.png"]
+    },
+    {
+      "test": "PJE-EVT-001: anchoring emits the context bundle on all three channels (#142)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PJE-EVT-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "PJE-FILT-001: serious only restricts the adverse-event lane and nothing else (#142)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PJE-FILT-001"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-FILT-001-serious-only.png"]
+    },
+    {
+      "test": "PJE-FILT-003: the con-med class multiselect filters the lane and keeps UNCODED selectable (#142)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PJE-FILT-003"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "PJE-KEY-001: marks are focusable controls with accessible names and a visible focus ring (#142)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PJE-KEY-001"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-KEY-001-mark-focus.png"]
+    },
+    {
+      "test": "PJE-KEY-001: the seeded participant's eight same-day history records share one mark whose pointer target names the others, and the journey fits the default height (#142)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PJE-KEY-001"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-KEY-001-mark-focus.png"]
+    },
+    {
+      "test": "PJE-KEY-002: Enter anchors the focused mark and Escape clears it (#142)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PJE-KEY-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "PJE-KEY-003: arrows move within and between lanes and the live region announces (#142)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PJE-KEY-003"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "PJE-KEY-004: focus is restored after a filter rebuild (#142)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PJE-KEY-004"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "PJE-LANE-001: every enabled domain renders a labelled lane in the fixed order (#142)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-001"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-LANE-001-lanes-all.png"]
+    },
+    {
+      "test": "PJE-LANE-002: toggling a lane hides it and leaves the shared domain unchanged (#142)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-002"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-LANE-002-lane-toggled.png"]
+    },
+    {
+      "test": "PJE-LANE-003: collapsing a lane group hides its lanes (#142)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-003"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "PJE-LANE-004: every lane shares one x domain and one y width (#142)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-004"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "PJE-LANE-005: the labs lane draws one sparkline per configured test with its reference band (#142)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-005"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-LANE-005-labs-small-multiples.png"]
+    },
+    {
+      "test": "PJE-LANE-006: exposure bars segment at each dose change and each change carries a direction glyph (#142)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-006"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-LANE-006-dose-change.png"]
+    },
+    {
+      "test": "PJE-LANE-007: a subject with no adverse events renders the lane with a note (#142)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-007"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-LANE-007-empty-ae-lane.png"]
+    },
+    {
+      "test": "PJE-LANE-009: the opening participant's journey fits the panel without scrolling (#142)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-009"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-LANE-009-one-screen.png"]
+    },
+    {
+      "test": "PJE-LANE-010: a lane over its row cap draws a deterministic subset and says so (#142)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-010"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "PJE-PANEL-001: at phone width the source drawer never widens the page, no painted labels overlap, and anchoring a mark brings the context panel into view (#142)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PJE-PANEL-001"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-PANEL-001-context-panel.png"]
+    },
+    {
+      "test": "PJE-PANEL-001: the side panel lists the four context kinds with counts (#142)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PJE-PANEL-001"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-PANEL-001-context-panel.png"]
+    },
+    {
+      "test": "PJE-SRC-001: both a mark and a panel item jump to their source row (#142)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PJE-SRC-001"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-SRC-001-source-row.png"]
+    },
+    {
+      "test": "PJE-SUBJ-001: the subject selector lists every participant and opens on the first (#142)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PJE-SUBJ-001"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-SUBJ-001-subject-journey.png"]
+    },
+    {
+      "test": "PJE-SUBJ-002: filtering the subject list and selecting a subject redraws every lane (#142)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PJE-SUBJ-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "PJE-TIME-001: switching to calendar date relabels ticks and tooltips (#142)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PJE-TIME-001"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-TIME-001-date-mode.png"]
+    },
+    {
+      "test": "abnormalLabsInWindow (PJE-CTX-002) PJE-CTX-002: a flag-only point reports \"flag\" and the baseline is computed over the whole record, not the window (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CTX-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "abnormalLabsInWindow (PJE-CTX-002) PJE-CTX-002: keeps in-window points where the flag or the change rule fires, with the reason recorded on a copy (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CTX-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "abnormalLabsInWindow (PJE-CTX-002) PJE-CTX-002: results are sorted by day then test name, and empty input yields [] (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CTX-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "aliases (PJE-CFG-002) PJE-CFG-002: every top-level camelCase alias maps onto its snake_case key with one warning each (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CFG-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "aliases (PJE-CFG-002) PJE-CFG-002: filters[].col maps to value_col and the literal plan §7 object yields three live filters (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CFG-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "aliases (PJE-CFG-002) PJE-CFG-002: lane-level severityCol, seriousCol and tests are lifted to the top level; domain, derivedFrom and smallMultiple are ignored (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CFG-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "aliases (PJE-CFG-002) PJE-CFG-002: the canonical key wins silently when both it and its alias are given (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CFG-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "aliases (PJE-CFG-002) PJE-CFG-002: the plan §7 object gives every domain a resolvable day column and lifts the lane-level columns (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CFG-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "aliases (PJE-CFG-002) PJE-CFG-002: time.day_col without \"--\" is rejected with a named warning and changes nothing (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CFG-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "aliases (PJE-CFG-002) PJE-CFG-002: unknown time keys, filters without a column and unknown lanes are rejected with a named warning each (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CFG-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "applyFilters / liveFilters (PJE-FILT-*) PJE-FILT-001: a flag filter applies only to its own domain — the serious filter keeps serious AEs and every lab point (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-FILT-001"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-FILT-001-serious-only.png"]
+    },
+    {
+      "test": "applyFilters / liveFilters (PJE-FILT-*) PJE-FILT-001: a flag value is compared trimmed and case-insensitively, and a filter state for an unknown column is ignored (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-FILT-001"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-FILT-001-serious-only.png"]
+    },
+    {
+      "test": "applyFilters / liveFilters (PJE-FILT-*) PJE-FILT-002: the __abnormal__ flag filter keeps only lab points failing isAbnormalByFlag and leaves AE and CM untouched (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-FILT-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "applyFilters / liveFilters (PJE-FILT-*) PJE-FILT-003: the con-med class multiselect is membership over the recorded classes, UNCODED included (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-FILT-003"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "applyFilters / liveFilters (PJE-FILT-*) PJE-FILT-004: a filter whose column is absent from every row of its domain is dropped with the library’s exact warning (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-FILT-004"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "axisTicks degrades to the endpoints for an unusable domain (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "axisTicks PJE-ANCH-004: anchored ticks are round offsets from the anchor — 0 always, then multiples of the step — not the study-day ticks shifted (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-ANCH-004"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "axisTicks returns at most 8 round study days covering the domain, positioned as percentages of the elapsed domain (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "axisTicks the ticks labelled -1 and 1 are one unit apart in elapsed space (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "buildAdslRecords derives EOSDY = EOSDT − TRTSDT + 1 and carries the end-of-study status (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "buildAdslRecords excludes non-safety participants and participants with no treatment start (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "buildAdslRecords falls back to TRTEDT when EOSDT is missing, and keeps a blank EOSDY with a warning when neither exists (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "buildAdslRecords takes the group from the subject-level actual treatment (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "buildAdslRecords writes one row per safety participant in adsl input order, in the declared columns (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "buildApiModel API-XFORM-010: assembles the artifact with module, factory, methods, settings, data contract, and missing docs (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-010"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "buildApiModel API-XFORM-011: flags DEFAULT_SETTINGS keys absent from the settings typedef (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-011"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "buildContext (PJE-PANEL-001, PJE-EVT-001) PJE-ANCH-002: the window honours the configured context_window_days, including zero (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-PANEL-001", "PJE-EVT-001", "PJE-ANCH-002"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-PANEL-001-context-panel.png"]
+    },
+    {
+      "test": "buildContext (PJE-PANEL-001, PJE-EVT-001) PJE-CTX-001: anchoring on a non-AE mark still answers every query, with no prior events (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-PANEL-001", "PJE-EVT-001", "PJE-CTX-001"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-PANEL-001-context-panel.png"]
+    },
+    {
+      "test": "buildContext (PJE-PANEL-001, PJE-EVT-001) PJE-CTX-004: the four lists are facts about the whole record — an active display filter that narrows byLane changes neither the prior events nor the active con-meds (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-PANEL-001", "PJE-EVT-001", "PJE-CTX-004"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-PANEL-001-context-panel.png"]
+    },
+    {
+      "test": "buildContext (PJE-PANEL-001, PJE-EVT-001) PJE-EVT-001: the bundle is data a consumer can read without the DOM — every list item carries its raw source row and anchor id (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-PANEL-001", "PJE-EVT-001"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-PANEL-001-context-panel.png"]
+    },
+    {
+      "test": "buildContext (PJE-PANEL-001, PJE-EVT-001) PJE-PANEL-001: buildContext returns null for no anchor, an unplaceable anchor, or no structured data (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-PANEL-001", "PJE-EVT-001"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-PANEL-001-context-panel.png"]
+    },
+    {
+      "test": "buildContext (PJE-PANEL-001, PJE-EVT-001) PJE-PANEL-001: the bundle carries the anchor, the inclusive window, the four lists, counts that match the arrays, and every honesty counter (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-PANEL-001", "PJE-EVT-001"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-PANEL-001-context-panel.png"]
+    },
+    {
+      "test": "buildEcgRecords anchors BASE and CHG on each participant baseline record (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "buildEcgRecords derives QTcF and QTcB from QT and RRR rather than the pilot parameters (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "buildEcgRecords drops non-analysis rows: the AVERAGE roll-up and non-supine postures (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "buildEcgRecords keeps each participant on its own baseline (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "buildEcgRecords passes heart rate through as recorded (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "buildEcgRecords refuses to build when the RR source contradicts the recorded heart rate (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "buildEcgRecords throws when a source parameter the derivation needs is absent (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "buildLabSeries (PJE-LANE-005) PJE-DERIV-002: baselines come from baselineEvents (the whole record) when the drawn points are filtered (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-005", "PJE-DERIV-002"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-LANE-005-labs-small-multiples.png"]
+    },
+    {
+      "test": "buildLabSeries (PJE-LANE-005) PJE-DERIV-002: each series carries its baseline with the rule that fired (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-005", "PJE-DERIV-002"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-LANE-005-labs-small-multiples.png"]
+    },
+    {
+      "test": "buildLabSeries (PJE-LANE-005) PJE-LANE-005: empty input yields no series, and unplaceable-only tests yield a series with no points and no baseline (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-005"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-LANE-005-labs-small-multiples.png"]
+    },
+    {
+      "test": "buildLabSeries (PJE-LANE-005) PJE-LANE-005: one series per configured test with records, in configured order, carrying the SHARED domain rather than the test’s own (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-005"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-LANE-005-labs-small-multiples.png"]
+    },
+    {
+      "test": "buildLabSeries (PJE-LANE-005) PJE-LANE-005: points are the placeable records in day order with their limits, indicator and event (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-005"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-LANE-005-labs-small-multiples.png"]
+    },
+    {
+      "test": "buildLabSeries (PJE-LANE-005) PJE-LANE-005: the value domain pads the values and the reference band, and a flat series still has height (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-005"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-LANE-005-labs-small-multiples.png"]
+    },
+    {
+      "test": "buildLaneDatasets (PJE-LANE-005/006, PJE-ANCH-003) PJE-ACC-002: the adverse-event lane emits one bar dataset per severity height so bar height and border weight carry severity at one opaque fill (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-005", "PJE-ANCH-003", "PJE-ACC-002"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-ANCH-003-context-window.png", "PJE-LANE-005-labs-small-multiples.png"]
+    },
+    {
+      "test": "buildLaneDatasets (PJE-LANE-005/006, PJE-ANCH-003) PJE-ANCH-003: with window bounds, out-of-window marks are dim with the per-hue de-emphasis alpha and in-window marks stay full strength (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-005", "PJE-ANCH-003"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-ANCH-003-context-window.png", "PJE-LANE-005-labs-small-multiples.png"]
+    },
+    {
+      "test": "buildLaneDatasets (PJE-LANE-005/006, PJE-ANCH-003) PJE-LANE-001: every domain has a human label (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-005", "PJE-ANCH-003", "PJE-LANE-001"],
+      "issueRefs": [142],
+      "screenshots": [
+        "PJE-ANCH-003-context-window.png",
+        "PJE-LANE-001-lanes-all.png",
+        "PJE-LANE-005-labs-small-multiples.png"
+      ]
+    },
+    {
+      "test": "buildLaneDatasets (PJE-LANE-005/006, PJE-ANCH-003) PJE-LANE-005: the labs lane is one line dataset per call over {x: elapsed, y: value} with the glyph per point and the trace ink (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-005", "PJE-ANCH-003"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-ANCH-003-context-window.png", "PJE-LANE-005-labs-small-multiples.png"]
+    },
+    {
+      "test": "buildLaneDatasets (PJE-LANE-005/006, PJE-ANCH-003) PJE-LANE-006: dose changes, medical history and disposition are scatter datasets with hidden points that draw.js paints as glyphs (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-005", "PJE-ANCH-003", "PJE-LANE-006"],
+      "issueRefs": [142],
+      "screenshots": [
+        "PJE-ANCH-003-context-window.png",
+        "PJE-LANE-005-labs-small-multiples.png",
+        "PJE-LANE-006-dose-change.png"
+      ]
+    },
+    {
+      "test": "buildLaneDatasets (PJE-LANE-005/006, PJE-ANCH-003) PJE-LANE-006: interval lanes produce floating bars {x: [elapsedStart, elapsedEnd], y: row} with the event and its end cap on each point (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-005", "PJE-ANCH-003", "PJE-LANE-006"],
+      "issueRefs": [142],
+      "screenshots": [
+        "PJE-ANCH-003-context-window.png",
+        "PJE-LANE-005-labs-small-multiples.png",
+        "PJE-LANE-006-dose-change.png"
+      ]
+    },
+    {
+      "test": "buildLaneDatasets (PJE-LANE-005/006, PJE-ANCH-003) PJE-LANE-008: unplaceable events are left out of every dataset, and empty input yields no datasets (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-005", "PJE-ANCH-003", "PJE-LANE-008"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-ANCH-003-context-window.png", "PJE-LANE-005-labs-small-multiples.png"]
+    },
+    {
+      "test": "buildPjeAeRecords PJE-DEMO-001: keeps treatment-emergent events only and carries AEOUT for the end-state rule (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DEMO-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "buildPjeCmRecords PJE-DEMO-001: de-duplicates the per-visit repeats to one row per course and keeps the lowest CMSEQ (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DEMO-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "buildPjeCmRecords PJE-DEMO-001: keeps UNCODED as an ordinary class value (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DEMO-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "buildPjeDsRecords PJE-DEMO-001: restricts the SDTM disposition rows to the safety population and joins TRTSDT from adsl (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DEMO-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "buildPjeDsRecords PJE-DEMO-001: warns naming every safety participant with no disposition row (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DEMO-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "buildPjeExRecords PJE-DEMO-001: keeps only the PARAMCD=DOSE exposure records, in the declared columns (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DEMO-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "buildPjeExRecords PJE-DEMO-001: writes blanks, never the literal NA, for missing values (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DEMO-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "buildPjeLbRecords PJE-DEMO-001: applies the analysis filter (DTYPE blank, ANL01FL or ABLFL, numeric AVAL) restricted to the liver panel (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DEMO-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "buildPjeLbRecords PJE-DEMO-001: renames the ADaM analysis columns to the module defaults and prefers ANRIND over LBNRIND (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DEMO-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "buildPjeLbRecords PJE-DEMO-001: the default panel is the four liver tests, matched on LBTEST, and a missing test warns by name (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DEMO-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "buildPjeMhRecords PJE-DEMO-001: plots at the collection day MHDY and carries the onset day separately as MHONSDY (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DEMO-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "buildScales / laneLayout a lab lane without a value domain and a lane with no rows still return a well-formed scale pair (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "buildScales / laneLayout PJE-LANE-004: every lane gets identical x.min/x.max, a hidden x axis and the same pinned y width (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-004"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "buildSourceUrl PJE-SRC-002: {domain} and each {COLUMN} token are replaced with the URI-encoded row values (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-SRC-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "buildSourceUrl PJE-SRC-002: a template naming a column the row lacks returns null with one warning (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-SRC-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "buildSourceUrl PJE-SRC-002: a template with no tokens is returned as-is and a null cell is an empty value, not \"null\" (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-SRC-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "buildSourceUrl PJE-SRC-002: no template means no link and no warning (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-SRC-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "coercion (PJE-CFG-004 and merge rules) callbacks are kept only when they are functions (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CFG-004"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "coercion (PJE-CFG-004 and merge rules) ds_reference_cats and the ongoing-value lists are upper-cased and trimmed; an empty ds_reference_cats warns once (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CFG-004"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "coercion (PJE-CFG-004 and merge rules) filters normalize through normalizeFilterSpec keeping domain, type and flag_value, and drop specs without a recognized domain (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CFG-004"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "coercion (PJE-CFG-004 and merge rules) layout numbers coerce to positive integers with their documented fallbacks and fit_to_height to a boolean (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CFG-004"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "coercion (PJE-CFG-004 and merge rules) lb_change_factor must be a finite number above 1 and lb_baseline_day a finite integer (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CFG-004"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "coercion (PJE-CFG-004 and merge rules) lb_tests and ae_severity_values arrayify to strings; an empty lb_tests means every test and an empty severity list falls back (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CFG-004"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "coercion (PJE-CFG-004 and merge rules) mh_day_source accepts only 'onset' exactly and otherwise falls back to 'collection' with a warning (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CFG-004"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "coercion (PJE-CFG-004 and merge rules) PJE-CFG-003: a lane naming a group that is not a lane_groups key warns and falls back — to its default group, else the first configured group (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CFG-004", "PJE-CFG-003"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "coercion (PJE-CFG-004 and merge rules) PJE-CFG-003: a lane_groups list that drops a default group leaves no lane orphaned — every lane belongs to a configured group (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CFG-004", "PJE-CFG-003"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "coercion (PJE-CFG-004 and merge rules) PJE-CFG-004: context_window_days coerces to a non-negative integer defaulting to 30; zero is legal (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CFG-004"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "coercion (PJE-CFG-004 and merge rules) PJE-DATA-007: every day column accepts a single name or a fallback chain and syncs to an array (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CFG-004", "PJE-DATA-007"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "coercion (PJE-CFG-004 and merge rules) time deep-merges key by key and date mode is honoured only when allow_date_mode is true (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CFG-004"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "committed adsl.csv carries the 254 safety participants across the three arms (TTE-DEMO-002, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-DEMO-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "committed adsl.csv every EOSDY is a positive integer day within the measured 1–213 range, with a status for each (TTE-DEMO-002, #128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-DEMO-002"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "committed pje-*.csv extracts PJE-DEMO-001: pje-ae.csv carries the published header, 1122 rows and 217 participants, with no NA cells (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DEMO-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "committed pje-*.csv extracts PJE-DEMO-001: pje-cm.csv carries the published header, 1081 rows and 229 participants, with no NA cells (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DEMO-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "committed pje-*.csv extracts PJE-DEMO-001: pje-ds.csv carries the published header, 798 rows and 254 participants, with no NA cells (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DEMO-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "committed pje-*.csv extracts PJE-DEMO-001: pje-ex.csv carries the published header, 591 rows and 254 participants, with no NA cells (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DEMO-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "committed pje-*.csv extracts PJE-DEMO-001: pje-lb.csv carries the published header, 6639 rows and 254 participants, with no NA cells (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DEMO-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "committed pje-*.csv extracts PJE-DEMO-001: pje-mh.csv carries the published header, 1818 rows and 254 participants, with no NA cells (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DEMO-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "committed pje-*.csv extracts PJE-DEMO-001: the guide's data caveats are the extracts' own numbers — 71% of con-med courses have no end date, 83% are UNCODED, and the lab indicator carries only NORMAL, HIGH and LOW (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DEMO-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "committed pje-*.csv extracts PJE-DEMO-001: the seeded participant 01-701-1203 is the uneventful placebo case with the 1986 con-med (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DEMO-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "committed pje-*.csv extracts PJE-DEMO-001: the seeded participant 01-705-1310 carries the 4.03 x ULN ALT peak and the adverse-event discontinuation (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DEMO-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "committed pje-*.csv extracts PJE-DEMO-001: the seeded participant 01-716-1447 carries the documented day-30 anchor story (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DEMO-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "committed pje-*.csv extracts PJE-DEMO-001: the six files together cover exactly the 254 safety participants (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DEMO-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "committed pje-*.csv extracts PJE-DEMO-001: the six outputs are declared once, with the published headers (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DEMO-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "committed pje-*.csv extracts PJE-DEMO-001: the study-wide caveats the demo page states hold on the committed files (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DEMO-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "conMedsActiveAt (PJE-CTX-001, D8, D16) PJE-CTX-001: a con-med whose end was never recorded IS active and raises endUnrecorded; an ongoing one is active and does not (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CTX-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "conMedsActiveAt (PJE-CTX-001, D8, D16) PJE-CTX-001: a con-med whose recorded end precedes its start is active only on its start day and is not counted as end-unrecorded (PJE-DATA-008) (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CTX-001", "PJE-DATA-008"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "conMedsActiveAt (PJE-CTX-001, D8, D16) PJE-CTX-001: a con-med with no usable start day is never asserted active and is counted in withoutStart (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CTX-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "conMedsActiveAt (PJE-CTX-001, D8, D16) PJE-CTX-001: active means started on or before the day and not ended before it — end === day is active, end === day - 1 is not (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CTX-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "conMedsActiveAt (PJE-CTX-001, D8, D16) PJE-CTX-001: the active list is ordered by start day, then name, then sourceIndex (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CTX-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "conMedsActiveAt (PJE-CTX-001, D8, D16) PJE-CTX-001: the day comparison runs in elapsed space and an unusable day returns nothing active (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CTX-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "conMedsStartingLater (PJE-CTX-001) PJE-CTX-001: returns only con-meds starting inside the window and AFTER the anchor day (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CTX-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "correctQt applies Bazett — QT divided by the square root of RR in seconds (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "correctQt applies Fridericia — QT divided by the cube root of RR in seconds (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "correctQt corrects upward above 60 bpm and downward below it (#79)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [79],
+      "screenshots": []
+    },
+    {
+      "test": "dayLabel / spanLabel (PJE-TIME-001, D16) PJE-ANCH-002: the terminal phrase comes from endState — \"to day N\", \"to ongoing (<outcome>)\", or \"end not recorded\" (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-TIME-001", "PJE-ANCH-002"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-TIME-001-date-mode.png"]
+    },
+    {
+      "test": "dayLabel / spanLabel (PJE-TIME-001, D16) PJE-TIME-001: day mode prints the study day and date mode the calendar date, falling back to the day when no date resolves (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-TIME-001"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-TIME-001-date-mode.png"]
+    },
+    {
+      "test": "dayLabel / spanLabel (PJE-TIME-001, D16) PJE-TIME-001: in date mode both ends of a closed interval are dates, and the day is used where no date resolves (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-TIME-001"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-TIME-001-date-mode.png"]
+    },
+    {
+      "test": "dayToDate / isFullDate dateDiffDays is the calendar-day difference between two ISO dates (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "dayToDate / isFullDate PJE-TIME-002: day 1 is the reference date, day 2 the next day, day -1 the day before, and day 0 is null (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-TIME-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "dayToDate / isFullDate PJE-TIME-003: isFullDate accepts YYYY-MM-DD (with an optional time part) and rejects partial or impossible dates (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-TIME-003"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "DEFAULT_SETTINGS PJE-CFG-001: carries a column mapping for all six domains, every key snake_case and domain-prefixed (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CFG-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "DEFAULT_SETTINGS PJE-CFG-001: every column setting is overridable through syncSettings (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CFG-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "DEFAULT_SETTINGS PJE-CFG-001: the documented column defaults are present with their documented values (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CFG-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "DEFAULT_SETTINGS PJE-CFG-001: the seven lanes, three lane groups and three filters are the documented defaults (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CFG-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "DEFAULT_SETTINGS syncSettings never mutates DEFAULT_SETTINGS or the caller object (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "deriveDoseChanges (PJE-DERIV-001) PJE-DERIV-001: 0 -> 0 -> 0 (placebo) yields no change (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DERIV-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "deriveDoseChanges (PJE-DERIV-001) PJE-DERIV-001: 54 -> 81 is an increase dated to the day the new dose begins, not the day the old one ended (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DERIV-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "deriveDoseChanges (PJE-DERIV-001) PJE-DERIV-001: a record with no usable start or a non-numeric dose is skipped, not paired (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DERIV-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "deriveDoseChanges (PJE-DERIV-001) PJE-DERIV-001: an exposure gap at the same dose is not a change (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DERIV-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "deriveDoseChanges (PJE-DERIV-001) PJE-DERIV-001: empty and non-array input yield [] (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DERIV-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "deriveDoseChanges (PJE-DERIV-001) PJE-DERIV-001: records are walked in start order regardless of input order, and a same-day tie is broken by sourceIndex (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DERIV-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "deriveDoseChanges (PJE-DERIV-001) PJE-DERIV-001: same-day duplicates at the same dose produce nothing (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DERIV-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "deriveDoseChanges (PJE-DERIV-001) PJE-DERIV-001: the change carries both defining rows for the source drawer (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DERIV-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "deriveDoseChanges (PJE-DERIV-001) PJE-DERIV-001: the four directions — increase, reduction, interruption, restart (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DERIV-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "detectDomain PJE-DATA-001: recognizes the six codes case-insensitively and the ADaM synonyms (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DATA-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "docs/DATA_SOURCES.md provenance PJE-DEMO-001: lists all six extracts in the file table (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DEMO-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "docs/DATA_SOURCES.md provenance PJE-DEMO-001: names pharmaversesdtm, its Apache-2.0 licence and the ds.csv source revision (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DEMO-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "doseChangesInWindow (PJE-CTX-003) PJE-CTX-003: point containment, inclusive at both edges; unplaceable changes never match (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CTX-003"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "elapsed helpers (re-exported from getScales.js) PJE-ANCH-005: toElapsed and toStudyDay round-trip every day in {-30,-5,-1,1,5,30} and skip day 0 (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-ANCH-005"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "elapsed-day space (D22) PJE-ANCH-005: toElapsed and toStudyDay round-trip every non-zero day and skip day 0 (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-ANCH-005"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer buildEvidenceSets splits records per module and duplicates shared scaffold records (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer buildRun builds GitHub Actions run provenance from the environment (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer compareEvidence flags status drift and test-set changes, ignoring screenshots (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer compareEvidence ignores provenance so --check never drifts on generatedAt/environment/run (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer moduleForFile routes test files to renderer modules by path (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer normalizePlaywright walks nested suites into browser-suite records (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer normalizeVitest maps assertion results to unit-suite records (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer parseTestName extracts requirement IDs and issue refs (#5)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [5],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer parseTestName recognizes every renderer requirement-ID prefix, not just SH (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence normalizer provenance lives in dedicated top-level keys; the records array stays timestamp-free (#20)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "formatTick PJE-ANCH-004: with an anchor day the tick is a signed elapsed offset and the anchor reads 0 (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-ANCH-004"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "formatTick PJE-TIME-001: day mode prints the study day and date mode the ISO date, falling back to the day when no date resolves (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-TIME-001"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-TIME-001-date-mode.png"]
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-001: the documented settings are exactly the DEFAULT_SETTINGS keys (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-001"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-002: every setting row has a type, default, and description (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-002"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-003: the factory is documented with params and a return value (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-003"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-004: every lifecycle method is documented with a description and return value (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-004"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-005: no missing-documentation entries remain across the public surface (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-005"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "histogram API documentation completeness API-COMPLETE-006: the data contract derives from the schema and its settings map onto real setting names (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-COMPLETE-006"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "import hygiene (RF-19) configure.js imports under a bare Node-style dynamic import, pulling in no JSON and no DOM (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "inWindow (PJE-ANCH-002) PJE-ANCH-002: a point exactly on either bound matches, and one just outside does not (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-ANCH-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "inWindow (PJE-ANCH-002) PJE-ANCH-002: an interval matches by overlap, inclusive at both edges (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-ANCH-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "inWindow (PJE-ANCH-002) PJE-ANCH-002: an unplaceable event never matches, and a clipped-start con-med uses its true start (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-ANCH-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "inWindow (PJE-ANCH-002) PJE-ANCH-002: ongoing and end-not-recorded intervals both run past their start, and a closed one stops at its end (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-ANCH-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "inWindow (PJE-ANCH-002) PJE-ANCH-002: with a zero-day window only the anchor day matches (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-ANCH-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "isAbnormalByChange (PJE-CTX-002, D28) PJE-CTX-002: a missing, zero or negative baseline disables the change rule (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CTX-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "isAbnormalByChange (PJE-CTX-002, D28) PJE-CTX-002: exactly 2x and exactly 0.5x the baseline are abnormal (inclusive on both arms) (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CTX-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "isAbnormalByChange (PJE-CTX-002, D28) PJE-CTX-002: lb_change_factor configures both arms (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CTX-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "isAbnormalByChange (PJE-CTX-002, D28) PJE-CTX-002: values just inside both arms are not abnormal (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CTX-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "isAbnormalByFlag (PJE-CTX-002) PJE-CTX-002: HIGH, LOW, ABNORMAL, HH and LL are abnormal; NORMAL and blank are not (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CTX-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "isAbnormalByFlag (PJE-CTX-002) PJE-CTX-002: the configured normal value is compared case-insensitively (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CTX-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "labBaseline (PJE-DERIV-002, D17) PJE-DERIV-002: accepts LabSeries points ({ day, value, event }) as well as event records (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DERIV-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "labBaseline (PJE-DERIV-002, D17) PJE-DERIV-002: falls back to the earliest value when every record is after the baseline day (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DERIV-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "labBaseline (PJE-DERIV-002, D17) PJE-DERIV-002: falls back to the last value on or before the baseline day when no flag column resolves (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DERIV-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "labBaseline (PJE-DERIV-002, D17) PJE-DERIV-002: returns null when no usable point exists (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DERIV-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "labBaseline (PJE-DERIV-002, D17) PJE-DERIV-002: same-day ties break on the SMALLER sourceIndex at every level (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DERIV-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "labBaseline (PJE-DERIV-002, D17) PJE-DERIV-002: the ABLFL record is the baseline even when a later, closer-to-day-1 unflagged record exists (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DERIV-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "labBaseline (PJE-DERIV-002, D17) PJE-DERIV-002: the day rule honours a configured lb_baseline_day and a null flag column (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DERIV-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "labBaseline (PJE-DERIV-002, D17) PJE-DERIV-002: with several flagged records the latest day wins (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DERIV-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "laneAriaLabel (PJE-KEY-001, PJE-ACC-002) PJE-ACC-002: seriousness and a missing severity are named, never carried by the ring or the hatch alone (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-KEY-001", "PJE-ACC-002"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-KEY-001-mark-focus.png"]
+    },
+    {
+      "test": "laneAriaLabel (PJE-KEY-001, PJE-ACC-002) PJE-KEY-001: labs name the test, value, indicator and ratio; date mode names dates; other domains read their domain word (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-KEY-001", "PJE-ACC-002"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-KEY-001-mark-focus.png"]
+    },
+    {
+      "test": "laneAriaLabel (PJE-KEY-001, PJE-ACC-002) PJE-KEY-001: the accessible name is a sentence naming the label, domain, severity, days and both gestures (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-KEY-001", "PJE-ACC-002"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-KEY-001-mark-focus.png"]
+    },
+    {
+      "test": "lanes and lane groups (PJE-CFG-003) lane_groups normalize to { key, label, collapsed } and fall back to the defaults when unusable (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CFG-003"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "lanes and lane groups (PJE-CFG-003) PJE-CFG-003: a lane set to null is disabled and keeps its label (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CFG-003"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "lanes and lane groups (PJE-CFG-003) PJE-CFG-003: a partial lane override back-fills label and group from the defaults (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CFG-003"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "lanes and lane groups (PJE-CFG-003) PJE-CFG-003: an unknown lane key is dropped with a console warning and enabled is boolean-coerced (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CFG-003"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "laneSortKey (PC-17) PJE-LANE-010: exposure sorts by treatment name, labs by the configured test order, and the single-row lanes by day (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-010"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "laneSortKey (PC-17) PJE-LANE-010: the AE order is severity rank descending, then onset ascending, then sourceIndex (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-010"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "laneSortKey (PC-17) PJE-LANE-010: the con-med order is start ascending with nulls last, then name, then sourceIndex (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-010"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "listener removal and teardown (PJE-EVT-003) PJE-EVT-003: destroy tears down the charts, the listeners and the container, and a later emit is a no-op (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-EVT-003"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "listener removal and teardown (PJE-EVT-003) PJE-EVT-003: off(name, fn) removes one listener and off(name) removes them all (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-EVT-003"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "markGeometry (PJE-LANE-005/006) PJE-ANCH-002: an open interval runs to the domain end with its end cap; a same-day event is zero-width but keeps the minimum width (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-005", "PJE-ANCH-002"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-LANE-005-labs-small-multiples.png"]
+    },
+    {
+      "test": "markGeometry (PJE-LANE-005/006) PJE-LANE-006: an interval is [elapsedStart, elapsedEnd] with the lane height and a minimum drawn width (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-005", "PJE-LANE-006"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-LANE-005-labs-small-multiples.png", "PJE-LANE-006-dose-change.png"]
+    },
+    {
+      "test": "markGeometry (PJE-LANE-005/006) PJE-LANE-008: a clipped start draws from the domain edge, points are zero-width at their day, and an unplaceable event has no geometry (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-005", "PJE-LANE-008"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-LANE-005-labs-small-multiples.png"]
+    },
+    {
+      "test": "matchesConfiguredTest / labTestOrder PJE-LANE-005: a configured list that matches nothing warns once and yields no tests (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-005"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-LANE-005-labs-small-multiples.png"]
+    },
+    {
+      "test": "matchesConfiguredTest / labTestOrder PJE-LANE-005: lb_tests matches the test name OR the test code, case-insensitively, and an empty list matches every test (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-005"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-LANE-005-labs-small-multiples.png"]
+    },
+    {
+      "test": "matchesConfiguredTest / labTestOrder PJE-LANE-005: the test order is the configured order, then first-seen order for unconfigured tests, naming configured tests with no records (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-005"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-LANE-005-labs-small-multiples.png"]
+    },
+    {
+      "test": "mdBlock: existing blocks are unchanged renders a numbered list as an ordered list",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: existing blocks are unchanged still renders headings, bullets, and paragraphs",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: heading ids and the guide TOC adds no heading ids by default (coverage docs stay unchanged)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: heading ids and the guide TOC adds slug ids to headings when opted in",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: heading ids and the guide TOC disambiguates repeated headings",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: heading ids and the guide TOC extractHeadings ids match the ids mdBlock emits",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: heading ids and the guide TOC slugify lowercases and collapses non-alphanumerics",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: image figures accepts a single-quoted caption (Prettier normalizes titles to single quotes)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: image figures falls back to the alt text when no caption title is given",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: image figures renders a standalone image line as a captioned figure",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: image figures treats a mid-paragraph image inline, not as a broken link",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: pipe tables applies column alignment from the delimiter row",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: pipe tables does not mistake a bare horizontal rule for a table delimiter",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdBlock: pipe tables renders a GFM pipe table inside a scroll wrapper with header and body",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdInline: parenthesised link destinations applies the same rule to image destinations",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdInline: parenthesised link destinations does not swallow the text after the link",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdInline: parenthesised link destinations keeps a balanced-paren URL whole in the href",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdInline: parenthesised link destinations still stops at the closing paren for an ordinary destination",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "mdInline: parenthesised link destinations unwraps the angle-bracketed destination Prettier normalizes to",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "muted ink guard the library's #7b8b96 muted ink (3.51:1) appears nowhere in the module's source (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeDomain — interval end handling (D16) a zero-length event (end === start) stays a closed interval (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeDomain — interval end handling (D16) an unplaceable interval keeps its end state logic but no end day (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeDomain — interval end handling (D16) PJE-ANCH-002: a blank end with an ongoing outcome is ongoing; a blank end with any other outcome is unrecorded (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-ANCH-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeDomain — interval end handling (D16) PJE-ANCH-002: with no outcome column configured (con-meds by default) every blank end is unrecorded (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-ANCH-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeDomain — interval end handling (D16) PJE-DATA-008: an end day before the start is kept as a single-day mark, unrecorded, and flagged with the exact reason (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DATA-008"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeDomain — per-domain rules AE: drops only when both term and decode are blank; the label prefers the decode and the detail is the verbatim term when it differs (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeDomain — per-domain rules CM: drops a missing name; the class keeps UNCODED as its own bucket and dose/route form the detail (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeDomain — per-domain rules DS: drops a missing decode; every row is a rule mark and only reference categories carry the cross-stack flag (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeDomain — per-domain rules EX: drops only when both treatment and dose are blank; label, detail, category and value follow §5.2 (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeDomain — per-domain rules LB: drops a missing test name and a non-numeric result with the exact reasons; points carry value, limits and the indicator (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeDomain — per-domain rules MH: drops only when both term and decode are blank; the point sits at the collection day and the detail names the onset (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeDomain — per-domain rules MH: under mh_day_source 'onset' the point sits at the onset day and rawDate is the onset date (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeDomain — per-domain rules normalizeDomain tolerates an unknown domain code and non-object rows (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeDomain — per-domain rules PJE-TIME-003: a partial recorded date is kept as recorded and never positions the mark (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-TIME-003"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeDomain — per-domain rules PJE-TIME-004: a full recorded date that disagrees with the study day is overridden by the day and flagged (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-TIME-004"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeDomain — per-domain rules without a row-level reference date the record keeps its own full date and no conflict is asserted (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeDomain — the shared record shape every domain drops a row with a missing participant id, naming the id column (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeDomain — the shared record shape PJE-DATA-003: dropped rows are copies carrying the reason and domain columns, and the export orders the reason first (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DATA-003"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-DATA-003-dropped-rows.png"]
+    },
+    {
+      "test": "normalizeDomain — the shared record shape PJE-DATA-006: an AE record carries the documented EventRecord fields and its source by reference (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DATA-006"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeDomain — the shared record shape PJE-DATA-006: sourceIndex is the index within the domain array in both forms (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DATA-006"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeDomain — the shared record shape PJE-DATA-007: the day chain resolves per row, left to right, and records the resolving column (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DATA-007"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeDomain — the shared record shape PJE-DATA-007: the plan's SDTM MHSTDY places a medical-history row under mh_day_source: onset, through the default onset chain (D15) (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DATA-007"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeDomain — the shared record shape PJE-LANE-008: 'NA', blank and non-numeric days leave the record unplaceable but kept (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-008"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeDomain — the shared record shape PJE-LANE-008: study day 0 is not a day — a record whose only day is 0 (or '-0') is kept, unplaceable, and flagged dayZero (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-008"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeInput an array-like object is form A and its numeric keys are unknown-key warnings (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeInput form A values that are not arrays are treated as absent and counted in dropped (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeInput null, undefined and primitives yield an all-empty object-form map (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeInput PJE-DATA-001: form A keys are matched case-insensitively and unknown keys warn (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DATA-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeInput PJE-DATA-001: form B domain values are upper-cased, trimmed and synonym-mapped (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DATA-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeInput PJE-DATA-001: the per-domain object and the merged array produce the same domain map (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DATA-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeInput PJE-DATA-002: a merged row with a blank or unrecognized domain is dropped with a named reason (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DATA-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeInput PJE-DATA-002: the merged array reads the configured domain column (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DATA-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeInput PJE-DATA-006: form A keeps the caller arrays by reference and no row is mutated in either form (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DATA-006"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "patient-journey-explorer checkInputs PJE-DATA-004: a missing id column in the AE domain is named as ae.USUBJID (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DATA-004"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "patient-journey-explorer checkInputs PJE-DATA-004: a valid per-domain map with the required columns passes (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DATA-004"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "patient-journey-explorer checkInputs PJE-DATA-004: all-empty input throws the \"no usable data\" message naming the domain column (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DATA-004"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "patient-journey-explorer checkInputs PJE-DATA-004: every entry of DOMAINS resolves a lower-case schema property carrying requiredSettings (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DATA-004"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "patient-journey-explorer checkInputs PJE-DATA-004: multiple misses across domains are named in one error, chains shown as their alternatives (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DATA-004"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "patient-journey-explorer checkInputs PJE-DATA-004: remapped column settings are validated against the remapped names (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DATA-004"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "patient-journey-explorer checkInputs PJE-DATA-005: absent domains never throw; a single present domain is enough (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DATA-005"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "patient-journey-explorer checkInputs PJE-DATA-007: a chain is satisfied by any one of its columns appearing in any row (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DATA-007"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "PJE_PALETTE PJE-ACC-001: each categorical hue is opaque and at least 3:1 against its surface in both modes, at the recorded ratios (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-ACC-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "PJE_PALETTE PJE-ACC-001: the de-emphasized fill composites to between 1.9:1 and 2.4:1 per hue, at the recorded ratios (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-ACC-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "PJE_PALETTE PJE-ACC-001: the escalation red, the diverging lab arms and the focus ring hold their recorded contrast in both modes (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-ACC-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "PJE_PALETTE PJE-ACC-001: the three hues stay pairwise separable under normal vision and simulated deuteranopia at the recorded floor (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-ACC-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "PJE_PALETTE PJE-ACC-002: severity is carried by height and border weight at a single opaque fill (D23), and every encoding has a glyph (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-ACC-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "PJE_PALETTE the light and dark token sets carry the same keys (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "planLanes empty states (PJE-LANE-007, PJE-LANE-008) PJE-DATA-003: labs for tests outside lb_tests are named in the footer when the lane draws, and in the empty text when it does not (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-007", "PJE-LANE-008", "PJE-DATA-003"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-DATA-003-dropped-rows.png", "PJE-LANE-007-empty-ae-lane.png"]
+    },
+    {
+      "test": "planLanes empty states (PJE-LANE-007, PJE-LANE-008) PJE-LANE-007: a participant with no records in a lane reads \"No <domain> recorded\", with no footer (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-007", "PJE-LANE-008"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-LANE-007-empty-ae-lane.png"]
+    },
+    {
+      "test": "planLanes empty states (PJE-LANE-007, PJE-LANE-008) PJE-LANE-007: records that exist but were all filtered out read \"No records match the current filters\" (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-007", "PJE-LANE-008"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-LANE-007-empty-ae-lane.png"]
+    },
+    {
+      "test": "planLanes empty states (PJE-LANE-007, PJE-LANE-008) PJE-LANE-008: a lane whose every record has no usable day does NOT say \"no records\" — it says no record has a usable day, and the footer names them (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-007", "PJE-LANE-008"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-LANE-007-empty-ae-lane.png"]
+    },
+    {
+      "test": "planLanes empty states (PJE-LANE-007, PJE-LANE-008) PJE-LANE-008: a record whose only day is 0 is named as such in the footer, apart from the blank-day records (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-007", "PJE-LANE-008"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-LANE-007-empty-ae-lane.png"]
+    },
+    {
+      "test": "priorSameTerm (PJE-CTX-004) PJE-CTX-004: a same-day prior is resolved by sourceIndex, and the anchor never lists itself (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CTX-004"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "priorSameTerm (PJE-CTX-004) PJE-CTX-004: an unplaceable candidate is never prior (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CTX-004"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "priorSameTerm (PJE-CTX-004) PJE-CTX-004: prior events with the same preferred term over the whole record, most recent first (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CTX-004"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "priorSameTerm (PJE-CTX-004) PJE-CTX-004: the key falls back to the verbatim term when the preferred term is blank (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CTX-004"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "programmatic setters mirror the sidebar (PJE-EVT-001) PJE-EVT-001: a throwing settings callback is caught and logged, and rendering continues (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-EVT-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "programmatic setters mirror the sidebar (PJE-EVT-001) PJE-EVT-001: date mode is refused, with a warning, when no reference date resolves (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-EVT-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "programmatic setters mirror the sidebar (PJE-EVT-001) PJE-EVT-001: getTimeMode and timeMode mirror setTimeMode, which emits pjeTimeModeChanged (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-EVT-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "programmatic setters mirror the sidebar (PJE-EVT-001) PJE-EVT-001: pjeSubjectSelected and pjeLaneToggled carry the documented payload shapes (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-EVT-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "programmatic setters mirror the sidebar (PJE-EVT-001) PJE-EVT-001: setFilter changes the filter, re-renders and emits pjeFilterChanged; an unknown column warns and no-ops (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-EVT-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "ratioLine (PC-29) PJE-CTX-002: \"× ULN\" above the range, \"× LLN\" below it, two decimals, and no line when the relevant limit is missing (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CTX-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "referenceDate derives the reference from the earliest row with both a full date and a finite day when no ref column resolves (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "referenceDate PJE-TIME-002: picks the first full ref_date_col cell and reports the rule (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-TIME-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "referenceDate returns null with no usable reference at all (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "referenceRatio (PC-29) PJE-CTX-002: a HIGH flag or a value above ULN divides by ULN and says so (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CTX-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "referenceRatio (PC-29) PJE-CTX-002: a LOW flag or a value below LLN divides by LLN, never by ULN (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CTX-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "referenceRatio (PC-29) PJE-CTX-002: no ratio when the relevant limit is missing or when the point is in range (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CTX-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "relativeDay (PJE-ANCH-004, PJE-ANCH-005) PJE-ANCH-004: null in, null out (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-ANCH-004", "PJE-ANCH-005"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "relativeDay (PJE-ANCH-004, PJE-ANCH-005) PJE-ANCH-004: the anchor itself is day 0, the axis title is \"Days from anchor\", and the offset is a plain count across first dose (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-ANCH-004", "PJE-ANCH-005"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "relativeDay (PJE-ANCH-004, PJE-ANCH-005) PJE-ANCH-005: relativeDay(a, b) equals the calendar-day difference between dayToDate(a) and dayToDate(b) for all 30 ordered pairs, including every pair straddling first dose (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-ANCH-004", "PJE-ANCH-005"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "renderGuidePage: composition renders a sticky TOC sidebar whose links anchor to the heading ids",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderGuidePage: composition renders authored figures from the guide markdown",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderGuidePage: composition renders the title, non-diagnostic caution, and the guide tab",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) exposes a railWrap slot with the sv-rail class",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) gives the rail a settable width and the root a positioning context for expand",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) hides the rail while it is empty via the shared stylesheet",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) honours [hidden] on the rail, which the module sets while it is idle",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) no longer carries the dock slot inside the main column (D4)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) puts the rail opposite the control sidebar, with the chart between them (D2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderShell rail slot (PPRF-RAIL-001) stacks the rail below the main column under the shell breakpoint (D4)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-RAIL-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "repo hygiene no source or test file carries a machine-specific absolute path (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "requirements-lib: freshness guard (#63) flags added and removed requirement IDs",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "requirements-lib: freshness guard (#63) flags changed requirement text",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "requirements-lib: freshness guard (#63) reports fresh when the committed set matches a fresh extraction",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "requirements-lib: matrix parsing (#63) ignores the header, separator, and non-requirement content",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "requirements-lib: matrix parsing (#63) keeps an escaped pipe inside a requirement cell as a single row",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "requirements-lib: matrix parsing (#63) maps each requirement ID to its reviewed text",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "requirements-lib: requirement set (#63) wraps the parsed map with module + matrix provenance",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "resolveEventDate a full recorded date that agrees with the day is kept without a conflict (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "resolveEventDate PJE-TIME-003: a partial recorded date never positions and never labels; the day does, when a reference exists (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-TIME-003"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "resolveEventDate PJE-TIME-004: a full recorded date that disagrees with the study day is overridden by the day and flagged (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-TIME-004"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "resolveTheme falls back to the literals when there is no root, no window or getComputedStyle yields empty (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "resolveTheme reads --pje-* custom properties back off the root when a stylesheet sets them (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "safety.viz scaffold SH-API-001: the collection exposes the histogram module factory (#2)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-API-001"],
+      "issueRefs": [2],
+      "screenshots": []
+    },
+    {
+      "test": "safety.viz scaffold src/main.js exports the public module collection (#1)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [1],
+      "screenshots": []
+    },
+    {
+      "test": "selectSubject (PJE-SUBJ-003) PJE-SUBJ-003: a known id selects it, clears the anchor first, and the subject list follows (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-SUBJ-003"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "selectSubject (PJE-SUBJ-003) PJE-SUBJ-003: an unknown id changes nothing and warns once (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-SUBJ-003"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "severityStyle / glyphFor / endCapFor (PJE-ACC-002, D16, D23) PJE-ACC-002: a custom severity scale maps its first rank to MILD, its last to SEVERE and the rest to MODERATE (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-ACC-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "severityStyle / glyphFor / endCapFor (PJE-ACC-002, D16, D23) PJE-ACC-002: glyphs are the palette vocabulary — bars for intervals, lab glyphs by indicator, carets by direction, a hollow circle for history and a dot for disposition (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-ACC-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "severityStyle / glyphFor / endCapFor (PJE-ACC-002, D16, D23) PJE-ACC-002: severity maps to the palette height, border width and (opaque) alpha; blank severity draws the hatched bar at the moderate height (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-ACC-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "severityStyle / glyphFor / endCapFor (PJE-ACC-002, D16, D23) PJE-ANCH-002: the end cap is closed / arrow (ongoing) / fade (end not recorded) by endState, never by a bare missing value (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-ACC-002", "PJE-ANCH-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "shared view selector VIEW-SEL-001: renders one option button per view under a titled View section (#76)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["VIEW-SEL-001"],
+      "issueRefs": [76],
+      "screenshots": []
+    },
+    {
+      "test": "shared view selector VIEW-SEL-002: highlights only the active option via is-active + aria-pressed (#76)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["VIEW-SEL-002"],
+      "issueRefs": [76],
+      "screenshots": []
+    },
+    {
+      "test": "shared view selector VIEW-SEL-003: renders real, keyboard-operable button elements (#76)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["VIEW-SEL-003"],
+      "issueRefs": [76],
+      "screenshots": []
+    },
+    {
+      "test": "shared view selector VIEW-SEL-004: clicking a non-active option fires onChange with its value; the active option is a no-op (#76)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["VIEW-SEL-004"],
+      "issueRefs": [76],
+      "screenshots": []
+    },
+    {
+      "test": "shared: filterMatches FILT-005: a scalar selection compares as a string, so 1 matches \"1\" (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: filterMatches FILT-005: an array selection is membership, and an empty array matches nothing (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: filterMatches FILT-005: no selection places no restriction — null, undefined and empty string all pass (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: initFilterState FILT-002: no specs is an empty state, and a nullish spec list does not throw (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: initFilterState FILT-002: the opening state is the start values, and null where there is no start (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: normalizeFilterSpec FILT-001: a bare column name is a filter with an All option and one selection (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: normalizeFilterSpec FILT-001: a spec object keeps its extra keys and defaults the label to the column (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: normalizeFilterSpec FILT-002: a start of 0 or false is a real column value, not an absent start (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: normalizeFilterSpec FILT-002: a start value is the opening selection, and suppresses All unless All is asked for (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: normalizeFilterSpec FILT-002: an empty string, null or empty array is no start at all (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: normalizeFilterSpec FILT-003: all:false is honoured — it is never truthiness-tested (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: normalizeFilterSpec FILT-004: a single-value filter given an array start takes the first entry (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: normalizeFilterSpec FILT-004: multiple takes an array start, and a scalar start becomes a one-value array (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: renderFilterControl FILT-001: a plain filter renders a select whose first option is All (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: renderFilterControl FILT-001: choosing All reports no selection, and choosing a value reports it (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: renderFilterControl FILT-003: all:false renders the same select with no All option (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: renderFilterControl FILT-004: a multiple filter opens on its start values (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: renderFilterControl FILT-004: a multiple filter renders the shared multiselect and reports an array (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: resolveMeasureList MEAS-001: a bare string is accepted as a one-entry whitelist (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: resolveMeasureList MEAS-001: a repeated entry is offered once, in its first position (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: resolveMeasureList MEAS-001: a whitelist entry matches the bare measure name as well as the displayed label (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: resolveMeasureList MEAS-001: a whitelist subsets the control and keeps its own order, not the alphabet (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: resolveMeasureList MEAS-001: an unset whitelist offers every measure in the data, alphabetically (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: resolveMeasureList MEAS-001: no measures in the data resolves to an empty control, configured or not (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: resolveMeasureList MEAS-001: one bare name matching several unit variants offers them all, in that slot (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: resolveMeasureList MEAS-002: a configured measure absent from the data is dropped, and named in a warning (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: resolveMeasureList MEAS-002: a whitelist matching nothing falls back to every measure rather than blanking the control (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: resolveMeasureList MEAS-002: warnings are suppressible so a per-render caller does not spam the console (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "sharedDomain (PJE-LANE-004, D10, D18) PJE-LANE-004: a con-med starting more than PRE_STUDY_CLAMP days before every other domain does not extend the domain (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-004"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "sharedDomain (PJE-LANE-004, D10, D18) PJE-LANE-004: a single day still yields a one-day-wide domain, and nothing placeable yields null (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-004"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "sharedDomain (PJE-LANE-004, D10, D18) PJE-LANE-004: medical history is not clamped under the default collection-day source, and is clamped under mh_day_source: onset (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-004"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "sharedDomain (PJE-LANE-004, D10, D18) PJE-LANE-004: the domain is an ELAPSED pair over every placeable day, with the minimum clamped to at most study day -14 (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-004"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "shell: addReset RESET-001: activating it calls the handler once (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shell: addReset RESET-001: the label can be overridden without changing the class (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shell: addReset RESET-001: the reset control is a full-width button at the foot of the sidebar (#136)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shell: multiSelect emits the selected values on change, and null when every value is selected (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "shell: multiSelect reflects a partial selection: matching boxes checked, master indeterminate, summary counted (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "shell: multiSelect renders one checkbox per value plus the All master row, all checked when selected is null (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "shell: multiSelect the All master row selects everything (null) or nothing (empty array) (#128)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "shell: prototypeBanner renders a labelled note element with the default v1.5 copy (#97)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [97],
+      "screenshots": []
+    },
+    {
+      "test": "shell: prototypeBanner uses a caller-supplied note verbatim when given (#97)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [97],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: about page (#21) carries the OpenRBQM mirror and audience framing moved off the homepage (#29)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 29],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: about page (#21) credits the safetyGraphics project and every original RhoInc renderer (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: about page (#21) describes each original renderer alongside its credit link (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: about page (#21) tells the keynote / developer-diary story and links the roadmap hub (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page opens with a module-anatomy overview linking the architecture page (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders a sidebar table of contents linking every section and method (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders each lifecycle method with signature, params, and returns (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders the factory signature and parameters (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders the schema-derived data contract (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page renders the settings table with type, default, and description (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: architecture page (#21) explains the shared shell and module anatomy (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: architecture page (#21) names the committed bundle for the running version (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: architecture page (#21) walks the pipeline from data contract to R htmlwidget (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: coverage parsing parses the browser and unit tables plus the routing-status tail (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page carries the routing-status sections onto the page (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page falls back to requirement-ID matching when a browser row wording drifts from the spec name (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page joins browser rows to their evidence record with status chip and screenshot (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page links source matrix rows to the safety.agent matrix (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page matches unit rows to records through expanded requirement IDs (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page rewrites repo-relative coverage links to repository URLs (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence page surfaces failing records with a fail status chip (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence report provenance (#21) degrades gracefully when provenance fields are absent (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence report provenance (#21) links result chips to the CI run when a run is recorded (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence report provenance (#21) presents a captioned visual-evidence gallery of the committed screenshots (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence report provenance (#21) renders generation date, environment, and CI run when evidence.json carries them (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: evidence report provenance (#21) summarizes scope and results in a fact panel (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery experimentalBadge renders Prototype for a prototype, Experimental for experimental, nothing otherwise (#97)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [97],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery compresses the migration queue to a one-line strip after the cards (#29)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [29],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery leads with the two-sentence intro linking the keynote and safetyGraphics (#29)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [29],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery links available renderers to demo, evidence, and API pages with a hero thumbnail (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery lists every renderer: available as cards, queued in the status strip (#7) (#29)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 29],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery marks a prototype renderer with a Prototype badge on its card (#97)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [97],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery gallery prefers a dedicated hero asset over the evidence baseline when configured (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery nav dropdown (#71) applies the mount-depth root prefix to every internal link (#71)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71, 71],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery nav dropdown (#71) lists one link per available renderer, data-driven from config (#71)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71, 71],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery nav dropdown (#71) renders a disclosure control wired to the chart menu (#71)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71, 71],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery nav dropdown (#71) shell substitutes the {{galleryNav}} token from the passed renderers (#71)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [71, 71],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery queued renderers link their requirement matrices, not site pages (#7) (#29)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7, 29],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: requirement text (#63) degrades to IDs-only when no requirements map is supplied",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: requirement text (#63) escapes HTML in requirement text",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: requirement text (#63) renders the reviewed requirement text for a row’s source-matrix IDs",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: requirement text (#63) shows no requirement text for IDs the matrix does not enumerate",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: requirement-ID expansion expands double-dot ranges and slash shorthand into full IDs (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: shell tokens (#21) falls back to an empty description when none is given (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: shell tokens (#21) replaces version and description tokens across the shell (#21)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site validation: evidence screenshots flags screenshots referenced in evidence.json but missing from the evidence set (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site validation: internal links flags internal links and asset references that do not resolve (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "site validation: internal links passes a site whose internal links all resolve, ignoring external and fragment links (#7)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "sourceColumns is empty for no rows and ignores non-object rows (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "sourceColumns returns the union of keys in first-seen order with __pje_* columns filtered out (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "structureData (PJE-LANE-008/010, PJE-DATA-003) PJE-DATA-003: a lab for a test outside lb_tests stays in the record — counted, in allEvents, named — but is never drawn, filtered, anchored, window-counted or part of the domain (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-008", "PJE-DATA-003"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-DATA-003-dropped-rows.png"]
+    },
+    {
+      "test": "structureData (PJE-LANE-008/010, PJE-DATA-003) PJE-DATA-003: dropped rows are aggregated study-wide by domain and by reason (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-008", "PJE-DATA-003"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-DATA-003-dropped-rows.png"]
+    },
+    {
+      "test": "structureData (PJE-LANE-008/010, PJE-DATA-003) PJE-DATA-005: a domain that was not supplied is marked so its lanes can render the empty state (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-008", "PJE-DATA-003", "PJE-DATA-005"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-DATA-003-dropped-rows.png"]
+    },
+    {
+      "test": "structureData (PJE-LANE-008/010, PJE-DATA-003) PJE-DATA-006: the raw rows are untouched and every event keeps its source by reference (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-008", "PJE-DATA-003", "PJE-DATA-006"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-DATA-003-dropped-rows.png"]
+    },
+    {
+      "test": "structureData (PJE-LANE-008/010, PJE-DATA-003) PJE-DATA-008: end-before-start and date-conflict records are kept and counted study-wide in flaggedCounts (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-008", "PJE-DATA-003", "PJE-DATA-008"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-DATA-003-dropped-rows.png"]
+    },
+    {
+      "test": "structureData (PJE-LANE-008/010, PJE-DATA-003) PJE-FILT-001: events is the post-filter set over ENABLED lanes in lane order then day order; allEvents is pre-filter (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-008", "PJE-DATA-003", "PJE-FILT-001"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-DATA-003-dropped-rows.png", "PJE-FILT-001-serious-only.png"]
+    },
+    {
+      "test": "structureData (PJE-LANE-008/010, PJE-DATA-003) PJE-FILT-002: the abnormal-only filter keeps the lab series baseline from the whole record (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-008", "PJE-DATA-003", "PJE-FILT-002"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-DATA-003-dropped-rows.png"]
+    },
+    {
+      "test": "structureData (PJE-LANE-008/010, PJE-DATA-003) PJE-FILT-004: the live filter list drops absent columns with the house warning and their state is ignored (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-008", "PJE-DATA-003", "PJE-FILT-004"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-DATA-003-dropped-rows.png"]
+    },
+    {
+      "test": "structureData (PJE-LANE-008/010, PJE-DATA-003) PJE-LANE-001: byLane carries every lane key in render order, sorted by the lane rule, with dose changes derived and labs limited to the configured tests (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-008", "PJE-DATA-003", "PJE-LANE-001"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-DATA-003-dropped-rows.png", "PJE-LANE-001-lanes-all.png"]
+    },
+    {
+      "test": "structureData (PJE-LANE-008/010, PJE-DATA-003) PJE-LANE-004: the shared domain is an elapsed pair, the clamped con-med is flagged clippedStart, and events carry the subject reference date (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-008", "PJE-DATA-003", "PJE-LANE-004"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-DATA-003-dropped-rows.png"]
+    },
+    {
+      "test": "structureData (PJE-LANE-008/010, PJE-DATA-003) PJE-LANE-004: with nothing placeable the domain is null, the lab series carry a null domain, and lanes still list their unplaceable rows (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-008", "PJE-DATA-003", "PJE-LANE-004"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-DATA-003-dropped-rows.png"]
+    },
+    {
+      "test": "structureData (PJE-LANE-008/010, PJE-DATA-003) PJE-LANE-008: unplaceable rows are kept, listed per lane, counted per domain and lane, and excluded from the domain (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-008", "PJE-DATA-003"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-DATA-003-dropped-rows.png"]
+    },
+    {
+      "test": "structureData (PJE-LANE-008/010, PJE-DATA-003) PJE-LANE-010: the row cap draws a deterministic head of the lane order, names the remainder and the sort rule, and carries the truncation into the context bundle (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-008", "PJE-DATA-003", "PJE-LANE-010"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-DATA-003-dropped-rows.png"]
+    },
+    {
+      "test": "structureData (PJE-LANE-008/010, PJE-DATA-003) PJE-SUBJ-001: opens on the first subject in sorted order, honours settings.subject and state.subject, and falls back for an unknown id (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-008", "PJE-DATA-003", "PJE-SUBJ-001"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-DATA-003-dropped-rows.png", "PJE-SUBJ-001-subject-journey.png"]
+    },
+    {
+      "test": "subjectIndex (PJE-SUBJ-001) PJE-SUBJ-001: the index reads the configured id_col (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-SUBJ-001"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-SUBJ-001-subject-journey.png"]
+    },
+    {
+      "test": "subjectIndex (PJE-SUBJ-001) PJE-SUBJ-001: the sorted union of participant ids across every domain, blanks excluded (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-SUBJ-001"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-SUBJ-001-subject-journey.png"]
+    },
+    {
+      "test": "the 2026-09-18 verification fixes (PJE-CFG-004, PJE-TIME-001, PJE-DATA-004, PJE-KEY-002, PJE-LANE-003, PJE-FILT-004, PJE-KEY-004) PJE-CFG-004: a cleared context-window field restores the configured width rather than collapsing the window to the anchor day (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [
+        "PJE-CFG-004",
+        "PJE-TIME-001",
+        "PJE-DATA-004",
+        "PJE-KEY-002",
+        "PJE-LANE-003",
+        "PJE-FILT-004",
+        "PJE-KEY-004"
+      ],
+      "issueRefs": [142],
+      "screenshots": ["PJE-TIME-001-date-mode.png"]
+    },
+    {
+      "test": "the 2026-09-18 verification fixes (PJE-CFG-004, PJE-TIME-001, PJE-DATA-004, PJE-KEY-002, PJE-LANE-003, PJE-FILT-004, PJE-KEY-004) PJE-CTX-001: a lane turned off or a filter never changes the context lists; the panel says why a listed record is not drawn and that the anchor is hidden (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [
+        "PJE-CFG-004",
+        "PJE-TIME-001",
+        "PJE-DATA-004",
+        "PJE-KEY-002",
+        "PJE-LANE-003",
+        "PJE-FILT-004",
+        "PJE-KEY-004",
+        "PJE-CTX-001"
+      ],
+      "issueRefs": [142],
+      "screenshots": ["PJE-TIME-001-date-mode.png"]
+    },
+    {
+      "test": "the 2026-09-18 verification fixes (PJE-CFG-004, PJE-TIME-001, PJE-DATA-004, PJE-KEY-002, PJE-LANE-003, PJE-FILT-004, PJE-KEY-004) PJE-DATA-004: after init() throws on invalid data, a later init() with valid data draws into the shell again, in the host element (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [
+        "PJE-CFG-004",
+        "PJE-TIME-001",
+        "PJE-DATA-004",
+        "PJE-KEY-002",
+        "PJE-LANE-003",
+        "PJE-FILT-004",
+        "PJE-KEY-004"
+      ],
+      "issueRefs": [142],
+      "screenshots": ["PJE-TIME-001-date-mode.png"]
+    },
+    {
+      "test": "the 2026-09-18 verification fixes (PJE-CFG-004, PJE-TIME-001, PJE-DATA-004, PJE-KEY-002, PJE-LANE-003, PJE-FILT-004, PJE-KEY-004) PJE-DATA-004: the checkInputs message is inserted as text, never as markup (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [
+        "PJE-CFG-004",
+        "PJE-TIME-001",
+        "PJE-DATA-004",
+        "PJE-KEY-002",
+        "PJE-LANE-003",
+        "PJE-FILT-004",
+        "PJE-KEY-004"
+      ],
+      "issueRefs": [142],
+      "screenshots": ["PJE-TIME-001-date-mode.png"]
+    },
+    {
+      "test": "the 2026-09-18 verification fixes (PJE-CFG-004, PJE-TIME-001, PJE-DATA-004, PJE-KEY-002, PJE-LANE-003, PJE-FILT-004, PJE-KEY-004) PJE-FILT-004: the absent-column filter warning and the source_url_template warning are printed once per data load, not once per interaction (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [
+        "PJE-CFG-004",
+        "PJE-TIME-001",
+        "PJE-DATA-004",
+        "PJE-KEY-002",
+        "PJE-LANE-003",
+        "PJE-FILT-004",
+        "PJE-KEY-004"
+      ],
+      "issueRefs": [142],
+      "screenshots": ["PJE-TIME-001-date-mode.png"]
+    },
+    {
+      "test": "the 2026-09-18 verification fixes (PJE-CFG-004, PJE-TIME-001, PJE-DATA-004, PJE-KEY-002, PJE-LANE-003, PJE-FILT-004, PJE-KEY-004) PJE-KEY-002: Escape inside the subject search or the window field keeps its native meaning and does not clear the anchor (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [
+        "PJE-CFG-004",
+        "PJE-TIME-001",
+        "PJE-DATA-004",
+        "PJE-KEY-002",
+        "PJE-LANE-003",
+        "PJE-FILT-004",
+        "PJE-KEY-004"
+      ],
+      "issueRefs": [142],
+      "screenshots": ["PJE-TIME-001-date-mode.png"]
+    },
+    {
+      "test": "the 2026-09-18 verification fixes (PJE-CFG-004, PJE-TIME-001, PJE-DATA-004, PJE-KEY-002, PJE-LANE-003, PJE-FILT-004, PJE-KEY-004) PJE-KEY-004: clearing the anchor from its own button, or resetting, never drops focus to the document body (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [
+        "PJE-CFG-004",
+        "PJE-TIME-001",
+        "PJE-DATA-004",
+        "PJE-KEY-002",
+        "PJE-LANE-003",
+        "PJE-FILT-004",
+        "PJE-KEY-004"
+      ],
+      "issueRefs": [142],
+      "screenshots": ["PJE-TIME-001-date-mode.png"]
+    },
+    {
+      "test": "the 2026-09-18 verification fixes (PJE-CFG-004, PJE-TIME-001, PJE-DATA-004, PJE-KEY-002, PJE-LANE-003, PJE-FILT-004, PJE-KEY-004) PJE-LANE-003: with every lane turned off the stack says so and the anchoring hint is not shown (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [
+        "PJE-CFG-004",
+        "PJE-TIME-001",
+        "PJE-DATA-004",
+        "PJE-KEY-002",
+        "PJE-LANE-003",
+        "PJE-FILT-004",
+        "PJE-KEY-004"
+      ],
+      "issueRefs": [142],
+      "screenshots": ["PJE-TIME-001-date-mode.png"]
+    },
+    {
+      "test": "the 2026-09-18 verification fixes (PJE-CFG-004, PJE-TIME-001, PJE-DATA-004, PJE-KEY-002, PJE-LANE-003, PJE-FILT-004, PJE-KEY-004) PJE-SUBJ-003: the footnote is cleared when its mark leaves the page — another subject, its lane off — and rewritten when the anchor changes (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [
+        "PJE-CFG-004",
+        "PJE-TIME-001",
+        "PJE-DATA-004",
+        "PJE-KEY-002",
+        "PJE-LANE-003",
+        "PJE-FILT-004",
+        "PJE-KEY-004",
+        "PJE-SUBJ-003"
+      ],
+      "issueRefs": [142],
+      "screenshots": ["PJE-TIME-001-date-mode.png"]
+    },
+    {
+      "test": "the 2026-09-18 verification fixes (PJE-CFG-004, PJE-TIME-001, PJE-DATA-004, PJE-KEY-002, PJE-LANE-003, PJE-FILT-004, PJE-KEY-004) PJE-TIME-001: date mode with no reference date shows study days everywhere — title, select, getTimeMode — and keeps the preference for a subject that has one (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [
+        "PJE-CFG-004",
+        "PJE-TIME-001",
+        "PJE-DATA-004",
+        "PJE-KEY-002",
+        "PJE-LANE-003",
+        "PJE-FILT-004",
+        "PJE-KEY-004"
+      ],
+      "issueRefs": [142],
+      "screenshots": ["PJE-TIME-001-date-mode.png"]
+    },
+    {
+      "test": "the drawing rule and the fit arithmetic (PJE-LANE-006, PJE-LANE-009) PJE-LANE-006: a closed bar drawn through the end of its end day never leaves the padded shared domain (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-006", "PJE-LANE-009"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-LANE-006-dose-change.png", "PJE-LANE-009-one-screen.png"]
+    },
+    {
+      "test": "the drawing rule and the fit arithmetic (PJE-LANE-006, PJE-LANE-009) PJE-LANE-009: the group-header estimate is the rendered header height, 35px, so the fit does not miss by a few pixels per group (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-006", "PJE-LANE-009"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-LANE-006-dose-change.png", "PJE-LANE-009-one-screen.png"]
+    },
+    {
+      "test": "the shared selection event (PJE-EVT-002) PJE-EVT-002: selecting a subject dispatches participantsSelected on the shell root with { detail: { data: [id] } } (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-EVT-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "the three delivery channels (PJE-EVT-001) PJE-EVT-001: anchor(null) clears and emits null on both anchor events; an unknown id warns and emits nothing (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-EVT-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "the three delivery channels (PJE-EVT-001) PJE-EVT-001: one emit reaches the settings callback, the instance listener and the DOM event with the same detail (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-EVT-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "the three delivery channels (PJE-EVT-001) PJE-EVT-001: the context bundle is re-emitted when the window, a filter or a lane changes while anchored (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-EVT-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "tooltipLines (design §6.5) PJE-ACC-002: a serious event adds the literal SAE tag and a blank severity adds \"severity not recorded\" (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-ACC-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "tooltipLines (design §6.5) PJE-ANCH-002: ongoing and end-not-recorded produce different terminal text, and a con-med shows its class and dose (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-ANCH-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "tooltipLines (design §6.5) PJE-ANCH-004: the \"+N days from anchor\" line appears only when anchored, signed, in elapsed days (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-ANCH-004"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "tooltipLines (design §6.5) PJE-CTX-002: a lab point reads test and value, the indicator, the day, the ratio line and the reference range (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-CTX-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "tooltipLines (design §6.5) PJE-DERIV-001: dose changes, exposure, medical history and disposition each read their domain word and detail (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-DERIV-001"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "tooltipLines (design §6.5) PJE-KEY-001: an adverse event reads label, domain · severity · relatedness, the span, the category, the verbatim term, the placing column and the gesture line (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-KEY-001"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-KEY-001-mark-focus.png"]
+    },
+    {
+      "test": "tooltipLines (design §6.5) PJE-LANE-008: an unplaceable event says so instead of a span (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-LANE-008"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "tooltipLines (design §6.5) PJE-TIME-003: a partial recorded date is shown as recorded; PJE-TIME-004: a disagreeing full date is named (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-TIME-003", "PJE-TIME-004"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: factory API-XFORM-004: maps the documented module.exports doclet to the factory, named for its source file (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-004"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: factory API-XFORM-005: ignores the spurious undocumented global doclet jsdoc emits for the default export (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-005"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: methods table API-XFORM-001: extracts documented instance methods in source order with signature, params, and returns (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-001"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: methods table API-XFORM-002: brackets optional params in signatures and carries their defaults (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-002"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: methods table API-XFORM-003: excludes private and undocumented methods from the table (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-003"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: missing-doc detection API-XFORM-008: flags undocumented public methods and settings properties without descriptions (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-008"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: missing-doc detection API-XFORM-009: flags a missing factory when no documented default export exists (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-009"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: settings table API-XFORM-006: extracts settings rows from the typedef properties with display-ready types and defaults (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-006"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformDoclets: settings table API-XFORM-007: normalizes non-string defaults (booleans, numbers, null) to display strings (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-XFORM-007"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-001: carries the schema title and description onto the contract (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-001"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-002: flattens top-level and nested settings properties into dotted field rows (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-002"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-003: derives required flags from each level’s required array (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-003"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-004: carries types, defaults, and descriptions through from the schema (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-004"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-005: resolves local $defs references to their concrete type (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-005"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "transformSchema API-SCHEMA-006: every contract field carries a non-empty description (#6)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["API-SCHEMA-006"],
+      "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "windowBounds (PJE-ANCH-002) PJE-ANCH-002: an unusable anchor day, or non-finite days, yields null (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-ANCH-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "windowBounds (PJE-ANCH-002) PJE-ANCH-002: windowBounds(30, 30) spans 30 elapsed days each side, labelled in study days (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-ANCH-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "windowBounds (PJE-ANCH-002) PJE-ANCH-002: windowBounds(5, 0) is a zero-width window at the anchor (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-ANCH-002"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "windowBounds (PJE-ANCH-002) PJE-ANCH-005: windowBounds(10, 30) is symmetric across first dose: {-21, 39} in elapsed space, {-21, 40} as study days (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-ANCH-002", "PJE-ANCH-005"],
+      "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "withAlpha PJE-ANCH-003: converts #rrggbb, #rgb, rgb() and rgba() to an rgba() string at the given alpha (#142)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PJE-ANCH-003"],
+      "issueRefs": [142],
+      "screenshots": ["PJE-ANCH-003-context-window.png"]
+    }
+  ]
+}

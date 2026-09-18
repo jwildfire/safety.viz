@@ -11,3 +11,4 @@ Current schemas:
 - [`results-over-time.json`](results-over-time.json) — the results-over-time module's data contract (#27)
 - [`hep-explorer.json`](hep-explorer.json) — the hep-explorer module's data contract (#43)
 - [`ae-explorer.json`](ae-explorer.json) — the ae-explorer module's data contract (#60)
+- [`patient-journey-explorer.json`](patient-journey-explorer.json) — the patient-journey-explorer module's data contract (#142): six per-domain row schemas as local `$defs`; documentation plus each domain's `requiredSettings`, not a row validator

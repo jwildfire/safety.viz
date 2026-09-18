@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>safety.viz patient-journey-explorer demo page</title>
+  </head>
+  <body>
+    <h1 id="patient-journey-explorer-heading">safety.viz Patient Journey Explorer demo</h1>
+    <p>
+      Demo and Playwright harness page for the patient-journey-explorer module (#142). Loads the
+      committed IIFE bundle, then the hand-computed fixture dataset
+      (patient-journey-explorer-data.js, which assigns window.PJE_FIXTURE), then mounts the six
+      per-domain arrays. Every expected number the browser suite asserts lives in
+      window.PJE_FIXTURE.expectations; nothing is pasted into the spec.
+    </p>
+    <div id="container"></div>
+    <div id="container-merged" hidden></div>
+    <!-- Bundle path tracks the package.json version; bump them together. -->
+    <script src="/dist/safety.viz-1.7.0/safety.viz.js"></script>
+    <script src="./patient-journey-explorer-data.js"></script>
+    <script>
+      // The settings callbacks record what they receive so the suite can
+      // assert the three delivery channels carry the same bundle (PJE-EVT-001).
+      window.__pjeCallbacks = { subject: [], anchor: [], context: [] };
+      const instance = SafetyViz.patientJourneyExplorer('#container', {
+        on_select_subject: (subjectId, detail) => window.__pjeCallbacks.subject.push(detail),
+        on_anchor_event: (event, context) => window.__pjeCallbacks.anchor.push({ event, context }),
+        on_context_change: (context) => window.__pjeCallbacks.context.push(context)
+      });
+      window.__safetyPatientJourneyInstance = instance;
+      const { ex, ae, lb, cm, mh, ds } = window.PJE_FIXTURE;
+      instance.init({ ex, ae, lb, cm, mh, ds });
+    </script>
+  </body>
+</html>
