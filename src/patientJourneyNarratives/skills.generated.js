@@ -197,7 +197,101 @@ const CATALOG = {
           }
         }
       },
-      "examples": [],
+      "examples": [
+        {
+          "inputs": {
+            "subject": "01-716-1447"
+          },
+          "reference": {
+            "required_facts": [
+              "COMPLETED",
+              "day 184",
+              "PROTOCOL COMPLETED",
+              "RANDOMIZED",
+              "day 1",
+              "FINAL LAB VISIT",
+              "CHEST PAIN",
+              "day 111"
+            ],
+            "required_citations": [
+              "AE-977",
+              "DS-729",
+              "DS-730",
+              "EX-541"
+            ],
+            "scope_row_ids": [
+              "DS-729",
+              "DS-730",
+              "DS-731"
+            ],
+            "expected_flags": [],
+            "refusal": null
+          }
+        },
+        {
+          "inputs": {
+            "subject": "01-701-1023"
+          },
+          "reference": {
+            "required_facts": [
+              "ADVERSE EVENT",
+              "day 29",
+              "RANDOMIZED",
+              "day 1",
+              "FINAL LAB VISIT",
+              "FINAL RETRIEVAL VISIT",
+              "day 198",
+              "day 28",
+              "ATRIOVENTRICULAR BLOCK SECOND DEGREE",
+              "day 22"
+            ],
+            "required_citations": [
+              "AE-6",
+              "DS-3",
+              "DS-4",
+              "EX-3"
+            ],
+            "scope_row_ids": [
+              "DS-3",
+              "DS-4",
+              "DS-5",
+              "DS-6"
+            ],
+            "expected_flags": [],
+            "refusal": null
+          }
+        },
+        {
+          "inputs": {
+            "subject": "01-701-1211"
+          },
+          "reference": {
+            "required_facts": [
+              "DEATH",
+              "day 61",
+              "RANDOMIZED",
+              "day 1",
+              "FINAL LAB VISIT",
+              "day 55",
+              "day 59",
+              "SUDDEN DEATH"
+            ],
+            "required_citations": [
+              "AE-99",
+              "DS-67",
+              "DS-69",
+              "EX-48"
+            ],
+            "scope_row_ids": [
+              "DS-67",
+              "DS-68",
+              "DS-69"
+            ],
+            "expected_flags": [],
+            "refusal": null
+          }
+        }
+      ],
       "readme": "# disposition\n\nWhat the record shows around the end of treatment: the disposition event and its day, the milestones, when exposure ends, and the last adverse event recorded. At most four cited sentences. Use it from the control on the disposition lane. It quotes a recorded \"discontinued due to adverse event\" as the record's wording and never infers a reason. Inputs: `{ subject }`. Refuses with `refused:insufficient-data` when there are no disposition rows.\n"
     },
     "dose-journey": {
@@ -355,7 +449,108 @@ const CATALOG = {
           }
         }
       },
-      "examples": [],
+      "examples": [
+        {
+          "inputs": {
+            "subject": "01-716-1447"
+          },
+          "reference": {
+            "required_facts": [
+              "XANOMELINE",
+              "3 record",
+              "day 1",
+              "day 184",
+              "from 54 to 81",
+              "day 17",
+              "increase",
+              "from 81 to 54",
+              "day 175",
+              "reduction"
+            ],
+            "required_citations": [
+              "DOSE-542",
+              "DOSE-543",
+              "EX-541",
+              "EX-542",
+              "EX-543"
+            ],
+            "scope_row_ids": [
+              "DOSE-542",
+              "DOSE-543",
+              "EX-541",
+              "EX-542",
+              "EX-543"
+            ],
+            "expected_flags": [],
+            "refusal": null
+          }
+        },
+        {
+          "inputs": {
+            "subject": "01-701-1034"
+          },
+          "reference": {
+            "required_facts": [
+              "XANOMELINE",
+              "3 record",
+              "day 1",
+              "day 183",
+              "from 54 to 0",
+              "day 16",
+              "interruption"
+            ],
+            "required_citations": [
+              "DOSE-10",
+              "EX-9",
+              "EX-10",
+              "EX-11"
+            ],
+            "scope_row_ids": [
+              "DOSE-10",
+              "EX-9",
+              "EX-10",
+              "EX-11"
+            ],
+            "expected_flags": [],
+            "refusal": null
+          }
+        },
+        {
+          "inputs": {
+            "subject": "01-701-1148"
+          },
+          "reference": {
+            "required_facts": [
+              "XANOMELINE",
+              "3 record",
+              "day 1",
+              "day 182",
+              "from 54 to 81",
+              "day 15",
+              "increase",
+              "from 81 to 0",
+              "day 171",
+              "interruption"
+            ],
+            "required_citations": [
+              "DOSE-32",
+              "DOSE-33",
+              "EX-31",
+              "EX-32",
+              "EX-33"
+            ],
+            "scope_row_ids": [
+              "DOSE-32",
+              "DOSE-33",
+              "EX-31",
+              "EX-32",
+              "EX-33"
+            ],
+            "expected_flags": [],
+            "refusal": null
+          }
+        }
+      ],
       "readme": "# dose-journey\n\nExposure and every dose change for one participant, with any serious adverse events placed on the same time line by day. At most five cited sentences. Use it from the control on the exposure group. Do not use it to explain why a dose changed — it will not. Inputs: `{ subject }`. Renders as a light-blue card under the exposure lanes, on demand. Refuses with `refused:insufficient-data` when there are no exposure records.\n"
     },
     "event-context": {
@@ -569,7 +764,173 @@ const CATALOG = {
           }
         }
       },
-      "examples": [],
+      "examples": [
+        {
+          "inputs": {
+            "subject": "01-716-1447",
+            "anchor_row_id": "AE-973",
+            "window_days": 30
+          },
+          "reference": {
+            "required_facts": [
+              "ERYTHEMA",
+              "day 30",
+              "7 con-med",
+              "B COMPLEX",
+              "MULTIVITAMIN",
+              "VITAMIN E",
+              "ALEVE",
+              "Aspartate Aminotransferase",
+              "36 U/L",
+              "day 27",
+              "1.06",
+              "from 54 to 81",
+              "day 17",
+              "CORTISONE"
+            ],
+            "required_citations": [
+              "AE-973",
+              "CM-1005",
+              "DOSE-542",
+              "LB-6057"
+            ],
+            "scope_row_ids": [
+              "AE-973",
+              "AE-974",
+              "AE-975",
+              "CM-343",
+              "CM-344",
+              "CM-345",
+              "CM-346",
+              "CM-1004",
+              "CM-1005",
+              "CM-1006",
+              "CM-1007",
+              "CM-1008",
+              "DOSE-542",
+              "DS-729",
+              "EX-541",
+              "EX-542",
+              "LB-6036",
+              "LB-6037",
+              "LB-6038",
+              "LB-6039",
+              "LB-6046",
+              "LB-6047",
+              "LB-6048",
+              "LB-6049",
+              "LB-6056",
+              "LB-6057",
+              "LB-6058",
+              "LB-6059",
+              "LB-6066",
+              "LB-6067",
+              "LB-6068",
+              "LB-6069"
+            ],
+            "expected_flags": [
+              "ends-unrecorded"
+            ],
+            "refusal": null
+          }
+        },
+        {
+          "inputs": {
+            "subject": "01-716-1447",
+            "anchor_row_id": "AE-973",
+            "window_days": 7
+          },
+          "reference": {
+            "required_facts": [
+              "ERYTHEMA",
+              "day 30",
+              "7 con-med",
+              "B COMPLEX",
+              "MULTIVITAMIN",
+              "VITAMIN E",
+              "ALEVE",
+              "Aspartate Aminotransferase",
+              "36 U/L",
+              "day 27",
+              "1.06"
+            ],
+            "required_citations": [
+              "AE-973",
+              "CM-1005",
+              "LB-6057"
+            ],
+            "scope_row_ids": [
+              "AE-973",
+              "AE-974",
+              "AE-975",
+              "CM-343",
+              "CM-344",
+              "CM-1004",
+              "CM-1005",
+              "CM-1006",
+              "CM-1007",
+              "CM-1008",
+              "EX-542",
+              "LB-6037",
+              "LB-6047",
+              "LB-6057",
+              "LB-6067"
+            ],
+            "expected_flags": [
+              "ends-unrecorded"
+            ],
+            "refusal": null
+          }
+        },
+        {
+          "inputs": {
+            "subject": "01-709-1424",
+            "anchor_row_id": "AE-632",
+            "window_days": 30
+          },
+          "reference": {
+            "required_facts": [
+              "SYNCOPE",
+              "day 5",
+              "3 con-med",
+              "MULTIVIT B",
+              "VITAMIN C",
+              "VITAMIN E"
+            ],
+            "required_citations": [
+              "AE-632",
+              "CM-798"
+            ],
+            "scope_row_ids": [
+              "AE-632",
+              "CM-797",
+              "CM-798",
+              "CM-799",
+              "CM-800",
+              "DS-471",
+              "DS-472",
+              "DS-473",
+              "EX-346",
+              "LB-3787",
+              "LB-3788",
+              "LB-3789",
+              "LB-3790",
+              "MH-151",
+              "MH-1238",
+              "MH-1239",
+              "MH-1240",
+              "MH-1241",
+              "MH-1242",
+              "MH-1243"
+            ],
+            "expected_flags": [
+              "sae",
+              "ends-unrecorded"
+            ],
+            "refusal": null
+          }
+        }
+      ],
       "readme": "# event-context\n\nDrafts the context of one anchored event: the con-meds active at onset, the abnormal labs and dose changes inside the ±window, and the earlier events with the same preferred term — the same four lists the Patient Journey Explorer's context panel prints mechanically, turned into at most six cited sentences.\n\n## Use it when\n\n- A reviewer has anchored an adverse event (or a dose change, or a disposition event) and wants the panel's lists as prose.\n- The window is the one the chart shows; the runtime passes `window_days` from the live control.\n\n## Do not use it for\n\n- A whole-journey account (that is `subject-summary`).\n- A single lab test over time (that is `lab-trajectory`).\n- Anything that would need a relatedness or causality assessment. The skill will not draw one, and the validator rejects the vocabulary.\n\n## Inputs\n\n`{ subject, anchor_row_id, window_days? }` — the anchor id is the chart's own event id (`AE-7`); `AE:7` is accepted.\n\n## Renders as\n\nA light-blue \"AI narrative\" card at the top of the context panel body, above \"Con-meds active at the anchor\". Every sentence carries a `Draft — AI generated` chip and its citation chips; a citation chip lights the cited mark on the timeline.\n\n## Refuses when\n\n- The anchor does not resolve (`refused:anchor-not-found`).\n- The grounding tool returns nothing at all (`refused:insufficient-data`); an anchor with an otherwise empty window is not a refusal — it drafts one sentence with the `context:empty` flag.\n"
     },
     "lab-trajectory": {
@@ -737,7 +1098,112 @@ const CATALOG = {
           }
         }
       },
-      "examples": [],
+      "examples": [
+        {
+          "inputs": {
+            "subject": "01-716-1447",
+            "test": "Alanine Aminotransferase"
+          },
+          "reference": {
+            "required_facts": [
+              "Alanine Aminotransferase",
+              "10 time",
+              "day -10",
+              "day 184",
+              "18 U/L",
+              "27 U/L",
+              "day 27",
+              "1.5",
+              "16 U/L"
+            ],
+            "required_citations": [
+              "LB-6045",
+              "LB-6047",
+              "LB-6054"
+            ],
+            "scope_row_ids": [
+              "LB-6045",
+              "LB-6046",
+              "LB-6047",
+              "LB-6048",
+              "LB-6049",
+              "LB-6050",
+              "LB-6051",
+              "LB-6052",
+              "LB-6053",
+              "LB-6054"
+            ],
+            "expected_flags": [],
+            "refusal": null
+          }
+        },
+        {
+          "inputs": {
+            "subject": "01-701-1234",
+            "test": "Bilirubin"
+          },
+          "reference": {
+            "required_facts": [
+              "Bilirubin",
+              "10 time",
+              "day -10",
+              "day 177",
+              "5.13 umol/L",
+              "20.52 umol/L",
+              "day 100",
+              "4",
+              "9 of 10",
+              "11.97 umol/L"
+            ],
+            "required_citations": [
+              "LB-566",
+              "LB-571",
+              "LB-575"
+            ],
+            "scope_row_ids": [
+              "LB-566",
+              "LB-567",
+              "LB-568",
+              "LB-569",
+              "LB-570",
+              "LB-571",
+              "LB-572",
+              "LB-573",
+              "LB-574",
+              "LB-575"
+            ],
+            "expected_flags": [
+              "labs:change-rule"
+            ],
+            "refusal": null
+          }
+        },
+        {
+          "inputs": {
+            "subject": "01-701-1033",
+            "test": "Alanine Aminotransferase"
+          },
+          "reference": {
+            "required_facts": [
+              "Alanine Aminotransferase",
+              "1 time",
+              "day -8",
+              "16 U/L",
+              "1"
+            ],
+            "required_citations": [
+              "LB-89"
+            ],
+            "scope_row_ids": [
+              "LB-89"
+            ],
+            "expected_flags": [
+              "series:single-point"
+            ],
+            "refusal": null
+          }
+        }
+      ],
       "readme": "# lab-trajectory\n\nOne lab test over the study for one participant: span, baseline and its rule, the peak with its ratio and baseline multiple, the abnormal count by rule, and the last value. At most five cited sentences.\n\nUse it from the control on a lab lane. Do not use it to compare tests, to describe the window around an event (`event-context`), or to characterise an injury pattern. Inputs: `{ subject, test }` (name or code). Renders as a light-blue card under that test's lane, drafted on demand. Refuses with `refused:insufficient-data` when the test has no rows for the participant.\n"
     },
     "subject-summary": {
@@ -897,7 +1363,105 @@ const CATALOG = {
           }
         }
       },
-      "examples": [],
+      "examples": [
+        {
+          "inputs": {
+            "subject": "01-716-1447"
+          },
+          "reference": {
+            "required_facts": [
+              "XANOMELINE",
+              "day 1",
+              "day 184",
+              "5 adverse event",
+              "CHEST PAIN",
+              "ELECTROCARDIOGRAM T WAVE INVERSION",
+              "ERYTHEMA",
+              "COMPLETED",
+              "day 111"
+            ],
+            "required_citations": [
+              "AE-977",
+              "DS-730",
+              "EX-541",
+              "EX-543"
+            ],
+            "scope_row_ids": [
+              "AE-973",
+              "AE-974",
+              "AE-975",
+              "AE-976",
+              "AE-977",
+              "DS-729",
+              "DS-730",
+              "DS-731",
+              "EX-541",
+              "EX-543"
+            ],
+            "expected_flags": [],
+            "refusal": null
+          }
+        },
+        {
+          "inputs": {
+            "subject": "01-709-1424"
+          },
+          "reference": {
+            "required_facts": [
+              "XANOMELINE",
+              "day 1",
+              "day 5",
+              "1 adverse event",
+              "SYNCOPE",
+              "ADVERSE EVENT",
+              "day 6"
+            ],
+            "required_citations": [
+              "AE-632",
+              "DS-472",
+              "EX-346"
+            ],
+            "scope_row_ids": [
+              "AE-632",
+              "DS-471",
+              "DS-472",
+              "DS-473",
+              "EX-346"
+            ],
+            "expected_flags": [
+              "sae"
+            ],
+            "refusal": null
+          }
+        },
+        {
+          "inputs": {
+            "subject": "01-701-1033"
+          },
+          "reference": {
+            "required_facts": [
+              "XANOMELINE",
+              "day 1",
+              "day 14",
+              "STUDY TERMINATED BY SPONSOR",
+              "day 28"
+            ],
+            "required_citations": [
+              "DS-11",
+              "EX-8"
+            ],
+            "scope_row_ids": [
+              "DS-10",
+              "DS-11",
+              "DS-12",
+              "DS-13",
+              "EX-8"
+            ],
+            "expected_flags": [],
+            "refusal": null
+          }
+        }
+      ],
       "readme": "# subject-summary\n\nThe whole-journey blurb above the timeline: treatment and exposure span, the adverse-event picture with the serious events named, how the record ends, and the data notes a reviewer needs before reading the lanes. At most eight cited sentences; the `summary` field is the one-line blurb the card shows collapsed.\n\nUse it when a participant is selected. Do not use it for the context of one event (`event-context`), one lab test (`lab-trajectory`), the dose course in detail (`dose-journey`) or the end of treatment in detail (`disposition`).\n\nInputs: `{ subject }`. Renders as the light-blue \"AI narrative\" card above the lanes, blurb first, \"Show full narrative\" to expand. Refuses with `refused:insufficient-data` when the record has no rows in any domain.\n"
     }
   }

@@ -1086,3 +1086,49 @@ ol.pipeline strong {
   margin: -0.4rem 0 1.4rem;
   font-size: 0.95rem;
 }
+
+/* The AI narratives strip on the Patient Journey Explorer demo (#146). */
+.sv-pje-demo-ai {
+  margin: 0 0 1rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid #9fc7ea;
+  border-left: 5px solid #9fc7ea;
+  border-radius: 8px;
+  background: #e8f3fc;
+  color: #0f3a5f;
+}
+.sv-pje-demo-ai h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+}
+.sv-pje-demo-ai p {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+}
+.sv-pje-demo-ai-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.2rem;
+  align-items: center;
+  margin: 0 0 0.4rem;
+  font-size: 0.88rem;
+}
+.sv-pje-demo-ai-row[hidden] {
+  display: none;
+}
+.sv-pje-demo-ai-row input[type='password'],
+.sv-pje-demo-ai-row input[type='text'] {
+  font: inherit;
+  padding: 0.2rem 0.4rem;
+  border: 1px solid #9fc7ea;
+  border-radius: 4px;
+  min-width: 14rem;
+}
+.sv-pje-demo-ai-row small {
+  flex-basis: 100%;
+  color: #52616f;
+}
+.sv-pje-demo-ai-status {
+  font-size: 0.82rem;
+  color: #52616f;
+}

@@ -162,6 +162,61 @@ export function applyPjeStyles() {
   if (typeof document === 'undefined' || document.getElementById(STYLE_ID)) return;
   const style = document.createElement('style');
   style.id = STYLE_ID;
-  style.textContent = moduleCss();
+  style.textContent = moduleCss() + narrativeCss();
   document.head.append(style);
+}
+
+/**
+ * The AI narrative card styles (#146): light-blue, labelled, one chip per
+ * sentence. Appended to the module stylesheet by applyPjeStyles.
+ * @private
+ */
+export function narrativeCss() {
+  return `
+/* --- the AI narrative cards (#146, PJE-NARR-009 … 014) --------------------- */
+.sv-pje-root{--pje-ai-bg:#e8f3fc;--pje-ai-border:#9fc7ea;--pje-ai-ink:#0f3a5f;--pje-ai-chip:#d4e8f9;--pje-ai-chip-ink:#0f3a5f;--pje-ai-accepted:#d7f0dd;--pje-ai-accepted-ink:#1b5e33}
+:root[data-theme=dark] .sv-pje-root{--pje-ai-bg:#12283a;--pje-ai-border:#2f5d84;--pje-ai-ink:#d8ecff;--pje-ai-chip:#1d3d5a;--pje-ai-chip-ink:#d8ecff;--pje-ai-accepted:#1c3f2a;--pje-ai-accepted-ink:#bfe8cc}
+.sv-pje-ai{box-sizing:border-box;margin:0 0 .6rem;padding:.55rem .75rem .6rem;border:1px solid var(--pje-ai-border);border-left:5px solid var(--pje-ai-border);border-radius:8px;background:var(--pje-ai-bg);color:var(--pje-ai-ink);font-size:.82rem;line-height:1.45}
+.sv-pje-ai.is-stale .sv-pje-ai-summary,.sv-pje-ai.is-stale .sv-pje-ai-sentence{color:var(--pje-ink-secondary);opacity:.72}
+.sv-pje-ai.is-loading{opacity:.85}
+.sv-pje-ai-head{display:flex;flex-wrap:wrap;align-items:center;gap:.35rem .55rem;margin:0 0 .3rem}
+.sv-pje-ai-label{display:inline-block;padding:.1rem .45rem;border-radius:999px;background:var(--pje-ai-ink);color:var(--pje-ai-bg);font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.sv-pje-ai-title{font-weight:700;font-size:.86rem}
+.sv-pje-ai-chip{display:inline-block;padding:.05rem .4rem;border-radius:999px;background:var(--pje-ai-chip);color:var(--pje-ai-chip-ink);border:1px solid var(--pje-ai-border);font-size:.66rem;font-weight:600;white-space:nowrap;vertical-align:middle}
+.sv-pje-ai-chip.is-accepted{background:var(--pje-ai-accepted);color:var(--pje-ai-accepted-ink);border-color:var(--pje-ai-accepted-ink)}
+.sv-pje-ai-toggle{margin-left:auto;border:1px solid var(--pje-ai-border);background:var(--pje-surface);color:var(--pje-ai-ink);border-radius:6px;font:inherit;font-size:.74rem;padding:.2rem .5rem;cursor:pointer}
+.sv-pje-ai-toggle:hover{border-color:var(--pje-ai-ink)}
+.sv-pje-ai-toggle:focus-visible,.sv-pje-ai-cite:focus-visible,.sv-pje-ai-action:focus-visible,.sv-pje-ai-request-btn:focus-visible{outline:2px solid var(--pje-focus-ring);outline-offset:1px}
+.sv-pje-ai-summary{margin:0;font-size:.84rem}
+.sv-pje-ai-summary.is-pending{font-style:italic;color:var(--pje-ink-secondary)}
+.sv-pje-ai-summary.is-refused{font-style:italic}
+.sv-pje-ai-body{margin:.45rem 0 0;padding-top:.45rem;border-top:1px dashed var(--pje-ai-border)}
+.sv-pje-ai-body[hidden]{display:none}
+.sv-pje-ai-sentence{margin:0 0 .4rem}
+.sv-pje-ai-sentence .sv-pje-ai-chip{margin-right:.15rem}
+.sv-pje-ai-cites{display:inline-flex;flex-wrap:wrap;gap:.2rem;vertical-align:middle}
+.sv-pje-ai-cite{border:1px solid var(--pje-ai-border);background:var(--pje-surface);color:var(--pje-ai-ink);border-radius:4px;font:inherit;font-size:.68rem;padding:.02rem .35rem;cursor:pointer;max-width:14rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sv-pje-ai-cite:hover{border-color:var(--pje-ai-ink);background:var(--pje-ai-chip)}
+.sv-pje-ai-cite.is-off-timeline{border-style:dashed}
+.sv-pje-ai-conf{margin-left:.35rem;font-size:.66rem;color:var(--pje-ink-secondary)}
+.sv-pje-ai-stale{margin:0 0 .4rem;padding:.3rem .5rem;border-radius:6px;background:var(--pje-surface);border:1px solid var(--pje-warning);color:var(--pje-warning);font-size:.76rem;opacity:1}
+.sv-pje-ai-flags{margin:.2rem 0 .3rem;display:flex;flex-wrap:wrap;gap:.25rem}
+.sv-pje-ai-flag{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.66rem;padding:.02rem .35rem;border-radius:4px;background:var(--pje-surface);border:1px solid var(--pje-ai-border)}
+.sv-pje-ai-actions{display:flex;flex-wrap:wrap;gap:.3rem;margin:.35rem 0 .25rem}
+.sv-pje-ai-action.is-accept{border-color:var(--pje-ai-accepted-ink)}
+.sv-pje-ai-prov{margin:.2rem 0 0;font-size:.66rem;color:var(--pje-ink-secondary);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.sv-pje-ai-foot{margin:.25rem 0 0;font-size:.7rem;color:var(--pje-ink-secondary)}
+.sv-pje-ai-edit-row{display:block;margin:0 0 .4rem}
+.sv-pje-ai-textarea{display:block;width:100%;box-sizing:border-box;margin:.15rem 0 0;font:inherit;font-size:.8rem;padding:.3rem .4rem;border:1px solid var(--pje-ai-border);border-radius:6px;background:var(--pje-surface);color:var(--pje-ink-primary)}
+.sv-pje-ai-request{display:flex;align-items:center;gap:.4rem;margin:.05rem 0 .4rem ${PLOT_GUTTER_LEFT}px}
+.sv-pje-ai-request-btn{font-size:.72rem;padding:.15rem .45rem}
+.sv-pje-ai-slot{margin:0 0 .3rem}
+.sv-pje-ai-slot .sv-pje-ai{margin-left:${PLOT_GUTTER_LEFT}px}
+.sv-pje-narrative-banner:empty{display:none}
+.sv-pje-panel-body>.sv-pje-ai{margin-bottom:.8rem}
+/* a cited mark, lit from a citation chip (PJE-NARR-011) */
+.sv-pje-mark.is-cited{outline:3px solid var(--pje-ai-ink);outline-offset:2px;box-shadow:0 0 0 3px var(--pje-ai-bg),0 0 0 6px var(--pje-ai-border);z-index:3}
+@media (prefers-reduced-motion:no-preference){.sv-pje-mark.is-cited{animation:sv-pje-cite-pulse 1.2s ease-out 2}}
+@keyframes sv-pje-cite-pulse{0%{box-shadow:0 0 0 3px var(--pje-ai-bg),0 0 0 6px var(--pje-ai-border)}50%{box-shadow:0 0 0 5px var(--pje-ai-bg),0 0 0 10px var(--pje-ai-border)}100%{box-shadow:0 0 0 3px var(--pje-ai-bg),0 0 0 6px var(--pje-ai-border)}}
+`;
 }

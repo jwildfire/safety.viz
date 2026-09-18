@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>safety.viz patient-journey-explorer AI narratives harness</title>
+  </head>
+  <body>
+    <h1 id="patient-journey-narratives-heading">
+      safety.viz Patient Journey Explorer — AI narratives harness
+    </h1>
+    <p>
+      Playwright harness for the AI narrative layer (#146): the same fixture dataset as
+      patient-journey-explorer.html, with the five narrative slots bound to the deterministic stub
+      adapter through SafetyViz.narratives.bindNarratives, and an on_narrative_action handler that
+      records every action in window.__pjeNarrativeActions and passes an accepted draft back through
+      refreshNarrative (the host-application half of the accept flow).
+    </p>
+    <div id="container"></div>
+    <!-- Bundle path tracks the package.json version; bump them together. -->
+    <script src="/dist/safety.viz-1.7.0/safety.viz.js"></script>
+    <script src="./patient-journey-explorer-data.js"></script>
+    <script>
+      window.__pjeNarrativeActions = [];
+      const instance = SafetyViz.patientJourneyExplorer('#container', {
+        on_narrative_action: (action) => {
+          window.__pjeNarrativeActions.push(action);
+          if (action.type === 'accept' && action.draft) {
+            instance.refreshNarrative({ ...action.draft, status: 'accepted' });
+          }
+        }
+      });
+      window.__safetyPatientJourneyInstance = instance;
+      const { ex, ae, lb, cm, mh, ds } = window.PJE_FIXTURE;
+      instance.init({ ex, ae, lb, cm, mh, ds });
+      window.__pjeGenerator = SafetyViz.narratives.bindNarratives(instance, { provider: 'stub' });
+    </script>
+  </body>
+</html>

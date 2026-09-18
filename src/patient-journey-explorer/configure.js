@@ -103,6 +103,8 @@ import { normalizeFilterSpec } from '../filters.js';
  * @property {?Function} [on_select_subject=null] Callback `(subjectId, detail)` when the subject changes; kept only when a function. The plan's `onSelectSubject` is an alias (PJE-EVT-001).
  * @property {?Function} [on_anchor_event=null] Callback `(event, context)` when a mark is anchored or the anchor is cleared (both null on clear). The plan's `onAnchorEvent` is an alias.
  * @property {?Function} [on_context_change=null] Callback `(context)` whenever the context bundle changes while anchored, and with null when cleared. The plan's `onContextChange` is an alias.
+ * @property {?Object} [narratives=null] The AI narrative slots (#146, PJE-NARR-009): an object of async functions returning a narrative draft — `subjectSummary(subject)`, `eventContext(subject, anchorRowId, { windowDays })`, `labTrajectory(subject, test)`, `doseJourney(subject)`, `disposition(subject)`. A slot with no function renders nothing; `SafetyViz.narratives.bindNarratives(instance, options)` installs all five over the built-in runtime. Non-function entries are dropped.
+ * @property {?Function} [on_narrative_action=null] Callback `(action)` when a reviewer acts on a narrative card (PJE-NARR-013): `{ type: 'accept' | 'reject' | 'edit' | 'regenerate', kind, subject, row_id, draft, editedSentences?, reason? }`. The camelCase `onNarrativeAction` is an alias. The host application owns what happens next (storage of accepted narratives); the chart only emits.
  * @property {number} [row_height=26] Pixels per row inside a categorical lane; a positive integer. The plan's `rowHeight` is an alias.
  * @property {number} [row_height_min=18] Floor for `row_height` when `fit_to_height` scales the stack down.
  * @property {number} [max_rows_per_lane=12] Rows drawn per categorical lane before the remainder is counted in prose, in the lane's documented sort order (PJE-LANE-010). The plan's `maxRowsPerLane` is an alias.
@@ -259,6 +261,8 @@ export const DEFAULT_SETTINGS = {
   on_select_subject: null,
   on_anchor_event: null,
   on_context_change: null,
+  narratives: null,
+  on_narrative_action: null,
 
   // ---- layout ----
   row_height: 26,
@@ -281,6 +285,7 @@ const TOP_LEVEL_ALIASES = {
   onSelectSubject: 'on_select_subject',
   onAnchorEvent: 'on_anchor_event',
   onContextChange: 'on_context_change',
+  onNarrativeAction: 'on_narrative_action',
   labTests: 'lb_tests',
   idCol: 'id_col',
   domainCol: 'domain_col',
@@ -345,7 +350,21 @@ const POSITIVE_INTS = [
   'max_rows_per_lane',
   'page_size'
 ];
-const CALLBACKS = ['on_select_subject', 'on_anchor_event', 'on_context_change'];
+/** The five narrative slot names (PJE-NARR-009). */
+export const NARRATIVE_SLOT_NAMES = [
+  'subjectSummary',
+  'eventContext',
+  'labTrajectory',
+  'doseJourney',
+  'disposition'
+];
+const CALLBACKS = [
+  'on_select_subject',
+  'on_anchor_event',
+  'on_context_change',
+  'on_narrative_action'
+];
+const NARRATIVE_SLOTS = NARRATIVE_SLOT_NAMES;
 
 const warn = (message) => console.warn(`patient-journey-explorer: ${message}`);
 const isObject = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -562,6 +581,20 @@ function syncFilters(input) {
  * @param {PatientJourneyExplorerSettings} settings Caller overrides; pass {} for the defaults.
  * @returns {PatientJourneyExplorerSettings} The merged, normalized settings.
  */
+/**
+ * The `narratives` slots: an object keeping only the five known slot names
+ * whose value is a function, or null when none is bound (PJE-NARR-009).
+ * @private
+ */
+function syncNarratives(value) {
+  if (!isObject(value)) return null;
+  const slots = {};
+  for (const name of NARRATIVE_SLOTS) {
+    if (typeof value[name] === 'function') slots[name] = value[name];
+  }
+  return Object.keys(slots).length ? slots : null;
+}
+
 export function syncSettings(settings) {
   const raw = isObject(settings) ? settings : {};
   const aliased = applyTopLevelAliases(raw);
@@ -597,6 +630,7 @@ export function syncSettings(settings) {
     : DEFAULT_SETTINGS.lb_baseline_day;
 
   for (const key of CALLBACKS) synced[key] = typeof synced[key] === 'function' ? synced[key] : null;
+  synced.narratives = syncNarratives(synced.narratives);
 
   for (const key of POSITIVE_INTS) synced[key] = positiveInt(synced[key], DEFAULT_SETTINGS[key]);
   synced.fit_to_height = Boolean(synced.fit_to_height);

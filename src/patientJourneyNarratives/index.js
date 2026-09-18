@@ -17,6 +17,7 @@ import { NARRATIVE_KINDS, REFUSAL_TEXT, SLUG_BY_SLOT, refusalReason } from './ki
 import { createClaudeAdapter } from './adapters/claude.js';
 import { createOpenAIAdapter } from './adapters/openai.js';
 import { createStubAdapter } from './adapters/stub.js';
+import { bindNarratives } from './bind.js';
 
 export {
   SHARED,
@@ -33,7 +34,8 @@ export {
   createStubAdapter,
   validateDraft,
   inputHash,
-  normalizeRowId
+  normalizeRowId,
+  bindNarratives
 };
 
 /** Marker lines the first user message uses; the stub adapter parses them. */
@@ -198,6 +200,40 @@ export function refusalDraft(skill, inputs, reason, provenance, grounding = null
 }
 
 /**
+ * The compiled skill for a slug or a renderer slot name.
+ * @param {string} slug `event-context` or `eventContext`.
+ * @returns {Object} The compiled skill.
+ */
+export function skillFor(slug) {
+  const key = SLUG_BY_SLOT[slug] || slug;
+  const skill = SKILLS[key];
+  if (!skill) {
+    throw new Error(`narratives: unknown skill "${slug}" (known: ${SKILL_SLUGS.join(', ')})`);
+  }
+  return skill;
+}
+
+/**
+ * The scope of a generation without a model: the grounding tool's rows and
+ * their hash. The renderer uses this on every render for stale detection,
+ * with the same function the generator uses, so the hashes agree.
+ * @param {Object} dataService A data service (createDataService).
+ * @returns {{scope: Function, scopeHash: Function}} `scope(slug, inputs)` → `{ skill, grounding, hash }`; `scopeHash(slug, inputs)` → the hash.
+ */
+export function createScope(dataService) {
+  function scope(slug, rawInputs = {}) {
+    const skill = skillFor(slug);
+    const inputs = { ...rawInputs };
+    if (inputs.subject !== undefined) inputs.subject = String(inputs.subject);
+    const args = groundingArgs(skill, inputs);
+    const grounding = runTool(dataService, skill.grounding, args, { subject: inputs.subject });
+    const hash = inputHash({ skill: skill.slug, version: skill.version, inputs, grounding });
+    return { skill, grounding, hash };
+  }
+  return { scope, scopeHash: (slug, inputs) => scope(slug, inputs).hash };
+}
+
+/**
  * Pick or build the adapter for the create() options.
  * @private
  */
@@ -272,14 +308,6 @@ export function create(options = {}) {
           if (typeof console !== 'undefined') console.warn(`narratives: ${message}`);
         };
 
-  function skillFor(slug) {
-    const key = SLUG_BY_SLOT[slug] || slug;
-    const skill = SKILLS[key];
-    if (!skill)
-      throw new Error(`narratives: unknown skill "${slug}" (known: ${SKILL_SLUGS.join(', ')})`);
-    return skill;
-  }
-
   function checkInputs(skill, inputs) {
     const verdict = validateSchema(inputs, skill.schema.definitions.Input, skill.schema);
     if (!verdict.ok) {
@@ -287,13 +315,7 @@ export function create(options = {}) {
     }
   }
 
-  function scope(slug, inputs) {
-    const skill = skillFor(slug);
-    const args = groundingArgs(skill, inputs);
-    const grounding = runTool(dataService, skill.grounding, args, { subject: inputs.subject });
-    const hash = inputHash({ skill: skill.slug, version: skill.version, inputs, grounding });
-    return { skill, grounding, hash };
-  }
+  const { scope } = createScope(dataService);
 
   async function run(slug, rawInputs = {}, { signal } = {}) {
     const skill = skillFor(slug);
@@ -590,4 +612,4 @@ function parseJsonObject(text) {
   return null;
 }
 
-export default { create };
+export default { create, bindNarratives };

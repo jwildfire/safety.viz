@@ -1081,3 +1081,301 @@ test.describe('safety.viz patient-journey-explorer module', () => {
     expect(await pageWidth()).toBeLessThanOrEqual(390);
   });
 });
+
+// The AI narrative layer (#146, obot.roadmap#351): the narratives fixture
+// binds the five slots to the deterministic stub adapter through
+// SafetyViz.narratives.bindNarratives, so every draft here is templated from
+// the fixture's own rows and every citation resolves. Nothing reads
+// `instance.state`; the read paths are `narratives`, `anchoredEvent`,
+// `getContext()` and the DOM the reviewer sees.
+test.describe('safety.viz patient-journey-explorer AI narratives (#146)', () => {
+  const settle = (page) =>
+    page.waitForFunction(() =>
+      window.__safetyPatientJourneyInstance.narratives.every((n) => n.status !== 'loading')
+    );
+
+  test.beforeEach(async ({ page }) => {
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') errors.push(msg.text());
+    });
+    page._pjeErrors = errors;
+    await page.goto('/tests/e2e/fixtures/patient-journey-narratives.html');
+    await page.waitForFunction(
+      () =>
+        window.__safetyPatientJourneyInstance &&
+        window.__safetyPatientJourneyInstance.laneCharts &&
+        window.__safetyPatientJourneyInstance.laneCharts.size > 0
+    );
+    await settle(page);
+  });
+
+  test.afterEach(async ({ page }) => {
+    expect(page._pjeErrors).toEqual([]);
+  });
+
+  test('PJE-NARR-009: the participant-summary card sits above the lanes as a labelled blurb that expands to the full cited draft, and an unbound slot renders nothing (#146)', async ({
+    page
+  }) => {
+    const banner = page.locator('.sv-pje-narrative-banner .sv-pje-ai[data-kind="subject-summary"]');
+    await expect(banner).toHaveCount(1);
+    await expect(banner.locator('.sv-pje-ai-label')).toHaveText('AI narrative');
+    await expect(banner.locator('.sv-pje-ai-summary')).toContainText(
+      '5 adverse events (1 serious)'
+    );
+    // The banner precedes the cue and the lane stack in the chart card.
+    const order = await page.evaluate(() =>
+      [...document.querySelector('.sv-chart-wrap').children].map((el) => el.className.split(' ')[0])
+    );
+    expect(order.indexOf('sv-pje-narrative-banner')).toBeLessThan(order.indexOf('sv-pje-lanes'));
+    // Collapsed by default: the sentences are behind the toggle.
+    const toggle = banner.locator('.sv-pje-ai-toggle');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(banner.locator('.sv-pje-ai-body')).toBeHidden();
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(banner.locator('.sv-pje-ai-sentence')).toHaveCount(5);
+    await expect(banner.locator('.sv-pje-ai-sentence').first()).toContainText(
+      'Exposure to STUDY DRUG is recorded from day 1 to day 60'
+    );
+    // Every sentence carries at least one citation chip that names a fixture row.
+    const chipCounts = await banner
+      .locator('.sv-pje-ai-sentence')
+      .evaluateAll((nodes) => nodes.map((n) => n.querySelectorAll('.sv-pje-ai-cite').length));
+    expect(chipCounts.every((n) => n >= 1)).toBe(true);
+    await captureEvidence(page, 'PJE-NARR-009', 'summary-card');
+
+    // Unbind: no slot, no card, no request controls.
+    await page.evaluate(() => window.__pjeGenerator.unbind());
+    await expect(page.locator('.sv-pje-ai')).toHaveCount(0);
+    await expect(page.locator('.sv-pje-ai-slot')).toHaveCount(0);
+    expect(await page.evaluate(() => window.__safetyPatientJourneyInstance.narratives)).toEqual([]);
+  });
+
+  test('PJE-NARR-010: anchoring an adverse event drafts its context at the top of the panel body, every sentence prefixed with the draft chip, and a refusal renders the catalog text (#146)', async ({
+    page
+  }) => {
+    await markButton(page, 'AE-1').click();
+    await page.waitForFunction(
+      () => window.__safetyPatientJourneyInstance.anchoredEvent?.id === 'AE-1'
+    );
+    await settle(page);
+    const body = page.locator('.sv-rail .sv-pje-panel-body');
+    const card = body.locator(':scope > .sv-pje-ai[data-kind="event-context"]');
+    await expect(card).toHaveCount(1);
+    // First child of the panel body, above the con-med section.
+    const firstClass = await body.evaluate((el) => el.firstElementChild.className);
+    expect(firstClass).toContain('sv-pje-ai');
+    await expect(card.locator('.sv-pje-ai-title')).toHaveText('Event context: RASH');
+    await expect(card.locator('.sv-pje-ai-summary')).toContainText('RASH on day 30');
+    const sentences = card.locator('.sv-pje-ai-sentence');
+    const n = await sentences.count();
+    expect(n).toBeGreaterThanOrEqual(4);
+    for (let i = 0; i < n; i += 1) {
+      await expect(sentences.nth(i).locator('.sv-pje-ai-chip').first()).toHaveText(
+        'Draft — AI generated'
+      );
+    }
+    await expect(card).toContainText('2 con-meds were active at onset: ASPIRIN, IBUPROFEN.');
+    await expect(card).toContainText('2.25 × ULN');
+    await expect(card.locator('.sv-pje-ai-foot')).toContainText('Co-occurrence is not causation');
+    await captureEvidence(page, 'PJE-NARR-010', 'event-card');
+
+    // A refusal draft (no sentences, a refused:<reason> flag) shows why.
+    await page.evaluate(() => {
+      const instance = window.__safetyPatientJourneyInstance;
+      const draft = instance.narratives.find((n) => n.kind === 'event-context').draft;
+      instance.refreshNarrative({
+        ...draft,
+        summary: '',
+        sentences: [],
+        flags: ['refused:insufficient-data']
+      });
+    });
+    await expect(card.locator('.sv-pje-ai-summary')).toHaveText(
+      'Not enough recorded data to draft a narrative.'
+    );
+    await expect(card.locator('.sv-pje-ai-sentence')).toHaveCount(0);
+    await expect(card.locator('.sv-pje-ai-action.is-regenerate')).toHaveCount(1);
+  });
+
+  test('PJE-NARR-011: a citation chip lights the cited mark and moves focus to it; a cited row not on the timeline opens its source record instead (#146)', async ({
+    page
+  }) => {
+    await markButton(page, 'AE-1').click();
+    await settle(page);
+    const card = page.locator('.sv-rail .sv-pje-panel-body > .sv-pje-ai');
+    const chip = card.locator('.sv-pje-ai-cite[data-row-id="CM-0"]');
+    await expect(chip).toHaveText('ASPIRIN');
+    await chip.click();
+    const lit = page.locator('.sv-pje-mark.is-cited');
+    await expect(lit).toHaveCount(1);
+    await expect(lit).toHaveAttribute('data-event-id', 'CM-0');
+    await expect(markButton(page, 'CM-0')).toBeFocused();
+    await captureEvidence(page, 'PJE-NARR-011', 'citation-lit');
+    // Escape clears the light.
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.sv-pje-mark.is-cited')).toHaveCount(0);
+
+    // Turn the con-med lane off: the chip is dashed and opens the source row.
+    await page.evaluate(() =>
+      window.__safetyPatientJourneyInstance.setLaneEnabled('conMeds', false)
+    );
+    await expect(markButton(page, 'CM-0')).toHaveCount(0);
+    const offChip = page.locator('.sv-rail .sv-pje-ai-cite[data-row-id="CM-0"]');
+    await expect(offChip).toHaveClass(/is-off-timeline/);
+    await offChip.click();
+    await page.waitForFunction(() => document.activeElement?.id === 'pje-src-CM-0');
+    await expect(page.locator('#pje-src-CM-0')).toBeFocused();
+  });
+
+  test('PJE-NARR-012: a window change regenerates the event narrative with a regenerate action; a filter that changes the window rows greys the card and offers Regenerate (#146)', async ({
+    page
+  }) => {
+    await markButton(page, 'AE-1').click();
+    await settle(page);
+    const hashBefore = await page.evaluate(
+      () =>
+        window.__safetyPatientJourneyInstance.narratives.find((n) => n.kind === 'event-context')
+          .hash
+    );
+    await page.evaluate(() => window.__safetyPatientJourneyInstance.setContextWindowDays(10));
+    await settle(page);
+    const after = await page.evaluate(() => {
+      const instance = window.__safetyPatientJourneyInstance;
+      const entry = instance.narratives.find((n) => n.kind === 'event-context');
+      return { hash: entry.hash, windowDays: entry.draft.window_days, stale: entry.stale };
+    });
+    expect(after.hash).not.toBe(hashBefore);
+    expect(after.windowDays).toBe(10);
+    expect(after.stale).toBe(false);
+    const regenerate = await page.evaluate(() =>
+      window.__pjeNarrativeActions.filter((a) => a.type === 'regenerate').map((a) => a.reason)
+    );
+    expect(regenerate).toEqual(['window']);
+
+    // Serious-only removes RASH's neighbours from the window: the rows the
+    // draft was grounded on changed, so the card is stale.
+    await page.evaluate(() => window.__safetyPatientJourneyInstance.setFilter('AESER', 'Y'));
+    const card = page.locator('.sv-rail .sv-pje-panel-body > .sv-pje-ai');
+    await expect(card).toHaveClass(/is-stale/);
+    await expect(card.locator('.sv-pje-ai-stale')).toContainText('changed since it was drafted');
+    await captureEvidence(page, 'PJE-NARR-012', 'stale-card');
+    // Clearing the filter restores the rows and the card is current again.
+    await page.evaluate(() => window.__safetyPatientJourneyInstance.setFilter('AESER', null));
+    await expect(card).not.toHaveClass(/is-stale/);
+    // Regenerate on a stale card re-requests and emits the reason.
+    await page.evaluate(() => window.__safetyPatientJourneyInstance.setFilter('AESER', 'Y'));
+    await card.locator('.sv-pje-ai-action.is-regenerate').click();
+    await settle(page);
+    await expect(card).not.toHaveClass(/is-stale/);
+    const reasons = await page.evaluate(() =>
+      window.__pjeNarrativeActions.filter((a) => a.type === 'regenerate').map((a) => a.reason)
+    );
+    expect(reasons).toEqual(['window', 'stale']);
+  });
+
+  test('PJE-NARR-013: Accept, Reject, Edit and Regenerate emit on_narrative_action on all three channels with the draft, and an accepted draft passed back flips the chips (#146)', async ({
+    page
+  }) => {
+    await markButton(page, 'AE-1').click();
+    await settle(page);
+    await page.evaluate(() => {
+      window.__pjeListener = [];
+      window.__pjeDom = [];
+      const instance = window.__safetyPatientJourneyInstance;
+      instance.on('pjeNarrativeAction', (detail) => window.__pjeListener.push(detail.type));
+      document
+        .querySelector('.sv-root')
+        .addEventListener('pjeNarrativeAction', (event) => window.__pjeDom.push(event.detail.type));
+    });
+    const card = page.locator('.sv-rail .sv-pje-panel-body > .sv-pje-ai');
+    await card.locator('.sv-pje-ai-action.is-reject').click();
+    await card.locator('.sv-pje-ai-action.is-edit').click();
+    await expect(card.locator('.sv-pje-ai-textarea')).toHaveCount(
+      await card.locator('.sv-pje-ai-textarea').count()
+    );
+    const first = card.locator('.sv-pje-ai-textarea').first();
+    await first.fill('RASH is recorded from day 30 (edited).');
+    await card.locator('.sv-pje-ai-action.is-save').click();
+    await expect(card.locator('.sv-pje-ai-sentence').first()).toContainText(
+      'RASH is recorded from day 30 (edited).'
+    );
+    await expect(
+      card.locator('.sv-pje-ai-sentence').first().locator('.sv-pje-ai-chip').first()
+    ).toHaveText('Draft — edited');
+    await card.locator('.sv-pje-ai-action.is-accept').click();
+    const seen = await page.evaluate(() => ({
+      callback: window.__pjeNarrativeActions.map((a) => a.type),
+      listener: window.__pjeListener,
+      dom: window.__pjeDom,
+      edited: window.__pjeNarrativeActions.find((a) => a.type === 'edit'),
+      accepted: window.__pjeNarrativeActions.find((a) => a.type === 'accept')
+    }));
+    expect(seen.callback).toEqual(['reject', 'edit', 'accept']);
+    expect(seen.listener).toEqual(['reject', 'edit', 'accept']);
+    expect(seen.dom).toEqual(['reject', 'edit', 'accept']);
+    expect(seen.edited.editedSentences[0].text).toBe('RASH is recorded from day 30 (edited).');
+    expect(seen.accepted.kind).toBe('event-context');
+    expect(seen.accepted.subject).toBe('PJE-1');
+    expect(seen.accepted.row_id).toBe('AE-1');
+    expect(seen.accepted.draft.status).toBe('edited');
+    // The fixture's handler passes the accepted draft back: chips read Accepted.
+    await expect(card.locator('.sv-pje-ai-chip.is-accepted').first()).toHaveText('Accepted');
+    await expect(card.locator('.sv-pje-ai-action.is-accept')).toHaveCount(0);
+    await captureEvidence(page, 'PJE-NARR-013', 'accepted-card');
+  });
+
+  test('PJE-NARR-014: lab, dose and disposition narratives are drafted on demand from their lane controls and render under the lane (#146)', async ({
+    page
+  }) => {
+    const slots = page.locator('.sv-pje-ai-slot');
+    const keys = await slots.evaluateAll((nodes) =>
+      nodes.map((n) => `${n.dataset.slot}:${n.dataset.key}`)
+    );
+    expect(keys).toEqual([
+      'doseJourney:',
+      'labTrajectory:Alanine Aminotransferase',
+      'labTrajectory:Aspartate Aminotransferase',
+      'disposition:'
+    ]);
+    await expect(page.locator('.sv-pje-ai-slot .sv-pje-ai')).toHaveCount(0);
+    await page.locator('.sv-pje-ai-slot[data-slot="doseJourney"] .sv-pje-ai-request-btn').click();
+    await settle(page);
+    const dose = page.locator('.sv-pje-ai-slot[data-slot="doseJourney"] .sv-pje-ai');
+    await expect(dose).toContainText('On day 21 the dose changed from 50 to 100 mg (increase).');
+    // The slot sits inside the exposure lane's group, after the exposure lane.
+    const placement = await page.evaluate(() => {
+      const slot = document.querySelector('.sv-pje-ai-slot[data-slot="doseJourney"]');
+      const lane = document.querySelector('.sv-pje-lane[data-lane="exposure"]');
+      return (
+        slot.previousElementSibling === lane ||
+        slot.compareDocumentPosition(lane) & Node.DOCUMENT_POSITION_PRECEDING
+      );
+    });
+    expect(Boolean(placement)).toBe(true);
+    await page
+      .locator('.sv-pje-ai-slot[data-key="Alanine Aminotransferase"] .sv-pje-ai-request-btn')
+      .click();
+    await settle(page);
+    await expect(
+      page.locator('.sv-pje-ai-slot[data-key="Alanine Aminotransferase"] .sv-pje-ai')
+    ).toContainText('Alanine Aminotransferase was measured 3 times');
+    await page.locator('.sv-pje-ai-slot[data-slot="disposition"] .sv-pje-ai-request-btn').click();
+    await settle(page);
+    await expect(page.locator('.sv-pje-ai-slot[data-slot="disposition"] .sv-pje-ai')).toContainText(
+      'The disposition event is COMPLETED on day 90'
+    );
+    await captureEvidence(page, 'PJE-NARR-014', 'lane-cards');
+    // Selecting another participant drops every card; the controls return.
+    await page.evaluate(() => window.__safetyPatientJourneyInstance.selectSubject('PJE-2'));
+    await settle(page);
+    await expect(page.locator('.sv-pje-ai-slot .sv-pje-ai')).toHaveCount(0);
+    expect(
+      await page.evaluate(() =>
+        window.__safetyPatientJourneyInstance.narratives.map((n) => `${n.kind}:${n.subject}`)
+      )
+    ).toEqual(['subject-summary:PJE-2']);
+  });
+});
