@@ -55,6 +55,11 @@ function moduleCss() {
    axis strip instead, where it also links to the panel on a stacked layout. */
 .safety-patient-journey .sv-main-annotation{position:static;display:flex;flex-wrap:wrap;align-items:center;gap:.35rem .6rem;margin:.5rem 0 0;padding:.3rem .5rem;font-size:.78rem;color:var(--pje-ink-secondary)}
 .safety-patient-journey .sv-main-annotation:empty{display:none}
+/* The notice above the lane stack (PJE-ANCH-006): the one line a first-time
+   reviewer needs — that the marks are clickable and what clicking shows. */
+.sv-pje-cue{display:flex;flex-wrap:wrap;align-items:baseline;gap:.2rem .5rem;margin:0 0 .6rem;padding:.55rem .75rem;border:1px solid var(--pje-border);border-left:4px solid var(--pje-focus-ring);border-radius:6px;background:var(--pje-panel);font-size:.84rem;line-height:1.4;color:var(--pje-ink-primary)}
+.sv-pje-cue[hidden]{display:none}
+.sv-pje-cue strong{font-weight:700}
 .sv-pje-annotation-link{border:0;background:none;padding:0;font:inherit;color:var(--pje-focus-ring);text-decoration:underline;cursor:pointer}
 .sv-pje-annotation-link:focus-visible{outline:2px solid var(--pje-focus-ring);outline-offset:1px}
 .sv-pje-lanes{position:relative;overflow-y:auto;overflow-x:hidden}

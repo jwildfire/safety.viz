@@ -94,6 +94,7 @@ rather than reading pixels or private state. The pilot-data numbers live only in
 | PJE-ANCH-002   | PJE-ANCH-002       | #142  | `anchor.test.js` — inclusive window bounds, interval overlap and point containment, ongoing and unrecorded ends both still running                         |
 | PJE-ANCH-004   | PJE-ANCH-004       | #142  | `anchor.test.js` — `relativeDay` is 0 at the anchor and the anchored axis title is `Days from anchor`                                                      |
 | PJE-ANCH-005   | PJE-ANCH-005       | #142  | `anchor.test.js` — the elapsed-day round-trip skips 0 and `relativeDay` equals the calendar difference for all 30 ordered pairs                            |
+| PJE-ANCH-006   | PJE-ANCH-006       | #145  | `events.test.js` — the notice above the lanes says clicking any mark shows its associated events, names the anchor once set, hides with every lane off     |
 | PJE-CTX-001    | PJE-CTX-001        | #142  | `context.test.js` — the active-at rule at the edges; unrecorded ends counted; a con-med with no start excluded and counted; later starts listed separately |
 | PJE-CTX-002    | PJE-CTX-002        | #142  | `labs.test.js` — the flag rule and the symmetric change rule at exactly 2× and ½×; a blank indicator is not abnormal                                       |
 | PJE-CTX-003    | PJE-CTX-003        | #142  | `context.test.js` — a dose change on the window edge is included                                                                                           |
