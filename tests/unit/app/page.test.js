@@ -256,15 +256,34 @@ describe('demo app: the page', () => {
     expect(calls[0].export).toBe('histogram');
   });
 
-  it('APP-PAGE-011: a second file placed in a domain replaces the first, and the page says so (#150)', () => {
+  it('APP-PAGE-011: a second file placed in a domain takes it, and the first is kept on the page, set aside (#150, #165)', () => {
     const { charts } = fakeCharts();
     const app = mountApp(root, { charts, manifest });
+    const notes = () => [...root.querySelectorAll('.sva-note')].map((node) => node.textContent);
+    const setAside = () => app.state.unplaced.map((item) => item.file.name);
     app.loadFiles([DEMO[0]]);
     app.loadFiles([{ name: 'adsl-v2.csv', text: DEMO[0].text }]);
-    expect([...root.querySelectorAll('.sva-note')].map((node) => node.textContent)).toEqual([
-      'adsl-v2.csv replaced adsl.csv as the Subject-level file.'
+    expect(notes()).toEqual([
+      'adsl-v2.csv replaced adsl.csv as the Subject-level file; adsl.csv is set aside.'
     ]);
+    expect(app.state.files.subject.name).toBe('adsl-v2.csv');
+    // Nothing is lost: the first file is still on the page, read by no chart.
+    expect(setAside()).toEqual(['adsl.csv']);
+    expect(root.querySelector('.sva-file.sva-unplaced .sva-file-name').textContent).toBe(
+      'adsl.csv'
+    );
     expect(tag(root, 'data')).toBe('1 file');
+    // Two files of one type in one drop: the last takes the domain, the other is set aside.
+    app.reset();
+    app.loadFiles([DEMO[0], { name: 'adsl-b.csv', text: DEMO[0].text }]);
+    expect(app.state.files.subject.name).toBe('adsl-b.csv');
+    expect(setAside()).toEqual(['adsl.csv']);
+    // The same file loaded again is the same file: it replaces itself and sets nothing aside.
+    app.reset();
+    app.loadFiles([DEMO[0]]);
+    app.loadFiles([DEMO[0]]);
+    expect(notes()).toEqual([]);
+    expect(setAside()).toEqual([]);
   });
 
   it('APP-PLACE-006: a standard ADaM labs file is placed as labs, and the same shape with QTc measures as ECG (#165)', () => {

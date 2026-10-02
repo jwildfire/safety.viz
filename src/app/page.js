@@ -438,12 +438,17 @@ export function mountApp(
     }
   }
 
-  /** Forget everything that was loaded: files, mappings, a held mapping file, notes. */
-  function clear() {
+  /** Forget the loaded files and their mappings, placed or set aside. */
+  function clearFiles() {
     state.files = {};
     state.mappings = {};
     state.placements = {};
     state.unplaced = [];
+  }
+
+  /** Forget everything that was loaded: files, mappings, a held mapping file, notes. */
+  function clear() {
+    clearFiles();
     state.saved = null;
     state.study = null;
     state.notes = [];
@@ -518,15 +523,24 @@ export function mountApp(
         state.busy = '';
       }
       state.notes = [...notes];
-      state.study = study;
-      // A mapping file among them is read first, so the data files dropped
-      // with it land where it says and take its rows.
+      const mappingFiles = [];
       const data = [];
       for (const entry of list) {
         const saved = readMappingFile(entry, manifest);
-        if (saved) handle.restoreMapping(saved, entry.name);
+        if (saved) mappingFiles.push({ saved, name: entry.name });
         else data.push(entry);
       }
+      // Files of the user's own replace a demo study whole: placed one by one
+      // they would displace its files and leave each of them set aside.
+      const demoLoaded = studies.find((item) => item.id === state.study);
+      if (!study && demoLoaded && data.length) {
+        clearFiles();
+        state.notes.push(`The ${demoLoaded.label} demo study was cleared to load your files.`);
+      }
+      if (study || data.length) state.study = study;
+      // A mapping file among them is read first, so the data files dropped
+      // with it land where it says and take its rows.
+      for (const { saved, name } of mappingFiles) handle.restoreMapping(saved, name);
       for (const { name, text } of data) {
         let file;
         try {
@@ -558,8 +572,10 @@ export function mountApp(
     },
 
     /**
-     * Put one parsed file in one domain, replacing whatever was there. A saved
-     * mapping for the domain, when one is held, is applied over the pre-filled one.
+     * Put one parsed file in one domain. A file of another name that was there
+     * is not dropped: it is kept on the page, set aside, and the page says so.
+     * The same file loaded again replaces itself. A saved mapping for the
+     * domain, when one is held, is applied over the pre-filled one.
      * @param {string} domain The manifest domain.
      * @param {Object} file The parsed file.
      * @param {Object} placement The placeFile result to keep with it.
@@ -568,8 +584,11 @@ export function mountApp(
     setFile(domain, file, placement) {
       const previous = state.files[domain];
       if (previous && previous.name !== file.name) {
+        state.unplaced = state.unplaced.filter((item) => item.file.name !== previous.name);
+        state.unplaced.push({ file: previous, placement: state.placements[domain] });
         state.notes.push(
-          `${file.name} replaced ${previous.name} as the ${manifest.domains[domain].label} file.`
+          `${file.name} replaced ${previous.name} as the ${manifest.domains[domain].label} ` +
+            `file; ${previous.name} is set aside.`
         );
       }
       state.files[domain] = file;

@@ -126,8 +126,15 @@ describe('demo app: the data panel', () => {
     choose(unplaced.querySelector('.sva-domain'), 'subject');
     expect(card('subject').querySelector('.sva-file-name').textContent).toBe('site_notes.csv');
     expect(card('subject').querySelector('.sva-found').textContent).toBe('0 of 7 columns found');
-    expect(notes()).toEqual(['site_notes.csv replaced dm.csv as the Subject-level file.']);
-    expect(root.querySelector('.sva-file.sva-unplaced')).toBeNull();
+    expect(notes()).toEqual([
+      'site_notes.csv replaced dm.csv as the Subject-level file; dm.csv is set aside.'
+    ]);
+    // The file it displaced is kept, set aside, where it can be placed again.
+    expect(
+      [...root.querySelectorAll('.sva-file.sva-unplaced .sva-file-name')].map(
+        (node) => node.textContent
+      )
+    ).toEqual(['dm.csv']);
   });
 
   it('APP-LOAD-003: before any correction the chart list names what each unsupported chart is missing (#151)', () => {
@@ -326,8 +333,9 @@ describe('demo app: the data panel', () => {
     expect(notes()).toEqual([
       'saved.json is a saved mapping for: Subject-level (dm.csv), Adverse events (ae.csv), ' +
         'ECG (labs_final.csv).',
-      'labs_final.csv replaced ecg.json as the ECG file.'
+      'labs_final.csv replaced ecg.json as the ECG file; ecg.json is set aside.'
     ]);
+    expect(app.state.unplaced.map((item) => item.file.name)).toEqual(['ecg.json']);
 
     // Dropped together it lands the same way.
     action('reset').click();
@@ -358,7 +366,9 @@ describe('demo app: the data panel', () => {
       bds: 'ecg.json',
       eg: 'labs_final.csv'
     });
-    expect(app.state.unplaced).toEqual([]);
+    // The two that swapped displaced nothing; the subject-level file that made
+    // way for the one taken from among the unplaced is kept, set aside.
+    expect(app.state.unplaced.map((item) => item.file.name)).toEqual(['dm.csv']);
   });
 
   it('APP-LOAD-024: a mapping file that is damaged or names what the app does not know loads the data files anyway, and says what it is (#165)', () => {
@@ -416,14 +426,20 @@ describe('demo app: the data panel', () => {
     choose(card('eg').querySelector('.sva-domain'), 'bds');
     expect(card('eg')).toBeNull();
     expect(card('bds').querySelector('.sva-file-name').textContent).toBe('ecg.json');
-    expect(notes()).toEqual(['ecg.json replaced labs_final.csv as the Labs and vitals file.']);
+    expect(notes()).toEqual([
+      'ecg.json replaced labs_final.csv as the Labs and vitals file; labs_final.csv is set aside.'
+    ]);
     expect(tag('qt-explorer')).toBe('no file');
-    // Set aside: kept on the page, read by no chart.
+    const aside = () =>
+      [...root.querySelectorAll('.sva-file.sva-unplaced .sva-file-name')].map(
+        (node) => node.textContent
+      );
+    // The file it displaced is kept on the page, read by no chart.
+    expect(aside()).toEqual(['labs_final.csv']);
+    // Set aside by hand: the same.
     choose(card('bds').querySelector('.sva-domain'), '');
     expect(card('bds')).toBeNull();
-    expect(root.querySelector('.sva-file.sva-unplaced .sva-file-name').textContent).toBe(
-      'ecg.json'
-    );
+    expect(aside()).toEqual(['labs_final.csv', 'ecg.json']);
     expect(tag('histogram')).toBe('no file');
   });
 
@@ -649,10 +665,20 @@ describe('demo app: the data panel', () => {
       ['Open a chart', 'todo', '8 of 13 charts ready']
     ]);
 
-    // Files of the user's own are no demo study.
-    app.loadFiles(STUDY);
+    // Files of the user's own are no demo study: they replace it whole, rather
+    // than displacing its files one by one and leaving them set aside (#165).
+    app.loadFiles([fixture('labs_final.csv')]);
     expect(menu().value).toBe('');
     expect(root.querySelector('.sva-study-note')).toBeNull();
+    expect(names()).toEqual(['labs_final.csv']);
+    expect(app.state.unplaced).toEqual([]);
+    expect(notes()).toEqual([
+      'The Liver cohort, labs only demo study was cleared to load your files.'
+    ]);
+    app.loadFiles(STUDY);
+    expect(names().sort()).toEqual(['ae.csv', 'dm.csv', 'ecg.json', 'labs_final.csv']);
+    expect(app.state.unplaced).toEqual([]);
+    expect(notes()).toEqual([]);
     // Reset leaves the menu, with no study chosen.
     action('reset').click();
     expect(menu().value).toBe('');
