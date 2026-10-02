@@ -33,7 +33,7 @@ import {
   syncProfileRail,
   unmountProfileRail
 } from './profile-host.js';
-import { initFilterState, renderFilterControl } from './filters.js';
+import { initFilterState, reconcileFilters, renderFilterControl } from './filters.js';
 
 Chart.register(ScatterController, PointElement, LinearScale, Tooltip);
 
@@ -257,7 +257,9 @@ class SafetyDeltaDelta {
     try {
       checkInputs(this.rawData, this.settings);
     } catch (error) {
-      this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+      // The message is inserted as text: it names columns from the settings,
+      // which a host may fill from a file header, and must never become markup.
+      this.element.replaceChildren(createElement('div', 'sv-warning', error.message));
       throw error;
     }
     let removed = 0;
@@ -367,16 +369,18 @@ class SafetyDeltaDelta {
         );
       return exists;
     });
-    if (filterSpecs.length) {
+    const filterControls = reconcileFilters(this.state.filters, filterSpecs, (filter) =>
+      unique(this.cleanRows.map((row) => row[filter.value_col])).sort()
+    );
+    if (filterControls.length) {
       const filterParent = addSection('Filters');
-      filterSpecs.forEach((filter) => {
-        const values = unique(this.cleanRows.map((row) => row[filter.value_col])).sort();
+      filterControls.forEach(({ spec: filter, values, selected }) => {
         addControl(
           filter.label,
           renderFilterControl({
             spec: filter,
             values,
-            selected: this.state.filters[filter.value_col],
+            selected,
             onChange: (next) => {
               this.state.filters[filter.value_col] = next;
               this.render();

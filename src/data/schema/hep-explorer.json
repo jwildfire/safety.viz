@@ -167,9 +167,25 @@
           "default": [0, null],
           "description": "Initial R-Ratio [min, max]; a null max is resolved from the data on first render (HEP-CTRL-010)."
         },
+        "unscheduled_visits": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include records taken at an unscheduled visit (matched by unscheduled_visit_values, else by unscheduled_visit_pattern, against visit_col) in the baseline and peak reduction. Included by default, unlike results-over-time: turning it off re-derives every baseline and peak from the scheduled records alone, and the note above the chart states how many records were excluded (HEP-CTRL-018)."
+        },
+        "unscheduled_visit_pattern": {
+          "type": "string",
+          "default": "/unscheduled|early termination/i",
+          "description": "Regular expression, in /source/flags string form, identifying an unscheduled visit (HEP-DATA-013)."
+        },
+        "unscheduled_visit_values": {
+          "type": ["array", "null"],
+          "items": { "type": "string" },
+          "default": null,
+          "description": "Explicit list of unscheduled visit names; takes precedence over unscheduled_visit_pattern when set (HEP-DATA-013)."
+        },
         "filters": {
-          "$ref": "#/$defs/fieldList",
-          "description": "Optional filter columns rendered as controls (HEP-CTRL-011)."
+          "$ref": "#/$defs/filterList",
+          "description": "Optional filter columns rendered as controls (HEP-CTRL-011). Each entry is a column name or a { value_col, label, start, all, multiple } spec: `start` is the value the filter opens on, `all` (default true) is whether an \"All\" option is offered, and `multiple` (default false) makes it a checkbox multiselect."
         },
         "groups": {
           "$ref": "#/$defs/fieldList",
@@ -194,6 +210,37 @@
             "properties": {
               "value_col": { "type": "string" },
               "label": { "type": "string" }
+            }
+          }
+        ]
+      }
+    },
+    "filterList": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          { "type": "string" },
+          {
+            "type": "object",
+            "required": ["value_col"],
+            "properties": {
+              "value_col": { "type": "string" },
+              "label": { "type": "string" },
+              "start": {
+                "type": ["string", "number", "boolean", "array", "null"],
+                "default": null,
+                "description": "The value the filter opens on; an array of values for a `multiple` filter. 0 and false are real values, not an absent start. A value the data lacks is dropped with a console warning."
+              },
+              "all": {
+                "type": "boolean",
+                "default": true,
+                "description": "Whether the filter offers an \"All\" option. false removes it, and the filter then always holds one value: the first, unless `start` names another."
+              },
+              "multiple": {
+                "type": "boolean",
+                "default": false,
+                "description": "Render a checkbox multiselect instead of a dropdown; the rows shown are those matching any selected value."
+              }
             }
           }
         ]

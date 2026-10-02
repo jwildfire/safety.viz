@@ -90,7 +90,7 @@ import {
 } from './hep-waterfall/getPlugins.js';
 import { unique } from './hep-explorer/structureData.js';
 import { renderListing } from './histogram/listing.js';
-import { initFilterState, renderFilterControl } from './filters.js';
+import { initFilterState, reconcileFilters, renderFilterControl } from './filters.js';
 
 Chart.register(
   BarController,
@@ -432,7 +432,9 @@ class SafetyHepWaterfall {
       // Destroy live charts before wiping the shell so Chart.js instances do
       // not leak when a later setData/setSettings re-renders.
       this.destroyCharts();
-      this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+      // The message is inserted as text: it names columns from the settings,
+      // which a host may fill from a file header, and must never become markup.
+      this.element.replaceChildren(createElement('div', 'sv-warning', error.message));
       throw error;
     }
     const { rows, removed } = prepareData(this.rawData, this.settings);
@@ -565,18 +567,20 @@ class SafetyHepWaterfall {
     const filterSpecs = this.settings.filters.filter((filter) =>
       this.cleanRows.some((row) => row[filter.value_col] !== undefined)
     );
-    if (filterSpecs.length) {
+    const filterControls = reconcileFilters(this.state.filters, filterSpecs, (filter) =>
+      unique(this.cleanRows.map((row) => row[filter.value_col]))
+        .map(String)
+        .sort()
+    );
+    if (filterControls.length) {
       const filterSection = addSection('Filters');
-      filterSpecs.forEach((filter) => {
-        const values = unique(this.cleanRows.map((row) => row[filter.value_col]))
-          .map(String)
-          .sort();
+      filterControls.forEach(({ spec: filter, values, selected }) => {
         addControl(
           filter.label,
           renderFilterControl({
             spec: filter,
-            values: values,
-            selected: this.state.filters[filter.value_col],
+            values,
+            selected,
             onChange: (next) => {
               this.state.filters[filter.value_col] = next;
               this.render();

@@ -175,6 +175,25 @@ test.describe('safety.viz shift-plot module', () => {
     await expect(page.locator('.sv-notes')).toContainText('6 of 15 participants shown (40.0%)');
   });
 
+  test('SSP-FILT-001: a plain filter opens on All with every participant shown, and All brings them back (#166)', async ({
+    page
+  }) => {
+    // The regression this pins: the shift plot offered no All, so the dropdown
+    // read "F" over a chart of everyone and there was no way back.
+    const sex = control(page, 'Sex');
+    const notes = page.locator('.sv-notes');
+    expect((await sex.locator('option').allTextContents())[0]).toBe('All');
+    await expect(sex.locator('option:checked')).toHaveText('All');
+    // 12 of the fixture's 15 participants have both a baseline and a
+    // comparison value; that is everyone the unfiltered chart can pair.
+    const everyone = await notes.textContent();
+    expect(everyone).toContain('12 of 15 participants shown (80.0%)');
+    await sex.selectOption('F');
+    await expect(notes).toContainText('6 of 15 participants shown (40.0%)');
+    await sex.selectOption({ label: 'All' });
+    await expect(notes).toHaveText(everyone);
+  });
+
   test('SSP-REG-006: the point tooltip reports id, baseline, comparison, change, and percent change (#14)', async ({
     page
   }) => {

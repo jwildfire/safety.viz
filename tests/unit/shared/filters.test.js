@@ -5,6 +5,7 @@ import {
   filterMatches,
   initFilterState,
   normalizeFilterSpec,
+  reconcileFilters,
   renderFilterControl
 } from '../../../src/filters.js';
 
@@ -38,17 +39,17 @@ describe('shared: normalizeFilterSpec', () => {
     expect(spec.type).toBe('participant');
   });
 
-  it('FILT-002: a start value is the opening selection, and suppresses All unless All is asked for (#136)', () => {
+  it('FILT-002: a start value is the opening selection and nothing else — All stays on offer (#166)', () => {
     const started = normalizeFilterSpec({ value_col: 'ARM', start: 'Placebo' });
     expect(started.start).toBe('Placebo');
-    expect(started.all).toBe(false);
+    expect(started.all).toBe(true);
     expect(normalizeFilterSpec({ value_col: 'ARM', start: 'Placebo', all: true }).all).toBe(true);
+    expect(normalizeFilterSpec({ value_col: 'ARM', start: 'Placebo', all: false }).all).toBe(false);
   });
 
   it('FILT-002: a start of 0 or false is a real column value, not an absent start (#136)', () => {
     expect(normalizeFilterSpec({ value_col: 'N', start: 0 }).start).toBe('0');
     expect(normalizeFilterSpec({ value_col: 'FLAG', start: false }).start).toBe('false');
-    expect(normalizeFilterSpec({ value_col: 'N', start: 0 }).all).toBe(false);
   });
 
   it('FILT-002: an empty string, null or empty array is no start at all (#136)', () => {
@@ -94,6 +95,102 @@ describe('shared: initFilterState', () => {
   it('FILT-002: no specs is an empty state, and a nullish spec list does not throw (#136)', () => {
     expect(initFilterState([])).toEqual({});
     expect(initFilterState(null)).toEqual({});
+  });
+});
+
+describe('shared: reconcileFilters', () => {
+  const VALUES = { ARM: ['Drug', 'Placebo'], SEX: ['F', 'M'] };
+  const valuesOf = (spec) => VALUES[spec.value_col];
+  const reconcile = (specs, state = initFilterState(specs)) => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const controls = reconcileFilters(state, specs, valuesOf);
+    const warnings = warn.mock.calls.map((call) => call[0]);
+    warn.mockRestore();
+    return { state, controls, warnings };
+  };
+
+  it('FILT-001: a plain filter and a start the data has pass through untouched, in spec order (#166)', () => {
+    const specs = [
+      normalizeFilterSpec('SEX'),
+      normalizeFilterSpec({ value_col: 'ARM', start: 'Placebo' })
+    ];
+    const { state, controls, warnings } = reconcile(specs);
+    expect(state).toEqual({ SEX: null, ARM: 'Placebo' });
+    expect(controls.map(({ spec, selected }) => [spec.value_col, selected])).toEqual([
+      ['SEX', null],
+      ['ARM', 'Placebo']
+    ]);
+    expect(controls[0].values).toBe(VALUES.SEX);
+    expect(warnings).toEqual([]);
+  });
+
+  it('FILT-003: all:false with no start selects the first value, so the control and the state agree (#166)', () => {
+    const { state } = reconcile([normalizeFilterSpec({ value_col: 'ARM', all: false })]);
+    expect(state).toEqual({ ARM: 'Drug' });
+  });
+
+  it('FILT-002: a start the data lacks warns, naming the filter and the value, and opens on All (#166)', () => {
+    const { state, warnings } = reconcile([
+      normalizeFilterSpec({ value_col: 'ARM', label: 'Treatment', start: 'Nope' })
+    ]);
+    expect(state).toEqual({ ARM: null });
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]).toContain('[ Treatment ]');
+    expect(warnings[0]).toContain('[ Nope ]');
+  });
+
+  it('FILT-003: a start the data lacks falls back to the first value when All is not offered (#166)', () => {
+    const { state } = reconcile([
+      normalizeFilterSpec({ value_col: 'ARM', start: 'Nope', all: false })
+    ]);
+    expect(state).toEqual({ ARM: 'Drug' });
+  });
+
+  it('FILT-002: values compare as strings, so a numeric column matches its string start (#166)', () => {
+    const state = { N: '2' };
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    reconcileFilters(state, [normalizeFilterSpec({ value_col: 'N', start: 2 })], () => [1, 2]);
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+    expect(state).toEqual({ N: '2' });
+  });
+
+  it('FILT-004: a multiple start keeps the values the data has, and none left means no restriction (#166)', () => {
+    const some = reconcile([
+      normalizeFilterSpec({ value_col: 'ARM', multiple: true, start: ['Drug', 'Nope'] })
+    ]);
+    expect(some.state).toEqual({ ARM: ['Drug'] });
+    expect(some.warnings).toHaveLength(1);
+    expect(some.warnings[0]).toContain('[ Nope ]');
+    const none = reconcile([
+      normalizeFilterSpec({ value_col: 'ARM', multiple: true, start: ['Nope', 'Nada'] })
+    ]);
+    expect(none.state).toEqual({ ARM: null });
+  });
+
+  it('FILT-004: a multiple filter emptied by hand stays empty — nothing selected, not no start (#166)', () => {
+    const specs = [normalizeFilterSpec({ value_col: 'ARM', multiple: true, start: ['Drug'] })];
+    expect(reconcile(specs, { ARM: [] }).state).toEqual({ ARM: [] });
+  });
+
+  it('FILT-001: a filter that gets no control leaves no restriction behind in the state (#166)', () => {
+    // SITE is configured with a start but its column is absent, so the chart
+    // passes only the specs it will draw; OLD is a filter no longer configured.
+    const state = { SITE: 'S1', OLD: 'x', SEX: 'F' };
+    reconcileFilters(state, [normalizeFilterSpec('SEX')], valuesOf);
+    expect(state).toEqual({ SEX: 'F' });
+  });
+
+  it('FILT-002: a filter the state has never held opens on its start value (#166)', () => {
+    const { state } = reconcile([normalizeFilterSpec({ value_col: 'ARM', start: 'Placebo' })], {});
+    expect(state).toEqual({ ARM: 'Placebo' });
+  });
+
+  it('FILT-002: a selection made in the control survives a rebuild (#166)', () => {
+    const specs = [normalizeFilterSpec({ value_col: 'ARM', start: 'Placebo' })];
+    expect(reconcile(specs, { ARM: 'Drug' }).state).toEqual({ ARM: 'Drug' });
+    // All, chosen by hand, is null — and is not mistaken for "never seeded".
+    expect(reconcile(specs, { ARM: null }).state).toEqual({ ARM: null });
   });
 });
 

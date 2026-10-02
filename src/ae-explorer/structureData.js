@@ -5,6 +5,8 @@
 // renderer's prepareData/cross/calculateDifference behavior
 // (RhoInc/aeexplorer v3.4.1). All functions are pure.
 
+import { filterMatches } from '../filters.js';
+
 /**
  * Distinct values in input order.
  * @private
@@ -73,17 +75,16 @@ export function groupLevels(rows, settings) {
 }
 
 /**
- * Whether a row passes the active filters of one kind. A filter is active
- * when its state value is non-null; rows match on string equality.
+ * Whether a row passes the active filters of one kind, by the shared filter
+ * contract's predicate: no selection places no restriction, a single value
+ * matches on string equality, and a `multiple` filter's list matches any of
+ * its values (AE-FILT-004).
  * @private
  */
 function passesFilters(row, specs, state, kind) {
-  return specs.every((spec) => {
-    if (spec.type !== kind) return true;
-    const value = state[spec.value_col];
-    if (value == null) return true;
-    return String(row[spec.value_col] ?? '') === String(value);
-  });
+  return specs.every(
+    (spec) => spec.type !== kind || filterMatches(row[spec.value_col] ?? '', state[spec.value_col])
+  );
 }
 
 /**

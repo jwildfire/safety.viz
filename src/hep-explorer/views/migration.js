@@ -736,27 +736,32 @@ function buildHyLawCaution(host, cells) {
  */
 function renderNotes(host, cohort, summary) {
   const total = unique(host.cleanRows.map((row) => row[host.settings.id_col])).length;
-  const parts = [
-    `<span>${cohort.plotted.length} of ${total} participants shown in the migration plot.</span>`
-  ];
+  // Each note is an element whose sentence is set as text: two of them name
+  // treatment arms, which are values from the data and must never become
+  // markup (#166).
+  const notes = [];
+  const note = (text, warning = false) =>
+    notes.push(createElement('span', warning ? 'sv-warning' : null, text));
+  note(`${cohort.plotted.length} of ${total} participants shown in the migration plot.`);
   if (cohort.excludedNoData)
-    parts.push(
-      `<span class="sv-warning">${cohort.excludedNoData} participant${
+    note(
+      `${cohort.excludedNoData} participant${
         cohort.excludedNoData > 1 ? 's' : ''
-      } excluded (missing baseline or on-treatment ALT/total bilirubin).</span>`
+      } excluded (missing baseline or on-treatment ALT/total bilirubin).`,
+      true
     );
   if (cohort.armExcluded)
-    parts.push(
-      `<span class="sv-warning">${cohort.armExcluded} participant${
+    note(
+      `${cohort.armExcluded} participant${
         cohort.armExcluded > 1 ? 's' : ''
-      } excluded: arm not designated placebo or active.</span>`
+      } excluded: arm not designated placebo or active.`,
+      true
     );
   if (host.state.hideUnchanged) {
     const hidden = summary.placebo.diagonal + summary.active.diagonal;
-    parts.push(`<span>Hide unchanged is on: ${hidden} no-migration participants hidden.</span>`);
+    note(`Hide unchanged is on: ${hidden} no-migration participants hidden.`);
   }
-  if (cohort.designation.warning)
-    parts.push(`<span class="sv-warning">${cohort.designation.warning}</span>`);
+  if (cohort.designation.warning) note(cohort.designation.warning, true);
   // A designated placebo with active_arms unset pools EVERY non-placebo arm onto
   // the single active side (arms.js: "every non-placebo arm pools right, with the
   // pooled arms named in the notes"). When more than one arm is pooled, the drug
@@ -765,18 +770,20 @@ function renderNotes(host, cohort, summary) {
   if (cohort.designation.placeboArm && !host.state.activeArms) {
     const pooled = cohort.arms.filter((arm) => arm !== cohort.designation.placeboArm);
     if (pooled.length > 1)
-      parts.push(
-        `<span class="sv-warning">Active side pools ${pooled.join(', ')}; use the Active arm ` +
-          'control to compare one at a time.</span>'
+      note(
+        `Active side pools ${pooled.join(', ')}; use the Active arm ` +
+          'control to compare one at a time.',
+        true
       );
   }
   const sidesPresent = SIDES.filter((side) => summary[side].total > 0);
   if (sidesPresent.length < 2)
-    parts.push(
-      '<span class="sv-warning">Only one treatment side is designated, so the plot is ' +
-        'one-directional. Map arm_col and set placebo_arm / active_arms to compare arms.</span>'
+    note(
+      'Only one treatment side is designated, so the plot is ' +
+        'one-directional. Map arm_col and set placebo_arm / active_arms to compare arms.',
+      true
     );
-  host.notes.innerHTML = parts.join('');
+  host.notes.replaceChildren(...notes);
 }
 
 /**

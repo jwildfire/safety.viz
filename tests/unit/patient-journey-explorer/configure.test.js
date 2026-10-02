@@ -472,7 +472,7 @@ describe('coercion (PJE-CFG-004 and merge rules)', () => {
         value_col: 'CMCLAS',
         label: 'CMCLAS',
         start: ['A'],
-        all: false,
+        all: true,
         multiple: true
       }
     ]);

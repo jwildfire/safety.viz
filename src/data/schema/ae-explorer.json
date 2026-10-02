@@ -50,7 +50,7 @@
         },
         "filters": {
           "$ref": "#/$defs/filterList",
-          "description": "Filter controls (AE-USER-018): column names or { value_col, label, type, start } specs. Type 'event' narrows the events counted; type 'participant' narrows the analysis population and its denominators. Defaults to the four ADAE event filters — seriousness, severity, relationship, outcome; filters whose column is absent or single-valued are dropped with a console warning."
+          "description": "Filter controls (AE-USER-018): column names or { value_col, label, type, start, all, multiple } specs: `start` is the value the filter opens on, `all` (default true) is whether an \"All\" option is offered, and `multiple` (default false) makes it a checkbox multiselect. Type 'event' narrows the events counted; type 'participant' narrows the analysis population and its denominators. Defaults to the four ADAE event filters — seriousness, severity, relationship, outcome; filters whose column is absent or single-valued are dropped with a console warning."
         },
         "details": {
           "$ref": "#/$defs/fieldList",
@@ -168,7 +168,21 @@
               "value_col": { "type": "string" },
               "label": { "type": "string" },
               "type": { "type": "string", "enum": ["event", "participant"], "default": "event" },
-              "start": { "type": ["array", "string", "null"], "default": null }
+              "start": {
+                "type": ["string", "number", "boolean", "array", "null"],
+                "default": null,
+                "description": "The value the filter opens on; an array of values for a `multiple` filter. 0 and false are real values, not an absent start. A value the data lacks is dropped with a console warning."
+              },
+              "all": {
+                "type": "boolean",
+                "default": true,
+                "description": "Whether the filter offers an \"All\" option. false removes it, and the filter then always holds one value: the first, unless `start` names another."
+              },
+              "multiple": {
+                "type": "boolean",
+                "default": false,
+                "description": "Render a checkbox multiselect instead of a dropdown; the rows shown are those matching any selected value."
+              }
             }
           }
         ]

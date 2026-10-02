@@ -6,6 +6,8 @@
 // { value_col, label } objects, singly or as an array; visit-list settings
 // accept a visit-label string or an array of them.
 
+import { normalizeFilterSpec } from '../filters.js';
+
 /**
  * Summary statistics offered for collapsing several results within a visit
  * set to one value per participant; valid values for baseline_stat /
@@ -37,7 +39,7 @@ export const AXIS_TYPES = ['linear', 'log'];
  * @property {?Array<string>} [comparison_visits=null] Visit label(s) plotted on the y-axis; when null every visit after the baseline is selected on first render (SSP-CFG-005).
  * @property {string} [baseline_stat='mean'] Statistic collapsing a participant's several baseline-visit results to one value; one of STATS.
  * @property {string} [comparison_stat='mean'] Statistic collapsing a participant's several comparison-visit results to one value; one of STATS.
- * @property {Array<string|Object>} [filters=[]] Filter controls: column names or { value_col, label } specs. Filters whose column is absent from the data are dropped with a console warning. Filter specs take `{ value_col, label, start, all, multiple }`: `start` is the opening selection (an array for a `multiple` filter, and a start of `0` or `false` is a real value, not an absent one); `all` controls the "All" option and defaults to true, or to false when a start is given — pass `all: true` to keep All alongside a start, `all: false` to require a selection; `multiple: true` renders a checkbox multiselect whose state is null (everything) or an array of values (#136).
+ * @property {Array<string|Object>} [filters=[]] Filter controls: column names or { value_col, label } specs. Filters whose column is absent from the data are dropped with a console warning. Filter specs take `{ value_col, label, start, all, multiple }`: `start` is the opening selection (an array for a `multiple` filter, and a start of `0` or `false` is a real value, not an absent one); `all` controls the "All" option and defaults to true whether or not a start is given — pass `all: false` to remove it, and the filter then always holds one value, the first unless `start` names another; a start value the data lacks is dropped with a console warning; `multiple: true` renders a checkbox multiselect whose state is null (everything) or an array of values (#136).
  * @property {?Array<string|Object>} [details=null] Columns for the linked participant listing; when null, defaults to participant ID, baseline, comparison, change, and percent change (SSP-REQ-005).
  * @property {?string} [start_value=null] Measure selected on first render; falls back to the first measure (with a console warning) when absent from the data.
  * @property {?string[]} [measures=null] Ordered whitelist of measures the Measure control offers: only these appear, and in this order. null or [] offers every measure in the data, alphabetically — the behaviour before this setting existed. Configured measures absent from the data are dropped with a console warning; when none of them is present the control falls back to every measure in the data rather than going blank (SSP-MEAS-001, SSP-MEAS-002).
@@ -106,8 +108,9 @@ export function fieldSpec(value, fallbackLabel) {
 }
 
 /**
- * Merge caller settings onto DEFAULT_SETTINGS and normalize them: filter and
- * detail field lists become { value_col, label } arrays, baseline/comparison
+ * Merge caller settings onto DEFAULT_SETTINGS and normalize them: filters
+ * normalize to the shared filter contract's specs (SSP-FILT-001), detail
+ * field lists become { value_col, label } arrays, baseline/comparison
  * visits become string arrays (or null when unset), the stats fall back to
  * 'mean' when not one of STATS, axis_type falls back to 'linear' when not one
  * of AXIS_TYPES, and the listing details default from the baseline/comparison
@@ -120,7 +123,7 @@ export function syncSettings(settings) {
 
   synced.measures = arrayify(synced.measures);
   synced.filters = arrayify(synced.filters)
-    .map((filter) => fieldSpec(filter))
+    .map((filter) => normalizeFilterSpec(filter))
     .filter((filter) => filter.value_col);
   synced.baseline_visits = synced.baseline_visits == null ? null : arrayify(synced.baseline_visits);
   synced.comparison_visits =

@@ -28,14 +28,27 @@ describe('shift-plot configure', () => {
     expect(STATS).toEqual(['mean', 'min', 'max', 'first']);
   });
 
-  it('SSP-CFG-006: filter specs normalize strings and objects to value_col/label pairs (#14)', () => {
+  it('SSP-CFG-006: filter specs normalize strings and objects to the shared filter contract (#166)', () => {
     const settings = syncSettings({
       filters: [{ value_col: 'SEX', label: 'Sex' }, 'RACE']
     });
     expect(settings.filters).toEqual([
-      { value_col: 'SEX', label: 'Sex' },
-      { value_col: 'RACE', label: 'RACE' }
+      { value_col: 'SEX', label: 'Sex', start: null, all: true, multiple: false },
+      { value_col: 'RACE', label: 'RACE', start: null, all: true, multiple: false }
     ]);
+  });
+
+  it('SSP-FILT-001: start, all and multiple survive normalization instead of being dropped (#166)', () => {
+    const [filter] = syncSettings({
+      filters: [{ value_col: 'SEX', label: 'Sex', start: ['F'], all: false, multiple: true }]
+    }).filters;
+    expect(filter).toEqual({
+      value_col: 'SEX',
+      label: 'Sex',
+      start: ['F'],
+      all: false,
+      multiple: true
+    });
   });
 
   it('SSP-CFG-004/005: baseline/comparison visits normalize to arrays and stats fall back to mean (#14)', () => {
