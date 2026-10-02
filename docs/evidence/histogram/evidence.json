@@ -1,6 +1,6 @@
 {
   "module": "histogram",
-  "generatedAt": "2026-10-02T18:20:30.597Z",
+  "generatedAt": "2026-10-02T18:25:08.239Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "37046679297",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37046679297"
+    "id": "37047224085",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37047224085"
   },
   "records": [
     {
