@@ -303,6 +303,108 @@ describe('demo app: the data panel', () => {
     );
   });
 
+  it('APP-LOAD-009: a mapping file dropped after the data moves each file it names to the domain it names (#165)', () => {
+    // The labs file moved to ECG by hand, and the ECG file set aside.
+    app.loadFiles(STUDY);
+    app.placeFileIn({ domain: 'eg' }, null);
+    app.placeFileIn({ domain: 'bds' }, 'eg');
+    setRow('eg', 'column', 'ARM', 'TREATMENT');
+    const before = JSON.parse(JSON.stringify(app.state.mappings));
+    const mappingFile = { name: 'saved.json', text: JSON.stringify(app.mappingFile()) };
+    expect(app.mappingFile().domains.eg.file).toBe('labs_final.csv');
+    const placed = () =>
+      Object.fromEntries(Object.entries(app.state.files).map(([id, file]) => [id, file.name]));
+
+    // The data first, placed by its columns; then the mapping file on its own.
+    action('reset').click();
+    app.loadFiles(STUDY);
+    expect(placed()).toMatchObject({ bds: 'labs_final.csv', eg: 'ecg.json' });
+    app.loadFiles([mappingFile]);
+    expect(placed()).toEqual({ subject: 'dm.csv', ae: 'ae.csv', eg: 'labs_final.csv' });
+    expect(app.state.mappings).toEqual(before);
+    expect(card('eg').querySelector('.sva-file-name').textContent).toBe('labs_final.csv');
+    expect(notes()).toEqual([
+      'saved.json is a saved mapping for: Subject-level (dm.csv), Adverse events (ae.csv), ' +
+        'ECG (labs_final.csv).',
+      'labs_final.csv replaced ecg.json as the ECG file.'
+    ]);
+
+    // Dropped together it lands the same way.
+    action('reset').click();
+    app.loadFiles([mappingFile, ...STUDY.filter((file) => file.name !== 'ecg.json')]);
+    expect(placed()).toEqual({ subject: 'dm.csv', ae: 'ae.csv', eg: 'labs_final.csv' });
+    expect(app.state.mappings).toEqual(before);
+  });
+
+  it('APP-LOAD-009: a mapping file that swaps two loaded files moves both, and takes one from among the unplaced (#165)', () => {
+    const swap = {
+      name: 'swap.json',
+      text: JSON.stringify({
+        safetyVizMapping: 1,
+        domains: {
+          bds: { file: 'ecg.json', columns: {}, measures: {} },
+          eg: { file: 'labs_final.csv', columns: {}, measures: {} },
+          subject: { file: 'site_notes.csv', columns: {}, measures: {} }
+        }
+      })
+    };
+    app.loadFiles([...STUDY, fixture('site_notes.csv')]);
+    app.loadFiles([swap]);
+    expect(
+      Object.fromEntries(Object.entries(app.state.files).map(([id, f]) => [id, f.name]))
+    ).toEqual({
+      subject: 'site_notes.csv',
+      ae: 'ae.csv',
+      bds: 'ecg.json',
+      eg: 'labs_final.csv'
+    });
+    expect(app.state.unplaced).toEqual([]);
+  });
+
+  it('APP-LOAD-024: a mapping file that is damaged or names what the app does not know loads the data files anyway, and says what it is (#165)', () => {
+    const labs = fixture('labs_final.csv');
+    for (const [domains, sentence] of [
+      [{ bds: null }, 'm.json is a saved mapping, but it names no domain: nothing was restored.'],
+      [
+        { toString: { file: 'labs_final.csv' }, visits: { file: 'labs_final.csv' } },
+        'm.json is a saved mapping, but it names no domain: nothing was restored.'
+      ],
+      ['yes', 'm.json is a saved mapping, but it names no domain: nothing was restored.'],
+      [
+        // Values that are not column names are passed over.
+        {
+          bds: { file: 'labs_final.csv', columns: { TEST: { a: 1 }, ARM: 7 }, measures: { ALT: 5 } }
+        },
+        'm.json is a saved mapping for: Labs and vitals (labs_final.csv).'
+      ]
+    ]) {
+      action('reset')?.click();
+      const text = JSON.stringify({ safetyVizMapping: 1, domains });
+      expect(() => app.loadFiles([{ name: 'm.json', text }, labs]), text).not.toThrow();
+      expect(Object.keys(app.state.files), text).toEqual(['bds']);
+      expect(notes(), text).toEqual([sentence]);
+      expect(app.state.mappings.bds.columns.TEST, text).toEqual({
+        value: 'LBTEST',
+        source: 'guessed'
+      });
+    }
+  });
+
+  it('APP-LOAD-025: a corrected file of the same name takes the place of the one that was not placed (#165)', () => {
+    // Semicolons where commas should be: one column, no domain.
+    app.loadFiles([{ name: 'dm.csv', text: 'SUBJID;SEX;RACE\n1;F;WHITE\n' }]);
+    expect(root.querySelectorAll('.sva-file.sva-unplaced')).toHaveLength(1);
+    app.loadFiles([fixture('dm.csv')]);
+    expect(card('subject').querySelector('.sva-file-name').textContent).toBe('dm.csv');
+    expect(root.querySelectorAll('.sva-file.sva-unplaced')).toHaveLength(0);
+    expect(app.state.unplaced).toEqual([]);
+    expect(loaded().map(([name]) => name)).toEqual(['dm.csv']);
+    // A file of another name that was not placed stays.
+    app.loadFiles([fixture('site_notes.csv')]);
+    app.loadFiles([fixture('ae.csv')]);
+    expect(loaded().map(([name]) => name)).toEqual(['dm.csv', 'ae.csv', 'site_notes.csv']);
+  });
+
   it('APP-LOAD-011: a file can be moved to another domain or set aside with its picker (#151)', () => {
     app.loadFiles(STUDY);
     // The ECG file is the same shape as a labs file; a user may know better.
@@ -337,6 +439,27 @@ describe('demo app: the data panel', () => {
       refused[0],
       'labs.xpt is not a CSV or JSON file. SAS transport and sas7bdat files are not supported yet.'
     ]);
+  });
+
+  it('APP-LOAD-012: a file that cannot be opened, such as a dropped folder, is named in a sentence and the rest of the drop loads (#165)', async () => {
+    const { loaded: read, refused } = await readFiles([
+      { name: 'dm.csv', size: 10, text: async () => fixture('dm.csv').text },
+      {
+        name: 'exports',
+        size: 96,
+        text: async () => {
+          throw new DOMException('The requested file could not be read', 'NotFoundError');
+        }
+      },
+      { name: 'ae.csv', size: 10, text: async () => fixture('ae.csv').text }
+    ]);
+    expect(read.map((file) => file.name)).toEqual(['dm.csv', 'ae.csv']);
+    expect(refused).toEqual([
+      'exports could not be read: it may be a folder, or a file the browser was not allowed to open.'
+    ]);
+    app.loadFiles(read, { notes: refused });
+    expect(Object.keys(app.state.files)).toEqual(['subject', 'ae']);
+    expect(notes()).toEqual(refused);
   });
 
   it('APP-LOAD-013: an empty page offers the drop zone and a file picker, and says nothing is loaded (#151, #159)', () => {
@@ -553,6 +676,73 @@ describe('demo app: the data panel', () => {
     expect(app.state.files).toEqual({});
     expect(app.state.selected).toBe('data');
     expect(root.querySelector('.sva-side select.sva-study').value).toBe('');
+  });
+
+  it('APP-LOAD-020: a demo study answered with an error page is not read as data: it is reported and changes nothing (#165)', async () => {
+    // The page's own fetch: a missing file is answered with a 404 and an HTML body.
+    const fetch = vi.fn(async (url) => ({
+      ok: !url.endsWith('adbds.csv'),
+      status: url.endsWith('adbds.csv') ? 404 : 200,
+      text: async () =>
+        url.endsWith('adbds.csv')
+          ? '<!DOCTYPE html><html><head><title>404</title></head><body>Not found</body></html>'
+          : readFileSync(path.join(repoDir, 'site/data', url.split('/').pop()), 'utf8')
+    }));
+    vi.stubGlobal('fetch', fetch);
+    try {
+      document.body.innerHTML = '<div id="demo"></div>';
+      root = document.querySelector('#demo');
+      app = mountApp(root, { charts: fakeCharts(), manifest, demo: { base: './data/' } });
+      await app.ready;
+    } finally {
+      vi.unstubAllGlobals();
+    }
+    expect(fetch).toHaveBeenCalledTimes(4);
+    expect(notes()).toEqual([
+      'The demo study could not be loaded: ./data/adbds.csv was answered with HTTP 404.'
+    ]);
+    expect(app.state.files).toEqual({});
+    expect(app.state.unplaced).toEqual([]);
+    expect(app.state.study).toBeNull();
+    expect(app.state.selected).toBe('data');
+    expect(root.querySelector('.sva-side select.sva-study').value).toBe('');
+  });
+
+  it('APP-LOAD-023: files loaded while a demo study is still being fetched are kept: the study is dropped when it arrives (#165)', async () => {
+    let release;
+    const gate = new Promise((resolve) => {
+      release = resolve;
+    });
+    const serve = demoFetch();
+    document.body.innerHTML = '<div id="demo"></div>';
+    root = document.querySelector('#demo');
+    app = mountApp(root, {
+      charts: fakeCharts(),
+      manifest,
+      demo: { base: './data/' },
+      fetchText: async (url) => {
+        await gate;
+        return serve(url);
+      }
+    });
+    expect(root.querySelector('.sva-busy').textContent).toBe('Loading the demo study…');
+    app.loadFiles(STUDY);
+    // The user's files are on the page, and the page no longer says it is loading.
+    expect(root.querySelector('.sva-busy')).toBeNull();
+    release();
+    await app.ready;
+    expect(loaded().map(([name]) => name)).toEqual([
+      'dm.csv',
+      'ae.csv',
+      'labs_final.csv',
+      'ecg.json'
+    ]);
+    expect(app.state.study).toBeNull();
+    expect(app.state.selected).toBe('data');
+    expect(root.querySelector('.sva-side select.sva-study').value).toBe('');
+    // A study chosen afterwards still loads.
+    await app.loadDemo('liver');
+    expect(Object.values(app.state.files).map((file) => file.name)).toEqual(['adbds-abnbl.csv']);
   });
 
   it('APP-LOAD-021: the sidebar belongs to the data view: a chart view has none (#159)', () => {

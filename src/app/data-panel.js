@@ -24,7 +24,8 @@ const rowCount = (count) => `${count.toLocaleString('en-US')} ${count === 1 ? 'r
 
 /**
  * Read dropped or chosen files into `{ name, text }` pairs, refusing in one
- * sentence each any that is too large to parse in memory.
+ * sentence each any that is too large to parse in memory or that the browser
+ * cannot open (a dropped folder). One refused file does not lose the others.
  * @param {ArrayLike<{name: string, size: number, text: () => Promise<string>}>} fileList The File objects.
  * @returns {Promise<{loaded: {name: string, text: string}[], refused: string[]}>} The files' text and a sentence per refused file.
  */
@@ -39,7 +40,14 @@ export async function readFiles(fileList) {
       );
       continue;
     }
-    loaded.push({ name: file.name, text: await file.text() });
+    try {
+      loaded.push({ name: file.name, text: await file.text() });
+    } catch {
+      refused.push(
+        `${file.name} could not be read: it may be a folder, or a file the browser was not ` +
+          'allowed to open.'
+      );
+    }
   }
   return { loaded, refused };
 }

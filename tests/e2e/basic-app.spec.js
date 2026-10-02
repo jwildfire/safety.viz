@@ -318,6 +318,100 @@ test.describe('demo app on the demo study', () => {
     });
     await expect(item(page, 'data')).toHaveAttribute('aria-current', 'page');
   });
+
+  test('APP-PAGE-027: an address naming something every object has, such as #constructor, opens the first chart and throws nothing (#165)', async ({
+    page
+  }) => {
+    const errors = watchErrors(page);
+    await page.goto('/tests/e2e/fixtures/basic-app.html#constructor');
+    await page.evaluate(`${APP}.ready`);
+    await expect(item(page, 'histogram')).toHaveAttribute('aria-current', 'page');
+    await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
+    await page.evaluate(() => {
+      window.location.hash = '#toString';
+    });
+    await expect(item(page, 'histogram')).toHaveAttribute('aria-current', 'page');
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-CHART-003: with every optional row cleared by hand, every chart still draws, reading none of them (#165)', async ({
+    page
+  }) => {
+    const errors = watchErrors(page);
+    await openOnDemo(page);
+    // Clear each row in turn; a row some chart cannot draw without is put back.
+    const cleared = await page.evaluate(`(() => {
+      const app = ${APP};
+      const ready = () =>
+        Object.values(app.status()).filter((status) => status.state === 'ready').length;
+      const done = [];
+      for (const [domain, mapping] of Object.entries(app.state.mappings)) {
+        for (const [column, row] of Object.entries(mapping.columns)) {
+          if (!row.value) continue;
+          app.setColumn(domain, column, null);
+          if (ready() < 13) app.setColumn(domain, column, row.value);
+          else done.push(domain + '.' + column);
+        }
+      }
+      return done;
+    })()`);
+    // The demo files carry every one of these under the charts' default names.
+    expect(cleared).toEqual(
+      expect.arrayContaining(['bds.STRESU', 'bds.STNRLO', 'bds.VISITNUM', 'eg.CHG', 'ae.AESER'])
+    );
+    await expect(page.locator('.sva-count')).toHaveText(
+      '13 of 13 charts supported by the loaded data'
+    );
+    for (const [module, entry] of destinations) {
+      await openChart(page, module);
+      await expect(page.locator('.sva-title')).toHaveText(entry.title);
+      await expect(
+        page.locator('.sva-chart').locator('canvas:visible, table:visible').first()
+      ).toBeVisible();
+      await expect(item(page, module).locator('.sva-tag')).toHaveText('ready');
+    }
+    // The hepatic explorer offers no unit it was told not to read.
+    await openChart(page, 'hep-explorer');
+    await expect(page.locator('.sva-chart')).not.toContainText('U/L');
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-CHART-010: on the renamed-column study the participant rail opens with its measures in the Shift Plot and Delta-Delta (#165)', async ({
+    page
+  }) => {
+    const errors = watchErrors(page);
+    await openOnDemo(page);
+    await item(page, 'data').click();
+    await page.locator('.sva-side select.sva-study').selectOption('renamed');
+    await expect(page.locator('.sva-loaded-name')).toHaveCount(4);
+    // The limits of normal are LLN and ULN in this study.
+    for (const [key, value] of [
+      ['STNRHI', 'ULN'],
+      ['STNRLO', 'LLN'],
+      ['ARM', 'TREATMENT']
+    ]) {
+      await mappingRow(page, 'bds', 'column', key).locator('select').selectOption(value);
+    }
+    await mappingRow(page, 'bds', 'measure', 'TB').locator('select').selectOption('Tot. Bilirubin');
+    for (const module of ['shift-plot', 'delta-delta', 'histogram']) {
+      await openChart(page, module);
+      await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
+      // Select the first participant, as a click on their point would.
+      await page.evaluate(`(() => {
+        const { files, mappings } = ${APP}.state;
+        const id = files.bds.rows[0][mappings.bds.columns.USUBJID.value];
+        document
+          .querySelector('.sva-chart canvas')
+          .dispatchEvent(
+            new CustomEvent('participantsSelected', { bubbles: true, detail: { data: [id] } })
+          );
+      })()`);
+      await expect(page.locator('.sv-rail .sv-profile-root')).toBeVisible();
+      await expect(page.locator('.sv-rail .sv-profile-measure-row').first()).toBeVisible();
+      await expect(page.locator('.sv-rail .sv-profile-spaghetti canvas')).toBeVisible();
+    }
+    expect(errors).toEqual([]);
+  });
 });
 
 // ---- the data panel (#151) ---------------------------------------------------
@@ -694,6 +788,27 @@ test.describe('demo app data view sidebar', () => {
       '13 of 13 charts supported by the loaded data'
     );
     expect(errors).toEqual([]);
+  });
+
+  test('APP-LOAD-020: a demo file answered with a 404 is not read as data: the study is reported as not loaded and nothing changes (#165)', async ({
+    page
+  }) => {
+    await page.route('**/site/data/adbds.csv', (route) =>
+      route.fulfill({
+        status: 404,
+        contentType: 'text/html',
+        body: '<!DOCTYPE html>\n<html><head><title>404</title></head>\n<body><h1>Not Found</h1></body></html>\n'
+      })
+    );
+    await page.goto('/tests/e2e/fixtures/basic-app.html');
+    await page.evaluate(`${APP}.ready`);
+    await expect(page.locator('.sva-note')).toHaveText([
+      /^The demo study could not be loaded: .*adbds\.csv was answered with HTTP 404\.$/
+    ]);
+    await expect(page.locator('.sva-file')).toHaveCount(0);
+    await expect(item(page, 'data')).toHaveAttribute('aria-current', 'page');
+    await expect(item(page, 'data').locator('.sva-tag')).toHaveText('no files');
+    await expect(page.locator('.sva-side select.sva-study')).toHaveValue('');
   });
 
   test('APP-LOAD-021: the sidebar sits beside the data view on a wide screen and on no chart view (#159)', async ({

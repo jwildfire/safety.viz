@@ -57,6 +57,19 @@ function fakeCharts(source = manifest) {
   return { charts, calls };
 }
 
+// A standard ADaM labs file: baseline, change and a baseline flag beside the
+// result, so it carries as many ECG columns as labs columns.
+const ADLB = {
+  name: 'adlb.csv',
+  text:
+    'USUBJID,PARAM,AVAL,AVISIT,AVISITN,TRTA,BASE,CHG,ABLFL,ANRLO,ANRHI,ADY\n' +
+    '01,Alanine Aminotransferase,20,Week 1,1,A,18,2,,5,40,8\n' +
+    '01,Bilirubin,1,Week 1,1,A,1,0,,0,1.2,8\n'
+};
+
+const names = (app) =>
+  Object.fromEntries(Object.entries(app.state.files).map(([domain, file]) => [domain, file.name]));
+
 const item = (root, id) => root.querySelector(`.sva-item[data-view="${id}"]`);
 const tag = (root, id) => item(root, id).querySelector('.sva-tag').textContent;
 
@@ -252,6 +265,60 @@ describe('demo app: the page', () => {
       'adsl-v2.csv replaced adsl.csv as the Subject-level file.'
     ]);
     expect(tag(root, 'data')).toBe('1 file');
+  });
+
+  it('APP-PLACE-006: a standard ADaM labs file is placed as labs, and the same shape with QTc measures as ECG (#165)', () => {
+    const { charts } = fakeCharts();
+    const app = mountApp(root, { charts, manifest });
+    app.loadFiles([ADLB]);
+    expect(names(app)).toEqual({ bds: 'adlb.csv' });
+    expect(root.querySelector('.sva-file .sva-found').textContent).toBe('9 of 13 columns found');
+    app.reset();
+    app.loadFiles([
+      {
+        name: 'adeg.csv',
+        text: ADLB.text
+          .replace('Alanine Aminotransferase', 'QTcF')
+          .replace('Bilirubin', 'Heart Rate')
+      }
+    ]);
+    expect(names(app)).toEqual({ eg: 'adeg.csv' });
+  });
+
+  it('APP-CHART-003: a row cleared by hand is not read by the chart, although the file carries the default name (#165)', () => {
+    const { charts, calls } = fakeCharts();
+    const app = mountApp(root, { charts, manifest });
+    app.loadFiles(DEMO);
+    for (const column of ['ARM', 'STNRLO', 'STRESU']) app.setColumn('bds', column, null);
+    app.select('hep-explorer');
+    const { settings, data } = calls[calls.length - 1];
+    expect(settings).toMatchObject({ arm_col: null, normal_col_low: null, unit_col: null });
+    expect(tag(root, 'hep-explorer')).toBe('ready');
+    // The file's own rows, still carrying the columns the chart is told not to read.
+    expect(data).toBe(app.state.files.bds.rows);
+    expect(Object.keys(data[0])).toEqual(expect.arrayContaining(['ARM', 'STNRLO', 'STRESU']));
+  });
+
+  it('APP-PAGE-027: an address naming something every object has, such as #constructor, is no view: nothing throws and nothing opens (#165)', async () => {
+    const { charts, calls } = fakeCharts();
+    window.location.hash = '#constructor';
+    const fetchText = vi.fn(async (url) => demoText(url.split('/').pop()));
+    const app = mountApp(root, { charts, manifest, demo: { base: './data/' }, fetchText });
+    await app.ready;
+    // Not a view: the page opens on the first chart the data supports.
+    expect(app.state.selected).toBe('histogram');
+    expect(calls).toHaveLength(1);
+    for (const hash of ['#constructor', '#toString', '#__proto__', '#hasOwnProperty']) {
+      window.location.hash = hash;
+      window.dispatchEvent(new Event('hashchange'));
+      expect(app.state.selected, hash).toBe('histogram');
+    }
+    expect(calls).toHaveLength(1);
+    // Asked for by name it is the data view, as any unknown view is.
+    app.select('constructor');
+    expect(app.state.selected).toBe('data');
+    app.openDomain('constructor');
+    expect(app.state.selected).toBe('data');
   });
 
   it('APP-PAGE-018: the app carries its own header: wordmark, what it is, and that nothing is sent anywhere (#150)', () => {

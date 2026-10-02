@@ -39,21 +39,47 @@ export const MAPPING_FILE_NAME = 'safety-viz-mapping.json';
 
 const OTHER_GROUP = 'other';
 
+// Whether an object has a key of its own. A name from the address or from a
+// file is looked up this way, never with a bare `object[name]`: "constructor"
+// and "toString" are on every object.
+const has = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
+
+const isRecord = (value) => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+
+/** The rows of a saved domain that are a column name or an explicit blank; anything else is passed over. */
+const savedRows = (rows) =>
+  Object.fromEntries(
+    Object.entries(isRecord(rows) ? rows : {}).filter(
+      ([, value]) => value === null || typeof value === 'string'
+    )
+  );
+
 /**
  * A mapping file's content, when a dropped file is one: a JSON object carrying
- * the `safetyVizMapping` marker. Anything else is data, and returns null.
+ * the `safetyVizMapping` marker. Anything else is data, and returns null. The
+ * file is a user's, so nothing in it is trusted to be the shape the app wrote:
+ * only the manifest's own domains are kept, each as a file name and its rows.
  * @private
  */
-function readMappingFile({ name, text }) {
+function readMappingFile({ name, text }, manifest) {
   if (!/\.json$/i.test(name)) return null;
+  let parsed;
   try {
-    const parsed = JSON.parse(text);
-    return parsed && !Array.isArray(parsed) && parsed.safetyVizMapping && parsed.domains
-      ? parsed
-      : null;
+    parsed = JSON.parse(text);
   } catch {
     return null;
   }
+  if (!isRecord(parsed) || !parsed.safetyVizMapping) return null;
+  const domains = {};
+  for (const [id, entry] of Object.entries(isRecord(parsed.domains) ? parsed.domains : {})) {
+    if (!has(manifest.domains, id) || !isRecord(entry)) continue;
+    domains[id] = {
+      file: typeof entry.file === 'string' ? entry.file : null,
+      columns: savedRows(entry.columns),
+      measures: savedRows(entry.measures)
+    };
+  }
+  return { ...parsed, domains };
 }
 
 /** The short status shown beside a chart in the list. */
@@ -101,7 +127,7 @@ function sentenceFor(module, status, manifest) {
  * @param {{base: string, studies?: Object[]}} [options.demo] Where the demo studies are served from, and which (default: {@link DEMO_STUDIES}); when given, the first study is loaded on mount and the data view offers each by name.
  * @param {{docs?: string, domains?: string, download?: string, github?: string}} [options.links] Where the footer's links go; a link with no address is left out.
  * @param {string} [options.version] The safety.viz version, shown in the footer.
- * @param {(url: string) => Promise<string>} [options.fetchText] Fetches the demo extracts' text; defaults to `fetch`.
+ * @param {(url: string) => Promise<string>} [options.fetchText] Fetches the demo extracts' text; defaults to `fetch`, refusing an answer that is not a success.
  * @param {(container: Element, app: Object) => void} [options.dataView] Renders the data view; defaults to the data panel.
  * @returns {{ready: Promise<void>, loadFiles: Function, loadDemo: Function, reset: Function, select: Function, state: Object, destroy: Function}} The app handle.
  */
@@ -113,7 +139,12 @@ export function mountApp(
     demo = null,
     links = {},
     version = '',
-    fetchText = (url) => fetch(url).then((response) => response.text()),
+    // An error page is not the file: a 404's body would otherwise be read as data.
+    fetchText = (url) =>
+      fetch(url).then((response) => {
+        if (!response.ok) throw new Error(`${url} was answered with HTTP ${response.status}.`);
+        return response.text();
+      }),
     dataView = renderDataPanel
   } = {}
 ) {
@@ -152,6 +183,7 @@ export function mountApp(
     return computed;
   };
 
+  const isChart = (id) => has(manifest.modules, id);
   const groupOf = (entry) => (entry.externalDomains ? OTHER_GROUP : entry.domains[0]);
   const tabTitle = (group) => (group === OTHER_GROUP ? 'Other' : manifest.domains[group].label);
   const groupTitle = (group) =>
@@ -455,7 +487,7 @@ export function mountApp(
     );
     if (!open) return;
     const wanted = window.location.hash.slice(1);
-    handle.select(manifest.modules[wanted] || wanted === 'data' ? wanted : firstReady() || 'data');
+    handle.select(isChart(wanted) || wanted === 'data' ? wanted : firstReady() || 'data');
   }
 
   const handle = {
@@ -479,13 +511,19 @@ export function mountApp(
      * @returns {void}
      */
     loadFiles(list, { notes = [], study = null } = {}) {
+      // Files of the user's own outrank a demo study still on its way: it is
+      // dropped when it arrives, instead of replacing them.
+      if (!study) {
+        demoRun += 1;
+        state.busy = '';
+      }
       state.notes = [...notes];
       state.study = study;
       // A mapping file among them is read first, so the data files dropped
       // with it land where it says and take its rows.
       const data = [];
       for (const entry of list) {
-        const saved = readMappingFile(entry);
+        const saved = readMappingFile(entry, manifest);
         if (saved) handle.restoreMapping(saved, entry.name);
         else data.push(entry);
       }
@@ -501,14 +539,15 @@ export function mountApp(
         const remembered =
           state.saved &&
           Object.keys(state.saved.domains).find((id) => state.saved.domains[id].file === name);
-        const domain = (manifest.domains[remembered] && remembered) || placement.domain;
+        const domain = remembered || placement.domain;
+        // A file of this name that was not placed before is replaced by this one.
+        state.unplaced = state.unplaced.filter((item) => item.file.name !== name);
         if (!domain) {
           const found = placement.found.length ? ` (${placement.found.join(', ')})` : '';
           state.notes.push(
             `${name} was not placed in a domain: it matches at most ` +
               `${plural(placement.matched, 'column')} of any of them${found}.`
           );
-          state.unplaced = state.unplaced.filter((item) => item.file.name !== name);
           state.unplaced.push({ file, placement });
           continue;
         }
@@ -594,20 +633,53 @@ export function mountApp(
     },
 
     /**
-     * Hold a mapping file's content and apply it to every domain already
-     * loaded; domains loaded later take it as their files arrive.
-     * @param {Object} saved The mapping file's parsed content.
+     * Hold a mapping file's content and apply it to what is already loaded: a
+     * loaded file it names is moved to the domain it names, from another
+     * domain or from among the unplaced, and every domain it covers takes its
+     * rows. Domains loaded later take it as their files arrive.
+     * @param {Object} saved The mapping file's content, as readMappingFile returns it.
      * @param {string} name The mapping file's name, for the note.
      * @returns {void}
      */
     restoreMapping(saved, name) {
       state.saved = saved;
       const domains = Object.keys(manifest.domains).filter((domain) => saved.domains[domain]);
+      if (!domains.length) {
+        state.notes.push(
+          `${name} is a saved mapping, but it names no domain: nothing was restored.`
+        );
+        return;
+      }
       state.notes.push(
         `${name} is a saved mapping for: ` +
           `${domains.map((domain) => `${manifest.domains[domain].label} (${saved.domains[domain].file})`).join(', ')}.`
       );
-      for (const domain of domains) applySaved(domain);
+      // Every file that has to move is taken out first and placed after, so
+      // two files that swap domains do not displace one another.
+      const moves = [];
+      for (const domain of domains) {
+        const wanted = saved.domains[domain].file;
+        if (!wanted || (state.files[domain] && state.files[domain].name === wanted)) continue;
+        const from = Object.keys(state.files).find((id) => state.files[id].name === wanted);
+        const item = from
+          ? { file: state.files[from], placement: state.placements[from] }
+          : state.unplaced.find((entry) => entry.file.name === wanted);
+        if (item) moves.push({ domain, from, item });
+      }
+      for (const { from, item } of moves) {
+        if (from) {
+          delete state.files[from];
+          delete state.mappings[from];
+          delete state.placements[from];
+        } else {
+          state.unplaced = state.unplaced.filter((entry) => entry.file !== item.file);
+        }
+      }
+      // setFile applies the saved rows to a file it places; the domains whose
+      // file stayed where it was take them here.
+      for (const { domain, item } of moves) handle.setFile(domain, item.file, item.placement);
+      const moved = new Set(moves.map((move) => move.domain));
+      for (const domain of domains) if (!moved.has(domain)) applySaved(domain);
     },
 
     /** The mapping file's content for what is loaded now. */
@@ -675,7 +747,7 @@ export function mountApp(
      * @returns {void}
      */
     select(id) {
-      state.selected = id === 'data' || manifest.modules[id] ? id : 'data';
+      state.selected = id === 'data' || isChart(id) ? id : 'data';
       if (window.history && window.history.replaceState) {
         window.history.replaceState(null, '', `#${state.selected}`);
       }
@@ -703,7 +775,7 @@ export function mountApp(
   function followAddress() {
     const wanted = window.location.hash.slice(1);
     if (wanted === state.selected) return;
-    if (wanted === 'data' || manifest.modules[wanted]) handle.select(wanted);
+    if (wanted === 'data' || isChart(wanted)) handle.select(wanted);
   }
   window.addEventListener('hashchange', followAddress);
 
