@@ -57,6 +57,7 @@ import {
   riskTablePlugin
 } from './time-to-event/getPlugins.js';
 import { csvDownloadLink, toCsv } from './hep-explorer/dropped.js';
+import { initFilterState, reconcileFilters, renderFilterControl } from './filters.js';
 
 Chart.register(LineController, LineElement, PointElement, LinearScale, Tooltip, Legend);
 
@@ -79,13 +80,7 @@ class SafetyTimeToEvent {
     this.structured = null;
     this.chart = null;
     this.participantsSelected = [];
-    this.state = {
-      eventFilters: {},
-      filters: {},
-      direction: this.settings.direction,
-      ci: this.settings.ci,
-      selected: null
-    };
+    this.state = this.seedState();
     Object.assign(
       this,
       renderShell(this.element, {
@@ -94,6 +89,25 @@ class SafetyTimeToEvent {
       })
     );
     this.chartWrap.style.height = `${this.settings.height}px`;
+  }
+
+  /**
+   * The opening control state, derived from the settings alone: an empty
+   * endpoint composer, the configured population-filter start values, and the
+   * configured orientation and confidence band. Nothing here depends on the
+   * bound data, so the "Reset chart" control (TTE-CTRL-001) can rebuild it at
+   * any point in the session.
+   * @returns {Object} A fresh control state.
+   * @private
+   */
+  seedState() {
+    return {
+      eventFilters: {},
+      filters: initFilterState(this.settings.filters),
+      direction: this.settings.direction,
+      ci: this.settings.ci,
+      selected: null
+    };
   }
 
   /**
@@ -119,7 +133,9 @@ class SafetyTimeToEvent {
     try {
       checkInputs(data, this.settings);
     } catch (error) {
-      this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+      // The message is inserted as text: it names columns from the settings,
+      // which a host may fill from a file header, and must never become markup.
+      this.element.replaceChildren(createElement('div', 'sv-warning', error.message));
       throw error;
     }
     this.rawEvents = data.events;
@@ -169,7 +185,7 @@ class SafetyTimeToEvent {
    */
   buildControls() {
     this.controls.innerHTML = '';
-    const { addSection, addControl } = controlBuilders(this.controls);
+    const { addSection, addControl, addReset } = controlBuilders(this.controls);
 
     // The endpoint composer (TTE-FILT-001): one multiselect per configured
     // event-descriptor column. The controls persist across renders — only the
@@ -204,23 +220,27 @@ class SafetyTimeToEvent {
         );
       return exists;
     });
-    if (filterSpecs.length) {
+    const filterControls = reconcileFilters(this.state.filters, filterSpecs, (filter) =>
+      unique(this.rawPopulation.map((row) => row[filter.value_col]).filter((v) => v !== undefined))
+        .map(String)
+        .sort()
+    );
+    if (filterControls.length) {
       const filterParent = addSection('Filters');
-      filterSpecs.forEach((filter) => {
-        const select = addControl(filter.label, document.createElement('select'), filterParent);
-        option(select, '__all__', 'All', !this.state.filters[filter.value_col]);
-        unique(
-          this.rawPopulation.map((row) => row[filter.value_col]).filter((v) => v !== undefined)
-        )
-          .map(String)
-          .sort()
-          .forEach((value) =>
-            option(select, value, value, this.state.filters[filter.value_col] === value)
-          );
-        select.onchange = () => {
-          this.state.filters[filter.value_col] = select.value === '__all__' ? null : select.value;
-          this.render();
-        };
+      filterControls.forEach(({ spec: filter, values, selected }) => {
+        addControl(
+          filter.label,
+          renderFilterControl({
+            spec: filter,
+            values,
+            selected,
+            onChange: (next) => {
+              this.state.filters[filter.value_col] = next;
+              this.render();
+            }
+          }),
+          filterParent
+        );
       });
     }
 
@@ -253,6 +273,16 @@ class SafetyTimeToEvent {
     const inline = createElement('div', 'sv-control-inline');
     inline.append(ci, document.createTextNode('Show'));
     addControl('Pointwise 95% CI band', inline, displayParent);
+
+    // The way back to the opening view (TTE-CTRL-001), at the foot of the
+    // sidebar below every section. The buildControls() call is load-bearing
+    // here, not decorative: the multiselects hold their own DOM state and are
+    // only ever re-seeded from this.state by a rebuild.
+    addReset(() => {
+      this.state = this.seedState();
+      this.buildControls();
+      this.render();
+    });
   }
 
   /**

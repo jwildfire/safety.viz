@@ -8,6 +8,7 @@
 // the library. Requirement IDs use the condensed QT-* scheme.
 
 import { zForCi, resolvePlaceboArm } from './configure.js';
+import { filterMatches } from '../filters.js';
 
 /**
  * Distinct, non-empty values in first-seen order.
@@ -75,7 +76,7 @@ const isFiniteNum = (v) => v !== '' && v !== null && v !== undefined && Number.i
  * Clean the raw records to the analysis rows the views read (QT-DATA-003/004):
  * drops rows whose value is missing or non-numeric, and stages the numeric
  * value, the baseline, the change (the source change column when finite, else
- * value − baseline), the arm, the visit, and a post-baseline flag. A row is
+ * value − baseline), the participant, the arm, the visit, and a post-baseline flag. A row is
  * post-baseline when it is not the baseline record: by the baseline_flag_col
  * ('Y') when that column is present in the data, otherwise by a zero change (the
  * fallback used only when no baseline-flag column is present). Derived fields
@@ -123,6 +124,7 @@ export function cleanData(data, settings) {
       __qt_value: value,
       __qt_baseline: baseline,
       __qt_change: change,
+      __qt_id: row[settings.id_col],
       __qt_arm: row[settings.arm_col],
       __qt_visit: row[settings.visit_col],
       __qt_postBaseline: !isBaseline
@@ -200,14 +202,18 @@ export function applyFilters(rows, filterState) {
     ([, value]) => value !== undefined && value !== null && value !== ''
   );
   if (!active.length) return rows;
-  return rows.filter((row) => active.every(([col, value]) => String(row[col]) === String(value)));
+  return rows.filter((row) => active.every(([col, value]) => filterMatches(row[col], value)));
 }
 
 /**
  * Per-arm per-visit summary of the change-from-baseline for one measure, in Δ
  * (change) or ΔΔ (placebo-corrected) mode (QT-CT-001/004/005). Each visit's
- * per-arm sample is the change values of the subjects with a reading at that
- * visit; the point value is the mean or median. In mean mode a two-sided CI is
+ * per-arm sample is ONE change value per participant with a reading at that
+ * visit: replicate readings (triplicate ECGs, say) are averaged to a single
+ * value per participant and visit first, so `n` is the number of participants
+ * and the spread is the spread between participants — three readings from one
+ * participant are not three independent observations (#166). The point value
+ * is the mean or median of those per-participant values. In mean mode a two-sided CI is
  * attached (value ± z·SE, SE = sd/√n). In ΔΔ mode the point is meanΔ(arm) −
  * meanΔ(placebo) with SE = √(SE_arm² + SE_placebo²); the placebo arm is dropped
  * (it is the reference ≡ 0) and median mode carries no CI. The CI is a
@@ -233,7 +239,8 @@ export function centralTendencySeries(measureRows, options) {
   } = options;
   const z = zForCi(options.ciLevel);
 
-  // visit -> arm -> { values, mean, sd, n, se, median }
+  // visit -> arm -> participant -> that participant's readings at the visit.
+  // A row carrying no participant id stands for a participant of its own.
   const cells = new Map();
   for (const visit of visitOrder) cells.set(visit, new Map());
   for (const row of measureRows) {
@@ -242,12 +249,16 @@ export function centralTendencySeries(measureRows, options) {
     if (!cells.has(visit)) continue;
     const armMap = cells.get(visit);
     const arm = String(row.__qt_arm);
-    if (!armMap.has(arm)) armMap.set(arm, []);
-    armMap.get(arm).push(row.__qt_change);
+    if (!armMap.has(arm)) armMap.set(arm, new Map());
+    const readings = armMap.get(arm);
+    const id = row.__qt_id === undefined || row.__qt_id === null ? row : String(row.__qt_id);
+    if (!readings.has(id)) readings.set(id, []);
+    readings.get(id).push(row.__qt_change);
   }
   const stat = (visit, arm) => {
-    const values = (cells.get(visit) || new Map()).get(arm) || [];
-    if (!values.length) return null;
+    const readings = (cells.get(visit) || new Map()).get(arm);
+    if (!readings) return null;
+    const values = [...readings.values()].map(mean);
     const n = values.length;
     const m = mean(values);
     const s = sd(values);

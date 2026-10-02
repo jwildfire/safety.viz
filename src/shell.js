@@ -18,27 +18,56 @@ export function createElement(tag, className, text) {
   return element;
 }
 
+// The status banners. A chart that is not stable says so in its own output, so
+// the status travels with the chart everywhere it renders — the demo, the
+// deployed site, and any downstream embed (e.g. a gsm.safety htmlwidget) — not
+// just the gallery pages. The two tiers mean different things (#165):
+//
+//   Experimental  still being worked on, and fine to ship: tested and
+//                 documented, but its behaviour and settings may change.
+//   Prototype     not ready for production: shown on the docs site only, kept
+//                 out of the demo app and the standard domain set, and not
+//                 counted a finished chart.
+function statusBanner(className, label, text) {
+  const banner = createElement('div', className);
+  banner.setAttribute('role', 'note');
+  banner.append(
+    createElement('span', 'sv-prototype-tag', label),
+    createElement('span', 'sv-prototype-text', text)
+  );
+  return banner;
+}
+
 /**
- * Build the standard "prototype" banner (HEP-MIG / HWF prototype marking): a
- * self-contained notice a chart prepends to its own output so the not-yet-stable
- * status travels with the chart everywhere it renders — the demo, the deployed
- * site, and any downstream embed (e.g. a gsm.safety htmlwidget) — not just the
- * gallery pages. The default copy names the target release and warns that
- * behaviour and API may change.
- * @param {string} [note] Optional trailing sentence appended after the label.
+ * Build the "Experimental" banner (HEP-MIG / HWF marking): the notice a chart
+ * that ships while still being worked on prepends to its own output.
+ * @param {string} [note] The sentence shown after the label; defaults to the standard wording.
+ * @returns {HTMLElement} A `.sv-experimental` banner element.
+ */
+export function experimentalBanner(note) {
+  return statusBanner(
+    'sv-experimental',
+    'Experimental',
+    note ||
+      'This chart is experimental: it is tested and documented, but its behaviour and ' +
+        'settings may change.'
+  );
+}
+
+/**
+ * Build the "Prototype" banner: the notice for a chart that is not ready for
+ * production use.
+ * @param {string} [note] The sentence shown after the label; defaults to the standard wording.
  * @returns {HTMLElement} A `.sv-prototype` banner element.
  */
 export function prototypeBanner(note) {
-  const banner = createElement('div', 'sv-prototype');
-  banner.setAttribute('role', 'note');
-  const tag = createElement('span', 'sv-prototype-tag', 'Prototype');
-  banner.append(tag);
-  const text =
+  return statusBanner(
+    'sv-prototype',
+    'Prototype',
     note ||
-    'This chart is a prototype under evaluation for the v1.5 release — its behaviour and ' +
-      'settings may change before it is finalized.';
-  banner.append(createElement('span', 'sv-prototype-text', text));
-  return banner;
+      'This chart is a prototype: it is not ready for production use, and its behaviour ' +
+        'and settings will change.'
+  );
 }
 
 /**
@@ -151,6 +180,9 @@ const SHELL_STYLES = `
 .sv-control-row{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
 .sv-control-row .sv-control{margin:0}
 .sv-control-inline{display:flex;align-items:center;gap:.4rem;font-size:.85rem}
+.sv-reset{width:100%;margin-top:.75rem;padding:.35rem .45rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.82rem;cursor:pointer}
+.sv-reset:hover{border-color:#8f9aa8;background:#f6f8fa}
+.sv-reset:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
 .sv-main{flex:1 1 auto;min-width:0}
 .sv-notes{display:flex;flex-wrap:wrap;gap:.25rem 1.25rem;font-size:.85rem;color:#52616f;margin:0 0 .6rem}
 .sv-warning{color:#9a3412}
@@ -206,13 +238,13 @@ const SHELL_STYLES = `
 .sv-ms-option{display:flex;align-items:center;gap:.4rem;font-size:.8rem;font-weight:400;margin:.15rem 0;cursor:pointer}
 .sv-ms-option input[type=checkbox]{width:auto;margin:0;accent-color:#0b62a4;flex:0 0 auto}
 .sv-ms-option.sv-ms-all{font-weight:600;border-bottom:1px solid #e3e8ee;padding-bottom:.25rem;margin-bottom:.25rem}
-.sv-prototype{display:flex;align-items:baseline;gap:.5rem;margin:0 0 .6rem;padding:.4rem .6rem;border:1px solid #e6c98a;border-left:4px solid #d99a2b;border-radius:6px;background:#fdf6e6;color:#6b4e12;font-size:.8rem;line-height:1.35}
+.sv-prototype,.sv-experimental{display:flex;align-items:baseline;gap:.5rem;margin:0 0 .6rem;padding:.4rem .6rem;border:1px solid #e6c98a;border-left:4px solid #d99a2b;border-radius:6px;background:#fdf6e6;color:#6b4e12;font-size:.8rem;line-height:1.35}
 .sv-prototype-tag{flex:0 0 auto;text-transform:uppercase;letter-spacing:.05em;font-weight:700;font-size:.68rem;padding:.08rem .4rem;border-radius:999px;background:#d99a2b;color:#fff}
 .sv-prototype-text{flex:1 1 auto}
 @media (max-width:900px){
-.sv-root{flex-direction:column}
-.sv-sidebar{position:static;flex:1 1 auto;width:100%;max-height:none}
-.sv-rail{position:static;flex:1 1 auto;width:100%;max-height:none}
+.sv-root{flex-direction:column;align-items:stretch}
+.sv-sidebar{position:static;flex:1 1 auto;width:100%;box-sizing:border-box;max-height:none}
+.sv-rail{position:static;flex:1 1 auto;width:100%;box-sizing:border-box;max-height:none}
 .sv-rail-expanded .sv-rail{position:static}
 .sv-rail-expanded .sv-main,.sv-rail-expanded .sv-sidebar{filter:none}
 .sv-controls{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:0 1.25rem;align-items:start}
@@ -321,10 +353,15 @@ export function renderShell(element, { moduleClass = '', onToggle } = {}) {
 /**
  * Control-builder helpers bound to a shell's controls container. Signatures
  * match how modules build controls: sections group related controls under a
- * heading, rows place two controls side by side, and addControl wraps a
- * labeled input (into the controls container by default).
+ * heading, rows place two controls side by side, addControl wraps a labeled
+ * input (into the controls container by default), and addReset appends the
+ * full-width "Reset chart" button at the foot of the sidebar, below every
+ * section. The reset builder exists because nine issues across seven of the
+ * legacy trackers asked for a way back to the starting view, and the four
+ * hand-rolled reset buttons already in the library had drifted into four
+ * different shapes (#136, obot.roadmap#33).
  * @param {HTMLElement} controls The shell's controls container.
- * @returns {{addSection: Function, addRow: Function, addControl: Function}} The bound helpers.
+ * @returns {{addSection: Function, addRow: Function, addControl: Function, addReset: Function}} The bound helpers.
  */
 export function controlBuilders(controls) {
   return {
@@ -345,6 +382,13 @@ export function controlBuilders(controls) {
       wrap.append(lab, input);
       parent.append(wrap);
       return input;
+    },
+    addReset(onReset, label = 'Reset chart') {
+      const button = createElement('button', 'sv-reset', label);
+      button.type = 'button';
+      button.onclick = onReset;
+      controls.append(button);
+      return button;
     }
   };
 }

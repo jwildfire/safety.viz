@@ -69,9 +69,15 @@
           "default": true,
           "description": "Draw a simple linear regression line with an equation and R² note (SDD-REG-026)."
         },
+        "measures": {
+          "type": ["array", "null"],
+          "items": { "type": "string" },
+          "default": null,
+          "description": "Ordered whitelist of measures the Measure control offers: only these appear, and in this order. null or [] offers every measure in the data, alphabetically. The first two listed are the comparison the chart opens on unless measure_x / measure_y say otherwise. Configured measures absent from the data are dropped with a console warning (SDD-MEAS-001)."
+        },
         "filters": {
-          "$ref": "#/$defs/fieldList",
-          "description": "Optional filter columns rendered as controls (SDD-CFG-014)."
+          "$ref": "#/$defs/filterList",
+          "description": "Optional filter columns rendered as controls (SDD-CFG-014). Each entry is a column name or a { value_col, label, start, all, multiple } spec: `start` is the value the filter opens on, `all` (default true) is whether an \"All\" option is offered, and `multiple` (default false) makes it a checkbox multiselect."
         },
         "details": {
           "$ref": "#/$defs/fieldList",
@@ -92,6 +98,37 @@
             "properties": {
               "value_col": { "type": "string" },
               "label": { "type": "string" }
+            }
+          }
+        ]
+      }
+    },
+    "filterList": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          { "type": "string" },
+          {
+            "type": "object",
+            "required": ["value_col"],
+            "properties": {
+              "value_col": { "type": "string" },
+              "label": { "type": "string" },
+              "start": {
+                "type": ["string", "number", "boolean", "array", "null"],
+                "default": null,
+                "description": "The value the filter opens on; an array of values for a `multiple` filter. 0 and false are real values, not an absent start. A value the data lacks is dropped with a console warning."
+              },
+              "all": {
+                "type": "boolean",
+                "default": true,
+                "description": "Whether the filter offers an \"All\" option. false removes it, and the filter then always holds one value: the first, unless `start` names another."
+              },
+              "multiple": {
+                "type": "boolean",
+                "default": false,
+                "description": "Render a checkbox multiselect instead of a dropdown; the rows shown are those matching any selected value."
+              }
             }
           }
         ]

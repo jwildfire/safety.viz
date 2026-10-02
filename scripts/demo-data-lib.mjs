@@ -1,4 +1,5 @@
-// demo-data-lib.mjs — pure helpers behind scripts/build-demo-data.mjs.
+// demo-data-lib.mjs — pure helpers behind scripts/build-demo-data.mjs and the drift
+// check, scripts/check-demo-data.mjs.
 //
 // Extracted so the derivations can be unit-tested without running the build (which
 // downloads ~200 MB of pharmaverseadam source). Mirrors the site-lib / evidence-lib
@@ -275,4 +276,340 @@ export function buildAdslRecords(adslRecords, { warn = () => {} } = {}) {
       `  WARNING: ${noEnd.length} participant(s) had no EOSDT/TRTEDT and keep a blank EOSDY: ${noEnd.join(', ')}`
     );
   return { columns: ADSL_COLUMNS, records };
+}
+
+// ---- Patient Journey Explorer per-domain contract ------------------------
+// Six per-domain extracts for the Patient Journey Explorer (safety.viz#142,
+// obot.roadmap#349; design §11). Five come from pharmaverseadam; the disposition
+// file comes from pharmaversesdtm's `ds.csv`, because pharmaverseadam ships no ADaM
+// DS dataset and without disposition there is no discontinuation rule (design
+// D24). Each file's header is exactly the module's default `*_col` names for that
+// domain plus TRTSDT (so calendar-date mode needs no ADSL join), and `NA` is never
+// written — `clean`/`num` blank it. Every builder is pure and `{ columns, records }`
+// shaped, so tests/unit/patient-journey-explorer/demo-data.test.js asserts the
+// derivation rules on hand-made rows and guards the committed files separately.
+
+export const PJE_EX_COLUMNS = [
+  'USUBJID',
+  'EXTRT',
+  'EXDOSE',
+  'EXDOSU',
+  'ASTDY',
+  'AENDY',
+  'EXSTDTC',
+  'TRTSDT'
+];
+export const PJE_AE_COLUMNS = [
+  'USUBJID',
+  'AETERM',
+  'AEDECOD',
+  'AEBODSYS',
+  'ASTDY',
+  'AENDY',
+  'AESEV',
+  'AESER',
+  'AEREL',
+  'AEOUT',
+  'AESTDTC',
+  'TRTSDT'
+];
+export const PJE_LB_COLUMNS = [
+  'USUBJID',
+  'LBTEST',
+  'LBTESTCD',
+  'LBSTRESN',
+  'LBSTRESU',
+  'LBSTNRLO',
+  'LBSTNRHI',
+  'LBNRIND',
+  'ABLFL',
+  'LBDY',
+  'LBDTC',
+  'TRTSDT'
+];
+export const PJE_CM_COLUMNS = [
+  'USUBJID',
+  'CMTRT',
+  'CMDECOD',
+  'CMCLAS',
+  'CMDOSE',
+  'CMROUTE',
+  'ASTDY',
+  'AENDY',
+  'CMSTDTC',
+  'CMENDTC',
+  'TRTSDT'
+];
+export const PJE_MH_COLUMNS = [
+  'USUBJID',
+  'MHTERM',
+  'MHDECOD',
+  'MHCAT',
+  'MHDY',
+  'MHONSDY',
+  'MHSTRTPT',
+  'MHENRTPT',
+  'MHSTDTC',
+  'TRTSDT'
+];
+export const PJE_DS_COLUMNS = [
+  'USUBJID',
+  'DSDECOD',
+  'DSTERM',
+  'DSCAT',
+  'DSSTDY',
+  'DSSTDTC',
+  'TRTSDT'
+];
+
+// The liver panel the labs lane shows by default, matched on adlb LBTEST. Traps:
+// bilirubin is `BILI` / "Bilirubin" in µmol/L (not TBILI, not mg/dL); alkaline
+// phosphatase's PARAMCD is ALKPH while its LBTESTCD is ALP; ALT's ULN varies by lab
+// (32/34/35/43), so any × ULN figure is per record, never a constant.
+export const PJE_LB_TESTS = [
+  'Alanine Aminotransferase',
+  'Aspartate Aminotransferase',
+  'Bilirubin',
+  'Alkaline Phosphatase'
+];
+
+// Exposure: adex replicates each dosing record across several record-level
+// PARAMCDs (DOSE, DOSEO, PDOSEO, ...); one is the record itself. Keep PARAMCD='DOSE'
+// so the exposure lane draws one segment per real dosing record, and dose changes
+// derive from consecutive records rather than from duplicates.
+export function buildPjeExRecords(adexRecords) {
+  const records = adexRecords
+    .filter((r) => clean(r.PARAMCD) === 'DOSE')
+    .map((r) => ({
+      USUBJID: clean(r.USUBJID),
+      EXTRT: clean(r.EXTRT),
+      EXDOSE: num(r.EXDOSE),
+      EXDOSU: clean(r.EXDOSU),
+      ASTDY: num(r.ASTDY),
+      AENDY: num(r.AENDY),
+      EXSTDTC: clean(r.EXSTDTC),
+      TRTSDT: clean(r.TRTSDT)
+    }));
+  return { columns: PJE_EX_COLUMNS, records };
+}
+
+// Adverse events: treatment-emergent only (TRTEMFL='Y'), days from the analysis
+// ASTDY/AENDY (100% populated against AESTDY's 97.8%). AEOUT rides along because
+// the module's end-state rule (design D16) calls a blank end "ongoing" only when
+// the outcome says so — in this study every blank AENDY carries
+// NOT RECOVERED/NOT RESOLVED.
+export function buildPjeAeRecords(adaeRecords) {
+  const records = adaeRecords
+    .filter((r) => clean(r.TRTEMFL) === 'Y')
+    .map((r) => ({
+      USUBJID: clean(r.USUBJID),
+      AETERM: clean(r.AETERM),
+      AEDECOD: clean(r.AEDECOD),
+      AEBODSYS: clean(r.AEBODSYS),
+      ASTDY: num(r.ASTDY),
+      AENDY: num(r.AENDY),
+      AESEV: clean(r.AESEV),
+      AESER: clean(r.AESER),
+      AEREL: clean(r.AEREL),
+      AEOUT: clean(r.AEOUT),
+      AESTDTC: clean(r.AESTDTC),
+      TRTSDT: clean(r.TRTSDT)
+    }));
+  return { columns: PJE_AE_COLUMNS, records };
+}
+
+// Labs: the same analysis filter as the BDS build (DTYPE blank, ANL01FL='Y' or the
+// ABLFL='Y' baseline, numeric AVAL) restricted to the liver panel, then renamed to
+// the module's default header — AVAL→LBSTRESN, ANRLO→LBSTNRLO, ANRHI→LBSTNRHI,
+// ADY→LBDY, ADT→LBDTC, and ANRIND (falling back to LBNRIND) → LBNRIND. ABLFL is
+// carried verbatim because the baseline rule is flag-first (design D17).
+export function buildPjeLbRecords(adlbRecords, { tests = PJE_LB_TESTS, warn = () => {} } = {}) {
+  const panel = new Set(tests);
+  const records = adlbRecords
+    .filter(
+      (r) =>
+        isBlank(r.DTYPE) &&
+        isNum(r.AVAL) &&
+        (r.ANL01FL === 'Y' || r.ABLFL === 'Y') &&
+        panel.has(clean(r.LBTEST))
+    )
+    .map((r) => ({
+      USUBJID: clean(r.USUBJID),
+      LBTEST: clean(r.LBTEST),
+      LBTESTCD: clean(r.LBTESTCD),
+      LBSTRESN: num(r.AVAL),
+      LBSTRESU: clean(r.LBSTRESU),
+      LBSTNRLO: num(r.ANRLO),
+      LBSTNRHI: num(r.ANRHI),
+      LBNRIND: clean(r.ANRIND) || clean(r.LBNRIND),
+      ABLFL: clean(r.ABLFL),
+      LBDY: num(r.ADY),
+      LBDTC: clean(r.ADT),
+      TRTSDT: clean(r.TRTSDT)
+    }));
+  const found = new Set(records.map((r) => r.LBTEST));
+  const missing = tests.filter((t) => !found.has(t));
+  if (missing.length) warn(`  WARNING: liver-panel tests not found in adlb: ${missing.join(', ')}`);
+  return { columns: PJE_LB_COLUMNS, records };
+}
+
+// Con-meds: the raw adcm repeats every medication once per collection visit
+// (7,510 rows for 1,081 distinct courses). De-duplicate on the course identity —
+// participant, verbatim and coded name, analysis start/end day, recorded
+// start/end date and dose — keeping the lowest CMSEQ member, in first-seen order.
+// UNCODED stays as an ordinary class value (81% of records in this study).
+export const pjeCmKey = (r) =>
+  [
+    clean(r.USUBJID),
+    clean(r.CMTRT),
+    clean(r.CMDECOD),
+    clean(r.ASTDY),
+    clean(r.AENDY),
+    clean(r.CMSTDTC),
+    clean(r.CMENDTC),
+    clean(r.CMDOSE)
+  ].join('|');
+
+export function buildPjeCmRecords(adcmRecords) {
+  const courses = new Map();
+  for (const r of adcmRecords) {
+    const key = pjeCmKey(r);
+    const prev = courses.get(key);
+    if (!prev || Number(r.CMSEQ) < Number(prev.CMSEQ)) courses.set(key, r);
+  }
+  const records = [...courses.values()].map((r) => ({
+    USUBJID: clean(r.USUBJID),
+    CMTRT: clean(r.CMTRT),
+    CMDECOD: clean(r.CMDECOD),
+    CMCLAS: clean(r.CMCLAS),
+    CMDOSE: num(r.CMDOSE),
+    CMROUTE: clean(r.CMROUTE),
+    ASTDY: num(r.ASTDY),
+    AENDY: num(r.AENDY),
+    CMSTDTC: clean(r.CMSTDTC),
+    CMENDTC: clean(r.CMENDTC),
+    TRTSDT: clean(r.TRTSDT)
+  }));
+  return { columns: PJE_CM_COLUMNS, records };
+}
+
+// Medical history: the lane plots at the COLLECTION day MHDY (100% populated, −37…−2
+// in this study), not the onset — onset (ASTDY) is 17% populated and reaches −18371.
+// It ships separately as MHONSDY for the tooltip, with the relative-timing text
+// (MHSTRTPT "BEFORE", MHENRTPT "ONGOING") and the recorded onset date (design D18).
+export function buildPjeMhRecords(admhRecords) {
+  const records = admhRecords.map((r) => ({
+    USUBJID: clean(r.USUBJID),
+    MHTERM: clean(r.MHTERM),
+    MHDECOD: clean(r.MHDECOD),
+    MHCAT: clean(r.MHCAT),
+    MHDY: num(r.MHDY),
+    MHONSDY: num(r.ASTDY),
+    MHSTRTPT: clean(r.MHSTRTPT),
+    MHENRTPT: clean(r.MHENRTPT),
+    MHSTDTC: clean(r.MHSTDTC),
+    TRTSDT: clean(r.TRTSDT)
+  }));
+  return { columns: PJE_MH_COLUMNS, records };
+}
+
+// The safety population with its treatment-start date, from adsl: the join key
+// for the SDTM disposition file, which carries neither SAFFL nor TRTSDT.
+export function safetySubjects(adslRecords) {
+  const subjects = new Map();
+  for (const r of adslRecords)
+    if (clean(r.SAFFL) === 'Y' && !isBlank(r.TRTSDT))
+      subjects.set(clean(r.USUBJID), clean(r.TRTSDT));
+  return subjects;
+}
+
+// Disposition: pharmaversesdtm's ds.csv carries DSSTDY as a real, populated column
+// (verified — see design §15 R1), so it passes straight through with DSCAT beside it:
+// the module draws the cross-stack rule only for DISPOSITION EVENT rows while the
+// PROTOCOL MILESTONE / OTHER EVENT rows still render marks (design D19). Rows are
+// restricted to the safety population (the SDTM file also holds screen failures)
+// and TRTSDT is joined from adsl.
+export function buildPjeDsRecords(dsRecords, { subjects, warn = () => {} } = {}) {
+  if (!(subjects instanceof Map))
+    throw new Error('buildPjeDsRecords needs { subjects: Map<USUBJID, TRTSDT> }');
+  const records = dsRecords
+    .filter((r) => subjects.has(clean(r.USUBJID)))
+    .map((r) => ({
+      USUBJID: clean(r.USUBJID),
+      DSDECOD: clean(r.DSDECOD),
+      DSTERM: clean(r.DSTERM),
+      DSCAT: clean(r.DSCAT),
+      DSSTDY: num(r.DSSTDY),
+      DSSTDTC: clean(r.DSSTDTC),
+      TRTSDT: subjects.get(clean(r.USUBJID))
+    }));
+  const seen = new Set(records.map((r) => r.USUBJID));
+  const missing = [...subjects.keys()].filter((id) => !seen.has(id));
+  if (missing.length)
+    warn(
+      `  WARNING: ${missing.length} safety participant(s) have no disposition row: ${missing.join(', ')}`
+    );
+  return { columns: PJE_DS_COLUMNS, records };
+}
+
+// The six outputs in one place, so the build script and the drift guard agree on
+// file names, headers and source files.
+export const PJE_OUTPUTS = [
+  { name: 'pje-ex', file: 'pje-ex.csv', columns: PJE_EX_COLUMNS, sources: ['adex.csv'] },
+  { name: 'pje-ae', file: 'pje-ae.csv', columns: PJE_AE_COLUMNS, sources: ['adae.csv'] },
+  { name: 'pje-lb', file: 'pje-lb.csv', columns: PJE_LB_COLUMNS, sources: ['adlb.csv'] },
+  { name: 'pje-cm', file: 'pje-cm.csv', columns: PJE_CM_COLUMNS, sources: ['adcm.csv'] },
+  { name: 'pje-mh', file: 'pje-mh.csv', columns: PJE_MH_COLUMNS, sources: ['admh.csv'] },
+  { name: 'pje-ds', file: 'pje-ds.csv', columns: PJE_DS_COLUMNS, sources: ['ds.csv', 'adsl.csv'] }
+];
+
+// ---- drift check (#140) ---------------------------------------------------
+// The comparison behind scripts/check-demo-data.mjs, which reruns the generators
+// into a temporary directory and asks whether the committed site/data/ files are
+// still what they produce. Kept here, away from the file system and the network,
+// so it is unit-tested on hand-made text.
+
+// A file's rows are its lines; the closing newline ends the last row rather than
+// starting an empty one.
+const rowsOf = (text) => {
+  const rows = text.split('\n');
+  if (rows.at(-1) === '') rows.pop();
+  return rows;
+};
+
+/**
+ * The first row at which a committed file and its freshly generated twin differ,
+ * or `null` when they are byte-identical. Rows are 1-based file lines with the
+ * header as row 1, so the number is the one an editor shows. A row only one side
+ * has comes back as `null` on the other.
+ */
+export function firstDifferingRow(committed, generated) {
+  if (committed === generated) return null;
+  const a = rowsOf(committed);
+  const b = rowsOf(generated);
+  for (let i = 0; i < Math.max(a.length, b.length); i += 1) {
+    if (a[i] !== b[i]) return { row: i + 1, committed: a[i] ?? null, generated: b[i] ?? null };
+  }
+  // Every row matches, so only the closing newline differs: name the last row and
+  // leave the newline on whichever side has it, so the difference is visible.
+  const lastRow = (text) => (text.endsWith('\n') ? `${a.at(-1)}\n` : a.at(-1));
+  return { row: a.length, committed: lastRow(committed), generated: lastRow(generated) };
+}
+
+/**
+ * Every drifted file between the committed extracts and a fresh rebuild, in file-name
+ * order so the first one named is stable from run to run. Both arguments map a file
+ * name to its text. `reason` is `differs` (with the first differing row),
+ * `not-committed` (a generator writes it but it is not in the repo) or
+ * `not-generated` (it is in the repo but no generator writes it, so nothing can
+ * vouch for it). An empty array means no drift.
+ */
+export function demoDataDrift(committed, generated) {
+  const files = [...new Set([...Object.keys(committed), ...Object.keys(generated)])].sort();
+  return files.flatMap((file) => {
+    if (!(file in committed)) return [{ file, reason: 'not-committed' }];
+    if (!(file in generated)) return [{ file, reason: 'not-generated' }];
+    const difference = firstDifferingRow(committed[file], generated[file]);
+    return difference ? [{ file, reason: 'differs', ...difference }] : [];
+  });
 }

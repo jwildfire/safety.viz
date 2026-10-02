@@ -214,7 +214,7 @@ For a rapid triage of which cases merit referral to a hepatic board, the manual'
 
 ## The Migration (Sankey) view — comparing arms before reviewing cases
 
-> **Prototype.** The Migration (Sankey) view is a prototype shipping alongside the v1.5 release for evaluation; its behaviour and settings may change before it is finalized. The scatter and composite views are stable. The view carries a prototype banner in the app to make this clear.
+> **Experimental.** The Migration (Sankey) view ships while it is still being worked on; its behaviour and settings may change. The scatter and composite views are stable. The view carries an Experimental banner in the app to make this clear.
 
 The View control offers a third top-level view, **Migration (Sankey)**, which reproduces Figure 3 of Amirzadegan et al., _"Emerging Tools to Support DILI Assessment in Clinical Trials with Abnormal Baseline Serum Liver Tests or Pre-existing Liver Diseases"_, Drug Safety 2025;48(5):443–453. It answers a different question from the scatter: not _who_ is in the Hy's-Law quadrant, but _how the two arms moved_ between baseline and peak on-treatment.
 

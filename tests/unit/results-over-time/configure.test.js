@@ -40,8 +40,8 @@ describe('results-over-time configure', () => {
       filters: ['SEX', { value_col: 'ARM', label: 'Treatment' }, '']
     });
     expect(settings.filters).toEqual([
-      { value_col: 'SEX', label: 'SEX' },
-      { value_col: 'ARM', label: 'Treatment' }
+      { value_col: 'SEX', label: 'SEX', start: null, all: true, multiple: false },
+      { value_col: 'ARM', label: 'Treatment', start: null, all: true, multiple: false }
     ]);
   });
 

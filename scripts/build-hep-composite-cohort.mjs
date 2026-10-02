@@ -16,7 +16,8 @@
 // prefix `CLD-`) is stripped before the fresh cohort is appended, so this can be
 // re-run after scripts/build-demo-data.mjs regenerates adbds.csv from source.
 //
-// Usage:  node scripts/build-hep-composite-cohort.mjs
+// Usage:  node scripts/build-hep-composite-cohort.mjs [--out-dir <dir>]
+//   Reads and rewrites adbds.csv in --out-dir (default: site/data).
 //
 // Provenance is documented in docs/DATA_SOURCES.md. The generated rows are
 // clearly labeled (SITE `Hepatology Research Unit`, ARM `CLD: Study Drug` /
@@ -28,7 +29,14 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const dataPath = path.join(rootDir, 'site', 'data', 'adbds.csv');
+// `--out-dir` points the script at another copy of the extract — how
+// scripts/check-demo-data.mjs reruns it without touching the committed file (#140).
+const outDirFlag = process.argv.indexOf('--out-dir');
+const dataDir =
+  outDirFlag === -1
+    ? path.join(rootDir, 'site', 'data')
+    : path.resolve(process.argv[outDirFlag + 1]);
+const dataPath = path.join(dataDir, 'adbds.csv');
 const PREFIX = 'CLD-';
 
 // Deterministic PRNG (mulberry32) so jitter is reproducible.

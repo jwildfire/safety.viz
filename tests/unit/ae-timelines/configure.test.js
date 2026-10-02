@@ -60,9 +60,15 @@ describe('ae-timelines configure', () => {
   it('AET-FUNC-002/AET-FUNC-003/AET-FUNC-004: default filters are serious event, severity, and participant ID (#26)', () => {
     const settings = syncSettings({});
     expect(settings.filters).toEqual([
-      { value_col: 'AESER', label: 'Serious Event' },
-      { value_col: 'AESEV', label: 'Severity/Intensity' },
-      { value_col: 'USUBJID', label: 'Participant Identifier' }
+      { value_col: 'AESER', label: 'Serious Event', start: null, all: true, multiple: false },
+      { value_col: 'AESEV', label: 'Severity/Intensity', start: null, all: true, multiple: false },
+      {
+        value_col: 'USUBJID',
+        label: 'Participant Identifier',
+        start: null,
+        all: true,
+        multiple: false
+      }
     ]);
     // Without a highlight, the serious-event filter is not offered.
     expect(syncSettings({ highlight: null }).filters.map((filter) => filter.value_col)).toEqual([
@@ -74,8 +80,8 @@ describe('ae-timelines configure', () => {
   it('AET-FUNC-005/AET-CFG-011: custom filters replace the defaults and normalize strings to specs (#26)', () => {
     const settings = syncSettings({ filters: [{ value_col: 'SEX', label: 'Sex' }, 'RACE'] });
     expect(settings.filters).toEqual([
-      { value_col: 'SEX', label: 'Sex' },
-      { value_col: 'RACE', label: 'RACE' }
+      { value_col: 'SEX', label: 'Sex', start: null, all: true, multiple: false },
+      { value_col: 'RACE', label: 'RACE', start: null, all: true, multiple: false }
     ]);
   });
 

@@ -2,7 +2,9 @@
 // _site/. Plain Node, no framework, per design #21 — and every internal URL
 // relative, so one build serves the site root, /dev/, and /pr/{N}/ unchanged.
 
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { LOGO_SVG } from '../src/app/styles.js';
+
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 
 export function escapeHtml(text) {
@@ -1024,15 +1026,30 @@ export function renderApiPage(
 // real example data (the renderer's `data` config key, defaulting to the
 // shared ADBDS extract, #26). The .demo-page wrapper widens the layout
 // (site.css) so the control sidebar and chart get full room.
-// A small status pill for a page title / gallery card: "Prototype" when the
-// config marks a renderer a prototype (a new chart still under evaluation, e.g.
-// the hep-waterfall shipped alongside v1.5), else "Experimental" for an
-// exploratory, not-yet-stable renderer. Prototype takes precedence.
+// A small status pill for a page title / gallery card. A chart has one of three
+// tiers, set in site/config.json (#165):
+//
+//   prototype     "Prototype": not ready for production. Shown on the docs site
+//                 only; kept out of the portfolio manifest, and so out of the
+//                 demo app and the Domains page; not counted a finished chart.
+//   experimental  "Experimental": still being worked on, and fine to ship. In
+//                 the manifest and the demo app; its behaviour and settings may
+//                 change.
+//   neither       stable: no pill.
+//
+// Prototype takes precedence when both are set. The pill's title says what the
+// tier means, for whoever hovers it.
+export const STATUS_MEANING = {
+  prototype: 'Not ready for production: on the docs site only, and not in the demo app.',
+  experimental: 'Still being worked on, and fine to use: its behaviour and settings may change.'
+};
 export function experimentalBadge(renderer) {
   if (renderer && renderer.prototype) {
-    return ` <span class="site-badge site-badge-prototype">Prototype</span>`;
+    return ` <span class="site-badge site-badge-prototype" title="${STATUS_MEANING.prototype}">Prototype</span>`;
   }
-  return renderer && renderer.experimental ? ` <span class="site-badge">Experimental</span>` : '';
+  return renderer && renderer.experimental
+    ? ` <span class="site-badge" title="${STATUS_MEANING.experimental}">Experimental</span>`
+    : '';
 }
 
 export function renderDemoPage({ renderer, version }) {
@@ -1050,6 +1067,131 @@ export function renderDemoPage({ renderer, version }) {
     `<script src="./demo.js"></script>` +
     `</div>`
   );
+}
+
+/**
+ * The demo app's typefaces (#165): the font files its page declares, served
+ * from the site itself so the page asks no other host for anything. Each is
+ * the Latin subset of one face, from an npm package that carries the family
+ * under the SIL Open Font License; other scripts fall back to system fonts.
+ *
+ *   family   the name the app's stylesheet asks for (src/app/styles.js)
+ *   weight   the weight the file covers; a range for a variable font
+ *   file     the file's name, in the package's files/ and beside the app
+ *   package  the devDependency the site build copies it from
+ *
+ * One file per face and no unicode-range: a face split into subsets fetches
+ * each subset when a character in it first appears, which for a user's own
+ * file and column names is after a file is chosen (APP-LOAD-014).
+ */
+export const DEMO_APP_FONTS = [
+  {
+    family: 'Instrument Sans',
+    weight: '400 700',
+    file: 'instrument-sans-latin-wght-normal.woff2',
+    package: '@fontsource-variable/instrument-sans'
+  },
+  {
+    family: 'Instrument Serif',
+    weight: '400',
+    file: 'instrument-serif-latin-400-normal.woff2',
+    package: '@fontsource/instrument-serif'
+  },
+  ...['400', '500', '600'].map((weight) => ({
+    family: 'IBM Plex Mono',
+    weight,
+    file: `ibm-plex-mono-latin-${weight}-normal.woff2`,
+    package: '@fontsource/ibm-plex-mono'
+  }))
+];
+
+/** The directory beside the app's page that its font files are served from. */
+const DEMO_APP_FONT_DIR = 'fonts';
+
+/**
+ * Copy the demo app's font files beside it, each family's licence with them.
+ * @param {string} rootDir The repository root, whose node_modules holds the font packages.
+ * @param {string} demoDir The app's directory in the site output.
+ * @returns {string[]} Paths of the copied files: the fonts, then one licence per package.
+ */
+export function publishDemoAppFonts(rootDir, demoDir) {
+  const fontDir = path.join(demoDir, DEMO_APP_FONT_DIR);
+  mkdirSync(fontDir, { recursive: true });
+  const packageDir = (name) => path.join(rootDir, 'node_modules', name);
+  const copied = DEMO_APP_FONTS.map((font) => {
+    const served = path.join(fontDir, font.file);
+    copyFileSync(path.join(packageDir(font.package), 'files', font.file), served);
+    return served;
+  });
+  for (const name of new Set(DEMO_APP_FONTS.map((font) => font.package))) {
+    const served = path.join(fontDir, `LICENSE-${name.split('/').pop()}.txt`);
+    copyFileSync(path.join(packageDir(name), 'LICENSE'), served);
+    copied.push(served);
+  }
+  return copied;
+}
+
+/**
+ * The demo app's page (#150, #152, obot.roadmap#352): a full-page web app with
+ * its own header, so a standalone document and not a page in the docs shell.
+ * The app bundle the site build writes beside it (scripts/build-app.mjs) draws
+ * everything; this document loads it, the site's three type families and the
+ * hex mark, and tells the app where the demo extracts and its links are.
+ *
+ * The typefaces are the site's own files (#165), fetched as the page opens:
+ * each is preloaded, and every declared face is loaded at once rather than
+ * when a weight is first used, so no request follows a user choosing a file.
+ * @param {Object} options Page options.
+ * @param {string} options.bundle File name of the app bundle beside the page.
+ * @param {string} options.download File name of the single-file build beside the page.
+ * @param {string} options.repoUrl The repository URL, for the app's source link.
+ * @returns {string} The complete HTML document.
+ */
+export function renderDemoAppPage({ bundle, download, repoUrl }) {
+  const icon = encodeURIComponent(LOGO_SVG).replace(/'/g, '%27');
+  const js = (value) => `'${String(value).replace(/[\\']/g, '\\$&')}'`;
+  const fontUrl = (font) => `./${DEMO_APP_FONT_DIR}/${font.file}`;
+  const preloads = DEMO_APP_FONTS.map(
+    (font) => `<link rel="preload" href="${fontUrl(font)}" as="font" type="font/woff2" crossorigin>`
+  ).join('\n');
+  const faces = DEMO_APP_FONTS.map(
+    (font) =>
+      `@font-face{font-family:"${font.family}";font-style:normal;font-weight:${font.weight};` +
+      `font-display:swap;src:url(${fontUrl(font)}) format("woff2")}`
+  ).join('\n');
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="The safety.viz demo app: load a study, check how its columns map, and review it in thirteen clinical safety charts. It runs in your browser; nothing is uploaded.">
+<title>safety.viz demo</title>
+<link rel="icon" href="data:image/svg+xml,${icon}">
+${preloads}
+<style>
+${faces}
+body{margin:0;background:#fafaf8}
+</style>
+<script>if (document.fonts) document.fonts.forEach(function (face) { face.load(); });</script>
+</head>
+<body>
+<div id="app"></div>
+<noscript>The safety.viz demo app needs JavaScript: it reads and draws your data in this browser.</noscript>
+<script src="./${escapeHtml(bundle)}"></script>
+<script>
+window.__safetyVizApp = SafetyVizApp.mount('#app', {
+  demo: { base: './' },
+  links: {
+    docs: '../index.html',
+    domains: '../domains/index.html',
+    download: ${js(`./${download}`)},
+    github: ${js(repoUrl)}
+  }
+});
+</script>
+</body>
+</html>
+`;
 }
 
 // Build the guide's on-page table of contents from its ## sections and their
@@ -1112,6 +1254,218 @@ export function renderGuidePage({ renderer, config, guideMarkdown }) {
   const body = `<div class="guide-body">${mdBlock(guideMarkdown, { headingIds: true })}</div>`;
   html.push(toc ? `<div class="guide-layout">${toc}${body}</div>` : body);
   return html.join('\n');
+}
+
+// Domains page (#139, obot.roadmap#325): the standard domain set and what
+// every chart reads from it, rendered from the portfolio manifest
+// (src/data/portfolio.json) alone. tests/unit/portfolio/ holds the manifest to
+// the charts' own data schemas, so the page inherits that agreement instead of
+// restating any of it by hand. site/config.json contributes only the
+// repository URL and which charts have site pages to link to.
+
+const asList = (value) => [].concat(value);
+
+// Comma-separated in-page links: to chart sections from [module, entry] pairs,
+// and to domain sections from domain ids.
+const chartLinks = (entries) =>
+  entries
+    .map(([module, entry]) => `<a href="#chart-${module}">${escapeHtml(entry.title)}</a>`)
+    .join(', ');
+
+const domainLinks = (ids, domains) =>
+  ids.map((id) => `<a href="#domain-${id}">${escapeHtml(domains[id].label)}</a>`).join(', ');
+
+// One domain: what a row is, the vendored demo extract that supplies it, the
+// charts that cannot draw without it kept apart from those that only add it
+// when supplied, and its columns.
+function domainSection(id, domain, modules, repoUrl) {
+  const feeds = modules.filter(([, entry]) => entry.domains.includes(id));
+  const optional = modules.filter(([, entry]) => (entry.optionalDomains || []).includes(id));
+  const rows = Object.entries(domain.columns)
+    .map(
+      ([name, column]) =>
+        `<tr><td><code>${escapeHtml(name)}</code></td>` +
+        `<td>${escapeHtml(column.label)}</td>` +
+        `<td>${escapeHtml(column.description)}</td></tr>`
+    )
+    .join('');
+  return (
+    `<section class="domain" id="domain-${id}">` +
+    `<h2>${escapeHtml(domain.label)} <code>${id}</code></h2>` +
+    `<p class="tagline">${escapeHtml(domain.grain)}</p>` +
+    `<ul>` +
+    `<li>Demo extract: <a href="${repoUrl}/blob/HEAD/site/data/${escapeHtml(domain.demo)}">` +
+    `<code>${escapeHtml(domain.demo)}</code></a></li>` +
+    (feeds.length ? `<li>Charts it feeds: ${chartLinks(feeds)}</li>` : '') +
+    (optional.length
+      ? `<li>Charts that add it when it is supplied: ${chartLinks(optional)}</li>`
+      : '') +
+    `</ul>` +
+    `<div class="table-scroll"><table><thead><tr><th>Column</th><th>Label</th>` +
+    `<th>What it holds</th></tr></thead><tbody>${rows}</tbody></table></div>` +
+    `</section>`
+  );
+}
+
+// One row per column setting. Whether it is required comes second, so the mark
+// stays in view on a phone, where the table scrolls sideways. A setting read
+// from two tables (time-to-event's id_col) names both; a setting the chart's
+// schema gives no default says so rather than printing null.
+function settingRows(settings, domains) {
+  return Object.entries(settings)
+    .map(([key, setting]) => {
+      const ids = asList(setting.domain);
+      const column = setting.column === null ? null : domains[ids[0]].columns[setting.column];
+      return (
+        `<tr><td><code>${escapeHtml(key)}</code></td>` +
+        `<td>${setting.required ? '<span class="badge">required</span>' : 'optional'}</td>` +
+        (setting.column === null
+          ? `<td>No default</td><td>—</td>`
+          : `<td><code>${escapeHtml(setting.column)}</code></td>` +
+            `<td>${column ? escapeHtml(column.label) : '—'}</td>`) +
+        `<td>${domainLinks(ids, domains)}</td></tr>`
+      );
+    })
+    .join('');
+}
+
+// One chart: links to its demo and API pages when the site has them (the data
+// schema in the repository always exists), the domains it reads, its note, and
+// its column settings. A chart outside the standard set names its own domains
+// and maps no settings, so it gets no table — only a pointer to where its
+// columns are documented.
+function chartSection(module, entry, { domains, hasPages, repoUrl, root }) {
+  const links = [
+    ...(hasPages
+      ? [
+          `<a href="${root}${module}/index.html">Live demo</a>`,
+          `<a href="${root}${module}/api.html">API reference</a>`
+        ]
+      : []),
+    `<a href="${repoUrl}/blob/HEAD/src/data/schema/${module}.json">Data schema</a>`
+  ].join(' · ');
+  const external = entry.externalDomains || [];
+  const optional = entry.optionalDomains || [];
+  const reads =
+    (entry.domains.length ? `<li>Reads: ${domainLinks(entry.domains, domains)}</li>` : '') +
+    (optional.length
+      ? `<li>Also reads, when supplied: ${domainLinks(optional, domains)}</li>`
+      : '') +
+    (external.length
+      ? `<li>Reads domains of its own: ` +
+        `${external.map((id) => `<code>${escapeHtml(id)}</code>`).join(', ')}</li>`
+      : '');
+  const rows = settingRows(entry.settings, domains);
+  return (
+    `<section class="chart-needs" id="chart-${module}">` +
+    `<h3>${escapeHtml(entry.title)}</h3>` +
+    `<p class="card-links">${links}</p>` +
+    `<ul>${reads}</ul>` +
+    (entry.note ? `<p>${escapeHtml(entry.note)}</p>` : '') +
+    (external.length && hasPages
+      ? `<p>Its columns are listed under the` +
+        ` <a href="${root}${module}/api.html#data-contract">data contract</a>` +
+        ` on its API reference.</p>`
+      : '') +
+    (rows
+      ? `<div class="table-scroll"><table><thead><tr><th>Setting</th><th>Required</th>` +
+        `<th>Default column</th><th>What it holds</th><th>Read from</th></tr></thead>` +
+        `<tbody>${rows}</tbody></table></div>`
+      : '') +
+    `</section>`
+  );
+}
+
+/**
+ * The Domains page: the standard domain set a study supplies, one section per
+ * domain with its columns and the charts it feeds, then one section per chart
+ * with the column settings it needs and which of them its schema requires.
+ * A chart that reads domains outside the standard set would be listed last,
+ * under its own heading, with no settings table; the manifest lists none since
+ * the Patient Journey Explorer, a prototype, left it (#165).
+ * @param {Object} options
+ * @param {Object} options.manifest The portfolio manifest (src/data/portfolio.json).
+ * @param {Object} options.config site/config.json: `repoUrl`, and `renderers` to tell which charts have demo and API pages to link.
+ * @param {string} [options.root='../'] Prefix from the page to the site root; the page is built at domains/index.html.
+ * @returns {string} The page content, for the shared shell.
+ */
+export function renderDomainsPage({ manifest, config, root = '../' }) {
+  const { domains } = manifest;
+  const domainIds = Object.keys(domains);
+  const modules = Object.entries(manifest.modules);
+  const standard = modules.filter(([, entry]) => !entry.externalDomains);
+  const outside = modules.filter(([, entry]) => entry.externalDomains);
+  const withPages = new Set(
+    config.renderers
+      .filter((renderer) => renderer.status === 'available')
+      .map((renderer) => renderer.module)
+  );
+  const section = ([module, entry]) =>
+    chartSection(module, entry, {
+      domains,
+      hasPages: withPages.has(module),
+      repoUrl: config.repoUrl,
+      root
+    });
+
+  const feeds = outside.length
+    ? `${standard.length} of the ${modules.length}`
+    : `all ${modules.length}`;
+  const html = [];
+  html.push(
+    `<div class="domains-page">`,
+    `<h1>Standard domain set</h1>`,
+    `<p class="tagline">The standard domain set is the ${domainIds.length} tables a study` +
+      ` supplies to safety.viz. Their column names are the ADaM-shaped defaults the charts` +
+      ` already expect, so data in this shape feeds ${feeds} charts without renaming a` +
+      ` column, and a column under another name` +
+      ` is mapped through that chart&#39;s settings.</p>`,
+    `<dl class="facts">` +
+      `<div class="fact"><dt>Domains</dt><dd>${domainLinks(domainIds, domains)}</dd></div>` +
+      `<div class="fact"><dt>Charts</dt><dd><a href="#charts">${standard.length} read the` +
+      ` standard set</a>` +
+      (outside.length
+        ? `<span class="sub"><a href="#outside">${outside.length}` +
+          ` ${outside.length === 1 ? 'reads' : 'read'} domains of its own</a></span>`
+        : '') +
+      `</dd></div>` +
+      `<div class="fact"><dt>Manifest</dt><dd><a href="${root}portfolio.json">portfolio.json</a>` +
+      `<span class="sub">The file this page is generated from, described by its` +
+      ` <a href="${config.repoUrl}/blob/HEAD/src/data/schema/portfolio.json">JSON Schema</a>` +
+      `</span></dd></div>` +
+      `</dl>`,
+    ...domainIds.map((id) => domainSection(id, domains[id], modules, config.repoUrl)),
+    `<h2 id="charts">What each chart needs</h2>`,
+    `<p>Each setting names the column a chart reads for one purpose, and defaults to the` +
+      ` column shown. Required marks the settings the chart&#39;s own data schema lists as` +
+      ` required; the rest are optional. A setting shown with no default reads no column until` +
+      ` one is named, and the chart&#39;s API reference says what each setting does.</p>`,
+    ...standard.map(section)
+  );
+  if (outside.length) {
+    html.push(
+      `<h2 id="outside">Outside the standard set</h2>`,
+      `<p>${outside.length} ${outside.length === 1 ? 'chart reads' : 'charts read'} domains the` +
+        ` standard set does not supply, so no column settings are mapped for` +
+        ` ${outside.length === 1 ? 'it' : 'them'} here.</p>`,
+      ...outside.map(section)
+    );
+  }
+  html.push(`</div>`);
+  return html.join('\n');
+}
+
+/**
+ * Serve the portfolio manifest from the site root, byte for byte, so a URL can
+ * quote exactly the file the bundle exports and the Domains page is built from.
+ * @param {string} manifestFile Path of the manifest (src/data/portfolio.json).
+ * @param {string} siteDir The site output directory.
+ * @returns {string} Path of the served copy, `<siteDir>/portfolio.json`.
+ */
+export function publishManifest(manifestFile, siteDir) {
+  const served = path.join(siteDir, 'portfolio.json');
+  copyFileSync(manifestFile, served);
+  return served;
 }
 
 // Gallery nav dropdown (#71): the top-level "Gallery" link keeps navigating to

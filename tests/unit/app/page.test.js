@@ -1,0 +1,517 @@
+// @vitest-environment jsdom
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import manifest from '../../../src/data/portfolio.json';
+import { mountApp } from '../../../src/app/page.js';
+
+// jsdom replaces the global URL, so the fixture path is built with node:path.
+const dataDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '../../../site/data');
+const demoText = (file) => readFileSync(path.join(dataDir, file), 'utf8');
+const DEMO = ['adsl.csv', 'adae.csv', 'adbds.csv', 'adeg.csv'].map((name) => ({
+  name,
+  text: demoText(name)
+}));
+
+// A made-up chart that reads domains outside the standard set. No chart the
+// app lists does since the Patient Journey Explorer, a prototype, left the
+// manifest (#165); the app's handling of one is kept, and held by this entry.
+const withOutside = {
+  ...manifest,
+  modules: {
+    ...manifest.modules,
+    'visit-calendar': {
+      export: 'visitCalendar',
+      title: 'Visit Calendar',
+      domains: [],
+      externalDomains: ['sv', 'tv'],
+      settings: {},
+      note: 'Reads two domains of its own: subject visits and planned visits.'
+    }
+  }
+};
+
+// Stand-ins for the chart factories: each records what it was handed and
+// whether it is still mounted, which is all the page's own logic touches.
+function fakeCharts(source = manifest) {
+  const calls = [];
+  const charts = { portfolio: source };
+  for (const entry of Object.values(source.modules)) {
+    charts[entry.export] = vi.fn((element, settings) => {
+      const call = { export: entry.export, settings, data: null, mounted: false };
+      calls.push(call);
+      return {
+        init(data) {
+          call.data = data;
+          call.mounted = true;
+          element.innerHTML = '<canvas></canvas>';
+        },
+        destroy() {
+          call.mounted = false;
+          element.innerHTML = '';
+        }
+      };
+    });
+  }
+  return { charts, calls };
+}
+
+// A standard ADaM labs file: baseline, change and a baseline flag beside the
+// result, so it carries as many ECG columns as labs columns.
+const ADLB = {
+  name: 'adlb.csv',
+  text:
+    'USUBJID,PARAM,AVAL,AVISIT,AVISITN,TRTA,BASE,CHG,ABLFL,ANRLO,ANRHI,ADY\n' +
+    '01,Alanine Aminotransferase,20,Week 1,1,A,18,2,,5,40,8\n' +
+    '01,Bilirubin,1,Week 1,1,A,1,0,,0,1.2,8\n'
+};
+
+const names = (app) =>
+  Object.fromEntries(Object.entries(app.state.files).map(([domain, file]) => [domain, file.name]));
+
+const item = (root, id) => root.querySelector(`.sva-item[data-view="${id}"]`);
+const tag = (root, id) => item(root, id).querySelector('.sva-tag').textContent;
+
+describe('demo app: the page', () => {
+  let root;
+  beforeEach(() => {
+    document.body.innerHTML = '<div id="app"></div>';
+    root = document.querySelector('#app');
+    window.location.hash = '';
+  });
+
+  it('APP-PAGE-001: lists every chart in the manifest under its domain, with a status each: thirteen charts under three domains (#150, #165)', () => {
+    const { charts } = fakeCharts();
+    mountApp(root, { charts, manifest });
+    const groups = [...root.querySelectorAll('.sva-group')].map((group) => ({
+      title: group.querySelector('.sva-group-title').textContent,
+      charts: [...group.querySelectorAll('.sva-item-title')].map((node) => node.textContent)
+    }));
+    expect(groups.map((group) => group.title)).toEqual([
+      'Labs and vitals',
+      'ECG',
+      'Adverse events'
+    ]);
+    // A chip drops the word every chart shares; see APP-PAGE-023.
+    expect(groups.flatMap((group) => group.charts)).toEqual(
+      Object.values(manifest.modules).map((entry) => entry.title.replace('Safety ', ''))
+    );
+    expect(groups.flatMap((group) => group.charts)).toHaveLength(13);
+    // The Patient Journey Explorer, a prototype, is not among them.
+    expect(item(root, 'patient-journey-explorer')).toBeNull();
+    // Nothing is loaded: the page opens on the data view and no chart is ready.
+    expect(root.querySelector('.sva-count').textContent).toBe(
+      '0 of 13 charts supported by the loaded data'
+    );
+    expect(item(root, 'data').getAttribute('aria-current')).toBe('page');
+    expect(tag(root, 'histogram')).toBe('no file');
+  });
+
+  it('APP-PAGE-026: a chart outside the standard domains has a tab and a heading of its own, reads "needs more domains" and is explained, not drawn (#165)', () => {
+    const { charts, calls } = fakeCharts(withOutside);
+    const app = mountApp(root, { charts, manifest: withOutside });
+    app.loadFiles(DEMO);
+    const tab = root.querySelector('.sva-tab[data-domain="other"]');
+    expect(tab.querySelector('.sva-tab-title').textContent).toBe('Other');
+    expect(tab.querySelector('.sva-tab-count').textContent).toBe('0 of 1');
+    expect(root.querySelector('.sva-count').textContent).toBe(
+      '13 of 14 charts supported by the loaded data'
+    );
+    const group = root.querySelector('.sva-group[data-group="other"]');
+    expect(group.querySelector('.sva-group-title').textContent).toBe(
+      'Outside the standard domains'
+    );
+    expect(tag(root, 'visit-calendar')).toBe('needs more domains');
+    expect(item(root, 'visit-calendar').querySelector('.sva-hex').className).toBe(
+      'sva-hex sva-hollow'
+    );
+    // Its tab opens on it, and the page says why it is not drawn in the chart's own words.
+    tab.click();
+    expect(root.querySelector('.sva-title').textContent).toBe('Visit Calendar');
+    expect(root.querySelector('.sva-message').textContent).toBe(
+      'Reads two domains of its own: subject visits and planned visits.'
+    );
+    expect(root.querySelector('.sva-message').classList.contains('sva-problem')).toBe(false);
+    expect(calls).toHaveLength(0);
+  });
+
+  it('APP-PAGE-002: on the demo study the supported count reads 13 of 13 (#150, #165)', () => {
+    const { charts } = fakeCharts();
+    const app = mountApp(root, { charts, manifest });
+    app.loadFiles(DEMO);
+    expect(root.querySelector('.sva-count').textContent).toBe(
+      '13 of 13 charts supported by the loaded data'
+    );
+    const ready = [...root.querySelectorAll('.sva-tag.sva-ready')];
+    expect(ready).toHaveLength(13);
+    expect(tag(root, 'data')).toBe('4 files');
+  });
+
+  it('APP-PAGE-003: choosing a chart draws it from the mapped data (#150)', () => {
+    const { charts, calls } = fakeCharts();
+    const app = mountApp(root, { charts, manifest });
+    app.loadFiles(DEMO);
+    app.select('histogram');
+    expect(calls).toHaveLength(1);
+    expect(calls[0]).toMatchObject({ export: 'histogram', mounted: true });
+    expect(calls[0].settings).toMatchObject({ measure_col: 'TEST', value_col: 'STRESN' });
+    expect(calls[0].data.length).toBeGreaterThan(50000);
+    expect(root.querySelector('.sva-title').textContent).toBe('Safety Histogram');
+    expect(item(root, 'histogram').getAttribute('aria-current')).toBe('page');
+    expect(window.location.hash).toBe('#histogram');
+  });
+
+  it('APP-PAGE-004: choosing another chart removes the first: never more than one is mounted (#150)', () => {
+    const { charts, calls } = fakeCharts();
+    const app = mountApp(root, { charts, manifest });
+    app.loadFiles(DEMO);
+    app.select('histogram');
+    item(root, 'qt-explorer').click();
+    expect(calls).toHaveLength(2);
+    expect(calls[0].mounted).toBe(false);
+    expect(calls[1]).toMatchObject({ export: 'qtExplorer', mounted: true });
+    expect(calls.filter((call) => call.mounted)).toHaveLength(1);
+    expect(root.querySelectorAll('.sva-chart canvas')).toHaveLength(1);
+    // The data view mounts none.
+    item(root, 'data').click();
+    expect(calls.filter((call) => call.mounted)).toHaveLength(0);
+  });
+
+  it('APP-PAGE-005: a chart that was ready but throws reads "did not draw" with the chart’s own message (#150)', () => {
+    const { charts } = fakeCharts();
+    charts.shiftPlot = vi.fn(() => ({
+      init() {
+        throw new Error('Required variable(s) missing: VISIT');
+      }
+    }));
+    const app = mountApp(root, { charts, manifest });
+    app.loadFiles(DEMO);
+    expect(tag(root, 'shift-plot')).toBe('ready');
+    app.select('shift-plot');
+    expect(tag(root, 'shift-plot')).toBe('did not draw');
+    expect(root.querySelector('.sva-message').textContent).toContain(
+      'Required variable(s) missing: VISIT'
+    );
+    // The count is corrected by what happened.
+    expect(root.querySelector('.sva-count').textContent).toBe(
+      '12 of 13 charts supported by the loaded data'
+    );
+  });
+
+  it('APP-PAGE-006: a chart the data does not support is not drawn, and the page says what it needs (#150)', () => {
+    const { charts, calls } = fakeCharts();
+    const app = mountApp(root, { charts, manifest });
+    app.loadFiles(DEMO.filter((file) => file.name !== 'adeg.csv'));
+    app.select('qt-explorer');
+    expect(calls).toHaveLength(0);
+    expect(root.querySelector('.sva-message').textContent).toBe('No file loaded for: ECG.');
+    expect(calls).toHaveLength(0);
+  });
+
+  it('APP-PAGE-007: the participant profile is listed with a status and explained, not drawn as a page of its own (#150)', () => {
+    const { charts, calls } = fakeCharts();
+    const app = mountApp(root, { charts, manifest });
+    app.loadFiles(DEMO);
+    expect(tag(root, 'participant-profile')).toBe('ready');
+    app.select('participant-profile');
+    expect(calls).toHaveLength(0);
+    expect(root.querySelector('.sva-message').textContent).toContain(
+      'opens beside a chart when you select a participant'
+    );
+  });
+
+  it('APP-PAGE-009: a file that belongs to no domain, or cannot be read, is reported in a sentence and loads nothing (#150)', () => {
+    const { charts } = fakeCharts();
+    const app = mountApp(root, { charts, manifest });
+    app.loadFiles([
+      { name: 'notes.csv', text: 'USUBJID,COMMENT\n01,fine\n' },
+      { name: 'labs.xpt', text: 'x' }
+    ]);
+    const notes = [...root.querySelectorAll('.sva-note')].map((node) => node.textContent);
+    expect(notes).toEqual([
+      'notes.csv was not placed in a domain: it matches at most 1 column of any of them (USUBJID).',
+      'labs.xpt is not a CSV or JSON file. SAS transport and sas7bdat files are not supported yet.'
+    ]);
+    expect(root.querySelector('.sva-count').textContent).toBe(
+      '0 of 13 charts supported by the loaded data'
+    );
+  });
+
+  it('APP-PAGE-010: served with a demo study, it loads it and opens on the first chart (#150)', async () => {
+    const { charts, calls } = fakeCharts();
+    const fetchText = vi.fn(async (url) => demoText(url.split('/').pop()));
+    const app = mountApp(root, { charts, manifest, demo: { base: './data/' }, fetchText });
+    await app.ready;
+    expect(fetchText.mock.calls.map(([url]) => url)).toEqual([
+      './data/adsl.csv',
+      './data/adae.csv',
+      './data/adbds.csv',
+      './data/adeg.csv'
+    ]);
+    expect(root.querySelector('.sva-count').textContent).toBe(
+      '13 of 13 charts supported by the loaded data'
+    );
+    expect(calls).toHaveLength(1);
+    expect(calls[0].export).toBe('histogram');
+  });
+
+  it('APP-PAGE-011: a second file placed in a domain takes it, and the first is kept on the page, set aside (#150, #165)', () => {
+    const { charts } = fakeCharts();
+    const app = mountApp(root, { charts, manifest });
+    const notes = () => [...root.querySelectorAll('.sva-note')].map((node) => node.textContent);
+    const setAside = () => app.state.unplaced.map((item) => item.file.name);
+    app.loadFiles([DEMO[0]]);
+    app.loadFiles([{ name: 'adsl-v2.csv', text: DEMO[0].text }]);
+    expect(notes()).toEqual([
+      'adsl-v2.csv replaced adsl.csv as the Subject-level file; adsl.csv is set aside.'
+    ]);
+    expect(app.state.files.subject.name).toBe('adsl-v2.csv');
+    // Nothing is lost: the first file is still on the page, read by no chart.
+    expect(setAside()).toEqual(['adsl.csv']);
+    expect(root.querySelector('.sva-file.sva-unplaced .sva-file-name').textContent).toBe(
+      'adsl.csv'
+    );
+    expect(tag(root, 'data')).toBe('1 file');
+    // Two files of one type in one drop: the last takes the domain, the other is set aside.
+    app.reset();
+    app.loadFiles([DEMO[0], { name: 'adsl-b.csv', text: DEMO[0].text }]);
+    expect(app.state.files.subject.name).toBe('adsl-b.csv');
+    expect(setAside()).toEqual(['adsl.csv']);
+    // The same file loaded again is the same file: it replaces itself and sets nothing aside.
+    app.reset();
+    app.loadFiles([DEMO[0]]);
+    app.loadFiles([DEMO[0]]);
+    expect(notes()).toEqual([]);
+    expect(setAside()).toEqual([]);
+  });
+
+  it('APP-PLACE-006: a standard ADaM labs file is placed as labs, and the same shape with QTc measures as ECG (#165)', () => {
+    const { charts } = fakeCharts();
+    const app = mountApp(root, { charts, manifest });
+    app.loadFiles([ADLB]);
+    expect(names(app)).toEqual({ bds: 'adlb.csv' });
+    expect(root.querySelector('.sva-file .sva-found').textContent).toBe('9 of 13 columns found');
+    app.reset();
+    app.loadFiles([
+      {
+        name: 'adeg.csv',
+        text: ADLB.text
+          .replace('Alanine Aminotransferase', 'QTcF')
+          .replace('Bilirubin', 'Heart Rate')
+      }
+    ]);
+    expect(names(app)).toEqual({ eg: 'adeg.csv' });
+  });
+
+  it('APP-CHART-003: a row cleared by hand is not read by the chart, although the file carries the default name (#165)', () => {
+    const { charts, calls } = fakeCharts();
+    const app = mountApp(root, { charts, manifest });
+    app.loadFiles(DEMO);
+    for (const column of ['ARM', 'STNRLO', 'STRESU']) app.setColumn('bds', column, null);
+    app.select('hep-explorer');
+    const { settings, data } = calls[calls.length - 1];
+    expect(settings).toMatchObject({ arm_col: null, normal_col_low: null, unit_col: null });
+    expect(tag(root, 'hep-explorer')).toBe('ready');
+    // The file's own rows, still carrying the columns the chart is told not to read.
+    expect(data).toBe(app.state.files.bds.rows);
+    expect(Object.keys(data[0])).toEqual(expect.arrayContaining(['ARM', 'STNRLO', 'STRESU']));
+  });
+
+  it('APP-PAGE-027: an address naming something every object has, such as #constructor, is no view: nothing throws and nothing opens (#165)', async () => {
+    const { charts, calls } = fakeCharts();
+    window.location.hash = '#constructor';
+    const fetchText = vi.fn(async (url) => demoText(url.split('/').pop()));
+    const app = mountApp(root, { charts, manifest, demo: { base: './data/' }, fetchText });
+    await app.ready;
+    // Not a view: the page opens on the first chart the data supports.
+    expect(app.state.selected).toBe('histogram');
+    expect(calls).toHaveLength(1);
+    for (const hash of ['#constructor', '#toString', '#__proto__', '#hasOwnProperty']) {
+      window.location.hash = hash;
+      window.dispatchEvent(new Event('hashchange'));
+      expect(app.state.selected, hash).toBe('histogram');
+    }
+    expect(calls).toHaveLength(1);
+    // Asked for by name it is the data view, as any unknown view is.
+    app.select('constructor');
+    expect(app.state.selected).toBe('data');
+    app.openDomain('constructor');
+    expect(app.state.selected).toBe('data');
+  });
+
+  it('APP-PAGE-018: the app carries its own header: wordmark, what it is, and that nothing is sent anywhere (#150)', () => {
+    const { charts } = fakeCharts();
+    mountApp(root, { charts, manifest, version: '1.2.3' });
+    expect(root.querySelector('.sva-header .sva-wordmark').textContent).toBe('safety.viz');
+    expect(root.querySelector('.sva-header .sva-kicker').textContent).toBe('Demo app');
+    expect(root.querySelector('.sva-logo svg')).not.toBeNull();
+    // The footer says what happens to the data, and carries the version.
+    expect(root.querySelector('.sva-footer .sva-pitch').textContent).toContain(
+      'Nothing is sent anywhere.'
+    );
+    expect(root.querySelector('.sva-footer .sva-version').textContent).toBe('safety.viz 1.2.3');
+    // The app's own parts are a header and a footer; nothing sits beside the view.
+    expect([...root.querySelector('.sva-app').children].map((node) => node.tagName)).toEqual([
+      'HEADER',
+      'MAIN',
+      'FOOTER'
+    ]);
+    // One page heading, the view's name, and the overall count: both kept for
+    // screen readers in the main area, neither in the header.
+    expect(root.querySelector('.sva-header h1')).toBeNull();
+    expect(root.querySelector('.sva-header .sva-count')).toBeNull();
+    expect(root.querySelector('main .sva-count').getAttribute('aria-live')).toBe('polite');
+    expect(root.querySelectorAll('h1')).toHaveLength(1);
+    expect(root.querySelector('main h1.sva-title').textContent).toBe('Data');
+  });
+
+  it('APP-PAGE-019: the footer links only where it was given an address, and the single file is a download (#150)', () => {
+    const { charts } = fakeCharts();
+    mountApp(root, { charts, manifest });
+    expect(root.querySelectorAll('.sva-links a')).toHaveLength(0);
+    mountApp(root, {
+      charts,
+      manifest,
+      links: { docs: '../index.html', download: './safety.viz-app.html' }
+    });
+    const anchors = [...root.querySelectorAll('.sva-links a')];
+    expect(anchors.map((a) => [a.dataset.link, a.getAttribute('href'), a.textContent])).toEqual([
+      ['docs', '../index.html', 'Docs and chart gallery'],
+      ['download', './safety.viz-app.html', 'Download as one file']
+    ]);
+    expect(anchors[0].hasAttribute('download')).toBe(false);
+    expect(anchors[1].hasAttribute('download')).toBe(true);
+  });
+
+  it('APP-PAGE-020: each chart’s hex says its state beside the words: its domain’s hue when ready, red when something is missing, hollow with nothing to read (#150)', () => {
+    const { charts } = fakeCharts();
+    const app = mountApp(root, { charts, manifest });
+    const hex = (id) => item(root, id).querySelector('.sva-hex').className;
+    expect(hex('histogram')).toBe('sva-hex sva-hollow');
+    app.loadFiles(DEMO);
+    expect(hex('histogram')).toBe('sva-hex');
+    expect(hex('data')).toBe('sva-hex sva-spectrum');
+    // The group carries the domain, which is what gives a ready hex its hue.
+    expect(item(root, 'histogram').closest('.sva-group').className).toBe(
+      'sva-group sva-domain-bds'
+    );
+    expect(item(root, 'qt-explorer').closest('.sva-group').className).toBe(
+      'sva-group sva-domain-eg'
+    );
+    // Missing reads red, and the words still say what.
+    app.state.mappings.eg.columns.ARM = { value: null, source: null };
+    app.refresh();
+    expect(hex('qt-explorer')).toBe('sva-hex sva-alarm');
+    expect(tag(root, 'qt-explorer')).toBe('1 missing');
+  });
+
+  it('APP-PAGE-022: the header has a tab per domain saying how many of its charts the data supports, and shows the open domain’s charts (#150)', () => {
+    const { charts, calls } = fakeCharts();
+    const app = mountApp(root, { charts, manifest });
+    const tab = (domain) => root.querySelector(`.sva-tab[data-domain="${domain}"]`);
+    const tabs = () =>
+      [...root.querySelectorAll('.sva-tab')].map((node) => [
+        node.querySelector('.sva-tab-title').textContent,
+        node.querySelector('.sva-tab-count').textContent
+      ]);
+    expect(tabs()).toEqual([
+      ['Labs and vitals', '0 of 9'],
+      ['ECG', '0 of 1'],
+      ['Adverse events', '0 of 3']
+    ]);
+    // On the data view no domain is open and no chart row is shown.
+    expect(root.querySelector('.sva-charts').hidden).toBe(true);
+
+    app.loadFiles(DEMO);
+    expect(tabs().map(([, count]) => count)).toEqual(['9 of 9', '1 of 1', '3 of 3']);
+
+    // Opening a domain shows its charts only, and draws its first ready chart.
+    tab('ae').click();
+    expect(tab('ae').getAttribute('aria-pressed')).toBe('true');
+    expect(tab('bds').getAttribute('aria-pressed')).toBe('false');
+    expect(root.querySelector('.sva-charts').hidden).toBe(false);
+    const shown = [...root.querySelectorAll('.sva-group')].filter((group) => !group.hidden);
+    expect(shown.map((group) => group.dataset.group)).toEqual(['ae']);
+    expect(calls[calls.length - 1].export).toBe('aeExplorer');
+    expect(root.querySelector('.sva-title').textContent).toBe('Adverse Event Explorer');
+
+    // Choosing a chart anywhere opens its domain.
+    app.select('qt-explorer');
+    expect(tab('eg').getAttribute('aria-pressed')).toBe('true');
+
+    // A domain with nothing ready opens on its first chart, which says why.
+    app.placeFileIn({ domain: 'ae' }, null);
+    tab('ae').click();
+    expect(root.querySelector('.sva-title').textContent).toBe('Adverse Event Explorer');
+    expect(root.querySelector('.sva-message').textContent).toBe(
+      'No file loaded for: Adverse events.'
+    );
+
+    // A domain with something missing is marked on its tab.
+    app.state.mappings.eg.columns.ARM = { value: null, source: null };
+    app.refresh();
+    expect(tab('eg').querySelector('.sva-hex').className).toBe('sva-hex sva-alarm');
+    expect(tab('eg').querySelector('.sva-tab-count').textContent).toBe('0 of 1');
+  });
+
+  it('APP-PAGE-023: a chart’s chip drops the word "Safety", and keeps the full title as its tooltip and as the view’s heading (#150)', () => {
+    const { charts } = fakeCharts();
+    const app = mountApp(root, { charts, manifest });
+    app.loadFiles(DEMO);
+    const label = (id) => item(root, id).querySelector('.sva-item-title').textContent;
+    expect(label('histogram')).toBe('Histogram');
+    expect(label('hep-explorer')).toBe('Hepatic Explorer');
+    expect(label('qt-explorer')).toBe('QT Explorer');
+    expect(label('hep-waterfall')).toBe('Hepatic ALT Waterfall');
+    expect(item(root, 'hep-explorer').title).toBe('Hepatic Safety Explorer');
+    // A chip whose label is already the title needs no tooltip.
+    expect(item(root, 'hep-waterfall').hasAttribute('title')).toBe(false);
+    app.select('hep-explorer');
+    expect(root.querySelector('.sva-title').textContent).toBe('Hepatic Safety Explorer');
+    // No chip repeats the word.
+    for (const chip of root.querySelectorAll('.sva-charts .sva-item-title')) {
+      expect(chip.textContent).not.toMatch(/Safety/);
+    }
+  });
+
+  it('APP-PAGE-025: the app follows the address: a change of hash opens that view, and an unknown one changes nothing (#163)', () => {
+    const { charts, calls } = fakeCharts();
+    const app = mountApp(root, { charts, manifest });
+    app.loadFiles(DEMO);
+    const go = (hash) => {
+      window.location.hash = hash;
+      window.dispatchEvent(new Event('hashchange'));
+    };
+    expect(app.state.selected).toBe('data');
+    go('#qt-explorer');
+    expect(app.state.selected).toBe('qt-explorer');
+    expect(item(root, 'qt-explorer').getAttribute('aria-current')).toBe('page');
+    expect(calls.filter((call) => call.mounted).map((call) => call.export)).toEqual([
+      manifest.modules['qt-explorer'].export
+    ]);
+    go('#data');
+    expect(app.state.selected).toBe('data');
+    expect(root.querySelector('.sva-data')).not.toBeNull();
+    // A hash that names no view is ignored: the view stays, and the address is left alone.
+    go('#no-such-view');
+    expect(app.state.selected).toBe('data');
+    expect(window.location.hash).toBe('#no-such-view');
+    // The view already open is not drawn again.
+    go('#histogram');
+    const drawn = calls.length;
+    go('#histogram');
+    expect(calls).toHaveLength(drawn);
+  });
+
+  it('APP-PAGE-025: a destroyed app no longer listens to the address (#163)', () => {
+    const { charts, calls } = fakeCharts();
+    const app = mountApp(root, { charts, manifest });
+    app.loadFiles(DEMO);
+    app.destroy();
+    window.location.hash = '#histogram';
+    window.dispatchEvent(new Event('hashchange'));
+    expect(calls).toHaveLength(0);
+    expect(root.innerHTML).toBe('');
+  });
+});

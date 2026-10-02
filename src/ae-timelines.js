@@ -31,6 +31,7 @@ import {
 import { buildScales, dayDomain } from './ae-timelines/getScales.js';
 import { buildDatasets, timelineMarksPlugin, tooltipLines } from './ae-timelines/getPlugins.js';
 import { renderListing } from './histogram/listing.js';
+import { initFilterState, reconcileFilters, renderFilterControl } from './filters.js';
 
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
@@ -63,10 +64,7 @@ class AETimelines {
     this.detailChart = null;
     this.selectedParticipant = null;
     this.participantsSelected = [];
-    this.state = {
-      filters: {},
-      sort: this.settings.sort_participants
-    };
+    this.state = this.seedState();
     this.renderShell();
     // The participant profile in the rail (obot.roadmap#75 decision D9). The AE
     // renderers were deferred in #45 because the profile had no AE domain;
@@ -75,6 +73,21 @@ class AETimelines {
     // as the AE story alone.
     this.profileRows = [];
     mountProfileRail(this, () => this.profileSettings(), { target: this.element });
+  }
+
+  /**
+   * The opening control state, derived from the settings alone: the configured
+   * filter start values and the configured participant sort order. Nothing here
+   * depends on the bound data, so the "Reset chart" control (AET-CTRL-001) can
+   * rebuild it at any point in the session.
+   * @returns {Object} A fresh control state.
+   * @private
+   */
+  seedState() {
+    return {
+      filters: initFilterState(this.settings.filters),
+      sort: this.settings.sort_participants
+    };
   }
 
   /**
@@ -200,7 +213,9 @@ class AETimelines {
     try {
       checkInputs(this.rawData, this.settings);
     } catch (error) {
-      this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+      // The message is inserted as text: it names columns from the settings,
+      // which a host may fill from a file header, and must never become markup.
+      this.element.replaceChildren(createElement('div', 'sv-warning', error.message));
       throw error;
     }
     this.population = populationCount(this.rawData, this.settings);
@@ -220,7 +235,7 @@ class AETimelines {
    */
   buildControls() {
     this.controls.innerHTML = '';
-    const { addSection, addControl } = controlBuilders(this.controls);
+    const { addSection, addControl, addReset } = controlBuilders(this.controls);
 
     const domain = colorDomain(this.cleanRows, this.settings.color);
     const filterSpecs = this.settings.filters.filter((filter) => {
@@ -240,23 +255,27 @@ class AETimelines {
       return true;
     });
     const filterParent = filterSpecs.length ? addSection('Filters') : this.controls;
-    filterSpecs.forEach((filter) => {
-      const select = addControl(filter.label, document.createElement('select'), filterParent);
-      option(select, '__all__', 'All', !this.state.filters[filter.value_col]);
+    reconcileFilters(this.state.filters, filterSpecs, (filter) => {
       const values = unique(this.cleanRows.map((row) => row[filter.value_col]));
       // The color filter lists its options in legend order, like the
       // original's sortLegendFilter; other filters sort alphabetically.
-      const ordered =
-        filter.value_col === this.settings.color.value_col
-          ? domain.filter((value) => values.includes(value))
-          : values.sort();
-      ordered.forEach((value) =>
-        option(select, value, value, this.state.filters[filter.value_col] === value)
+      return filter.value_col === this.settings.color.value_col
+        ? domain.filter((value) => values.includes(value))
+        : values.sort();
+    }).forEach(({ spec: filter, values, selected }) => {
+      addControl(
+        filter.label,
+        renderFilterControl({
+          spec: filter,
+          values,
+          selected,
+          onChange: (next) => {
+            this.state.filters[filter.value_col] = next;
+            this.render();
+          }
+        }),
+        filterParent
       );
-      select.onchange = () => {
-        this.state.filters[filter.value_col] = select.value === '__all__' ? null : select.value;
-        this.render();
-      };
     });
 
     const sortParent = addSection('Sorting');
@@ -266,6 +285,15 @@ class AETimelines {
       this.state.sort = sort.value;
       this.render();
     };
+
+    // The way back to the opening view (AET-CTRL-001), at the foot of the
+    // sidebar below every section. render() closes any open participant detail
+    // view and empties the listing, so the reset leaves the timelines showing.
+    addReset(() => {
+      this.state = this.seedState();
+      this.buildControls();
+      this.render();
+    });
   }
 
   /**
@@ -324,9 +352,12 @@ class AETimelines {
     ]
       .filter(Boolean)
       .join(' ');
-    this.notes.innerHTML =
-      `<em>${shown} of ${this.population} participant ID(s) shown (${pct}%)</em>` +
-      (warnings ? `<span class="sv-warning">${warnings}</span>` : '');
+    // Built as elements, not markup: the warnings quote column names from the
+    // settings, which a host may fill from a file header (#166).
+    this.notes.replaceChildren(
+      createElement('em', null, `${shown} of ${this.population} participant ID(s) shown (${pct}%)`)
+    );
+    if (warnings) this.notes.append(createElement('span', 'sv-warning', warnings));
   }
 
   /**

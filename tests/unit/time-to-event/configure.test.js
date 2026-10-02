@@ -64,7 +64,9 @@ describe('syncSettings', () => {
 
   it('normalizes population filters to { value_col, label }, defaulting to none (#128)', () => {
     expect(syncSettings({}).filters).toEqual([]);
-    expect(syncSettings({ filters: 'ARM' }).filters).toEqual([{ value_col: 'ARM', label: 'ARM' }]);
+    expect(syncSettings({ filters: 'ARM' }).filters).toEqual([
+      { value_col: 'ARM', label: 'ARM', start: null, all: true, multiple: false }
+    ]);
   });
 
   it('keeps the endpoint label a non-empty string (TTE-FILT-003, #128)', () => {

@@ -8,10 +8,16 @@
 //   site/data/adsl.csv  — one row per safety participant (id, arm, follow-up-end
 //                         study day, end-of-study status): the population half of
 //                         the Time-to-Event Explorer demo (events come from adae.csv)
+//   site/data/pje-{ex,ae,lb,cm,mh,ds}.csv — six per-domain extracts (exposure,
+//                         adverse events, liver labs, con-meds, medical history,
+//                         disposition) for the Patient Journey Explorer (#142); the
+//                         `pje` group alias builds all six
 //
-// This script (re)builds all three from **pharmaverseadam** (https://github.com/pharmaverse/pharmaverseadam),
+// This script (re)builds them from **pharmaverseadam** (https://github.com/pharmaverse/pharmaverseadam),
 // the pharmaverse consortium's ADaM test data derived from the CDISC SDTM/ADaM Pilot 01
 // study (Apache-2.0). It replaces an earlier synthetic stopgap of unclear provenance.
+// One source file, `ds.csv`, comes from the sibling **pharmaversesdtm** package instead
+// (same study, same licence) because pharmaverseadam ships no ADaM DS dataset.
 // See obot.roadmap requirement #25 and docs/DATA_SOURCES.md.
 //
 // The BDS file is the row-bind of ADaM `adlb` (labs) + `advs` (vitals) — both already
@@ -21,11 +27,14 @@
 // The ECG file is `adeg` projected to a QT measure contract (QTcF / QTcB / HR, each with
 // its analysis value, source-derived baseline, and change-from-baseline) — see buildEg.
 //
-// Usage:  node scripts/build-demo-data.mjs [--source-dir <dir>] [--out-dir <dir>] [--only bds,ae,eg,adsl]
+// Usage:  node scripts/build-demo-data.mjs [--source-dir <dir>] [--out-dir <dir>]
+//                                          [--only bds,ae,eg,adsl,pje,pje-ex,…,pje-ds]
 //   Fetches the source CSVs from raw.githubusercontent.com by default (cached under
 //   node's tmp), or reads them from --source-dir if provided
-//   (adlb.csv/advs.csv/adae.csv/adsl.csv/adeg.csv).
-//   Writes adbds.csv + adae.csv + adeg.csv + adsl.csv to --out-dir (default: site/data).
+//   (adlb.csv/advs.csv/adae.csv/adsl.csv/adeg.csv/adex.csv/adcm.csv/admh.csv, plus
+//   ds.csv from pharmaversesdtm).
+//   Writes adbds.csv + adae.csv + adeg.csv + adsl.csv + the six pje-*.csv files to
+//   --out-dir (default: site/data). `--only pje` expands to the six pje-* outputs.
 //
 // The generated CSVs are committed to the repo; rerun this script to refresh them.
 
@@ -39,13 +48,36 @@ import { pipeline } from 'node:stream/promises';
 import { Readable } from 'node:stream';
 // Value helpers and the ECG derivation live in demo-data-lib.mjs so they can be
 // unit-tested without running this script (which downloads ~200 MB of source).
-import { buildAdslRecords, buildEcgRecords, clean, isBlank, isNum, num } from './demo-data-lib.mjs';
+import {
+  PJE_OUTPUTS,
+  buildAdslRecords,
+  buildEcgRecords,
+  buildPjeAeRecords,
+  buildPjeCmRecords,
+  buildPjeDsRecords,
+  buildPjeExRecords,
+  buildPjeLbRecords,
+  buildPjeMhRecords,
+  clean,
+  isBlank,
+  isNum,
+  num,
+  safetySubjects
+} from './demo-data-lib.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(__dirname, '..');
 
 const PHARMAVERSEADAM_BASE =
   'https://raw.githubusercontent.com/pharmaverse/pharmaverseadam/main/inst/extdata';
+// The disposition source lives in the sibling SDTM package (no ADaM DS exists).
+// The revision the committed pje-ds.csv was taken at is recorded in
+// docs/DATA_SOURCES.md and asserted by demo-data.test.js (design D24).
+const PHARMAVERSESDTM_BASE =
+  'https://raw.githubusercontent.com/pharmaverse/pharmaversesdtm/main/inst/extdata';
+// Per-file source base; anything not listed comes from pharmaverseadam. Cache keys
+// stay the bare file name — `ds.csv` is unique across the two packages.
+const SOURCE_BASE = { 'ds.csv': PHARMAVERSESDTM_BASE };
 // Source files are declared per output in OUTPUTS below, so `--only` fetches
 // just what the requested outputs need.
 
@@ -182,7 +214,7 @@ async function loadSource(name, sourceDir) {
     console.log(`  cached ${cached}`);
     return readFile(cached, 'utf8');
   }
-  const url = `${PHARMAVERSEADAM_BASE}/${name}`;
+  const url = `${SOURCE_BASE[name] ?? PHARMAVERSEADAM_BASE}/${name}`;
   console.log(`  fetching ${url}`);
   const res = await fetch(url);
   if (!res.ok) throw new Error(`fetch ${url} failed: ${res.status} ${res.statusText}`);
@@ -380,19 +412,71 @@ const OUTPUTS = {
         `EOSDY ${Math.min(...days)}–${Math.max(...days)}`
       );
     }
-  }
+  },
+  // Patient Journey Explorer (#142): six per-domain extracts, one builder each in
+  // demo-data-lib.mjs. `--only pje` expands to all six through GROUPS below.
+  ...pjeOutputs()
 };
+
+function pjeOutputs() {
+  const warn = (msg) => console.warn(msg);
+  const participants = (built) => new Set(built.records.map((r) => r.USUBJID)).size;
+  const builders = {
+    'pje-ex': (src) => buildPjeExRecords(toRecords(src['adex.csv'])),
+    'pje-ae': (src) => buildPjeAeRecords(toRecords(src['adae.csv'])),
+    'pje-lb': (src) => buildPjeLbRecords(toRecords(src['adlb.csv']), { warn }),
+    'pje-cm': (src) => buildPjeCmRecords(toRecords(src['adcm.csv'])),
+    'pje-mh': (src) => buildPjeMhRecords(toRecords(src['admh.csv'])),
+    'pje-ds': (src) =>
+      buildPjeDsRecords(toRecords(src['ds.csv']), {
+        subjects: safetySubjects(toRecords(src['adsl.csv'])),
+        warn
+      })
+  };
+  const reports = {
+    'pje-ex': (b) =>
+      `pje-ex.csv: ${b.records.length} dosing records · ${participants(b)} participants · ` +
+      `treatments {${[...new Set(b.records.map((r) => r.EXTRT))].join(', ')}}`,
+    'pje-ae': (b) =>
+      `pje-ae.csv: ${b.records.length} treatment-emergent events · ${participants(b)} participants · ` +
+      `${b.records.filter((r) => r.AESER === 'Y').length} serious · ` +
+      `${b.records.filter((r) => r.AENDY === '').length} with no end day`,
+    'pje-lb': (b) =>
+      `pje-lb.csv: ${b.records.length} liver-panel results · ${participants(b)} participants · ` +
+      `tests {${[...new Set(b.records.map((r) => r.LBTESTCD))].join(', ')}}`,
+    'pje-cm': (b) =>
+      `pje-cm.csv: ${b.records.length} con-med courses · ${participants(b)} participants · ` +
+      `${Math.round((100 * b.records.filter((r) => r.CMCLAS === 'UNCODED').length) / b.records.length)}% UNCODED`,
+    'pje-mh': (b) =>
+      `pje-mh.csv: ${b.records.length} medical-history records · ${participants(b)} participants · ` +
+      `MHDY ${Math.min(...b.records.map((r) => Number(r.MHDY)))}–${Math.max(...b.records.map((r) => Number(r.MHDY)))}`,
+    'pje-ds': (b) =>
+      `pje-ds.csv: ${b.records.length} disposition rows · ${participants(b)} participants · ` +
+      `categories {${[...new Set(b.records.map((r) => r.DSCAT))].join(', ')}}`
+  };
+  return Object.fromEntries(
+    PJE_OUTPUTS.map(({ name, file, sources }) => [
+      name,
+      { file, sources, build: builders[name], report: reports[name] }
+    ])
+  );
+}
+
+// Group aliases for `--only`: a group name expands to its member outputs.
+const GROUPS = { pje: PJE_OUTPUTS.map((o) => o.name) };
 
 async function main() {
   const { sourceDir, outDir, only } = parseArgs(process.argv.slice(2));
-  const requested = only || Object.keys(OUTPUTS);
+  const requested = [
+    ...new Set((only || Object.keys(OUTPUTS)).flatMap((name) => GROUPS[name] ?? [name]))
+  ];
   const unknown = requested.filter((name) => !OUTPUTS[name]);
   if (unknown.length)
     throw new Error(
-      `unknown --only output(s): ${unknown.join(', ')} (valid: ${Object.keys(OUTPUTS).join(', ')})`
+      `unknown --only output(s): ${unknown.join(', ')} (valid: ${[...Object.keys(OUTPUTS), ...Object.keys(GROUPS)].join(', ')})`
     );
 
-  console.log('Loading pharmaverseadam source datasets…');
+  console.log('Loading pharmaverse source datasets…');
   const needed = [...new Set(requested.flatMap((name) => OUTPUTS[name].sources))];
   const texts = await Promise.all(needed.map((f) => loadSource(f, sourceDir)));
   const src = Object.fromEntries(needed.map((f, i) => [f, texts[i]]));

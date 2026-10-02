@@ -1,4 +1,4 @@
-> **Prototype.** This chart is a prototype shipping alongside the v1.5 release for evaluation. It is fully tested and documented, but its settings and behaviour may change before it is finalized — pin a version if you depend on the exact API.
+> **Experimental.** This chart ships while it is still being worked on. It is fully tested and documented, but its settings and behaviour may change — pin a version if you depend on the exact API.
 
 ## When to use this chart — and when not to
 

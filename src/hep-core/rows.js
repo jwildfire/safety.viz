@@ -14,6 +14,7 @@
 // (R-Ratio), HEP-QUAD-001 (cutpoints), HEP-SELECT-002/005 (drill-down series).
 
 import { median } from './stats.js';
+import { isUnscheduledVisit } from '../unscheduled-visits.js';
 
 /** The four liver measures the hepatic tools standardize and plot (HEP-DISPLAY-003). */
 export const MEASURE_KEYS = ['ALT', 'AST', 'TB', 'ALP'];
@@ -176,6 +177,30 @@ export function assignSequence(rows, settings) {
  */
 export function hasStudyDay(rows) {
   return rows.some((row) => Number.isFinite(row.__hep_day));
+}
+
+/**
+ * Split cleaned rows into the ones at scheduled visits and the ones at
+ * unscheduled visits (HEP-DATA-013). A row is unscheduled when `visit_col` is
+ * mapped, present and non-empty on that row, and the visit name matches the
+ * caller's unscheduled-visit settings. When `visit_col` is unmapped, or absent
+ * from the data, every row counts as scheduled — so a caller degrades to its
+ * previous behaviour rather than emptying the chart.
+ * @param {Object[]} rows Cleaned rows.
+ * @param {Object} settings Normalized settings: visit_col plus the unscheduled-visit keys.
+ * @returns {{scheduled: Object[], unscheduled: Object[]}} The partition.
+ */
+export function partitionUnscheduledRows(rows, settings) {
+  const visitCol = settings.visit_col;
+  const scheduled = [];
+  const unscheduled = [];
+  (rows || []).forEach((row) => {
+    const visit = visitCol ? row[visitCol] : undefined;
+    const isUnscheduled =
+      visit !== undefined && visit !== null && visit !== '' && isUnscheduledVisit(visit, settings);
+    (isUnscheduled ? unscheduled : scheduled).push(row);
+  });
+  return { scheduled, unscheduled };
 }
 
 /**

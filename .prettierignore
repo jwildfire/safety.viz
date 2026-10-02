@@ -4,6 +4,8 @@ playwright-report/
 test-results/
 package-lock.json
 _site/
+_site.build-*/
+build/
 _api/
 
 # Requirement matrices are wide, hand-maintained data tables moved verbatim from
@@ -11,3 +13,7 @@ _api/
 # would break the byte-for-byte audit trail back to the reviewed originals.
 requirements/*.md
 !requirements/README.md
+
+# The renamed-column study for the demo app's browser tests (#151): written
+# by scripts/build-app-fixture.mjs, and a test pins the files to its output.
+tests/e2e/fixtures/app/

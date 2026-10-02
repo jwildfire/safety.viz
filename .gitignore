@@ -4,4 +4,6 @@ test-results/
 dist/.drift-check-*/
 _api/
 _site/
+_site.build-*/
+build/
 .requirements-src/

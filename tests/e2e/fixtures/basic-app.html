@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>safety.viz demo app harness page</title>
+    <style>
+      body {
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <!--
+      Playwright harness page for the demo app (#150). Loads the app bundle
+      that `npm run build:app` writes to build/app/ (a build product, not
+      committed) and mounts it on the demo studies, each fetched from where the
+      repository keeps its files (the site build copies them beside the app).
+      `?empty` mounts it with no demo study, as the single-file build opens.
+    -->
+    <div id="app"></div>
+    <script src="/build/app/safety.viz-app.js"></script>
+    <script>
+      const empty = new URLSearchParams(window.location.search).has('empty');
+      const studies = SafetyVizApp.DEMO_STUDIES.map((study) => ({
+        ...study,
+        base: `/${study.source}/`
+      }));
+      window.__safetyVizApp = SafetyVizApp.mount(
+        '#app',
+        empty ? {} : { demo: { base: '/site/data/', studies } }
+      );
+    </script>
+  </body>
+</html>

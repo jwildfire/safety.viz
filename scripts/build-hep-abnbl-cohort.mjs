@@ -26,7 +26,8 @@
 // (USUBJID prefix `ABL-`) is stripped before the fresh cohort is written, so the
 // script is safe to re-run over its own output.
 //
-// Usage:  node scripts/build-hep-abnbl-cohort.mjs
+// Usage:  node scripts/build-hep-abnbl-cohort.mjs [--out-dir <dir>]
+//   Reads and writes adbds-abnbl.csv in --out-dir (default: site/data).
 //
 // Provenance is documented in docs/DATA_SOURCES.md. Every generated row is
 // clearly labelled as synthetic (SITE `Hepatology ABN-BL Unit (synthetic)`, ARM
@@ -38,7 +39,14 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const dataPath = path.join(rootDir, 'site', 'data', 'adbds-abnbl.csv');
+// `--out-dir` points the script at another copy of the extract — how
+// scripts/check-demo-data.mjs reruns it without touching the committed file (#140).
+const outDirFlag = process.argv.indexOf('--out-dir');
+const dataDir =
+  outDirFlag === -1
+    ? path.join(rootDir, 'site', 'data')
+    : path.resolve(process.argv[outDirFlag + 1]);
+const dataPath = path.join(dataDir, 'adbds-abnbl.csv');
 
 // The measure contract shared with site/data/adbds.csv — same columns, same
 // order, so any renderer that reads one file reads the other unchanged.

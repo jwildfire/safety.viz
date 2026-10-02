@@ -13,6 +13,7 @@ import {
   mkdirSync,
   readFileSync,
   readdirSync,
+  renameSync,
   rmSync,
   writeFileSync
 } from 'node:fs';
@@ -20,10 +21,14 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   parseCoverage,
+  publishDemoAppFonts,
+  publishManifest,
   renderAboutPage,
   renderApiPage,
   renderArchitecturePage,
+  renderDemoAppPage,
   renderDemoPage,
+  renderDomainsPage,
   renderEvidencePage,
   renderGallery,
   renderGuidePage,
@@ -31,9 +36,16 @@ import {
   validateEvidenceScreenshots,
   validateSiteLinks
 } from './site-lib.mjs';
+import { APP_BUNDLE, APP_HTML, buildApp } from './build-app.mjs';
+import { DEMO_STUDIES } from '../src/app/studies.js';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const siteDir = path.join(rootDir, '_site');
+// The site is built beside its destination and swapped in at the end, so a
+// reader of _site/ — a browser test in another worker, a second build — never
+// sees a half-written site. The build directory is per process because two
+// builds can run at once (two specs build the site in their beforeAll).
+const publishedDir = path.join(rootDir, '_site');
+const siteDir = path.join(rootDir, `_site.build-${process.pid}`);
 const { version } = JSON.parse(readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
 const config = JSON.parse(readFileSync(path.join(rootDir, 'site/config.json'), 'utf8'));
 const shell = readFileSync(path.join(rootDir, 'site/shell.html'), 'utf8');
@@ -84,6 +96,21 @@ page(
   '',
   'How safety.viz works: JSON-Schema data contracts, the shared renderer shell, ' +
     'committed versioned bundles, and the gsm.safety R bindings.'
+);
+
+// Domains page (#139): the standard domain set and every chart's column needs,
+// rendered from the portfolio manifest — which is also served from the site
+// root, so a URL can quote the same file the bundle exports as `portfolio`.
+const manifestFile = path.join(rootDir, 'src/data/portfolio.json');
+publishManifest(manifestFile, siteDir);
+mkdirSync(path.join(siteDir, 'domains'), { recursive: true });
+page(
+  path.join(siteDir, 'domains/index.html'),
+  'Standard domain set · safety.viz',
+  renderDomainsPage({ manifest: JSON.parse(readFileSync(manifestFile, 'utf8')), config }),
+  '../',
+  'The standard domain set a study supplies to safety.viz: its tables and their columns, ' +
+    'the charts each one feeds, and the column settings every chart needs.'
 );
 
 // Shared dist bundle for the demo pages (IIFE + source map).
@@ -202,13 +229,44 @@ for (const renderer of config.renderers.filter((entry) => entry.status === 'avai
   }
 }
 
+// Demo app (#150, #152): a full-page web app at demo/, with its own header, so
+// it is written as a standalone document and not through the docs shell. The app
+// bundle and the single-file build are build products written here, not
+// committed assets, and the demo studies are copied beside them so the app
+// loads them from its own directory.
+const demoAppDir = path.join(siteDir, 'demo');
+await buildApp(demoAppDir);
+// Every demo study the app offers (#159) is copied from where the repository
+// keeps it into the study's own directory beside the app.
+for (const study of DEMO_STUDIES) {
+  mkdirSync(path.join(demoAppDir, study.dir), { recursive: true });
+  for (const file of study.files) {
+    copyFileSync(path.join(rootDir, study.source, file), path.join(demoAppDir, study.dir, file));
+  }
+}
+// The app's typefaces (#165) are served from beside it, with their licences,
+// so its page asks no other host for anything.
+publishDemoAppFonts(rootDir, demoAppDir);
+writeFileSync(
+  path.join(demoAppDir, 'index.html'),
+  renderDemoAppPage({ bundle: APP_BUNDLE, download: APP_HTML, repoUrl: config.repoUrl })
+);
+
 errors.push(...validateSiteLinks(siteDir));
 
 if (errors.length) {
   console.error('✗ Site build failed validation:');
   errors.forEach((error) => console.error(`  - ${error}`));
+  rmSync(siteDir, { recursive: true, force: true });
   process.exit(1);
 }
+
+// Swap the finished build into place: the old site steps aside, the new one
+// takes its name, and only then is the old one removed.
+const retiredDir = `${siteDir}.old`;
+if (existsSync(publishedDir)) renameSync(publishedDir, retiredDir);
+renameSync(siteDir, publishedDir);
+rmSync(retiredDir, { recursive: true, force: true });
 
 const available = config.renderers.filter((entry) => entry.status === 'available').length;
 console.log(

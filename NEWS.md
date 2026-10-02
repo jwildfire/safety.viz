@@ -8,11 +8,48 @@ from the section here when the release-candidate PR (dev -> main) merges and is 
 
 # safety.viz v1.8.0 (Upcoming)
 
-Nothing user-facing yet.
+**See it move:** the [annotated v1.8.0 demo](https://jwildfire.github.io/obot.roadmap/reports/sv-v1.8-demo/) has captures and try-it steps for everything below.
 
-## Also in this release
+safety.viz becomes something you can use on your own study. A [demo app](https://jwildfire.github.io/safety.viz/demo/) loads your files, maps their columns and draws the charts they support, all in your browser. Nine long-standing requests land on the existing charts. No existing API is removed or renamed.
 
-- The renderer done-gate gains a fourth pillar — a renderer is not done until its `gsm.safety` R widget is delivered or filed as a milestoned requirement ([#132](https://github.com/jwildfire/safety.viz/pull/132), rule: [obot.roadmap#164](https://github.com/jwildfire/obot.roadmap/issues/164)). Contributor-facing; no change to any chart.
+## The demo app
+
+- **Thirteen charts on one study.** Tabs by data domain say how many charts your data supports; a chart that cannot draw names what it is missing. [#150](https://github.com/jwildfire/safety.viz/issues/150)
+- **Load your own study.** Drop CSV or JSON files: each is placed in a domain and its columns mapped, with every guess labelled. Nothing is uploaded. [#151](https://github.com/jwildfire/safety.viz/issues/151), [#165](https://github.com/jwildfire/safety.viz/issues/165)
+- **A sidebar for the work.** Load, check the mapping, open a chart, with Reset and three demo studies to try. [#159](https://github.com/jwildfire/safety.viz/issues/159), [#163](https://github.com/jwildfire/safety.viz/issues/163)
+- **One file to take with you.** The whole app as a single HTML file, under 1 MB, that runs offline. [#152](https://github.com/jwildfire/safety.viz/issues/152)
+- **A standard domain set.** Four domains and what each chart reads from them, on the [Domains page](https://jwildfire.github.io/safety.viz/domains/) and in the bundle as `SafetyViz.portfolio`. [#138](https://github.com/jwildfire/safety.viz/issues/138), [#139](https://github.com/jwildfire/safety.viz/issues/139)
+
+## Asked for by the original renderers' users
+
+Nine requests the retired RhoInc and SafetyGraphics trackers left open. Who asked, and when: [#136](https://github.com/jwildfire/safety.viz/issues/136).
+
+- **Filters mean the same thing in every chart:** `start`, `all` and `multiple`, in all twelve charts that have filters. [ae-timelines#83](https://github.com/RhoInc/ae-timelines/issues/83), [#166](https://github.com/jwildfire/safety.viz/issues/166)
+- **Choose and order the measures** with a `measures` setting, in five charts. [safety-results-over-time#5](https://github.com/RhoInc/safety-results-over-time/issues/5)
+- **Reset chart** on nine charts. [safety-histogram#61](https://github.com/RhoInc/safety-histogram/issues/61)
+- **Shift Plot:** a log scale. [safety-shift-plot#3](https://github.com/RhoInc/safety-shift-plot/issues/3)
+- **QT Explorer:** its confidence intervals as a table, and its caution in every view. [qtexplorer#41](https://github.com/SafetyGraphics/qtexplorer/issues/41), [#51](https://github.com/SafetyGraphics/qtexplorer/issues/51)
+- **Hepatic Safety Explorer:** include or exclude unscheduled visits. [hep-explorer#229](https://github.com/SafetyGraphics/hep-explorer/issues/229)
+- **Adverse Event Explorer:** says what kind of empty an empty table is. [aeexplorer#153](https://github.com/RhoInc/aeexplorer/issues/153)
+
+## Changed
+
+- **A filter with a `start` value keeps its "All" option** in every chart; pass `all: false` to drop it. The Outlier Explorer used to drop it. [#166](https://github.com/jwildfire/safety.viz/issues/166)
+- **The QT Explorer averages replicate readings** to one value per participant and visit, so `n` counts participants. [#166](https://github.com/jwildfire/safety.viz/issues/166)
+- **A chart's status means one thing.** Prototype: docs site only, not ready for production. Experimental: ships, and may change. No badge: stable. The Hepatic ALT Waterfall is now Experimental. [#165](https://github.com/jwildfire/safety.viz/issues/165)
+
+## Fixed
+
+- **Adverse Event Explorer:** a single-arm study with the per-group columns off drew no counts. [aeexplorer#148](https://github.com/RhoInc/aeexplorer/issues/148)
+- **Text from a dataset is written to the page as text,** never as markup. [#166](https://github.com/jwildfire/safety.viz/issues/166)
+
+## Prototype
+
+- **[Patient Journey Explorer](https://jwildfire.github.io/safety.viz/patient-journey-explorer/index.html):** one participant's record as stacked lanes on a study-day axis; click an event to see what was recorded around it. Docs site only, not ready for production: known issues in [#167](https://github.com/jwildfire/safety.viz/issues/167). [#142](https://github.com/jwildfire/safety.viz/issues/142)
+
+## Tests and provenance
+
+2,100 unit and 344 browser tests pass. The release candidate was reviewed in three parts, and every finding in the charts and the app was fixed first: [#171](https://github.com/jwildfire/safety.viz/pull/171).
 
 # safety.viz v1.7.0
 

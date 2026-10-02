@@ -32,8 +32,8 @@ describe('delta-delta configure', () => {
       filters: ['SITE', { value_col: 'ARM', label: 'Treatment Group' }]
     });
     expect(synced.filters).toEqual([
-      { value_col: 'SITE', label: 'SITE' },
-      { value_col: 'ARM', label: 'Treatment Group' }
+      { value_col: 'SITE', label: 'SITE', start: null, all: true, multiple: false },
+      { value_col: 'ARM', label: 'Treatment Group', start: null, all: true, multiple: false }
     ]);
   });
 

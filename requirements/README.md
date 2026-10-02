@@ -13,13 +13,16 @@ These matrices are the input to the evidence pages published with every release:
 | [safety-results-over-time.md](safety-results-over-time.md) | results-over-time                  |   62 |
 | [hep-waterfall.md](hep-waterfall.md)                       | hep-waterfall                      |   57 |
 | [safety-delta-delta.md](safety-delta-delta.md)             | delta-delta                        |   48 |
-| [qt-explorer.md](qt-explorer.md)                           | qt-explorer                        |   47 |
+| [qt-explorer.md](qt-explorer.md)                           | qt-explorer                        |   50 |
 | [nep-explorer.md](nep-explorer.md)                         | nep-explorer                       |   46 |
 | [participant-profile.md](participant-profile.md)           | participant-profile                |   68 |
 | [ae-timelines.md](ae-timelines.md)                         | ae-timelines                       |   43 |
 | [safety-shift-plot.md](safety-shift-plot.md)               | shift-plot                         |   39 |
+| [patient-journey-explorer.md](patient-journey-explorer.md) | patient-journey-explorer           |   61 |
 | [web-codebook.md](web-codebook.md)                         | web-codebook (planned)             |  223 |
 | [paneled-outlier-explorer.md](paneled-outlier-explorer.md) | paneled-outlier-explorer (planned) |  114 |
+
+One matrix is not a renderer's: [demo-app.md](demo-app.md) holds the `APP-` rows for the demo app, the page that hosts the renderers. It has no `site/config.json` entry, so the extractor does not read it; its tests carry its IDs.
 
 Row counts are the rows the extractor recognizes; they move as requirements are added, split, or superseded.
 

@@ -93,8 +93,8 @@ describe('nep-explorer configure', () => {
       details: ['SITE']
     });
     expect(settings.filters).toEqual([
-      { value_col: 'SEX', label: 'SEX' },
-      { value_col: 'ARM', label: 'Treatment' }
+      { value_col: 'SEX', label: 'SEX', start: null, all: true, multiple: false },
+      { value_col: 'ARM', label: 'Treatment', start: null, all: true, multiple: false }
     ]);
     expect(settings.details[0]).toEqual({ value_col: 'USUBJID', label: 'Participant ID' });
     expect(settings.details.map((detail) => detail.value_col)).toContain('SITE');
