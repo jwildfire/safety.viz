@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import manifest from '../../../src/data/portfolio.json';
 import { parseFile } from '../../../src/app/parse.js';
 import { buildMapping, setColumn, setMeasure } from '../../../src/app/mapping.js';
-import { chartStatus, supportedCount } from '../../../src/app/status.js';
+import { chartStatus, neededBy, supportedCount } from '../../../src/app/status.js';
 
 const demo = (file) =>
   parseFile(file, readFileSync(new URL(`../../../site/data/${file}`, import.meta.url), 'utf8'));
@@ -111,5 +111,27 @@ describe('portfolio app: chart status', () => {
     expect(new Set(Object.values(states(status)))).toEqual(
       new Set(['no file', 'needs more domains'])
     );
+  });
+});
+
+describe('portfolio app: what needs each row', () => {
+  it('APP-STAT-008: each column and measure knows which charts cannot draw without it (#151)', () => {
+    const needed = neededBy(manifest);
+    expect(needed.columns.bds.STNRHI).toEqual([
+      'Hepatic Safety Explorer',
+      'Hepatic ALT Waterfall',
+      'Participant Profile'
+    ]);
+    expect(needed.columns.bds.ARM).toEqual(['Hepatic ALT Waterfall']);
+    // Optional everywhere: no chart needs it.
+    expect(needed.columns.bds.DY).toEqual([]);
+    // Time to event's needs come from the chart, not its schema's empty required list.
+    expect(needed.columns.subject.EOSDY).toEqual(['Time-to-Event Explorer']);
+    expect(needed.columns.ae.USUBJID).toContain('Time-to-Event Explorer');
+    expect(needed.measures.CREAT).toEqual(['Nephrotoxicity Explorer']);
+    expect(needed.measures.ALT).toEqual(['Hepatic Safety Explorer', 'Hepatic ALT Waterfall']);
+    // One of the two corrections is enough, so neither is needed on its own account.
+    expect(needed.measures.QTcF).toEqual([]);
+    expect(needed.anyMeasure).toEqual([{ keys: ['QTcF', 'QTcB'], charts: ['QT Safety Explorer'] }]);
   });
 });

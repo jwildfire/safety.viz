@@ -114,3 +114,40 @@ export function supportedCount(status) {
     total: entries.length
   };
 }
+
+/**
+ * Which charts cannot draw without each mapping row: the index behind the
+ * mapping table's "needed by 3 charts". A column is needed by the charts whose
+ * schema requires the setting it backs, plus the settings {@link CHART_NEEDS}
+ * adds; a measure by the charts that find it by name. Charts for which one of
+ * several measures is enough are listed apart, since no single measure is needed.
+ * @param {Object} manifest The portfolio manifest.
+ * @returns {{columns: Object<string, Object<string, string[]>>, measures: Object<string, string[]>, anyMeasure: {keys: string[], charts: string[]}[]}} Chart titles per domain column and per measure key, in manifest order.
+ */
+export function neededBy(manifest) {
+  const columns = Object.fromEntries(
+    Object.entries(manifest.domains).map(([domain, definition]) => [
+      domain,
+      Object.fromEntries(Object.keys(definition.columns).map((column) => [column, []]))
+    ])
+  );
+  const measures = Object.fromEntries(MEASURES.map((measure) => [measure.key, []]));
+  const anyMeasure = [];
+  for (const [module, entry] of Object.entries(manifest.modules)) {
+    const needs = CHART_NEEDS[module] || {};
+    for (const [key, setting] of Object.entries(entry.settings)) {
+      if (!setting.required && !(needs.settings || []).includes(key)) continue;
+      for (const domain of asList(setting.domain)) {
+        const charts = columns[domain][setting.column];
+        if (charts && !charts.includes(entry.title)) charts.push(entry.title);
+      }
+    }
+    for (const key of needs.measures || []) measures[key].push(entry.title);
+    if (needs.anyMeasure) {
+      const group = anyMeasure.find((item) => item.keys.join() === needs.anyMeasure.join());
+      if (group) group.charts.push(entry.title);
+      else anyMeasure.push({ keys: [...needs.anyMeasure], charts: [entry.title] });
+    }
+  }
+  return { columns, measures, anyMeasure };
+}

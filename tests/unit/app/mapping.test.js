@@ -3,10 +3,12 @@ import { readFileSync } from 'node:fs';
 import manifest from '../../../src/data/portfolio.json';
 import { parseFile } from '../../../src/app/parse.js';
 import {
+  applySavedMapping,
   buildMapping,
   measureColumn,
   resolveColumn,
   resolveMeasure,
+  serializeMappings,
   setColumn,
   setMeasure,
   MEASURES
@@ -137,5 +139,70 @@ describe('portfolio app: the pre-filled mapping', () => {
       value: 'CREAT',
       source: 'chosen'
     });
+  });
+});
+
+describe('portfolio app: the mapping file', () => {
+  const file = {
+    name: 'labs.csv',
+    columns: ['SUBJID', 'LBTEST', 'LBSTRESN', 'ULN', 'GRP'],
+    rows: [
+      { SUBJID: '1', LBTEST: 'ALT (SGPT)', LBSTRESN: '30', ULN: '40', GRP: 'A' },
+      { SUBJID: '1', LBTEST: 'Tot. Bilirubin', LBSTRESN: '1', ULN: '1.2', GRP: 'A' }
+    ]
+  };
+  const byHand = () => {
+    let mapping = buildMapping('bds', file, manifest);
+    mapping = setColumn(mapping, 'STNRHI', 'ULN', file);
+    mapping = setColumn(mapping, 'ARM', 'GRP', file);
+    mapping = setColumn(mapping, 'VISIT', null, file);
+    return setMeasure(mapping, 'TB', 'Tot. Bilirubin');
+  };
+
+  it('APP-MAP-008: mappings are saved as each row’s value, with the file each belongs to, marked provisional (#151)', () => {
+    const saved = serializeMappings({ bds: file }, { bds: byHand() });
+    expect(saved.safetyVizMapping).toBe(1);
+    expect(saved.note).toContain('Provisional');
+    expect(saved.domains.bds.file).toBe('labs.csv');
+    expect(saved.domains.bds.columns).toMatchObject({
+      USUBJID: 'SUBJID',
+      STNRHI: 'ULN',
+      ARM: 'GRP',
+      VISIT: null
+    });
+    expect(saved.domains.bds.measures).toMatchObject({ ALT: 'ALT (SGPT)', TB: 'Tot. Bilirubin' });
+    // Plain data: it survives being written to a file and read back.
+    expect(JSON.parse(JSON.stringify(saved))).toEqual(saved);
+  });
+
+  it('APP-MAP-009: a saved mapping restores the same mapping on the same file, rows chosen by hand still marked chosen (#151)', () => {
+    const before = byHand();
+    const saved = JSON.parse(JSON.stringify(serializeMappings({ bds: file }, { bds: before })));
+    const { mapping, skipped } = applySavedMapping(
+      buildMapping('bds', file, manifest),
+      saved.domains.bds,
+      file
+    );
+    expect(mapping).toEqual(before);
+    expect(skipped).toEqual([]);
+    expect(mapping.columns.USUBJID.source).toBe('guessed');
+    expect(mapping.columns.STNRHI.source).toBe('chosen');
+  });
+
+  it('APP-MAP-010: a saved value the file no longer carries is skipped and named, never applied blind (#151)', () => {
+    const saved = serializeMappings({ bds: file }, { bds: byHand() }).domains.bds;
+    const changed = {
+      ...file,
+      columns: ['SUBJID', 'LBTEST', 'LBSTRESN', 'GRP'],
+      rows: [{ SUBJID: '1', LBTEST: 'ALT (SGPT)', LBSTRESN: '30', GRP: 'A' }]
+    };
+    const { mapping, skipped } = applySavedMapping(
+      buildMapping('bds', changed, manifest),
+      saved,
+      changed
+    );
+    expect(mapping.columns.STNRHI).toEqual({ value: null, source: null });
+    expect(mapping.columns.ARM).toEqual({ value: 'GRP', source: 'chosen' });
+    expect(skipped).toEqual(['ULN', 'Tot. Bilirubin']);
   });
 });

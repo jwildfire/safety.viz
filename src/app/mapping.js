@@ -290,3 +290,59 @@ export function setMeasure(mapping, key, value) {
     measures: { ...mapping.measures, [key]: value ? { value, source: 'chosen' } : { ...EMPTY } }
   };
 }
+
+/**
+ * The mappings as plain data for the mapping file (#151): for each loaded
+ * domain, the file it belongs to and each row's value, an unmapped row as null.
+ * The format is provisional: the study configuration replaces it.
+ * @param {Object<string, {name: string}>} files The parsed file for each loaded domain.
+ * @param {Object<string, Object>} mappings The mapping for each loaded domain.
+ * @returns {{safetyVizMapping: number, note: string, domains: Object}} The mapping file's content.
+ */
+export function serializeMappings(files, mappings) {
+  const values = (rows) =>
+    Object.fromEntries(Object.entries(rows).map(([key, row]) => [key, row.value]));
+  return {
+    safetyVizMapping: 1,
+    note:
+      'Provisional format, written by the safety.viz portfolio app. Drop this file on the app ' +
+      'with the data files it names to restore the mapping. A study configuration will replace it.',
+    domains: Object.fromEntries(
+      Object.entries(mappings).map(([domain, mapping]) => [
+        domain,
+        {
+          file: files[domain].name,
+          columns: values(mapping.columns),
+          measures: values(mapping.measures)
+        }
+      ])
+    )
+  };
+}
+
+/**
+ * Apply one domain of a saved mapping file to a freshly built mapping. A row
+ * the saved file agrees with is left as it was filled; a row it disagrees with
+ * is set as if by hand, so it reads "chosen". A saved value the file no longer
+ * carries is skipped and returned by name, never applied blind.
+ * @param {Object} mapping The mapping {@link buildMapping} gave for the file.
+ * @param {{columns: Object, measures: Object}} saved The saved domain entry.
+ * @param {{columns: string[], rows: Object[]}} file The parsed file.
+ * @returns {{mapping: Object, skipped: string[]}} The restored mapping and the saved values that were not found.
+ */
+export function applySavedMapping(mapping, saved, file) {
+  let next = mapping;
+  const skipped = [];
+  for (const [column, value] of Object.entries(saved.columns || {})) {
+    if (!next.columns[column] || next.columns[column].value === value) continue;
+    if (value !== null && !file.columns.includes(value)) skipped.push(value);
+    else next = setColumn(next, column, value, file);
+  }
+  const names = distinctValues(file.rows, measureColumn(next));
+  for (const [key, value] of Object.entries(saved.measures || {})) {
+    if (!next.measures[key] || next.measures[key].value === value) continue;
+    if (value !== null && !names.includes(value)) skipped.push(value);
+    else next = setMeasure(next, key, value);
+  }
+  return { mapping: next, skipped };
+}
