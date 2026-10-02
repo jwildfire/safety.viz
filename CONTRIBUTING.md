@@ -13,6 +13,7 @@ npm ci
 | `npm run build`                           | esbuild `src/main.js` into versioned IIFE + ESM bundles under `dist/safety.viz-{version}/`                                                             |
 | `npm run build:check-dist`                | Rebuild to a temp dir and fail if committed `dist/` has drifted from `src/`                                                                            |
 | `npm run build:app`                       | Bundle the portfolio app (`src/app/`) into `build/app/` (gitignored) for the browser tests; the site build writes its own copy into `_site/portfolio/` |
+| `node scripts/build-app-fixture.mjs`      | Regenerate the renamed-column study under `tests/e2e/fixtures/app/` that the portfolio app's browser tests load                                        |
 | `npm test`                                | Vitest unit tests (`tests/unit/`)                                                                                                                      |
 | `npm run test:e2e`                        | Playwright browser tests (`tests/e2e/`)                                                                                                                |
 | `npm run format` / `npm run format:check` | Prettier write / check                                                                                                                                 |
