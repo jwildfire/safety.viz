@@ -4,6 +4,7 @@ playwright-report/
 test-results/
 package-lock.json
 _site/
+build/
 _api/
 
 # Requirement matrices are wide, hand-maintained data tables moved verbatim from
