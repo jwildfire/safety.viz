@@ -1,0 +1,2224 @@
+SUBJID,CENTRE,SEX,RACE,TREATMENT,AVISIT,AVISITN,LBTEST,UNITS,LBSTRESN,LLN,ULN
+01-701-1015,701,F,WHITE,Placebo,Baseline,0,Albumin,g/L,38,33,49
+01-701-1015,701,F,WHITE,Placebo,Week 2,4,Albumin,g/L,39,33,49
+01-701-1015,701,F,WHITE,Placebo,Week 4,5,Albumin,g/L,38,33,49
+01-701-1015,701,F,WHITE,Placebo,Week 6,7,Albumin,g/L,37,33,49
+01-701-1015,701,F,WHITE,Placebo,Week 8,8,Albumin,g/L,38,33,49
+01-701-1015,701,F,WHITE,Placebo,Week 12,9,Albumin,g/L,38,33,49
+01-701-1015,701,F,WHITE,Placebo,Week 16,10,Albumin,g/L,37,33,49
+01-701-1015,701,F,WHITE,Placebo,Week 20,11,Albumin,g/L,37,33,49
+01-701-1015,701,F,WHITE,Placebo,Week 24,12,Albumin,g/L,38,33,49
+01-701-1015,701,F,WHITE,Placebo,Week 26,13,Albumin,g/L,38,33,49
+01-701-1015,701,F,WHITE,Placebo,Baseline,0,Alk Phos,U/L,34,35,115
+01-701-1015,701,F,WHITE,Placebo,Week 2,4,Alk Phos,U/L,50,35,115
+01-701-1015,701,F,WHITE,Placebo,Week 4,5,Alk Phos,U/L,41,35,115
+01-701-1015,701,F,WHITE,Placebo,Week 6,7,Alk Phos,U/L,43,35,115
+01-701-1015,701,F,WHITE,Placebo,Week 8,8,Alk Phos,U/L,47,35,115
+01-701-1015,701,F,WHITE,Placebo,Week 12,9,Alk Phos,U/L,53,35,115
+01-701-1015,701,F,WHITE,Placebo,Week 16,10,Alk Phos,U/L,41,35,115
+01-701-1015,701,F,WHITE,Placebo,Week 20,11,Alk Phos,U/L,45,35,115
+01-701-1015,701,F,WHITE,Placebo,Week 24,12,Alk Phos,U/L,46,35,115
+01-701-1015,701,F,WHITE,Placebo,Week 26,13,Alk Phos,U/L,44,35,115
+01-701-1015,701,F,WHITE,Placebo,Baseline,0,ALT (SGPT),U/L,27,6,34
+01-701-1015,701,F,WHITE,Placebo,Week 2,4,ALT (SGPT),U/L,41,6,34
+01-701-1015,701,F,WHITE,Placebo,Week 4,5,ALT (SGPT),U/L,18,6,34
+01-701-1015,701,F,WHITE,Placebo,Week 6,7,ALT (SGPT),U/L,26,6,34
+01-701-1015,701,F,WHITE,Placebo,Week 8,8,ALT (SGPT),U/L,22,6,34
+01-701-1015,701,F,WHITE,Placebo,Week 12,9,ALT (SGPT),U/L,27,6,34
+01-701-1015,701,F,WHITE,Placebo,Week 16,10,ALT (SGPT),U/L,17,6,34
+01-701-1015,701,F,WHITE,Placebo,Week 20,11,ALT (SGPT),U/L,21,6,34
+01-701-1015,701,F,WHITE,Placebo,Week 24,12,ALT (SGPT),U/L,23,6,34
+01-701-1015,701,F,WHITE,Placebo,Week 26,13,ALT (SGPT),U/L,23,6,34
+01-701-1015,701,F,WHITE,Placebo,Baseline,0,AST (SGOT),U/L,40,9,34
+01-701-1015,701,F,WHITE,Placebo,Week 2,4,AST (SGOT),U/L,33,9,34
+01-701-1015,701,F,WHITE,Placebo,Week 4,5,AST (SGOT),U/L,21,9,34
+01-701-1015,701,F,WHITE,Placebo,Week 6,7,AST (SGOT),U/L,26,9,34
+01-701-1015,701,F,WHITE,Placebo,Week 8,8,AST (SGOT),U/L,21,9,34
+01-701-1015,701,F,WHITE,Placebo,Week 12,9,AST (SGOT),U/L,22,9,34
+01-701-1015,701,F,WHITE,Placebo,Week 16,10,AST (SGOT),U/L,23,9,34
+01-701-1015,701,F,WHITE,Placebo,Week 20,11,AST (SGOT),U/L,19,9,34
+01-701-1015,701,F,WHITE,Placebo,Week 24,12,AST (SGOT),U/L,23,9,34
+01-701-1015,701,F,WHITE,Placebo,Week 26,13,AST (SGOT),U/L,19,9,34
+01-701-1015,701,F,WHITE,Placebo,Baseline,0,Tot. Bilirubin,umol/L,10.26,3,21
+01-701-1015,701,F,WHITE,Placebo,Week 2,4,Tot. Bilirubin,umol/L,8.55,3,21
+01-701-1015,701,F,WHITE,Placebo,Week 4,5,Tot. Bilirubin,umol/L,6.84,3,21
+01-701-1015,701,F,WHITE,Placebo,Week 6,7,Tot. Bilirubin,umol/L,5.13,3,21
+01-701-1015,701,F,WHITE,Placebo,Week 8,8,Tot. Bilirubin,umol/L,8.55,3,21
+01-701-1015,701,F,WHITE,Placebo,Week 12,9,Tot. Bilirubin,umol/L,6.84,3,21
+01-701-1015,701,F,WHITE,Placebo,Week 16,10,Tot. Bilirubin,umol/L,6.84,3,21
+01-701-1015,701,F,WHITE,Placebo,Week 20,11,Tot. Bilirubin,umol/L,6.84,3,21
+01-701-1015,701,F,WHITE,Placebo,Week 24,12,Tot. Bilirubin,umol/L,6.84,3,21
+01-701-1015,701,F,WHITE,Placebo,Week 26,13,Tot. Bilirubin,umol/L,5.13,3,21
+01-701-1015,701,F,WHITE,Placebo,Baseline,0,Creatinine,umol/L,79.56,62,124
+01-701-1015,701,F,WHITE,Placebo,Week 2,4,Creatinine,umol/L,88.4,62,124
+01-701-1015,701,F,WHITE,Placebo,Week 4,5,Creatinine,umol/L,70.72,62,124
+01-701-1015,701,F,WHITE,Placebo,Week 6,7,Creatinine,umol/L,88.4,62,124
+01-701-1015,701,F,WHITE,Placebo,Week 8,8,Creatinine,umol/L,88.4,62,124
+01-701-1015,701,F,WHITE,Placebo,Week 12,9,Creatinine,umol/L,79.56,62,124
+01-701-1015,701,F,WHITE,Placebo,Week 16,10,Creatinine,umol/L,88.4,62,124
+01-701-1015,701,F,WHITE,Placebo,Week 20,11,Creatinine,umol/L,79.56,62,124
+01-701-1015,701,F,WHITE,Placebo,Week 24,12,Creatinine,umol/L,79.56,62,124
+01-701-1015,701,F,WHITE,Placebo,Week 26,13,Creatinine,umol/L,88.4,62,124
+01-701-1015,701,F,WHITE,Placebo,Baseline,0,Glucose,mmol/L,4.71835,2.8,13.9
+01-701-1015,701,F,WHITE,Placebo,Week 2,4,Glucose,mmol/L,4.66284,2.8,13.9
+01-701-1015,701,F,WHITE,Placebo,Week 4,5,Glucose,mmol/L,4.38529,2.8,13.9
+01-701-1015,701,F,WHITE,Placebo,Week 6,7,Glucose,mmol/L,5.10692,2.8,13.9
+01-701-1015,701,F,WHITE,Placebo,Week 8,8,Glucose,mmol/L,4.55182,2.8,13.9
+01-701-1015,701,F,WHITE,Placebo,Week 12,9,Glucose,mmol/L,4.82937,2.8,13.9
+01-701-1015,701,F,WHITE,Placebo,Week 16,10,Glucose,mmol/L,4.77386,2.8,13.9
+01-701-1015,701,F,WHITE,Placebo,Week 20,11,Glucose,mmol/L,4.88488,2.8,13.9
+01-701-1015,701,F,WHITE,Placebo,Week 24,12,Glucose,mmol/L,4.49631,2.8,13.9
+01-701-1015,701,F,WHITE,Placebo,Week 26,13,Glucose,mmol/L,5.10692,2.8,13.9
+01-701-1015,701,F,WHITE,Placebo,Baseline,0,Potassium,mmol/L,4.5,3.4,5.4
+01-701-1015,701,F,WHITE,Placebo,Week 2,4,Potassium,mmol/L,4.4,3.4,5.4
+01-701-1015,701,F,WHITE,Placebo,Week 4,5,Potassium,mmol/L,4.5,3.4,5.4
+01-701-1015,701,F,WHITE,Placebo,Week 6,7,Potassium,mmol/L,4.6,3.4,5.4
+01-701-1015,701,F,WHITE,Placebo,Week 8,8,Potassium,mmol/L,4.1,3.4,5.4
+01-701-1015,701,F,WHITE,Placebo,Week 12,9,Potassium,mmol/L,3.6,3.4,5.4
+01-701-1015,701,F,WHITE,Placebo,Week 16,10,Potassium,mmol/L,4.1,3.4,5.4
+01-701-1015,701,F,WHITE,Placebo,Week 20,11,Potassium,mmol/L,4.3,3.4,5.4
+01-701-1015,701,F,WHITE,Placebo,Week 24,12,Potassium,mmol/L,4.1,3.4,5.4
+01-701-1015,701,F,WHITE,Placebo,Week 26,13,Potassium,mmol/L,4.5,3.4,5.4
+01-701-1023,701,M,WHITE,Placebo,Baseline,0,Albumin,g/L,40,33,49
+01-701-1023,701,M,WHITE,Placebo,Week 2,4,Albumin,g/L,36,33,49
+01-701-1023,701,M,WHITE,Placebo,Baseline,0,Alk Phos,U/L,98,35,115
+01-701-1023,701,M,WHITE,Placebo,Week 2,4,Alk Phos,U/L,90,35,115
+01-701-1023,701,M,WHITE,Placebo,Baseline,0,ALT (SGPT),U/L,23,6,43
+01-701-1023,701,M,WHITE,Placebo,Week 2,4,ALT (SGPT),U/L,30,6,43
+01-701-1023,701,M,WHITE,Placebo,Baseline,0,AST (SGOT),U/L,21,11,36
+01-701-1023,701,M,WHITE,Placebo,Week 2,4,AST (SGOT),U/L,25,11,36
+01-701-1023,701,M,WHITE,Placebo,Baseline,0,Tot. Bilirubin,umol/L,11.97,3,21
+01-701-1023,701,M,WHITE,Placebo,Week 2,4,Tot. Bilirubin,umol/L,6.84,3,21
+01-701-1023,701,M,WHITE,Placebo,Baseline,0,Creatinine,umol/L,123.76,71,141
+01-701-1023,701,M,WHITE,Placebo,Week 2,4,Creatinine,umol/L,132.6,71,141
+01-701-1023,701,M,WHITE,Placebo,Baseline,0,Glucose,mmol/L,5.32896,2.8,13.9
+01-701-1023,701,M,WHITE,Placebo,Week 2,4,Glucose,mmol/L,5.77304,2.8,13.9
+01-701-1023,701,M,WHITE,Placebo,Baseline,0,Potassium,mmol/L,4.9,3.4,5.4
+01-701-1023,701,M,WHITE,Placebo,Week 2,4,Potassium,mmol/L,4.8,3.4,5.4
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Baseline,0,Albumin,g/L,44,35,46
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 2,4,Albumin,g/L,42,35,46
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 4,5,Albumin,g/L,41,35,46
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 6,7,Albumin,g/L,40,35,46
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 8,8,Albumin,g/L,39,35,46
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 12,9,Albumin,g/L,44,35,46
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 16,10,Albumin,g/L,37,35,46
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 20,11,Albumin,g/L,40,35,46
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 24,12,Albumin,g/L,42,35,46
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 26,13,Albumin,g/L,45,35,46
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Baseline,0,Alk Phos,U/L,44,35,115
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 2,4,Alk Phos,U/L,46,35,115
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 4,5,Alk Phos,U/L,38,35,115
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 6,7,Alk Phos,U/L,40,35,115
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 8,8,Alk Phos,U/L,40,35,115
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 12,9,Alk Phos,U/L,41,35,115
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 16,10,Alk Phos,U/L,36,35,115
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 20,11,Alk Phos,U/L,43,35,115
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 24,12,Alk Phos,U/L,47,35,115
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 26,13,Alk Phos,U/L,40,35,115
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Baseline,0,ALT (SGPT),U/L,26,6,35
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 2,4,ALT (SGPT),U/L,30,6,35
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 4,5,ALT (SGPT),U/L,29,6,35
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 6,7,ALT (SGPT),U/L,32,6,35
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 8,8,ALT (SGPT),U/L,33,6,35
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 12,9,ALT (SGPT),U/L,29,6,35
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 16,10,ALT (SGPT),U/L,24,6,35
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 20,11,ALT (SGPT),U/L,22,6,35
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 24,12,ALT (SGPT),U/L,24,6,35
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 26,13,ALT (SGPT),U/L,26,6,35
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Baseline,0,AST (SGOT),U/L,24,11,36
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 2,4,AST (SGOT),U/L,23,11,36
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 4,5,AST (SGOT),U/L,24,11,36
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 6,7,AST (SGOT),U/L,26,11,36
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 8,8,AST (SGOT),U/L,28,11,36
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 12,9,AST (SGOT),U/L,28,11,36
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 16,10,AST (SGOT),U/L,18,11,36
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 20,11,AST (SGOT),U/L,21,11,36
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 24,12,AST (SGOT),U/L,23,11,36
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 26,13,AST (SGOT),U/L,24,11,36
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Baseline,0,Tot. Bilirubin,umol/L,18.81,3,21
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 2,4,Tot. Bilirubin,umol/L,11.97,3,21
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 4,5,Tot. Bilirubin,umol/L,13.68,3,21
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 6,7,Tot. Bilirubin,umol/L,11.97,3,21
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 8,8,Tot. Bilirubin,umol/L,13.68,3,21
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 12,9,Tot. Bilirubin,umol/L,13.68,3,21
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 16,10,Tot. Bilirubin,umol/L,11.97,3,21
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 20,11,Tot. Bilirubin,umol/L,13.68,3,21
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 24,12,Tot. Bilirubin,umol/L,15.39,3,21
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 26,13,Tot. Bilirubin,umol/L,13.68,3,21
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Baseline,0,Creatinine,umol/L,123.76,71,141
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 2,4,Creatinine,umol/L,132.6,71,141
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 4,5,Creatinine,umol/L,141.44,71,141
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 6,7,Creatinine,umol/L,123.76,71,141
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 8,8,Creatinine,umol/L,132.6,71,141
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 12,9,Creatinine,umol/L,132.6,71,141
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 16,10,Creatinine,umol/L,114.92,71,141
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 20,11,Creatinine,umol/L,123.76,71,141
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 24,12,Creatinine,umol/L,132.6,71,141
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 26,13,Creatinine,umol/L,132.6,71,141
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Baseline,0,Glucose,mmol/L,4.77386,2.8,13.9
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 2,4,Glucose,mmol/L,4.16325,2.8,13.9
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 4,5,Glucose,mmol/L,4.4408,2.8,13.9
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 6,7,Glucose,mmol/L,4.21876,2.8,13.9
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 8,8,Glucose,mmol/L,5.10692,2.8,13.9
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 12,9,Glucose,mmol/L,4.82937,2.8,13.9
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 16,10,Glucose,mmol/L,4.82937,2.8,13.9
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 20,11,Glucose,mmol/L,4.55182,2.8,13.9
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 24,12,Glucose,mmol/L,5.43998,2.8,13.9
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 26,13,Glucose,mmol/L,4.88488,2.8,13.9
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Baseline,0,Potassium,mmol/L,4.4,3.4,5.4
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 2,4,Potassium,mmol/L,4.6,3.4,5.4
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 4,5,Potassium,mmol/L,4.6,3.4,5.4
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 6,7,Potassium,mmol/L,4.4,3.4,5.4
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 8,8,Potassium,mmol/L,4,3.4,5.4
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 12,9,Potassium,mmol/L,4.4,3.4,5.4
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 16,10,Potassium,mmol/L,4.2,3.4,5.4
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 20,11,Potassium,mmol/L,4.2,3.4,5.4
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 24,12,Potassium,mmol/L,4.6,3.4,5.4
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 26,13,Potassium,mmol/L,4.4,3.4,5.4
+01-701-1033,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Albumin,g/L,38,35,46
+01-701-1033,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Alk Phos,U/L,67,35,115
+01-701-1033,701,M,WHITE,Xanomeline Low Dose,Baseline,0,ALT (SGPT),U/L,16,6,35
+01-701-1033,701,M,WHITE,Xanomeline Low Dose,Baseline,0,AST (SGOT),U/L,20,11,36
+01-701-1033,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Tot. Bilirubin,umol/L,13.68,3,21
+01-701-1033,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Creatinine,umol/L,132.6,71,141
+01-701-1033,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Glucose,mmol/L,4.9959,2.8,13.9
+01-701-1033,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Potassium,mmol/L,4.1,3.4,5.4
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Baseline,0,Albumin,g/L,43,35,46
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 2,4,Albumin,g/L,42,35,46
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 4,5,Albumin,g/L,41,35,46
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 6,7,Albumin,g/L,38,35,46
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 8,8,Albumin,g/L,41,35,46
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 12,9,Albumin,g/L,39,35,46
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 16,10,Albumin,g/L,39,35,46
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 20,11,Albumin,g/L,39,35,46
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 24,12,Albumin,g/L,40,35,46
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 26,13,Albumin,g/L,41,35,46
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Baseline,0,Alk Phos,U/L,41,35,115
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 2,4,Alk Phos,U/L,34,35,115
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 4,5,Alk Phos,U/L,36,35,115
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 6,7,Alk Phos,U/L,33,35,115
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 8,8,Alk Phos,U/L,29,35,115
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 12,9,Alk Phos,U/L,34,35,115
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 16,10,Alk Phos,U/L,34,35,115
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 20,11,Alk Phos,U/L,31,35,115
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 24,12,Alk Phos,U/L,40,35,115
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 26,13,Alk Phos,U/L,27,35,115
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Baseline,0,ALT (SGPT),U/L,15,6,32
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 2,4,ALT (SGPT),U/L,19,6,32
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 4,5,ALT (SGPT),U/L,21,6,32
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 6,7,ALT (SGPT),U/L,15,6,32
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 8,8,ALT (SGPT),U/L,24,6,32
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 12,9,ALT (SGPT),U/L,20,6,32
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 16,10,ALT (SGPT),U/L,21,6,32
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 20,11,ALT (SGPT),U/L,23,6,32
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 24,12,ALT (SGPT),U/L,15,6,32
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 26,13,ALT (SGPT),U/L,18,6,32
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Baseline,0,AST (SGOT),U/L,23,9,34
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 2,4,AST (SGOT),U/L,23,9,34
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 4,5,AST (SGOT),U/L,25,9,34
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 6,7,AST (SGOT),U/L,19,9,34
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 8,8,AST (SGOT),U/L,26,9,34
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 12,9,AST (SGOT),U/L,23,9,34
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 16,10,AST (SGOT),U/L,21,9,34
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 20,11,AST (SGOT),U/L,22,9,34
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 24,12,AST (SGOT),U/L,17,9,34
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 26,13,AST (SGOT),U/L,21,9,34
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Baseline,0,Tot. Bilirubin,umol/L,10.26,3,21
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 2,4,Tot. Bilirubin,umol/L,6.84,3,21
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 4,5,Tot. Bilirubin,umol/L,6.84,3,21
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 6,7,Tot. Bilirubin,umol/L,6.84,3,21
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 8,8,Tot. Bilirubin,umol/L,8.55,3,21
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 12,9,Tot. Bilirubin,umol/L,8.55,3,21
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 16,10,Tot. Bilirubin,umol/L,6.84,3,21
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 20,11,Tot. Bilirubin,umol/L,5.13,3,21
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 24,12,Tot. Bilirubin,umol/L,6.84,3,21
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 26,13,Tot. Bilirubin,umol/L,6.84,3,21
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Baseline,0,Creatinine,umol/L,88.4,62,124
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 2,4,Creatinine,umol/L,88.4,62,124
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 4,5,Creatinine,umol/L,79.56,62,124
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 6,7,Creatinine,umol/L,79.56,62,124
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 8,8,Creatinine,umol/L,79.56,62,124
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 12,9,Creatinine,umol/L,97.24,62,124
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 16,10,Creatinine,umol/L,97.24,62,124
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 20,11,Creatinine,umol/L,79.56,62,124
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 24,12,Creatinine,umol/L,79.56,62,124
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 26,13,Creatinine,umol/L,70.72,62,124
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Baseline,0,Glucose,mmol/L,4.49631,2.8,13.9
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 2,4,Glucose,mmol/L,4.71835,2.8,13.9
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 4,5,Glucose,mmol/L,4.60733,2.8,13.9
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 6,7,Glucose,mmol/L,5.43998,2.8,13.9
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 8,8,Glucose,mmol/L,4.77386,2.8,13.9
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 12,9,Glucose,mmol/L,5.05141,2.8,13.9
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 16,10,Glucose,mmol/L,5.10692,2.8,13.9
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 20,11,Glucose,mmol/L,4.82937,2.8,13.9
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 24,12,Glucose,mmol/L,5.10692,2.8,13.9
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 26,13,Glucose,mmol/L,4.77386,2.8,13.9
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Baseline,0,Potassium,mmol/L,4.4,3.4,5.4
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 2,4,Potassium,mmol/L,4.6,3.4,5.4
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 4,5,Potassium,mmol/L,4.4,3.4,5.4
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 6,7,Potassium,mmol/L,4.1,3.4,5.4
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 8,8,Potassium,mmol/L,4.8,3.4,5.4
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 12,9,Potassium,mmol/L,4.2,3.4,5.4
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 16,10,Potassium,mmol/L,4.7,3.4,5.4
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 20,11,Potassium,mmol/L,4.5,3.4,5.4
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 24,12,Potassium,mmol/L,4.5,3.4,5.4
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 26,13,Potassium,mmol/L,4.2,3.4,5.4
+01-701-1047,701,F,WHITE,Placebo,Baseline,0,Albumin,g/L,42,35,46
+01-701-1047,701,F,WHITE,Placebo,Week 2,4,Albumin,g/L,38,35,46
+01-701-1047,701,F,WHITE,Placebo,Baseline,0,Alk Phos,U/L,78,35,115
+01-701-1047,701,F,WHITE,Placebo,Week 2,4,Alk Phos,U/L,67,35,115
+01-701-1047,701,F,WHITE,Placebo,Baseline,0,ALT (SGPT),U/L,22,6,32
+01-701-1047,701,F,WHITE,Placebo,Week 2,4,ALT (SGPT),U/L,16,6,32
+01-701-1047,701,F,WHITE,Placebo,Baseline,0,AST (SGOT),U/L,25,9,34
+01-701-1047,701,F,WHITE,Placebo,Week 2,4,AST (SGOT),U/L,21,9,34
+01-701-1047,701,F,WHITE,Placebo,Baseline,0,Tot. Bilirubin,umol/L,6.84,3,21
+01-701-1047,701,F,WHITE,Placebo,Week 2,4,Tot. Bilirubin,umol/L,8.55,3,21
+01-701-1047,701,F,WHITE,Placebo,Baseline,0,Creatinine,umol/L,88.4,62,124
+01-701-1047,701,F,WHITE,Placebo,Week 2,4,Creatinine,umol/L,88.4,62,124
+01-701-1047,701,F,WHITE,Placebo,Baseline,0,Glucose,mmol/L,5.551,2.8,13.9
+01-701-1047,701,F,WHITE,Placebo,Week 2,4,Glucose,mmol/L,5.551,2.8,13.9
+01-701-1047,701,F,WHITE,Placebo,Baseline,0,Potassium,mmol/L,4.3,3.4,5.4
+01-701-1047,701,F,WHITE,Placebo,Week 2,4,Potassium,mmol/L,3.9,3.4,5.4
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Albumin,g/L,43,33,49
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 2,4,Albumin,g/L,42,33,49
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 4,5,Albumin,g/L,42,33,49
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 6,7,Albumin,g/L,41,33,49
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 8,8,Albumin,g/L,43,33,49
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 12,9,Albumin,g/L,41,33,49
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 16,10,Albumin,g/L,42,33,49
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 20,11,Albumin,g/L,39,33,49
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 24,12,Albumin,g/L,43,33,49
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 26,13,Albumin,g/L,40,33,49
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Alk Phos,U/L,56,35,115
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 2,4,Alk Phos,U/L,54,35,115
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 4,5,Alk Phos,U/L,49,35,115
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 6,7,Alk Phos,U/L,48,35,115
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 8,8,Alk Phos,U/L,49,35,115
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 12,9,Alk Phos,U/L,53,35,115
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 16,10,Alk Phos,U/L,67,35,115
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 20,11,Alk Phos,U/L,50,35,115
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 24,12,Alk Phos,U/L,54,35,115
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 26,13,Alk Phos,U/L,52,35,115
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Baseline,0,ALT (SGPT),U/L,16,6,43
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 2,4,ALT (SGPT),U/L,24,6,43
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 4,5,ALT (SGPT),U/L,17,6,43
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 6,7,ALT (SGPT),U/L,14,6,43
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 8,8,ALT (SGPT),U/L,18,6,43
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 12,9,ALT (SGPT),U/L,14,6,43
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 16,10,ALT (SGPT),U/L,15,6,43
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 20,11,ALT (SGPT),U/L,11,6,43
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 24,12,ALT (SGPT),U/L,18,6,43
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 26,13,ALT (SGPT),U/L,15,6,43
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Baseline,0,AST (SGOT),U/L,19,11,36
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 2,4,AST (SGOT),U/L,21,11,36
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 4,5,AST (SGOT),U/L,16,11,36
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 6,7,AST (SGOT),U/L,19,11,36
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 8,8,AST (SGOT),U/L,18,11,36
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 12,9,AST (SGOT),U/L,17,11,36
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 16,10,AST (SGOT),U/L,17,11,36
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 20,11,AST (SGOT),U/L,16,11,36
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 24,12,AST (SGOT),U/L,20,11,36
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 26,13,AST (SGOT),U/L,19,11,36
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Tot. Bilirubin,umol/L,6.84,3,21
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 2,4,Tot. Bilirubin,umol/L,8.55,3,21
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 4,5,Tot. Bilirubin,umol/L,10.26,3,21
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 6,7,Tot. Bilirubin,umol/L,8.55,3,21
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 8,8,Tot. Bilirubin,umol/L,8.55,3,21
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 12,9,Tot. Bilirubin,umol/L,6.84,3,21
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 16,10,Tot. Bilirubin,umol/L,6.84,3,21
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 20,11,Tot. Bilirubin,umol/L,5.13,3,21
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 24,12,Tot. Bilirubin,umol/L,10.26,3,21
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 26,13,Tot. Bilirubin,umol/L,8.55,3,21
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Creatinine,umol/L,123.76,71,141
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 2,4,Creatinine,umol/L,132.6,71,141
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 4,5,Creatinine,umol/L,132.6,71,141
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 6,7,Creatinine,umol/L,132.6,71,141
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 8,8,Creatinine,umol/L,132.6,71,141
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 12,9,Creatinine,umol/L,132.6,71,141
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 16,10,Creatinine,umol/L,132.6,71,141
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 20,11,Creatinine,umol/L,132.6,71,141
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 24,12,Creatinine,umol/L,123.76,71,141
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 26,13,Creatinine,umol/L,141.44,71,141
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Glucose,mmol/L,5.16243,2.8,13.9
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 2,4,Glucose,mmol/L,4.9959,2.8,13.9
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 4,5,Glucose,mmol/L,5.38447,2.8,13.9
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 6,7,Glucose,mmol/L,3.71917,2.8,13.9
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 8,8,Glucose,mmol/L,4.94039,2.8,13.9
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 12,9,Glucose,mmol/L,5.93957,2.8,13.9
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 16,10,Glucose,mmol/L,4.9959,2.8,13.9
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 20,11,Glucose,mmol/L,4.32978,2.8,13.9
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 24,12,Glucose,mmol/L,5.32896,2.8,13.9
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 26,13,Glucose,mmol/L,4.94039,2.8,13.9
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Potassium,mmol/L,4.6,3.4,5.4
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 2,4,Potassium,mmol/L,4.8,3.4,5.4
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 4,5,Potassium,mmol/L,4.8,3.4,5.4
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 6,7,Potassium,mmol/L,4.6,3.4,5.4
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 8,8,Potassium,mmol/L,5,3.4,5.4
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 12,9,Potassium,mmol/L,4.2,3.4,5.4
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 16,10,Potassium,mmol/L,4.7,3.4,5.4
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 20,11,Potassium,mmol/L,4.2,3.4,5.4
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 24,12,Potassium,mmol/L,4.1,3.4,5.4
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 26,13,Potassium,mmol/L,5,3.4,5.4
+01-701-1111,701,F,WHITE,Xanomeline Low Dose,Baseline,0,Albumin,g/L,36,35,46
+01-701-1111,701,F,WHITE,Xanomeline Low Dose,Baseline,0,Alk Phos,U/L,64,35,115
+01-701-1111,701,F,WHITE,Xanomeline Low Dose,Baseline,0,ALT (SGPT),U/L,23,6,32
+01-701-1111,701,F,WHITE,Xanomeline Low Dose,Baseline,0,AST (SGOT),U/L,28,9,34
+01-701-1111,701,F,WHITE,Xanomeline Low Dose,Baseline,0,Tot. Bilirubin,umol/L,6.84,3,21
+01-701-1111,701,F,WHITE,Xanomeline Low Dose,Baseline,0,Creatinine,umol/L,79.56,62,124
+01-701-1111,701,F,WHITE,Xanomeline Low Dose,Baseline,0,Glucose,mmol/L,5.32896,2.8,13.9
+01-701-1111,701,F,WHITE,Xanomeline Low Dose,Baseline,0,Potassium,mmol/L,3.9,3.4,5.4
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Albumin,g/L,39,35,46
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 2,4,Albumin,g/L,36,35,46
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 4,5,Albumin,g/L,35,35,46
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Unscheduled 5.1,5.1,Albumin,g/L,37,35,46
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 6,7,Albumin,g/L,37,35,46
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 8,8,Albumin,g/L,39,35,46
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Alk Phos,U/L,93,35,115
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 2,4,Alk Phos,U/L,88,35,115
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 4,5,Alk Phos,U/L,91,35,115
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Unscheduled 5.1,5.1,Alk Phos,U/L,101,35,115
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 6,7,Alk Phos,U/L,98,35,115
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 8,8,Alk Phos,U/L,98,35,115
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Baseline,0,ALT (SGPT),U/L,18,6,35
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 2,4,ALT (SGPT),U/L,15,6,35
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 4,5,ALT (SGPT),U/L,13,6,35
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Unscheduled 5.1,5.1,ALT (SGPT),U/L,16,6,35
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 6,7,ALT (SGPT),U/L,18,6,35
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 8,8,ALT (SGPT),U/L,16,6,35
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Baseline,0,AST (SGOT),U/L,26,11,36
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 2,4,AST (SGOT),U/L,25,11,36
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 4,5,AST (SGOT),U/L,20,11,36
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Unscheduled 5.1,5.1,AST (SGOT),U/L,23,11,36
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 6,7,AST (SGOT),U/L,25,11,36
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 8,8,AST (SGOT),U/L,25,11,36
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Tot. Bilirubin,umol/L,8.55,3,21
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 2,4,Tot. Bilirubin,umol/L,6.84,3,21
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 4,5,Tot. Bilirubin,umol/L,6.84,3,21
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Unscheduled 5.1,5.1,Tot. Bilirubin,umol/L,5.13,3,21
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 6,7,Tot. Bilirubin,umol/L,6.84,3,21
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 8,8,Tot. Bilirubin,umol/L,8.55,3,21
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Creatinine,umol/L,114.92,71,141
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 2,4,Creatinine,umol/L,114.92,71,141
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 4,5,Creatinine,umol/L,114.92,71,141
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Unscheduled 5.1,5.1,Creatinine,umol/L,114.92,71,141
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 6,7,Creatinine,umol/L,132.6,71,141
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 8,8,Creatinine,umol/L,114.92,71,141
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Glucose,mmol/L,4.10774,2.8,13.9
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 2,4,Glucose,mmol/L,4.71835,2.8,13.9
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Unscheduled 5.1,5.1,Glucose,mmol/L,2.66448,2.8,13.9
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 6,7,Glucose,mmol/L,5.05141,2.8,13.9
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 8,8,Glucose,mmol/L,4.38529,2.8,13.9
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Potassium,mmol/L,4.3,3.4,5.4
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 2,4,Potassium,mmol/L,5.1,3.4,5.4
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 4,5,Potassium,mmol/L,4.7,3.4,5.4
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 6,7,Potassium,mmol/L,5.3,3.4,5.4
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 8,8,Potassium,mmol/L,4.7,3.4,5.4
+01-701-1118,701,M,WHITE,Placebo,Baseline,0,Albumin,g/L,39,33,49
+01-701-1118,701,M,WHITE,Placebo,Week 2,4,Albumin,g/L,42,33,49
+01-701-1118,701,M,WHITE,Placebo,Week 4,5,Albumin,g/L,44,33,49
+01-701-1118,701,M,WHITE,Placebo,Week 6,7,Albumin,g/L,41,33,49
+01-701-1118,701,M,WHITE,Placebo,Week 8,8,Albumin,g/L,39,33,49
+01-701-1118,701,M,WHITE,Placebo,Week 12,9,Albumin,g/L,40,33,49
+01-701-1118,701,M,WHITE,Placebo,Week 16,10,Albumin,g/L,41,33,49
+01-701-1118,701,M,WHITE,Placebo,Week 20,11,Albumin,g/L,41,33,49
+01-701-1118,701,M,WHITE,Placebo,Week 24,12,Albumin,g/L,42,33,49
+01-701-1118,701,M,WHITE,Placebo,Week 26,13,Albumin,g/L,39,33,49
+01-701-1118,701,M,WHITE,Placebo,Baseline,0,Alk Phos,U/L,65,31,110
+01-701-1118,701,M,WHITE,Placebo,Week 2,4,Alk Phos,U/L,76,31,110
+01-701-1118,701,M,WHITE,Placebo,Week 4,5,Alk Phos,U/L,67,31,110
+01-701-1118,701,M,WHITE,Placebo,Week 6,7,Alk Phos,U/L,62,31,110
+01-701-1118,701,M,WHITE,Placebo,Week 8,8,Alk Phos,U/L,67,31,110
+01-701-1118,701,M,WHITE,Placebo,Week 12,9,Alk Phos,U/L,70,31,110
+01-701-1118,701,M,WHITE,Placebo,Week 16,10,Alk Phos,U/L,65,31,110
+01-701-1118,701,M,WHITE,Placebo,Week 20,11,Alk Phos,U/L,62,31,110
+01-701-1118,701,M,WHITE,Placebo,Week 24,12,Alk Phos,U/L,58,31,110
+01-701-1118,701,M,WHITE,Placebo,Week 26,13,Alk Phos,U/L,56,31,110
+01-701-1118,701,M,WHITE,Placebo,Baseline,0,ALT (SGPT),U/L,15,6,43
+01-701-1118,701,M,WHITE,Placebo,Week 2,4,ALT (SGPT),U/L,7,6,43
+01-701-1118,701,M,WHITE,Placebo,Week 4,5,ALT (SGPT),U/L,15,6,43
+01-701-1118,701,M,WHITE,Placebo,Week 6,7,ALT (SGPT),U/L,11,6,43
+01-701-1118,701,M,WHITE,Placebo,Week 8,8,ALT (SGPT),U/L,15,6,43
+01-701-1118,701,M,WHITE,Placebo,Week 12,9,ALT (SGPT),U/L,16,6,43
+01-701-1118,701,M,WHITE,Placebo,Week 16,10,ALT (SGPT),U/L,15,6,43
+01-701-1118,701,M,WHITE,Placebo,Week 20,11,ALT (SGPT),U/L,13,6,43
+01-701-1118,701,M,WHITE,Placebo,Week 24,12,ALT (SGPT),U/L,13,6,43
+01-701-1118,701,M,WHITE,Placebo,Week 26,13,ALT (SGPT),U/L,10,6,43
+01-701-1118,701,M,WHITE,Placebo,Baseline,0,AST (SGOT),U/L,15,11,36
+01-701-1118,701,M,WHITE,Placebo,Week 2,4,AST (SGOT),U/L,13,11,36
+01-701-1118,701,M,WHITE,Placebo,Week 4,5,AST (SGOT),U/L,14,11,36
+01-701-1118,701,M,WHITE,Placebo,Week 6,7,AST (SGOT),U/L,15,11,36
+01-701-1118,701,M,WHITE,Placebo,Week 8,8,AST (SGOT),U/L,18,11,36
+01-701-1118,701,M,WHITE,Placebo,Week 12,9,AST (SGOT),U/L,13,11,36
+01-701-1118,701,M,WHITE,Placebo,Week 16,10,AST (SGOT),U/L,18,11,36
+01-701-1118,701,M,WHITE,Placebo,Week 20,11,AST (SGOT),U/L,14,11,36
+01-701-1118,701,M,WHITE,Placebo,Week 24,12,AST (SGOT),U/L,11,11,36
+01-701-1118,701,M,WHITE,Placebo,Week 26,13,AST (SGOT),U/L,12,11,36
+01-701-1118,701,M,WHITE,Placebo,Baseline,0,Tot. Bilirubin,umol/L,11.97,3,21
+01-701-1118,701,M,WHITE,Placebo,Week 2,4,Tot. Bilirubin,umol/L,8.55,3,21
+01-701-1118,701,M,WHITE,Placebo,Week 4,5,Tot. Bilirubin,umol/L,10.26,3,21
+01-701-1118,701,M,WHITE,Placebo,Week 6,7,Tot. Bilirubin,umol/L,8.55,3,21
+01-701-1118,701,M,WHITE,Placebo,Week 8,8,Tot. Bilirubin,umol/L,10.26,3,21
+01-701-1118,701,M,WHITE,Placebo,Week 12,9,Tot. Bilirubin,umol/L,8.55,3,21
+01-701-1118,701,M,WHITE,Placebo,Week 16,10,Tot. Bilirubin,umol/L,10.26,3,21
+01-701-1118,701,M,WHITE,Placebo,Week 20,11,Tot. Bilirubin,umol/L,10.26,3,21
+01-701-1118,701,M,WHITE,Placebo,Week 24,12,Tot. Bilirubin,umol/L,8.55,3,21
+01-701-1118,701,M,WHITE,Placebo,Week 26,13,Tot. Bilirubin,umol/L,8.55,3,21
+01-701-1118,701,M,WHITE,Placebo,Baseline,0,Creatinine,umol/L,88.4,71,141
+01-701-1118,701,M,WHITE,Placebo,Week 2,4,Creatinine,umol/L,88.4,71,141
+01-701-1118,701,M,WHITE,Placebo,Week 4,5,Creatinine,umol/L,106.08,71,141
+01-701-1118,701,M,WHITE,Placebo,Week 6,7,Creatinine,umol/L,97.24,71,141
+01-701-1118,701,M,WHITE,Placebo,Week 8,8,Creatinine,umol/L,88.4,71,141
+01-701-1118,701,M,WHITE,Placebo,Week 12,9,Creatinine,umol/L,106.08,71,141
+01-701-1118,701,M,WHITE,Placebo,Week 16,10,Creatinine,umol/L,97.24,71,141
+01-701-1118,701,M,WHITE,Placebo,Week 20,11,Creatinine,umol/L,106.08,71,141
+01-701-1118,701,M,WHITE,Placebo,Week 24,12,Creatinine,umol/L,97.24,71,141
+01-701-1118,701,M,WHITE,Placebo,Week 26,13,Creatinine,umol/L,97.24,71,141
+01-701-1118,701,M,WHITE,Placebo,Baseline,0,Glucose,mmol/L,4.05223,2.8,13.9
+01-701-1118,701,M,WHITE,Placebo,Week 2,4,Glucose,mmol/L,4.88488,2.8,13.9
+01-701-1118,701,M,WHITE,Placebo,Week 4,5,Glucose,mmol/L,5.10692,2.8,13.9
+01-701-1118,701,M,WHITE,Placebo,Week 6,7,Glucose,mmol/L,5.21794,2.8,13.9
+01-701-1118,701,M,WHITE,Placebo,Week 8,8,Glucose,mmol/L,3.83019,2.8,13.9
+01-701-1118,701,M,WHITE,Placebo,Week 12,9,Glucose,mmol/L,5.88406,2.8,13.9
+01-701-1118,701,M,WHITE,Placebo,Week 16,10,Glucose,mmol/L,4.82937,2.8,13.9
+01-701-1118,701,M,WHITE,Placebo,Week 20,11,Glucose,mmol/L,5.16243,2.8,13.9
+01-701-1118,701,M,WHITE,Placebo,Week 24,12,Glucose,mmol/L,5.10692,2.8,13.9
+01-701-1118,701,M,WHITE,Placebo,Week 26,13,Glucose,mmol/L,4.94039,2.8,13.9
+01-701-1118,701,M,WHITE,Placebo,Baseline,0,Potassium,mmol/L,4.7,3.4,5.4
+01-701-1118,701,M,WHITE,Placebo,Week 2,4,Potassium,mmol/L,4.6,3.4,5.4
+01-701-1118,701,M,WHITE,Placebo,Week 4,5,Potassium,mmol/L,4.7,3.4,5.4
+01-701-1118,701,M,WHITE,Placebo,Week 6,7,Potassium,mmol/L,4.8,3.4,5.4
+01-701-1118,701,M,WHITE,Placebo,Week 8,8,Potassium,mmol/L,4.3,3.4,5.4
+01-701-1118,701,M,WHITE,Placebo,Week 12,9,Potassium,mmol/L,4.2,3.4,5.4
+01-701-1118,701,M,WHITE,Placebo,Week 16,10,Potassium,mmol/L,4.5,3.4,5.4
+01-701-1118,701,M,WHITE,Placebo,Week 20,11,Potassium,mmol/L,4.2,3.4,5.4
+01-701-1118,701,M,WHITE,Placebo,Week 24,12,Potassium,mmol/L,4.6,3.4,5.4
+01-701-1118,701,M,WHITE,Placebo,Week 26,13,Potassium,mmol/L,4.1,3.4,5.4
+01-701-1130,701,M,WHITE,Placebo,Baseline,0,Albumin,g/L,37,35,46
+01-701-1130,701,M,WHITE,Placebo,Week 2,4,Albumin,g/L,38,35,46
+01-701-1130,701,M,WHITE,Placebo,Week 4,5,Albumin,g/L,33,35,46
+01-701-1130,701,M,WHITE,Placebo,Week 6,7,Albumin,g/L,36,35,46
+01-701-1130,701,M,WHITE,Placebo,Week 8,8,Albumin,g/L,36,35,46
+01-701-1130,701,M,WHITE,Placebo,Week 12,9,Albumin,g/L,37,35,46
+01-701-1130,701,M,WHITE,Placebo,Week 16,10,Albumin,g/L,39,35,46
+01-701-1130,701,M,WHITE,Placebo,Week 20,11,Albumin,g/L,34,35,46
+01-701-1130,701,M,WHITE,Placebo,Week 24,12,Albumin,g/L,38,35,46
+01-701-1130,701,M,WHITE,Placebo,Week 26,13,Albumin,g/L,39,35,46
+01-701-1130,701,M,WHITE,Placebo,Baseline,0,Alk Phos,U/L,61,35,115
+01-701-1130,701,M,WHITE,Placebo,Week 2,4,Alk Phos,U/L,61,35,115
+01-701-1130,701,M,WHITE,Placebo,Week 4,5,Alk Phos,U/L,68,35,115
+01-701-1130,701,M,WHITE,Placebo,Week 6,7,Alk Phos,U/L,63,35,115
+01-701-1130,701,M,WHITE,Placebo,Week 8,8,Alk Phos,U/L,58,35,115
+01-701-1130,701,M,WHITE,Placebo,Week 12,9,Alk Phos,U/L,63,35,115
+01-701-1130,701,M,WHITE,Placebo,Week 16,10,Alk Phos,U/L,65,35,115
+01-701-1130,701,M,WHITE,Placebo,Week 20,11,Alk Phos,U/L,62,35,115
+01-701-1130,701,M,WHITE,Placebo,Week 24,12,Alk Phos,U/L,65,35,115
+01-701-1130,701,M,WHITE,Placebo,Week 26,13,Alk Phos,U/L,67,35,115
+01-701-1130,701,M,WHITE,Placebo,Baseline,0,ALT (SGPT),U/L,15,6,35
+01-701-1130,701,M,WHITE,Placebo,Week 2,4,ALT (SGPT),U/L,14,6,35
+01-701-1130,701,M,WHITE,Placebo,Week 4,5,ALT (SGPT),U/L,18,6,35
+01-701-1130,701,M,WHITE,Placebo,Week 6,7,ALT (SGPT),U/L,13,6,35
+01-701-1130,701,M,WHITE,Placebo,Week 8,8,ALT (SGPT),U/L,10,6,35
+01-701-1130,701,M,WHITE,Placebo,Week 12,9,ALT (SGPT),U/L,13,6,35
+01-701-1130,701,M,WHITE,Placebo,Week 16,10,ALT (SGPT),U/L,12,6,35
+01-701-1130,701,M,WHITE,Placebo,Week 20,11,ALT (SGPT),U/L,11,6,35
+01-701-1130,701,M,WHITE,Placebo,Week 24,12,ALT (SGPT),U/L,13,6,35
+01-701-1130,701,M,WHITE,Placebo,Week 26,13,ALT (SGPT),U/L,10,6,35
+01-701-1130,701,M,WHITE,Placebo,Baseline,0,AST (SGOT),U/L,24,11,36
+01-701-1130,701,M,WHITE,Placebo,Week 2,4,AST (SGOT),U/L,26,11,36
+01-701-1130,701,M,WHITE,Placebo,Week 4,5,AST (SGOT),U/L,25,11,36
+01-701-1130,701,M,WHITE,Placebo,Week 6,7,AST (SGOT),U/L,19,11,36
+01-701-1130,701,M,WHITE,Placebo,Week 8,8,AST (SGOT),U/L,18,11,36
+01-701-1130,701,M,WHITE,Placebo,Week 12,9,AST (SGOT),U/L,21,11,36
+01-701-1130,701,M,WHITE,Placebo,Week 16,10,AST (SGOT),U/L,19,11,36
+01-701-1130,701,M,WHITE,Placebo,Week 20,11,AST (SGOT),U/L,19,11,36
+01-701-1130,701,M,WHITE,Placebo,Week 24,12,AST (SGOT),U/L,22,11,36
+01-701-1130,701,M,WHITE,Placebo,Week 26,13,AST (SGOT),U/L,19,11,36
+01-701-1130,701,M,WHITE,Placebo,Baseline,0,Tot. Bilirubin,umol/L,8.55,3,21
+01-701-1130,701,M,WHITE,Placebo,Week 2,4,Tot. Bilirubin,umol/L,10.26,3,21
+01-701-1130,701,M,WHITE,Placebo,Week 4,5,Tot. Bilirubin,umol/L,5.13,3,21
+01-701-1130,701,M,WHITE,Placebo,Week 6,7,Tot. Bilirubin,umol/L,6.84,3,21
+01-701-1130,701,M,WHITE,Placebo,Week 8,8,Tot. Bilirubin,umol/L,10.26,3,21
+01-701-1130,701,M,WHITE,Placebo,Week 12,9,Tot. Bilirubin,umol/L,8.55,3,21
+01-701-1130,701,M,WHITE,Placebo,Week 16,10,Tot. Bilirubin,umol/L,10.26,3,21
+01-701-1130,701,M,WHITE,Placebo,Week 20,11,Tot. Bilirubin,umol/L,6.84,3,21
+01-701-1130,701,M,WHITE,Placebo,Week 24,12,Tot. Bilirubin,umol/L,11.97,3,21
+01-701-1130,701,M,WHITE,Placebo,Week 26,13,Tot. Bilirubin,umol/L,10.26,3,21
+01-701-1130,701,M,WHITE,Placebo,Baseline,0,Creatinine,umol/L,123.76,71,141
+01-701-1130,701,M,WHITE,Placebo,Week 2,4,Creatinine,umol/L,123.76,71,141
+01-701-1130,701,M,WHITE,Placebo,Week 4,5,Creatinine,umol/L,176.8,71,141
+01-701-1130,701,M,WHITE,Placebo,Week 6,7,Creatinine,umol/L,123.76,71,141
+01-701-1130,701,M,WHITE,Placebo,Week 8,8,Creatinine,umol/L,114.92,71,141
+01-701-1130,701,M,WHITE,Placebo,Week 12,9,Creatinine,umol/L,123.76,71,141
+01-701-1130,701,M,WHITE,Placebo,Week 16,10,Creatinine,umol/L,132.6,71,141
+01-701-1130,701,M,WHITE,Placebo,Week 20,11,Creatinine,umol/L,132.6,71,141
+01-701-1130,701,M,WHITE,Placebo,Week 24,12,Creatinine,umol/L,132.6,71,141
+01-701-1130,701,M,WHITE,Placebo,Week 26,13,Creatinine,umol/L,132.6,71,141
+01-701-1130,701,M,WHITE,Placebo,Baseline,0,Glucose,mmol/L,5.05141,2.8,13.9
+01-701-1130,701,M,WHITE,Placebo,Week 2,4,Glucose,mmol/L,5.66202,2.8,13.9
+01-701-1130,701,M,WHITE,Placebo,Week 4,5,Glucose,mmol/L,6.16161,2.8,13.9
+01-701-1130,701,M,WHITE,Placebo,Week 6,7,Glucose,mmol/L,5.16243,2.8,13.9
+01-701-1130,701,M,WHITE,Placebo,Week 8,8,Glucose,mmol/L,5.16243,2.8,13.9
+01-701-1130,701,M,WHITE,Placebo,Week 12,9,Glucose,mmol/L,6.1061,2.8,13.9
+01-701-1130,701,M,WHITE,Placebo,Week 16,10,Glucose,mmol/L,4.88488,2.8,13.9
+01-701-1130,701,M,WHITE,Placebo,Week 20,11,Glucose,mmol/L,4.88488,2.8,13.9
+01-701-1130,701,M,WHITE,Placebo,Week 24,12,Glucose,mmol/L,4.88488,2.8,13.9
+01-701-1130,701,M,WHITE,Placebo,Week 26,13,Glucose,mmol/L,5.21794,2.8,13.9
+01-701-1130,701,M,WHITE,Placebo,Baseline,0,Potassium,mmol/L,4.2,3.4,5.4
+01-701-1130,701,M,WHITE,Placebo,Week 2,4,Potassium,mmol/L,4.5,3.4,5.4
+01-701-1130,701,M,WHITE,Placebo,Week 4,5,Potassium,mmol/L,4.6,3.4,5.4
+01-701-1130,701,M,WHITE,Placebo,Week 6,7,Potassium,mmol/L,4.3,3.4,5.4
+01-701-1130,701,M,WHITE,Placebo,Week 8,8,Potassium,mmol/L,4.5,3.4,5.4
+01-701-1130,701,M,WHITE,Placebo,Week 12,9,Potassium,mmol/L,4.4,3.4,5.4
+01-701-1130,701,M,WHITE,Placebo,Week 16,10,Potassium,mmol/L,4,3.4,5.4
+01-701-1130,701,M,WHITE,Placebo,Week 20,11,Potassium,mmol/L,4,3.4,5.4
+01-701-1130,701,M,WHITE,Placebo,Week 24,12,Potassium,mmol/L,4.3,3.4,5.4
+01-701-1130,701,M,WHITE,Placebo,Week 26,13,Potassium,mmol/L,4.2,3.4,5.4
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Baseline,0,Albumin,g/L,45,35,46
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 4,5,Albumin,g/L,40,35,46
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 6,7,Albumin,g/L,41,35,46
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 8,8,Albumin,g/L,41,35,46
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 12,9,Albumin,g/L,41,35,46
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 16,10,Albumin,g/L,40,35,46
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 20,11,Albumin,g/L,39,35,46
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 24,12,Albumin,g/L,41,35,46
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Baseline,0,Alk Phos,U/L,59,35,115
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 4,5,Alk Phos,U/L,63,35,115
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 6,7,Alk Phos,U/L,61,35,115
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 8,8,Alk Phos,U/L,60,35,115
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 12,9,Alk Phos,U/L,68,35,115
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 16,10,Alk Phos,U/L,57,35,115
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 20,11,Alk Phos,U/L,63,35,115
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 24,12,Alk Phos,U/L,56,35,115
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Baseline,0,ALT (SGPT),U/L,23,6,32
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 4,5,ALT (SGPT),U/L,21,6,32
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 6,7,ALT (SGPT),U/L,15,6,32
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 8,8,ALT (SGPT),U/L,16,6,32
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 12,9,ALT (SGPT),U/L,16,6,32
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 16,10,ALT (SGPT),U/L,15,6,32
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 20,11,ALT (SGPT),U/L,19,6,32
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 24,12,ALT (SGPT),U/L,18,6,32
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Baseline,0,AST (SGOT),U/L,27,9,34
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 4,5,AST (SGOT),U/L,20,9,34
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 6,7,AST (SGOT),U/L,20,9,34
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 8,8,AST (SGOT),U/L,19,9,34
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 12,9,AST (SGOT),U/L,19,9,34
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 16,10,AST (SGOT),U/L,19,9,34
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 20,11,AST (SGOT),U/L,21,9,34
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 24,12,AST (SGOT),U/L,23,9,34
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Baseline,0,Tot. Bilirubin,umol/L,15.39,3,21
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 4,5,Tot. Bilirubin,umol/L,10.26,3,21
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 6,7,Tot. Bilirubin,umol/L,11.97,3,21
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 8,8,Tot. Bilirubin,umol/L,10.26,3,21
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 12,9,Tot. Bilirubin,umol/L,10.26,3,21
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 16,10,Tot. Bilirubin,umol/L,13.68,3,21
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 20,11,Tot. Bilirubin,umol/L,10.26,3,21
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 24,12,Tot. Bilirubin,umol/L,11.97,3,21
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Baseline,0,Creatinine,umol/L,97.24,62,124
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 4,5,Creatinine,umol/L,97.24,62,124
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 6,7,Creatinine,umol/L,97.24,62,124
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 8,8,Creatinine,umol/L,97.24,62,124
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 12,9,Creatinine,umol/L,97.24,62,124
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 16,10,Creatinine,umol/L,97.24,62,124
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 20,11,Creatinine,umol/L,97.24,62,124
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 24,12,Creatinine,umol/L,97.24,62,124
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Baseline,0,Glucose,mmol/L,5.49549,2.8,13.9
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 4,5,Glucose,mmol/L,5.60651,2.8,13.9
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 6,7,Glucose,mmol/L,5.88406,2.8,13.9
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 8,8,Glucose,mmol/L,5.10692,2.8,13.9
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 12,9,Glucose,mmol/L,3.77468,2.8,13.9
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 16,10,Glucose,mmol/L,5.82855,2.8,13.9
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 20,11,Glucose,mmol/L,6.77222,2.8,13.9
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 24,12,Glucose,mmol/L,5.43998,2.8,13.9
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Baseline,0,Potassium,mmol/L,4.4,3.4,5.4
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 4,5,Potassium,mmol/L,4.5,3.4,5.4
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 6,7,Potassium,mmol/L,4.4,3.4,5.4
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 8,8,Potassium,mmol/L,4.4,3.4,5.4
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 12,9,Potassium,mmol/L,3.9,3.4,5.4
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 16,10,Potassium,mmol/L,4.8,3.4,5.4
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 20,11,Potassium,mmol/L,3.9,3.4,5.4
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 24,12,Potassium,mmol/L,3.9,3.4,5.4
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Baseline,0,Albumin,g/L,37,35,46
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Week 2,4,Albumin,g/L,37,35,46
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Week 4,5,Albumin,g/L,35,35,46
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Baseline,0,Alk Phos,U/L,33,35,115
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Week 2,4,Alk Phos,U/L,35,35,115
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Week 4,5,Alk Phos,U/L,34,35,115
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Baseline,0,ALT (SGPT),U/L,15,6,32
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Week 2,4,ALT (SGPT),U/L,14,6,32
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Week 4,5,ALT (SGPT),U/L,16,6,32
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Baseline,0,AST (SGOT),U/L,14,9,34
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Week 2,4,AST (SGOT),U/L,20,9,34
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Week 4,5,AST (SGOT),U/L,19,9,34
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Baseline,0,Tot. Bilirubin,umol/L,5.13,3,21
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Week 2,4,Tot. Bilirubin,umol/L,6.84,3,21
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Week 4,5,Tot. Bilirubin,umol/L,5.13,3,21
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Baseline,0,Creatinine,umol/L,79.56,62,124
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Week 2,4,Creatinine,umol/L,79.56,62,124
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Week 4,5,Creatinine,umol/L,70.72,62,124
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Baseline,0,Glucose,mmol/L,4.71835,2.8,13.9
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Week 2,4,Glucose,mmol/L,5.32896,2.8,13.9
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Week 4,5,Glucose,mmol/L,4.66284,2.8,13.9
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Baseline,0,Potassium,mmol/L,4.3,3.4,5.4
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Week 2,4,Potassium,mmol/L,4.3,3.4,5.4
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Week 4,5,Potassium,mmol/L,4.6,3.4,5.4
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Baseline,0,Albumin,g/L,41,33,49
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 2,4,Albumin,g/L,39,33,49
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 4,5,Albumin,g/L,38,33,49
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 6,7,Albumin,g/L,41,33,49
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 8,8,Albumin,g/L,38,33,49
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 12,9,Albumin,g/L,38,33,49
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 16,10,Albumin,g/L,38,33,49
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 20,11,Albumin,g/L,40,33,49
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 24,12,Albumin,g/L,40,33,49
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 26,13,Albumin,g/L,40,33,49
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Baseline,0,Alk Phos,U/L,88,31,110
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 2,4,Alk Phos,U/L,83,31,110
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 4,5,Alk Phos,U/L,82,31,110
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 6,7,Alk Phos,U/L,76,31,110
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 8,8,Alk Phos,U/L,80,31,110
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 12,9,Alk Phos,U/L,81,31,110
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 16,10,Alk Phos,U/L,85,31,110
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 20,11,Alk Phos,U/L,84,31,110
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 24,12,Alk Phos,U/L,79,31,110
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 26,13,Alk Phos,U/L,78,31,110
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Baseline,0,ALT (SGPT),U/L,34,6,43
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 2,4,ALT (SGPT),U/L,41,6,43
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 4,5,ALT (SGPT),U/L,35,6,43
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 6,7,ALT (SGPT),U/L,31,6,43
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 8,8,ALT (SGPT),U/L,31,6,43
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 12,9,ALT (SGPT),U/L,39,6,43
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 16,10,ALT (SGPT),U/L,33,6,43
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 20,11,ALT (SGPT),U/L,32,6,43
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 24,12,ALT (SGPT),U/L,37,6,43
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 26,13,ALT (SGPT),U/L,28,6,43
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Baseline,0,AST (SGOT),U/L,25,11,36
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 2,4,AST (SGOT),U/L,27,11,36
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 4,5,AST (SGOT),U/L,25,11,36
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 6,7,AST (SGOT),U/L,22,11,36
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 8,8,AST (SGOT),U/L,26,11,36
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 12,9,AST (SGOT),U/L,25,11,36
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 16,10,AST (SGOT),U/L,26,11,36
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 20,11,AST (SGOT),U/L,26,11,36
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 24,12,AST (SGOT),U/L,30,11,36
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 26,13,AST (SGOT),U/L,23,11,36
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Baseline,0,Tot. Bilirubin,umol/L,8.55,3,21
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 2,4,Tot. Bilirubin,umol/L,8.55,3,21
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 4,5,Tot. Bilirubin,umol/L,8.55,3,21
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 6,7,Tot. Bilirubin,umol/L,8.55,3,21
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 8,8,Tot. Bilirubin,umol/L,8.55,3,21
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 12,9,Tot. Bilirubin,umol/L,6.84,3,21
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 16,10,Tot. Bilirubin,umol/L,11.97,3,21
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 20,11,Tot. Bilirubin,umol/L,6.84,3,21
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 24,12,Tot. Bilirubin,umol/L,6.84,3,21
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 26,13,Tot. Bilirubin,umol/L,6.84,3,21
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Baseline,0,Creatinine,umol/L,106.08,71,141
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 2,4,Creatinine,umol/L,106.08,71,141
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 4,5,Creatinine,umol/L,114.92,71,141
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 6,7,Creatinine,umol/L,106.08,71,141
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 8,8,Creatinine,umol/L,123.76,71,141
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 12,9,Creatinine,umol/L,106.08,71,141
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 16,10,Creatinine,umol/L,114.92,71,141
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 20,11,Creatinine,umol/L,114.92,71,141
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 24,12,Creatinine,umol/L,114.92,71,141
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 26,13,Creatinine,umol/L,106.08,71,141
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Baseline,0,Glucose,mmol/L,5.27345,2.8,13.9
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 2,4,Glucose,mmol/L,3.99672,2.8,13.9
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 4,5,Glucose,mmol/L,5.43998,2.8,13.9
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 6,7,Glucose,mmol/L,4.9959,2.8,13.9
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 8,8,Glucose,mmol/L,5.88406,2.8,13.9
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 12,9,Glucose,mmol/L,5.05141,2.8,13.9
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 16,10,Glucose,mmol/L,5.21794,2.8,13.9
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 20,11,Glucose,mmol/L,5.32896,2.8,13.9
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 24,12,Glucose,mmol/L,4.88488,2.8,13.9
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 26,13,Glucose,mmol/L,4.94039,2.8,13.9
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Baseline,0,Potassium,mmol/L,4,3.4,5.4
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 2,4,Potassium,mmol/L,3.9,3.4,5.4
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 4,5,Potassium,mmol/L,3.4,3.4,5.4
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 6,7,Potassium,mmol/L,3.8,3.4,5.4
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 8,8,Potassium,mmol/L,3.5,3.4,5.4
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 12,9,Potassium,mmol/L,4,3.4,5.4
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 16,10,Potassium,mmol/L,3.7,3.4,5.4
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 20,11,Potassium,mmol/L,4,3.4,5.4
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 24,12,Potassium,mmol/L,3.8,3.4,5.4
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 26,13,Potassium,mmol/L,3.7,3.4,5.4
+01-701-1153,701,F,WHITE,Placebo,Baseline,0,Albumin,g/L,39,35,46
+01-701-1153,701,F,WHITE,Placebo,Week 2,4,Albumin,g/L,42,35,46
+01-701-1153,701,F,WHITE,Placebo,Week 4,5,Albumin,g/L,40,35,46
+01-701-1153,701,F,WHITE,Placebo,Week 6,7,Albumin,g/L,40,35,46
+01-701-1153,701,F,WHITE,Placebo,Week 8,8,Albumin,g/L,40,35,46
+01-701-1153,701,F,WHITE,Placebo,Week 12,9,Albumin,g/L,40,35,46
+01-701-1153,701,F,WHITE,Placebo,Week 16,10,Albumin,g/L,40,35,46
+01-701-1153,701,F,WHITE,Placebo,Week 20,11,Albumin,g/L,40,35,46
+01-701-1153,701,F,WHITE,Placebo,Week 24,12,Albumin,g/L,42,35,46
+01-701-1153,701,F,WHITE,Placebo,Baseline,0,Alk Phos,U/L,65,35,115
+01-701-1153,701,F,WHITE,Placebo,Week 2,4,Alk Phos,U/L,64,35,115
+01-701-1153,701,F,WHITE,Placebo,Week 4,5,Alk Phos,U/L,58,35,115
+01-701-1153,701,F,WHITE,Placebo,Week 6,7,Alk Phos,U/L,54,35,115
+01-701-1153,701,F,WHITE,Placebo,Week 8,8,Alk Phos,U/L,60,35,115
+01-701-1153,701,F,WHITE,Placebo,Week 12,9,Alk Phos,U/L,57,35,115
+01-701-1153,701,F,WHITE,Placebo,Week 16,10,Alk Phos,U/L,53,35,115
+01-701-1153,701,F,WHITE,Placebo,Week 20,11,Alk Phos,U/L,60,35,115
+01-701-1153,701,F,WHITE,Placebo,Week 24,12,Alk Phos,U/L,63,35,115
+01-701-1153,701,F,WHITE,Placebo,Baseline,0,ALT (SGPT),U/L,13,6,32
+01-701-1153,701,F,WHITE,Placebo,Week 2,4,ALT (SGPT),U/L,14,6,32
+01-701-1153,701,F,WHITE,Placebo,Week 4,5,ALT (SGPT),U/L,14,6,32
+01-701-1153,701,F,WHITE,Placebo,Week 6,7,ALT (SGPT),U/L,14,6,32
+01-701-1153,701,F,WHITE,Placebo,Week 8,8,ALT (SGPT),U/L,11,6,32
+01-701-1153,701,F,WHITE,Placebo,Week 12,9,ALT (SGPT),U/L,13,6,32
+01-701-1153,701,F,WHITE,Placebo,Week 16,10,ALT (SGPT),U/L,17,6,32
+01-701-1153,701,F,WHITE,Placebo,Week 20,11,ALT (SGPT),U/L,14,6,32
+01-701-1153,701,F,WHITE,Placebo,Week 24,12,ALT (SGPT),U/L,13,6,32
+01-701-1153,701,F,WHITE,Placebo,Baseline,0,AST (SGOT),U/L,24,9,34
+01-701-1153,701,F,WHITE,Placebo,Week 2,4,AST (SGOT),U/L,25,9,34
+01-701-1153,701,F,WHITE,Placebo,Week 4,5,AST (SGOT),U/L,22,9,34
+01-701-1153,701,F,WHITE,Placebo,Week 6,7,AST (SGOT),U/L,22,9,34
+01-701-1153,701,F,WHITE,Placebo,Week 8,8,AST (SGOT),U/L,21,9,34
+01-701-1153,701,F,WHITE,Placebo,Week 12,9,AST (SGOT),U/L,22,9,34
+01-701-1153,701,F,WHITE,Placebo,Week 16,10,AST (SGOT),U/L,25,9,34
+01-701-1153,701,F,WHITE,Placebo,Week 20,11,AST (SGOT),U/L,24,9,34
+01-701-1153,701,F,WHITE,Placebo,Week 24,12,AST (SGOT),U/L,22,9,34
+01-701-1153,701,F,WHITE,Placebo,Baseline,0,Tot. Bilirubin,umol/L,5.13,3,21
+01-701-1153,701,F,WHITE,Placebo,Week 2,4,Tot. Bilirubin,umol/L,6.84,3,21
+01-701-1153,701,F,WHITE,Placebo,Week 4,5,Tot. Bilirubin,umol/L,6.84,3,21
+01-701-1153,701,F,WHITE,Placebo,Week 6,7,Tot. Bilirubin,umol/L,6.84,3,21
+01-701-1153,701,F,WHITE,Placebo,Week 8,8,Tot. Bilirubin,umol/L,5.13,3,21
+01-701-1153,701,F,WHITE,Placebo,Week 12,9,Tot. Bilirubin,umol/L,6.84,3,21
+01-701-1153,701,F,WHITE,Placebo,Week 16,10,Tot. Bilirubin,umol/L,8.55,3,21
+01-701-1153,701,F,WHITE,Placebo,Week 20,11,Tot. Bilirubin,umol/L,5.13,3,21
+01-701-1153,701,F,WHITE,Placebo,Week 24,12,Tot. Bilirubin,umol/L,6.84,3,21
+01-701-1153,701,F,WHITE,Placebo,Baseline,0,Creatinine,umol/L,88.4,62,124
+01-701-1153,701,F,WHITE,Placebo,Week 2,4,Creatinine,umol/L,79.56,62,124
+01-701-1153,701,F,WHITE,Placebo,Week 4,5,Creatinine,umol/L,88.4,62,124
+01-701-1153,701,F,WHITE,Placebo,Week 6,7,Creatinine,umol/L,79.56,62,124
+01-701-1153,701,F,WHITE,Placebo,Week 8,8,Creatinine,umol/L,79.56,62,124
+01-701-1153,701,F,WHITE,Placebo,Week 12,9,Creatinine,umol/L,88.4,62,124
+01-701-1153,701,F,WHITE,Placebo,Week 16,10,Creatinine,umol/L,79.56,62,124
+01-701-1153,701,F,WHITE,Placebo,Week 20,11,Creatinine,umol/L,70.72,62,124
+01-701-1153,701,F,WHITE,Placebo,Week 24,12,Creatinine,umol/L,88.4,62,124
+01-701-1153,701,F,WHITE,Placebo,Baseline,0,Glucose,mmol/L,5.49549,2.8,13.9
+01-701-1153,701,F,WHITE,Placebo,Week 2,4,Glucose,mmol/L,4.9959,2.8,13.9
+01-701-1153,701,F,WHITE,Placebo,Week 4,5,Glucose,mmol/L,4.77386,2.8,13.9
+01-701-1153,701,F,WHITE,Placebo,Week 6,7,Glucose,mmol/L,4.88488,2.8,13.9
+01-701-1153,701,F,WHITE,Placebo,Week 8,8,Glucose,mmol/L,5.16243,2.8,13.9
+01-701-1153,701,F,WHITE,Placebo,Week 12,9,Glucose,mmol/L,5.49549,2.8,13.9
+01-701-1153,701,F,WHITE,Placebo,Week 16,10,Glucose,mmol/L,5.21794,2.8,13.9
+01-701-1153,701,F,WHITE,Placebo,Week 20,11,Glucose,mmol/L,5.10692,2.8,13.9
+01-701-1153,701,F,WHITE,Placebo,Week 24,12,Glucose,mmol/L,5.32896,2.8,13.9
+01-701-1153,701,F,WHITE,Placebo,Baseline,0,Potassium,mmol/L,3.7,3.4,5.4
+01-701-1153,701,F,WHITE,Placebo,Week 2,4,Potassium,mmol/L,4,3.4,5.4
+01-701-1153,701,F,WHITE,Placebo,Week 4,5,Potassium,mmol/L,3.9,3.4,5.4
+01-701-1153,701,F,WHITE,Placebo,Week 6,7,Potassium,mmol/L,4,3.4,5.4
+01-701-1153,701,F,WHITE,Placebo,Week 8,8,Potassium,mmol/L,3.9,3.4,5.4
+01-701-1153,701,F,WHITE,Placebo,Week 12,9,Potassium,mmol/L,3.9,3.4,5.4
+01-701-1153,701,F,WHITE,Placebo,Week 16,10,Potassium,mmol/L,3.7,3.4,5.4
+01-701-1153,701,F,WHITE,Placebo,Week 20,11,Potassium,mmol/L,3.9,3.4,5.4
+01-701-1153,701,F,WHITE,Placebo,Week 24,12,Potassium,mmol/L,3.8,3.4,5.4
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Baseline,0,Albumin,g/L,41,33,49
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Week 2,4,Albumin,g/L,40,33,49
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Week 4,5,Albumin,g/L,39,33,49
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Baseline,0,Alk Phos,U/L,77,31,110
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Week 2,4,Alk Phos,U/L,79,31,110
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Week 4,5,Alk Phos,U/L,66,31,110
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Baseline,0,ALT (SGPT),U/L,29,6,43
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Week 2,4,ALT (SGPT),U/L,29,6,43
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Week 4,5,ALT (SGPT),U/L,20,6,43
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Baseline,0,AST (SGOT),U/L,21,11,36
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Week 2,4,AST (SGOT),U/L,25,11,36
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Week 4,5,AST (SGOT),U/L,17,11,36
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Baseline,0,Tot. Bilirubin,umol/L,11.97,3,21
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Week 2,4,Tot. Bilirubin,umol/L,8.55,3,21
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Week 4,5,Tot. Bilirubin,umol/L,10.26,3,21
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Baseline,0,Creatinine,umol/L,114.92,71,141
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Week 2,4,Creatinine,umol/L,114.92,71,141
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Week 4,5,Creatinine,umol/L,114.92,71,141
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Baseline,0,Glucose,mmol/L,4.88488,2.8,13.9
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Week 2,4,Glucose,mmol/L,4.66284,2.8,13.9
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Week 4,5,Glucose,mmol/L,5.16243,2.8,13.9
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Baseline,0,Potassium,mmol/L,4.5,3.4,5.4
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Week 2,4,Potassium,mmol/L,4.5,3.4,5.4
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Week 4,5,Potassium,mmol/L,4.4,3.4,5.4
+01-701-1181,701,F,WHITE,Xanomeline High Dose,Baseline,0,Albumin,g/L,32,35,46
+01-701-1181,701,F,WHITE,Xanomeline High Dose,Baseline,0,Alk Phos,U/L,79,35,115
+01-701-1181,701,F,WHITE,Xanomeline High Dose,Baseline,0,ALT (SGPT),U/L,18,6,32
+01-701-1181,701,F,WHITE,Xanomeline High Dose,Baseline,0,AST (SGOT),U/L,20,9,34
+01-701-1181,701,F,WHITE,Xanomeline High Dose,Baseline,0,Tot. Bilirubin,umol/L,5.13,3,21
+01-701-1181,701,F,WHITE,Xanomeline High Dose,Baseline,0,Creatinine,umol/L,106.08,62,124
+01-701-1181,701,F,WHITE,Xanomeline High Dose,Baseline,0,Glucose,mmol/L,5.38447,2.8,13.9
+01-701-1181,701,F,WHITE,Xanomeline High Dose,Baseline,0,Potassium,mmol/L,4.1,3.4,5.4
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Albumin,g/L,39,35,46
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Week 2,4,Albumin,g/L,40,35,46
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Week 4,5,Albumin,g/L,41,35,46
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Alk Phos,U/L,99,35,115
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Week 2,4,Alk Phos,U/L,77,35,115
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Week 4,5,Alk Phos,U/L,78,35,115
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Baseline,0,ALT (SGPT),U/L,21,6,35
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Week 2,4,ALT (SGPT),U/L,29,6,35
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Week 4,5,ALT (SGPT),U/L,23,6,35
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Baseline,0,AST (SGOT),U/L,17,11,36
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Week 2,4,AST (SGOT),U/L,20,11,36
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Week 4,5,AST (SGOT),U/L,17,11,36
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Tot. Bilirubin,umol/L,6.84,3,21
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Week 2,4,Tot. Bilirubin,umol/L,8.55,3,21
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Week 4,5,Tot. Bilirubin,umol/L,8.55,3,21
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Creatinine,umol/L,106.08,71,141
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Week 2,4,Creatinine,umol/L,114.92,71,141
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Week 4,5,Creatinine,umol/L,114.92,71,141
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Glucose,mmol/L,5.32896,2.8,13.9
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Week 2,4,Glucose,mmol/L,5.32896,2.8,13.9
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Week 4,5,Glucose,mmol/L,5.16243,2.8,13.9
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Potassium,mmol/L,4.7,3.4,5.4
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Week 2,4,Potassium,mmol/L,4.5,3.4,5.4
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Week 4,5,Potassium,mmol/L,4.7,3.4,5.4
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Baseline,0,Albumin,g/L,41,35,46
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 2,4,Albumin,g/L,38,35,46
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 4,5,Albumin,g/L,38,35,46
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 6,7,Albumin,g/L,38,35,46
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 8,8,Albumin,g/L,37,35,46
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 12,9,Albumin,g/L,34,35,46
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 16,10,Albumin,g/L,38,35,46
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 20,11,Albumin,g/L,37,35,46
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 24,12,Albumin,g/L,42,35,46
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 26,13,Albumin,g/L,39,35,46
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Baseline,0,Alk Phos,U/L,155,35,115
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 2,4,Alk Phos,U/L,131,35,115
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 4,5,Alk Phos,U/L,134,35,115
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 6,7,Alk Phos,U/L,137,35,115
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 8,8,Alk Phos,U/L,130,35,115
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 12,9,Alk Phos,U/L,138,35,115
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 16,10,Alk Phos,U/L,124,35,115
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 20,11,Alk Phos,U/L,128,35,115
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 24,12,Alk Phos,U/L,139,35,115
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 26,13,Alk Phos,U/L,116,35,115
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Baseline,0,ALT (SGPT),U/L,17,6,32
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 2,4,ALT (SGPT),U/L,15,6,32
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 4,5,ALT (SGPT),U/L,14,6,32
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 6,7,ALT (SGPT),U/L,12,6,32
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 8,8,ALT (SGPT),U/L,19,6,32
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 12,9,ALT (SGPT),U/L,14,6,32
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 16,10,ALT (SGPT),U/L,13,6,32
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 20,11,ALT (SGPT),U/L,15,6,32
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 24,12,ALT (SGPT),U/L,19,6,32
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 26,13,ALT (SGPT),U/L,16,6,32
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Baseline,0,AST (SGOT),U/L,18,9,34
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 2,4,AST (SGOT),U/L,20,9,34
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 4,5,AST (SGOT),U/L,20,9,34
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 6,7,AST (SGOT),U/L,15,9,34
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 8,8,AST (SGOT),U/L,23,9,34
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 12,9,AST (SGOT),U/L,19,9,34
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 16,10,AST (SGOT),U/L,20,9,34
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 20,11,AST (SGOT),U/L,19,9,34
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 24,12,AST (SGOT),U/L,24,9,34
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 26,13,AST (SGOT),U/L,20,9,34
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Baseline,0,Tot. Bilirubin,umol/L,11.97,3,21
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 2,4,Tot. Bilirubin,umol/L,11.97,3,21
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 4,5,Tot. Bilirubin,umol/L,10.26,3,21
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 6,7,Tot. Bilirubin,umol/L,8.55,3,21
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 8,8,Tot. Bilirubin,umol/L,8.55,3,21
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 12,9,Tot. Bilirubin,umol/L,10.26,3,21
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 16,10,Tot. Bilirubin,umol/L,10.26,3,21
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 20,11,Tot. Bilirubin,umol/L,10.26,3,21
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 24,12,Tot. Bilirubin,umol/L,8.55,3,21
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 26,13,Tot. Bilirubin,umol/L,8.55,3,21
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Baseline,0,Creatinine,umol/L,79.56,62,124
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 2,4,Creatinine,umol/L,79.56,62,124
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 4,5,Creatinine,umol/L,79.56,62,124
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 6,7,Creatinine,umol/L,70.72,62,124
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 8,8,Creatinine,umol/L,70.72,62,124
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 12,9,Creatinine,umol/L,88.4,62,124
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 16,10,Creatinine,umol/L,70.72,62,124
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 20,11,Creatinine,umol/L,70.72,62,124
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 24,12,Creatinine,umol/L,79.56,62,124
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 26,13,Creatinine,umol/L,70.72,62,124
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Baseline,0,Glucose,mmol/L,7.38283,2.8,13.9
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 2,4,Glucose,mmol/L,5.43998,2.8,13.9
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 4,5,Glucose,mmol/L,5.16243,2.8,13.9
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 6,7,Glucose,mmol/L,5.05141,2.8,13.9
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 8,8,Glucose,mmol/L,5.16243,2.8,13.9
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 12,9,Glucose,mmol/L,6.32814,2.8,13.9
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 16,10,Glucose,mmol/L,5.71753,2.8,13.9
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 20,11,Glucose,mmol/L,4.88488,2.8,13.9
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 24,12,Glucose,mmol/L,5.16243,2.8,13.9
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 26,13,Glucose,mmol/L,5.38447,2.8,13.9
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Baseline,0,Potassium,mmol/L,3.8,3.4,5.4
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 2,4,Potassium,mmol/L,4.1,3.4,5.4
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 4,5,Potassium,mmol/L,4.2,3.4,5.4
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 6,7,Potassium,mmol/L,3.9,3.4,5.4
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 8,8,Potassium,mmol/L,4.5,3.4,5.4
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 12,9,Potassium,mmol/L,4,3.4,5.4
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 16,10,Potassium,mmol/L,4,3.4,5.4
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 20,11,Potassium,mmol/L,4,3.4,5.4
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 24,12,Potassium,mmol/L,3.9,3.4,5.4
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 26,13,Potassium,mmol/L,4,3.4,5.4
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Baseline,0,Albumin,g/L,38,35,46
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 2,4,Albumin,g/L,37,35,46
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 4,5,Albumin,g/L,37,35,46
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 6,7,Albumin,g/L,40,35,46
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 8,8,Albumin,g/L,38,35,46
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 12,9,Albumin,g/L,39,35,46
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 16,10,Albumin,g/L,38,35,46
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 20,11,Albumin,g/L,43,35,46
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 24,12,Albumin,g/L,38,35,46
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 26,13,Albumin,g/L,38,35,46
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Baseline,0,Alk Phos,U/L,87,35,115
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 2,4,Alk Phos,U/L,90,35,115
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 4,5,Alk Phos,U/L,82,35,115
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 6,7,Alk Phos,U/L,82,35,115
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 8,8,Alk Phos,U/L,90,35,115
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 12,9,Alk Phos,U/L,81,35,115
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 16,10,Alk Phos,U/L,81,35,115
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 20,11,Alk Phos,U/L,84,35,115
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 24,12,Alk Phos,U/L,79,35,115
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 26,13,Alk Phos,U/L,80,35,115
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Baseline,0,ALT (SGPT),U/L,13,6,32
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 2,4,ALT (SGPT),U/L,14,6,32
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 4,5,ALT (SGPT),U/L,10,6,32
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 6,7,ALT (SGPT),U/L,12,6,32
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 8,8,ALT (SGPT),U/L,11,6,32
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 12,9,ALT (SGPT),U/L,16,6,32
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 16,10,ALT (SGPT),U/L,11,6,32
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 20,11,ALT (SGPT),U/L,13,6,32
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 24,12,ALT (SGPT),U/L,10,6,32
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 26,13,ALT (SGPT),U/L,14,6,32
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Baseline,0,AST (SGOT),U/L,20,9,34
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 2,4,AST (SGOT),U/L,20,9,34
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 4,5,AST (SGOT),U/L,16,9,34
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 6,7,AST (SGOT),U/L,23,9,34
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 8,8,AST (SGOT),U/L,19,9,34
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 12,9,AST (SGOT),U/L,22,9,34
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 16,10,AST (SGOT),U/L,18,9,34
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 20,11,AST (SGOT),U/L,22,9,34
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 24,12,AST (SGOT),U/L,15,9,34
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 26,13,AST (SGOT),U/L,19,9,34
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Baseline,0,Tot. Bilirubin,umol/L,5.13,3,21
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 2,4,Tot. Bilirubin,umol/L,5.13,3,21
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 4,5,Tot. Bilirubin,umol/L,6.84,3,21
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 6,7,Tot. Bilirubin,umol/L,6.84,3,21
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 8,8,Tot. Bilirubin,umol/L,6.84,3,21
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 12,9,Tot. Bilirubin,umol/L,5.13,3,21
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 16,10,Tot. Bilirubin,umol/L,6.84,3,21
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 20,11,Tot. Bilirubin,umol/L,5.13,3,21
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 24,12,Tot. Bilirubin,umol/L,5.13,3,21
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 26,13,Tot. Bilirubin,umol/L,8.55,3,21
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Baseline,0,Creatinine,umol/L,88.4,62,124
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 2,4,Creatinine,umol/L,97.24,62,124
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 4,5,Creatinine,umol/L,106.08,62,124
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 6,7,Creatinine,umol/L,97.24,62,124
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 8,8,Creatinine,umol/L,97.24,62,124
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 12,9,Creatinine,umol/L,97.24,62,124
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 16,10,Creatinine,umol/L,97.24,62,124
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 20,11,Creatinine,umol/L,106.08,62,124
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 24,12,Creatinine,umol/L,97.24,62,124
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 26,13,Creatinine,umol/L,88.4,62,124
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Baseline,0,Glucose,mmol/L,8.27099,2.8,13.9
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 2,4,Glucose,mmol/L,5.16243,2.8,13.9
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 4,5,Glucose,mmol/L,4.77386,2.8,13.9
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 6,7,Glucose,mmol/L,4.94039,2.8,13.9
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 8,8,Glucose,mmol/L,5.05141,2.8,13.9
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 12,9,Glucose,mmol/L,5.27345,2.8,13.9
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 16,10,Glucose,mmol/L,4.88488,2.8,13.9
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 20,11,Glucose,mmol/L,5.93957,2.8,13.9
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 24,12,Glucose,mmol/L,5.27345,2.8,13.9
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 26,13,Glucose,mmol/L,5.16243,2.8,13.9
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Baseline,0,Potassium,mmol/L,4.1,3.4,5.4
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 2,4,Potassium,mmol/L,5.1,3.4,5.4
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 4,5,Potassium,mmol/L,4.8,3.4,5.4
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 6,7,Potassium,mmol/L,4.8,3.4,5.4
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 8,8,Potassium,mmol/L,4.1,3.4,5.4
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 12,9,Potassium,mmol/L,4.2,3.4,5.4
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 16,10,Potassium,mmol/L,4.9,3.4,5.4
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 20,11,Potassium,mmol/L,4.9,3.4,5.4
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 24,12,Potassium,mmol/L,4.5,3.4,5.4
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 26,13,Potassium,mmol/L,4.5,3.4,5.4
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Baseline,0,Albumin,g/L,42,35,46
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 2,4,Albumin,g/L,34,35,46
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 4,5,Albumin,g/L,36,35,46
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 6,7,Albumin,g/L,33,35,46
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 8,8,Albumin,g/L,33,35,46
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Baseline,0,Alk Phos,U/L,106,35,115
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 2,4,Alk Phos,U/L,103,35,115
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 4,5,Alk Phos,U/L,136,35,115
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 6,7,Alk Phos,U/L,132,35,115
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 8,8,Alk Phos,U/L,183,35,115
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Baseline,0,ALT (SGPT),U/L,19,6,32
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 2,4,ALT (SGPT),U/L,19,6,32
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 4,5,ALT (SGPT),U/L,14,6,32
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 6,7,ALT (SGPT),U/L,15,6,32
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 8,8,ALT (SGPT),U/L,21,6,32
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Baseline,0,AST (SGOT),U/L,20,9,34
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 2,4,AST (SGOT),U/L,10,9,34
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 4,5,AST (SGOT),U/L,15,9,34
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 6,7,AST (SGOT),U/L,15,9,34
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 8,8,AST (SGOT),U/L,17,9,34
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Baseline,0,Tot. Bilirubin,umol/L,18.81,3,21
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 2,4,Tot. Bilirubin,umol/L,25.65,3,21
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 4,5,Tot. Bilirubin,umol/L,15.39,3,21
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 6,7,Tot. Bilirubin,umol/L,15.39,3,21
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 8,8,Tot. Bilirubin,umol/L,23.94,3,21
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Baseline,0,Creatinine,umol/L,97.24,62,124
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 2,4,Creatinine,umol/L,106.08,62,124
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 4,5,Creatinine,umol/L,97.24,62,124
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 6,7,Creatinine,umol/L,97.24,62,124
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 8,8,Creatinine,umol/L,114.92,62,124
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Baseline,0,Glucose,mmol/L,5.05141,2.8,13.9
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 2,4,Glucose,mmol/L,3.99672,2.8,13.9
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 4,5,Glucose,mmol/L,4.05223,2.8,13.9
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 6,7,Glucose,mmol/L,4.4408,2.8,13.9
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 8,8,Glucose,mmol/L,5.551,2.8,13.9
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Baseline,0,Potassium,mmol/L,3.9,3.4,5.4
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 2,4,Potassium,mmol/L,3.6,3.4,5.4
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 4,5,Potassium,mmol/L,4.2,3.4,5.4
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 6,7,Potassium,mmol/L,4.3,3.4,5.4
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 8,8,Potassium,mmol/L,3.6,3.4,5.4
+01-701-1234,701,M,WHITE,Placebo,Baseline,0,Albumin,g/L,41,35,46
+01-701-1234,701,M,WHITE,Placebo,Week 2,4,Albumin,g/L,43,35,46
+01-701-1234,701,M,WHITE,Placebo,Week 4,5,Albumin,g/L,41,35,46
+01-701-1234,701,M,WHITE,Placebo,Week 6,7,Albumin,g/L,38,35,46
+01-701-1234,701,M,WHITE,Placebo,Week 8,8,Albumin,g/L,41,35,46
+01-701-1234,701,M,WHITE,Placebo,Week 12,9,Albumin,g/L,40,35,46
+01-701-1234,701,M,WHITE,Placebo,Week 16,10,Albumin,g/L,43,35,46
+01-701-1234,701,M,WHITE,Placebo,Week 20,11,Albumin,g/L,38,35,46
+01-701-1234,701,M,WHITE,Placebo,Week 24,12,Albumin,g/L,40,35,46
+01-701-1234,701,M,WHITE,Placebo,Week 26,13,Albumin,g/L,42,35,46
+01-701-1234,701,M,WHITE,Placebo,Baseline,0,Alk Phos,U/L,94,35,115
+01-701-1234,701,M,WHITE,Placebo,Week 2,4,Alk Phos,U/L,55,35,115
+01-701-1234,701,M,WHITE,Placebo,Week 4,5,Alk Phos,U/L,64,35,115
+01-701-1234,701,M,WHITE,Placebo,Week 6,7,Alk Phos,U/L,64,35,115
+01-701-1234,701,M,WHITE,Placebo,Week 8,8,Alk Phos,U/L,51,35,115
+01-701-1234,701,M,WHITE,Placebo,Week 12,9,Alk Phos,U/L,59,35,115
+01-701-1234,701,M,WHITE,Placebo,Week 16,10,Alk Phos,U/L,63,35,115
+01-701-1234,701,M,WHITE,Placebo,Week 20,11,Alk Phos,U/L,52,35,115
+01-701-1234,701,M,WHITE,Placebo,Week 24,12,Alk Phos,U/L,50,35,115
+01-701-1234,701,M,WHITE,Placebo,Week 26,13,Alk Phos,U/L,67,35,115
+01-701-1234,701,M,WHITE,Placebo,Baseline,0,ALT (SGPT),U/L,18,6,35
+01-701-1234,701,M,WHITE,Placebo,Week 2,4,ALT (SGPT),U/L,30,6,35
+01-701-1234,701,M,WHITE,Placebo,Week 4,5,ALT (SGPT),U/L,26,6,35
+01-701-1234,701,M,WHITE,Placebo,Week 6,7,ALT (SGPT),U/L,20,6,35
+01-701-1234,701,M,WHITE,Placebo,Week 8,8,ALT (SGPT),U/L,22,6,35
+01-701-1234,701,M,WHITE,Placebo,Week 12,9,ALT (SGPT),U/L,40,6,35
+01-701-1234,701,M,WHITE,Placebo,Week 16,10,ALT (SGPT),U/L,23,6,35
+01-701-1234,701,M,WHITE,Placebo,Week 20,11,ALT (SGPT),U/L,16,6,35
+01-701-1234,701,M,WHITE,Placebo,Week 24,12,ALT (SGPT),U/L,25,6,35
+01-701-1234,701,M,WHITE,Placebo,Week 26,13,ALT (SGPT),U/L,23,6,35
+01-701-1234,701,M,WHITE,Placebo,Baseline,0,AST (SGOT),U/L,24,11,36
+01-701-1234,701,M,WHITE,Placebo,Week 2,4,AST (SGOT),U/L,31,11,36
+01-701-1234,701,M,WHITE,Placebo,Week 4,5,AST (SGOT),U/L,23,11,36
+01-701-1234,701,M,WHITE,Placebo,Week 6,7,AST (SGOT),U/L,20,11,36
+01-701-1234,701,M,WHITE,Placebo,Week 8,8,AST (SGOT),U/L,26,11,36
+01-701-1234,701,M,WHITE,Placebo,Week 12,9,AST (SGOT),U/L,32,11,36
+01-701-1234,701,M,WHITE,Placebo,Week 16,10,AST (SGOT),U/L,23,11,36
+01-701-1234,701,M,WHITE,Placebo,Week 20,11,AST (SGOT),U/L,19,11,36
+01-701-1234,701,M,WHITE,Placebo,Week 24,12,AST (SGOT),U/L,24,11,36
+01-701-1234,701,M,WHITE,Placebo,Week 26,13,AST (SGOT),U/L,26,11,36
+01-701-1234,701,M,WHITE,Placebo,Baseline,0,Tot. Bilirubin,umol/L,5.13,3,21
+01-701-1234,701,M,WHITE,Placebo,Week 2,4,Tot. Bilirubin,umol/L,11.97,3,21
+01-701-1234,701,M,WHITE,Placebo,Week 4,5,Tot. Bilirubin,umol/L,15.39,3,21
+01-701-1234,701,M,WHITE,Placebo,Week 6,7,Tot. Bilirubin,umol/L,17.1,3,21
+01-701-1234,701,M,WHITE,Placebo,Week 8,8,Tot. Bilirubin,umol/L,13.68,3,21
+01-701-1234,701,M,WHITE,Placebo,Week 12,9,Tot. Bilirubin,umol/L,20.52,3,21
+01-701-1234,701,M,WHITE,Placebo,Week 16,10,Tot. Bilirubin,umol/L,15.39,3,21
+01-701-1234,701,M,WHITE,Placebo,Week 20,11,Tot. Bilirubin,umol/L,13.68,3,21
+01-701-1234,701,M,WHITE,Placebo,Week 24,12,Tot. Bilirubin,umol/L,17.1,3,21
+01-701-1234,701,M,WHITE,Placebo,Week 26,13,Tot. Bilirubin,umol/L,11.97,3,21
+01-701-1234,701,M,WHITE,Placebo,Baseline,0,Creatinine,umol/L,97.24,71,141
+01-701-1234,701,M,WHITE,Placebo,Week 2,4,Creatinine,umol/L,88.4,71,141
+01-701-1234,701,M,WHITE,Placebo,Week 4,5,Creatinine,umol/L,97.24,71,141
+01-701-1234,701,M,WHITE,Placebo,Week 6,7,Creatinine,umol/L,97.24,71,141
+01-701-1234,701,M,WHITE,Placebo,Week 8,8,Creatinine,umol/L,97.24,71,141
+01-701-1234,701,M,WHITE,Placebo,Week 12,9,Creatinine,umol/L,88.4,71,141
+01-701-1234,701,M,WHITE,Placebo,Week 16,10,Creatinine,umol/L,97.24,71,141
+01-701-1234,701,M,WHITE,Placebo,Week 20,11,Creatinine,umol/L,106.08,71,141
+01-701-1234,701,M,WHITE,Placebo,Week 24,12,Creatinine,umol/L,97.24,71,141
+01-701-1234,701,M,WHITE,Placebo,Week 26,13,Creatinine,umol/L,97.24,71,141
+01-701-1234,701,M,WHITE,Placebo,Baseline,0,Glucose,mmol/L,5.99508,2.8,13.9
+01-701-1234,701,M,WHITE,Placebo,Week 2,4,Glucose,mmol/L,5.60651,2.8,13.9
+01-701-1234,701,M,WHITE,Placebo,Week 4,5,Glucose,mmol/L,5.16243,2.8,13.9
+01-701-1234,701,M,WHITE,Placebo,Week 6,7,Glucose,mmol/L,5.27345,2.8,13.9
+01-701-1234,701,M,WHITE,Placebo,Week 8,8,Glucose,mmol/L,5.49549,2.8,13.9
+01-701-1234,701,M,WHITE,Placebo,Week 12,9,Glucose,mmol/L,5.60651,2.8,13.9
+01-701-1234,701,M,WHITE,Placebo,Week 16,10,Glucose,mmol/L,6.05059,2.8,13.9
+01-701-1234,701,M,WHITE,Placebo,Week 20,11,Glucose,mmol/L,4.66284,2.8,13.9
+01-701-1234,701,M,WHITE,Placebo,Week 24,12,Glucose,mmol/L,10.76894,2.8,13.9
+01-701-1234,701,M,WHITE,Placebo,Week 26,13,Glucose,mmol/L,5.32896,2.8,13.9
+01-701-1234,701,M,WHITE,Placebo,Baseline,0,Potassium,mmol/L,4.3,3.4,5.4
+01-701-1234,701,M,WHITE,Placebo,Week 2,4,Potassium,mmol/L,4.7,3.4,5.4
+01-701-1234,701,M,WHITE,Placebo,Week 4,5,Potassium,mmol/L,4.8,3.4,5.4
+01-701-1234,701,M,WHITE,Placebo,Week 6,7,Potassium,mmol/L,4.5,3.4,5.4
+01-701-1234,701,M,WHITE,Placebo,Week 8,8,Potassium,mmol/L,4.5,3.4,5.4
+01-701-1234,701,M,WHITE,Placebo,Week 12,9,Potassium,mmol/L,4.6,3.4,5.4
+01-701-1234,701,M,WHITE,Placebo,Week 16,10,Potassium,mmol/L,4.2,3.4,5.4
+01-701-1234,701,M,WHITE,Placebo,Week 20,11,Potassium,mmol/L,3.7,3.4,5.4
+01-701-1234,701,M,WHITE,Placebo,Week 24,12,Potassium,mmol/L,4.2,3.4,5.4
+01-701-1234,701,M,WHITE,Placebo,Week 26,13,Potassium,mmol/L,4.3,3.4,5.4
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Unscheduled 1.1,1.1,Albumin,g/L,42,33,49
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 2,4,Albumin,g/L,40,33,49
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 4,5,Albumin,g/L,42,33,49
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 6,7,Albumin,g/L,41,33,49
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 8,8,Albumin,g/L,38,33,49
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 12,9,Albumin,g/L,40,33,49
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 16,10,Albumin,g/L,38,33,49
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 20,11,Albumin,g/L,43,33,49
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 24,12,Albumin,g/L,41,33,49
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Unscheduled 1.1,1.1,Alk Phos,U/L,80,31,110
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 2,4,Alk Phos,U/L,95,31,110
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 4,5,Alk Phos,U/L,89,31,110
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 6,7,Alk Phos,U/L,89,31,110
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 8,8,Alk Phos,U/L,77,31,110
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 12,9,Alk Phos,U/L,90,31,110
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 16,10,Alk Phos,U/L,75,31,110
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 20,11,Alk Phos,U/L,83,31,110
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 24,12,Alk Phos,U/L,71,31,110
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Unscheduled 1.1,1.1,ALT (SGPT),U/L,61,6,43
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 2,4,ALT (SGPT),U/L,47,6,43
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 4,5,ALT (SGPT),U/L,61,6,43
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 6,7,ALT (SGPT),U/L,60,6,43
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 8,8,ALT (SGPT),U/L,71,6,43
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 12,9,ALT (SGPT),U/L,70,6,43
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 16,10,ALT (SGPT),U/L,35,6,43
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 20,11,ALT (SGPT),U/L,35,6,43
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 24,12,ALT (SGPT),U/L,43,6,43
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Unscheduled 1.1,1.1,AST (SGOT),U/L,36,11,36
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 2,4,AST (SGOT),U/L,26,11,36
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 4,5,AST (SGOT),U/L,43,11,36
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 6,7,AST (SGOT),U/L,32,11,36
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 8,8,AST (SGOT),U/L,35,11,36
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 12,9,AST (SGOT),U/L,35,11,36
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 16,10,AST (SGOT),U/L,26,11,36
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 20,11,AST (SGOT),U/L,23,11,36
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 24,12,AST (SGOT),U/L,28,11,36
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Unscheduled 1.1,1.1,Tot. Bilirubin,umol/L,34.2,3,21
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 2,4,Tot. Bilirubin,umol/L,18.81,3,21
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 4,5,Tot. Bilirubin,umol/L,34.2,3,21
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 6,7,Tot. Bilirubin,umol/L,25.65,3,21
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 8,8,Tot. Bilirubin,umol/L,23.94,3,21
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 12,9,Tot. Bilirubin,umol/L,15.39,3,21
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 16,10,Tot. Bilirubin,umol/L,23.94,3,21
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 20,11,Tot. Bilirubin,umol/L,25.65,3,21
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 24,12,Tot. Bilirubin,umol/L,30.78,3,21
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Unscheduled 1.1,1.1,Creatinine,umol/L,114.92,71,141
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 2,4,Creatinine,umol/L,106.08,71,141
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 4,5,Creatinine,umol/L,114.92,71,141
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 6,7,Creatinine,umol/L,114.92,71,141
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 8,8,Creatinine,umol/L,114.92,71,141
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 12,9,Creatinine,umol/L,123.76,71,141
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 16,10,Creatinine,umol/L,114.92,71,141
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 20,11,Creatinine,umol/L,114.92,71,141
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 24,12,Creatinine,umol/L,123.76,71,141
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Unscheduled 1.1,1.1,Glucose,mmol/L,11.87914,2.8,13.9
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 2,4,Glucose,mmol/L,16.70851,2.8,13.9
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 4,5,Glucose,mmol/L,7.32732,2.8,13.9
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 6,7,Glucose,mmol/L,8.54854,2.8,13.9
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 8,8,Glucose,mmol/L,5.27345,2.8,13.9
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 12,9,Glucose,mmol/L,6.93875,2.8,13.9
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 16,10,Glucose,mmol/L,6.82773,2.8,13.9
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 20,11,Glucose,mmol/L,5.38447,2.8,13.9
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 24,12,Glucose,mmol/L,8.21548,2.8,13.9
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Baseline,0,Potassium,mmol/L,4.4,3.4,5.4
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 2,4,Potassium,mmol/L,4.4,3.4,5.4
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 4,5,Potassium,mmol/L,4.3,3.4,5.4
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 6,7,Potassium,mmol/L,4.2,3.4,5.4
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 8,8,Potassium,mmol/L,4.4,3.4,5.4
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 12,9,Potassium,mmol/L,4.4,3.4,5.4
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 16,10,Potassium,mmol/L,4.5,3.4,5.4
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 20,11,Potassium,mmol/L,4,3.4,5.4
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 24,12,Potassium,mmol/L,4.2,3.4,5.4
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Baseline,0,Albumin,g/L,38,33,49
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 2,4,Albumin,g/L,35,33,49
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 4,5,Albumin,g/L,35,33,49
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 6,7,Albumin,g/L,34,33,49
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 8,8,Albumin,g/L,37,33,49
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 12,9,Albumin,g/L,35,33,49
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Baseline,0,Alk Phos,U/L,38,35,115
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 2,4,Alk Phos,U/L,36,35,115
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 4,5,Alk Phos,U/L,36,35,115
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 6,7,Alk Phos,U/L,34,35,115
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 8,8,Alk Phos,U/L,41,35,115
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 12,9,Alk Phos,U/L,37,35,115
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Baseline,0,ALT (SGPT),U/L,19,6,43
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 2,4,ALT (SGPT),U/L,19,6,43
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 4,5,ALT (SGPT),U/L,20,6,43
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 6,7,ALT (SGPT),U/L,22,6,43
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 8,8,ALT (SGPT),U/L,21,6,43
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 12,9,ALT (SGPT),U/L,15,6,43
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Baseline,0,AST (SGOT),U/L,28,11,36
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 2,4,AST (SGOT),U/L,27,11,36
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 4,5,AST (SGOT),U/L,27,11,36
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 6,7,AST (SGOT),U/L,25,11,36
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 8,8,AST (SGOT),U/L,30,11,36
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 12,9,AST (SGOT),U/L,26,11,36
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Baseline,0,Tot. Bilirubin,umol/L,10.26,3,21
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 2,4,Tot. Bilirubin,umol/L,10.26,3,21
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 4,5,Tot. Bilirubin,umol/L,8.55,3,21
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 6,7,Tot. Bilirubin,umol/L,8.55,3,21
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 8,8,Tot. Bilirubin,umol/L,6.84,3,21
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 12,9,Tot. Bilirubin,umol/L,8.55,3,21
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Baseline,0,Creatinine,umol/L,97.24,71,141
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 2,4,Creatinine,umol/L,88.4,71,141
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 4,5,Creatinine,umol/L,88.4,71,141
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 6,7,Creatinine,umol/L,88.4,71,141
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 8,8,Creatinine,umol/L,88.4,71,141
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 12,9,Creatinine,umol/L,97.24,71,141
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Baseline,0,Glucose,mmol/L,4.4408,2.8,13.9
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 2,4,Glucose,mmol/L,4.38529,2.8,13.9
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 4,5,Glucose,mmol/L,5.10692,2.8,13.9
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 6,7,Glucose,mmol/L,4.38529,2.8,13.9
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 8,8,Glucose,mmol/L,6.71671,2.8,13.9
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 12,9,Glucose,mmol/L,5.43998,2.8,13.9
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Baseline,0,Potassium,mmol/L,4.3,3.4,5.4
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 2,4,Potassium,mmol/L,4.1,3.4,5.4
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 4,5,Potassium,mmol/L,4.2,3.4,5.4
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 6,7,Potassium,mmol/L,4.3,3.4,5.4
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 8,8,Potassium,mmol/L,4.4,3.4,5.4
+01-701-1015,701,F,WHITE,Placebo,Baseline,0,Pulse Rate,BEATS/MIN,56,60,100
+01-701-1015,701,F,WHITE,Placebo,Baseline,0,Pulse Rate,BEATS/MIN,59,60,100
+01-701-1015,701,F,WHITE,Placebo,Baseline,0,Pulse Rate,BEATS/MIN,59,60,100
+01-701-1015,701,F,WHITE,Placebo,Week 2,2,Pulse Rate,BEATS/MIN,58,60,100
+01-701-1015,701,F,WHITE,Placebo,Week 2,2,Pulse Rate,BEATS/MIN,61,60,100
+01-701-1015,701,F,WHITE,Placebo,Week 2,2,Pulse Rate,BEATS/MIN,62,60,100
+01-701-1015,701,F,WHITE,Placebo,Week 4,4,Pulse Rate,BEATS/MIN,59,60,100
+01-701-1015,701,F,WHITE,Placebo,Week 4,4,Pulse Rate,BEATS/MIN,62,60,100
+01-701-1015,701,F,WHITE,Placebo,Week 4,4,Pulse Rate,BEATS/MIN,59,60,100
+01-701-1015,701,F,WHITE,Placebo,Week 6,6,Pulse Rate,BEATS/MIN,55,60,100
+01-701-1015,701,F,WHITE,Placebo,Week 6,6,Pulse Rate,BEATS/MIN,56,60,100
+01-701-1015,701,F,WHITE,Placebo,Week 6,6,Pulse Rate,BEATS/MIN,57,60,100
+01-701-1015,701,F,WHITE,Placebo,Week 8,8,Pulse Rate,BEATS/MIN,57,60,100
+01-701-1015,701,F,WHITE,Placebo,Week 8,8,Pulse Rate,BEATS/MIN,60,60,100
+01-701-1015,701,F,WHITE,Placebo,Week 8,8,Pulse Rate,BEATS/MIN,57,60,100
+01-701-1015,701,F,WHITE,Placebo,Week 12,12,Pulse Rate,BEATS/MIN,54,60,100
+01-701-1015,701,F,WHITE,Placebo,Week 12,12,Pulse Rate,BEATS/MIN,53,60,100
+01-701-1015,701,F,WHITE,Placebo,Week 12,12,Pulse Rate,BEATS/MIN,52,60,100
+01-701-1015,701,F,WHITE,Placebo,Week 16,16,Pulse Rate,BEATS/MIN,60,60,100
+01-701-1015,701,F,WHITE,Placebo,Week 16,16,Pulse Rate,BEATS/MIN,55,60,100
+01-701-1015,701,F,WHITE,Placebo,Week 16,16,Pulse Rate,BEATS/MIN,61,60,100
+01-701-1015,701,F,WHITE,Placebo,Week 20,20,Pulse Rate,BEATS/MIN,54,60,100
+01-701-1015,701,F,WHITE,Placebo,Week 20,20,Pulse Rate,BEATS/MIN,59,60,100
+01-701-1015,701,F,WHITE,Placebo,Week 20,20,Pulse Rate,BEATS/MIN,58,60,100
+01-701-1015,701,F,WHITE,Placebo,Week 24,24,Pulse Rate,BEATS/MIN,55,60,100
+01-701-1015,701,F,WHITE,Placebo,Week 24,24,Pulse Rate,BEATS/MIN,57,60,100
+01-701-1015,701,F,WHITE,Placebo,Week 24,24,Pulse Rate,BEATS/MIN,56,60,100
+01-701-1015,701,F,WHITE,Placebo,Week 26,26,Pulse Rate,BEATS/MIN,60,60,100
+01-701-1015,701,F,WHITE,Placebo,Week 26,26,Pulse Rate,BEATS/MIN,61,60,100
+01-701-1015,701,F,WHITE,Placebo,Week 26,26,Pulse Rate,BEATS/MIN,59,60,100
+01-701-1015,701,F,WHITE,Placebo,Baseline,0,Systolic Blood Pressure,mmHg,130,90,130
+01-701-1015,701,F,WHITE,Placebo,Baseline,0,Systolic Blood Pressure,mmHg,121,90,130
+01-701-1015,701,F,WHITE,Placebo,Baseline,0,Systolic Blood Pressure,mmHg,131,90,130
+01-701-1015,701,F,WHITE,Placebo,Week 2,2,Systolic Blood Pressure,mmHg,114,90,130
+01-701-1015,701,F,WHITE,Placebo,Week 2,2,Systolic Blood Pressure,mmHg,121,90,130
+01-701-1015,701,F,WHITE,Placebo,Week 2,2,Systolic Blood Pressure,mmHg,132,90,130
+01-701-1015,701,F,WHITE,Placebo,Week 4,4,Systolic Blood Pressure,mmHg,138,90,130
+01-701-1015,701,F,WHITE,Placebo,Week 4,4,Systolic Blood Pressure,mmHg,137,90,130
+01-701-1015,701,F,WHITE,Placebo,Week 4,4,Systolic Blood Pressure,mmHg,132,90,130
+01-701-1015,701,F,WHITE,Placebo,Week 6,6,Systolic Blood Pressure,mmHg,148,90,130
+01-701-1015,701,F,WHITE,Placebo,Week 6,6,Systolic Blood Pressure,mmHg,137,90,130
+01-701-1015,701,F,WHITE,Placebo,Week 6,6,Systolic Blood Pressure,mmHg,138,90,130
+01-701-1015,701,F,WHITE,Placebo,Week 8,8,Systolic Blood Pressure,mmHg,138,90,130
+01-701-1015,701,F,WHITE,Placebo,Week 8,8,Systolic Blood Pressure,mmHg,146,90,130
+01-701-1015,701,F,WHITE,Placebo,Week 8,8,Systolic Blood Pressure,mmHg,140,90,130
+01-701-1015,701,F,WHITE,Placebo,Week 12,12,Systolic Blood Pressure,mmHg,139,90,130
+01-701-1015,701,F,WHITE,Placebo,Week 12,12,Systolic Blood Pressure,mmHg,146,90,130
+01-701-1015,701,F,WHITE,Placebo,Week 12,12,Systolic Blood Pressure,mmHg,138,90,130
+01-701-1015,701,F,WHITE,Placebo,Week 16,16,Systolic Blood Pressure,mmHg,163,90,130
+01-701-1015,701,F,WHITE,Placebo,Week 16,16,Systolic Blood Pressure,mmHg,145,90,130
+01-701-1015,701,F,WHITE,Placebo,Week 16,16,Systolic Blood Pressure,mmHg,152,90,130
+01-701-1015,701,F,WHITE,Placebo,Week 20,20,Systolic Blood Pressure,mmHg,137,90,130
+01-701-1015,701,F,WHITE,Placebo,Week 20,20,Systolic Blood Pressure,mmHg,139,90,130
+01-701-1015,701,F,WHITE,Placebo,Week 20,20,Systolic Blood Pressure,mmHg,136,90,130
+01-701-1015,701,F,WHITE,Placebo,Week 24,24,Systolic Blood Pressure,mmHg,129,90,130
+01-701-1015,701,F,WHITE,Placebo,Week 24,24,Systolic Blood Pressure,mmHg,131,90,130
+01-701-1015,701,F,WHITE,Placebo,Week 24,24,Systolic Blood Pressure,mmHg,137,90,130
+01-701-1015,701,F,WHITE,Placebo,Week 26,26,Systolic Blood Pressure,mmHg,127,90,130
+01-701-1015,701,F,WHITE,Placebo,Week 26,26,Systolic Blood Pressure,mmHg,128,90,130
+01-701-1015,701,F,WHITE,Placebo,Week 26,26,Systolic Blood Pressure,mmHg,129,90,130
+01-701-1023,701,M,WHITE,Placebo,Baseline,0,Pulse Rate,BEATS/MIN,68,60,100
+01-701-1023,701,M,WHITE,Placebo,Baseline,0,Pulse Rate,BEATS/MIN,80,60,100
+01-701-1023,701,M,WHITE,Placebo,Baseline,0,Pulse Rate,BEATS/MIN,76,60,100
+01-701-1023,701,M,WHITE,Placebo,Week 2,2,Pulse Rate,BEATS/MIN,84,60,100
+01-701-1023,701,M,WHITE,Placebo,Week 2,2,Pulse Rate,BEATS/MIN,92,60,100
+01-701-1023,701,M,WHITE,Placebo,Week 2,2,Pulse Rate,BEATS/MIN,94,60,100
+01-701-1023,701,M,WHITE,Placebo,Baseline,0,Systolic Blood Pressure,mmHg,130,90,130
+01-701-1023,701,M,WHITE,Placebo,Baseline,0,Systolic Blood Pressure,mmHg,132,90,130
+01-701-1023,701,M,WHITE,Placebo,Baseline,0,Systolic Blood Pressure,mmHg,132,90,130
+01-701-1023,701,M,WHITE,Placebo,Week 2,2,Systolic Blood Pressure,mmHg,122,90,130
+01-701-1023,701,M,WHITE,Placebo,Week 2,2,Systolic Blood Pressure,mmHg,130,90,130
+01-701-1023,701,M,WHITE,Placebo,Week 2,2,Systolic Blood Pressure,mmHg,138,90,130
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Baseline,0,Pulse Rate,BEATS/MIN,62,60,100
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Baseline,0,Pulse Rate,BEATS/MIN,62,60,100
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Baseline,0,Pulse Rate,BEATS/MIN,66,60,100
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 2,2,Pulse Rate,BEATS/MIN,65,60,100
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 2,2,Pulse Rate,BEATS/MIN,77,60,100
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 2,2,Pulse Rate,BEATS/MIN,72,60,100
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 4,4,Pulse Rate,BEATS/MIN,68,60,100
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 4,4,Pulse Rate,BEATS/MIN,81,60,100
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 4,4,Pulse Rate,BEATS/MIN,76,60,100
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 6,6,Pulse Rate,BEATS/MIN,56,60,100
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 6,6,Pulse Rate,BEATS/MIN,60,60,100
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 6,6,Pulse Rate,BEATS/MIN,62,60,100
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 8,8,Pulse Rate,BEATS/MIN,67,60,100
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 8,8,Pulse Rate,BEATS/MIN,76,60,100
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 8,8,Pulse Rate,BEATS/MIN,81,60,100
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 12,12,Pulse Rate,BEATS/MIN,61,60,100
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 12,12,Pulse Rate,BEATS/MIN,64,60,100
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 12,12,Pulse Rate,BEATS/MIN,70,60,100
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 16,16,Pulse Rate,BEATS/MIN,60,60,100
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 16,16,Pulse Rate,BEATS/MIN,70,60,100
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 16,16,Pulse Rate,BEATS/MIN,69,60,100
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 20,20,Pulse Rate,BEATS/MIN,60,60,100
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 20,20,Pulse Rate,BEATS/MIN,67,60,100
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 20,20,Pulse Rate,BEATS/MIN,69,60,100
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 24,24,Pulse Rate,BEATS/MIN,62,60,100
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 24,24,Pulse Rate,BEATS/MIN,72,60,100
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 24,24,Pulse Rate,BEATS/MIN,73,60,100
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 26,26,Pulse Rate,BEATS/MIN,53,60,100
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 26,26,Pulse Rate,BEATS/MIN,58,60,100
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 26,26,Pulse Rate,BEATS/MIN,59,60,100
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Baseline,0,Systolic Blood Pressure,mmHg,138,90,130
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Baseline,0,Systolic Blood Pressure,mmHg,145,90,130
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Baseline,0,Systolic Blood Pressure,mmHg,139,90,130
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 2,2,Systolic Blood Pressure,mmHg,134,90,130
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 2,2,Systolic Blood Pressure,mmHg,138,90,130
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 2,2,Systolic Blood Pressure,mmHg,131,90,130
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 4,4,Systolic Blood Pressure,mmHg,130,90,130
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 4,4,Systolic Blood Pressure,mmHg,130,90,130
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 4,4,Systolic Blood Pressure,mmHg,138,90,130
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 6,6,Systolic Blood Pressure,mmHg,131,90,130
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 6,6,Systolic Blood Pressure,mmHg,131,90,130
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 6,6,Systolic Blood Pressure,mmHg,132,90,130
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 8,8,Systolic Blood Pressure,mmHg,137,90,130
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 8,8,Systolic Blood Pressure,mmHg,146,90,130
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 8,8,Systolic Blood Pressure,mmHg,130,90,130
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 12,12,Systolic Blood Pressure,mmHg,128,90,130
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 12,12,Systolic Blood Pressure,mmHg,137,90,130
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 12,12,Systolic Blood Pressure,mmHg,138,90,130
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 16,16,Systolic Blood Pressure,mmHg,122,90,130
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 16,16,Systolic Blood Pressure,mmHg,130,90,130
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 16,16,Systolic Blood Pressure,mmHg,132,90,130
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 20,20,Systolic Blood Pressure,mmHg,129,90,130
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 20,20,Systolic Blood Pressure,mmHg,123,90,130
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 20,20,Systolic Blood Pressure,mmHg,131,90,130
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 24,24,Systolic Blood Pressure,mmHg,130,90,130
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 24,24,Systolic Blood Pressure,mmHg,133,90,130
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 24,24,Systolic Blood Pressure,mmHg,131,90,130
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 26,26,Systolic Blood Pressure,mmHg,131,90,130
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 26,26,Systolic Blood Pressure,mmHg,118,90,130
+01-701-1028,701,M,WHITE,Xanomeline High Dose,Week 26,26,Systolic Blood Pressure,mmHg,131,90,130
+01-701-1033,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Pulse Rate,BEATS/MIN,55,60,100
+01-701-1033,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Pulse Rate,BEATS/MIN,64,60,100
+01-701-1033,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Pulse Rate,BEATS/MIN,62,60,100
+01-701-1033,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Systolic Blood Pressure,mmHg,136,90,130
+01-701-1033,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Systolic Blood Pressure,mmHg,116,90,130
+01-701-1033,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Systolic Blood Pressure,mmHg,121,90,130
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Baseline,0,Pulse Rate,BEATS/MIN,76,60,100
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Baseline,0,Pulse Rate,BEATS/MIN,83,60,100
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Baseline,0,Pulse Rate,BEATS/MIN,80,60,100
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 2,2,Pulse Rate,BEATS/MIN,86,60,100
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 2,2,Pulse Rate,BEATS/MIN,91,60,100
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 2,2,Pulse Rate,BEATS/MIN,86,60,100
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 4,4,Pulse Rate,BEATS/MIN,87,60,100
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 4,4,Pulse Rate,BEATS/MIN,91,60,100
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 4,4,Pulse Rate,BEATS/MIN,88,60,100
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 6,6,Pulse Rate,BEATS/MIN,97,60,100
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 6,6,Pulse Rate,BEATS/MIN,93,60,100
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 6,6,Pulse Rate,BEATS/MIN,94,60,100
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 8,8,Pulse Rate,BEATS/MIN,78,60,100
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 8,8,Pulse Rate,BEATS/MIN,71,60,100
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 8,8,Pulse Rate,BEATS/MIN,71,60,100
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 12,12,Pulse Rate,BEATS/MIN,66,60,100
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 12,12,Pulse Rate,BEATS/MIN,70,60,100
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 12,12,Pulse Rate,BEATS/MIN,69,60,100
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 16,16,Pulse Rate,BEATS/MIN,74,60,100
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 16,16,Pulse Rate,BEATS/MIN,79,60,100
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 16,16,Pulse Rate,BEATS/MIN,78,60,100
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 20,20,Pulse Rate,BEATS/MIN,86,60,100
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 20,20,Pulse Rate,BEATS/MIN,84,60,100
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 20,20,Pulse Rate,BEATS/MIN,80,60,100
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 24,24,Pulse Rate,BEATS/MIN,96,60,100
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 24,24,Pulse Rate,BEATS/MIN,97,60,100
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 24,24,Pulse Rate,BEATS/MIN,91,60,100
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 26,26,Pulse Rate,BEATS/MIN,74,60,100
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 26,26,Pulse Rate,BEATS/MIN,86,60,100
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 26,26,Pulse Rate,BEATS/MIN,76,60,100
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Baseline,0,Systolic Blood Pressure,mmHg,163,90,130
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Baseline,0,Systolic Blood Pressure,mmHg,177,90,130
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Baseline,0,Systolic Blood Pressure,mmHg,168,90,130
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 2,2,Systolic Blood Pressure,mmHg,183,90,130
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 2,2,Systolic Blood Pressure,mmHg,191,90,130
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 2,2,Systolic Blood Pressure,mmHg,161,90,130
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 4,4,Systolic Blood Pressure,mmHg,165,90,130
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 4,4,Systolic Blood Pressure,mmHg,170,90,130
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 4,4,Systolic Blood Pressure,mmHg,169,90,130
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 6,6,Systolic Blood Pressure,mmHg,145,90,130
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 6,6,Systolic Blood Pressure,mmHg,174,90,130
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 6,6,Systolic Blood Pressure,mmHg,170,90,130
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 8,8,Systolic Blood Pressure,mmHg,188,90,130
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 8,8,Systolic Blood Pressure,mmHg,197,90,130
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 8,8,Systolic Blood Pressure,mmHg,198,90,130
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 12,12,Systolic Blood Pressure,mmHg,145,90,130
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 12,12,Systolic Blood Pressure,mmHg,150,90,130
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 12,12,Systolic Blood Pressure,mmHg,177,90,130
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 16,16,Systolic Blood Pressure,mmHg,154,90,130
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 16,16,Systolic Blood Pressure,mmHg,183,90,130
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 16,16,Systolic Blood Pressure,mmHg,186,90,130
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 20,20,Systolic Blood Pressure,mmHg,167,90,130
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 20,20,Systolic Blood Pressure,mmHg,181,90,130
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 20,20,Systolic Blood Pressure,mmHg,185,90,130
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 24,24,Systolic Blood Pressure,mmHg,178,90,130
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 24,24,Systolic Blood Pressure,mmHg,198,90,130
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 24,24,Systolic Blood Pressure,mmHg,164,90,130
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 26,26,Systolic Blood Pressure,mmHg,154,90,130
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 26,26,Systolic Blood Pressure,mmHg,150,90,130
+01-701-1034,701,F,WHITE,Xanomeline High Dose,Week 26,26,Systolic Blood Pressure,mmHg,179,90,130
+01-701-1047,701,F,WHITE,Placebo,Baseline,0,Pulse Rate,BEATS/MIN,58,60,100
+01-701-1047,701,F,WHITE,Placebo,Baseline,0,Pulse Rate,BEATS/MIN,67,60,100
+01-701-1047,701,F,WHITE,Placebo,Baseline,0,Pulse Rate,BEATS/MIN,67,60,100
+01-701-1047,701,F,WHITE,Placebo,Week 2,2,Pulse Rate,BEATS/MIN,66,60,100
+01-701-1047,701,F,WHITE,Placebo,Week 2,2,Pulse Rate,BEATS/MIN,75,60,100
+01-701-1047,701,F,WHITE,Placebo,Week 2,2,Pulse Rate,BEATS/MIN,78,60,100
+01-701-1047,701,F,WHITE,Placebo,Baseline,0,Systolic Blood Pressure,mmHg,151,90,130
+01-701-1047,701,F,WHITE,Placebo,Baseline,0,Systolic Blood Pressure,mmHg,145,90,130
+01-701-1047,701,F,WHITE,Placebo,Baseline,0,Systolic Blood Pressure,mmHg,167,90,130
+01-701-1047,701,F,WHITE,Placebo,Week 2,2,Systolic Blood Pressure,mmHg,145,90,130
+01-701-1047,701,F,WHITE,Placebo,Week 2,2,Systolic Blood Pressure,mmHg,146,90,130
+01-701-1047,701,F,WHITE,Placebo,Week 2,2,Systolic Blood Pressure,mmHg,153,90,130
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Pulse Rate,BEATS/MIN,60,60,100
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Pulse Rate,BEATS/MIN,68,60,100
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Pulse Rate,BEATS/MIN,64,60,100
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 2,2,Pulse Rate,BEATS/MIN,66,60,100
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 2,2,Pulse Rate,BEATS/MIN,72,60,100
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 2,2,Pulse Rate,BEATS/MIN,68,60,100
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 4,4,Pulse Rate,BEATS/MIN,50,60,100
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 4,4,Pulse Rate,BEATS/MIN,54,60,100
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 4,4,Pulse Rate,BEATS/MIN,54,60,100
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 6,6,Pulse Rate,BEATS/MIN,64,60,100
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 6,6,Pulse Rate,BEATS/MIN,76,60,100
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 6,6,Pulse Rate,BEATS/MIN,74,60,100
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 8,8,Pulse Rate,BEATS/MIN,54,60,100
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 8,8,Pulse Rate,BEATS/MIN,62,60,100
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 8,8,Pulse Rate,BEATS/MIN,61,60,100
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 12,12,Pulse Rate,BEATS/MIN,58,60,100
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 12,12,Pulse Rate,BEATS/MIN,72,60,100
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 12,12,Pulse Rate,BEATS/MIN,70,60,100
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 16,16,Pulse Rate,BEATS/MIN,67,60,100
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 16,16,Pulse Rate,BEATS/MIN,74,60,100
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 16,16,Pulse Rate,BEATS/MIN,72,60,100
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 20,20,Pulse Rate,BEATS/MIN,61,60,100
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 20,20,Pulse Rate,BEATS/MIN,70,60,100
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 20,20,Pulse Rate,BEATS/MIN,67,60,100
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 24,24,Pulse Rate,BEATS/MIN,65,60,100
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 24,24,Pulse Rate,BEATS/MIN,74,60,100
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 24,24,Pulse Rate,BEATS/MIN,72,60,100
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 26,26,Pulse Rate,BEATS/MIN,58,60,100
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 26,26,Pulse Rate,BEATS/MIN,76,60,100
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 26,26,Pulse Rate,BEATS/MIN,66,60,100
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Systolic Blood Pressure,mmHg,128,90,130
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Systolic Blood Pressure,mmHg,130,90,130
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Systolic Blood Pressure,mmHg,132,90,130
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 2,2,Systolic Blood Pressure,mmHg,124,90,130
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 2,2,Systolic Blood Pressure,mmHg,130,90,130
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 2,2,Systolic Blood Pressure,mmHg,132,90,130
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 4,4,Systolic Blood Pressure,mmHg,137,90,130
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 4,4,Systolic Blood Pressure,mmHg,134,90,130
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 4,4,Systolic Blood Pressure,mmHg,137,90,130
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 6,6,Systolic Blood Pressure,mmHg,122,90,130
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 6,6,Systolic Blood Pressure,mmHg,124,90,130
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 6,6,Systolic Blood Pressure,mmHg,124,90,130
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 8,8,Systolic Blood Pressure,mmHg,136,90,130
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 8,8,Systolic Blood Pressure,mmHg,130,90,130
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 8,8,Systolic Blood Pressure,mmHg,131,90,130
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 12,12,Systolic Blood Pressure,mmHg,121,90,130
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 12,12,Systolic Blood Pressure,mmHg,132,90,130
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 12,12,Systolic Blood Pressure,mmHg,139,90,130
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 16,16,Systolic Blood Pressure,mmHg,132,90,130
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 16,16,Systolic Blood Pressure,mmHg,138,90,130
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 16,16,Systolic Blood Pressure,mmHg,139,90,130
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 20,20,Systolic Blood Pressure,mmHg,121,90,130
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 20,20,Systolic Blood Pressure,mmHg,112,90,130
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 20,20,Systolic Blood Pressure,mmHg,115,90,130
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 24,24,Systolic Blood Pressure,mmHg,137,90,130
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 24,24,Systolic Blood Pressure,mmHg,131,90,130
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 24,24,Systolic Blood Pressure,mmHg,130,90,130
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 26,26,Systolic Blood Pressure,mmHg,123,90,130
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 26,26,Systolic Blood Pressure,mmHg,132,90,130
+01-701-1097,701,M,WHITE,Xanomeline Low Dose,Week 26,26,Systolic Blood Pressure,mmHg,131,90,130
+01-701-1111,701,F,WHITE,Xanomeline Low Dose,Baseline,0,Pulse Rate,BEATS/MIN,78,60,100
+01-701-1111,701,F,WHITE,Xanomeline Low Dose,Baseline,0,Pulse Rate,BEATS/MIN,85,60,100
+01-701-1111,701,F,WHITE,Xanomeline Low Dose,Baseline,0,Pulse Rate,BEATS/MIN,85,60,100
+01-701-1111,701,F,WHITE,Xanomeline Low Dose,Baseline,0,Systolic Blood Pressure,mmHg,129,90,130
+01-701-1111,701,F,WHITE,Xanomeline Low Dose,Baseline,0,Systolic Blood Pressure,mmHg,136,90,130
+01-701-1111,701,F,WHITE,Xanomeline Low Dose,Baseline,0,Systolic Blood Pressure,mmHg,135,90,130
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Pulse Rate,BEATS/MIN,50,60,100
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Pulse Rate,BEATS/MIN,62,60,100
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Pulse Rate,BEATS/MIN,60,60,100
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 2,2,Pulse Rate,BEATS/MIN,53,60,100
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 2,2,Pulse Rate,BEATS/MIN,70,60,100
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 2,2,Pulse Rate,BEATS/MIN,65,60,100
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 4,4,Pulse Rate,BEATS/MIN,51,60,100
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 4,4,Pulse Rate,BEATS/MIN,57,60,100
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 4,4,Pulse Rate,BEATS/MIN,64,60,100
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 6,6,Pulse Rate,BEATS/MIN,52,60,100
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 6,6,Pulse Rate,BEATS/MIN,62,60,100
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 6,6,Pulse Rate,BEATS/MIN,62,60,100
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 8,8,Pulse Rate,BEATS/MIN,50,60,100
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 8,8,Pulse Rate,BEATS/MIN,52,60,100
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 8,8,Pulse Rate,BEATS/MIN,54,60,100
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Systolic Blood Pressure,mmHg,130,90,130
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Systolic Blood Pressure,mmHg,106,90,130
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Systolic Blood Pressure,mmHg,110,90,130
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 2,2,Systolic Blood Pressure,mmHg,122,90,130
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 2,2,Systolic Blood Pressure,mmHg,119,90,130
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 2,2,Systolic Blood Pressure,mmHg,100,90,130
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 4,4,Systolic Blood Pressure,mmHg,115,90,130
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 4,4,Systolic Blood Pressure,mmHg,98,90,130
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 4,4,Systolic Blood Pressure,mmHg,95,90,130
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 6,6,Systolic Blood Pressure,mmHg,131,90,130
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 6,6,Systolic Blood Pressure,mmHg,107,90,130
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 6,6,Systolic Blood Pressure,mmHg,104,90,130
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 8,8,Systolic Blood Pressure,mmHg,123,90,130
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 8,8,Systolic Blood Pressure,mmHg,113,90,130
+01-701-1115,701,M,WHITE,Xanomeline Low Dose,Week 8,8,Systolic Blood Pressure,mmHg,98,90,130
+01-701-1118,701,M,WHITE,Placebo,Baseline,0,Pulse Rate,BEATS/MIN,62,60,100
+01-701-1118,701,M,WHITE,Placebo,Baseline,0,Pulse Rate,BEATS/MIN,70,60,100
+01-701-1118,701,M,WHITE,Placebo,Baseline,0,Pulse Rate,BEATS/MIN,70,60,100
+01-701-1118,701,M,WHITE,Placebo,Week 2,2,Pulse Rate,BEATS/MIN,62,60,100
+01-701-1118,701,M,WHITE,Placebo,Week 2,2,Pulse Rate,BEATS/MIN,73,60,100
+01-701-1118,701,M,WHITE,Placebo,Week 2,2,Pulse Rate,BEATS/MIN,68,60,100
+01-701-1118,701,M,WHITE,Placebo,Week 4,4,Pulse Rate,BEATS/MIN,64,60,100
+01-701-1118,701,M,WHITE,Placebo,Week 4,4,Pulse Rate,BEATS/MIN,72,60,100
+01-701-1118,701,M,WHITE,Placebo,Week 4,4,Pulse Rate,BEATS/MIN,81,60,100
+01-701-1118,701,M,WHITE,Placebo,Week 6,6,Pulse Rate,BEATS/MIN,74,60,100
+01-701-1118,701,M,WHITE,Placebo,Week 6,6,Pulse Rate,BEATS/MIN,77,60,100
+01-701-1118,701,M,WHITE,Placebo,Week 6,6,Pulse Rate,BEATS/MIN,79,60,100
+01-701-1118,701,M,WHITE,Placebo,Week 8,8,Pulse Rate,BEATS/MIN,65,60,100
+01-701-1118,701,M,WHITE,Placebo,Week 8,8,Pulse Rate,BEATS/MIN,83,60,100
+01-701-1118,701,M,WHITE,Placebo,Week 8,8,Pulse Rate,BEATS/MIN,80,60,100
+01-701-1118,701,M,WHITE,Placebo,Week 12,12,Pulse Rate,BEATS/MIN,75,60,100
+01-701-1118,701,M,WHITE,Placebo,Week 12,12,Pulse Rate,BEATS/MIN,89,60,100
+01-701-1118,701,M,WHITE,Placebo,Week 12,12,Pulse Rate,BEATS/MIN,89,60,100
+01-701-1118,701,M,WHITE,Placebo,Week 16,16,Pulse Rate,BEATS/MIN,70,60,100
+01-701-1118,701,M,WHITE,Placebo,Week 16,16,Pulse Rate,BEATS/MIN,78,60,100
+01-701-1118,701,M,WHITE,Placebo,Week 16,16,Pulse Rate,BEATS/MIN,78,60,100
+01-701-1118,701,M,WHITE,Placebo,Week 20,20,Pulse Rate,BEATS/MIN,72,60,100
+01-701-1118,701,M,WHITE,Placebo,Week 20,20,Pulse Rate,BEATS/MIN,87,60,100
+01-701-1118,701,M,WHITE,Placebo,Week 20,20,Pulse Rate,BEATS/MIN,85,60,100
+01-701-1118,701,M,WHITE,Placebo,Week 24,24,Pulse Rate,BEATS/MIN,61,60,100
+01-701-1118,701,M,WHITE,Placebo,Week 24,24,Pulse Rate,BEATS/MIN,74,60,100
+01-701-1118,701,M,WHITE,Placebo,Week 24,24,Pulse Rate,BEATS/MIN,75,60,100
+01-701-1118,701,M,WHITE,Placebo,Week 26,26,Pulse Rate,BEATS/MIN,65,60,100
+01-701-1118,701,M,WHITE,Placebo,Week 26,26,Pulse Rate,BEATS/MIN,75,60,100
+01-701-1118,701,M,WHITE,Placebo,Week 26,26,Pulse Rate,BEATS/MIN,75,60,100
+01-701-1118,701,M,WHITE,Placebo,Baseline,0,Systolic Blood Pressure,mmHg,137,90,130
+01-701-1118,701,M,WHITE,Placebo,Baseline,0,Systolic Blood Pressure,mmHg,129,90,130
+01-701-1118,701,M,WHITE,Placebo,Baseline,0,Systolic Blood Pressure,mmHg,123,90,130
+01-701-1118,701,M,WHITE,Placebo,Week 2,2,Systolic Blood Pressure,mmHg,129,90,130
+01-701-1118,701,M,WHITE,Placebo,Week 2,2,Systolic Blood Pressure,mmHg,127,90,130
+01-701-1118,701,M,WHITE,Placebo,Week 2,2,Systolic Blood Pressure,mmHg,131,90,130
+01-701-1118,701,M,WHITE,Placebo,Week 4,4,Systolic Blood Pressure,mmHg,130,90,130
+01-701-1118,701,M,WHITE,Placebo,Week 4,4,Systolic Blood Pressure,mmHg,114,90,130
+01-701-1118,701,M,WHITE,Placebo,Week 4,4,Systolic Blood Pressure,mmHg,130,90,130
+01-701-1118,701,M,WHITE,Placebo,Week 6,6,Systolic Blood Pressure,mmHg,129,90,130
+01-701-1118,701,M,WHITE,Placebo,Week 6,6,Systolic Blood Pressure,mmHg,122,90,130
+01-701-1118,701,M,WHITE,Placebo,Week 6,6,Systolic Blood Pressure,mmHg,122,90,130
+01-701-1118,701,M,WHITE,Placebo,Week 8,8,Systolic Blood Pressure,mmHg,126,90,130
+01-701-1118,701,M,WHITE,Placebo,Week 8,8,Systolic Blood Pressure,mmHg,106,90,130
+01-701-1118,701,M,WHITE,Placebo,Week 8,8,Systolic Blood Pressure,mmHg,131,90,130
+01-701-1118,701,M,WHITE,Placebo,Week 12,12,Systolic Blood Pressure,mmHg,123,90,130
+01-701-1118,701,M,WHITE,Placebo,Week 12,12,Systolic Blood Pressure,mmHg,130,90,130
+01-701-1118,701,M,WHITE,Placebo,Week 12,12,Systolic Blood Pressure,mmHg,130,90,130
+01-701-1118,701,M,WHITE,Placebo,Week 16,16,Systolic Blood Pressure,mmHg,122,90,130
+01-701-1118,701,M,WHITE,Placebo,Week 16,16,Systolic Blood Pressure,mmHg,122,90,130
+01-701-1118,701,M,WHITE,Placebo,Week 16,16,Systolic Blood Pressure,mmHg,114,90,130
+01-701-1118,701,M,WHITE,Placebo,Week 20,20,Systolic Blood Pressure,mmHg,136,90,130
+01-701-1118,701,M,WHITE,Placebo,Week 20,20,Systolic Blood Pressure,mmHg,154,90,130
+01-701-1118,701,M,WHITE,Placebo,Week 20,20,Systolic Blood Pressure,mmHg,135,90,130
+01-701-1118,701,M,WHITE,Placebo,Week 24,24,Systolic Blood Pressure,mmHg,130,90,130
+01-701-1118,701,M,WHITE,Placebo,Week 24,24,Systolic Blood Pressure,mmHg,107,90,130
+01-701-1118,701,M,WHITE,Placebo,Week 24,24,Systolic Blood Pressure,mmHg,116,90,130
+01-701-1118,701,M,WHITE,Placebo,Week 26,26,Systolic Blood Pressure,mmHg,121,90,130
+01-701-1118,701,M,WHITE,Placebo,Week 26,26,Systolic Blood Pressure,mmHg,113,90,130
+01-701-1118,701,M,WHITE,Placebo,Week 26,26,Systolic Blood Pressure,mmHg,122,90,130
+01-701-1130,701,M,WHITE,Placebo,Baseline,0,Pulse Rate,BEATS/MIN,70,60,100
+01-701-1130,701,M,WHITE,Placebo,Baseline,0,Pulse Rate,BEATS/MIN,77,60,100
+01-701-1130,701,M,WHITE,Placebo,Baseline,0,Pulse Rate,BEATS/MIN,76,60,100
+01-701-1130,701,M,WHITE,Placebo,Week 2,2,Pulse Rate,BEATS/MIN,68,60,100
+01-701-1130,701,M,WHITE,Placebo,Week 2,2,Pulse Rate,BEATS/MIN,76,60,100
+01-701-1130,701,M,WHITE,Placebo,Week 2,2,Pulse Rate,BEATS/MIN,72,60,100
+01-701-1130,701,M,WHITE,Placebo,Week 4,4,Pulse Rate,BEATS/MIN,74,60,100
+01-701-1130,701,M,WHITE,Placebo,Week 4,4,Pulse Rate,BEATS/MIN,80,60,100
+01-701-1130,701,M,WHITE,Placebo,Week 4,4,Pulse Rate,BEATS/MIN,79,60,100
+01-701-1130,701,M,WHITE,Placebo,Week 6,6,Pulse Rate,BEATS/MIN,60,60,100
+01-701-1130,701,M,WHITE,Placebo,Week 6,6,Pulse Rate,BEATS/MIN,72,60,100
+01-701-1130,701,M,WHITE,Placebo,Week 6,6,Pulse Rate,BEATS/MIN,72,60,100
+01-701-1130,701,M,WHITE,Placebo,Week 8,8,Pulse Rate,BEATS/MIN,70,60,100
+01-701-1130,701,M,WHITE,Placebo,Week 8,8,Pulse Rate,BEATS/MIN,76,60,100
+01-701-1130,701,M,WHITE,Placebo,Week 8,8,Pulse Rate,BEATS/MIN,75,60,100
+01-701-1130,701,M,WHITE,Placebo,Week 12,12,Pulse Rate,BEATS/MIN,68,60,100
+01-701-1130,701,M,WHITE,Placebo,Week 12,12,Pulse Rate,BEATS/MIN,75,60,100
+01-701-1130,701,M,WHITE,Placebo,Week 12,12,Pulse Rate,BEATS/MIN,74,60,100
+01-701-1130,701,M,WHITE,Placebo,Week 16,16,Pulse Rate,BEATS/MIN,65,60,100
+01-701-1130,701,M,WHITE,Placebo,Week 16,16,Pulse Rate,BEATS/MIN,72,60,100
+01-701-1130,701,M,WHITE,Placebo,Week 16,16,Pulse Rate,BEATS/MIN,72,60,100
+01-701-1130,701,M,WHITE,Placebo,Week 20,20,Pulse Rate,BEATS/MIN,74,60,100
+01-701-1130,701,M,WHITE,Placebo,Week 20,20,Pulse Rate,BEATS/MIN,83,60,100
+01-701-1130,701,M,WHITE,Placebo,Week 20,20,Pulse Rate,BEATS/MIN,80,60,100
+01-701-1130,701,M,WHITE,Placebo,Week 24,24,Pulse Rate,BEATS/MIN,60,60,100
+01-701-1130,701,M,WHITE,Placebo,Week 24,24,Pulse Rate,BEATS/MIN,76,60,100
+01-701-1130,701,M,WHITE,Placebo,Week 24,24,Pulse Rate,BEATS/MIN,74,60,100
+01-701-1130,701,M,WHITE,Placebo,Week 26,26,Pulse Rate,BEATS/MIN,63,60,100
+01-701-1130,701,M,WHITE,Placebo,Week 26,26,Pulse Rate,BEATS/MIN,76,60,100
+01-701-1130,701,M,WHITE,Placebo,Week 26,26,Pulse Rate,BEATS/MIN,76,60,100
+01-701-1130,701,M,WHITE,Placebo,Baseline,0,Systolic Blood Pressure,mmHg,122,90,130
+01-701-1130,701,M,WHITE,Placebo,Baseline,0,Systolic Blood Pressure,mmHg,122,90,130
+01-701-1130,701,M,WHITE,Placebo,Baseline,0,Systolic Blood Pressure,mmHg,130,90,130
+01-701-1130,701,M,WHITE,Placebo,Week 2,2,Systolic Blood Pressure,mmHg,123,90,130
+01-701-1130,701,M,WHITE,Placebo,Week 2,2,Systolic Blood Pressure,mmHg,131,90,130
+01-701-1130,701,M,WHITE,Placebo,Week 2,2,Systolic Blood Pressure,mmHg,123,90,130
+01-701-1130,701,M,WHITE,Placebo,Week 4,4,Systolic Blood Pressure,mmHg,100,90,130
+01-701-1130,701,M,WHITE,Placebo,Week 4,4,Systolic Blood Pressure,mmHg,123,90,130
+01-701-1130,701,M,WHITE,Placebo,Week 4,4,Systolic Blood Pressure,mmHg,123,90,130
+01-701-1130,701,M,WHITE,Placebo,Week 6,6,Systolic Blood Pressure,mmHg,123,90,130
+01-701-1130,701,M,WHITE,Placebo,Week 6,6,Systolic Blood Pressure,mmHg,121,90,130
+01-701-1130,701,M,WHITE,Placebo,Week 6,6,Systolic Blood Pressure,mmHg,136,90,130
+01-701-1130,701,M,WHITE,Placebo,Week 8,8,Systolic Blood Pressure,mmHg,145,90,130
+01-701-1130,701,M,WHITE,Placebo,Week 8,8,Systolic Blood Pressure,mmHg,138,90,130
+01-701-1130,701,M,WHITE,Placebo,Week 8,8,Systolic Blood Pressure,mmHg,146,90,130
+01-701-1130,701,M,WHITE,Placebo,Week 12,12,Systolic Blood Pressure,mmHg,114,90,130
+01-701-1130,701,M,WHITE,Placebo,Week 12,12,Systolic Blood Pressure,mmHg,117,90,130
+01-701-1130,701,M,WHITE,Placebo,Week 12,12,Systolic Blood Pressure,mmHg,122,90,130
+01-701-1130,701,M,WHITE,Placebo,Week 16,16,Systolic Blood Pressure,mmHg,123,90,130
+01-701-1130,701,M,WHITE,Placebo,Week 16,16,Systolic Blood Pressure,mmHg,141,90,130
+01-701-1130,701,M,WHITE,Placebo,Week 16,16,Systolic Blood Pressure,mmHg,155,90,130
+01-701-1130,701,M,WHITE,Placebo,Week 20,20,Systolic Blood Pressure,mmHg,114,90,130
+01-701-1130,701,M,WHITE,Placebo,Week 20,20,Systolic Blood Pressure,mmHg,107,90,130
+01-701-1130,701,M,WHITE,Placebo,Week 20,20,Systolic Blood Pressure,mmHg,130,90,130
+01-701-1130,701,M,WHITE,Placebo,Week 24,24,Systolic Blood Pressure,mmHg,124,90,130
+01-701-1130,701,M,WHITE,Placebo,Week 24,24,Systolic Blood Pressure,mmHg,124,90,130
+01-701-1130,701,M,WHITE,Placebo,Week 24,24,Systolic Blood Pressure,mmHg,139,90,130
+01-701-1130,701,M,WHITE,Placebo,Week 26,26,Systolic Blood Pressure,mmHg,140,90,130
+01-701-1130,701,M,WHITE,Placebo,Week 26,26,Systolic Blood Pressure,mmHg,130,90,130
+01-701-1130,701,M,WHITE,Placebo,Week 26,26,Systolic Blood Pressure,mmHg,155,90,130
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Baseline,0,Pulse Rate,BEATS/MIN,70,60,100
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Baseline,0,Pulse Rate,BEATS/MIN,73,60,100
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Baseline,0,Pulse Rate,BEATS/MIN,64,60,100
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 2,2,Pulse Rate,BEATS/MIN,59,60,100
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 2,2,Pulse Rate,BEATS/MIN,64,60,100
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 2,2,Pulse Rate,BEATS/MIN,66,60,100
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 4,4,Pulse Rate,BEATS/MIN,64,60,100
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 4,4,Pulse Rate,BEATS/MIN,68,60,100
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 4,4,Pulse Rate,BEATS/MIN,61,60,100
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 6,6,Pulse Rate,BEATS/MIN,63,60,100
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 6,6,Pulse Rate,BEATS/MIN,61,60,100
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 6,6,Pulse Rate,BEATS/MIN,62,60,100
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 8,8,Pulse Rate,BEATS/MIN,57,60,100
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 8,8,Pulse Rate,BEATS/MIN,61,60,100
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 8,8,Pulse Rate,BEATS/MIN,62,60,100
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 12,12,Pulse Rate,BEATS/MIN,79,60,100
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 12,12,Pulse Rate,BEATS/MIN,88,60,100
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 12,12,Pulse Rate,BEATS/MIN,82,60,100
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 16,16,Pulse Rate,BEATS/MIN,70,60,100
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 16,16,Pulse Rate,BEATS/MIN,72,60,100
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 16,16,Pulse Rate,BEATS/MIN,74,60,100
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 20,20,Pulse Rate,BEATS/MIN,77,60,100
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 20,20,Pulse Rate,BEATS/MIN,81,60,100
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 20,20,Pulse Rate,BEATS/MIN,80,60,100
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 24,24,Pulse Rate,BEATS/MIN,57,60,100
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 24,24,Pulse Rate,BEATS/MIN,61,60,100
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 24,24,Pulse Rate,BEATS/MIN,57,60,100
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Baseline,0,Systolic Blood Pressure,mmHg,160,90,130
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Baseline,0,Systolic Blood Pressure,mmHg,138,90,130
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Baseline,0,Systolic Blood Pressure,mmHg,154,90,130
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 2,2,Systolic Blood Pressure,mmHg,169,90,130
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 2,2,Systolic Blood Pressure,mmHg,137,90,130
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 2,2,Systolic Blood Pressure,mmHg,144,90,130
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 4,4,Systolic Blood Pressure,mmHg,181,90,130
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 4,4,Systolic Blood Pressure,mmHg,155,90,130
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 4,4,Systolic Blood Pressure,mmHg,160,90,130
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 6,6,Systolic Blood Pressure,mmHg,161,90,130
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 6,6,Systolic Blood Pressure,mmHg,137,90,130
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 6,6,Systolic Blood Pressure,mmHg,137,90,130
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 8,8,Systolic Blood Pressure,mmHg,145,90,130
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 8,8,Systolic Blood Pressure,mmHg,154,90,130
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 8,8,Systolic Blood Pressure,mmHg,146,90,130
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 12,12,Systolic Blood Pressure,mmHg,129,90,130
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 12,12,Systolic Blood Pressure,mmHg,145,90,130
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 12,12,Systolic Blood Pressure,mmHg,146,90,130
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 16,16,Systolic Blood Pressure,mmHg,169,90,130
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 16,16,Systolic Blood Pressure,mmHg,153,90,130
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 16,16,Systolic Blood Pressure,mmHg,144,90,130
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 20,20,Systolic Blood Pressure,mmHg,159,90,130
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 20,20,Systolic Blood Pressure,mmHg,158,90,130
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 20,20,Systolic Blood Pressure,mmHg,130,90,130
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 24,24,Systolic Blood Pressure,mmHg,147,90,130
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 24,24,Systolic Blood Pressure,mmHg,137,90,130
+01-701-1133,701,F,WHITE,Xanomeline High Dose,Week 24,24,Systolic Blood Pressure,mmHg,138,90,130
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Baseline,0,Pulse Rate,BEATS/MIN,67,60,100
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Baseline,0,Pulse Rate,BEATS/MIN,72,60,100
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Baseline,0,Pulse Rate,BEATS/MIN,68,60,100
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Week 2,2,Pulse Rate,BEATS/MIN,62,60,100
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Week 2,2,Pulse Rate,BEATS/MIN,70,60,100
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Week 2,2,Pulse Rate,BEATS/MIN,69,60,100
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Week 4,4,Pulse Rate,BEATS/MIN,68,60,100
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Week 4,4,Pulse Rate,BEATS/MIN,73,60,100
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Week 4,4,Pulse Rate,BEATS/MIN,73,60,100
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Baseline,0,Systolic Blood Pressure,mmHg,128,90,130
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Baseline,0,Systolic Blood Pressure,mmHg,124,90,130
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Baseline,0,Systolic Blood Pressure,mmHg,115,90,130
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Week 2,2,Systolic Blood Pressure,mmHg,108,90,130
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Week 2,2,Systolic Blood Pressure,mmHg,104,90,130
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Week 2,2,Systolic Blood Pressure,mmHg,116,90,130
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Week 4,4,Systolic Blood Pressure,mmHg,121,90,130
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Week 4,4,Systolic Blood Pressure,mmHg,129,90,130
+01-701-1146,701,F,WHITE,Xanomeline High Dose,Week 4,4,Systolic Blood Pressure,mmHg,122,90,130
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Baseline,0,Pulse Rate,BEATS/MIN,58,60,100
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Baseline,0,Pulse Rate,BEATS/MIN,73,60,100
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Baseline,0,Pulse Rate,BEATS/MIN,70,60,100
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 2,2,Pulse Rate,BEATS/MIN,74,60,100
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 2,2,Pulse Rate,BEATS/MIN,86,60,100
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 2,2,Pulse Rate,BEATS/MIN,81,60,100
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 4,4,Pulse Rate,BEATS/MIN,72,60,100
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 4,4,Pulse Rate,BEATS/MIN,83,60,100
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 4,4,Pulse Rate,BEATS/MIN,84,60,100
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 6,6,Pulse Rate,BEATS/MIN,61,60,100
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 6,6,Pulse Rate,BEATS/MIN,73,60,100
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 6,6,Pulse Rate,BEATS/MIN,74,60,100
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 8,8,Pulse Rate,BEATS/MIN,70,60,100
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 8,8,Pulse Rate,BEATS/MIN,80,60,100
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 8,8,Pulse Rate,BEATS/MIN,77,60,100
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 12,12,Pulse Rate,BEATS/MIN,57,60,100
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 12,12,Pulse Rate,BEATS/MIN,65,60,100
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 12,12,Pulse Rate,BEATS/MIN,70,60,100
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 16,16,Pulse Rate,BEATS/MIN,60,60,100
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 16,16,Pulse Rate,BEATS/MIN,78,60,100
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 16,16,Pulse Rate,BEATS/MIN,77,60,100
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 20,20,Pulse Rate,BEATS/MIN,52,60,100
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 20,20,Pulse Rate,BEATS/MIN,59,60,100
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 20,20,Pulse Rate,BEATS/MIN,59,60,100
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 24,24,Pulse Rate,BEATS/MIN,59,60,100
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 24,24,Pulse Rate,BEATS/MIN,74,60,100
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 24,24,Pulse Rate,BEATS/MIN,76,60,100
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 26,26,Pulse Rate,BEATS/MIN,62,60,100
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 26,26,Pulse Rate,BEATS/MIN,77,60,100
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 26,26,Pulse Rate,BEATS/MIN,75,60,100
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Baseline,0,Systolic Blood Pressure,mmHg,116,90,130
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Baseline,0,Systolic Blood Pressure,mmHg,116,90,130
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Baseline,0,Systolic Blood Pressure,mmHg,122,90,130
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 2,2,Systolic Blood Pressure,mmHg,122,90,130
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 2,2,Systolic Blood Pressure,mmHg,113,90,130
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 2,2,Systolic Blood Pressure,mmHg,115,90,130
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 4,4,Systolic Blood Pressure,mmHg,115,90,130
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 4,4,Systolic Blood Pressure,mmHg,101,90,130
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 4,4,Systolic Blood Pressure,mmHg,95,90,130
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 6,6,Systolic Blood Pressure,mmHg,115,90,130
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 6,6,Systolic Blood Pressure,mmHg,106,90,130
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 6,6,Systolic Blood Pressure,mmHg,108,90,130
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 8,8,Systolic Blood Pressure,mmHg,122,90,130
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 8,8,Systolic Blood Pressure,mmHg,110,90,130
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 8,8,Systolic Blood Pressure,mmHg,116,90,130
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 12,12,Systolic Blood Pressure,mmHg,114,90,130
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 12,12,Systolic Blood Pressure,mmHg,107,90,130
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 12,12,Systolic Blood Pressure,mmHg,108,90,130
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 16,16,Systolic Blood Pressure,mmHg,114,90,130
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 16,16,Systolic Blood Pressure,mmHg,107,90,130
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 16,16,Systolic Blood Pressure,mmHg,109,90,130
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 20,20,Systolic Blood Pressure,mmHg,116,90,130
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 20,20,Systolic Blood Pressure,mmHg,105,90,130
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 20,20,Systolic Blood Pressure,mmHg,102,90,130
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 24,24,Systolic Blood Pressure,mmHg,101,90,130
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 24,24,Systolic Blood Pressure,mmHg,96,90,130
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 24,24,Systolic Blood Pressure,mmHg,100,90,130
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 26,26,Systolic Blood Pressure,mmHg,107,90,130
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 26,26,Systolic Blood Pressure,mmHg,99,90,130
+01-701-1148,701,M,WHITE,Xanomeline High Dose,Week 26,26,Systolic Blood Pressure,mmHg,95,90,130
+01-701-1153,701,F,WHITE,Placebo,Baseline,0,Pulse Rate,BEATS/MIN,84,60,100
+01-701-1153,701,F,WHITE,Placebo,Baseline,0,Pulse Rate,BEATS/MIN,89,60,100
+01-701-1153,701,F,WHITE,Placebo,Baseline,0,Pulse Rate,BEATS/MIN,86,60,100
+01-701-1153,701,F,WHITE,Placebo,Week 2,2,Pulse Rate,BEATS/MIN,72,60,100
+01-701-1153,701,F,WHITE,Placebo,Week 2,2,Pulse Rate,BEATS/MIN,74,60,100
+01-701-1153,701,F,WHITE,Placebo,Week 2,2,Pulse Rate,BEATS/MIN,79,60,100
+01-701-1153,701,F,WHITE,Placebo,Week 4,4,Pulse Rate,BEATS/MIN,76,60,100
+01-701-1153,701,F,WHITE,Placebo,Week 4,4,Pulse Rate,BEATS/MIN,75,60,100
+01-701-1153,701,F,WHITE,Placebo,Week 4,4,Pulse Rate,BEATS/MIN,78,60,100
+01-701-1153,701,F,WHITE,Placebo,Week 6,6,Pulse Rate,BEATS/MIN,66,60,100
+01-701-1153,701,F,WHITE,Placebo,Week 6,6,Pulse Rate,BEATS/MIN,78,60,100
+01-701-1153,701,F,WHITE,Placebo,Week 6,6,Pulse Rate,BEATS/MIN,72,60,100
+01-701-1153,701,F,WHITE,Placebo,Week 8,8,Pulse Rate,BEATS/MIN,74,60,100
+01-701-1153,701,F,WHITE,Placebo,Week 8,8,Pulse Rate,BEATS/MIN,80,60,100
+01-701-1153,701,F,WHITE,Placebo,Week 8,8,Pulse Rate,BEATS/MIN,78,60,100
+01-701-1153,701,F,WHITE,Placebo,Week 12,12,Pulse Rate,BEATS/MIN,80,60,100
+01-701-1153,701,F,WHITE,Placebo,Week 12,12,Pulse Rate,BEATS/MIN,84,60,100
+01-701-1153,701,F,WHITE,Placebo,Week 12,12,Pulse Rate,BEATS/MIN,86,60,100
+01-701-1153,701,F,WHITE,Placebo,Week 16,16,Pulse Rate,BEATS/MIN,74,60,100
+01-701-1153,701,F,WHITE,Placebo,Week 16,16,Pulse Rate,BEATS/MIN,74,60,100
+01-701-1153,701,F,WHITE,Placebo,Week 16,16,Pulse Rate,BEATS/MIN,76,60,100
+01-701-1153,701,F,WHITE,Placebo,Week 20,20,Pulse Rate,BEATS/MIN,68,60,100
+01-701-1153,701,F,WHITE,Placebo,Week 20,20,Pulse Rate,BEATS/MIN,68,60,100
+01-701-1153,701,F,WHITE,Placebo,Week 20,20,Pulse Rate,BEATS/MIN,71,60,100
+01-701-1153,701,F,WHITE,Placebo,Week 24,24,Pulse Rate,BEATS/MIN,74,60,100
+01-701-1153,701,F,WHITE,Placebo,Week 24,24,Pulse Rate,BEATS/MIN,77,60,100
+01-701-1153,701,F,WHITE,Placebo,Week 24,24,Pulse Rate,BEATS/MIN,79,60,100
+01-701-1153,701,F,WHITE,Placebo,Baseline,0,Systolic Blood Pressure,mmHg,142,90,130
+01-701-1153,701,F,WHITE,Placebo,Baseline,0,Systolic Blood Pressure,mmHg,137,90,130
+01-701-1153,701,F,WHITE,Placebo,Baseline,0,Systolic Blood Pressure,mmHg,138,90,130
+01-701-1153,701,F,WHITE,Placebo,Week 2,2,Systolic Blood Pressure,mmHg,142,90,130
+01-701-1153,701,F,WHITE,Placebo,Week 2,2,Systolic Blood Pressure,mmHg,154,90,130
+01-701-1153,701,F,WHITE,Placebo,Week 2,2,Systolic Blood Pressure,mmHg,141,90,130
+01-701-1153,701,F,WHITE,Placebo,Week 4,4,Systolic Blood Pressure,mmHg,138,90,130
+01-701-1153,701,F,WHITE,Placebo,Week 4,4,Systolic Blood Pressure,mmHg,136,90,130
+01-701-1153,701,F,WHITE,Placebo,Week 4,4,Systolic Blood Pressure,mmHg,138,90,130
+01-701-1153,701,F,WHITE,Placebo,Week 6,6,Systolic Blood Pressure,mmHg,145,90,130
+01-701-1153,701,F,WHITE,Placebo,Week 6,6,Systolic Blood Pressure,mmHg,151,90,130
+01-701-1153,701,F,WHITE,Placebo,Week 6,6,Systolic Blood Pressure,mmHg,154,90,130
+01-701-1153,701,F,WHITE,Placebo,Week 8,8,Systolic Blood Pressure,mmHg,144,90,130
+01-701-1153,701,F,WHITE,Placebo,Week 8,8,Systolic Blood Pressure,mmHg,139,90,130
+01-701-1153,701,F,WHITE,Placebo,Week 8,8,Systolic Blood Pressure,mmHg,138,90,130
+01-701-1153,701,F,WHITE,Placebo,Week 12,12,Systolic Blood Pressure,mmHg,161,90,130
+01-701-1153,701,F,WHITE,Placebo,Week 12,12,Systolic Blood Pressure,mmHg,140,90,130
+01-701-1153,701,F,WHITE,Placebo,Week 12,12,Systolic Blood Pressure,mmHg,145,90,130
+01-701-1153,701,F,WHITE,Placebo,Week 16,16,Systolic Blood Pressure,mmHg,150,90,130
+01-701-1153,701,F,WHITE,Placebo,Week 16,16,Systolic Blood Pressure,mmHg,145,90,130
+01-701-1153,701,F,WHITE,Placebo,Week 16,16,Systolic Blood Pressure,mmHg,154,90,130
+01-701-1153,701,F,WHITE,Placebo,Week 20,20,Systolic Blood Pressure,mmHg,144,90,130
+01-701-1153,701,F,WHITE,Placebo,Week 20,20,Systolic Blood Pressure,mmHg,138,90,130
+01-701-1153,701,F,WHITE,Placebo,Week 20,20,Systolic Blood Pressure,mmHg,138,90,130
+01-701-1153,701,F,WHITE,Placebo,Week 24,24,Systolic Blood Pressure,mmHg,153,90,130
+01-701-1153,701,F,WHITE,Placebo,Week 24,24,Systolic Blood Pressure,mmHg,140,90,130
+01-701-1153,701,F,WHITE,Placebo,Week 24,24,Systolic Blood Pressure,mmHg,145,90,130
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Baseline,0,Pulse Rate,BEATS/MIN,66,60,100
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Baseline,0,Pulse Rate,BEATS/MIN,74,60,100
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Baseline,0,Pulse Rate,BEATS/MIN,70,60,100
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Week 2,2,Pulse Rate,BEATS/MIN,68,60,100
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Week 2,2,Pulse Rate,BEATS/MIN,74,60,100
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Week 2,2,Pulse Rate,BEATS/MIN,74,60,100
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Week 4,4,Pulse Rate,BEATS/MIN,67,60,100
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Week 4,4,Pulse Rate,BEATS/MIN,81,60,100
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Week 4,4,Pulse Rate,BEATS/MIN,71,60,100
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Baseline,0,Systolic Blood Pressure,mmHg,132,90,130
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Baseline,0,Systolic Blood Pressure,mmHg,130,90,130
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Baseline,0,Systolic Blood Pressure,mmHg,130,90,130
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Week 2,2,Systolic Blood Pressure,mmHg,138,90,130
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Week 2,2,Systolic Blood Pressure,mmHg,126,90,130
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Week 2,2,Systolic Blood Pressure,mmHg,134,90,130
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Week 4,4,Systolic Blood Pressure,mmHg,124,90,130
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Week 4,4,Systolic Blood Pressure,mmHg,115,90,130
+01-701-1180,701,M,WHITE,Xanomeline High Dose,Week 4,4,Systolic Blood Pressure,mmHg,129,90,130
+01-701-1181,701,F,WHITE,Xanomeline High Dose,Baseline,0,Pulse Rate,BEATS/MIN,74,60,100
+01-701-1181,701,F,WHITE,Xanomeline High Dose,Baseline,0,Pulse Rate,BEATS/MIN,82,60,100
+01-701-1181,701,F,WHITE,Xanomeline High Dose,Baseline,0,Pulse Rate,BEATS/MIN,89,60,100
+01-701-1181,701,F,WHITE,Xanomeline High Dose,Baseline,0,Systolic Blood Pressure,mmHg,146,90,130
+01-701-1181,701,F,WHITE,Xanomeline High Dose,Baseline,0,Systolic Blood Pressure,mmHg,130,90,130
+01-701-1181,701,F,WHITE,Xanomeline High Dose,Baseline,0,Systolic Blood Pressure,mmHg,129,90,130
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Pulse Rate,BEATS/MIN,57,60,100
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Pulse Rate,BEATS/MIN,65,60,100
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Pulse Rate,BEATS/MIN,56,60,100
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Week 2,2,Pulse Rate,BEATS/MIN,61,60,100
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Week 2,2,Pulse Rate,BEATS/MIN,64,60,100
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Week 2,2,Pulse Rate,BEATS/MIN,67,60,100
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Week 4,4,Pulse Rate,BEATS/MIN,63,60,100
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Week 4,4,Pulse Rate,BEATS/MIN,68,60,100
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Week 4,4,Pulse Rate,BEATS/MIN,68,60,100
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Systolic Blood Pressure,mmHg,135,90,130
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Systolic Blood Pressure,mmHg,124,90,130
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Baseline,0,Systolic Blood Pressure,mmHg,130,90,130
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Week 2,2,Systolic Blood Pressure,mmHg,147,90,130
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Week 2,2,Systolic Blood Pressure,mmHg,139,90,130
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Week 2,2,Systolic Blood Pressure,mmHg,139,90,130
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Week 4,4,Systolic Blood Pressure,mmHg,145,90,130
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Week 4,4,Systolic Blood Pressure,mmHg,143,90,130
+01-701-1188,701,M,WHITE,Xanomeline Low Dose,Week 4,4,Systolic Blood Pressure,mmHg,146,90,130
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Baseline,0,Pulse Rate,BEATS/MIN,74,60,100
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Baseline,0,Pulse Rate,BEATS/MIN,86,60,100
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Baseline,0,Pulse Rate,BEATS/MIN,82,60,100
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 2,2,Pulse Rate,BEATS/MIN,67,60,100
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 2,2,Pulse Rate,BEATS/MIN,75,60,100
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 2,2,Pulse Rate,BEATS/MIN,86,60,100
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 4,4,Pulse Rate,BEATS/MIN,83,60,100
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 4,4,Pulse Rate,BEATS/MIN,95,60,100
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 4,4,Pulse Rate,BEATS/MIN,89,60,100
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 6,6,Pulse Rate,BEATS/MIN,76,60,100
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 6,6,Pulse Rate,BEATS/MIN,79,60,100
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 6,6,Pulse Rate,BEATS/MIN,80,60,100
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 8,8,Pulse Rate,BEATS/MIN,86,60,100
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 8,8,Pulse Rate,BEATS/MIN,96,60,100
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 8,8,Pulse Rate,BEATS/MIN,92,60,100
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 12,12,Pulse Rate,BEATS/MIN,85,60,100
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 12,12,Pulse Rate,BEATS/MIN,94,60,100
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 12,12,Pulse Rate,BEATS/MIN,91,60,100
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 16,16,Pulse Rate,BEATS/MIN,72,60,100
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 16,16,Pulse Rate,BEATS/MIN,84,60,100
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 16,16,Pulse Rate,BEATS/MIN,86,60,100
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 20,20,Pulse Rate,BEATS/MIN,60,60,100
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 20,20,Pulse Rate,BEATS/MIN,80,60,100
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 20,20,Pulse Rate,BEATS/MIN,76,60,100
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 24,24,Pulse Rate,BEATS/MIN,83,60,100
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 24,24,Pulse Rate,BEATS/MIN,86,60,100
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 24,24,Pulse Rate,BEATS/MIN,88,60,100
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 26,26,Pulse Rate,BEATS/MIN,82,60,100
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 26,26,Pulse Rate,BEATS/MIN,86,60,100
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 26,26,Pulse Rate,BEATS/MIN,87,60,100
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Baseline,0,Systolic Blood Pressure,mmHg,162,90,130
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Baseline,0,Systolic Blood Pressure,mmHg,154,90,130
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Baseline,0,Systolic Blood Pressure,mmHg,156,90,130
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 2,2,Systolic Blood Pressure,mmHg,178,90,130
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 2,2,Systolic Blood Pressure,mmHg,174,90,130
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 2,2,Systolic Blood Pressure,mmHg,153,90,130
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 4,4,Systolic Blood Pressure,mmHg,152,90,130
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 4,4,Systolic Blood Pressure,mmHg,144,90,130
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 4,4,Systolic Blood Pressure,mmHg,160,90,130
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 6,6,Systolic Blood Pressure,mmHg,142,90,130
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 6,6,Systolic Blood Pressure,mmHg,164,90,130
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 6,6,Systolic Blood Pressure,mmHg,150,90,130
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 8,8,Systolic Blood Pressure,mmHg,137,90,130
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 8,8,Systolic Blood Pressure,mmHg,130,90,130
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 8,8,Systolic Blood Pressure,mmHg,144,90,130
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 12,12,Systolic Blood Pressure,mmHg,136,90,130
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 12,12,Systolic Blood Pressure,mmHg,144,90,130
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 12,12,Systolic Blood Pressure,mmHg,152,90,130
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 16,16,Systolic Blood Pressure,mmHg,156,90,130
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 16,16,Systolic Blood Pressure,mmHg,138,90,130
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 16,16,Systolic Blood Pressure,mmHg,155,90,130
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 20,20,Systolic Blood Pressure,mmHg,150,90,130
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 20,20,Systolic Blood Pressure,mmHg,160,90,130
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 20,20,Systolic Blood Pressure,mmHg,154,90,130
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 24,24,Systolic Blood Pressure,mmHg,173,90,130
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 24,24,Systolic Blood Pressure,mmHg,164,90,130
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 24,24,Systolic Blood Pressure,mmHg,168,90,130
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 26,26,Systolic Blood Pressure,mmHg,173,90,130
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 26,26,Systolic Blood Pressure,mmHg,166,90,130
+01-701-1192,701,F,WHITE,Xanomeline Low Dose,Week 26,26,Systolic Blood Pressure,mmHg,171,90,130
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Baseline,0,Pulse Rate,BEATS/MIN,57,60,100
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Baseline,0,Pulse Rate,BEATS/MIN,69,60,100
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Baseline,0,Pulse Rate,BEATS/MIN,64,60,100
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 2,2,Pulse Rate,BEATS/MIN,50,60,100
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 2,2,Pulse Rate,BEATS/MIN,60,60,100
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 2,2,Pulse Rate,BEATS/MIN,55,60,100
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 4,4,Pulse Rate,BEATS/MIN,57,60,100
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 4,4,Pulse Rate,BEATS/MIN,62,60,100
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 4,4,Pulse Rate,BEATS/MIN,58,60,100
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 6,6,Pulse Rate,BEATS/MIN,53,60,100
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 6,6,Pulse Rate,BEATS/MIN,57,60,100
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 6,6,Pulse Rate,BEATS/MIN,56,60,100
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 8,8,Pulse Rate,BEATS/MIN,54,60,100
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 8,8,Pulse Rate,BEATS/MIN,68,60,100
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 8,8,Pulse Rate,BEATS/MIN,62,60,100
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 12,12,Pulse Rate,BEATS/MIN,56,60,100
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 12,12,Pulse Rate,BEATS/MIN,74,60,100
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 12,12,Pulse Rate,BEATS/MIN,64,60,100
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 16,16,Pulse Rate,BEATS/MIN,61,60,100
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 16,16,Pulse Rate,BEATS/MIN,62,60,100
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 16,16,Pulse Rate,BEATS/MIN,62,60,100
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 20,20,Pulse Rate,BEATS/MIN,53,60,100
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 20,20,Pulse Rate,BEATS/MIN,60,60,100
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 20,20,Pulse Rate,BEATS/MIN,58,60,100
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 24,24,Pulse Rate,BEATS/MIN,50,60,100
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 24,24,Pulse Rate,BEATS/MIN,59,60,100
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 24,24,Pulse Rate,BEATS/MIN,56,60,100
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 26,26,Pulse Rate,BEATS/MIN,54,60,100
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 26,26,Pulse Rate,BEATS/MIN,55,60,100
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 26,26,Pulse Rate,BEATS/MIN,54,60,100
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Baseline,0,Systolic Blood Pressure,mmHg,129,90,130
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Baseline,0,Systolic Blood Pressure,mmHg,145,90,130
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Baseline,0,Systolic Blood Pressure,mmHg,138,90,130
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 2,2,Systolic Blood Pressure,mmHg,130,90,130
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 2,2,Systolic Blood Pressure,mmHg,131,90,130
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 2,2,Systolic Blood Pressure,mmHg,144,90,130
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 4,4,Systolic Blood Pressure,mmHg,128,90,130
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 4,4,Systolic Blood Pressure,mmHg,138,90,130
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 4,4,Systolic Blood Pressure,mmHg,130,90,130
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 6,6,Systolic Blood Pressure,mmHg,139,90,130
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 6,6,Systolic Blood Pressure,mmHg,148,90,130
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 6,6,Systolic Blood Pressure,mmHg,138,90,130
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 8,8,Systolic Blood Pressure,mmHg,139,90,130
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 8,8,Systolic Blood Pressure,mmHg,138,90,130
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 8,8,Systolic Blood Pressure,mmHg,145,90,130
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 12,12,Systolic Blood Pressure,mmHg,115,90,130
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 12,12,Systolic Blood Pressure,mmHg,95,90,130
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 12,12,Systolic Blood Pressure,mmHg,110,90,130
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 16,16,Systolic Blood Pressure,mmHg,131,90,130
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 16,16,Systolic Blood Pressure,mmHg,138,90,130
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 16,16,Systolic Blood Pressure,mmHg,132,90,130
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 20,20,Systolic Blood Pressure,mmHg,130,90,130
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 20,20,Systolic Blood Pressure,mmHg,131,90,130
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 20,20,Systolic Blood Pressure,mmHg,147,90,130
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 24,24,Systolic Blood Pressure,mmHg,125,90,130
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 24,24,Systolic Blood Pressure,mmHg,114,90,130
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 24,24,Systolic Blood Pressure,mmHg,144,90,130
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 26,26,Systolic Blood Pressure,mmHg,137,90,130
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 26,26,Systolic Blood Pressure,mmHg,114,90,130
+01-701-1203,701,F,BLACK OR AFRICAN AMERICAN,Placebo,Week 26,26,Systolic Blood Pressure,mmHg,137,90,130
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Baseline,0,Pulse Rate,BEATS/MIN,57,60,100
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Baseline,0,Pulse Rate,BEATS/MIN,76,60,100
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Baseline,0,Pulse Rate,BEATS/MIN,64,60,100
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 2,2,Pulse Rate,BEATS/MIN,74,60,100
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 2,2,Pulse Rate,BEATS/MIN,85,60,100
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 2,2,Pulse Rate,BEATS/MIN,84,60,100
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 4,4,Pulse Rate,BEATS/MIN,66,60,100
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 4,4,Pulse Rate,BEATS/MIN,79,60,100
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 4,4,Pulse Rate,BEATS/MIN,73,60,100
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 6,6,Pulse Rate,BEATS/MIN,63,60,100
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 6,6,Pulse Rate,BEATS/MIN,74,60,100
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 6,6,Pulse Rate,BEATS/MIN,67,60,100
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 8,8,Pulse Rate,BEATS/MIN,65,60,100
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 8,8,Pulse Rate,BEATS/MIN,75,60,100
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 8,8,Pulse Rate,BEATS/MIN,74,60,100
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Baseline,0,Systolic Blood Pressure,mmHg,135,90,130
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Baseline,0,Systolic Blood Pressure,mmHg,116,90,130
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Baseline,0,Systolic Blood Pressure,mmHg,108,90,130
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 2,2,Systolic Blood Pressure,mmHg,113,90,130
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 2,2,Systolic Blood Pressure,mmHg,98,90,130
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 2,2,Systolic Blood Pressure,mmHg,96,90,130
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 4,4,Systolic Blood Pressure,mmHg,115,90,130
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 4,4,Systolic Blood Pressure,mmHg,106,90,130
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 4,4,Systolic Blood Pressure,mmHg,106,90,130
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 6,6,Systolic Blood Pressure,mmHg,123,90,130
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 6,6,Systolic Blood Pressure,mmHg,123,90,130
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 6,6,Systolic Blood Pressure,mmHg,123,90,130
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 8,8,Systolic Blood Pressure,mmHg,156,90,130
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 8,8,Systolic Blood Pressure,mmHg,114,90,130
+01-701-1211,701,F,WHITE,Xanomeline Low Dose,Week 8,8,Systolic Blood Pressure,mmHg,127,90,130
+01-701-1234,701,M,WHITE,Placebo,Baseline,0,Pulse Rate,BEATS/MIN,58,60,100
+01-701-1234,701,M,WHITE,Placebo,Baseline,0,Pulse Rate,BEATS/MIN,56,60,100
+01-701-1234,701,M,WHITE,Placebo,Baseline,0,Pulse Rate,BEATS/MIN,57,60,100
+01-701-1234,701,M,WHITE,Placebo,Week 2,2,Pulse Rate,BEATS/MIN,51,60,100
+01-701-1234,701,M,WHITE,Placebo,Week 2,2,Pulse Rate,BEATS/MIN,54,60,100
+01-701-1234,701,M,WHITE,Placebo,Week 2,2,Pulse Rate,BEATS/MIN,56,60,100
+01-701-1234,701,M,WHITE,Placebo,Week 4,4,Pulse Rate,BEATS/MIN,52,60,100
+01-701-1234,701,M,WHITE,Placebo,Week 4,4,Pulse Rate,BEATS/MIN,50,60,100
+01-701-1234,701,M,WHITE,Placebo,Week 4,4,Pulse Rate,BEATS/MIN,54,60,100
+01-701-1234,701,M,WHITE,Placebo,Week 6,6,Pulse Rate,BEATS/MIN,54,60,100
+01-701-1234,701,M,WHITE,Placebo,Week 6,6,Pulse Rate,BEATS/MIN,60,60,100
+01-701-1234,701,M,WHITE,Placebo,Week 6,6,Pulse Rate,BEATS/MIN,59,60,100
+01-701-1234,701,M,WHITE,Placebo,Week 8,8,Pulse Rate,BEATS/MIN,52,60,100
+01-701-1234,701,M,WHITE,Placebo,Week 8,8,Pulse Rate,BEATS/MIN,55,60,100
+01-701-1234,701,M,WHITE,Placebo,Week 8,8,Pulse Rate,BEATS/MIN,56,60,100
+01-701-1234,701,M,WHITE,Placebo,Week 12,12,Pulse Rate,BEATS/MIN,53,60,100
+01-701-1234,701,M,WHITE,Placebo,Week 12,12,Pulse Rate,BEATS/MIN,62,60,100
+01-701-1234,701,M,WHITE,Placebo,Week 12,12,Pulse Rate,BEATS/MIN,62,60,100
+01-701-1234,701,M,WHITE,Placebo,Week 16,16,Pulse Rate,BEATS/MIN,51,60,100
+01-701-1234,701,M,WHITE,Placebo,Week 16,16,Pulse Rate,BEATS/MIN,56,60,100
+01-701-1234,701,M,WHITE,Placebo,Week 16,16,Pulse Rate,BEATS/MIN,59,60,100
+01-701-1234,701,M,WHITE,Placebo,Week 20,20,Pulse Rate,BEATS/MIN,60,60,100
+01-701-1234,701,M,WHITE,Placebo,Week 20,20,Pulse Rate,BEATS/MIN,54,60,100
+01-701-1234,701,M,WHITE,Placebo,Week 20,20,Pulse Rate,BEATS/MIN,66,60,100
+01-701-1234,701,M,WHITE,Placebo,Week 24,24,Pulse Rate,BEATS/MIN,59,60,100
+01-701-1234,701,M,WHITE,Placebo,Week 24,24,Pulse Rate,BEATS/MIN,66,60,100
+01-701-1234,701,M,WHITE,Placebo,Week 24,24,Pulse Rate,BEATS/MIN,67,60,100
+01-701-1234,701,M,WHITE,Placebo,Week 26,26,Pulse Rate,BEATS/MIN,50,60,100
+01-701-1234,701,M,WHITE,Placebo,Week 26,26,Pulse Rate,BEATS/MIN,59,60,100
+01-701-1234,701,M,WHITE,Placebo,Week 26,26,Pulse Rate,BEATS/MIN,57,60,100
+01-701-1234,701,M,WHITE,Placebo,Baseline,0,Systolic Blood Pressure,mmHg,138,90,130
+01-701-1234,701,M,WHITE,Placebo,Baseline,0,Systolic Blood Pressure,mmHg,124,90,130
+01-701-1234,701,M,WHITE,Placebo,Baseline,0,Systolic Blood Pressure,mmHg,132,90,130
+01-701-1234,701,M,WHITE,Placebo,Week 2,2,Systolic Blood Pressure,mmHg,158,90,130
+01-701-1234,701,M,WHITE,Placebo,Week 2,2,Systolic Blood Pressure,mmHg,159,90,130
+01-701-1234,701,M,WHITE,Placebo,Week 2,2,Systolic Blood Pressure,mmHg,144,90,130
+01-701-1234,701,M,WHITE,Placebo,Week 4,4,Systolic Blood Pressure,mmHg,135,90,130
+01-701-1234,701,M,WHITE,Placebo,Week 4,4,Systolic Blood Pressure,mmHg,145,90,130
+01-701-1234,701,M,WHITE,Placebo,Week 4,4,Systolic Blood Pressure,mmHg,147,90,130
+01-701-1234,701,M,WHITE,Placebo,Week 6,6,Systolic Blood Pressure,mmHg,131,90,130
+01-701-1234,701,M,WHITE,Placebo,Week 6,6,Systolic Blood Pressure,mmHg,131,90,130
+01-701-1234,701,M,WHITE,Placebo,Week 6,6,Systolic Blood Pressure,mmHg,131,90,130
+01-701-1234,701,M,WHITE,Placebo,Week 8,8,Systolic Blood Pressure,mmHg,142,90,130
+01-701-1234,701,M,WHITE,Placebo,Week 8,8,Systolic Blood Pressure,mmHg,130,90,130
+01-701-1234,701,M,WHITE,Placebo,Week 8,8,Systolic Blood Pressure,mmHg,137,90,130
+01-701-1234,701,M,WHITE,Placebo,Week 12,12,Systolic Blood Pressure,mmHg,131,90,130
+01-701-1234,701,M,WHITE,Placebo,Week 12,12,Systolic Blood Pressure,mmHg,147,90,130
+01-701-1234,701,M,WHITE,Placebo,Week 12,12,Systolic Blood Pressure,mmHg,138,90,130
+01-701-1234,701,M,WHITE,Placebo,Week 16,16,Systolic Blood Pressure,mmHg,134,90,130
+01-701-1234,701,M,WHITE,Placebo,Week 16,16,Systolic Blood Pressure,mmHg,124,90,130
+01-701-1234,701,M,WHITE,Placebo,Week 16,16,Systolic Blood Pressure,mmHg,143,90,130
+01-701-1234,701,M,WHITE,Placebo,Week 20,20,Systolic Blood Pressure,mmHg,136,90,130
+01-701-1234,701,M,WHITE,Placebo,Week 20,20,Systolic Blood Pressure,mmHg,120,90,130
+01-701-1234,701,M,WHITE,Placebo,Week 20,20,Systolic Blood Pressure,mmHg,129,90,130
+01-701-1234,701,M,WHITE,Placebo,Week 24,24,Systolic Blood Pressure,mmHg,123,90,130
+01-701-1234,701,M,WHITE,Placebo,Week 24,24,Systolic Blood Pressure,mmHg,126,90,130
+01-701-1234,701,M,WHITE,Placebo,Week 24,24,Systolic Blood Pressure,mmHg,131,90,130
+01-701-1234,701,M,WHITE,Placebo,Week 26,26,Systolic Blood Pressure,mmHg,160,90,130
+01-701-1234,701,M,WHITE,Placebo,Week 26,26,Systolic Blood Pressure,mmHg,146,90,130
+01-701-1234,701,M,WHITE,Placebo,Week 26,26,Systolic Blood Pressure,mmHg,146,90,130
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Baseline,0,Pulse Rate,BEATS/MIN,83,60,100
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Baseline,0,Pulse Rate,BEATS/MIN,87,60,100
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Baseline,0,Pulse Rate,BEATS/MIN,80,60,100
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 2,2,Pulse Rate,BEATS/MIN,87,60,100
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 2,2,Pulse Rate,BEATS/MIN,86,60,100
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 2,2,Pulse Rate,BEATS/MIN,89,60,100
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 4,4,Pulse Rate,BEATS/MIN,75,60,100
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 4,4,Pulse Rate,BEATS/MIN,77,60,100
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 4,4,Pulse Rate,BEATS/MIN,73,60,100
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 6,6,Pulse Rate,BEATS/MIN,81,60,100
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 6,6,Pulse Rate,BEATS/MIN,87,60,100
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 6,6,Pulse Rate,BEATS/MIN,86,60,100
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 8,8,Pulse Rate,BEATS/MIN,84,60,100
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 8,8,Pulse Rate,BEATS/MIN,91,60,100
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 8,8,Pulse Rate,BEATS/MIN,83,60,100
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 12,12,Pulse Rate,BEATS/MIN,70,60,100
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 12,12,Pulse Rate,BEATS/MIN,84,60,100
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 12,12,Pulse Rate,BEATS/MIN,80,60,100
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 16,16,Pulse Rate,BEATS/MIN,81,60,100
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 16,16,Pulse Rate,BEATS/MIN,87,60,100
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 16,16,Pulse Rate,BEATS/MIN,83,60,100
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 20,20,Pulse Rate,BEATS/MIN,77,60,100
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 20,20,Pulse Rate,BEATS/MIN,89,60,100
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 20,20,Pulse Rate,BEATS/MIN,80,60,100
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 24,24,Pulse Rate,BEATS/MIN,69,60,100
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 24,24,Pulse Rate,BEATS/MIN,75,60,100
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 24,24,Pulse Rate,BEATS/MIN,70,60,100
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Baseline,0,Systolic Blood Pressure,mmHg,153,90,130
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Baseline,0,Systolic Blood Pressure,mmHg,148,90,130
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Baseline,0,Systolic Blood Pressure,mmHg,154,90,130
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 2,2,Systolic Blood Pressure,mmHg,140,90,130
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 2,2,Systolic Blood Pressure,mmHg,139,90,130
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 2,2,Systolic Blood Pressure,mmHg,147,90,130
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 4,4,Systolic Blood Pressure,mmHg,136,90,130
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 4,4,Systolic Blood Pressure,mmHg,139,90,130
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 4,4,Systolic Blood Pressure,mmHg,137,90,130
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 6,6,Systolic Blood Pressure,mmHg,138,90,130
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 6,6,Systolic Blood Pressure,mmHg,120,90,130
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 6,6,Systolic Blood Pressure,mmHg,130,90,130
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 8,8,Systolic Blood Pressure,mmHg,140,90,130
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 8,8,Systolic Blood Pressure,mmHg,124,90,130
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 8,8,Systolic Blood Pressure,mmHg,131,90,130
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 12,12,Systolic Blood Pressure,mmHg,146,90,130
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 12,12,Systolic Blood Pressure,mmHg,130,90,130
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 12,12,Systolic Blood Pressure,mmHg,138,90,130
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 16,16,Systolic Blood Pressure,mmHg,139,90,130
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 16,16,Systolic Blood Pressure,mmHg,123,90,130
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 16,16,Systolic Blood Pressure,mmHg,131,90,130
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 20,20,Systolic Blood Pressure,mmHg,145,90,130
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 20,20,Systolic Blood Pressure,mmHg,132,90,130
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 20,20,Systolic Blood Pressure,mmHg,139,90,130
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 24,24,Systolic Blood Pressure,mmHg,139,90,130
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 24,24,Systolic Blood Pressure,mmHg,125,90,130
+01-701-1239,701,M,WHITE,Xanomeline High Dose,Week 24,24,Systolic Blood Pressure,mmHg,143,90,130
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Baseline,0,Pulse Rate,BEATS/MIN,64,60,100
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Baseline,0,Pulse Rate,BEATS/MIN,70,60,100
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Baseline,0,Pulse Rate,BEATS/MIN,70,60,100
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 2,2,Pulse Rate,BEATS/MIN,70,60,100
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 2,2,Pulse Rate,BEATS/MIN,72,60,100
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 2,2,Pulse Rate,BEATS/MIN,71,60,100
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 4,4,Pulse Rate,BEATS/MIN,83,60,100
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 4,4,Pulse Rate,BEATS/MIN,88,60,100
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 4,4,Pulse Rate,BEATS/MIN,87,60,100
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 6,6,Pulse Rate,BEATS/MIN,79,60,100
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 6,6,Pulse Rate,BEATS/MIN,86,60,100
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 6,6,Pulse Rate,BEATS/MIN,88,60,100
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 8,8,Pulse Rate,BEATS/MIN,84,60,100
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 8,8,Pulse Rate,BEATS/MIN,85,60,100
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 8,8,Pulse Rate,BEATS/MIN,87,60,100
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 12,12,Pulse Rate,BEATS/MIN,80,60,100
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 12,12,Pulse Rate,BEATS/MIN,85,60,100
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 12,12,Pulse Rate,BEATS/MIN,89,60,100
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Baseline,0,Systolic Blood Pressure,mmHg,122,90,130
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Baseline,0,Systolic Blood Pressure,mmHg,132,90,130
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Baseline,0,Systolic Blood Pressure,mmHg,124,90,130
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 2,2,Systolic Blood Pressure,mmHg,121,90,130
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 2,2,Systolic Blood Pressure,mmHg,130,90,130
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 2,2,Systolic Blood Pressure,mmHg,123,90,130
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 4,4,Systolic Blood Pressure,mmHg,122,90,130
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 4,4,Systolic Blood Pressure,mmHg,115,90,130
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 4,4,Systolic Blood Pressure,mmHg,124,90,130
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 6,6,Systolic Blood Pressure,mmHg,122,90,130
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 6,6,Systolic Blood Pressure,mmHg,115,90,130
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 6,6,Systolic Blood Pressure,mmHg,122,90,130
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 8,8,Systolic Blood Pressure,mmHg,130,90,130
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 8,8,Systolic Blood Pressure,mmHg,123,90,130
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 8,8,Systolic Blood Pressure,mmHg,124,90,130
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 12,12,Systolic Blood Pressure,mmHg,123,90,130
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 12,12,Systolic Blood Pressure,mmHg,131,90,130
+01-701-1275,701,M,AMERICAN INDIAN OR ALASKA NATIVE,Xanomeline High Dose,Week 12,12,Systolic Blood Pressure,mmHg,131,90,130
