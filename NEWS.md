@@ -6,6 +6,14 @@ functionality-first account of what a user can now do. The GitHub release publis
 from the section here when the release-candidate PR (dev -> main) merges and is tagged.
 -->
 
+# safety.viz v1.9.0 (Upcoming)
+
+**Every chart on one page.** The original safetyGraphics app put a study’s charts in one place and told you which ones your data could feed. This release starts that app again on safety.viz, as a page that runs entirely in the browser ([obot.roadmap#352](https://github.com/jwildfire/obot.roadmap/issues/352)).
+
+## What’s new
+
+- **A portfolio page lists all fourteen charts by the data they read, says which the loaded study supports, and draws the one you choose** ([#149](https://github.com/jwildfire/safety.viz/issues/149), [#150](https://github.com/jwildfire/safety.viz/issues/150)). Open [Portfolio](https://jwildfire.github.io/safety.viz/dev/portfolio/) from the site’s navigation: the charts are grouped under labs and vitals, ECG and adverse events, each with a status. On the demo study thirteen read “ready”; the Patient Journey Explorer reads “needs more domains”, because it takes six domains of its own that the standard four do not supply. A chart that is not ready says what it is missing by name — the column, the measure or the file — and a chart that was ready but fails on load says so with its own message, and the count above the list drops. One chart is drawn at a time. The participant profile is listed with a status and opens, as before, beside the chart you select a participant in.
+
 # safety.viz v1.8.0 (Upcoming)
 
 **Everything below was asked for by the people who used the original renderers.** When the RhoInc and SafetyGraphics safety renderers were retired they left 282 open issues behind — years of requests from the clinicians, programmers and reviewers who actually ran these charts on studies. A [survey of all twelve trackers](https://jwildfire.github.io/obot.roadmap/reports/legacy-tracker-migration-2026-08-24/) found 144 of them still worth carrying into safety.viz, and picked out nine that the shared modules make cheap. This release is those nine. Every item names the issue it answers and, where the tracker recorded one, the person who filed it.

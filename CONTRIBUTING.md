@@ -8,17 +8,18 @@ npm ci
 
 ## Commands
 
-| Command                                   | Purpose                                                                                    |
-| ----------------------------------------- | ------------------------------------------------------------------------------------------ |
-| `npm run build`                           | esbuild `src/main.js` into versioned IIFE + ESM bundles under `dist/safety.viz-{version}/` |
-| `npm run build:check-dist`                | Rebuild to a temp dir and fail if committed `dist/` has drifted from `src/`                |
-| `npm test`                                | Vitest unit tests (`tests/unit/`)                                                          |
-| `npm run test:e2e`                        | Playwright browser tests (`tests/e2e/`)                                                    |
-| `npm run format` / `npm run format:check` | Prettier write / check                                                                     |
-| `npm run evidence` / `evidence:check`     | (Re)build `docs/evidence/<module>/evidence.json` from a fresh run / CI freshness guard     |
-| `npm run requirements` / `:check`         | (Re)build `docs/requirements/<module>.json` requirement-text extracts / CI freshness guard |
-| `npm run docs:api`                        | Generate the `_api/<module>.json` API data artifact from JSDoc + the data schema           |
-| `npm run site`                            | Build the docs site into `_site/` (gitignored); fails on broken links/missing screenshots  |
+| Command                                   | Purpose                                                                                                                                                |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `npm run build`                           | esbuild `src/main.js` into versioned IIFE + ESM bundles under `dist/safety.viz-{version}/`                                                             |
+| `npm run build:check-dist`                | Rebuild to a temp dir and fail if committed `dist/` has drifted from `src/`                                                                            |
+| `npm run build:app`                       | Bundle the portfolio app (`src/app/`) into `build/app/` (gitignored) for the browser tests; the site build writes its own copy into `_site/portfolio/` |
+| `npm test`                                | Vitest unit tests (`tests/unit/`)                                                                                                                      |
+| `npm run test:e2e`                        | Playwright browser tests (`tests/e2e/`)                                                                                                                |
+| `npm run format` / `npm run format:check` | Prettier write / check                                                                                                                                 |
+| `npm run evidence` / `evidence:check`     | (Re)build `docs/evidence/<module>/evidence.json` from a fresh run / CI freshness guard                                                                 |
+| `npm run requirements` / `:check`         | (Re)build `docs/requirements/<module>.json` requirement-text extracts / CI freshness guard                                                             |
+| `npm run docs:api`                        | Generate the `_api/<module>.json` API data artifact from JSDoc + the data schema                                                                       |
+| `npm run site`                            | Build the docs site into `_site/` (gitignored); fails on broken links/missing screenshots                                                              |
 
 `dist/` is committed — after any change under `src/`, run `npm run build`
 and commit the regenerated bundle alongside it. CI's drift check fails the
