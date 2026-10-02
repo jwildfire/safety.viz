@@ -782,14 +782,6 @@
         }
       },
       "note": "Takes two tables: the adverse events as the events, without the placeholder rows for event-free participants, and the subject-level table as the population. The participant column must carry the same name in both."
-    },
-    "patient-journey-explorer": {
-      "export": "patientJourneyExplorer",
-      "title": "Patient Journey Explorer",
-      "domains": [],
-      "externalDomains": ["ex", "ae", "lb", "cm", "mh", "ds"],
-      "settings": {},
-      "note": "Reads six domains of its own under SDTM column names: exposure, adverse events, labs, concomitant medications, medical history and disposition. None is supplied by the standard domain set, so its column settings are not mapped here; see its data schema."
     }
   }
 }
