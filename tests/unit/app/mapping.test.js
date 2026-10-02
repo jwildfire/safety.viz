@@ -6,6 +6,7 @@ import {
   applySavedMapping,
   buildMapping,
   measureColumn,
+  normalizeName,
   resolveColumn,
   resolveMeasure,
   serializeMappings,
@@ -71,6 +72,44 @@ describe('demo app: the pre-filled mapping', () => {
       value: null,
       source: null
     });
+  });
+
+  it('APP-MAP-004: bracketed text that is not a unit is part of the name: a qualified measure is not the plain one (#165)', () => {
+    const found = (values, key) => resolveMeasure(values, measure(key)).value;
+    // Direct bilirubin is not total bilirubin, whichever comes first.
+    expect(found(['Bilirubin (Direct)', 'Bilirubin (Total)'], 'TB')).toBe('Bilirubin (Total)');
+    expect(found(['Bilirubin (Direct)', 'Bilirubin, Indirect'], 'TB')).toBeNull();
+    // Nor urine creatinine serum creatinine, a multiple of the limit a result,
+    // or a change from baseline the interval.
+    expect(found(['Creatinine (Urine)', 'Creatinine (Serum)'], 'CREAT')).toBe('Creatinine (Serum)');
+    expect(found(['Creatinine [Urine]', 'Albumin'], 'CREAT')).toBeNull();
+    expect(found(['ALT (xULN)', 'ALT (U/L)'], 'ALT')).toBe('ALT (U/L)');
+    expect(found(['ALT (xULN)'], 'ALT')).toBeNull();
+    expect(found(['QTcF (Change from baseline)', 'QTcF (msec)'], 'QTcF')).toBe('QTcF (msec)');
+    expect(found(['QTcF (Change from baseline)'], 'QTcF')).toBeNull();
+    // A unit is ignored in round or square brackets, whatever its case or micro sign.
+    for (const name of [
+      'Alanine Aminotransferase (U/L)',
+      'Alanine Aminotransferase [IU/L]',
+      'ALT (ukat/L)',
+      'SGPT (%)'
+    ]) {
+      expect(found([name], 'ALT'), name).toBe(name);
+    }
+    expect(found(['Creatinine (µmol/L)'], 'CREAT')).toBe('Creatinine (µmol/L)');
+    expect(found(['Creatinine (MG/DL)'], 'CREAT')).toBe('Creatinine (MG/DL)');
+    expect(found(['Bilirubin [mg/dL]'], 'TB')).toBe('Bilirubin [mg/dL]');
+    expect(found(['HR (bpm)'], 'HR')).toBe('HR (bpm)');
+    expect(found(['Heart Rate (beats/min)'], 'HR')).toBe('Heart Rate (beats/min)');
+    // A lone letter is not taken for a unit: (U) may as well say urine.
+    expect(found(['Creatinine (U)'], 'CREAT')).toBeNull();
+    // An abbreviation in brackets matches only as a listed alternative.
+    expect(found(['Alanine Aminotransferase (ALT)'], 'ALT')).toBe('Alanine Aminotransferase (ALT)');
+    expect(found(['ALT (SGPT)'], 'ALT')).toBe('ALT (SGPT)');
+    expect(found(['Alanine Aminotransferase (AST)'], 'ALT')).toBeNull();
+    expect(normalizeName('Bilirubin (Direct)')).toBe('bilirubindirect');
+    expect(normalizeName('Bilirubin (mg/dL)')).toBe('bilirubin');
+    expect(normalizeName('Leukocytes (10^9/L)')).toBe('leukocytes');
   });
 
   it('APP-MAP-005: the demo study fills every column it carries by the same name and guesses its key measures (#149)', () => {

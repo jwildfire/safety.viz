@@ -75,14 +75,26 @@ export const MEASURES = [
     label: 'ALT',
     domain: 'bds',
     default: 'Aminotransferase, alanine (ALT)',
-    names: ['Alanine Aminotransferase', 'ALT', 'SGPT', 'ALT (SGPT)']
+    names: [
+      'Alanine Aminotransferase',
+      'Alanine Aminotransferase (ALT)',
+      'ALT',
+      'SGPT',
+      'ALT (SGPT)'
+    ]
   },
   {
     key: 'AST',
     label: 'AST',
     domain: 'bds',
     default: 'Aminotransferase, aspartate (AST)',
-    names: ['Aspartate Aminotransferase', 'AST', 'SGOT', 'AST (SGOT)']
+    names: [
+      'Aspartate Aminotransferase',
+      'Aspartate Aminotransferase (AST)',
+      'AST',
+      'SGOT',
+      'AST (SGOT)'
+    ]
   },
   {
     key: 'TB',
@@ -130,17 +142,56 @@ export const MEASURES = [
 
 const EMPTY = Object.freeze({ value: null, source: null });
 
+// What a bracketed unit is made of, in lower case with the micro sign written
+// "u". A unit is recognised from these lists and nothing else: bracketed text
+// they do not cover is kept as part of the name, which leaves a row empty
+// rather than guessing it wrong.
+const UNIT_PARTS = new Set(
+  (
+    'g kg mg ug mcg ng pg l dl ml ul fl mol mmol umol nmol pmol eq meq u iu miu uiu ku ' +
+    'kat ukat nkat s sec ms msec min h hr day mmhg kpa beats cells gi ti m2 %'
+  ).split(' ')
+);
+// Units that stand alone. The one-letter parts above are units only inside a
+// ratio (U/L, g/L): alone, "(U)" may say urine and "(S)" serum.
+const WHOLE_UNITS = new Set(
+  (
+    '% mmhg kpa bpm ms msec sec kg cm mm mg ug mcg ng pg mmol umol nmol pmol meq iu miu ' +
+    'degc degf °c °f'
+  ).split(' ')
+);
+const POWER_OF_TEN = /^x?10[\^*e]?\d+$/;
+
 /**
- * Reduce a measure name to what is compared: lower case, with any bracketed
- * group (a unit, an abbreviation) and all punctuation and spacing removed, so
- * "Alanine Aminotransferase (U/L)" and "alanine aminotransferase" agree.
+ * Whether bracketed text is a unit: one that stands alone (%, mmHg, msec), or
+ * a ratio whose every part is a unit part or a power of ten (U/L, mg/dL,
+ * 10^9/L, beats/min).
+ * @param {string} text The text between the brackets, in lower case.
+ * @returns {boolean} True for a recognised unit.
+ * @private
+ */
+function isUnit(text) {
+  const unit = text.replace(/\s+/g, '').replace(/[µμ]/g, 'u');
+  if (WHOLE_UNITS.has(unit)) return true;
+  const parts = unit.split('/');
+  return parts.length > 1 && parts.every((part) => UNIT_PARTS.has(part) || POWER_OF_TEN.test(part));
+}
+
+/**
+ * Reduce a measure name to what is compared: lower case, with a bracketed unit
+ * and all punctuation and spacing removed, so "Alanine Aminotransferase (U/L)"
+ * and "alanine aminotransferase" agree. Only a unit is dropped: any other
+ * bracketed text is a qualifier and stays in the name, so "Bilirubin (Direct)"
+ * is not "Bilirubin" and "ALT (xULN)" is not "ALT".
  * @param {string} name A measure name as the data or a list spells it.
  * @returns {string} The comparable form.
  */
 export function normalizeName(name) {
   return String(name)
     .toLowerCase()
-    .replace(/\([^)]*\)|\[[^\]]*\]/g, '')
+    .replace(/\(([^()]*)\)|\[([^[\]]*)\]/g, (group, round, square) =>
+      isUnit(round ?? square) ? '' : group
+    )
     .replace(/[^a-z0-9]/g, '');
 }
 
