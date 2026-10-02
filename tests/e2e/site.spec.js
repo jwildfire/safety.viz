@@ -150,6 +150,10 @@ test.describe('docs site', () => {
     const link = page.locator('.site-nav a.nav-app');
     await expect(link).toHaveText('Demo app');
     await expect(link).toHaveAttribute('href', 'demo/index.html');
+    // It is the first entry of the header, ahead of Gallery.
+    expect(
+      await page.evaluate(() => document.querySelector('.site-nav').firstElementChild.className)
+    ).toBe('nav-app');
     const look = (locator) =>
       locator.evaluate((node) => {
         const style = getComputedStyle(node);

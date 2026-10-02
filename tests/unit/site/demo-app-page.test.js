@@ -167,6 +167,9 @@ describe('site shell: the Demo app nav entry', () => {
     }
     // One such link, and no other entry carries the mark.
     expect(shell.match(/class="nav-app"/g)).toHaveLength(1);
+    // It comes first in the header, before the Gallery entry.
+    expect(shell.indexOf('class="nav-app"')).toBeLessThan(shell.indexOf('{{galleryNav}}'));
+    expect(shell.indexOf('class="nav-app"')).toBeGreaterThan(shell.indexOf('class="site-nav"'));
   });
 
   it('APP-PAGE-029: the stylesheet gives the app link a border and draws its arrow as decoration, not as text (#172)', () => {
