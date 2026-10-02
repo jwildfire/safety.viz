@@ -72,7 +72,7 @@ Two things an existing page may notice. Both follow from making one rule hold in
 
 ## Tests and provenance
 
-2,174 unit and 349 browser tests are green; `evidence:check`, `requirements:check`, `demo-data:check`, `build:check-dist`, `prettier` and the site build are all clean, with screenshots captured on the canonical Linux environment. The vendored `dist/safety.viz-1.8.0/` is byte-checked against a fresh build in CI. The demo app's tests include loading a renamed-column study with no request leaving the page, and opening the single file with the browser offline. The release candidate was reviewed in three parts before it was cut — the existing charts, the demo app, and the Patient Journey Explorer — with each finding reproduced before it was reported; the chart and app findings are fixed in this release, each with a test that failed first, and the Patient Journey Explorer’s are filed.
+2,176 unit and 350 browser tests are green; `evidence:check`, `requirements:check`, `demo-data:check`, `build:check-dist`, `prettier` and the site build are all clean, with screenshots captured on the canonical Linux environment. The vendored `dist/safety.viz-1.8.0/` is byte-checked against a fresh build in CI. The demo app's tests include loading a renamed-column study with no request leaving the page, and opening the single file with the browser offline. The release candidate was reviewed in three parts before it was cut — the existing charts, the demo app, and the Patient Journey Explorer — with each finding reproduced before it was reported; the chart and app findings are fixed in this release, each with a test that failed first, and the Patient Journey Explorer’s are filed.
 
 # safety.viz v1.7.0
 
