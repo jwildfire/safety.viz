@@ -62,7 +62,7 @@ const bundleOptions = {
   minify: true,
   format: 'iife',
   globalName: 'SafetyVizApp',
-  // The version shown in the app's rail.
+  // The version shown in the app's footer.
   define: { __SAFETY_VIZ_VERSION__: JSON.stringify(version) },
   absWorkingDir: rootDir
 };

@@ -23,6 +23,15 @@ const destinations = modules.filter(
 
 const APP = 'window.__safetyVizApp';
 const item = (page, id) => page.locator(`.sva-item[data-view="${id}"]`);
+const tab = (page, domain) => page.locator(`.sva-tab[data-domain="${domain}"]`);
+
+// A chart sits under its domain's tab: open the tab, then choose the chart.
+const domainOf = (module) =>
+  manifest.modules[module].externalDomains ? 'other' : manifest.modules[module].domains[0];
+async function openChart(page, module) {
+  await tab(page, domainOf(module)).click();
+  await item(page, module).click();
+}
 
 function watchErrors(page) {
   const errors = [];
@@ -85,7 +94,7 @@ test.describe('demo app on the demo study', () => {
     }) => {
       const errors = watchErrors(page);
       await openOnDemo(page);
-      await item(page, module).click();
+      await openChart(page, module);
       await expect(page.locator('.sva-title')).toHaveText(entry.title);
       // The chart's own output is on the page — a canvas, or a table for the
       // table-led adverse-event explorer — and it did not throw on load, which
@@ -100,7 +109,7 @@ test.describe('demo app on the demo study', () => {
   test('APP-PAGE-004: only one chart is mounted at a time (#150)', async ({ page }) => {
     await openOnDemo(page);
     for (const module of ['histogram', 'qt-explorer', 'ae-explorer', 'hep-explorer']) {
-      await item(page, module).click();
+      await openChart(page, module);
       await expect(item(page, module)).toHaveAttribute('aria-current', 'page');
       await expect(page.locator('.sva-chart')).toHaveCount(1);
       await expect(page.locator('.sva-chart > *')).not.toHaveCount(0);
@@ -124,7 +133,7 @@ test.describe('demo app on the demo study', () => {
         rows: app.state.files.bds.rows.map(({ VISIT, ...row }) => row)
       };
     })()`);
-    await item(page, 'shift-plot').click();
+    await openChart(page, 'shift-plot');
     await expect(item(page, 'shift-plot').locator('.sva-tag')).toHaveText('did not draw');
     await expect(page.locator('.sva-message')).toContainText('Required variable(s) missing: VISIT');
     await expect(page.locator('.sva-count')).toHaveText(
@@ -136,7 +145,7 @@ test.describe('demo app on the demo study', () => {
     page
   }) => {
     await openOnDemo(page);
-    await item(page, 'patient-journey-explorer').click();
+    await openChart(page, 'patient-journey-explorer');
     await expect(page.locator('.sva-message')).toContainText('six domains of its own');
     await expect(page.locator('.sva-chart')).toHaveCount(0);
   });
@@ -145,7 +154,7 @@ test.describe('demo app on the demo study', () => {
     page
   }) => {
     await openOnDemo(page);
-    await item(page, 'participant-profile').click();
+    await openChart(page, 'participant-profile');
     await expect(page.locator('.sva-message')).toContainText(
       'opens beside a chart when you select a participant'
     );
@@ -164,37 +173,75 @@ test.describe('demo app on the demo study', () => {
     await expect(page.locator('[data-action="demo"]')).toHaveCount(0);
   });
 
-  test('APP-PAGE-012: the page’s own chrome fits a phone-width viewport (#150)', async ({
+  test('APP-PAGE-012: at phone width the header’s rows scroll within themselves and the page does not scroll sideways (#150)', async ({
     page
   }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await openOnDemo(page);
-    await page.locator('.sva-navtoggle').click();
+    const overflow = () =>
+      page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    // The demo opens on a labs chart: nine chips, more than a phone is wide.
+    await expect(item(page, 'histogram')).toBeVisible();
+    expect(await overflow()).toBeLessThanOrEqual(0);
+    const row = page.locator('.sva-group:not([hidden])');
+    expect(await row.evaluate((node) => node.scrollWidth > node.clientWidth)).toBe(true);
+    // A chip off the right edge is reached by scrolling its row, not the page.
+    await item(page, 'nep-explorer').scrollIntoViewIfNeeded();
+    await item(page, 'nep-explorer').click();
+    await expect(page.locator('.sva-title')).toHaveText('Nephrotoxicity Explorer');
+    expect(await overflow()).toBeLessThanOrEqual(0);
     await item(page, 'data').click();
-    const overflow = await page.evaluate(
-      () => document.documentElement.scrollWidth - window.innerWidth
-    );
-    expect(overflow).toBeLessThanOrEqual(0);
+    expect(await overflow()).toBeLessThanOrEqual(0);
   });
 
-  test('APP-PAGE-021: at phone width the chart list folds behind a Charts button and closes on a choice (#150)', async ({
+  test('APP-PAGE-021: the app’s own parts are a header and a footer, so the chart has the page’s width (#150)', async ({
     page
   }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
+    await page.setViewportSize({ width: 1440, height: 900 });
     await openOnDemo(page);
-    const toggle = page.locator('.sva-navtoggle');
-    await expect(toggle).toBeVisible();
-    await expect(page.locator('.sva-nav')).toBeHidden();
-    await toggle.click();
-    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
-    await expect(item(page, 'qt-explorer')).toBeVisible();
-    await item(page, 'qt-explorer').click();
-    await expect(page.locator('.sva-nav')).toBeHidden();
-    await expect(page.locator('.sva-title')).toHaveText('QT Safety Explorer');
-    // On a wide screen there is no button and the list is always there.
-    await page.setViewportSize({ width: 1280, height: 800 });
-    await expect(toggle).toBeHidden();
-    await expect(page.locator('.sva-nav')).toBeVisible();
+    await openChart(page, 'hep-explorer');
+    const box = async (selector) => page.locator(selector).boundingBox();
+    const header = await box('.sva-header');
+    const chart = await box('.sva-chart');
+    // Nothing of the app sits beside the chart: it spans the page but for the gutters.
+    expect(header.width).toBe(1440);
+    expect(chart.width).toBeGreaterThan(1440 - 80);
+    expect(chart.y).toBeGreaterThan(header.y + header.height);
+    // The header stays shallow: the bar, and one or two rows of charts.
+    expect(header.height).toBeLessThan(150);
+    await expect(page.locator('.sva-footer .sva-pitch')).toHaveText(
+      'Everything runs in this browser. Nothing is sent anywhere.'
+    );
+  });
+
+  test('APP-PAGE-022: a tab per domain says how many of its charts are supported and shows that domain’s charts (#150)', async ({
+    page
+  }) => {
+    await openOnDemo(page);
+    await expect(page.locator('.sva-tab .sva-tab-title')).toHaveText([
+      'Labs and vitals',
+      'ECG',
+      'Adverse events',
+      'Other'
+    ]);
+    await expect(page.locator('.sva-tab .sva-tab-count')).toHaveText([
+      '9 of 9',
+      '1 of 1',
+      '3 of 3',
+      '0 of 1'
+    ]);
+    // The demo opens on the first chart, so its domain is open.
+    await expect(tab(page, 'bds')).toHaveAttribute('aria-pressed', 'true');
+    await expect(item(page, 'histogram')).toBeVisible();
+    await expect(item(page, 'ae-explorer')).toBeHidden();
+    // Opening another domain swaps the row and draws its first chart.
+    await tab(page, 'ae').click();
+    await expect(item(page, 'ae-explorer')).toBeVisible();
+    await expect(item(page, 'histogram')).toBeHidden();
+    await expect(page.locator('.sva-title')).toHaveText('Adverse Event Explorer');
+    // On the data view no domain is open.
+    await item(page, 'data').click();
+    await expect(page.locator('.sva-charts')).toBeHidden();
   });
 });
 
@@ -292,7 +339,7 @@ test.describe('demo app data panel on a renamed-column study', () => {
       ['ae-explorer', 'Not mapped yet: Treatment arm.'],
       ['time-to-event', 'Not mapped yet: End-of-study day.']
     ]) {
-      await item(page, module).click();
+      await openChart(page, module);
       await expect(page.locator('.sva-message')).toHaveText(sentence);
       await expect(page.locator('.sva-chart')).toHaveCount(0);
     }
@@ -330,7 +377,7 @@ test.describe('demo app data panel on a renamed-column study', () => {
       'chosen'
     );
     for (const [module, entry] of destinations) {
-      await item(page, module).click();
+      await openChart(page, module);
       await expect(page.locator('.sva-title')).toHaveText(entry.title);
       await expect(
         page.locator('.sva-chart').locator('canvas:visible, table:visible').first()
@@ -338,7 +385,7 @@ test.describe('demo app data panel on a renamed-column study', () => {
       await expect(item(page, module).locator('.sva-tag')).toHaveText('ready');
     }
     expect(errors).toEqual([]);
-    await item(page, 'hep-explorer').click();
+    await openChart(page, 'hep-explorer');
     await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
     await captureEvidence(page, 'APP-LOAD-007', 'renamed-study-chart');
   });
@@ -351,7 +398,8 @@ test.describe('demo app data panel on a renamed-column study', () => {
     page.on('request', (request) => requests.push(`${request.method()} ${request.url()}`));
     await chooseFiles(page, [...STUDY, NO_DOMAIN]);
     await correct(page);
-    for (const [module] of destinations) await item(page, module).click();
+    for (const [module] of destinations) await openChart(page, module);
+    await item(page, 'data').click();
     const download = page.waitForEvent('download');
     await page.locator('[data-action="download-mapping"]').click();
     await download;
@@ -485,7 +533,7 @@ test.describe('demo app as one file, offline', () => {
       '13 of 14 charts supported by the loaded data'
     );
     for (const [module, entry] of destinations) {
-      await item(page, module).click();
+      await openChart(page, module);
       await expect(page.locator('.sva-title')).toHaveText(entry.title);
       await expect(
         page.locator('.sva-chart').locator('canvas:visible, table:visible').first()

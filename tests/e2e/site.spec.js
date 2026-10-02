@@ -39,7 +39,7 @@ test.describe('docs site', () => {
     );
     await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
     // Its own header, not the docs site's.
-    await expect(page.locator('.sva-rail .sva-wordmark')).toHaveText('safety.viz');
+    await expect(page.locator('.sva-header .sva-wordmark')).toHaveText('safety.viz');
     await expect(page.locator('.site-header')).toHaveCount(0);
     // Its links lead back into the site, and to the single file as a download (#152).
     await expect(page.locator('.sva-links a[data-link="docs"]')).toHaveAttribute(

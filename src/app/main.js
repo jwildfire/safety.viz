@@ -11,7 +11,7 @@ import { mountApp } from './page.js';
 const SITE = 'https://jwildfire.github.io/safety.viz/';
 
 /**
- * Where the rail's links go when the host page does not say: the published
+ * Where the footer's links go when the host page does not say: the published
  * site. The single-file build keeps these, since it has no site around it.
  */
 export const DEFAULT_LINKS = {
@@ -23,7 +23,7 @@ export const DEFAULT_LINKS = {
 /**
  * Mount the demo app with the bundled charts and manifest.
  * @param {string|Element} target The element, or a selector for it, to mount into.
- * @param {Object} [options] Mount options; see {@link mountApp}. `demo: { base }` loads the demo study from that path; `links` overrides where the rail's links go.
+ * @param {Object} [options] Mount options; see {@link mountApp}. `demo: { base }` loads the demo study from that path; `links` overrides where the footer's links go.
  * @returns {Object} The app handle.
  */
 export function mount(target, options = {}) {

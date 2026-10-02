@@ -212,17 +212,26 @@ describe('demo app: the page', () => {
   it('APP-PAGE-018: the app carries its own header: wordmark, what it is, and that nothing is sent anywhere (#150)', () => {
     const { charts } = fakeCharts();
     mountApp(root, { charts, manifest, version: '1.2.3' });
-    expect(root.querySelector('.sva-rail .sva-wordmark').textContent).toBe('safety.viz');
-    expect(root.querySelector('.sva-rail .sva-kicker').textContent).toBe('Demo app');
+    expect(root.querySelector('.sva-header .sva-wordmark').textContent).toBe('safety.viz');
+    expect(root.querySelector('.sva-header .sva-kicker').textContent).toBe('Demo app');
     expect(root.querySelector('.sva-logo svg')).not.toBeNull();
-    expect(root.querySelector('.sva-pitch').textContent).toContain('Nothing is sent anywhere.');
-    expect(root.querySelector('.sva-version').textContent).toBe('safety.viz 1.2.3');
+    // The footer says what happens to the data, and carries the version.
+    expect(root.querySelector('.sva-footer .sva-pitch').textContent).toContain(
+      'Nothing is sent anywhere.'
+    );
+    expect(root.querySelector('.sva-footer .sva-version').textContent).toBe('safety.viz 1.2.3');
+    // The app's own parts are a header and a footer; nothing sits beside the view.
+    expect([...root.querySelector('.sva-app').children].map((node) => node.tagName)).toEqual([
+      'HEADER',
+      'MAIN',
+      'FOOTER'
+    ]);
     // One page title: the view's name, in the main column.
     expect(root.querySelectorAll('h1')).toHaveLength(1);
     expect(root.querySelector('main h1.sva-title').textContent).toBe('Data');
   });
 
-  it('APP-PAGE-019: the rail links only where it was given an address, and the single file is a download (#150)', () => {
+  it('APP-PAGE-019: the footer links only where it was given an address, and the single file is a download (#150)', () => {
     const { charts } = fakeCharts();
     mountApp(root, { charts, manifest });
     expect(root.querySelectorAll('.sva-links a')).toHaveLength(0);
@@ -261,5 +270,52 @@ describe('demo app: the page', () => {
     app.refresh();
     expect(hex('qt-explorer')).toBe('sva-hex sva-alarm');
     expect(tag(root, 'qt-explorer')).toBe('1 missing');
+  });
+
+  it('APP-PAGE-022: the header has a tab per domain saying how many of its charts the data supports, and shows the open domain’s charts (#150)', () => {
+    const { charts, calls } = fakeCharts();
+    const app = mountApp(root, { charts, manifest });
+    const tab = (domain) => root.querySelector(`.sva-tab[data-domain="${domain}"]`);
+    const tabs = () =>
+      [...root.querySelectorAll('.sva-tab')].map((node) => [
+        node.querySelector('.sva-tab-title').textContent,
+        node.querySelector('.sva-tab-count').textContent
+      ]);
+    expect(tabs()).toEqual([
+      ['Labs and vitals', '0 of 9'],
+      ['ECG', '0 of 1'],
+      ['Adverse events', '0 of 3'],
+      ['Other', '0 of 1']
+    ]);
+    // On the data view no domain is open and no chart row is shown.
+    expect(root.querySelector('.sva-charts').hidden).toBe(true);
+
+    app.loadFiles(DEMO);
+    expect(tabs().map(([, count]) => count)).toEqual(['9 of 9', '1 of 1', '3 of 3', '0 of 1']);
+
+    // Opening a domain shows its charts only, and draws its first ready chart.
+    tab('ae').click();
+    expect(tab('ae').getAttribute('aria-pressed')).toBe('true');
+    expect(tab('bds').getAttribute('aria-pressed')).toBe('false');
+    expect(root.querySelector('.sva-charts').hidden).toBe(false);
+    const shown = [...root.querySelectorAll('.sva-group')].filter((group) => !group.hidden);
+    expect(shown.map((group) => group.dataset.group)).toEqual(['ae']);
+    expect(calls[calls.length - 1].export).toBe('aeExplorer');
+    expect(root.querySelector('.sva-title').textContent).toBe('Adverse Event Explorer');
+
+    // Choosing a chart anywhere opens its domain.
+    app.select('qt-explorer');
+    expect(tab('eg').getAttribute('aria-pressed')).toBe('true');
+
+    // A domain with nothing ready opens on its first chart, which says why.
+    tab('other').click();
+    expect(root.querySelector('.sva-title').textContent).toBe('Patient Journey Explorer');
+    expect(root.querySelector('.sva-message').textContent).toContain('six domains of its own');
+
+    // A domain with something missing is marked on its tab.
+    app.state.mappings.eg.columns.ARM = { value: null, source: null };
+    app.refresh();
+    expect(tab('eg').querySelector('.sva-hex').className).toBe('sva-hex sva-alarm');
+    expect(tab('eg').querySelector('.sva-tab-count').textContent).toBe('0 of 1');
   });
 });

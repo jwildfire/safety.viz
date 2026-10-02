@@ -1,7 +1,9 @@
-// Demo app: the page (#150, obot.roadmap#352). A full-page web app with its own
-// header: a rail carrying the wordmark and every chart in the manifest, grouped
-// by the domain it reads, each with a status saying whether the loaded data
-// supports it; and a main column showing the data view or one chart at a time.
+// Demo app: the page (#150, obot.roadmap#352). A full-page web app whose own
+// chrome is a header and a footer, so the chart keeps the page's full width. The
+// header carries the wordmark, a Data tab and one tab per domain, and beneath
+// them the charts of the open domain, each with a status saying whether the
+// loaded data supports it. The main area shows the data view or one chart at a
+// time; the footer carries the links.
 // This is the only module of the app that touches the document. The parsing,
 // placing, mapping and status rules it shows are the pure modules beside it,
 // and its look is styles.js.
@@ -87,8 +89,8 @@ function sentenceFor(module, status, manifest) {
  * @param {Object} options.charts The chart factories, keyed by export name (the safety.viz module collection).
  * @param {Object} options.manifest The portfolio manifest.
  * @param {{base: string}} [options.demo] Where the demo extracts are served from; when given, the demo study is loaded on mount and a Load demo data button is offered.
- * @param {{docs?: string, domains?: string, download?: string, github?: string}} [options.links] Where the rail's links go; a link with no address is left out.
- * @param {string} [options.version] The safety.viz version, shown in the rail.
+ * @param {{docs?: string, domains?: string, download?: string, github?: string}} [options.links] Where the footer's links go; a link with no address is left out.
+ * @param {string} [options.version] The safety.viz version, shown in the footer.
  * @param {(url: string) => Promise<string>} [options.fetchText] Fetches the demo extracts' text; defaults to `fetch`.
  * @param {(container: Element, app: Object) => void} [options.dataView] Renders the data view; defaults to the data panel.
  * @returns {{ready: Promise<void>, loadFiles: Function, loadDemo: Function, select: Function, state: Object, destroy: Function}} The app handle.
@@ -138,37 +140,45 @@ export function mountApp(
   };
 
   const groupOf = (entry) => (entry.externalDomains ? OTHER_GROUP : entry.domains[0]);
+  const tabTitle = (group) => (group === OTHER_GROUP ? 'Other' : manifest.domains[group].label);
   const groupTitle = (group) =>
     group === OTHER_GROUP ? 'Outside the standard domains' : manifest.domains[group].label;
 
   root.innerHTML = '';
   const app = el('div', 'sva-app');
 
-  // The rail: the app's own header, then the list of data and charts.
-  const rail = el('aside', 'sva-rail');
+  // The header: the wordmark, the Data tab and a tab per domain, the count; and
+  // beneath them the charts of the open domain.
+  const header = el('header', 'sva-header');
+  const bar = el('div', 'sva-bar');
   const brand = el('div', 'sva-brand');
   const logo = el('span', 'sva-logo');
   logo.innerHTML = LOGO_SVG;
-  const names = el('div');
-  names.append(el('div', 'sva-wordmark', 'safety.viz'), el('p', 'sva-kicker', 'Demo app'));
-  brand.append(logo, names);
-  const navToggle = el('button', 'sva-button sva-navtoggle', 'Charts');
-  navToggle.type = 'button';
-  navToggle.setAttribute('aria-expanded', 'false');
-  navToggle.onclick = () => {
-    const open = rail.classList.toggle('sva-open');
-    navToggle.setAttribute('aria-expanded', String(open));
-  };
-  const brandRow = el('div', 'sva-brandrow');
-  brandRow.append(brand, navToggle);
-  const pitch = el(
-    'p',
-    'sva-pitch',
-    'Load a study, check how its columns map, and review it in the safety charts. ' +
-      'Everything runs in this browser. Nothing is sent anywhere.'
+  brand.append(
+    logo,
+    el('span', 'sva-wordmark', 'safety.viz'),
+    el('span', 'sva-kicker', 'Demo app')
   );
-  const nav = el('nav', 'sva-nav');
-  nav.setAttribute('aria-label', 'Data and charts');
+  const tabs = el('nav', 'sva-tabs');
+  tabs.setAttribute('aria-label', 'Data and domains');
+  const count = el('div', 'sva-count');
+  count.setAttribute('aria-live', 'polite');
+  bar.append(brand, tabs, count);
+  const chartRow = el('nav', 'sva-charts');
+  chartRow.setAttribute('aria-label', 'Charts');
+  header.append(bar, chartRow);
+
+  // The main area: the view's title and actions, and the view beneath them.
+  const main = el('main', 'sva-main');
+  const head = el('div', 'sva-sechead');
+  const title = el('h1', 'sva-title');
+  const actions = el('div', 'sva-actions');
+  head.append(title, actions);
+  const content = el('div', 'sva-content');
+  main.append(head, content);
+
+  // The footer: what the app does with your data, and the links.
+  const footer = el('footer', 'sva-footer');
   const railLinks = el('ul', 'sva-links');
   for (const [key, label] of [
     ['docs', 'Docs and chart gallery'],
@@ -186,19 +196,12 @@ export function mountApp(
     railLinks.append(item);
   }
   if (version) railLinks.append(el('li', 'sva-version', `safety.viz ${version}`));
-  rail.append(brandRow, pitch, nav, railLinks);
+  footer.append(
+    el('p', 'sva-pitch', 'Everything runs in this browser. Nothing is sent anywhere.'),
+    railLinks
+  );
 
-  // The main column: a section head that stays, and the view beneath it.
-  const main = el('main', 'sva-main');
-  const head = el('div', 'sva-sechead');
-  const title = el('h1', 'sva-title');
-  const actions = el('div', 'sva-actions');
-  const count = el('div', 'sva-count');
-  count.setAttribute('aria-live', 'polite');
-  head.append(title, actions, count);
-  const content = el('div', 'sva-content');
-  main.append(head, content);
-  app.append(rail, main);
+  app.append(header, main, footer);
   root.append(app);
 
   function destroyChart() {
@@ -215,7 +218,9 @@ export function mountApp(
   function renderHead(current) {
     const { ready, total } = supportedCount(current);
     count.textContent = state.busy || `${ready} of ${total} charts supported by the loaded data`;
+    // The data actions belong to the data view.
     actions.innerHTML = '';
+    if (state.selected !== 'data') return;
     if (demo) {
       const button = el('button', 'sva-button', 'Load demo data');
       button.type = 'button';
@@ -242,18 +247,26 @@ export function mountApp(
       el('span', 'sva-item-title', label),
       el('span', tag.className, tag.text)
     );
-    button.onclick = () => {
-      rail.classList.remove('sva-open');
-      navToggle.setAttribute('aria-expanded', 'false');
-      handle.select(id);
-    };
+    button.onclick = () => handle.select(id);
     return button;
   }
 
+  /** The charts of each group, in manifest order. */
+  function chartGroups() {
+    const groups = new Map();
+    for (const [module, entry] of Object.entries(manifest.modules)) {
+      const group = groupOf(entry);
+      if (!groups.has(group)) groups.set(group, []);
+      groups.get(group).push([module, entry]);
+    }
+    return groups;
+  }
+
   function renderNav(current) {
-    nav.innerHTML = '';
+    const open = state.selected === 'data' ? null : groupOf(manifest.modules[state.selected]);
     const loaded = Object.keys(state.files).length;
-    nav.append(
+    tabs.innerHTML = '';
+    tabs.append(
       navItem(
         'data',
         'Data',
@@ -261,22 +274,36 @@ export function mountApp(
         'sva-hex sva-spectrum'
       )
     );
-    const groups = new Map();
-    for (const [module, entry] of Object.entries(manifest.modules)) {
-      const group = groupOf(entry);
-      if (!groups.has(group)) groups.set(group, []);
-      groups.get(group).push([module, entry]);
-    }
-    for (const [group, members] of groups) {
+    chartRow.innerHTML = '';
+    chartRow.hidden = open === null;
+    for (const [group, members] of chartGroups()) {
+      // The tab: the domain, and how many of its charts the data supports.
+      const states = members.map(([module]) => current[module].state);
+      const readyHere = states.filter((value) => value === 'ready').length;
+      const tab = el('button', `sva-tab sva-domain-${group}`);
+      tab.type = 'button';
+      tab.dataset.domain = group;
+      tab.setAttribute('aria-pressed', String(open === group));
+      const alarm = states.some((value) => value === 'missing' || value === 'did not draw');
+      tab.append(
+        el('span', alarm ? 'sva-hex sva-alarm' : readyHere ? 'sva-hex' : 'sva-hex sva-hollow'),
+        el('span', 'sva-tab-title', tabTitle(group)),
+        el('span', 'sva-tab-count', `${readyHere} of ${members.length}`)
+      );
+      tab.onclick = () => handle.openDomain(group);
+      tabs.append(tab);
+
+      // Its charts: on the page for every domain, shown for the open one.
       const section = el('div', `sva-group sva-domain-${group}`);
       section.dataset.group = group;
+      section.hidden = open !== group;
       section.append(el('h2', 'sva-group-title', groupTitle(group)));
       for (const [module, entry] of members) {
         section.append(
           navItem(module, entry.title, tagFor(current[module]), hexFor(current[module]))
         );
       }
-      nav.append(section);
+      chartRow.append(section);
     }
   }
 
@@ -563,6 +590,22 @@ export function mountApp(
         (module) => isDestination(module, manifest) && current[module].state === 'ready'
       );
       handle.select(manifest.modules[wanted] || wanted === 'data' ? wanted : first || 'data');
+    },
+
+    /**
+     * Open a domain's tab: show its charts and draw the first one the data
+     * supports, or its first chart when none is ready, which says what is missing.
+     * @param {string} group A domain id from the manifest, or `other` for charts outside the standard set.
+     * @returns {void}
+     */
+    openDomain(group) {
+      const current = status();
+      const members = chartGroups().get(group) || [];
+      const [module] =
+        members.find(([id]) => current[id].state === 'ready' && isDestination(id, manifest)) ||
+        members[0] ||
+        [];
+      if (module) handle.select(module);
     },
 
     /**
