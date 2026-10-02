@@ -1,6 +1,6 @@
 {
   "module": "time-to-event",
-  "generatedAt": "2026-10-02T10:10:34.348Z",
+  "generatedAt": "2026-10-02T10:49:43.838Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "36993944809",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/36993944809"
+    "id": "36997572999",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/36997572999"
   },
   "records": [
     {
@@ -18,6 +18,270 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [71],
+      "screenshots": []
+    },
+    {
+      "test": "APP-FILE-005: the file opens from disk with no network, empty and ready for files (#152)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-FILE-005"],
+      "issueRefs": [152],
+      "screenshots": []
+    },
+    {
+      "test": "APP-FILE-006: offline, the file loads the renamed study, takes the corrections and draws its charts (#152)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-FILE-006"],
+      "issueRefs": [152],
+      "screenshots": []
+    },
+    {
+      "test": "APP-FILE-007: the built file holds no script, stylesheet or image reference to another URL (#152)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-FILE-007"],
+      "issueRefs": [152],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LOAD-001: each chosen file is placed in its domain with its column count (#151)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-001"],
+      "issueRefs": [151],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LOAD-002: the file that belongs to no domain is reported in one sentence that names it (#151)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-002"],
+      "issueRefs": [151],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LOAD-003: before mapping, the chart list names what each unsupported chart is missing (#151)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-003"],
+      "issueRefs": [151],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LOAD-004: the mapping table labels each guess and prices each empty row in charts (#151)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-004"],
+      "issueRefs": [151],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LOAD-007: with the mapping corrected by hand, every chart the study supports draws (#151)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-007"],
+      "issueRefs": [151],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LOAD-008: the mapping downloads, and dropping it back with the files restores it (#151)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-008"],
+      "issueRefs": [151],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LOAD-012: a file of another type is refused in a sentence that names it (#151)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-012"],
+      "issueRefs": [151],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LOAD-014: no network request leaves the page from the first file selection onward (#151)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-014"],
+      "issueRefs": [151],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LOAD-015: files dropped on the drop zone load as chosen files do (#151)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-015"],
+      "issueRefs": [151],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-001: every chart in the manifest is listed under its domain with a status (#150)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-001"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-002: the demo study reads 13 of 14 supported and opens on the first chart (#150)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-002"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-003: Adverse Event Explorer draws from the demo study with no console error (#150)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-003"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-003: Adverse Event Timelines draws from the demo study with no console error (#150)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-003"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-003: Hepatic ALT Waterfall draws from the demo study with no console error (#150)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-003"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-003: Hepatic Safety Explorer draws from the demo study with no console error (#150)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-003"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-003: Nephrotoxicity Explorer draws from the demo study with no console error (#150)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-003"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-003: QT Safety Explorer draws from the demo study with no console error (#150)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-003"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-003: Safety Delta-Delta draws from the demo study with no console error (#150)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-003"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-003: Safety Histogram draws from the demo study with no console error (#150)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-003"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-003: Safety Outlier Explorer draws from the demo study with no console error (#150)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-003"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-003: Safety Results Over Time draws from the demo study with no console error (#150)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-003"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-003: Safety Shift Plot draws from the demo study with no console error (#150)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-003"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-003: Time-to-Event Explorer draws from the demo study with no console error (#150)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-003"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-004: only one chart is mounted at a time (#150)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-004"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-005: a chart that was ready but throws reads \"did not draw\" with its own message (#150)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-005"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-006: a chart the data cannot support is not drawn, and the page says why (#150)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-006"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-007: the participant profile is explained, and opens as the rail beside its host chart (#150)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-007"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-008: with no demo study the page opens on an empty data view and nothing is ready (#150)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-008"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-012: the page’s own chrome fits a phone-width viewport (#150)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-012"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-013: the built portfolio page mounts the app on the demo study with no console errors (#150)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-013"],
+      "issueRefs": [150],
       "screenshots": []
     },
     {
@@ -178,6 +442,22 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [71],
+      "screenshots": []
+    },
+    {
+      "test": "PF-SITE-019: the Domains page opens from the nav, lists every chart in the manifest and fits a 390px phone with no sideways page scroll (#139)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PF-SITE-019"],
+      "issueRefs": [139],
+      "screenshots": []
+    },
+    {
+      "test": "PF-SITE-020: the Domains page links portfolio.json at the site root, and it is the manifest byte for byte (#139)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PF-SITE-020"],
+      "issueRefs": [139],
       "screenshots": []
     },
     {
@@ -685,6 +965,30 @@
       "screenshots": []
     },
     {
+      "test": "demoDataDrift flags a committed file no generator produces and a generated file that is not committed (#140)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [140],
+      "screenshots": []
+    },
+    {
+      "test": "demoDataDrift names the first differing file and row (#140)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [140],
+      "screenshots": []
+    },
+    {
+      "test": "demoDataDrift reports no drift when every committed file matches its generated twin (#140)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [140],
+      "screenshots": []
+    },
+    {
       "test": "deriveObservations censors event-free participants at the follow-up day with the population censor description (TTE-DERIV-002, #128)",
       "suite": "unit",
       "status": "pass",
@@ -826,6 +1130,38 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "firstDifferingRow catches a difference that is only the closing newline, keeping it visible (#140)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [140],
+      "screenshots": []
+    },
+    {
+      "test": "firstDifferingRow counts the header as row 1, so the row is the line an editor shows (#140)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [140],
+      "screenshots": []
+    },
+    {
+      "test": "firstDifferingRow reports a row only one side has as missing from the other (#140)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [140],
+      "screenshots": []
+    },
+    {
+      "test": "firstDifferingRow returns null when the committed and generated text are byte-identical (#140)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [140],
       "screenshots": []
     },
     {
@@ -1221,6 +1557,550 @@
       "screenshots": []
     },
     {
+      "test": "portfolio app: chart recipes APP-CHART-001: on the demo study the histogram gets its columns, filters, groups and the rail’s settings (#150)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-CHART-001"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: chart recipes APP-CHART-002: a renamed study’s settings carry the user’s column names, and the data is not rewritten (#150)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-CHART-002"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: chart recipes APP-CHART-003: an unmapped optional column is left to the chart’s own default (#150)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-CHART-003"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: chart recipes APP-CHART-004: a nested column setting becomes a nested object (#150)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-CHART-004"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: chart recipes APP-CHART-005: charts that find measures by name are told the data’s names (#150)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-CHART-005"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: chart recipes APP-CHART-006: the study day is the mapped column, else visit order, else nothing for a chart that would print it (#150)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-CHART-006"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: chart recipes APP-CHART-007: time to event is handed its events without the placeholder rows, and its population (#150)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-CHART-007"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: chart recipes APP-CHART-008: when the two tables name the participant differently, the population carries the events’ name too (#150)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-CHART-008"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: chart recipes APP-CHART-009: twelve charts are destinations; the participant profile and the Patient Journey Explorer are not (#150)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-CHART-009"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: chart status APP-STAT-001: on the demo study thirteen charts are ready and the Patient Journey Explorer needs more domains (#149)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-STAT-001"],
+      "issueRefs": [149],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: chart status APP-STAT-002: a chart whose domain has no file says which file, and is not an error (#149)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-STAT-002"],
+      "issueRefs": [149],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: chart status APP-STAT-003: with no upper limit of normal, the two hepatic charts and the participant profile say so by name (#149)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-STAT-003"],
+      "issueRefs": [149],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: chart status APP-STAT-004: a chart that finds its measures by name is missing them by name (#149)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-STAT-004"],
+      "issueRefs": [149],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: chart status APP-STAT-005: the QT explorer needs one QTc correction, not both (#149)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-STAT-005"],
+      "issueRefs": [149],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: chart status APP-STAT-006: time to event needs its participant and day columns although its schema requires none (#149)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-STAT-006"],
+      "issueRefs": [149],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: chart status APP-STAT-007: with nothing loaded no chart is ready and none is in error (#149)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-STAT-007"],
+      "issueRefs": [149],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: parsing APP-PARSE-001: reads quoted fields with embedded commas and doubled quotes (#149)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PARSE-001"],
+      "issueRefs": [149],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: parsing APP-PARSE-002: tolerates a byte-order mark, CRLF line ends, blank lines and a missing final newline (#149)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PARSE-002"],
+      "issueRefs": [149],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: parsing APP-PARSE-003: fills a short row with blanks and keeps a quoted line break inside one field (#149)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PARSE-003"],
+      "issueRefs": [149],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: parsing APP-PARSE-004: reads a JSON list of records as text values, with columns in first-seen order (#149)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PARSE-004"],
+      "issueRefs": [149],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: parsing APP-PARSE-005: chooses the parser from the file name, whatever its case (#149)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PARSE-005"],
+      "issueRefs": [149],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: parsing APP-PARSE-006: refuses what it cannot read in one sentence that names the file (#149)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PARSE-006"],
+      "issueRefs": [149],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: parsing APP-PARSE-007: reads the vendored demo extracts whole (#149)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PARSE-007"],
+      "issueRefs": [149],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: placing a file in a domain APP-PLACE-001: the four vendored demo extracts place to their four domains (#149)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PLACE-001"],
+      "issueRefs": [149],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: placing a file in a domain APP-PLACE-002: reports how many of the domain’s columns were found, and every candidate (#149)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PLACE-002"],
+      "issueRefs": [149],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: placing a file in a domain APP-PLACE-003: a file matching two columns or fewer is not placed, and says what it did find (#149)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PLACE-003"],
+      "issueRefs": [149],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: placing a file in a domain APP-PLACE-004: known alternative names count, so an ADaM or SDTM file is placed (#149)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PLACE-004"],
+      "issueRefs": [149],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: placing a file in a domain APP-PLACE-005: on equal counts the fuller match wins (#149)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PLACE-005"],
+      "issueRefs": [149],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: placing a file in a domain APP-PLACE-006: labs and ECG share a shape, so QT measure names send a file to ECG (#149)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PLACE-006"],
+      "issueRefs": [149],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: the data panel APP-LOAD-001: each file is placed in its domain and shown with how many of the domain’s columns it carries (#151)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-001"],
+      "issueRefs": [151],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: the data panel APP-LOAD-002: a file that belongs to no domain is reported in one sentence, and can be placed by hand (#151)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-002"],
+      "issueRefs": [151],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: the data panel APP-LOAD-003: before any correction the chart list names what each unsupported chart is missing (#151)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-003"],
+      "issueRefs": [151],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: the data panel APP-LOAD-004: every row says how it was filled, and an empty row says which charts need it (#151)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-004"],
+      "issueRefs": [151],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: the data panel APP-LOAD-005: key measures are mapped in the same table, from the names in the measure column (#151)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-005"],
+      "issueRefs": [151],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: the data panel APP-LOAD-006: changing a row updates the chart statuses at once and marks the row chosen (#151)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-006"],
+      "issueRefs": [151],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: the data panel APP-LOAD-007: with the six rows corrected by hand, the renamed study supports 13 of 14 charts (#151)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-007"],
+      "issueRefs": [151],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: the data panel APP-LOAD-008: the mapping file restores the mapping on a fresh page, dropped with the data files (#151)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-008"],
+      "issueRefs": [151],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: the data panel APP-LOAD-009: a mapping file dropped first is held and applied as each data file arrives (#151)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-009"],
+      "issueRefs": [151],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: the data panel APP-LOAD-010: a saved value the file no longer carries is named and skipped (#151)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-010"],
+      "issueRefs": [151],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: the data panel APP-LOAD-011: a file can be moved to another domain or set aside with its picker (#151)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-011"],
+      "issueRefs": [151],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: the data panel APP-LOAD-012: a file too large to read in memory, or of another type, is refused in a sentence (#151)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-012"],
+      "issueRefs": [151],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: the data panel APP-LOAD-013: an empty page offers the drop zone and says nothing is loaded (#151)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-013"],
+      "issueRefs": [151],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: the mapping file APP-MAP-008: mappings are saved as each row’s value, with the file each belongs to, marked provisional (#151)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-MAP-008"],
+      "issueRefs": [151],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: the mapping file APP-MAP-009: a saved mapping restores the same mapping on the same file, rows chosen by hand still marked chosen (#151)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-MAP-009"],
+      "issueRefs": [151],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: the mapping file APP-MAP-010: a saved value the file no longer carries is skipped and named, never applied blind (#151)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-MAP-010"],
+      "issueRefs": [151],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: the page APP-PAGE-001: lists every chart in the manifest under its domain, with a status each (#150)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-001"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: the page APP-PAGE-002: on the demo study the supported count reads 13 of 14 (#150)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-002"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: the page APP-PAGE-003: choosing a chart draws it from the mapped data (#150)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-003"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: the page APP-PAGE-004: choosing another chart removes the first: never more than one is mounted (#150)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-004"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: the page APP-PAGE-005: a chart that was ready but throws reads \"did not draw\" with the chart’s own message (#150)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-005"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: the page APP-PAGE-006: a chart the data does not support is not drawn, and the page says what it needs (#150)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-006"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: the page APP-PAGE-007: the participant profile is listed with a status and explained, not drawn as a page of its own (#150)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-007"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: the page APP-PAGE-009: a file that belongs to no domain, or cannot be read, is reported in a sentence and loads nothing (#150)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-009"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: the page APP-PAGE-010: served with a demo study, it loads it and opens on the first chart (#150)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-010"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: the page APP-PAGE-011: a second file placed in a domain replaces the first, and the page says so (#150)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-011"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: the pre-filled mapping APP-MAP-001: a column with the same name is filled and says so, whatever its case (#149)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-MAP-001"],
+      "issueRefs": [149],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: the pre-filled mapping APP-MAP-002: a known alternative is filled and labelled a guess (#149)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-MAP-002"],
+      "issueRefs": [149],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: the pre-filled mapping APP-MAP-003: nothing fuzzier is attempted: a near miss stays empty (#149)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-MAP-003"],
+      "issueRefs": [149],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: the pre-filled mapping APP-MAP-004: a key measure is found by its known names, ignoring case, punctuation and a bracketed unit (#149)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-MAP-004"],
+      "issueRefs": [149],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: the pre-filled mapping APP-MAP-005: the demo study fills every column it carries by the same name and guesses its key measures (#149)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-MAP-005"],
+      "issueRefs": [149],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: the pre-filled mapping APP-MAP-006: a row changed by hand is marked chosen, and can be cleared (#149)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-MAP-006"],
+      "issueRefs": [149],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: the pre-filled mapping APP-MAP-007: changing the measure column looks the key measures up again in the new column (#149)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-MAP-007"],
+      "issueRefs": [149],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: the renamed-column study APP-LOAD-016: scripts/build-app-fixture.mjs reproduces the committed files byte for byte (#151)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-016"],
+      "issueRefs": [151],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: the single file APP-FILE-001: the script is inlined and the app mounted with no demo study (#152)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-FILE-001"],
+      "issueRefs": [152],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: the single file APP-FILE-002: nothing in the file points at another URL: no script source, stylesheet, image, font or source map (#152)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-FILE-002"],
+      "issueRefs": [152],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: the single file APP-FILE-003: a closing script tag inside the bundle cannot end the inline script early (#152)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-FILE-003"],
+      "issueRefs": [152],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: the single file APP-FILE-004: the page says what it is, its version, and that nothing leaves the browser (#152)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-FILE-004"],
+      "issueRefs": [152],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio app: what needs each row APP-STAT-008: each column and measure knows which charts cannot draw without it (#151)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-STAT-008"],
+      "issueRefs": [151],
+      "screenshots": []
+    },
+    {
       "test": "portfolio manifest PF-MAN-001: validates against its JSON Schema (#138)",
       "suite": "unit",
       "status": "pass",
@@ -1322,6 +2202,46 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderPortfolioPage APP-FILE-008: links the single file beside the page as a download (#152)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-FILE-008"],
+      "issueRefs": [152],
+      "screenshots": []
+    },
+    {
+      "test": "renderPortfolioPage APP-PAGE-014: loads the app bundle from beside the page and mounts it on the demo study there (#150)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-014"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "renderPortfolioPage APP-PAGE-015: says how many charts the manifest lists and names each demo extract (#150)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-015"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "renderPortfolioPage APP-PAGE-016: takes the site’s wide demo layout (#150)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-016"],
+      "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "renderPortfolioPage APP-PAGE-017: points to the Domains page for what each extract holds (#150)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-017"],
+      "issueRefs": [150],
       "screenshots": []
     },
     {
@@ -1917,6 +2837,134 @@
       "screenshots": []
     },
     {
+      "test": "site generator: domains page (#139) PF-SITE-001: the page lists every module in the manifest (#139)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PF-SITE-001"],
+      "issueRefs": [139, 139],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: domains page (#139) PF-SITE-002: each of the four domains has a section with its label, what one row is and its demo extract (#139)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PF-SITE-002"],
+      "issueRefs": [139, 139],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: domains page (#139) PF-SITE-003: every domain column appears with its label and description (#139)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PF-SITE-003"],
+      "issueRefs": [139, 139],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: domains page (#139) PF-SITE-004: each domain names the charts it feeds, and apart from them the charts that read it only when supplied (#139)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PF-SITE-004"],
+      "issueRefs": [139, 139],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: domains page (#139) PF-SITE-005: each chart lists every column setting with its default column, what that column holds and the domain it is read from (#139)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PF-SITE-005"],
+      "issueRefs": [139, 139],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: domains page (#139) PF-SITE-006: required settings are marked and optional ones are not (#139)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PF-SITE-006"],
+      "issueRefs": [139, 139],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: domains page (#139) PF-SITE-007: every chart links to its own demo and API reference pages (#139)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PF-SITE-007"],
+      "issueRefs": [139, 139],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: domains page (#139) PF-SITE-008: the Patient Journey Explorer is shown as outside the standard set, with its own six domains (#139)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PF-SITE-008"],
+      "issueRefs": [139, 139],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: domains page (#139) PF-SITE-009: the lead says how many charts read the standard set and links the served manifest (#139)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PF-SITE-009"],
+      "issueRefs": [139, 139],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: domains page (#139) PF-SITE-010: a module's note is shown with the chart it belongs to (#139)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PF-SITE-010"],
+      "issueRefs": [139, 139],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: domains page (#139) PF-SITE-011: renderers the manifest does not list never appear (#139)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PF-SITE-011"],
+      "issueRefs": [139, 139],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: domains page (#139) PF-SITE-012: a chart with no pages on the site is listed without links to them (#139)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PF-SITE-012"],
+      "issueRefs": [139, 139],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: domains page (#139) PF-SITE-013: every in-page link lands on a heading or section the page has (#139)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PF-SITE-013"],
+      "issueRefs": [139, 139],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: domains page (#139) PF-SITE-014: links take the mount-depth root prefix (#139)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PF-SITE-014"],
+      "issueRefs": [139, 139],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: domains page (#139) PF-SITE-015: manifest text is escaped, and nothing is set in bold (#139)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PF-SITE-015"],
+      "issueRefs": [139, 139],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: domains page (#139) PF-SITE-016: wide tables sit in the scrolling container so the page never scrolls sideways (#139)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PF-SITE-016"],
+      "issueRefs": [139, 139],
+      "screenshots": []
+    },
+    {
       "test": "site generator: evidence page carries the routing-status sections onto the page (#7)",
       "suite": "unit",
       "status": "pass",
@@ -2149,6 +3197,14 @@
       "screenshots": []
     },
     {
+      "test": "site generator: serving the manifest (#139) PF-SITE-017: the manifest is copied to the site root byte for byte (#139)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PF-SITE-017"],
+      "issueRefs": [139, 139],
+      "screenshots": []
+    },
+    {
       "test": "site generator: shell tokens (#21) falls back to an empty description when none is given (#21)",
       "suite": "unit",
       "status": "pass",
@@ -2162,6 +3218,14 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [21, 21],
+      "screenshots": []
+    },
+    {
+      "test": "site shell: Domains nav entry (#139) PF-SITE-018: the shell carries a Domains nav entry at every mount depth (#139)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PF-SITE-018"],
+      "issueRefs": [139, 139],
       "screenshots": []
     },
     {
