@@ -8,13 +8,11 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "build:app": "node scripts/build-app.mjs",
-    "narratives:skills": "node scripts/narratives/build-skills.mjs",
     "build:check-dist": "node scripts/check-dist-drift.mjs",
     "docs:api": "node scripts/api/build-api-data.mjs",
     "site": "node scripts/api/build-api-data.mjs && node scripts/site.mjs",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "eval:narratives": "node tests/evals/patient-journey-narratives/run.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "evidence": "node scripts/evidence.mjs",
@@ -25,6 +23,9 @@
     "demo-data:check": "node scripts/check-demo-data.mjs"
   },
   "devDependencies": {
+    "@fontsource-variable/instrument-sans": "^5.3.0",
+    "@fontsource/ibm-plex-mono": "^5.3.0",
+    "@fontsource/instrument-serif": "^5.3.0",
     "@playwright/test": "^1.61.1",
     "ajv": "^8.20.0",
     "esbuild": "^0.28.1",

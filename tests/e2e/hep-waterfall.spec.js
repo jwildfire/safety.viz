@@ -52,13 +52,14 @@ test.describe('safety.viz hep-waterfall module', () => {
     expect(page._hwfErrors).toEqual([]);
   });
 
-  test('HWF-CFG-001: the chart carries a prototype banner naming the v1.5 evaluation (#97)', async ({
+  test('HWF-CFG-001: the chart carries an Experimental banner saying it may change (#97, #165)', async ({
     page
   }) => {
-    const banner = page.locator('.sv-main .sv-prototype');
+    const banner = page.locator('.sv-main .sv-experimental');
     await expect(banner).toHaveCount(1);
-    await expect(banner).toContainText('Prototype');
-    await expect(banner).toContainText('v1.5');
+    await expect(banner).toContainText('Experimental');
+    await expect(banner).toContainText('may change');
+    await expect(page.locator('.sv-main .sv-prototype')).toHaveCount(0);
   });
 
   test('HWF-BAR-001/HWF-BAR-002/HWF-BAR-003/HWF-BAR-004/HWF-ORDER-001/HWF-ORDER-002/HWF-ORDER-003: one floating bar per participant from baseline to on-treatment maximum, under a continuous baseline trace (#93)', async ({

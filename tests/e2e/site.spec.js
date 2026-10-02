@@ -35,7 +35,7 @@ test.describe('docs site', () => {
     await page.evaluate('window.__safetyVizApp.ready');
     await expect(page).toHaveTitle('safety.viz demo');
     await expect(page.locator('.sva-count')).toHaveText(
-      '13 of 14 charts supported by the loaded data'
+      '13 of 13 charts supported by the loaded data'
     );
     await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
     // Its own header, not the docs site's.
@@ -58,6 +58,128 @@ test.describe('docs site', () => {
     await page.goto('/_site/index.html');
     await expect(page.locator('.site-nav a[href="demo/index.html"]')).toHaveText('Demo app');
     expect(errors).toEqual([]);
+  });
+
+  test('APP-PAGE-028: the hosted app fetches its typefaces from beside it as it opens, and nothing once a file is chosen, whatever script its names are in (#165)', async ({
+    page
+  }) => {
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') errors.push(msg.text());
+    });
+    const opening = [];
+    const record = (list) => (request) => {
+      if (!/^(blob|data):/.test(request.url())) list.push(request.url());
+    };
+    page.on('request', record(opening));
+    await page.goto('/_site/demo/index.html');
+    await page.evaluate('window.__safetyVizApp.ready');
+    await page.evaluate(async () => {
+      await document.fonts.ready;
+    });
+
+    // Nothing is asked of another host: the typefaces are the site's own files.
+    const site = `${new URL(page.url()).origin}/_site/`;
+    expect(opening.filter((url) => !url.startsWith(site))).toEqual([]);
+    // Every face the page declares was fetched as the page opened, and is
+    // loaded — including the weights the first view does not use.
+    const fetched = opening
+      .filter((url) => /\.woff2?$/.test(url))
+      .map((url) => url.slice(site.length));
+    const faces = await page.evaluate(() =>
+      [...document.fonts].map((face) => [face.family.replace(/"/g, ''), face.weight, face.status])
+    );
+    expect(faces).toEqual([
+      ['Instrument Sans', '400 700', 'loaded'],
+      ['Instrument Serif', '400', 'loaded'],
+      ['IBM Plex Mono', '400', 'loaded'],
+      ['IBM Plex Mono', '500', 'loaded'],
+      ['IBM Plex Mono', '600', 'loaded']
+    ]);
+    expect([...new Set(fetched)].sort()).toEqual([
+      'demo/fonts/ibm-plex-mono-latin-400-normal.woff2',
+      'demo/fonts/ibm-plex-mono-latin-500-normal.woff2',
+      'demo/fonts/ibm-plex-mono-latin-600-normal.woff2',
+      'demo/fonts/instrument-sans-latin-wght-normal.woff2',
+      'demo/fonts/instrument-serif-latin-400-normal.woff2'
+    ]);
+    // Each family's licence is served beside its files.
+    for (const family of ['instrument-sans', 'instrument-serif', 'ibm-plex-mono']) {
+      const licence = await page.request.get(`/_site/demo/fonts/LICENSE-${family}.txt`);
+      expect(licence.ok(), family).toBe(true);
+      expect(await licence.text()).toContain('SIL OPEN FONT LICENSE');
+    }
+
+    // A file of the user's own, named and filled in Greek, Cyrillic and
+    // accented Latin: a subsetted web font would fetch more of itself now.
+    const after = [];
+    page.on('request', record(after));
+    await page.locator('.sva-item[data-view="data"]').click();
+    const rows = ['01', '02', '03'].flatMap((id) => [
+      `${id},Креатинин,80,μmol/L,60,110,Wizyta Łódź 1,1,1,Ασθενής,01,F,WHITE`,
+      `${id},Alanine Aminotransferase,20,U/L,5,40,Wizyta Łódź 1,1,1,Ασθενής,01,F,WHITE`
+    ]);
+    await page.locator('.sva-file-input').setInputFiles({
+      name: 'Λαβ-мои.csv',
+      mimeType: 'text/csv',
+      buffer: Buffer.from(
+        `USUBJID,TEST,STRESN,STRESU,STNRLO,STNRHI,VISIT,VISITNUM,DY,ARM,SITEID,SEX,RASĂ\n${rows.join('\n')}\n`
+      )
+    });
+    await expect(page.locator('.sva-file[data-domain="bds"] .sva-file-name')).toHaveText(
+      'Λαβ-мои.csv'
+    );
+    await page.locator('.sva-tab[data-domain="bds"]').click();
+    await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
+    await page.locator('.sva-item[data-view="data"]').click();
+    await expect(page.locator('.sva-loaded-file[data-domain="bds"] .sva-loaded-name')).toHaveText(
+      'Λαβ-мои.csv'
+    );
+    await page.evaluate(async () => {
+      await document.fonts.ready;
+    });
+    expect(after).toEqual([]);
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-PAGE-029: the header sets the Demo app link apart with a border and an arrow, and still fits a phone (#172)', async ({
+    page
+  }) => {
+    await page.goto('/_site/index.html');
+    const link = page.locator('.site-nav a.nav-app');
+    await expect(link).toHaveText('Demo app');
+    await expect(link).toHaveAttribute('href', 'demo/index.html');
+    // It is the first entry of the header, ahead of Gallery.
+    expect(
+      await page.evaluate(() => document.querySelector('.site-nav').firstElementChild.className)
+    ).toBe('nav-app');
+    const look = (locator) =>
+      locator.evaluate((node) => {
+        const style = getComputedStyle(node);
+        const after = getComputedStyle(node, '::after');
+        return {
+          border: parseFloat(style.borderTopWidth),
+          arrow: after.content !== 'none' && parseFloat(after.width) > 0
+        };
+      });
+    // Bordered, with an arrow drawn beside the words.
+    expect(await look(link)).toEqual({ border: 1, arrow: true });
+    // Its neighbours are plain links.
+    expect(await look(page.locator('.site-nav > a', { hasText: 'Domains' }))).toEqual({
+      border: 0,
+      arrow: false
+    });
+    // It leads to the app.
+    await link.click();
+    await expect(page).toHaveURL(/\/_site\/demo\/index\.html/);
+    // On a phone the header wraps and the page does not scroll sideways.
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/_site/index.html');
+    await expect(page.locator('.site-nav a.nav-app')).toBeVisible();
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
+    ).toBeLessThanOrEqual(0);
   });
 
   test('APP-LOAD-022: the built site serves every demo study beside the app, and the app loads each (#159)', async ({
@@ -204,15 +326,17 @@ test.describe('docs site', () => {
       await expect(page.locator('h1')).toHaveText('Standard domain set');
 
       const modules = Object.values(manifest.modules);
-      expect(modules).toHaveLength(14);
+      expect(modules).toHaveLength(13);
       await expect(page.locator('section.domain')).toHaveCount(
         Object.keys(manifest.domains).length
       );
-      // Charts on the standard set come first, then those outside it.
-      await expect(page.locator('section.chart-needs h3')).toHaveText([
-        ...modules.filter((entry) => !entry.externalDomains).map((entry) => entry.title),
-        ...modules.filter((entry) => entry.externalDomains).map((entry) => entry.title)
-      ]);
+      // Every chart reads the standard set, so there is no section for charts
+      // outside it, and the experimental Patient Journey Explorer is not listed (#165).
+      await expect(page.locator('section.chart-needs h3')).toHaveText(
+        modules.map((entry) => entry.title)
+      );
+      await expect(page.locator('#outside')).toHaveCount(0);
+      await expect(page.locator('.domains-page')).not.toContainText('Patient Journey');
 
       const layout = await page.evaluate(() => {
         const width = document.documentElement.clientWidth;

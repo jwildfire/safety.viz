@@ -12,10 +12,20 @@
 // declaring one is the same act in every renderer:
 //
 //   { value_col }                            a dropdown of every value, plus All
-//   { value_col, start: 'Placebo' }          opens on Placebo, and offers no All
-//   { value_col, start: 'Placebo', all: true }   opens on Placebo, All still offered
-//   { value_col, all: false }                no All: one value is always selected
+//   { value_col, start: 'Placebo' }          opens on Placebo, All still offered
+//   { value_col, all: false }                no All: one value is always selected,
+//                                            the first unless `start` names another
 //   { value_col, multiple: true }            a checkbox multiselect, any number of values
+//
+// `start` only sets what the filter opens on. It used to switch All off as
+// well — the outlier explorer's original rule, taken up for every chart in
+// #136 — and the owner reversed that on 2026-10-02 (#166): one rule for every
+// chart, and only `all: false` removes All.
+//
+// What a spec asks for and what the bound data can give are reconciled in one
+// place, reconcileFilters, which every chart calls as it builds its filter
+// controls — so the selection a control shows is the selection the chart
+// filters by.
 //
 // Two rules are load-bearing and are pinned by tests rather than by comments:
 //
@@ -73,9 +83,9 @@ export function normalizeFilterSpec(value, fallbackLabel) {
     const raw = Array.isArray(spec.start) ? spec.start : [spec.start];
     start = multiple ? raw.map(String) : String(raw[0]);
   }
-  // A start value means the chart opens filtered, so All is off unless the
-  // spec asks for it back. `all: false` on its own is honoured as written.
-  const all = spec.all === undefined ? !started : spec.all !== false;
+  // `start` decides what the filter opens on and nothing else: All stays on
+  // offer unless the spec says `all: false` (#166).
+  const all = spec.all !== false;
   return { ...spec, start, all, multiple };
 }
 
@@ -91,6 +101,66 @@ export function initFilterState(specs) {
     state[spec.value_col] = spec.start === undefined ? null : spec.start;
   });
   return state;
+}
+
+/**
+ * Reconcile a module's filter state with the filters it is about to draw, so
+ * the selection each control shows is the selection the chart filters by
+ * (#166). Called from every chart's filter loop, after the data is cleaned and
+ * before anything renders, with the specs whose column the data carries:
+ *
+ * - a filter that gets no control — its column is absent, or it is no longer
+ *   configured — leaves no restriction behind in the state;
+ * - a filter the state has never held (one a later setSettings introduced)
+ *   opens on its spec's `start`;
+ * - a single-value selection the data lacks falls back to All, with a console
+ *   warning naming the filter and the value;
+ * - with `all: false` there is no All to fall back to, or to open on, so the
+ *   first value is selected;
+ * - a `multiple` selection keeps the values the data has, and places no
+ *   restriction when none of them remain. A list the reader emptied by hand
+ *   stays empty: it means "nothing selected", not "no start".
+ *
+ * @param {Object<string, ?(string|string[])>} state The module's `state.filters`, corrected in place.
+ * @param {Object[]} specs The normalized specs that get a control, in display order.
+ * @param {(spec: Object) => Array<string|number>} valuesOf The selectable values of one filter, in display order.
+ * @returns {Array<{spec: Object, values: Array<string|number>, selected: ?(string|string[])}>} One entry per control to draw.
+ */
+export function reconcileFilters(state, specs, valuesOf) {
+  const drawn = new Set(specs.map((spec) => spec.value_col));
+  Object.keys(state).forEach((column) => {
+    if (!drawn.has(column)) delete state[column];
+  });
+  return specs.map((spec) => {
+    const values = valuesOf(spec);
+    const has = (value) => values.some((candidate) => String(candidate) === String(value));
+    const missing = (value, fallback) =>
+      console.warn(
+        `The [ ${spec.label} ] filter value [ ${value} ] does not exist in the data, so the filter ${fallback}.`
+      );
+    let selected = state[spec.value_col];
+    if (selected === undefined) selected = spec.start;
+    if (spec.multiple) {
+      if (selected === null || selected === undefined || selected === '') selected = null;
+      else {
+        const list = (Array.isArray(selected) ? selected : [selected]).map(String);
+        const kept = list.filter(has);
+        list.filter((value) => !has(value)).forEach((value) => missing(value, 'opens without it'));
+        selected = kept.length || !list.length ? kept : null;
+      }
+    } else {
+      if (Array.isArray(selected)) selected = selected.length ? selected[0] : null;
+      if (selected === undefined || selected === '') selected = null;
+      const first = spec.all || !values.length ? null : String(values[0]);
+      if (selected !== null && !has(selected)) {
+        missing(selected, first === null ? 'opens on All' : `opens on [ ${first} ]`);
+        selected = null;
+      }
+      if (selected === null) selected = first;
+    }
+    state[spec.value_col] = selected;
+    return { spec, values, selected };
+  });
 }
 
 /**

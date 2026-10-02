@@ -70,7 +70,7 @@ it is evidenced rather than assumed.
 | NEP-DATA-006 (required columns; a creatinine-free dataset is reported)       | NEP-DATA-006                                           | #120  | `export.test.js`                                                                                                      |
 | NEP-API-001 (module export)                                                  | NEP-API-001                                            | #120  | `export.test.js`                                                                                                      |
 | NEP-COHORT-001..012 (the synthetic AKI demo cohort's data shape)             | NEP-COHORT-001..012                                    | #120  | `cohort.test.js`                                                                                                      |
-| NEP-FILT-001..004 (shared filter contract)                                   | NEP-FILT-001, NEP-FILT-002, NEP-FILT-003, NEP-FILT-004 | #136  | `../shared/filters.test.js`                                                                                           |
+| NEP-FILT-001..004 (shared filter contract)                                   | NEP-FILT-001, NEP-FILT-002, NEP-FILT-003, NEP-FILT-004 | #166  | `../shared/filter-contract.test.js`                                                                                   |
 | NEP-CTRL-001                                                                 | NEP-CTRL-001                                           | #136  | `reset.test.js` — the reset control sits last, restores the zone labels in state AND settings, and clears the filters |
 
 ## The demo cohort (D8, #89 DEMO-6)

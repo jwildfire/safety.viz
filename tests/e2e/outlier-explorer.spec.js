@@ -276,7 +276,7 @@ test.describe('safety.viz outlier-explorer module', () => {
     expect(events[1].length).toBe(0);
   });
 
-  test('SOE-REG-051/SOE-REG-052/SOE-REG-053: a filter with a start value initializes filtered and offers no All option (#24)', async ({
+  test('SOE-REG-051/SOE-REG-052/SOE-REG-053: a filter with a start value initializes filtered and still offers All (#166)', async ({
     page
   }) => {
     await page.evaluate(() => {
@@ -290,7 +290,9 @@ test.describe('safety.viz outlier-explorer module', () => {
       })
       .locator('select');
     const options = await armSelect.locator('option').allTextContents();
-    expect(options).not.toContain('All');
+    // One rule for every chart since #166: a start value sets what the filter
+    // opens on and nothing else, so All is still there to go back to.
+    expect(options).toContain('All');
     await expect(armSelect).toHaveValue('Placebo');
     await expect(page.locator('.sv-notes')).toContainText('2 of 4 participants shown');
   });

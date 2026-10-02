@@ -9,7 +9,10 @@
 
 /**
  * Split CSV text into cells, honouring quoted fields: embedded commas, doubled
- * quotes and line breaks inside quotes stay in their field.
+ * quotes and line breaks inside quotes stay in their field. A quote opens a
+ * quoted field only at the start of a field, as RFC 4180 and d3.csv have it;
+ * anywhere else it is an ordinary character (an inch mark in `5" needle`), so
+ * it cannot swallow the rest of the file.
  * @param {string} text The file's text.
  * @returns {string[][]} One array of cells per line.
  * @private
@@ -19,6 +22,7 @@ function splitCells(text) {
   let line = [];
   let field = '';
   let inQuotes = false;
+  let atStart = true; // nothing of the current field has been read yet
   for (let i = 0; i < text.length; i += 1) {
     const char = text[i];
     if (inQuotes) {
@@ -30,19 +34,23 @@ function splitCells(text) {
       } else {
         field += char;
       }
-    } else if (char === '"') {
+    } else if (char === '"' && atStart) {
       inQuotes = true;
+      atStart = false;
     } else if (char === ',') {
       line.push(field);
       field = '';
+      atStart = true;
     } else if (char === '\n' || char === '\r') {
       if (char === '\r' && text[i + 1] === '\n') i += 1;
       line.push(field);
       lines.push(line);
       line = [];
       field = '';
+      atStart = true;
     } else {
       field += char;
+      atStart = false;
     }
   }
   if (field !== '' || line.length) {

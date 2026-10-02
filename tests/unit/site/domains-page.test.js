@@ -22,6 +22,22 @@ const modules = Object.entries(manifest.modules);
 const onStandardSet = modules.filter(([, entry]) => !entry.externalDomains);
 const asList = (value) => [].concat(value);
 
+// A made-up chart that reads domains outside the standard set. No shipped
+// chart does since the Patient Journey Explorer, a prototype, left the manifest
+// (#165); the page's handling of one is kept, and held by this entry.
+const OUTSIDE = {
+  export: 'visitCalendar',
+  title: 'Visit Calendar',
+  domains: [],
+  externalDomains: ['sv', 'tv'],
+  settings: {},
+  note: 'Reads two domains of its own: subject visits and planned visits.'
+};
+const withOutside = {
+  ...manifest,
+  modules: { ...manifest.modules, 'visit-calendar': OUTSIDE }
+};
+
 // The page's own escaping, for comparing manifest text with emitted HTML.
 const escaped = (text) =>
   String(text).replace(
@@ -43,7 +59,7 @@ describe('site generator: domains page (#139)', () => {
   const html = renderDomainsPage({ manifest, config });
 
   it('PF-SITE-001: the page lists every module in the manifest (#139)', () => {
-    expect(modules).toHaveLength(14);
+    expect(modules).toHaveLength(13);
     for (const [module, entry] of modules) {
       const section = sectionOf(html, `chart-${module}`);
       expect(section, `${module} has no section`).not.toBe('');
@@ -157,33 +173,53 @@ describe('site generator: domains page (#139)', () => {
     }
   });
 
-  it('PF-SITE-008: the Patient Journey Explorer is shown as outside the standard set, with its own six domains (#139)', () => {
-    const journey = manifest.modules['patient-journey-explorer'];
-    const section = sectionOf(html, 'chart-patient-journey-explorer');
-    expect(journey.externalDomains).toHaveLength(6);
-    for (const domain of journey.externalDomains) {
+  it('PF-SITE-008: a chart outside the standard set is shown under its own heading with the domains it reads; the page as built has no such chart (#139, #165)', () => {
+    // As built: every chart reads the standard set, and the prototype
+    // Patient Journey Explorer is not on the page.
+    expect(html).not.toContain('id="outside"');
+    expect(html).not.toContain('href="#outside"');
+    expect(html).not.toContain('Patient Journey Explorer');
+    expect(html).not.toContain('patient-journey-explorer');
+
+    const page = renderDomainsPage({
+      manifest: withOutside,
+      config: {
+        ...config,
+        renderers: [...config.renderers, { module: 'visit-calendar', status: 'available' }]
+      }
+    });
+    const section = sectionOf(page, 'chart-visit-calendar');
+    for (const domain of OUTSIDE.externalDomains) {
       expect(section).toContain(`<code>${domain}</code>`);
     }
-    expect(section).toContain(escaped(journey.note));
-    // No settings table, and no claim on a standard domain: its `ae` is its own.
+    expect(section).toContain(escaped(OUTSIDE.note));
+    // No settings table, and no claim on a standard domain.
     expect(section).not.toContain('<table');
     expect(section).not.toContain('href="#domain-');
-    expect(section).toContain('href="../patient-journey-explorer/api.html#data-contract"');
+    expect(section).toContain('href="../visit-calendar/api.html#data-contract"');
     // It sits under its own heading, after the charts that read the standard set.
-    const outside = html.indexOf('<h2 id="outside">Outside the standard set</h2>');
+    const outside = page.indexOf('<h2 id="outside">Outside the standard set</h2>');
     expect(outside).toBeGreaterThan(-1);
-    expect(html.indexOf('id="chart-patient-journey-explorer"')).toBeGreaterThan(outside);
+    expect(page.indexOf('id="chart-visit-calendar"')).toBeGreaterThan(outside);
     for (const [module] of onStandardSet) {
-      expect(html.indexOf(`id="chart-${module}"`)).toBeLessThan(outside);
+      expect(page.indexOf(`id="chart-${module}"`)).toBeLessThan(outside);
     }
     for (const [id] of domains) {
-      expect(sectionOf(html, `domain-${id}`)).not.toContain('patient-journey-explorer');
+      expect(sectionOf(page, `domain-${id}`)).not.toContain('visit-calendar');
     }
+    expect(page).toContain('<a href="#outside">1 reads domains of its own</a>');
   });
 
-  it('PF-SITE-009: the lead says how many charts read the standard set and links the served manifest (#139)', () => {
+  it('PF-SITE-009: the lead says how many charts read the standard set and links the served manifest (#139, #165)', () => {
     expect(html).toContain('<h1>Standard domain set</h1>');
-    expect(html).toContain(`${onStandardSet.length} of the ${modules.length} charts`);
+    // Every chart reads the standard set, and the lead says so plainly.
+    expect(onStandardSet).toHaveLength(modules.length);
+    expect(html).toContain(`feeds all ${modules.length} charts without renaming a column`);
+    expect(html).toContain(`<a href="#charts">${modules.length} read the standard set</a>`);
+    // With a chart outside the set it counts those that do.
+    expect(renderDomainsPage({ manifest: withOutside, config })).toContain(
+      `feeds ${modules.length} of the ${modules.length + 1} charts without renaming a column`
+    );
     expect(html).toContain('href="../portfolio.json"');
     expect(html).toContain(`${config.repoUrl}/blob/HEAD/src/data/schema/portfolio.json`);
   });
@@ -193,21 +229,21 @@ describe('site generator: domains page (#139)', () => {
     expect(noted.map(([module]) => module)).toEqual([
       'hep-waterfall',
       'participant-profile',
-      'time-to-event',
-      'patient-journey-explorer'
+      'time-to-event'
     ]);
     for (const [module, entry] of noted) {
       expect(sectionOf(html, `chart-${module}`)).toContain(escaped(entry.note));
     }
   });
 
-  it('PF-SITE-011: renderers the manifest does not list never appear (#139)', () => {
-    const planned = config.renderers.filter((renderer) => !manifest.modules[renderer.module]);
-    expect(planned.map((renderer) => renderer.module)).toEqual([
+  it('PF-SITE-011: renderers the manifest does not list never appear: the planned ones, and the prototype Patient Journey Explorer (#139, #165)', () => {
+    const unlisted = config.renderers.filter((renderer) => !manifest.modules[renderer.module]);
+    expect(unlisted.map((renderer) => renderer.module)).toEqual([
       'paneled-outlier-explorer',
-      'web-codebook'
+      'web-codebook',
+      'patient-journey-explorer'
     ]);
-    for (const renderer of planned) {
+    for (const renderer of unlisted) {
       expect(html).not.toContain(renderer.module);
       expect(html).not.toContain(renderer.title);
     }

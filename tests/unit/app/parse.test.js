@@ -15,6 +15,29 @@ describe('demo app: parsing', () => {
     ]);
   });
 
+  it('APP-PARSE-008: a quote inside an unquoted field is an ordinary character and ends nothing (#165)', () => {
+    // An inch mark in a reported term: the quote is not at the start of its field.
+    const { rows } = parseCsv(
+      'ID,TERM,SEV\n01,pain from 5" needle,MILD\n02,rash,MILD\n03,nausea,MILD\n'
+    );
+    expect(rows).toEqual([
+      { ID: '01', TERM: 'pain from 5" needle', SEV: 'MILD' },
+      { ID: '02', TERM: 'rash', SEV: 'MILD' },
+      { ID: '03', TERM: 'nausea', SEV: 'MILD' }
+    ]);
+    // A 52-row file with one such term is read whole.
+    const lines = Array.from({ length: 52 }, (_, index) =>
+      index === 1 ? '02,pain from 5" needle' : `${String(index + 1).padStart(2, '0')},rash`
+    );
+    expect(parseFile('ae.csv', `ID,TERM\n${lines.join('\n')}\n`).rows).toHaveLength(52);
+    // Two stray quotes in one field, and text after a closed quoted field, stay literal.
+    expect(parseCsv('A,B\n6" x 4" card,"x"y"z\n').rows).toEqual([{ A: '6" x 4" card', B: 'xy"z' }]);
+    // A quote at the start of a field still opens a quoted one.
+    expect(parseCsv('A,B\n"5"" needle, long",2\n').rows).toEqual([
+      { A: '5" needle, long', B: '2' }
+    ]);
+  });
+
   it('APP-PARSE-002: tolerates a byte-order mark, CRLF line ends, blank lines and a missing final newline (#149)', () => {
     const { columns, rows } = parseCsv('﻿A,B\r\n1,2\r\n\r\n3,4');
     expect(columns).toEqual(['A', 'B']);

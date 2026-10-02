@@ -23,7 +23,6 @@ import participantProfile from './participant-profile.js';
 import nepExplorer from './nep-explorer.js';
 import timeToEvent from './time-to-event.js';
 import patientJourneyExplorer from './patient-journey-explorer.js';
-import * as narratives from './patientJourneyNarratives/index.js';
 import portfolio from './data/portfolio.json';
 import { kit } from './kit.js';
 
@@ -42,7 +41,6 @@ export {
   nepExplorer,
   timeToEvent,
   patientJourneyExplorer,
-  narratives,
   portfolio,
   kit
 };
@@ -61,7 +59,6 @@ export default {
   nepExplorer,
   timeToEvent,
   patientJourneyExplorer,
-  narratives,
   portfolio,
   kit
 };

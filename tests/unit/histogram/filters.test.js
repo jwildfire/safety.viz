@@ -85,12 +85,12 @@ describe('histogram: the shared filter contract', () => {
     expect(arms(instance)).toEqual(['Comparator', 'Drug', 'Drug', 'Placebo']);
   });
 
-  it('SH-FILT-002: a start value opens the chart filtered and drops the All option (#136)', () => {
+  it('SH-FILT-002: a start value opens the chart filtered and keeps the All option (#166)', () => {
     const instance = mount({
       filters: [{ value_col: 'ARM', label: 'Treatment', start: 'Placebo' }]
     });
     const select = control(instance, 'Treatment');
-    expect([...select.options].map((node) => node.textContent)).not.toContain('All');
+    expect([...select.options].map((node) => node.textContent)).toContain('All');
     expect(select.value).toBe('Placebo');
     expect(arms(instance)).toEqual(['Placebo']);
   });

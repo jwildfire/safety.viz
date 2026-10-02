@@ -14,7 +14,6 @@ import { build } from 'esbuild';
 import { mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { buildSkillsModule } from './narratives/build-skills.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..');
@@ -73,7 +72,6 @@ const bundleOptions = {
  * @returns {Promise<{file: string, bytes: number, html: {file: string, bytes: number}}>} Each output's path and size.
  */
 export async function buildApp(outDir) {
-  buildSkillsModule();
   mkdirSync(outDir, { recursive: true });
   const file = path.join(outDir, APP_BUNDLE);
   await build({ ...bundleOptions, sourcemap: true, outfile: file });

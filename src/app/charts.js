@@ -23,7 +23,10 @@ const LIVER = ['ALT', 'AST', 'TB', 'ALP'];
  *   group specs.
  * - `measures`: the key measures passed as `measure_values`.
  * - `rail`: the chart hosts the railed participant profile, which reads the
- *   visit and study-day columns and the liver panel.
+ *   visit, study-day, unit and normal-range columns and the liver panel. A host
+ *   forwards them to the rail whether or not it has a setting of its own for
+ *   them (the shift plot and delta-delta list no normal range), so they are
+ *   passed to every host.
  * - `studyDay`: what to pass when the study day is unmapped. `'visit order'`
  *   passes the visit-order column instead, as the site's demos do for a labs
  *   extract with no study day; `'none'` passes null, for a chart that would
@@ -54,6 +57,8 @@ export const RECIPES = {
 const EVENT_FILTERS = ['AEBODSYS', 'AEDECOD', 'AESER', 'AESEV'];
 
 const asList = (value) => [].concat(value);
+
+const has = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
 
 const mapped = (mappings, domain, column) => {
   const row = mappings[domain] && mappings[domain].columns[column];
@@ -89,16 +94,19 @@ function fieldSpecs(columns, domain, mappings, manifest) {
  * @returns {boolean} True when the chart has a recipe.
  */
 export function isDestination(module, manifest) {
-  return Boolean(RECIPES[module]) && !manifest.modules[module].externalDomains;
+  return has(RECIPES, module) && !manifest.modules[module].externalDomains;
 }
 
 /**
  * Turn the mappings into one chart's settings.
  *
  * Every column setting the manifest lists is set to the user's mapped column.
- * A setting whose column is unmapped is left out, so the chart keeps its own
- * default and degrades as it does for any absent optional column. Nested
- * settings (`color.value_col`) become nested objects.
+ * A setting whose row is unmapped is set to null — no column — and not left
+ * out: left out, the chart would fall back to its default name and read that
+ * column when the file happens to carry it, while the mapping table says "not
+ * mapped". The chart degrades as it does for any absent optional column.
+ * Settings of a domain with no file are left out: there is no row to clear and
+ * no column to read. Nested settings (`color.value_col`) become nested objects.
  * @param {string} module The module name, as keyed in the manifest.
  * @param {Object<string, Object>} mappings The mapping for each loaded domain.
  * @param {Object} manifest The portfolio manifest.
@@ -106,14 +114,14 @@ export function isDestination(module, manifest) {
  */
 export function chartSettings(module, mappings, manifest) {
   const entry = manifest.modules[module];
-  const recipe = RECIPES[module] || {};
+  const recipe = has(RECIPES, module) ? RECIPES[module] : {};
   const settings = {};
 
   for (const [key, setting] of Object.entries(entry.settings)) {
     if (setting.column === null) continue;
     const domain = asList(setting.domain).find((id) => mappings[id]);
-    const value = domain ? mapped(mappings, domain, setting.column) : null;
-    if (value === null) continue;
+    if (!domain) continue;
+    const value = mapped(mappings, domain, setting.column);
     const [outer, inner] = key.split('.');
     if (inner) settings[outer] = { ...(settings[outer] || {}), [inner]: value };
     else settings[key] = value;
@@ -134,21 +142,20 @@ export function chartSettings(module, mappings, manifest) {
   if (recipe.rail) {
     for (const [key, column] of [
       ['visit_col', 'VISIT'],
-      ['visitn_col', 'VISITNUM']
+      ['visitn_col', 'VISITNUM'],
+      ['unit_col', 'STRESU'],
+      ['normal_col_low', 'STNRLO'],
+      ['normal_col_high', 'STNRHI']
     ]) {
-      const value = mapped(mappings, domain, column);
-      if (value) settings[key] = value;
+      settings[key] = mapped(mappings, domain, column);
     }
     settings.profile_details = fieldSpecs(['SEX', 'RACE', 'ARM'], domain, mappings, manifest);
   }
 
   if (recipe.rail || recipe.studyDay) {
-    const studyDay = mapped(mappings, domain, 'DY');
-    if (studyDay) settings.studyday_col = studyDay;
-    else if (recipe.studyDay === 'none') settings.studyday_col = null;
-    else if (mapped(mappings, domain, 'VISITNUM')) {
-      settings.studyday_col = mapped(mappings, domain, 'VISITNUM');
-    }
+    settings.studyday_col =
+      mapped(mappings, domain, 'DY') ||
+      (recipe.studyDay === 'none' ? null : mapped(mappings, domain, 'VISITNUM'));
   }
 
   if (module === 'qt-explorer') {

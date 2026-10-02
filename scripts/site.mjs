@@ -21,6 +21,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   parseCoverage,
+  publishDemoAppFonts,
   publishManifest,
   renderAboutPage,
   renderApiPage,
@@ -265,6 +266,9 @@ for (const study of DEMO_STUDIES) {
     copyFileSync(path.join(rootDir, study.source, file), path.join(demoAppDir, study.dir, file));
   }
 }
+// The app's typefaces (#165) are served from beside it, with their licences,
+// so its page asks no other host for anything.
+publishDemoAppFonts(rootDir, demoAppDir);
 writeFileSync(
   path.join(demoAppDir, 'index.html'),
   renderDemoAppPage({ bundle: APP_BUNDLE, download: APP_HTML, repoUrl: config.repoUrl })

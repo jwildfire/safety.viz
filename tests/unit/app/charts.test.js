@@ -19,6 +19,24 @@ const demoMappings = () =>
     Object.entries(files).map(([domain, file]) => [domain, buildMapping(domain, file, manifest)])
   );
 
+// A made-up chart that reads domains outside the standard set. No chart the
+// app lists does since the Patient Journey Explorer, a prototype, left the
+// manifest (#165); the app's handling of one is kept, and held by this entry.
+const withOutside = {
+  ...manifest,
+  modules: {
+    ...manifest.modules,
+    'visit-calendar': {
+      export: 'visitCalendar',
+      title: 'Visit Calendar',
+      domains: [],
+      externalDomains: ['sv', 'tv'],
+      settings: {},
+      note: 'Reads two domains of its own: subject visits and planned visits.'
+    }
+  }
+};
+
 // A study whose columns carry none of the default names.
 const renamed = {
   columns: ['PT', 'LABNAME', 'RESULT', 'HI', 'WK', 'WKNO', 'GRP', 'GENDER_CD'],
@@ -104,13 +122,44 @@ describe('demo app: chart recipes', () => {
     expect(chartData('hep-explorer', { bds: renamed }, mappings, manifest)).toBe(renamed.rows);
   });
 
-  it('APP-CHART-003: an unmapped optional column is left to the chart’s own default (#150)', () => {
+  it('APP-CHART-003: an unmapped optional column is passed as no column, never left to the chart’s default name (#150, #165)', () => {
     const settings = chartSettings('hep-explorer', { bds: renamedMapping() }, manifest);
     // No unit and no lower limit in the renamed study.
-    expect(settings).not.toHaveProperty('unit_col');
-    expect(settings).not.toHaveProperty('normal_col_low');
+    expect(settings.unit_col).toBeNull();
+    expect(settings.normal_col_low).toBeNull();
     // A setting the schema gives no default column is never set.
     expect(settings).not.toHaveProperty('baseline_col');
+  });
+
+  it('APP-CHART-003: a row cleared by hand is not read, although the file carries the chart’s default name for it (#165)', () => {
+    let { bds } = demoMappings();
+    expect(files.bds.columns).toEqual(expect.arrayContaining(['ARM', 'STNRLO', 'STRESU']));
+    for (const column of ['ARM', 'STNRLO', 'STRESU']) {
+      bds = setColumn(bds, column, null, files.bds);
+    }
+    const settings = chartSettings('hep-explorer', { bds }, manifest);
+    // Left out, each of these would fall back to the name the file carries.
+    expect(settings).toMatchObject({ arm_col: null, normal_col_low: null, unit_col: null });
+    expect(settings.filters.map((filter) => filter.value_col)).not.toContain('ARM');
+    expect(settings.profile_details.map((detail) => detail.value_col)).not.toContain('ARM');
+    // The rail's columns too, on a host with no setting of its own for them.
+    expect(chartSettings('shift-plot', { bds }, manifest)).toMatchObject({
+      normal_col_low: null,
+      normal_col_high: 'STNRHI',
+      unit_col: null
+    });
+    // A nested setting is cleared as a nested object.
+    const ae = setColumn(demoMappings().ae, 'AESER', null, files.ae);
+    expect(chartSettings('ae-timelines', { ae }, manifest).highlight).toEqual({ value_col: null });
+    // With neither a study day nor a visit order there is no study day to pass.
+    const noDay = setColumn(bds, 'VISITNUM', null, files.bds);
+    expect(chartSettings('hep-explorer', { bds: noDay }, manifest).studyday_col).toBeNull();
+    // The user's rows are untouched: the chart is handed the file's own.
+    expect(chartData('hep-explorer', files, { bds }, manifest)).toBe(files.bds.rows);
+    // A domain with no file has no row to clear, and its settings are left out.
+    expect(chartSettings('time-to-event', { ae: demoMappings().ae }, manifest)).not.toHaveProperty(
+      'fu_day_col'
+    );
   });
 
   it('APP-CHART-004: a nested column setting becomes a nested object (#150)', () => {
@@ -143,6 +192,46 @@ describe('demo app: chart recipes', () => {
     expect(chartSettings('results-over-time', mappings, manifest)).not.toHaveProperty(
       'measure_values'
     );
+  });
+
+  it('APP-CHART-010: every chart that hosts the participant rail is passed the unit and normal-range columns the rail reads, under the user’s names (#165)', () => {
+    // The renamed-columns demo study maps the limits of normal to LLN and ULN.
+    const file = {
+      columns: ['SUBJID', 'LBTEST', 'LBSTRESN', 'UNITS', 'LLN', 'ULN', 'AVISIT', 'AVISITN'],
+      rows: [
+        {
+          SUBJID: '1',
+          LBTEST: 'ALT (SGPT)',
+          LBSTRESN: '30',
+          UNITS: 'U/L',
+          LLN: '5',
+          ULN: '40',
+          AVISIT: 'Week 1',
+          AVISITN: '1'
+        }
+      ]
+    };
+    let mapping = buildMapping('bds', file, manifest);
+    for (const [column, value] of [
+      ['STRESU', 'UNITS'],
+      ['STNRLO', 'LLN'],
+      ['STNRHI', 'ULN']
+    ]) {
+      mapping = setColumn(mapping, column, value, file);
+    }
+    const hosts = ['histogram', 'outlier-explorer', 'shift-plot', 'delta-delta', 'hep-explorer'];
+    for (const module of hosts) {
+      expect(chartSettings(module, { bds: mapping }, manifest), module).toMatchObject({
+        unit_col: 'UNITS',
+        normal_col_low: 'LLN',
+        normal_col_high: 'ULN',
+        visit_col: 'AVISIT'
+      });
+    }
+    // A chart with no rail is not passed columns it has no setting for.
+    const none = chartSettings('results-over-time', { bds: mapping }, manifest);
+    expect(none).not.toHaveProperty('normal_col_high');
+    expect(none).not.toHaveProperty('normal_col_low');
   });
 
   it('APP-CHART-006: the study day is the mapped column, else visit order, else nothing for a chart that would print it (#150)', () => {
@@ -198,13 +287,17 @@ describe('demo app: chart recipes', () => {
     expect(chartSettings('time-to-event', mappings, manifest).id_col).toBe('USUBJID');
   });
 
-  it('APP-CHART-009: twelve charts are destinations; the participant profile and the Patient Journey Explorer are not (#150)', () => {
+  it('APP-CHART-009: twelve charts are destinations; the participant profile is not, nor is a chart outside the standard domains (#150, #165)', () => {
     const destinations = Object.keys(manifest.modules).filter((module) =>
       isDestination(module, manifest)
     );
     expect(destinations).toHaveLength(12);
-    expect(destinations).not.toContain('participant-profile');
-    expect(destinations).not.toContain('patient-journey-explorer');
+    expect(
+      Object.keys(manifest.modules).filter((module) => !destinations.includes(module))
+    ).toEqual(['participant-profile']);
     expect(chartData('participant-profile', files, demoMappings(), manifest)).toBeNull();
+    // A chart that reads domains of its own is not drawn from the standard set.
+    expect(isDestination('visit-calendar', withOutside)).toBe(false);
+    expect(chartData('visit-calendar', files, demoMappings(), withOutside)).toBeNull();
   });
 });
