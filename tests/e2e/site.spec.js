@@ -35,6 +35,12 @@ test.describe('docs site', () => {
       '13 of 14 charts supported by the loaded data'
     );
     await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
+    // The single file is served beside the page, for download (#152).
+    const download = page.locator('.portfolio-download a');
+    await expect(download).toHaveAttribute('href', './safety.viz-app.html');
+    const response = await page.request.get('/_site/portfolio/safety.viz-app.html');
+    expect(response.ok()).toBe(true);
+    expect(await response.text()).toContain('<title>safety.viz portfolio</title>');
     // The shell's nav reaches the page from anywhere on the site.
     await page.goto('/_site/index.html');
     await expect(page.locator('.site-nav a[href="portfolio/index.html"]')).toHaveText('Portfolio');

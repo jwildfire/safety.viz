@@ -32,7 +32,7 @@ import {
   validateEvidenceScreenshots,
   validateSiteLinks
 } from './site-lib.mjs';
-import { APP_BUNDLE, buildApp } from './build-app.mjs';
+import { APP_BUNDLE, APP_HTML, buildApp } from './build-app.mjs';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const siteDir = path.join(rootDir, '_site');
@@ -204,9 +204,9 @@ for (const renderer of config.renderers.filter((entry) => entry.status === 'avai
   }
 }
 
-// Portfolio app (#150): the app bundle is a build product written here, not a
-// committed asset, and the demo extracts are copied beside it so the page
-// loads the demo study from its own directory.
+// Portfolio app (#150, #152): the app bundle and the single-file build are
+// build products written here, not committed assets, and the demo extracts are
+// copied beside them so the page loads the demo study from its own directory.
 const manifest = JSON.parse(readFileSync(path.join(rootDir, 'src/data/portfolio.json'), 'utf8'));
 const portfolioDir = path.join(siteDir, 'portfolio');
 await buildApp(portfolioDir);
@@ -216,7 +216,7 @@ for (const domain of Object.values(manifest.domains)) {
 page(
   path.join(portfolioDir, 'index.html'),
   'Portfolio · safety.viz',
-  renderPortfolioPage({ manifest, bundle: APP_BUNDLE }),
+  renderPortfolioPage({ manifest, bundle: APP_BUNDLE, download: APP_HTML }),
   '../',
   'Every safety.viz chart on one page, on the demo study: which charts the loaded data ' +
     'supports, and each one drawn from it.'

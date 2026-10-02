@@ -10,7 +10,11 @@ const manifest = JSON.parse(
 );
 
 describe('renderPortfolioPage', () => {
-  const html = renderPortfolioPage({ manifest, bundle: 'safety.viz-app.js' });
+  const html = renderPortfolioPage({
+    manifest,
+    bundle: 'safety.viz-app.js',
+    download: 'safety.viz-app.html'
+  });
 
   it('APP-PAGE-014: loads the app bundle from beside the page and mounts it on the demo study there (#150)', () => {
     expect(html).toContain('<div id="app"></div>');
@@ -29,5 +33,9 @@ describe('renderPortfolioPage', () => {
 
   it('APP-PAGE-016: takes the site’s wide demo layout (#150)', () => {
     expect(html.startsWith('<div class="demo-page portfolio-page">')).toBe(true);
+  });
+
+  it('APP-FILE-008: links the single file beside the page as a download (#152)', () => {
+    expect(html).toContain('<a href="./safety.viz-app.html" download>download the single file</a>');
   });
 });

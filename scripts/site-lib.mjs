@@ -1060,9 +1060,10 @@ export function renderDemoPage({ renderer, version }) {
  * @param {Object} options Page options.
  * @param {Object} options.manifest The portfolio manifest (src/data/portfolio.json).
  * @param {string} options.bundle File name of the app bundle beside the page.
+ * @param {string} options.download File name of the single-file build beside the page.
  * @returns {string} The page content for the site shell.
  */
-export function renderPortfolioPage({ manifest, bundle }) {
+export function renderPortfolioPage({ manifest, bundle, download }) {
   const charts = Object.keys(manifest.modules).length;
   const extracts = Object.values(manifest.domains)
     .map((domain) => `<code>${escapeHtml(domain.demo)}</code>`)
@@ -1076,6 +1077,10 @@ export function renderPortfolioPage({ manifest, bundle }) {
     ` opens on the demo study (${extracts}), built from the` +
     ` <a href="https://github.com/pharmaverse/pharmaverseadam">pharmaverseadam</a> CDISC Pilot 01` +
     ` ADaM datasets. Nothing is sent anywhere: the data is read and drawn in this browser.</p>` +
+    `<p class="portfolio-download">To use it on your own study without this site,` +
+    ` <a href="./${escapeHtml(download)}" download>download the single file</a>:` +
+    ` one HTML file that opens from your disk with no network and no install. It starts empty,` +
+    ` ready for your files.</p>` +
     `<div id="app"></div>` +
     `<script src="./${escapeHtml(bundle)}"></script>` +
     `<script>window.__safetyVizApp = SafetyVizApp.mount('#app', { demo: { base: './' } });</script>` +
