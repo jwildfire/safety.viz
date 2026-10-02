@@ -38,6 +38,7 @@ from the section here when the release-candidate PR (dev -> main) merges and is 
 
 ## Also in this release
 
+- A portfolio manifest states, in one place, which data a study supplies and what every chart reads from it ([obot.roadmap#325](https://github.com/jwildfire/obot.roadmap/issues/325), [#138](https://github.com/jwildfire/safety.viz/issues/138)). Four standard domains — subject-level, adverse events, labs and vitals as one long-format domain, and ECG — each with the column names the charts already default to, and for each of the fourteen charts the domains it reads and the column behind every one of its column settings, marked required or optional as the chart’s own schema says. It ships in the bundle as `SafetyViz.portfolio`, and a test fails whenever a chart’s schema and the manifest disagree. Thirteen charts read the standard set; the Patient Journey Explorer is listed with the six domains of its own that the set does not supply. No chart changes behaviour.
 - The renderer done-gate gains a fourth pillar — a renderer is not done until its `gsm.safety` R widget is delivered or filed as a milestoned requirement ([#132](https://github.com/jwildfire/safety.viz/pull/132), rule: [obot.roadmap#164](https://github.com/jwildfire/obot.roadmap/issues/164)). Contributor-facing; no change to any chart.
 
 # safety.viz v1.7.0
