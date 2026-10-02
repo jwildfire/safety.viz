@@ -339,6 +339,8 @@ test.describe('demo app on the demo study', () => {
   }) => {
     const errors = watchErrors(page);
     await openOnDemo(page);
+    // On the data view, where a mapping edit redraws the table and no chart.
+    await item(page, 'data').click();
     // Clear each row in turn; a row some chart cannot draw without is put back.
     const cleared = await page.evaluate(`(() => {
       const app = ${APP};
@@ -370,9 +372,13 @@ test.describe('demo app on the demo study', () => {
       ).toBeVisible();
       await expect(item(page, module).locator('.sva-tag')).toHaveText('ready');
     }
-    // The hepatic explorer offers no unit it was told not to read.
-    await openChart(page, 'hep-explorer');
+    // The histogram names its measures without the unit it was told not to
+    // read, although the file still carries it under the default name.
+    await openChart(page, 'histogram');
+    await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
+    await expect(page.locator('.sva-chart')).toContainText('Alanine Aminotransferase');
     await expect(page.locator('.sva-chart')).not.toContainText('U/L');
+    expect(await page.evaluate(`'STRESU' in ${APP}.state.files.bds.rows[0]`)).toBe(true);
     expect(errors).toEqual([]);
   });
 

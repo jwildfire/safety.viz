@@ -376,6 +376,11 @@ describe('demo app: the data panel', () => {
           bds: { file: 'labs_final.csv', columns: { TEST: { a: 1 }, ARM: 7 }, measures: { ALT: 5 } }
         },
         'm.json is a saved mapping for: Labs and vitals (labs_final.csv).'
+      ],
+      [
+        // No file named: the rows are applied to whatever file is placed there.
+        { bds: { file: 42, columns: { ARM: 'TREATMENT' } } },
+        'm.json is a saved mapping for: Labs and vitals.'
       ]
     ]) {
       action('reset')?.click();

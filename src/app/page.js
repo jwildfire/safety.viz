@@ -650,10 +650,11 @@ export function mountApp(
         );
         return;
       }
-      state.notes.push(
-        `${name} is a saved mapping for: ` +
-          `${domains.map((domain) => `${manifest.domains[domain].label} (${saved.domains[domain].file})`).join(', ')}.`
-      );
+      const named = domains.map((domain) => {
+        const { file } = saved.domains[domain];
+        return `${manifest.domains[domain].label}${file ? ` (${file})` : ''}`;
+      });
+      state.notes.push(`${name} is a saved mapping for: ${named.join(', ')}.`);
       // Every file that has to move is taken out first and placed after, so
       // two files that swap domains do not displace one another.
       const moves = [];
