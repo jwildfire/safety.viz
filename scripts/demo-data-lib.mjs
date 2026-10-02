@@ -1,4 +1,5 @@
-// demo-data-lib.mjs — pure helpers behind scripts/build-demo-data.mjs.
+// demo-data-lib.mjs — pure helpers behind scripts/build-demo-data.mjs and the drift
+// check, scripts/check-demo-data.mjs.
 //
 // Extracted so the derivations can be unit-tested without running the build (which
 // downloads ~200 MB of pharmaverseadam source). Mirrors the site-lib / evidence-lib
@@ -561,3 +562,54 @@ export const PJE_OUTPUTS = [
   { name: 'pje-mh', file: 'pje-mh.csv', columns: PJE_MH_COLUMNS, sources: ['admh.csv'] },
   { name: 'pje-ds', file: 'pje-ds.csv', columns: PJE_DS_COLUMNS, sources: ['ds.csv', 'adsl.csv'] }
 ];
+
+// ---- drift check (#140) ---------------------------------------------------
+// The comparison behind scripts/check-demo-data.mjs, which reruns the generators
+// into a temporary directory and asks whether the committed site/data/ files are
+// still what they produce. Kept here, away from the file system and the network,
+// so it is unit-tested on hand-made text.
+
+// A file's rows are its lines; the closing newline ends the last row rather than
+// starting an empty one.
+const rowsOf = (text) => {
+  const rows = text.split('\n');
+  if (rows.at(-1) === '') rows.pop();
+  return rows;
+};
+
+/**
+ * The first row at which a committed file and its freshly generated twin differ,
+ * or `null` when they are byte-identical. Rows are 1-based file lines with the
+ * header as row 1, so the number is the one an editor shows. A row only one side
+ * has comes back as `null` on the other.
+ */
+export function firstDifferingRow(committed, generated) {
+  if (committed === generated) return null;
+  const a = rowsOf(committed);
+  const b = rowsOf(generated);
+  for (let i = 0; i < Math.max(a.length, b.length); i += 1) {
+    if (a[i] !== b[i]) return { row: i + 1, committed: a[i] ?? null, generated: b[i] ?? null };
+  }
+  // Every row matches, so only the closing newline differs: name the last row and
+  // leave the newline on whichever side has it, so the difference is visible.
+  const lastRow = (text) => (text.endsWith('\n') ? `${a.at(-1)}\n` : a.at(-1));
+  return { row: a.length, committed: lastRow(committed), generated: lastRow(generated) };
+}
+
+/**
+ * Every drifted file between the committed extracts and a fresh rebuild, in file-name
+ * order so the first one named is stable from run to run. Both arguments map a file
+ * name to its text. `reason` is `differs` (with the first differing row),
+ * `not-committed` (a generator writes it but it is not in the repo) or
+ * `not-generated` (it is in the repo but no generator writes it, so nothing can
+ * vouch for it). An empty array means no drift.
+ */
+export function demoDataDrift(committed, generated) {
+  const files = [...new Set([...Object.keys(committed), ...Object.keys(generated)])].sort();
+  return files.flatMap((file) => {
+    if (!(file in committed)) return [{ file, reason: 'not-committed' }];
+    if (!(file in generated)) return [{ file, reason: 'not-generated' }];
+    const difference = firstDifferingRow(committed[file], generated[file]);
+    return difference ? [{ file, reason: 'differs', ...difference }] : [];
+  });
+}
