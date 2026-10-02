@@ -405,3 +405,75 @@ test.describe('portfolio app data panel on a renamed-column study', () => {
     await expect(card(page, 'subject').locator('.sva-file-name')).toHaveText('dm.csv');
   });
 });
+
+// ---- the single file (#152) --------------------------------------------------
+//
+// `npm run build:app` also writes build/app/safety.viz-app.html: the app inlined
+// into one HTML file. It is opened here from disk, with the browser offline.
+
+const SINGLE_FILE = new URL('../../build/app/safety.viz-app.html', import.meta.url);
+
+test.describe('portfolio app as one file, offline', () => {
+  test.beforeAll(() => {
+    execSync('npm run build:app', { stdio: 'inherit', cwd: new URL('../..', import.meta.url) });
+  });
+
+  test('APP-FILE-005: the file opens from disk with no network, empty and ready for files (#152)', async ({
+    page,
+    context
+  }) => {
+    const errors = watchErrors(page);
+    const requests = [];
+    page.on('request', (request) => requests.push(request.url()));
+    await context.setOffline(true);
+    await page.goto(SINGLE_FILE.href);
+    await expect(page.locator('h1')).toHaveText('safety.viz portfolio');
+    await expect(page.locator('.sva-count')).toHaveText(
+      '0 of 14 charts supported by the loaded data'
+    );
+    await expect(page.locator('.sva-drop')).toBeVisible();
+    await expect(page.locator('[data-action="demo"]')).toHaveCount(0);
+    // The only thing fetched is the file itself.
+    expect(requests).toEqual([SINGLE_FILE.href]);
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-FILE-006: offline, the file loads the renamed study, takes the corrections and draws its charts (#152)', async ({
+    page,
+    context
+  }) => {
+    const errors = watchErrors(page);
+    await context.setOffline(true);
+    await page.goto(SINGLE_FILE.href);
+    const requests = [];
+    page.on('request', (request) => requests.push(request.url()));
+    await chooseFiles(page, STUDY);
+    await expect(page.locator('.sva-count')).toHaveText(
+      '7 of 14 charts supported by the loaded data'
+    );
+    await correct(page);
+    await expect(page.locator('.sva-count')).toHaveText(
+      '13 of 14 charts supported by the loaded data'
+    );
+    for (const [module, entry] of destinations) {
+      await item(page, module).click();
+      await expect(page.locator('.sva-title')).toHaveText(entry.title);
+      await expect(
+        page.locator('.sva-chart').locator('canvas:visible, table:visible').first()
+      ).toBeVisible();
+      await expect(item(page, module).locator('.sva-tag')).toHaveText('ready');
+    }
+    expect(requests.filter((url) => !/^(blob|data):/.test(url))).toEqual([]);
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-FILE-007: the built file holds no script, stylesheet or image reference to another URL (#152)', async () => {
+    const html = readFileSync(SINGLE_FILE, 'utf8');
+    expect(html).not.toMatch(/<script[^>]*\ssrc=/i);
+    expect(html).not.toMatch(/<link\b[^>]*\shref=/i);
+    expect(html).not.toMatch(/<img\b[^>]*\ssrc=["']?https?:/i);
+    expect(html).not.toContain('sourceMappingURL');
+    // Two script elements: the inlined app, and the one line that mounts it.
+    expect(html.match(/<script>/g)).toHaveLength(2);
+  });
+});
