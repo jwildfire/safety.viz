@@ -46,7 +46,13 @@ import {
   Legend
 } from 'chart.js';
 
-import { controlBuilders, createElement, option, prototypeBanner, renderShell } from './shell.js';
+import {
+  controlBuilders,
+  createElement,
+  experimentalBanner,
+  option,
+  renderShell
+} from './shell.js';
 import { boxWhiskerPlugin } from './box-whisker.js';
 import { ARM_SIDE_COLORS } from './hep-core/arms.js';
 import { checkInputs } from './hep-waterfall/checkInputs.js';
@@ -90,7 +96,7 @@ import {
 } from './hep-waterfall/getPlugins.js';
 import { unique } from './hep-explorer/structureData.js';
 import { renderListing } from './histogram/listing.js';
-import { initFilterState, renderFilterControl } from './filters.js';
+import { initFilterState, reconcileFilters, renderFilterControl } from './filters.js';
 
 Chart.register(
   BarController,
@@ -220,10 +226,10 @@ class SafetyHepWaterfall {
       })
     );
     applyWaterfallStyles();
-    // Prototype marking: a notice at the top of the chart so the not-yet-stable
-    // status travels with the widget wherever it renders, not only on the
-    // gallery pages (which also carry the config's prototype badge).
-    this.main.insertBefore(prototypeBanner(), this.main.firstChild);
+    // Experimental marking: a notice at the top of the chart so the status
+    // travels with the widget wherever it renders, not only on the gallery
+    // pages (which also carry the config's Experimental badge).
+    this.main.insertBefore(experimentalBanner(), this.main.firstChild);
     this.legendEl = createElement('div', 'hwf-legend');
     this.main.insertBefore(this.legendEl, this.chartWrap);
 
@@ -432,7 +438,9 @@ class SafetyHepWaterfall {
       // Destroy live charts before wiping the shell so Chart.js instances do
       // not leak when a later setData/setSettings re-renders.
       this.destroyCharts();
-      this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+      // The message is inserted as text: it names columns from the settings,
+      // which a host may fill from a file header, and must never become markup.
+      this.element.replaceChildren(createElement('div', 'sv-warning', error.message));
       throw error;
     }
     const { rows, removed } = prepareData(this.rawData, this.settings);
@@ -565,18 +573,20 @@ class SafetyHepWaterfall {
     const filterSpecs = this.settings.filters.filter((filter) =>
       this.cleanRows.some((row) => row[filter.value_col] !== undefined)
     );
-    if (filterSpecs.length) {
+    const filterControls = reconcileFilters(this.state.filters, filterSpecs, (filter) =>
+      unique(this.cleanRows.map((row) => row[filter.value_col]))
+        .map(String)
+        .sort()
+    );
+    if (filterControls.length) {
       const filterSection = addSection('Filters');
-      filterSpecs.forEach((filter) => {
-        const values = unique(this.cleanRows.map((row) => row[filter.value_col]))
-          .map(String)
-          .sort();
+      filterControls.forEach(({ spec: filter, values, selected }) => {
         addControl(
           filter.label,
           renderFilterControl({
             spec: filter,
-            values: values,
-            selected: this.state.filters[filter.value_col],
+            values,
+            selected,
             onChange: (next) => {
               this.state.filters[filter.value_col] = next;
               this.render();

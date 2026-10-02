@@ -67,9 +67,21 @@
           "default": "mean",
           "description": "Summary statistic applied when a participant has several results across the comparison visit(s)."
         },
+        "measures": {
+          "type": ["array", "null"],
+          "items": { "type": "string" },
+          "default": null,
+          "description": "Ordered whitelist of measures the Measure control offers: only these appear, and in this order. null or [] offers every measure in the data, alphabetically. Configured measures absent from the data are dropped with a console warning (SSP-MEAS-001)."
+        },
+        "axis_type": {
+          "type": "string",
+          "enum": ["linear", "log"],
+          "default": "linear",
+          "description": "Initial scale for both axes; the Axis Type control switches them together because the two axes share one domain. On the log scale a participant pair with a zero or negative value is removed and counted in the note above the chart (SSP-SCALE-001, SSP-SCALE-003)."
+        },
         "filters": {
-          "$ref": "#/$defs/fieldList",
-          "description": "Optional filter columns rendered as controls (SSP-CFG-006)."
+          "$ref": "#/$defs/filterList",
+          "description": "Optional filter columns rendered as controls (SSP-CFG-006). Each entry is a column name or a { value_col, label, start, all, multiple } spec: `start` is the value the filter opens on, `all` (default true) is whether an \"All\" option is offered, and `multiple` (default false) makes it a checkbox multiselect."
         },
         "details": {
           "$ref": "#/$defs/fieldList",
@@ -94,6 +106,37 @@
             "properties": {
               "value_col": { "type": "string" },
               "label": { "type": "string" }
+            }
+          }
+        ]
+      }
+    },
+    "filterList": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          { "type": "string" },
+          {
+            "type": "object",
+            "required": ["value_col"],
+            "properties": {
+              "value_col": { "type": "string" },
+              "label": { "type": "string" },
+              "start": {
+                "type": ["string", "number", "boolean", "array", "null"],
+                "default": null,
+                "description": "The value the filter opens on; an array of values for a `multiple` filter. 0 and false are real values, not an absent start. A value the data lacks is dropped with a console warning."
+              },
+              "all": {
+                "type": "boolean",
+                "default": true,
+                "description": "Whether the filter offers an \"All\" option. false removes it, and the filter then always holds one value: the first, unless `start` names another."
+              },
+              "multiple": {
+                "type": "boolean",
+                "default": false,
+                "description": "Render a checkbox multiselect instead of a dropdown; the rows shown are those matching any selected value."
+              }
             }
           }
         ]

@@ -57,7 +57,7 @@ import {
   riskTablePlugin
 } from './time-to-event/getPlugins.js';
 import { csvDownloadLink, toCsv } from './hep-explorer/dropped.js';
-import { initFilterState, renderFilterControl } from './filters.js';
+import { initFilterState, reconcileFilters, renderFilterControl } from './filters.js';
 
 Chart.register(LineController, LineElement, PointElement, LinearScale, Tooltip, Legend);
 
@@ -133,7 +133,9 @@ class SafetyTimeToEvent {
     try {
       checkInputs(data, this.settings);
     } catch (error) {
-      this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+      // The message is inserted as text: it names columns from the settings,
+      // which a host may fill from a file header, and must never become markup.
+      this.element.replaceChildren(createElement('div', 'sv-warning', error.message));
       throw error;
     }
     this.rawEvents = data.events;
@@ -218,20 +220,20 @@ class SafetyTimeToEvent {
         );
       return exists;
     });
-    if (filterSpecs.length) {
+    const filterControls = reconcileFilters(this.state.filters, filterSpecs, (filter) =>
+      unique(this.rawPopulation.map((row) => row[filter.value_col]).filter((v) => v !== undefined))
+        .map(String)
+        .sort()
+    );
+    if (filterControls.length) {
       const filterParent = addSection('Filters');
-      filterSpecs.forEach((filter) => {
-        const values = unique(
-          this.rawPopulation.map((row) => row[filter.value_col]).filter((v) => v !== undefined)
-        )
-          .map(String)
-          .sort();
+      filterControls.forEach(({ spec: filter, values, selected }) => {
         addControl(
           filter.label,
           renderFilterControl({
             spec: filter,
-            values: values,
-            selected: this.state.filters[filter.value_col],
+            values,
+            selected,
             onChange: (next) => {
               this.state.filters[filter.value_col] = next;
               this.render();

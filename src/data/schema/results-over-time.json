@@ -47,9 +47,31 @@
           "default": "STRESU",
           "description": "Optional unit column, appended to measure labels and the y-axis title."
         },
+        "measures": {
+          "type": ["array", "null"],
+          "items": { "type": "string" },
+          "default": null,
+          "description": "Ordered whitelist of measures the Measure control offers: only these appear, and in this order. null or [] offers every measure in the data, alphabetically. Configured measures absent from the data are dropped with a console warning (SROT-MEAS-001)."
+        },
+        "unscheduled_visits": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show unscheduled visits on the x-axis (matched by unscheduled_visit_values, else by unscheduled_visit_pattern). A display toggle: no statistic is re-derived."
+        },
+        "unscheduled_visit_pattern": {
+          "type": "string",
+          "default": "/unscheduled|early termination/i",
+          "description": "Regular expression, in /source/flags string form, identifying an unscheduled visit (SROT-CFG-017)."
+        },
+        "unscheduled_visit_values": {
+          "type": ["array", "null"],
+          "items": { "type": "string" },
+          "default": null,
+          "description": "Explicit list of unscheduled visit names; takes precedence over unscheduled_visit_pattern when set (SROT-CFG-019)."
+        },
         "filters": {
-          "$ref": "#/$defs/fieldList",
-          "description": "Optional filter columns rendered as controls."
+          "$ref": "#/$defs/filterList",
+          "description": "Optional filter columns rendered as controls. Each entry is a column name or a { value_col, label, start, all, multiple } spec: `start` is the value the filter opens on, `all` (default true) is whether an \"All\" option is offered, and `multiple` (default false) makes it a checkbox multiselect."
         },
         "groups": {
           "$ref": "#/$defs/fieldList",
@@ -70,6 +92,37 @@
             "properties": {
               "value_col": { "type": "string" },
               "label": { "type": "string" }
+            }
+          }
+        ]
+      }
+    },
+    "filterList": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          { "type": "string" },
+          {
+            "type": "object",
+            "required": ["value_col"],
+            "properties": {
+              "value_col": { "type": "string" },
+              "label": { "type": "string" },
+              "start": {
+                "type": ["string", "number", "boolean", "array", "null"],
+                "default": null,
+                "description": "The value the filter opens on; an array of values for a `multiple` filter. 0 and false are real values, not an absent start. A value the data lacks is dropped with a console warning."
+              },
+              "all": {
+                "type": "boolean",
+                "default": true,
+                "description": "Whether the filter offers an \"All\" option. false removes it, and the filter then always holds one value: the first, unless `start` names another."
+              },
+              "multiple": {
+                "type": "boolean",
+                "default": false,
+                "description": "Render a checkbox multiselect instead of a dropdown; the rows shown are those matching any selected value."
+              }
             }
           }
         ]

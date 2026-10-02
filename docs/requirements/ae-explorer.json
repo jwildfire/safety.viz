@@ -79,9 +79,9 @@
     "AE-CFG-008": "Object to specify the appearance of the plots embedded in the table rows.",
     "AE-CFG-009": "adds a link to download the summarized data in a comma-separated format",
     "AE-API-001": "A factory to create a custom `aeTable` object.",
-    "AE-FILT-001": "A filter spec accepts `start`, `all` and `multiple` alongside `value_col` and `label`, and means the same thing here as in every other renderer. A spec that declares only `value_col` and `label` behaves exactly as it did before: a single-value dropdown whose first option is \"All\".",
-    "AE-FILT-002": "`start` names the value the filter opens on, and suppresses the \"All\" option unless the spec also passes `all: true`. A start of `0` or `false` is a real column value, not an absent start.",
-    "AE-FILT-003": "`all: false` removes the \"All\" option so a value is always selected. The key is read as written and is never truthiness-tested, because `false` is the value that does something.",
-    "AE-FILT-004": "`multiple: true` renders a checkbox multiselect instead of a dropdown, and the rows shown are those matching ANY selected value. Its state is null (everything selected, no restriction) or an array of values."
+    "AE-FILT-001": "A filter spec accepts `start`, `all` and `multiple` alongside `value_col` and `label`, and means the same thing here as in every other renderer. A spec that declares only `value_col` and `label` behaves exactly as it did before: a single-value dropdown whose first option is \"All\". A filter whose column the data lacks draws no control and places no restriction on the chart, whatever its `start`.",
+    "AE-FILT-002": "`start` names the value the filter opens on and changes nothing else: the \"All\" option stays on offer unless the spec says `all: false`. A start of `0` or `false` is a real column value, not an absent start. A start value the data lacks is dropped with a console warning naming the filter and the value, and the filter opens on \"All\" — or on its first value when \"All\" is not offered. Reset returns the filter to this opening selection.",
+    "AE-FILT-003": "`all: false` removes the \"All\" option so a value is always selected: the first value, unless `start` names another, and the chart opens filtered to it. The key is read as written and is never truthiness-tested, because `false` is the value that does something.",
+    "AE-FILT-004": "`multiple: true` renders a checkbox multiselect instead of a dropdown, and the rows shown are those matching ANY selected value. Its state is null (everything selected, no restriction) or an array of values. Start values the data lacks are dropped, and when none remain the filter places no restriction; a list the reader empties by hand selects nothing."
   }
 }

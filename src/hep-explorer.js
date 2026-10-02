@@ -73,7 +73,7 @@ import scatterView from './hep-explorer/views/scatter.js';
 import migrationView from './hep-explorer/views/migration.js';
 import compositeView from './hep-explorer/views/composite.js';
 import { renderListing } from './histogram/listing.js';
-import { initFilterState, renderFilterControl } from './filters.js';
+import { initFilterState, reconcileFilters, renderFilterControl } from './filters.js';
 
 Chart.register(
   ScatterController,
@@ -523,7 +523,7 @@ class SafetyHepExplorer {
     if ('unscheduled_visits' in settings)
       this.state.unscheduledVisits = this.settings.unscheduled_visits;
     if ('details' in settings) this.profileDetails = this.settings.details;
-    this.state.filters = {};
+    this.state.filters = initFilterState(this.settings.filters);
     if (this.rawData.length) this.validateAndCleanData();
     this.syncProfileRail();
     this.buildControls();
@@ -541,7 +541,9 @@ class SafetyHepExplorer {
     try {
       checkInputs(this.rawData, this.settings);
     } catch (error) {
-      this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+      // The message is inserted as text: it names columns from the settings,
+      // which a host may fill from a file header, and must never become markup.
+      this.element.replaceChildren(createElement('div', 'sv-warning', error.message));
       throw error;
     }
     const { rows, removed, dropped } = cleanData(this.rawData, this.settings);
@@ -732,18 +734,21 @@ class SafetyHepExplorer {
 
     // Filters section (HEP-CTRL-011) plus, for the views that filter on it, the
     // R-Ratio range filter (HEP-CTRL-010).
-    const filterSpecs = this.activeFilterSpecs();
+    const filterControls = reconcileFilters(
+      this.state.filters,
+      this.activeFilterSpecs(),
+      (filter) => unique(this.cleanRows.map((row) => row[filter.value_col])).sort()
+    );
     const showRRatio = this.settings.r_ratio_filter && view.usesRRatioFilter;
-    if (filterSpecs.length || showRRatio) {
+    if (filterControls.length || showRRatio) {
       const filterParent = addSection('Filters');
-      filterSpecs.forEach((filter) => {
-        const values = unique(this.cleanRows.map((row) => row[filter.value_col])).sort();
+      filterControls.forEach(({ spec: filter, values, selected }) => {
         addControl(
           filter.label,
           renderFilterControl({
             spec: filter,
-            values: values,
-            selected: this.state.filters[filter.value_col],
+            values,
+            selected,
             onChange: (next) => {
               this.state.filters[filter.value_col] = next;
               this.render();
@@ -785,7 +790,7 @@ class SafetyHepExplorer {
     clearAxisLimits(this.state.axisY);
     this.state.pointSize = 'Uniform';
     this.state.visitWindow = this.settings.visit_window;
-    this.state.filters = {};
+    this.state.filters = initFilterState(this.settings.filters);
     this.state.rRatio = [...this.settings.r_ratio];
     this.state.hideUnchanged = this.settings.hide_unchanged;
     this.state.activeArms = this.settings.active_arms;
@@ -913,6 +918,22 @@ class SafetyHepExplorer {
 
     view.teardown(this);
     view.render(this, { carriedIds });
+
+    // The excluded-record count (HEP-CTRL-018) is stated here rather than by a
+    // view, because the exclusion is applied to the row set every view reduces
+    // from: whichever view is open, the reader is told how many records went
+    // (#166). A reader's own choice, not a data problem, so a plain span rather
+    // than the warning style the removed-record note carries.
+    if (this.unscheduledRecords) {
+      const count = this.unscheduledRecords;
+      this.notes.append(
+        createElement(
+          'span',
+          null,
+          `${count} record${count === 1 ? '' : 's'} at unscheduled visits excluded.`
+        )
+      );
+    }
   }
 
   /**

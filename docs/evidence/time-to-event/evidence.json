@@ -1,6 +1,6 @@
 {
   "module": "time-to-event",
-  "generatedAt": "2026-10-02T14:42:11.912Z",
+  "generatedAt": "2026-10-02T18:30:09.143Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "37021623985",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37021623985"
+    "id": "37047789673",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37047789673"
   },
   "records": [
     {
@@ -18,6 +18,22 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [71],
+      "screenshots": []
+    },
+    {
+      "test": "APP-CHART-003: with every optional row cleared by hand, every chart still draws, reading none of them (#165)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-CHART-003"],
+      "issueRefs": [165],
+      "screenshots": []
+    },
+    {
+      "test": "APP-CHART-010: on the renamed-column study the participant rail opens with its measures in the Shift Plot and Delta-Delta (#165)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-CHART-010"],
+      "issueRefs": [165],
       "screenshots": []
     },
     {
@@ -141,6 +157,14 @@
       "screenshots": []
     },
     {
+      "test": "APP-LOAD-020: a demo file answered with a 404 is not read as data: the study is reported as not loaded and nothing changes (#165)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-020"],
+      "issueRefs": [165],
+      "screenshots": []
+    },
+    {
       "test": "APP-LOAD-020: each demo study loads from the menu and replaces the one before it (#159)",
       "suite": "browser",
       "status": "pass",
@@ -173,19 +197,19 @@
       "screenshots": []
     },
     {
-      "test": "APP-PAGE-001: every chart in the manifest is listed under its domain with a status (#150)",
+      "test": "APP-PAGE-001: every chart in the manifest is listed under its domain with a status: thirteen charts, three domains (#150, #165)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-PAGE-001"],
-      "issueRefs": [150],
+      "issueRefs": [],
       "screenshots": []
     },
     {
-      "test": "APP-PAGE-002: the demo study reads 13 of 14 supported and opens on the first chart (#150)",
+      "test": "APP-PAGE-002: the demo study reads 13 of 13 supported and opens on the first chart (#150, #165)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-PAGE-002"],
-      "issueRefs": [150],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -362,6 +386,30 @@
       "status": "pass",
       "requirementIds": ["APP-PAGE-024"],
       "issueRefs": [150],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-025: changing the address opens that view without a reload (#163)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-025"],
+      "issueRefs": [163],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-027: an address naming something every object has, such as #constructor, opens the first chart and throws nothing (#165)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-027"],
+      "issueRefs": [165],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-028: the hosted app fetches its typefaces from beside it as it opens, and nothing once a file is chosen, whatever script its names are in (#165)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-028"],
+      "issueRefs": [165],
       "screenshots": []
     },
     {
@@ -698,6 +746,1526 @@
       "status": "pass",
       "requirementIds": ["TTE-USER-008"],
       "issueRefs": [128],
+      "screenshots": []
+    },
+    {
+      "test": "'ae-explorer': the shared filter contract AE-FILT-001: a filter whose column the data lacks draws no control and leaves no restriction behind (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'ae-explorer': the shared filter contract AE-FILT-001: a plain filter offers All, opens unfiltered and draws every participant (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'ae-explorer': the shared filter contract AE-FILT-001: choosing a value filters the chart, and choosing All brings everyone back (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'ae-explorer': the shared filter contract AE-FILT-002: a start value opens the chart filtered, with All still on offer (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'ae-explorer': the shared filter contract AE-FILT-002: a start value the data lacks warns by name and opens on All (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'ae-explorer': the shared filter contract AE-FILT-002: after a reader's own choice, setSettings still leaves the control and the chart agreeing (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'ae-explorer': the shared filter contract AE-FILT-002: setSettings leaves the chart on its opening selection (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'ae-explorer': the shared filter contract AE-FILT-002: when later data brings the filter's column, the filter opens on its start value (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'ae-explorer': the shared filter contract AE-FILT-003: all:false offers no All, selects the first value and filters to it (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-FILT-003"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'ae-explorer': the shared filter contract AE-FILT-003: all:false with a start the data lacks falls back to the first value (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-FILT-003"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'ae-explorer': the shared filter contract AE-FILT-004: a multiple filter emptied by hand keeps meaning nothing is selected (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'ae-explorer': the shared filter contract AE-FILT-004: multiple drops start values the data lacks, and keeps the rest (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'ae-explorer': the shared filter contract AE-FILT-004: multiple opens on its start list and draws every checked value (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'ae-explorer': the shared filter contract AE-FILT-004: multiple with no start value left in the data places no restriction (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'ae-timelines': the shared filter contract AET-FILT-001: a filter whose column the data lacks draws no control and leaves no restriction behind (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'ae-timelines': the shared filter contract AET-FILT-001: a plain filter offers All, opens unfiltered and draws every participant (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'ae-timelines': the shared filter contract AET-FILT-001: choosing a value filters the chart, and choosing All brings everyone back (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'ae-timelines': the shared filter contract AET-FILT-002: a start value opens the chart filtered, with All still on offer (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'ae-timelines': the shared filter contract AET-FILT-002: a start value the data lacks warns by name and opens on All (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'ae-timelines': the shared filter contract AET-FILT-002: after a reader's own choice, setSettings still leaves the control and the chart agreeing (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'ae-timelines': the shared filter contract AET-FILT-002: Reset returns the filter to its opening selection (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'ae-timelines': the shared filter contract AET-FILT-002: Reset squares a start value the data lacks with the data, exactly as load does (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'ae-timelines': the shared filter contract AET-FILT-002: setSettings leaves the chart on its opening selection (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'ae-timelines': the shared filter contract AET-FILT-002: when later data brings the filter's column, the filter opens on its start value (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'ae-timelines': the shared filter contract AET-FILT-003: all:false offers no All, selects the first value and filters to it (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-FILT-003"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'ae-timelines': the shared filter contract AET-FILT-003: all:false with a start the data lacks falls back to the first value (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-FILT-003"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'ae-timelines': the shared filter contract AET-FILT-004: a multiple filter emptied by hand keeps meaning nothing is selected (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'ae-timelines': the shared filter contract AET-FILT-004: multiple drops start values the data lacks, and keeps the rest (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'ae-timelines': the shared filter contract AET-FILT-004: multiple opens on its start list and draws every checked value (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'ae-timelines': the shared filter contract AET-FILT-004: multiple with no start value left in the data places no restriction (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'delta-delta': the shared filter contract SDD-FILT-001: a filter whose column the data lacks draws no control and leaves no restriction behind (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'delta-delta': the shared filter contract SDD-FILT-001: a plain filter offers All, opens unfiltered and draws every participant (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'delta-delta': the shared filter contract SDD-FILT-001: choosing a value filters the chart, and choosing All brings everyone back (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'delta-delta': the shared filter contract SDD-FILT-002: a start value opens the chart filtered, with All still on offer (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'delta-delta': the shared filter contract SDD-FILT-002: a start value the data lacks warns by name and opens on All (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'delta-delta': the shared filter contract SDD-FILT-002: after a reader's own choice, setSettings still leaves the control and the chart agreeing (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'delta-delta': the shared filter contract SDD-FILT-002: Reset returns the filter to its opening selection (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'delta-delta': the shared filter contract SDD-FILT-002: Reset squares a start value the data lacks with the data, exactly as load does (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'delta-delta': the shared filter contract SDD-FILT-002: setSettings leaves the chart on its opening selection (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'delta-delta': the shared filter contract SDD-FILT-002: when later data brings the filter's column, the filter opens on its start value (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'delta-delta': the shared filter contract SDD-FILT-003: all:false offers no All, selects the first value and filters to it (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-FILT-003"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'delta-delta': the shared filter contract SDD-FILT-003: all:false with a start the data lacks falls back to the first value (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-FILT-003"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'delta-delta': the shared filter contract SDD-FILT-004: a multiple filter emptied by hand keeps meaning nothing is selected (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'delta-delta': the shared filter contract SDD-FILT-004: multiple drops start values the data lacks, and keeps the rest (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'delta-delta': the shared filter contract SDD-FILT-004: multiple opens on its start list and draws every checked value (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'delta-delta': the shared filter contract SDD-FILT-004: multiple with no start value left in the data places no restriction (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'hep-explorer': the shared filter contract HEP-FILT-001: a filter whose column the data lacks draws no control and leaves no restriction behind (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'hep-explorer': the shared filter contract HEP-FILT-001: a plain filter offers All, opens unfiltered and draws every participant (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'hep-explorer': the shared filter contract HEP-FILT-001: choosing a value filters the chart, and choosing All brings everyone back (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'hep-explorer': the shared filter contract HEP-FILT-002: a start value opens the chart filtered, with All still on offer (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'hep-explorer': the shared filter contract HEP-FILT-002: a start value the data lacks warns by name and opens on All (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'hep-explorer': the shared filter contract HEP-FILT-002: after a reader's own choice, setSettings still leaves the control and the chart agreeing (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'hep-explorer': the shared filter contract HEP-FILT-002: Reset returns the filter to its opening selection (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'hep-explorer': the shared filter contract HEP-FILT-002: Reset squares a start value the data lacks with the data, exactly as load does (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'hep-explorer': the shared filter contract HEP-FILT-002: setSettings leaves the chart on its opening selection (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'hep-explorer': the shared filter contract HEP-FILT-002: when later data brings the filter's column, the filter opens on its start value (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'hep-explorer': the shared filter contract HEP-FILT-003: all:false offers no All, selects the first value and filters to it (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-FILT-003"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'hep-explorer': the shared filter contract HEP-FILT-003: all:false with a start the data lacks falls back to the first value (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-FILT-003"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'hep-explorer': the shared filter contract HEP-FILT-004: a multiple filter emptied by hand keeps meaning nothing is selected (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'hep-explorer': the shared filter contract HEP-FILT-004: multiple drops start values the data lacks, and keeps the rest (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'hep-explorer': the shared filter contract HEP-FILT-004: multiple opens on its start list and draws every checked value (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'hep-explorer': the shared filter contract HEP-FILT-004: multiple with no start value left in the data places no restriction (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'hep-waterfall': the shared filter contract HWF-FILT-001: a filter whose column the data lacks draws no control and leaves no restriction behind (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'hep-waterfall': the shared filter contract HWF-FILT-001: a plain filter offers All, opens unfiltered and draws every participant (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'hep-waterfall': the shared filter contract HWF-FILT-001: choosing a value filters the chart, and choosing All brings everyone back (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'hep-waterfall': the shared filter contract HWF-FILT-002: a start value opens the chart filtered, with All still on offer (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'hep-waterfall': the shared filter contract HWF-FILT-002: a start value the data lacks warns by name and opens on All (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'hep-waterfall': the shared filter contract HWF-FILT-002: after a reader's own choice, setSettings still leaves the control and the chart agreeing (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'hep-waterfall': the shared filter contract HWF-FILT-002: Reset returns the filter to its opening selection (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'hep-waterfall': the shared filter contract HWF-FILT-002: Reset squares a start value the data lacks with the data, exactly as load does (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'hep-waterfall': the shared filter contract HWF-FILT-002: setSettings leaves the chart on its opening selection (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'hep-waterfall': the shared filter contract HWF-FILT-002: when later data brings the filter's column, the filter opens on its start value (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'hep-waterfall': the shared filter contract HWF-FILT-003: all:false offers no All, selects the first value and filters to it (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-FILT-003"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'hep-waterfall': the shared filter contract HWF-FILT-003: all:false with a start the data lacks falls back to the first value (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-FILT-003"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'hep-waterfall': the shared filter contract HWF-FILT-004: a multiple filter emptied by hand keeps meaning nothing is selected (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'hep-waterfall': the shared filter contract HWF-FILT-004: multiple drops start values the data lacks, and keeps the rest (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'hep-waterfall': the shared filter contract HWF-FILT-004: multiple opens on its start list and draws every checked value (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'hep-waterfall': the shared filter contract HWF-FILT-004: multiple with no start value left in the data places no restriction (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'histogram': the shared filter contract SH-FILT-001: a filter whose column the data lacks draws no control and leaves no restriction behind (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'histogram': the shared filter contract SH-FILT-001: a plain filter offers All, opens unfiltered and draws every participant (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'histogram': the shared filter contract SH-FILT-001: choosing a value filters the chart, and choosing All brings everyone back (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'histogram': the shared filter contract SH-FILT-002: a start value opens the chart filtered, with All still on offer (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'histogram': the shared filter contract SH-FILT-002: a start value the data lacks warns by name and opens on All (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'histogram': the shared filter contract SH-FILT-002: after a reader's own choice, setSettings still leaves the control and the chart agreeing (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'histogram': the shared filter contract SH-FILT-002: Reset returns the filter to its opening selection (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'histogram': the shared filter contract SH-FILT-002: Reset squares a start value the data lacks with the data, exactly as load does (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'histogram': the shared filter contract SH-FILT-002: setSettings leaves the chart on its opening selection (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'histogram': the shared filter contract SH-FILT-002: when later data brings the filter's column, the filter opens on its start value (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'histogram': the shared filter contract SH-FILT-003: all:false offers no All, selects the first value and filters to it (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-FILT-003"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'histogram': the shared filter contract SH-FILT-003: all:false with a start the data lacks falls back to the first value (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-FILT-003"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'histogram': the shared filter contract SH-FILT-004: a multiple filter emptied by hand keeps meaning nothing is selected (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'histogram': the shared filter contract SH-FILT-004: multiple drops start values the data lacks, and keeps the rest (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'histogram': the shared filter contract SH-FILT-004: multiple opens on its start list and draws every checked value (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'histogram': the shared filter contract SH-FILT-004: multiple with no start value left in the data places no restriction (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'nep-explorer': the shared filter contract NEP-FILT-001: a filter whose column the data lacks draws no control and leaves no restriction behind (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'nep-explorer': the shared filter contract NEP-FILT-001: a plain filter offers All, opens unfiltered and draws every participant (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'nep-explorer': the shared filter contract NEP-FILT-001: choosing a value filters the chart, and choosing All brings everyone back (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'nep-explorer': the shared filter contract NEP-FILT-002: a start value opens the chart filtered, with All still on offer (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'nep-explorer': the shared filter contract NEP-FILT-002: a start value the data lacks warns by name and opens on All (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'nep-explorer': the shared filter contract NEP-FILT-002: after a reader's own choice, setSettings still leaves the control and the chart agreeing (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'nep-explorer': the shared filter contract NEP-FILT-002: Reset returns the filter to its opening selection (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'nep-explorer': the shared filter contract NEP-FILT-002: Reset squares a start value the data lacks with the data, exactly as load does (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'nep-explorer': the shared filter contract NEP-FILT-002: setSettings leaves the chart on its opening selection (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'nep-explorer': the shared filter contract NEP-FILT-002: when later data brings the filter's column, the filter opens on its start value (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'nep-explorer': the shared filter contract NEP-FILT-003: all:false offers no All, selects the first value and filters to it (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-FILT-003"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'nep-explorer': the shared filter contract NEP-FILT-003: all:false with a start the data lacks falls back to the first value (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-FILT-003"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'nep-explorer': the shared filter contract NEP-FILT-004: a multiple filter emptied by hand keeps meaning nothing is selected (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'nep-explorer': the shared filter contract NEP-FILT-004: multiple drops start values the data lacks, and keeps the rest (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'nep-explorer': the shared filter contract NEP-FILT-004: multiple opens on its start list and draws every checked value (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'nep-explorer': the shared filter contract NEP-FILT-004: multiple with no start value left in the data places no restriction (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'outlier-explorer': the shared filter contract SOE-FILT-001: a filter whose column the data lacks draws no control and leaves no restriction behind (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'outlier-explorer': the shared filter contract SOE-FILT-001: a plain filter offers All, opens unfiltered and draws every participant (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'outlier-explorer': the shared filter contract SOE-FILT-001: choosing a value filters the chart, and choosing All brings everyone back (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'outlier-explorer': the shared filter contract SOE-FILT-002: a start value opens the chart filtered, with All still on offer (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'outlier-explorer': the shared filter contract SOE-FILT-002: a start value the data lacks warns by name and opens on All (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'outlier-explorer': the shared filter contract SOE-FILT-002: after a reader's own choice, setSettings still leaves the control and the chart agreeing (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'outlier-explorer': the shared filter contract SOE-FILT-002: Reset returns the filter to its opening selection (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'outlier-explorer': the shared filter contract SOE-FILT-002: Reset squares a start value the data lacks with the data, exactly as load does (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'outlier-explorer': the shared filter contract SOE-FILT-002: setSettings leaves the chart on its opening selection (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'outlier-explorer': the shared filter contract SOE-FILT-002: when later data brings the filter's column, the filter opens on its start value (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'outlier-explorer': the shared filter contract SOE-FILT-003: all:false offers no All, selects the first value and filters to it (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-FILT-003"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'outlier-explorer': the shared filter contract SOE-FILT-003: all:false with a start the data lacks falls back to the first value (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-FILT-003"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'outlier-explorer': the shared filter contract SOE-FILT-004: a multiple filter emptied by hand keeps meaning nothing is selected (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'outlier-explorer': the shared filter contract SOE-FILT-004: multiple drops start values the data lacks, and keeps the rest (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'outlier-explorer': the shared filter contract SOE-FILT-004: multiple opens on its start list and draws every checked value (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'outlier-explorer': the shared filter contract SOE-FILT-004: multiple with no start value left in the data places no restriction (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'qt-explorer': the shared filter contract QT-FILT-001: a filter whose column the data lacks draws no control and leaves no restriction behind (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'qt-explorer': the shared filter contract QT-FILT-001: a plain filter offers All, opens unfiltered and draws every participant (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'qt-explorer': the shared filter contract QT-FILT-001: choosing a value filters the chart, and choosing All brings everyone back (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'qt-explorer': the shared filter contract QT-FILT-002: a start value opens the chart filtered, with All still on offer (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'qt-explorer': the shared filter contract QT-FILT-002: a start value the data lacks warns by name and opens on All (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'qt-explorer': the shared filter contract QT-FILT-002: after a reader's own choice, setSettings still leaves the control and the chart agreeing (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'qt-explorer': the shared filter contract QT-FILT-002: Reset returns the filter to its opening selection (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'qt-explorer': the shared filter contract QT-FILT-002: Reset squares a start value the data lacks with the data, exactly as load does (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'qt-explorer': the shared filter contract QT-FILT-002: setSettings leaves the chart on its opening selection (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'qt-explorer': the shared filter contract QT-FILT-002: when later data brings the filter's column, the filter opens on its start value (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'qt-explorer': the shared filter contract QT-FILT-003: all:false offers no All, selects the first value and filters to it (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-FILT-003"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'qt-explorer': the shared filter contract QT-FILT-003: all:false with a start the data lacks falls back to the first value (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-FILT-003"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'qt-explorer': the shared filter contract QT-FILT-004: a multiple filter emptied by hand keeps meaning nothing is selected (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'qt-explorer': the shared filter contract QT-FILT-004: multiple drops start values the data lacks, and keeps the rest (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'qt-explorer': the shared filter contract QT-FILT-004: multiple opens on its start list and draws every checked value (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'qt-explorer': the shared filter contract QT-FILT-004: multiple with no start value left in the data places no restriction (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'results-over-time': the shared filter contract SROT-FILT-001: a filter whose column the data lacks draws no control and leaves no restriction behind (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'results-over-time': the shared filter contract SROT-FILT-001: a plain filter offers All, opens unfiltered and draws every participant (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'results-over-time': the shared filter contract SROT-FILT-001: choosing a value filters the chart, and choosing All brings everyone back (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'results-over-time': the shared filter contract SROT-FILT-002: a start value opens the chart filtered, with All still on offer (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'results-over-time': the shared filter contract SROT-FILT-002: a start value the data lacks warns by name and opens on All (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'results-over-time': the shared filter contract SROT-FILT-002: after a reader's own choice, setSettings still leaves the control and the chart agreeing (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'results-over-time': the shared filter contract SROT-FILT-002: Reset returns the filter to its opening selection (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'results-over-time': the shared filter contract SROT-FILT-002: Reset squares a start value the data lacks with the data, exactly as load does (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'results-over-time': the shared filter contract SROT-FILT-002: setSettings leaves the chart on its opening selection (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'results-over-time': the shared filter contract SROT-FILT-002: when later data brings the filter's column, the filter opens on its start value (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'results-over-time': the shared filter contract SROT-FILT-003: all:false offers no All, selects the first value and filters to it (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-FILT-003"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'results-over-time': the shared filter contract SROT-FILT-003: all:false with a start the data lacks falls back to the first value (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-FILT-003"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'results-over-time': the shared filter contract SROT-FILT-004: a multiple filter emptied by hand keeps meaning nothing is selected (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'results-over-time': the shared filter contract SROT-FILT-004: multiple drops start values the data lacks, and keeps the rest (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'results-over-time': the shared filter contract SROT-FILT-004: multiple opens on its start list and draws every checked value (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'results-over-time': the shared filter contract SROT-FILT-004: multiple with no start value left in the data places no restriction (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'shift-plot': the shared filter contract SSP-FILT-001: a filter whose column the data lacks draws no control and leaves no restriction behind (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SSP-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'shift-plot': the shared filter contract SSP-FILT-001: a plain filter offers All, opens unfiltered and draws every participant (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SSP-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'shift-plot': the shared filter contract SSP-FILT-001: choosing a value filters the chart, and choosing All brings everyone back (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SSP-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'shift-plot': the shared filter contract SSP-FILT-002: a start value opens the chart filtered, with All still on offer (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SSP-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'shift-plot': the shared filter contract SSP-FILT-002: a start value the data lacks warns by name and opens on All (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SSP-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'shift-plot': the shared filter contract SSP-FILT-002: after a reader's own choice, setSettings still leaves the control and the chart agreeing (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SSP-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'shift-plot': the shared filter contract SSP-FILT-002: Reset returns the filter to its opening selection (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SSP-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'shift-plot': the shared filter contract SSP-FILT-002: Reset squares a start value the data lacks with the data, exactly as load does (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SSP-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'shift-plot': the shared filter contract SSP-FILT-002: setSettings leaves the chart on its opening selection (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SSP-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'shift-plot': the shared filter contract SSP-FILT-002: when later data brings the filter's column, the filter opens on its start value (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SSP-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'shift-plot': the shared filter contract SSP-FILT-003: all:false offers no All, selects the first value and filters to it (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SSP-FILT-003"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'shift-plot': the shared filter contract SSP-FILT-003: all:false with a start the data lacks falls back to the first value (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SSP-FILT-003"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'shift-plot': the shared filter contract SSP-FILT-004: a multiple filter emptied by hand keeps meaning nothing is selected (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SSP-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'shift-plot': the shared filter contract SSP-FILT-004: multiple drops start values the data lacks, and keeps the rest (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SSP-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'shift-plot': the shared filter contract SSP-FILT-004: multiple opens on its start list and draws every checked value (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SSP-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'shift-plot': the shared filter contract SSP-FILT-004: multiple with no start value left in the data places no restriction (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SSP-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'time-to-event': the shared filter contract TTE-FILT-001: a filter whose column the data lacks draws no control and leaves no restriction behind (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": ["TTE-FILT-001-serious-only-composed-endpoint.png"]
+    },
+    {
+      "test": "'time-to-event': the shared filter contract TTE-FILT-001: a plain filter offers All, opens unfiltered and draws every participant (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": ["TTE-FILT-001-serious-only-composed-endpoint.png"]
+    },
+    {
+      "test": "'time-to-event': the shared filter contract TTE-FILT-001: choosing a value filters the chart, and choosing All brings everyone back (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": ["TTE-FILT-001-serious-only-composed-endpoint.png"]
+    },
+    {
+      "test": "'time-to-event': the shared filter contract TTE-FILT-002: a start value opens the chart filtered, with All still on offer (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'time-to-event': the shared filter contract TTE-FILT-002: a start value the data lacks warns by name and opens on All (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'time-to-event': the shared filter contract TTE-FILT-002: after a reader's own choice, setSettings still leaves the control and the chart agreeing (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'time-to-event': the shared filter contract TTE-FILT-002: Reset returns the filter to its opening selection (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'time-to-event': the shared filter contract TTE-FILT-002: Reset squares a start value the data lacks with the data, exactly as load does (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'time-to-event': the shared filter contract TTE-FILT-002: setSettings leaves the chart on its opening selection (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'time-to-event': the shared filter contract TTE-FILT-002: when later data brings the filter's column, the filter opens on its start value (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-FILT-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'time-to-event': the shared filter contract TTE-FILT-003: all:false offers no All, selects the first value and filters to it (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-FILT-003"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'time-to-event': the shared filter contract TTE-FILT-003: all:false with a start the data lacks falls back to the first value (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-FILT-003"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'time-to-event': the shared filter contract TTE-FILT-004: a multiple filter emptied by hand keeps meaning nothing is selected (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'time-to-event': the shared filter contract TTE-FILT-004: multiple drops start values the data lacks, and keeps the rest (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'time-to-event': the shared filter contract TTE-FILT-004: multiple opens on its start list and draws every checked value (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-FILT-004"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'time-to-event': the shared filter contract TTE-FILT-004: multiple with no start value left in the data places no restriction (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-FILT-004"],
+      "issueRefs": [166],
       "screenshots": []
     },
     {
@@ -1061,11 +2629,19 @@
       "screenshots": []
     },
     {
-      "test": "demo app: chart recipes APP-CHART-003: an unmapped optional column is left to the chart’s own default (#150)",
+      "test": "demo app: chart recipes APP-CHART-003: a row cleared by hand is not read, although the file carries the chart’s default name for it (#165)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-CHART-003"],
-      "issueRefs": [150],
+      "issueRefs": [165],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: chart recipes APP-CHART-003: an unmapped optional column is passed as no column, never left to the chart’s default name (#150, #165)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-CHART-003"],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -1109,19 +2685,27 @@
       "screenshots": []
     },
     {
-      "test": "demo app: chart recipes APP-CHART-009: twelve charts are destinations; the participant profile and the Patient Journey Explorer are not (#150)",
+      "test": "demo app: chart recipes APP-CHART-009: twelve charts are destinations; the participant profile is not, nor is a chart outside the standard domains (#150, #165)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-CHART-009"],
-      "issueRefs": [150],
+      "issueRefs": [],
       "screenshots": []
     },
     {
-      "test": "demo app: chart status APP-STAT-001: on the demo study thirteen charts are ready and the Patient Journey Explorer needs more domains (#149)",
+      "test": "demo app: chart recipes APP-CHART-010: every chart that hosts the participant rail is passed the unit and normal-range columns the rail reads, under the user’s names (#165)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-CHART-010"],
+      "issueRefs": [165],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: chart status APP-STAT-001: on the demo study all thirteen charts are ready (#149, #165)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-STAT-001"],
-      "issueRefs": [149],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -1170,6 +2754,14 @@
       "status": "pass",
       "requirementIds": ["APP-STAT-007"],
       "issueRefs": [149],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: chart status APP-STAT-009: a chart that reads domains outside the standard set needs more domains, whatever is loaded (#165)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-STAT-009"],
+      "issueRefs": [165],
       "screenshots": []
     },
     {
@@ -1229,6 +2821,14 @@
       "screenshots": []
     },
     {
+      "test": "demo app: parsing APP-PARSE-008: a quote inside an unquoted field is an ordinary character and ends nothing (#165)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PARSE-008"],
+      "issueRefs": [165],
+      "screenshots": []
+    },
+    {
       "test": "demo app: placing a file in a domain APP-PLACE-001: the four vendored demo extracts place to their four domains (#149)",
       "suite": "unit",
       "status": "pass",
@@ -1266,6 +2866,14 @@
       "status": "pass",
       "requirementIds": ["APP-PLACE-005"],
       "issueRefs": [149],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: placing a file in a domain APP-PLACE-006: a standard ADaM labs file with baseline and change columns is labs, not ECG: the measure names decide in both directions (#165)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PLACE-006"],
+      "issueRefs": [165],
       "screenshots": []
     },
     {
@@ -1325,11 +2933,11 @@
       "screenshots": []
     },
     {
-      "test": "demo app: the data panel APP-LOAD-007: with the six rows corrected by hand, the renamed study supports 13 of 14 charts (#151)",
+      "test": "demo app: the data panel APP-LOAD-007: with the six rows corrected by hand, the renamed study supports all 13 charts (#151, #165)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-LOAD-007"],
-      "issueRefs": [151],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -1341,11 +2949,27 @@
       "screenshots": []
     },
     {
+      "test": "demo app: the data panel APP-LOAD-009: a mapping file dropped after the data moves each file it names to the domain it names (#165)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-009"],
+      "issueRefs": [165],
+      "screenshots": []
+    },
+    {
       "test": "demo app: the data panel APP-LOAD-009: a mapping file dropped first is held and applied as each data file arrives (#151)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-LOAD-009"],
       "issueRefs": [151],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: the data panel APP-LOAD-009: a mapping file that swaps two loaded files moves both, and takes one from among the unplaced (#165)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-009"],
+      "issueRefs": [165],
       "screenshots": []
     },
     {
@@ -1365,6 +2989,14 @@
       "screenshots": []
     },
     {
+      "test": "demo app: the data panel APP-LOAD-012: a file that cannot be opened, such as a dropped folder, is named in a sentence and the rest of the drop loads (#165)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-012"],
+      "issueRefs": [165],
+      "screenshots": []
+    },
+    {
       "test": "demo app: the data panel APP-LOAD-012: a file too large to read in memory, or of another type, is refused in a sentence (#151)",
       "suite": "unit",
       "status": "pass",
@@ -1381,11 +3013,11 @@
       "screenshots": []
     },
     {
-      "test": "demo app: the data panel APP-LOAD-017: the mapping step is done when no row is guessed and no chart is short of one (#159)",
+      "test": "demo app: the data panel APP-LOAD-017: the mapping step is done when no chart is waiting on a row; guesses are counted and flagged but do not hold it (#159, #163)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-LOAD-017"],
-      "issueRefs": [159],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -1410,6 +3042,14 @@
       "status": "pass",
       "requirementIds": ["APP-LOAD-019"],
       "issueRefs": [159],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: the data panel APP-LOAD-020: a demo study answered with an error page is not read as data: it is reported and changes nothing (#165)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-020"],
+      "issueRefs": [165],
       "screenshots": []
     },
     {
@@ -1442,6 +3082,30 @@
       "status": "pass",
       "requirementIds": ["APP-LOAD-021"],
       "issueRefs": [159],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: the data panel APP-LOAD-023: files loaded while a demo study is still being fetched are kept: the study is dropped when it arrives (#165)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-023"],
+      "issueRefs": [165],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: the data panel APP-LOAD-024: a mapping file that is damaged or names what the app does not know loads the data files anyway, and says what it is (#165)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-024"],
+      "issueRefs": [165],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: the data panel APP-LOAD-025: a corrected file of the same name takes the place of the one that was not placed (#165)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-025"],
+      "issueRefs": [165],
       "screenshots": []
     },
     {
@@ -1501,19 +3165,27 @@
       "screenshots": []
     },
     {
-      "test": "demo app: the page APP-PAGE-001: lists every chart in the manifest under its domain, with a status each (#150)",
+      "test": "demo app: the page APP-CHART-003: a row cleared by hand is not read by the chart, although the file carries the default name (#165)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["APP-PAGE-001"],
-      "issueRefs": [150],
+      "requirementIds": ["APP-CHART-003"],
+      "issueRefs": [165],
       "screenshots": []
     },
     {
-      "test": "demo app: the page APP-PAGE-002: on the demo study the supported count reads 13 of 14 (#150)",
+      "test": "demo app: the page APP-PAGE-001: lists every chart in the manifest under its domain, with a status each: thirteen charts under three domains (#150, #165)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-001"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: the page APP-PAGE-002: on the demo study the supported count reads 13 of 13 (#150, #165)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-PAGE-002"],
-      "issueRefs": [150],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -1573,11 +3245,11 @@
       "screenshots": []
     },
     {
-      "test": "demo app: the page APP-PAGE-011: a second file placed in a domain replaces the first, and the page says so (#150)",
+      "test": "demo app: the page APP-PAGE-011: a second file placed in a domain takes it, and the first is kept on the page, set aside (#150, #165)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-PAGE-011"],
-      "issueRefs": [150],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -1621,6 +3293,46 @@
       "screenshots": []
     },
     {
+      "test": "demo app: the page APP-PAGE-025: a destroyed app no longer listens to the address (#163)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-025"],
+      "issueRefs": [163],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: the page APP-PAGE-025: the app follows the address: a change of hash opens that view, and an unknown one changes nothing (#163)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-025"],
+      "issueRefs": [163],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: the page APP-PAGE-026: a chart outside the standard domains has a tab and a heading of its own, reads \"needs more domains\" and is explained, not drawn (#165)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-026"],
+      "issueRefs": [165],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: the page APP-PAGE-027: an address naming something every object has, such as #constructor, is no view: nothing throws and nothing opens (#165)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-027"],
+      "issueRefs": [165],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: the page APP-PLACE-006: a standard ADaM labs file is placed as labs, and the same shape with QTc measures as ECG (#165)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PLACE-006"],
+      "issueRefs": [165],
+      "screenshots": []
+    },
+    {
       "test": "demo app: the pre-filled mapping APP-MAP-001: a column with the same name is filled and says so, whatever its case (#149)",
       "suite": "unit",
       "status": "pass",
@@ -1650,6 +3362,14 @@
       "status": "pass",
       "requirementIds": ["APP-MAP-004"],
       "issueRefs": [149],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: the pre-filled mapping APP-MAP-004: bracketed text that is not a unit is part of the name: a qualified measure is not the plain one (#165)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-MAP-004"],
+      "issueRefs": [165],
       "screenshots": []
     },
     {
@@ -2165,6 +3885,142 @@
       "screenshots": []
     },
     {
+      "test": "markup safety: the missing-variable message AE-DATA-001: ae-explorer writes a missing column name as text, never as markup (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-DATA-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "markup safety: the missing-variable message AET-DATA-001: ae-timelines writes a missing column name as text, never as markup (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-DATA-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "markup safety: the missing-variable message HEP-DATA-005: hep-explorer writes a missing column name as text, never as markup (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DATA-005"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "markup safety: the missing-variable message HWF-DATA-001: hep-waterfall writes a missing column name as text, never as markup (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-DATA-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "markup safety: the missing-variable message NEP-DATA-006: nep-explorer writes a missing column name as text, never as markup (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-DATA-006"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "markup safety: the missing-variable message PPRF-CORE-002: participant-profile writes a missing column name as text, never as markup (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-CORE-002"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "markup safety: the missing-variable message QT-DATA-005: qt-explorer writes a missing column name as text, never as markup (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-DATA-005"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "markup safety: the missing-variable message SDD-REG-010: delta-delta writes a missing column name as text, never as markup (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-REG-010"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "markup safety: the missing-variable message SH-DATA-001: histogram writes a missing column name as text, never as markup (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-DATA-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "markup safety: the missing-variable message SOE-DATA-001: outlier-explorer writes a missing column name as text, never as markup (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-DATA-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "markup safety: the missing-variable message SROT-DATA-001: results-over-time writes a missing column name as text, never as markup (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-DATA-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "markup safety: the missing-variable message SSP-DATA-001: shift-plot writes a missing column name as text, never as markup (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SSP-DATA-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "markup safety: the missing-variable message TTE-DATA-001: time-to-event writes a missing column name as text, never as markup (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-DATA-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "markup safety: values from the data AET-DATA-001: a column name from the settings is written into the removed-record note as text (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-DATA-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "markup safety: values from the data HEP-ARM-008: arm names from the data are written into the pooled-arms note as text (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-ARM-008"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "markup safety: values from the data NEP-TBL-001: a target unit from the settings is written into the stage summary as text (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-TBL-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "markup safety: values from the data NEP-TBL-001: a unit from the data is written into the stage summary as text (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-TBL-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
       "test": "mdBlock: existing blocks are unchanged renders a numbered list as an ordered list",
       "suite": "unit",
       "status": "pass",
@@ -2333,11 +4189,11 @@
       "screenshots": []
     },
     {
-      "test": "portfolio manifest PF-MAN-003: every chart exported by src/main.js appears exactly once (#138)",
+      "test": "portfolio manifest PF-MAN-003: every chart exported by src/main.js appears exactly once, or is a prototype (#138, #165)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["PF-MAN-003"],
-      "issueRefs": [138],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -2381,11 +4237,11 @@
       "screenshots": []
     },
     {
-      "test": "portfolio manifest PF-MAN-009: thirteen modules read the standard set; the Patient Journey Explorer is listed with its own six domains (#138)",
+      "test": "portfolio manifest PF-MAN-009: thirteen modules are listed and all read the standard set; a prototype is left out and an experimental chart is in (#138, #165)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["PF-MAN-009"],
-      "issueRefs": [138],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -2429,11 +4285,27 @@
       "screenshots": []
     },
     {
-      "test": "renderDemoAppPage APP-PAGE-017: loads the site’s three type families and carries the hex mark as its icon (#150)",
+      "test": "renderDemoAppPage APP-PAGE-017: declares the site’s three type families from files beside the page, loads every one as it opens, and carries the hex mark as its icon (#150, #165)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-PAGE-017"],
-      "issueRefs": [150],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "renderDemoAppPage APP-PAGE-017: every weight the app’s stylesheet sets in a web typeface is one the page declares (#165)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-017"],
+      "issueRefs": [165],
+      "screenshots": []
+    },
+    {
+      "test": "renderDemoAppPage APP-PAGE-028: the site build copies every font file the page declares, and each family’s licence, beside the app (#165)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-028"],
+      "issueRefs": [165],
       "screenshots": []
     },
     {
@@ -2613,6 +4485,166 @@
       "screenshots": []
     },
     {
+      "test": "schemas: a filter spec AE-FILT-001: the ae-explorer schema lists start, all and multiple on a filter spec (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AE-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "schemas: a filter spec AET-FILT-001: the ae-timelines schema lists start, all and multiple on a filter spec (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["AET-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "schemas: a filter spec HEP-FILT-001: the hep-explorer schema lists start, all and multiple on a filter spec (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "schemas: a filter spec HWF-FILT-001: the hep-waterfall schema lists start, all and multiple on a filter spec (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "schemas: a filter spec NEP-FILT-001: the nep-explorer schema lists start, all and multiple on a filter spec (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["NEP-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "schemas: a filter spec QT-FILT-001: the qt-explorer schema lists start, all and multiple on a filter spec (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["QT-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "schemas: a filter spec SDD-FILT-001: the delta-delta schema lists start, all and multiple on a filter spec (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "schemas: a filter spec SH-FILT-001: the histogram schema lists start, all and multiple on a filter spec (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "schemas: a filter spec SOE-FILT-001: the outlier-explorer schema lists start, all and multiple on a filter spec (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "schemas: a filter spec SROT-FILT-001: the results-over-time schema lists start, all and multiple on a filter spec (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "schemas: a filter spec SSP-FILT-001: the shift-plot schema lists start, all and multiple on a filter spec (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SSP-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "schemas: a filter spec TTE-FILT-001: the time-to-event schema lists start, all and multiple on a filter spec (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-FILT-001"],
+      "issueRefs": [166],
+      "screenshots": ["TTE-FILT-001-serious-only-composed-endpoint.png"]
+    },
+    {
+      "test": "schemas: the measures whitelist SDD-MEAS-001: the delta-delta schema lists the measures setting (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SDD-MEAS-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "schemas: the measures whitelist SH-MEAS-001: the histogram schema lists the measures setting (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-MEAS-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "schemas: the measures whitelist SOE-MEAS-001: the outlier-explorer schema lists the measures setting (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-MEAS-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "schemas: the measures whitelist SROT-MEAS-001: the results-over-time schema lists the measures setting (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-MEAS-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "schemas: the measures whitelist SSP-MEAS-001: the shift-plot schema lists the measures setting (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SSP-MEAS-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "schemas: the shift plot axis type SSP-SCALE-001: the shift-plot schema lists axis_type with the scales the control offers (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SSP-SCALE-001"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "schemas: unscheduled visits HEP-DATA-013: the hep-explorer schema lists the three unscheduled-visit settings with the defaults the code uses (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DATA-013"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "schemas: unscheduled visits SROT-CFG-017: the results-over-time schema lists the three unscheduled-visit settings with the defaults the code uses (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SROT-CFG-017"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
       "test": "shared view selector VIEW-SEL-001: renders one option button per view under a titled View section (#76)",
       "suite": "unit",
       "status": "pass",
@@ -2709,11 +4741,11 @@
       "screenshots": []
     },
     {
-      "test": "shared: normalizeFilterSpec FILT-002: a start value is the opening selection, and suppresses All unless All is asked for (#136)",
+      "test": "shared: normalizeFilterSpec FILT-002: a start value is the opening selection and nothing else — All stays on offer (#166)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": [],
-      "issueRefs": [136],
+      "issueRefs": [166],
       "screenshots": []
     },
     {
@@ -2746,6 +4778,86 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [136],
+      "screenshots": []
+    },
+    {
+      "test": "shared: reconcileFilters FILT-001: a filter that gets no control leaves no restriction behind in the state (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "shared: reconcileFilters FILT-001: a plain filter and a start the data has pass through untouched, in spec order (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "shared: reconcileFilters FILT-002: a filter the state has never held opens on its start value (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "shared: reconcileFilters FILT-002: a selection made in the control survives a rebuild (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "shared: reconcileFilters FILT-002: a start the data lacks warns, naming the filter and the value, and opens on All (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "shared: reconcileFilters FILT-002: values compare as strings, so a numeric column matches its string start (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "shared: reconcileFilters FILT-003: a start the data lacks falls back to the first value when All is not offered (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "shared: reconcileFilters FILT-003: all:false with no start selects the first value, so the control and the state agree (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "shared: reconcileFilters FILT-004: a multiple filter emptied by hand stays empty — nothing selected, not no start (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "shared: reconcileFilters FILT-004: a multiple start keeps the values the data has, and none left means no restriction (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [166],
       "screenshots": []
     },
     {
@@ -2925,7 +5037,7 @@
       "screenshots": []
     },
     {
-      "test": "shell: prototypeBanner renders a labelled note element with the default v1.5 copy (#97)",
+      "test": "shell: status banners each banner uses a caller-supplied note verbatim when given (#97)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": [],
@@ -2933,11 +5045,19 @@
       "screenshots": []
     },
     {
-      "test": "shell: prototypeBanner uses a caller-supplied note verbatim when given (#97)",
+      "test": "shell: status banners experimentalBanner renders a labelled note saying the chart may change (#97, #165)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": [],
-      "issueRefs": [97],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "shell: status banners prototypeBanner renders a labelled note saying the chart is not ready for production (#97, #165)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -3109,19 +5229,19 @@
       "screenshots": []
     },
     {
-      "test": "site generator: domains page (#139) PF-SITE-008: the Patient Journey Explorer is shown as outside the standard set, with its own six domains (#139)",
+      "test": "site generator: domains page (#139) PF-SITE-008: a chart outside the standard set is shown under its own heading with the domains it reads; the page as built has no such chart (#139, #165)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["PF-SITE-008"],
-      "issueRefs": [139, 139],
+      "issueRefs": [139],
       "screenshots": []
     },
     {
-      "test": "site generator: domains page (#139) PF-SITE-009: the lead says how many charts read the standard set and links the served manifest (#139)",
+      "test": "site generator: domains page (#139) PF-SITE-009: the lead says how many charts read the standard set and links the served manifest (#139, #165)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["PF-SITE-009"],
-      "issueRefs": [139, 139],
+      "issueRefs": [139],
       "screenshots": []
     },
     {
@@ -3133,11 +5253,11 @@
       "screenshots": []
     },
     {
-      "test": "site generator: domains page (#139) PF-SITE-011: renderers the manifest does not list never appear (#139)",
+      "test": "site generator: domains page (#139) PF-SITE-011: renderers the manifest does not list never appear: the planned ones, and the prototype Patient Journey Explorer (#139, #165)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["PF-SITE-011"],
-      "issueRefs": [139, 139],
+      "issueRefs": [139],
       "screenshots": []
     },
     {

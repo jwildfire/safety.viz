@@ -36,7 +36,7 @@ import {
   stageZonesPlugin
 } from './nep-explorer/getPlugins.js';
 import { csvDownloadLink, toCsv } from './hep-explorer/dropped.js';
-import { initFilterState, renderFilterControl } from './filters.js';
+import { initFilterState, reconcileFilters, renderFilterControl } from './filters.js';
 
 Chart.register(ScatterController, PointElement, LinearScale, Tooltip);
 
@@ -201,7 +201,9 @@ class SafetyNepExplorer {
     try {
       checkInputs(this.rawData, this.settings);
     } catch (error) {
-      this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+      // The message is inserted as text: it names columns from the settings,
+      // which a host may fill from a file header, and must never become markup.
+      this.element.replaceChildren(createElement('div', 'sv-warning', error.message));
       throw error;
     }
     this.hasMeasure = hasCreatinine(this.rawData, this.settings);
@@ -242,16 +244,18 @@ class SafetyNepExplorer {
         );
       return exists;
     });
-    if (filterSpecs.length) {
+    const filterControls = reconcileFilters(this.state.filters, filterSpecs, (filter) =>
+      unique(this.allPoints.map((point) => point.meta[filter.value_col])).sort()
+    );
+    if (filterControls.length) {
       const filterParent = addSection('Filters');
-      filterSpecs.forEach((filter) => {
-        const values = unique(this.allPoints.map((point) => point.meta[filter.value_col])).sort();
+      filterControls.forEach(({ spec: filter, values, selected }) => {
         addControl(
           filter.label,
           renderFilterControl({
             spec: filter,
-            values: values,
-            selected: this.state.filters[filter.value_col],
+            values,
+            selected,
             onChange: (next) => {
               this.state.filters[filter.value_col] = next;
               this.render();
@@ -510,32 +514,48 @@ class SafetyNepExplorer {
           '</tr>'
       )
       .join('');
-    // Stage 2 and Stage 3 do not exist on the absolute-change axis — KDIGO
-    // defines exactly one cut-point there. Those cells are dashes rather than
-    // zeroes, and the footnote says why, because a zero would read as "nobody
-    // qualified" (which is what the R source's unreachable case_when arms
-    // invite a reader to conclude).
-    const suppressed = this.unitsResolved
-      ? ''
-      : `<p class="nep-summary-note sv-warning">Absolute-change staging is suppressed: the unit ` +
-        `"${this.nativeUnit}" is not recognized.</p>`;
+    // The markup below is constants and counts only. The three values that
+    // come from the data or the settings — the unit in the column heading, the
+    // target unit in the footnote and the unrecognized unit in the suppression
+    // notice — are written afterwards as text, so a unit carrying markup is
+    // shown to the reader rather than run (#166).
     this.listingWrap.innerHTML =
       `<h3 class="nep-summary-title">KDIGO stage summary (n = ${summary.total})</h3>` +
       '<div class="nep-table-scroll"><table class="nep-summary"><thead>' +
       '<tr><th rowspan="2" scope="col">Stage</th>' +
       '<th colspan="2" scope="colgroup">Fold change</th>' +
-      `<th colspan="2" scope="colgroup">Absolute change (${unit})</th>` +
+      '<th colspan="2" scope="colgroup" class="nep-absolute-heading"></th>' +
       '<th colspan="2" scope="colgroup">KDIGO stage</th></tr>' +
       '<tr><th scope="col">N</th><th scope="col">%</th>' +
       '<th scope="col">N</th><th scope="col">%</th>' +
       '<th scope="col">N</th><th scope="col">%</th></tr>' +
-      `</thead><tbody>${rows}</tbody></table></div>` +
-      '<p class="nep-summary-note">The first two column pairs are separate marginal ' +
-      'distributions, not a cross-tabulation; the third is the combined stage the zones show — ' +
-      'the worse of the two axes, raised to Stage 3 for any participant whose maximum reached ' +
-      `${formatNumber(this.settings.stages.absolute)} ${this.settings.units.target}. ` +
-      'KDIGO defines no Stage 2 or Stage 3 on absolute change, so those cells are marked —.</p>' +
-      suppressed;
+      `</thead><tbody>${rows}</tbody></table></div>`;
+    this.listingWrap.querySelector('.nep-absolute-heading').textContent =
+      `Absolute change (${unit})`;
+    this.listingWrap.append(
+      createElement(
+        'p',
+        'nep-summary-note',
+        'The first two column pairs are separate marginal ' +
+          'distributions, not a cross-tabulation; the third is the combined stage the zones show — ' +
+          'the worse of the two axes, raised to Stage 3 for any participant whose maximum reached ' +
+          `${formatNumber(this.settings.stages.absolute)} ${this.settings.units.target}. ` +
+          'KDIGO defines no Stage 2 or Stage 3 on absolute change, so those cells are marked —.'
+      )
+    );
+    // Stage 2 and Stage 3 do not exist on the absolute-change axis — KDIGO
+    // defines exactly one cut-point there. Those cells are dashes rather than
+    // zeroes, and the footnote says why, because a zero would read as "nobody
+    // qualified" (which is what the R source's unreachable case_when arms
+    // invite a reader to conclude).
+    if (!this.unitsResolved)
+      this.listingWrap.append(
+        createElement(
+          'p',
+          'nep-summary-note sv-warning',
+          `Absolute-change staging is suppressed: the unit "${this.nativeUnit}" is not recognized.`
+        )
+      );
   }
 
   /**

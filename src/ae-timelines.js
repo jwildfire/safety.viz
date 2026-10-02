@@ -31,7 +31,7 @@ import {
 import { buildScales, dayDomain } from './ae-timelines/getScales.js';
 import { buildDatasets, timelineMarksPlugin, tooltipLines } from './ae-timelines/getPlugins.js';
 import { renderListing } from './histogram/listing.js';
-import { initFilterState, renderFilterControl } from './filters.js';
+import { initFilterState, reconcileFilters, renderFilterControl } from './filters.js';
 
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
@@ -213,7 +213,9 @@ class AETimelines {
     try {
       checkInputs(this.rawData, this.settings);
     } catch (error) {
-      this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+      // The message is inserted as text: it names columns from the settings,
+      // which a host may fill from a file header, and must never become markup.
+      this.element.replaceChildren(createElement('div', 'sv-warning', error.message));
       throw error;
     }
     this.population = populationCount(this.rawData, this.settings);
@@ -253,20 +255,20 @@ class AETimelines {
       return true;
     });
     const filterParent = filterSpecs.length ? addSection('Filters') : this.controls;
-    filterSpecs.forEach((filter) => {
+    reconcileFilters(this.state.filters, filterSpecs, (filter) => {
       const values = unique(this.cleanRows.map((row) => row[filter.value_col]));
       // The color filter lists its options in legend order, like the
       // original's sortLegendFilter; other filters sort alphabetically.
-      const ordered =
-        filter.value_col === this.settings.color.value_col
-          ? domain.filter((value) => values.includes(value))
-          : values.sort();
+      return filter.value_col === this.settings.color.value_col
+        ? domain.filter((value) => values.includes(value))
+        : values.sort();
+    }).forEach(({ spec: filter, values, selected }) => {
       addControl(
         filter.label,
         renderFilterControl({
           spec: filter,
-          values: ordered,
-          selected: this.state.filters[filter.value_col],
+          values,
+          selected,
           onChange: (next) => {
             this.state.filters[filter.value_col] = next;
             this.render();
@@ -350,9 +352,12 @@ class AETimelines {
     ]
       .filter(Boolean)
       .join(' ');
-    this.notes.innerHTML =
-      `<em>${shown} of ${this.population} participant ID(s) shown (${pct}%)</em>` +
-      (warnings ? `<span class="sv-warning">${warnings}</span>` : '');
+    // Built as elements, not markup: the warnings quote column names from the
+    // settings, which a host may fill from a file header (#166).
+    this.notes.replaceChildren(
+      createElement('em', null, `${shown} of ${this.population} participant ID(s) shown (${pct}%)`)
+    );
+    if (warnings) this.notes.append(createElement('span', 'sv-warning', warnings));
   }
 
   /**

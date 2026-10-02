@@ -74,4 +74,55 @@ describe('demo app: placing a file in a domain', () => {
       'bds'
     );
   });
+
+  it('APP-PLACE-006: a standard ADaM labs file with baseline and change columns is labs, not ECG: the measure names decide in both directions (#165)', () => {
+    // Nine of the ten ECG columns against nine of the thirteen labs columns:
+    // by column names alone the fuller match would be ECG.
+    const adlb = [
+      'USUBJID',
+      'PARAM',
+      'AVAL',
+      'AVISIT',
+      'AVISITN',
+      'TRTA',
+      'BASE',
+      'CHG',
+      'ABLFL',
+      'ANRLO',
+      'ANRHI',
+      'ADY'
+    ];
+    const counts = Object.fromEntries(
+      placeFile(adlb, manifest).candidates.map((candidate) => [candidate.domain, candidate.matched])
+    );
+    expect(counts).toMatchObject({ bds: 9, eg: 9 });
+    const labs = placeFile(adlb, manifest, {
+      measureNames: ['Alanine Aminotransferase', 'Bilirubin']
+    });
+    expect(labs).toMatchObject({ domain: 'bds', matched: 9, of: 13 });
+    expect(placeFile(adlb, manifest, { measureNames: ['QTcF', 'Heart Rate'] })).toMatchObject({
+      domain: 'eg',
+      matched: 9,
+      of: 10
+    });
+    // Without normal ranges or a study day it carries more ECG columns than
+    // labs columns, and is still labs by what it measures.
+    const lean = [
+      'USUBJID',
+      'PARAM',
+      'AVAL',
+      'AVALU',
+      'AVISIT',
+      'AVISITN',
+      'TRTA',
+      'BASE',
+      'CHG',
+      'ABLFL'
+    ];
+    expect(placeFile(lean, manifest).domain).toBe('eg');
+    expect(placeFile(lean, manifest, { measureNames: ['Creatinine'] }).domain).toBe('bds');
+    // The measure names never move a file that is neither: only labs and ECG share a shape.
+    const adsl = ['USUBJID', 'ARM', 'SITEID', 'SEX', 'RACE', 'AGE'];
+    expect(placeFile(adsl, manifest, { measureNames: ['QTcF'] }).domain).toBe('subject');
+  });
 });

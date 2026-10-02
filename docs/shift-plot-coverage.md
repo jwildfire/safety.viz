@@ -23,6 +23,7 @@ matrix row → failing test → minimal implementation.
 | SSP-REG-001                                                 | SSP-REG-001                                                     | #14      | changing the measure re-pairs the scatter                                                    |
 | SSP-REG-002/SSP-REG-003                                     | SSP-REG-002, SSP-REG-003                                        | #14      | changing baseline and comparison visits swaps the axes                                       |
 | SSP-CTRL-003                                                | SSP-CTRL-003                                                    | #14      | applying a filter updates the participant note                                               |
+| SSP-FILT-001                                                | SSP-FILT-001                                                    | #166     | a plain filter opens on All with every participant shown, and All brings them back           |
 | SSP-REG-006                                                 | SSP-REG-006                                                     | #14      | the point tooltip reports id, baseline, comparison, change, and pct                          |
 | SSP-REQ-003/SSP-REQ-006/SSP-REQ-007/SSP-REG-004/SSP-REG-012 | SSP-REQ-003, SSP-REQ-006, SSP-REQ-007, SSP-REG-004, SSP-REG-012 | #14      | brushing opens the listing, boxes the selection, and de-emphasizes the rest                  |
 | SSP-REG-011                                                 | SSP-REG-011                                                     | #14      | clearing the selection resets the points and hides the listing                               |
@@ -52,7 +53,7 @@ matrix row → failing test → minimal implementation.
 | SSP-SCALE-003                              | SSP-SCALE-003                                          | #136  | `scale-toggle.test.js`                                           |
 | SSP-DATA-001/SSP-DATA-003                  | SSP-DATA-001, SSP-DATA-003                             | #14   | `checkInputs.test.js`                                            |
 | PPRF-SSP-001..004                          | PPRF-SSP-001..004 (participant-profile matrix)         | #99   | `profile-adoption.test.js`                                       |
-| SSP-FILT-001..004 (shared filter contract) | SSP-FILT-001, SSP-FILT-002, SSP-FILT-003, SSP-FILT-004 | #136  | `../shared/filters.test.js`                                      |
+| SSP-FILT-001..004 (shared filter contract) | SSP-FILT-001, SSP-FILT-002, SSP-FILT-003, SSP-FILT-004 | #166  | `../shared/filter-contract.test.js`                              |
 | SSP-MEAS-001/002 (measures whitelist)      | SSP-MEAS-001, SSP-MEAS-002                             | #136  | `measure-list.test.js`                                           |
 | SSP-CTRL-004 (whole-chart reset)           | SSP-CTRL-004                                           | #136  | `reset.test.js`                                                  |
 

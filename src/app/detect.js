@@ -18,8 +18,11 @@ const QTC_MEASURES = MEASURES.filter((measure) => measure.key === 'QTcF' || meas
  * The best count wins; on equal counts the fuller match does (five of the
  * seven subject-level columns beats five of the thirteen labs columns). Labs
  * and ECG are the same long-format shape and cannot be told apart by column
- * names alone, so when a file could be either and its measure names are
- * supplied, a QTc correction among them sends it to ECG.
+ * names alone: a standard ADaM labs file with baseline, change and a baseline
+ * flag carries as many ECG columns as labs columns. So when a file could be
+ * either and its measure names are supplied, they decide, in both directions:
+ * a QTc correction among them makes it ECG, and anything else labs. With no
+ * measure names to read, the counts stand.
  * @param {string[]} columns The file's column names.
  * @param {Object} manifest The portfolio manifest.
  * @param {Object} [options] Placement options.
@@ -46,12 +49,13 @@ export function placeFile(columns, manifest, { measureNames = [] } = {}) {
 
   const placeable = candidates.filter((candidate) => candidate.matched > UNPLACED_AT_OR_BELOW);
   let best = placeable[0] || null;
+  const bds = placeable.find((candidate) => candidate.domain === 'bds');
   const eg = placeable.find((candidate) => candidate.domain === 'eg');
-  if (best && best.domain === 'bds' && eg) {
+  if (bds && eg && (best === bds || best === eg) && measureNames.length) {
     const hasQtc = QTC_MEASURES.some(
       (measure) => resolveMeasure(measureNames, measure).value !== null
     );
-    if (hasQtc) best = eg;
+    best = hasQtc ? eg : bds;
   }
 
   return {

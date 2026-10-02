@@ -30,7 +30,7 @@ matching its behavior, under
 | SOE-XAXIS-004            | SOE-FUNC-004, SOE-REG-003                                                                                 | #24   | the x-axis toggle switches between the visit and study-day axes                |
 | SOE-TIP-011              | SOE-REG-011                                                                                               | #24   | point tooltips list participant, result, and time                              |
 | SOE-EVENT-003            | SOE-API-003                                                                                               | #24   | participantsSelected fires on select and clear                                 |
-| SOE-FILT-051             | SOE-REG-051, SOE-REG-052, SOE-REG-053                                                                     | #24   | a filter with a start value initializes filtered and offers no All option      |
+| SOE-FILT-051             | SOE-REG-051, SOE-REG-052, SOE-REG-053                                                                     | #166  | a filter with a start value initializes filtered and still offers All          |
 | SOE-API-001              | — (see legacy-API note)                                                                                   | #24   | lifecycle API supports init, setData, setSettings, render, resize, and destroy |
 | PPRF-OE-001/PPRF-OE-002  | PPRF-OE-001, PPRF-OE-002 (participant-profile matrix)                                                     | #99   | clicking a point opens the railed profile ALONGSIDE the linked listing         |
 | PPRF-OE-003              | PPRF-OE-003 (participant-profile matrix)                                                                  | #99   | background click and control changes empty the rail                            |
@@ -39,23 +39,23 @@ matching its behavior, under
 
 ## Unit evidence (Vitest — `tests/unit/outlier-explorer/`)
 
-| Requirement ID                             | Source matrix rows                                              | Issue | Test file                   |
-| ------------------------------------------ | --------------------------------------------------------------- | ----- | --------------------------- |
-| SOE-CFG-004/005/006/013/014                | SOE-CFG-004, SOE-CFG-005, SOE-CFG-006, SOE-CFG-013, SOE-CFG-014 | #24   | `configure.test.js`         |
-| SOE-CFG-007/008/009 (defaults)             | SOE-CFG-007, SOE-CFG-008, SOE-CFG-009                           | #24   | `configure.test.js`         |
-| SOE-FUNC-004/SOE-REG-048                   | SOE-FUNC-004, SOE-REG-048                                       | #24   | `configure.test.js`         |
-| SOE-REG-037/038, SOE-REG-029/031           | SOE-REG-037, SOE-REG-038, SOE-REG-029, SOE-REG-031              | #24   | `structureData.test.js`     |
-| SOE-FUNC-004/SOE-REG-028 (axis)            | SOE-FUNC-004, SOE-REG-028                                       | #24   | `structureData.test.js`     |
-| SOE-FUNC-007/SOE-CFG-007/008 (stats)       | SOE-FUNC-007, SOE-CFG-007, SOE-CFG-008, SOE-REG-025             | #24   | `structureData.test.js`     |
-| SOE-FUNC-005/006, SOE-REG-004/033          | SOE-FUNC-005, SOE-FUNC-006, SOE-REG-004, SOE-REG-033            | #24   | `getScales.test.js`         |
-| SOE-REG-028 (x-scale)                      | SOE-REG-028                                                     | #24   | `getScales.test.js`         |
-| SOE-REG-011/049, SOE-CFG-006               | SOE-REG-011, SOE-REG-049, SOE-CFG-006                           | #24   | `getPlugins.test.js`        |
-| SOE-DATA-001/003 (schema)                  | SOE-DATA-001, SOE-DATA-003                                      | #24   | `checkInputs.test.js`       |
-| SOE-API-001 (module export)                | —                                                               | #24   | `export.test.js`            |
-| SOE-AXIS-001/002/003/004                   | SOE-AXIS-001, SOE-AXIS-002, SOE-AXIS-003, SOE-AXIS-004          | #85   | `axis-limits.test.js`       |
-| SOE-MEAS-001/002 (measures whitelist)      | SOE-MEAS-001, SOE-MEAS-002                                      | #136  | `measure-list.test.js`      |
-| SOE-FILT-001..004 (shared filter contract) | SOE-FILT-001, SOE-FILT-002, SOE-FILT-003, SOE-FILT-004          | #136  | `../shared/filters.test.js` |
-| SOE-CTRL-002 (whole-chart reset)           | SOE-CTRL-002                                                    | #136  | `reset.test.js`             |
+| Requirement ID                             | Source matrix rows                                              | Issue | Test file                           |
+| ------------------------------------------ | --------------------------------------------------------------- | ----- | ----------------------------------- |
+| SOE-CFG-004/005/006/013/014                | SOE-CFG-004, SOE-CFG-005, SOE-CFG-006, SOE-CFG-013, SOE-CFG-014 | #24   | `configure.test.js`                 |
+| SOE-CFG-007/008/009 (defaults)             | SOE-CFG-007, SOE-CFG-008, SOE-CFG-009                           | #24   | `configure.test.js`                 |
+| SOE-FUNC-004/SOE-REG-048                   | SOE-FUNC-004, SOE-REG-048                                       | #24   | `configure.test.js`                 |
+| SOE-REG-037/038, SOE-REG-029/031           | SOE-REG-037, SOE-REG-038, SOE-REG-029, SOE-REG-031              | #24   | `structureData.test.js`             |
+| SOE-FUNC-004/SOE-REG-028 (axis)            | SOE-FUNC-004, SOE-REG-028                                       | #24   | `structureData.test.js`             |
+| SOE-FUNC-007/SOE-CFG-007/008 (stats)       | SOE-FUNC-007, SOE-CFG-007, SOE-CFG-008, SOE-REG-025             | #24   | `structureData.test.js`             |
+| SOE-FUNC-005/006, SOE-REG-004/033          | SOE-FUNC-005, SOE-FUNC-006, SOE-REG-004, SOE-REG-033            | #24   | `getScales.test.js`                 |
+| SOE-REG-028 (x-scale)                      | SOE-REG-028                                                     | #24   | `getScales.test.js`                 |
+| SOE-REG-011/049, SOE-CFG-006               | SOE-REG-011, SOE-REG-049, SOE-CFG-006                           | #24   | `getPlugins.test.js`                |
+| SOE-DATA-001/003 (schema)                  | SOE-DATA-001, SOE-DATA-003                                      | #24   | `checkInputs.test.js`               |
+| SOE-API-001 (module export)                | —                                                               | #24   | `export.test.js`                    |
+| SOE-AXIS-001/002/003/004                   | SOE-AXIS-001, SOE-AXIS-002, SOE-AXIS-003, SOE-AXIS-004          | #85   | `axis-limits.test.js`               |
+| SOE-MEAS-001/002 (measures whitelist)      | SOE-MEAS-001, SOE-MEAS-002                                      | #136  | `measure-list.test.js`              |
+| SOE-FILT-001..004 (shared filter contract) | SOE-FILT-001, SOE-FILT-002, SOE-FILT-003, SOE-FILT-004          | #166  | `../shared/filter-contract.test.js` |
+| SOE-CTRL-002 (whole-chart reset)           | SOE-CTRL-002                                                    | #136  | `reset.test.js`                     |
 
 ## Source-matrix routing status
 

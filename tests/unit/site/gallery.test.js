@@ -49,6 +49,13 @@ describe('site generator: gallery', () => {
     expect(experimentalBadge({ prototype: true })).toContain('>Prototype<');
     expect(experimentalBadge({ prototype: true })).toContain('site-badge-prototype');
     expect(experimentalBadge({ experimental: true })).toContain('>Experimental<');
+    // Each pill says what its tier means (#165).
+    expect(experimentalBadge({ prototype: true })).toContain(
+      'title="Not ready for production: on the docs site only, and not in the demo app."'
+    );
+    expect(experimentalBadge({ experimental: true })).toContain(
+      'title="Still being worked on, and fine to use: its behaviour and settings may change."'
+    );
     // Prototype wins when both are set; a plain renderer gets no badge.
     expect(experimentalBadge({ prototype: true, experimental: true })).toContain('>Prototype<');
     expect(experimentalBadge({})).toBe('');

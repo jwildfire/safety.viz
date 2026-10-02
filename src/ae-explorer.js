@@ -35,7 +35,7 @@ import {
 } from './ae-explorer/getPlugins.js';
 import { renderListing } from './histogram/listing.js';
 import { mountProfileRail, syncProfileRail, unmountProfileRail } from './profile-host.js';
-import { initFilterState, renderFilterControl } from './filters.js';
+import { initFilterState, reconcileFilters, renderFilterControl } from './filters.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const SUMMARY_FOOTNOTE =
@@ -283,7 +283,9 @@ class AEExplorer {
     try {
       checkInputs(this.rawData, this.settings);
     } catch (error) {
-      this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+      // The message is inserted as text: it names columns from the settings,
+      // which a host may fill from a file header, and must never become markup.
+      this.element.replaceChildren(createElement('div', 'sv-warning', error.message));
       throw error;
     }
     this.cleanRows = flagPlaceholders(this.rawData, this.settings);
@@ -371,15 +373,16 @@ class AEExplorer {
       }
       return true;
     });
-    this.activeFilterSpecs.forEach((spec) => {
+    reconcileFilters(this.state.filters, this.activeFilterSpecs, (spec) => {
       const source = spec.type === 'participant' ? this.cleanRows : eventRows;
-      const values = [
+      return [
         ...new Set(source.map((row) => String(row[spec.value_col] ?? '')).filter(Boolean))
       ].sort();
+    }).forEach(({ spec, values, selected }) => {
       const control = renderFilterControl({
         spec,
         values,
-        selected: this.state.filters[spec.value_col],
+        selected,
         onChange: (next) => {
           this.state.filters[spec.value_col] = next;
           this.render();

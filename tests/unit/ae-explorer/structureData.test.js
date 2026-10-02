@@ -119,6 +119,29 @@ describe('ae-explorer structureData', () => {
     expect(majorByKey(table, 'Cardiac disorders').cells.A).toEqual({ n: 1, tot: 2, per: 50 });
   });
 
+  it('AE-FILT-004: a multiple event filter with two checked values counts events carrying either (#166)', () => {
+    const { events } = build({ filterState: { AESEV: ['MILD', 'MODERATE'] } });
+    // Everything but A2's SEVERE arrhythmia.
+    expect(events.map((row) => row.AESEV).sort()).toEqual([
+      'MILD',
+      'MILD',
+      'MILD',
+      'MODERATE',
+      'MODERATE'
+    ]);
+    // One checked value is still a list, and an emptied list selects nothing.
+    expect(build({ filterState: { AESEV: ['SEVERE'] } }).events).toHaveLength(1);
+    expect(build({ filterState: { AESEV: [] } }).events).toHaveLength(0);
+  });
+
+  it('AE-FILT-004: a multiple participant filter with two checked values keeps both groups of participants (#166)', () => {
+    const { counts } = build({
+      overrides: { filters: [{ value_col: 'SEX', type: 'participant', multiple: true }] },
+      filterState: { SEX: ['F', 'M'] }
+    });
+    expect(counts.map((count) => count.n)).toEqual([4, 3]);
+  });
+
   it('AE-USER-013: the group difference is the unpooled Wald interval on the difference in proportions (#60)', () => {
     // p1 = 10/50 = .2, p2 = 5/50 = .1: diff 10, CI spans zero.
     const wide = calculateDifference(10, 50, 5, 50);

@@ -112,8 +112,8 @@
           "description": "Confidence level for the two-sided CI on the mean change and the mean difference; the ICH-E14 metric reads the upper bound of this interval (QT-CT-005)."
         },
         "filters": {
-          "$ref": "#/$defs/fieldList",
-          "description": "Optional filter columns rendered as controls (QT-CTRL-003)."
+          "$ref": "#/$defs/filterList",
+          "description": "Optional filter columns rendered as controls (QT-CTRL-003). Each entry is a column name or a { value_col, label, start, all, multiple } spec: `start` is the value the filter opens on, `all` (default true) is whether an \"All\" option is offered, and `multiple` (default false) makes it a checkbox multiselect."
         }
       }
     }
@@ -130,6 +130,37 @@
             "properties": {
               "value_col": { "type": "string" },
               "label": { "type": "string" }
+            }
+          }
+        ]
+      }
+    },
+    "filterList": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          { "type": "string" },
+          {
+            "type": "object",
+            "required": ["value_col"],
+            "properties": {
+              "value_col": { "type": "string" },
+              "label": { "type": "string" },
+              "start": {
+                "type": ["string", "number", "boolean", "array", "null"],
+                "default": null,
+                "description": "The value the filter opens on; an array of values for a `multiple` filter. 0 and false are real values, not an absent start. A value the data lacks is dropped with a console warning."
+              },
+              "all": {
+                "type": "boolean",
+                "default": true,
+                "description": "Whether the filter offers an \"All\" option. false removes it, and the filter then always holds one value: the first, unless `start` names another."
+              },
+              "multiple": {
+                "type": "boolean",
+                "default": false,
+                "description": "Render a checkbox multiselect instead of a dropdown; the rows shown are those matching any selected value."
+              }
             }
           }
         ]

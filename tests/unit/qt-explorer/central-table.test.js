@@ -181,6 +181,26 @@ describe('qt-explorer printed central-tendency values (QT-CT-008)', () => {
     expect(printed.every((cells) => cells.length > 0)).toBe(true);
   });
 
+  it('QT-CT-008: with triplicate ECGs n is the number of participants and the printed values do not move (#166)', () => {
+    const single = bodyRows(build());
+    // Every reading taken three times over, identically: the averaged cohort
+    // is the single-reading cohort, so the table must print the same rows —
+    // n = 2 participants, never 6 readings, and the same interval.
+    const instance = build(
+      {},
+      ecgRows().flatMap((row) => [row, { ...row }, { ...row }])
+    );
+    expect(bodyRows(instance)).toEqual(single);
+    expect(rowFor(instance, 'Week 4', 'High Dose')).toEqual([
+      'Week 4',
+      'High Dose',
+      '2',
+      '+55.5',
+      '+54.7',
+      '+56.3'
+    ]);
+  });
+
   it('QT-CT-008: median mode prints NA for the CI bounds (#136)', () => {
     const instance = build();
     instance.state.statistic = 'median';
