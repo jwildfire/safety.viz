@@ -6,7 +6,8 @@ import { fileURLToPath } from 'node:url';
 import {
   DEMO_APP_FONTS,
   publishDemoAppFonts,
-  renderDemoAppPage
+  renderDemoAppPage,
+  renderShell
 } from '../../../scripts/site-lib.mjs';
 import { STYLES } from '../../../src/app/styles.js';
 
@@ -144,5 +145,39 @@ describe('renderDemoAppPage', () => {
 
   it('APP-FILE-008: tells the app where the single file is, for its download link (#152)', () => {
     expect(html).toContain("download: './safety.viz-app.html'");
+  });
+});
+
+// The docs site's header sets the app's link apart (#172): it is the one entry
+// that leaves the docs pages for a page of its own.
+describe('site shell: the Demo app nav entry', () => {
+  const shell = readFileSync(
+    fileURLToPath(new URL('../../../site/shell.html', import.meta.url)),
+    'utf8'
+  );
+  const css = readFileSync(
+    fileURLToPath(new URL('../../../site/site.css', import.meta.url)),
+    'utf8'
+  );
+
+  it('APP-PAGE-029: the shell marks the Demo app link as the app link at every mount depth, and its text stays "Demo app" (#172)', () => {
+    for (const root of ['', '../']) {
+      const page = renderShell({ shell, title: 'T', content: 'C', root, renderers: [] });
+      expect(page).toContain(`<a class="nav-app" href="${root}demo/index.html">Demo app</a>`);
+    }
+    // One such link, and no other entry carries the mark.
+    expect(shell.match(/class="nav-app"/g)).toHaveLength(1);
+    // It comes first in the header, before the Gallery entry.
+    expect(shell.indexOf('class="nav-app"')).toBeLessThan(shell.indexOf('{{galleryNav}}'));
+    expect(shell.indexOf('class="nav-app"')).toBeGreaterThan(shell.indexOf('class="site-nav"'));
+  });
+
+  it('APP-PAGE-029: the stylesheet gives the app link a border and draws its arrow as decoration, not as text (#172)', () => {
+    const rule = css.match(/\.site-nav a\.nav-app \{([^}]*)\}/);
+    expect(rule, 'no .site-nav a.nav-app rule').not.toBeNull();
+    expect(rule[1]).toMatch(/border: 1px solid/);
+    const arrow = css.match(/\.site-nav a\.nav-app::after \{([^}]*)\}/);
+    expect(arrow, 'no ::after arrow').not.toBeNull();
+    expect(arrow[1]).toMatch(/mask:/);
   });
 });

@@ -265,6 +265,7 @@ a.site-version:hover {
 .site-nav {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 0.35rem 1.1rem;
 }
 
@@ -284,6 +285,41 @@ a.site-version:hover {
   color: var(--accent-bright);
   border-bottom: 2px solid var(--accent-bright);
   padding-bottom: 0.1rem;
+}
+
+/* The Demo app link (#172) is set apart from its neighbours: it is the one
+   entry that leaves the docs pages for a page of its own. A bordered pill, with
+   an arrow drawn as decoration so the link's text stays "Demo app". */
+.site-nav a.nav-app {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.18rem 0.7rem;
+  border: 1px solid var(--accent-bright);
+  border-radius: 999px;
+  color: var(--side-ink);
+  white-space: nowrap;
+  transition:
+    background 120ms ease,
+    color 120ms ease;
+}
+
+.site-nav a.nav-app::after {
+  content: '';
+  flex: none;
+  width: 0.62em;
+  height: 0.62em;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3.5 2.25h6.25V8.5M9.5 2.5 2.5 9.5' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+  mask: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3.5 2.25h6.25V8.5M9.5 2.5 2.5 9.5' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+}
+
+.site-nav a.nav-app:hover,
+.site-nav a.nav-app:focus-visible {
+  background: var(--accent-bright);
+  color: var(--side-bg);
 }
 
 /* Gallery dropdown (#71): the Gallery link plus an adjacent disclosure caret,
