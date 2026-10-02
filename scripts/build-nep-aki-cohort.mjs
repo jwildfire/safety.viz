@@ -39,7 +39,8 @@
 // this is safe to re-run after scripts/build-demo-data.mjs regenerates
 // adbds.csv from source, and after build-hep-composite-cohort.mjs.
 //
-// Usage:  node scripts/build-nep-aki-cohort.mjs
+// Usage:  node scripts/build-nep-aki-cohort.mjs [--out-dir <dir>]
+//   Reads and rewrites adbds.csv in --out-dir (default: site/data).
 //
 // Provenance is documented in docs/DATA_SOURCES.md, and the invariants above are
 // asserted against the committed CSV by tests/unit/nep-explorer/cohort.test.js
@@ -53,7 +54,14 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const dataPath = path.join(rootDir, 'site', 'data', 'adbds.csv');
+// `--out-dir` points the script at another copy of the extract — how
+// scripts/check-demo-data.mjs reruns it without touching the committed file (#140).
+const outDirFlag = process.argv.indexOf('--out-dir');
+const dataDir =
+  outDirFlag === -1
+    ? path.join(rootDir, 'site', 'data')
+    : path.resolve(process.argv[outDirFlag + 1]);
+const dataPath = path.join(dataDir, 'adbds.csv');
 const PREFIX = 'AKI-';
 const SITE = 'Nephrology Research Unit';
 const TEST = 'Creatinine';
