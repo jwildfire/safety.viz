@@ -64,6 +64,13 @@ each chart's site page links its own.
 **Using R?** [gsm.safety](https://github.com/jwildfire/gsm.safety) wraps this
 same bundle as `Widget_*` htmlwidgets — one per chart.
 
+**Building another chart library beside it?** The parts every chart shares —
+the control sidebar, filters, record listing, participant rail and the bundled
+Chart.js — are exported as `SafetyViz.kit` (`kit` in the ESM build), so a second
+library on the page builds from them instead of copying them. The
+[kit reference](https://jwildfire.github.io/safety.viz/kit/index.html) lists
+every member; a change to one is a breaking change.
+
 ## Example data
 
 The demos and evidence reports run on
