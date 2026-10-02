@@ -23,7 +23,7 @@ const onStandardSet = modules.filter(([, entry]) => !entry.externalDomains);
 const asList = (value) => [].concat(value);
 
 // A made-up chart that reads domains outside the standard set. No shipped
-// chart does since the experimental Patient Journey Explorer left the manifest
+// chart does since the Patient Journey Explorer, a prototype, left the manifest
 // (#165); the page's handling of one is kept, and held by this entry.
 const OUTSIDE = {
   export: 'visitCalendar',
@@ -174,7 +174,7 @@ describe('site generator: domains page (#139)', () => {
   });
 
   it('PF-SITE-008: a chart outside the standard set is shown under its own heading with the domains it reads; the page as built has no such chart (#139, #165)', () => {
-    // As built: every chart reads the standard set, and the experimental
+    // As built: every chart reads the standard set, and the prototype
     // Patient Journey Explorer is not on the page.
     expect(html).not.toContain('id="outside"');
     expect(html).not.toContain('href="#outside"');
@@ -236,7 +236,7 @@ describe('site generator: domains page (#139)', () => {
     }
   });
 
-  it('PF-SITE-011: renderers the manifest does not list never appear: the planned ones, and the experimental Patient Journey Explorer (#139, #165)', () => {
+  it('PF-SITE-011: renderers the manifest does not list never appear: the planned ones, and the prototype Patient Journey Explorer (#139, #165)', () => {
     const unlisted = config.renderers.filter((renderer) => !manifest.modules[renderer.module]);
     expect(unlisted.map((renderer) => renderer.module)).toEqual([
       'paneled-outlier-explorer',

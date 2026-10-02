@@ -20,7 +20,7 @@ const demoMappings = () =>
   );
 
 // A made-up chart that reads domains outside the standard set. No chart the
-// app lists does since the experimental Patient Journey Explorer left the
+// app lists does since the Patient Journey Explorer, a prototype, left the
 // manifest (#165); the app's handling of one is kept, and held by this entry.
 const withOutside = {
   ...manifest,

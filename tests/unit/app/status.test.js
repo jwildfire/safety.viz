@@ -20,7 +20,7 @@ const demoMappings = () =>
   );
 
 // A made-up chart that reads domains outside the standard set. No chart the
-// app lists does since the experimental Patient Journey Explorer left the
+// app lists does since the Patient Journey Explorer, a prototype, left the
 // manifest (#165); the app's handling of one is kept, and held by this entry.
 const withOutside = {
   ...manifest,
@@ -47,7 +47,7 @@ describe('demo app: chart status', () => {
     const ready = Object.entries(states(status)).filter(([, state]) => state === 'ready');
     expect(ready).toHaveLength(13);
     expect(supportedCount(status)).toEqual({ ready: 13, total: 13 });
-    // The experimental Patient Journey Explorer is not among the charts.
+    // The Patient Journey Explorer, a prototype, is not among the charts.
     expect(status).not.toHaveProperty('patient-journey-explorer');
   });
 

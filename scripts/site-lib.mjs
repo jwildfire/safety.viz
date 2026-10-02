@@ -1026,15 +1026,30 @@ export function renderApiPage(
 // real example data (the renderer's `data` config key, defaulting to the
 // shared ADBDS extract, #26). The .demo-page wrapper widens the layout
 // (site.css) so the control sidebar and chart get full room.
-// A small status pill for a page title / gallery card: "Prototype" when the
-// config marks a renderer a prototype (a new chart still under evaluation, e.g.
-// the hep-waterfall shipped alongside v1.5), else "Experimental" for an
-// exploratory, not-yet-stable renderer. Prototype takes precedence.
+// A small status pill for a page title / gallery card. A chart has one of three
+// tiers, set in site/config.json (#165):
+//
+//   prototype     "Prototype": not ready for production. Shown on the docs site
+//                 only; kept out of the portfolio manifest, and so out of the
+//                 demo app and the Domains page; not counted a finished chart.
+//   experimental  "Experimental": still being worked on, and fine to ship. In
+//                 the manifest and the demo app; its behaviour and settings may
+//                 change.
+//   neither       stable: no pill.
+//
+// Prototype takes precedence when both are set. The pill's title says what the
+// tier means, for whoever hovers it.
+export const STATUS_MEANING = {
+  prototype: 'Not ready for production: on the docs site only, and not in the demo app.',
+  experimental: 'Still being worked on, and fine to use: its behaviour and settings may change.'
+};
 export function experimentalBadge(renderer) {
   if (renderer && renderer.prototype) {
-    return ` <span class="site-badge site-badge-prototype">Prototype</span>`;
+    return ` <span class="site-badge site-badge-prototype" title="${STATUS_MEANING.prototype}">Prototype</span>`;
   }
-  return renderer && renderer.experimental ? ` <span class="site-badge">Experimental</span>` : '';
+  return renderer && renderer.experimental
+    ? ` <span class="site-badge" title="${STATUS_MEANING.experimental}">Experimental</span>`
+    : '';
 }
 
 export function renderDemoPage({ renderer, version }) {
@@ -1367,7 +1382,7 @@ function chartSection(module, entry, { domains, hasPages, repoUrl, root }) {
  * with the column settings it needs and which of them its schema requires.
  * A chart that reads domains outside the standard set would be listed last,
  * under its own heading, with no settings table; the manifest lists none since
- * the experimental Patient Journey Explorer left it (#165).
+ * the Patient Journey Explorer, a prototype, left it (#165).
  * @param {Object} options
  * @param {Object} options.manifest The portfolio manifest (src/data/portfolio.json).
  * @param {Object} options.config site/config.json: `repoUrl`, and `renderers` to tell which charts have demo and API pages to link.

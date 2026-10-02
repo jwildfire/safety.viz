@@ -15,7 +15,7 @@ const DEMO = ['adsl.csv', 'adae.csv', 'adbds.csv', 'adeg.csv'].map((name) => ({
 }));
 
 // A made-up chart that reads domains outside the standard set. No chart the
-// app lists does since the experimental Patient Journey Explorer left the
+// app lists does since the Patient Journey Explorer, a prototype, left the
 // manifest (#165); the app's handling of one is kept, and held by this entry.
 const withOutside = {
   ...manifest,
@@ -98,7 +98,7 @@ describe('demo app: the page', () => {
       Object.values(manifest.modules).map((entry) => entry.title.replace('Safety ', ''))
     );
     expect(groups.flatMap((group) => group.charts)).toHaveLength(13);
-    // The experimental Patient Journey Explorer is not among them.
+    // The Patient Journey Explorer, a prototype, is not among them.
     expect(item(root, 'patient-journey-explorer')).toBeNull();
     // Nothing is loaded: the page opens on the data view and no chart is ready.
     expect(root.querySelector('.sva-count').textContent).toBe(
