@@ -916,6 +916,22 @@ class SafetyHepExplorer {
 
     view.teardown(this);
     view.render(this, { carriedIds });
+
+    // The excluded-record count (HEP-CTRL-018) is stated here rather than by a
+    // view, because the exclusion is applied to the row set every view reduces
+    // from: whichever view is open, the reader is told how many records went
+    // (#166). A reader's own choice, not a data problem, so a plain span rather
+    // than the warning style the removed-record note carries.
+    if (this.unscheduledRecords) {
+      const count = this.unscheduledRecords;
+      this.notes.append(
+        createElement(
+          'span',
+          null,
+          `${count} record${count === 1 ? '' : 's'} at unscheduled visits excluded.`
+        )
+      );
+    }
   }
 
   /**
