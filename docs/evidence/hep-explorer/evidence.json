@@ -1,6 +1,6 @@
 {
   "module": "hep-explorer",
-  "generatedAt": "2026-10-02T18:25:08.239Z",
+  "generatedAt": "2026-10-02T18:30:09.143Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "37047224085",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37047224085"
+    "id": "37047789673",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37047789673"
   },
   "records": [
     {
@@ -3450,11 +3450,11 @@
       "screenshots": []
     },
     {
-      "test": "demo app: the page APP-PAGE-011: a second file placed in a domain replaces the first, and the page says so (#150)",
+      "test": "demo app: the page APP-PAGE-011: a second file placed in a domain takes it, and the first is kept on the page, set aside (#150, #165)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-PAGE-011"],
-      "issueRefs": [150],
+      "issueRefs": [],
       "screenshots": []
     },
     {
