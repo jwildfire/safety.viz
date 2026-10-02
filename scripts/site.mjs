@@ -20,10 +20,12 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   parseCoverage,
+  publishManifest,
   renderAboutPage,
   renderApiPage,
   renderArchitecturePage,
   renderDemoPage,
+  renderDomainsPage,
   renderEvidencePage,
   renderGallery,
   renderGuidePage,
@@ -86,6 +88,21 @@ page(
   '',
   'How safety.viz works: JSON-Schema data contracts, the shared renderer shell, ' +
     'committed versioned bundles, and the gsm.safety R bindings.'
+);
+
+// Domains page (#139): the standard domain set and every chart's column needs,
+// rendered from the portfolio manifest — which is also served from the site
+// root, so a URL can quote the same file the bundle exports as `portfolio`.
+const manifestFile = path.join(rootDir, 'src/data/portfolio.json');
+publishManifest(manifestFile, siteDir);
+mkdirSync(path.join(siteDir, 'domains'), { recursive: true });
+page(
+  path.join(siteDir, 'domains/index.html'),
+  'Standard domain set · safety.viz',
+  renderDomainsPage({ manifest: JSON.parse(readFileSync(manifestFile, 'utf8')), config }),
+  '../',
+  'The standard domain set a study supplies to safety.viz: its tables and their columns, ' +
+    'the charts each one feeds, and the column settings every chart needs.'
 );
 
 // Shared dist bundle for the demo pages (IIFE + source map).

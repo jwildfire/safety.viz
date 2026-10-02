@@ -2,7 +2,7 @@
 // _site/. Plain Node, no framework, per design #21 — and every internal URL
 // relative, so one build serves the site root, /dev/, and /pr/{N}/ unchanged.
 
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { copyFileSync, existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 
 export function escapeHtml(text) {
@@ -1148,6 +1148,214 @@ export function renderGuidePage({ renderer, config, guideMarkdown }) {
   const body = `<div class="guide-body">${mdBlock(guideMarkdown, { headingIds: true })}</div>`;
   html.push(toc ? `<div class="guide-layout">${toc}${body}</div>` : body);
   return html.join('\n');
+}
+
+// Domains page (#139, obot.roadmap#325): the standard domain set and what
+// every chart reads from it, rendered from the portfolio manifest
+// (src/data/portfolio.json) alone. tests/unit/portfolio/ holds the manifest to
+// the charts' own data schemas, so the page inherits that agreement instead of
+// restating any of it by hand. site/config.json contributes only the
+// repository URL and which charts have site pages to link to.
+
+const asList = (value) => [].concat(value);
+
+// Comma-separated in-page links: to chart sections from [module, entry] pairs,
+// and to domain sections from domain ids.
+const chartLinks = (entries) =>
+  entries
+    .map(([module, entry]) => `<a href="#chart-${module}">${escapeHtml(entry.title)}</a>`)
+    .join(', ');
+
+const domainLinks = (ids, domains) =>
+  ids.map((id) => `<a href="#domain-${id}">${escapeHtml(domains[id].label)}</a>`).join(', ');
+
+// One domain: what a row is, the vendored demo extract that supplies it, the
+// charts that cannot draw without it kept apart from those that only add it
+// when supplied, and its columns.
+function domainSection(id, domain, modules, repoUrl) {
+  const feeds = modules.filter(([, entry]) => entry.domains.includes(id));
+  const optional = modules.filter(([, entry]) => (entry.optionalDomains || []).includes(id));
+  const rows = Object.entries(domain.columns)
+    .map(
+      ([name, column]) =>
+        `<tr><td><code>${escapeHtml(name)}</code></td>` +
+        `<td>${escapeHtml(column.label)}</td>` +
+        `<td>${escapeHtml(column.description)}</td></tr>`
+    )
+    .join('');
+  return (
+    `<section class="domain" id="domain-${id}">` +
+    `<h2>${escapeHtml(domain.label)} <code>${id}</code></h2>` +
+    `<p class="tagline">${escapeHtml(domain.grain)}</p>` +
+    `<ul>` +
+    `<li>Demo extract: <a href="${repoUrl}/blob/HEAD/site/data/${escapeHtml(domain.demo)}">` +
+    `<code>${escapeHtml(domain.demo)}</code></a></li>` +
+    (feeds.length ? `<li>Charts it feeds: ${chartLinks(feeds)}</li>` : '') +
+    (optional.length
+      ? `<li>Charts that add it when it is supplied: ${chartLinks(optional)}</li>`
+      : '') +
+    `</ul>` +
+    `<div class="table-scroll"><table><thead><tr><th>Column</th><th>Label</th>` +
+    `<th>What it holds</th></tr></thead><tbody>${rows}</tbody></table></div>` +
+    `</section>`
+  );
+}
+
+// One row per column setting. Whether it is required comes second, so the mark
+// stays in view on a phone, where the table scrolls sideways. A setting read
+// from two tables (time-to-event's id_col) names both; a setting the chart's
+// schema gives no default says so rather than printing null.
+function settingRows(settings, domains) {
+  return Object.entries(settings)
+    .map(([key, setting]) => {
+      const ids = asList(setting.domain);
+      const column = setting.column === null ? null : domains[ids[0]].columns[setting.column];
+      return (
+        `<tr><td><code>${escapeHtml(key)}</code></td>` +
+        `<td>${setting.required ? '<span class="badge">required</span>' : 'optional'}</td>` +
+        (setting.column === null
+          ? `<td>No default</td><td>—</td>`
+          : `<td><code>${escapeHtml(setting.column)}</code></td>` +
+            `<td>${column ? escapeHtml(column.label) : '—'}</td>`) +
+        `<td>${domainLinks(ids, domains)}</td></tr>`
+      );
+    })
+    .join('');
+}
+
+// One chart: links to its demo and API pages when the site has them (the data
+// schema in the repository always exists), the domains it reads, its note, and
+// its column settings. A chart outside the standard set names its own domains
+// and maps no settings, so it gets no table — only a pointer to where its
+// columns are documented.
+function chartSection(module, entry, { domains, hasPages, repoUrl, root }) {
+  const links = [
+    ...(hasPages
+      ? [
+          `<a href="${root}${module}/index.html">Live demo</a>`,
+          `<a href="${root}${module}/api.html">API reference</a>`
+        ]
+      : []),
+    `<a href="${repoUrl}/blob/HEAD/src/data/schema/${module}.json">Data schema</a>`
+  ].join(' · ');
+  const external = entry.externalDomains || [];
+  const optional = entry.optionalDomains || [];
+  const reads =
+    (entry.domains.length ? `<li>Reads: ${domainLinks(entry.domains, domains)}</li>` : '') +
+    (optional.length
+      ? `<li>Also reads, when supplied: ${domainLinks(optional, domains)}</li>`
+      : '') +
+    (external.length
+      ? `<li>Reads domains of its own: ` +
+        `${external.map((id) => `<code>${escapeHtml(id)}</code>`).join(', ')}</li>`
+      : '');
+  const rows = settingRows(entry.settings, domains);
+  return (
+    `<section class="chart-needs" id="chart-${module}">` +
+    `<h3>${escapeHtml(entry.title)}</h3>` +
+    `<p class="card-links">${links}</p>` +
+    `<ul>${reads}</ul>` +
+    (entry.note ? `<p>${escapeHtml(entry.note)}</p>` : '') +
+    (external.length && hasPages
+      ? `<p>Its columns are listed under the` +
+        ` <a href="${root}${module}/api.html#data-contract">data contract</a>` +
+        ` on its API reference.</p>`
+      : '') +
+    (rows
+      ? `<div class="table-scroll"><table><thead><tr><th>Setting</th><th>Required</th>` +
+        `<th>Default column</th><th>What it holds</th><th>Read from</th></tr></thead>` +
+        `<tbody>${rows}</tbody></table></div>`
+      : '') +
+    `</section>`
+  );
+}
+
+/**
+ * The Domains page: the standard domain set a study supplies, one section per
+ * domain with its columns and the charts it feeds, then one section per chart
+ * with the column settings it needs and which of them its schema requires.
+ * Charts that read domains outside the standard set (the Patient Journey
+ * Explorer) are listed last, under their own heading, with no settings table.
+ * @param {Object} options
+ * @param {Object} options.manifest The portfolio manifest (src/data/portfolio.json).
+ * @param {Object} options.config site/config.json: `repoUrl`, and `renderers` to tell which charts have demo and API pages to link.
+ * @param {string} [options.root='../'] Prefix from the page to the site root; the page is built at domains/index.html.
+ * @returns {string} The page content, for the shared shell.
+ */
+export function renderDomainsPage({ manifest, config, root = '../' }) {
+  const { domains } = manifest;
+  const domainIds = Object.keys(domains);
+  const modules = Object.entries(manifest.modules);
+  const standard = modules.filter(([, entry]) => !entry.externalDomains);
+  const outside = modules.filter(([, entry]) => entry.externalDomains);
+  const withPages = new Set(
+    config.renderers
+      .filter((renderer) => renderer.status === 'available')
+      .map((renderer) => renderer.module)
+  );
+  const section = ([module, entry]) =>
+    chartSection(module, entry, {
+      domains,
+      hasPages: withPages.has(module),
+      repoUrl: config.repoUrl,
+      root
+    });
+
+  const html = [];
+  html.push(
+    `<div class="domains-page">`,
+    `<h1>Standard domain set</h1>`,
+    `<p class="tagline">The standard domain set is the ${domainIds.length} tables a study` +
+      ` supplies to safety.viz. Their column names are the ADaM-shaped defaults the charts` +
+      ` already expect, so data in this shape feeds ${standard.length} of the` +
+      ` ${modules.length} charts without renaming a column, and a column under another name` +
+      ` is mapped through that chart&#39;s settings.</p>`,
+    `<dl class="facts">` +
+      `<div class="fact"><dt>Domains</dt><dd>${domainLinks(domainIds, domains)}</dd></div>` +
+      `<div class="fact"><dt>Charts</dt><dd><a href="#charts">${standard.length} read the` +
+      ` standard set</a>` +
+      (outside.length
+        ? `<span class="sub"><a href="#outside">${outside.length}` +
+          ` ${outside.length === 1 ? 'reads' : 'read'} domains of its own</a></span>`
+        : '') +
+      `</dd></div>` +
+      `<div class="fact"><dt>Manifest</dt><dd><a href="${root}portfolio.json">portfolio.json</a>` +
+      `<span class="sub">The file this page is generated from, described by its` +
+      ` <a href="${config.repoUrl}/blob/HEAD/src/data/schema/portfolio.json">JSON Schema</a>` +
+      `</span></dd></div>` +
+      `</dl>`,
+    ...domainIds.map((id) => domainSection(id, domains[id], modules, config.repoUrl)),
+    `<h2 id="charts">What each chart needs</h2>`,
+    `<p>Each setting names the column a chart reads for one purpose, and defaults to the` +
+      ` column shown. Required marks the settings the chart&#39;s own data schema lists as` +
+      ` required; the rest are optional. A setting shown with no default reads no column until` +
+      ` one is named, and the chart&#39;s API reference says what each setting does.</p>`,
+    ...standard.map(section)
+  );
+  if (outside.length) {
+    html.push(
+      `<h2 id="outside">Outside the standard set</h2>`,
+      `<p>${outside.length} ${outside.length === 1 ? 'chart reads' : 'charts read'} domains the` +
+        ` standard set does not supply, so no column settings are mapped for` +
+        ` ${outside.length === 1 ? 'it' : 'them'} here.</p>`,
+      ...outside.map(section)
+    );
+  }
+  html.push(`</div>`);
+  return html.join('\n');
+}
+
+/**
+ * Serve the portfolio manifest from the site root, byte for byte, so a URL can
+ * quote exactly the file the bundle exports and the Domains page is built from.
+ * @param {string} manifestFile Path of the manifest (src/data/portfolio.json).
+ * @param {string} siteDir The site output directory.
+ * @returns {string} Path of the served copy, `<siteDir>/portfolio.json`.
+ */
+export function publishManifest(manifestFile, siteDir) {
+  const served = path.join(siteDir, 'portfolio.json');
+  copyFileSync(manifestFile, served);
+  return served;
 }
 
 // Gallery nav dropdown (#71): the top-level "Gallery" link keeps navigating to
