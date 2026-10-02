@@ -60,6 +60,30 @@ test.describe('docs site', () => {
     expect(errors).toEqual([]);
   });
 
+  test('APP-LOAD-022: the built site serves every demo study beside the app, and the app loads each (#159)', async ({
+    page
+  }) => {
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') errors.push(msg.text());
+    });
+    await page.goto('/_site/demo/index.html#data');
+    await page.evaluate('window.__safetyVizApp.ready');
+    const menu = page.locator('.sva-side select.sva-study');
+    await expect(menu).toHaveValue('pilot');
+    for (const [study, files] of [
+      ['renamed', ['dm.csv', 'ae.csv', 'labs_final.csv', 'ecg.json']],
+      ['liver', ['adbds-abnbl.csv']],
+      ['pilot', ['adsl.csv', 'adae.csv', 'adbds.csv', 'adeg.csv']]
+    ]) {
+      await menu.selectOption(study);
+      await expect(page.locator('.sva-loaded-name')).toHaveText(files);
+    }
+    expect((await page.request.get('/_site/demo/renamed/dm.csv')).ok()).toBe(true);
+    expect(errors).toEqual([]);
+  });
+
   test('gallery shows one card per available renderer (#7)', async ({ page }) => {
     await page.goto('/_site/index.html');
     await expect(page.locator('.card.status-available')).toHaveCount(available.length);

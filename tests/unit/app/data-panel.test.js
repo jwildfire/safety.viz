@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import manifest from '../../../src/data/portfolio.json';
 import { mountApp } from '../../../src/app/page.js';
 import { MAX_FILE_BYTES, readFiles } from '../../../src/app/data-panel.js';
+import { DEMO_STUDIES } from '../../../src/app/studies.js';
 
 // The renamed-column study (scripts/build-app-fixture.mjs): SDTM-style names
 // the app can guess, names it cannot, renamed key measures, one JSON file and
@@ -17,6 +18,19 @@ const fixtureDir = path.join(
 );
 const fixture = (name) => ({ name, text: readFileSync(path.join(fixtureDir, name), 'utf8') });
 const STUDY = ['labs_final.csv', 'dm.csv', 'ae.csv', 'ecg.json'].map(fixture);
+
+// The demo studies as the site serves them: each study's files under the demo
+// base, in the study's own directory, read here from where the repository keeps them.
+const repoDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '../../..');
+const demoFetch = () =>
+  vi.fn(async (url) => {
+    const relative = url.replace('./data/', '');
+    const study = DEMO_STUDIES.find((item) => item.dir && relative.startsWith(item.dir)) || {
+      dir: '',
+      source: 'site/data'
+    };
+    return readFileSync(path.join(repoDir, study.source, relative.slice(study.dir.length)), 'utf8');
+  });
 
 function fakeCharts() {
   const charts = { portfolio: manifest };
@@ -57,6 +71,20 @@ describe('demo app: the data panel', () => {
   const tag = (id) => root.querySelector(`.sva-item[data-view="${id}"] .sva-tag`).textContent;
   const count = () => root.querySelector('.sva-count').textContent;
   const notes = () => [...root.querySelectorAll('.sva-note')].map((node) => node.textContent);
+  const step = (id) => root.querySelector(`.sva-step[data-step="${id}"]`);
+  const steps = () =>
+    ['load', 'map', 'open'].map((id) => [
+      step(id).querySelector('.sva-step-title').textContent,
+      step(id).dataset.state,
+      step(id).querySelector('.sva-step-status').textContent
+    ]);
+  const action = (name) => root.querySelector(`.sva-side [data-action="${name}"]`);
+  const loaded = () =>
+    [...root.querySelectorAll('.sva-loaded-file')].map((node) => [
+      node.querySelector('.sva-loaded-name').textContent,
+      node.querySelector('.sva-loaded-detail').textContent,
+      [...node.querySelectorAll('.sva-flag')].map((flag) => flag.textContent)
+    ]);
 
   beforeEach(() => {
     document.body.innerHTML = '<div id="app"></div>';
@@ -311,16 +339,214 @@ describe('demo app: the data panel', () => {
     ]);
   });
 
-  it('APP-LOAD-013: an empty page offers the drop zone and says nothing is loaded (#151)', () => {
-    expect(root.querySelector('.sva-drop').textContent).toContain(
-      'Drop CSV or JSON files here, or Choose files'
-    );
+  it('APP-LOAD-013: an empty page offers the drop zone and a file picker, and says nothing is loaded (#151, #159)', () => {
+    expect(root.querySelector('.sva-drop').textContent).toContain('Drop CSV or JSON files here');
     expect(root.querySelector('.sva-drop-note').textContent).toBe(
       'They are read in this browser and sent nowhere.'
     );
     const input = root.querySelector('.sva-file-input');
     expect(input.multiple).toBe(true);
-    expect(root.querySelector('.sva-data .sva-message').textContent).toBe('No files are loaded.');
+    // The picker is opened from the sidebar's first step.
+    const click = vi.spyOn(input, 'click').mockImplementation(() => {});
+    action('choose-files').click();
+    expect(click).toHaveBeenCalledTimes(1);
+    expect(root.querySelector('.sva-side .sva-loaded-empty').textContent).toBe(
+      'No files are loaded.'
+    );
     expect(root.querySelector('[data-action="download-mapping"]')).toBeNull();
+  });
+
+  // ---- the sidebar (#159) ----------------------------------------------------
+
+  it('APP-LOAD-017: the sidebar shows the three steps as live status, each with its own actions (#159)', () => {
+    // Nothing loaded: the first step is the current one and offers the picker only.
+    expect(steps()).toEqual([
+      ['Load your files', 'current', 'No files loaded'],
+      ['Check the mapping', 'todo', 'Nothing to check yet'],
+      ['Open a chart', 'todo', '0 of 14 charts ready']
+    ]);
+    expect(action('choose-files')).not.toBeNull();
+    for (const name of ['reset', 'download-mapping', 'open-chart']) expect(action(name)).toBeNull();
+
+    // The renamed study: loaded, with guesses to check and six rows charts need.
+    app.loadFiles(STUDY);
+    expect(steps()).toEqual([
+      ['Load your files', 'done', '4 files loaded'],
+      ['Check the mapping', 'current', '23 guessed, 6 needed by a chart'],
+      ['Open a chart', 'todo', '7 of 14 charts ready']
+    ]);
+    for (const name of ['reset', 'download-mapping', 'open-chart']) {
+      expect(action(name)).not.toBeNull();
+    }
+
+    // A correction is counted at once.
+    setRow('eg', 'column', 'ARM', 'TREATMENT');
+    expect(steps()[1]).toEqual(['Check the mapping', 'current', '23 guessed, 5 needed by a chart']);
+    expect(steps()[2]).toEqual(['Open a chart', 'todo', '8 of 14 charts ready']);
+
+    // The third step opens the first chart the data supports.
+    action('open-chart').click();
+    expect(app.state.selected).toBe('histogram');
+  });
+
+  it('APP-LOAD-017: the mapping step is done when no row is guessed and no chart is short of one (#159)', () => {
+    app.loadFiles(STUDY);
+    for (const [domain, kind, key, value] of CORRECTIONS) setRow(domain, kind, key, value);
+    expect(steps()[1]).toEqual(['Check the mapping', 'current', '23 guessed, 0 needed by a chart']);
+    // Confirming a guess is choosing it: every guessed row set to the value it already has.
+    for (const [domain, mapping] of Object.entries(app.state.mappings)) {
+      for (const [kind, rows] of [
+        ['column', mapping.columns],
+        ['measure', mapping.measures]
+      ]) {
+        for (const [key, row] of Object.entries(rows)) {
+          if (row.source === 'guessed') setRow(domain, kind, key, row.value);
+        }
+      }
+    }
+    expect(steps()).toEqual([
+      ['Load your files', 'done', '4 files loaded'],
+      ['Check the mapping', 'done', '0 guessed, 0 needed by a chart'],
+      ['Open a chart', 'current', '13 of 14 charts ready']
+    ]);
+  });
+
+  it('APP-LOAD-018: the sidebar lists each loaded file with its domain and row count, flagged only where a row wants a look (#159)', () => {
+    app.loadFiles([...STUDY, fixture('site_notes.csv')]);
+    expect(loaded()).toEqual([
+      ['dm.csv', 'Subject-level, 24 rows', ['1 guessed', '1 needed']],
+      ['ae.csv', 'Adverse events, 136 rows', ['4 guessed', '1 needed']],
+      ['labs_final.csv', 'Labs and vitals, 2,223 rows', ['8 guessed', '3 needed']],
+      ['ecg.json', 'ECG, 516 rows', ['10 guessed', '1 needed']],
+      ['site_notes.csv', 'Not placed, 3 rows', []]
+    ]);
+    // A settled file carries no flag.
+    setRow('subject', 'column', 'EOSDY', 'LASTDAY');
+    setRow('subject', 'column', 'USUBJID', 'SUBJID');
+    expect(loaded()[0]).toEqual(['dm.csv', 'Subject-level, 24 rows', []]);
+    // Choosing an entry moves to that file's card.
+    root.querySelector('.sva-loaded-file[data-domain="bds"]').click();
+    expect(document.activeElement).toBe(card('bds'));
+    root.querySelector('.sva-loaded-file[data-unplaced="site_notes.csv"]').click();
+    expect(document.activeElement).toBe(root.querySelector('.sva-file.sva-unplaced'));
+  });
+
+  it('APP-LOAD-019: Reset clears every file, mapping, held mapping file and note, back to the empty drop zone (#159)', () => {
+    app.loadFiles([
+      ...STUDY,
+      fixture('site_notes.csv'),
+      { name: 'saved.json', text: JSON.stringify({ safetyVizMapping: 1, domains: {} }) }
+    ]);
+    setRow('eg', 'column', 'ARM', 'TREATMENT');
+    expect(notes().length).toBeGreaterThan(0);
+    action('reset').click();
+    expect(app.state.files).toEqual({});
+    expect(app.state.mappings).toEqual({});
+    expect(app.state.placements).toEqual({});
+    expect(app.state.unplaced).toEqual([]);
+    expect(app.state.saved).toBeNull();
+    expect(notes()).toEqual([]);
+    expect(root.querySelectorAll('.sva-file')).toHaveLength(0);
+    expect(tag('data')).toBe('no files');
+    expect(count()).toBe('0 of 14 charts supported by the loaded data');
+    expect(steps()[0]).toEqual(['Load your files', 'current', 'No files loaded']);
+    expect(action('reset')).toBeNull();
+    // A file loaded afterwards takes no row from the mapping file that was held.
+    app.loadFiles(STUDY);
+    expect(app.state.mappings.eg.columns.ARM).toEqual({ value: null, source: null });
+  });
+
+  it('APP-LOAD-020: served with demo studies, the sidebar offers each by name, and choosing one replaces what is loaded (#159)', async () => {
+    const fetchText = demoFetch();
+    document.body.innerHTML = '<div id="demo"></div>';
+    root = document.querySelector('#demo');
+    app = mountApp(root, { charts: fakeCharts(), manifest, demo: { base: './data/' }, fetchText });
+    await app.ready;
+    app.select('data');
+    const menu = () => root.querySelector('.sva-side select.sva-study');
+    const names = () => Object.values(app.state.files).map((file) => file.name);
+    expect([...menu().options].map((option) => [option.value, option.textContent])).toEqual([
+      ['', 'Choose a demo study'],
+      ['pilot', 'Pilot study'],
+      ['renamed', 'Renamed columns'],
+      ['liver', 'Liver cohort, labs only']
+    ]);
+    // The page opens on the first study, and says what is in it.
+    expect(menu().value).toBe('pilot');
+    expect(names()).toEqual(['adsl.csv', 'adae.csv', 'adbds.csv', 'adeg.csv']);
+    expect(root.querySelector('.sva-study-note').textContent).toContain(
+      '110 synthetic liver and kidney participants who are in no other file'
+    );
+    expect(steps()[1]).toEqual(['Check the mapping', 'current', '4 guessed, 0 needed by a chart']);
+
+    // Another study replaces it, from its own directory, and the data view stays open.
+    setRow('bds', 'measure', 'ALT', 'Albumin');
+    choose(menu(), 'renamed');
+    await app.ready;
+    expect(fetchText.mock.calls.slice(-4).map(([url]) => url)).toEqual([
+      './data/renamed/dm.csv',
+      './data/renamed/ae.csv',
+      './data/renamed/labs_final.csv',
+      './data/renamed/ecg.json'
+    ]);
+    expect(names()).toEqual(['dm.csv', 'ae.csv', 'labs_final.csv', 'ecg.json']);
+    expect(app.state.selected).toBe('data');
+    expect(menu().value).toBe('renamed');
+    expect(root.querySelector('.sva-study-note').textContent).toContain('six rows');
+    expect(steps()[1][2]).toBe('23 guessed, 6 needed by a chart');
+
+    // One file: the other domains have none, and the charts say so.
+    choose(menu(), 'liver');
+    await app.ready;
+    expect(names()).toEqual(['adbds-abnbl.csv']);
+    expect(Object.keys(app.state.files)).toEqual(['bds']);
+    expect(tag('qt-explorer')).toBe('no file');
+    expect(steps()).toEqual([
+      ['Load your files', 'done', '1 file loaded'],
+      ['Check the mapping', 'current', '4 guessed, 1 needed by a chart'],
+      ['Open a chart', 'todo', '8 of 14 charts ready']
+    ]);
+
+    // Files of the user's own are no demo study.
+    app.loadFiles(STUDY);
+    expect(menu().value).toBe('');
+    expect(root.querySelector('.sva-study-note')).toBeNull();
+    // Reset leaves the menu, with no study chosen.
+    action('reset').click();
+    expect(menu().value).toBe('');
+    expect(names()).toEqual([]);
+  });
+
+  it('APP-LOAD-020: with no demo studies served, no menu is offered (#159)', () => {
+    expect(root.querySelector('.sva-study')).toBeNull();
+    app.loadFiles(STUDY);
+    expect(root.querySelector('.sva-study')).toBeNull();
+  });
+
+  it('APP-LOAD-020: a demo study that cannot be fetched is reported in a sentence and loads nothing (#159)', async () => {
+    document.body.innerHTML = '<div id="demo"></div>';
+    root = document.querySelector('#demo');
+    app = mountApp(root, {
+      charts: fakeCharts(),
+      manifest,
+      demo: { base: './data/' },
+      fetchText: async () => {
+        throw new Error('offline');
+      }
+    });
+    await app.ready;
+    expect(notes()).toEqual(['The demo study could not be loaded: offline']);
+    expect(app.state.files).toEqual({});
+    expect(app.state.selected).toBe('data');
+    expect(root.querySelector('.sva-side select.sva-study').value).toBe('');
+  });
+
+  it('APP-LOAD-021: the sidebar belongs to the data view: a chart view has none (#159)', () => {
+    app.loadFiles(STUDY);
+    expect(root.querySelector('.sva-data > .sva-side')).not.toBeNull();
+    expect(root.querySelector('.sva-data > .sva-data-main .sva-drop')).not.toBeNull();
+    app.select('histogram');
+    expect(root.querySelector('.sva-side')).toBeNull();
+    expect(root.querySelector('.sva-chart')).not.toBeNull();
   });
 });

@@ -5,6 +5,7 @@
 
 import charts from '../main.js';
 import { mountApp } from './page.js';
+import { DEMO_STUDIES } from './studies.js';
 
 /* global __SAFETY_VIZ_VERSION__ */
 
@@ -23,7 +24,7 @@ export const DEFAULT_LINKS = {
 /**
  * Mount the demo app with the bundled charts and manifest.
  * @param {string|Element} target The element, or a selector for it, to mount into.
- * @param {Object} [options] Mount options; see {@link mountApp}. `demo: { base }` loads the demo study from that path; `links` overrides where the footer's links go.
+ * @param {Object} [options] Mount options; see {@link mountApp}. `demo: { base }` serves the demo studies from that path and loads the first; `links` overrides where the footer's links go.
  * @returns {Object} The app handle.
  */
 export function mount(target, options = {}) {
@@ -36,4 +37,4 @@ export function mount(target, options = {}) {
   });
 }
 
-export { charts };
+export { charts, DEMO_STUDIES };
