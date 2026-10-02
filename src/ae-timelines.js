@@ -213,7 +213,9 @@ class AETimelines {
     try {
       checkInputs(this.rawData, this.settings);
     } catch (error) {
-      this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+      // The message is inserted as text: it names columns from the settings,
+      // which a host may fill from a file header, and must never become markup.
+      this.element.replaceChildren(createElement('div', 'sv-warning', error.message));
       throw error;
     }
     this.population = populationCount(this.rawData, this.settings);
@@ -350,9 +352,12 @@ class AETimelines {
     ]
       .filter(Boolean)
       .join(' ');
-    this.notes.innerHTML =
-      `<em>${shown} of ${this.population} participant ID(s) shown (${pct}%)</em>` +
-      (warnings ? `<span class="sv-warning">${warnings}</span>` : '');
+    // Built as elements, not markup: the warnings quote column names from the
+    // settings, which a host may fill from a file header (#166).
+    this.notes.replaceChildren(
+      createElement('em', null, `${shown} of ${this.population} participant ID(s) shown (${pct}%)`)
+    );
+    if (warnings) this.notes.append(createElement('span', 'sv-warning', warnings));
   }
 
   /**

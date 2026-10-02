@@ -257,7 +257,9 @@ class SafetyDeltaDelta {
     try {
       checkInputs(this.rawData, this.settings);
     } catch (error) {
-      this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+      // The message is inserted as text: it names columns from the settings,
+      // which a host may fill from a file header, and must never become markup.
+      this.element.replaceChildren(createElement('div', 'sv-warning', error.message));
       throw error;
     }
     let removed = 0;

@@ -432,7 +432,9 @@ class SafetyHepWaterfall {
       // Destroy live charts before wiping the shell so Chart.js instances do
       // not leak when a later setData/setSettings re-renders.
       this.destroyCharts();
-      this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+      // The message is inserted as text: it names columns from the settings,
+      // which a host may fill from a file header, and must never become markup.
+      this.element.replaceChildren(createElement('div', 'sv-warning', error.message));
       throw error;
     }
     const { rows, removed } = prepareData(this.rawData, this.settings);
