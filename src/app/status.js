@@ -1,0 +1,116 @@
+// Portfolio app: can each chart draw? (#149, obot.roadmap#352). One status per
+// chart, computed from the mappings against the manifest, and priced in what is
+// missing by name — "needs upper limit of normal", never a count of empty
+// boxes. This is the old safetyGraphics app's chart-availability check.
+//
+//   ready               every domain it needs is loaded and everything required is mapped
+//   missing             a domain is loaded and something required is unmapped
+//   no file             no file is placed in a domain it needs — a legitimate final state
+//   needs more domains  it reads domains the standard set does not supply
+//
+// A fifth state, `did not draw`, is set by the page when a ready chart throws:
+// status is corrected by what happened, never left at ready.
+
+import { MEASURES } from './mapping.js';
+
+/**
+ * What a chart cannot draw without, beyond its schema's required settings.
+ *
+ * - `measures`: key measures it finds by name; each must be mapped.
+ * - `anyMeasure`: key measures of which one is enough.
+ * - `settings`: column settings the chart needs although its schema's required
+ *   array does not list them — time-to-event's schema requires none, yet it
+ *   validates its participant, onset-day and follow-up-day columns on load
+ *   (TTE-DATA-001).
+ */
+export const CHART_NEEDS = {
+  'hep-explorer': { measures: ['ALT', 'TB'] },
+  'hep-waterfall': { measures: ['ALT'] },
+  'nep-explorer': { measures: ['CREAT'] },
+  'qt-explorer': { anyMeasure: ['QTcF', 'QTcB'] },
+  'time-to-event': { settings: ['id_col', 'event_day_col', 'fu_day_col'] }
+};
+
+const measureByKey = Object.fromEntries(MEASURES.map((measure) => [measure.key, measure]));
+const asList = (value) => [].concat(value);
+
+/**
+ * Status of every chart in the manifest.
+ * @param {Object<string, Object>} mappings The mapping for each loaded domain, keyed by domain id; a domain with no file is absent.
+ * @param {Object} manifest The portfolio manifest.
+ * @returns {Object<string, {state: string, missing: {kind: string, domain: string, key?: string, label: string}[]}>} Per module, in manifest order: its state and what it is missing.
+ */
+export function chartStatus(mappings, manifest) {
+  const status = {};
+  for (const [module, entry] of Object.entries(manifest.modules)) {
+    if (entry.externalDomains) {
+      status[module] = { state: 'needs more domains', missing: [] };
+      continue;
+    }
+    const unloaded = entry.domains.filter((domain) => !mappings[domain]);
+    if (unloaded.length) {
+      status[module] = {
+        state: 'no file',
+        missing: unloaded.map((domain) => ({
+          kind: 'domain',
+          domain,
+          label: manifest.domains[domain].label
+        }))
+      };
+      continue;
+    }
+
+    const needs = CHART_NEEDS[module] || {};
+    const missing = [];
+    const seen = new Set();
+    for (const [key, setting] of Object.entries(entry.settings)) {
+      if (!setting.required && !(needs.settings || []).includes(key)) continue;
+      for (const domain of asList(setting.domain)) {
+        // A setting may name a column in an optional domain that has no file.
+        if (!mappings[domain]) continue;
+        const mapped = mappings[domain].columns[setting.column];
+        if ((mapped && mapped.value) || seen.has(`${domain}.${setting.column}`)) continue;
+        seen.add(`${domain}.${setting.column}`);
+        missing.push({
+          kind: 'column',
+          domain,
+          key: setting.column,
+          label: manifest.domains[domain].columns[setting.column].label
+        });
+      }
+    }
+    const mappedMeasure = (key) => {
+      const row = mappings[measureByKey[key].domain].measures[key];
+      return Boolean(row && row.value);
+    };
+    for (const key of needs.measures || []) {
+      if (mappedMeasure(key)) continue;
+      const measure = measureByKey[key];
+      missing.push({ kind: 'measure', domain: measure.domain, key, label: measure.label });
+    }
+    if (needs.anyMeasure && !needs.anyMeasure.some(mappedMeasure)) {
+      const [first] = needs.anyMeasure;
+      missing.push({
+        kind: 'measure',
+        domain: measureByKey[first].domain,
+        key: first,
+        label: needs.anyMeasure.map((key) => measureByKey[key].label).join(' or ')
+      });
+    }
+    status[module] = { state: missing.length ? 'missing' : 'ready', missing };
+  }
+  return status;
+}
+
+/**
+ * The supported count shown above the chart list.
+ * @param {Object} status The result of {@link chartStatus}.
+ * @returns {{ready: number, total: number}} How many charts are ready, of how many.
+ */
+export function supportedCount(status) {
+  const entries = Object.values(status);
+  return {
+    ready: entries.filter((entry) => entry.state === 'ready').length,
+    total: entries.length
+  };
+}
