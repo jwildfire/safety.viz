@@ -12,6 +12,7 @@ npm ci
 | ----------------------------------------- | ------------------------------------------------------------------------------------------ |
 | `npm run build`                           | esbuild `src/main.js` into versioned IIFE + ESM bundles under `dist/safety.viz-{version}/` |
 | `npm run build:check-dist`                | Rebuild to a temp dir and fail if committed `dist/` has drifted from `src/`                |
+| `npm run demo-data:check`                 | Rerun the demo-data generators to a temp dir and fail if `site/data/` has drifted          |
 | `npm test`                                | Vitest unit tests (`tests/unit/`)                                                          |
 | `npm run test:e2e`                        | Playwright browser tests (`tests/e2e/`)                                                    |
 | `npm run format` / `npm run format:check` | Prettier write / check                                                                     |
