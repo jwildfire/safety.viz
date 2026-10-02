@@ -143,6 +143,41 @@ test.describe('docs site', () => {
     expect(errors).toEqual([]);
   });
 
+  test('APP-PAGE-029: the header sets the Demo app link apart with a border and an arrow, and still fits a phone (#172)', async ({
+    page
+  }) => {
+    await page.goto('/_site/index.html');
+    const link = page.locator('.site-nav a.nav-app');
+    await expect(link).toHaveText('Demo app');
+    await expect(link).toHaveAttribute('href', 'demo/index.html');
+    const look = (locator) =>
+      locator.evaluate((node) => {
+        const style = getComputedStyle(node);
+        const after = getComputedStyle(node, '::after');
+        return {
+          border: parseFloat(style.borderTopWidth),
+          arrow: after.content !== 'none' && parseFloat(after.width) > 0
+        };
+      });
+    // Bordered, with an arrow drawn beside the words.
+    expect(await look(link)).toEqual({ border: 1, arrow: true });
+    // Its neighbours are plain links.
+    expect(await look(page.locator('.site-nav > a', { hasText: 'Domains' }))).toEqual({
+      border: 0,
+      arrow: false
+    });
+    // It leads to the app.
+    await link.click();
+    await expect(page).toHaveURL(/\/_site\/demo\/index\.html/);
+    // On a phone the header wraps and the page does not scroll sideways.
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/_site/index.html');
+    await expect(page.locator('.site-nav a.nav-app')).toBeVisible();
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
+    ).toBeLessThanOrEqual(0);
+  });
+
   test('APP-LOAD-022: the built site serves every demo study beside the app, and the app loads each (#159)', async ({
     page
   }) => {
