@@ -22,7 +22,7 @@ These matrices are the input to the evidence pages published with every release:
 | [web-codebook.md](web-codebook.md)                         | web-codebook (planned)             |  223 |
 | [paneled-outlier-explorer.md](paneled-outlier-explorer.md) | paneled-outlier-explorer (planned) |  114 |
 
-One matrix is not a renderer's: [portfolio-app.md](portfolio-app.md) holds the `APP-` rows for the portfolio app, the page that hosts the renderers. It has no `site/config.json` entry, so the extractor does not read it; its tests carry its IDs.
+One matrix is not a renderer's: [demo-app.md](demo-app.md) holds the `APP-` rows for the demo app, the page that hosts the renderers. It has no `site/config.json` entry, so the extractor does not read it; its tests carry its IDs.
 
 Row counts are the rows the extractor recognizes; they move as requirements are added, split, or superseded.
 
