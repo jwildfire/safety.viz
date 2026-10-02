@@ -5,7 +5,8 @@
 // module name, and DEFAULT_SETTINGS is imported from the module's configure.js
 // — so a new renderer needs no edits here. Exits non-zero when any public
 // surface is undocumented, so the docs cannot drift from the code (#21,
-// Pillar 3).
+// Pillar 3). The kit (#154) is not a renderer and gets its own artifact,
+// _api/kit.json, held to the same rule (scripts/api/kit.mjs).
 
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -13,6 +14,7 @@ import path from 'node:path';
 
 import { extractDoclets, apiSourceFiles } from './extract.mjs';
 import { buildApiModel } from './transform.mjs';
+import { KIT_FILE, buildKitModel, loadKit } from './kit.mjs';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
@@ -58,6 +60,24 @@ for (const module of modules) {
     `Wrote ${path.relative(repoRoot, outFile)} ` +
       `(${model.methods.length} methods, ${model.settings.length} settings, ` +
       `${model.dataContract.fields.length} contract fields)`
+  );
+}
+
+// The kit: the shared parts the bundle exports for a second chart library.
+const kitModel = buildKitModel({ doclets: extractDoclets([KIT_FILE]), ...(await loadKit()) });
+if (kitModel.missing.length) {
+  incomplete = true;
+  console.error('API documentation is incomplete for the kit:');
+  for (const entry of kitModel.missing) {
+    console.error(`  - ${entry.kind} ${entry.name}: ${entry.reason}`);
+  }
+} else {
+  const outFile = path.join(repoRoot, '_api', 'kit.json');
+  mkdirSync(path.dirname(outFile), { recursive: true });
+  writeFileSync(outFile, `${JSON.stringify(kitModel, null, 2)}\n`);
+  console.log(
+    `Wrote ${path.relative(repoRoot, outFile)} ` +
+      `(${kitModel.count} members from ${kitModel.groups.length} sources)`
   );
 }
 

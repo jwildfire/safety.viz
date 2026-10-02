@@ -31,6 +31,7 @@ import {
   renderEvidencePage,
   renderGallery,
   renderGuidePage,
+  renderKitPage,
   renderShell,
   validateEvidenceScreenshots,
   validateSiteLinks
@@ -110,6 +111,27 @@ page(
   'The standard domain set a study supplies to safety.viz: its tables and their columns, ' +
     'the charts each one feeds, and the column settings every chart needs.'
 );
+
+// Kit page (#154): the API reference for the shared parts the bundle exports
+// as `kit`, from the _api/kit.json artifact. The architecture page and every
+// chart's API reference link to it, so it is written whenever the site is.
+const kitApiFile = path.join(rootDir, '_api', 'kit.json');
+if (!existsSync(kitApiFile)) {
+  errors.push(`missing ${path.relative(rootDir, kitApiFile)} — run \`npm run docs:api\` first`);
+} else {
+  mkdirSync(path.join(siteDir, 'kit'), { recursive: true });
+  page(
+    path.join(siteDir, 'kit/index.html'),
+    'Kit API reference · safety.viz',
+    renderKitPage(JSON.parse(readFileSync(kitApiFile, 'utf8')), {
+      repoUrl: config.repoUrl,
+      version
+    }),
+    '../',
+    'The safety.viz kit: the shared sidebar, filters, record listing, participant rail and ' +
+      'Chart.js constructor the bundle exports for a second chart library on the same page.'
+  );
+}
 
 // Shared dist bundle for the demo pages (IIFE + source map).
 const distDir = path.join(rootDir, `dist/safety.viz-${version}`);
