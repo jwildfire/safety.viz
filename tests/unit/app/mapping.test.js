@@ -19,7 +19,7 @@ const demo = (file) =>
 
 const measure = (key) => MEASURES.find((entry) => entry.key === key);
 
-describe('portfolio app: the pre-filled mapping', () => {
+describe('demo app: the pre-filled mapping', () => {
   it('APP-MAP-001: a column with the same name is filled and says so, whatever its case (#149)', () => {
     expect(resolveColumn(['USUBJID', 'TEST'], 'bds', 'TEST')).toEqual({
       value: 'TEST',
@@ -142,7 +142,7 @@ describe('portfolio app: the pre-filled mapping', () => {
   });
 });
 
-describe('portfolio app: the mapping file', () => {
+describe('demo app: the mapping file', () => {
   const file = {
     name: 'labs.csv',
     columns: ['SUBJID', 'LBTEST', 'LBSTRESN', 'ULN', 'GRP'],

@@ -1,4 +1,4 @@
-// Portfolio app: the pre-filled mapping (#149, obot.roadmap#352). A user's
+// Demo app: the pre-filled mapping (#149, obot.roadmap#352). A user's
 // file rarely names its columns the way the charts do. This module builds, for
 // one domain, the mapping from each manifest column to the user's column, and
 // from each key measure to what the user's data calls it — and records for
@@ -305,7 +305,7 @@ export function serializeMappings(files, mappings) {
   return {
     safetyVizMapping: 1,
     note:
-      'Provisional format, written by the safety.viz portfolio app. Drop this file on the app ' +
+      'Provisional format, written by the safety.viz demo app. Drop this file on the app ' +
       'with the data files it names to restore the mapping. A study configuration will replace it.',
     domains: Object.fromEntries(
       Object.entries(mappings).map(([domain, mapping]) => [

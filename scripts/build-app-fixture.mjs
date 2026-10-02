@@ -1,4 +1,4 @@
-// Renamed-column study for the portfolio app's browser tests (#151,
+// Renamed-column study for the demo app's browser tests (#151,
 // obot.roadmap#352). Cuts 24 participants from the vendored demo extracts under
 // site/data/ and writes them under tests/e2e/fixtures/app/ the way a study
 // programmer's folder might arrive: SDTM-style names the app can guess, names

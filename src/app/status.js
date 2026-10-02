@@ -1,4 +1,4 @@
-// Portfolio app: can each chart draw? (#149, obot.roadmap#352). One status per
+// Demo app: can each chart draw? (#149, obot.roadmap#352). One status per
 // chart, computed from the mappings against the manifest, and priced in what is
 // missing by name — "needs upper limit of normal", never a count of empty
 // boxes. This is the old safetyGraphics app's chart-availability check.

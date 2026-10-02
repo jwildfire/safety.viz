@@ -2,6 +2,8 @@
 // _site/. Plain Node, no framework, per design #21 — and every internal URL
 // relative, so one build serves the site root, /dev/, and /pr/{N}/ unchanged.
 
+import { LOGO_SVG } from '../src/app/styles.js';
+
 import { copyFileSync, existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 
@@ -1053,40 +1055,51 @@ export function renderDemoPage({ renderer, version }) {
 }
 
 /**
- * The portfolio app page (#150, obot.roadmap#352): every chart in the portfolio
- * manifest behind one list, on the demo study. The page is a mount point; the
- * app bundle the site build writes beside it (scripts/build-app.mjs) does the
- * rest, loading the demo extracts copied into the same directory.
+ * The demo app's page (#150, #152, obot.roadmap#352): a full-page web app with
+ * its own header, so a standalone document and not a page in the docs shell.
+ * The app bundle the site build writes beside it (scripts/build-app.mjs) draws
+ * everything; this document loads it, the site's three type families and the
+ * hex mark, and tells the app where the demo extracts and its links are.
  * @param {Object} options Page options.
- * @param {Object} options.manifest The portfolio manifest (src/data/portfolio.json).
  * @param {string} options.bundle File name of the app bundle beside the page.
  * @param {string} options.download File name of the single-file build beside the page.
- * @returns {string} The page content for the site shell.
+ * @param {string} options.repoUrl The repository URL, for the app's source link.
+ * @returns {string} The complete HTML document.
  */
-export function renderPortfolioPage({ manifest, bundle, download }) {
-  const charts = Object.keys(manifest.modules).length;
-  const extracts = Object.values(manifest.domains)
-    .map((domain) => `<code>${escapeHtml(domain.demo)}</code>`)
-    .join(', ');
-  return (
-    `<div class="demo-page portfolio-page">` +
-    `<h1>Portfolio</h1>` +
-    `<p class="tagline">Every safety.viz chart on one page, on one study.</p>` +
-    `<p>The list names all ${charts} charts under the data domain each reads and says whether` +
-    ` the loaded data supports it. Choose a chart to draw it; one is drawn at a time. The page` +
-    ` opens on the demo study (${extracts}; the <a href="../domains/index.html">Domains</a>` +
-    ` page says what each holds and what each chart needs from it), built from the` +
-    ` <a href="https://github.com/pharmaverse/pharmaverseadam">pharmaverseadam</a> CDISC Pilot 01` +
-    ` ADaM datasets. Nothing is sent anywhere: the data is read and drawn in this browser.</p>` +
-    `<p class="portfolio-download">To use it on your own study without this site,` +
-    ` <a href="./${escapeHtml(download)}" download>download the single file</a>:` +
-    ` one HTML file that opens from your disk with no network and no install. It starts empty,` +
-    ` ready for your files.</p>` +
-    `<div id="app"></div>` +
-    `<script src="./${escapeHtml(bundle)}"></script>` +
-    `<script>window.__safetyVizApp = SafetyVizApp.mount('#app', { demo: { base: './' } });</script>` +
-    `</div>`
-  );
+export function renderDemoAppPage({ bundle, download, repoUrl }) {
+  const icon = encodeURIComponent(LOGO_SVG).replace(/'/g, '%27');
+  const js = (value) => `'${String(value).replace(/[\\']/g, '\\$&')}'`;
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="The safety.viz demo app: load a study, check how its columns map, and review it in fourteen clinical safety charts. It runs in your browser; nothing is uploaded.">
+<title>safety.viz demo</title>
+<link rel="icon" href="data:image/svg+xml,${icon}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#fafaf8}</style>
+</head>
+<body>
+<div id="app"></div>
+<noscript>The safety.viz demo app needs JavaScript: it reads and draws your data in this browser.</noscript>
+<script src="./${escapeHtml(bundle)}"></script>
+<script>
+window.__safetyVizApp = SafetyVizApp.mount('#app', {
+  demo: { base: './' },
+  links: {
+    docs: '../index.html',
+    domains: '../domains/index.html',
+    download: ${js(`./${download}`)},
+    github: ${js(repoUrl)}
+  }
+});
+</script>
+</body>
+</html>
+`;
 }
 
 // Build the guide's on-page table of contents from its ## sections and their

@@ -25,12 +25,12 @@ import {
   renderAboutPage,
   renderApiPage,
   renderArchitecturePage,
+  renderDemoAppPage,
   renderDemoPage,
   renderDomainsPage,
   renderEvidencePage,
   renderGallery,
   renderGuidePage,
-  renderPortfolioPage,
   renderShell,
   validateEvidenceScreenshots,
   validateSiteLinks
@@ -227,22 +227,20 @@ for (const renderer of config.renderers.filter((entry) => entry.status === 'avai
   }
 }
 
-// Portfolio app (#150, #152): the app bundle and the single-file build are
-// build products written here, not committed assets, and the demo extracts are
-// copied beside them so the page loads the demo study from its own directory.
-const manifest = JSON.parse(readFileSync(path.join(rootDir, 'src/data/portfolio.json'), 'utf8'));
-const portfolioDir = path.join(siteDir, 'portfolio');
-await buildApp(portfolioDir);
+// Demo app (#150, #152): a full-page web app at demo/, with its own header, so
+// it is written as a standalone document and not through the docs shell. The app
+// bundle and the single-file build are build products written here, not
+// committed assets, and the demo extracts are copied beside them so the app
+// loads the demo study from its own directory.
+const manifest = JSON.parse(readFileSync(manifestFile, 'utf8'));
+const demoAppDir = path.join(siteDir, 'demo');
+await buildApp(demoAppDir);
 for (const domain of Object.values(manifest.domains)) {
-  copyFileSync(path.join(rootDir, 'site/data', domain.demo), path.join(portfolioDir, domain.demo));
+  copyFileSync(path.join(rootDir, 'site/data', domain.demo), path.join(demoAppDir, domain.demo));
 }
-page(
-  path.join(portfolioDir, 'index.html'),
-  'Portfolio · safety.viz',
-  renderPortfolioPage({ manifest, bundle: APP_BUNDLE, download: APP_HTML }),
-  '../',
-  'Every safety.viz chart on one page, on the demo study: which charts the loaded data ' +
-    'supports, and each one drawn from it.'
+writeFileSync(
+  path.join(demoAppDir, 'index.html'),
+  renderDemoAppPage({ bundle: APP_BUNDLE, download: APP_HTML, repoUrl: config.repoUrl })
 );
 
 errors.push(...validateSiteLinks(siteDir));

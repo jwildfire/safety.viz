@@ -1,4 +1,4 @@
-// Portfolio app: one recipe per chart (#150, obot.roadmap#352). The charts take
+// Demo app: one recipe per chart (#150, obot.roadmap#352). The charts take
 // their column names as settings, so a mapping never rewrites the user's data:
 // it becomes a settings object. This module is that translation, plus the few
 // places where charts differ in how they are handed their data.

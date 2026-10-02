@@ -3,11 +3,16 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>safety.viz portfolio app harness page</title>
+    <title>safety.viz demo app harness page</title>
+    <style>
+      body {
+        margin: 0;
+      }
+    </style>
   </head>
   <body>
     <!--
-      Playwright harness page for the portfolio app (#150). Loads the app bundle
+      Playwright harness page for the demo app (#150). Loads the app bundle
       that `npm run build:app` writes to build/app/ (a build product, not
       committed) and mounts it on the vendored demo extracts under site/data/.
       `?empty` mounts it with no demo study, as the single-file build opens.

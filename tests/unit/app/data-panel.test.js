@@ -43,7 +43,7 @@ const CORRECTIONS = [
   ['subject', 'column', 'EOSDY', 'LASTDAY']
 ];
 
-describe('portfolio app: the data panel', () => {
+describe('demo app: the data panel', () => {
   let root;
   let app;
   const card = (domain) => root.querySelector(`.sva-file[data-domain="${domain}"]`);

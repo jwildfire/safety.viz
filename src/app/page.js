@@ -1,9 +1,10 @@
-// Portfolio app: the page (#150, obot.roadmap#352). Every chart in the manifest
-// behind one list, grouped by the domain it reads, each with a status saying
-// whether the loaded data supports it; one chart drawn at a time in the main
-// pane. This is the only module of the app that touches the document. The
-// parsing, placing, mapping and status rules it shows are the pure modules
-// beside it.
+// Demo app: the page (#150, obot.roadmap#352). A full-page web app with its own
+// header: a rail carrying the wordmark and every chart in the manifest, grouped
+// by the domain it reads, each with a status saying whether the loaded data
+// supports it; and a main column showing the data view or one chart at a time.
+// This is the only module of the app that touches the document. The parsing,
+// placing, mapping and status rules it shows are the pure modules beside it,
+// and its look is styles.js.
 //
 // The chart factories and the manifest are passed in rather than imported, so
 // the page's own logic is testable without the charts and the same page serves
@@ -24,57 +25,12 @@ import { chartStatus, supportedCount } from './status.js';
 import { chartData, chartSettings, isDestination } from './charts.js';
 import { renderDataPanel } from './data-panel.js';
 import { el, plural } from './dom.js';
+import { LOGO_SVG, STYLES } from './styles.js';
 
 const STYLE_ID = 'safety-viz-app-styles';
 
 /** The name the mapping file is offered for download under. */
 export const MAPPING_FILE_NAME = 'safety-viz-mapping.json';
-
-const STYLES = `
-.sva-app{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#1f2933;font-size:.95rem}
-.sva-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.6rem;padding:.6rem .9rem;border:1px solid #d8dee4;border-radius:10px;background:#f6f8fa;margin-bottom:1rem}
-.sva-count{font-weight:600}
-.sva-actions{display:flex;flex-wrap:wrap;gap:.5rem}
-.sva-button{border:1px solid #b8c0cc;border-radius:6px;background:#fff;color:#1f2933;font:inherit;font-size:.85rem;padding:.35rem .7rem;cursor:pointer}
-.sva-button:hover{border-color:#0b62a4;color:#0b62a4}
-.sva-button:focus-visible,.sva-item:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
-.sva-body{display:grid;grid-template-columns:15.5rem minmax(0,1fr);gap:1.25rem;align-items:start}
-.sva-nav{border:1px solid #d8dee4;border-radius:10px;background:#fff;padding:.5rem}
-.sva-app .sva-group-title{margin:.9rem .4rem .3rem;font-family:inherit;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#52616f}
-.sva-item{display:flex;align-items:center;justify-content:space-between;gap:.5rem;width:100%;border:0;border-radius:6px;background:none;color:inherit;font:inherit;font-size:.88rem;text-align:left;padding:.35rem .4rem;cursor:pointer}
-.sva-item:hover{background:#f0f3f6}
-.sva-item[aria-current=page]{background:#e3eef8;font-weight:600}
-.sva-tag{flex:none;border-radius:999px;padding:.1rem .5rem;font-size:.7rem;font-weight:600;white-space:nowrap;background:#eef1f4;color:#52616f}
-.sva-tag.sva-ready,.sva-tag.sva-same{background:#e3f4ec;color:#146c43}
-.sva-tag.sva-missing{background:#fbe9e5;color:#a23a22}
-.sva-main{min-width:0}
-.sva-app .sva-title{margin:0 0 .5rem;font-family:inherit;font-size:1.25rem;font-weight:700}
-.sva-message{margin:0 0 1rem;padding:.7rem .9rem;border:1px solid #d8dee4;border-left:3px solid #0b62a4;border-radius:6px;background:#f6f8fa}
-.sva-message.sva-problem{border-left-color:#a23a22}
-.sva-notes{margin:0 0 1rem;padding:0;list-style:none}
-.sva-note{margin:0 0 .4rem;padding:.5rem .8rem;border:1px solid #f0d9a8;border-radius:6px;background:#fdf6e3}
-.sva-drop{margin:0 0 1rem;padding:1.1rem;border:1.5px dashed #b8c0cc;border-radius:10px;background:#fbfcfd;text-align:center;color:#52616f}
-.sva-drop.sva-over{border-color:#0b62a4;background:#e3eef8;color:#1f2933}
-.sva-drop p{margin:0 0 .6rem}
-.sva-drop p:last-child{margin:0}
-.sva-file{margin:0 0 1rem;border:1px solid #d8dee4;border-radius:10px;background:#fff}
-.sva-file-head{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem .7rem;padding:.6rem .8rem;border-bottom:1px solid #e3e8ee;background:#f6f8fa;border-radius:10px 10px 0 0}
-.sva-file.sva-unplaced .sva-file-head{border-bottom:0;border-radius:10px}
-.sva-file-name{font-weight:700;overflow-wrap:anywhere}
-.sva-file-rows{color:#52616f;font-size:.82rem}
-.sva-select{max-width:100%;box-sizing:border-box;padding:.3rem .4rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.85rem;color:inherit}
-.sva-select:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
-.sva-map{width:100%;border-collapse:collapse;font-size:.88rem}
-.sva-map th,.sva-map td{text-align:left;padding:.4rem .8rem;border-bottom:1px solid #e3e8ee;vertical-align:middle}
-.sva-map tr:last-child td{border-bottom:0}
-.sva-map th{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:#52616f}
-.sva-map .sva-select{width:100%;min-width:9rem}
-.sva-map-section td{background:#f6f8fa;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#52616f}
-.sva-tag.sva-guess{background:#f8efdd;color:#8a5a06}
-.sva-tag.sva-chosen{background:#e3eef8;color:#0b4f85}
-.sva-scroll{overflow-x:auto}
-@media (max-width:760px){.sva-body{grid-template-columns:minmax(0,1fr)}}
-`;
 
 const OTHER_GROUP = 'other';
 
@@ -107,6 +63,13 @@ function tagFor(status) {
   return { text: status.state, className: 'sva-tag' };
 }
 
+/** The hex beside a chart in the list: its domain's hue when ready, red when something is missing, hollow when it has nothing to read. */
+function hexFor(status) {
+  if (status.state === 'ready') return 'sva-hex';
+  if (status.state === 'missing' || status.state === 'did not draw') return 'sva-hex sva-alarm';
+  return 'sva-hex sva-hollow';
+}
+
 /** The sentence shown in the main pane for a chart that is not drawn. */
 function sentenceFor(module, status, manifest) {
   const labels = status.missing.map((item) => item.label).join(', ');
@@ -118,12 +81,14 @@ function sentenceFor(module, status, manifest) {
 }
 
 /**
- * Mount the portfolio app.
+ * Mount the demo app.
  * @param {string|Element} target The element, or a selector for it, to mount into.
  * @param {Object} options Mount options.
  * @param {Object} options.charts The chart factories, keyed by export name (the safety.viz module collection).
  * @param {Object} options.manifest The portfolio manifest.
  * @param {{base: string}} [options.demo] Where the demo extracts are served from; when given, the demo study is loaded on mount and a Load demo data button is offered.
+ * @param {{docs?: string, domains?: string, download?: string, github?: string}} [options.links] Where the rail's links go; a link with no address is left out.
+ * @param {string} [options.version] The safety.viz version, shown in the rail.
  * @param {(url: string) => Promise<string>} [options.fetchText] Fetches the demo extracts' text; defaults to `fetch`.
  * @param {(container: Element, app: Object) => void} [options.dataView] Renders the data view; defaults to the data panel.
  * @returns {{ready: Promise<void>, loadFiles: Function, loadDemo: Function, select: Function, state: Object, destroy: Function}} The app handle.
@@ -134,6 +99,8 @@ export function mountApp(
     charts,
     manifest,
     demo = null,
+    links = {},
+    version = '',
     fetchText = (url) => fetch(url).then((response) => response.text()),
     dataView = renderDataPanel
   } = {}
@@ -176,17 +143,62 @@ export function mountApp(
 
   root.innerHTML = '';
   const app = el('div', 'sva-app');
-  const bar = el('div', 'sva-bar');
-  const count = el('div', 'sva-count');
-  count.setAttribute('aria-live', 'polite');
-  const actions = el('div', 'sva-actions');
-  bar.append(count, actions);
-  const body = el('div', 'sva-body');
+
+  // The rail: the app's own header, then the list of data and charts.
+  const rail = el('aside', 'sva-rail');
+  const brand = el('div', 'sva-brand');
+  const logo = el('span', 'sva-logo');
+  logo.innerHTML = LOGO_SVG;
+  const names = el('div');
+  names.append(el('div', 'sva-wordmark', 'safety.viz'), el('p', 'sva-kicker', 'Demo app'));
+  brand.append(logo, names);
+  const navToggle = el('button', 'sva-button sva-navtoggle', 'Charts');
+  navToggle.type = 'button';
+  navToggle.setAttribute('aria-expanded', 'false');
+  navToggle.onclick = () => {
+    const open = rail.classList.toggle('sva-open');
+    navToggle.setAttribute('aria-expanded', String(open));
+  };
+  const brandRow = el('div', 'sva-brandrow');
+  brandRow.append(brand, navToggle);
+  const pitch = el(
+    'p',
+    'sva-pitch',
+    'Load a study, check how its columns map, and review it in the safety charts. ' +
+      'Everything runs in this browser. Nothing is sent anywhere.'
+  );
   const nav = el('nav', 'sva-nav');
   nav.setAttribute('aria-label', 'Data and charts');
-  const main = el('section', 'sva-main');
-  body.append(nav, main);
-  app.append(bar, body);
+  const railLinks = el('ul', 'sva-links');
+  for (const [key, label] of [
+    ['docs', 'Docs and chart gallery'],
+    ['domains', 'The standard domains'],
+    ['download', 'Download as one file'],
+    ['github', 'Source on GitHub']
+  ]) {
+    if (!links[key]) continue;
+    const anchor = el('a', null, label);
+    anchor.href = links[key];
+    anchor.dataset.link = key;
+    if (key === 'download') anchor.setAttribute('download', '');
+    const item = el('li');
+    item.append(anchor);
+    railLinks.append(item);
+  }
+  if (version) railLinks.append(el('li', 'sva-version', `safety.viz ${version}`));
+  rail.append(brandRow, pitch, nav, railLinks);
+
+  // The main column: a section head that stays, and the view beneath it.
+  const main = el('main', 'sva-main');
+  const head = el('div', 'sva-sechead');
+  const title = el('h1', 'sva-title');
+  const actions = el('div', 'sva-actions');
+  const count = el('div', 'sva-count');
+  count.setAttribute('aria-live', 'polite');
+  head.append(title, actions, count);
+  const content = el('div', 'sva-content');
+  main.append(head, content);
+  app.append(rail, main);
   root.append(app);
 
   function destroyChart() {
@@ -200,7 +212,7 @@ export function mountApp(
     instance = null;
   }
 
-  function renderBar(current) {
+  function renderHead(current) {
     const { ready, total } = supportedCount(current);
     count.textContent = state.busy || `${ready} of ${total} charts supported by the loaded data`;
     actions.innerHTML = '';
@@ -220,13 +232,21 @@ export function mountApp(
     }
   }
 
-  function navItem(id, title, tag) {
+  function navItem(id, label, tag, hexClass) {
     const button = el('button', 'sva-item');
     button.type = 'button';
     button.dataset.view = id;
     if (state.selected === id) button.setAttribute('aria-current', 'page');
-    button.append(el('span', 'sva-item-title', title), el('span', tag.className, tag.text));
-    button.onclick = () => handle.select(id);
+    button.append(
+      el('span', hexClass),
+      el('span', 'sva-item-title', label),
+      el('span', tag.className, tag.text)
+    );
+    button.onclick = () => {
+      rail.classList.remove('sva-open');
+      navToggle.setAttribute('aria-expanded', 'false');
+      handle.select(id);
+    };
     return button;
   }
 
@@ -234,10 +254,12 @@ export function mountApp(
     nav.innerHTML = '';
     const loaded = Object.keys(state.files).length;
     nav.append(
-      navItem('data', 'Data', {
-        className: 'sva-tag',
-        text: loaded ? plural(loaded, 'file') : 'no files'
-      })
+      navItem(
+        'data',
+        'Data',
+        { className: 'sva-tag', text: loaded ? plural(loaded, 'file') : 'no files' },
+        'sva-hex sva-spectrum'
+      )
     );
     const groups = new Map();
     for (const [module, entry] of Object.entries(manifest.modules)) {
@@ -246,11 +268,13 @@ export function mountApp(
       groups.get(group).push([module, entry]);
     }
     for (const [group, members] of groups) {
-      const section = el('div', 'sva-group');
+      const section = el('div', `sva-group sva-domain-${group}`);
       section.dataset.group = group;
-      section.append(el('h3', 'sva-group-title', groupTitle(group)));
+      section.append(el('h2', 'sva-group-title', groupTitle(group)));
       for (const [module, entry] of members) {
-        section.append(navItem(module, entry.title, tagFor(current[module])));
+        section.append(
+          navItem(module, entry.title, tagFor(current[module]), hexFor(current[module]))
+        );
       }
       nav.append(section);
     }
@@ -265,19 +289,19 @@ export function mountApp(
 
   function renderMain(current) {
     destroyChart();
-    main.innerHTML = '';
+    content.innerHTML = '';
     if (state.selected === 'data') {
-      main.append(el('h2', 'sva-title', 'Data'));
-      renderNotes(main);
+      title.textContent = 'Data';
+      renderNotes(content);
       const container = el('div', 'sva-data');
-      main.append(container);
+      content.append(container);
       dataView(container, handle);
       return;
     }
 
     const module = state.selected;
     const entry = manifest.modules[module];
-    main.append(el('h2', 'sva-title', entry.title));
+    title.textContent = entry.title;
 
     if (module === 'participant-profile') {
       const hosts = Object.entries(manifest.modules)
@@ -289,19 +313,19 @@ export function mountApp(
           ? 'The participant profile opens beside a chart when you select a participant in it. ' +
             `Choose one of these charts and select a point or a row: ${hosts.join(', ')}.`
           : sentenceFor(module, current[module], manifest);
-      main.append(el('p', 'sva-message', sentence));
+      content.append(el('p', 'sva-message', sentence));
       return;
     }
 
     if (current[module].state !== 'ready') {
       const message = el('p', 'sva-message', sentenceFor(module, current[module], manifest));
       if (current[module].state !== 'needs more domains') message.classList.add('sva-problem');
-      main.append(message);
+      content.append(message);
       return;
     }
 
-    const mount = el('div', 'sva-chart');
-    main.append(mount);
+    const mount = el('div', `sva-chart sva-domain-${groupOf(entry)}`);
+    content.append(mount);
     try {
       instance = charts[entry.export](mount, chartSettings(module, state.mappings, manifest));
       instance.init(chartData(module, state.files, state.mappings, manifest));
@@ -314,7 +338,7 @@ export function mountApp(
 
   function render() {
     const current = status();
-    renderBar(current);
+    renderHead(current);
     renderNav(current);
     renderMain(current);
   }

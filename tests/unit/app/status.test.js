@@ -22,7 +22,7 @@ const demoMappings = () =>
 const states = (status) =>
   Object.fromEntries(Object.entries(status).map(([module, entry]) => [module, entry.state]));
 
-describe('portfolio app: chart status', () => {
+describe('demo app: chart status', () => {
   it('APP-STAT-001: on the demo study thirteen charts are ready and the Patient Journey Explorer needs more domains (#149)', () => {
     const status = chartStatus(demoMappings(), manifest);
     expect(Object.keys(status)).toEqual(Object.keys(manifest.modules));
@@ -114,7 +114,7 @@ describe('portfolio app: chart status', () => {
   });
 });
 
-describe('portfolio app: what needs each row', () => {
+describe('demo app: what needs each row', () => {
   it('APP-STAT-008: each column and measure knows which charts cannot draw without it (#151)', () => {
     const needed = neededBy(manifest);
     expect(needed.columns.bds.STNRHI).toEqual([

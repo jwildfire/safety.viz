@@ -4,7 +4,7 @@ import { parseCsv, parseJson, parseFile } from '../../../src/app/parse.js';
 
 const demo = (file) => readFileSync(new URL(`../../../site/data/${file}`, import.meta.url), 'utf8');
 
-describe('portfolio app: parsing', () => {
+describe('demo app: parsing', () => {
   it('APP-PARSE-001: reads quoted fields with embedded commas and doubled quotes (#149)', () => {
     const { columns, rows } = parseCsv(
       'USUBJID,TEST,NOTE\n01,"Aminotransferase, alanine (ALT)","said ""fine"""\n'

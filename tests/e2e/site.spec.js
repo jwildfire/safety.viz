@@ -23,7 +23,7 @@ test.describe('docs site', () => {
     execSync('npm run site', { stdio: 'inherit', cwd: new URL('../..', import.meta.url) });
   });
 
-  test('APP-PAGE-013: the built portfolio page mounts the app on the demo study with no console errors (#150)', async ({
+  test('APP-PAGE-013: the built demo app is its own page at demo/, mounted on the demo study with no console errors (#150)', async ({
     page
   }) => {
     const errors = [];
@@ -31,21 +31,32 @@ test.describe('docs site', () => {
     page.on('console', (msg) => {
       if (msg.type() === 'error') errors.push(msg.text());
     });
-    await page.goto('/_site/portfolio/index.html');
+    await page.goto('/_site/demo/index.html');
     await page.evaluate('window.__safetyVizApp.ready');
+    await expect(page).toHaveTitle('safety.viz demo');
     await expect(page.locator('.sva-count')).toHaveText(
       '13 of 14 charts supported by the loaded data'
     );
     await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
-    // The single file is served beside the page, for download (#152).
-    const download = page.locator('.portfolio-download a');
+    // Its own header, not the docs site's.
+    await expect(page.locator('.sva-rail .sva-wordmark')).toHaveText('safety.viz');
+    await expect(page.locator('.site-header')).toHaveCount(0);
+    // Its links lead back into the site, and to the single file as a download (#152).
+    await expect(page.locator('.sva-links a[data-link="docs"]')).toHaveAttribute(
+      'href',
+      '../index.html'
+    );
+    const download = page.locator('.sva-links a[data-link="download"]');
     await expect(download).toHaveAttribute('href', './safety.viz-app.html');
-    const response = await page.request.get('/_site/portfolio/safety.viz-app.html');
+    await expect(download).toHaveAttribute('download', '');
+    const response = await page.request.get('/_site/demo/safety.viz-app.html');
     expect(response.ok()).toBe(true);
-    expect(await response.text()).toContain('<title>safety.viz portfolio</title>');
-    // The shell's nav reaches the page from anywhere on the site.
+    expect(await response.text()).toContain('<title>safety.viz demo</title>');
+    await page.locator('.sva-links a[data-link="domains"]').click();
+    await expect(page).toHaveURL(/\/_site\/domains\/index\.html$/);
+    // The docs site's nav reaches the app from anywhere.
     await page.goto('/_site/index.html');
-    await expect(page.locator('.site-nav a[href="portfolio/index.html"]')).toHaveText('Portfolio');
+    await expect(page.locator('.site-nav a[href="demo/index.html"]')).toHaveText('Demo app');
     expect(errors).toEqual([]);
   });
 

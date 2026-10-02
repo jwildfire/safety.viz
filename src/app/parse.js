@@ -1,4 +1,4 @@
-// Portfolio app: file text → rows (#149, obot.roadmap#352). The quote-aware
+// Demo app: file text → rows (#149, obot.roadmap#352). The quote-aware
 // CSV parser every demo page under site/demo/ carried its own copy of, in one
 // place, plus a JSON reader, so a user's file becomes the same d3.csv()-style
 // records the chart modules already take: one object per row, every value a

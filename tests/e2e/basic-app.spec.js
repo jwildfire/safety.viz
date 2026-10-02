@@ -3,10 +3,10 @@ import { readFileSync } from 'node:fs';
 import { test, expect } from '@playwright/test';
 import { captureEvidence } from './evidence.js';
 
-// Browser evidence for the portfolio app (#150, obot.roadmap#352): one page
+// Browser evidence for the demo app (#150, obot.roadmap#352): a full-page app
 // that lists every chart in the portfolio manifest by domain, says which the
 // loaded data supports, and draws one at a time. Test names are keyed to the
-// APP-* rows in requirements/portfolio-app.md.
+// APP-* rows in requirements/demo-app.md.
 //
 // The harness page (fixtures/basic-app.html) mounts the real app bundle on the
 // vendored demo extracts. The bundle is a build product, so it is built here.
@@ -38,7 +38,7 @@ async function openOnDemo(page) {
   await page.evaluate(`${APP}.ready`);
 }
 
-test.describe('portfolio app on the demo study', () => {
+test.describe('demo app on the demo study', () => {
   test.beforeAll(() => {
     execSync('npm run build:app', { stdio: 'inherit', cwd: new URL('../..', import.meta.url) });
   });
@@ -169,11 +169,32 @@ test.describe('portfolio app on the demo study', () => {
   }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await openOnDemo(page);
+    await page.locator('.sva-navtoggle').click();
     await item(page, 'data').click();
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth - window.innerWidth
     );
     expect(overflow).toBeLessThanOrEqual(0);
+  });
+
+  test('APP-PAGE-021: at phone width the chart list folds behind a Charts button and closes on a choice (#150)', async ({
+    page
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await openOnDemo(page);
+    const toggle = page.locator('.sva-navtoggle');
+    await expect(toggle).toBeVisible();
+    await expect(page.locator('.sva-nav')).toBeHidden();
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(item(page, 'qt-explorer')).toBeVisible();
+    await item(page, 'qt-explorer').click();
+    await expect(page.locator('.sva-nav')).toBeHidden();
+    await expect(page.locator('.sva-title')).toHaveText('QT Safety Explorer');
+    // On a wide screen there is no button and the list is always there.
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await expect(toggle).toBeHidden();
+    await expect(page.locator('.sva-nav')).toBeVisible();
   });
 });
 
@@ -218,7 +239,7 @@ async function correct(page) {
   }
 }
 
-test.describe('portfolio app data panel on a renamed-column study', () => {
+test.describe('demo app data panel on a renamed-column study', () => {
   test.beforeAll(() => {
     execSync('npm run build:app', { stdio: 'inherit', cwd: new URL('../..', import.meta.url) });
   });
@@ -413,7 +434,7 @@ test.describe('portfolio app data panel on a renamed-column study', () => {
 
 const SINGLE_FILE = new URL('../../build/app/safety.viz-app.html', import.meta.url);
 
-test.describe('portfolio app as one file, offline', () => {
+test.describe('demo app as one file, offline', () => {
   test.beforeAll(() => {
     execSync('npm run build:app', { stdio: 'inherit', cwd: new URL('../..', import.meta.url) });
   });
@@ -427,7 +448,15 @@ test.describe('portfolio app as one file, offline', () => {
     page.on('request', (request) => requests.push(request.url()));
     await context.setOffline(true);
     await page.goto(SINGLE_FILE.href);
-    await expect(page.locator('h1')).toHaveText('safety.viz portfolio');
+    await expect(page).toHaveTitle('safety.viz demo');
+    await expect(page.locator('.sva-wordmark')).toHaveText('safety.viz');
+    await expect(page.locator('.sva-kicker')).toHaveText('Demo app');
+    await expect(page.locator('.sva-version')).toHaveText(/^safety\.viz \d+\.\d+\.\d+$/);
+    // With no site around it, its links go to the published one.
+    await expect(page.locator('.sva-links a[data-link="docs"]')).toHaveAttribute(
+      'href',
+      'https://jwildfire.github.io/safety.viz/'
+    );
     await expect(page.locator('.sva-count')).toHaveText(
       '0 of 14 charts supported by the loaded data'
     );

@@ -1,4 +1,4 @@
-// Portfolio app: the data panel (#151, obot.roadmap#352). Where a user's own
+// Demo app: the data panel (#151, obot.roadmap#352). Where a user's own
 // files come in: a drop zone that reads them in the browser, and under each
 // file one table mapping what the charts need to what the file has — its
 // columns, and the names of the key measures — pre-filled, with every guess
@@ -88,7 +88,7 @@ function fileCard(domain, app, needed) {
   const definition = manifest.domains[domain];
   const candidate = app.state.placements[domain].candidates.find((item) => item.domain === domain);
 
-  const card = el('section', 'sva-file');
+  const card = el('section', `sva-file sva-domain-${domain}`);
   card.dataset.domain = domain;
   const head = el('div', 'sva-file-head');
   const domainPicker = el('select', 'sva-select sva-domain');
@@ -104,6 +104,7 @@ function fileCard(domain, app, needed) {
   domainPicker.value = domain;
   domainPicker.onchange = () => app.placeFileIn({ domain }, domainPicker.value || null);
   head.append(
+    el('span', 'sva-hex'),
     el('span', 'sva-file-name', file.name),
     domainPicker,
     el('span', 'sva-tag sva-found', `${candidate.matched} of ${candidate.of} columns found`),
@@ -188,6 +189,7 @@ function unplacedCard(item, index, app) {
     if (select.value) app.placeFileIn({ unplaced: index }, select.value);
   };
   head.append(
+    el('span', 'sva-hex sva-hollow'),
     el('span', 'sva-file-name', item.file.name),
     select,
     el('span', 'sva-file-rows', rowCount(item.file.rows.length))
@@ -205,6 +207,21 @@ function unplacedCard(item, index, app) {
  */
 export function renderDataPanel(container, app) {
   const { state, manifest } = app;
+
+  // The three steps, each on a hex of the spectrum.
+  const steps = el('ol', 'sva-steps');
+  [
+    ['Load your files', 'sva-domain-ae'],
+    ['Check the mapping', 'sva-domain-bds'],
+    ['Open a chart', 'sva-domain-eg']
+  ].forEach(([label, hue], index) => {
+    const step = el('li', hue);
+    const number = el('span', 'sva-step-n', String(index + 1));
+    number.setAttribute('aria-hidden', 'true');
+    step.append(number, el('span', null, label));
+    steps.append(step);
+  });
+  container.append(steps);
 
   const drop = el('div', 'sva-drop');
   const input = el('input');

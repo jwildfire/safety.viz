@@ -52,7 +52,7 @@ const renamedMapping = () => {
   return mapping;
 };
 
-describe('portfolio app: chart recipes', () => {
+describe('demo app: chart recipes', () => {
   it('APP-CHART-001: on the demo study the histogram gets its columns, filters, groups and the rail’s settings (#150)', () => {
     const demographics = [
       { value_col: 'SITEID', label: 'Site' },

@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const committedDir = path.join(rootDir, 'tests/e2e/fixtures/app');
 
-describe('portfolio app: the renamed-column study', () => {
+describe('demo app: the renamed-column study', () => {
   it('APP-LOAD-016: scripts/build-app-fixture.mjs reproduces the committed files byte for byte (#151)', () => {
     const outDir = mkdtempSync(path.join(tmpdir(), 'safety-viz-app-fixture-'));
     try {

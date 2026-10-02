@@ -1,4 +1,4 @@
-// Portfolio app: which domain is this file? (#149, obot.roadmap#352). A file is
+// Demo app: which domain is this file? (#149, obot.roadmap#352). A file is
 // placed in the manifest domain whose columns it carries most of, counting a
 // column as found when the file has it by the same name or a known
 // alternative — the shape of the old safetyGraphics app's standard detection.

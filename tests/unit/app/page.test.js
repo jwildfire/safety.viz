@@ -42,7 +42,7 @@ function fakeCharts() {
 const item = (root, id) => root.querySelector(`.sva-item[data-view="${id}"]`);
 const tag = (root, id) => item(root, id).querySelector('.sva-tag').textContent;
 
-describe('portfolio app: the page', () => {
+describe('demo app: the page', () => {
   let root;
   beforeEach(() => {
     document.body.innerHTML = '<div id="app"></div>';
@@ -207,5 +207,59 @@ describe('portfolio app: the page', () => {
       'adsl-v2.csv replaced adsl.csv as the Subject-level file.'
     ]);
     expect(tag(root, 'data')).toBe('1 file');
+  });
+
+  it('APP-PAGE-018: the app carries its own header: wordmark, what it is, and that nothing is sent anywhere (#150)', () => {
+    const { charts } = fakeCharts();
+    mountApp(root, { charts, manifest, version: '1.2.3' });
+    expect(root.querySelector('.sva-rail .sva-wordmark').textContent).toBe('safety.viz');
+    expect(root.querySelector('.sva-rail .sva-kicker').textContent).toBe('Demo app');
+    expect(root.querySelector('.sva-logo svg')).not.toBeNull();
+    expect(root.querySelector('.sva-pitch').textContent).toContain('Nothing is sent anywhere.');
+    expect(root.querySelector('.sva-version').textContent).toBe('safety.viz 1.2.3');
+    // One page title: the view's name, in the main column.
+    expect(root.querySelectorAll('h1')).toHaveLength(1);
+    expect(root.querySelector('main h1.sva-title').textContent).toBe('Data');
+  });
+
+  it('APP-PAGE-019: the rail links only where it was given an address, and the single file is a download (#150)', () => {
+    const { charts } = fakeCharts();
+    mountApp(root, { charts, manifest });
+    expect(root.querySelectorAll('.sva-links a')).toHaveLength(0);
+    mountApp(root, {
+      charts,
+      manifest,
+      links: { docs: '../index.html', download: './safety.viz-app.html' }
+    });
+    const anchors = [...root.querySelectorAll('.sva-links a')];
+    expect(anchors.map((a) => [a.dataset.link, a.getAttribute('href'), a.textContent])).toEqual([
+      ['docs', '../index.html', 'Docs and chart gallery'],
+      ['download', './safety.viz-app.html', 'Download as one file']
+    ]);
+    expect(anchors[0].hasAttribute('download')).toBe(false);
+    expect(anchors[1].hasAttribute('download')).toBe(true);
+  });
+
+  it('APP-PAGE-020: each chart’s hex says its state beside the words: its domain’s hue when ready, red when something is missing, hollow with nothing to read (#150)', () => {
+    const { charts } = fakeCharts();
+    const app = mountApp(root, { charts, manifest });
+    const hex = (id) => item(root, id).querySelector('.sva-hex').className;
+    expect(hex('histogram')).toBe('sva-hex sva-hollow');
+    app.loadFiles(DEMO);
+    expect(hex('histogram')).toBe('sva-hex');
+    expect(hex('patient-journey-explorer')).toBe('sva-hex sva-hollow');
+    expect(hex('data')).toBe('sva-hex sva-spectrum');
+    // The group carries the domain, which is what gives a ready hex its hue.
+    expect(item(root, 'histogram').closest('.sva-group').className).toBe(
+      'sva-group sva-domain-bds'
+    );
+    expect(item(root, 'qt-explorer').closest('.sva-group').className).toBe(
+      'sva-group sva-domain-eg'
+    );
+    // Missing reads red, and the words still say what.
+    app.state.mappings.eg.columns.ARM = { value: null, source: null };
+    app.refresh();
+    expect(hex('qt-explorer')).toBe('sva-hex sva-alarm');
+    expect(tag(root, 'qt-explorer')).toBe('1 missing');
   });
 });

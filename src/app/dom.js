@@ -1,4 +1,4 @@
-// Portfolio app: the two DOM helpers the page and the data panel share (#151).
+// Demo app: the two DOM helpers the page and the data panel share (#151).
 
 /**
  * Create an element with an optional class and text content. Text is always

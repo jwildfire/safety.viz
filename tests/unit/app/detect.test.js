@@ -8,7 +8,7 @@ const header = (file) =>
     .split(/\r?\n/, 1)[0]
     .split(',');
 
-describe('portfolio app: placing a file in a domain', () => {
+describe('demo app: placing a file in a domain', () => {
   it('APP-PLACE-001: the four vendored demo extracts place to their four domains (#149)', () => {
     expect(placeFile(header('adsl.csv'), manifest).domain).toBe('subject');
     expect(placeFile(header('adae.csv'), manifest).domain).toBe('ae');
