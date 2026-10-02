@@ -86,6 +86,11 @@ test.describe('demo app on the demo study', () => {
     await expect(page.locator('.sva-chart .sv-root')).toBeVisible();
     await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
     expect(errors).toEqual([]);
+    // The evidence shot is of one chart drawn whole. The histogram the demo
+    // opens on draws 28 small charts, and how many are painted when the frame
+    // settles varies from run to run.
+    await openChart(page, 'hep-explorer');
+    await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
     await captureEvidence(page, 'APP-PAGE-002', 'demo-study');
   });
 
@@ -228,6 +233,34 @@ test.describe('demo app on the demo study', () => {
     await expect(page.locator('.sva-footer .sva-pitch')).toHaveText(
       'Everything runs in this browser. Nothing is sent anywhere.'
     );
+  });
+
+  test('APP-PAGE-024: the open chart’s chip is the view’s visible name: no heading and no count line take up the page (#150)', async ({
+    page
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await openOnDemo(page);
+    await openChart(page, 'ae-timelines');
+    // The heading and the overall count are still there for a screen reader...
+    await expect(page.locator('h1.sva-title')).toHaveText('Adverse Event Timelines');
+    await expect(page.locator('.sva-count')).toHaveAttribute('aria-live', 'polite');
+    // ...and take up no room on the page.
+    for (const selector of ['h1.sva-title', '.sva-count']) {
+      const box = await page.locator(selector).boundingBox();
+      expect(box.width).toBeLessThanOrEqual(1);
+      expect(box.height).toBeLessThanOrEqual(1);
+    }
+    // The chart starts straight under the header.
+    const header = await page.locator('.sva-header').boundingBox();
+    const chart = await page.locator('.sva-chart').boundingBox();
+    expect(chart.y - (header.y + header.height)).toBeLessThan(30);
+    // The open chip stands out from its neighbours.
+    const weight = (id) =>
+      item(page, id).evaluate((node) => Number(getComputedStyle(node).fontWeight));
+    expect(await weight('ae-timelines')).toBeGreaterThanOrEqual(600);
+    expect(await weight('ae-explorer')).toBeLessThan(600);
+    const fill = (id) => item(page, id).evaluate((node) => getComputedStyle(node).backgroundColor);
+    expect(await fill('ae-timelines')).not.toBe(await fill('ae-explorer'));
   });
 
   test('APP-PAGE-022: a tab per domain says how many of its charts are supported and shows that domain’s charts (#150)', async ({

@@ -227,7 +227,11 @@ describe('demo app: the page', () => {
       'MAIN',
       'FOOTER'
     ]);
-    // One page title: the view's name, in the main column.
+    // One page heading, the view's name, and the overall count: both kept for
+    // screen readers in the main area, neither in the header.
+    expect(root.querySelector('.sva-header h1')).toBeNull();
+    expect(root.querySelector('.sva-header .sva-count')).toBeNull();
+    expect(root.querySelector('main .sva-count').getAttribute('aria-live')).toBe('polite');
     expect(root.querySelectorAll('h1')).toHaveLength(1);
     expect(root.querySelector('main h1.sva-title').textContent).toBe('Data');
   });

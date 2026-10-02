@@ -2,7 +2,8 @@
 // chrome is a header and a footer, so the chart keeps the page's full width. The
 // header carries the wordmark, a Data tab and one tab per domain, and beneath
 // them the charts of the open domain, each with a status saying whether the
-// loaded data supports it. The main area shows the data view or one chart at a
+// loaded data supports it. The open chart's chip is emphasised and is the
+// view's visible name. The main area shows the data view or one chart at a
 // time; the footer carries the links.
 // This is the only module of the app that touches the document. The parsing,
 // placing, mapping and status rules it shows are the pure modules beside it,
@@ -154,8 +155,10 @@ export function mountApp(
   root.innerHTML = '';
   const app = el('div', 'sva-app');
 
-  // The header: the wordmark, the Data tab and a tab per domain, the count; and
-  // beneath them the charts of the open domain.
+  // The header: the wordmark, the Data tab and a tab per domain; and beneath
+  // them the charts of the open domain, the open one emphasised. That chip is
+  // the view's visible name: the heading and the overall count are kept for
+  // screen readers and not shown.
   const header = el('header', 'sva-header');
   const bar = el('div', 'sva-bar');
   const brand = el('div', 'sva-brand');
@@ -170,17 +173,18 @@ export function mountApp(
   tabs.setAttribute('aria-label', 'Data and domains');
   const count = el('div', 'sva-count');
   count.setAttribute('aria-live', 'polite');
-  bar.append(brand, tabs, count);
+  bar.append(brand, tabs);
   const chartRow = el('nav', 'sva-charts');
   chartRow.setAttribute('aria-label', 'Charts');
   header.append(bar, chartRow);
 
-  // The main area: the view's title and actions, and the view beneath them.
+  // The main area: the view's heading and count for screen readers, the data
+  // view's actions, and the view beneath them.
   const main = el('main', 'sva-main');
   const head = el('div', 'sva-sechead');
   const title = el('h1', 'sva-title');
   const actions = el('div', 'sva-actions');
-  head.append(title, actions);
+  head.append(title, count, actions);
   const content = el('div', 'sva-content');
   main.append(head, content);
 
@@ -224,15 +228,8 @@ export function mountApp(
 
   function renderHead(current) {
     const { ready, total } = supportedCount(current);
-    // The tail of the sentence is dropped where the bar is short of room.
-    count.replaceChildren(
-      ...(state.busy
-        ? [state.busy]
-        : [
-            `${ready} of ${total} charts supported`,
-            el('span', 'sva-count-rest', ' by the loaded data')
-          ])
-    );
+    // Spoken, not shown: each domain's tab already carries its own count.
+    count.textContent = state.busy || `${ready} of ${total} charts supported by the loaded data`;
     // The data actions belong to the data view.
     actions.innerHTML = '';
     if (state.selected !== 'data') return;
@@ -339,6 +336,7 @@ export function mountApp(
   function renderMain(current) {
     destroyChart();
     content.innerHTML = '';
+    if (state.busy) content.append(el('p', 'sva-message sva-busy', state.busy));
     if (state.selected === 'data') {
       title.textContent = 'Data';
       renderNotes(content);
