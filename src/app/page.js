@@ -11,11 +11,24 @@
 
 import { parseFile } from './parse.js';
 import { placeFile } from './detect.js';
-import { buildMapping, distinctValues, resolveColumn } from './mapping.js';
+import {
+  applySavedMapping,
+  buildMapping,
+  distinctValues,
+  resolveColumn,
+  serializeMappings,
+  setColumn,
+  setMeasure
+} from './mapping.js';
 import { chartStatus, supportedCount } from './status.js';
 import { chartData, chartSettings, isDestination } from './charts.js';
+import { renderDataPanel } from './data-panel.js';
+import { el, plural } from './dom.js';
 
 const STYLE_ID = 'safety-viz-app-styles';
+
+/** The name the mapping file is offered for download under. */
+export const MAPPING_FILE_NAME = 'safety-viz-mapping.json';
 
 const STYLES = `
 .sva-app{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#1f2933;font-size:.95rem}
@@ -32,7 +45,7 @@ const STYLES = `
 .sva-item:hover{background:#f0f3f6}
 .sva-item[aria-current=page]{background:#e3eef8;font-weight:600}
 .sva-tag{flex:none;border-radius:999px;padding:.1rem .5rem;font-size:.7rem;font-weight:600;white-space:nowrap;background:#eef1f4;color:#52616f}
-.sva-tag.sva-ready{background:#e3f4ec;color:#146c43}
+.sva-tag.sva-ready,.sva-tag.sva-same{background:#e3f4ec;color:#146c43}
 .sva-tag.sva-missing{background:#fbe9e5;color:#a23a22}
 .sva-main{min-width:0}
 .sva-app .sva-title{margin:0 0 .5rem;font-family:inherit;font-size:1.25rem;font-weight:700}
@@ -40,23 +53,47 @@ const STYLES = `
 .sva-message.sva-problem{border-left-color:#a23a22}
 .sva-notes{margin:0 0 1rem;padding:0;list-style:none}
 .sva-note{margin:0 0 .4rem;padding:.5rem .8rem;border:1px solid #f0d9a8;border-radius:6px;background:#fdf6e3}
-.sva-files{width:100%;border-collapse:collapse;font-size:.88rem}
-.sva-files th,.sva-files td{text-align:left;padding:.4rem .6rem;border-bottom:1px solid #e3e8ee;vertical-align:top}
-.sva-files th{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:#52616f}
+.sva-drop{margin:0 0 1rem;padding:1.1rem;border:1.5px dashed #b8c0cc;border-radius:10px;background:#fbfcfd;text-align:center;color:#52616f}
+.sva-drop.sva-over{border-color:#0b62a4;background:#e3eef8;color:#1f2933}
+.sva-drop p{margin:0 0 .6rem}
+.sva-drop p:last-child{margin:0}
+.sva-file{margin:0 0 1rem;border:1px solid #d8dee4;border-radius:10px;background:#fff}
+.sva-file-head{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem .7rem;padding:.6rem .8rem;border-bottom:1px solid #e3e8ee;background:#f6f8fa;border-radius:10px 10px 0 0}
+.sva-file.sva-unplaced .sva-file-head{border-bottom:0;border-radius:10px}
+.sva-file-name{font-weight:700;overflow-wrap:anywhere}
+.sva-file-rows{color:#52616f;font-size:.82rem}
+.sva-select{max-width:100%;box-sizing:border-box;padding:.3rem .4rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.85rem;color:inherit}
+.sva-select:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
+.sva-map{width:100%;border-collapse:collapse;font-size:.88rem}
+.sva-map th,.sva-map td{text-align:left;padding:.4rem .8rem;border-bottom:1px solid #e3e8ee;vertical-align:middle}
+.sva-map tr:last-child td{border-bottom:0}
+.sva-map th{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:#52616f}
+.sva-map .sva-select{width:100%;min-width:9rem}
+.sva-map-section td{background:#f6f8fa;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#52616f}
+.sva-tag.sva-guess{background:#f8efdd;color:#8a5a06}
+.sva-tag.sva-chosen{background:#e3eef8;color:#0b4f85}
 .sva-scroll{overflow-x:auto}
 @media (max-width:760px){.sva-body{grid-template-columns:minmax(0,1fr)}}
 `;
 
 const OTHER_GROUP = 'other';
 
-function el(tag, className, text) {
-  const node = document.createElement(tag);
-  if (className) node.className = className;
-  if (text !== undefined) node.textContent = text;
-  return node;
+/**
+ * A mapping file's content, when a dropped file is one: a JSON object carrying
+ * the `safetyVizMapping` marker. Anything else is data, and returns null.
+ * @private
+ */
+function readMappingFile({ name, text }) {
+  if (!/\.json$/i.test(name)) return null;
+  try {
+    const parsed = JSON.parse(text);
+    return parsed && !Array.isArray(parsed) && parsed.safetyVizMapping && parsed.domains
+      ? parsed
+      : null;
+  } catch {
+    return null;
+  }
 }
-
-const plural = (count, noun) => `${count} ${noun}${count === 1 ? '' : 's'}`;
 
 /** The short status shown beside a chart in the list. */
 function tagFor(status) {
@@ -88,7 +125,7 @@ function sentenceFor(module, status, manifest) {
  * @param {Object} options.manifest The portfolio manifest.
  * @param {{base: string}} [options.demo] Where the demo extracts are served from; when given, the demo study is loaded on mount and a Load demo data button is offered.
  * @param {(url: string) => Promise<string>} [options.fetchText] Fetches the demo extracts' text; defaults to `fetch`.
- * @param {(container: Element, app: Object) => void} [options.dataView] Renders the data view; defaults to a summary of the loaded files.
+ * @param {(container: Element, app: Object) => void} [options.dataView] Renders the data view; defaults to the data panel.
  * @returns {{ready: Promise<void>, loadFiles: Function, loadDemo: Function, select: Function, state: Object, destroy: Function}} The app handle.
  */
 export function mountApp(
@@ -98,7 +135,7 @@ export function mountApp(
     manifest,
     demo = null,
     fetchText = (url) => fetch(url).then((response) => response.text()),
-    dataView = renderDataSummary
+    dataView = renderDataPanel
   } = {}
 ) {
   const root = typeof target === 'string' ? document.querySelector(target) : target;
@@ -113,8 +150,11 @@ export function mountApp(
     files: {}, // domain → { name, columns, rows }
     mappings: {}, // domain → mapping
     placements: {}, // domain → the placeFile result for its file
+    unplaced: [], // files that matched no domain, kept so they can be placed by hand
+    saved: null, // a mapping file's content, applied to each domain as its file loads
     notes: [], // sentences about the last load: unplaced, unreadable, replaced
     failed: {}, // module → the message of a chart that was ready and threw
+    focus: null, // the mapping row to return the keyboard focus to after a re-render
     selected: 'data',
     busy: ''
   };
@@ -169,6 +209,13 @@ export function mountApp(
       button.type = 'button';
       button.dataset.action = 'demo';
       button.onclick = () => handle.loadDemo();
+      actions.append(button);
+    }
+    if (Object.keys(state.files).length) {
+      const button = el('button', 'sva-button', 'Download mapping');
+      button.type = 'button';
+      button.dataset.action = 'download-mapping';
+      button.onclick = () => handle.downloadMapping();
       actions.append(button);
     }
   }
@@ -283,6 +330,24 @@ export function mountApp(
     });
   }
 
+  /** Apply the held mapping file to one loaded domain, noting what it could not find. */
+  function applySaved(domain) {
+    const saved = state.saved && state.saved.domains[domain];
+    if (!saved || !state.files[domain]) return;
+    const { mapping, skipped } = applySavedMapping(
+      state.mappings[domain],
+      saved,
+      state.files[domain]
+    );
+    state.mappings[domain] = mapping;
+    if (skipped.length) {
+      state.notes.push(
+        `The saved mapping names ${skipped.join(', ')}, which ${state.files[domain].name} ` +
+          'does not have; those rows were left as they were.'
+      );
+    }
+  }
+
   const handle = {
     state,
     manifest,
@@ -298,9 +363,17 @@ export function mountApp(
      * @param {{name: string, text: string}[]} list The files' names and text.
      * @returns {void}
      */
-    loadFiles(list) {
-      state.notes = [];
-      for (const { name, text } of list) {
+    loadFiles(list, { notes = [] } = {}) {
+      state.notes = [...notes];
+      // A mapping file among them is read first, so the data files dropped
+      // with it land where it says and take its rows.
+      const data = [];
+      for (const entry of list) {
+        const saved = readMappingFile(entry);
+        if (saved) handle.restoreMapping(saved, entry.name);
+        else data.push(entry);
+      }
+      for (const { name, text } of data) {
         let file;
         try {
           file = parseFile(name, text);
@@ -309,22 +382,29 @@ export function mountApp(
           continue;
         }
         const placement = place(file);
-        if (!placement.domain) {
+        const remembered =
+          state.saved &&
+          Object.keys(state.saved.domains).find((id) => state.saved.domains[id].file === name);
+        const domain = (manifest.domains[remembered] && remembered) || placement.domain;
+        if (!domain) {
           const found = placement.found.length ? ` (${placement.found.join(', ')})` : '';
           state.notes.push(
             `${name} was not placed in a domain: it matches at most ` +
               `${plural(placement.matched, 'column')} of any of them${found}.`
           );
+          state.unplaced = state.unplaced.filter((item) => item.file.name !== name);
+          state.unplaced.push({ file, placement });
           continue;
         }
-        handle.setFile(placement.domain, file, placement);
+        handle.setFile(domain, file, placement);
       }
       state.failed = {};
       render();
     },
 
     /**
-     * Put one parsed file in one domain, replacing whatever was there.
+     * Put one parsed file in one domain, replacing whatever was there. A saved
+     * mapping for the domain, when one is held, is applied over the pre-filled one.
      * @param {string} domain The manifest domain.
      * @param {Object} file The parsed file.
      * @param {Object} placement The placeFile result to keep with it.
@@ -340,6 +420,97 @@ export function mountApp(
       state.files[domain] = file;
       state.placements[domain] = placement;
       state.mappings[domain] = buildMapping(domain, file, manifest);
+      applySaved(domain);
+    },
+
+    /**
+     * Move a file to another domain, or set it aside, by hand.
+     * @param {{domain: string}|{unplaced: number}} source The file: the domain it is in, or its index among the unplaced.
+     * @param {?string} domain The domain to place it in; null sets it aside.
+     * @returns {void}
+     */
+    placeFileIn(source, domain) {
+      state.notes = [];
+      let item;
+      if ('unplaced' in source) {
+        [item] = state.unplaced.splice(source.unplaced, 1);
+      } else {
+        item = { file: state.files[source.domain], placement: state.placements[source.domain] };
+        delete state.files[source.domain];
+        delete state.mappings[source.domain];
+        delete state.placements[source.domain];
+      }
+      if (domain) handle.setFile(domain, item.file, item.placement);
+      else state.unplaced.push(item);
+      state.failed = {};
+      render();
+    },
+
+    /**
+     * Set one column row of a domain's mapping by hand.
+     * @param {string} domain The manifest domain.
+     * @param {string} column The manifest column.
+     * @param {?string} value The file's column, or null to clear the row.
+     * @returns {void}
+     */
+    setColumn(domain, column, value) {
+      state.mappings[domain] = setColumn(
+        state.mappings[domain],
+        column,
+        value,
+        state.files[domain]
+      );
+      state.focus = { domain, kind: 'column', key: column };
+      handle.refresh();
+    },
+
+    /**
+     * Set one key-measure row of a domain's mapping by hand.
+     * @param {string} domain The manifest domain.
+     * @param {string} key The measure key.
+     * @param {?string} value What the data calls the measure, or null to clear the row.
+     * @returns {void}
+     */
+    setMeasure(domain, key, value) {
+      state.mappings[domain] = setMeasure(state.mappings[domain], key, value);
+      state.focus = { domain, kind: 'measure', key };
+      handle.refresh();
+    },
+
+    /**
+     * Hold a mapping file's content and apply it to every domain already
+     * loaded; domains loaded later take it as their files arrive.
+     * @param {Object} saved The mapping file's parsed content.
+     * @param {string} name The mapping file's name, for the note.
+     * @returns {void}
+     */
+    restoreMapping(saved, name) {
+      state.saved = saved;
+      const domains = Object.keys(manifest.domains).filter((domain) => saved.domains[domain]);
+      state.notes.push(
+        `${name} is a saved mapping for: ` +
+          `${domains.map((domain) => `${manifest.domains[domain].label} (${saved.domains[domain].file})`).join(', ')}.`
+      );
+      for (const domain of domains) applySaved(domain);
+    },
+
+    /** The mapping file's content for what is loaded now. */
+    mappingFile() {
+      return serializeMappings(state.files, state.mappings);
+    },
+
+    /** Offer the mapping file as a download; nothing leaves the browser. */
+    downloadMapping() {
+      const blob = new Blob([`${JSON.stringify(handle.mappingFile(), null, 2)}\n`], {
+        type: 'application/json'
+      });
+      const link = el('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = MAPPING_FILE_NAME;
+      document.body.append(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(link.href);
     },
 
     /**
@@ -399,40 +570,4 @@ export function mountApp(
   render();
   if (demo) handle.ready = handle.loadDemo();
   return handle;
-}
-
-/**
- * The data view's default: one row per loaded file, saying which domain it was
- * placed in, how many of that domain's columns it carries, and its size.
- * @param {Element} container The element to render into.
- * @param {Object} app The app handle from {@link mountApp}.
- * @returns {void}
- */
-export function renderDataSummary(container, app) {
-  const { files, placements } = app.state;
-  const domains = Object.keys(app.manifest.domains).filter((domain) => files[domain]);
-  if (!domains.length) {
-    container.append(el('p', 'sva-message', 'No files are loaded.'));
-    return;
-  }
-  const scroll = el('div', 'sva-scroll');
-  const table = el('table', 'sva-files');
-  const head = el('tr');
-  for (const title of ['File', 'Domain', 'Columns found', 'Rows'])
-    head.append(el('th', null, title));
-  table.append(head);
-  for (const domain of domains) {
-    const row = el('tr');
-    row.dataset.domain = domain;
-    const placement = placements[domain];
-    row.append(
-      el('td', null, files[domain].name),
-      el('td', null, app.manifest.domains[domain].label),
-      el('td', null, `${placement.matched} of ${placement.of}`),
-      el('td', null, files[domain].rows.length.toLocaleString('en-US'))
-    );
-    table.append(row);
-  }
-  scroll.append(table);
-  container.append(scroll);
 }
