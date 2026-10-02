@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="The safety.viz demo app: load a study, check how its columns map, and review it in thirteen clinical safety charts. It runs in your browser; nothing is uploaded.">
+<title>safety.viz demo</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%20aria-hidden%3D%22true%22%20focusable%3D%22false%22%3E%3Cpolygon%20points%3D%2250.0%2C33.3%2064.4%2C41.7%2064.4%2C58.3%2050.0%2C66.7%2035.6%2C58.3%2035.6%2C41.7%22%20fill%3D%22%231f2328%22%2F%3E%3Cpolygon%20points%3D%2282.1%2C33.3%2096.5%2C41.7%2096.5%2C58.3%2082.1%2C66.7%2067.6%2C58.3%2067.6%2C41.7%22%20fill%3D%22%23d87972%22%2F%3E%3Cpolygon%20points%3D%2266.0%2C61.1%2080.5%2C69.4%2080.5%2C86.1%2066.0%2C94.4%2051.6%2C86.1%2051.6%2C69.4%22%20fill%3D%22%23c78a3b%22%2F%3E%3Cpolygon%20points%3D%2234.0%2C61.1%2048.4%2C69.4%2048.4%2C86.1%2034.0%2C94.4%2019.5%2C86.1%2019.5%2C69.4%22%20fill%3D%22%2377a95b%22%2F%3E%3Cpolygon%20points%3D%2217.9%2C33.3%2032.4%2C41.7%2032.4%2C58.3%2017.9%2C66.7%203.5%2C58.3%203.5%2C41.7%22%20fill%3D%22%2300afa9%22%2F%3E%3Cpolygon%20points%3D%2234.0%2C5.6%2048.4%2C13.9%2048.4%2C30.6%2034.0%2C38.9%2019.5%2C30.6%2019.5%2C13.9%22%20fill%3D%22%23519fdd%22%2F%3E%3Cpolygon%20points%3D%2266.0%2C5.6%2080.5%2C13.9%2080.5%2C30.6%2066.0%2C38.9%2051.6%2C30.6%2051.6%2C13.9%22%20fill%3D%22%23988bdd%22%2F%3E%3C%2Fsvg%3E">
+<link rel="preload" href="./fonts/instrument-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="./fonts/instrument-serif-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="./fonts/ibm-plex-mono-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="./fonts/ibm-plex-mono-latin-500-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="./fonts/ibm-plex-mono-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face{font-family:"Instrument Sans";font-style:normal;font-weight:400 700;font-display:swap;src:url(./fonts/instrument-sans-latin-wght-normal.woff2) format("woff2")}
+@font-face{font-family:"Instrument Serif";font-style:normal;font-weight:400;font-display:swap;src:url(./fonts/instrument-serif-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"IBM Plex Mono";font-style:normal;font-weight:400;font-display:swap;src:url(./fonts/ibm-plex-mono-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"IBM Plex Mono";font-style:normal;font-weight:500;font-display:swap;src:url(./fonts/ibm-plex-mono-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"IBM Plex Mono";font-style:normal;font-weight:600;font-display:swap;src:url(./fonts/ibm-plex-mono-latin-600-normal.woff2) format("woff2")}
+body{margin:0;background:#fafaf8}
+</style>
+<script>if (document.fonts) document.fonts.forEach(function (face) { face.load(); });</script>
+</head>
+<body>
+<div id="app"></div>
+<noscript>The safety.viz demo app needs JavaScript: it reads and draws your data in this browser.</noscript>
+<script src="./safety.viz-app.js"></script>
+<script>
+window.__safetyVizApp = SafetyVizApp.mount('#app', {
+  demo: { base: './' },
+  links: {
+    docs: '../index.html',
+    domains: '../domains/index.html',
+    download: './safety.viz-app.html',
+    github: 'https://github.com/jwildfire/safety.viz'
+  }
+});
+</script>
+</body>
+</html>
