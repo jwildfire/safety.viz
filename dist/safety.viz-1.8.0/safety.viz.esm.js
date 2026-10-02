@@ -1,3 +1,9 @@
+var __defProp = Object.defineProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+
 // node_modules/@kurkle/color/dist/color.esm.js
 function round(v) {
   return v + 0.5 | 0;
@@ -1011,8 +1017,8 @@ function debounce(fn, delay) {
 var _toLeftRightCenter = (align) => align === "start" ? "left" : align === "end" ? "right" : "center";
 var _alignStartEnd = (align, start, end) => align === "start" ? start : align === "end" ? end : (start + end) / 2;
 var _textX = (align, left, right, rtl) => {
-  const check = rtl ? "left" : "right";
-  return align === check ? right : align === "center" ? (left + right) / 2 : left;
+  const check2 = rtl ? "left" : "right";
+  return align === check2 ? right : align === "center" ? (left + right) / 2 : left;
 };
 function _getStartAndCountOfVisiblePoints(meta, points, animationsDisabled) {
   const pointCount = points.length;
@@ -1770,9 +1776,9 @@ function drawBackdrop(ctx, opts) {
   ctx.fillRect(opts.left, opts.top, opts.width, opts.height);
   ctx.fillStyle = oldColor;
 }
-function renderText(ctx, text, x, y, font, opts = {}) {
-  const lines = isArray(text) ? text : [
-    text
+function renderText(ctx, text3, x, y, font, opts = {}) {
+  const lines = isArray(text3) ? text3 : [
+    text3
   ];
   const stroke = opts.strokeWidth > 0 && opts.strokeColor !== "";
   let i, line;
@@ -3911,9 +3917,9 @@ var DatasetController = class {
       ""
     ];
     const scopes = config.getOptionScopes(this.getDataset(), scopeKeys);
-    const names2 = Object.keys(defaults.elements[elementType]);
+    const names3 = Object.keys(defaults.elements[elementType]);
     const context = () => this.getContext(index, active, mode);
-    const values = config.resolveNamedOptions(scopes, names2, context, prefixes);
+    const values = config.resolveNamedOptions(scopes, names3, context, prefixes);
     if (values.$shared) {
       values.$shared = sharing;
       cache[cacheKey] = Object.freeze(cloneIfNotShared(values, sharing));
@@ -5559,9 +5565,9 @@ function nodeListContains(nodeList, canvas) {
 }
 function createAttachObserver(chart, type, listener) {
   const canvas = chart.canvas;
-  const observer = new MutationObserver((entries) => {
+  const observer = new MutationObserver((entries2) => {
     let trigger = false;
-    for (const entry of entries) {
+    for (const entry of entries2) {
       trigger = trigger || nodeListContains(entry.addedNodes, canvas);
       trigger = trigger && !nodeListContains(entry.removedNodes, canvas);
     }
@@ -5577,9 +5583,9 @@ function createAttachObserver(chart, type, listener) {
 }
 function createDetachObserver(chart, type, listener) {
   const canvas = chart.canvas;
-  const observer = new MutationObserver((entries) => {
+  const observer = new MutationObserver((entries2) => {
     let trigger = false;
-    for (const entry of entries) {
+    for (const entry of entries2) {
       trigger = trigger || nodeListContains(entry.removedNodes, canvas);
       trigger = trigger && !nodeListContains(entry.addedNodes, canvas);
     }
@@ -5632,8 +5638,8 @@ function createResizeObserver(chart, type, listener) {
       listener();
     }
   }, window);
-  const observer = new ResizeObserver((entries) => {
-    const entry = entries[0];
+  const observer = new ResizeObserver((entries2) => {
+    const entry = entries2[0];
     const width = entry.contentRect.width;
     const height = entry.contentRect.height;
     if (width === 0 && height === 0) {
@@ -7729,7 +7735,7 @@ var Config = class {
       descriptors
     ];
   }
-  resolveNamedOptions(scopes, names2, context, prefixes = [
+  resolveNamedOptions(scopes, names3, context, prefixes = [
     ""
   ]) {
     const result = {
@@ -7737,13 +7743,13 @@ var Config = class {
     };
     const { resolver, subPrefixes } = getResolver(this._resolverCache, scopes, prefixes);
     let options = resolver;
-    if (needContext(resolver, names2)) {
+    if (needContext(resolver, names3)) {
       result.$shared = false;
       context = isFunction(context) ? context() : context;
       const subResolver = this.createResolver(scopes, context, subPrefixes);
       options = _attachContext(resolver, context, subResolver);
     }
-    for (const prop of names2) {
+    for (const prop of names3) {
       result[prop] = options[prop];
     }
     return result;
@@ -7774,9 +7780,9 @@ function getResolver(resolverCache, scopes, prefixes) {
   return cached;
 }
 var hasFunction = (value) => isObject(value) && Object.getOwnPropertyNames(value).some((key) => isFunction(value[key]));
-function needContext(proxy, names2) {
+function needContext(proxy, names3) {
   const { isScriptable, isIndexable } = _descriptors(proxy);
-  for (const prop of names2) {
+  for (const prop of names3) {
     const scriptable = isScriptable(prop);
     const indexable = isIndexable(prop);
     const value = (indexable || scriptable) && proxy[prop];
@@ -10071,11 +10077,11 @@ function determineYAlign(chart, size) {
 }
 function doesNotFitWithAlign(xAlign, chart, options, size) {
   const { x, width } = size;
-  const caret = options.caretSize + options.caretPadding;
-  if (xAlign === "left" && x + width + caret > chart.width) {
+  const caret2 = options.caretSize + options.caretPadding;
+  if (xAlign === "left" && x + width + caret2 > chart.width) {
     return true;
   }
-  if (xAlign === "right" && x - width - caret < 0) {
+  if (xAlign === "right" && x - width - caret2 < 0) {
     return true;
   }
 }
@@ -11986,7 +11992,7 @@ function parse(scale, input) {
     return null;
   }
   const adapter = scale._adapter;
-  const { parser, round: round2, isoWeekday } = scale._parseOpts;
+  const { parser, round: round3, isoWeekday } = scale._parseOpts;
   let value = input;
   if (typeof parser === "function") {
     value = parser(value);
@@ -11997,8 +12003,8 @@ function parse(scale, input) {
   if (value === null) {
     return null;
   }
-  if (round2) {
-    value = round2 === "week" && (isNumber(isoWeekday) || isoWeekday === true) ? adapter.startOf(value, "isoWeek", isoWeekday) : adapter.startOf(value, round2);
+  if (round3) {
+    value = round3 === "week" && (isNumber(isoWeekday) || isoWeekday === true) ? adapter.startOf(value, "isoWeek", isoWeekday) : adapter.startOf(value, round3);
   }
   return +value;
 }
@@ -12463,10 +12469,10 @@ var TimeSeriesScale = class extends TimeScale {
 };
 
 // src/shell.js
-function createElement(tag, className, text) {
+function createElement(tag, className, text3) {
   const element = document.createElement(tag);
   if (className) element.className = className;
-  if (text !== void 0) element.textContent = text;
+  if (text3 !== void 0) element.textContent = text3;
   return element;
 }
 function prototypeBanner(note) {
@@ -12474,8 +12480,8 @@ function prototypeBanner(note) {
   banner.setAttribute("role", "note");
   const tag = createElement("span", "sv-prototype-tag", "Prototype");
   banner.append(tag);
-  const text = note || "This chart is a prototype under evaluation for the v1.5 release \u2014 its behaviour and settings may change before it is finalized.";
-  banner.append(createElement("span", "sv-prototype-text", text));
+  const text3 = note || "This chart is a prototype under evaluation for the v1.5 release \u2014 its behaviour and settings may change before it is finalized.";
+  banner.append(createElement("span", "sv-prototype-text", text3));
   return banner;
 }
 function option(select, value, label, selected) {
@@ -12489,21 +12495,21 @@ function multiSelect({ values, selected, onChange }) {
   const details = createElement("details", "sv-multiselect");
   const summary = createElement("summary");
   details.append(summary);
-  const list = createElement("div", "sv-ms-list");
-  details.append(list);
+  const list2 = createElement("div", "sv-ms-list");
+  details.append(list2);
   const current = () => selected === null ? new Set(values) : new Set(selected);
   const allLabel = createElement("label", "sv-ms-option sv-ms-all");
   const allBox = document.createElement("input");
   allBox.type = "checkbox";
   allLabel.append(allBox, document.createTextNode("All"));
-  list.append(allLabel);
+  list2.append(allLabel);
   const boxes = values.map((value) => {
     const label = createElement("label", "sv-ms-option");
     const box = document.createElement("input");
     box.type = "checkbox";
     box.value = value;
     label.append(box, document.createTextNode(value));
-    list.append(label);
+    list2.append(label);
     return box;
   });
   const sync = () => {
@@ -12555,6 +12561,9 @@ var SHELL_STYLES = `
 .sv-control-row{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
 .sv-control-row .sv-control{margin:0}
 .sv-control-inline{display:flex;align-items:center;gap:.4rem;font-size:.85rem}
+.sv-reset{width:100%;margin-top:.75rem;padding:.35rem .45rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.82rem;cursor:pointer}
+.sv-reset:hover{border-color:#8f9aa8;background:#f6f8fa}
+.sv-reset:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
 .sv-main{flex:1 1 auto;min-width:0}
 .sv-notes{display:flex;flex-wrap:wrap;gap:.25rem 1.25rem;font-size:.85rem;color:#52616f;margin:0 0 .6rem}
 .sv-warning{color:#9a3412}
@@ -12614,9 +12623,9 @@ var SHELL_STYLES = `
 .sv-prototype-tag{flex:0 0 auto;text-transform:uppercase;letter-spacing:.05em;font-weight:700;font-size:.68rem;padding:.08rem .4rem;border-radius:999px;background:#d99a2b;color:#fff}
 .sv-prototype-text{flex:1 1 auto}
 @media (max-width:900px){
-.sv-root{flex-direction:column}
-.sv-sidebar{position:static;flex:1 1 auto;width:100%;max-height:none}
-.sv-rail{position:static;flex:1 1 auto;width:100%;max-height:none}
+.sv-root{flex-direction:column;align-items:stretch}
+.sv-sidebar{position:static;flex:1 1 auto;width:100%;box-sizing:border-box;max-height:none}
+.sv-rail{position:static;flex:1 1 auto;width:100%;box-sizing:border-box;max-height:none}
 .sv-rail-expanded .sv-rail{position:static}
 .sv-rail-expanded .sv-main,.sv-rail-expanded .sv-sidebar{filter:none}
 .sv-controls{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:0 1.25rem;align-items:start}
@@ -12700,12 +12709,19 @@ function controlBuilders(controls) {
       wrap.append(lab, input);
       parent.append(wrap);
       return input;
+    },
+    addReset(onReset, label = "Reset chart") {
+      const button = createElement("button", "sv-reset", label);
+      button.type = "button";
+      button.onclick = onReset;
+      controls.append(button);
+      return button;
     }
   };
 }
 function renderViewSelector(addSection, { options, active, onChange, title = "View" }) {
   const section = addSection(title);
-  const list = createElement("div", "sv-view-list");
+  const list2 = createElement("div", "sv-view-list");
   options.forEach(({ value, label }) => {
     const isActive3 = value === active;
     const optionButton = createElement(
@@ -12719,10 +12735,58 @@ function renderViewSelector(addSection, { options, active, onChange, title = "Vi
       if (value === active) return;
       onChange(value);
     };
-    list.append(optionButton);
+    list2.append(optionButton);
   });
-  section.append(list);
+  section.append(list2);
   return section;
+}
+
+// src/measure-list.js
+function entries(configured) {
+  if (configured === void 0 || configured === null || configured === "") return [];
+  return Array.isArray(configured) ? configured : [configured];
+}
+function resolveMeasureList(present, configured, { warn: warn3 = true } = {}) {
+  const labels = (present || []).map((measure) => measure.label);
+  const sorted = [...labels].sort();
+  const configuredEntries = entries(configured);
+  if (!configuredEntries.length) return sorted;
+  const chosen = [];
+  const missing = [];
+  configuredEntries.forEach((entry) => {
+    const byLabel = labels.filter((label) => label === entry);
+    const matched = byLabel.length ? byLabel : present.filter((measure) => measure.name === entry).map((measure) => measure.label);
+    if (!matched.length) {
+      if (!missing.includes(entry)) missing.push(entry);
+      return;
+    }
+    matched.forEach((label) => {
+      if (!chosen.includes(label)) chosen.push(label);
+    });
+  });
+  if (warn3 && missing.length) {
+    const plural4 = missing.length > 1;
+    console.warn(
+      `The configured measure${plural4 ? "s" : ""} [ ${missing.join(", ")} ] ${plural4 ? "do" : "does"} not exist in the data and ${plural4 ? "have" : "has"} been removed from the Measure control.`
+    );
+  }
+  if (!chosen.length) {
+    if (warn3 && labels.length)
+      console.warn(
+        "No configured measure exists in the data. Falling back to every measure in the data."
+      );
+    return sorted;
+  }
+  return chosen;
+}
+function presentMeasures(rows, settings, label) {
+  const seen = /* @__PURE__ */ new Map();
+  (rows || []).forEach((row) => {
+    const text3 = label(row, settings);
+    if (text3 === void 0 || text3 === null || text3 === "") return;
+    if (!seen.has(text3)) seen.set(text3, { label: text3, name: row[settings.measure_col] });
+  });
+  return [...seen.values()];
 }
 
 // src/axis-limits.js
@@ -12753,9 +12817,9 @@ function applyLimitEdit(state, key, raw) {
   state[key] = Number.isFinite(value) ? value : null;
   const domain = state.axisDomain || [];
   const lower = state.lower == null ? domain[0] : state.lower;
-  const upper = state.upper == null ? domain[1] : state.upper;
-  if (Number.isFinite(lower) && Number.isFinite(upper) && lower >= upper) {
-    state.lower = upper;
+  const upper8 = state.upper == null ? domain[1] : state.upper;
+  if (Number.isFinite(lower) && Number.isFinite(upper8) && lower >= upper8) {
+    state.lower = upper8;
     state.upper = lower;
   }
   return state;
@@ -12764,6 +12828,66 @@ function clearAxisLimits(state) {
   state.lower = null;
   state.upper = null;
   state.axisDomain = null;
+}
+
+// src/filters.js
+var ALL_VALUE = "__all__";
+function hasStart(start) {
+  if (start === void 0 || start === null || start === "") return false;
+  if (Array.isArray(start)) return start.length > 0;
+  return true;
+}
+function normalizeFilterSpec(value, fallbackLabel) {
+  if (typeof value === "string") {
+    return {
+      value_col: value,
+      label: fallbackLabel || value,
+      start: null,
+      all: true,
+      multiple: false
+    };
+  }
+  const spec = { ...value, value_col: value.value_col, label: value.label || value.value_col };
+  const multiple = spec.multiple === true;
+  const started = hasStart(spec.start);
+  let start = null;
+  if (started) {
+    const raw = Array.isArray(spec.start) ? spec.start : [spec.start];
+    start = multiple ? raw.map(String) : String(raw[0]);
+  }
+  const all = spec.all === void 0 ? !started : spec.all !== false;
+  return { ...spec, start, all, multiple };
+}
+function initFilterState(specs) {
+  const state = {};
+  (specs || []).forEach((spec) => {
+    state[spec.value_col] = spec.start === void 0 ? null : spec.start;
+  });
+  return state;
+}
+function filterMatches(rowValue, selection) {
+  if (selection === null || selection === void 0 || selection === "") return true;
+  if (Array.isArray(selection))
+    return selection.some((value) => String(value) === String(rowValue));
+  return String(rowValue) === String(selection);
+}
+function renderFilterControl({ spec, values, selected, onChange }) {
+  if (spec.multiple) {
+    return multiSelect({
+      values: values.map(String),
+      selected: Array.isArray(selected) ? selected.map(String) : null,
+      onChange
+    });
+  }
+  const select = document.createElement("select");
+  select.dataset.filter = spec.value_col;
+  const unset = selected === null || selected === void 0 || selected === "";
+  if (spec.all) option(select, ALL_VALUE, "All", unset);
+  values.forEach(
+    (value) => option(select, value, value, !unset && String(selected) === String(value))
+  );
+  select.onchange = () => onChange(select.value === ALL_VALUE ? null : select.value);
+  return select;
 }
 
 // src/histogram/configure.js
@@ -12778,6 +12902,7 @@ var DEFAULT_SETTINGS = {
   groups: [],
   details: null,
   start_value: null,
+  measures: null,
   bin_algorithm: "Scott's normal reference rule",
   normal_range: true,
   display_normal_range: false,
@@ -12815,7 +12940,8 @@ function fieldSpec(value, fallbackLabel) {
 }
 function syncSettings(settings) {
   const synced = { ...DEFAULT_SETTINGS, ...settings };
-  synced.filters = arrayify(synced.filters).map(fieldSpec).filter((d) => d.value_col);
+  synced.measures = arrayify(synced.measures);
+  synced.filters = arrayify(synced.filters).map((value) => normalizeFilterSpec(value)).filter((d) => d.value_col);
   const defaultGroup = { value_col: "sh_none", label: "None" };
   synced.groups = [
     defaultGroup,
@@ -12829,7 +12955,9 @@ function syncSettings(settings) {
   if (!synced.details.length) {
     synced.details = [
       { value_col: synced.id_col, label: "Participant ID" },
-      ...synced.filters,
+      // Listing columns, not filters: take only the column and its label, so the
+      // filter contract's start/all/multiple keys do not leak into the listing.
+      ...synced.filters.map((filter) => fieldSpec(filter)),
       { value_col: synced.value_col, label: "Result" },
       { value_col: synced.normal_col_low, label: "Lower Limit of Normal" },
       { value_col: synced.normal_col_high, label: "Upper Limit of Normal" },
@@ -12967,8 +13095,8 @@ function sd(values) {
 }
 function precision(values) {
   const decimals = values.map((value) => {
-    const text = String(value);
-    return text.includes(".") ? text.split(".")[1].length : 0;
+    const text3 = String(value);
+    return text3.includes(".") ? text3.split(".")[1].length : 0;
   });
   return Math.min(4, Math.max(0, ...decimals));
 }
@@ -13004,7 +13132,7 @@ function measureHasNormalRange(rows, settings) {
 }
 function applyFilters(rows, filters) {
   return rows.filter(
-    (row) => Object.entries(filters).every(([key, value]) => !value || String(row[key]) === String(value))
+    (row) => Object.entries(filters || {}).every(([key, value]) => filterMatches(row[key], value))
   );
 }
 function shimazakiShinomotoBins(values, span) {
@@ -13069,8 +13197,8 @@ function calculateBins(values, algorithm, customQuantity, customWidth, domain) {
   width = range / quantity;
   const bins = Array.from({ length: quantity }, (_, index) => {
     const lower = min + index * width;
-    const upper = index === quantity - 1 ? max : min + (index + 1) * width;
-    return { index, lower, upper, records: [] };
+    const upper8 = index === quantity - 1 ? max : min + (index + 1) * width;
+    return { index, lower, upper: upper8, records: [] };
   });
   values.forEach((value, idx) => {
     bins[binIndex(value, min, width, bins.length)].records.push(idx);
@@ -13090,9 +13218,9 @@ function normalizeDomain(state) {
     state.upper = tmp;
   }
 }
-function resolveDomain(values, lower, upper) {
+function resolveDomain(values, lower, upper8) {
   const defaultDomain = [Math.min(...values), Math.max(...values)];
-  return [lower == null ? defaultDomain[0] : lower, upper == null ? defaultDomain[1] : upper];
+  return [lower == null ? defaultDomain[0] : lower, upper8 == null ? defaultDomain[1] : upper8];
 }
 function buildTickLabels(bins, digits, annotateBoundaries) {
   return bins.map(
@@ -13124,25 +13252,25 @@ function approximateNormalityP(values) {
   return Math.max(1e-4, Math.min(0.9999, Math.exp(-0.5 * jb)));
 }
 function approximateGroupP(groups) {
-  const entries = Object.entries(groups).map(([key, vals]) => [key, vals.map(Number).filter(Number.isFinite)]).filter(([, vals]) => vals.length);
-  if (entries.length < 2) return NaN;
-  const all = entries.flatMap(([, vals]) => vals);
+  const entries2 = Object.entries(groups).map(([key, vals]) => [key, vals.map(Number).filter(Number.isFinite)]).filter(([, vals]) => vals.length);
+  if (entries2.length < 2) return NaN;
+  const all = entries2.flatMap(([, vals]) => vals);
   const grand = mean(all);
-  const between = entries.reduce(
+  const between = entries2.reduce(
     (sum, [, vals]) => sum + vals.length * Math.pow(mean(vals) - grand, 2),
     0
   );
-  const within = entries.reduce(
+  const within = entries2.reduce(
     (sum, [, vals]) => sum + vals.reduce((inner, v) => inner + Math.pow(v - mean(vals), 2), 0),
     0
   );
-  const f = between / Math.max(1, entries.length - 1) / (within / Math.max(1, all.length - entries.length) || Number.EPSILON);
+  const f = between / Math.max(1, entries2.length - 1) / (within / Math.max(1, all.length - entries2.length) || Number.EPSILON);
   return Math.max(1e-4, Math.min(0.9999, Math.exp(-0.5 * f)));
 }
 function statisticalAnnotation(label, pValue, testName, url) {
-  const text = `${label}: p=${formatPValue(pValue)}`;
+  const text3 = `${label}: p=${formatPValue(pValue)}`;
   const annotation = createElement("div", "sv-annotation");
-  const value = createElement("span", null, text);
+  const value = createElement("span", null, text3);
   value.title = `${testName}. Caution: This graphic has been thoroughly tested, but is not validated.`;
   const link = createElement("a", "sv-info", "\u24D8");
   link.href = url;
@@ -13369,6 +13497,27 @@ function boxStats(values) {
   };
 }
 
+// src/unscheduled-visits.js
+function parseUnscheduledPattern(pattern) {
+  const match = /^\/(.*)\/([a-z]*)$/i.exec(String(pattern));
+  return match ? new RegExp(match[1], match[2]) : new RegExp(String(pattern));
+}
+function isUnscheduledVisit(visit, settings) {
+  if (Array.isArray(settings.unscheduled_visit_values)) {
+    return settings.unscheduled_visit_values.map(String).includes(String(visit));
+  }
+  if (settings.unscheduled_visit_pattern) {
+    return parseUnscheduledPattern(settings.unscheduled_visit_pattern).test(String(visit));
+  }
+  return false;
+}
+function hasUnscheduledVisits(rows, visitCol, settings) {
+  if (!visitCol) return false;
+  return (rows || []).some(
+    (row) => row[visitCol] !== void 0 && row[visitCol] !== null && row[visitCol] !== "" && isUnscheduledVisit(row[visitCol], settings)
+  );
+}
+
 // src/hep-core/rows.js
 var MEASURE_KEYS = ["ALT", "AST", "TB", "ALP"];
 function cutFor(cuts, measureKey, display) {
@@ -13447,6 +13596,17 @@ function assignSequence(rows, settings) {
 }
 function hasStudyDay(rows) {
   return rows.some((row) => Number.isFinite(row.__hep_day));
+}
+function partitionUnscheduledRows(rows, settings) {
+  const visitCol = settings.visit_col;
+  const scheduled = [];
+  const unscheduled = [];
+  (rows || []).forEach((row) => {
+    const visit = visitCol ? row[visitCol] : void 0;
+    const isUnscheduled = visit !== void 0 && visit !== null && visit !== "" && isUnscheduledVisit(visit, settings);
+    (isUnscheduled ? unscheduled : scheduled).push(row);
+  });
+  return { scheduled, unscheduled };
 }
 function deriveBaseline(rows, settings) {
   const groups = /* @__PURE__ */ new Map();
@@ -13645,6 +13805,9 @@ var DEFAULT_SETTINGS3 = {
   // jaundice flag and a Cholestasis/Hy's-Law classification can never disagree.
   jaundice_uln: 2,
   hide_unchanged: false,
+  unscheduled_visits: true,
+  unscheduled_visit_pattern: "/unscheduled|early termination/i",
+  unscheduled_visit_values: null,
   measure_values: {
     ALT: "Aminotransferase, alanine (ALT)",
     AST: "Aminotransferase, aspartate (AST)",
@@ -13700,7 +13863,7 @@ function fieldSpec3(value, fallbackLabel) {
 }
 function syncSettings3(settings) {
   const synced = { ...DEFAULT_SETTINGS3, ...settings };
-  synced.filters = arrayify3(synced.filters).map((value) => fieldSpec3(value)).filter((d) => d.value_col);
+  synced.filters = arrayify3(synced.filters).map((value) => normalizeFilterSpec(value)).filter((d) => d.value_col);
   const defaultGroup = { value_col: GROUP_NONE, label: "None" };
   synced.groups = [
     defaultGroup,
@@ -14017,11 +14180,11 @@ function calculatePalt(participantRows, settings) {
     auc += meanValue * hours;
   }
   const value = auc * Math.pow(peak, PEAK_EXPONENT) / SCALE;
-  const text = f2(value);
-  const note = `NOTE: For this participant, P_ALT was calculated as ALT AUC \xD7 Peak ALT^${PEAK_EXPONENT} / 10^5 = ${f2(auc)} \xD7 ${f2(peak)}^${PEAK_EXPONENT} / 10^5 = ${text}. The AUC is trapezoidal over study day \xD7 24 hours, and the estimate assumes ALT is reported in IU/L \u2014 if your results are in other units this figure does not apply. P_ALT predicts the percentage hepatocyte loss from the maximum value and the AUC of serum ALT observed during a DILI event (Chung et al., PMID 30303523). It is an estimate, not a measurement, and is not validated for clinical use.`;
+  const text3 = f2(value);
+  const note = `NOTE: For this participant, P_ALT was calculated as ALT AUC \xD7 Peak ALT^${PEAK_EXPONENT} / 10^5 = ${f2(auc)} \xD7 ${f2(peak)}^${PEAK_EXPONENT} / 10^5 = ${text3}. The AUC is trapezoidal over study day \xD7 24 hours, and the estimate assumes ALT is reported in IU/L \u2014 if your results are in other units this figure does not apply. P_ALT predicts the percentage hepatocyte loss from the maximum value and the AUC of serum ALT observed during a DILI event (Chung et al., PMID 30303523). It is an estimate, not a measurement, and is not validated for clinical use.`;
   return {
     value,
-    text_value: text,
+    text_value: text3,
     note,
     reference: {
       label: "A Rapid Method to Estimate Hepatocyte Loss Due to Drug-Induced Liver Injury",
@@ -14055,11 +14218,11 @@ function orderedMeasures(participantRows, settings) {
     byMeasure.get(value).push(row);
   });
   const keyOrder = Object.keys(settings.measure_values || {});
-  const entries = [...byMeasure.entries()].map(([value, rows]) => {
+  const entries2 = [...byMeasure.entries()].map(([value, rows]) => {
     const { key, isKey } = resolve2(value);
     return { key, label: value, isKey, rows };
   });
-  return entries.sort((a, b) => {
+  return entries2.sort((a, b) => {
     if (a.isKey !== b.isKey) return a.isKey ? -1 : 1;
     if (a.isKey) return keyOrder.indexOf(a.key) - keyOrder.indexOf(b.key);
     return 0;
@@ -14221,12 +14384,12 @@ function rankParticipants(cleanRows, ids, settings) {
 function format2(value) {
   return Number.isFinite(value) ? value.toFixed(2) : "";
 }
-function appendDetail(list, label, value, className) {
+function appendDetail(list2, label, value, className) {
   const li = createElement("li", className || null);
   li.append(createElement("div", "sv-profile-detail-label", label));
   const valueEl = createElement("div", "sv-profile-detail-value", value);
   li.append(valueEl);
-  list.append(li);
+  list2.append(li);
   return valueEl;
 }
 function renderHeader(participant, settings, { onClear } = {}) {
@@ -14249,17 +14412,17 @@ function renderHeader(participant, settings, { onClear } = {}) {
   };
   titleRow.append(clear);
   header.append(titleRow);
-  const list = createElement("ul", "sv-profile-details");
+  const list2 = createElement("ul", "sv-profile-details");
   (participant.details || []).forEach((detail) => {
     const value = detail.value === void 0 || detail.value === null ? "" : String(detail.value);
-    appendDetail(list, detail.label, value);
+    appendDetail(list2, detail.label, value);
   });
-  appendDetail(list, "R Ratio", format2(participant.rRatio));
+  appendDetail(list2, "R Ratio", format2(participant.rRatio));
   const footnote = createElement("p", "sv-profile-footnote", "");
   if (participant.pAlt !== void 0 && participant.pAlt !== null && participant.pAlt !== "") {
     const isNote = typeof participant.pAlt === "object";
-    const text = isNote ? String(participant.pAlt.text_value) : String(participant.pAlt);
-    const valueEl = appendDetail(list, "P_ALT", text, "sv-profile-palt");
+    const text3 = isNote ? String(participant.pAlt.text_value) : String(participant.pAlt);
+    const valueEl = appendDetail(list2, "P_ALT", text3, "sv-profile-palt");
     if (isNote && participant.pAlt.note) {
       valueEl.setAttribute("role", "button");
       valueEl.setAttribute("tabindex", "0");
@@ -14283,7 +14446,7 @@ function renderHeader(participant, settings, { onClear } = {}) {
       };
     }
   }
-  header.append(list, footnote);
+  header.append(list2, footnote);
   return header;
 }
 
@@ -14312,9 +14475,9 @@ var AE_DEFAULT_SETTINGS = {
 var SEVERITY_COLORS = ["#fab219", "#ec835a", "#d03b3b"];
 var NOT_RECORDED_COLOR = "#c3c2b7";
 function defaultLabel(value) {
-  const text = String(value);
-  if (!/^[A-Za-z][A-Za-z\s-]*$/.test(text)) return text;
-  return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+  const text3 = String(value);
+  if (!/^[A-Za-z][A-Za-z\s-]*$/.test(text3)) return text3;
+  return text3.charAt(0).toUpperCase() + text3.slice(1).toLowerCase();
 }
 function syncAeSettings(settings = {}) {
   const synced = { ...AE_DEFAULT_SETTINGS, ...settings };
@@ -14353,7 +14516,7 @@ function day(value) {
   return Number.isFinite(number) ? number : null;
 }
 function cleanAeRecords(rawData, settings) {
-  const events = [];
+  const events2 = [];
   let removed = 0;
   (Array.isArray(rawData) ? rawData : []).forEach((record, index) => {
     const id = record[settings.id_col];
@@ -14368,7 +14531,7 @@ function cleanAeRecords(rawData, settings) {
     const rawEnd = day(record[settings.endy_col]);
     const end = start !== null && rawEnd !== null && rawEnd >= start ? rawEnd : null;
     const serious = settings.highlight ? String(record[settings.highlight.value_col] ?? "").trim().toUpperCase() === String(settings.highlight.value).toUpperCase() : false;
-    events.push({
+    events2.push({
       ...record,
       __ae_id: String(id),
       __ae_index: index,
@@ -14383,11 +14546,11 @@ function cleanAeRecords(rawData, settings) {
       __ae_placeable: start !== null
     });
   });
-  return { events, removed };
+  return { events: events2, removed };
 }
-function participantEvents(events, id) {
+function participantEvents(events2, id) {
   const key = String(id);
-  return (Array.isArray(events) ? events : []).filter((event) => event.__ae_id === key).sort((a, b) => {
+  return (Array.isArray(events2) ? events2 : []).filter((event) => event.__ae_id === key).sort((a, b) => {
     if (a.__ae_placeable !== b.__ae_placeable) return a.__ae_placeable ? -1 : 1;
     if (b.__ae_severity.rank !== a.__ae_severity.rank)
       return b.__ae_severity.rank - a.__ae_severity.rank;
@@ -14396,9 +14559,9 @@ function participantEvents(events, id) {
     return sa - sb || a.__ae_index - b.__ae_index;
   });
 }
-function summarizeAe(events, settings) {
-  const list = Array.isArray(events) ? events : [];
-  const worst = list.reduce(
+function summarizeAe(events2, settings) {
+  const list2 = Array.isArray(events2) ? events2 : [];
+  const worst = list2.reduce(
     (acc, event) => event.__ae_severity.rank > acc.rank ? event.__ae_severity : acc,
     { ...NOT_RECORDED, color: NOT_RECORDED_COLOR }
   );
@@ -14409,26 +14572,26 @@ function summarizeAe(events, settings) {
   })).reverse().concat([{ key: null, label: NOT_RECORDED.label, rank: 0 }]);
   const mix = levels.map((level) => ({
     ...level,
-    color: level.rank === 0 ? NOT_RECORDED_COLOR : (list.find((event) => event.__ae_severity.rank === level.rank) || {}).__ae_severity?.color || NOT_RECORDED_COLOR,
-    count: list.filter((event) => event.__ae_severity.rank === level.rank).length
+    color: level.rank === 0 ? NOT_RECORDED_COLOR : (list2.find((event) => event.__ae_severity.rank === level.rank) || {}).__ae_severity?.color || NOT_RECORDED_COLOR,
+    count: list2.filter((event) => event.__ae_severity.rank === level.rank).length
   })).filter((entry) => entry.count > 0);
   const counts = /* @__PURE__ */ new Map();
-  list.forEach((event) => {
+  list2.forEach((event) => {
     const name = event.__ae_soc || "Not recorded";
     counts.set(name, (counts.get(name) || 0) + 1);
   });
   const bodySystems = [...counts.entries()].map(([name, count2]) => ({ name, count: count2 })).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
   return {
-    total: list.length,
-    serious: list.filter((event) => event.__ae_serious).length,
-    openEnded: list.filter((event) => event.__ae_open).length,
+    total: list2.length,
+    serious: list2.filter((event) => event.__ae_serious).length,
+    openEnded: list2.filter((event) => event.__ae_open).length,
     worst,
     mix,
     bodySystems
   };
 }
-function aeDomain(events) {
-  const placeable = (Array.isArray(events) ? events : []).filter((event) => event.__ae_placeable);
+function aeDomain(events2) {
+  const placeable = (Array.isArray(events2) ? events2 : []).filter((event) => event.__ae_placeable);
   if (!placeable.length) return null;
   const days = [];
   placeable.forEach((event) => {
@@ -14446,12 +14609,12 @@ function unionDomain(labs, aes) {
   const max = Math.max(...parts.map((domain) => domain[1]));
   return min === max ? [min - 1, max + 1] : [min, max];
 }
-function timelineGeometry(events, domain) {
-  if (!Array.isArray(domain) || domain.length !== 2) return (events || []).map(() => null);
+function timelineGeometry(events2, domain) {
+  if (!Array.isArray(domain) || domain.length !== 2) return (events2 || []).map(() => null);
   const [min, max] = domain;
   const span = max - min || 1;
   const percent = (value) => (value - min) / span * 100;
-  return (Array.isArray(events) ? events : []).map((event) => {
+  return (Array.isArray(events2) ? events2 : []).map((event) => {
     if (!event || !event.__ae_placeable) return null;
     const end = event.__ae_end === null ? max : event.__ae_end;
     const rawLeft = percent(event.__ae_start);
@@ -14539,16 +14702,16 @@ function renderMix(summary) {
 function renderBodySystems(summary, limit = 4) {
   const wrap = createElement("div", "sv-profile-ae-soc-wrap");
   wrap.append(createElement("div", "sv-profile-ae-track-label", "Body systems"));
-  const list = createElement("ul", "sv-profile-ae-soc");
+  const list2 = createElement("ul", "sv-profile-ae-soc");
   summary.bodySystems.slice(0, limit).forEach((entry) => {
     const item = createElement("li");
     item.append(
       createElement("span", "sv-profile-ae-soc-name", entry.name),
       createElement("span", "sv-profile-ae-soc-count", String(entry.count))
     );
-    list.append(item);
+    list2.append(item);
   });
-  wrap.append(list);
+  wrap.append(list2);
   const rest = summary.bodySystems.length - limit;
   if (rest > 0) {
     wrap.append(
@@ -14568,13 +14731,13 @@ function eventDescription(event) {
   parts.push(event.__ae_placeable ? `day ${event.__ae_start} to ${end}` : "no start day recorded");
   return parts.join(" \xB7 ");
 }
-function renderTimeline(events, domain, settings) {
+function renderTimeline(events2, domain, settings) {
   const wrap = createElement("div", "sv-profile-ae-timeline");
   const area = createElement("div", "sv-profile-ae-plotarea");
   area.style.paddingLeft = `${PLOT_GUTTER_LEFT}px`;
   area.style.paddingRight = `${PLOT_GUTTER_RIGHT}px`;
   wrap.append(area);
-  const placeable = events.filter((event) => event.__ae_placeable);
+  const placeable = events2.filter((event) => event.__ae_placeable);
   const shown = placeable.slice(0, settings.max_rows);
   const geometry = timelineGeometry(shown, domain);
   const plot = createElement("div", "sv-profile-ae-plot");
@@ -14625,7 +14788,7 @@ function renderTimeline(events, domain, settings) {
       )
     );
   }
-  const unplaceable = events.filter((event) => !event.__ae_placeable);
+  const unplaceable = events2.filter((event) => !event.__ae_placeable);
   if (unplaceable.length) {
     const note = createElement(
       "p",
@@ -14636,18 +14799,18 @@ function renderTimeline(events, domain, settings) {
   }
   return wrap;
 }
-function renderAeTracks(events, domain, settings) {
+function renderAeTracks(events2, domain, settings) {
   const section = createElement("section", "sv-profile-ae");
   section.setAttribute("aria-label", "Adverse events");
   section.append(createElement("h3", "sv-profile-ae-title", "Adverse events"));
-  const list = Array.isArray(events) ? events : [];
-  if (!list.length) {
+  const list2 = Array.isArray(events2) ? events2 : [];
+  if (!list2.length) {
     section.append(
       createElement("p", "sv-profile-ae-empty", "No adverse events recorded for this participant.")
     );
     return section;
   }
-  const summary = summarizeAe(list, settings);
+  const summary = summarizeAe(list2, settings);
   section.append(renderTiles(summary));
   section.append(renderMix(summary));
   if (!domain) {
@@ -14666,7 +14829,7 @@ function renderAeTracks(events, domain, settings) {
         "Timeline, on the labs chart\u2019s study-day axis"
       )
     );
-    section.append(renderTimeline(list, domain, settings));
+    section.append(renderTimeline(list2, domain, settings));
   }
   section.append(renderBodySystems(summary));
   return section;
@@ -14748,9 +14911,9 @@ function cutLinePlugin() {
     }
   };
 }
-function annotationPlacements(entries, gap = ANNOTATION_GAP) {
+function annotationPlacements(entries2, gap = ANNOTATION_GAP) {
   let last = -Infinity;
-  return entries.slice().sort((a, b) => a.y - b.y).map((entry) => {
+  return entries2.slice().sort((a, b) => a.y - b.y).map((entry) => {
     const y = Math.max(entry.y, last + gap);
     last = y;
     return { ...entry, y };
@@ -14760,27 +14923,27 @@ function measureAnnotationPlugin() {
   return {
     id: "sv-profile-measure-annotation",
     afterDatasetsDraw(chart) {
-      const entries = [];
+      const entries2 = [];
       chart.data.datasets.forEach((dataset, index) => {
         const meta = chart.getDatasetMeta ? chart.getDatasetMeta(index) : null;
         const drawn = meta && meta.data || [];
         const last = drawn[drawn.length - 1];
         if (!last || !Number.isFinite(last.x) || !Number.isFinite(last.y)) return;
-        entries.push({
+        entries2.push({
           key: dataset.svKey || dataset.label,
           x: last.x,
           y: last.y,
           color: dataset.borderColor
         });
       });
-      if (!entries.length) return;
+      if (!entries2.length) return;
       const { left, right, top, bottom } = chart.chartArea;
       const ctx = chart.ctx;
       ctx.save();
       ctx.font = ANNOTATION_FONT;
       ctx.textAlign = "right";
       ctx.textBaseline = "bottom";
-      annotationPlacements(entries).forEach((entry) => {
+      annotationPlacements(entries2).forEach((entry) => {
         ctx.fillStyle = entry.color;
         const width = ctx.measureText ? ctx.measureText(entry.key).width : 0;
         const x = Math.min(Math.max(entry.x, left + width), right);
@@ -14955,9 +15118,9 @@ function sparklineSVG(measure) {
     [SPARK_OFFSET, SPARK_WIDTH - SPARK_OFFSET]
   );
   const y = linear(sparkDomain(measure), [SPARK_HEIGHT - SPARK_OFFSET, SPARK_OFFSET]);
-  const upper = spark.filter((point) => Number.isFinite(point.uln)).map((point) => [x(point.day), y(point.uln)]);
+  const upper8 = spark.filter((point) => Number.isFinite(point.uln)).map((point) => [x(point.day), y(point.uln)]);
   const lower = spark.filter((point) => Number.isFinite(point.lln)).map((point) => [x(point.day), y(point.lln)]).reverse();
-  const band = upper.concat(lower);
+  const band = upper8.concat(lower);
   if (band.length) {
     svg.append(
       svgElement("polygon", {
@@ -15022,9 +15185,9 @@ function bandGuidePlugin(measure) {
       const { x, y } = chart.scales;
       const { left, right } = chart.chartArea;
       const ctx = chart.ctx;
-      const upper = measure.spark.filter((point) => Number.isFinite(point.uln)).map((point) => [x.getPixelForValue(point.day), y.getPixelForValue(point.uln)]);
+      const upper8 = measure.spark.filter((point) => Number.isFinite(point.uln)).map((point) => [x.getPixelForValue(point.day), y.getPixelForValue(point.uln)]);
       const lower = measure.spark.filter((point) => Number.isFinite(point.lln)).map((point) => [x.getPixelForValue(point.day), y.getPixelForValue(point.lln)]).reverse();
-      const band = upper.concat(lower);
+      const band = upper8.concat(lower);
       if (band.length) {
         ctx.save();
         ctx.fillStyle = "#eee";
@@ -15315,7 +15478,7 @@ function renderStepper(ids, index, { onStep, onToggleList, listOpen = false, ran
   strip.append(toggle);
   if (!listOpen || !Array.isArray(ranked)) return strip;
   const wrap = createElement("div", "sv-profile-cohort");
-  const list = createElement("ol", "sv-profile-cohort-list");
+  const list2 = createElement("ol", "sv-profile-cohort-list");
   ranked.forEach((entry) => {
     const item = createElement("li");
     const button = createElement("button", "sv-profile-cohort-item", entry.id);
@@ -15326,9 +15489,9 @@ function renderStepper(ids, index, { onStep, onToggleList, listOpen = false, ran
       if (!entry.current && onStep) onStep(entry.index);
     };
     item.append(button);
-    list.append(item);
+    list2.append(item);
   });
-  wrap.append(list);
+  wrap.append(list2);
   const shell = createElement("div", "sv-profile-stepper-wrap");
   shell.append(strip, wrap);
   return shell;
@@ -15537,8 +15700,8 @@ var SafetyParticipantProfile = class {
    */
   setAeData(records) {
     if (!this.aeSettings) return this;
-    const { events, removed } = cleanAeRecords(records, this.aeSettings);
-    this.aeEvents = events;
+    const { events: events2, removed } = cleanAeRecords(records, this.aeSettings);
+    this.aeEvents = events2;
     this.aeRemoved = removed;
     return this;
   }
@@ -15743,8 +15906,8 @@ var SafetyParticipantProfile = class {
    * @returns {SafetyParticipantProfile} The instance, for chaining.
    */
   setSelected(ids) {
-    const list = (Array.isArray(ids) ? ids : []).map(String);
-    if (list.length) this.show(list);
+    const list2 = (Array.isArray(ids) ? ids : []).map(String);
+    if (list2.length) this.show(list2);
     else this.clear();
     return this;
   }
@@ -15758,9 +15921,9 @@ var SafetyParticipantProfile = class {
    */
   show(ids, cleanRows) {
     if (cleanRows !== void 0) this.cleanRows = Array.isArray(cleanRows) ? cleanRows : [];
-    const list = (Array.isArray(ids) ? ids : []).map(String);
-    if (!list.length) return this.clear();
-    const ranked = rankParticipants(this.cleanRows, list, this.settings);
+    const list2 = (Array.isArray(ids) ? ids : []).map(String);
+    if (!list2.length) return this.clear();
+    const ranked = rankParticipants(this.cleanRows, list2, this.settings);
     const sameCohort = ranked.length === this.state.ids.length && ranked.every((id, index) => String(id) === String(this.state.ids[index]));
     this.state.ids = ranked;
     this.state.index = sameCohort ? Math.min(this.state.index, ranked.length - 1) : 0;
@@ -16151,6 +16314,7 @@ var SafetyHistogram = class {
     this.settings = syncSettings(settings);
     this.rawData = [];
     this.cleanData = [];
+    this.availableMeasures = [];
     this.filteredData = [];
     this.currentTableData = [];
     this.listingSearch = "";
@@ -16163,9 +16327,23 @@ var SafetyHistogram = class {
     this.profileKey = null;
     this.profileRows = [];
     this.listingSelectedId = null;
-    this.state = {
+    this.state = this.seedState();
+    this.renderShell();
+    this.onListingRowClick = (row) => this.selectParticipant(row[this.settings.id_col]);
+    mountProfileRail(this, () => this.profileSettings());
+  }
+  /**
+   * The opening control state, derived from settings alone. Built once in the
+   * constructor and again by {@link reseed} behind the Reset chart control
+   * (SH-CTRL-009, #136), so "the state the chart opens in" has one definition
+   * rather than one per caller.
+   * @returns {Object} A fresh state object.
+   * @private
+   */
+  seedState() {
+    return {
       measure: this.settings.start_value,
-      filters: {},
+      filters: initFilterState(this.settings.filters),
       groupBy: this.settings.group_by,
       // X-axis limits (#85): `lower`/`upper` hold USER OVERRIDES only (null =
       // auto), `axisDomain` the [lower, upper] the last render resolved — what
@@ -16181,9 +16359,19 @@ var SafetyHistogram = class {
       annotateBoundaries: this.settings.annotate_bin_boundaries,
       selectedId: null
     };
-    this.renderShell();
-    this.onListingRowClick = (row) => this.selectParticipant(row[this.settings.id_col]);
-    mountProfileRail(this, () => this.profileSettings());
+  }
+  /**
+   * Return to the opening state (SH-CTRL-009, #136): re-seed from settings,
+   * then re-run the data-driven measure resolution the seed cannot do on its
+   * own — a `start_value` naming a measure absent from the data has to fall
+   * back to the all-measures overview again, not come back as a selection
+   * with no records. The bound data is untouched, so this deliberately does
+   * NOT re-run validateAndCleanData.
+   * @private
+   */
+  reseed() {
+    this.state = this.seedState();
+    if (this.cleanData.length) this.resolveMeasure();
   }
   /**
    * The settings handed to the railed participant-profile module (#99,
@@ -16302,6 +16490,21 @@ var SafetyHistogram = class {
     this.cleanData = rows;
     this.removedRecords = removed;
     if (removed) console.warn(`${removed} missing or non-numeric results have been removed.`);
+    this.availableMeasures = resolveMeasureList(
+      presentMeasures(this.cleanData, this.settings, measureLabel),
+      this.settings.measures
+    );
+    this.resolveMeasure();
+  }
+  /**
+   * Pin the selected measure to one present in the data, falling back to the
+   * all-measures overview with a console warning (SH-OVW-001). Runs after
+   * cleaning and again on reset, where it is what stops an absent
+   * `start_value` from coming back as an empty single-measure view
+   * (SH-CTRL-009).
+   * @private
+   */
+  resolveMeasure() {
     const measures = this.measures();
     if (this.state.measure != null && !measures.includes(this.state.measure)) {
       console.warn(
@@ -16331,11 +16534,13 @@ var SafetyHistogram = class {
     this.render();
   }
   /**
-   * Sorted distinct measure labels present in the cleaned data.
+   * The measure labels the Measure control offers: the configured `measures`
+   * whitelist in its own order, or every measure in the cleaned data
+   * alphabetically when it is unset (#136).
    * @private
    */
   measures() {
-    return unique(this.cleanData.map((row) => measureLabel(row, this.settings))).sort();
+    return this.availableMeasures;
   }
   /**
    * Rebuild the measure/filter/bin/normal-range/group controls from data + state.
@@ -16343,7 +16548,7 @@ var SafetyHistogram = class {
    */
   buildControls() {
     this.controls.innerHTML = "";
-    const { addSection, addRow, addControl } = controlBuilders(this.controls);
+    const { addSection, addRow, addControl, addReset } = controlBuilders(this.controls);
     const measure = addControl("Measure", document.createElement("select"));
     option(measure, OVERVIEW, "All Measures", this.isOverview());
     this.measures().forEach((value) => option(measure, value, value, value === this.state.measure));
@@ -16360,15 +16565,20 @@ var SafetyHistogram = class {
     });
     const filterParent = filterSpecs.length ? addSection("Filters") : this.controls;
     filterSpecs.forEach((filter) => {
-      const select = addControl(filter.label, document.createElement("select"), filterParent);
-      option(select, "__all__", "All", !this.state.filters[filter.value_col]);
-      unique(this.cleanData.map((row) => row[filter.value_col])).sort().forEach(
-        (value) => option(select, value, value, this.state.filters[filter.value_col] === value)
+      const values = unique(this.cleanData.map((row) => row[filter.value_col])).sort();
+      addControl(
+        filter.label,
+        renderFilterControl({
+          spec: filter,
+          values,
+          selected: this.state.filters[filter.value_col],
+          onChange: (next) => {
+            this.state.filters[filter.value_col] = next;
+            this.render();
+          }
+        }),
+        filterParent
       );
-      select.onchange = () => {
-        this.state.filters[filter.value_col] = select.value === "__all__" ? null : select.value;
-        this.render();
-      };
     });
     const xAxisParent = addSection("X-axis Limits");
     this.xAxisSection = xAxisParent;
@@ -16383,16 +16593,16 @@ var SafetyHistogram = class {
       this.render();
     };
     this.lowerInput = lower;
-    const upper = addControl("Upper", document.createElement("input"), xAxisRow);
-    upper.type = "number";
-    upper.step = "any";
-    upper.value = seedLimitInput(this.state, "upper");
-    upper.onchange = () => {
-      applyLimitEdit(this.state, "upper", upper.value);
+    const upper8 = addControl("Upper", document.createElement("input"), xAxisRow);
+    upper8.type = "number";
+    upper8.step = "any";
+    upper8.value = seedLimitInput(this.state, "upper");
+    upper8.onchange = () => {
+      applyLimitEdit(this.state, "upper", upper8.value);
       normalizeDomain(this.state);
       this.render();
     };
-    this.upperInput = upper;
+    this.upperInput = upper8;
     const reset = createElement("button", "sv-reset-limits", "Reset Limits");
     reset.type = "button";
     reset.onclick = () => {
@@ -16470,6 +16680,11 @@ var SafetyHistogram = class {
       (section) => section.classList.toggle("sv-hidden", this.isOverview())
     );
     this.updateNormalRangeControl();
+    addReset(() => {
+      this.reseed();
+      this.buildControls();
+      this.render();
+    });
   }
   /**
    * Hides the normal-range control for measures without normal data (SH-FUNC-004C).
@@ -16948,6 +17163,7 @@ function histogram(element = "body", settings = {}) {
 
 // src/shift-plot/configure.js
 var STATS = ["mean", "min", "max", "first"];
+var AXIS_TYPES2 = ["linear", "log"];
 var DEFAULT_SETTINGS4 = {
   measure_col: "TEST",
   value_col: "STRESN",
@@ -16962,6 +17178,8 @@ var DEFAULT_SETTINGS4 = {
   filters: [],
   details: null,
   start_value: null,
+  measures: null,
+  axis_type: "linear",
   width: "100%",
   height: 460,
   page_size: 10,
@@ -16983,11 +17201,13 @@ function fieldSpec4(value, fallbackLabel) {
 }
 function syncSettings4(settings) {
   const synced = { ...DEFAULT_SETTINGS4, ...settings };
+  synced.measures = arrayify4(synced.measures);
   synced.filters = arrayify4(synced.filters).map((filter) => fieldSpec4(filter)).filter((filter) => filter.value_col);
   synced.baseline_visits = synced.baseline_visits == null ? null : arrayify4(synced.baseline_visits);
   synced.comparison_visits = synced.comparison_visits == null ? null : arrayify4(synced.comparison_visits);
   synced.baseline_stat = STATS.includes(synced.baseline_stat) ? synced.baseline_stat : "mean";
   synced.comparison_stat = STATS.includes(synced.comparison_stat) ? synced.comparison_stat : "mean";
+  synced.axis_type = AXIS_TYPES2.includes(synced.axis_type) ? synced.axis_type : "linear";
   synced.details = arrayify4(synced.details).map((detail) => fieldSpec4(detail)).filter((detail) => detail.value_col);
   if (!synced.details.length) {
     synced.details = [
@@ -17182,7 +17402,7 @@ function listVisits(rows, settings) {
 }
 function applyFilters2(rows, filters) {
   return rows.filter(
-    (row) => Object.entries(filters).every(([key, value]) => !value || String(row[key]) === String(value))
+    (row) => Object.entries(filters || {}).every(([key, value]) => filterMatches(row[key], value))
   );
 }
 function computeShiftPairs({
@@ -17234,7 +17454,15 @@ function computeShiftPairs({
   });
   return pairs;
 }
-function computeDomain(pairs) {
+function computeDomain(pairs, type = "linear") {
+  if (type === "log") {
+    const positives = pairs.flatMap((pair) => [pair.x, pair.y]).filter((value) => value > 0);
+    if (!positives.length) return [0.1, 1];
+    const min2 = Math.min(...positives);
+    const max2 = Math.max(...positives);
+    const factor = max2 > min2 ? (max2 / min2) ** 0.05 : 1.05;
+    return [min2 / factor, max2 * factor];
+  }
   if (!pairs.length) return [0, 1];
   const values = pairs.flatMap((pair) => [pair.x, pair.y]);
   const min = Math.min(...values);
@@ -17244,18 +17472,19 @@ function computeDomain(pairs) {
 }
 
 // src/shift-plot/getScales.js
-function buildScales2(domain, measure) {
+function buildScales2(domain, measure, type = "linear") {
   const suffix = measure ? ` \u2014 ${measure}` : "";
+  const scaleType = type === "log" ? "logarithmic" : "linear";
   return {
     x: {
-      type: "linear",
+      type: scaleType,
       min: domain[0],
       max: domain[1],
       title: { display: true, text: `Baseline Value${suffix}` },
       ticks: { maxRotation: 0 }
     },
     y: {
-      type: "linear",
+      type: scaleType,
       min: domain[0],
       max: domain[1],
       title: { display: true, text: `Comparison Value${suffix}` }
@@ -17321,7 +17550,7 @@ function pointColors(count2, selected, base = POINT_COLOR, faded = POINT_FADED) 
 }
 
 // src/shift-plot.js
-Chart.register(ScatterController, PointElement, LinearScale, plugin_tooltip, plugin_legend);
+Chart.register(ScatterController, PointElement, LinearScale, LogarithmicScale, plugin_tooltip, plugin_legend);
 var INITIAL_FOOTNOTE = "Click and drag across the points to list the selected participants.";
 var SafetyShiftPlot = class {
   constructor(element = "body", settings = {}) {
@@ -17330,6 +17559,7 @@ var SafetyShiftPlot = class {
     this.settings = syncSettings4(settings);
     this.rawData = [];
     this.cleanData = [];
+    this.availableMeasures = [];
     this.chartPairs = [];
     this.currentTableData = [];
     this.listingSearch = "";
@@ -17341,17 +17571,46 @@ var SafetyShiftPlot = class {
     this.profileFeed = null;
     this.profileKey = null;
     this.profileRows = [];
-    this.state = {
+    this.state = this.seedState();
+    this.renderShell();
+    mountProfileRail(this, () => this.profileSettings());
+  }
+  /**
+   * The opening control state: every settings-derived default, before the
+   * data-driven normalisers (the measure fallback and resolveVisits) run.
+   * Called from the constructor and from reseed(), so the Reset chart control
+   * and the first render agree by construction (SSP-CTRL-004, #136).
+   * @private
+   */
+  seedState() {
+    return {
       measure: this.settings.start_value,
       baselineVisits: this.settings.baseline_visits,
       comparisonVisits: this.settings.comparison_visits,
       baselineStat: this.settings.baseline_stat,
       comparisonStat: this.settings.comparison_stat,
-      filters: {},
+      filters: initFilterState(this.settings.filters),
+      axisType: this.settings.axis_type,
       domain: null
     };
-    this.renderShell();
-    mountProfileRail(this, () => this.profileSettings());
+  }
+  /**
+   * Restore the opening state for the Reset chart control (SSP-CTRL-004,
+   * #136): the settings-derived seed, then the two normalisers that run after
+   * it on first load — the measure fallback and the baseline/comparison visit
+   * resolution (SSP-CFG-004/005). All three of `start_value`,
+   * `baseline_visits` and `comparison_visits` default to null, so skipping
+   * them would hand back a blank chart with two empty visit controls.
+   * `domain: null` needs no normalisation — render() recomputes it. Does NOT
+   * re-clean the data: nothing about the data changed.
+   * @private
+   */
+  reseed() {
+    this.state = this.seedState();
+    if (this.cleanData.length) {
+      this.resolveMeasure();
+      this.resolveVisits();
+    }
   }
   /**
    * The settings handed to the railed participant-profile module (#99,
@@ -17460,8 +17719,10 @@ var SafetyShiftPlot = class {
    */
   setSettings(settings) {
     this.settings = syncSettings4({ ...this.settings, ...settings });
+    if (this.rawData.length) this.validateAndCleanData();
     this.state.baselineStat = this.settings.baseline_stat;
     this.state.comparisonStat = this.settings.comparison_stat;
+    this.state.axisType = this.settings.axis_type;
     if (settings.baseline_visits !== void 0)
       this.state.baselineVisits = this.settings.baseline_visits;
     if (settings.comparison_visits !== void 0)
@@ -17489,6 +17750,22 @@ var SafetyShiftPlot = class {
     this.cleanData = rows;
     this.removedRecords = removed;
     if (removed) console.warn(`${removed} missing or non-numeric results have been removed.`);
+    this.availableMeasures = resolveMeasureList(
+      presentMeasures(this.cleanData, this.settings, measureLabel2),
+      this.settings.measures
+    );
+    this.resolveMeasure();
+    this.resolveVisits();
+  }
+  /**
+   * Pin the selected measure to one the data actually carries, warning when a
+   * configured measure is absent (SSP-CTRL-001, SSP-MEAS-002). Runs after the
+   * settings-derived seed on both paths that produce an opening state —
+   * validateAndCleanData and reseed — because `start_value` defaults to null
+   * and the opening measure is therefore data-derived, not settings-derived.
+   * @private
+   */
+  resolveMeasure() {
     const measures = this.measures();
     if (this.state.measure && !measures.includes(this.state.measure)) {
       console.warn(
@@ -17496,14 +17773,15 @@ var SafetyShiftPlot = class {
       );
     }
     this.state.measure = measures.includes(this.state.measure) ? this.state.measure : measures[0];
-    this.resolveVisits();
   }
   /**
-   * Sorted distinct measure labels present in the cleaned data.
+   * The measure labels the Measure control offers: the configured `measures`
+   * whitelist in its own order, or every measure in the cleaned data
+   * alphabetically when it is unset (#136).
    * @private
    */
   measures() {
-    return unique2(this.cleanData.map((row) => measureLabel2(row, this.settings))).sort();
+    return this.availableMeasures;
   }
   /**
    * Ordered distinct visit labels present in the cleaned data.
@@ -17535,12 +17813,19 @@ var SafetyShiftPlot = class {
    */
   buildControls() {
     this.controls.innerHTML = "";
-    const { addSection, addControl } = controlBuilders(this.controls);
+    const { addSection, addControl, addReset } = controlBuilders(this.controls);
     const visits = this.visits();
     const measure = addControl("Measure", document.createElement("select"));
     this.measures().forEach((value) => option(measure, value, value, value === this.state.measure));
     measure.onchange = () => {
       this.state.measure = measure.value;
+      this.render();
+    };
+    const axisSection = addSection("Axis");
+    const axisType = addControl("Axis Type", document.createElement("select"), axisSection);
+    AXIS_TYPES2.forEach((value) => option(axisType, value, value, value === this.state.axisType));
+    axisType.onchange = () => {
+      this.state.axisType = axisType.value;
       this.render();
     };
     const visitSection = addSection("Visits");
@@ -17583,17 +17868,27 @@ var SafetyShiftPlot = class {
     if (filterSpecs.length) {
       const filterParent = addSection("Filters");
       filterSpecs.forEach((filter) => {
-        const select = addControl(filter.label, document.createElement("select"), filterParent);
-        option(select, "__all__", "All", !this.state.filters[filter.value_col]);
-        unique2(this.cleanData.map((row) => row[filter.value_col])).sort().forEach(
-          (value) => option(select, value, value, this.state.filters[filter.value_col] === value)
+        const values = unique2(this.cleanData.map((row) => row[filter.value_col])).sort();
+        addControl(
+          filter.label,
+          renderFilterControl({
+            spec: filter,
+            values,
+            selected: this.state.filters[filter.value_col],
+            onChange: (next) => {
+              this.state.filters[filter.value_col] = next;
+              this.render();
+            }
+          }),
+          filterParent
         );
-        select.onchange = () => {
-          this.state.filters[filter.value_col] = select.value === "__all__" ? null : select.value;
-          this.render();
-        };
       });
     }
+    addReset(() => {
+      this.reseed();
+      this.buildControls();
+      this.render();
+    });
   }
   /**
    * Cleaned rows for the selected measure.
@@ -17642,9 +17937,16 @@ var SafetyShiftPlot = class {
     this.footnote.textContent = INITIAL_FOOTNOTE;
     resetProfileRail(this);
     this.notes.innerHTML = "";
-    this.chartPairs = this.computePairs();
-    this.state.domain = computeDomain(this.chartPairs);
-    this.updateNotes();
+    let pairs = this.computePairs();
+    let nonPositive = 0;
+    if (this.state.axisType === "log") {
+      const positive = pairs.filter((pair) => pair.x > 0 && pair.y > 0);
+      nonPositive = pairs.length - positive.length;
+      pairs = positive;
+    }
+    this.chartPairs = pairs;
+    this.state.domain = computeDomain(this.chartPairs, this.state.axisType);
+    this.updateNotes(nonPositive);
     if (!this.chartPairs.length) {
       this.footnote.textContent = "No participant has both a baseline and a comparison value for the current selection.";
       return;
@@ -17684,7 +17986,7 @@ var SafetyShiftPlot = class {
             }
           }
         },
-        scales: buildScales2(this.state.domain, this.state.measure)
+        scales: buildScales2(this.state.domain, this.state.measure, this.state.axisType)
       },
       plugins: [identityLinePlugin(this), brushBoxPlugin()]
     });
@@ -17845,16 +18147,21 @@ var SafetyShiftPlot = class {
     );
   }
   /**
-   * Refresh the shown/total participant counts and the removed-record note
-   * (SSP-COUNT-001, SSP-REG-005/020).
+   * Refresh the shown/total participant counts and the removed-record notes
+   * (SSP-COUNT-001, SSP-REG-005/020). The shown count is chartPairs.length, so
+   * pairs dropped for the log scale leave it automatically honest; the
+   * nonPositive count explains where they went (SSP-SCALE-003).
+   * @param {number} [nonPositive=0] Pairs removed because a coordinate was
+   *   zero or negative under the log scale.
    * @private
    */
-  updateNotes() {
+  updateNotes(nonPositive = 0) {
     const totalParticipants = unique2(this.cleanData.map((row) => row[this.settings.id_col])).length;
     const shownParticipants = this.chartPairs.length;
     const pct = totalParticipants ? (shownParticipants / totalParticipants * 100).toFixed(1) : "0.0";
     const removedNote = this.removedRecords ? `<span class="sv-warning">${this.removedRecords} missing or non-numeric results removed.</span>` : "";
-    this.notes.innerHTML = `<span>${shownParticipants} of ${totalParticipants} participants shown (${pct}%).</span>${removedNote}`;
+    const nonPositiveNote = nonPositive ? `<span class="sv-warning">${nonPositive} participant pair${nonPositive > 1 ? "s" : ""} with a nonpositive value removed for the log scale.</span>` : "";
+    this.notes.innerHTML = `<span>${shownParticipants} of ${totalParticipants} participants shown (${pct}%).</span>${removedNote}${nonPositiveNote}`;
   }
   /**
    * Resize the live chart to its container. For host layouts that change the
@@ -17901,6 +18208,7 @@ var DEFAULT_SETTINGS5 = {
   visitn_col: "VISITNUM",
   measure_x: null,
   measure_y: null,
+  measures: null,
   baseline_visits: [],
   comparison_visits: [],
   add_regression_line: true,
@@ -17927,13 +18235,16 @@ function fieldSpec5(value, fallbackLabel) {
 }
 function syncSettings5(settings) {
   const synced = { ...DEFAULT_SETTINGS5, ...settings };
-  synced.filters = arrayify5(synced.filters).map((filter) => fieldSpec5(filter)).filter((filter) => filter.value_col);
+  synced.measures = arrayify5(synced.measures);
+  synced.filters = arrayify5(synced.filters).map((filter) => normalizeFilterSpec(filter)).filter((filter) => filter.value_col);
   synced.baseline_visits = arrayify5(synced.baseline_visits);
   synced.comparison_visits = arrayify5(synced.comparison_visits);
   const suppliedDetails = arrayify5(synced.details).map((detail) => fieldSpec5(detail)).filter((detail) => detail.value_col);
   const defaultDetails = [
     { value_col: synced.id_col, label: "Participant ID" },
-    ...synced.filters.filter((filter) => filter.value_col !== synced.id_col)
+    // Listing columns, not filters: take only the column and its label, so the
+    // filter contract's start/all/multiple keys do not leak into the listing.
+    ...synced.filters.filter((filter) => filter.value_col !== synced.id_col).map((filter) => fieldSpec5(filter))
   ];
   const merged = [...defaultDetails];
   suppliedDetails.forEach((detail) => {
@@ -18075,7 +18386,10 @@ function mean4(values) {
   return nums.reduce((sum, value) => sum + value, 0) / nums.length;
 }
 function getMeasures(rows, settings) {
-  return unique3(rows.map((row) => row[settings.measure_col])).sort();
+  return resolveMeasureList(
+    presentMeasures(rows, settings, (row) => row[settings.measure_col]),
+    settings.measures
+  );
 }
 function getVisits(rows, settings) {
   const hasVisitN = settings.visitn_col && rows.some((row) => row[settings.visitn_col] !== void 0);
@@ -18172,8 +18486,8 @@ function plottablePoints(participants) {
 }
 function applyFilters3(participants, filters) {
   return participants.filter(
-    (participant) => Object.entries(filters).every(
-      ([key, value]) => !value || String(participant.meta[key]) === String(value)
+    (participant) => Object.entries(filters || {}).every(
+      ([key, value]) => filterMatches(participant.meta[key], value)
     )
   );
 }
@@ -18348,17 +18662,42 @@ var SafetyDeltaDelta = class {
     this.profileFeed = null;
     this.profileKey = null;
     this.profileRows = [];
-    this.state = {
+    this.state = this.seedState();
+    this.renderShell();
+    mountProfileRail(this, () => this.profileSettings());
+  }
+  /**
+   * The opening control state, derived from the settings alone (SDD-CTRL-001).
+   * Only HALF the seed: resolveStateDefaults fills the measure and visit
+   * selections from the data afterwards, because measure_x/measure_y default
+   * to null and the visit lists to []. The visit arrays are COPIED so nothing
+   * downstream can write the caller's settings arrays through the state.
+   * @returns {Object} A fresh control state.
+   * @private
+   */
+  seedState() {
+    return {
       measureX: this.settings.measure_x,
       measureY: this.settings.measure_y,
       baseline: [...this.settings.baseline_visits],
       comparison: [...this.settings.comparison_visits],
-      filters: {},
+      filters: initFilterState(this.settings.filters),
       addRegressionLine: this.settings.add_regression_line,
       selectedId: null
     };
-    this.renderShell();
-    mountProfileRail(this, () => this.profileSettings());
+  }
+  /**
+   * Return the control state to its opening value the way the constructor and
+   * setData do: re-seed from the settings, then re-run the data-driven
+   * defaults so the measure and visit pickers land where they opened rather
+   * than on the unset settings (SDD-CTRL-001, #136). Cheap enough for a
+   * control click — resolveStateDefaults reads the cached measure/visit lists
+   * and never re-cleans the data.
+   * @private
+   */
+  reseed() {
+    this.state = this.seedState();
+    if (this.cleanRows.length) this.resolveStateDefaults();
   }
   /**
    * The settings handed to the railed participant-profile module (#99,
@@ -18535,7 +18874,7 @@ var SafetyDeltaDelta = class {
    */
   buildControls() {
     this.controls.innerHTML = "";
-    const { addSection, addControl } = controlBuilders(this.controls);
+    const { addSection, addControl, addReset } = controlBuilders(this.controls);
     const visitParent = addSection("Visits");
     const baseline = addControl("Baseline visit(s)", document.createElement("select"), visitParent);
     baseline.multiple = true;
@@ -18589,15 +18928,20 @@ var SafetyDeltaDelta = class {
     if (filterSpecs.length) {
       const filterParent = addSection("Filters");
       filterSpecs.forEach((filter) => {
-        const select = addControl(filter.label, document.createElement("select"), filterParent);
-        option(select, "__all__", "All", !this.state.filters[filter.value_col]);
-        unique3(this.cleanRows.map((row) => row[filter.value_col])).sort().forEach(
-          (value) => option(select, value, value, this.state.filters[filter.value_col] === value)
+        const values = unique3(this.cleanRows.map((row) => row[filter.value_col])).sort();
+        addControl(
+          filter.label,
+          renderFilterControl({
+            spec: filter,
+            values,
+            selected: this.state.filters[filter.value_col],
+            onChange: (next) => {
+              this.state.filters[filter.value_col] = next;
+              this.render();
+            }
+          }),
+          filterParent
         );
-        select.onchange = () => {
-          this.state.filters[filter.value_col] = select.value === "__all__" ? null : select.value;
-          this.render();
-        };
       });
     }
     const displayParent = addSection("Display");
@@ -18611,6 +18955,11 @@ var SafetyDeltaDelta = class {
     const inline = createElement("div", "sv-control-inline");
     inline.append(regression, document.createTextNode("Show"));
     addControl("Regression Line", inline, displayParent);
+    addReset(() => {
+      this.reseed();
+      this.buildControls();
+      this.render();
+    });
   }
   /**
    * Cleaned rows for the current selection after the active filters, flattened
@@ -18821,6 +19170,7 @@ var DEFAULT_SETTINGS6 = {
   filters: [],
   groups: [],
   start_value: null,
+  measures: null,
   group_by: "srot_none",
   boxplots: true,
   outliers: true,
@@ -18843,7 +19193,8 @@ function fieldSpec6(value, fallbackLabel) {
 }
 function syncSettings6(settings) {
   const synced = { ...DEFAULT_SETTINGS6, ...settings };
-  synced.filters = arrayify6(synced.filters).map((value) => fieldSpec6(value)).filter((spec) => spec.value_col);
+  synced.measures = arrayify6(synced.measures);
+  synced.filters = arrayify6(synced.filters).map((value) => normalizeFilterSpec(value)).filter((spec) => spec.value_col);
   const defaultGroup = { value_col: "srot_none", label: "None" };
   synced.groups = [
     defaultGroup,
@@ -18995,7 +19346,7 @@ function measureLabel3(row, settings) {
 }
 function applyFilters4(rows, filters) {
   return rows.filter(
-    (row) => Object.entries(filters).every(([key, value]) => !value || String(row[key]) === String(value))
+    (row) => Object.entries(filters || {}).every(([key, value]) => filterMatches(row[key], value))
   );
 }
 function computeVisitOrder(rows, settings) {
@@ -19057,19 +19408,6 @@ function flagOutliers(rows, statsByVisitGroup, settings, groupCol) {
   }
   return rows;
 }
-function parseUnscheduledPattern(pattern) {
-  const match = /^\/(.*)\/([a-z]*)$/i.exec(String(pattern));
-  return match ? new RegExp(match[1], match[2]) : new RegExp(String(pattern));
-}
-function isUnscheduledVisit(visit, settings) {
-  if (Array.isArray(settings.unscheduled_visit_values)) {
-    return settings.unscheduled_visit_values.map(String).includes(String(visit));
-  }
-  if (settings.unscheduled_visit_pattern) {
-    return parseUnscheduledPattern(settings.unscheduled_visit_pattern).test(String(visit));
-  }
-  return false;
-}
 
 // src/results-over-time/getScales.js
 function formatFixed(value, digits) {
@@ -19083,9 +19421,9 @@ function normalizeDomain2(state) {
     state.upper = tmp;
   }
 }
-function resolveYDomain(values, lower, upper) {
+function resolveYDomain(values, lower, upper8) {
   const extent = [Math.min(...values), Math.max(...values)];
-  return [lower == null ? extent[0] : lower, upper == null ? extent[1] : upper];
+  return [lower == null ? extent[0] : lower, upper8 == null ? extent[1] : upper8];
 }
 function yPrecision(domain) {
   const range = domain[1] - domain[0];
@@ -19224,12 +19562,25 @@ var SafetyResultsOverTime = class {
     this.settings = syncSettings6(settings);
     this.rawData = [];
     this.cleanData = [];
+    this.availableMeasures = [];
     this.filteredData = [];
     this.charts = [];
     this.boxSpecs = [];
-    this.state = {
+    this.state = this.seedState();
+    this.renderShell();
+  }
+  /**
+   * The opening control state, derived from settings alone. Built once in the
+   * constructor and again by {@link reseed} behind the Reset chart control
+   * (SROT-CTRL-001, #136), so "the state the chart opens in" has one
+   * definition rather than one per caller.
+   * @returns {Object} A fresh state object.
+   * @private
+   */
+  seedState() {
+    return {
       measure: this.settings.start_value,
-      filters: {},
+      filters: initFilterState(this.settings.filters),
       groupBy: this.settings.group_by,
       // Y-axis limits (#85): `lower`/`upper` hold USER OVERRIDES only (null =
       // auto), `axisDomain` the [lower, upper] the last render resolved — what
@@ -19243,7 +19594,18 @@ var SafetyResultsOverTime = class {
       visitsWithoutData: this.settings.visits_without_data,
       unscheduledVisits: this.settings.unscheduled_visits
     };
-    this.renderShell();
+  }
+  /**
+   * Return to the opening state (SROT-CTRL-001, #136): re-seed from settings,
+   * then re-run the data-driven measure resolution the seed cannot do on its
+   * own — `start_value` defaults to null, so a bare re-seed would leave the
+   * chart with no measure and nothing to draw. The bound data is untouched,
+   * so this deliberately does NOT re-run validateAndCleanData.
+   * @private
+   */
+  reseed() {
+    this.state = this.seedState();
+    if (this.cleanData.length) this.resolveMeasure();
   }
   /**
    * Build the static DOM shell the chart renders into.
@@ -19322,6 +19684,20 @@ var SafetyResultsOverTime = class {
     this.removedRecords = removed;
     if (removed) console.warn(`${removed} missing or non-numeric results have been removed.`);
     this.allVisits = computeVisitOrder(this.cleanData, this.settings);
+    this.availableMeasures = resolveMeasureList(
+      presentMeasures(this.cleanData, this.settings, measureLabel3),
+      this.settings.measures
+    );
+    this.resolveMeasure();
+  }
+  /**
+   * Pin the selected measure to one present in the data, falling back to the
+   * first with a console warning (SROT-FUNC-001 / SROT-REG-024). Runs after
+   * cleaning and again on reset, where it is what stops a null `start_value`
+   * from emptying the chart (SROT-CTRL-001).
+   * @private
+   */
+  resolveMeasure() {
     const measures = this.measures();
     if (this.state.measure && !measures.includes(this.state.measure)) {
       console.warn(
@@ -19331,11 +19707,13 @@ var SafetyResultsOverTime = class {
     this.state.measure = measures.includes(this.state.measure) ? this.state.measure : measures[0];
   }
   /**
-   * Sorted distinct measure labels present in the cleaned data.
+   * The measure labels the Measure control offers: the configured `measures`
+   * whitelist in its own order, or every measure in the cleaned data
+   * alphabetically when it is unset (#136).
    * @private
    */
   measures() {
-    return unique4(this.cleanData.map((row) => measureLabel3(row, this.settings))).sort();
+    return this.availableMeasures;
   }
   /**
    * Cleaned rows for the selected measure.
@@ -19358,7 +19736,7 @@ var SafetyResultsOverTime = class {
    */
   buildControls() {
     this.controls.innerHTML = "";
-    const { addSection, addRow, addControl } = controlBuilders(this.controls);
+    const { addSection, addRow, addControl, addReset } = controlBuilders(this.controls);
     const measure = addControl("Measure", document.createElement("select"));
     this.measures().forEach((value) => option(measure, value, value, value === this.state.measure));
     measure.onchange = () => {
@@ -19384,15 +19762,20 @@ var SafetyResultsOverTime = class {
     });
     const filterParent = filterSpecs.length ? addSection("Filters") : this.controls;
     filterSpecs.forEach((filter) => {
-      const select = addControl(filter.label, document.createElement("select"), filterParent);
-      option(select, "__all__", "All", !this.state.filters[filter.value_col]);
-      unique4(this.cleanData.map((row) => row[filter.value_col])).sort().forEach(
-        (value) => option(select, value, value, this.state.filters[filter.value_col] === value)
+      const values = unique4(this.cleanData.map((row) => row[filter.value_col])).sort();
+      addControl(
+        filter.label,
+        renderFilterControl({
+          spec: filter,
+          values,
+          selected: this.state.filters[filter.value_col],
+          onChange: (next) => {
+            this.state.filters[filter.value_col] = next;
+            this.render();
+          }
+        }),
+        filterParent
       );
-      select.onchange = () => {
-        this.state.filters[filter.value_col] = select.value === "__all__" ? null : select.value;
-        this.render();
-      };
     });
     const yParent = addSection("Y-axis Limits");
     const yRow = addRow(yParent);
@@ -19423,6 +19806,11 @@ var SafetyResultsOverTime = class {
     this.addToggle(displayParent, addControl, "Outliers", "outliers");
     this.addToggle(displayParent, addControl, "Visits without data", "visitsWithoutData");
     this.addToggle(displayParent, addControl, "Unscheduled visits", "unscheduledVisits");
+    addReset(() => {
+      this.reseed();
+      this.buildControls();
+      this.render();
+    });
   }
   /**
    * Add a labeled checkbox bound to a boolean state key.
@@ -19715,6 +20103,7 @@ var DEFAULT_SETTINGS7 = {
   normal_range_quantile_high: 0.95,
   time_cols: [],
   start_value: null,
+  measures: null,
   filters: [],
   groups: [],
   group_by: GROUP_NONE2,
@@ -19753,7 +20142,8 @@ function timeSpec(value) {
 }
 function syncSettings7(settings) {
   const synced = { ...DEFAULT_SETTINGS7, ...settings };
-  synced.filters = arrayify7(synced.filters).map((value) => fieldSpec7(value)).filter((d) => d.value_col);
+  synced.measures = arrayify7(synced.measures);
+  synced.filters = arrayify7(synced.filters).map((value) => normalizeFilterSpec(value)).filter((d) => d.value_col);
   const defaultGroup = { value_col: GROUP_NONE2, label: "None" };
   synced.groups = [
     defaultGroup,
@@ -19952,7 +20342,7 @@ function measureLabel4(row, settings) {
 }
 function applyFilters5(rows, filters) {
   return rows.filter(
-    (row) => Object.entries(filters).every(([key, value]) => !value || String(row[key]) === String(value))
+    (row) => Object.entries(filters || {}).every(([key, value]) => filterMatches(row[key], value))
   );
 }
 function assignSequence2(rows, idCol) {
@@ -20044,9 +20434,9 @@ function defaultYDomain(values) {
   const pad = (max - min || Math.abs(max) || 1) * 0.04;
   return [min - pad, max + pad];
 }
-function resolveYDomain2(values, lower, upper) {
+function resolveYDomain2(values, lower, upper8) {
   const domain = defaultYDomain(values);
-  return [lower == null ? domain[0] : lower, upper == null ? domain[1] : upper];
+  return [lower == null ? domain[0] : lower, upper8 == null ? domain[1] : upper8];
 }
 function normalizeYDomain(state) {
   if (Number.isFinite(state.lower) && Number.isFinite(state.upper) && state.lower >= state.upper) {
@@ -20174,6 +20564,7 @@ var SafetyOutlierExplorer = class {
     this.settings = syncSettings7(settings);
     this.rawData = [];
     this.cleanData = [];
+    this.availableMeasures = [];
     this.filteredData = [];
     this.currentTableData = [];
     this.listingSearch = "";
@@ -20185,7 +20576,21 @@ var SafetyOutlierExplorer = class {
     this.profileFeed = null;
     this.profileKey = null;
     this.profileRows = [];
-    this.state = {
+    this.state = this.seedState();
+    this.initFilterState();
+    this.renderShell();
+    mountProfileRail(this, () => this.profileSettings());
+  }
+  /**
+   * The opening control state: every settings-derived default, before the
+   * data-driven normalisers (the filter `start` values and the measure
+   * fallback) run. Called from the constructor and from reseed(), so the
+   * Reset chart control and the first render agree by construction
+   * (SOE-CTRL-002, #136).
+   * @private
+   */
+  seedState() {
+    return {
       measure: this.settings.start_value,
       filters: {},
       timeIndex: 0,
@@ -20203,9 +20608,21 @@ var SafetyOutlierExplorer = class {
       normalRange: null,
       selectedId: null
     };
+  }
+  /**
+   * Restore the opening state for the Reset chart control (SOE-CTRL-002,
+   * #136): the settings-derived seed, then the two normalisers that run after
+   * it on first load — the filter `start` values (SOE-REG-051/053) and the
+   * data-driven measure. Skipping either would put the measure back to the
+   * `start_value` default of null (blanking the chart) and a start filter back
+   * to "All". Deliberately does NOT re-clean the data: nothing about the data
+   * changed, so an O(rows) re-clean on a control click would be waste.
+   * @private
+   */
+  reseed() {
+    this.state = this.seedState();
     this.initFilterState();
-    this.renderShell();
-    mountProfileRail(this, () => this.profileSettings());
+    if (this.cleanData.length) this.resolveMeasure();
   }
   /**
    * The settings handed to the railed participant-profile module (#99,
@@ -20251,12 +20668,7 @@ var SafetyOutlierExplorer = class {
    * @private
    */
   initFilterState() {
-    this.state.filters = {};
-    this.settings.filters.forEach((filter) => {
-      if (filter.start !== void 0 && filter.start !== null && filter.start !== "") {
-        this.state.filters[filter.value_col] = String(filter.start);
-      }
-    });
+    this.state.filters = initFilterState(this.settings.filters);
   }
   /**
    * Build the static DOM shell the chart, legend, and listing render into.
@@ -20343,6 +20755,21 @@ var SafetyOutlierExplorer = class {
     this.cleanData = rows;
     this.removedRecords = removed;
     if (removed) console.warn(`${removed} missing or non-numeric results have been removed.`);
+    this.availableMeasures = resolveMeasureList(
+      presentMeasures(this.cleanData, this.settings, measureLabel4),
+      this.settings.measures
+    );
+    this.resolveMeasure();
+  }
+  /**
+   * Pin the selected measure to one the data actually carries, warning when a
+   * configured measure is absent (SOE-FUNC-001, SOE-MEAS-002). Runs after the
+   * settings-derived seed on both paths that produce an opening state —
+   * validateAndCleanData and reseed — because `start_value` defaults to null
+   * and the opening measure is therefore data-derived, not settings-derived.
+   * @private
+   */
+  resolveMeasure() {
     const measures = this.measures();
     if (this.state.measure && !measures.includes(this.state.measure)) {
       console.warn(
@@ -20352,11 +20779,13 @@ var SafetyOutlierExplorer = class {
     this.state.measure = measures.includes(this.state.measure) ? this.state.measure : measures[0];
   }
   /**
-   * Sorted distinct measure labels present in the cleaned data.
+   * The measure labels the Measure control offers: the configured `measures`
+   * whitelist in its own order, or every measure in the cleaned data
+   * alphabetically when it is unset (#136).
    * @private
    */
   measures() {
-    return unique5(this.cleanData.map((row) => measureLabel4(row, this.settings))).sort();
+    return this.availableMeasures;
   }
   /**
    * The active time-axis column spec.
@@ -20390,7 +20819,7 @@ var SafetyOutlierExplorer = class {
    */
   buildControls() {
     this.controls.innerHTML = "";
-    const { addSection, addRow, addControl } = controlBuilders(this.controls);
+    const { addSection, addRow, addControl, addReset } = controlBuilders(this.controls);
     const measure = addControl("Measure", document.createElement("select"));
     this.measures().forEach((value) => option(measure, value, value, value === this.state.measure));
     measure.onchange = () => {
@@ -20408,21 +20837,20 @@ var SafetyOutlierExplorer = class {
     });
     const filterParent = filterSpecs.length ? addSection("Filters") : this.controls;
     filterSpecs.forEach((filter) => {
-      const select = addControl(filter.label, document.createElement("select"), filterParent);
-      const hasStart = filter.start !== void 0 && filter.start !== null && filter.start !== "";
-      if (!hasStart) option(select, "__all__", "All", !this.state.filters[filter.value_col]);
-      unique5(this.cleanData.map((row) => row[filter.value_col])).sort().forEach(
-        (value) => option(
-          select,
-          value,
-          value,
-          String(this.state.filters[filter.value_col]) === String(value)
-        )
+      const values = unique5(this.cleanData.map((row) => row[filter.value_col])).sort();
+      addControl(
+        filter.label,
+        renderFilterControl({
+          spec: filter,
+          values,
+          selected: this.state.filters[filter.value_col],
+          onChange: (next) => {
+            this.state.filters[filter.value_col] = next;
+            this.render();
+          }
+        }),
+        filterParent
       );
-      select.onchange = () => {
-        this.state.filters[filter.value_col] = select.value === "__all__" ? null : select.value;
-        this.render();
-      };
     });
     if (this.settings.time_cols.length > 1) {
       const xParent = addSection("X-axis");
@@ -20448,16 +20876,16 @@ var SafetyOutlierExplorer = class {
       this.render();
     };
     this.lowerInput = lower;
-    const upper = addControl("Upper", document.createElement("input"), yRow);
-    upper.type = "number";
-    upper.step = String(step);
-    upper.value = seedLimitInput(this.state, "upper");
-    upper.onchange = () => {
-      applyLimitEdit(this.state, "upper", upper.value);
+    const upper8 = addControl("Upper", document.createElement("input"), yRow);
+    upper8.type = "number";
+    upper8.step = String(step);
+    upper8.value = seedLimitInput(this.state, "upper");
+    upper8.onchange = () => {
+      applyLimitEdit(this.state, "upper", upper8.value);
       normalizeYDomain(this.state);
       this.render();
     };
-    this.upperInput = upper;
+    this.upperInput = upper8;
     const reset = addControl("\xA0", document.createElement("button"), yParent);
     reset.type = "button";
     reset.textContent = "Reset Limits";
@@ -20517,6 +20945,11 @@ var SafetyOutlierExplorer = class {
       this.state.groupBy = group.value;
       this.render();
     };
+    addReset(() => {
+      this.reseed();
+      this.buildControls();
+      this.render();
+    });
   }
   /**
    * The current y-axis stepper increment, ~1/15 of the default measure range
@@ -20905,12 +21338,12 @@ function syncSettings8(settings) {
       ...(settings.highlight || {}).attributes || {}
     }
   };
-  const customFilters = arrayify(synced.filters).map((value) => fieldSpec(value)).filter((filter) => filter.value_col);
+  const customFilters = arrayify(synced.filters).map((value) => normalizeFilterSpec(value)).filter((filter) => filter.value_col);
   synced.filters = customFilters.length ? customFilters : [
     ...synced.highlight ? [{ value_col: synced.highlight.value_col, label: synced.highlight.label }] : [],
     { value_col: synced.color.value_col, label: synced.color.label },
     { value_col: synced.id_col, label: "Participant Identifier" }
-  ];
+  ].map((filter) => normalizeFilterSpec(filter));
   const defaultDetails = [
     { value_col: synced.seq_col, label: "Sequence Number" },
     { value_col: synced.stdy_col, label: "Start Day" },
@@ -20924,7 +21357,9 @@ function syncSettings8(settings) {
         label: `${synced.highlight.label} Details`
       }
     ] : [],
-    ...synced.filters.filter((filter) => filter.value_col !== synced.id_col)
+    // Listing columns, not filters: take only the column and its label, so the
+    // filter contract's start/all/multiple keys do not leak into the listing.
+    ...synced.filters.filter((filter) => filter.value_col !== synced.id_col).map((filter) => fieldSpec(filter))
   ];
   const details = [...defaultDetails, ...arrayify(synced.details).map((value) => fieldSpec(value))];
   const seen = /* @__PURE__ */ new Set();
@@ -21152,11 +21587,11 @@ function buildTimelineRows(rows, settings) {
 }
 
 // src/ae-timelines/getScales.js
-function dayDomain(events) {
-  if (!events.length) return [0, 1];
+function dayDomain(events2) {
+  if (!events2.length) return [0, 1];
   let min = Infinity;
   let max = -Infinity;
-  events.forEach((event) => {
+  events2.forEach((event) => {
     if (event.start < min) min = event.start;
     if (event.start > max) max = event.start;
     if (event.end > max) max = event.end;
@@ -21197,12 +21632,12 @@ function withAlpha(hex2, alpha2) {
   const b = value & 255;
   return `rgba(${r}, ${g}, ${b}, ${alpha2})`;
 }
-function buildDatasets(events, domain, settings) {
+function buildDatasets(events2, domain, settings) {
   const datasets = domain.map((level) => {
     const color2 = colorFor(level, domain, settings.color.colors);
     return {
       label: level,
-      data: events.filter((event) => event.color === level).map((event) => ({ x: [event.start, event.end], y: event.subject, __aet: event })),
+      data: events2.filter((event) => event.color === level).map((event) => ({ x: [event.start, event.end], y: event.subject, __aet: event })),
       backgroundColor: withAlpha(color2, 0.5),
       borderColor: color2,
       borderWidth: 1,
@@ -21315,13 +21750,24 @@ var AETimelines = class {
     this.detailChart = null;
     this.selectedParticipant = null;
     this.participantsSelected = [];
-    this.state = {
-      filters: {},
-      sort: this.settings.sort_participants
-    };
+    this.state = this.seedState();
     this.renderShell();
     this.profileRows = [];
     mountProfileRail(this, () => this.profileSettings(), { target: this.element });
+  }
+  /**
+   * The opening control state, derived from the settings alone: the configured
+   * filter start values and the configured participant sort order. Nothing here
+   * depends on the bound data, so the "Reset chart" control (AET-CTRL-001) can
+   * rebuild it at any point in the session.
+   * @returns {Object} A fresh control state.
+   * @private
+   */
+  seedState() {
+    return {
+      filters: initFilterState(this.settings.filters),
+      sort: this.settings.sort_participants
+    };
   }
   /**
    * The settings handed to the railed participant-profile module: this
@@ -21454,7 +21900,7 @@ var AETimelines = class {
    */
   buildControls() {
     this.controls.innerHTML = "";
-    const { addSection, addControl } = controlBuilders(this.controls);
+    const { addSection, addControl, addReset } = controlBuilders(this.controls);
     const domain = colorDomain(this.cleanRows, this.settings.color);
     const filterSpecs = this.settings.filters.filter((filter) => {
       const values = unique(this.cleanRows.map((row) => row[filter.value_col]));
@@ -21474,17 +21920,21 @@ var AETimelines = class {
     });
     const filterParent = filterSpecs.length ? addSection("Filters") : this.controls;
     filterSpecs.forEach((filter) => {
-      const select = addControl(filter.label, document.createElement("select"), filterParent);
-      option(select, "__all__", "All", !this.state.filters[filter.value_col]);
       const values = unique(this.cleanRows.map((row) => row[filter.value_col]));
       const ordered = filter.value_col === this.settings.color.value_col ? domain.filter((value) => values.includes(value)) : values.sort();
-      ordered.forEach(
-        (value) => option(select, value, value, this.state.filters[filter.value_col] === value)
+      addControl(
+        filter.label,
+        renderFilterControl({
+          spec: filter,
+          values: ordered,
+          selected: this.state.filters[filter.value_col],
+          onChange: (next) => {
+            this.state.filters[filter.value_col] = next;
+            this.render();
+          }
+        }),
+        filterParent
       );
-      select.onchange = () => {
-        this.state.filters[filter.value_col] = select.value === "__all__" ? null : select.value;
-        this.render();
-      };
     });
     const sortParent = addSection("Sorting");
     const sort = addControl("Sort Participant IDs", document.createElement("select"), sortParent);
@@ -21493,6 +21943,11 @@ var AETimelines = class {
       this.state.sort = sort.value;
       this.render();
     };
+    addReset(() => {
+      this.state = this.seedState();
+      this.buildControls();
+      this.render();
+    });
   }
   /**
    * Cleaned records after the active filters.
@@ -21524,11 +21979,11 @@ var AETimelines = class {
       this.footnote.textContent = "No adverse events match the current filters.";
       return;
     }
-    const events = buildTimelineRows(this.filteredData, this.settings);
-    this.currentDomain = dayDomain(events);
+    const events2 = buildTimelineRows(this.filteredData, this.settings);
+    this.currentDomain = dayDomain(events2);
     const subjects = sortSubjects(this.filteredData, this.settings, this.state.sort);
     this.chartWrap.style.height = `${Math.max(240, subjects.length * this.settings.row_height + 120)}px`;
-    this.chart = this.drawTimeline(this.canvas, events, this.currentDomain, subjects);
+    this.chart = this.drawTimeline(this.canvas, events2, this.currentDomain, subjects);
   }
   /**
    * Refresh the italicized shown/total participant annotation
@@ -21549,8 +22004,8 @@ var AETimelines = class {
    * per-event chart — with the shared datasets, scales, marks, and tooltips.
    * @private
    */
-  drawTimeline(canvas, events, domain, labels) {
-    const datasets = buildDatasets(events, colorDomain(this.cleanRows, this.settings.color), {
+  drawTimeline(canvas, events2, domain, labels) {
+    const datasets = buildDatasets(events2, colorDomain(this.cleanRows, this.settings.color), {
       ...this.settings
     });
     const chart = new Chart(canvas.getContext("2d"), {
@@ -21574,7 +22029,7 @@ var AETimelines = class {
       },
       plugins: [timelineMarksPlugin(this.settings)]
     });
-    chart.$aetEvents = events;
+    chart.$aetEvents = events2;
     this.charts.push(chart);
     return chart;
   }
@@ -21618,17 +22073,17 @@ var AETimelines = class {
     this.detailWrap.classList.remove("sv-hidden");
     this.detailTitle.textContent = `Participant: ${participant}`;
     const rows = this.cleanRows.filter((row) => row[this.settings.id_col] === participant).sort((a, b) => Number(a[this.settings.seq_col]) - Number(b[this.settings.seq_col]));
-    const events = buildTimelineRows(rows, this.settings).map((event) => ({
+    const events2 = buildTimelineRows(rows, this.settings).map((event) => ({
       ...event,
       subject: String(event.seq)
     }));
-    const seqs = events.map((event) => event.subject);
+    const seqs = events2.map((event) => event.subject);
     this.detailChartWrap.style.height = `${Math.max(200, seqs.length * this.settings.row_height * 2 + 120)}px`;
     if (this.detailChart) {
       this.charts = this.charts.filter((chart) => chart !== this.detailChart);
       this.detailChart.destroy();
     }
-    this.detailChart = this.drawTimeline(this.detailCanvas, events, this.currentDomain, seqs);
+    this.detailChart = this.drawTimeline(this.detailCanvas, events2, this.currentDomain, seqs);
     this.currentTableData = rows;
     this.listingSearch = "";
     this.listingSort = null;
@@ -21963,10 +22418,10 @@ function resolveEdishDomain(values, cut, type, limits) {
   const derived = edishDomain(values, cut, type);
   const override = (value, fallback) => Number.isFinite(value) ? value : fallback;
   let lower = override(limits && limits.lower, derived[0]);
-  const upper = override(limits && limits.upper, derived[1]);
+  const upper8 = override(limits && limits.upper, derived[1]);
   if (type === "log" && !(lower > 0)) lower = derived[0];
-  if (!(upper > lower)) return derived;
-  return [lower, upper];
+  if (!(upper8 > lower)) return derived;
+  return [lower, upper8];
 }
 var LOG_EPSILON = 1e-9;
 function logTicks(domain, base = 10) {
@@ -22299,9 +22754,7 @@ function buildPoints(cleanRows, settings, state) {
 }
 function applyFilters6(points, filters) {
   return points.filter(
-    (point) => Object.entries(filters).every(
-      ([key, value]) => !value || String(point.raw[key]) === String(value)
-    )
+    (point) => Object.entries(filters || {}).every(([key, value]) => filterMatches(point.raw[key], value))
   );
 }
 function classifyQuadrants(points, xCut, yCut) {
@@ -22340,14 +22793,14 @@ function visitPathSeries(cleanRows, id, settings, state) {
     if (Number.isFinite(row.__hep_day)) return `d:${row.__hep_day}`;
     return `s:${Number.isFinite(row.__hep_seq) ? row.__hep_seq : row.__hep_index}`;
   };
-  const entries = /* @__PURE__ */ new Map();
+  const entries2 = /* @__PURE__ */ new Map();
   const ingest = (rows, axis) => {
     rows.forEach((row) => {
       const key = keyOf(row);
-      if (!entries.has(key)) {
-        entries.set(key, { x: NaN, y: NaN, day: NaN, seq: NaN, visit: null, order: Infinity });
+      if (!entries2.has(key)) {
+        entries2.set(key, { x: NaN, y: NaN, day: NaN, seq: NaN, visit: null, order: Infinity });
       }
-      const entry = entries.get(key);
+      const entry = entries2.get(key);
       entry[axis] = row[field];
       if (Number.isFinite(row.__hep_day)) entry.day = row.__hep_day;
       if (Number.isFinite(row.__hep_seq)) {
@@ -22361,7 +22814,7 @@ function visitPathSeries(cleanRows, id, settings, state) {
   };
   ingest(xRows, "x");
   ingest(yRows, "y");
-  return [...entries.values()].filter((entry) => Number.isFinite(entry.x) && Number.isFinite(entry.y)).sort((a, b) => {
+  return [...entries2.values()].filter((entry) => Number.isFinite(entry.x) && Number.isFinite(entry.y)).sort((a, b) => {
     const da = Number.isFinite(a.day) ? a.day : Number.MAX_SAFE_INTEGER;
     const db = Number.isFinite(b.day) ? b.day : Number.MAX_SAFE_INTEGER;
     return da - db || a.order - b.order;
@@ -22608,19 +23061,19 @@ function createSelection(host) {
      */
     updateTraceHeader(hoverId, selected) {
       if (!host.compositeHeaderEl) return;
-      let text;
+      let text3;
       let active = true;
       if (hoverId != null) {
-        text = api.annotationText(hoverId, selected.includes(String(hoverId)));
+        text3 = api.annotationText(hoverId, selected.includes(String(hoverId)));
       } else if (selected.length === 1) {
-        text = api.annotationText(selected[0], true);
+        text3 = api.annotationText(selected[0], true);
       } else if (selected.length > 1) {
-        text = `${selected.length} participants selected.`;
+        text3 = `${selected.length} participants selected.`;
       } else {
-        text = TRACE_HEADER_HINT;
+        text3 = TRACE_HEADER_HINT;
         active = false;
       }
-      host.compositeHeaderEl.textContent = text;
+      host.compositeHeaderEl.textContent = text3;
       host.compositeHeaderEl.classList.toggle("is-active", active);
     },
     /**
@@ -23193,6 +23646,15 @@ function updateNotes(host) {
       );
     }
     host.notes.append(note);
+  }
+  if (host.unscheduledRecords) {
+    host.notes.append(
+      createElement(
+        "span",
+        null,
+        `${host.unscheduledRecords} records at unscheduled visits excluded.`
+      )
+    );
   }
   if (host.droppedParticipants) {
     const dropReason2 = host.state.display === "relative_baseline" ? `missing ${host.state.measureX}/${host.state.measureY} peak or baseline` : `missing ${host.state.measureX}/${host.state.measureY} peak`;
@@ -23932,7 +24394,7 @@ function migrationMatrixBySide(subjects, sides) {
     const side = sideOf(subject, sides);
     if (buckets.has(side)) buckets.get(side).push(subject);
   });
-  return new Map([...buckets].map(([side, list]) => [side, migrationMatrix(list)]));
+  return new Map([...buckets].map(([side, list2]) => [side, migrationMatrix(list2)]));
 }
 function migrationCells(subjects, sides) {
   const staged = /* @__PURE__ */ new Map();
@@ -24016,9 +24478,9 @@ function emptyTally() {
   };
 }
 function normalizeCells(cells) {
-  const list = cells instanceof Map ? [...cells.values()] : Array.isArray(cells) ? cells : cells && typeof cells === "object" ? Object.values(cells) : [];
+  const list2 = cells instanceof Map ? [...cells.values()] : Array.isArray(cells) ? cells : cells && typeof cells === "object" ? Object.values(cells) : [];
   const normalized = [];
-  list.forEach((cell2) => {
+  list2.forEach((cell2) => {
     if (!cell2 || !SIDES2.includes(cell2.side)) return;
     if (!SEVERITY_ORDER.includes(cell2.pre) || !SEVERITY_ORDER.includes(cell2.post)) return;
     const ids = Array.isArray(cell2.ids) ? cell2.ids : [];
@@ -24139,9 +24601,9 @@ function layoutSankey({
       (side) => SEVERITY_ORDER.reduce((total, quadrant) => total + tally.outer[side][quadrant], 0)
     )
   );
-  const usable = Math.max(0, height - 2 * PAD - GAP_TOTAL);
+  const usable2 = Math.max(0, height - 2 * PAD - GAP_TOTAL);
   const denominator = Math.max(centreTotal, sideTotal);
-  const unit = denominator > 0 ? usable / denominator : 0;
+  const unit = denominator > 0 ? usable2 / denominator : 0;
   const { nodes, tops } = buildNodes(tally, columns, unit);
   const nodeById = new Map(nodes.map((node) => [node.id, node]));
   const cursors = new Map(tops);
@@ -24286,10 +24748,10 @@ function ribbonTip(ribbon) {
 ${ribbon.pre} \u2192 ${ribbon.post}
 ${CONCERN_PHRASE[ribbon.concern]}`;
 }
-function showTip(host, event, text) {
+function showTip(host, event, text3) {
   const tip = host.migrationTipEl;
   if (!tip) return;
-  tip.textContent = text;
+  tip.textContent = text3;
   tip.classList.add("is-visible");
   const bounds = host.migrationWrap.getBoundingClientRect();
   const x = (event.clientX ?? bounds.left) - bounds.left;
@@ -24442,7 +24904,7 @@ function paintNodes(group, nodes) {
     );
     const centred = node.column === "centre";
     const counts = centred ? `${node.counts.placebo} / ${node.counts.active}` : String(node.count);
-    const text = svgEl("text", {
+    const text3 = svgEl("text", {
       class: `hep-sankey-node-label${node.stub ? " is-stub" : ""}${centred ? " is-centre" : ""}`,
       "data-node": node.id,
       x: centred ? (columns.centre[0] + columns.centre[1]) / 2 : node.column === "left" ? node.x1 + 8 : node.x0 - 8,
@@ -24450,8 +24912,8 @@ function paintNodes(group, nodes) {
       "text-anchor": centred ? "middle" : node.column === "left" ? "start" : "end",
       "dominant-baseline": "middle"
     });
-    text.textContent = `${node.quadrant} ${counts}`;
-    group.append(text);
+    text3.textContent = `${node.quadrant} ${counts}`;
+    group.append(text3);
   });
 }
 function paintRibbons(host, group, ribbons) {
@@ -24525,15 +24987,15 @@ function buildSankey(host, layout, summary) {
     ["active", SANKEY_WIDTH, "end", `${SIDE_TITLE.active} \u2014 peak on-treatment`]
   ];
   headers.forEach(([key, x, anchor, label]) => {
-    const text = svgEl("text", {
+    const text3 = svgEl("text", {
       class: "hep-sankey-col-label",
       "data-column": key,
       x,
       y: -22,
       "text-anchor": anchor
     });
-    text.textContent = label;
-    group.append(text);
+    text3.textContent = label;
+    group.append(text3);
   });
   paintTiers(group, layout.nodes);
   paintRibbons(host, group, layout.ribbons);
@@ -25277,6 +25739,8 @@ var SafetyHepExplorer = class {
     this.settings = syncSettings3(settings);
     this.rawData = [];
     this.cleanRows = [];
+    this.unscheduledRecords = 0;
+    this.hasUnscheduled = false;
     this.removedRecords = 0;
     this.droppedParticipants = 0;
     this.droppedRows = [];
@@ -25337,13 +25801,17 @@ var SafetyHepExplorer = class {
       quadrantLabels: this.settings.quadrant_labels,
       visitWindow: this.settings.visit_window,
       groupBy: this.settings.group_by,
-      filters: {},
+      filters: initFilterState(this.settings.filters),
       rRatio: [...this.settings.r_ratio],
       cuts: JSON.parse(JSON.stringify(this.settings.cuts)),
       // Migration-view controls (HEP-MIG-013, HEP-ARM-003): suppress the
       // no-migration diagonal, and narrow the right-hand side to one active arm.
       hideUnchanged: this.settings.hide_unchanged,
       activeArms: this.settings.active_arms,
+      // Unscheduled-visit inclusion (HEP-CTRL-018). Unlike results-over-time's
+      // display-only toggle, turning this off RE-DERIVES every baseline and
+      // peak from the scheduled records alone, so it re-runs the clean pass.
+      unscheduledVisits: this.settings.unscheduled_visits,
       // Study-day playback (HEP-ANIM-*): the day the cloud is positioned on
       // (null = the static peak-vs-peak scatter), and whether the play-through
       // is running. Lives on state — not on the view — because the quadrant
@@ -25582,6 +26050,8 @@ var SafetyHepExplorer = class {
     if ("group_by" in settings) this.state.groupBy = this.settings.group_by;
     if ("cuts" in settings) this.state.cuts = JSON.parse(JSON.stringify(this.settings.cuts));
     if ("r_ratio" in settings) this.state.rRatio = [...this.settings.r_ratio];
+    if ("unscheduled_visits" in settings)
+      this.state.unscheduledVisits = this.settings.unscheduled_visits;
     if ("details" in settings) this.profileDetails = this.settings.details;
     this.state.filters = {};
     if (this.rawData.length) this.validateAndCleanData();
@@ -25608,12 +26078,16 @@ var SafetyHepExplorer = class {
     this.droppedRows = [...dropped, ...imputation.dropped];
     this.imputedRecords = imputation.imputed;
     this.imputationLimits = imputation.limits;
-    deriveBaseline(imputation.rows, this.settings);
-    assignSequence(imputation.rows, this.settings);
-    this.cleanRows = imputation.rows;
+    const partition = partitionUnscheduledRows(imputation.rows, this.settings);
+    const retained = this.state.unscheduledVisits ? imputation.rows : partition.scheduled;
+    this.unscheduledRecords = this.state.unscheduledVisits ? 0 : partition.unscheduled.length;
+    this.hasUnscheduled = partition.unscheduled.length > 0 || hasUnscheduledVisits(imputation.rows, this.settings.visit_col, this.settings);
+    deriveBaseline(retained, this.settings);
+    assignSequence(retained, this.settings);
+    this.cleanRows = retained;
     this.removedRecords = removed + imputation.dropped.length;
-    this.rRatioMax = maxRRatio(imputation.rows, this.settings);
-    this.displayAvailability = availableDisplays(imputation.rows);
+    this.rRatioMax = maxRRatio(retained, this.settings);
+    this.displayAvailability = availableDisplays(retained);
     if (this.displayAvailability.modes.length && !this.displayAvailability.modes.includes(this.state.display)) {
       this.state.display = this.displayAvailability.modes[0];
     }
@@ -25702,6 +26176,22 @@ var SafetyHepExplorer = class {
     this.buildViewControl(addSection);
     const settingsParent = addSection("Settings");
     view.contributeControls(this, { addSection, addRow, addControl, settingsParent });
+    if (this.hasUnscheduled) {
+      const unscheduled = addControl(
+        "Unscheduled visits",
+        document.createElement("input"),
+        settingsParent
+      );
+      unscheduled.type = "checkbox";
+      unscheduled.className = "hep-unscheduled-visits";
+      unscheduled.checked = Boolean(this.state.unscheduledVisits);
+      unscheduled.onchange = () => {
+        this.state.unscheduledVisits = unscheduled.checked;
+        this.validateAndCleanData();
+        this.buildControls();
+        this.render();
+      };
+    }
     if (this.settings.groups.length > 1) {
       const group = addControl("Group", document.createElement("select"), settingsParent);
       this.settings.groups.forEach(
@@ -25717,20 +26207,20 @@ var SafetyHepExplorer = class {
     if (filterSpecs.length || showRRatio) {
       const filterParent = addSection("Filters");
       filterSpecs.forEach((filter) => {
-        const select = addControl(filter.label, document.createElement("select"), filterParent);
-        option(select, "__all__", "All", !this.state.filters[filter.value_col]);
-        unique6(this.cleanRows.map((row) => row[filter.value_col])).sort().forEach(
-          (value) => option(
-            select,
-            value,
-            value,
-            String(this.state.filters[filter.value_col]) === String(value)
-          )
+        const values = unique6(this.cleanRows.map((row) => row[filter.value_col])).sort();
+        addControl(
+          filter.label,
+          renderFilterControl({
+            spec: filter,
+            values,
+            selected: this.state.filters[filter.value_col],
+            onChange: (next) => {
+              this.state.filters[filter.value_col] = next;
+              this.render();
+            }
+          }),
+          filterParent
         );
-        select.onchange = () => {
-          this.state.filters[filter.value_col] = select.value === "__all__" ? null : select.value;
-          this.render();
-        };
       });
       if (showRRatio) view.contributeFilters(this, { addRow, addControl }, filterParent);
     }
@@ -25745,7 +26235,7 @@ var SafetyHepExplorer = class {
   /**
    * Reset the cutpoints, display mode, axis type, point size, filters, and
    * R-Ratio range to their initial values, then rebuild and redraw
-   * (HEP-CTRL-012).
+   * (HEP-CTRL-019).
    * @private
    */
   resetChart() {
@@ -25761,6 +26251,8 @@ var SafetyHepExplorer = class {
     this.state.rRatio = [...this.settings.r_ratio];
     this.state.hideUnchanged = this.settings.hide_unchanged;
     this.state.activeArms = this.settings.active_arms;
+    this.state.unscheduledVisits = this.settings.unscheduled_visits;
+    if (this.rawData.length) this.validateAndCleanData();
     this.buildControls();
     this.render();
   }
@@ -26011,10 +26503,9 @@ var DEFAULT_FILTERS = [
   { value_col: "AEOUT", label: "Outcome" }
 ];
 function filterSpec(value) {
-  const spec = fieldSpec(value);
+  const spec = normalizeFilterSpec(value);
   const type = value && value.type === "participant" ? "participant" : "event";
-  const start = value && value.start || null;
-  return { ...spec, type, start };
+  return { ...spec, type };
 }
 function syncSettings9(settings) {
   const synced = { ...DEFAULT_SETTINGS9, ...settings };
@@ -26050,7 +26541,7 @@ function columnPlan(groupCount, settings) {
     );
   }
   const groupCols = settings.group_cols;
-  const totalCol = settings.total_col && groupCount > 1;
+  const totalCol = settings.total_col && (groupCount > 1 || !groupCols);
   const diffCol = settings.diff_col && groupCols && groupCount > 1;
   return { groupCols, totalCol, diffCol };
 }
@@ -26384,12 +26875,12 @@ function calculateDifference(n1, tot1, n2, tot2) {
   const diff = p1 - p2;
   const se = Math.sqrt(p1 * (1 - p1) / (tot1 || 1) + p2 * (1 - p2) / (tot2 || 1));
   const lower = diff - 1.96 * se;
-  const upper = diff + 1.96 * se;
+  const upper8 = diff + 1.96 * se;
   return {
     diff: diff * 100,
     lower: lower * 100,
-    upper: upper * 100,
-    sig: lower > 0 || upper < 0 ? 1 : 0
+    upper: upper8 * 100,
+    sig: lower > 0 || upper8 < 0 ? 1 : 0
   };
 }
 function addDifferences(cells, groups) {
@@ -26495,10 +26986,32 @@ function summaryCsv(majors, groups) {
   });
   return lines.join("\n") + "\n";
 }
+var NO_MATCH_MESSAGE = "Error: No AEs found for the current filters. Update the filters to see results.";
+function emptyState({ populationRows, eventRows, allRows }, settings) {
+  if (eventRows.length) return null;
+  const participants = (rows) => new Set(rows.map((row) => String(row[settings.id_col] ?? ""))).size;
+  const enrolled = participants(allRows);
+  const shown = participants(populationRows);
+  if (!populationRows.length) {
+    return {
+      kind: "no-participants",
+      text: `No participants are in the current selection: none of the ${enrolled} participants in the data match the participant filters. Widen a participant filter to see results.`
+    };
+  }
+  if (!populationRows.some((row) => !row.__ae_placeholder)) {
+    return shown === enrolled ? {
+      kind: "no-events-in-study",
+      text: `No adverse events have been recorded in this study: all ${enrolled} participants are event-free.`
+    } : {
+      kind: "no-events-for-selection",
+      text: `No adverse events have been recorded for the ${shown} participant${shown === 1 ? "" : "s"} in the current selection.`
+    };
+  }
+  return { kind: "filtered-out", text: NO_MATCH_MESSAGE };
+}
 
 // src/ae-explorer.js
 var SVG_NS3 = "http://www.w3.org/2000/svg";
-var NO_MATCH_MESSAGE = "Error: No AEs found for the current filters. Update the filters to see results.";
 var SUMMARY_FOOTNOTE = "Click a category to view the underlying records. Hover a rate for counts.";
 var FILTER_TYPE_NOTES = {
   event: "Event filter: narrows the events counted without changing the group denominators.",
@@ -26535,6 +27048,7 @@ var MODULE_STYLES = `
 .safety-ae-explorer .ae-search-note{font-size:.8rem;color:#52616f;margin-top:.25rem}
 .safety-ae-explorer sup.ae-filter-type{cursor:help;color:#0b62a4;margin-left:.25em}
 .safety-ae-explorer .ae-error{color:#9a3412;padding:1rem 0}
+.safety-ae-explorer .ae-empty{color:#52616f;padding:1rem 0}
 .safety-ae-explorer .ae-detail-note{font-size:.85rem;color:#52616f;margin:.35rem 0 .6rem}
 `;
 var AEExplorer = class {
@@ -26724,11 +27238,7 @@ var AEExplorer = class {
    * @private
    */
   seedFilterState() {
-    this.state.filters = {};
-    this.settings.filters.forEach((spec) => {
-      const start = Array.isArray(spec.start) ? spec.start[0] : spec.start;
-      if (start != null) this.state.filters[spec.value_col] = String(start);
-    });
+    this.state.filters = initFilterState(this.settings.filters);
     this.state.searchTerm = "";
   }
   /**
@@ -26795,24 +27305,24 @@ var AEExplorer = class {
       return true;
     });
     this.activeFilterSpecs.forEach((spec) => {
-      const select = document.createElement("select");
-      select.dataset.filter = spec.value_col;
-      const active = this.state.filters[spec.value_col];
-      option(select, "__all__", "All", active == null);
       const source = spec.type === "participant" ? this.cleanRows : eventRows;
       const values = [
         ...new Set(source.map((row) => String(row[spec.value_col] ?? "")).filter(Boolean))
       ].sort();
-      values.forEach((value) => option(select, value, value, active === value));
-      const wrap = addControl(spec.label, select, filterSection);
+      const control = renderFilterControl({
+        spec,
+        values,
+        selected: this.state.filters[spec.value_col],
+        onChange: (next) => {
+          this.state.filters[spec.value_col] = next;
+          this.render();
+        }
+      });
+      const wrap = addControl(spec.label, control, filterSection);
       const label = wrap.parentElement.querySelector("label");
       const sup = createElement("sup", "ae-filter-type", spec.type === "participant" ? "P" : "E");
       sup.title = FILTER_TYPE_NOTES[spec.type];
       label.append(sup);
-      select.onchange = () => {
-        this.state.filters[spec.value_col] = select.value === "__all__" ? null : select.value;
-        this.render();
-      };
     });
     this.buildVariableControls(addSection);
     if (this.settings.validation) {
@@ -26870,29 +27380,41 @@ var AEExplorer = class {
       specs,
       this.state.filters
     );
-    const events = eventData(population, specs, this.state.filters);
-    const counts = groupCounts(population, events, this.settings, groups);
-    return { groups, population, events, counts };
+    const events2 = eventData(population, specs, this.state.filters);
+    const counts = groupCounts(population, events2, this.settings, groups);
+    return { groups, population, events: events2, counts };
   }
   /**
    * Redraw the summary table from the current data, settings, and control
    * state: closes any open details view, recomputes the roll-up, and
    * rebuilds the table with the prevalence and search visibility applied.
    * Called automatically by the controls and the data/settings setters;
-   * call it directly only after mutating state by hand.
+   * call it directly only after mutating state by hand. When nothing is
+   * left to draw, the table is replaced by a message naming which kind of
+   * empty it is (AE-USER-021, AE-USER-022).
    * @returns {void}
    */
   render() {
     this.closeDetail();
-    const { groups, events, counts } = this.computeData();
+    const { groups, population, events: events2, counts } = this.computeData();
     this.groups = groups;
     this.counts = counts;
     this.plan = columnPlan(groups.length, this.settings);
-    this.table = crossTab(events, this.settings, groups, counts, this.state.summarizeBy);
-    this.currentEvents = events;
+    this.table = crossTab(events2, this.settings, groups, counts, this.state.summarizeBy);
+    this.currentEvents = events2;
     this.tableWrap.innerHTML = "";
-    if (!events.length) {
-      this.tableWrap.append(createElement("div", "ae-error", NO_MATCH_MESSAGE));
+    const empty = emptyState(
+      { populationRows: population, eventRows: events2, allRows: this.cleanRows },
+      this.settings
+    );
+    if (empty) {
+      const notice = createElement(
+        "div",
+        empty.kind === "filtered-out" ? "ae-error" : "ae-empty",
+        empty.text
+      );
+      notice.dataset.emptyState = empty.kind;
+      this.tableWrap.append(notice);
       this.updateSearchNote(null);
       return;
     }
@@ -27078,14 +27600,14 @@ var AEExplorer = class {
     svg.append(line);
     const anchors = ["start", "middle", "end"];
     [d0, (d0 + d1) / 2, d1].forEach((value, index) => {
-      const text = document.createElementNS(SVG_NS3, "text");
-      text.setAttribute("x", scale.x(value));
-      text.setAttribute("y", 15);
-      text.setAttribute("text-anchor", anchors[index]);
-      text.setAttribute("font-size", "9");
-      text.setAttribute("fill", "#52616f");
-      text.textContent = format(value);
-      svg.append(text);
+      const text3 = document.createElementNS(SVG_NS3, "text");
+      text3.setAttribute("x", scale.x(value));
+      text3.setAttribute("y", 15);
+      text3.setAttribute("text-anchor", anchors[index]);
+      text3.setAttribute("font-size", "9");
+      text3.setAttribute("fill", "#52616f");
+      text3.textContent = format(value);
+      svg.append(text3);
     });
     return svg;
   }
@@ -27150,18 +27672,18 @@ var AEExplorer = class {
    * highlight style (AE-REG-003).
    * @private
    */
-  setLabelText(label, text, matched) {
+  setLabelText(label, text3, matched) {
     label.textContent = "";
     const term = this.state.searchTerm;
-    const index = matched ? text.toLowerCase().indexOf(term.toLowerCase()) : -1;
+    const index = matched ? text3.toLowerCase().indexOf(term.toLowerCase()) : -1;
     if (index < 0) {
-      label.textContent = text;
+      label.textContent = text3;
       return;
     }
     label.append(
-      document.createTextNode(text.slice(0, index)),
-      createElement("span", "ae-search-match", text.slice(index, index + term.length)),
-      document.createTextNode(text.slice(index + term.length))
+      document.createTextNode(text3.slice(0, index)),
+      createElement("span", "ae-search-match", text3.slice(index, index + term.length)),
+      document.createTextNode(text3.slice(index + term.length))
     );
   }
   /**
@@ -27513,6 +28035,15 @@ var DISPLAY_MODES2 = [
   { value: "delta", label: "\u0394 (change from baseline)" },
   { value: "deltadelta", label: "\u0394\u0394 (placebo-corrected)" }
 ];
+var CLINICAL_CAUTION2 = "Exploratory tool \u2014 not validated for clinical use. Confirm any signal with the validated ICH-E14 analyses.";
+var UNBLINDING_CAUTION = "Treatment assignment is shown: every view colours and labels participants by arm. Reading or sharing arm-labelled results can unblind an ongoing study \u2014 confirm this view is permitted by the study\u2019s blinding plan.";
+function showsUnblindingCaution(arms) {
+  if (!Array.isArray(arms)) return false;
+  const named = arms.filter(
+    (arm) => arm !== void 0 && arm !== null && String(arm).trim() !== ""
+  );
+  return named.length > 1;
+}
 var TIMEPOINT_MAX = "__qt_max";
 var DEFAULT_SETTINGS10 = {
   id_col: "USUBJID",
@@ -27550,7 +28081,7 @@ function fieldSpec8(value, fallbackLabel) {
 }
 function syncSettings10(settings) {
   const synced = { ...DEFAULT_SETTINGS10, ...settings };
-  synced.filters = arrayify8(synced.filters).map((value) => fieldSpec8(value)).filter((d) => d.value_col);
+  synced.filters = arrayify8(synced.filters).map((value) => normalizeFilterSpec(value)).filter((d) => d.value_col);
   synced.measures = arrayify8(synced.measures);
   synced.qtc_measures = arrayify8(synced.qtc_measures);
   synced.absolute_thresholds = arrayify8(synced.absolute_thresholds).map(Number).filter((n) => Number.isFinite(n)).sort((a, b) => a - b);
@@ -27684,7 +28215,7 @@ function applyFilters7(rows, filterState) {
     ([, value]) => value !== void 0 && value !== null && value !== ""
   );
   if (!active.length) return rows;
-  return rows.filter((row) => active.every(([col, value]) => String(row[col]) === String(value)));
+  return rows.filter((row) => active.every(([col, value]) => filterMatches(row[col], value)));
 }
 function centralTendencySeries(measureRows2, options) {
   const {
@@ -27828,14 +28359,14 @@ function classifyThresholds(measureRows2, options) {
     denominators[entry.arm] += 1;
     allDenom += 1;
   }
-  const buildRow = (kind, threshold, pick) => {
+  const buildRow = (kind, threshold, pick2) => {
     const byArm = {};
     let allCount = 0;
     arms.forEach((arm) => {
       byArm[arm] = 0;
     });
     for (const entry of extremes.values()) {
-      if (pick(entry) > threshold) {
+      if (pick2(entry) > threshold) {
         if (byArm[entry.arm] === void 0) byArm[entry.arm] = 0;
         byArm[entry.arm] += 1;
         allCount += 1;
@@ -28140,8 +28671,10 @@ var QT_STYLES = `
 .safety-qt-explorer .qt-table th.qt-num,.safety-qt-explorer .qt-table td.qt-num,.safety-qt-explorer .qt-ich td.qt-num{text-align:right;font-variant-numeric:tabular-nums}
 .safety-qt-explorer .qt-table th{border-bottom:2px solid #d8dee4;font-size:.75rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f;white-space:nowrap}
 .safety-qt-explorer .qt-table caption,.safety-qt-explorer .qt-ich caption{caption-side:top;text-align:left;font-weight:600;margin-bottom:.35rem}
+.safety-qt-explorer .qt-table{margin:.7rem 0 0}
 .safety-qt-explorer .qt-flag{color:#9a3412;font-weight:600}
 .safety-qt-explorer .qt-empty{display:none}
+.safety-qt-explorer .qt-caution{margin-top:.5rem;font-size:.8rem;color:#8a4b00}
 `;
 function applyQtStyles() {
   if (typeof document === "undefined" || document.getElementById(QT_STYLE_ID)) return;
@@ -28166,17 +28699,52 @@ var SafetyQtExplorer = class {
     this.profileFeed = null;
     this.profileKey = null;
     this.profileRows = [];
-    this.state = {
+    this.state = this.seedState();
+    this.renderShellDom();
+    mountProfileRail(this, () => this.profileSettings());
+  }
+  /**
+   * The opening control state, derived from the settings alone (QT-CTRL-004).
+   * `view` is part of the seed, so a whole-chart reset returns the reader to
+   * the central-tendency view. Only HALF the seed: resolveMeasure pins the
+   * correction to one the bound data actually carries afterwards.
+   * @returns {Object} A fresh control state.
+   * @private
+   */
+  seedState() {
+    return {
       view: "central",
       measure: this.settings.start_measure,
       statistic: "mean",
       mode: "delta",
       timepoint: TIMEPOINT_MAX,
-      filters: {},
+      filters: initFilterState(this.settings.filters),
       selectedId: null
     };
-    this.renderShellDom();
-    mountProfileRail(this, () => this.profileSettings());
+  }
+  /**
+   * Pin the selected correction to one present in the bound data, so a
+   * configured start_measure the extract does not carry never strands the
+   * chart on an empty selection (QT-CTRL-002).
+   * @private
+   */
+  resolveMeasure() {
+    if (!this.availableMeasures.includes(this.state.measure)) {
+      this.state.measure = this.availableMeasures[0];
+    }
+  }
+  /**
+   * Return the control state to its opening value: re-seed from the settings,
+   * then re-run the available-measure pin so the Correction control lands
+   * where it opened rather than on a correction the data lacks (QT-CTRL-004,
+   * #136). The stale-filter prune needs no re-run — the seed's filters come
+   * straight from the configured specs. Cheap enough for a control click:
+   * availableMeasures is already cached, and the data is not re-cleaned.
+   * @private
+   */
+  reseed() {
+    this.state = this.seedState();
+    if (this.cleanRows.length) this.resolveMeasure();
   }
   /**
    * The settings handed to the railed participant-profile module (#99,
@@ -28262,6 +28830,10 @@ var SafetyQtExplorer = class {
     this.ichWrap = createElement("div", "qt-ich qt-empty");
     this.chartWrap.after(this.ichWrap);
     this.ichWrap.after(this.tableWrap);
+    this.cautionEl = createElement("div", "qt-caution sv-warning", CLINICAL_CAUTION2);
+    this.unblindingEl = createElement("div", "qt-caution qt-caution-unblinding sv-warning");
+    this.unblindingEl.hidden = true;
+    this.main.append(this.cautionEl, this.unblindingEl);
   }
   /**
    * Load data and render — an alias for setData keeping the two-step
@@ -28340,13 +28912,24 @@ var SafetyQtExplorer = class {
     const measures = measuresPresent(rows);
     const available = this.settings.measures.filter((m) => measures.includes(m));
     this.availableMeasures = available.length ? available : measures;
-    if (!this.availableMeasures.includes(this.state.measure)) {
-      this.state.measure = this.availableMeasures[0];
-    }
+    this.resolveMeasure();
     const configured = new Set(this.settings.filters.map((f) => f.value_col));
     for (const col of Object.keys(this.state.filters)) {
-      const present = rows.some((row) => String(row[col]) === String(this.state.filters[col]));
-      if (!configured.has(col) || !present) delete this.state.filters[col];
+      const selection = this.state.filters[col];
+      if (!configured.has(col)) {
+        delete this.state.filters[col];
+        continue;
+      }
+      if (Array.isArray(selection)) {
+        const kept = selection.filter(
+          (value) => rows.some((row) => String(row[col]) === String(value))
+        );
+        if (kept.length) this.state.filters[col] = kept;
+        else delete this.state.filters[col];
+        continue;
+      }
+      if (!rows.some((row) => String(row[col]) === String(selection)))
+        delete this.state.filters[col];
     }
   }
   /**
@@ -28372,7 +28955,7 @@ var SafetyQtExplorer = class {
   /** Build the sidebar controls for the active view. @private */
   buildControls() {
     this.controls.innerHTML = "";
-    const { addSection, addControl } = controlBuilders(this.controls);
+    const { addSection, addControl, addReset } = controlBuilders(this.controls);
     this.buildViewControl(addSection);
     const section = addSection("Display");
     const measureSelect = addControl("Correction", document.createElement("select"), section);
@@ -28421,18 +29004,27 @@ var SafetyQtExplorer = class {
     if (this.settings.filters.length) {
       const filterSection = addSection("Filters");
       this.settings.filters.forEach((filter) => {
-        const select = addControl(filter.label, document.createElement("select"), filterSection);
-        option(select, "", "All", !this.state.filters[filter.value_col]);
-        unique8(this.cleanRows.map((row) => row[filter.value_col])).map(String).sort().forEach(
-          (value) => option(select, value, value, this.state.filters[filter.value_col] === value)
+        const values = unique8(this.cleanRows.map((row) => row[filter.value_col])).map(String).sort();
+        addControl(
+          filter.label,
+          renderFilterControl({
+            spec: filter,
+            values,
+            selected: this.state.filters[filter.value_col],
+            onChange: (next) => {
+              this.state.filters[filter.value_col] = next;
+              this.render();
+            }
+          }),
+          filterSection
         );
-        select.onchange = () => {
-          if (select.value) this.state.filters[filter.value_col] = select.value;
-          else delete this.state.filters[filter.value_col];
-          this.render();
-        };
       });
     }
+    addReset(() => {
+      this.reseed();
+      this.buildControls();
+      this.render();
+    });
   }
   /** Post-baseline visit labels for the current measure. @private */
   postBaselineVisits() {
@@ -28456,6 +29048,7 @@ var SafetyQtExplorer = class {
     this.state.selectedId = null;
     this.participantsSelected = [];
     resetProfileRail(this);
+    this.updateCautions();
     this.legendEl.classList.add("qt-empty");
     this.noteEl.classList.add("qt-empty");
     this.tableWrap.classList.add("qt-empty");
@@ -28474,6 +29067,18 @@ var SafetyQtExplorer = class {
     if (this.state.view === "central") this.renderCentral();
     else if (this.state.view === "outlier") this.renderOutlier();
     else this.renderCategorical();
+  }
+  /**
+   * Keep the standing cautions current (QT-CAUTION-001, QT-CAUTION-002). The
+   * not-for-clinical-use caution is permanent and is never touched here; the
+   * unblinding warning appears only when the bound data actually carries more
+   * than one treatment arm.
+   * @private
+   */
+  updateCautions() {
+    const unblinding = showsUnblindingCaution(this.arms);
+    this.unblindingEl.textContent = unblinding ? UNBLINDING_CAUTION : "";
+    this.unblindingEl.hidden = !unblinding;
   }
   /** Show a "select a QTc correction" note and hide chart/table (HR, QTc-only views). @private */
   showQtcOnlyNote() {
@@ -28636,6 +29241,7 @@ var SafetyQtExplorer = class {
     this.charts.push(this.chart);
     this.drawLegend(seriesArms);
     this.drawIchCallout(tendency, isQtc);
+    this.drawCentralTable(tendency, measure);
     this.setCentralFootnote(measure, isQtc);
   }
   /** ICH-E14 metric callout (mean + ΔΔ + QTc only). @private */
@@ -28675,6 +29281,71 @@ var SafetyQtExplorer = class {
     table.append(tbody);
     this.ichWrap.append(table);
   }
+  /**
+   * Print the plotted central-tendency values beneath the chart (QT-CT-008):
+   * one row per visit and arm carrying the sample size, the plotted statistic,
+   * and the two-sided CI bounds the band draws. Built from the SAME
+   * centralTendencySeries result the chart consumes, so the printed numbers can
+   * never disagree with the graphic — and it therefore inherits the active
+   * correction, statistic, display mode, and filters for free. Median mode
+   * carries no CI (lo/hi NaN), which formatSigned prints as "NA".
+   * @param {{mode: string, statistic: string, visitOrder: string[], series: Array<{arm: string, points: Object[]}>}} tendency The centralTendencySeries result.
+   * @param {string} measure The active measure.
+   * @private
+   */
+  drawCentralTable(tendency, measure) {
+    if (!tendency.series.length) return;
+    const pct = Math.round(this.settings.ci_level * 100);
+    const isDd = tendency.mode === "deltadelta";
+    const prefix = isDd ? "\u0394\u0394" : "\u0394";
+    const statLabel = tendency.statistic === "median" ? "median" : "mean";
+    const unit = measureUnit(measure, this.settings.qtc_measures);
+    const byVisit = new Map(tendency.visitOrder.map((visit) => [visit, []]));
+    tendency.series.forEach(({ arm, points }) => {
+      points.forEach((point) => {
+        if (byVisit.has(point.visit)) byVisit.get(point.visit).push({ arm, point });
+      });
+    });
+    this.tableWrap.classList.remove("qt-empty");
+    this.tableWrap.innerHTML = "";
+    const table = createElement("table", "qt-ct-table");
+    table.append(
+      createElement(
+        "caption",
+        null,
+        `${prefix} ${measure} \u2014 ${statLabel} change by visit and arm with the two-sided ${pct}% CI` + (isDd ? " (n is the active arm; placebo is the reference)" : "")
+      )
+    );
+    const thead = document.createElement("thead");
+    const hr = document.createElement("tr");
+    [
+      ["Visit", false],
+      ["Arm", false],
+      ["n", true],
+      [`${prefix} ${statLabel} (${unit})`, true],
+      [`${pct}% CI low`, true],
+      [`${pct}% CI high`, true]
+    ].forEach(
+      ([label, numeric]) => hr.append(createElement("th", numeric ? "qt-num" : null, label))
+    );
+    thead.append(hr);
+    table.append(thead);
+    const tbody = document.createElement("tbody");
+    tendency.visitOrder.forEach((visit) => {
+      (byVisit.get(visit) || []).forEach(({ arm, point }) => {
+        const tr = document.createElement("tr");
+        tr.append(createElement("td", null, String(visit)));
+        tr.append(createElement("td", null, String(arm)));
+        tr.append(createElement("td", "qt-num", String(point.n)));
+        tr.append(createElement("td", "qt-num", formatSigned(point.value)));
+        tr.append(createElement("td", "qt-num", formatSigned(point.lo)));
+        tr.append(createElement("td", "qt-num", formatSigned(point.hi)));
+        tbody.append(tr);
+      });
+    });
+    table.append(tbody);
+    this.tableWrap.append(table);
+  }
   /** Central-tendency footnote: method + mode caveats. @private */
   setCentralFootnote(measure, isQtc) {
     const parts = [];
@@ -28691,7 +29362,6 @@ var SafetyQtExplorer = class {
     if (!isQtc) {
       parts.push("Heart rate has no ICH-E14 QTc reference; read alongside the QTc corrections.");
     }
-    parts.push("Exploratory tool \u2014 confirm signals with validated ICH-E14 analyses.");
     this.footnote.textContent = parts.join(" ");
   }
   // ---- Outlier scatter (QT-OUT-*) -----------------------------------------
@@ -28798,8 +29468,7 @@ var SafetyQtExplorer = class {
     this.drawLegend(armsWithPoints);
     const footParts = [
       `${points.length} participants.`,
-      isMax ? "Each point is a participant\u2019s maximum post-baseline value; change-from-baseline lines are shown only in per-visit mode \u2014 see the categorical table for change-threshold counts." : "Each point is the selected visit\u2019s reading; diagonals are absolute-QTc thresholds, horizontals are change-from-baseline thresholds.",
-      "Exploratory tool \u2014 confirm signals with validated ICH-E14 analyses."
+      isMax ? "Each point is a participant\u2019s maximum post-baseline value; change-from-baseline lines are shown only in per-visit mode \u2014 see the categorical table for change-threshold counts." : "Each point is the selected visit\u2019s reading; diagonals are absolute-QTc thresholds, horizontals are change-from-baseline thresholds."
     ];
     this.footnote.textContent = footParts.join(" ");
   }
@@ -28862,7 +29531,7 @@ var SafetyQtExplorer = class {
     table.append(tbody);
     this.tableWrap.append(table);
     this.drawLegend(classification.arms);
-    this.footnote.textContent = "Absolute rows use each participant\u2019s maximum post-baseline value; change rows use the maximum post-baseline change (they may fall at different visits). Exploratory tool \u2014 confirm signals with validated ICH-E14 analyses.";
+    this.footnote.textContent = "Absolute rows use each participant\u2019s maximum post-baseline value; change rows use the maximum post-baseline change (they may fall at different visits).";
   }
   /**
    * Select one participant from the outlier scatter (#99, PPRF-QT-001): set
@@ -29181,7 +29850,7 @@ function enumOr(value, allowed, key) {
 }
 function syncSettings11(settings = {}) {
   const synced = { ...DEFAULT_SETTINGS11, ...settings };
-  synced.filters = arrayify9(synced.filters).map((value) => fieldSpec9(value)).filter((spec) => spec.value_col);
+  synced.filters = arrayify9(synced.filters).map((value) => normalizeFilterSpec(value)).filter((spec) => spec.value_col);
   synced.details = arrayify9(synced.details).map((value) => fieldSpec9(value)).filter((spec) => spec.value_col);
   synced.measure_values = {
     ...DEFAULT_SETTINGS11.measure_values,
@@ -29416,10 +30085,10 @@ function ulnBandPlugin(instance) {
         ctx.stroke();
         ctx.setLineDash([]);
       } else {
-        const upper = clamp(yOf(range.max));
+        const upper8 = clamp(yOf(range.max));
         const lower = clamp(yOf(range.min));
         ctx.fillStyle = "rgba(148, 163, 184, 0.22)";
-        ctx.fillRect(left, upper, right - left, lower - upper);
+        ctx.fillRect(left, upper8, right - left, lower - upper8);
       }
       ctx.fillStyle = DIVIDER_COLOR;
       ctx.font = "11px system-ui, -apple-system, sans-serif";
@@ -29576,7 +30245,7 @@ function applyFilters8(subjects, filters) {
   );
   if (!active.length) return [...subjects || []];
   return (subjects || []).filter(
-    (subject) => active.every(([col, value]) => String(subject.raw ? subject.raw[col] : "") === String(value))
+    (subject) => active.every(([col, value]) => filterMatches(subject.raw ? subject.raw[col] : "", value))
   );
 }
 function buildWaterfall(cleanRows, settings, { removed = 0, filters = {} } = {}) {
@@ -29800,7 +30469,7 @@ var SafetyHepWaterfall = class {
       summary: this.settings.summary,
       placeboArm: this.settings.placebo_arm,
       activeArm: active && active.length === 1 ? active[0] : "",
-      filters: {},
+      filters: initFilterState(this.settings.filters),
       selectedIds: []
     };
   }
@@ -30140,16 +30809,20 @@ var SafetyHepWaterfall = class {
     if (filterSpecs.length) {
       const filterSection = addSection("Filters");
       filterSpecs.forEach((filter) => {
-        const select = addControl(filter.label, document.createElement("select"), filterSection);
-        option(select, "", "All", !this.state.filters[filter.value_col]);
-        unique6(this.cleanRows.map((row) => row[filter.value_col])).map(String).sort().forEach(
-          (value) => option(select, value, value, this.state.filters[filter.value_col] === value)
+        const values = unique6(this.cleanRows.map((row) => row[filter.value_col])).map(String).sort();
+        addControl(
+          filter.label,
+          renderFilterControl({
+            spec: filter,
+            values,
+            selected: this.state.filters[filter.value_col],
+            onChange: (next) => {
+              this.state.filters[filter.value_col] = next;
+              this.render();
+            }
+          }),
+          filterSection
         );
-        select.onchange = () => {
-          if (select.value) this.state.filters[filter.value_col] = select.value;
-          else delete this.state.filters[filter.value_col];
-          this.render();
-        };
       });
     }
     const reset = createElement("button", "hwf-reset", "Reset chart");
@@ -30566,11 +31239,13 @@ function syncSettings12(settings) {
   synced.units = syncUnits(settings ? settings.units : void 0);
   synced.measure_values = { ...DEFAULT_SETTINGS12.measure_values, ...synced.measure_values || {} };
   synced.zone_labels = synced.zone_labels === "hidden" ? "hidden" : "shown";
-  synced.filters = arrayify10(synced.filters).map((filter) => fieldSpec10(filter)).filter((filter) => filter.value_col);
+  synced.filters = arrayify10(synced.filters).map((filter) => normalizeFilterSpec(filter)).filter((filter) => filter.value_col);
   const suppliedDetails = arrayify10(synced.details).map((detail) => fieldSpec10(detail)).filter((detail) => detail.value_col);
   const merged = [
     { value_col: synced.id_col, label: "Participant ID" },
-    ...synced.filters.filter((filter) => filter.value_col !== synced.id_col)
+    // Listing columns, not filters: take only the column and its label, so the
+    // filter contract's start/all/multiple keys do not leak into the listing.
+    ...synced.filters.filter((filter) => filter.value_col !== synced.id_col).map((filter) => fieldSpec10(filter))
   ];
   suppliedDetails.forEach((detail) => {
     if (!merged.some((existing) => existing.value_col === detail.value_col)) merged.push(detail);
@@ -30930,9 +31605,7 @@ function structureData(rawData, settings) {
 }
 function applyFilters9(points, filters) {
   return points.filter(
-    (point) => Object.entries(filters || {}).every(
-      ([key, value]) => !value || String(point.meta[key]) === String(value)
-    )
+    (point) => Object.entries(filters || {}).every(([key, value]) => filterMatches(point.meta[key], value))
   );
 }
 function stageSummary(points) {
@@ -31090,8 +31763,8 @@ function selectionBorders2(count2, selectedIndex) {
 }
 function formatSigned2(value, digits = 2) {
   if (!Number.isFinite(value)) return "";
-  const text = formatNumber7(Math.abs(value), digits);
-  return value < 0 ? `\u2212${text}` : `+${text}`;
+  const text3 = formatNumber7(Math.abs(value), digits);
+  return value < 0 ? `\u2212${text3}` : `+${text3}`;
 }
 function pointTooltip3(point, settings, measure) {
   const unit = point.unit;
@@ -31216,8 +31889,24 @@ var SafetyNepExplorer = class {
     this.charts = [];
     this.chart = null;
     this.participantsSelected = [];
-    this.state = { filters: {}, zoneLabels: this.settings.zone_labels, selectedId: null };
+    this.initialZoneLabels = this.settings.zone_labels;
+    this.state = this.seedState();
     this.renderShell();
+  }
+  /**
+   * The opening control state, derived from the settings alone: the configured
+   * filter start values and the configured stage-zone-label choice. Nothing
+   * here depends on the bound data, so the "Reset chart" control
+   * (NEP-CTRL-001) can rebuild it at any point in the session.
+   * @returns {Object} A fresh control state.
+   * @private
+   */
+  seedState() {
+    return {
+      filters: initFilterState(this.settings.filters),
+      zoneLabels: this.initialZoneLabels,
+      selectedId: null
+    };
   }
   /**
    * Build the static DOM shell the chart and summary table render into.
@@ -31265,7 +31954,10 @@ var SafetyNepExplorer = class {
    * @returns {SafetyNepExplorer} The instance, for chaining.
    */
   setSettings(settings) {
-    if ("zone_labels" in settings) this.state.zoneLabels = settings.zone_labels;
+    if ("zone_labels" in settings) {
+      this.state.zoneLabels = settings.zone_labels;
+      this.initialZoneLabels = settings.zone_labels;
+    }
     this.settings = syncSettings12({ ...this.settings, ...settings });
     this.settings.zone_labels = this.state.zoneLabels;
     if (this.rawData.length) this.validateAndCleanData();
@@ -31308,7 +32000,7 @@ var SafetyNepExplorer = class {
    */
   buildControls() {
     this.controls.innerHTML = "";
-    const { addSection, addControl } = controlBuilders(this.controls);
+    const { addSection, addControl, addReset } = controlBuilders(this.controls);
     const filterSpecs = this.settings.filters.filter((filter) => {
       const exists = this.rawData.some((row) => row[filter.value_col] !== void 0);
       if (!exists)
@@ -31320,15 +32012,20 @@ var SafetyNepExplorer = class {
     if (filterSpecs.length) {
       const filterParent = addSection("Filters");
       filterSpecs.forEach((filter) => {
-        const select = addControl(filter.label, document.createElement("select"), filterParent);
-        option(select, "__all__", "All", !this.state.filters[filter.value_col]);
-        unique9(this.allPoints.map((point) => point.meta[filter.value_col])).sort().forEach(
-          (value) => option(select, value, value, this.state.filters[filter.value_col] === value)
+        const values = unique9(this.allPoints.map((point) => point.meta[filter.value_col])).sort();
+        addControl(
+          filter.label,
+          renderFilterControl({
+            spec: filter,
+            values,
+            selected: this.state.filters[filter.value_col],
+            onChange: (next) => {
+              this.state.filters[filter.value_col] = next;
+              this.render();
+            }
+          }),
+          filterParent
         );
-        select.onchange = () => {
-          this.state.filters[filter.value_col] = select.value === "__all__" ? null : select.value;
-          this.render();
-        };
       });
     }
     const displayParent = addSection("Display");
@@ -31343,6 +32040,12 @@ var SafetyNepExplorer = class {
     const inline = createElement("div", "sv-control-inline");
     inline.append(zoneLabels, document.createTextNode("Show"));
     addControl("Stage zone labels", inline, displayParent);
+    addReset(() => {
+      this.state = this.seedState();
+      this.settings.zone_labels = this.state.zoneLabels;
+      this.buildControls();
+      this.render();
+    });
   }
   /**
    * Redraw everything from the current data, settings and control state.
@@ -31545,7 +32248,7 @@ var SafetyNepExplorer = class {
     if (!point) return;
     this.state.selectedId = point.id;
     this.restyle(index);
-    const details = this.settings.details.filter((detail) => detail.value_col !== this.settings.id_col).map((detail) => `${detail.label}: ${point.meta[detail.value_col]}`).filter((text) => !/: $/.test(text));
+    const details = this.settings.details.filter((detail) => detail.value_col !== this.settings.id_col).map((detail) => `${detail.label}: ${point.meta[detail.value_col]}`).filter((text3) => !/: $/.test(text3));
     this.mainAnnotation.textContent = `${point.id} \u2014 ${stageLabel(point.stage)}`;
     this.footnote.textContent = [
       `${point.id}: baseline ${formatNumber7(point.baseline)} ${point.unit} (${point.baselineVisit}), maximum ${formatNumber7(point.max)} ${point.unit} (${point.maxVisit}), ${formatNumber7(point.fold)}\xD7 baseline.`,
@@ -31657,7 +32360,7 @@ function syncSettings13(settings) {
   synced.time_unit = typeof synced.time_unit === "string" && synced.time_unit ? synced.time_unit : "day";
   synced.endpoint_label = typeof synced.endpoint_label === "string" && synced.endpoint_label ? synced.endpoint_label : DEFAULT_SETTINGS13.endpoint_label;
   synced.event_filters = arrayify11(synced.event_filters).map((filter) => fieldSpec11(filter)).filter((filter) => filter.value_col);
-  synced.filters = arrayify11(synced.filters).map((filter) => fieldSpec11(filter)).filter((filter) => filter.value_col);
+  synced.filters = arrayify11(synced.filters).map((filter) => normalizeFilterSpec(filter)).filter((filter) => filter.value_col);
   return synced;
 }
 
@@ -31896,18 +32599,18 @@ var POOLED_GROUP = "All participants";
 function unique10(values) {
   return [...new Set(values)];
 }
-function applyEventFilters(events, filters) {
+function applyEventFilters(events2, filters) {
   const active = Object.entries(filters || {}).filter(([, values]) => values != null);
-  if (!active.length) return events;
+  if (!active.length) return events2;
   const sets = active.map(([column, values]) => [column, new Set(values.map(String))]);
-  return events.filter((row) => sets.every(([column, set2]) => set2.has(String(row[column]))));
+  return events2.filter((row) => sets.every(([column, set2]) => set2.has(String(row[column]))));
 }
 function applyFilters10(rows, filters) {
   const active = Object.entries(filters || {}).filter(([, value]) => value != null);
   if (!active.length) return rows;
-  return rows.filter((row) => active.every(([column, value]) => String(row[column]) === value));
+  return rows.filter((row) => active.every(([column, value]) => filterMatches(row[column], value)));
 }
-function deriveObservations(events, population, settings) {
+function deriveObservations(events2, population, settings) {
   const droppedEvents = [];
   const droppedPopulation = [];
   const dropEvent = (row, reason) => droppedEvents.push({ ...row, [DROP_REASON_COLUMN2]: reason });
@@ -31926,7 +32629,7 @@ function deriveObservations(events, population, settings) {
     }
     participants.set(key, { row, first: null });
   }
-  for (const row of events) {
+  for (const row of events2) {
     const id = String(row[settings.id_col] ?? "");
     const entry = participants.get(id);
     if (!entry) {
@@ -31981,9 +32684,9 @@ function deriveObservations(events, population, settings) {
   }
   return { observations, droppedEvents, droppedPopulation };
 }
-function structureData2(events, population, settings) {
+function structureData2(events2, population, settings) {
   const { observations, droppedEvents, droppedPopulation } = deriveObservations(
-    Array.isArray(events) ? events : [],
+    Array.isArray(events2) ? events2 : [],
     Array.isArray(population) ? population : [],
     settings
   );
@@ -32242,9 +32945,9 @@ function riskTablePlugin(context) {
     }
   };
 }
-function truncate(ctx, text, width) {
-  if (ctx.measureText(text).width <= width) return text;
-  let out = text;
+function truncate(ctx, text3, width) {
+  if (ctx.measureText(text3).width <= width) return text3;
+  let out = text3;
   while (out.length > 1 && ctx.measureText(`${out}\u2026`).width > width) out = out.slice(0, -1);
   return `${out}\u2026`;
 }
@@ -32261,13 +32964,7 @@ var SafetyTimeToEvent = class {
     this.structured = null;
     this.chart = null;
     this.participantsSelected = [];
-    this.state = {
-      eventFilters: {},
-      filters: {},
-      direction: this.settings.direction,
-      ci: this.settings.ci,
-      selected: null
-    };
+    this.state = this.seedState();
     Object.assign(
       this,
       renderShell(this.element, {
@@ -32276,6 +32973,24 @@ var SafetyTimeToEvent = class {
       })
     );
     this.chartWrap.style.height = `${this.settings.height}px`;
+  }
+  /**
+   * The opening control state, derived from the settings alone: an empty
+   * endpoint composer, the configured population-filter start values, and the
+   * configured orientation and confidence band. Nothing here depends on the
+   * bound data, so the "Reset chart" control (TTE-CTRL-001) can rebuild it at
+   * any point in the session.
+   * @returns {Object} A fresh control state.
+   * @private
+   */
+  seedState() {
+    return {
+      eventFilters: {},
+      filters: initFilterState(this.settings.filters),
+      direction: this.settings.direction,
+      ci: this.settings.ci,
+      selected: null
+    };
   }
   /**
    * Load data and render: an alias for setData that keeps the two-step
@@ -32346,7 +33061,7 @@ var SafetyTimeToEvent = class {
    */
   buildControls() {
     this.controls.innerHTML = "";
-    const { addSection, addControl } = controlBuilders(this.controls);
+    const { addSection, addControl, addReset } = controlBuilders(this.controls);
     const specs = this.eventFilterSpecs();
     if (specs.length) {
       const eventParent = addSection("Event definition");
@@ -32376,17 +33091,22 @@ var SafetyTimeToEvent = class {
     if (filterSpecs.length) {
       const filterParent = addSection("Filters");
       filterSpecs.forEach((filter) => {
-        const select = addControl(filter.label, document.createElement("select"), filterParent);
-        option(select, "__all__", "All", !this.state.filters[filter.value_col]);
-        unique10(
+        const values = unique10(
           this.rawPopulation.map((row) => row[filter.value_col]).filter((v) => v !== void 0)
-        ).map(String).sort().forEach(
-          (value) => option(select, value, value, this.state.filters[filter.value_col] === value)
+        ).map(String).sort();
+        addControl(
+          filter.label,
+          renderFilterControl({
+            spec: filter,
+            values,
+            selected: this.state.filters[filter.value_col],
+            onChange: (next) => {
+              this.state.filters[filter.value_col] = next;
+              this.render();
+            }
+          }),
+          filterParent
         );
-        select.onchange = () => {
-          this.state.filters[filter.value_col] = select.value === "__all__" ? null : select.value;
-          this.render();
-        };
       });
     }
     const displayParent = addSection("Display");
@@ -32417,6 +33137,11 @@ var SafetyTimeToEvent = class {
     const inline = createElement("div", "sv-control-inline");
     inline.append(ci, document.createTextNode("Show"));
     addControl("Pointwise 95% CI band", inline, displayParent);
+    addReset(() => {
+      this.state = this.seedState();
+      this.buildControls();
+      this.render();
+    });
   }
   /**
    * Redraw everything from the current data, settings and control state.
@@ -32464,7 +33189,7 @@ var SafetyTimeToEvent = class {
   updateNotes() {
     this.notes.innerHTML = "";
     const { groups, total, droppedEvents, droppedPopulation } = this.structured;
-    const events = groups.reduce(
+    const events2 = groups.reduce(
       (sum, group) => sum + group.estimate.points.reduce((s, p) => s + p.events, 0),
       0
     );
@@ -32472,7 +33197,7 @@ var SafetyTimeToEvent = class {
       createElement(
         "span",
         null,
-        `${this.settings.endpoint_label}: ${total} participant${total === 1 ? "" : "s"} in ${groups.length} group${groups.length === 1 ? "" : "s"}; ${events} event${events === 1 ? "" : "s"}, ${total - events} censored.`
+        `${this.settings.endpoint_label}: ${total} participant${total === 1 ? "" : "s"} in ${groups.length} group${groups.length === 1 ? "" : "s"}; ${events2} event${events2 === 1 ? "" : "s"}, ${total - events2} censored.`
       )
     );
     this.notes.append(createElement("span", null, this.filterSummary()));
@@ -32733,6 +33458,11130 @@ function timeToEvent(element = "body", settings = {}) {
   return new SafetyTimeToEvent(element, settings);
 }
 
+// src/patient-journey-explorer/configure.js
+var LANE_KEYS = [
+  "exposure",
+  "doseChanges",
+  "adverseEvents",
+  "labs",
+  "conMeds",
+  "medicalHistory",
+  "disposition"
+];
+var DEFAULT_SETTINGS14 = {
+  // ---- identity / input form ----
+  id_col: "USUBJID",
+  domain_col: "DOMAIN",
+  subject: null,
+  // ---- time ----
+  time: {
+    mode: "day",
+    ref_date_col: "TRTSDT",
+    allow_date_mode: true
+  },
+  context_window_days: 30,
+  // ---- exposure (EX) ----
+  ex_trt_col: "EXTRT",
+  ex_dose_col: "EXDOSE",
+  ex_dosu_col: "EXDOSU",
+  ex_stdy_col: ["ASTDY", "EXSTDY"],
+  ex_endy_col: ["AENDY", "EXENDY"],
+  ex_stdtc_col: "EXSTDTC",
+  // ---- adverse events (AE) ----
+  ae_term_col: "AETERM",
+  ae_decod_col: "AEDECOD",
+  ae_soc_col: "AEBODSYS",
+  ae_stdy_col: ["ASTDY", "AESTDY"],
+  ae_endy_col: ["AENDY", "AEENDY"],
+  ae_sev_col: "AESEV",
+  ae_ser_col: "AESER",
+  ae_rel_col: "AEREL",
+  ae_stdtc_col: "AESTDTC",
+  ae_severity_values: ["MILD", "MODERATE", "SEVERE"],
+  ae_serious_value: "Y",
+  // Terminal state of an event whose end day is blank (D16): ongoing only
+  // when the outcome column says so, otherwise "end not recorded".
+  ae_out_col: "AEOUT",
+  ae_ongoing_values: ["NOT RECOVERED/NOT RESOLVED", "RECOVERING/RESOLVING", "ONGOING", "N"],
+  // ---- labs (LB) ----
+  lb_test_col: "LBTEST",
+  lb_testcd_col: "LBTESTCD",
+  lb_value_col: "LBSTRESN",
+  lb_lo_col: "LBSTNRLO",
+  lb_hi_col: "LBSTNRHI",
+  lb_day_col: ["LBDY", "ADY"],
+  lb_nrind_col: "LBNRIND",
+  lb_unit_col: "LBSTRESU",
+  lb_dtc_col: "LBDTC",
+  lb_tests: [
+    "Alanine Aminotransferase",
+    "Aspartate Aminotransferase",
+    "Bilirubin",
+    "Alkaline Phosphatase"
+  ],
+  lb_normal_value: "NORMAL",
+  lb_baseline_flag_col: "ABLFL",
+  lb_baseline_flag_value: "Y",
+  lb_baseline_day: 1,
+  lb_change_factor: 2,
+  // ---- con-meds (CM) ----
+  cm_trt_col: "CMTRT",
+  cm_class_col: "CMCLAS",
+  cm_dose_col: "CMDOSE",
+  cm_route_col: "CMROUTE",
+  cm_stdy_col: ["ASTDY", "CMSTDY"],
+  cm_endy_col: ["AENDY", "CMENDY"],
+  cm_stdtc_col: "CMSTDTC",
+  cm_uncoded_value: "UNCODED",
+  cm_out_col: null,
+  cm_ongoing_values: ["ONGOING", "Y", "CONTINUING"],
+  // ---- medical history (MH) ----
+  mh_term_col: "MHTERM",
+  mh_decod_col: "MHDECOD",
+  mh_cat_col: "MHCAT",
+  mh_day_col: "MHDY",
+  mh_day_source: "collection",
+  mh_onset_stdy_col: ["ASTDY", "MHSTDY"],
+  mh_strtpt_col: "MHSTRTPT",
+  mh_enrtpt_col: "MHENRTPT",
+  mh_onset_dtc_col: "MHSTDTC",
+  // ---- disposition (DS) ----
+  ds_decod_col: "DSDECOD",
+  ds_term_col: "DSTERM",
+  ds_cat_col: "DSCAT",
+  ds_stdy_col: "DSSTDY",
+  ds_dtc_col: "DSSTDTC",
+  ds_reference_cats: ["DISPOSITION EVENT"],
+  // ---- lanes ----
+  lanes: {
+    exposure: { enabled: true, label: "Exposure", group: "treatment" },
+    doseChanges: { enabled: true, label: "Dose changes", group: "treatment" },
+    adverseEvents: { enabled: true, label: "Adverse events", group: "events" },
+    labs: { enabled: true, label: "Labs", group: "events" },
+    conMeds: { enabled: true, label: "Con-meds", group: "context" },
+    medicalHistory: { enabled: true, label: "Medical history (at screening)", group: "context" },
+    disposition: { enabled: true, label: "Disposition", group: "context" }
+  },
+  lane_groups: [
+    { key: "treatment", label: "Treatment", collapsed: false },
+    { key: "events", label: "Events and labs", collapsed: false },
+    { key: "context", label: "Context", collapsed: false }
+  ],
+  // ---- filters ----
+  filters: [
+    { domain: "AE", value_col: "AESER", label: "Serious only", type: "flag", flag_value: "Y" },
+    {
+      domain: "LB",
+      value_col: "LBNRIND",
+      label: "Abnormal labs only",
+      type: "flag",
+      flag_value: "__abnormal__"
+    },
+    { domain: "CM", value_col: "CMCLAS", label: "ATC class", multiple: true }
+  ],
+  // ---- traceability ----
+  source_url_template: null,
+  source_url_label: "Open source record",
+  // ---- callbacks ----
+  on_select_subject: null,
+  on_anchor_event: null,
+  on_context_change: null,
+  narratives: null,
+  on_narrative_action: null,
+  // ---- layout ----
+  row_height: 26,
+  row_height_min: 18,
+  max_rows_per_lane: 12,
+  lab_height: 96,
+  lab_height_min: 64,
+  height: 760,
+  fit_to_height: true,
+  width: "100%",
+  page_size: 10
+};
+var DOMAIN_CODES = ["EX", "AE", "LB", "CM", "MH", "DS"];
+var TOP_LEVEL_ALIASES = {
+  contextWindowDays: "context_window_days",
+  sourceUrlTemplate: "source_url_template",
+  onSelectSubject: "on_select_subject",
+  onAnchorEvent: "on_anchor_event",
+  onContextChange: "on_context_change",
+  onNarrativeAction: "on_narrative_action",
+  labTests: "lb_tests",
+  idCol: "id_col",
+  domainCol: "domain_col",
+  rowHeight: "row_height",
+  pageSize: "page_size",
+  maxRowsPerLane: "max_rows_per_lane",
+  labHeight: "lab_height",
+  laneGroups: "lane_groups"
+};
+var LANE_LIFTED_ALIASES = {
+  severityCol: "ae_sev_col",
+  seriousCol: "ae_ser_col",
+  tests: "lb_tests"
+};
+var LANE_IGNORED_KEYS = ["domain", "derivedFrom", "smallMultiple"];
+var LANE_DISPLAY_KEYS = ["enabled", "label", "group"];
+var TIME_KEYS = ["mode", "ref_date_col", "allow_date_mode"];
+var TIME_PATTERN_KEYS = ["day_col", "date_col"];
+var CHAIN_KEYS = [
+  "ex_stdy_col",
+  "ex_endy_col",
+  "ae_stdy_col",
+  "ae_endy_col",
+  "lb_day_col",
+  "cm_stdy_col",
+  "cm_endy_col",
+  "mh_onset_stdy_col",
+  "ds_stdy_col"
+];
+var DAY_PATTERN_TARGETS = {
+  EX: "ex_stdy_col",
+  AE: "ae_stdy_col",
+  LB: "lb_day_col",
+  CM: "cm_stdy_col",
+  MH: "mh_day_col",
+  DS: "ds_stdy_col"
+};
+var DATE_PATTERN_TARGETS = {
+  EX: "ex_stdtc_col",
+  AE: "ae_stdtc_col",
+  LB: "lb_dtc_col",
+  CM: "cm_stdtc_col",
+  MH: "mh_onset_dtc_col",
+  DS: "ds_dtc_col"
+};
+var UPPER_LISTS = ["ds_reference_cats", "ae_ongoing_values", "cm_ongoing_values"];
+var POSITIVE_INTS = [
+  "row_height",
+  "row_height_min",
+  "lab_height",
+  "lab_height_min",
+  "height",
+  "max_rows_per_lane",
+  "page_size"
+];
+var NARRATIVE_SLOT_NAMES = [
+  "subjectSummary",
+  "eventContext",
+  "labTrajectory",
+  "doseJourney",
+  "disposition"
+];
+var CALLBACKS = [
+  "on_select_subject",
+  "on_anchor_event",
+  "on_context_change",
+  "on_narrative_action"
+];
+var NARRATIVE_SLOTS = NARRATIVE_SLOT_NAMES;
+var warn = (message) => console.warn(`patient-journey-explorer: ${message}`);
+var isObject2 = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+var stringList = (value) => arrayify(value).map(String);
+var unique11 = (list2) => [...new Set(list2)];
+function positiveInt(value, fallback) {
+  const n = Math.floor(Number(value));
+  return Number.isFinite(n) && n > 0 ? n : fallback;
+}
+function applyTopLevelAliases(raw) {
+  const out = {};
+  for (const [key, value] of Object.entries(raw)) {
+    const canonical = TOP_LEVEL_ALIASES[key];
+    if (!canonical) {
+      out[key] = value;
+      continue;
+    }
+    if (raw[canonical] !== void 0) continue;
+    warn(`setting "${key}" is an alias; use "${canonical}".`);
+    out[canonical] = value;
+  }
+  return out;
+}
+function syncLanes(input, synced, raw) {
+  const lanes = {};
+  for (const key of LANE_KEYS) lanes[key] = { ...DEFAULT_SETTINGS14.lanes[key] };
+  if (isObject2(input)) {
+    for (const [key, value] of Object.entries(input)) {
+      if (!LANE_KEYS.includes(key)) {
+        warn(`lanes.${key} is not a lane; the known lanes are ${LANE_KEYS.join(", ")}.`);
+        continue;
+      }
+      if (value === null) {
+        lanes[key].enabled = false;
+        continue;
+      }
+      if (!isObject2(value)) continue;
+      for (const [laneKey, laneValue] of Object.entries(value)) {
+        if (LANE_DISPLAY_KEYS.includes(laneKey)) {
+          if (laneKey === "enabled") lanes[key].enabled = laneValue;
+          else if (typeof laneValue === "string" && laneValue.trim())
+            lanes[key][laneKey] = laneValue;
+          continue;
+        }
+        const canonical = LANE_LIFTED_ALIASES[laneKey];
+        if (canonical) {
+          if (raw[canonical] === void 0) {
+            warn(`lanes.${key}.${laneKey} is an alias; use the top-level "${canonical}".`);
+            synced[canonical] = laneValue;
+          }
+          continue;
+        }
+        if (!LANE_IGNORED_KEYS.includes(laneKey)) {
+          warn(`lanes.${key}.${laneKey} is not a lane setting and was ignored.`);
+        }
+      }
+    }
+  }
+  for (const key of LANE_KEYS) lanes[key].enabled = Boolean(lanes[key].enabled);
+  return lanes;
+}
+function syncLaneGroupMembership(lanes, groups) {
+  const keys = groups.map((group) => group.key);
+  for (const key of LANE_KEYS) {
+    const lane = lanes[key];
+    lane.group = typeof lane.group === "string" ? lane.group.trim() : "";
+    if (keys.includes(lane.group)) continue;
+    const preferred = DEFAULT_SETTINGS14.lanes[key].group;
+    const fallback = keys.includes(preferred) ? preferred : keys[0];
+    warn(
+      `lanes.${key}.group "${lane.group}" is not a lane_groups key; the lane was placed in "${fallback}".`
+    );
+    lane.group = fallback;
+  }
+}
+function syncLaneGroups(input) {
+  const groups = arrayify(input).map((group) => {
+    if (!isObject2(group) || typeof group.key !== "string" || !group.key.trim()) return null;
+    const key = group.key.trim();
+    return {
+      key,
+      label: typeof group.label === "string" && group.label.trim() ? group.label : key,
+      collapsed: Boolean(group.collapsed)
+    };
+  }).filter(Boolean);
+  return groups.length ? groups : DEFAULT_SETTINGS14.lane_groups.map((group) => ({ ...group }));
+}
+function syncTime(input, synced) {
+  const time = { ...DEFAULT_SETTINGS14.time };
+  if (isObject2(input)) {
+    for (const [key, value] of Object.entries(input)) {
+      if (TIME_KEYS.includes(key)) {
+        time[key] = value;
+      } else if (TIME_PATTERN_KEYS.includes(key)) {
+        expandPattern(key, value, synced);
+      } else {
+        warn(
+          `time.${key} is not a time setting; the known keys are ${[...TIME_KEYS, ...TIME_PATTERN_KEYS].join(", ")}.`
+        );
+      }
+    }
+  }
+  time.allow_date_mode = Boolean(time.allow_date_mode);
+  time.mode = time.mode === "date" && time.allow_date_mode ? "date" : "day";
+  time.ref_date_col = typeof time.ref_date_col === "string" && time.ref_date_col.trim() ? time.ref_date_col : DEFAULT_SETTINGS14.time.ref_date_col;
+  return time;
+}
+function expandPattern(key, value, synced) {
+  if (typeof value !== "string" || !value.includes("--")) {
+    warn(`time.${key} must contain "--" (a generic pattern such as "--DY"); ignored.`);
+    return;
+  }
+  const targets = key === "day_col" ? DAY_PATTERN_TARGETS : DATE_PATTERN_TARGETS;
+  warn(`time.${key} is an alias; it expands "${value}" onto each domain's column chain.`);
+  for (const [domain, target] of Object.entries(targets)) {
+    const expanded = value.replace(/--/g, domain);
+    synced[target] = unique11([expanded, ...stringList(synced[target])]);
+  }
+}
+function syncFilters(input) {
+  return arrayify(input).map((spec) => {
+    if (typeof spec === "string") {
+      warn(`filter "${spec}" has no domain and was dropped; pass { domain, value_col }.`);
+      return null;
+    }
+    if (!isObject2(spec)) return null;
+    const { col, ...rest } = spec;
+    if (rest.value_col === void 0 && col !== void 0) {
+      warn(`filters[].col is an alias; use "value_col" (${spec.label || col}).`);
+      rest.value_col = col;
+    }
+    if (!rest.value_col) {
+      warn(`filter "${spec.label || "(unlabelled)"}" names no value_col and was dropped.`);
+      return null;
+    }
+    const domain = String(rest.domain ?? "").trim().toUpperCase();
+    if (!DOMAIN_CODES.includes(domain)) {
+      warn(
+        `filter "${rest.label || rest.value_col}" has no recognized domain (${DOMAIN_CODES.join(", ")}) and was dropped.`
+      );
+      return null;
+    }
+    return { ...normalizeFilterSpec(rest), domain };
+  }).filter(Boolean);
+}
+function syncNarratives(value) {
+  if (!isObject2(value)) return null;
+  const slots = {};
+  for (const name of NARRATIVE_SLOTS) {
+    if (typeof value[name] === "function") slots[name] = value[name];
+  }
+  return Object.keys(slots).length ? slots : null;
+}
+function syncSettings14(settings) {
+  const raw = isObject2(settings) ? settings : {};
+  const aliased = applyTopLevelAliases(raw);
+  const synced = { ...DEFAULT_SETTINGS14, ...aliased };
+  synced.lanes = syncLanes(aliased.lanes, synced, aliased);
+  synced.lane_groups = syncLaneGroups(synced.lane_groups);
+  syncLaneGroupMembership(synced.lanes, synced.lane_groups);
+  for (const key of CHAIN_KEYS) synced[key] = stringList(synced[key]);
+  synced.time = syncTime(aliased.time, synced);
+  synced.filters = syncFilters(synced.filters);
+  const windowDays = synced.context_window_days;
+  synced.context_window_days = windowDays === null || windowDays === void 0 || windowDays === "" ? DEFAULT_SETTINGS14.context_window_days : Number.isFinite(Number(windowDays)) ? Math.max(0, Math.floor(Number(windowDays))) : DEFAULT_SETTINGS14.context_window_days;
+  synced.lb_tests = stringList(synced.lb_tests);
+  synced.ae_severity_values = stringList(synced.ae_severity_values);
+  if (!synced.ae_severity_values.length)
+    synced.ae_severity_values = [...DEFAULT_SETTINGS14.ae_severity_values];
+  const factor = Number(synced.lb_change_factor);
+  synced.lb_change_factor = Number.isFinite(factor) && factor > 1 ? factor : DEFAULT_SETTINGS14.lb_change_factor;
+  const baselineDay = Number(synced.lb_baseline_day);
+  synced.lb_baseline_day = Number.isFinite(baselineDay) ? Math.trunc(baselineDay) : DEFAULT_SETTINGS14.lb_baseline_day;
+  for (const key of CALLBACKS) synced[key] = typeof synced[key] === "function" ? synced[key] : null;
+  synced.narratives = syncNarratives(synced.narratives);
+  for (const key of POSITIVE_INTS) synced[key] = positiveInt(synced[key], DEFAULT_SETTINGS14[key]);
+  synced.fit_to_height = Boolean(synced.fit_to_height);
+  for (const key of UPPER_LISTS) {
+    synced[key] = stringList(synced[key]).map((value) => value.trim().toUpperCase()).filter(Boolean);
+  }
+  if (!synced.ds_reference_cats.length) {
+    warn("ds_reference_cats is empty, so every disposition row draws a cross-lane rule.");
+  }
+  if (synced.mh_day_source !== "onset") {
+    if (synced.mh_day_source !== "collection") {
+      warn(
+        `mh_day_source "${synced.mh_day_source}" is not 'collection' or 'onset'; using 'collection'.`
+      );
+    }
+    synced.mh_day_source = "collection";
+  }
+  synced.subject = synced.subject === null || synced.subject === void 0 || synced.subject === "" ? null : String(synced.subject);
+  synced.source_url_template = typeof synced.source_url_template === "string" && synced.source_url_template.trim() ? synced.source_url_template : null;
+  synced.source_url_label = typeof synced.source_url_label === "string" && synced.source_url_label.trim() ? synced.source_url_label : DEFAULT_SETTINGS14.source_url_label;
+  return synced;
+}
+
+// src/data/schema/patient-journey-explorer.json
+var patient_journey_explorer_default = {
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "https://raw.githubusercontent.com/jwildfire/safety.viz/main/src/data/schema/patient-journey-explorer.json",
+  title: "safety.viz patient-journey-explorer data contract",
+  description: "One subject's safety record across six CDISC domains \u2014 exposure (EX), adverse events (AE), labs (LB), concomitant medications (CM), medical history (MH) and disposition (DS) \u2014 drawn as stacked lanes on one shared study-day axis. Data arrives either as an object of per-domain arrays (keys matched case-insensitively: { ae, lb, ex, cm, mh, ds }) or as one merged array whose rows carry a domain column named by settings.domain_col (PJE-DATA-001). No domain is individually required: any one is enough to draw a partial journey, and absent domains render an explanatory empty lane (PJE-DATA-005). Column names are supplied by the settings mapping; day columns accept an ordered fallback chain resolved per row (PJE-DATA-007). Rows that cannot be used are dropped with a named, counted, exportable reason (PJE-DATA-003); rows with no usable study day are kept and named in prose rather than dropped (PJE-LANE-008). This schema documents the contract and names, per domain, the settings keys whose columns must be present (requiredSettings); it validates no rows \u2014 row-level rules are the module's own drop table.",
+  type: "object",
+  required: ["settings"],
+  properties: {
+    ex: {
+      type: "array",
+      items: { $ref: "#/$defs/exRow" },
+      requiredSettings: ["id_col", "ex_stdy_col"],
+      description: "Exposure records (an ADEX or EX projection), one row per dosing record: the participant id, the treatment name (ex_trt_col), the dose and unit (ex_dose_col, ex_dosu_col), the start and end study days (ex_stdy_col, ex_endy_col \u2014 fallback chains, ASTDY/EXSTDY and AENDY/EXENDY by default) and optionally the start date (ex_stdtc_col). The exposure lane draws one bar segment per record; consecutive records with different doses derive the dose-change events (PJE-DERIV-001, PJE-LANE-006). A row with both treatment and dose blank is dropped with a named reason; a row with no usable start day is kept but not drawn."
+    },
+    ae: {
+      type: "array",
+      items: { $ref: "#/$defs/aeRow" },
+      requiredSettings: ["id_col", "ae_stdy_col"],
+      description: "Adverse-event records (an ADAE or AE projection), one row per event: the participant id, the verbatim and preferred terms (ae_term_col, ae_decod_col), the body system (ae_soc_col), onset and resolution study days (ae_stdy_col, ae_endy_col \u2014 ASTDY/AESTDY and AENDY/AEENDY by default), severity, seriousness and relatedness (ae_sev_col, ae_ser_col, ae_rel_col), the outcome (ae_out_col, which decides whether a blank end day means ongoing or simply not recorded, D16) and optionally the onset date (ae_stdtc_col). Anchoring an event opens the \xB1N-day context window (PJE-ANCH-001). A row with both terms blank is dropped with a named reason; an end day before the start day is kept as a single-day mark and counted (PJE-DATA-008)."
+    },
+    lb: {
+      type: "array",
+      items: { $ref: "#/$defs/lbRow" },
+      requiredSettings: ["id_col", "lb_test_col", "lb_value_col", "lb_day_col"],
+      description: "Lab records (an ADLB or LB projection), one row per result: the participant id, the test name and code (lb_test_col, lb_testcd_col \u2014 lb_tests matches either), the numeric result and unit (lb_value_col, lb_unit_col), the reference range (lb_lo_col, lb_hi_col), the normal-range indicator (lb_nrind_col), the study day (lb_day_col \u2014 LBDY/ADY by default), the analysis-baseline flag (lb_baseline_flag_col, consulted first when resolving a test's baseline, D17) and optionally the collection date (lb_dtc_col). Each configured test draws as a small multiple with its reference band (PJE-LANE-005); a point is abnormal by flag when the indicator is present and not normal, or by change when it is at least lb_change_factor times, or at most 1/lb_change_factor of, the baseline (PJE-CTX-002). A row with a blank test name or a non-numeric result is dropped with a named reason."
+    },
+    cm: {
+      type: "array",
+      items: { $ref: "#/$defs/cmRow" },
+      requiredSettings: ["id_col", "cm_trt_col"],
+      description: "Concomitant-medication records (an ADCM or CM projection), one row per medication course: the participant id, the medication name (cm_trt_col), its class (cm_class_col; the uncoded value is kept as its own selectable bucket, PJE-FILT-003), optional dose and route (cm_dose_col, cm_route_col), start and end study days (cm_stdy_col, cm_endy_col \u2014 ASTDY/CMSTDY and AENDY/CMENDY by default), optionally an ongoing indicator (cm_out_col; none by default, so a blank end day is 'end not recorded' rather than asserted ongoing) and the start date (cm_stdtc_col). Con-meds active at an anchor are those started on or before it and not ended before it; one with no usable start day is never asserted active and is counted as not evaluated (PJE-CTX-001). A row with a blank name is dropped with a named reason."
+    },
+    mh: {
+      type: "array",
+      items: { $ref: "#/$defs/mhRow" },
+      requiredSettings: ["id_col"],
+      description: "Medical-history records (an ADMH or MH projection), one row per condition: the participant id, the verbatim and decoded terms (mh_term_col, mh_decod_col \u2014 the decode is preferred as the label because verbatim terms are often scrubbed), the category (mh_cat_col), the collection study day (mh_day_col, the screening visit, where the mark is drawn by default, D18), the onset study day, date and relative-timing text (mh_onset_stdy_col, mh_onset_dtc_col, mh_strtpt_col \u2014 named in the tooltip) and the end relative-timing text (mh_enrtpt_col; ONGOING adds 'still present'). Set mh_day_source to 'onset' to place marks at onset instead. A row with both terms blank is dropped with a named reason."
+    },
+    ds: {
+      type: "array",
+      items: { $ref: "#/$defs/dsRow" },
+      requiredSettings: ["id_col", "ds_decod_col"],
+      description: "Disposition records (a DS projection), one row per disposition event or milestone: the participant id, the decoded and verbatim terms (ds_decod_col, ds_term_col), the category (ds_cat_col), the study day (ds_stdy_col) and optionally the date (ds_dtc_col). Every row draws a mark in the disposition lane; only rows whose category is in ds_reference_cats (DISPOSITION EVENT by default) draw the full-height dashed rule across every lane (D19). A row with a blank decode is dropped with a named reason."
+    },
+    settings: {
+      type: "object",
+      description: "Column mappings and rendering options; merged onto the module's DEFAULT_SETTINGS, so only overrides need to be supplied. Column settings are flat, snake_case and domain-prefixed; the plan's camelCase spellings (contextWindowDays, onAnchorEvent, sourceUrlTemplate, lane-level severityCol/seriousCol/tests, filters[].col, time.day_col/date_col) are accepted as aliases and normalized with a console warning each (PJE-CFG-002).",
+      properties: {
+        id_col: {
+          type: "string",
+          default: "USUBJID",
+          description: "Participant identifier column, present in every domain; the subject picker lists its distinct values across all domains and the participantsSelected event carries it (PJE-SUBJ-001, PJE-EVT-002)."
+        },
+        domain_col: {
+          type: "string",
+          default: "DOMAIN",
+          description: "For the merged-array input form, the column whose value names each row's domain (AE, LB, EX, CM, MH, DS, or the ADaM spellings ADAE \u2026, case-insensitively); rows with any other value are dropped with a named reason (PJE-DATA-002)."
+        },
+        subject: {
+          type: ["string", "null"],
+          default: null,
+          description: "The subject to open on; null opens on the first subject in sorted order (PJE-SUBJ-001)."
+        },
+        time: {
+          type: "object",
+          description: "Time-axis configuration: mode ('day' or 'date', the opening display), ref_date_col ('TRTSDT', the column holding the date of study day 1, read from any row of any domain) and allow_date_mode (true; when false the calendar-date control is not offered). The plan's day_col / date_col keys are accepted as generic --DY / --DTC patterns expanded per domain (PJE-TIME-001, PJE-TIME-002).",
+          properties: {
+            mode: {
+              type: "string",
+              enum: ["day", "date"],
+              default: "day",
+              description: "The opening display mode: study day, or calendar date (only when allow_date_mode is true and a reference date resolves for the subject). The scale stays linear in days in both modes; date mode relabels ticks, tooltips and panel text (D7)."
+            },
+            ref_date_col: {
+              type: "string",
+              default: "TRTSDT",
+              description: "Column holding the date of study day 1 (first dose), read from any row of any domain and preferred over deriving the reference from a recorded --DTC date plus its study day (D30)."
+            },
+            allow_date_mode: {
+              type: "boolean",
+              default: true,
+              description: "Whether the calendar-date display is offered at all; false forces mode to 'day'."
+            }
+          }
+        },
+        context_window_days: {
+          type: "number",
+          default: 30,
+          description: "Half-width of the anchor context window in elapsed days, inclusive on both sides; coerced to a non-negative integer, and 0 means the anchor day only (PJE-CFG-004, PJE-ANCH-002)."
+        },
+        ex_trt_col: {
+          type: "string",
+          default: "EXTRT",
+          description: "Exposure treatment name column; the exposure lane draws one row per distinct value and each record's label and category come from it."
+        },
+        ex_dose_col: {
+          type: "string",
+          default: "EXDOSE",
+          description: "Exposure dose column; consecutive records with different numeric doses derive the dose-change events (PJE-DERIV-001). A record with both treatment and dose blank is dropped."
+        },
+        ex_dosu_col: {
+          type: "string",
+          default: "EXDOSU",
+          description: "Exposure dose unit column, appended to the dose in tooltips and dose-change labels."
+        },
+        ex_stdy_col: {
+          type: ["string", "array"],
+          default: ["ASTDY", "EXSTDY"],
+          description: "Exposure start study day, as a column name or a fallback chain resolved per row; required in exposure data. A record with no usable start day is kept but not drawn (PJE-LANE-008)."
+        },
+        ex_endy_col: {
+          type: ["string", "array"],
+          default: ["AENDY", "EXENDY"],
+          description: "Exposure end study day, as a column name or a fallback chain; a blank end is 'end not recorded' (exposure has no outcome column)."
+        },
+        ex_stdtc_col: {
+          type: "string",
+          default: "EXSTDTC",
+          description: "Exposure start date column (--DTC), shown as recorded; a full date labels the record in date mode and a partial one never positions it (PJE-TIME-003)."
+        },
+        ae_term_col: {
+          type: "string",
+          default: "AETERM",
+          description: "Adverse-event verbatim term column; the tooltip's secondary line when it differs from the decoded term, and the label when the decode is blank. A record with both blank is dropped."
+        },
+        ae_decod_col: {
+          type: "string",
+          default: "AEDECOD",
+          description: "Adverse-event preferred term column: the mark label, and the key the 'prior events with the same preferred term' context list matches on (PJE-CTX-004)."
+        },
+        ae_soc_col: {
+          type: "string",
+          default: "AEBODSYS",
+          description: "Adverse-event body-system column, shown as the record's category."
+        },
+        ae_stdy_col: {
+          type: ["string", "array"],
+          default: ["ASTDY", "AESTDY"],
+          description: "Adverse-event onset study day, as a column name or a fallback chain; required in adverse-event data."
+        },
+        ae_endy_col: {
+          type: ["string", "array"],
+          default: ["AENDY", "AEENDY"],
+          description: "Adverse-event resolution study day, as a column name or a fallback chain. A blank end is 'ongoing' only when ae_out_col says so, otherwise 'end not recorded'; an end before the start is kept as a single-day mark and counted (PJE-DATA-008)."
+        },
+        ae_sev_col: {
+          type: "string",
+          default: "AESEV",
+          description: "Adverse-event severity column, ranked by ae_severity_values; drawn as bar height and border weight at one opaque fill, and a blank value draws a hatched mark named 'severity not recorded' (PJE-ACC-002)."
+        },
+        ae_ser_col: {
+          type: "string",
+          default: "AESER",
+          description: "Adverse-event seriousness column, compared with ae_serious_value; serious events get a filled start dot, an escalation ring and an SAE tag."
+        },
+        ae_rel_col: {
+          type: "string",
+          default: "AEREL",
+          description: "Adverse-event relatedness column, shown in the tooltip as recorded."
+        },
+        ae_stdtc_col: {
+          type: "string",
+          default: "AESTDTC",
+          description: "Adverse-event onset date column (--DTC), shown as recorded (PJE-TIME-003, PJE-TIME-004)."
+        },
+        ae_severity_values: {
+          type: "array",
+          default: ["MILD", "MODERATE", "SEVERE"],
+          description: "Severity levels in ascending rank; a value outside the list keeps rank 0 and draws at the moderate height. An empty list falls back to the default."
+        },
+        ae_serious_value: {
+          type: "string",
+          default: "Y",
+          description: "The ae_ser_col value (case-insensitive) that marks a serious event (PJE-FILT-001)."
+        },
+        ae_out_col: {
+          type: ["string", "null"],
+          default: "AEOUT",
+          description: "Adverse-event outcome column, read only when the end day is blank: the event is 'ongoing' when this cell is one of ae_ongoing_values, and 'end not recorded' otherwise (D16)."
+        },
+        ae_ongoing_values: {
+          type: "array",
+          default: ["NOT RECOVERED/NOT RESOLVED", "RECOVERING/RESOLVING", "ONGOING", "N"],
+          description: "Outcome values (upper-cased, trimmed) that assert an event is still running when its end day is blank."
+        },
+        lb_test_col: {
+          type: "string",
+          default: "LBTEST",
+          description: "Lab test name column; required in lab data. A record with a blank name is dropped; lb_tests matches this column or lb_testcd_col, case-insensitively."
+        },
+        lb_testcd_col: {
+          type: "string",
+          default: "LBTESTCD",
+          description: "Lab test code column; lb_tests entries match either the name or the code, so 'Alanine Aminotransferase' and 'ALT' select the same series."
+        },
+        lb_value_col: {
+          type: "string",
+          default: "LBSTRESN",
+          description: "Lab numeric result column; required in lab data. A non-numeric result is dropped with a named reason."
+        },
+        lb_lo_col: {
+          type: "string",
+          default: "LBSTNRLO",
+          description: "Lab lower limit of normal column; with lb_hi_col draws the reference band and the \xD7 LLN ratio (PJE-LANE-005)."
+        },
+        lb_hi_col: {
+          type: "string",
+          default: "LBSTNRHI",
+          description: "Lab upper limit of normal column; with lb_lo_col draws the reference band and the \xD7 ULN ratio."
+        },
+        lb_day_col: {
+          type: ["string", "array"],
+          default: ["LBDY", "ADY"],
+          description: "Lab study day, as a column name or a fallback chain; required in lab data."
+        },
+        lb_nrind_col: {
+          type: "string",
+          default: "LBNRIND",
+          description: "Lab normal-range indicator column: a present value other than lb_normal_value marks the point abnormal by flag (PJE-CTX-002); HIGH/LOW pick the glyph and HH/LL add the escalation ring."
+        },
+        lb_unit_col: {
+          type: "string",
+          default: "LBSTRESU",
+          description: "Lab result unit column, appended to values in labels and the panel."
+        },
+        lb_dtc_col: {
+          type: "string",
+          default: "LBDTC",
+          description: "Lab collection date column (--DTC), shown as recorded."
+        },
+        lb_tests: {
+          type: "array",
+          default: [
+            "Alanine Aminotransferase",
+            "Aspartate Aminotransferase",
+            "Bilirubin",
+            "Alkaline Phosphatase"
+          ],
+          description: "The lab tests drawn as small multiples, in this order, matched case-insensitively against the test name or code; an empty list means every test present. The plan's labTests and lane-level tests are aliases."
+        },
+        lb_normal_value: {
+          type: "string",
+          default: "NORMAL",
+          description: "The lb_nrind_col value meaning within range; any other non-blank value is abnormal by flag, and a blank value is not abnormal."
+        },
+        lb_baseline_flag_col: {
+          type: ["string", "null"],
+          default: "ABLFL",
+          description: "Analysis-baseline flag column, consulted first when resolving a test's baseline (D17); null skips the flag rule."
+        },
+        lb_baseline_flag_value: {
+          type: "string",
+          default: "Y",
+          description: "The lb_baseline_flag_col value marking the baseline record."
+        },
+        lb_baseline_day: {
+          type: "number",
+          default: 1,
+          description: "Fallback baseline rule: the last value on or before this study day, used only when no flagged record exists (PJE-DERIV-002)."
+        },
+        lb_change_factor: {
+          type: "number",
+          default: 2,
+          description: "Symmetric change rule: a value at least this many times, or at most 1/this of, the baseline is abnormal by change (D28). Must exceed 1."
+        },
+        cm_trt_col: {
+          type: "string",
+          default: "CMTRT",
+          description: "Con-med name column; required in con-med data. A record with a blank name is dropped with a named reason."
+        },
+        cm_class_col: {
+          type: "string",
+          default: "CMCLAS",
+          description: "Con-med class column (ATC class), the record's category and the multiselect filter's values; cm_uncoded_value is kept as its own bucket (PJE-FILT-003)."
+        },
+        cm_dose_col: {
+          type: "string",
+          default: "CMDOSE",
+          description: "Con-med dose column, shown with the route as the tooltip's secondary line when present."
+        },
+        cm_route_col: {
+          type: "string",
+          default: "CMROUTE",
+          description: "Con-med route column, shown with the dose as the tooltip's secondary line when present."
+        },
+        cm_stdy_col: {
+          type: ["string", "array"],
+          default: ["ASTDY", "CMSTDY"],
+          description: "Con-med start study day, as a column name or a fallback chain. A con-med with no usable start is kept, not drawn, and never asserted active at an anchor (PJE-CTX-001)."
+        },
+        cm_endy_col: {
+          type: ["string", "array"],
+          default: ["AENDY", "CMENDY"],
+          description: "Con-med end study day, as a column name or a fallback chain; a blank end is 'end not recorded' unless cm_out_col says ongoing."
+        },
+        cm_stdtc_col: {
+          type: "string",
+          default: "CMSTDTC",
+          description: "Con-med start date column (--DTC), shown as recorded."
+        },
+        cm_uncoded_value: {
+          type: "string",
+          default: "UNCODED",
+          description: "The cm_class_col value meaning 'not coded', kept as an ordinary selectable class."
+        },
+        cm_out_col: {
+          type: ["string", "null"],
+          default: null,
+          description: "Con-med ongoing-indicator column (CMENRTPT, CMONGO, \u2026), read only when the end day is blank; null (the default \u2014 the pilot data has none) makes every blank end 'end not recorded' (D16)."
+        },
+        cm_ongoing_values: {
+          type: "array",
+          default: ["ONGOING", "Y", "CONTINUING"],
+          description: "Values of cm_out_col (upper-cased, trimmed) that assert a con-med is still running when its end day is blank."
+        },
+        mh_term_col: {
+          type: "string",
+          default: "MHTERM",
+          description: "Medical-history verbatim term column; the label when the decode is blank. A record with both blank is dropped with a named reason."
+        },
+        mh_decod_col: {
+          type: "string",
+          default: "MHDECOD",
+          description: "Medical-history decoded term column, the mark label when present."
+        },
+        mh_cat_col: {
+          type: "string",
+          default: "MHCAT",
+          description: "Medical-history category column, shown as the record's category."
+        },
+        mh_day_col: {
+          type: ["string", "array"],
+          default: "MHDY",
+          description: "Medical-history collection study day (the screening visit), the mark's position under the default mh_day_source (D18)."
+        },
+        mh_day_source: {
+          type: "string",
+          enum: ["collection", "onset"],
+          default: "collection",
+          description: "Which day places a medical-history mark: 'collection' (mh_day_col, the day it was recorded) or 'onset' (mh_onset_stdy_col); anything else falls back to 'collection' with a warning."
+        },
+        mh_onset_stdy_col: {
+          type: ["string", "array"],
+          default: ["ASTDY", "MHSTDY"],
+          description: "Medical-history onset study day, as a column name or a fallback chain resolved per row (the ADaM ASTDY, then the SDTM MHSTDY, so the plan's vocabulary places too \u2014 D15); the tooltip's onset text by default, and the mark position under mh_day_source 'onset'."
+        },
+        mh_strtpt_col: {
+          type: "string",
+          default: "MHSTRTPT",
+          description: "Medical-history onset relative-timing column (BEFORE, \u2026), the tooltip's onset text when no onset day or date resolves."
+        },
+        mh_enrtpt_col: {
+          type: "string",
+          default: "MHENRTPT",
+          description: "Medical-history end relative-timing column; ONGOING adds 'still present' to the tooltip."
+        },
+        mh_onset_dtc_col: {
+          type: "string",
+          default: "MHSTDTC",
+          description: "Medical-history onset date column (--DTC), shown as recorded in the onset text."
+        },
+        ds_decod_col: {
+          type: "string",
+          default: "DSDECOD",
+          description: "Disposition decoded term column, the mark label; required in disposition data. A record with a blank decode is dropped with a named reason."
+        },
+        ds_term_col: {
+          type: "string",
+          default: "DSTERM",
+          description: "Disposition verbatim term column, the tooltip's secondary line when it differs from the decode."
+        },
+        ds_cat_col: {
+          type: "string",
+          default: "DSCAT",
+          description: "Disposition category column (DISPOSITION EVENT, PROTOCOL MILESTONE, \u2026), the record's category and the key ds_reference_cats matches (D19)."
+        },
+        ds_stdy_col: {
+          type: ["string", "array"],
+          default: "DSSTDY",
+          description: "Disposition study day, as a column name or a fallback chain."
+        },
+        ds_dtc_col: {
+          type: "string",
+          default: "DSSTDTC",
+          description: "Disposition date column (--DTC), shown as recorded."
+        },
+        ds_reference_cats: {
+          type: "array",
+          default: ["DISPOSITION EVENT"],
+          description: "Disposition categories (upper-cased, trimmed) whose rows draw a full-height dashed rule across every lane; every disposition row still draws its own mark. An empty list draws a rule for every row, which is legal but noisy and warned once."
+        },
+        lanes: {
+          type: "object",
+          description: "Per-lane display configuration keyed by lane (exposure, doseChanges, adverseEvents, labs, conMeds, medicalHistory, disposition), each { enabled, label, group } merged key by key onto the default; null disables a lane, an unknown lane key is dropped with a warning (PJE-CFG-003). Lane-level severityCol, seriousCol and tests are lifted to ae_sev_col, ae_ser_col and lb_tests; domain, derivedFrom and smallMultiple are accepted and ignored."
+        },
+        lane_groups: {
+          type: "array",
+          default: [
+            { key: "treatment", label: "Treatment", collapsed: false },
+            { key: "events", label: "Events and labs", collapsed: false },
+            { key: "context", label: "Context", collapsed: false }
+          ],
+          description: "Collapsible lane groups in stack order, each { key, label, collapsed }; a group with no enabled lane is dropped at render time (PJE-LANE-003). The plan's laneGroups is an alias."
+        },
+        filters: {
+          type: "array",
+          default: [
+            {
+              domain: "AE",
+              value_col: "AESER",
+              label: "Serious only",
+              type: "flag",
+              flag_value: "Y"
+            },
+            {
+              domain: "LB",
+              value_col: "LBNRIND",
+              label: "Abnormal labs only",
+              type: "flag",
+              flag_value: "__abnormal__"
+            },
+            { domain: "CM", value_col: "CMCLAS", label: "ATC class", multiple: true }
+          ],
+          description: "Sidebar filter specs, each with a domain (the only domain the filter applies to) and the shared filter contract keys: type 'flag' with a flag_value renders a checkbox (the special flag_value '__abnormal__' keeps only labs failing the abnormality rule), multiple true renders the shell multiselect, and the rest follow { value_col, label, start, all }. Specs without a value_col (or the plan's col alias) or without a recognized domain are dropped with a warning; a filter whose column is absent from its domain's data is dropped at render time with the library's standard warning (PJE-FILT-001 \u2026 PJE-FILT-004)."
+        },
+        source_url_template: {
+          type: ["string", "null"],
+          default: null,
+          description: "Optional external link template for every source row, e.g. 'https://edc.example/{domain}/{USUBJID}/{AESEQ}': {domain} is the domain code and {COLUMN} the row's URI-encoded value; a row lacking a named column gets no link. null renders no link (PJE-SRC-002). The plan's sourceUrlTemplate is an alias."
+        },
+        source_url_label: {
+          type: "string",
+          default: "Open source record",
+          description: "Link text for the external source link."
+        },
+        on_select_subject: {
+          type: ["null"],
+          default: null,
+          description: "Callback (subjectId, detail) when the subject changes; kept only when a function. The plan's onSelectSubject is an alias (PJE-EVT-001)."
+        },
+        on_anchor_event: {
+          type: ["null"],
+          default: null,
+          description: "Callback (event, context) when a mark is anchored or the anchor is cleared (both null on clear). The plan's onAnchorEvent is an alias."
+        },
+        on_context_change: {
+          type: ["null"],
+          default: null,
+          description: "Callback (context) whenever the context bundle changes while anchored, and with null when cleared. The plan's onContextChange is an alias."
+        },
+        row_height: {
+          type: "number",
+          default: 26,
+          description: "Pixels per row inside a categorical lane; a positive integer. The plan's rowHeight is an alias."
+        },
+        row_height_min: {
+          type: "number",
+          default: 18,
+          description: "Floor for row_height when fit_to_height scales the stack down."
+        },
+        max_rows_per_lane: {
+          type: "number",
+          default: 12,
+          description: "Rows drawn per categorical lane before the remainder is counted in prose, in the lane's documented sort order (PJE-LANE-010). The plan's maxRowsPerLane is an alias."
+        },
+        lab_height: {
+          type: "number",
+          default: 96,
+          description: "Pixels per lab small multiple. The plan's labHeight is an alias."
+        },
+        lab_height_min: {
+          type: "number",
+          default: 64,
+          description: "Floor for lab_height when fit_to_height scales the stack down."
+        },
+        height: {
+          type: "number",
+          default: 760,
+          description: "Pixel height of the lane column; taller stacks scroll and say so (PJE-LANE-009, D21). 760 is the height at which the Definition-of-Done participant fits at the row and lab floors."
+        },
+        fit_to_height: {
+          type: "boolean",
+          default: true,
+          description: "Scale row and lab heights (down to their floors) so the opening stack fits height before the column scrolls (D21)."
+        },
+        width: {
+          type: "string",
+          default: "100%",
+          description: "Widget width, applied as the container element's style width; carried for the R widget binding."
+        },
+        page_size: {
+          type: "number",
+          default: 10,
+          description: "Rows per page in the source-row drawer's tables."
+        }
+      }
+    }
+  },
+  $defs: {
+    exRow: {
+      type: "object",
+      description: "One exposure record as passed to init: the participant id, treatment name, dose and unit, start and end study days and optionally the start date, under the columns named by the ex_* settings. Retained by reference and shown verbatim in the source drawer (PJE-DATA-006, PJE-SRC-001)."
+    },
+    aeRow: {
+      type: "object",
+      description: "One adverse-event record as passed to init: the participant id, verbatim and preferred terms, body system, onset and resolution study days, severity, seriousness, relatedness, outcome and optionally the onset date, under the columns named by the ae_* settings. Retained by reference and shown verbatim in the source drawer."
+    },
+    lbRow: {
+      type: "object",
+      description: "One lab result as passed to init: the participant id, test name and code, numeric result and unit, reference range, normal-range indicator, study day, baseline flag and optionally the collection date, under the columns named by the lb_* settings. Retained by reference and shown verbatim in the source drawer."
+    },
+    cmRow: {
+      type: "object",
+      description: "One concomitant-medication record as passed to init: the participant id, medication name, class, optional dose and route, start and end study days, optional ongoing indicator and start date, under the columns named by the cm_* settings. Retained by reference and shown verbatim in the source drawer."
+    },
+    mhRow: {
+      type: "object",
+      description: "One medical-history record as passed to init: the participant id, verbatim and decoded terms, category, collection study day, onset study day, date and relative-timing text, and end relative-timing text, under the columns named by the mh_* settings. Retained by reference and shown verbatim in the source drawer."
+    },
+    dsRow: {
+      type: "object",
+      description: "One disposition record as passed to init: the participant id, decoded and verbatim terms, category, study day and optionally the date, under the columns named by the ds_* settings. Retained by reference and shown verbatim in the source drawer."
+    }
+  }
+};
+
+// src/patient-journey-explorer/getScales.js
+var PLOT_GUTTER_LEFT2 = 132;
+var PLOT_GUTTER_RIGHT2 = 16;
+var MS_PER_DAY2 = 864e5;
+var FULL_DATE = /^(\d{4})-(\d{2})-(\d{2})(?:T.*)?$/;
+var STEP_LADDER2 = [1, 2, 5, 7, 14, 30, 60, 90, 180, 365, 730, 1825, 3650];
+function toElapsed(day2) {
+  const n = Number(day2);
+  if (!Number.isFinite(n) || n === 0) return null;
+  return n > 0 ? n - 1 : n;
+}
+function toStudyDay(elapsed) {
+  return elapsed >= 0 ? elapsed + 1 : elapsed;
+}
+function isFullDate(value) {
+  if (typeof value !== "string") return false;
+  const match = FULL_DATE.exec(value.trim());
+  if (!match) return false;
+  const [, y, m, d] = match.map(Number);
+  const date = new Date(Date.UTC(y, m - 1, d));
+  return date.getUTCFullYear() === y && date.getUTCMonth() === m - 1 && date.getUTCDate() === d;
+}
+function datePart(value) {
+  return isFullDate(value) ? value.trim().slice(0, 10) : null;
+}
+var utc = (iso) => Date.UTC(Number(iso.slice(0, 4)), Number(iso.slice(5, 7)) - 1, Number(iso.slice(8, 10)));
+function addDays(iso, days) {
+  return new Date(utc(iso) + days * MS_PER_DAY2).toISOString().slice(0, 10);
+}
+function dayToDate(day2, refDate) {
+  const ref = datePart(refDate);
+  const elapsed = toElapsed(day2);
+  if (!ref || elapsed === null) return null;
+  return addDays(ref, elapsed);
+}
+function referenceDate(events2, settings) {
+  if (!Array.isArray(events2)) return null;
+  const refCol = settings?.time?.ref_date_col;
+  if (refCol) {
+    for (const event of events2) {
+      const cell2 = event?.source?.[refCol];
+      if (isFullDate(cell2)) return { date: datePart(cell2), rule: "ref_col" };
+    }
+  }
+  let earliest = null;
+  for (const event of events2) {
+    if (!event || event.placeable === false || !Number.isFinite(event.day)) continue;
+    if (!isFullDate(event.rawDate)) continue;
+    if (!earliest || event.day < earliest.day) earliest = event;
+  }
+  if (!earliest) return null;
+  const elapsed = toElapsed(earliest.day);
+  if (elapsed === null) return null;
+  return { date: addDays(datePart(earliest.rawDate), -elapsed), rule: "derived" };
+}
+function resolveEventDate(event, refDate) {
+  const ref = datePart(refDate);
+  const own = datePart(event.rawDate);
+  const fromDay = ref && event.placeable !== false ? dayToDate(event.day, ref) : null;
+  let date = own || fromDay || null;
+  let dateConflict = false;
+  if (own && fromDay && own !== fromDay) {
+    date = fromDay;
+    dateConflict = true;
+  }
+  const endDate = ref && event.endState === "closed" && Number.isFinite(event.end) ? dayToDate(event.end, ref) : null;
+  return { ...event, date, endDate, dateConflict };
+}
+function formatTick(day2, { mode, refDate, anchorDay } = {}) {
+  const anchorElapsed = toElapsed(anchorDay);
+  const dayElapsed = toElapsed(day2);
+  if (anchorElapsed !== null && dayElapsed !== null) {
+    const offset = dayElapsed - anchorElapsed;
+    if (offset > 0) return `+${offset}`;
+    return String(offset);
+  }
+  if (mode === "date") {
+    const date = dayToDate(day2, refDate);
+    if (date) return date;
+  }
+  return String(day2);
+}
+function usableDomain(domain) {
+  return Array.isArray(domain) && domain.length === 2 && domain.every(Number.isFinite);
+}
+function axisTicks3(domain, target = 6) {
+  if (!usableDomain(domain)) return [];
+  const [lo, hi] = domain;
+  const span = hi - lo;
+  if (span <= 0) return [{ value: toStudyDay(lo), elapsed: lo, position: 0 }];
+  const intervals = Math.max(1, Number(target) || 6);
+  let step = STEP_LADDER2[STEP_LADDER2.length - 1];
+  for (const candidate of STEP_LADDER2) {
+    if (span / candidate <= intervals) {
+      step = candidate;
+      break;
+    }
+  }
+  while (span / step > intervals) step *= 10;
+  const loDay = toStudyDay(lo);
+  const hiDay = toStudyDay(hi);
+  const values = /* @__PURE__ */ new Set();
+  for (let k = Math.ceil(loDay / step); k * step <= hiDay; k += 1) {
+    if (k !== 0) values.add(k * step);
+  }
+  if (lo <= 0 && hi >= 0) values.add(1);
+  return [...values].map((value) => ({ value, elapsed: toElapsed(value) })).filter((tick) => tick.elapsed !== null && tick.elapsed >= lo && tick.elapsed <= hi).sort((a, b) => a.elapsed - b.elapsed).map((tick) => ({ ...tick, position: (tick.elapsed - lo) / span * 100 }));
+}
+function anchoredTicks(domain, anchorElapsed, target = 8) {
+  if (!usableDomain(domain) || !Number.isFinite(anchorElapsed)) return axisTicks3(domain, target);
+  const [lo, hi] = domain;
+  const span = hi - lo;
+  if (span <= 0) return axisTicks3(domain, target);
+  const intervals = Math.max(1, Number(target) || 6);
+  let step = STEP_LADDER2[STEP_LADDER2.length - 1];
+  for (const candidate of STEP_LADDER2) {
+    if (span / candidate <= intervals) {
+      step = candidate;
+      break;
+    }
+  }
+  while (span / step > intervals) step *= 10;
+  const offsets = /* @__PURE__ */ new Set([0]);
+  for (let k = Math.ceil((lo - anchorElapsed) / step); k * step <= hi - anchorElapsed; k += 1) {
+    offsets.add(k * step);
+  }
+  return [...offsets].map((offset) => anchorElapsed + offset).filter((elapsed) => elapsed >= lo && elapsed <= hi).sort((a, b) => a - b).map((elapsed) => ({
+    value: toStudyDay(elapsed),
+    elapsed,
+    anchor: elapsed === anchorElapsed,
+    position: (elapsed - lo) / span * 100
+  }));
+}
+function laneLayout() {
+  return { padding: { left: 0, right: PLOT_GUTTER_RIGHT2, top: 2, bottom: 2 } };
+}
+function buildScales8({ lane, domain, rows, valueDomain } = {}) {
+  const [min, max] = usableDomain(domain) ? domain : [0, 1];
+  const x = {
+    type: "linear",
+    min,
+    max,
+    display: false,
+    offset: false,
+    bounds: "data",
+    grid: { display: false },
+    ticks: { display: false }
+  };
+  const afterFit = (scale) => {
+    scale.width = PLOT_GUTTER_LEFT2;
+  };
+  const shared = { display: true, grid: { display: false }, ticks: { display: false }, afterFit };
+  if (lane === "labs") {
+    const [lo, hi] = usableDomain(valueDomain) ? valueDomain : [0, 1];
+    return { x, y: { type: "linear", min: lo, max: hi, ...shared } };
+  }
+  return {
+    x,
+    y: {
+      type: "category",
+      labels: Array.isArray(rows) ? rows.map(String) : [],
+      offset: true,
+      ...shared
+    }
+  };
+}
+
+// src/patient-journey-explorer/normalize.js
+var DROP_REASON_COLUMN3 = "__pje_dropReason";
+var DROP_DOMAIN_COLUMN = "__pje_domain";
+var DOMAINS = ["EX", "AE", "LB", "CM", "MH", "DS"];
+var LANE_BY_DOMAIN = {
+  EX: "exposure",
+  AE: "adverseEvents",
+  LB: "labs",
+  CM: "conMeds",
+  MH: "medicalHistory",
+  DS: "disposition"
+};
+var SYNONYMS = {
+  ADAE: "AE",
+  ADLB: "LB",
+  ADEX: "EX",
+  ADCM: "CM",
+  ADMH: "MH",
+  ADDS: "DS",
+  ADSL: "DS"
+};
+var DERIVED_PREFIX = "__pje_";
+var isBlank = (value) => value === null || value === void 0 || typeof value === "string" && (value.trim() === "" || /^na$/i.test(value.trim()));
+var text = (value) => isBlank(value) ? "" : String(value).trim();
+var upper = (value) => text(value).toUpperCase();
+function parseNumber(value) {
+  if (isBlank(value)) return null;
+  const n = Number(typeof value === "string" ? value.trim() : value);
+  return Number.isFinite(n) ? n : null;
+}
+function resolveDay(row, chain) {
+  let zero = false;
+  for (const column of arrayify(chain).map(String)) {
+    const value = parseNumber(row[column]);
+    if (value !== null && toElapsed(value) !== null) return { value, column, zero: false };
+    if (value === 0) zero = true;
+  }
+  return { value: null, column: null, zero };
+}
+function endBeforeStart(event) {
+  return Boolean(event) && Array.isArray(event.flagged) && event.flagged.some((flag) => /precedes start/.test(String(flag)));
+}
+function resolveText(row, chain) {
+  for (const column of arrayify(chain).map(String)) {
+    if (!isBlank(row[column])) return String(row[column]).trim();
+  }
+  return "";
+}
+var titleCase = (value) => text(value).toLowerCase().replace(/(^|[\s/-])(\S)/g, (match, lead, char) => lead + char.toUpperCase());
+function detectDomain(value) {
+  const code = upper(value);
+  if (DOMAINS.includes(code)) return code;
+  return SYNONYMS[code] || null;
+}
+var emptyDomains = () => Object.fromEntries(DOMAINS.map((domain) => [domain, []]));
+var droppedCopy = (row, reason, domain) => ({
+  ...row && typeof row === "object" ? row : {},
+  [DROP_REASON_COLUMN3]: reason,
+  [DROP_DOMAIN_COLUMN]: domain
+});
+function normalizeInput(data, settings) {
+  const domains = emptyDomains();
+  const dropped = [];
+  if (Array.isArray(data)) {
+    const domainCol = settings?.domain_col ?? "DOMAIN";
+    for (const row of data) {
+      const cell2 = row && typeof row === "object" ? row[domainCol] : void 0;
+      const domain = detectDomain(cell2);
+      if (!domain) {
+        dropped.push(droppedCopy(row, `unrecognized domain "${text(cell2)}"`, ""));
+        continue;
+      }
+      domains[domain].push(row);
+    }
+    return { domains, dropped, form: "array" };
+  }
+  if (data && typeof data === "object") {
+    for (const [key, value] of Object.entries(data)) {
+      const domain = detectDomain(key);
+      if (!domain) {
+        console.warn(
+          `patient-journey-explorer: unknown domain key "${key}" was ignored; the known keys are ${DOMAINS.join(", ")}.`
+        );
+        continue;
+      }
+      if (!Array.isArray(value)) {
+        dropped.push(droppedCopy(null, `domain "${key}" is not an array`, domain));
+        continue;
+      }
+      if (domains[domain].length) {
+        console.warn(
+          `patient-journey-explorer: domain ${domain} was supplied twice ("${key}"); the later key was ignored.`
+        );
+        continue;
+      }
+      domains[domain] = value;
+    }
+  }
+  return { domains, dropped, form: "object" };
+}
+function droppedRowColumns2(rows) {
+  if (!Array.isArray(rows) || !rows.length) return [];
+  const seen = /* @__PURE__ */ new Set();
+  const source = [];
+  for (const row of rows) {
+    if (!row || typeof row !== "object") continue;
+    for (const key of Object.keys(row)) {
+      if (key.startsWith(DERIVED_PREFIX) || seen.has(key)) continue;
+      seen.add(key);
+      source.push(key);
+    }
+  }
+  return [DROP_REASON_COLUMN3, DROP_DOMAIN_COLUMN, ...source];
+}
+function resolveInterval(row, settings, prefix, endChainKey) {
+  const startRes = resolveDay(row, settings[`${prefix}_stdy_col`]);
+  const endRes = resolveDay(row, settings[endChainKey]);
+  const outCol = settings[`${prefix}_out_col`];
+  const outcome = outCol ? text(row[outCol]) : "";
+  const ongoingValues = settings[`${prefix}_ongoing_values`] || [];
+  const start = startRes.value;
+  let end = startRes.value === null ? null : endRes.value;
+  let endState;
+  let flag = null;
+  if (start !== null && end !== null && end >= start) {
+    endState = "closed";
+  } else {
+    if (start !== null && end !== null && end < start) {
+      flag = `end day ${endRes.column} (${end}) precedes start day (${start})`;
+      end = null;
+      endState = "unrecorded";
+    } else {
+      end = null;
+      endState = outcome && ongoingValues.includes(outcome.toUpperCase()) ? "ongoing" : "unrecorded";
+    }
+  }
+  return { start, end, endState, dayCol: startRes.column, dayZero: startRes.zero, outcome, flag };
+}
+function severityFlag(value, settings) {
+  const key = upper(value);
+  if (!key) return null;
+  const rank = settings.ae_severity_values.map((v) => v.toUpperCase()).indexOf(key) + 1;
+  return { key, label: titleCase(key), rank };
+}
+function deriveFields(row, domain, settings) {
+  const s = settings;
+  switch (domain) {
+    case "EX": {
+      const trt = text(row[s.ex_trt_col]);
+      const dose = parseNumber(row[s.ex_dose_col]);
+      if (!trt && isBlank(row[s.ex_dose_col])) {
+        return {
+          reason: `missing exposure treatment and dose (${s.ex_trt_col}, ${s.ex_dose_col})`
+        };
+      }
+      const unit = text(row[s.ex_dosu_col]);
+      const interval = resolveInterval(row, s, "ex", "ex_endy_col");
+      const doseText = [dose === null ? text(row[s.ex_dose_col]) : String(dose), unit].filter(Boolean).join(" ");
+      const dayText2 = interval.start === null ? "" : interval.end === null ? `from day ${interval.start}` : `days ${interval.start}\u2013${interval.end}`;
+      return {
+        kind: "interval",
+        ...interval,
+        rawDate: resolveText(row, s.ex_stdtc_col),
+        label: trt,
+        detail: [doseText, dayText2].filter(Boolean).join(" "),
+        category: trt,
+        value: dose,
+        unit
+      };
+    }
+    case "AE": {
+      const term = text(row[s.ae_term_col]);
+      const decod = text(row[s.ae_decod_col]);
+      if (!term && !decod) {
+        return { reason: `missing adverse-event term (${s.ae_term_col}, ${s.ae_decod_col})` };
+      }
+      const label = decod || term;
+      const interval = resolveInterval(row, s, "ae", "ae_endy_col");
+      return {
+        kind: "interval",
+        ...interval,
+        rawDate: resolveText(row, s.ae_stdtc_col),
+        label,
+        detail: term && term !== label ? term : "",
+        category: text(row[s.ae_soc_col]),
+        flags: {
+          severity: severityFlag(row[s.ae_sev_col], s),
+          serious: upper(row[s.ae_ser_col]) === String(s.ae_serious_value).toUpperCase(),
+          related: text(row[s.ae_rel_col])
+        }
+      };
+    }
+    case "LB": {
+      const test = text(row[s.lb_test_col]);
+      if (!test) return { reason: `missing lab test name (${s.lb_test_col})` };
+      const value = parseNumber(row[s.lb_value_col]);
+      if (value === null) {
+        return {
+          reason: `non-numeric result (${s.lb_value_col} = "${text(row[s.lb_value_col])}")`
+        };
+      }
+      const dayRes = resolveDay(row, s.lb_day_col);
+      const unit = text(row[s.lb_unit_col]);
+      const lln = parseNumber(row[s.lb_lo_col]);
+      const uln = parseNumber(row[s.lb_hi_col]);
+      const range = lln !== null && uln !== null ? ` (${lln}\u2013${uln}${unit ? ` ${unit}` : ""})` : "";
+      return {
+        kind: "point",
+        start: dayRes.value,
+        end: null,
+        endState: "closed",
+        dayCol: dayRes.column,
+        dayZero: dayRes.zero,
+        rawDate: resolveText(row, s.lb_dtc_col),
+        label: [String(value), unit].filter(Boolean).join(" "),
+        detail: `${test}${range}`,
+        category: test,
+        test,
+        testCode: text(row[s.lb_testcd_col]),
+        value,
+        unit,
+        lln,
+        uln,
+        flags: { abnormal: upper(row[s.lb_nrind_col]) }
+      };
+    }
+    case "CM": {
+      const trt = text(row[s.cm_trt_col]);
+      if (!trt) return { reason: `missing con-med name (${s.cm_trt_col})` };
+      const interval = resolveInterval(row, s, "cm", "cm_endy_col");
+      return {
+        kind: "interval",
+        ...interval,
+        rawDate: resolveText(row, s.cm_stdtc_col),
+        label: trt,
+        detail: [text(row[s.cm_dose_col]), text(row[s.cm_route_col])].filter(Boolean).join(" "),
+        category: text(row[s.cm_class_col])
+      };
+    }
+    case "MH": {
+      const term = text(row[s.mh_term_col]);
+      const decod = text(row[s.mh_decod_col]);
+      if (!term && !decod) {
+        return { reason: `missing medical-history term (${s.mh_term_col}, ${s.mh_decod_col})` };
+      }
+      const onsetSource = s.mh_day_source === "onset";
+      const collection = resolveDay(row, s.mh_day_col);
+      const onset = resolveDay(row, s.mh_onset_stdy_col);
+      const onsetDtc = resolveText(row, s.mh_onset_dtc_col);
+      const placed = onsetSource ? onset : collection;
+      const strtpt = text(row[s.mh_strtpt_col]);
+      const onsetText = onset.value !== null ? `day ${onset.value}` : onsetDtc ? onsetDtc : strtpt ? strtpt.toUpperCase() === "BEFORE" ? "before study" : strtpt.toLowerCase() : "not recorded";
+      const stillPresent = upper(row[s.mh_enrtpt_col]) === "ONGOING";
+      return {
+        kind: "point",
+        start: placed.value,
+        end: null,
+        endState: "closed",
+        dayCol: placed.column,
+        dayZero: placed.zero,
+        rawDate: onsetSource ? onsetDtc : "",
+        label: decod || term,
+        detail: `recorded day ${collection.value === null ? "not recorded" : collection.value}; onset ${onsetText}` + (stillPresent ? "; still present" : ""),
+        category: text(row[s.mh_cat_col])
+      };
+    }
+    case "DS": {
+      const decod = text(row[s.ds_decod_col]);
+      if (!decod) return { reason: `missing disposition decode (${s.ds_decod_col})` };
+      const term = text(row[s.ds_term_col]);
+      const dayRes = resolveDay(row, s.ds_stdy_col);
+      const cat = text(row[s.ds_cat_col]);
+      const cats = s.ds_reference_cats || [];
+      return {
+        kind: "rule",
+        start: dayRes.value,
+        end: null,
+        endState: "closed",
+        dayCol: dayRes.column,
+        dayZero: dayRes.zero,
+        rawDate: resolveText(row, s.ds_dtc_col),
+        label: decod,
+        detail: term && term !== decod ? term : "",
+        category: cat,
+        flags: { reference: cats.length === 0 || cats.includes(cat.toUpperCase()) }
+      };
+    }
+    default:
+      return null;
+  }
+}
+function normalizeDomain3(rows, domain, settings) {
+  const events2 = [];
+  const dropped = [];
+  const flagged = [];
+  if (!DOMAINS.includes(domain) || !Array.isArray(rows)) return { events: events2, dropped, flagged };
+  const lane = LANE_BY_DOMAIN[domain];
+  const refCol = settings?.time?.ref_date_col;
+  rows.forEach((row, index) => {
+    const source = row && typeof row === "object" ? row : {};
+    const subject = text(source[settings.id_col]);
+    if (!subject) {
+      dropped.push(droppedCopy(row, `missing participant id (${settings.id_col})`, domain));
+      return;
+    }
+    const fields = deriveFields(source, domain, settings);
+    if (!fields || fields.reason) {
+      dropped.push(droppedCopy(row, fields ? fields.reason : "unknown domain", domain));
+      return;
+    }
+    const { flag, flags: domainFlags, dayZero, ...rest } = fields;
+    const start = rest.start;
+    const record = {
+      id: `${domain}-${index}`,
+      domain,
+      lane,
+      subject,
+      kind: rest.kind,
+      start,
+      end: rest.end,
+      endState: rest.endState,
+      open: rest.endState !== "closed",
+      day: start,
+      placeable: toElapsed(start) !== null,
+      clippedStart: false,
+      dayCol: rest.dayCol,
+      date: null,
+      endDate: null,
+      rawDate: rest.rawDate || "",
+      dateConflict: false,
+      refDate: datePart(source[refCol]),
+      label: rest.label,
+      detail: rest.detail || "",
+      category: rest.category || "",
+      value: rest.value === void 0 ? null : rest.value,
+      unit: rest.unit || "",
+      outcome: rest.outcome || "",
+      test: rest.test ?? null,
+      testCode: rest.testCode ?? null,
+      lln: rest.lln ?? null,
+      uln: rest.uln ?? null,
+      flags: {
+        severity: null,
+        serious: false,
+        related: "",
+        abnormal: "",
+        abnormalReason: "",
+        derived: false,
+        direction: null,
+        dayZero: Boolean(dayZero) && start === null,
+        ...domainFlags
+      },
+      flagged: flag ? [flag] : [],
+      source: row,
+      sourceIndex: index,
+      sourceAnchorId: `pje-src-${domain}-${index}`
+    };
+    if (flag) flagged.push(droppedCopy(row, flag, domain));
+    events2.push(resolveEventDate(record, record.refDate));
+  });
+  return { events: events2, dropped, flagged };
+}
+
+// src/patient-journey-explorer/checkInputs.js
+function checkInputs14(domains, settings) {
+  const present = DOMAINS.filter(
+    (domain) => Array.isArray(domains?.[domain]) && domains[domain].length > 0
+  );
+  if (!present.length) {
+    throw new Error(
+      `No usable data: pass at least one of { ae, lb, ex, cm, mh, ds } (or a merged array with a ${settings?.domain_col ?? "DOMAIN"} column).`
+    );
+  }
+  const missing = [];
+  for (const domain of present) {
+    const rows = domains[domain];
+    const property = patient_journey_explorer_default.properties[domain.toLowerCase()];
+    const required = (property?.requiredSettings || []).map(
+      (key) => arrayify(settings[key]).map(String)
+    );
+    for (const chain of required) {
+      if (!chain.length) continue;
+      const found = rows.some((row) => row && chain.some((column) => row[column] !== void 0));
+      if (!found) missing.push(`${domain.toLowerCase()}.${chain.join("|")}`);
+    }
+  }
+  if (missing.length) {
+    throw new Error(`Required variable(s) missing: ${missing.join(", ")}`);
+  }
+}
+
+// src/patient-journey-explorer/labs.js
+var upper2 = (value) => value === null || value === void 0 ? "" : String(value).trim().toUpperCase();
+var finite = (value) => typeof value === "number" && Number.isFinite(value);
+var RATIO_EPSILON = 1e-9;
+var HIGH_FLAGS = ["HIGH", "HH", "H"];
+var LOW_FLAGS = ["LOW", "LL", "L"];
+function eventOf(candidate) {
+  if (!candidate || typeof candidate !== "object") return null;
+  return candidate.event && typeof candidate.event === "object" ? candidate.event : candidate;
+}
+function usable(points) {
+  return arrayify(points).map(eventOf).filter(
+    (event) => event && event.placeable !== false && finite(event.day) && finite(event.value)
+  );
+}
+function pick(candidates, latest) {
+  let best = null;
+  for (const event of candidates) {
+    if (!best) {
+      best = event;
+      continue;
+    }
+    const better = latest ? event.day > best.day : event.day < best.day;
+    const tie = event.day === best.day && event.sourceIndex < best.sourceIndex;
+    if (better || tie) best = event;
+  }
+  return best;
+}
+function labBaseline(points, settings) {
+  const candidates = usable(points);
+  if (!candidates.length) return null;
+  const flagCol = settings?.lb_baseline_flag_col;
+  const flagValue = upper2(settings?.lb_baseline_flag_value ?? "Y");
+  let rule = "flag";
+  let chosen = null;
+  if (flagCol && flagValue) {
+    chosen = pick(
+      candidates.filter((event) => upper2(event.source?.[flagCol]) === flagValue),
+      true
+    );
+  }
+  if (!chosen) {
+    rule = "day";
+    const baselineDay = Number(settings?.lb_baseline_day);
+    const cutoff = Number.isFinite(baselineDay) ? baselineDay : 1;
+    chosen = pick(
+      candidates.filter((event) => event.day <= cutoff),
+      true
+    );
+  }
+  if (!chosen) {
+    rule = "earliest";
+    chosen = pick(candidates, false);
+  }
+  return { day: chosen.day, value: chosen.value, event: chosen, rule };
+}
+function isAbnormalByFlag(event, settings) {
+  const flag = upper2(event?.flags?.abnormal);
+  if (!flag || /^NA$/.test(flag)) return false;
+  return flag !== upper2(settings?.lb_normal_value ?? "NORMAL");
+}
+function isAbnormalByChange(event, baseline, settings) {
+  const value = event?.value;
+  const base = baseline?.value;
+  if (!finite(value) || !finite(base) || base <= 0) return false;
+  const factor = Number(settings?.lb_change_factor);
+  const f = Number.isFinite(factor) && factor > 1 ? factor : 2;
+  const ratio = value / base;
+  return ratio >= f - RATIO_EPSILON || ratio <= 1 / f + RATIO_EPSILON;
+}
+function referenceRatio(event) {
+  if (!event || !finite(event.value)) return null;
+  const flag = upper2(event.flags?.abnormal);
+  const { value, lln, uln } = event;
+  const high = HIGH_FLAGS.includes(flag) || finite(uln) && value > uln;
+  const low = !high && (LOW_FLAGS.includes(flag) || finite(lln) && value < lln);
+  if (high) return finite(uln) && uln !== 0 ? { ratio: value / uln, limit: "ULN" } : null;
+  if (low) return finite(lln) && lln !== 0 ? { ratio: value / lln, limit: "LLN" } : null;
+  return null;
+}
+function configuredTests(settings) {
+  return arrayify(settings?.lb_tests).map(upper2).filter(Boolean);
+}
+function matchesConfiguredTest(event, settings) {
+  if (!event || typeof event !== "object") return false;
+  const tests = configuredTests(settings);
+  if (!tests.length) return true;
+  return tests.includes(upper2(event.test)) || tests.includes(upper2(event.testCode));
+}
+function labTestOrder(labEvents, settings) {
+  const events2 = arrayify(labEvents).filter((event) => event && typeof event === "object");
+  const configured = arrayify(settings?.lb_tests).map(String).filter(Boolean);
+  const seen = [];
+  for (const event of events2) {
+    const test = event.test ?? "";
+    if (test && !seen.includes(test)) seen.push(test);
+  }
+  if (!configured.length) return { tests: seen, missing: [] };
+  const tests = [];
+  const missing = [];
+  for (const entry of configured) {
+    const key = upper2(entry);
+    const match = events2.find(
+      (event) => upper2(event.test) === key || upper2(event.testCode) === key
+    );
+    if (match && match.test && !tests.includes(match.test)) tests.push(match.test);
+    else if (!match) missing.push(entry);
+  }
+  if (!tests.length && events2.length) {
+    console.warn(
+      `patient-journey-explorer: lb_tests (${configured.join(", ")}) matched no lab test name or code; the labs lane is empty.`
+    );
+  }
+  return { tests, missing };
+}
+function padRange(values) {
+  const finiteValues = values.filter(finite);
+  if (!finiteValues.length) return [0, 1];
+  const lo = Math.min(...finiteValues);
+  const hi = Math.max(...finiteValues);
+  const pad = hi === lo ? 1 : (hi - lo) * 0.05;
+  return [lo - pad, hi + pad];
+}
+function buildLabSeries(labEvents, domain, settings, { baselineEvents } = {}) {
+  const events2 = arrayify(labEvents).filter((event) => event && typeof event === "object");
+  if (!events2.length) return [];
+  const baselinePool = Array.isArray(baselineEvents) ? baselineEvents : events2;
+  const { tests } = labTestOrder(events2, settings);
+  const shared = Array.isArray(domain) && domain.length === 2 && domain.every(finite) ? [...domain] : null;
+  return tests.map((test) => {
+    const own = events2.filter((event) => event.test === test);
+    const points = own.filter((event) => event.placeable !== false && finite(event.day) && finite(event.value)).map((event) => ({
+      day: event.day,
+      elapsed: toElapsed(event.day),
+      value: event.value,
+      lln: finite(event.lln) ? event.lln : null,
+      uln: finite(event.uln) ? event.uln : null,
+      nrind: upper2(event.flags?.abnormal),
+      event
+    })).sort((a, b) => a.day - b.day || a.event.sourceIndex - b.event.sourceIndex);
+    const baseline = labBaseline(
+      baselinePool.filter((event) => event && event.test === test),
+      settings
+    );
+    const band = points.filter((point) => point.lln !== null && point.uln !== null).map((point) => ({ day: point.day, lln: point.lln, uln: point.uln }));
+    const unitSource = own.find((event) => event.unit);
+    return {
+      test,
+      testCode: own.find((event) => event.testCode)?.testCode ?? "",
+      unit: unitSource ? unitSource.unit : "",
+      points,
+      baseline,
+      domain: shared,
+      valueDomain: padRange([
+        ...points.map((point) => point.value),
+        ...points.map((point) => point.lln),
+        ...points.map((point) => point.uln),
+        baseline ? baseline.value : null
+      ]),
+      band
+    };
+  });
+}
+
+// src/patient-journey-explorer/structureData.js
+var PRE_STUDY_CLAMP = 60;
+var DOMAIN_MIN_DAY = -14;
+var CAPPED_LANES = ["exposure", "adverseEvents", "labs", "conMeds"];
+var LANE_SORT_RULES = {
+  exposure: "sorted by treatment name",
+  doseChanges: "",
+  adverseEvents: "sorted by severity, then onset",
+  labs: "in the configured test order",
+  conMeds: "sorted by start day, then name",
+  medicalHistory: "",
+  disposition: ""
+};
+var DOMAIN_BY_LANE = Object.fromEntries(
+  Object.entries(LANE_BY_DOMAIN).map(([domain, lane]) => [lane, domain])
+);
+DOMAIN_BY_LANE.doseChanges = "EX";
+var finite2 = (value) => typeof value === "number" && Number.isFinite(value);
+var isBlank2 = (value) => value === null || value === void 0 || typeof value === "string" && (value.trim() === "" || /^na$/i.test(value.trim()));
+var text2 = (value) => isBlank2(value) ? "" : String(value).trim();
+var upper3 = (value) => text2(value).toUpperCase();
+var compareText = (a, b) => a === b ? 0 : a < b ? -1 : 1;
+var dayOrNull = (event) => event.placeable === false ? null : event.day;
+var nullsLast = (a, b) => {
+  const da = finite2(a) ? a : Infinity;
+  const db = finite2(b) ? b : Infinity;
+  return da - db;
+};
+var emptyByDomain = () => Object.fromEntries(DOMAINS.map((domain) => [domain, 0]));
+var emptyByLane = () => Object.fromEntries(LANE_KEYS.map((lane) => [lane, 0]));
+var rowCopy = (row, reason, domain) => ({
+  ...row && typeof row === "object" ? row : {},
+  [DROP_REASON_COLUMN3]: reason,
+  [DROP_DOMAIN_COLUMN]: domain
+});
+function subjectIndex(domains, settings) {
+  const idCol = settings?.id_col ?? "USUBJID";
+  const ids = /* @__PURE__ */ new Set();
+  for (const rows of Object.values(domains || {})) {
+    for (const row of arrayify(rows)) {
+      const id = row && typeof row === "object" ? text2(row[idCol]) : "";
+      if (id) ids.add(id);
+    }
+  }
+  return [...ids].sort();
+}
+function deriveDoseChanges(exEvents, settings) {
+  const candidates = arrayify(exEvents).filter(
+    (event) => event && typeof event === "object" && event.placeable !== false && finite2(event.start) && finite2(event.value)
+  ).sort((a, b) => a.start - b.start || a.sourceIndex - b.sourceIndex);
+  const changes = [];
+  for (let i = 1; i < candidates.length; i += 1) {
+    const prev = candidates[i - 1];
+    const next = candidates[i];
+    const from2 = Number(prev.value);
+    const to2 = Number(next.value);
+    if (from2 === to2) continue;
+    let direction = null;
+    if (to2 > from2 && from2 > 0) direction = "increase";
+    else if (to2 < from2 && to2 > 0) direction = "reduction";
+    else if (to2 === 0 && from2 > 0) direction = "interruption";
+    else if (from2 === 0 && to2 > 0) direction = "restart";
+    const unit = next.unit || prev.unit || "";
+    changes.push({
+      id: `DOSE-${next.sourceIndex}`,
+      domain: "EX",
+      lane: "doseChanges",
+      subject: next.subject,
+      kind: "point",
+      start: next.start,
+      end: null,
+      endState: "closed",
+      open: false,
+      day: next.start,
+      placeable: true,
+      clippedStart: false,
+      dayCol: next.dayCol,
+      date: next.date ?? null,
+      endDate: null,
+      rawDate: next.rawDate || "",
+      dateConflict: Boolean(next.dateConflict),
+      refDate: next.refDate ?? null,
+      label: `${from2} \u2192 ${to2}${unit ? ` ${unit}` : ""}`,
+      detail: direction || "",
+      category: next.category || "",
+      value: to2,
+      unit,
+      outcome: "",
+      test: null,
+      testCode: null,
+      lln: null,
+      uln: null,
+      flags: {
+        severity: null,
+        serious: false,
+        related: "",
+        abnormal: "",
+        abnormalReason: "",
+        derived: true,
+        direction
+      },
+      flagged: [],
+      previousValue: from2,
+      previousSource: prev.source,
+      previousSourceIndex: prev.sourceIndex,
+      source: next.source,
+      sourceIndex: next.sourceIndex,
+      sourceAnchorId: next.sourceAnchorId
+    });
+  }
+  return changes;
+}
+function clampable(event, settings) {
+  if (event.domain === "CM") return true;
+  return event.domain === "MH" && settings?.mh_day_source === "onset";
+}
+function sharedDomain(events2, settings) {
+  const extent = elapsedExtent(events2, settings);
+  if (!extent) return null;
+  const [min, max] = extent;
+  return [min, max + 1];
+}
+function recordExtent(events2, settings) {
+  const extent = elapsedExtent(events2, settings);
+  return extent ? [toStudyDay(extent[0]), toStudyDay(extent[1])] : null;
+}
+function elapsedExtent(events2, settings) {
+  const placeable = arrayify(events2).filter(
+    (event) => event && typeof event === "object" && event.placeable !== false
+  );
+  const daysOf = (event) => {
+    const days = [toElapsed(event.start ?? event.day)];
+    if (event.kind === "interval" && event.endState === "closed" && finite2(event.end)) {
+      days.push(toElapsed(event.end));
+    }
+    return days.filter((day2) => day2 !== null);
+  };
+  const anchored = placeable.filter((event) => !clampable(event, settings)).flatMap(daysOf);
+  const otherMin = anchored.length ? Math.min(...anchored) : null;
+  const floor = otherMin === null ? -Infinity : otherMin - PRE_STUDY_CLAMP;
+  const candidates = [
+    ...anchored,
+    ...placeable.filter((event) => clampable(event, settings)).flatMap(daysOf).filter((day2) => day2 >= floor)
+  ];
+  if (!candidates.length) return null;
+  return [Math.min(DOMAIN_MIN_DAY, ...candidates), Math.max(...candidates)];
+}
+function filterPasses(event, spec, selection, settings) {
+  const cell2 = event.source && typeof event.source === "object" ? event.source[spec.value_col] : void 0;
+  if (spec.type === "flag") {
+    const flagValue = spec.flag_value ?? selection;
+    if (String(flagValue) === "__abnormal__") return isAbnormalByFlag(event, settings);
+    return upper3(cell2) === upper3(flagValue);
+  }
+  return filterMatches(cell2, selection);
+}
+function applyFilters11(events2, filterState, settings, specs) {
+  const state = filterState && typeof filterState === "object" ? filterState : {};
+  const active = arrayify(specs ?? settings?.filters).filter((spec) => {
+    const selection = state[spec.value_col];
+    return selection !== null && selection !== void 0 && selection !== "";
+  });
+  const source = arrayify(events2);
+  if (!active.length) return [...source];
+  return source.filter(
+    (event) => active.every(
+      (spec) => spec.domain !== event.domain || filterPasses(event, spec, state[spec.value_col], settings)
+    )
+  );
+}
+function liveFilters(specs, domains) {
+  return arrayify(specs).filter((spec) => {
+    const rows = arrayify(domains?.[spec.domain]);
+    const exists = rows.some(
+      (row) => row && typeof row === "object" && row[spec.value_col] !== void 0
+    );
+    if (!exists) {
+      console.warn(
+        `The [ ${spec.label} ] filter has been removed because the variable does not exist.`
+      );
+    }
+    return exists;
+  });
+}
+function laneSortKey(laneKey, settings, events2) {
+  const byIndex = (a, b) => (a.sourceIndex ?? 0) - (b.sourceIndex ?? 0);
+  switch (laneKey) {
+    case "exposure":
+      return (a, b) => compareText(String(a.label ?? ""), String(b.label ?? "")) || nullsLast(dayOrNull(a), dayOrNull(b)) || byIndex(a, b);
+    case "adverseEvents":
+      return (a, b) => {
+        const ra = a.flags?.severity?.rank ?? -1;
+        const rb = b.flags?.severity?.rank ?? -1;
+        return rb - ra || nullsLast(dayOrNull(a), dayOrNull(b)) || byIndex(a, b);
+      };
+    case "labs": {
+      const order = labTestOrder(arrayify(events2), settings).tests;
+      const configured = arrayify(settings?.lb_tests).map(upper3);
+      const rank = (event) => {
+        const named = order.indexOf(event.test);
+        if (named >= 0) return named;
+        const byName = configured.indexOf(upper3(event.test));
+        const byCode = configured.indexOf(upper3(event.testCode));
+        const idx = byName >= 0 ? byName : byCode;
+        return idx >= 0 ? idx : Infinity;
+      };
+      return (a, b) => {
+        const ra = rank(a);
+        const rb = rank(b);
+        if (ra !== rb) return ra === Infinity ? 1 : rb === Infinity ? -1 : ra - rb;
+        return compareText(String(a.test ?? ""), String(b.test ?? "")) || nullsLast(dayOrNull(a), dayOrNull(b)) || byIndex(a, b);
+      };
+    }
+    case "conMeds":
+      return (a, b) => nullsLast(dayOrNull(a), dayOrNull(b)) || compareText(String(a.label ?? ""), String(b.label ?? "")) || byIndex(a, b);
+    default:
+      return (a, b) => nullsLast(dayOrNull(a), dayOrNull(b)) || byIndex(a, b);
+  }
+}
+function normalizeAll(domains, settings) {
+  let events2 = [];
+  const dropped = [];
+  const flagged = [];
+  const droppedCounts = { total: 0, byDomain: emptyByDomain(), byReason: {} };
+  const flaggedCounts = { total: 0, endBeforeStart: 0, dateConflict: 0, byReason: {} };
+  for (const domain of DOMAINS) {
+    const result = normalizeDomain3(arrayify(domains?.[domain]), domain, settings);
+    events2 = events2.concat(result.events);
+    for (const row of result.dropped) {
+      dropped.push(row);
+      droppedCounts.total += 1;
+      droppedCounts.byDomain[domain] += 1;
+      const reason = row[DROP_REASON_COLUMN3];
+      droppedCounts.byReason[reason] = (droppedCounts.byReason[reason] || 0) + 1;
+    }
+    for (const row of result.flagged) {
+      flagged.push(row);
+      flaggedCounts.endBeforeStart += 1;
+    }
+  }
+  const bySubject = /* @__PURE__ */ new Map();
+  for (const event of events2) {
+    if (!bySubject.has(event.subject)) bySubject.set(event.subject, []);
+    bySubject.get(event.subject).push(event);
+  }
+  const refDates = /* @__PURE__ */ new Map();
+  const resolved = [];
+  for (const [subject, group] of bySubject) {
+    const ref = referenceDate(group, settings);
+    refDates.set(subject, ref);
+    for (const event of group) {
+      resolved.push(ref && event.refDate === null ? resolveEventDate(event, ref.date) : event);
+    }
+  }
+  for (const event of resolved) {
+    if (!event.dateConflict) continue;
+    flagged.push(
+      rowCopy(
+        event.source,
+        `recorded date ${event.rawDate} disagrees with day ${event.day}`,
+        event.domain
+      )
+    );
+    flaggedCounts.dateConflict += 1;
+  }
+  for (const row of flagged) {
+    flaggedCounts.total += 1;
+    const reason = row[DROP_REASON_COLUMN3];
+    flaggedCounts.byReason[reason] = (flaggedCounts.byReason[reason] || 0) + 1;
+  }
+  return { events: resolved, dropped, droppedCounts, flagged, flaggedCounts, refDates };
+}
+function laneRows(laneKey, placeable) {
+  switch (laneKey) {
+    case "exposure":
+      return [...new Set(placeable.map((event) => String(event.label ?? "")))];
+    case "adverseEvents":
+    case "conMeds":
+      return placeable.map((event) => event.id);
+    case "labs":
+      return [...new Set(placeable.map((event) => String(event.test ?? "")))];
+    default:
+      return [laneKey];
+  }
+}
+function rowKeyOf(laneKey, event) {
+  switch (laneKey) {
+    case "exposure":
+      return String(event.label ?? "");
+    case "adverseEvents":
+    case "conMeds":
+      return event.id;
+    case "labs":
+      return String(event.test ?? "");
+    default:
+      return laneKey;
+  }
+}
+function structureData3(domains, settings, state = {}) {
+  const normalized = normalizeAll(domains, settings);
+  const subjects = subjectIndex(domains, settings);
+  const wanted = [state?.subject, settings?.subject].map(
+    (id) => id === null || id === void 0 ? "" : String(id)
+  );
+  const subject = wanted.find((id) => id && subjects.includes(id)) ?? subjects[0] ?? null;
+  const refDate = subject === null ? null : normalized.refDates.get(subject) ?? null;
+  const subjectEvents = normalized.events.filter((event) => event.subject === subject).map(
+    (event) => event.domain === "LB" && !matchesConfiguredTest(event, settings) ? { ...event, flags: { ...event.flags, unconfiguredTest: true } } : event
+  );
+  const drawable = (event) => !event.flags?.unconfiguredTest;
+  const doseChanges = deriveDoseChanges(
+    subjectEvents.filter((event) => event.domain === "EX"),
+    settings
+  );
+  const base = [...subjectEvents, ...doseChanges];
+  const domain = sharedDomain(base.filter(drawable), settings);
+  const extent = recordExtent(base.filter(drawable), settings);
+  const allEvents = base.map((event) => {
+    if (!domain || event.kind !== "interval" || event.placeable === false) return event;
+    const startE = toElapsed(event.start);
+    return startE !== null && startE < domain[0] ? { ...event, clippedStart: true } : event;
+  });
+  const unconfiguredLabs = allEvents.filter((event) => !drawable(event));
+  const filters = Array.isArray(state?.filterSpecs) ? state.filterSpecs : liveFilters(settings?.filters, domains);
+  const filtered = applyFilters11(allEvents.filter(drawable), state?.filters, settings, filters);
+  const enabled = (lane) => state?.lanes && typeof state.lanes[lane] === "boolean" ? state.lanes[lane] : Boolean(settings?.lanes?.[lane]?.enabled);
+  const cap = Number(settings?.max_rows_per_lane);
+  const rowCap = Number.isFinite(cap) && cap > 0 ? Math.floor(cap) : Infinity;
+  const byLane = {};
+  const lanes = {};
+  const unplaceable = {};
+  const truncatedByLane = emptyByLane();
+  for (const lane of LANE_KEYS) {
+    const laneEvents = filtered.filter((event) => event.lane === lane);
+    laneEvents.sort(laneSortKey(lane, settings, laneEvents));
+    byLane[lane] = laneEvents;
+    const placeable = laneEvents.filter((event) => event.placeable !== false);
+    const rows = laneRows(lane, placeable);
+    const drawnRows = CAPPED_LANES.includes(lane) ? rows.slice(0, rowCap) : rows;
+    const truncated = rows.length - drawnRows.length;
+    truncatedByLane[lane] = truncated;
+    unplaceable[lane] = allEvents.filter(
+      (event) => event.lane === lane && event.placeable === false && drawable(event)
+    );
+    const domainCode2 = DOMAIN_BY_LANE[lane];
+    lanes[lane] = {
+      key: lane,
+      enabled: enabled(lane),
+      supplied: arrayify(domains?.[domainCode2]).length > 0,
+      rows: drawnRows,
+      rowCount: rows.length,
+      drawn: placeable.filter((event) => drawnRows.includes(rowKeyOf(lane, event))),
+      truncated,
+      sortRule: LANE_SORT_RULES[lane] ?? "",
+      unplaceable: unplaceable[lane]
+    };
+  }
+  const allLabs = allEvents.filter((event) => event.domain === "LB");
+  const configuredLabs = allLabs.filter(drawable);
+  const labSeries = buildLabSeries(byLane.labs, domain, settings, {
+    baselineEvents: configuredLabs
+  });
+  const labTestsMissing = allLabs.length ? labTestOrder(allLabs, settings).missing : [];
+  const events2 = filtered.filter((event) => enabled(event.lane)).sort(
+    (a, b) => LANE_KEYS.indexOf(a.lane) - LANE_KEYS.indexOf(b.lane) || nullsLast(dayOrNull(a), dayOrNull(b)) || (a.sourceIndex ?? 0) - (b.sourceIndex ?? 0)
+  );
+  const unplaceableCounts = { byDomain: emptyByDomain(), byLane: emptyByLane() };
+  const counts = emptyByDomain();
+  for (const event of allEvents) {
+    if (event.flags?.derived) continue;
+    counts[event.domain] += 1;
+    if (event.placeable === false) {
+      unplaceableCounts.byDomain[event.domain] += 1;
+      unplaceableCounts.byLane[event.lane] += 1;
+    }
+  }
+  return {
+    subjects,
+    subject,
+    mode: state?.mode === "date" ? "date" : "day",
+    refDate,
+    events: events2,
+    allEvents,
+    byLane,
+    lanes,
+    labSeries,
+    labTestsMissing,
+    unconfiguredLabs,
+    domain,
+    extent,
+    filters,
+    dropped: normalized.dropped,
+    droppedCounts: normalized.droppedCounts,
+    flagged: normalized.flagged,
+    flaggedCounts: normalized.flaggedCounts,
+    unplaceable,
+    unplaceableCounts,
+    truncatedByLane,
+    counts
+  };
+}
+
+// src/patient-journey-explorer/anchor.js
+var ANCHOR_AXIS_TITLE = "Days from anchor";
+var DOMAIN_CODES2 = ["AE", "LB", "EX", "CM", "MH", "DS"];
+var finite3 = (value) => typeof value === "number" && Number.isFinite(value);
+var list = (value) => Array.isArray(value) ? value.filter((e) => e && typeof e === "object") : [];
+var usableBounds = (bounds) => bounds && typeof bounds === "object" && finite3(bounds.elapsedStart) && finite3(bounds.elapsedEnd);
+var upper4 = (value) => value === null || value === void 0 ? "" : String(value).trim().toUpperCase();
+function byStartThenLabel(a, b) {
+  const da = finite3(a.start) ? a.start : Infinity;
+  const db = finite3(b.start) ? b.start : Infinity;
+  if (da !== db) return da - db;
+  const la = String(a.label ?? "");
+  const lb = String(b.label ?? "");
+  if (la !== lb) return la < lb ? -1 : 1;
+  return (a.sourceIndex ?? 0) - (b.sourceIndex ?? 0);
+}
+function relativeDay(day2, anchorDay) {
+  const e = toElapsed(day2);
+  const a = toElapsed(anchorDay);
+  if (e === null || a === null) return null;
+  return e - a;
+}
+function windowBounds(anchorDay, days) {
+  const e0 = toElapsed(anchorDay);
+  const n = Number(days);
+  if (e0 === null || !Number.isFinite(n)) return null;
+  const width = Math.max(0, Math.floor(n));
+  const elapsedStart = e0 - width;
+  const elapsedEnd2 = e0 + width;
+  return {
+    elapsedStart,
+    elapsedEnd: elapsedEnd2,
+    startDay: toStudyDay(elapsedStart),
+    endDay: toStudyDay(elapsedEnd2)
+  };
+}
+function elapsedEnd(event) {
+  if (event.endState === "closed" && finite3(event.end)) {
+    const e = toElapsed(event.end);
+    return e === null ? toElapsed(event.start) : e;
+  }
+  if (endBeforeStart(event)) return toElapsed(event.start);
+  return Infinity;
+}
+var endUnrecorded = (event) => event.endState === "unrecorded" && !endBeforeStart(event);
+function inWindow(event, bounds, settings) {
+  if (!event || typeof event !== "object" || event.placeable === false) return false;
+  if (!usableBounds(bounds)) return false;
+  if (event.kind === "interval") {
+    const startE = toElapsed(event.start);
+    if (startE === null) return false;
+    return startE <= bounds.elapsedEnd && elapsedEnd(event) >= bounds.elapsedStart;
+  }
+  const dayE = toElapsed(event.day);
+  if (dayE === null) return false;
+  return dayE >= bounds.elapsedStart && dayE <= bounds.elapsedEnd;
+}
+function conMedsActiveAt(cmEvents, day2, settings) {
+  const dayE = toElapsed(day2);
+  const events2 = list(cmEvents);
+  if (dayE === null) return { active: [], withoutStart: 0, endUnrecorded: 0 };
+  let withoutStart = 0;
+  const active = [];
+  for (const event of events2) {
+    const startE = event.placeable === false ? null : toElapsed(event.start);
+    if (startE === null) {
+      withoutStart += 1;
+      continue;
+    }
+    if (startE <= dayE && elapsedEnd(event) >= dayE) active.push(event);
+  }
+  active.sort(byStartThenLabel);
+  return { active, withoutStart, endUnrecorded: active.filter(endUnrecorded).length };
+}
+function conMedsStartingLater(cmEvents, bounds, anchorDay) {
+  const anchorE = toElapsed(anchorDay);
+  if (!usableBounds(bounds) || anchorE === null) return [];
+  return list(cmEvents).filter((event) => {
+    if (event.placeable === false) return false;
+    const startE = toElapsed(event.start);
+    return startE !== null && startE > anchorE && startE <= bounds.elapsedEnd;
+  }).sort(byStartThenLabel);
+}
+function abnormalLabsInWindow(labEvents, bounds, settings, { baselineEvents } = {}) {
+  const events2 = list(labEvents);
+  if (!usableBounds(bounds) || !events2.length) return [];
+  const pool = Array.isArray(baselineEvents) ? list(baselineEvents) : events2;
+  const baselines = /* @__PURE__ */ new Map();
+  const baselineFor = (test) => {
+    if (!baselines.has(test)) {
+      baselines.set(
+        test,
+        labBaseline(
+          pool.filter((event) => event.test === test),
+          settings
+        )
+      );
+    }
+    return baselines.get(test);
+  };
+  return events2.filter((event) => inWindow(event, bounds, settings)).map((event) => {
+    const flag = isAbnormalByFlag(event, settings);
+    const change = isAbnormalByChange(event, baselineFor(event.test), settings);
+    if (!flag && !change) return null;
+    const abnormalReason = flag && change ? "both" : flag ? "flag" : "change";
+    return { ...event, flags: { ...event.flags, abnormalReason } };
+  }).filter(Boolean).sort(
+    (a, b) => a.day - b.day || String(a.test ?? "").localeCompare(String(b.test ?? "")) || a.sourceIndex - b.sourceIndex
+  );
+}
+function doseChangesInWindow(doseEvents, bounds) {
+  if (!usableBounds(bounds)) return [];
+  return list(doseEvents).filter((event) => inWindow(event, bounds)).sort((a, b) => a.day - b.day || a.sourceIndex - b.sourceIndex);
+}
+function termKey(event, settings) {
+  const source = event?.source && typeof event.source === "object" ? event.source : {};
+  const decod = upper4(source[settings?.ae_decod_col]);
+  return decod || upper4(source[settings?.ae_term_col]);
+}
+function priorSameTerm(aeEvents, anchorEvent, settings) {
+  if (!anchorEvent || typeof anchorEvent !== "object" || !finite3(anchorEvent.start)) return [];
+  const key = termKey(anchorEvent, settings);
+  if (!key) return [];
+  return list(aeEvents).filter((event) => {
+    if (event.id === anchorEvent.id || event.placeable === false || !finite3(event.start))
+      return false;
+    if (termKey(event, settings) !== key) return false;
+    return event.start < anchorEvent.start || event.start === anchorEvent.start && event.sourceIndex < anchorEvent.sourceIndex;
+  }).sort((a, b) => b.start - a.start || b.sourceIndex - a.sourceIndex);
+}
+function buildContext(structured, anchorEvent, settings) {
+  if (!structured || typeof structured !== "object") return null;
+  if (!anchorEvent || typeof anchorEvent !== "object" || anchorEvent.placeable === false)
+    return null;
+  const days = Number(settings?.context_window_days);
+  const width = Number.isFinite(days) ? Math.max(0, Math.floor(days)) : 30;
+  const bounds = windowBounds(anchorEvent.day, width);
+  if (!bounds) return null;
+  const byLane = structured.byLane && typeof structured.byLane === "object" ? structured.byLane : {};
+  const allEvents = list(structured.allEvents);
+  const record = (lane) => allEvents.length ? allEvents.filter((event) => event.lane === lane && !event.flags?.unconfiguredTest) : list(byLane[lane]);
+  const labPool = record("labs");
+  const active = conMedsActiveAt(record("conMeds"), anchorEvent.day, settings);
+  const conMedsLater = conMedsStartingLater(record("conMeds"), bounds, anchorEvent.day);
+  const abnormalLabs = abnormalLabsInWindow(labPool, bounds, settings, {
+    baselineEvents: labPool.length ? labPool : void 0
+  });
+  const doseChanges = doseChangesInWindow(record("doseChanges"), bounds);
+  const priorEvents = priorSameTerm(record("adverseEvents"), anchorEvent, settings);
+  const inWindowEvents = list(structured.events).filter(
+    (event) => inWindow(event, bounds, settings)
+  );
+  const aeEndUnrecorded = inWindowEvents.filter(
+    (event) => event.domain === "AE" && endUnrecorded(event)
+  ).length;
+  const unplaceableByDomain = {};
+  for (const domain of DOMAIN_CODES2) {
+    unplaceableByDomain[domain] = Number(structured.unplaceableCounts?.byDomain?.[domain]) || 0;
+  }
+  const truncatedByLane = {};
+  for (const [lane, count2] of Object.entries(structured.truncatedByLane || {})) {
+    truncatedByLane[lane] = Number(count2) || 0;
+  }
+  return {
+    subject: structured.subject ?? anchorEvent.subject ?? null,
+    mode: (structured.mode ?? settings?.time?.mode) === "date" ? "date" : "day",
+    anchor: {
+      id: anchorEvent.id,
+      domain: anchorEvent.domain,
+      lane: anchorEvent.lane,
+      label: anchorEvent.label,
+      day: anchorEvent.day,
+      date: anchorEvent.date ?? null,
+      source: anchorEvent.source,
+      sourceIndex: anchorEvent.sourceIndex,
+      sourceAnchorId: anchorEvent.sourceAnchorId
+    },
+    window: { days: width, ...bounds },
+    conMeds: active.active,
+    conMedsLater,
+    abnormalLabs,
+    doseChanges,
+    priorEvents,
+    inWindow: inWindowEvents,
+    counts: {
+      conMeds: active.active.length,
+      conMedsLater: conMedsLater.length,
+      abnormalLabs: abnormalLabs.length,
+      doseChanges: doseChanges.length,
+      priorEvents: priorEvents.length,
+      inWindow: inWindowEvents.length
+    },
+    notEvaluated: {
+      conMedsWithoutStart: active.withoutStart,
+      conMedsEndUnrecorded: active.endUnrecorded,
+      aeEndUnrecorded,
+      unplaceableByDomain,
+      truncatedByLane
+    },
+    generatedAt: (/* @__PURE__ */ new Date()).toISOString()
+  };
+}
+
+// src/patient-journey-explorer/palette.js
+var PJE_PALETTE = {
+  light: {
+    // surfaces & chrome
+    surface: "#ffffff",
+    // .sv-chart-wrap background
+    page: "#faf6f1",
+    // site.css --paper
+    panel: "#f6f8fa",
+    border: "#d8dee4",
+    grid: "#e1e0d9",
+    inkPrimary: "#1f2933",
+    inkSecondary: "#52616f",
+    // floor for ALL text under 24px — the library's muted ink fails AA
+    inkMuted: "#898781",
+    // non-text chrome only (window edges)
+    warning: "#9a3412",
+    // lanes 1/3/5 — categorical
+    ex: "#008300",
+    // exposure bar
+    ae: "#4a3aa7",
+    // adverse-event bar + start dot
+    cm: "#d55181",
+    // con-med bar
+    // lanes 2/4/6/7 — chrome ink
+    doseCaret: "#111827",
+    doseNotch: "#ffffff",
+    lbTrace: "#52616f",
+    mh: "#52616f",
+    ds: "#52616f",
+    // AE severity (D23): ONE opaque fill at every grade — an alpha ramp put MILD
+    // at 2.05:1 against white, under the 3:1 gate PJE-ACC-001 asserts. Severity
+    // is carried by bar height and border width instead; the alpha map is kept
+    // at 1 so a consumer reading it draws exactly what the gate measured.
+    aeSeverityAlpha: { MILD: 1, MODERATE: 1, SEVERE: 1 },
+    aeSeverityHeight: { MILD: 5, MODERATE: 7, SEVERE: 9 },
+    aeSeverityBorder: { MILD: 1, MODERATE: 1.5, SEVERE: 2 },
+    // labs — diverging arms + neutral midpoint
+    labHigh: "#eb6834",
+    labLow: "#0d366b",
+    labBand: "#f0efec",
+    // status
+    escalate: "#d03b3b",
+    // reference lines
+    ruleDay1: "#52616f",
+    ruleDisposition: "#52616f",
+    ruleAnchor: "#111827",
+    // context window
+    windowFill: "rgba(17, 24, 39, 0.06)",
+    windowEdge: "#898781",
+    // focus
+    focusRing: "#0b62a4",
+    focusSeparator: "#ffffff"
+  },
+  dark: {
+    surface: "#1a1a19",
+    page: "#0d0d0d",
+    panel: "#232320",
+    border: "#3a3a37",
+    grid: "#2c2c2a",
+    inkPrimary: "#f5f5f3",
+    inkSecondary: "#c3c2b7",
+    inkMuted: "#898781",
+    warning: "#f0b37e",
+    ex: "#008300",
+    ae: "#9085e9",
+    cm: "#d55181",
+    doseCaret: "#ffffff",
+    doseNotch: "#1a1a19",
+    lbTrace: "#c3c2b7",
+    mh: "#c3c2b7",
+    ds: "#c3c2b7",
+    aeSeverityAlpha: { MILD: 1, MODERATE: 1, SEVERE: 1 },
+    aeSeverityHeight: { MILD: 5, MODERATE: 7, SEVERE: 9 },
+    aeSeverityBorder: { MILD: 1, MODERATE: 1.5, SEVERE: 2 },
+    labHigh: "#d95926",
+    labLow: "#9ec5f4",
+    labBand: "#383835",
+    escalate: "#e66767",
+    ruleDay1: "#c3c2b7",
+    ruleDisposition: "#c3c2b7",
+    ruleAnchor: "#ffffff",
+    windowFill: "rgba(255, 255, 255, 0.08)",
+    windowEdge: "#898781",
+    focusRing: "#86b6ef",
+    // #0b62a4 is 2.73:1 on the dark surface and fails
+    focusSeparator: "#1a1a19"
+  }
+};
+var PJE_GLYPHS = {
+  // H / L are the one-letter aliases labs.js and draw.js already read as
+  // high / low; ABNORMAL is the direction-unknown glyph every other non-normal
+  // indicator falls back to, so an abnormal point never wears the normal ring.
+  labFlag: {
+    HIGH: "triangle-up",
+    H: "triangle-up",
+    LOW: "triangle-down",
+    L: "triangle-down",
+    HH: "triangle-up-double",
+    LL: "triangle-down-double",
+    ABNORMAL: "diamond",
+    NORMAL: "circle-open"
+  },
+  doseChange: {
+    INCREASE: "caret-up",
+    REDUCTION: "caret-down",
+    INTERRUPTION: "caret-pause",
+    RESTART: "caret-restart"
+  },
+  aeStartDot: { serious: "circle-filled", default: "circle-open" },
+  // An adverse event with no recorded severity draws a hatched bar at the
+  // MODERATE height and says so in its accessible name (PJE-ACC-002).
+  aeSeverityMissing: "hatch-bar"
+};
+var PJE_MARKS = {
+  exBarHeight: 12,
+  cmBarHeight: 8,
+  mhDotRadius: 4,
+  labGlyphSize: 9,
+  labGlyphSizeExtreme: 11,
+  barRadius: 4,
+  // rounded data-ends
+  surfaceGap: 2,
+  // between overlapping fills, and inside the escalation ring
+  lineWidth: 2,
+  escalateRingWidth: 2,
+  focusRingWidth: 2,
+  focusSeparatorWidth: 2
+};
+var PJE_DEEMPHASIS = {
+  fillAlpha: { ae: 0.4, ex: 0.55, cm: 0.55 },
+  strokeAlpha: 0.75
+};
+var propertyName = (key) => `--pje-${key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`;
+function resolveTheme(root, mode) {
+  const prefersDark = typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const base = PJE_PALETTE[mode || (prefersDark ? "dark" : "light")] || PJE_PALETTE.light;
+  const out = { ...base };
+  if (!root || typeof window === "undefined" || typeof window.getComputedStyle !== "function")
+    return out;
+  const computed = window.getComputedStyle(root);
+  for (const key of Object.keys(base)) {
+    if (typeof base[key] !== "string") continue;
+    const value = String(computed.getPropertyValue(propertyName(key)) || "").trim();
+    if (value) out[key] = value;
+  }
+  return out;
+}
+
+// src/patient-journey-explorer/getPlugins.js
+var DOMAIN_LABELS = {
+  EX: "Exposure",
+  DOSE: "Dose change",
+  AE: "Adverse event",
+  LB: "Lab result",
+  CM: "Con-med",
+  MH: "Medical history",
+  DS: "Disposition"
+};
+var MIN_BAR_WIDTH = 4;
+var GESTURE_LINE = "Enter to anchor \xB7 Shift+Enter to open the source record";
+var GESTURE_SENTENCE = "Press Enter to anchor time on this event, Shift and Enter to open its source record.";
+var HUE_BY_LANE = { exposure: "ex", adverseEvents: "ae", conMeds: "cm" };
+var BAR_LANES = ["exposure", "adverseEvents", "conMeds"];
+var POINT_LANES = ["doseChanges", "medicalHistory", "disposition"];
+var SEVERITY_KEYS = ["MILD", "MODERATE", "SEVERE"];
+var finite4 = (value) => typeof value === "number" && Number.isFinite(value);
+var isEvent = (event) => Boolean(event) && typeof event === "object";
+var upper5 = (value) => value === null || value === void 0 ? "" : String(value).trim().toUpperCase();
+var domainCode = (event) => event.flags?.derived ? "DOSE" : event.domain;
+var usableDomain2 = (domain) => Array.isArray(domain) && domain.length === 2 && domain.every(finite4);
+function humanize(value) {
+  const text3 = String(value ?? "").trim();
+  if (!text3 || /[a-z]/.test(text3)) return text3;
+  return text3.charAt(0).toUpperCase() + text3.slice(1).toLowerCase();
+}
+function withAlpha2(color2, alpha2) {
+  const a = Math.min(1, Math.max(0, Number(alpha2)));
+  const text3 = String(color2 ?? "").trim();
+  const hex2 = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(text3);
+  if (hex2) {
+    let digits = hex2[1];
+    if (digits.length === 3) digits = digits.replace(/./g, (c) => c + c);
+    const [r, g, b] = [0, 2, 4].map((i) => parseInt(digits.slice(i, i + 2), 16));
+    return `rgba(${r}, ${g}, ${b}, ${Number.isFinite(a) ? a : 1})`;
+  }
+  const rgb = /^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*[\d.]+\s*)?\)$/i.exec(text3);
+  if (rgb) return `rgba(${rgb[1]}, ${rgb[2]}, ${rgb[3]}, ${Number.isFinite(a) ? a : 1})`;
+  return text3;
+}
+function severityStyle(event, theme, settings) {
+  const severity = event?.flags?.severity ?? null;
+  const missing = severity === null;
+  let bucket = "MODERATE";
+  if (severity) {
+    const key = upper5(severity.key);
+    if (SEVERITY_KEYS.includes(key)) bucket = key;
+    else if (severity.rank > 0) {
+      const count2 = Array.isArray(settings?.ae_severity_values) ? settings.ae_severity_values.length : 0;
+      bucket = severity.rank === 1 ? "MILD" : severity.rank === count2 ? "SEVERE" : "MODERATE";
+    }
+  }
+  const heights = theme?.aeSeverityHeight || {};
+  const borders = theme?.aeSeverityBorder || {};
+  const alphas = theme?.aeSeverityAlpha || {};
+  return {
+    key: severity ? severity.key : null,
+    height: finite4(heights[bucket]) ? heights[bucket] : 7,
+    borderWidth: finite4(borders[bucket]) ? borders[bucket] : 1.5,
+    alpha: finite4(alphas[bucket]) ? alphas[bucket] : 1,
+    glyph: missing ? PJE_GLYPHS.aeSeverityMissing : "bar",
+    missing
+  };
+}
+function glyphFor(event, settings) {
+  if (!isEvent(event)) return "dot";
+  if (event.flags?.derived) {
+    return PJE_GLYPHS.doseChange[upper5(event.flags.direction)] || "caret-up";
+  }
+  switch (event.domain) {
+    case "AE":
+      return event.flags?.severity === null ? PJE_GLYPHS.aeSeverityMissing : "bar";
+    case "EX":
+    case "CM":
+      return "bar";
+    case "LB": {
+      const flag = upper5(event.flags?.abnormal);
+      if (!flag || flag === "NA") return "dot";
+      if (flag === upper5(settings?.lb_normal_value ?? "NORMAL")) return PJE_GLYPHS.labFlag.NORMAL;
+      return PJE_GLYPHS.labFlag[flag] || PJE_GLYPHS.labFlag.ABNORMAL;
+    }
+    case "MH":
+      return "circle-open";
+    default:
+      return "dot";
+  }
+}
+function endCapFor(event) {
+  if (!isEvent(event) || event.kind !== "interval") return "closed";
+  if (event.endState === "closed" || endBeforeStart(event)) return "closed";
+  return event.endState === "ongoing" ? "arrow" : "fade";
+}
+function markGeometry(event, { lane, domain, settings, theme } = {}) {
+  if (!isEvent(event) || event.placeable === false) return null;
+  const start = toElapsed(event.kind === "interval" ? event.start : event.day);
+  if (start === null) return null;
+  const hasDomain = usableDomain2(domain);
+  const glyph = glyphFor(event, settings);
+  const endCap = endCapFor(event);
+  let x0 = start;
+  let x1 = start;
+  if (event.kind === "interval") {
+    if (event.clippedStart && hasDomain) x0 = Math.max(domain[0], start);
+    if (event.endState === "closed" && finite4(event.end)) x1 = toElapsed(event.end) ?? start;
+    else if (endBeforeStart(event)) x1 = start;
+    else x1 = hasDomain ? domain[1] : start;
+  }
+  let height;
+  switch (lane) {
+    case "exposure":
+      height = PJE_MARKS.exBarHeight;
+      break;
+    case "conMeds":
+      height = PJE_MARKS.cmBarHeight;
+      break;
+    case "adverseEvents":
+      height = severityStyle(event, theme, settings).height;
+      break;
+    case "labs":
+      height = /double$/.test(glyph) ? PJE_MARKS.labGlyphSizeExtreme : PJE_MARKS.labGlyphSize;
+      break;
+    case "doseChanges":
+      height = PJE_MARKS.labGlyphSize;
+      break;
+    default:
+      height = PJE_MARKS.mhDotRadius * 2;
+  }
+  return {
+    x0,
+    x1,
+    height,
+    minWidth: MIN_BAR_WIDTH,
+    endCap,
+    glyph,
+    clippedStart: Boolean(event.clippedStart)
+  };
+}
+function dayLabel(day2, { mode, refDate } = {}) {
+  if (!finite4(day2)) return "no study day";
+  if (mode === "date") {
+    const date = dayToDate(day2, refDate);
+    if (date) return date;
+  }
+  return `Day ${day2}`;
+}
+function startLabel(event, options) {
+  if (options.mode === "date" && event.date) return event.date;
+  return dayLabel(event.day, options);
+}
+function spanLabel(event, options = {}) {
+  if (!isEvent(event) || event.placeable === false || !finite4(event.day)) {
+    return "No study day recorded";
+  }
+  const start = startLabel(event, options);
+  if (event.kind !== "interval") return start;
+  if (event.endState === "closed" && finite4(event.end)) {
+    const endDate = options.mode === "date" ? event.endDate || dayToDate(event.end, options.refDate) : null;
+    return `${start} to ${endDate || `day ${event.end}`}`;
+  }
+  if (event.endState === "ongoing") {
+    const outcome = String(event.outcome ?? "").trim().toLowerCase();
+    return `${start} to ongoing${outcome ? ` (${outcome})` : ""}`;
+  }
+  if (endBeforeStart(event)) return `${start}, end day precedes start; shown as a single day`;
+  return `${start}, end not recorded`;
+}
+function ratioLine(event) {
+  if (!isEvent(event) || event.domain !== "LB") return null;
+  const ratio = referenceRatio(event);
+  return ratio ? `${ratio.ratio.toFixed(2)} \xD7 ${ratio.limit}` : null;
+}
+function anchorLine(event, anchor) {
+  const offset = relativeDay(event.day, anchor?.day);
+  if (offset === null) return null;
+  const sign2 = offset >= 0 ? "+" : "";
+  return `${sign2}${offset} day${Math.abs(offset) === 1 ? "" : "s"} from anchor`;
+}
+function domainLine(event) {
+  const parts = [DOMAIN_LABELS[domainCode(event)] || event.domain];
+  if (event.domain === "AE" && !event.flags?.derived) {
+    if (event.flags?.severity) parts.push(event.flags.severity.label);
+    if (event.flags?.related) parts.push(`related: ${event.flags.related}`);
+  } else if (event.domain === "LB") {
+    const flag = upper5(event.flags?.abnormal);
+    parts.push(flag || "indicator not recorded");
+  } else if (event.flags?.derived && event.flags.direction) {
+    parts.push(event.flags.direction);
+  }
+  return parts.join(" \xB7 ");
+}
+function detailLine(event) {
+  const detail = String(event.detail ?? "").trim();
+  if (event.flags?.derived && detail === String(event.flags.direction ?? "")) return "";
+  return detail;
+}
+function titleLine(event) {
+  if (event.domain === "LB" && event.test) return `${event.test} ${event.label}`.trim();
+  return String(event.label ?? "");
+}
+function tooltipLines3(event, settings, { mode, refDate, anchor } = {}) {
+  if (!isEvent(event)) return [];
+  const options = { mode, refDate };
+  const title = titleLine(event);
+  const lines = [title, domainLine(event), spanLabel(event, options)];
+  if (event.domain === "AE" && !event.flags?.derived) {
+    if (event.flags?.serious) lines.push("SAE");
+    if (event.flags?.severity === null) lines.push("severity not recorded");
+  }
+  const ratio = ratioLine(event);
+  if (ratio) lines.push(ratio);
+  if (anchor) {
+    const offset = anchorLine(event, anchor);
+    if (offset) lines.push(offset);
+  }
+  const category = String(event.category ?? "").trim();
+  if (category && !title.includes(category)) lines.push(category);
+  const detail = detailLine(event);
+  if (detail) lines.push(detail);
+  const rawDate = String(event.rawDate ?? "").trim();
+  if (rawDate && !isFullDate(rawDate)) lines.push(`start date recorded as ${rawDate} (partial)`);
+  if (event.dateConflict && rawDate) {
+    lines.push(`recorded date ${rawDate} disagrees with day ${event.day}`);
+  }
+  if (event.placeable !== false && event.dayCol) lines.push(`placed by ${event.dayCol}`);
+  lines.push(GESTURE_LINE);
+  return lines;
+}
+function laneAriaLabel(event, settings, { mode, refDate } = {}) {
+  if (!isEvent(event)) return "";
+  const options = { mode, refDate };
+  const parts = [];
+  if (event.domain === "LB" && event.test) parts.push(`${event.test} ${event.label}`.trim());
+  else if (event.flags?.derived) parts.push(String(event.label ?? ""));
+  else parts.push(humanize(event.label));
+  parts.push((DOMAIN_LABELS[domainCode(event)] || event.domain).toLowerCase());
+  if (event.domain === "AE" && !event.flags?.derived) {
+    parts.push(
+      event.flags?.severity ? String(event.flags.severity.label).toLowerCase() : "severity not recorded"
+    );
+    if (event.flags?.serious) parts.push("serious (SAE)");
+    if (event.flags?.related) parts.push(`related: ${event.flags.related}`);
+  } else if (event.domain === "LB") {
+    const flag = upper5(event.flags?.abnormal);
+    if (flag) parts.push(flag);
+    const ratio = ratioLine(event);
+    if (ratio) parts.push(ratio);
+  } else if (event.flags?.derived && event.flags.direction) {
+    parts.push(event.flags.direction);
+  }
+  const span = spanLabel(event, options);
+  parts.push(span.replace(/^(Day|No)/, (word) => word.toLowerCase()));
+  return `${parts.join(", ")}. ${GESTURE_SENTENCE}`;
+}
+function emphasisOf(event, bounds, settings) {
+  if (!bounds) return "full";
+  return inWindow(event, bounds, settings) ? "full" : "dim";
+}
+function marksColors(hueKey, emphasis, theme) {
+  const hue2 = theme?.[hueKey] || "#000000";
+  if (emphasis !== "dim") return { fill: hue2, stroke: hue2 };
+  return {
+    fill: withAlpha2(hue2, PJE_DEEMPHASIS.fillAlpha[hueKey] ?? 0.5),
+    stroke: withAlpha2(hue2, PJE_DEEMPHASIS.strokeAlpha)
+  };
+}
+function barDataset(lane, thickness, entries2) {
+  const dataset = {
+    type: "bar",
+    label: lane,
+    indexAxis: "y",
+    grouped: false,
+    barThickness: thickness,
+    minBarLength: MIN_BAR_WIDTH,
+    borderSkipped: false,
+    borderRadius: PJE_MARKS.barRadius,
+    data: [],
+    backgroundColor: [],
+    borderColor: [],
+    borderWidth: []
+  };
+  for (const { point, fill, stroke, borderWidth } of entries2) {
+    dataset.data.push(point);
+    dataset.backgroundColor.push(fill);
+    dataset.borderColor.push(stroke);
+    dataset.borderWidth.push(borderWidth);
+  }
+  return dataset;
+}
+function buildLaneDatasets(lane, events2, { domain, settings, theme, bounds } = {}) {
+  const drawable = (Array.isArray(events2) ? events2 : []).filter(
+    (event) => isEvent(event) && event.placeable !== false
+  );
+  if (!drawable.length) return [];
+  const context = { lane, domain, settings, theme };
+  if (BAR_LANES.includes(lane)) {
+    const hueKey = HUE_BY_LANE[lane];
+    const groups = /* @__PURE__ */ new Map();
+    for (const event of drawable) {
+      const geometry = markGeometry(event, context);
+      if (!geometry) continue;
+      const emphasis = emphasisOf(event, bounds, settings);
+      const severity = lane === "adverseEvents" ? severityStyle(event, theme, settings) : null;
+      const { fill, stroke } = marksColors(hueKey, emphasis, theme);
+      const thickness = severity ? severity.height : geometry.height;
+      const point = {
+        x: [geometry.x0, geometry.x1],
+        y: lane === "exposure" ? String(event.label ?? "") : event.id,
+        event,
+        glyph: geometry.glyph,
+        endCap: geometry.endCap,
+        emphasis,
+        clippedStart: geometry.clippedStart,
+        height: thickness,
+        serious: Boolean(event.flags?.serious)
+      };
+      if (!groups.has(thickness)) groups.set(thickness, []);
+      groups.get(thickness).push({
+        point,
+        fill,
+        stroke,
+        borderWidth: severity ? severity.borderWidth : 0
+      });
+    }
+    return [...groups.keys()].sort((a, b) => a - b).map((thickness) => barDataset(lane, thickness, groups.get(thickness)));
+  }
+  if (lane === "labs") {
+    const points = drawable.filter((event) => finite4(event.value)).map((event) => {
+      const x = toElapsed(event.day);
+      if (x === null) return null;
+      return {
+        x,
+        y: event.value,
+        event,
+        glyph: glyphFor(event, settings),
+        endCap: "closed",
+        emphasis: emphasisOf(event, bounds, settings),
+        nrind: upper5(event.flags?.abnormal),
+        ratio: ratioLine(event)
+      };
+    }).filter(Boolean).sort((a, b) => a.x - b.x || a.event.sourceIndex - b.event.sourceIndex);
+    if (!points.length) return [];
+    return [
+      {
+        type: "line",
+        label: points[0].event.test || "labs",
+        data: points,
+        borderColor: theme?.lbTrace,
+        borderWidth: PJE_MARKS.lineWidth,
+        pointRadius: 0,
+        pointHitRadius: 0,
+        tension: 0,
+        spanGaps: true,
+        fill: false
+      }
+    ];
+  }
+  if (POINT_LANES.includes(lane)) {
+    const points = drawable.map((event) => {
+      const x = toElapsed(event.day);
+      if (x === null) return null;
+      return {
+        x,
+        y: lane,
+        event,
+        glyph: glyphFor(event, settings),
+        endCap: "closed",
+        emphasis: emphasisOf(event, bounds, settings),
+        reference: lane === "disposition" ? Boolean(event.flags?.reference) : false
+      };
+    }).filter(Boolean).sort((a, b) => a.x - b.x || a.event.sourceIndex - b.event.sourceIndex);
+    if (!points.length) return [];
+    return [
+      {
+        type: "scatter",
+        label: lane,
+        data: points,
+        pointRadius: 0,
+        pointHitRadius: 0,
+        showLine: false
+      }
+    ];
+  }
+  return [];
+}
+
+// src/patient-journey-explorer/styles.js
+var STYLE_ID5 = "safety-viz-patient-journey-styles";
+var propertyName2 = (key) => `--pje-${key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`;
+function tokenBlock(mode) {
+  return Object.entries(PJE_PALETTE[mode]).filter(([, value]) => typeof value === "string").map(([key, value]) => `${propertyName2(key)}:${value}`).join(";");
+}
+function moduleCss() {
+  const L = PLOT_GUTTER_LEFT2;
+  const R = PLOT_GUTTER_RIGHT2;
+  return `
+.sv-pje-root{${tokenBlock("light")}}
+:root[data-theme=dark] .sv-pje-root{${tokenBlock("dark")}}
+@media (prefers-color-scheme:dark){:root[data-theme=auto] .sv-pje-root{${tokenBlock("dark")}}}
+
+/* --- the lane stack inside the shell's chart card (design \xA76.1) ------------ */
+.sv-root.safety-patient-journey{--sv-rail-width:360px}
+.safety-patient-journey .sv-chart-wrap{height:auto;padding:.75rem .75rem .5rem;background:var(--pje-surface);color:var(--pje-ink-primary)}
+/* The shell pins its annotation to the card's top-right corner, which here is
+   the first lane group \u2014 the pill covered the group header and the end of the
+   exposure bar. The lanes fill the card, so the hint sits in flow beneath the
+   axis strip instead, where it also links to the panel on a stacked layout. */
+.safety-patient-journey .sv-main-annotation{position:static;display:flex;flex-wrap:wrap;align-items:center;gap:.35rem .6rem;margin:.5rem 0 0;padding:.3rem .5rem;font-size:.78rem;color:var(--pje-ink-secondary)}
+.safety-patient-journey .sv-main-annotation:empty{display:none}
+/* The notice above the lane stack (PJE-ANCH-006): the one line a first-time
+   reviewer needs \u2014 that the marks are clickable and what clicking shows. */
+.sv-pje-cue{display:flex;flex-wrap:wrap;align-items:baseline;gap:.2rem .5rem;margin:0 0 .6rem;padding:.55rem .75rem;border:1px solid var(--pje-border);border-left:4px solid var(--pje-focus-ring);border-radius:6px;background:var(--pje-panel);font-size:.84rem;line-height:1.4;color:var(--pje-ink-primary)}
+.sv-pje-cue[hidden]{display:none}
+.sv-pje-cue strong{font-weight:700}
+.sv-pje-annotation-link{border:0;background:none;padding:0;font:inherit;color:var(--pje-focus-ring);text-decoration:underline;cursor:pointer}
+.sv-pje-annotation-link:focus-visible{outline:2px solid var(--pje-focus-ring);outline-offset:1px}
+.sv-pje-lanes{position:relative;overflow-y:auto;overflow-x:hidden}
+.sv-pje-note{margin:.5rem 0;font-size:.85rem;color:var(--pje-ink-secondary)}
+.sv-pje-group{margin:0 0 .3rem}
+.sv-pje-group-toggle{display:flex;align-items:center;gap:.4rem;width:100%;border:0;border-bottom:1px solid var(--pje-border);background:transparent;color:var(--pje-ink-secondary);font:inherit;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:.3rem 0 .25rem;margin:0 0 .25rem;cursor:pointer;text-align:left}
+.sv-pje-group-toggle::before{content:"\\25BE";font-size:.7rem}
+.sv-pje-group-toggle[aria-expanded=false]::before{content:"\\25B8"}
+.sv-pje-group-toggle:focus-visible{outline:2px solid var(--pje-focus-ring);outline-offset:1px}
+.sv-pje-group-body[hidden]{display:none}
+.sv-pje-lane{position:relative;box-sizing:border-box;margin:0 0 2px}
+.sv-pje-lane-canvas{position:absolute;inset:0}
+.sv-pje-canvas{display:block;width:100%;height:100%}
+.sv-pje-lane-label{position:absolute;left:0;top:0;bottom:0;width:${L}px;box-sizing:border-box;padding:0 .5rem 0 0;display:flex;flex-direction:column;justify-content:center;font-size:.74rem;line-height:1.2;color:var(--pje-ink-secondary);pointer-events:none;overflow:hidden;z-index:1}
+.sv-pje-lane-label strong{color:var(--pje-ink-primary);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sv-pje-lane-label small{font-size:.68rem;line-height:1.15;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}
+.sv-pje-lane-empty{position:absolute;left:${L}px;right:${R}px;top:0;bottom:0;display:flex;align-items:center;font-size:.78rem;color:var(--pje-ink-secondary)}
+.sv-pje-lane-foot{margin:.05rem 0 .3rem ${L}px;font-size:.72rem;color:var(--pje-ink-secondary)}
+
+/* --- the keyboard overlay: real buttons over the canvas (design \xA78) -------- */
+.sv-pje-marks{position:absolute;inset:0;pointer-events:none;z-index:2}
+.sv-pje-mark{position:absolute;box-sizing:border-box;margin:0;padding:0;border:0;background:transparent;pointer-events:auto;cursor:pointer;border-radius:3px}
+.sv-pje-mark:focus{outline:none}
+.sv-pje-mark:focus-visible{outline:2px solid var(--pje-focus-ring);outline-offset:2px;box-shadow:0 0 0 2px var(--pje-focus-separator)}
+
+/* --- the one shared axis strip, pinned below the stack (design \xA76.2) ------- */
+.sv-pje-axis{position:relative;margin:.35rem 0 0;padding:0 ${R}px 0 ${L}px;height:2.3rem}
+.sv-pje-axis-title{position:absolute;left:0;top:0;width:${L}px;box-sizing:border-box;padding:.35rem .5rem 0 0;font-size:.7rem;font-weight:600;color:var(--pje-ink-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sv-pje-axis-track{position:relative;height:100%;border-top:1px solid var(--pje-border)}
+.sv-pje-axis-tick{position:absolute;top:0;transform:translateX(-50%);padding-top:.35rem;font-size:.68rem;color:var(--pje-ink-secondary);font-variant-numeric:tabular-nums;white-space:nowrap}
+.sv-pje-axis-tick::before{content:"";position:absolute;left:50%;top:-1px;width:1px;height:4px;background:var(--pje-ink-secondary)}
+.sv-pje-axis-tick.is-anchor{font-weight:700;color:var(--pje-ink-primary)}
+.sv-pje-axis-tick.is-anchor::before{width:2px;background:var(--pje-rule-anchor)}
+
+/* --- the tooltip and the footnote line (design \xA76.5, \xA76.7) ----------------- */
+.sv-pje-tooltip{position:absolute;z-index:5;max-width:320px;padding:.4rem .55rem;border-radius:6px;background:var(--pje-ink-primary);color:var(--pje-surface);font-size:.76rem;line-height:1.35;pointer-events:none;white-space:pre-line;box-shadow:0 4px 14px rgba(31,41,51,.18)}
+.sv-pje-tooltip[hidden]{display:none}
+.sv-pje-footnote-text{margin-right:.5rem}
+.sv-pje-open-source{border:1px solid var(--pje-border);background:var(--pje-surface);color:var(--pje-ink-primary);border-radius:6px;font:inherit;font-size:.75rem;padding:.2rem .5rem;cursor:pointer}
+.sv-pje-open-source:hover{border-color:var(--pje-focus-ring)}
+.sv-pje-open-source:focus-visible{outline:2px solid var(--pje-focus-ring);outline-offset:1px}
+
+/* --- sidebar additions (design \xA77) ---------------------------------------- */
+.sv-pje-subject-list{width:100%;font:inherit;font-size:.82rem;margin-top:.35rem}
+.sv-pje-subject-count{margin:.25rem 0 0;font-size:.72rem;color:var(--pje-ink-secondary)}
+.sv-pje-sidebar-note{margin:.35rem 0 0;font-size:.72rem;color:var(--pje-ink-secondary)}
+.sv-pje-lane-toggle{display:flex;align-items:center;gap:.4rem;font-size:.8rem;font-weight:400;margin:.15rem 0;cursor:pointer}
+.sv-pje-lane-toggle input{width:auto;margin:0;accent-color:var(--pje-focus-ring)}
+.sv-pje-lane-toggle.is-disabled{color:var(--pje-ink-secondary);cursor:default}
+
+/* --- the anchor context panel in the shell rail (design \xA76.6) -------------- */
+.sv-pje-panel{display:flex;flex-direction:column;min-height:0;height:100%;font-size:.82rem;color:var(--pje-ink-primary)}
+.sv-pje-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:.6rem;padding:.55rem .7rem;border-bottom:1px solid var(--pje-border);background:var(--pje-panel);flex:0 0 auto}
+.sv-pje-panel-title{margin:0;font-family:inherit;font-size:.95rem;font-weight:700}
+.sv-pje-panel-title:focus{outline:none}
+.sv-pje-panel-sub{margin:.1rem 0 0;font-size:.75rem;color:var(--pje-ink-secondary)}
+.sv-pje-panel-actions{display:flex;gap:.35rem;flex:0 0 auto}
+.sv-pje-btn{border:1px solid var(--pje-border);background:var(--pje-surface);color:var(--pje-ink-primary);border-radius:6px;font:inherit;font-size:.75rem;padding:.3rem .5rem;cursor:pointer;white-space:nowrap}
+.sv-pje-btn:hover:not(:disabled){border-color:var(--pje-focus-ring)}
+.sv-pje-btn:focus-visible{outline:2px solid var(--pje-focus-ring);outline-offset:1px}
+.sv-pje-btn:disabled{opacity:.5;cursor:default}
+.sv-pje-panel-body{flex:1 1 auto;min-height:0;overflow-y:auto;padding:.6rem .7rem}
+.sv-pje-section{margin:0 0 .8rem}
+.sv-pje-section h3{margin:0 0 .3rem;font-family:inherit;font-size:.82rem;font-weight:700}
+.sv-pje-section h4{margin:.45rem 0 .2rem;font-family:inherit;font-size:.74rem;font-weight:600;color:var(--pje-ink-secondary)}
+.sv-pje-section-note{margin:0 0 .3rem;font-size:.72rem;color:var(--pje-ink-secondary)}
+.sv-pje-honesty{margin:.15rem 0 .3rem;font-size:.74rem;color:var(--pje-warning)}
+.sv-pje-empty{margin:.1rem 0;font-size:.76rem;color:var(--pje-ink-secondary);font-style:italic}
+.sv-pje-items{list-style:none;margin:0;padding:0}
+.sv-pje-item{display:block;width:100%;text-align:left;border:1px solid transparent;background:none;font:inherit;font-size:.78rem;line-height:1.3;padding:.25rem .4rem;border-radius:4px;cursor:pointer;color:var(--pje-ink-primary)}
+.sv-pje-item:hover{background:var(--pje-panel);border-color:var(--pje-border)}
+.sv-pje-item:focus-visible{outline:2px solid var(--pje-focus-ring);outline-offset:-2px}
+.sv-pje-item small{display:block;color:var(--pje-ink-secondary);font-size:.7rem}
+.sv-pje-panel-foot{margin:.5rem 0 0;padding-top:.5rem;border-top:1px solid var(--pje-border);font-size:.74rem;color:var(--pje-ink-secondary)}
+
+/* --- the source-row drawer (design \xA76.7) ---------------------------------- */
+.sv-pje-drawer>summary{cursor:pointer;font-size:.85rem;font-weight:600;padding:.3rem 0}
+.sv-pje-drawer>summary:focus-visible{outline:2px solid var(--pje-focus-ring);outline-offset:1px}
+.sv-pje-drawer-domain{margin:.5rem 0 .9rem}
+.sv-pje-drawer-domain h3{margin:0 0 .3rem;font-family:inherit;font-size:.8rem}
+.sv-pje-drawer-scroll{overflow-x:auto}
+.sv-pje-drawer table{font-size:.76rem}
+.sv-pje-drawer th{cursor:default}
+.sv-pje-drawer td{white-space:nowrap;max-width:18rem;overflow:hidden;text-overflow:ellipsis}
+.sv-pje-drawer a{color:var(--pje-focus-ring)}
+.sv-pje-drawer tbody tr:focus{outline:2px solid var(--pje-focus-ring);outline-offset:-2px}
+@media (prefers-reduced-motion:no-preference){.sv-pje-drawer tbody tr.is-flashed{background:#fff3c4;transition:background .2s ease}}
+
+/* --- the persistent live region (design \xA78) -------------------------------- */
+.sv-pje-live{position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+`;
+}
+function applyPjeStyles() {
+  if (typeof document === "undefined" || document.getElementById(STYLE_ID5)) return;
+  const style = document.createElement("style");
+  style.id = STYLE_ID5;
+  style.textContent = moduleCss() + narrativeCss();
+  document.head.append(style);
+}
+function narrativeCss() {
+  return `
+/* --- the AI narrative cards (#146, PJE-NARR-009 \u2026 014) --------------------- */
+.sv-pje-root{--pje-ai-bg:#e8f3fc;--pje-ai-border:#9fc7ea;--pje-ai-ink:#0f3a5f;--pje-ai-chip:#d4e8f9;--pje-ai-chip-ink:#0f3a5f;--pje-ai-accepted:#d7f0dd;--pje-ai-accepted-ink:#1b5e33}
+:root[data-theme=dark] .sv-pje-root{--pje-ai-bg:#12283a;--pje-ai-border:#2f5d84;--pje-ai-ink:#d8ecff;--pje-ai-chip:#1d3d5a;--pje-ai-chip-ink:#d8ecff;--pje-ai-accepted:#1c3f2a;--pje-ai-accepted-ink:#bfe8cc}
+.sv-pje-ai{box-sizing:border-box;margin:0 0 .6rem;padding:.55rem .75rem .6rem;border:1px solid var(--pje-ai-border);border-left:5px solid var(--pje-ai-border);border-radius:8px;background:var(--pje-ai-bg);color:var(--pje-ai-ink);font-size:.82rem;line-height:1.45}
+.sv-pje-ai.is-stale .sv-pje-ai-summary,.sv-pje-ai.is-stale .sv-pje-ai-sentence{color:var(--pje-ink-secondary);opacity:.72}
+.sv-pje-ai.is-loading{opacity:.85}
+.sv-pje-ai-head{display:flex;flex-wrap:wrap;align-items:center;gap:.35rem .55rem;margin:0 0 .3rem}
+.sv-pje-ai-label{display:inline-block;padding:.1rem .45rem;border-radius:999px;background:var(--pje-ai-ink);color:var(--pje-ai-bg);font-size:.66rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.sv-pje-ai-title{font-weight:700;font-size:.86rem}
+.sv-pje-ai-chip{display:inline-block;padding:.05rem .4rem;border-radius:999px;background:var(--pje-ai-chip);color:var(--pje-ai-chip-ink);border:1px solid var(--pje-ai-border);font-size:.66rem;font-weight:600;white-space:nowrap;vertical-align:middle}
+.sv-pje-ai-chip.is-accepted{background:var(--pje-ai-accepted);color:var(--pje-ai-accepted-ink);border-color:var(--pje-ai-accepted-ink)}
+.sv-pje-ai-toggle{margin-left:auto;border:1px solid var(--pje-ai-border);background:var(--pje-surface);color:var(--pje-ai-ink);border-radius:6px;font:inherit;font-size:.74rem;padding:.2rem .5rem;cursor:pointer}
+.sv-pje-ai-toggle:hover{border-color:var(--pje-ai-ink)}
+.sv-pje-ai-toggle:focus-visible,.sv-pje-ai-cite:focus-visible,.sv-pje-ai-action:focus-visible,.sv-pje-ai-request-btn:focus-visible{outline:2px solid var(--pje-focus-ring);outline-offset:1px}
+.sv-pje-ai-summary{margin:0;font-size:.84rem}
+.sv-pje-ai-summary.is-pending{font-style:italic;color:var(--pje-ink-secondary)}
+.sv-pje-ai-summary.is-refused{font-style:italic}
+.sv-pje-ai-body{margin:.45rem 0 0;padding-top:.45rem;border-top:1px dashed var(--pje-ai-border)}
+.sv-pje-ai-body[hidden]{display:none}
+.sv-pje-ai-sentence{margin:0 0 .4rem}
+.sv-pje-ai-sentence .sv-pje-ai-chip{margin-right:.15rem}
+.sv-pje-ai-cites{display:inline-flex;flex-wrap:wrap;gap:.2rem;vertical-align:middle}
+.sv-pje-ai-cite{border:1px solid var(--pje-ai-border);background:var(--pje-surface);color:var(--pje-ai-ink);border-radius:4px;font:inherit;font-size:.68rem;padding:.02rem .35rem;cursor:pointer;max-width:14rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sv-pje-ai-cite:hover{border-color:var(--pje-ai-ink);background:var(--pje-ai-chip)}
+.sv-pje-ai-cite.is-off-timeline{border-style:dashed}
+.sv-pje-ai-conf{margin-left:.35rem;font-size:.66rem;color:var(--pje-ink-secondary)}
+.sv-pje-ai-stale{margin:0 0 .4rem;padding:.3rem .5rem;border-radius:6px;background:var(--pje-surface);border:1px solid var(--pje-warning);color:var(--pje-warning);font-size:.76rem;opacity:1}
+.sv-pje-ai-flags{margin:.2rem 0 .3rem;display:flex;flex-wrap:wrap;gap:.25rem}
+.sv-pje-ai-flag{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.66rem;padding:.02rem .35rem;border-radius:4px;background:var(--pje-surface);border:1px solid var(--pje-ai-border)}
+.sv-pje-ai-actions{display:flex;flex-wrap:wrap;gap:.3rem;margin:.35rem 0 .25rem}
+.sv-pje-ai-action.is-accept{border-color:var(--pje-ai-accepted-ink)}
+.sv-pje-ai-prov{margin:.2rem 0 0;font-size:.66rem;color:var(--pje-ink-secondary);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.sv-pje-ai-foot{margin:.25rem 0 0;font-size:.7rem;color:var(--pje-ink-secondary)}
+.sv-pje-ai-edit-row{display:block;margin:0 0 .4rem}
+.sv-pje-ai-textarea{display:block;width:100%;box-sizing:border-box;margin:.15rem 0 0;font:inherit;font-size:.8rem;padding:.3rem .4rem;border:1px solid var(--pje-ai-border);border-radius:6px;background:var(--pje-surface);color:var(--pje-ink-primary)}
+.sv-pje-ai-tray{margin:.55rem 0 0}
+.sv-pje-ai-tray:empty{display:none}
+.sv-pje-ai-tray-head{display:flex;flex-wrap:wrap;align-items:center;gap:.35rem .5rem;margin:0 0 .5rem;padding:.4rem .6rem;border:1px dashed var(--pje-ai-border);border-radius:8px;color:var(--pje-ai-ink);font-size:.78rem}
+.sv-pje-ai-tray-hint{color:var(--pje-ink-secondary)}
+.sv-pje-ai-request-btn{font-size:.74rem;padding:.15rem .5rem;border-color:var(--pje-ai-border);color:var(--pje-ai-ink)}
+.sv-pje-ai-request-btn:hover{border-color:var(--pje-ai-ink);background:var(--pje-ai-chip)}
+.sv-pje-narrative-banner:empty{display:none}
+.sv-pje-panel-body>.sv-pje-ai{margin-bottom:.8rem}
+/* a cited mark, lit from a citation chip (PJE-NARR-011) */
+.sv-pje-mark.is-cited{outline:3px solid var(--pje-ai-ink);outline-offset:2px;box-shadow:0 0 0 3px var(--pje-ai-bg),0 0 0 6px var(--pje-ai-border);z-index:3}
+@media (prefers-reduced-motion:no-preference){.sv-pje-mark.is-cited{animation:sv-pje-cite-pulse 1.2s ease-out 2}}
+@keyframes sv-pje-cite-pulse{0%{box-shadow:0 0 0 3px var(--pje-ai-bg),0 0 0 6px var(--pje-ai-border)}50%{box-shadow:0 0 0 5px var(--pje-ai-bg),0 0 0 10px var(--pje-ai-border)}100%{box-shadow:0 0 0 3px var(--pje-ai-bg),0 0 0 6px var(--pje-ai-border)}}
+`;
+}
+
+// src/patient-journey-explorer/draw.js
+var HIGH_FLAGS2 = ["HIGH", "HH", "H"];
+var LOW_FLAGS2 = ["LOW", "LL", "L"];
+var DIM_FILL = 0.5;
+var DIM_STROKE = PJE_DEEMPHASIS.strokeAlpha;
+var CARET_BOX = 12;
+var FONT = '10px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+var FONT_BOLD = `700 ${FONT}`;
+var finite5 = (value) => typeof value === "number" && Number.isFinite(value);
+function clipToArea(ctx, area, slack = 0) {
+  ctx.beginPath();
+  ctx.rect(area.left, area.top - slack, area.right - area.left, area.bottom - area.top + 2 * slack);
+  ctx.clip();
+}
+function roundPath(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  if (typeof ctx.roundRect === "function") ctx.roundRect(x, y, w, h, r);
+  else ctx.rect(x, y, w, h);
+}
+function trianglePath(ctx, cx, cy, size, up) {
+  const h = size / 2;
+  ctx.beginPath();
+  if (up) {
+    ctx.moveTo(cx, cy - h);
+    ctx.lineTo(cx + h, cy + h);
+    ctx.lineTo(cx - h, cy + h);
+  } else {
+    ctx.moveTo(cx, cy + h);
+    ctx.lineTo(cx + h, cy - h);
+    ctx.lineTo(cx - h, cy - h);
+  }
+  ctx.closePath();
+}
+function fadeMask(ctx, x, top, length, height, surface, toward) {
+  if (length <= 0) return;
+  const gradient = ctx.createLinearGradient(x, 0, x + length, 0);
+  gradient.addColorStop(0, withAlpha2(surface, toward === "right" ? 0 : 1));
+  gradient.addColorStop(1, withAlpha2(surface, toward === "right" ? 1 : 0));
+  ctx.fillStyle = gradient;
+  ctx.fillRect(x, top - 1, length, height + 2);
+}
+function arrowCap(ctx, left, top, width, height, fill, surface) {
+  const right = left + width;
+  const head = Math.min(12, Math.max(4, width / 2));
+  fadeMask(ctx, right - head - 16, top, 16, height, surface, "right");
+  ctx.fillStyle = surface;
+  ctx.fillRect(right - head - 1, top - 2, head + 2, height + 4);
+  ctx.fillStyle = fill;
+  ctx.beginPath();
+  ctx.moveTo(right - head, top - 2);
+  ctx.lineTo(right, top + height / 2);
+  ctx.lineTo(right - head, top + height + 2);
+  ctx.closePath();
+  ctx.fill();
+}
+function fadeCap(ctx, left, top, width, height, fill, surface) {
+  const right = left + width;
+  const length = Math.min(26, width * 0.6);
+  fadeMask(ctx, right - length, top, length, height, surface, "right");
+  const r = Math.max(1.2, Math.min(2, height / 4));
+  ctx.fillStyle = fill;
+  for (const dx of [16, 10, 4]) {
+    if (dx > width) continue;
+    ctx.beginPath();
+    ctx.arc(right - dx, top + height / 2, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+function hatch(ctx, left, top, width, height, surface) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(left, top, width, height);
+  ctx.clip();
+  ctx.strokeStyle = surface;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  for (let x = left - height; x < left + width + height; x += 4) {
+    ctx.moveTo(x, top + height);
+    ctx.lineTo(x + height, top);
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+function startDot(ctx, cx, cy, height, color2, surface, filled) {
+  const r = Math.max(2.5, height / 2 + 1);
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.fillStyle = filled ? color2 : surface;
+  ctx.fill();
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = color2;
+  ctx.stroke();
+}
+function seriousRing(ctx, left, top, width, height, escalate, surface) {
+  ctx.lineWidth = PJE_MARKS.escalateRingWidth;
+  ctx.strokeStyle = surface;
+  roundPath(ctx, left - 1, top - 1, width + 2, height + 2, 3);
+  ctx.stroke();
+  ctx.strokeStyle = escalate;
+  roundPath(ctx, left - 3, top - 3, width + 6, height + 6, 5);
+  ctx.stroke();
+}
+function labGlyph(ctx, cx, cy, size, glyph, color2, surface, escalate) {
+  ctx.lineWidth = 1.5;
+  ctx.fillStyle = color2;
+  ctx.strokeStyle = color2;
+  switch (glyph) {
+    case "diamond": {
+      const h = size / 2 + 0.5;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - h);
+      ctx.lineTo(cx + h, cy);
+      ctx.lineTo(cx, cy + h);
+      ctx.lineTo(cx - h, cy);
+      ctx.closePath();
+      ctx.fill();
+      break;
+    }
+    case "triangle-up":
+      trianglePath(ctx, cx, cy, size, true);
+      ctx.fill();
+      break;
+    case "triangle-down":
+      trianglePath(ctx, cx, cy, size, false);
+      ctx.fill();
+      break;
+    case "triangle-up-double":
+    case "triangle-down-double": {
+      const up = glyph === "triangle-up-double";
+      const small = size * 0.62;
+      trianglePath(ctx, cx, cy - size * 0.28, small, up);
+      ctx.fill();
+      trianglePath(ctx, cx, cy + size * 0.28, small, up);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(cx, cy, size * 0.85, 0, Math.PI * 2);
+      ctx.lineWidth = PJE_MARKS.escalateRingWidth;
+      ctx.strokeStyle = escalate;
+      ctx.stroke();
+      break;
+    }
+    case "circle-open":
+      ctx.beginPath();
+      ctx.arc(cx, cy, size / 2 - 0.75, 0, Math.PI * 2);
+      ctx.fillStyle = surface;
+      ctx.fill();
+      ctx.stroke();
+      break;
+    default:
+      ctx.beginPath();
+      ctx.arc(cx, cy, Math.max(1.5, size / 2 - 1.5), 0, Math.PI * 2);
+      ctx.fill();
+  }
+}
+function caret(ctx, cx, cy, glyph, color2) {
+  ctx.fillStyle = color2;
+  switch (glyph) {
+    case "caret-down":
+      trianglePath(ctx, cx, cy, 10, false);
+      ctx.fill();
+      break;
+    case "caret-pause":
+      ctx.fillRect(cx - 4.5, cy - 5, 3, 10);
+      ctx.fillRect(cx + 1.5, cy - 5, 3, 10);
+      break;
+    case "caret-restart":
+      ctx.beginPath();
+      ctx.moveTo(cx - 4, cy - 5);
+      ctx.lineTo(cx + 5, cy);
+      ctx.lineTo(cx - 4, cy + 5);
+      ctx.closePath();
+      ctx.fill();
+      break;
+    default:
+      trianglePath(ctx, cx, cy, 10, true);
+      ctx.fill();
+  }
+}
+function bandRuns(band) {
+  const runs = [];
+  for (const entry of [...band].sort((a, b) => a.day - b.day)) {
+    const last = runs[runs.length - 1];
+    if (last && last.lln === entry.lln && last.uln === entry.uln) continue;
+    runs.push({ day: entry.day, lln: entry.lln, uln: entry.uln });
+  }
+  return runs;
+}
+function truncate2(ctx, text3, width) {
+  if (ctx.measureText(text3).width <= width) return text3;
+  let out = text3;
+  while (out.length > 1 && ctx.measureText(`${out}\u2026`).width > width) out = out.slice(0, -1);
+  return `${out}\u2026`;
+}
+function haloText(ctx, text3, x, y, surface) {
+  ctx.save();
+  ctx.lineJoin = "round";
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = surface;
+  ctx.strokeText(text3, x, y);
+  ctx.restore();
+  ctx.fillText(text3, x, y);
+}
+function labelBox(ctx, text3, x, y, align, baseline, lineHeight = 11) {
+  const width = ctx.measureText(text3).width;
+  const left = align === "right" ? x - width : align === "center" ? x - width / 2 : x;
+  const top = baseline === "bottom" ? y - lineHeight : baseline === "middle" ? y - lineHeight / 2 : y;
+  return { text: text3, x: left, y: top, width, height: lineHeight };
+}
+function traceHits(chart, box) {
+  let hits = 0;
+  const inside = (px, py) => px >= box.x - 4 && px <= box.x + box.width + 4 && py >= box.y - 4 && py <= box.y + box.height + 4;
+  chart.data.datasets.forEach((dataset, datasetIndex) => {
+    const meta = chart.getDatasetMeta(datasetIndex);
+    if (!meta || meta.hidden) return;
+    let previous = null;
+    for (const el of meta.data) {
+      const p = el.getProps(["x", "y"], true);
+      if (!finite5(p.x) || !finite5(p.y)) continue;
+      if (inside(p.x, p.y)) hits += 1;
+      if (previous) {
+        for (const t of [0.25, 0.5, 0.75]) {
+          if (inside(previous.x + (p.x - previous.x) * t, previous.y + (p.y - previous.y) * t))
+            hits += 1;
+        }
+      }
+      previous = p;
+    }
+  });
+  return hits;
+}
+function lanePlugin(context) {
+  const {
+    laneKey,
+    test = null,
+    theme,
+    bounds = null,
+    anchor = null,
+    anchoredHere = false,
+    referenceDays = [],
+    doseChangeDays = [],
+    band = null
+  } = context;
+  const surface = theme.surface;
+  return {
+    id: "pjeLane",
+    beforeDatasetsDraw(chart) {
+      const { ctx, chartArea: area, scales } = chart;
+      const x = scales && scales.x;
+      const rules = [];
+      const labels = [];
+      chart.$pjeBand = [];
+      chart.$pjeWindow = null;
+      chart.$pjeLabels = labels;
+      if (!area || !x) {
+        chart.$pjeRules = rules;
+        return;
+      }
+      const height = area.bottom - area.top;
+      ctx.save();
+      clipToArea(ctx, area);
+      if (bounds && finite5(bounds.elapsedStart) && finite5(bounds.elapsedEnd)) {
+        const x0 = Math.max(area.left, x.getPixelForValue(bounds.elapsedStart));
+        const x1 = Math.min(area.right, x.getPixelForValue(bounds.elapsedEnd + 1));
+        if (x1 > x0) {
+          ctx.fillStyle = theme.windowFill;
+          ctx.fillRect(x0, area.top, x1 - x0, height);
+          ctx.strokeStyle = theme.windowEdge;
+          ctx.lineWidth = 1;
+          ctx.setLineDash([3, 3]);
+          for (const edge of [x0, x1]) {
+            ctx.beginPath();
+            ctx.moveTo(Math.round(edge) + 0.5, area.top);
+            ctx.lineTo(Math.round(edge) + 0.5, area.bottom);
+            ctx.stroke();
+          }
+          ctx.setLineDash([]);
+          if (anchoredHere && anchor && x1 - x0 >= 90) {
+            const days = bounds.elapsedEnd - (toElapsed(anchor.day) ?? bounds.elapsedEnd);
+            ctx.font = FONT;
+            ctx.fillStyle = theme.inkSecondary;
+            ctx.textBaseline = "bottom";
+            ctx.textAlign = "left";
+            ctx.fillText(`\u2212${days} d`, x0 + 3, area.bottom - 1);
+            ctx.textAlign = "right";
+            ctx.fillText(`+${days} d`, x1 - 3, area.bottom - 1);
+          }
+        }
+        chart.$pjeWindow = {
+          elapsedStart: bounds.elapsedStart,
+          elapsedEnd: bounds.elapsedEnd,
+          x: x0,
+          width: Math.max(0, x1 - x0)
+        };
+      }
+      if (laneKey === "labs" && Array.isArray(band) && band.length && scales.y) {
+        const runs = bandRuns(band);
+        const drawn = [];
+        runs.forEach((run, index) => {
+          const from2 = index === 0 ? area.left : x.getPixelForValue(toElapsed(run.day));
+          const to2 = index === runs.length - 1 ? area.right : x.getPixelForValue(toElapsed(runs[index + 1].day));
+          const yTop = scales.y.getPixelForValue(run.uln);
+          const yBottom = scales.y.getPixelForValue(run.lln);
+          const top = Math.min(yTop, yBottom);
+          const h = Math.abs(yBottom - yTop);
+          ctx.fillStyle = theme.labBand;
+          ctx.fillRect(from2, top, to2 - from2, h);
+          drawn.push({
+            test,
+            x: from2,
+            y: top,
+            width: to2 - from2,
+            height: h,
+            lln: run.lln,
+            uln: run.uln
+          });
+        });
+        const last = drawn[drawn.length - 1];
+        const first = drawn[0];
+        if (last && first && last.height >= 14) {
+          ctx.font = FONT;
+          ctx.fillStyle = theme.inkSecondary;
+          const both = last.height >= 26;
+          const candidates = (run, align) => {
+            const px = align === "right" ? area.right - 3 : area.left + 3;
+            const uln = { text: `ULN ${run.uln}`, x: px, y: run.y + 1, baseline: "top" };
+            const lln = {
+              text: `LLN ${run.lln}`,
+              x: px,
+              y: run.y + run.height - 1,
+              baseline: "bottom"
+            };
+            return (both ? [uln, lln] : [uln]).map((label) => ({
+              ...label,
+              align,
+              box: labelBox(ctx, label.text, label.x, label.y, align, label.baseline)
+            }));
+          };
+          const right = candidates(last, "right");
+          const left = candidates(first, "left");
+          const score = (list2) => list2.reduce((sum, label) => sum + traceHits(chart, label.box), 0);
+          chart.$pjeLimitLabels = score(left) < score(right) ? left : right;
+        } else {
+          chart.$pjeLimitLabels = [];
+        }
+        chart.$pjeBand = drawn;
+      }
+      const rule = (elapsed, glyph, color2, width, dash) => {
+        if (!finite5(elapsed) || elapsed < x.min || elapsed > x.max) return;
+        const px = Math.round(x.getPixelForValue(elapsed)) + (width % 2 ? 0.5 : 0);
+        ctx.strokeStyle = color2;
+        ctx.lineWidth = width;
+        ctx.setLineDash(dash);
+        ctx.beginPath();
+        ctx.moveTo(px, area.top);
+        ctx.lineTo(px, area.bottom);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        rules.push({
+          id: glyph,
+          lane: laneKey,
+          test,
+          kind: "rule",
+          glyph,
+          emphasis: "full",
+          endCap: "closed",
+          x: px - width / 2,
+          y: area.top,
+          width,
+          height,
+          event: null
+        });
+      };
+      rule(0, "rule-day1", theme.ruleDay1, 1, []);
+      for (const day2 of referenceDays)
+        rule(day2, "rule-disposition", theme.ruleDisposition, 2, [6, 4]);
+      ctx.restore();
+      chart.$pjeRules = rules;
+    },
+    afterDatasetsDraw(chart) {
+      const { ctx, chartArea: area, scales } = chart;
+      const x = scales && scales.x;
+      const marks = [...chart.$pjeRules || []];
+      const labels = chart.$pjeLabels || (chart.$pjeLabels = []);
+      if (!area || !x) {
+        chart.$pjeMarks = marks;
+        return;
+      }
+      ctx.save();
+      clipToArea(ctx, area, 4);
+      const sameDay = /* @__PURE__ */ new Map();
+      if (laneKey === "disposition" || laneKey === "medicalHistory") {
+        chart.data.datasets.forEach((dataset, datasetIndex) => {
+          const meta = chart.getDatasetMeta(datasetIndex);
+          if (!meta || meta.hidden) return;
+          dataset.data.forEach((point, i) => {
+            const el = meta.data[i];
+            const label = point && point.event && point.event.label;
+            if (!el || !label) return;
+            const px = el.getProps(["x"], true).x;
+            if (!finite5(px)) return;
+            const key = Math.round(px);
+            const group = sameDay.get(key) || { first: point, labels: [], px: key, dim: true };
+            group.labels.push(String(label));
+            if (point.emphasis !== "dim") group.dim = false;
+            sameDay.set(key, group);
+          });
+        });
+      }
+      const dispositionText = /* @__PURE__ */ new Map();
+      if (laneKey === "disposition") {
+        ctx.font = FONT;
+        const groups = [...sameDay.values()].filter((group) => !group.dim).sort((a, b) => a.px - b.px);
+        let occupiedRight = area.left;
+        groups.forEach((group, index) => {
+          const text3 = group.labels.join(" \xB7 ");
+          const px = group.px;
+          const nextPx = index + 1 < groups.length ? groups[index + 1].px : Infinity;
+          const rightRoom = Math.min(area.right - 8, nextPx - 6) - (px + 7);
+          let placed = null;
+          if (rightRoom > 40) {
+            const shown = truncate2(ctx, text3, rightRoom);
+            placed = { text: shown, x: px + 7, align: "left" };
+            occupiedRight = px + 7 + ctx.measureText(shown).width;
+          } else {
+            const leftRoom = px - 7 - Math.max(area.left + 1, occupiedRight + 4);
+            if (leftRoom >= 20) {
+              placed = { text: truncate2(ctx, text3, leftRoom), x: px - 7, align: "right" };
+            }
+            occupiedRight = Math.max(occupiedRight, px + 4);
+          }
+          if (placed) dispositionText.set(px, placed);
+        });
+      }
+      chart.data.datasets.forEach((dataset, datasetIndex) => {
+        const meta = chart.getDatasetMeta(datasetIndex);
+        if (!meta || meta.hidden) return;
+        dataset.data.forEach((point, i) => {
+          const el = meta.data[i];
+          const event = point && point.event;
+          if (!el || !event) return;
+          const dim = point.emphasis === "dim";
+          if (dataset.type === "bar") {
+            const p2 = el.getProps(["x", "y", "base", "height"], true);
+            const left = Math.min(p2.x, p2.base);
+            const width = Math.max(Math.abs(p2.x - p2.base), MIN_BAR_WIDTH);
+            const barHeight = p2.height;
+            const top = p2.y - barHeight / 2;
+            const fill = Array.isArray(dataset.backgroundColor) ? dataset.backgroundColor[i] : dataset.backgroundColor;
+            const stroke = Array.isArray(dataset.borderColor) ? dataset.borderColor[i] : dataset.borderColor;
+            if (point.clippedStart)
+              fadeMask(ctx, left, top, Math.min(18, width), barHeight, surface, "left");
+            if (point.endCap === "arrow") arrowCap(ctx, left, top, width, barHeight, fill, surface);
+            else if (point.endCap === "fade")
+              fadeCap(ctx, left, top, width, barHeight, fill, surface);
+            if (point.glyph === "hatch-bar") hatch(ctx, left, top, width, barHeight, surface);
+            if (laneKey === "exposure") {
+              for (const day2 of doseChangeDays) {
+                const px = x.getPixelForValue(day2);
+                if (px < left - 1 || px > left + width + 1) continue;
+                ctx.fillStyle = theme.doseNotch;
+                ctx.fillRect(px - 1, top - 1, 2, barHeight + 2);
+              }
+            }
+            if (laneKey === "adverseEvents") {
+              startDot(ctx, left, p2.y, barHeight, stroke, surface, Boolean(point.serious));
+              if (point.serious) {
+                seriousRing(
+                  ctx,
+                  left,
+                  top,
+                  width,
+                  barHeight,
+                  dim ? withAlpha2(theme.escalate, DIM_STROKE) : theme.escalate,
+                  surface
+                );
+              }
+            }
+            marks.push({
+              id: event.id,
+              lane: laneKey,
+              test: null,
+              kind: event.kind,
+              glyph: point.glyph,
+              emphasis: point.emphasis,
+              endCap: point.endCap,
+              x: left,
+              y: top,
+              width,
+              height: barHeight,
+              event
+            });
+            return;
+          }
+          const p = el.getProps(["x", "y"], true);
+          if (!finite5(p.x) || !finite5(p.y)) return;
+          if (laneKey === "labs") {
+            const size = /double$/.test(point.glyph) ? PJE_MARKS.labGlyphSizeExtreme : PJE_MARKS.labGlyphSize;
+            const base = HIGH_FLAGS2.includes(point.nrind) ? theme.labHigh : LOW_FLAGS2.includes(point.nrind) ? theme.labLow : theme.lbTrace;
+            labGlyph(
+              ctx,
+              p.x,
+              p.y,
+              size,
+              point.glyph,
+              dim ? withAlpha2(base, DIM_FILL) : base,
+              surface,
+              dim ? withAlpha2(theme.escalate, DIM_STROKE) : theme.escalate
+            );
+            marks.push({
+              id: event.id,
+              lane: laneKey,
+              test,
+              kind: "point",
+              glyph: point.glyph,
+              emphasis: point.emphasis,
+              endCap: "closed",
+              x: p.x - size / 2,
+              y: p.y - size / 2,
+              width: size,
+              height: size,
+              event
+            });
+            return;
+          }
+          if (laneKey === "doseChanges") {
+            caret(
+              ctx,
+              p.x,
+              p.y,
+              point.glyph,
+              dim ? withAlpha2(theme.doseCaret, DIM_FILL) : theme.doseCaret
+            );
+          } else if (laneKey === "medicalHistory") {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, PJE_MARKS.mhDotRadius, 0, Math.PI * 2);
+            ctx.fillStyle = surface;
+            ctx.fill();
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = dim ? withAlpha2(theme.mh, DIM_STROKE) : theme.mh;
+            ctx.stroke();
+          } else {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, PJE_MARKS.mhDotRadius, 0, Math.PI * 2);
+            ctx.fillStyle = dim ? withAlpha2(theme.ds, DIM_FILL) : theme.ds;
+            ctx.fill();
+            const group = sameDay.get(Math.round(p.x));
+            const placed = group && group.first === point ? dispositionText.get(group.px) : null;
+            if (placed) {
+              ctx.font = FONT;
+              ctx.fillStyle = theme.inkSecondary;
+              ctx.textBaseline = "middle";
+              ctx.textAlign = placed.align;
+              ctx.fillText(placed.text, placed.x, p.y);
+              labels.push({
+                kind: "disposition",
+                ...labelBox(ctx, placed.text, placed.x, p.y, placed.align, "middle")
+              });
+            }
+          }
+          if (laneKey === "medicalHistory") {
+            const group = sameDay.get(Math.round(p.x));
+            if (group && group.labels.length > 1 && group.first === point) {
+              const text3 = `\xD7${group.labels.length}`;
+              ctx.font = FONT_BOLD;
+              ctx.fillStyle = dim ? withAlpha2(theme.mh, DIM_STROKE) : theme.mh;
+              ctx.textBaseline = "middle";
+              ctx.textAlign = "left";
+              const bx = p.x + PJE_MARKS.mhDotRadius + 3;
+              haloText(ctx, text3, bx, p.y, surface);
+              labels.push({ kind: "count", ...labelBox(ctx, text3, bx, p.y, "left", "middle") });
+            }
+          }
+          marks.push({
+            id: event.id,
+            lane: laneKey,
+            test: null,
+            kind: event.kind,
+            glyph: point.glyph,
+            emphasis: point.emphasis,
+            endCap: "closed",
+            x: p.x - CARET_BOX / 2,
+            y: p.y - CARET_BOX / 2,
+            width: CARET_BOX,
+            height: CARET_BOX,
+            event
+          });
+        });
+      });
+      if (laneKey === "labs" && Array.isArray(chart.$pjeLimitLabels)) {
+        ctx.font = FONT;
+        ctx.fillStyle = theme.inkSecondary;
+        for (const label of chart.$pjeLimitLabels) {
+          ctx.textAlign = label.align;
+          ctx.textBaseline = label.baseline;
+          haloText(ctx, label.text, label.x, label.y, surface);
+          labels.push({ kind: "limit", ...label.box });
+        }
+      }
+      const anchorElapsed = anchor ? toElapsed(anchor.day) : null;
+      if (anchor && finite5(anchorElapsed) && anchorElapsed >= x.min && anchorElapsed <= x.max) {
+        const px = Math.round(x.getPixelForValue(anchorElapsed));
+        ctx.strokeStyle = theme.ruleAnchor;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([]);
+        ctx.beginPath();
+        ctx.moveTo(px, area.top - 4);
+        ctx.lineTo(px, area.bottom + 4);
+        ctx.stroke();
+        marks.push({
+          id: "rule-anchor",
+          lane: laneKey,
+          test,
+          kind: "rule",
+          glyph: "rule-anchor",
+          emphasis: "full",
+          endCap: "closed",
+          x: px - 1,
+          y: area.top,
+          width: 2,
+          height: area.bottom - area.top,
+          event: null
+        });
+        if (anchoredHere) {
+          const own = marks.find((mark) => mark.event && mark.event.id === anchor.id);
+          ctx.font = FONT_BOLD;
+          const text3 = `Anchor \xB7 ${anchor.label}`;
+          const w = Math.min(ctx.measureText(text3).width + 10, area.right - area.left - 8);
+          const h = 14;
+          let py = own ? own.y - h - 3 : area.top + 2;
+          if (py < area.top) py = own ? own.y + own.height + 3 : area.top + 2;
+          if (py + h > area.bottom) py = Math.max(area.top, area.bottom - h);
+          let ax = px + 4;
+          if (ax + w > area.right) ax = Math.max(area.left, px - 4 - w);
+          ctx.strokeStyle = surface;
+          ctx.lineWidth = 3;
+          roundPath(ctx, ax, py, w, h, 3);
+          ctx.stroke();
+          ctx.fillStyle = theme.ruleAnchor;
+          roundPath(ctx, ax, py, w, h, 3);
+          ctx.fill();
+          ctx.fillStyle = surface;
+          ctx.textAlign = "left";
+          ctx.textBaseline = "middle";
+          ctx.fillText(truncate2(ctx, text3, w - 10), ax + 5, py + h / 2 + 0.5);
+        }
+      }
+      ctx.restore();
+      chart.$pjeMarks = marks;
+    }
+  };
+}
+
+// src/patient-journey-explorer/lanes.js
+var LANE_REGISTRY = {
+  exposure: {
+    key: "exposure",
+    domain: "EX",
+    markKind: "bar",
+    single: false,
+    noun: "treatment",
+    domainWord: "exposure",
+    empty: "No exposure records for this participant."
+  },
+  doseChanges: {
+    key: "doseChanges",
+    domain: "EX",
+    markKind: "point",
+    single: true,
+    noun: "dose change",
+    domainWord: "exposure",
+    empty: "No dose changes derived for this participant."
+  },
+  adverseEvents: {
+    key: "adverseEvents",
+    domain: "AE",
+    markKind: "bar",
+    single: false,
+    noun: "event",
+    domainWord: "adverse-event",
+    empty: "No adverse events recorded for this participant."
+  },
+  labs: {
+    key: "labs",
+    domain: "LB",
+    markKind: "point",
+    single: false,
+    noun: "test",
+    domainWord: "lab",
+    empty: "No laboratory records for this participant."
+  },
+  conMeds: {
+    key: "conMeds",
+    domain: "CM",
+    markKind: "bar",
+    single: false,
+    noun: "con-med",
+    domainWord: "con-med",
+    empty: "No con-meds recorded for this participant."
+  },
+  medicalHistory: {
+    key: "medicalHistory",
+    domain: "MH",
+    markKind: "point",
+    single: true,
+    noun: "record",
+    domainWord: "medical-history",
+    empty: "No medical history recorded for this participant."
+  },
+  disposition: {
+    key: "disposition",
+    domain: "DS",
+    markKind: "rule",
+    single: true,
+    noun: "record",
+    domainWord: "disposition",
+    empty: "No disposition records for this participant."
+  }
+};
+var BAR_LANES2 = ["exposure", "adverseEvents", "conMeds"];
+var GROUP_HEADER_PX = 35;
+var LANE_GAP_PX = 2;
+var FOOTER_PX = 18;
+var SINGLE_ROW_FACTOR = 1.5;
+var FILTERED_EMPTY = "No records match the current filters.";
+function laneFooters(info, registry2, laneKey) {
+  const footers = [];
+  if (info.truncated > 0) {
+    footers.push(
+      `${info.truncated} more ${registry2.noun}${info.truncated === 1 ? "" : "s"} not drawn, ${info.sortRule} \u2014 see Source records.`
+    );
+  }
+  if (info.unplaceable.length) {
+    const nameOf = (event) => laneKey === "labs" ? String(event.test ?? event.label ?? "") : String(event.label ?? "");
+    const zero = info.unplaceable.filter((event) => event.flags?.dayZero);
+    const rest = info.unplaceable.filter((event) => !zero.includes(event));
+    if (rest.length) {
+      const labels = [...new Set(rest.map(nameOf))];
+      footers.push(`No start day recorded, so not on the timeline: ${labels.join(", ")}.`);
+    }
+    if (zero.length) {
+      const labels = [...new Set(zero.map(nameOf))];
+      footers.push(`Study day 0 is not a valid day, so not on the timeline: ${labels.join(", ")}.`);
+    }
+  }
+  return footers;
+}
+function emptyText(laneKey, structured, registry2) {
+  const has = structured.allEvents.some((event) => event.lane === laneKey);
+  if (!has) return registry2.empty;
+  const postFilter = structured.byLane[laneKey] || [];
+  if (!postFilter.length) {
+    if (laneKey === "labs" && (structured.unconfiguredLabs || []).length) {
+      const n = structured.unconfiguredLabs.length;
+      return `No records for the configured tests; ${n} other lab result${n === 1 ? " is" : "s are"} in Source records.`;
+    }
+    return FILTERED_EMPTY;
+  }
+  const noun = laneKey === "labs" ? "lab result" : registry2.noun;
+  return `No ${noun} has a usable study day; see below.`;
+}
+function planLanes(structured, settings, state) {
+  const enabled = (key) => typeof state?.lanes?.[key] === "boolean" ? state.lanes[key] : Boolean(settings.lanes[key]?.enabled);
+  const groups = [];
+  for (const group of settings.lane_groups) {
+    const keys = LANE_KEYS.filter(
+      (key) => settings.lanes[key]?.group === group.key && enabled(key)
+    );
+    if (!keys.length) continue;
+    const lanes = [];
+    for (const key of keys) {
+      const registry2 = LANE_REGISTRY[key];
+      const info = structured.lanes[key];
+      const label = settings.lanes[key]?.label || key;
+      if (!info || !info.supplied) {
+        lanes.push({
+          key,
+          label,
+          kind: "absent",
+          chartKey: null,
+          emptyText: `No ${registry2.domainWord} records were supplied.`,
+          footers: []
+        });
+        continue;
+      }
+      if (key === "labs") {
+        const drawnTests = info.rows;
+        const series = structured.labSeries.filter((entry) => drawnTests.includes(entry.test));
+        const footers2 = laneFooters(info, registry2, key);
+        const other = (structured.unconfiguredLabs || []).length;
+        if (other > 0 && series.length) {
+          footers2.push(
+            `${other} lab result${other === 1 ? "" : "s"} for tests not in lb_tests ${other === 1 ? "is" : "are"} not drawn \u2014 see Source records.`
+          );
+        }
+        if (structured.labTestsMissing.length) {
+          footers2.unshift(`No records for: ${structured.labTestsMissing.join(", ")}.`);
+        }
+        if (!series.length) {
+          lanes.push({
+            key,
+            label,
+            kind: "empty",
+            chartKey: null,
+            emptyText: emptyText(key, structured, registry2),
+            footers: footers2
+          });
+          continue;
+        }
+        series.forEach((entry, index) => {
+          lanes.push({
+            key,
+            label,
+            kind: "chart",
+            chartKey: `labs:${entry.test}`,
+            test: entry.test,
+            // The short code fits the 132px gutter; the full name rides on
+            // the lane's title and the overlay's accessible name.
+            sublabel: entry.unit ? `${entry.testCode || entry.test} (${entry.unit})` : entry.testCode || entry.test,
+            title: entry.unit ? `${entry.test} (${entry.unit})` : entry.test,
+            series: entry,
+            rows: null,
+            events: entry.points.map((point) => point.event),
+            footers: index === series.length - 1 ? footers2 : []
+          });
+        });
+        continue;
+      }
+      const footers = laneFooters(info, registry2, key);
+      if (!info.drawn.length) {
+        lanes.push({
+          key,
+          label,
+          kind: "empty",
+          chartKey: null,
+          emptyText: emptyText(key, structured, registry2),
+          footers
+        });
+        continue;
+      }
+      lanes.push({
+        key,
+        label,
+        kind: "chart",
+        chartKey: key,
+        rows: registry2.single ? [key] : info.rows,
+        events: info.drawn,
+        footers
+      });
+    }
+    groups.push({
+      key: group.key,
+      label: group.label,
+      collapsed: Boolean(state?.groups?.[group.key] ?? group.collapsed),
+      lanes
+    });
+  }
+  return groups;
+}
+function laneHeightPx(lane, rowHeight, labHeight) {
+  if (lane.kind !== "chart") return Math.round(rowHeight * SINGLE_ROW_FACTOR);
+  if (lane.key === "labs") return labHeight;
+  if (LANE_REGISTRY[lane.key].single) return Math.round(rowHeight * SINGLE_ROW_FACTOR);
+  return lane.rows.length * rowHeight;
+}
+function stackHeight(groups, rowHeight, labHeight) {
+  let total = 0;
+  for (const group of groups) {
+    total += GROUP_HEADER_PX;
+    for (const lane of group.lanes) {
+      total += laneHeightPx(lane, rowHeight, labHeight) + LANE_GAP_PX + lane.footers.length * FOOTER_PX;
+    }
+  }
+  return total;
+}
+function fitHeights(groups, settings) {
+  const natural = stackHeight(groups, settings.row_height, settings.lab_height);
+  if (!settings.fit_to_height || natural <= settings.height) {
+    return {
+      rowHeight: settings.row_height,
+      labHeight: settings.lab_height,
+      natural,
+      planned: natural
+    };
+  }
+  const fixed = stackHeight(groups, 0, 0);
+  const variable = natural - fixed;
+  const factor = variable > 0 ? Math.max(0, (settings.height - fixed) / variable) : 1;
+  const rowHeight = Math.max(settings.row_height_min, Math.floor(settings.row_height * factor));
+  const labHeight = Math.max(settings.lab_height_min, Math.floor(settings.lab_height * factor));
+  return { rowHeight, labHeight, natural, planned: stackHeight(groups, rowHeight, labHeight) };
+}
+function flagCheckbox({ spec, checked, label, focusKey, onChange }) {
+  const wrap = createElement("label", "sv-control-inline");
+  const input = document.createElement("input");
+  input.type = "checkbox";
+  input.checked = Boolean(checked);
+  input.dataset.filter = spec.value_col;
+  if (focusKey) input.setAttribute("data-sv-focus", focusKey);
+  input.onchange = () => onChange(input.checked);
+  wrap.append(input, document.createTextNode(label || spec.label));
+  return wrap;
+}
+function laneDatasets(laneKey, events2, context) {
+  const datasets = buildLaneDatasets(laneKey, events2, context);
+  if (!BAR_LANES2.includes(laneKey)) return datasets;
+  for (const dataset of datasets) {
+    for (const point of dataset.data) {
+      const event = point.event;
+      if (event && event.kind === "interval" && event.endState === "closed" && Number.isFinite(event.end) && Array.isArray(point.x)) {
+        point.x = [point.x[0], point.x[1] + 1];
+      }
+    }
+  }
+  return datasets;
+}
+function buildLaneChart({
+  canvas,
+  lane,
+  structured,
+  settings,
+  theme,
+  bounds = null,
+  anchor = null,
+  referenceDays = [],
+  doseChangeDays = []
+}) {
+  const laneKey = lane.key;
+  const domain = structured.domain;
+  const datasets = laneDatasets(laneKey, lane.events, { domain, settings, theme, bounds });
+  const scales = buildScales8({
+    lane: laneKey,
+    domain,
+    rows: lane.rows,
+    valueDomain: lane.series ? lane.series.valueDomain : null
+  });
+  const isBar = BAR_LANES2.includes(laneKey);
+  const type = isBar ? "bar" : laneKey === "labs" ? "line" : "scatter";
+  const anchoredHere = Boolean(anchor && lane.events.some((event) => event.id === anchor.id));
+  return new Chart(canvas, {
+    type,
+    data: { datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      events: [],
+      indexAxis: isBar ? "y" : "x",
+      layout: laneLayout(),
+      scales,
+      plugins: { legend: { display: false }, tooltip: { enabled: false } }
+    },
+    plugins: [
+      lanePlugin({
+        laneKey,
+        test: lane.test ?? null,
+        theme,
+        bounds,
+        anchor: anchor ? { id: anchor.id, day: anchor.day, label: anchor.label } : null,
+        anchoredHere,
+        referenceDays,
+        doseChangeDays: laneKey === "exposure" ? doseChangeDays : [],
+        band: lane.series ? lane.series.band : null
+      })
+    ]
+  });
+}
+
+// src/patient-journey-explorer/keyboard.js
+var MIN_HIT_PX = 24;
+var MARK = ".sv-pje-mark";
+function createLiveRegion() {
+  const live = createElement("div", "sv-pje-live");
+  live.setAttribute("aria-live", "polite");
+  live.setAttribute("aria-atomic", "true");
+  return live;
+}
+function chronological(a, b) {
+  const da = Number.isFinite(a.event.day) ? a.event.day : Infinity;
+  const db = Number.isFinite(b.event.day) ? b.event.day : Infinity;
+  return da - db || (a.event.sourceIndex ?? 0) - (b.event.sourceIndex ?? 0);
+}
+var MarkOverlay = class {
+  /**
+   * @param {Object} handlers The orchestrator's callbacks.
+   * @param {(event: Object, sameDay: string[]) => string} handlers.describe The accessible name of a mark, given the labels of the other records stacked on the same day (empty for a lone mark).
+   * @param {(eventId: string) => boolean} handlers.isAnchored Whether an event is the current anchor.
+   * @param {(eventId: string, button: HTMLButtonElement) => void} handlers.onActivate Click / Enter / Space on a mark.
+   * @param {(eventId: string) => void} handlers.onJump Shift+Enter on a mark.
+   * @param {(event: Object, button: HTMLButtonElement, via: 'hover'|'focus') => void} handlers.onEnter Pointer enters or focus lands on a mark.
+   * @param {(via: 'hover'|'focus') => void} handlers.onLeave Pointer leaves or focus leaves a mark.
+   */
+  constructor(handlers) {
+    this.handlers = handlers;
+    this.entries = [];
+    this.activeByLane = /* @__PURE__ */ new Map();
+    this.stack = null;
+    this.keydownHandler = (event) => this.handleKeydown(event);
+    this.focusinHandler = (event) => {
+      const button = event.target && event.target.closest ? event.target.closest(MARK) : null;
+      if (button) this.setActive(button);
+    };
+  }
+  /**
+   * Install the delegated key and focus handlers on the lane stack.
+   * @param {HTMLElement} stack The `.sv-pje-lanes` element.
+   * @returns {void}
+   */
+  attach(stack) {
+    this.stack = stack;
+    stack.addEventListener("keydown", this.keydownHandler);
+    stack.addEventListener("focusin", this.focusinHandler);
+  }
+  /**
+   * Remove the handlers installed by attach.
+   * @returns {void}
+   */
+  detach() {
+    if (!this.stack) return;
+    this.stack.removeEventListener("keydown", this.keydownHandler);
+    this.stack.removeEventListener("focusin", this.focusinHandler);
+    this.stack = null;
+  }
+  /**
+   * Rebuild every lane's buttons from its chart's `$pjeMarks` (called after
+   * every render and every resize). Reference rules carry no event and get no
+   * button. The lane's active mark (its one tab stop) is remembered across
+   * rebuilds so a keyboard user returns to where they were.
+   * @param {Array<{chartKey: string, laneKey: string, label: string, laneEl: HTMLElement, overlayEl: HTMLElement, chart: Object}>} entries The live lanes, in stack order.
+   * @returns {void}
+   */
+  sync(entries2) {
+    this.entries = entries2;
+    for (const entry of entries2) {
+      const { overlayEl, chart, chartKey, label } = entry;
+      overlayEl.setAttribute("role", "group");
+      overlayEl.setAttribute("aria-label", `${label} marks`);
+      const marks = [];
+      const seen = /* @__PURE__ */ new Set();
+      for (const mark of (chart && chart.$pjeMarks || []).filter((mark2) => mark2.event).sort(chronological)) {
+        if (seen.has(mark.event.id)) continue;
+        seen.add(mark.event.id);
+        marks.push(mark);
+      }
+      const existing = this.buttons(overlayEl);
+      const sameSet = existing.length === marks.length && existing.every((button, index) => button.dataset.eventId === marks[index].event.id);
+      let buttons;
+      if (sameSet) {
+        buttons = existing;
+        marks.forEach((mark, index) => this.placeButton(existing[index], mark));
+      } else {
+        overlayEl.innerHTML = "";
+        buttons = marks.map((mark) => this.buildButton(mark));
+        overlayEl.append(...buttons);
+      }
+      this.stackSameDay(buttons);
+      const wanted = this.activeByLane.get(chartKey);
+      const active = buttons.find((button) => button.dataset.eventId === wanted) || buttons[0];
+      buttons.forEach((button) => button.setAttribute("tabindex", button === active ? "0" : "-1"));
+      if (active) this.activeByLane.set(chartKey, active.dataset.eventId);
+    }
+  }
+  /**
+   * Buttons that sit on the identical box (same-day records in a one-row
+   * lane: the eight screening-history records of the pilot's opening
+   * participant) would otherwise let the LAST one win every pointer while the
+   * FIRST one is the lane's tab stop. The first (chronological) button is
+   * raised above the others so pointer and keyboard land on the same record,
+   * and it carries the group on `data-same-day` (the other records' labels)
+   * and `data-same-day-count` so its tooltip and accessible name can say
+   * "and N more on this day" — the records are all still reachable by arrow
+   * key and in the source drawer.
+   * @private
+   */
+  stackSameDay(buttons) {
+    const groups = /* @__PURE__ */ new Map();
+    for (const button of buttons) {
+      const key = `${button.style.left}|${button.style.top}`;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(button);
+    }
+    for (const group of groups.values()) {
+      group.forEach((button, index) => {
+        button.style.zIndex = index === 0 && group.length > 1 ? "1" : "";
+        if (index === 0 && group.length > 1) {
+          button.dataset.sameDayCount = String(group.length - 1);
+          button.dataset.sameDay = group.slice(1).map((other) => other.dataset.label || "").join("; ");
+        } else {
+          delete button.dataset.sameDayCount;
+          delete button.dataset.sameDay;
+        }
+      });
+    }
+    for (const button of buttons) {
+      const others = button.dataset.sameDay;
+      button.setAttribute(
+        "aria-label",
+        this.handlers.describe(this.eventOf(button), others ? others.split("; ") : [])
+      );
+    }
+  }
+  /**
+   * The event behind a button, from the entry that built it.
+   * @private
+   */
+  eventOf(button) {
+    return button.$pjeEvent || null;
+  }
+  /**
+   * Position a mark button over its painted mark with at least a MIN_HIT_PX
+   * square hit box around the same centre, and refresh the attributes that
+   * depend on the render (glyph, emphasis, accessible name, pressed state).
+   * @private
+   */
+  placeButton(button, mark) {
+    const { event } = mark;
+    button.$pjeEvent = event;
+    button.dataset.day = Number.isFinite(event.day) ? String(event.day) : "";
+    button.dataset.label = String(event.label ?? "");
+    button.dataset.glyph = mark.glyph;
+    button.dataset.emphasis = mark.emphasis;
+    button.setAttribute("aria-label", this.handlers.describe(event, []));
+    button.setAttribute("aria-pressed", String(Boolean(this.handlers.isAnchored(event.id))));
+    const width = Math.max(mark.width, MIN_HIT_PX);
+    const height = Math.max(mark.height, MIN_HIT_PX);
+    const left = mark.x + mark.width / 2 - width / 2;
+    const top = mark.y + mark.height / 2 - height / 2;
+    button.style.left = `${Math.round(left)}px`;
+    button.style.top = `${Math.round(top)}px`;
+    button.style.width = `${Math.round(width)}px`;
+    button.style.height = `${Math.round(height)}px`;
+  }
+  /**
+   * One mark button: the hit target, the focus target and the accessible
+   * name of a painted mark.
+   * @private
+   */
+  buildButton(mark) {
+    const { event } = mark;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "sv-pje-mark";
+    button.dataset.eventId = event.id;
+    button.setAttribute("data-sv-focus", `mark-${event.id}`);
+    this.placeButton(button, mark);
+    button.addEventListener("click", () => this.handlers.onActivate(event.id, button));
+    button.addEventListener("mouseenter", () => this.handlers.onEnter(event, button, "hover"));
+    button.addEventListener("mouseleave", () => this.handlers.onLeave("hover"));
+    button.addEventListener("focus", () => this.handlers.onEnter(event, button, "focus"));
+    button.addEventListener("blur", () => this.handlers.onLeave("focus"));
+    return button;
+  }
+  /**
+   * The buttons of one overlay, in chronological (DOM) order.
+   * @private
+   */
+  buttons(overlayEl) {
+    return [...overlayEl.querySelectorAll(MARK)];
+  }
+  /**
+   * The entry a button belongs to.
+   * @private
+   */
+  entryOf(button) {
+    return this.entries.find((entry) => entry.overlayEl.contains(button)) || null;
+  }
+  /**
+   * Make a button its lane's tab stop.
+   * @private
+   */
+  setActive(button) {
+    const entry = this.entryOf(button);
+    if (!entry) return;
+    for (const other of this.buttons(entry.overlayEl)) {
+      other.setAttribute("tabindex", other === button ? "0" : "-1");
+    }
+    this.activeByLane.set(entry.chartKey, button.dataset.eventId);
+  }
+  /**
+   * The entries whose lane is visible (enabled, and inside an expanded group)
+   * and carries at least one mark.
+   * @private
+   */
+  visibleEntries() {
+    return this.entries.filter(
+      (entry) => !entry.laneEl.closest("[hidden]") && this.buttons(entry.overlayEl).length > 0
+    );
+  }
+  /**
+   * The mark in the adjacent visible lane whose day is closest to a day.
+   * @private
+   */
+  nearestInAdjacentLane(entry, day2, direction) {
+    const visible = this.visibleEntries();
+    let index = visible.indexOf(entry) + direction;
+    while (index >= 0 && index < visible.length) {
+      const candidates = this.buttons(visible[index].overlayEl);
+      if (candidates.length) {
+        let best = candidates[0];
+        let bestDistance = Infinity;
+        for (const candidate of candidates) {
+          const candidateDay = Number(candidate.dataset.day);
+          const distance = Number.isFinite(candidateDay) && Number.isFinite(day2) ? Math.abs(candidateDay - day2) : Infinity;
+          if (distance < bestDistance) {
+            best = candidate;
+            bestDistance = distance;
+          }
+        }
+        return best;
+      }
+      index += direction;
+    }
+    return null;
+  }
+  /**
+   * Focus a mark, making it its lane's tab stop.
+   * @param {HTMLButtonElement} button The mark button.
+   * @returns {void}
+   */
+  focusMark(button) {
+    if (!button) return;
+    this.setActive(button);
+    button.focus();
+  }
+  /**
+   * Arrow keys move chronologically within the lane (no wrap) and to the
+   * nearest mark in the adjacent lane; Home/End jump to the lane's ends;
+   * Shift+Enter jumps to the source row. Enter and Space are left to the
+   * button's native activation.
+   * @param {KeyboardEvent} event The keydown event.
+   * @returns {void}
+   */
+  handleKeydown(event) {
+    const button = event.target && event.target.closest ? event.target.closest(MARK) : null;
+    if (!button) return;
+    const entry = this.entryOf(button);
+    if (!entry) return;
+    if (event.key === "Enter" && event.shiftKey) {
+      event.preventDefault();
+      this.handlers.onJump(button.dataset.eventId);
+      return;
+    }
+    const list2 = this.buttons(entry.overlayEl);
+    const index = list2.indexOf(button);
+    const day2 = Number(button.dataset.day);
+    let target = null;
+    switch (event.key) {
+      case "ArrowRight":
+        target = list2[Math.min(index + 1, list2.length - 1)];
+        break;
+      case "ArrowLeft":
+        target = list2[Math.max(index - 1, 0)];
+        break;
+      case "Home":
+        target = list2[0];
+        break;
+      case "End":
+        target = list2[list2.length - 1];
+        break;
+      case "ArrowDown":
+        target = this.nearestInAdjacentLane(entry, day2, 1);
+        break;
+      case "ArrowUp":
+        target = this.nearestInAdjacentLane(entry, day2, -1);
+        break;
+      default:
+        return;
+    }
+    event.preventDefault();
+    if (target && target !== button) this.focusMark(target);
+  }
+};
+
+// src/patient-journey-explorer/panel.js
+var CAUSATION_SENTENCE = "Co-occurrence is not causation. This panel lists what was recorded around the anchor; it does not assess relatedness.";
+var plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
+var lowerDay = (text3) => text3.replace(/^Day\b/, "day");
+var BASELINE_RULE = {
+  flag: "the flagged baseline record",
+  day: "the last value on or before the baseline day",
+  earliest: "the earliest value"
+};
+function itemButton({ title, detail, anchorId, onJump }) {
+  const li = document.createElement("li");
+  const button = createElement("button", "sv-pje-item");
+  button.type = "button";
+  button.setAttribute("data-source-anchor", anchorId);
+  button.append(document.createTextNode(title));
+  if (detail) button.append(createElement("small", null, detail));
+  button.title = "Open the source record";
+  button.onclick = () => onJump(anchorId);
+  li.append(button);
+  return li;
+}
+function itemList(parent, items, { emptyText: emptyText2, describe, drawState, onJump }) {
+  if (!items.length) {
+    parent.append(createElement("p", "sv-pje-empty", emptyText2));
+    return;
+  }
+  const list2 = createElement("ul", "sv-pje-items");
+  for (const event of items) {
+    const { title, detail } = describe(event);
+    list2.append(itemButton({ title, detail, anchorId: event.sourceAnchorId, onJump }));
+  }
+  parent.append(list2);
+  const reasons = /* @__PURE__ */ new Map();
+  for (const event of items) {
+    const state = drawState(event);
+    if (state === "drawn") continue;
+    reasons.set(state, (reasons.get(state) || 0) + 1);
+  }
+  const notDrawn = [...reasons.values()].reduce((sum, n) => sum + n, 0);
+  if (notDrawn > 0) {
+    const why = [...reasons.entries()].map(([reason, n]) => `${n} ${reason}`).join(", ");
+    parent.append(
+      createElement(
+        "p",
+        "sv-pje-honesty",
+        `${notDrawn} of these ${items.length} ${notDrawn === 1 ? "is" : "are"} not drawn on the timeline (${why}).`
+      )
+    );
+  }
+}
+function endUnrecordedSentence(unrecorded, total) {
+  if (unrecorded <= 0) return null;
+  if (total === 1) {
+    return "This con-med has no recorded end date; it is shown as active because nothing records it stopping.";
+  }
+  if (unrecorded === total) {
+    return `None of these ${total} has a recorded end date; they are shown as active because nothing records them stopping.`;
+  }
+  return `${unrecorded} of these ${total} ${unrecorded === 1 ? "has" : "have"} no recorded end date; ${unrecorded === 1 ? "it is" : "they are"} shown as active because nothing records ${unrecorded === 1 ? "it" : "them"} stopping.`;
+}
+function renderPanel(host, context, options) {
+  const {
+    settings,
+    mode,
+    refDate,
+    drawState,
+    anchorHidden = null,
+    labPool,
+    expanded,
+    onClear,
+    onExpand,
+    onJump
+  } = options;
+  const display = { mode, refDate };
+  host.innerHTML = "";
+  const panel = createElement("div", "sv-pje-panel");
+  const head = createElement("div", "sv-pje-panel-head");
+  const heading = createElement("div");
+  const title = createElement("h2", "sv-pje-panel-title", `Anchor: ${context.anchor.label}`);
+  title.tabIndex = -1;
+  const when = [DOMAIN_LABELS[context.anchor.domain] || context.anchor.domain];
+  when.push(dayLabel(context.anchor.day, display));
+  if (mode !== "date" && context.anchor.date) when.push(context.anchor.date);
+  when.push(`\xB1${context.window.days} days`);
+  heading.append(title, createElement("p", "sv-pje-panel-sub", when.join(" \xB7 ")));
+  const actions = createElement("div", "sv-pje-panel-actions");
+  const expand = createElement("button", "sv-pje-btn", expanded ? "Collapse" : "Expand");
+  expand.type = "button";
+  expand.setAttribute("data-sv-focus", "rail-expand");
+  expand.setAttribute("aria-pressed", String(Boolean(expanded)));
+  expand.onclick = () => onExpand(!expanded);
+  const clear = createElement("button", "sv-pje-btn", "Clear anchor");
+  clear.type = "button";
+  clear.setAttribute("data-sv-focus", "clear-anchor");
+  clear.onclick = () => onClear();
+  actions.append(expand, clear);
+  head.append(heading, actions);
+  panel.append(head);
+  const body = createElement("div", "sv-pje-panel-body");
+  if (anchorHidden) {
+    body.append(
+      createElement(
+        "p",
+        "sv-pje-honesty",
+        `The anchored event is not on the timeline right now (${anchorHidden}); the lists below are unchanged, because they describe the whole record.`
+      )
+    );
+  }
+  const section = (text3, className = "sv-pje-section") => {
+    const el = createElement("section", className);
+    el.append(createElement("h3", null, text3));
+    body.append(el);
+    return el;
+  };
+  const common = { drawState, onJump };
+  const cm = section(`Con-meds active at the anchor (${context.counts.conMeds})`);
+  cm.dataset.section = "conMeds";
+  const withoutStart = context.notEvaluated.conMedsWithoutStart;
+  if (withoutStart > 0) {
+    cm.append(
+      createElement(
+        "p",
+        "sv-pje-honesty",
+        `${plural(withoutStart, "con-med")} ${withoutStart === 1 ? "has" : "have"} no start day and ${withoutStart === 1 ? "was" : "were"} not evaluated.`
+      )
+    );
+  }
+  const unrecorded = endUnrecordedSentence(
+    context.notEvaluated.conMedsEndUnrecorded,
+    context.counts.conMeds
+  );
+  if (unrecorded) cm.append(createElement("p", "sv-pje-honesty", unrecorded));
+  const describeConMed = (event) => ({
+    title: event.label,
+    detail: [spanLabel(event, display), event.category].filter(Boolean).join(" \xB7 ")
+  });
+  itemList(cm, context.conMeds, {
+    ...common,
+    emptyText: "No con-meds were active at the anchor.",
+    describe: describeConMed
+  });
+  const later = createElement("div");
+  later.dataset.section = "conMedsLater";
+  later.append(
+    createElement("h4", null, `Started later in the window (${context.counts.conMedsLater})`)
+  );
+  itemList(later, context.conMedsLater, {
+    ...common,
+    emptyText: "None started later in the window.",
+    describe: describeConMed
+  });
+  cm.append(later);
+  const lb = section(`Abnormal labs in the window (${context.counts.abnormalLabs})`);
+  lb.dataset.section = "abnormalLabs";
+  const baselines = /* @__PURE__ */ new Map();
+  const baselineFor = (test) => {
+    if (!baselines.has(test)) {
+      baselines.set(
+        test,
+        labBaseline(
+          (labPool || []).filter((event) => event.test === test),
+          settings
+        )
+      );
+    }
+    return baselines.get(test);
+  };
+  itemList(lb, context.abnormalLabs, {
+    ...common,
+    emptyText: "No abnormal labs in the window.",
+    describe: (event) => {
+      const reason = event.flags.abnormalReason;
+      const parts = [lowerDay(dayLabel(event.day, display))];
+      const flag = String(event.flags.abnormal || "").trim();
+      if (reason === "flag" || reason === "both") {
+        const ratio = ratioLine(event);
+        parts.push(flag ? `flagged ${flag}` : "flagged");
+        parts.push(ratio || "no reference limit recorded");
+      }
+      if (reason === "change" || reason === "both") {
+        const baseline = baselineFor(event.test);
+        if (baseline && Number.isFinite(baseline.value) && baseline.value > 0) {
+          const multiple = event.value / baseline.value;
+          const rule = BASELINE_RULE[baseline.rule] || baseline.rule;
+          parts.push(
+            `${multiple.toFixed(multiple >= 10 ? 0 : 1)} \xD7 baseline (${baseline.value}${event.unit ? ` ${event.unit}` : ""}, ${lowerDay(dayLabel(baseline.day, display))}; baseline is ${rule})`
+          );
+        }
+      }
+      return {
+        title: `${event.test}: ${event.value}${event.unit ? ` ${event.unit}` : ""}`,
+        detail: parts.join(" \xB7 ")
+      };
+    }
+  });
+  const dose = section(`Dose changes in the window (${context.counts.doseChanges})`);
+  dose.dataset.section = "doseChanges";
+  itemList(dose, context.doseChanges, {
+    ...common,
+    emptyText: "No dose changes in the window.",
+    describe: (event) => ({
+      title: `${event.label}, ${lowerDay(dayLabel(event.day, display))}${event.flags.direction ? ` (${event.flags.direction})` : ""}`,
+      detail: event.category
+    })
+  });
+  const prior = section(
+    `Earlier or same-day adverse events with the same preferred term (${context.counts.priorEvents})`
+  );
+  prior.dataset.section = "priorEvents";
+  prior.append(
+    createElement(
+      "p",
+      "sv-pje-section-note",
+      "Any time up to the anchor, not only in the window; each row says how many days before the anchor it started."
+    )
+  );
+  itemList(prior, context.priorEvents, {
+    ...common,
+    emptyText: "No earlier or same-day adverse events with this preferred term.",
+    describe: (event) => {
+      const offset = relativeDay(event.day, context.anchor.day);
+      const before = offset === null ? null : offset === 0 ? "same day as the anchor" : `${plural(-offset, "day")} before the anchor`;
+      const parts = [
+        spanLabel(event, display),
+        before,
+        event.flags.severity ? event.flags.severity.label : "severity not recorded"
+      ].filter(Boolean);
+      if (event.flags.serious) parts.push("SAE");
+      return { title: event.label, detail: parts.join(" \xB7 ") };
+    }
+  });
+  const lines = [];
+  const aeUnrecorded = context.notEvaluated.aeEndUnrecorded;
+  if (aeUnrecorded > 0) {
+    lines.push(
+      `${plural(aeUnrecorded, "adverse event")} in the window ${aeUnrecorded === 1 ? "has" : "have"} no recorded end and ${aeUnrecorded === 1 ? "is" : "are"} not asserted ongoing.`
+    );
+  }
+  for (const [domain, count2] of Object.entries(context.notEvaluated.unplaceableByDomain || {})) {
+    if (!count2 || domain === "CM") continue;
+    const word = (DOMAIN_LABELS[domain] || domain).toLowerCase();
+    lines.push(
+      `${plural(count2, `${word} record`)} ${count2 === 1 ? "has" : "have"} no usable study day and ${count2 === 1 ? "was" : "were"} not evaluated.`
+    );
+  }
+  for (const [lane, count2] of Object.entries(context.notEvaluated.truncatedByLane || {})) {
+    if (!count2) continue;
+    const label = settings.lanes?.[lane]?.label || lane;
+    lines.push(`${plural(count2, "row")} of ${label} not drawn (row cap).`);
+  }
+  if (lines.length) {
+    const honesty = section("Not evaluated");
+    honesty.dataset.section = "notEvaluated";
+    const list2 = createElement("ul", "sv-pje-items");
+    for (const line of lines) {
+      const li = createElement("li", "sv-pje-honesty", line);
+      list2.append(li);
+    }
+    honesty.append(list2);
+  }
+  body.append(createElement("p", "sv-pje-panel-foot", CAUSATION_SENTENCE));
+  panel.append(body);
+  host.append(panel);
+  return panel;
+}
+
+// src/patient-journey-explorer/sourceRows.js
+var TOKEN = /\{([^{}]+)\}/g;
+var DERIVED_PREFIX2 = "__pje_";
+function buildSourceUrl(row, domain, template, { warn: warn3 = true } = {}) {
+  if (typeof template !== "string" || !template) return null;
+  const source = row && typeof row === "object" ? row : {};
+  const missing = [];
+  const href = template.replace(TOKEN, (match, token) => {
+    if (token === "domain") return encodeURIComponent(String(domain ?? ""));
+    if (!Object.prototype.hasOwnProperty.call(source, token)) {
+      missing.push(token);
+      return match;
+    }
+    const value = source[token];
+    return encodeURIComponent(value === null || value === void 0 ? "" : String(value));
+  });
+  if (missing.length) {
+    if (warn3) {
+      console.warn(
+        `patient-journey-explorer: source_url_template names column(s) the ${domain} row does not carry (${missing.join(
+          ", "
+        )}); the link is omitted.`
+      );
+    }
+    return null;
+  }
+  return href;
+}
+function sourceColumns(rows) {
+  const columns = [];
+  const seen = /* @__PURE__ */ new Set();
+  for (const row of Array.isArray(rows) ? rows : []) {
+    if (!row || typeof row !== "object") continue;
+    for (const key of Object.keys(row)) {
+      if (key.startsWith(DERIVED_PREFIX2) || seen.has(key)) continue;
+      seen.add(key);
+      columns.push(key);
+    }
+  }
+  return columns;
+}
+var DOMAIN_ORDER = ["EX", "AE", "LB", "CM", "MH", "DS"];
+var ANCHOR_ID = /^pje-src-([A-Z]+)-(\d+)$/;
+var FLASH_MS = 1200;
+function jumpToSource(target, scope = document) {
+  const row = typeof target === "string" ? scope.querySelector(`[id="${String(target).replace(/"/g, "")}"]`) : target;
+  if (!row) return false;
+  const details = row.closest ? row.closest("details") : null;
+  if (details && !details.open) details.open = true;
+  if (typeof row.scrollIntoView === "function") row.scrollIntoView({ block: "center" });
+  if (typeof row.focus === "function") row.focus({ preventScroll: true });
+  row.classList.add("is-flashed");
+  setTimeout(() => row.classList.remove("is-flashed"), FLASH_MS);
+  return true;
+}
+function domainRows(structured, domain) {
+  return structured.allEvents.filter((event) => event.domain === domain && !event.flags?.derived).map((event) => ({
+    id: event.sourceAnchorId,
+    sourceIndex: event.sourceIndex,
+    source: event.source && typeof event.source === "object" ? event.source : {}
+  })).sort((a, b) => a.sourceIndex - b.sourceIndex);
+}
+function renderSourceDrawer(host, structured, settings, { open = false, warn: warn3 = true } = {}) {
+  host.innerHTML = "";
+  const pageSize = Math.max(1, Number(settings.page_size) || 10);
+  const template = settings.source_url_template;
+  const tables = /* @__PURE__ */ new Map();
+  let total = 0;
+  const missingLinks = /* @__PURE__ */ new Set();
+  const details = createElement("details", "sv-pje-drawer");
+  details.open = Boolean(open);
+  const summary = createElement("summary");
+  details.append(summary);
+  for (const domain of DOMAIN_ORDER) {
+    const rows = domainRows(structured, domain);
+    if (!rows.length) continue;
+    total += rows.length;
+    const wrap = createElement("div", "sv-pje-drawer-domain");
+    wrap.dataset.domain = domain;
+    wrap.append(
+      createElement("h3", null, `${DOMAIN_LABELS[domain] || domain} records (${rows.length})`)
+    );
+    const columns = sourceColumns(rows.map((row) => row.source));
+    const scroll = createElement("div", "sv-pje-drawer-scroll");
+    const table = document.createElement("table");
+    const thead = document.createElement("thead");
+    const headRow = document.createElement("tr");
+    for (const column of columns) headRow.append(createElement("th", null, column));
+    if (template) headRow.append(createElement("th", null, "Link"));
+    thead.append(headRow);
+    const tbody = document.createElement("tbody");
+    table.append(thead, tbody);
+    scroll.append(table);
+    const pager = createElement("div", "sv-listing-actions");
+    wrap.append(scroll, pager);
+    details.append(wrap);
+    const state = { rows, page: 1, columns, tbody, pager, domain };
+    tables.set(domain, state);
+    renderTable(state);
+  }
+  function renderTable(state) {
+    const { visible, pages, page } = paginate(state.rows, state.page, pageSize);
+    state.page = page;
+    state.tbody.innerHTML = "";
+    for (const row of visible) {
+      const tr = document.createElement("tr");
+      tr.id = row.id;
+      tr.tabIndex = -1;
+      for (const column of state.columns) {
+        const value = row.source[column];
+        tr.append(
+          createElement("td", null, value === null || value === void 0 ? "" : String(value))
+        );
+      }
+      if (template) {
+        const cell2 = createElement("td");
+        const href = buildSourceUrl(row.source, state.domain, template, { warn: false });
+        if (href) {
+          const link = createElement("a", null, settings.source_url_label);
+          link.href = href;
+          link.target = "_blank";
+          link.rel = "noopener";
+          cell2.append(link);
+        } else {
+          missingLinks.add(state.domain);
+        }
+        tr.append(cell2);
+      }
+      state.tbody.append(tr);
+    }
+    state.pager.innerHTML = "";
+    if (pages <= 1) {
+      state.pager.hidden = true;
+      return;
+    }
+    state.pager.hidden = false;
+    const from2 = (page - 1) * pageSize + 1;
+    const to2 = Math.min(page * pageSize, state.rows.length);
+    state.pager.append(createElement("span", null, `${from2}\u2013${to2} of ${state.rows.length}`));
+    const tools = createElement("div", "sv-listing-tools");
+    const prev = createElement("button", null, "Previous");
+    prev.type = "button";
+    prev.disabled = page <= 1;
+    prev.onclick = () => {
+      state.page = Math.max(1, state.page - 1);
+      renderTable(state);
+    };
+    const next = createElement("button", null, "Next");
+    next.type = "button";
+    next.disabled = page >= pages;
+    next.onclick = () => {
+      state.page = Math.min(pages, state.page + 1);
+      renderTable(state);
+    };
+    tools.append(prev, next);
+    state.pager.append(tools);
+  }
+  summary.textContent = `Source records (${total})`;
+  if (missingLinks.size && warn3) {
+    console.warn(
+      `patient-journey-explorer: source_url_template names a column some ${[...missingLinks].join(
+        ", "
+      )} rows do not carry; those links are omitted.`
+    );
+  }
+  host.append(details);
+  return {
+    element: details,
+    count: total,
+    open() {
+      details.open = true;
+    },
+    jumpTo(anchorId) {
+      const match = ANCHOR_ID.exec(String(anchorId));
+      if (!match) return false;
+      const state = tables.get(match[1]);
+      if (!state) return false;
+      const position = state.rows.findIndex((row) => row.id === anchorId);
+      if (position < 0) return false;
+      const page = Math.floor(position / pageSize) + 1;
+      if (page !== state.page) {
+        state.page = page;
+        renderTable(state);
+      }
+      details.open = true;
+      return jumpToSource(anchorId, details);
+    }
+  };
+}
+
+// src/patientJourneyNarratives/kinds.js
+var NARRATIVE_KINDS = {
+  "subject-summary": "subjectSummary",
+  "event-context": "eventContext",
+  "lab-trajectory": "labTrajectory",
+  "dose-journey": "doseJourney",
+  disposition: "disposition"
+};
+var SLUG_BY_SLOT = Object.fromEntries(
+  Object.entries(NARRATIVE_KINDS).map(([slug, slot]) => [slot, slug])
+);
+var REFUSAL_TEXT = {
+  "insufficient-data": "Not enough recorded data to draft a narrative.",
+  "anchor-not-found": "The anchored event could not be found in the record.",
+  "ambiguous-scope": "The request matched more than one record; narrow it.",
+  "disallowed-claim": "A narrative here would need a claim this tool does not make.",
+  validation: "The draft did not pass validation and was withheld.",
+  "provider-error": "The narrative service did not answer.",
+  "provider-refusal": "The narrative service declined this request.",
+  reidentification: "This tool does not describe the person, only the record.",
+  cancelled: ""
+};
+function refusalReason(draft) {
+  const flag = (draft?.flags || []).find((entry) => String(entry).startsWith("refused:"));
+  return flag ? String(flag).slice("refused:".length) : null;
+}
+
+// src/patient-journey-explorer/narratives.js
+var CARD_LABEL = "AI narrative";
+var DRAFT_CHIP = "Draft \u2014 AI generated";
+var ACCEPTED_CHIP = "Accepted";
+var STALE_NOTICE = "The rows under this narrative changed since it was drafted; regenerate before relying on it.";
+var CARD_CAUTION = "An AI draft from the recorded rows, not a clinical assessment. Co-occurrence is not causation.";
+var TITLES = {
+  "subject-summary": "Participant summary",
+  "event-context": "Event context",
+  "lab-trajectory": "Lab trajectory",
+  "dose-journey": "Dose journey",
+  disposition: "Disposition"
+};
+function cardTitle(entry) {
+  const base = TITLES[entry.kind] || entry.kind;
+  if (entry.kind === "event-context" && entry.label) return `${base}: ${entry.label}`;
+  if (entry.kind === "lab-trajectory" && entry.label) return `${base}: ${entry.label}`;
+  return base;
+}
+function chipText(draft) {
+  if (draft.status === "accepted") return ACCEPTED_CHIP;
+  if (draft.status === "edited") return "Draft \u2014 edited";
+  if (draft.status === "rejected") return "Rejected";
+  return DRAFT_CHIP;
+}
+function citationChip(rowId, describe, onCite) {
+  const info = describe ? describe(rowId) : null;
+  const button = createElement("button", "sv-pje-ai-cite", info && info.label ? info.label : rowId);
+  button.type = "button";
+  button.dataset.rowId = rowId;
+  if (info && info.onTimeline === false) button.classList.add("is-off-timeline");
+  button.title = `${rowId}${info && info.label ? ` \u2014 ${info.label}` : ""}. ` + (info && info.onTimeline === false ? "Not on the timeline right now; click to open its source record." : "Click to light this mark on the timeline; Shift+click to open its source record.");
+  button.setAttribute(
+    "aria-label",
+    `Citation ${rowId}${info && info.label ? `, ${info.label}` : ""}`
+  );
+  button.onclick = (event) => onCite(rowId, { jump: Boolean(event.shiftKey) });
+  return button;
+}
+function sentenceBlock(sentence2, draft, index, { describe, onCite }) {
+  const p = createElement("p", "sv-pje-ai-sentence");
+  p.dataset.index = String(index);
+  p.dataset.confidence = sentence2.confidence || "";
+  const chip = createElement("span", "sv-pje-ai-chip", chipText(draft));
+  chip.classList.toggle("is-accepted", draft.status === "accepted");
+  p.append(chip, document.createTextNode(` ${sentence2.text} `));
+  const cites = createElement("span", "sv-pje-ai-cites");
+  cites.setAttribute("aria-label", "Citations");
+  for (const rowId of sentence2.citations || []) cites.append(citationChip(rowId, describe, onCite));
+  p.append(cites);
+  if (sentence2.confidence) {
+    const conf = createElement("span", "sv-pje-ai-conf", `confidence ${sentence2.confidence}`);
+    p.append(conf);
+  }
+  return p;
+}
+function provenanceLine(draft) {
+  const prov = draft.provenance || {};
+  const parts = [];
+  if (prov.model) parts.push(prov.model);
+  if (prov.skill) parts.push(prov.skill);
+  if (prov.generated_at) parts.push(prov.generated_at.replace("T", " ").replace(/\.\d+Z$/, "Z"));
+  if (Array.isArray(prov.tool_calls)) parts.push(`${prov.tool_calls.length} tool calls`);
+  if (prov.input_hash) parts.push(prov.input_hash.slice(0, 19));
+  const line = createElement("p", "sv-pje-ai-prov", parts.join(" \xB7 "));
+  if (prov.input_hash) line.title = prov.input_hash;
+  return line;
+}
+function renderNarrativeCard(entry, handlers) {
+  const { describe, onCite, onAction, onToggle } = handlers;
+  const card = createElement("section", "sv-pje-ai");
+  card.dataset.kind = entry.kind;
+  card.dataset.status = entry.status;
+  if (entry.key) card.dataset.key = entry.key;
+  card.setAttribute("role", "region");
+  card.setAttribute("aria-label", `${CARD_LABEL}: ${cardTitle(entry)}`);
+  card.classList.toggle("is-stale", Boolean(entry.stale));
+  card.classList.toggle("is-loading", entry.status === "loading");
+  card.classList.toggle("is-collapsed", Boolean(entry.collapsible && !entry.expanded));
+  const head = createElement("div", "sv-pje-ai-head");
+  head.append(
+    createElement("span", "sv-pje-ai-label", CARD_LABEL),
+    createElement("span", "sv-pje-ai-title", cardTitle(entry))
+  );
+  const draft = entry.draft;
+  if (draft && draft.status === "accepted") {
+    head.append(createElement("span", "sv-pje-ai-chip is-accepted", ACCEPTED_CHIP));
+  } else if (entry.status === "ready") {
+    head.append(createElement("span", "sv-pje-ai-chip", DRAFT_CHIP));
+  }
+  let toggle = null;
+  if (entry.collapsible && entry.status === "ready") {
+    toggle = createElement(
+      "button",
+      "sv-pje-ai-toggle",
+      entry.expanded ? "Hide full narrative" : "Show full narrative"
+    );
+    toggle.type = "button";
+    toggle.setAttribute("aria-expanded", String(Boolean(entry.expanded)));
+    toggle.setAttribute("data-sv-focus", `ai-toggle-${entry.slot}`);
+    toggle.onclick = () => onToggle(entry, !entry.expanded);
+    head.append(toggle);
+  }
+  card.append(head);
+  if (entry.status === "loading") {
+    card.setAttribute("aria-busy", "true");
+    card.append(
+      createElement("p", "sv-pje-ai-summary is-pending", "Drafting from the recorded rows\u2026")
+    );
+    return card;
+  }
+  if (entry.status === "error" || !draft) {
+    card.append(
+      createElement(
+        "p",
+        "sv-pje-ai-summary is-refused",
+        entry.error || "The narrative could not be drafted."
+      )
+    );
+    const actions = createElement("div", "sv-pje-ai-actions");
+    actions.append(actionButton("regenerate", "Regenerate", entry, onAction));
+    card.append(actions);
+    return card;
+  }
+  const refusal = refusalReason(draft);
+  const summary = createElement(
+    "p",
+    `sv-pje-ai-summary${refusal ? " is-refused" : ""}`,
+    refusal ? REFUSAL_TEXT[refusal] || draft.summary || `Narrative withheld (${refusal}).` : draft.summary || ""
+  );
+  card.append(summary);
+  const body = createElement("div", "sv-pje-ai-body");
+  body.id = `${entry.id}-body`;
+  if (toggle) toggle.setAttribute("aria-controls", body.id);
+  body.hidden = Boolean(entry.collapsible && !entry.expanded);
+  if (entry.stale) {
+    body.append(createElement("p", "sv-pje-ai-stale", STALE_NOTICE));
+  }
+  if (!refusal) {
+    if (entry.editing) {
+      body.append(editForm(entry, handlers));
+    } else {
+      draft.sentences.forEach(
+        (sentence2, index) => body.append(sentenceBlock(sentence2, draft, index, { describe, onCite }))
+      );
+      if (!draft.sentences.length) {
+        body.append(createElement("p", "sv-pje-empty", "The draft has no sentences."));
+      }
+    }
+  }
+  const flags = (draft.flags || []).filter((flag) => !String(flag).startsWith("refused:"));
+  if (flags.length) {
+    const list2 = createElement("p", "sv-pje-ai-flags");
+    for (const flag of flags) list2.append(createElement("span", "sv-pje-ai-flag", flag));
+    body.append(list2);
+  }
+  if (!entry.editing) {
+    const actions = createElement("div", "sv-pje-ai-actions");
+    if (!refusal && draft.status !== "accepted") {
+      actions.append(actionButton("accept", "Accept", entry, onAction));
+      actions.append(actionButton("reject", "Reject", entry, onAction));
+      actions.append(actionButton("edit", "Edit", entry, onAction));
+    }
+    actions.append(actionButton("regenerate", "Regenerate", entry, onAction));
+    body.append(actions);
+  }
+  body.append(provenanceLine(draft));
+  body.append(createElement("p", "sv-pje-ai-foot", CARD_CAUTION));
+  card.append(body);
+  return card;
+}
+function actionButton(type, label, entry, onAction) {
+  const button = createElement("button", `sv-pje-btn sv-pje-ai-action is-${type}`, label);
+  button.type = "button";
+  button.dataset.action = type;
+  button.setAttribute("data-sv-focus", `ai-${type}-${entry.slot}`);
+  button.onclick = () => onAction(type, entry);
+  return button;
+}
+function editForm(entry, { onEditSave, onAction }) {
+  const form = createElement("div", "sv-pje-ai-edit");
+  const areas = entry.draft.sentences.map((sentence2, index) => {
+    const wrap = createElement("label", "sv-pje-ai-edit-row");
+    wrap.append(createElement("span", "sv-pje-ai-chip", `Sentence ${index + 1}`));
+    const area = document.createElement("textarea");
+    area.className = "sv-pje-ai-textarea";
+    area.rows = 2;
+    area.value = sentence2.text;
+    area.setAttribute("aria-label", `Edit sentence ${index + 1}`);
+    wrap.append(area);
+    form.append(wrap);
+    return { area, sentence: sentence2 };
+  });
+  const actions = createElement("div", "sv-pje-ai-actions");
+  const save = createElement("button", "sv-pje-btn sv-pje-ai-action is-save", "Save edits");
+  save.type = "button";
+  save.dataset.action = "save";
+  save.onclick = () => onEditSave(
+    entry,
+    areas.map(({ area, sentence: sentence2 }) => ({ ...sentence2, text: area.value.trim() }))
+  );
+  const cancel = createElement("button", "sv-pje-btn sv-pje-ai-action is-cancel", "Cancel");
+  cancel.type = "button";
+  cancel.dataset.action = "cancel";
+  cancel.onclick = () => onAction("cancel-edit", entry);
+  actions.append(save, cancel);
+  form.append(actions);
+  return form;
+}
+
+// src/patientJourneyNarratives/dataService.js
+var ALL_LANES = Object.fromEntries(LANE_KEYS.map((key) => [key, true]));
+function createDataService({ domains, data, settings, structured: hook } = {}) {
+  const synced = settings && typeof settings === "object" && Array.isArray(settings.lane_groups) ? settings : syncSettings14(settings || {});
+  const source = domains && typeof domains === "object" ? domains : normalizeInput(data ?? {}, synced).domains;
+  const cache = /* @__PURE__ */ new Map();
+  return {
+    settings: synced,
+    domains: source,
+    subjects() {
+      return subjectIndex(source, synced);
+    },
+    structuredFor(subject) {
+      const key = subject === null || subject === void 0 ? "" : String(subject);
+      if (!key) return null;
+      if (cache.has(key)) return cache.get(key);
+      const live = typeof hook === "function" ? hook(key) : null;
+      if (live && live.subject === key) return live;
+      const structured = structureData3(source, synced, { subject: key, lanes: ALL_LANES });
+      const result = structured.subject === key ? structured : null;
+      cache.set(key, result);
+      return result;
+    },
+    invalidate() {
+      cache.clear();
+    }
+  };
+}
+
+// src/patientJourneyNarratives/index.js
+var patientJourneyNarratives_exports = {};
+__export(patientJourneyNarratives_exports, {
+  MARKERS: () => MARKERS,
+  NARRATIVE_KINDS: () => NARRATIVE_KINDS,
+  REFUSAL_TEXT: () => REFUSAL_TEXT,
+  SHARED: () => SHARED,
+  SKILLS: () => SKILLS,
+  SKILL_SLUGS: () => SKILL_SLUGS,
+  SLUG_BY_SLOT: () => SLUG_BY_SLOT,
+  TOOLS: () => TOOLS,
+  bindNarratives: () => bindNarratives,
+  create: () => create,
+  createClaudeAdapter: () => createClaudeAdapter,
+  createDataService: () => createDataService,
+  createOpenAIAdapter: () => createOpenAIAdapter,
+  createScope: () => createScope,
+  createStubAdapter: () => createStubAdapter,
+  default: () => patientJourneyNarratives_default,
+  inputHash: () => inputHash,
+  normalizeRowId: () => normalizeRowId,
+  parseFirstMessage: () => parseFirstMessage,
+  refusalDraft: () => refusalDraft,
+  refusalReason: () => refusalReason,
+  skillFor: () => skillFor,
+  validateDraft: () => validateDraft
+});
+
+// src/patientJourneyNarratives/skills.generated.js
+var CATALOG = {
+  "shared": {
+    "systemPrompt": 'You draft short clinical-safety narratives for ONE participant in a clinical trial, from records a reviewer is looking at on a timeline. You are a drafting aid for a human safety reviewer, not a reviewer yourself.\n\nGround rules that are enforced after you answer, so follow them or the sentence is discarded:\n\n1. Use only the tools you are given to read the record. Every fact you state must come from a row a tool returned in this conversation. Never use outside knowledge about a drug, a lab test or a diagnosis to add a fact the rows do not carry.\n2. Every sentence must cite at least one `row_id` from the rows you read, in its `citations` array. A sentence with no resolvable citation is dropped. Cite the specific rows a claim rests on, not every row you saw.\n3. Describe co-occurrence in time; never assert causation. Say "temporally associated with", "occurred within N days of", "was active at onset", "consistent with the recorded timeline". Never say "caused", "due to", "led to", "resulted in", "because of".\n4. No diagnoses, no treatment recommendations, no statements about whether a drug is appropriate or off-label, no prognosis. Do not name a condition the rows do not name.\n5. Refer to the participant only by the identifier the record uses. Never speculate about age, sex, occupation or anything that could re-identify a person.\n6. Count in the units the tools use: study days, elapsed days from the anchor. Report numbers exactly as the rows carry them, with their units.\n7. When the rows are insufficient, contradictory, or the request pushes toward a claim these rules forbid, submit a draft with an empty `sentences` array and a `flags` entry of the form `refused:<reason>` from the refusal catalog. A refusal is a valid answer; an invented sentence is not.\n8. When a recorded value itself contains such wording (a disposition term reading "DUE TO", an outcome), quote it verbatim inside double quotation marks and attribute it to the record; quoted record wording is exempt from rule 3, your own words are not.\n9. Keep to the sentence cap the skill states. Prefer fewer, denser sentences. Plain clinical register; no headings, no bullet lists inside a sentence, no first person.\n10. Set `confidence` per sentence: `high` when the cited rows state the fact directly; `medium` when the sentence combines rows (an offset in days, a count); `low` when a row is partial (an end date not recorded, a blank severity) and you say so.\n\nWhen you have read what you need, submit the draft by calling the `submit_draft` tool exactly once. Do not write the draft as free text.',
+    "styleGuide": '# Style guide for patient-journey narratives\n\nApplies to every skill in this folder. The output validator (`src/patientJourneyNarratives/validator.js`) loads the forbidden-phrase list from the fenced block at the end of this file, so an edit here changes what is rejected at run time.\n\n## Register\n\n- Plain clinical prose, third person, past tense for what happened, present tense for what the record shows now ("no end date is recorded").\n- One claim per sentence where possible. A sentence that combines rows (a count, an offset in days) is fine; a sentence that combines an observation with an interpretation is not.\n- Name records the way the rows name them: the preferred term, the con-med name as recorded, the lab test name, the dose with its unit.\n- Numbers as the rows carry them. Study days are "day 30", offsets are "12 days before the anchor" or "within 5 days of onset". Never round a lab value; report the ratio to the limit the tool computed.\n\n## Hedging vocabulary (use these)\n\n- "temporally associated with"\n- "occurred within N days of"\n- "was active at onset" / "was active on day N"\n- "started N days after" / "started N days before"\n- "consistent with the recorded timeline"\n- "is recorded as" / "the record shows"\n- "no end date is recorded" / "severity is not recorded"\n\n## Forbidden constructs\n\n- Causal language of any kind: caused, due to, led to, resulted in, because of, secondary to, attributable to, induced, triggered, responsible for.\n- Diagnoses the rows do not carry: naming a syndrome, a disease, an injury pattern, or a classification (for example a Hy\'s-law call) that is not itself a recorded term.\n- Treatment recommendations or judgements about care: should, recommend, consider discontinuing, appropriate, inappropriate, off-label, contraindicated.\n- Prognosis or risk statements: likely to, at risk of, may develop, prognosis.\n- Re-identification: age, sex, occupation, location, dates of birth, anything beyond the participant identifier.\n- Confidence beyond the rows: "clearly", "definitely", "certainly", "proves", "confirms".\n- Absolutes not supported by a row: "never", "always", "no other".\n\n## Sentence structure\n\n- Every sentence carries at least one citation to a `row_id` returned by a tool in this generation. The validator drops sentences whose citations do not all resolve.\n- A sentence about a list (the con-meds active at onset) cites every member it names.\n- A sentence about a count cites the rows counted, or the anchor when the count came from the context-window tool.\n- Do not cite the same row twice in one sentence.\n\n## Quoting the record\n\nA recorded value that itself contains forbidden wording \u2014 a disposition term such as `PMD DECISION DUE TO AE\'S`, a verbatim outcome \u2014 is quoted verbatim inside double quotation marks and attributed to the record ("the disposition record reads \u2026"). The validator exempts double-quoted spans from the forbidden-phrase block, because the quoted words are the record\'s claim, not the model\'s. Never paraphrase such wording into your own sentence, and never quote to smuggle a claim the rows do not carry.\n\n## Forbidden phrase patterns\n\nThe validator compiles each line of the block below as a case-insensitive JavaScript regular expression and rejects a sentence that matches any of them.\n\n```forbidden\n\\bcaus(e|es|ed|ing|al|ation)\\b\n\\bdue to\\b\n\\bled to\\b\n\\bleads? to\\b\n\\bresult(s|ed|ing)? (in|from)\\b\n\\bbecause of\\b\n\\bsecondary to\\b\n\\battributable to\\b\n\\binduced\\b\n\\btriggered\\b\n\\bresponsible for\\b\n\\bshould\\b\n\\brecommend(s|ed|ation)?\\b\n\\bconsider (stopping|discontinuing|reducing|withholding)\\b\n\\b(in)?appropriate\\b\n\\boff-?label\\b\n\\bcontraindicat(ed|ion)\\b\n\\blikely to\\b\n\\bat risk (of|for)\\b\n\\bmay develop\\b\n\\bprognosis\\b\n\\b(clearly|definitely|certainly)\\b\n\\bprov(es|ed|en)\\b\n\\bconfirm(s|ed)\\b\n\\bdiagnos(is|ed|es|tic)\\b\n\\bhy\'?s law\\b\n\\bdrug-induced\\b\n\\b(years?|yrs?)[ -]old\\b\n\\b(male|female|man|woman)\\b\n```\n',
+    "refusalCatalog": '# Refusal catalog\n\nA refusal is a valid, schema-conformant draft: `sentences` is empty and `flags` carries exactly one `refused:<reason>` entry from the list below (a skill may add its own descriptive flags after it). The runtime also emits these itself when the validator rejects the model\'s output twice, or when the tools return nothing to describe. The renderer shows a refusal as a card that says why, never as an empty space.\n\n| Flag                        | When to emit it                                                                                                                          | What the card says                                             |\n| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |\n| `refused:insufficient-data` | The tools returned no rows for the scope: no events in the window, no lab points for the test, no exposure records, no disposition rows. | "Not enough recorded data to draft a narrative."               |\n| `refused:anchor-not-found`  | The anchor `row_id` does not resolve to an event of this participant.                                                                    | "The anchored event could not be found in the record."         |\n| `refused:ambiguous-scope`   | The request names a test, term or record that matches several rows and no rule picks one.                                                | "The request matched more than one record; narrow it."         |\n| `refused:disallowed-claim`  | The request, or the only sentence the rows support, would require a diagnosis, a causal statement, a treatment judgement or a prognosis. | "A narrative here would need a claim this tool does not make." |\n| `refused:validation`        | Emitted by the runtime: the model\'s output failed the validator twice (schema, citations, forbidden phrases, length).                    | "The draft did not pass validation and was withheld."          |\n| `refused:provider-error`    | Emitted by the runtime: the adapter threw or returned no usable content.                                                                 | "The narrative service did not answer."                        |\n| `refused:reidentification`  | The request asks for anything about the person beyond the identifier the record uses.                                                    | "This tool does not describe the person, only the record."     |\n\nRules:\n\n- A refusal names one reason. Choose the most specific.\n- A refusal never carries prose in `sentences`. If a partial narrative is possible (some facts are supported), draft those sentences and add a descriptive flag such as `partial:labs-missing` instead of refusing.\n- The `provenance` of a refusal is complete: model, skill, input hash, timestamp, tool calls. A refusal is reproducible like any other draft.\n\nRuntime-only additions (never chosen by the model):\n\n| Flag                       | When                                                         | What the card says                             |\n| -------------------------- | ------------------------------------------------------------ | ---------------------------------------------- |\n| `refused:provider-refusal` | The provider declined the request (a `refusal` stop reason). | "The narrative service declined this request." |\n| `refused:cancelled`        | The host cancelled the generation (an AbortSignal).          | Nothing: the card is removed.                  |\n',
+    "forbiddenPatterns": [
+      "\\bcaus(e|es|ed|ing|al|ation)\\b",
+      "\\bdue to\\b",
+      "\\bled to\\b",
+      "\\bleads? to\\b",
+      "\\bresult(s|ed|ing)? (in|from)\\b",
+      "\\bbecause of\\b",
+      "\\bsecondary to\\b",
+      "\\battributable to\\b",
+      "\\binduced\\b",
+      "\\btriggered\\b",
+      "\\bresponsible for\\b",
+      "\\bshould\\b",
+      "\\brecommend(s|ed|ation)?\\b",
+      "\\bconsider (stopping|discontinuing|reducing|withholding)\\b",
+      "\\b(in)?appropriate\\b",
+      "\\boff-?label\\b",
+      "\\bcontraindicat(ed|ion)\\b",
+      "\\blikely to\\b",
+      "\\bat risk (of|for)\\b",
+      "\\bmay develop\\b",
+      "\\bprognosis\\b",
+      "\\b(clearly|definitely|certainly)\\b",
+      "\\bprov(es|ed|en)\\b",
+      "\\bconfirm(s|ed)\\b",
+      "\\bdiagnos(is|ed|es|tic)\\b",
+      "\\bhy'?s law\\b",
+      "\\bdrug-induced\\b",
+      "\\b(years?|yrs?)[ -]old\\b",
+      "\\b(male|female|man|woman)\\b"
+    ]
+  },
+  "skills": {
+    "disposition": {
+      "slug": "disposition",
+      "version": "1.0.0",
+      "modelHint": "claude-opus-5",
+      "grounding": "get_events",
+      "groundingArgs": [
+        "domain=DS"
+      ],
+      "tools": [
+        "get_events",
+        "get_subject_overview",
+        "get_context_window",
+        "get_source_row"
+      ],
+      "prompt": '## Task\n\nDescribe what the record shows around the end of treatment for ONE participant: the disposition event (the record flagged as the reference event) and its day, the other disposition records (milestones), when exposure is recorded as ending, and the last adverse event recorded before the end. Read `get_subject_overview` for the exposure extent and the last adverse event. At most four cited sentences.\n\n## What to cover, in this order\n\n1. The disposition event: the decoded term, the verbatim term when it differs, the day (cite the row).\n2. The other disposition records, by day (cite them).\n3. The exposure extent: first and last exposure day, and whether the last record has an end date (cite the exposure rows the overview names).\n4. The last adverse event recorded, its day and whether it is serious (cite it).\n\n## Rules specific to this skill\n\n- A recorded term such as "DISCONTINUED DUE TO ADVERSE EVENT" is the record\'s own wording: quote it verbatim inside double quotation marks (the validator exempts quoted spans) and do not restate it as your own causal claim. Do not name which adverse event it refers to unless a row says so.\n- Never infer the reason for a disposition from the timeline.\n- If no row is flagged as the disposition event, say so and describe the milestones.\n\n## Flags you may add\n\n- `disposition:none` \u2014 no record is flagged as the disposition event.\n- `sae` \u2014 the last adverse event is serious.\n- `exposure:end-unrecorded` \u2014 the last exposure record has no end date.',
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "disposition narrative skill",
+        "definitions": {
+          "Input": {
+            "type": "object",
+            "required": [
+              "subject"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "subject": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "Sentence": {
+            "type": "object",
+            "required": [
+              "text",
+              "citations",
+              "confidence"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 400
+              },
+              "citations": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 12,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Z]+[-:][0-9]+$"
+                }
+              },
+              "confidence": {
+                "type": "string",
+                "enum": [
+                  "high",
+                  "medium",
+                  "low"
+                ]
+              }
+            }
+          },
+          "Draft": {
+            "type": "object",
+            "required": [
+              "kind",
+              "subject",
+              "summary",
+              "sentences",
+              "flags"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "disposition"
+              },
+              "subject": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string",
+                "maxLength": 240
+              },
+              "sentences": {
+                "type": "array",
+                "maxItems": 4,
+                "items": {
+                  "$ref": "#/definitions/Sentence"
+                }
+              },
+              "flags": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "maxLength": 60
+                }
+              }
+            }
+          },
+          "Output": {
+            "type": "object",
+            "required": [
+              "kind",
+              "subject",
+              "summary",
+              "sentences",
+              "flags",
+              "provenance",
+              "status"
+            ],
+            "properties": {
+              "status": {
+                "type": "string",
+                "const": "draft"
+              },
+              "provenance": {
+                "$ref": "#/definitions/Provenance"
+              }
+            }
+          },
+          "Provenance": {
+            "type": "object",
+            "required": [
+              "model",
+              "skill",
+              "input_hash",
+              "generated_at",
+              "tool_calls"
+            ],
+            "properties": {
+              "model": {
+                "type": "string"
+              },
+              "skill": {
+                "type": "string",
+                "pattern": "^[a-z-]+@[0-9]+\\.[0-9]+\\.[0-9]+$"
+              },
+              "input_hash": {
+                "type": "string",
+                "pattern": "^sha256:[0-9a-f]{64}$"
+              },
+              "generated_at": {
+                "type": "string"
+              },
+              "tool_calls": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "examples": [
+        {
+          "inputs": {
+            "subject": "01-716-1447"
+          },
+          "reference": {
+            "required_facts": [
+              "COMPLETED",
+              "day 184",
+              "PROTOCOL COMPLETED",
+              "RANDOMIZED",
+              "day 1",
+              "FINAL LAB VISIT",
+              "CHEST PAIN",
+              "day 111"
+            ],
+            "required_citations": [
+              "AE-977",
+              "DS-729",
+              "DS-730",
+              "EX-541"
+            ],
+            "scope_row_ids": [
+              "DS-729",
+              "DS-730",
+              "DS-731"
+            ],
+            "expected_flags": [],
+            "refusal": null
+          }
+        },
+        {
+          "inputs": {
+            "subject": "01-701-1023"
+          },
+          "reference": {
+            "required_facts": [
+              "ADVERSE EVENT",
+              "day 29",
+              "RANDOMIZED",
+              "day 1",
+              "FINAL LAB VISIT",
+              "FINAL RETRIEVAL VISIT",
+              "day 198",
+              "day 28",
+              "ATRIOVENTRICULAR BLOCK SECOND DEGREE",
+              "day 22"
+            ],
+            "required_citations": [
+              "AE-6",
+              "DS-3",
+              "DS-4",
+              "EX-3"
+            ],
+            "scope_row_ids": [
+              "DS-3",
+              "DS-4",
+              "DS-5",
+              "DS-6"
+            ],
+            "expected_flags": [],
+            "refusal": null
+          }
+        },
+        {
+          "inputs": {
+            "subject": "01-701-1211"
+          },
+          "reference": {
+            "required_facts": [
+              "DEATH",
+              "day 61",
+              "RANDOMIZED",
+              "day 1",
+              "FINAL LAB VISIT",
+              "day 55",
+              "day 59",
+              "SUDDEN DEATH"
+            ],
+            "required_citations": [
+              "AE-99",
+              "DS-67",
+              "DS-69",
+              "EX-48"
+            ],
+            "scope_row_ids": [
+              "DS-67",
+              "DS-68",
+              "DS-69"
+            ],
+            "expected_flags": [],
+            "refusal": null
+          }
+        }
+      ],
+      "readme": '# disposition\n\nWhat the record shows around the end of treatment: the disposition event and its day, the milestones, when exposure ends, and the last adverse event recorded. At most four cited sentences. Use it from the tray beneath the lanes. It quotes a recorded "discontinued due to adverse event" as the record\'s wording and never infers a reason. Inputs: `{ subject }`. Refuses with `refused:insufficient-data` when there are no disposition rows.\n'
+    },
+    "dose-journey": {
+      "slug": "dose-journey",
+      "version": "1.0.0",
+      "modelHint": "claude-opus-5",
+      "grounding": "get_dose_history",
+      "groundingArgs": [],
+      "tools": [
+        "get_dose_history",
+        "get_events",
+        "get_source_row"
+      ],
+      "prompt": '## Task\n\nDescribe ONE participant\'s exposure and every dose change: the treatment(s), the exposure records and their span, each change (from \u2192 to with unit, its direction, the day the new dose began), and \u2014 read through `get_events` for serious events \u2014 any serious adverse event recorded during the study, by day, so the reviewer sees dose changes and serious events on one time line. At most five cited sentences.\n\n## What to cover, in this order\n\n1. Treatment and the exposure span across the records (cite the exposure rows).\n2. Each dose change in order, up to three; if more, say how many more and add the flag (cite the change row and its source exposure row).\n3. Serious adverse events by day, if any (cite them).\n4. Whether the last exposure record has an end date.\n\n## Rules specific to this skill\n\n- A dose change is described by direction as the tool reports it: increase, reduction, interruption (to zero), restart (from zero).\n- Do not infer why a dose changed. "Interruption on day 40; a serious event is recorded on day 38" is the strongest juxtaposition allowed \u2014 two facts, in time order, no link asserted.\n- A gap between exposure records at the same dose is not a dose change; do not call it one.\n\n## Flags you may add\n\n- `dose:more-changes` \u2014 more than three changes; only three are described.\n- `sae` \u2014 a serious adverse event is recorded.\n- `exposure:end-unrecorded` \u2014 the last exposure record has no end date.',
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "dose-journey narrative skill",
+        "definitions": {
+          "Input": {
+            "type": "object",
+            "required": [
+              "subject"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "subject": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "Sentence": {
+            "type": "object",
+            "required": [
+              "text",
+              "citations",
+              "confidence"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 400
+              },
+              "citations": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 12,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Z]+[-:][0-9]+$"
+                }
+              },
+              "confidence": {
+                "type": "string",
+                "enum": [
+                  "high",
+                  "medium",
+                  "low"
+                ]
+              }
+            }
+          },
+          "Draft": {
+            "type": "object",
+            "required": [
+              "kind",
+              "subject",
+              "summary",
+              "sentences",
+              "flags"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "dose-journey"
+              },
+              "subject": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string",
+                "maxLength": 240
+              },
+              "sentences": {
+                "type": "array",
+                "maxItems": 5,
+                "items": {
+                  "$ref": "#/definitions/Sentence"
+                }
+              },
+              "flags": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "maxLength": 60
+                }
+              }
+            }
+          },
+          "Output": {
+            "type": "object",
+            "required": [
+              "kind",
+              "subject",
+              "summary",
+              "sentences",
+              "flags",
+              "provenance",
+              "status"
+            ],
+            "properties": {
+              "status": {
+                "type": "string",
+                "const": "draft"
+              },
+              "provenance": {
+                "$ref": "#/definitions/Provenance"
+              }
+            }
+          },
+          "Provenance": {
+            "type": "object",
+            "required": [
+              "model",
+              "skill",
+              "input_hash",
+              "generated_at",
+              "tool_calls"
+            ],
+            "properties": {
+              "model": {
+                "type": "string"
+              },
+              "skill": {
+                "type": "string",
+                "pattern": "^[a-z-]+@[0-9]+\\.[0-9]+\\.[0-9]+$"
+              },
+              "input_hash": {
+                "type": "string",
+                "pattern": "^sha256:[0-9a-f]{64}$"
+              },
+              "generated_at": {
+                "type": "string"
+              },
+              "tool_calls": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "examples": [
+        {
+          "inputs": {
+            "subject": "01-716-1447"
+          },
+          "reference": {
+            "required_facts": [
+              "XANOMELINE",
+              "3 record",
+              "day 1",
+              "day 184",
+              "from 54 to 81",
+              "day 17",
+              "increase",
+              "from 81 to 54",
+              "day 175",
+              "reduction"
+            ],
+            "required_citations": [
+              "DOSE-542",
+              "DOSE-543",
+              "EX-541",
+              "EX-542",
+              "EX-543"
+            ],
+            "scope_row_ids": [
+              "DOSE-542",
+              "DOSE-543",
+              "EX-541",
+              "EX-542",
+              "EX-543"
+            ],
+            "expected_flags": [],
+            "refusal": null
+          }
+        },
+        {
+          "inputs": {
+            "subject": "01-701-1034"
+          },
+          "reference": {
+            "required_facts": [
+              "XANOMELINE",
+              "3 record",
+              "day 1",
+              "day 183",
+              "from 54 to 0",
+              "day 16",
+              "interruption"
+            ],
+            "required_citations": [
+              "DOSE-10",
+              "EX-9",
+              "EX-10",
+              "EX-11"
+            ],
+            "scope_row_ids": [
+              "DOSE-10",
+              "EX-9",
+              "EX-10",
+              "EX-11"
+            ],
+            "expected_flags": [],
+            "refusal": null
+          }
+        },
+        {
+          "inputs": {
+            "subject": "01-701-1148"
+          },
+          "reference": {
+            "required_facts": [
+              "XANOMELINE",
+              "3 record",
+              "day 1",
+              "day 182",
+              "from 54 to 81",
+              "day 15",
+              "increase",
+              "from 81 to 0",
+              "day 171",
+              "interruption"
+            ],
+            "required_citations": [
+              "DOSE-32",
+              "DOSE-33",
+              "EX-31",
+              "EX-32",
+              "EX-33"
+            ],
+            "scope_row_ids": [
+              "DOSE-32",
+              "DOSE-33",
+              "EX-31",
+              "EX-32",
+              "EX-33"
+            ],
+            "expected_flags": [],
+            "refusal": null
+          }
+        }
+      ],
+      "readme": "# dose-journey\n\nExposure and every dose change for one participant, with any serious adverse events placed on the same time line by day. At most five cited sentences. Use it from the tray beneath the lanes. Do not use it to explain why a dose changed \u2014 it will not. Inputs: `{ subject }`. Renders as a light-blue card in the tray beneath the lanes, on request. Refuses with `refused:insufficient-data` when there are no exposure records.\n"
+    },
+    "event-context": {
+      "slug": "event-context",
+      "version": "1.0.0",
+      "modelHint": "claude-opus-5",
+      "grounding": "get_context_window",
+      "groundingArgs": [],
+      "tools": [
+        "get_context_window",
+        "get_lab_series",
+        "get_source_row"
+      ],
+      "prompt": '## Task\n\nDraft the context of ONE anchored event for a safety reviewer: what the record shows was going on around it. The grounding rows are the same lists the reviewer already sees in the context panel \u2014 the con-meds active at the anchor (and those started later in the window), the abnormal labs in the window, the dose changes in the window, and the earlier or same-day events with the same preferred term. Your job is to turn those lists into at most the stated number of sentences a reviewer can read in ten seconds, each one traceable to its rows.\n\n## What to cover, in this order of priority\n\n1. The anchor itself: term, day, severity and seriousness as recorded, whether an end is recorded (cite the anchor row).\n2. Con-meds active at onset, named, and the fact when their end is not recorded (cite each con-med row you name). If none, say so in one clause and cite the anchor.\n3. Abnormal labs in the window: test, value with unit, the ratio to the limit the tool gives, the day and its offset from the anchor (cite the lab rows). Say which rule fired when the tool says `change`.\n4. Dose changes in the window: from \u2192 to with unit, direction, day (cite the dose-change row).\n5. Earlier same-term events: how many, the most recent one\'s start and offset (cite them). A same-day record is "recorded on the same day", not a recurrence.\n6. Con-meds started later in the window, as a possible response, without asserting intent.\n\n## Rules specific to this skill\n\n- The offset unit is elapsed days from the anchor, as the tool reports them. Do not recompute.\n- Do not describe records outside the window except the prior same-term events, which the tool deliberately returns over the whole record.\n- If the grounding lists are all empty except the anchor, draft one sentence describing the anchor and add the flag `context:empty`.\n- Never rank the con-meds by suspicion, never call a con-med hepatotoxic or nephrotoxic, never say a lab change is "consistent with" a drug effect. "Temporally associated" is the strongest link you may draw.\n- Do not quote the honesty counters as findings; use them only to hedge ("no end date is recorded").\n\n## Flags you may add\n\n- `context:empty` \u2014 nothing in the window beyond the anchor.\n- `sae` \u2014 the anchor is recorded as serious.\n- `labs:change-rule` \u2014 at least one abnormal lab fired the change-from-baseline rule.\n- `ends-unrecorded` \u2014 at least one named con-med has no recorded end.',
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "event-context narrative skill",
+        "definitions": {
+          "Input": {
+            "type": "object",
+            "required": [
+              "subject",
+              "anchor_row_id"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "subject": {
+                "type": "string",
+                "minLength": 1
+              },
+              "anchor_row_id": {
+                "type": "string",
+                "pattern": "^[A-Z]+[-:][0-9]+$"
+              },
+              "window_days": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          },
+          "Sentence": {
+            "type": "object",
+            "required": [
+              "text",
+              "citations",
+              "confidence"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 400
+              },
+              "citations": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 12,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Z]+[-:][0-9]+$"
+                }
+              },
+              "confidence": {
+                "type": "string",
+                "enum": [
+                  "high",
+                  "medium",
+                  "low"
+                ]
+              }
+            }
+          },
+          "Draft": {
+            "type": "object",
+            "required": [
+              "kind",
+              "subject",
+              "anchor",
+              "window_days",
+              "summary",
+              "sentences",
+              "flags"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "event-context"
+              },
+              "subject": {
+                "type": "string"
+              },
+              "anchor": {
+                "type": "object",
+                "required": [
+                  "domain",
+                  "row_id",
+                  "term",
+                  "start_day"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "domain": {
+                    "type": "string"
+                  },
+                  "row_id": {
+                    "type": "string"
+                  },
+                  "term": {
+                    "type": "string"
+                  },
+                  "start_day": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  }
+                }
+              },
+              "window_days": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "summary": {
+                "type": "string",
+                "maxLength": 240
+              },
+              "sentences": {
+                "type": "array",
+                "maxItems": 6,
+                "items": {
+                  "$ref": "#/definitions/Sentence"
+                }
+              },
+              "flags": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "maxLength": 60
+                }
+              }
+            }
+          },
+          "Output": {
+            "type": "object",
+            "required": [
+              "kind",
+              "subject",
+              "anchor",
+              "window_days",
+              "summary",
+              "sentences",
+              "flags",
+              "provenance",
+              "status"
+            ],
+            "properties": {
+              "status": {
+                "type": "string",
+                "const": "draft"
+              },
+              "provenance": {
+                "$ref": "#/definitions/Provenance"
+              }
+            }
+          },
+          "Provenance": {
+            "type": "object",
+            "required": [
+              "model",
+              "skill",
+              "input_hash",
+              "generated_at",
+              "tool_calls"
+            ],
+            "properties": {
+              "model": {
+                "type": "string"
+              },
+              "skill": {
+                "type": "string",
+                "pattern": "^[a-z-]+@[0-9]+\\.[0-9]+\\.[0-9]+$"
+              },
+              "input_hash": {
+                "type": "string",
+                "pattern": "^sha256:[0-9a-f]{64}$"
+              },
+              "generated_at": {
+                "type": "string"
+              },
+              "tool_calls": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "adapter": {
+                "type": "string"
+              },
+              "usage": {
+                "type": "object"
+              },
+              "dropped": {
+                "type": "array"
+              },
+              "attempts": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      },
+      "examples": [
+        {
+          "inputs": {
+            "subject": "01-716-1447",
+            "anchor_row_id": "AE-973",
+            "window_days": 30
+          },
+          "reference": {
+            "required_facts": [
+              "ERYTHEMA",
+              "day 30",
+              "7 con-med",
+              "B COMPLEX",
+              "MULTIVITAMIN",
+              "VITAMIN E",
+              "ALEVE",
+              "Aspartate Aminotransferase",
+              "36 U/L",
+              "day 27",
+              "1.06",
+              "from 54 to 81",
+              "day 17",
+              "CORTISONE"
+            ],
+            "required_citations": [
+              "AE-973",
+              "CM-1005",
+              "DOSE-542",
+              "LB-6057"
+            ],
+            "scope_row_ids": [
+              "AE-973",
+              "AE-974",
+              "AE-975",
+              "CM-343",
+              "CM-344",
+              "CM-345",
+              "CM-346",
+              "CM-1004",
+              "CM-1005",
+              "CM-1006",
+              "CM-1007",
+              "CM-1008",
+              "DOSE-542",
+              "DS-729",
+              "EX-541",
+              "EX-542",
+              "LB-6036",
+              "LB-6037",
+              "LB-6038",
+              "LB-6039",
+              "LB-6046",
+              "LB-6047",
+              "LB-6048",
+              "LB-6049",
+              "LB-6056",
+              "LB-6057",
+              "LB-6058",
+              "LB-6059",
+              "LB-6066",
+              "LB-6067",
+              "LB-6068",
+              "LB-6069"
+            ],
+            "expected_flags": [
+              "ends-unrecorded"
+            ],
+            "refusal": null
+          }
+        },
+        {
+          "inputs": {
+            "subject": "01-716-1447",
+            "anchor_row_id": "AE-973",
+            "window_days": 7
+          },
+          "reference": {
+            "required_facts": [
+              "ERYTHEMA",
+              "day 30",
+              "7 con-med",
+              "B COMPLEX",
+              "MULTIVITAMIN",
+              "VITAMIN E",
+              "ALEVE",
+              "Aspartate Aminotransferase",
+              "36 U/L",
+              "day 27",
+              "1.06"
+            ],
+            "required_citations": [
+              "AE-973",
+              "CM-1005",
+              "LB-6057"
+            ],
+            "scope_row_ids": [
+              "AE-973",
+              "AE-974",
+              "AE-975",
+              "CM-343",
+              "CM-344",
+              "CM-1004",
+              "CM-1005",
+              "CM-1006",
+              "CM-1007",
+              "CM-1008",
+              "EX-542",
+              "LB-6037",
+              "LB-6047",
+              "LB-6057",
+              "LB-6067"
+            ],
+            "expected_flags": [
+              "ends-unrecorded"
+            ],
+            "refusal": null
+          }
+        },
+        {
+          "inputs": {
+            "subject": "01-709-1424",
+            "anchor_row_id": "AE-632",
+            "window_days": 30
+          },
+          "reference": {
+            "required_facts": [
+              "SYNCOPE",
+              "day 5",
+              "3 con-med",
+              "MULTIVIT B",
+              "VITAMIN C",
+              "VITAMIN E"
+            ],
+            "required_citations": [
+              "AE-632",
+              "CM-798"
+            ],
+            "scope_row_ids": [
+              "AE-632",
+              "CM-797",
+              "CM-798",
+              "CM-799",
+              "CM-800",
+              "DS-471",
+              "DS-472",
+              "DS-473",
+              "EX-346",
+              "LB-3787",
+              "LB-3788",
+              "LB-3789",
+              "LB-3790",
+              "MH-151",
+              "MH-1238",
+              "MH-1239",
+              "MH-1240",
+              "MH-1241",
+              "MH-1242",
+              "MH-1243"
+            ],
+            "expected_flags": [
+              "sae",
+              "ends-unrecorded"
+            ],
+            "refusal": null
+          }
+        }
+      ],
+      "readme": '# event-context\n\nDrafts the context of one anchored event: the con-meds active at onset, the abnormal labs and dose changes inside the \xB1window, and the earlier events with the same preferred term \u2014 the same four lists the Patient Journey Explorer\'s context panel prints mechanically, turned into at most six cited sentences.\n\n## Use it when\n\n- A reviewer has anchored an adverse event (or a dose change, or a disposition event) and wants the panel\'s lists as prose.\n- The window is the one the chart shows; the runtime passes `window_days` from the live control.\n\n## Do not use it for\n\n- A whole-journey account (that is `subject-summary`).\n- A single lab test over time (that is `lab-trajectory`).\n- Anything that would need a relatedness or causality assessment. The skill will not draw one, and the validator rejects the vocabulary.\n\n## Inputs\n\n`{ subject, anchor_row_id, window_days? }` \u2014 the anchor id is the chart\'s own event id (`AE-7`); `AE:7` is accepted.\n\n## Renders as\n\nA light-blue "AI narrative" card at the top of the context panel body, above "Con-meds active at the anchor". Every sentence carries a `Draft \u2014 AI generated` chip and its citation chips; a citation chip lights the cited mark on the timeline.\n\n## Refuses when\n\n- The anchor does not resolve (`refused:anchor-not-found`).\n- The grounding tool returns nothing at all (`refused:insufficient-data`); an anchor with an otherwise empty window is not a refusal \u2014 it drafts one sentence with the `context:empty` flag.\n'
+    },
+    "lab-trajectory": {
+      "slug": "lab-trajectory",
+      "version": "1.0.0",
+      "modelHint": "claude-opus-5",
+      "grounding": "get_lab_series",
+      "groundingArgs": [],
+      "tools": [
+        "get_lab_series",
+        "get_events",
+        "get_source_row"
+      ],
+      "prompt": '## Task\n\nDescribe ONE lab test\'s course over the study for one participant: how many measurements, over which days, the baseline the chart uses and its rule, the highest value with its ratio to the limit it crossed and its multiple of baseline, how many values are abnormal and by which rule, and where the last value sits. At most five cited sentences.\n\n## What to cover, in this order\n\n1. The measurement span: count, first and last day, unit, reference range (cite the first and last points).\n2. The baseline: value, day, rule (cite the baseline row).\n3. The peak: value, day, ratio to the limit, multiple of baseline (cite the peak row).\n4. The abnormal count and the rule(s) that fired, naming the flags as recorded (cite the abnormal rows, up to twelve).\n5. The last value and whether it is within the reference range (cite it).\n\n## Rules specific to this skill\n\n- Report ratios and multiples as the tool computed them; never recompute or round further.\n- "Rose", "fell", "returned toward baseline" describe the numbers; never say a value "normalised" unless the last value is within range and flagged normal.\n- Do not name a hepatic, renal or any other injury pattern, and do not compare this test with another test unless the reviewer asked for it in the inputs \u2014 one test per narrative.\n- If the series has one point, say so in one sentence and add `series:single-point`.\n\n## Flags you may add\n\n- `labs:change-rule` \u2014 at least one point fired the change-from-baseline rule.\n- `series:single-point` \u2014 only one measurement.\n- `baseline:missing` \u2014 the tool returned no baseline.',
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "lab-trajectory narrative skill",
+        "definitions": {
+          "Input": {
+            "type": "object",
+            "required": [
+              "subject",
+              "test"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "subject": {
+                "type": "string",
+                "minLength": 1
+              },
+              "test": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "Sentence": {
+            "type": "object",
+            "required": [
+              "text",
+              "citations",
+              "confidence"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 400
+              },
+              "citations": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 12,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Z]+[-:][0-9]+$"
+                }
+              },
+              "confidence": {
+                "type": "string",
+                "enum": [
+                  "high",
+                  "medium",
+                  "low"
+                ]
+              }
+            }
+          },
+          "Draft": {
+            "type": "object",
+            "required": [
+              "kind",
+              "subject",
+              "test",
+              "summary",
+              "sentences",
+              "flags"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "lab-trajectory"
+              },
+              "subject": {
+                "type": "string"
+              },
+              "test": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string",
+                "maxLength": 240
+              },
+              "sentences": {
+                "type": "array",
+                "maxItems": 5,
+                "items": {
+                  "$ref": "#/definitions/Sentence"
+                }
+              },
+              "flags": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "maxLength": 60
+                }
+              }
+            }
+          },
+          "Output": {
+            "type": "object",
+            "required": [
+              "kind",
+              "subject",
+              "test",
+              "summary",
+              "sentences",
+              "flags",
+              "provenance",
+              "status"
+            ],
+            "properties": {
+              "status": {
+                "type": "string",
+                "const": "draft"
+              },
+              "provenance": {
+                "$ref": "#/definitions/Provenance"
+              }
+            }
+          },
+          "Provenance": {
+            "type": "object",
+            "required": [
+              "model",
+              "skill",
+              "input_hash",
+              "generated_at",
+              "tool_calls"
+            ],
+            "properties": {
+              "model": {
+                "type": "string"
+              },
+              "skill": {
+                "type": "string",
+                "pattern": "^[a-z-]+@[0-9]+\\.[0-9]+\\.[0-9]+$"
+              },
+              "input_hash": {
+                "type": "string",
+                "pattern": "^sha256:[0-9a-f]{64}$"
+              },
+              "generated_at": {
+                "type": "string"
+              },
+              "tool_calls": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "examples": [
+        {
+          "inputs": {
+            "subject": "01-716-1447",
+            "test": "Alanine Aminotransferase"
+          },
+          "reference": {
+            "required_facts": [
+              "Alanine Aminotransferase",
+              "10 time",
+              "day -10",
+              "day 184",
+              "18 U/L",
+              "27 U/L",
+              "day 27",
+              "1.5",
+              "16 U/L"
+            ],
+            "required_citations": [
+              "LB-6045",
+              "LB-6047",
+              "LB-6054"
+            ],
+            "scope_row_ids": [
+              "LB-6045",
+              "LB-6046",
+              "LB-6047",
+              "LB-6048",
+              "LB-6049",
+              "LB-6050",
+              "LB-6051",
+              "LB-6052",
+              "LB-6053",
+              "LB-6054"
+            ],
+            "expected_flags": [],
+            "refusal": null
+          }
+        },
+        {
+          "inputs": {
+            "subject": "01-701-1234",
+            "test": "Bilirubin"
+          },
+          "reference": {
+            "required_facts": [
+              "Bilirubin",
+              "10 time",
+              "day -10",
+              "day 177",
+              "5.13 umol/L",
+              "20.52 umol/L",
+              "day 100",
+              "4",
+              "9 of 10",
+              "11.97 umol/L"
+            ],
+            "required_citations": [
+              "LB-566",
+              "LB-571",
+              "LB-575"
+            ],
+            "scope_row_ids": [
+              "LB-566",
+              "LB-567",
+              "LB-568",
+              "LB-569",
+              "LB-570",
+              "LB-571",
+              "LB-572",
+              "LB-573",
+              "LB-574",
+              "LB-575"
+            ],
+            "expected_flags": [
+              "labs:change-rule"
+            ],
+            "refusal": null
+          }
+        },
+        {
+          "inputs": {
+            "subject": "01-701-1033",
+            "test": "Alanine Aminotransferase"
+          },
+          "reference": {
+            "required_facts": [
+              "Alanine Aminotransferase",
+              "1 time",
+              "day -8",
+              "16 U/L"
+            ],
+            "required_citations": [
+              "LB-89"
+            ],
+            "scope_row_ids": [
+              "LB-89"
+            ],
+            "expected_flags": [
+              "series:single-point"
+            ],
+            "refusal": null
+          }
+        }
+      ],
+      "readme": "# lab-trajectory\n\nOne lab test over the study for one participant: span, baseline and its rule, the peak with its ratio and baseline multiple, the abnormal count by rule, and the last value. At most five cited sentences.\n\nUse it from the tray beneath the lanes (one control per drawn lab test). Do not use it to compare tests, to describe the window around an event (`event-context`), or to characterise an injury pattern. Inputs: `{ subject, test }` (name or code). Renders as a light-blue card in the tray beneath the lanes, drafted on request. Refuses with `refused:insufficient-data` when the test has no rows for the participant.\n"
+    },
+    "subject-summary": {
+      "slug": "subject-summary",
+      "version": "1.0.0",
+      "modelHint": "claude-opus-5",
+      "grounding": "get_subject_overview",
+      "groundingArgs": [],
+      "tools": [
+        "get_subject_overview",
+        "get_dose_history",
+        "get_events",
+        "get_lab_series",
+        "get_source_row"
+      ],
+      "prompt": '## Task\n\nDraft the whole-journey summary of ONE participant for a safety reviewer opening their record: what treatment they received and for how long, what adverse events are recorded and which were serious, how the record ends, and anything about the data itself the reviewer must know before reading the lanes. The reviewer sees the first sentence (`summary`) as a one-line blurb above the timeline and expands to read the rest.\n\n## What to cover, in this order of priority\n\n1. Exposure: the treatment(s), the exposure extent in study days, the dose range and the number of dose changes. Read `get_dose_history` for the exposure rows; cite them.\n2. Adverse events: the total, the number of distinct preferred terms, the most frequent terms with counts (cite their rows). Serious events named with their onset day (cite each).\n3. The disposition event and its day (cite the disposition row).\n4. The last adverse event recorded and its onset day.\n5. Data notes the reviewer needs: records with no usable study day, end-before-start records, date conflicts \u2014 state the count, do not speculate why.\n\n## Rules specific to this skill\n\n- The `summary` field is one sentence a reviewer reads in three seconds: counts, the span in study days, how the record ends.\n- Do not enumerate labs or con-meds beyond their counts unless a serious event makes a specific test relevant; the lab-trajectory skill exists for that.\n- Do not characterise the participant\'s course ("tolerated well", "complicated") \u2014 report what is recorded.\n- Never describe the participant beyond the identifier.\n\n## Flags you may add\n\n- `sae` \u2014 at least one serious adverse event is recorded.\n- `data:unplaceable` \u2014 some records have no usable study day.\n- `exposure:end-unrecorded` \u2014 the last exposure record has no end date.',
+      "schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "subject-summary narrative skill",
+        "definitions": {
+          "Input": {
+            "type": "object",
+            "required": [
+              "subject"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "subject": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "Sentence": {
+            "type": "object",
+            "required": [
+              "text",
+              "citations",
+              "confidence"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 400
+              },
+              "citations": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 12,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Z]+[-:][0-9]+$"
+                }
+              },
+              "confidence": {
+                "type": "string",
+                "enum": [
+                  "high",
+                  "medium",
+                  "low"
+                ]
+              }
+            }
+          },
+          "Draft": {
+            "type": "object",
+            "required": [
+              "kind",
+              "subject",
+              "summary",
+              "sentences",
+              "flags"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "subject-summary"
+              },
+              "subject": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string",
+                "maxLength": 240
+              },
+              "sentences": {
+                "type": "array",
+                "maxItems": 8,
+                "items": {
+                  "$ref": "#/definitions/Sentence"
+                }
+              },
+              "flags": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "maxLength": 60
+                }
+              }
+            }
+          },
+          "Output": {
+            "type": "object",
+            "required": [
+              "kind",
+              "subject",
+              "summary",
+              "sentences",
+              "flags",
+              "provenance",
+              "status"
+            ],
+            "properties": {
+              "status": {
+                "type": "string",
+                "const": "draft"
+              },
+              "provenance": {
+                "$ref": "#/definitions/Provenance"
+              }
+            }
+          },
+          "Provenance": {
+            "type": "object",
+            "required": [
+              "model",
+              "skill",
+              "input_hash",
+              "generated_at",
+              "tool_calls"
+            ],
+            "properties": {
+              "model": {
+                "type": "string"
+              },
+              "skill": {
+                "type": "string",
+                "pattern": "^[a-z-]+@[0-9]+\\.[0-9]+\\.[0-9]+$"
+              },
+              "input_hash": {
+                "type": "string",
+                "pattern": "^sha256:[0-9a-f]{64}$"
+              },
+              "generated_at": {
+                "type": "string"
+              },
+              "tool_calls": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "examples": [
+        {
+          "inputs": {
+            "subject": "01-716-1447"
+          },
+          "reference": {
+            "required_facts": [
+              "XANOMELINE",
+              "day 1",
+              "day 184",
+              "5 adverse event",
+              "CHEST PAIN",
+              "ELECTROCARDIOGRAM T WAVE INVERSION",
+              "ERYTHEMA",
+              "COMPLETED",
+              "day 111"
+            ],
+            "required_citations": [
+              "AE-977",
+              "DS-730",
+              "EX-541",
+              "EX-543"
+            ],
+            "scope_row_ids": [
+              "AE-973",
+              "AE-974",
+              "AE-975",
+              "AE-976",
+              "AE-977",
+              "DS-729",
+              "DS-730",
+              "DS-731",
+              "EX-541",
+              "EX-543"
+            ],
+            "expected_flags": [],
+            "refusal": null
+          }
+        },
+        {
+          "inputs": {
+            "subject": "01-709-1424"
+          },
+          "reference": {
+            "required_facts": [
+              "XANOMELINE",
+              "day 1",
+              "day 5",
+              "1 adverse event",
+              "SYNCOPE",
+              "ADVERSE EVENT",
+              "day 6"
+            ],
+            "required_citations": [
+              "AE-632",
+              "DS-472",
+              "EX-346"
+            ],
+            "scope_row_ids": [
+              "AE-632",
+              "DS-471",
+              "DS-472",
+              "DS-473",
+              "EX-346"
+            ],
+            "expected_flags": [
+              "sae"
+            ],
+            "refusal": null
+          }
+        },
+        {
+          "inputs": {
+            "subject": "01-701-1033"
+          },
+          "reference": {
+            "required_facts": [
+              "XANOMELINE",
+              "day 1",
+              "day 14",
+              "STUDY TERMINATED BY SPONSOR",
+              "day 28"
+            ],
+            "required_citations": [
+              "DS-11",
+              "EX-8"
+            ],
+            "scope_row_ids": [
+              "DS-10",
+              "DS-11",
+              "DS-12",
+              "DS-13",
+              "EX-8"
+            ],
+            "expected_flags": [],
+            "refusal": null
+          }
+        }
+      ],
+      "readme": '# subject-summary\n\nThe whole-journey blurb above the timeline: treatment and exposure span, the adverse-event picture with the serious events named, how the record ends, and the data notes a reviewer needs before reading the lanes. At most eight cited sentences; the `summary` field is the one-line blurb the card shows collapsed.\n\nUse it when a participant is selected. Do not use it for the context of one event (`event-context`), one lab test (`lab-trajectory`), the dose course in detail (`dose-journey`) or the end of treatment in detail (`disposition`).\n\nInputs: `{ subject }`. Renders as the light-blue "AI narrative" card above the lanes, blurb first, "Show full narrative" to expand. Refuses with `refused:insufficient-data` when the record has no rows in any domain.\n'
+    }
+  }
+};
+var SHARED = CATALOG.shared;
+var SKILLS = CATALOG.skills;
+var SKILL_SLUGS = Object.keys(SKILLS);
+
+// src/patientJourneyNarratives/tools/index.js
+var finite6 = (value) => typeof value === "number" && Number.isFinite(value);
+var upper6 = (value) => value === null || value === void 0 ? "" : String(value).trim().toUpperCase();
+var round2 = (value, places = 2) => finite6(value) ? Number(value.toFixed(places)) : null;
+function normalizeRowId(id) {
+  const text3 = id === null || id === void 0 ? "" : String(id).trim().toUpperCase();
+  return text3.replace(/^([A-Z]+):(\d+)$/, "$1-$2");
+}
+function projectEvent(event, { anchorDay = null } = {}) {
+  const flags = event.flags || {};
+  const row = {
+    row_id: event.id,
+    domain: event.domain,
+    lane: event.lane,
+    label: event.label ?? "",
+    kind: event.kind,
+    start_day: finite6(event.start) ? event.start : finite6(event.day) ? event.day : null,
+    end_day: event.endState === "closed" && finite6(event.end) ? event.end : null,
+    end_state: event.endState ?? null,
+    date: event.date ?? null,
+    category: event.category || null,
+    detail: event.detail || null,
+    placeable: event.placeable !== false
+  };
+  if (event.domain === "AE") {
+    row.severity = flags.severity ? flags.severity.label : null;
+    row.serious = Boolean(flags.serious);
+    row.related = flags.related || null;
+    row.outcome = event.outcome || null;
+  }
+  if (event.domain === "LB") {
+    row.test = event.test ?? null;
+    row.test_code = event.testCode ?? null;
+    row.value = finite6(event.value) ? event.value : null;
+    row.unit = event.unit || null;
+    row.lln = finite6(event.lln) ? event.lln : null;
+    row.uln = finite6(event.uln) ? event.uln : null;
+    row.abnormal_flag = flags.abnormal || null;
+    const ratio = referenceRatio(event);
+    row.ratio_to_limit = ratio ? { ratio: round2(ratio.ratio), limit: ratio.limit } : null;
+  }
+  if (event.domain === "EX") {
+    row.dose = finite6(event.value) ? event.value : null;
+    row.unit = event.unit || null;
+    if (flags.derived) {
+      row.direction = flags.direction || null;
+      row.dose_from = finite6(event.previousValue) ? event.previousValue : null;
+      row.dose_to = finite6(event.value) ? event.value : null;
+    }
+  }
+  if (event.domain === "DS") row.reference = Boolean(flags.reference);
+  if (anchorDay !== null && anchorDay !== void 0) {
+    row.days_from_anchor = relativeDay(row.start_day, anchorDay);
+  }
+  return row;
+}
+var SUBJECT_PROPERTY = {
+  usubjid: {
+    type: "string",
+    description: "The participant identifier exactly as the record carries it."
+  }
+};
+var unknownSubject = (usubjid) => ({
+  error: "unknown-subject",
+  message: `No record for participant "${usubjid}".`
+});
+function structuredOrError(service, usubjid) {
+  const structured = service.structuredFor(usubjid);
+  return structured ? { structured } : { error: unknownSubject(usubjid) };
+}
+var events = (structured, domain) => structured.allEvents.filter((event) => event.domain === domain && !event.flags?.derived);
+function exposureExtent(ex) {
+  const placeable = ex.filter((event) => finite6(event.start));
+  if (!placeable.length) return null;
+  const first = placeable.reduce((best, event) => event.start < best.start ? event : best);
+  const endOf = (event) => finite6(event.end) ? event.end : event.start;
+  const last = placeable.reduce((best, event) => endOf(event) > endOf(best) ? event : best);
+  return {
+    first_day: first.start,
+    first_row_id: first.id,
+    last_day: endOf(last),
+    last_row_id: last.id,
+    last_end_state: last.endState ?? null
+  };
+}
+function lastAdverseEvent(ae) {
+  const placeable = ae.filter((event) => finite6(event.day));
+  if (!placeable.length) return null;
+  return projectEvent(placeable.reduce((best, event) => event.day > best.day ? event : best));
+}
+var getSubjectOverview = {
+  name: "get_subject_overview",
+  description: "The shape of one participant's whole record: counts per domain, the study-day extent, treatments and dose range, disposition rows, the adverse-event terms with counts, the lab tests present, and data-quality counters. Rows carry row_id.",
+  input_schema: {
+    type: "object",
+    required: ["usubjid"],
+    additionalProperties: false,
+    properties: { ...SUBJECT_PROPERTY }
+  },
+  run(service, { usubjid }) {
+    const { structured, error } = structuredOrError(service, usubjid);
+    if (error) return error;
+    const ex = events(structured, "EX");
+    const ae = events(structured, "AE");
+    const doses = ex.map((event) => event.value).filter(finite6);
+    const termCounts = /* @__PURE__ */ new Map();
+    for (const event of ae) {
+      const key = event.label || "";
+      termCounts.set(key, (termCounts.get(key) || 0) + 1);
+    }
+    const terms = [...termCounts.entries()].sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1)).slice(0, 25).map(([term, count2]) => ({
+      term,
+      count: count2,
+      row_ids: ae.filter((event) => (event.label || "") === term).map((event) => event.id)
+    }));
+    return {
+      subject: structured.subject,
+      counts: { ...structured.counts },
+      extent: structured.extent ? { first_day: structured.extent[0], last_day: structured.extent[1] } : null,
+      ref_date: structured.refDate ? structured.refDate.date : null,
+      treatments: [...new Set(ex.map((event) => event.label).filter(Boolean))],
+      dose_range: doses.length ? { min: Math.min(...doses), max: Math.max(...doses), unit: ex[0]?.unit || null } : null,
+      dose_change_count: structured.allEvents.filter((event) => event.flags?.derived).length,
+      exposure_extent: exposureExtent(ex),
+      last_adverse_event: lastAdverseEvent(ae),
+      disposition: events(structured, "DS").map((event) => projectEvent(event)),
+      adverse_event_terms: terms,
+      serious_adverse_events: ae.filter((event) => event.flags?.serious).map((e) => projectEvent(e)),
+      lab_tests: [
+        ...new Set(
+          events(structured, "LB").map((event) => event.test).filter(Boolean)
+        )
+      ],
+      con_med_count: events(structured, "CM").length,
+      medical_history_count: events(structured, "MH").length,
+      unplaceable: { ...structured.unplaceableCounts.byDomain },
+      data_quality: {
+        end_before_start: structured.flaggedCounts.endBeforeStart,
+        date_conflict: structured.flaggedCounts.dateConflict
+      }
+    };
+  }
+};
+var getEvents = {
+  name: "get_events",
+  description: "The rows of one domain (EX, AE, LB, CM, MH or DS) for a participant, in start-day order, each with row_id. Optional filters: serious (AE), term (AE preferred term, case-insensitive), test (LB test name or code), from_day / to_day (study days, inclusive), max (default 60).",
+  input_schema: {
+    type: "object",
+    required: ["usubjid", "domain"],
+    additionalProperties: false,
+    properties: {
+      ...SUBJECT_PROPERTY,
+      domain: { type: "string", enum: ["EX", "AE", "LB", "CM", "MH", "DS"] },
+      filters: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          serious: { type: "boolean" },
+          term: { type: "string" },
+          test: { type: "string" },
+          from_day: { type: "integer" },
+          to_day: { type: "integer" },
+          max: { type: "integer", minimum: 1, maximum: 500 }
+        }
+      }
+    }
+  },
+  run(service, { usubjid, domain, filters = {} }) {
+    const { structured, error } = structuredOrError(service, usubjid);
+    if (error) return error;
+    const code = upper6(domain);
+    let rows = events(structured, code);
+    const f = filters && typeof filters === "object" ? filters : {};
+    if (f.serious === true) rows = rows.filter((event) => event.flags?.serious);
+    if (f.term) rows = rows.filter((event) => upper6(event.label) === upper6(f.term));
+    if (f.test) {
+      rows = rows.filter(
+        (event) => upper6(event.test) === upper6(f.test) || upper6(event.testCode) === upper6(f.test)
+      );
+    }
+    if (finite6(f.from_day))
+      rows = rows.filter((event) => finite6(event.day) && event.day >= f.from_day);
+    if (finite6(f.to_day)) rows = rows.filter((event) => finite6(event.day) && event.day <= f.to_day);
+    rows = [...rows].sort((a, b) => {
+      const da = finite6(a.day) ? a.day : Infinity;
+      const db = finite6(b.day) ? b.day : Infinity;
+      return da - db || a.sourceIndex - b.sourceIndex;
+    });
+    const max = finite6(f.max) ? f.max : 60;
+    return {
+      subject: structured.subject,
+      domain: code,
+      total: rows.length,
+      truncated: Math.max(0, rows.length - max),
+      rows: rows.slice(0, max).map((event) => projectEvent(event))
+    };
+  }
+};
+var getContextWindow = {
+  name: "get_context_window",
+  description: "Anchor on one event of a participant and return the mechanical context the chart panel shows: the anchor row, the inclusive \xB1days window in elapsed days, con-meds active at the anchor (and those started later in the window), abnormal labs in the window with the rule that fired, dose changes in the window, earlier or same-day events with the same preferred term over the whole record, everything in the window, the counts, and the honesty counters. Every row carries row_id and days_from_anchor.",
+  input_schema: {
+    type: "object",
+    required: ["usubjid", "anchor_row_id"],
+    additionalProperties: false,
+    properties: {
+      ...SUBJECT_PROPERTY,
+      anchor_row_id: { type: "string", description: "The event id, e.g. AE-7." },
+      days: {
+        type: "integer",
+        minimum: 0,
+        description: "Half-width in elapsed days; default from settings."
+      }
+    }
+  },
+  run(service, { usubjid, anchor_row_id, days }) {
+    const { structured, error } = structuredOrError(service, usubjid);
+    if (error) return error;
+    const id = normalizeRowId(anchor_row_id);
+    const anchor = structured.allEvents.find((event) => event.id === id);
+    if (!anchor || anchor.placeable === false) {
+      return { error: "anchor-not-found", message: `No anchorable event "${id}" for ${usubjid}.` };
+    }
+    const width = finite6(days) ? Math.max(0, Math.floor(days)) : service.settings.context_window_days;
+    const settings = { ...service.settings, context_window_days: width };
+    const bundle = buildContext(structured, anchor, settings);
+    if (!bundle) return { error: "anchor-not-found", message: `Cannot anchor on "${id}".` };
+    const anchorDay = anchor.day;
+    const project = (event) => projectEvent(event, { anchorDay });
+    const labPool = structured.allEvents.filter(
+      (event) => event.domain === "LB" && !event.flags?.unconfiguredTest
+    );
+    const baselines = /* @__PURE__ */ new Map();
+    const baselineFor = (test) => {
+      if (!baselines.has(test)) {
+        baselines.set(
+          test,
+          labBaseline(
+            labPool.filter((event) => event.test === test),
+            settings
+          )
+        );
+      }
+      return baselines.get(test);
+    };
+    return {
+      subject: structured.subject,
+      anchor: project(anchor),
+      window: {
+        days: width,
+        start_day: bundle.window.startDay,
+        end_day: bundle.window.endDay
+      },
+      con_meds_active: bundle.conMeds.map(project),
+      con_meds_started_later: bundle.conMedsLater.map(project),
+      abnormal_labs: bundle.abnormalLabs.map((event) => {
+        const row = project(event);
+        row.abnormal_reason = event.flags.abnormalReason;
+        const baseline = baselineFor(event.test);
+        row.baseline = baseline && finite6(baseline.value) ? { value: baseline.value, day: baseline.day, rule: baseline.rule } : null;
+        row.x_baseline = baseline && finite6(baseline.value) && baseline.value > 0 ? round2(event.value / baseline.value) : null;
+        return row;
+      }),
+      dose_changes: bundle.doseChanges.map(project),
+      prior_same_term_events: bundle.priorEvents.map((event) => {
+        const row = project(event);
+        const offset = relativeDay(event.day, anchorDay);
+        row.days_before_anchor = offset === null ? null : -offset;
+        return row;
+      }),
+      in_window: bundle.inWindow.map((event) => ({
+        row_id: event.id,
+        domain: event.domain,
+        label: event.label ?? "",
+        start_day: finite6(event.start) ? event.start : event.day,
+        days_from_anchor: relativeDay(finite6(event.start) ? event.start : event.day, anchorDay)
+      })),
+      counts: { ...bundle.counts },
+      not_evaluated: {
+        con_meds_without_start: bundle.notEvaluated.conMedsWithoutStart,
+        con_meds_end_unrecorded: bundle.notEvaluated.conMedsEndUnrecorded,
+        adverse_events_end_unrecorded: bundle.notEvaluated.aeEndUnrecorded,
+        unplaceable_by_domain: { ...bundle.notEvaluated.unplaceableByDomain }
+      }
+    };
+  }
+};
+var getLabSeries = {
+  name: "get_lab_series",
+  description: "Every result of one lab test for a participant in study-day order, with the reference limits, the baseline the chart uses (and its rule), each point's ratio to the limit it crossed, its multiple of baseline, and which abnormality rule fires. Match the test by name or code, case-insensitively.",
+  input_schema: {
+    type: "object",
+    required: ["usubjid", "test"],
+    additionalProperties: false,
+    properties: {
+      ...SUBJECT_PROPERTY,
+      test: { type: "string", description: "Test name (LBTEST) or code (LBTESTCD)." }
+    }
+  },
+  run(service, { usubjid, test }) {
+    const { structured, error } = structuredOrError(service, usubjid);
+    if (error) return error;
+    const wanted = upper6(test);
+    const all = events(structured, "LB");
+    const points = all.filter((event) => upper6(event.test) === wanted || upper6(event.testCode) === wanted).sort((a, b) => {
+      const da = finite6(a.day) ? a.day : Infinity;
+      const db = finite6(b.day) ? b.day : Infinity;
+      return da - db || a.sourceIndex - b.sourceIndex;
+    });
+    if (!points.length) {
+      return {
+        error: "no-lab-rows",
+        message: `No lab rows for "${test}".`,
+        available_tests: [...new Set(all.map((event) => event.test).filter(Boolean))]
+      };
+    }
+    const settings = service.settings;
+    const baseline = labBaseline(points, settings);
+    const limits = points.find((event) => finite6(event.lln) || finite6(event.uln)) || {};
+    return {
+      subject: structured.subject,
+      test: points[0].test,
+      test_code: points[0].testCode ?? null,
+      unit: points.find((event) => event.unit)?.unit || null,
+      lln: finite6(limits.lln) ? limits.lln : null,
+      uln: finite6(limits.uln) ? limits.uln : null,
+      baseline: baseline && finite6(baseline.value) ? {
+        value: baseline.value,
+        day: baseline.day,
+        rule: baseline.rule,
+        row_id: baseline.event?.id ?? null
+      } : null,
+      change_factor: settings.lb_change_factor,
+      points: points.map((event) => {
+        const row = projectEvent(event);
+        row.x_baseline = baseline && finite6(baseline.value) && baseline.value > 0 && finite6(event.value) ? round2(event.value / baseline.value) : null;
+        row.abnormal_by_flag = isAbnormalByFlag(event, settings);
+        row.abnormal_by_change = isAbnormalByChange(event, baseline, settings);
+        return row;
+      }),
+      peak: (() => {
+        const valued = points.filter((event) => finite6(event.value));
+        if (!valued.length) return null;
+        const max = valued.reduce((best, event) => event.value > best.value ? event : best);
+        return { row_id: max.id, day: max.day, value: max.value };
+      })()
+    };
+  }
+};
+var getDoseHistory = {
+  name: "get_dose_history",
+  description: "The exposure records of a participant in start order (treatment, dose, unit, start and end study days) and the dose changes derived from consecutive records (from \u2192 to, direction, the day the new dose began), each with row_id.",
+  input_schema: {
+    type: "object",
+    required: ["usubjid"],
+    additionalProperties: false,
+    properties: { ...SUBJECT_PROPERTY }
+  },
+  run(service, { usubjid }) {
+    const { structured, error } = structuredOrError(service, usubjid);
+    if (error) return error;
+    const ex = events(structured, "EX").sort((a, b) => {
+      const da = finite6(a.start) ? a.start : Infinity;
+      const db = finite6(b.start) ? b.start : Infinity;
+      return da - db || a.sourceIndex - b.sourceIndex;
+    });
+    const changes = deriveDoseChanges(ex, service.settings);
+    return {
+      subject: structured.subject,
+      treatments: [...new Set(ex.map((event) => event.label).filter(Boolean))],
+      records: ex.map((event) => projectEvent(event)),
+      changes: changes.map((event) => ({
+        ...projectEvent(event),
+        source_row_id: `EX-${event.sourceIndex}`,
+        previous_row_id: `EX-${event.previousSourceIndex}`
+      })),
+      unplaceable: structured.unplaceableCounts.byDomain.EX
+    };
+  }
+};
+var getSourceRow = {
+  name: "get_source_row",
+  description: "The raw source row behind a row_id, exactly as the host passed it in (every column), plus the chart's projection of it. Use it to read a column the projections leave out, such as a verbatim term, a route, or a recorded outcome.",
+  input_schema: {
+    type: "object",
+    required: ["row_id"],
+    additionalProperties: false,
+    properties: {
+      row_id: { type: "string", description: "A row id such as AE-7 or DOSE-4." },
+      usubjid: { ...SUBJECT_PROPERTY.usubjid, description: "The participant the row belongs to." }
+    }
+  },
+  run(service, { row_id, usubjid }) {
+    const id = normalizeRowId(row_id);
+    if (!usubjid) return { error: "subject-required", message: "usubjid is required." };
+    const { structured, error } = structuredOrError(service, usubjid);
+    if (error) return error;
+    const event = structured.allEvents.find((entry) => entry.id === id);
+    if (!event) return { error: "row-not-found", message: `No row "${id}" for ${usubjid}.` };
+    return {
+      row_id: id,
+      domain: event.domain,
+      source: event.source && typeof event.source === "object" ? { ...event.source } : {},
+      event: projectEvent(event)
+    };
+  }
+};
+var TOOLS = Object.fromEntries(
+  [getSubjectOverview, getEvents, getContextWindow, getLabSeries, getDoseHistory, getSourceRow].map(
+    (tool) => [tool.name, tool]
+  )
+);
+function toolDefinitions(names3) {
+  return names3.filter((name) => TOOLS[name]).map((name) => {
+    const { description, input_schema } = TOOLS[name];
+    return { name, description, input_schema };
+  });
+}
+function collectRowIds(value) {
+  const ids = /* @__PURE__ */ new Set();
+  const walk = (node) => {
+    if (Array.isArray(node)) {
+      node.forEach(walk);
+      return;
+    }
+    if (!node || typeof node !== "object") return;
+    for (const [key, entry] of Object.entries(node)) {
+      if (/(^|_)row_ids?$/.test(key)) {
+        for (const id of [].concat(entry)) if (typeof id === "string") ids.add(normalizeRowId(id));
+      } else walk(entry);
+    }
+  };
+  walk(value);
+  return ids;
+}
+function runTool(service, name, input, { subject } = {}) {
+  const tool = TOOLS[name];
+  if (!tool) return { error: "unknown-tool", message: `No tool named "${name}".` };
+  const args = input && typeof input === "object" ? { ...input } : {};
+  if ("usubjid" in tool.input_schema.properties && !args.usubjid && subject) args.usubjid = subject;
+  try {
+    return tool.run(service, args);
+  } catch (error) {
+    return {
+      error: "tool-failed",
+      message: error && error.message ? error.message : String(error)
+    };
+  }
+}
+
+// src/patientJourneyNarratives/schema.js
+var typeOf = (value) => {
+  if (value === null) return "null";
+  if (Array.isArray(value)) return "array";
+  if (typeof value === "number") return Number.isInteger(value) ? "integer" : "number";
+  return typeof value;
+};
+var matchesType = (value, type) => {
+  const actual = typeOf(value);
+  if (type === "number") return actual === "number" || actual === "integer";
+  return actual === type;
+};
+function resolveRef(ref, root) {
+  if (typeof ref !== "string" || !ref.startsWith("#/")) {
+    throw new Error(`schema: unsupported $ref "${ref}"`);
+  }
+  let node = root;
+  for (const part of ref.slice(2).split("/")) {
+    node = node && node[part];
+    if (node === void 0) throw new Error(`schema: $ref "${ref}" does not resolve`);
+  }
+  return node;
+}
+function check(value, schema, root, path, errors) {
+  if (!schema || typeof schema !== "object") return;
+  if (schema.$ref) {
+    check(value, resolveRef(schema.$ref, root), root, path, errors);
+    return;
+  }
+  if (schema.type) {
+    const types = [].concat(schema.type);
+    if (!types.some((type) => matchesType(value, type))) {
+      errors.push(`${path}: expected ${types.join(" | ")}, got ${typeOf(value)}`);
+      return;
+    }
+  }
+  if ("const" in schema && value !== schema.const) {
+    errors.push(`${path}: must equal ${JSON.stringify(schema.const)}`);
+  }
+  if (Array.isArray(schema.enum) && !schema.enum.includes(value)) {
+    errors.push(`${path}: must be one of ${schema.enum.map((v) => JSON.stringify(v)).join(", ")}`);
+  }
+  if (typeof value === "string") {
+    if (schema.minLength !== void 0 && value.length < schema.minLength) {
+      errors.push(`${path}: shorter than ${schema.minLength} characters`);
+    }
+    if (schema.maxLength !== void 0 && value.length > schema.maxLength) {
+      errors.push(`${path}: longer than ${schema.maxLength} characters`);
+    }
+    if (schema.pattern && !new RegExp(schema.pattern).test(value)) {
+      errors.push(`${path}: does not match ${schema.pattern}`);
+    }
+  }
+  if (typeof value === "number") {
+    if (schema.minimum !== void 0 && value < schema.minimum) {
+      errors.push(`${path}: below minimum ${schema.minimum}`);
+    }
+    if (schema.maximum !== void 0 && value > schema.maximum) {
+      errors.push(`${path}: above maximum ${schema.maximum}`);
+    }
+  }
+  if (Array.isArray(value)) {
+    if (schema.minItems !== void 0 && value.length < schema.minItems) {
+      errors.push(`${path}: fewer than ${schema.minItems} items`);
+    }
+    if (schema.maxItems !== void 0 && value.length > schema.maxItems) {
+      errors.push(`${path}: more than ${schema.maxItems} items`);
+    }
+    if (schema.items) {
+      value.forEach((item, index) => check(item, schema.items, root, `${path}[${index}]`, errors));
+    }
+  }
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    for (const key of schema.required || []) {
+      if (!(key in value)) errors.push(`${path}: missing required "${key}"`);
+    }
+    const properties = schema.properties || {};
+    for (const [key, sub] of Object.entries(properties)) {
+      if (key in value) check(value[key], sub, root, `${path}.${key}`, errors);
+    }
+    if (schema.additionalProperties === false) {
+      for (const key of Object.keys(value)) {
+        if (!(key in properties)) errors.push(`${path}: unexpected property "${key}"`);
+      }
+    }
+  }
+}
+function validateSchema(value, schema, root = schema) {
+  const errors = [];
+  check(value, schema, root, "$", errors);
+  return { ok: errors.length === 0, errors };
+}
+function sentenceCap(root) {
+  const cap = root?.definitions?.Draft?.properties?.sentences?.maxItems;
+  return Number.isInteger(cap) ? cap : null;
+}
+function inlineRefs(schema, root) {
+  const walk = (node, depth) => {
+    if (depth > 32) throw new Error("schema: $ref nesting too deep");
+    if (Array.isArray(node)) return node.map((entry) => walk(entry, depth + 1));
+    if (!node || typeof node !== "object") return node;
+    if (node.$ref) return walk(resolveRef(node.$ref, root), depth + 1);
+    const out = {};
+    for (const [key, value] of Object.entries(node)) out[key] = walk(value, depth + 1);
+    return out;
+  };
+  return walk(schema, 0);
+}
+
+// src/patientJourneyNarratives/validator.js
+var QUOTED = /"[^"\n]{1,200}"|\u201c[^\u201d\n]{1,200}\u201d/g;
+var compiled = null;
+var forbiddenRegexes = () => {
+  if (!compiled) compiled = SHARED.forbiddenPatterns.map((source) => new RegExp(source, "i"));
+  return compiled;
+};
+function forbiddenMatch(text3, patterns = forbiddenRegexes()) {
+  const unquoted = String(text3 ?? "").replace(QUOTED, '""');
+  for (const pattern of patterns) {
+    const match = pattern.exec(unquoted);
+    if (match) return match[0];
+  }
+  return null;
+}
+function validateDraft(draft, { skill, scopeIds, subject, patterns } = {}) {
+  const errors = [];
+  const dropped = [];
+  if (!draft || typeof draft !== "object") {
+    return { ok: false, errors: ["no draft object was submitted"], dropped, draft: null };
+  }
+  const schema = skill.schema;
+  const cap = sentenceCap(schema);
+  let candidate = draft;
+  if (cap !== null && Array.isArray(draft.sentences) && draft.sentences.length > cap) {
+    for (const sentence2 of draft.sentences.slice(cap)) {
+      dropped.push({
+        text: sentence2 && typeof sentence2 === "object" ? String(sentence2.text ?? "") : String(sentence2),
+        reason: `over the cap of ${cap} sentences`
+      });
+    }
+    candidate = { ...draft, sentences: draft.sentences.slice(0, cap) };
+  }
+  const verdict = validateSchema(candidate, schema.definitions.Draft, schema);
+  errors.push(...verdict.errors);
+  if (candidate.kind !== skill.slug) errors.push(`$.kind: expected "${skill.slug}"`);
+  if (subject !== void 0 && String(candidate.subject) !== String(subject)) {
+    errors.push(`$.subject: expected "${subject}"`);
+  }
+  if (errors.length) return { ok: false, errors, dropped, draft: null };
+  const scope = new Set([...scopeIds || []].map(normalizeRowId));
+  const regexes = patterns || forbiddenRegexes();
+  const summaryHit = forbiddenMatch(candidate.summary, regexes);
+  if (summaryHit) errors.push(`$.summary: forbidden construct "${summaryHit}"`);
+  const kept = [];
+  candidate.sentences.forEach((sentence2, index) => {
+    const hit = forbiddenMatch(sentence2.text, regexes);
+    if (hit) {
+      errors.push(`$.sentences[${index}]: forbidden construct "${hit}"`);
+      return;
+    }
+    const citations = [...new Set(sentence2.citations.map(normalizeRowId))];
+    const unresolved = citations.filter((id) => !scope.has(id));
+    if (unresolved.length) {
+      dropped.push({
+        text: sentence2.text,
+        reason: `citation${unresolved.length === 1 ? "" : "s"} not in scope: ${unresolved.join(", ")}`
+      });
+      return;
+    }
+    kept.push({ ...sentence2, citations });
+  });
+  if (errors.length) return { ok: false, errors, dropped, draft: null };
+  const sentences = kept;
+  const flags = [
+    ...new Set([].concat(draft.flags || []).map((flag) => String(flag).trim()))
+  ].filter(Boolean);
+  return {
+    ok: true,
+    errors: [],
+    dropped,
+    draft: { ...candidate, sentences, flags, status: "draft" }
+  };
+}
+
+// src/patientJourneyNarratives/hash.js
+var K = new Uint32Array([
+  1116352408,
+  1899447441,
+  3049323471,
+  3921009573,
+  961987163,
+  1508970993,
+  2453635748,
+  2870763221,
+  3624381080,
+  310598401,
+  607225278,
+  1426881987,
+  1925078388,
+  2162078206,
+  2614888103,
+  3248222580,
+  3835390401,
+  4022224774,
+  264347078,
+  604807628,
+  770255983,
+  1249150122,
+  1555081692,
+  1996064986,
+  2554220882,
+  2821834349,
+  2952996808,
+  3210313671,
+  3336571891,
+  3584528711,
+  113926993,
+  338241895,
+  666307205,
+  773529912,
+  1294757372,
+  1396182291,
+  1695183700,
+  1986661051,
+  2177026350,
+  2456956037,
+  2730485921,
+  2820302411,
+  3259730800,
+  3345764771,
+  3516065817,
+  3600352804,
+  4094571909,
+  275423344,
+  430227734,
+  506948616,
+  659060556,
+  883997877,
+  958139571,
+  1322822218,
+  1537002063,
+  1747873779,
+  1955562222,
+  2024104815,
+  2227730452,
+  2361852424,
+  2428436474,
+  2756734187,
+  3204031479,
+  3329325298
+]);
+var rotr = (x, n) => x >>> n | x << 32 - n;
+function sha256Hex(text3) {
+  const bytes = new TextEncoder().encode(String(text3));
+  const bitLength = bytes.length * 8;
+  const padded = new Uint8Array(bytes.length + 9 + 63 >> 6 << 6);
+  padded.set(bytes);
+  padded[bytes.length] = 128;
+  const view = new DataView(padded.buffer);
+  view.setUint32(padded.length - 8, Math.floor(bitLength / 4294967296));
+  view.setUint32(padded.length - 4, bitLength >>> 0);
+  const h = new Uint32Array([
+    1779033703,
+    3144134277,
+    1013904242,
+    2773480762,
+    1359893119,
+    2600822924,
+    528734635,
+    1541459225
+  ]);
+  const w = new Uint32Array(64);
+  for (let offset = 0; offset < padded.length; offset += 64) {
+    for (let i = 0; i < 16; i += 1) w[i] = view.getUint32(offset + i * 4);
+    for (let i = 16; i < 64; i += 1) {
+      const s0 = rotr(w[i - 15], 7) ^ rotr(w[i - 15], 18) ^ w[i - 15] >>> 3;
+      const s1 = rotr(w[i - 2], 17) ^ rotr(w[i - 2], 19) ^ w[i - 2] >>> 10;
+      w[i] = w[i - 16] + s0 + w[i - 7] + s1 >>> 0;
+    }
+    let [a, b, c, d, e, f, g, hh] = h;
+    for (let i = 0; i < 64; i += 1) {
+      const S1 = rotr(e, 6) ^ rotr(e, 11) ^ rotr(e, 25);
+      const ch = e & f ^ ~e & g;
+      const t1 = hh + S1 + ch + K[i] + w[i] >>> 0;
+      const S0 = rotr(a, 2) ^ rotr(a, 13) ^ rotr(a, 22);
+      const maj = a & b ^ a & c ^ b & c;
+      const t2 = S0 + maj >>> 0;
+      hh = g;
+      g = f;
+      f = e;
+      e = d + t1 >>> 0;
+      d = c;
+      c = b;
+      b = a;
+      a = t1 + t2 >>> 0;
+    }
+    h[0] = h[0] + a >>> 0;
+    h[1] = h[1] + b >>> 0;
+    h[2] = h[2] + c >>> 0;
+    h[3] = h[3] + d >>> 0;
+    h[4] = h[4] + e >>> 0;
+    h[5] = h[5] + f >>> 0;
+    h[6] = h[6] + g >>> 0;
+    h[7] = h[7] + hh >>> 0;
+  }
+  return [...h].map((n) => n.toString(16).padStart(8, "0")).join("");
+}
+function canonicalJson(value) {
+  const walk = (v) => {
+    if (v === null || v === void 0) return null;
+    if (typeof v === "number") return Number.isFinite(v) ? v : null;
+    if (typeof v === "function") return null;
+    if (Array.isArray(v)) return v.map(walk);
+    if (typeof v === "object") {
+      const out = {};
+      for (const key of Object.keys(v).sort()) {
+        if (v[key] === void 0 || typeof v[key] === "function") continue;
+        out[key] = walk(v[key]);
+      }
+      return out;
+    }
+    return v;
+  };
+  return JSON.stringify(walk(value));
+}
+function inputHash(value) {
+  return `sha256:${sha256Hex(canonicalJson(value))}`;
+}
+
+// src/patientJourneyNarratives/adapters/claude.js
+var DEFAULT_MODEL = "claude-opus-5";
+var API_VERSION = "2023-06-01";
+var EFFORT_MODELS = /claude-(opus-5|opus-4-[678]|sonnet-5|sonnet-4-6|fable|mythos)/;
+var isBrowser = () => typeof window !== "undefined" && typeof document !== "undefined";
+function createClaudeAdapter(options = {}) {
+  const {
+    apiKey = null,
+    getToken = null,
+    baseUrl = "https://api.anthropic.com",
+    model = DEFAULT_MODEL,
+    maxTokens = 4096,
+    effort = "medium",
+    temperature,
+    headers = {},
+    fetch: fetchImpl = typeof fetch === "function" ? fetch : null
+  } = options;
+  if (!fetchImpl) throw new Error("claude adapter: no fetch implementation available");
+  async function credential() {
+    if (typeof getToken === "function") return getToken();
+    return apiKey;
+  }
+  return {
+    name: "claude",
+    model,
+    async messages({ system, messages, tools = [], model: modelOverride, signal } = {}) {
+      const key = await credential();
+      if (!key) throw new Error("claude adapter: no API key or getToken() credential");
+      const useModel = modelOverride || model;
+      const body = {
+        model: useModel,
+        max_tokens: maxTokens,
+        system,
+        messages,
+        tools
+      };
+      if (typeof temperature === "number") body.temperature = temperature;
+      else if (effort && EFFORT_MODELS.test(useModel)) body.output_config = { effort };
+      const requestHeaders = {
+        "content-type": "application/json",
+        "anthropic-version": API_VERSION,
+        "x-api-key": key,
+        ...headers
+      };
+      if (isBrowser()) requestHeaders["anthropic-dangerous-direct-browser-access"] = "true";
+      const response = await fetchImpl(`${baseUrl.replace(/\/$/, "")}/v1/messages`, {
+        method: "POST",
+        headers: requestHeaders,
+        body: JSON.stringify(body),
+        signal
+      });
+      const text3 = await response.text();
+      let data = null;
+      try {
+        data = text3 ? JSON.parse(text3) : null;
+      } catch {
+        data = null;
+      }
+      if (!response.ok) {
+        const message = data?.error?.message || text3 || `HTTP ${response.status}`;
+        const error = new Error(`claude adapter: HTTP ${response.status}: ${message}`);
+        error.status = response.status;
+        throw error;
+      }
+      return {
+        content: Array.isArray(data?.content) ? data.content : [],
+        stop_reason: data?.stop_reason ?? null,
+        stop_details: data?.stop_details ?? null,
+        usage: {
+          input_tokens: data?.usage?.input_tokens ?? 0,
+          output_tokens: data?.usage?.output_tokens ?? 0
+        },
+        model: data?.model || useModel
+      };
+    }
+  };
+}
+
+// src/patientJourneyNarratives/adapters/openai.js
+var isBrowser2 = () => typeof window !== "undefined" && typeof document !== "undefined";
+function toChatMessages(system, messages) {
+  const out = [];
+  if (system) out.push({ role: "system", content: system });
+  for (const message of messages) {
+    const blocks = Array.isArray(message.content) ? message.content : [{ type: "text", text: String(message.content ?? "") }];
+    if (message.role === "assistant") {
+      const text4 = blocks.filter((block) => block.type === "text").map((block) => block.text).join("\n");
+      const calls = blocks.filter((block) => block.type === "tool_use").map((block) => ({
+        id: block.id,
+        type: "function",
+        function: { name: block.name, arguments: JSON.stringify(block.input ?? {}) }
+      }));
+      const entry = { role: "assistant", content: text4 || null };
+      if (calls.length) entry.tool_calls = calls;
+      out.push(entry);
+      continue;
+    }
+    const results = blocks.filter((block) => block.type === "tool_result");
+    for (const block of results) {
+      out.push({
+        role: "tool",
+        tool_call_id: block.tool_use_id,
+        content: typeof block.content === "string" ? block.content : JSON.stringify(block.content)
+      });
+    }
+    const text3 = blocks.filter((block) => block.type === "text").map((block) => block.text).join("\n");
+    if (text3) out.push({ role: "user", content: text3 });
+  }
+  return out;
+}
+function fromChatChoice(choice) {
+  const message = choice?.message || {};
+  const content = [];
+  if (message.content) content.push({ type: "text", text: String(message.content) });
+  for (const call of message.tool_calls || []) {
+    let input = {};
+    try {
+      input = call.function?.arguments ? JSON.parse(call.function.arguments) : {};
+    } catch {
+      input = { __invalid_json: call.function?.arguments ?? "" };
+    }
+    content.push({ type: "tool_use", id: call.id, name: call.function?.name, input });
+  }
+  const finish = choice?.finish_reason;
+  const stop_reason = finish === "tool_calls" ? "tool_use" : finish === "length" ? "max_tokens" : finish === "content_filter" ? "refusal" : "end_turn";
+  return { content, stop_reason };
+}
+function createOpenAIAdapter(options = {}) {
+  const {
+    apiKey = null,
+    getToken = null,
+    baseUrl = "https://api.openai.com",
+    model,
+    maxTokens = 4096,
+    temperature = 0.2,
+    headers = {},
+    fetch: fetchImpl = typeof fetch === "function" ? fetch : null
+  } = options;
+  if (!model) throw new Error("openai adapter: a model id is required");
+  if (!fetchImpl) throw new Error("openai adapter: no fetch implementation available");
+  async function credential() {
+    if (typeof getToken === "function") return getToken();
+    return apiKey;
+  }
+  return {
+    name: "openai",
+    model,
+    async messages({ system, messages, tools = [], model: modelOverride, signal } = {}) {
+      const key = await credential();
+      if (!key) throw new Error("openai adapter: no API key or getToken() credential");
+      const useModel = modelOverride || model;
+      const body = {
+        model: useModel,
+        max_completion_tokens: maxTokens,
+        messages: toChatMessages(system, messages),
+        tools: tools.map((tool) => ({
+          type: "function",
+          function: {
+            name: tool.name,
+            description: tool.description,
+            parameters: tool.input_schema
+          }
+        }))
+      };
+      if (typeof temperature === "number") body.temperature = temperature;
+      const requestHeaders = {
+        "content-type": "application/json",
+        authorization: `Bearer ${key}`,
+        ...headers
+      };
+      void isBrowser2;
+      const response = await fetchImpl(`${baseUrl.replace(/\/$/, "")}/v1/chat/completions`, {
+        method: "POST",
+        headers: requestHeaders,
+        body: JSON.stringify(body),
+        signal
+      });
+      const text3 = await response.text();
+      let data = null;
+      try {
+        data = text3 ? JSON.parse(text3) : null;
+      } catch {
+        data = null;
+      }
+      if (!response.ok) {
+        const message = data?.error?.message || text3 || `HTTP ${response.status}`;
+        const error = new Error(`openai adapter: HTTP ${response.status}: ${message}`);
+        error.status = response.status;
+        throw error;
+      }
+      const { content, stop_reason } = fromChatChoice(data?.choices?.[0]);
+      return {
+        content,
+        stop_reason,
+        stop_details: null,
+        usage: {
+          input_tokens: data?.usage?.prompt_tokens ?? 0,
+          output_tokens: data?.usage?.completion_tokens ?? 0
+        },
+        model: data?.model || useModel
+      };
+    }
+  };
+}
+
+// src/patientJourneyNarratives/adapters/stub.js
+var plural2 = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
+var were = (n) => n === 1 ? "was" : "were";
+var is = (n) => n === 1 ? "is" : "are";
+var finite7 = (value) => typeof value === "number" && Number.isFinite(value);
+var unitText = (unit) => unit ? ` ${unit}` : "";
+var names2 = (rows) => rows.map((row) => row.label).join(", ");
+var cite = (rows) => [...new Set(rows.map((row) => row.row_id))].slice(0, 12);
+var offsetPhrase = (dfa) => {
+  if (!finite7(dfa)) return "at an unplaceable day";
+  if (dfa === 0) return "on the anchor day";
+  return dfa < 0 ? `${plural2(-dfa, "day")} before the anchor` : `${plural2(dfa, "day")} after the anchor`;
+};
+var spanText = (row) => {
+  if (!finite7(row.start_day)) return "with no usable start day";
+  if (finite7(row.end_day))
+    return row.end_day === row.start_day ? `on day ${row.start_day}` : `from day ${row.start_day} to day ${row.end_day}`;
+  if (row.end_state === "ongoing") return `from day ${row.start_day}, recorded as ongoing`;
+  return `from day ${row.start_day}, with no end date recorded`;
+};
+var ratioText = (row) => row.ratio_to_limit ? `${row.ratio_to_limit.ratio} \xD7 ${row.ratio_to_limit.limit}` : "within the reference range";
+var sentence = (text3, rows, confidence = "high") => ({
+  text: text3,
+  citations: Array.isArray(rows) ? cite(rows) : cite([rows]),
+  confidence
+});
+function eventContext(inputs, g, extra) {
+  const a = g.anchor;
+  const sentences = [];
+  const flags = [];
+  const severity = a.severity ? a.severity.toLowerCase() : "severity not recorded";
+  sentences.push(
+    sentence(
+      `${a.label} is recorded ${spanText(a)}, ${severity}${a.serious ? ", serious" : ""}${a.outcome ? `, outcome ${a.outcome.toLowerCase()}` : ""}.`,
+      a
+    )
+  );
+  if (a.serious) flags.push("sae");
+  const cm = g.con_meds_active || [];
+  if (cm.length) {
+    const unrecorded = g.not_evaluated?.con_meds_end_unrecorded ?? 0;
+    let text3 = `${plural2(cm.length, "con-med")} ${were(cm.length)} active at onset: ${names2(cm)}.`;
+    if (unrecorded > 0) {
+      text3 += unrecorded === cm.length ? " No end date is recorded for any of them." : ` No end date is recorded for ${unrecorded} of them.`;
+      flags.push("ends-unrecorded");
+    }
+    sentences.push(sentence(text3, cm, unrecorded > 0 ? "low" : "high"));
+  } else {
+    sentences.push(sentence("No con-meds were active at onset.", a));
+  }
+  const labs = g.abnormal_labs || [];
+  for (const lab of labs.slice(0, 2)) {
+    const change = lab.abnormal_reason !== "flag" && finite7(lab.x_baseline);
+    if (change) flags.push("labs:change-rule");
+    sentences.push(
+      sentence(
+        `${lab.test} was ${lab.value}${unitText(lab.unit)} on day ${lab.start_day} (${ratioText(lab)}${change ? `, ${lab.x_baseline} \xD7 baseline` : ""}), ${offsetPhrase(lab.days_from_anchor)}.`,
+        lab,
+        "medium"
+      )
+    );
+  }
+  const doses = g.dose_changes || [];
+  if (doses.length) {
+    const d = doses[0];
+    sentences.push(
+      sentence(
+        `The dose changed from ${d.dose_from} to ${d.dose_to}${unitText(d.unit)} on day ${d.start_day} (${d.direction || "change"}), ${offsetPhrase(d.days_from_anchor)}${doses.length > 1 ? `; ${plural2(doses.length - 1, "further dose change")} ${is(doses.length - 1)} in the window` : ""}.`,
+        doses,
+        "medium"
+      )
+    );
+  }
+  const prior = g.prior_same_term_events || [];
+  if (prior.length) {
+    const recent = prior[0];
+    const when = recent.days_before_anchor === 0 ? "recorded on the same day" : `started ${plural2(recent.days_before_anchor, "day")} before the anchor`;
+    sentences.push(
+      sentence(
+        `${plural2(prior.length, "earlier or same-day event")} with the same preferred term ${is(prior.length)} recorded; the most recent ${when}.`,
+        prior,
+        "medium"
+      )
+    );
+  }
+  const later = g.con_meds_started_later || [];
+  if (later.length && sentences.length < 6) {
+    sentences.push(
+      sentence(
+        `${names2(later)} started later in the window, ${offsetPhrase(later[0].days_from_anchor)}.`,
+        later,
+        "medium"
+      )
+    );
+  }
+  const c = g.counts || {};
+  if (!cm.length && !labs.length && !doses.length && !prior.length && !later.length)
+    flags.push("context:empty");
+  return {
+    kind: "event-context",
+    subject: inputs.subject,
+    anchor: { domain: a.domain, row_id: a.row_id, term: a.label, start_day: a.start_day },
+    window_days: g.window.days,
+    summary: `${a.label} on day ${a.start_day}: ${plural2(c.conMeds ?? cm.length, "con-med")} active, ${plural2(c.abnormalLabs ?? labs.length, "abnormal lab")}, ${plural2(c.doseChanges ?? doses.length, "dose change")} within \xB1${g.window.days} days.`,
+    sentences: sentences.slice(0, 6),
+    flags,
+    __extraUsed: Boolean(extra)
+  };
+}
+function subjectSummary(inputs, g, extra) {
+  const sentences = [];
+  const flags = [];
+  const counts = g.counts || {};
+  const dose = extra && extra.records ? extra : null;
+  if (dose && dose.records.length) {
+    const range = g.dose_range;
+    sentences.push(
+      sentence(
+        `Exposure to ${g.treatments.join(" and ")} is recorded from day ${g.exposure_extent.first_day} to day ${g.exposure_extent.last_day}${range ? ` at ${range.min === range.max ? range.min : `${range.min}\u2013${range.max}`}${unitText(range.unit)}` : ""}, with ${plural2(dose.changes.length, "dose change")}.`,
+        dose.records
+      )
+    );
+  }
+  const terms = g.adverse_event_terms || [];
+  if (counts.AE > 0 && terms.length) {
+    const top = terms.slice(0, 3);
+    sentences.push(
+      sentence(
+        `${plural2(counts.AE, "adverse event")} ${is(counts.AE)} recorded across ${plural2(terms.length, "preferred term")}; the most frequent ${is(top.length)} ${top.map((t) => `${t.term} (${t.count})`).join(", ")}.`,
+        top.flatMap((t) => t.row_ids.map((row_id) => ({ row_id }))),
+        "medium"
+      )
+    );
+  }
+  const sae = g.serious_adverse_events || [];
+  if (sae.length) {
+    flags.push("sae");
+    sentences.push(
+      sentence(
+        `${plural2(sae.length, "serious adverse event")} ${is(sae.length)} recorded: ${sae.map((e) => `${e.label} on day ${e.start_day}`).join("; ")}.`,
+        sae
+      )
+    );
+  }
+  const dispo = (g.disposition || []).filter((row) => row.reference);
+  if (dispo.length) {
+    sentences.push(
+      sentence(
+        `The disposition event is ${dispo.map((d) => `${d.label} on day ${d.start_day}`).join("; ")}.`,
+        dispo
+      )
+    );
+  }
+  if (g.last_adverse_event) {
+    sentences.push(
+      sentence(
+        `The last adverse event recorded is ${g.last_adverse_event.label} on day ${g.last_adverse_event.start_day}.`,
+        g.last_adverse_event
+      )
+    );
+  }
+  const unplaceable = Object.values(g.unplaceable || {}).reduce((sum, n) => sum + n, 0);
+  if (unplaceable > 0) flags.push("data:unplaceable");
+  return {
+    kind: "subject-summary",
+    subject: inputs.subject,
+    summary: `${plural2(counts.AE || 0, "adverse event")} (${sae.length} serious), ${plural2(counts.LB || 0, "lab result")} and ${plural2(counts.CM || 0, "con-med record")}${g.extent ? ` over days ${g.extent.first_day} to ${g.extent.last_day}` : ""}${dispo.length ? `; ${dispo[0].label.toLowerCase()} on day ${dispo[0].start_day}` : ""}.`,
+    sentences: sentences.slice(0, 8),
+    flags
+  };
+}
+function labTrajectory(inputs, g) {
+  const points = g.points || [];
+  const sentences = [];
+  const flags = [];
+  const first = points[0];
+  const last = points[points.length - 1];
+  if (points.length === 1) flags.push("series:single-point");
+  sentences.push(
+    sentence(
+      `${g.test} was measured ${plural2(points.length, "time")} between day ${first.start_day} and day ${last.start_day}${g.unit ? ` (${g.unit}` : ""}${finite7(g.lln) && finite7(g.uln) ? `${g.unit ? "; " : "("}reference ${g.lln}\u2013${g.uln})` : g.unit ? ")" : ""}.`,
+      [first, last]
+    )
+  );
+  if (g.baseline && g.baseline.row_id) {
+    sentences.push(
+      sentence(
+        `Baseline is ${g.baseline.value}${unitText(g.unit)} on day ${g.baseline.day} (${g.baseline.rule === "flag" ? "the flagged baseline record" : g.baseline.rule === "day" ? "the last value on or before the baseline day" : "the earliest value"}).`,
+        { row_id: g.baseline.row_id }
+      )
+    );
+  }
+  if (g.peak) {
+    const peakRow = points.find((p) => p.row_id === g.peak.row_id) || { row_id: g.peak.row_id };
+    sentences.push(
+      sentence(
+        `The highest value, ${g.peak.value}${unitText(g.unit)} on day ${g.peak.day}, is ${ratioText(peakRow)}${finite7(peakRow.x_baseline) ? ` and ${peakRow.x_baseline} \xD7 baseline` : ""}.`,
+        peakRow,
+        "medium"
+      )
+    );
+  }
+  const abnormal = points.filter((p) => p.abnormal_by_flag || p.abnormal_by_change);
+  if (abnormal.length) {
+    if (abnormal.some((p) => p.abnormal_by_change)) flags.push("labs:change-rule");
+    const flagged = abnormal.filter((p) => p.abnormal_flag).map((p) => p.abnormal_flag);
+    sentences.push(
+      sentence(
+        `${abnormal.length} of ${points.length} values ${is(abnormal.length)} abnormal${flagged.length ? ` (flagged ${[...new Set(flagged)].join(", ")})` : " by the change-from-baseline rule"}.`,
+        abnormal,
+        "medium"
+      )
+    );
+  } else {
+    sentences.push(
+      sentence(
+        "No value is flagged abnormal and none crosses the change-from-baseline rule.",
+        points,
+        "medium"
+      )
+    );
+  }
+  if (last !== first) {
+    sentences.push(
+      sentence(
+        `The last value, ${last.value}${unitText(g.unit)} on day ${last.start_day}, is ${ratioText(last)}.`,
+        last
+      )
+    );
+  }
+  return {
+    kind: "lab-trajectory",
+    subject: inputs.subject,
+    test: g.test,
+    summary: `${g.test}: ${plural2(points.length, "value")}, ${abnormal.length} abnormal; peak ${g.peak ? `${g.peak.value}${unitText(g.unit)} on day ${g.peak.day}` : "not available"}.`,
+    sentences: sentences.slice(0, 5),
+    flags
+  };
+}
+function doseJourney(inputs, g, extra) {
+  const sentences = [];
+  const flags = [];
+  const records = g.records || [];
+  const changes = g.changes || [];
+  const first = records[0];
+  const last = records[records.length - 1];
+  sentences.push(
+    sentence(
+      `${g.treatments.join(" and ")} exposure is recorded across ${plural2(records.length, "record")}, from day ${first.start_day}${finite7(last.end_day) ? ` to day ${last.end_day}` : last.end_state === "unrecorded" ? ", with no end date recorded for the last record" : ""}.`,
+      records
+    )
+  );
+  if (changes.length) {
+    for (const change of changes.slice(0, 3)) {
+      sentences.push(
+        sentence(
+          `On day ${change.start_day} the dose changed from ${change.dose_from} to ${change.dose_to}${unitText(change.unit)} (${change.direction || "change"}).`,
+          [change, { row_id: change.source_row_id }],
+          "medium"
+        )
+      );
+    }
+    if (changes.length > 3) flags.push("dose:more-changes");
+  } else {
+    sentences.push(
+      sentence(
+        `No dose change is recorded; the dose stayed at ${first.dose}${unitText(first.unit)} throughout.`,
+        records
+      )
+    );
+  }
+  const sae = extra && Array.isArray(extra.rows) ? extra.rows : [];
+  if (sae.length && sentences.length < 5) {
+    flags.push("sae");
+    sentences.push(
+      sentence(
+        `${plural2(sae.length, "serious adverse event")} ${is(sae.length)} recorded during the study: ${sae.map((e) => `${e.label} on day ${e.start_day}`).join("; ")}.`,
+        sae
+      )
+    );
+  }
+  return {
+    kind: "dose-journey",
+    subject: inputs.subject,
+    summary: `${g.treatments.join(" and ")}: ${plural2(records.length, "exposure record")}, ${plural2(changes.length, "dose change")}${changes.length ? ` (${changes.map((c) => c.direction).filter(Boolean).join(", ")})` : ""}.`,
+    sentences: sentences.slice(0, 5),
+    flags
+  };
+}
+function disposition(inputs, g, extra) {
+  const rows = g.rows || [];
+  const sentences = [];
+  const flags = [];
+  const reference = rows.filter((row) => row.reference);
+  const milestones = rows.filter((row) => !row.reference);
+  if (reference.length) {
+    sentences.push(
+      sentence(
+        `The disposition event is ${reference.map((d) => `${d.label} on day ${d.start_day}${d.detail && d.detail !== d.label ? ` (the record reads "${d.detail}")` : ""}`).join("; ")}.`,
+        reference
+      )
+    );
+  }
+  if (milestones.length) {
+    sentences.push(
+      sentence(
+        `${plural2(milestones.length, "other disposition record")} ${is(milestones.length)} recorded: ${milestones.map((d) => `${d.label} on day ${d.start_day}`).join(", ")}.`,
+        milestones,
+        "medium"
+      )
+    );
+  }
+  const overview = extra && extra.exposure_extent ? extra : null;
+  if (overview) {
+    const ext = overview.exposure_extent;
+    sentences.push(
+      sentence(
+        `Exposure is recorded from day ${ext.first_day} to day ${ext.last_day}${ext.last_end_state === "unrecorded" ? " (end not recorded)" : ""}.`,
+        [{ row_id: ext.first_row_id }, { row_id: ext.last_row_id }]
+      )
+    );
+    if (overview.last_adverse_event) {
+      const lastAe = overview.last_adverse_event;
+      sentences.push(
+        sentence(
+          `The last adverse event recorded is ${lastAe.label} on day ${lastAe.start_day}${lastAe.serious ? ", serious" : ""}.`,
+          lastAe
+        )
+      );
+      if (lastAe.serious) flags.push("sae");
+    }
+  }
+  return {
+    kind: "disposition",
+    subject: inputs.subject,
+    summary: reference.length ? `${reference[0].label} on day ${reference[0].start_day}; ${plural2(rows.length, "disposition record")} in total.` : `${plural2(rows.length, "disposition record")}, none marked as the disposition event.`,
+    sentences: sentences.slice(0, 4),
+    flags
+  };
+}
+var COMPOSERS = {
+  "event-context": eventContext,
+  "subject-summary": subjectSummary,
+  "lab-trajectory": labTrajectory,
+  "dose-journey": doseJourney,
+  disposition
+};
+function extraCall(skill, inputs, grounding) {
+  switch (skill) {
+    case "event-context":
+      return {
+        name: "get_source_row",
+        input: { row_id: grounding.anchor.row_id, usubjid: inputs.subject }
+      };
+    case "subject-summary":
+      return { name: "get_dose_history", input: { usubjid: inputs.subject } };
+    case "lab-trajectory":
+      return grounding.peak ? {
+        name: "get_source_row",
+        input: { row_id: grounding.peak.row_id, usubjid: inputs.subject }
+      } : null;
+    case "dose-journey":
+      return {
+        name: "get_events",
+        input: { usubjid: inputs.subject, domain: "AE", filters: { serious: true } }
+      };
+    case "disposition":
+      return { name: "get_subject_overview", input: { usubjid: inputs.subject } };
+    default:
+      return null;
+  }
+}
+function createStubAdapter({
+  model = "stub-1",
+  delay = 0,
+  extraCall: useExtra = true
+} = {}) {
+  return {
+    name: "stub",
+    model,
+    async messages({ messages }) {
+      if (delay > 0) await new Promise((resolve2) => setTimeout(resolve2, delay));
+      const first = messages[0];
+      const firstText = (first?.content || []).find((block) => block.type === "text")?.text;
+      const payload = parseFirstMessage(firstText);
+      if (!payload) {
+        return {
+          content: [{ type: "text", text: "stub: cannot read the request" }],
+          stop_reason: "end_turn",
+          usage: { input_tokens: 0, output_tokens: 0 },
+          model
+        };
+      }
+      const { skill, inputs, grounding } = payload;
+      const assistantTurns = messages.filter((m) => m.role === "assistant").length;
+      const call = useExtra ? extraCall(skill, inputs, grounding) : null;
+      if (assistantTurns === 0 && call) {
+        return {
+          content: [{ type: "tool_use", id: "stub-call-1", name: call.name, input: call.input }],
+          stop_reason: "tool_use",
+          usage: { input_tokens: 0, output_tokens: 0 },
+          model
+        };
+      }
+      let extra = null;
+      if (call) {
+        const results = messages.filter((m) => m.role === "user").flatMap((m) => m.content || []).filter((block) => block.type === "tool_result" && block.tool_use_id === "stub-call-1");
+        if (results.length) {
+          try {
+            extra = JSON.parse(results[0].content);
+          } catch {
+            extra = null;
+          }
+          if (extra && extra.error) extra = null;
+        }
+      }
+      const compose = COMPOSERS[skill];
+      if (!compose) {
+        return {
+          content: [{ type: "text", text: `stub: no composer for ${skill}` }],
+          stop_reason: "end_turn",
+          usage: { input_tokens: 0, output_tokens: 0 },
+          model
+        };
+      }
+      const draft = compose(inputs, grounding, extra);
+      delete draft.__extraUsed;
+      return {
+        content: [{ type: "tool_use", id: "stub-submit", name: "submit_draft", input: draft }],
+        stop_reason: "tool_use",
+        usage: { input_tokens: 0, output_tokens: 0 },
+        model
+      };
+    }
+  };
+}
+
+// src/patientJourneyNarratives/bind.js
+function bindNarratives(instance, options = {}) {
+  if (!instance || typeof instance.setSettings !== "function") {
+    throw new Error("bindNarratives: an explorer instance with setSettings() is required");
+  }
+  const service = () => createDataService({
+    domains: instance.domains || {},
+    settings: instance.settings,
+    structured: (subject) => instance.structured && instance.structured.subject === subject ? instance.structured : null
+  });
+  const generator = create({
+    ...options,
+    dataService: {
+      structuredFor: (subject) => service().structuredFor(subject),
+      subjects: () => service().subjects(),
+      get settings() {
+        return instance.settings;
+      },
+      get domains() {
+        return instance.domains || {};
+      },
+      invalidate() {
+      }
+    }
+  });
+  const slots = {
+    subjectSummary: (subject) => generator.run("subject-summary", { subject }),
+    eventContext: (subject, anchorRowId, { windowDays } = {}) => generator.run("event-context", {
+      subject,
+      anchor_row_id: anchorRowId,
+      ...Number.isFinite(windowDays) ? { window_days: windowDays } : {}
+    }),
+    labTrajectory: (subject, test) => generator.run("lab-trajectory", { subject, test }),
+    doseJourney: (subject) => generator.run("dose-journey", { subject }),
+    disposition: (subject) => generator.run("disposition", { subject })
+  };
+  instance.setSettings({ narratives: slots });
+  generator.unbind = () => instance.setSettings({ narratives: null });
+  generator.slots = slots;
+  return generator;
+}
+
+// src/patientJourneyNarratives/index.js
+var MARKERS = { inputs: "<<INPUTS>>", grounding: "<<GROUNDING>>", end: "<<END>>" };
+var SUBMIT_TOOL = "submit_draft";
+var ALIASES = { usubjid: "subject", days: "window_days" };
+function groundingArgs(skill, inputs) {
+  const tool = TOOLS[skill.grounding];
+  if (!tool)
+    throw new Error(`narratives: skill ${skill.slug} grounds on unknown tool ${skill.grounding}`);
+  const args = {};
+  for (const name of Object.keys(tool.input_schema.properties)) {
+    const source = name in inputs ? inputs[name] : inputs[ALIASES[name]];
+    if (source !== void 0 && source !== null) args[name] = source;
+  }
+  for (const entry of skill.groundingArgs || []) {
+    const [key, value] = String(entry).split("=");
+    if (key && value !== void 0) args[key.trim()] = value.trim();
+  }
+  return args;
+}
+function scopeIsEmpty(skill, grounding) {
+  if (!grounding || grounding.error) return true;
+  switch (skill.grounding) {
+    case "get_subject_overview":
+      return !Object.values(grounding.counts || {}).some((n) => n > 0);
+    case "get_lab_series":
+      return !(grounding.points || []).length;
+    case "get_dose_history":
+      return !(grounding.records || []).length;
+    case "get_events":
+      return !(grounding.rows || []).length;
+    default:
+      return false;
+  }
+}
+function groundingRefusal(skill, grounding) {
+  if (grounding && grounding.error === "anchor-not-found") return "anchor-not-found";
+  return scopeIsEmpty(skill, grounding) ? "insufficient-data" : null;
+}
+function identityFields(skill, inputs, grounding) {
+  const fields = { kind: skill.slug, subject: String(inputs.subject) };
+  if (skill.slug === "event-context") {
+    const id = normalizeRowId(inputs.anchor_row_id);
+    const anchor = grounding && grounding.anchor;
+    fields.anchor = {
+      domain: anchor ? anchor.domain : id.split("-")[0] || "",
+      row_id: id,
+      term: anchor ? String(anchor.label ?? "") : "",
+      start_day: anchor && Number.isFinite(anchor.start_day) ? anchor.start_day : null
+    };
+    fields.window_days = grounding && grounding.window ? grounding.window.days : inputs.window_days ?? 0;
+  }
+  if (skill.slug === "lab-trajectory") {
+    fields.test = grounding && grounding.test ? grounding.test : String(inputs.test ?? "");
+  }
+  return fields;
+}
+function systemPrompt(skill) {
+  const cap = sentenceCap(skill.schema);
+  return [
+    SHARED.systemPrompt,
+    `# Skill: ${skill.slug} (version ${skill.version})`,
+    skill.prompt,
+    cap !== null ? `Sentence cap for this skill: at most ${cap} sentences.` : "",
+    "Row ids look like AE-7, CM-11, LB-203, DOSE-4; cite them exactly as the tools return them."
+  ].filter(Boolean).join("\n\n");
+}
+function firstMessage(skill, inputs, grounding) {
+  return [
+    `Draft the ${skill.slug} narrative for participant ${inputs.subject}.`,
+    MARKERS.inputs,
+    JSON.stringify(inputs),
+    `${MARKERS.grounding} ${skill.grounding} (already run; every row_id below is in scope for citations)`,
+    JSON.stringify(grounding),
+    MARKERS.end,
+    `Call other declared tools only when you need a column the grounding rows do not carry, then call ${SUBMIT_TOOL} exactly once.`
+  ].join("\n");
+}
+function parseFirstMessage(text3) {
+  const source = String(text3 ?? "");
+  const skill = /^Draft the ([a-z-]+) narrative/.exec(source);
+  const inputsAt = source.indexOf(MARKERS.inputs);
+  const groundingAt = source.indexOf(MARKERS.grounding);
+  const endAt = source.indexOf(MARKERS.end);
+  if (!skill || inputsAt < 0 || groundingAt < 0 || endAt < 0) return null;
+  try {
+    const inputs = JSON.parse(source.slice(inputsAt + MARKERS.inputs.length, groundingAt).trim());
+    const groundingText = source.slice(groundingAt, endAt);
+    const grounding = JSON.parse(groundingText.slice(groundingText.indexOf("\n") + 1).trim());
+    return { skill: skill[1], inputs, grounding };
+  } catch {
+    return null;
+  }
+}
+function refusalDraft(skill, inputs, reason, provenance, grounding = null) {
+  return {
+    ...identityFields(skill, inputs, grounding),
+    summary: reason in REFUSAL_TEXT ? REFUSAL_TEXT[reason] : `Narrative withheld (${reason}).`,
+    sentences: [],
+    flags: [`refused:${reason}`],
+    provenance,
+    status: "draft"
+  };
+}
+function skillFor(slug) {
+  const key = SLUG_BY_SLOT[slug] || slug;
+  const skill = SKILLS[key];
+  if (!skill) {
+    throw new Error(`narratives: unknown skill "${slug}" (known: ${SKILL_SLUGS.join(", ")})`);
+  }
+  return skill;
+}
+function createScope(dataService) {
+  function scope(slug, rawInputs = {}) {
+    const skill = skillFor(slug);
+    const inputs = { ...rawInputs };
+    if (inputs.subject !== void 0) inputs.subject = String(inputs.subject);
+    const args = groundingArgs(skill, inputs);
+    const grounding = runTool(dataService, skill.grounding, args, { subject: inputs.subject });
+    const hash = inputHash({ skill: skill.slug, version: skill.version, inputs, grounding });
+    return { skill, grounding, hash };
+  }
+  return { scope, scopeHash: (slug, inputs) => scope(slug, inputs).hash };
+}
+function resolveAdapter(options) {
+  if (options.adapter && typeof options.adapter.messages === "function") return options.adapter;
+  const common = {
+    apiKey: options.apiKey,
+    getToken: options.getToken,
+    baseUrl: options.baseUrl,
+    model: options.model,
+    maxTokens: options.maxTokens,
+    effort: options.effort,
+    temperature: options.temperature,
+    headers: options.headers,
+    fetch: options.fetch
+  };
+  for (const key of Object.keys(common)) if (common[key] === void 0) delete common[key];
+  switch (options.provider || "stub") {
+    case "claude":
+      return createClaudeAdapter(common);
+    case "openai":
+      return createOpenAIAdapter(common);
+    case "stub":
+      return createStubAdapter(options.stub || {});
+    default:
+      throw new Error(`narratives: unknown provider "${options.provider}"`);
+  }
+}
+function resolveCache(cache) {
+  if (cache === false || cache === null) return null;
+  if (cache && typeof cache.get === "function" && typeof cache.set === "function") return cache;
+  const map2 = /* @__PURE__ */ new Map();
+  return {
+    get: (key) => map2.get(key),
+    set: (key, value) => map2.set(key, value),
+    clear: () => map2.clear()
+  };
+}
+function create(options = {}) {
+  const adapter = resolveAdapter(options);
+  const dataService = options.dataService && typeof options.dataService.structuredFor === "function" ? options.dataService : createDataService(options.dataService || {});
+  const cache = resolveCache(options.cache === void 0 ? "memory" : options.cache);
+  const maxToolCalls = Number.isInteger(options.maxToolCalls) ? options.maxToolCalls : 8;
+  const log = typeof options.log === "function" ? options.log : (message) => {
+    if (typeof console !== "undefined") console.warn(`narratives: ${message}`);
+  };
+  function checkInputs15(skill, inputs) {
+    const verdict = validateSchema(inputs, skill.schema.definitions.Input, skill.schema);
+    if (!verdict.ok) {
+      throw new Error(`narratives: invalid inputs for ${skill.slug}: ${verdict.errors.join("; ")}`);
+    }
+  }
+  const { scope } = createScope(dataService);
+  async function run(slug, rawInputs = {}, { signal } = {}) {
+    const skill = skillFor(slug);
+    const inputs = { ...rawInputs };
+    if (inputs.subject !== void 0) inputs.subject = String(inputs.subject);
+    checkInputs15(skill, inputs);
+    const { grounding, hash } = scope(skill.slug, inputs);
+    const cacheKey = `${skill.slug}@${skill.version}|${hash}|${adapter.name}:${adapter.model}`;
+    if (cache) {
+      const hit = cache.get(cacheKey);
+      if (hit) return hit;
+    }
+    const startedAt = (/* @__PURE__ */ new Date()).toISOString();
+    const toolCalls = [skill.grounding];
+    const usage = { input_tokens: 0, output_tokens: 0, calls: 0 };
+    const provenance = () => ({
+      model: adapter.model,
+      skill: `${skill.slug}@${skill.version}`,
+      input_hash: hash,
+      generated_at: (/* @__PURE__ */ new Date()).toISOString(),
+      started_at: startedAt,
+      tool_calls: [...toolCalls],
+      adapter: adapter.name,
+      usage: { ...usage },
+      dropped: [],
+      attempts: 0
+    });
+    const finish = (draft) => {
+      if (cache) cache.set(cacheKey, draft);
+      return draft;
+    };
+    const refusal = groundingRefusal(skill, grounding);
+    if (refusal) return finish(refusalDraft(skill, inputs, refusal, provenance(), grounding));
+    const declared = skill.tools.filter((name) => TOOLS[name]);
+    const tools = [
+      ...toolDefinitions(declared),
+      {
+        name: SUBMIT_TOOL,
+        description: "Submit the finished narrative draft. Call exactly once, after any tool reads. Every sentence must cite row_ids returned in this conversation.",
+        input_schema: inlineRefs(skill.schema.definitions.Draft, skill.schema)
+      }
+    ];
+    const system = systemPrompt(skill);
+    const messages = [
+      { role: "user", content: [{ type: "text", text: firstMessage(skill, inputs, grounding) }] }
+    ];
+    const scopeIds = collectRowIds(grounding);
+    if (skill.slug === "event-context") scopeIds.add(normalizeRowId(inputs.anchor_row_id));
+    const identity = identityFields(skill, inputs, grounding);
+    let attempts = 0;
+    let validationRetried = false;
+    let submitNudged = false;
+    let lastErrors = [];
+    let lastDropped = [];
+    const maxRounds = maxToolCalls + 4;
+    for (let round3 = 0; round3 < maxRounds; round3 += 1) {
+      if (signal && signal.aborted) {
+        const draft = refusalDraft(skill, inputs, "cancelled", provenance(), grounding);
+        return draft;
+      }
+      let response;
+      try {
+        response = await adapter.messages({ system, messages, tools, signal });
+      } catch (error) {
+        log(`${skill.slug}: adapter failed: ${error && error.message ? error.message : error}`);
+        const draft = refusalDraft(skill, inputs, "provider-error", provenance(), grounding);
+        draft.provenance.error = String(error && error.message ? error.message : error);
+        return draft;
+      }
+      usage.input_tokens += response.usage?.input_tokens ?? 0;
+      usage.output_tokens += response.usage?.output_tokens ?? 0;
+      usage.calls += 1;
+      if (response.stop_reason === "refusal") {
+        const draft = refusalDraft(skill, inputs, "provider-refusal", provenance(), grounding);
+        if (response.stop_details) draft.provenance.stop_details = response.stop_details;
+        return finish(draft);
+      }
+      const content = Array.isArray(response.content) ? response.content : [];
+      const toolUses = content.filter((block) => block && block.type === "tool_use");
+      if (content.length) messages.push({ role: "assistant", content });
+      const results = [];
+      let submitted = null;
+      for (const use of toolUses) {
+        if (use.name === SUBMIT_TOOL) {
+          submitted = submitted || use;
+          continue;
+        }
+        let result;
+        if (!declared.includes(use.name)) {
+          result = {
+            error: "tool-not-available",
+            message: `${use.name} is not available to this skill.`
+          };
+        } else if (toolCalls.length - 1 >= maxToolCalls) {
+          result = {
+            error: "tool-call-cap",
+            message: `The tool-call cap (${maxToolCalls}) is reached; submit the draft.`
+          };
+        } else {
+          result = runTool(dataService, use.name, use.input, { subject: inputs.subject });
+          toolCalls.push(use.name);
+          for (const id of collectRowIds(result)) scopeIds.add(id);
+        }
+        results.push({
+          type: "tool_result",
+          tool_use_id: use.id,
+          content: JSON.stringify(result),
+          ...result && result.error ? { is_error: true } : {}
+        });
+      }
+      if (submitted) {
+        attempts += 1;
+        const candidate = { ...submitted.input, ...identity };
+        const verdict = validateDraft(candidate, { skill, scopeIds, subject: inputs.subject });
+        lastErrors = verdict.errors;
+        lastDropped = verdict.dropped;
+        const allDropped = verdict.ok && !verdict.draft.sentences.length && verdict.dropped.length > 0;
+        if (verdict.ok && !allDropped) {
+          for (const drop of verdict.dropped)
+            log(`${skill.slug}: dropped sentence (${drop.reason}): "${drop.text}"`);
+          const prov3 = provenance();
+          prov3.dropped = verdict.dropped;
+          prov3.attempts = attempts;
+          prov3.model = response.model || adapter.model;
+          return finish({ ...verdict.draft, provenance: prov3, status: "draft" });
+        }
+        if (!validationRetried) {
+          validationRetried = true;
+          const problems = [
+            ...verdict.errors,
+            ...verdict.dropped.map((drop) => `dropped "${drop.text}" (${drop.reason})`)
+          ];
+          results.push({
+            type: "tool_result",
+            tool_use_id: submitted.id,
+            content: JSON.stringify({ error: "validation-failed", problems }),
+            is_error: true
+          });
+          results.push({
+            type: "text",
+            text: "VALIDATION FEEDBACK: the draft was rejected. Fix every problem listed in the submit_draft result \u2014 cite only row_ids returned in this conversation, remove forbidden constructs, keep to the schema \u2014 and call submit_draft again."
+          });
+          messages.push({ role: "user", content: results });
+          continue;
+        }
+        const prov2 = provenance();
+        prov2.dropped = verdict.dropped;
+        prov2.errors = verdict.errors;
+        prov2.attempts = attempts;
+        log(
+          `${skill.slug}: refused after ${attempts} attempts: ${[...verdict.errors, ...verdict.dropped.map((d) => d.reason)].join("; ")}`
+        );
+        return finish(refusalDraft(skill, inputs, "validation", prov2, grounding));
+      }
+      if (!toolUses.length) {
+        const text3 = content.filter((block) => block.type === "text").map((block) => block.text).join("\n");
+        const parsed = parseJsonObject(text3);
+        if (parsed && Array.isArray(parsed.sentences)) {
+          messages.push({
+            role: "assistant",
+            content: [{ type: "tool_use", id: `text-${round3}`, name: SUBMIT_TOOL, input: parsed }]
+          });
+          toolUses.push({
+            type: "tool_use",
+            id: `text-${round3}`,
+            name: SUBMIT_TOOL,
+            input: parsed
+          });
+          messages.pop();
+          messages.push({
+            role: "assistant",
+            content: [{ type: "tool_use", id: `text-${round3}`, name: SUBMIT_TOOL, input: parsed }]
+          });
+          const synthetic = await handleSynthetic(parsed, `text-${round3}`);
+          if (synthetic) return synthetic;
+          continue;
+        }
+        if (response.stop_reason === "max_tokens") {
+          log(`${skill.slug}: the model hit max_tokens without submitting`);
+          const prov3 = provenance();
+          prov3.attempts = attempts;
+          return finish(refusalDraft(skill, inputs, "provider-error", prov3, grounding));
+        }
+        if (!submitNudged) {
+          submitNudged = true;
+          messages.push({
+            role: "user",
+            content: [{ type: "text", text: `Call ${SUBMIT_TOOL} now with the finished draft.` }]
+          });
+          continue;
+        }
+        const prov2 = provenance();
+        prov2.attempts = attempts;
+        prov2.errors = ["the model ended without submitting a draft"];
+        return finish(refusalDraft(skill, inputs, "validation", prov2, grounding));
+      }
+      messages.push({ role: "user", content: results });
+    }
+    const prov = provenance();
+    prov.attempts = attempts;
+    prov.errors = lastErrors.length ? lastErrors : ["round cap reached"];
+    prov.dropped = lastDropped;
+    return finish(refusalDraft(skill, inputs, "validation", prov, grounding));
+    async function handleSynthetic(parsed, id) {
+      attempts += 1;
+      const candidate = { ...parsed, ...identity };
+      const verdict = validateDraft(candidate, { skill, scopeIds, subject: inputs.subject });
+      const allDropped = verdict.ok && !verdict.draft.sentences.length && verdict.dropped.length > 0;
+      if (verdict.ok && !allDropped) {
+        const prov3 = provenance();
+        prov3.dropped = verdict.dropped;
+        prov3.attempts = attempts;
+        return finish({ ...verdict.draft, provenance: prov3, status: "draft" });
+      }
+      if (!validationRetried) {
+        validationRetried = true;
+        messages.push({
+          role: "user",
+          content: [
+            {
+              type: "tool_result",
+              tool_use_id: id,
+              content: JSON.stringify({
+                error: "validation-failed",
+                problems: [
+                  ...verdict.errors,
+                  ...verdict.dropped.map((d) => `dropped "${d.text}" (${d.reason})`)
+                ]
+              }),
+              is_error: true
+            },
+            {
+              type: "text",
+              text: "VALIDATION FEEDBACK: fix the problems and call submit_draft again."
+            }
+          ]
+        });
+        return null;
+      }
+      const prov2 = provenance();
+      prov2.dropped = verdict.dropped;
+      prov2.errors = verdict.errors;
+      prov2.attempts = attempts;
+      return finish(refusalDraft(skill, inputs, "validation", prov2, grounding));
+    }
+  }
+  return {
+    run,
+    scope,
+    scopeHash: (slug, inputs) => scope(slug, inputs).hash,
+    skills: SKILLS,
+    adapter,
+    dataService,
+    cache
+  };
+}
+function parseJsonObject(text3) {
+  const source = String(text3 ?? "");
+  const start = source.indexOf("{");
+  if (start < 0) return null;
+  for (let end = source.lastIndexOf("}"); end > start; end = source.lastIndexOf("}", end - 1)) {
+    try {
+      return JSON.parse(source.slice(start, end + 1));
+    } catch {
+    }
+  }
+  return null;
+}
+var patientJourneyNarratives_default = { create, bindNarratives };
+
+// src/patient-journey-explorer.js
+Chart.register(
+  BarController,
+  BarElement,
+  LineController,
+  LineElement,
+  PointElement,
+  ScatterController,
+  LinearScale,
+  CategoryScale
+);
+var EVENT_NAMES = [
+  "pjeSubjectSelected",
+  "pjeEventAnchored",
+  "pjeContextChanged",
+  "pjeLaneToggled",
+  "pjeFilterChanged",
+  "pjeTimeModeChanged",
+  "pjeNarrativeAction",
+  "participantsSelected"
+];
+var CALLBACK_BY_EVENT = {
+  pjeSubjectSelected: (settings, detail) => settings.on_select_subject?.(detail.subject, detail),
+  pjeEventAnchored: (settings, detail) => settings.on_anchor_event?.(detail.anchor, detail.context),
+  pjeContextChanged: (settings, detail) => settings.on_context_change?.(detail),
+  pjeNarrativeAction: (settings, detail) => settings.on_narrative_action?.(detail)
+};
+var DOMAIN_NOUNS = {
+  EX: "exposure record",
+  AE: "adverse event",
+  LB: "lab result",
+  CM: "con-med",
+  MH: "medical-history record",
+  DS: "disposition record"
+};
+var LANE_DOMAIN = {
+  exposure: "EX",
+  doseChanges: "EX",
+  adverseEvents: "AE",
+  labs: "LB",
+  conMeds: "CM",
+  medicalHistory: "MH",
+  disposition: "DS"
+};
+var TALLER_NOTE = "This participant's journey is taller than the panel; scroll or turn off a lane.";
+var NO_DAY_NOTE = "No study day resolves for this participant, so the journey cannot be drawn.";
+var NO_LANE_NOTE = "Every lane is turned off. Turn on a lane to see marks.";
+var CUE_LEAD = "Click any mark in the chart to show its associated events.";
+var CUE_DETAIL = "Time anchors on that mark, and the panel beside the chart lists the con-meds, labs, dose changes and earlier same-term events recorded around it, each linked to its source row. Keyboard: Tab into a lane, arrow keys to move, Enter to select.";
+var CUE_ANCHORED_DETAIL = "Click another mark to move the anchor; Escape or the Clear anchor control releases it.";
+var instanceCounter = 0;
+var warn2 = (message) => console.warn(`patient-journey-explorer: ${message}`);
+var plural3 = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
+var upper7 = (value) => value === null || value === void 0 ? "" : String(value).trim().toUpperCase();
+var raf = typeof requestAnimationFrame === "function" ? (fn) => requestAnimationFrame(fn) : (fn) => setTimeout(fn, 16);
+function coerceWindowDays(value, fallback) {
+  if (value === null || value === void 0 || value === "") return fallback;
+  const n = Number(value);
+  return Number.isFinite(n) ? Math.max(0, Math.floor(n)) : fallback;
+}
+var SafetyPatientJourneyExplorer = class {
+  constructor(element = "body", settings = {}) {
+    this.element = typeof element === "string" ? document.querySelector(element) : element;
+    if (!this.element)
+      throw new Error(`Safety Patient Journey Explorer target not found: ${element}`);
+    this.settings = syncSettings14(settings);
+    this.uid = `pje-${instanceCounter += 1}`;
+    this.domains = null;
+    this.inputDropped = [];
+    this.structured = null;
+    this.subject = null;
+    this.anchoredEvent = null;
+    this.context = null;
+    this.bounds = null;
+    this.laneCharts = /* @__PURE__ */ new Map();
+    this.listeners = /* @__PURE__ */ new Map();
+    this.participantsSelected = [];
+    this.stackHeight = 0;
+    this.subjectList = [];
+    this.liveFilterSpecs = [];
+    this.drawer = null;
+    this.hoveredEvent = null;
+    this.footnoteEvent = null;
+    this.suppressTooltip = false;
+    this.sourceLinkWarned = false;
+    this.lastEffectiveMode = null;
+    this.narrativeEntries = /* @__PURE__ */ new Map();
+    this.narrativeSeq = 0;
+    this.citedMarkId = null;
+    this.destroyed = false;
+    this.state = this.seedState();
+    Object.assign(
+      this,
+      renderShell(this.element, {
+        moduleClass: "safety-patient-journey",
+        onToggle: () => this.resize()
+      })
+    );
+    this.root.classList.add("sv-pje-root");
+    this.element.style.width = this.settings.width;
+    applyPjeStyles();
+    this.canvas.remove();
+    this.chartWrap.style.height = "auto";
+    this.lanesEl = createElement("div", "sv-pje-lanes");
+    this.lanesEl.style.maxHeight = `${this.settings.height}px`;
+    this.axisEl = createElement("div", "sv-pje-axis");
+    this.cueEl = createElement("div", "sv-pje-cue");
+    this.cueEl.setAttribute("role", "note");
+    this.cueEl.hidden = true;
+    this.narrativeBannerEl = createElement("div", "sv-pje-narrative-banner");
+    this.chartWrap.insertBefore(this.narrativeBannerEl, this.mainAnnotation);
+    this.chartWrap.insertBefore(this.cueEl, this.mainAnnotation);
+    this.chartWrap.insertBefore(this.lanesEl, this.mainAnnotation);
+    this.chartWrap.insertBefore(this.axisEl, this.mainAnnotation);
+    this.narrativeTrayEl = createElement("div", "sv-pje-ai-tray");
+    this.chartWrap.insertBefore(this.narrativeTrayEl, this.mainAnnotation);
+    this.tooltipEl = createElement("div", "sv-pje-tooltip");
+    this.tooltipEl.setAttribute("role", "tooltip");
+    this.tooltipEl.hidden = true;
+    this.chartWrap.append(this.tooltipEl);
+    this.liveRegion = createLiveRegion();
+    this.root.append(this.liveRegion);
+    this.railWrap.hidden = true;
+    this.mainAnnotation.textContent = "Bind data with init() to draw a journey.";
+    this.overlay = new MarkOverlay({
+      describe: (event, sameDay) => this.describeMark(event, sameDay),
+      isAnchored: (id) => this.state.anchorId === id,
+      onActivate: (id) => {
+        if (this.state.anchorId === id) this.anchor(null);
+        else {
+          this.anchor(id);
+          this.revealPanel();
+        }
+      },
+      onJump: (id) => {
+        const event = this.findEvent(id);
+        if (event) this.jumpToSource(event.sourceAnchorId);
+      },
+      onEnter: (event, button, via) => this.showTooltip(event, button, via),
+      onLeave: (via) => this.hideTooltip(via)
+    });
+    this.overlay.attach(this.lanesEl);
+    this.rootKeyHandler = (event) => this.handleEscape(event);
+    this.root.addEventListener("keydown", this.rootKeyHandler);
+    this.resizeHandler = () => {
+      if (this.resizeFrame) return;
+      this.resizeFrame = raf(() => {
+        this.resizeFrame = null;
+        this.resize();
+      });
+    };
+    window.addEventListener("resize", this.resizeHandler);
+    this.stackObserver = typeof ResizeObserver === "function" ? new ResizeObserver(this.resizeHandler) : null;
+    if (this.stackObserver) this.stackObserver.observe(this.lanesEl);
+    this.themeQuery = typeof window.matchMedia === "function" ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+    this.themeHandler = () => {
+      this.resolveThemeTokens();
+      if (this.domains) this.render();
+    };
+    if (this.themeQuery && typeof this.themeQuery.addEventListener === "function") {
+      this.themeQuery.addEventListener("change", this.themeHandler);
+    }
+    this.resolveThemeTokens();
+  }
+  /**
+   * The opening control state, derived from the settings alone: the
+   * configured subject (null = first at render time), no anchor, the filter
+   * start values, the lane enablement and group collapse flags, the window
+   * width and the time mode. The Reset control rebuilds it at any point.
+   * @returns {Object} A fresh control state.
+   * @private
+   */
+  seedState() {
+    const lanes = {};
+    const groups = {};
+    for (const key of LANE_KEYS) lanes[key] = Boolean(this.settings.lanes[key]?.enabled);
+    for (const group of this.settings.lane_groups) groups[group.key] = Boolean(group.collapsed);
+    return {
+      subject: this.settings.subject,
+      anchorId: null,
+      filters: initFilterState(this.settings.filters),
+      lanes,
+      groups,
+      windowDays: this.settings.context_window_days,
+      mode: this.settings.time.mode
+    };
+  }
+  /**
+   * The active theme mode: the document's explicit `data-theme`, `auto` with
+   * the OS preference, else light (D12).
+   * @private
+   */
+  themeMode() {
+    const attr = document.documentElement.getAttribute("data-theme");
+    if (attr === "dark") return "dark";
+    if (attr === "auto" && this.themeQuery && this.themeQuery.matches) return "dark";
+    return "light";
+  }
+  /**
+   * Read the palette tokens back from the module stylesheet for the canvas.
+   * @private
+   */
+  resolveThemeTokens() {
+    this.theme = resolveTheme(this.root, this.themeMode());
+  }
+  /**
+   * The mode the axis, tooltips and panel actually show: the user's
+   * preference (`state.mode`) when a reference date resolves for the current
+   * subject, else day mode. The preference is kept, so calendar dates return
+   * when a subject that has a reference date is selected again; the title,
+   * the ticks, the select and getTimeMode() all read this, never the raw
+   * preference, so "Calendar date" is never printed over study-day numbers.
+   * @private
+   */
+  effectiveMode() {
+    if (this.state.mode !== "date") return "day";
+    return this.structured && this.structured.refDate ? "date" : "day";
+  }
+  /**
+   * The display options every text builder takes: the mode and the subject's
+   * reference date.
+   * @private
+   */
+  display() {
+    return {
+      mode: this.effectiveMode(),
+      refDate: this.structured && this.structured.refDate ? this.structured.refDate.date : null
+    };
+  }
+  /**
+   * The accessible name of a mark: the event's sentence, plus the other
+   * records stacked on the same day when the mark stands for several.
+   * @private
+   */
+  describeMark(event, sameDay = []) {
+    const base = laneAriaLabel(event, this.settings, this.display());
+    if (!sameDay.length) return base;
+    return `${base} Also on this day, ${plural3(sameDay.length, "more record")} at this mark: ${sameDay.join(", ")}. Use the arrow keys to reach each one.`;
+  }
+  /**
+   * The settings the pure logic sees this render: the synced settings with the
+   * live window width from the control state.
+   * @private
+   */
+  effectiveSettings() {
+    return { ...this.settings, context_window_days: this.state.windowDays };
+  }
+  /**
+   * The current subject's EventRecord for an id (pre-filter, dose changes
+   * included), or null.
+   * @private
+   */
+  findEvent(id) {
+    if (!this.structured) return null;
+    return this.structured.allEvents.find((event) => event.id === String(id)) || null;
+  }
+  /**
+   * Load data and render: an alias for setData that keeps the two-step
+   * create-then-init call shape working.
+   * @param {Object|Object[]} data Per-domain arrays under `{ ex, ae, lb, cm, mh, ds }` keys (any case), or one merged array whose rows carry the domain column.
+   * @returns {SafetyPatientJourneyExplorer} The instance, for chaining.
+   */
+  init(data) {
+    this.setData(data);
+    return this;
+  }
+  /**
+   * Replace the bound data and re-render. The input is split into the six
+   * domains (either form), validated against the data contract (throwing, and
+   * rendering the message into the target element, when a present domain is
+   * missing a required column or no domain has rows), then the controls are
+   * rebuilt from the data and the journey drawn for the opening subject.
+   * @param {Object|Object[]} data Per-domain arrays under `{ ex, ae, lb, cm, mh, ds }` keys (any case), or one merged array whose rows carry the domain column.
+   * @returns {SafetyPatientJourneyExplorer} The instance, for chaining.
+   */
+  setData(data) {
+    const { domains, dropped } = normalizeInput(data, this.settings);
+    try {
+      checkInputs14(domains, this.settings);
+    } catch (error) {
+      this.element.replaceChildren(createElement("div", "sv-warning", error.message));
+      throw error;
+    }
+    if (!this.element.contains(this.root)) this.element.replaceChildren(this.root);
+    this.domains = domains;
+    this.inputDropped = dropped;
+    this.state.anchorId = null;
+    this.anchoredEvent = null;
+    this.context = null;
+    this.clearFootnote();
+    this.narrativeEntries.clear();
+    this.sourceLinkWarned = false;
+    this.subjectList = subjectIndex(domains, this.settings);
+    this.liveFilterSpecs = liveFilters(this.settings.filters, domains);
+    this.buildControls();
+    this.render();
+    return this;
+  }
+  /**
+   * Merge setting overrides onto the current settings, re-normalize, re-adopt
+   * the state keys that mirror settings (the window width, lane enablement,
+   * time mode, filter start values, the configured subject), rebuild the
+   * controls, and re-render.
+   * @param {PatientJourneyExplorerSettings} settings Setting overrides to merge.
+   * @returns {SafetyPatientJourneyExplorer} The instance, for chaining.
+   */
+  setSettings(settings) {
+    const overrides2 = settings && typeof settings === "object" ? settings : {};
+    this.settings = syncSettings14({ ...this.settings, ...overrides2 });
+    if ("context_window_days" in overrides2 || "contextWindowDays" in overrides2) {
+      this.state.windowDays = this.settings.context_window_days;
+    }
+    if ("lanes" in overrides2) {
+      for (const key of LANE_KEYS)
+        this.state.lanes[key] = Boolean(this.settings.lanes[key]?.enabled);
+    }
+    if ("lane_groups" in overrides2 || "laneGroups" in overrides2) {
+      this.state.groups = {};
+      for (const group of this.settings.lane_groups) this.state.groups[group.key] = group.collapsed;
+    }
+    if ("time" in overrides2) this.state.mode = this.settings.time.mode;
+    if ("filters" in overrides2) this.state.filters = initFilterState(this.settings.filters);
+    if ("subject" in overrides2 && this.settings.subject) this.state.subject = this.settings.subject;
+    if ("narratives" in overrides2) this.narrativeEntries.clear();
+    this.lanesEl.style.maxHeight = `${this.settings.height}px`;
+    this.element.style.width = this.settings.width;
+    if (!this.domains) return this;
+    this.withFocusRestore(() => {
+      this.liveFilterSpecs = liveFilters(this.settings.filters, this.domains);
+      this.sourceLinkWarned = false;
+      this.buildControls();
+      this.render();
+    });
+    return this;
+  }
+  /**
+   * Run a rebuild with keyboard focus captured first and restored onto the
+   * recreated control afterwards (PJE-KEY-004).
+   * @private
+   */
+  withFocusRestore(fn) {
+    const key = this.captureFocus();
+    fn();
+    this.restoreFocus(key);
+  }
+  /**
+   * The `data-sv-focus` key of the focused control inside this instance, or
+   * null.
+   * @private
+   */
+  captureFocus() {
+    const active = typeof document !== "undefined" ? document.activeElement : null;
+    if (!active || !this.root.contains(active)) return null;
+    return active.getAttribute("data-sv-focus");
+  }
+  /**
+   * Restore keyboard focus onto the recreated control carrying the captured
+   * key (PPRF-8 pattern). The tooltip is not re-shown by a restored focus: the
+   * footnote still carries the mark's text, and Escape then means "clear the
+   * anchor", not "dismiss the tooltip". When the control is gone or disabled
+   * — the panel's Clear button after clearing, a mark whose lane was turned
+   * off or whose subject changed — focus goes to the nearest sensible stop
+   * instead of dropping to the document body: the previously anchored mark,
+   * the lane's own tab stop, the sidebar Clear control, or the subject list.
+   * @private
+   */
+  restoreFocus(key, { fallbackMarkId = null } = {}) {
+    if (!key) return;
+    const usable2 = (el) => el && !el.disabled && typeof el.focus === "function";
+    let target = this.root.querySelector(`[data-sv-focus="${key}"]`);
+    if (!usable2(target)) {
+      const candidates = [];
+      if (fallbackMarkId) candidates.push(`[data-sv-focus="mark-${fallbackMarkId}"]`);
+      if (key.startsWith("mark-")) candidates.push('.sv-pje-mark[tabindex="0"]');
+      if (key === "clear-anchor" || key === "clear-anchor-control" || key === "reset") {
+        candidates.push('.sv-pje-mark[tabindex="0"]', '[data-sv-focus="subject"]');
+      }
+      candidates.push('[data-sv-focus="subject"]');
+      target = candidates.map((selector) => this.root.querySelector(selector)).find(usable2) || null;
+    }
+    if (!target) return;
+    this.suppressTooltip = true;
+    try {
+      target.focus({ preventScroll: true });
+    } finally {
+      this.suppressTooltip = false;
+    }
+  }
+  /**
+   * Rebuild the sidebar (design §7): the subject search + list, the lane
+   * toggles, the filters, the anchor window and clear control, the time-axis
+   * mode, and the reset.
+   * @private
+   */
+  buildControls() {
+    this.controls.innerHTML = "";
+    const { addSection, addControl, addReset } = controlBuilders(this.controls);
+    const settings = this.settings;
+    const subjectSection = addSection("Subject");
+    const group = createElement("div", "sv-pje-subject");
+    group.setAttribute("role", "group");
+    group.setAttribute("aria-label", "Subject");
+    const listId = `${this.uid}-subject-list`;
+    const search = document.createElement("input");
+    search.type = "search";
+    search.className = "sv-pje-subject-search";
+    search.placeholder = "Filter subjects\u2026";
+    search.setAttribute("aria-label", "Filter subjects");
+    search.setAttribute("aria-controls", listId);
+    search.setAttribute("data-sv-focus", "subject-search");
+    const select = document.createElement("select");
+    select.id = listId;
+    select.size = 8;
+    select.className = "sv-pje-subject-list";
+    select.setAttribute("aria-label", "Subject");
+    select.setAttribute("data-sv-focus", "subject");
+    const count2 = createElement("p", "sv-pje-subject-count");
+    count2.setAttribute("aria-live", "polite");
+    this.subjectControl = { search, select, count: count2 };
+    search.oninput = () => this.syncSubjectControl();
+    select.onchange = () => {
+      if (select.value && select.value !== this.subject) this.selectSubject(select.value);
+    };
+    group.append(search, select, count2);
+    const subjectWrap = createElement("div", "sv-control");
+    subjectWrap.append(group);
+    subjectSection.append(subjectWrap);
+    this.syncSubjectControl();
+    const laneSection = addSection("Lanes");
+    const laneWrap = createElement("div", "sv-control");
+    this.laneToggles = {};
+    for (const key of LANE_KEYS) {
+      const label = createElement("label", "sv-pje-lane-toggle");
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.checked = Boolean(this.state.lanes[key]);
+      input.setAttribute("data-sv-focus", `lane-${key}`);
+      const domain = key === "doseChanges" ? "EX" : LANE_DOMAIN[key];
+      const supplied = Boolean(this.domains && this.domains[domain] && this.domains[domain].length);
+      if (!supplied) {
+        input.disabled = true;
+        input.setAttribute("aria-disabled", "true");
+        label.classList.add("is-disabled");
+        label.title = `No ${DOMAIN_NOUNS[domain]} rows were supplied, so this lane has nothing to draw.`;
+      }
+      input.onchange = () => this.setLaneEnabled(key, input.checked);
+      label.append(input, document.createTextNode(settings.lanes[key]?.label || key));
+      laneWrap.append(label);
+      this.laneToggles[key] = input;
+    }
+    laneSection.append(laneWrap);
+    this.filterControls = {};
+    if (this.liveFilterSpecs.length) {
+      const filterSection = addSection("Filters");
+      for (const spec of this.liveFilterSpecs) {
+        const rows = this.domains && this.domains[spec.domain] || [];
+        if (spec.type === "flag") {
+          let label = spec.label;
+          if (String(spec.flag_value) !== "__abnormal__") {
+            const n = rows.filter(
+              (row) => row && upper7(row[spec.value_col]) === upper7(spec.flag_value)
+            ).length;
+            label = `${spec.label} (${n} in this study)`;
+          }
+          const control2 = flagCheckbox({
+            spec,
+            checked: this.state.filters[spec.value_col] != null,
+            label,
+            focusKey: `filter-${spec.value_col}`,
+            onChange: (checked) => this.updateFilter(spec.value_col, checked ? spec.flag_value ?? "Y" : null)
+          });
+          const wrap = createElement("div", "sv-control");
+          wrap.append(control2);
+          filterSection.append(wrap);
+          this.filterControls[spec.value_col] = control2.querySelector("input");
+          continue;
+        }
+        const values = [
+          ...new Set(
+            rows.map((row) => row ? row[spec.value_col] : void 0).filter((value) => value !== void 0 && value !== null && String(value) !== "").map(String)
+          )
+        ].sort();
+        const control = renderFilterControl({
+          spec,
+          values,
+          selected: this.state.filters[spec.value_col],
+          onChange: (next) => this.updateFilter(spec.value_col, next)
+        });
+        const focusTarget = control.tagName === "DETAILS" ? control.querySelector("summary") : control;
+        if (focusTarget) focusTarget.setAttribute("data-sv-focus", `filter-${spec.value_col}`);
+        addControl(spec.label, control, filterSection);
+        this.filterControls[spec.value_col] = control;
+        if (spec.domain === "CM" && spec.value_col === settings.cm_class_col && rows.length) {
+          const uncoded = rows.filter(
+            (row) => row && upper7(row[spec.value_col]) === upper7(settings.cm_uncoded_value)
+          ).length;
+          if (uncoded > 0) {
+            filterSection.append(
+              createElement(
+                "p",
+                "sv-pje-sidebar-note",
+                `${Math.round(100 * uncoded / rows.length)}% of con-med records in this study are ${settings.cm_uncoded_value}.`
+              )
+            );
+          }
+        }
+      }
+    }
+    const anchorSection = addSection("Anchor");
+    const windowInput = document.createElement("input");
+    windowInput.type = "number";
+    windowInput.min = "0";
+    windowInput.step = "1";
+    windowInput.value = String(this.state.windowDays);
+    windowInput.setAttribute("data-sv-focus", "window-days");
+    windowInput.onchange = () => this.setContextWindowDays(windowInput.value);
+    addControl("Context window (days)", windowInput, anchorSection);
+    const clearButton = createElement("button", "sv-reset", "Clear anchor");
+    clearButton.type = "button";
+    clearButton.style.marginTop = ".25rem";
+    clearButton.setAttribute("data-sv-focus", "clear-anchor-control");
+    clearButton.disabled = !this.state.anchorId;
+    clearButton.onclick = () => this.anchor(null);
+    anchorSection.append(clearButton);
+    this.windowInput = windowInput;
+    this.clearButton = clearButton;
+    const displaySection = addSection("Display");
+    const modeSelect = addControl("Time axis", document.createElement("select"), displaySection);
+    modeSelect.setAttribute("data-sv-focus", "time-mode");
+    option(modeSelect, "day", "Study day", this.state.mode !== "date");
+    option(modeSelect, "date", "Calendar date", this.state.mode === "date");
+    modeSelect.onchange = () => this.setTimeMode(modeSelect.value);
+    this.modeSelect = modeSelect;
+    this.syncDateOption();
+    const reset = addReset(() => {
+      this.withFocusRestore(() => {
+        this.state = this.seedState();
+        this.clearFootnote();
+        this.buildControls();
+        this.render();
+      });
+    });
+    reset.setAttribute("data-sv-focus", "reset");
+  }
+  /**
+   * Refill the subject list from the search text: case-insensitive substring,
+   * the current subject always kept and marked.
+   * @private
+   */
+  syncSubjectControl() {
+    if (!this.subjectControl) return;
+    const { search, select, count: count2 } = this.subjectControl;
+    const query = String(search.value || "").toLowerCase();
+    const shown = this.subjectList.filter(
+      (id) => id === this.subject || !query || id.toLowerCase().includes(query)
+    );
+    select.innerHTML = "";
+    for (const id of shown) {
+      option(select, id, id === this.subject ? `${id} (current)` : id, id === this.subject);
+    }
+    if (this.subject && shown.includes(this.subject)) select.value = this.subject;
+    count2.textContent = `${plural3(this.subjectList.length, "subject")} \xB7 ${shown.length} shown`;
+  }
+  /**
+   * Enable the calendar-date option only when a reference date resolves.
+   * @private
+   */
+  syncDateOption() {
+    if (!this.modeSelect) return;
+    const dateOption = this.modeSelect.options[1];
+    const allowed = this.settings.time.allow_date_mode;
+    const hasRef = Boolean(this.structured && this.structured.refDate);
+    dateOption.disabled = !allowed || !hasRef;
+    dateOption.title = !allowed ? "Calendar dates are not enabled for this chart." : hasRef ? "" : "No reference date resolves for this participant, so calendar dates cannot be shown.";
+    this.modeSelect.value = this.effectiveMode();
+  }
+  /**
+   * Mirror the control state into the sidebar controls without rebuilding
+   * them (checkbox states, the window width, the clear button, the mode).
+   * @private
+   */
+  syncControls() {
+    if (this.laneToggles) {
+      for (const key of LANE_KEYS) {
+        if (this.laneToggles[key]) this.laneToggles[key].checked = Boolean(this.state.lanes[key]);
+      }
+    }
+    if (this.filterControls) {
+      for (const spec of this.liveFilterSpecs) {
+        const control = this.filterControls[spec.value_col];
+        if (!control) continue;
+        if (spec.type === "flag") control.checked = this.state.filters[spec.value_col] != null;
+        else if (control.tagName === "SELECT") {
+          const selection = this.state.filters[spec.value_col];
+          control.value = selection === null || selection === void 0 ? "__all__" : String(selection);
+        }
+      }
+    }
+    if (this.windowInput) this.windowInput.value = String(this.state.windowDays);
+    if (this.clearButton) this.clearButton.disabled = !this.state.anchorId;
+    this.syncDateOption();
+    this.syncSubjectControl();
+  }
+  /**
+   * Redraw everything from the current data, settings and control state:
+   * destroy the lane charts, restructure for the subject and filters, resolve
+   * the anchor and its context bundle, and rebuild the notes, the lane stack,
+   * the axis strip, the keyboard overlay, the panel and the source drawer.
+   * @returns {void}
+   */
+  render() {
+    if (!this.domains) return;
+    const focusKey = this.captureFocus();
+    const previousAnchorId = this.anchoredEvent ? this.anchoredEvent.id : null;
+    this.destroyCharts();
+    this.hideTooltip();
+    const settings = this.effectiveSettings();
+    this.structured = structureData3(this.domains, settings, {
+      subject: this.state.subject,
+      filters: this.state.filters,
+      lanes: this.state.lanes,
+      mode: this.state.mode,
+      filterSpecs: this.liveFilterSpecs
+    });
+    this.structured.mode = this.effectiveMode();
+    this.subject = this.structured.subject;
+    this.state.subject = this.subject;
+    this.participantsSelected = this.subject === null ? [] : [this.subject];
+    if (this.state.mode === "date" && this.effectiveMode() === "day") {
+      if (this.lastEffectiveMode !== "day") {
+        warn2(
+          `no reference date resolves for participant ${this.subject}; showing study days until one does.`
+        );
+      }
+    }
+    const anchored = this.state.anchorId ? this.findEvent(this.state.anchorId) : null;
+    if (this.state.anchorId && (!anchored || anchored.placeable === false)) {
+      this.state.anchorId = null;
+    }
+    this.anchoredEvent = this.state.anchorId ? anchored : null;
+    this.context = this.anchoredEvent ? buildContext(this.structured, this.anchoredEvent, settings) : null;
+    this.bounds = this.anchoredEvent ? windowBounds(this.anchoredEvent.day, this.state.windowDays) : null;
+    if (!this.context) {
+      this.state.anchorId = null;
+      this.anchoredEvent = null;
+      this.bounds = null;
+    }
+    if (this.footnoteEvent) {
+      const stillShown = this.structured.events.some((event) => event.id === this.footnoteEvent.id);
+      if (!stillShown) this.clearFootnote();
+      else if ((this.anchoredEvent ? this.anchoredEvent.id : null) !== previousAnchorId) {
+        this.writeFootnote(this.footnoteEvent);
+      }
+    }
+    this.updateNotes();
+    this.citedMarkId = null;
+    this.syncNarratives();
+    this.renderPanel();
+    this.buildLanes();
+    this.renderNarrativeBanner();
+    this.mountPanelNarrative();
+    this.renderNarrativeTray();
+    this.renderSourceDrawer();
+    this.renderAnnotation();
+    this.renderCue();
+    this.syncControls();
+    this.restoreFocus(focusKey, { fallbackMarkId: previousAnchorId });
+    const effective = this.effectiveMode();
+    if (this.lastEffectiveMode !== null && this.lastEffectiveMode !== effective) {
+      this.emit("pjeTimeModeChanged", {
+        mode: effective,
+        refDate: this.structured.refDate ? this.structured.refDate.date : null
+      });
+    }
+    this.lastEffectiveMode = effective;
+  }
+  /**
+   * The notice above the lane stack. Before any anchor it says that clicking
+   * any mark shows the events associated with it, and names the keyboard
+   * path; once a mark is anchored it says which one and how to move or
+   * release the anchor. Hidden when nothing is drawn or every lane is off, so
+   * the stack never opens on a prompt about marks that are not there.
+   * @private
+   */
+  renderCue() {
+    this.cueEl.innerHTML = "";
+    const anyLane = LANE_KEYS.some((key) => this.state.lanes[key]);
+    if (!this.structured.domain || !anyLane) {
+      this.cueEl.hidden = true;
+      return;
+    }
+    this.cueEl.hidden = false;
+    if (!this.anchoredEvent) {
+      this.cueEl.append(
+        createElement("strong", null, CUE_LEAD),
+        createElement("span", null, CUE_DETAIL)
+      );
+      return;
+    }
+    const event = this.anchoredEvent;
+    const when = Number.isFinite(event.day) ? ` (day ${event.day})` : "";
+    this.cueEl.append(
+      createElement("strong", null, `Anchored on ${event.label}${when}.`),
+      createElement("span", null, CUE_ANCHORED_DETAIL)
+    );
+  }
+  /**
+   * The line beneath the axis strip: empty until a mark is anchored (the
+   * notice above the lanes carries the hint), then the anchor's four counts
+   * with a control that brings the context panel into view — on a stacked
+   * (phone) layout the panel renders below the lanes, the footnote and the
+   * drawer, and a tap on a mark would otherwise show nothing beyond the
+   * highlight.
+   * @private
+   */
+  renderAnnotation() {
+    this.mainAnnotation.innerHTML = "";
+    if (!this.structured.domain || !this.anchoredEvent) return;
+    const c = this.context.counts;
+    this.mainAnnotation.append(
+      createElement(
+        "span",
+        null,
+        `Anchored on ${this.anchoredEvent.label}: ${plural3(c.conMeds, "con-med")} active, ${plural3(c.abnormalLabs, "abnormal lab")}, ${plural3(c.doseChanges, "dose change")}, ${plural3(c.priorEvents, "earlier or same-day event")} with this term.`
+      )
+    );
+    const show = createElement("button", "sv-pje-annotation-link", "Show the context panel");
+    show.type = "button";
+    show.setAttribute("data-sv-focus", "show-panel");
+    show.onclick = () => this.revealPanel(true);
+    this.mainAnnotation.append(show);
+  }
+  /**
+   * Bring the context panel into view when the layout has stacked it below
+   * the main column and it is entirely off-screen (a phone), or always when
+   * asked for explicitly.
+   * @private
+   */
+  revealPanel(always = false) {
+    if (!this.context || this.railWrap.hidden) return;
+    if (typeof this.railWrap.scrollIntoView !== "function") return;
+    if (!always) {
+      if (typeof window === "undefined" || typeof this.railWrap.getBoundingClientRect !== "function")
+        return;
+      const rail = this.railWrap.getBoundingClientRect();
+      const main = this.main.getBoundingClientRect();
+      const stacked = rail.top >= main.bottom - 1;
+      const offScreen = rail.top >= (window.innerHeight || 0);
+      if (!stacked || !offScreen) return;
+    }
+    this.railWrap.scrollIntoView({ block: "start" });
+    const title = this.railWrap.querySelector(".sv-pje-panel-title");
+    if (title && typeof title.focus === "function" && always) title.focus({ preventScroll: true });
+  }
+  /**
+   * The status line above the lanes: the subject summary, the study-wide
+   * data-quality sentences (end before start, date conflicts) and the
+   * counted, exportable dropped rows (PJE-DATA-003).
+   * @private
+   */
+  updateNotes() {
+    this.notes.innerHTML = "";
+    const { counts, subjects, flaggedCounts } = this.structured;
+    const summary = this.subject ? `Participant ${this.subject} \xB7 ` + Object.keys(DOMAIN_NOUNS).map((domain) => plural3(counts[domain] || 0, DOMAIN_NOUNS[domain])).join(", ") + "." : "No participant selected.";
+    this.notes.append(createElement("span", null, summary));
+    this.notes.append(
+      createElement("span", null, `${plural3(subjects.length, "participant")} in the supplied data.`)
+    );
+    if (flaggedCounts.endBeforeStart > 0) {
+      const n = flaggedCounts.endBeforeStart;
+      this.notes.append(
+        createElement(
+          "span",
+          "sv-warning",
+          `${plural3(n, "record")} ${n === 1 ? "has" : "have"} an end date before ${n === 1 ? "its" : "their"} start date and ${n === 1 ? "is" : "are"} drawn as ${n === 1 ? "a single-day mark" : "single-day marks"}.`
+        )
+      );
+    }
+    if (flaggedCounts.dateConflict > 0) {
+      const n = flaggedCounts.dateConflict;
+      this.notes.append(
+        createElement(
+          "span",
+          "sv-warning",
+          `${plural3(n, "record")} ${n === 1 ? "has" : "have"} a recorded date that does not match ${n === 1 ? "its" : "their"} study day; the study day was used.`
+        )
+      );
+    }
+    this.appendDropNote();
+  }
+  /**
+   * The counted-drop note with its click-built CSV export (study-wide: a
+   * dropped row may have no usable id and so belong to no subject).
+   * @private
+   */
+  appendDropNote() {
+    const rows = this.droppedRows;
+    if (!rows.length) return;
+    const note = createElement("span", "sv-warning");
+    note.append(
+      document.createTextNode(
+        `${plural3(rows.length, "unusable record")} in the supplied data (all participants). `
+      ),
+      csvDownloadLink(
+        () => toCsv(rows, droppedRowColumns2(rows)),
+        "patient-journey-explorer-dropped-rows",
+        "Download records"
+      )
+    );
+    this.notes.append(note);
+  }
+  /**
+   * Build the lane stack and the axis strip for the current structured record
+   * (design §6.1): plan the groups and lanes, fit the row and lab heights to
+   * the panel (D21), build the DOM, create one chart per lane, sync the
+   * keyboard overlay, and record the achieved stack height.
+   * @private
+   */
+  buildLanes() {
+    this.lanesEl.innerHTML = "";
+    this.axisEl.innerHTML = "";
+    this.laneEntries = [];
+    const structured = this.structured;
+    if (!structured.domain) {
+      this.lanesEl.append(createElement("p", "sv-pje-note", NO_DAY_NOTE));
+      this.stackHeight = this.lanesEl.scrollHeight;
+      this.overlay.sync([]);
+      return;
+    }
+    const groups = planLanes(structured, this.settings, this.state);
+    if (!groups.length) {
+      this.lanesEl.append(createElement("p", "sv-pje-note", NO_LANE_NOTE));
+      this.stackHeight = this.lanesEl.scrollHeight;
+      this.overlay.sync([]);
+      this.renderAxis();
+      return;
+    }
+    const { rowHeight, labHeight } = fitHeights(groups, this.settings);
+    const referenceDays = structured.allEvents.filter(
+      (event) => event.domain === "DS" && event.placeable !== false && event.flags?.reference
+    ).map((event) => toElapsed(event.day)).filter((day2) => day2 !== null);
+    const doseChangeDays = (structured.byLane.doseChanges || []).filter((event) => event.placeable !== false).map((event) => toElapsed(event.day)).filter((day2) => day2 !== null);
+    const pending = [];
+    for (const group of groups) {
+      const groupEl = createElement("div", "sv-pje-group");
+      groupEl.dataset.group = group.key;
+      const bodyId = `${this.uid}-group-${group.key}`;
+      const toggle = createElement("button", "sv-pje-group-toggle", group.label);
+      toggle.type = "button";
+      toggle.setAttribute("aria-expanded", String(!group.collapsed));
+      toggle.setAttribute("aria-controls", bodyId);
+      toggle.setAttribute("data-sv-focus", `group-${group.key}`);
+      const body = createElement("div", "sv-pje-group-body");
+      body.id = bodyId;
+      body.hidden = group.collapsed;
+      toggle.onclick = () => {
+        const collapsed = !body.hidden;
+        this.state.groups[group.key] = collapsed;
+        body.hidden = collapsed;
+        toggle.setAttribute("aria-expanded", String(!collapsed));
+        this.resize();
+      };
+      groupEl.append(toggle, body);
+      this.lanesEl.append(groupEl);
+      for (const lane of group.lanes) {
+        const laneEl = createElement("div", "sv-pje-lane");
+        laneEl.dataset.lane = lane.key;
+        if (lane.test) laneEl.dataset.test = lane.test;
+        if (lane.chartKey) laneEl.dataset.chartKey = lane.chartKey;
+        laneEl.style.height = `${laneHeightPx(lane, rowHeight, labHeight)}px`;
+        laneEl.title = [lane.label, lane.title || lane.sublabel].filter(Boolean).join(" \u2014 ");
+        const label = createElement("div", "sv-pje-lane-label");
+        label.append(createElement("strong", null, lane.label));
+        if (lane.sublabel) label.append(createElement("small", null, lane.sublabel));
+        laneEl.append(label);
+        if (lane.kind === "chart") {
+          const canvasWrap = createElement("div", "sv-pje-lane-canvas");
+          const canvas = createElement("canvas", "sv-pje-canvas");
+          canvas.setAttribute("role", "presentation");
+          canvasWrap.append(canvas);
+          const overlayEl = createElement("div", "sv-pje-marks");
+          laneEl.append(canvasWrap, overlayEl);
+          pending.push({ lane, laneEl, canvas, overlayEl });
+        } else {
+          laneEl.append(createElement("div", "sv-pje-lane-empty", lane.emptyText));
+        }
+        body.append(laneEl);
+        for (const footer of lane.footers) {
+          body.append(createElement("p", "sv-pje-lane-foot", footer));
+        }
+      }
+    }
+    for (const { lane, laneEl, canvas, overlayEl } of pending) {
+      const chart = buildLaneChart({
+        canvas,
+        lane,
+        structured,
+        settings: this.effectiveSettings(),
+        theme: this.theme,
+        bounds: this.bounds,
+        anchor: this.anchoredEvent,
+        referenceDays,
+        doseChangeDays
+      });
+      this.laneCharts.set(lane.chartKey, chart);
+      this.laneEntries.push({
+        chartKey: lane.chartKey,
+        laneKey: lane.key,
+        label: lane.test ? `${lane.label} ${lane.test}` : lane.label,
+        laneEl,
+        overlayEl,
+        chart
+      });
+    }
+    this.renderAxis();
+    this.syncOverlay();
+    this.stackHeight = this.lanesEl.scrollHeight;
+    if (this.stackHeight > this.lanesEl.clientHeight + 1 && this.lanesEl.clientHeight > 0) {
+      this.notes.append(createElement("span", null, TALLER_NOTE));
+    }
+  }
+  /**
+   * The one shared axis strip below the stack (design §6.2): ticks from
+   * axisTicks positioned by percentage inside the same gutters as the lanes,
+   * labelled in the active mode, relabelled as offsets when anchored with the
+   * anchor itself at 0 (PJE-ANCH-004).
+   * @private
+   */
+  renderAxis() {
+    const domain = this.structured.domain;
+    if (!domain) return;
+    const anchorDay = this.anchoredEvent ? this.anchoredEvent.day : null;
+    const title = this.anchoredEvent ? ANCHOR_AXIS_TITLE : this.effectiveMode() === "date" ? "Calendar date" : "Study day";
+    this.axisEl.append(createElement("div", "sv-pje-axis-title", title));
+    const track = createElement("div", "sv-pje-axis-track");
+    const anchorElapsed = anchorDay === null ? null : toElapsed(anchorDay);
+    const ticks = anchorElapsed === null ? axisTicks3(domain) : anchoredTicks(domain, anchorElapsed);
+    const display = this.display();
+    for (const tick of ticks) {
+      const label = createElement(
+        "span",
+        `sv-pje-axis-tick${tick.anchor ? " is-anchor" : ""}`,
+        formatTick(tick.value, { ...display, anchorDay })
+      );
+      label.style.left = `${tick.position}%`;
+      if (tick.value === 1) label.title = "Day 1: first dose";
+      if (tick.anchor) label.title = `Anchor: ${this.anchoredEvent.label}, day ${anchorDay}`;
+      track.append(label);
+    }
+    this.axisEl.append(track);
+  }
+  /**
+   * Rebuild every lane's mark buttons from its chart's recorded marks.
+   * @private
+   */
+  syncOverlay() {
+    this.overlay.sync(this.laneEntries || []);
+  }
+  /**
+   * Render the anchor context panel into the rail, or hide the rail when
+   * nothing is anchored.
+   * @private
+   */
+  renderPanel() {
+    if (!this.context) {
+      this.railWrap.innerHTML = "";
+      this.railWrap.hidden = true;
+      this.setExpanded(false);
+      return;
+    }
+    const drawState = (event) => this.drawState(event);
+    const anchorState = drawState(this.anchoredEvent);
+    renderPanel(this.railWrap, this.context, {
+      settings: this.effectiveSettings(),
+      ...this.display(),
+      drawState,
+      anchorHidden: anchorState === "drawn" || anchorState === "row cap" ? null : anchorState,
+      labPool: this.structured.allEvents.filter((event) => event.domain === "LB"),
+      expanded: this.root.classList.contains("sv-rail-expanded"),
+      onClear: () => this.anchor(null),
+      onExpand: (expanded) => this.setExpanded(expanded),
+      onJump: (anchorId) => this.jumpToSource(anchorId)
+    });
+    this.railWrap.hidden = false;
+    this.mountPanelNarrative();
+  }
+  // ---------------------------------------------------------------------------
+  // AI narratives (#146, obot.roadmap#351, PJE-NARR-009 … 014). The orchestrator
+  // owns the entries — which narrative is requested for the current subject,
+  // its draft, the scope hash at request time — and narratives.js draws the
+  // cards. A slot with no function bound requests nothing and renders nothing.
+  // ---------------------------------------------------------------------------
+  /**
+   * The bound slot function for a narrative kind, or null.
+   * @private
+   */
+  narrativeSlot(slot) {
+    const slots = this.settings.narratives;
+    return slots && typeof slots[slot] === "function" ? slots[slot] : null;
+  }
+  /**
+   * The scope helper over this instance's live record: the same grounding
+   * tool and hash the runtime uses, so a draft's `input_hash` and the
+   * renderer's staleness check agree (PJE-NARR-012).
+   * @private
+   */
+  narrativeScope() {
+    return createScope(
+      createDataService({
+        domains: this.domains || {},
+        settings: this.settings,
+        structured: (subject) => this.structured && this.structured.subject === subject ? this.structured : null
+      })
+    );
+  }
+  /**
+   * The run() inputs of a slot for a key (the anchor id or the lab test).
+   * @private
+   */
+  narrativeInputs(slot, key) {
+    const subject = this.subject;
+    switch (slot) {
+      case "eventContext":
+        return { subject, anchor_row_id: key, window_days: this.state.windowDays };
+      case "labTrajectory":
+        return { subject, test: key };
+      default:
+        return { subject };
+    }
+  }
+  /**
+   * Request a narrative from its slot function and keep the entry; the card
+   * shows a pending state until the promise settles. A later request for the
+   * same slot and key supersedes an earlier one still in flight.
+   * @private
+   */
+  requestNarrative(slot, key = null) {
+    const fn = this.narrativeSlot(slot);
+    if (!fn || !this.subject) return null;
+    const inputs = this.narrativeInputs(slot, key);
+    const slug = SLUG_BY_SLOT[slot];
+    let hash = null;
+    try {
+      hash = this.narrativeScope().scopeHash(slug, inputs);
+    } catch (error) {
+      warn2(`could not hash the ${slug} scope: ${error && error.message}`);
+    }
+    const id = `${this.uid}-ai-${this.narrativeSeq += 1}`;
+    const labelEvent = slot === "eventContext" ? this.findEvent(key) : null;
+    const entry = {
+      id,
+      slot,
+      kind: slug,
+      subject: this.subject,
+      key: key === null || key === void 0 ? null : String(key),
+      label: labelEvent ? labelEvent.label : slot === "labTrajectory" ? String(key) : null,
+      inputs,
+      hash,
+      status: "loading",
+      draft: null,
+      stale: false,
+      expanded: slot !== "subjectSummary",
+      collapsible: slot === "subjectSummary",
+      editing: false,
+      error: null
+    };
+    this.narrativeEntries.set(`${slot}|${entry.key ?? ""}`, entry);
+    const args = slot === "eventContext" ? [this.subject, key, { windowDays: this.state.windowDays, hash }] : slot === "labTrajectory" ? [this.subject, key, { hash }] : [this.subject, { hash }];
+    Promise.resolve().then(() => fn(...args)).then((draft) => {
+      if (this.destroyed || this.narrativeEntries.get(`${slot}|${entry.key ?? ""}`) !== entry)
+        return;
+      if (!draft || typeof draft !== "object" || !Array.isArray(draft.sentences)) {
+        throw new Error("the narrative slot did not return a draft");
+      }
+      entry.draft = draft;
+      entry.status = "ready";
+      entry.error = null;
+      this.refreshNarrativeCards();
+      this.announce(`AI narrative ready: ${cardTitle(entry)}.`);
+    }).catch((error) => {
+      if (this.destroyed || this.narrativeEntries.get(`${slot}|${entry.key ?? ""}`) !== entry)
+        return;
+      entry.status = "error";
+      entry.error = `The narrative could not be drafted: ${error && error.message ? error.message : error}`;
+      warn2(
+        `the ${slug} narrative slot failed: ${error && error.message ? error.message : error}`
+      );
+      this.refreshNarrativeCards();
+    });
+    return entry;
+  }
+  /**
+   * Reconcile the narrative entries with the render state: drop another
+   * subject's entries and a stale anchor's card, request the participant
+   * summary and the anchored event's context when their slots are bound,
+   * re-request the event context when the window width changed (emitting a
+   * regenerate action), and recompute staleness for every ready entry.
+   * @private
+   */
+  syncNarratives() {
+    const entries2 = this.narrativeEntries;
+    for (const [key, entry] of [...entries2]) {
+      if (entry.subject !== this.subject) entries2.delete(key);
+    }
+    if (!this.settings.narratives || !this.subject) {
+      entries2.clear();
+      return;
+    }
+    if (this.narrativeSlot("subjectSummary") && !entries2.has("subjectSummary|")) {
+      this.requestNarrative("subjectSummary");
+    }
+    const anchorId = this.anchoredEvent ? this.anchoredEvent.id : null;
+    for (const [key, entry] of [...entries2]) {
+      if (entry.slot === "eventContext" && entry.key !== anchorId) entries2.delete(key);
+    }
+    if (anchorId && this.narrativeSlot("eventContext")) {
+      const existing = entries2.get(`eventContext|${anchorId}`);
+      if (!existing) this.requestNarrative("eventContext", anchorId);
+      else if (existing.inputs.window_days !== this.state.windowDays) {
+        this.emitNarrativeAction("regenerate", existing, { reason: "window" });
+        this.requestNarrative("eventContext", anchorId);
+      }
+    }
+    let scope = null;
+    for (const entry of entries2.values()) {
+      if (entry.status !== "ready" || !entry.hash) continue;
+      try {
+        scope = scope || this.narrativeScope();
+        entry.stale = scope.scopeHash(entry.kind, entry.inputs) !== entry.hash;
+      } catch {
+        entry.stale = false;
+      }
+    }
+  }
+  /**
+   * The card handlers narratives.js calls back into.
+   * @private
+   */
+  narrativeHandlers() {
+    return {
+      describe: (rowId) => {
+        const id = normalizeRowId(rowId);
+        const event = this.findEvent(id);
+        const label = !event ? id : event.domain === "LB" && event.test ? `${event.test} ${event.label}` : event.label;
+        return { label, onTimeline: Boolean(this.markButton(id)) };
+      },
+      onCite: (rowId, options) => this.citeRow(rowId, options),
+      onAction: (type, entry) => this.handleNarrativeAction(type, entry),
+      onToggle: (entry, expanded) => {
+        entry.expanded = expanded;
+        this.withFocusRestore(() => this.refreshNarrativeCards());
+      },
+      onEditSave: (entry, sentences) => {
+        entry.editing = false;
+        entry.draft = { ...entry.draft, sentences, status: "edited" };
+        this.emitNarrativeAction("edit", entry, { editedSentences: sentences });
+        this.withFocusRestore(() => this.refreshNarrativeCards());
+      }
+    };
+  }
+  /**
+   * Draw one entry's card.
+   * @private
+   */
+  narrativeCard(entry) {
+    return renderNarrativeCard(entry, this.narrativeHandlers());
+  }
+  /**
+   * The mark button for an event id, or null when it is not on the timeline.
+   * @private
+   */
+  markButton(id) {
+    return this.lanesEl.querySelector(
+      `.sv-pje-mark[data-event-id="${String(id).replace(/"/g, "")}"]`
+    );
+  }
+  /**
+   * Light the cited mark on the timeline and move keyboard focus to it, or
+   * open the row's source record when the mark is not drawn (its lane is off,
+   * a filter removed it, the row cap) or when asked to jump (PJE-NARR-011).
+   * @param {string} rowId The cited row id (`AE-7`).
+   * @param {Object} [options] Options: `jump` (boolean) opens the source record instead of lighting the mark.
+   * @returns {SafetyPatientJourneyExplorer} The instance, for chaining.
+   */
+  citeRow(rowId, { jump = false } = {}) {
+    const id = normalizeRowId(rowId);
+    const button = this.markButton(id);
+    const event = this.findEvent(id);
+    if (jump || !button) {
+      if (event) this.jumpToSource(event.sourceAnchorId);
+      if (!button)
+        this.announce(
+          `${event ? event.label : id} is not on the timeline; opened its source record.`
+        );
+      return this;
+    }
+    this.clearCitedMark();
+    button.classList.add("is-cited");
+    this.citedMarkId = id;
+    if (typeof button.scrollIntoView === "function") button.scrollIntoView({ block: "nearest" });
+    this.overlay.focusMark(button);
+    this.announce(`Cited: ${event ? event.label : id}.`);
+    return this;
+  }
+  /**
+   * Remove the citation highlight.
+   * @private
+   */
+  clearCitedMark() {
+    if (!this.citedMarkId) return;
+    for (const lit of this.lanesEl.querySelectorAll(".sv-pje-mark.is-cited"))
+      lit.classList.remove("is-cited");
+    this.citedMarkId = null;
+  }
+  /**
+   * A reviewer action on a card: accept, reject and regenerate emit and leave
+   * the draft as it is (the host application decides what accepting means and
+   * passes the accepted draft back through refreshNarrative); edit opens the
+   * in-place form; regenerate also re-requests the draft.
+   * @private
+   */
+  handleNarrativeAction(type, entry) {
+    if (type === "edit") {
+      entry.editing = true;
+      this.withFocusRestore(() => this.refreshNarrativeCards());
+      return;
+    }
+    if (type === "cancel-edit") {
+      entry.editing = false;
+      this.withFocusRestore(() => this.refreshNarrativeCards());
+      return;
+    }
+    if (type === "regenerate") {
+      this.emitNarrativeAction("regenerate", entry, { reason: entry.stale ? "stale" : "manual" });
+      this.withFocusRestore(() => {
+        this.requestNarrative(entry.slot, entry.key);
+        this.refreshNarrativeCards();
+      });
+      return;
+    }
+    if (type === "accept" || type === "reject") this.emitNarrativeAction(type, entry);
+  }
+  /**
+   * Emit a narrative action on the three channels (PJE-NARR-013).
+   * @private
+   */
+  emitNarrativeAction(type, entry, extra = {}) {
+    this.emit("pjeNarrativeAction", {
+      type,
+      kind: entry.kind,
+      subject: entry.subject,
+      row_id: entry.key,
+      draft: entry.draft,
+      ...extra
+    });
+  }
+  /**
+   * Replace a narrative's draft with one the host passes back — the accepted
+   * copy, an edited copy, or a fresh generation — and redraw its card. The
+   * draft is matched by kind, subject and key (the anchor row id or the lab
+   * test); an unmatched draft warns and changes nothing.
+   * @param {Object} draft A narrative draft (with `status: 'accepted'` to mark it accepted).
+   * @returns {SafetyPatientJourneyExplorer} The instance, for chaining.
+   */
+  refreshNarrative(draft) {
+    if (!draft || typeof draft !== "object") return this;
+    const slot = NARRATIVE_KINDS[draft.kind];
+    const key = draft.kind === "event-context" ? normalizeRowId(draft.anchor && draft.anchor.row_id) : draft.kind === "lab-trajectory" ? String(draft.test ?? "") : null;
+    const entry = this.narrativeEntries.get(`${slot}|${key ?? ""}`);
+    if (!entry || String(entry.subject) !== String(draft.subject)) {
+      warn2(
+        `refreshNarrative: no ${draft.kind} card for ${draft.subject}${key ? ` / ${key}` : ""}.`
+      );
+      return this;
+    }
+    entry.draft = draft;
+    entry.status = "ready";
+    entry.error = null;
+    entry.editing = false;
+    this.withFocusRestore(() => this.refreshNarrativeCards());
+    return this;
+  }
+  /**
+   * Redraw every mounted narrative card from the entries: the banner above
+   * the lanes, the card at the top of the panel body, the lane slots.
+   * @private
+   */
+  refreshNarrativeCards() {
+    this.renderNarrativeBanner();
+    this.mountPanelNarrative();
+    this.renderNarrativeTray();
+  }
+  /**
+   * The participant-summary card above the lanes (PJE-NARR-009).
+   * @private
+   */
+  renderNarrativeBanner() {
+    this.narrativeBannerEl.innerHTML = "";
+    const entry = this.narrativeEntries.get("subjectSummary|");
+    if (entry) this.narrativeBannerEl.append(this.narrativeCard(entry));
+  }
+  /**
+   * The event-context card at the top of the panel body (PJE-NARR-010).
+   * @private
+   */
+  mountPanelNarrative() {
+    const body = this.railWrap.querySelector(".sv-pje-panel-body");
+    if (!body) return;
+    for (const old of body.querySelectorAll(":scope > .sv-pje-ai")) old.remove();
+    const anchorId = this.anchoredEvent ? this.anchoredEvent.id : null;
+    const entry = anchorId ? this.narrativeEntries.get(`eventContext|${anchorId}`) : null;
+    if (entry) body.prepend(this.narrativeCard(entry));
+  }
+  /**
+   * The on-demand narratives one request at a time (PJE-NARR-014): every
+   * available kind — the dose journey when exposure rows exist, one lab test
+   * per drawn small multiple, the disposition when its rows exist — is a
+   * control in the tray beneath the axis strip until it is requested; then
+   * its card sits in the tray with the others. A slot with no function bound
+   * offers nothing.
+   * @private
+   */
+  narrativeTrayOffers() {
+    if (!this.structured || !this.structured.domain) return [];
+    const offers = [];
+    const lanes = this.structured.lanes || {};
+    if (this.narrativeSlot("doseJourney") && lanes.exposure && lanes.exposure.drawn.length) {
+      offers.push({ slot: "doseJourney", key: "", label: "Dose journey" });
+    }
+    if (this.narrativeSlot("labTrajectory") && lanes.labs) {
+      for (const test of lanes.labs.rows) {
+        offers.push({ slot: "labTrajectory", key: String(test), label: String(test) });
+      }
+    }
+    if (this.narrativeSlot("disposition") && lanes.disposition && lanes.disposition.drawn.length) {
+      offers.push({ slot: "disposition", key: "", label: "Disposition" });
+    }
+    return offers;
+  }
+  /**
+   * Draw the tray: the request controls for the kinds not yet drafted, then
+   * the drafted cards.
+   * @private
+   */
+  renderNarrativeTray() {
+    const tray = this.narrativeTrayEl;
+    tray.innerHTML = "";
+    const offers = this.narrativeTrayOffers();
+    if (!offers.length) return;
+    const pending = offers.filter(
+      (offer) => !this.narrativeEntries.has(`${offer.slot}|${offer.key}`)
+    );
+    if (pending.length) {
+      const head = createElement("div", "sv-pje-ai-tray-head");
+      head.setAttribute("role", "group");
+      head.setAttribute("aria-label", "Draft an AI narrative");
+      head.append(
+        createElement("span", "sv-pje-ai-label", "AI narrative"),
+        createElement("span", "sv-pje-ai-tray-hint", "Draft on request:")
+      );
+      for (const offer of pending) {
+        const button = createElement("button", "sv-pje-btn sv-pje-ai-request-btn", offer.label);
+        button.type = "button";
+        button.dataset.slot = offer.slot;
+        button.dataset.key = offer.key;
+        button.setAttribute("data-sv-focus", `ai-request-${offer.slot}-${offer.key}`);
+        button.title = `Draft the ${offer.label} narrative from the recorded rows`;
+        button.onclick = () => {
+          this.requestNarrative(offer.slot, offer.key || null);
+          this.withFocusRestore(() => this.refreshNarrativeCards());
+        };
+        head.append(button);
+      }
+      tray.append(head);
+    }
+    for (const offer of offers) {
+      const entry = this.narrativeEntries.get(`${offer.slot}|${offer.key}`);
+      if (entry) tray.append(this.narrativeCard(entry));
+    }
+  }
+  /**
+   * The narrative entries for the current subject: kind, key, status, draft,
+   * stale flag and scope hash. A read model for hosts and tests.
+   * @type {Object[]}
+   */
+  get narratives() {
+    return [...this.narrativeEntries.values()].map((entry) => ({
+      kind: entry.kind,
+      slot: entry.slot,
+      subject: entry.subject,
+      key: entry.key,
+      status: entry.status,
+      draft: entry.draft,
+      stale: entry.stale,
+      hash: entry.hash,
+      expanded: entry.expanded,
+      error: entry.error
+    }));
+  }
+  /**
+   * Whether an event of the current subject is on the timeline, and if not,
+   * why: its lane is off, a filter removed it, or the row cap left it undrawn.
+   * @param {?Object} event An EventRecord of the current subject.
+   * @returns {'drawn'|'lane off'|'filtered out'|'row cap'} The state.
+   * @private
+   */
+  drawState(event) {
+    if (!event || !this.structured) return "filtered out";
+    const lane = this.structured.lanes[event.lane];
+    if (!lane || !lane.enabled) return "lane off";
+    if (!(this.structured.byLane[event.lane] || []).some((e) => e.id === event.id))
+      return "filtered out";
+    if (!lane.drawn.some((e) => e.id === event.id)) return "row cap";
+    return "drawn";
+  }
+  /**
+   * Expand the rail over the chart card, or collapse it back.
+   * @private
+   */
+  setExpanded(expanded) {
+    const next = Boolean(expanded);
+    const was = this.root.classList.contains("sv-rail-expanded");
+    this.root.classList.toggle("sv-rail-expanded", next);
+    const button = this.railWrap.querySelector('[data-sv-focus="rail-expand"]');
+    if (button) {
+      button.textContent = next ? "Collapse" : "Expand";
+      button.setAttribute("aria-pressed", String(next));
+    }
+    if (was !== next) this.resize();
+  }
+  /**
+   * Render the source-row drawer for the current subject.
+   * @private
+   */
+  renderSourceDrawer() {
+    const wasOpen = Boolean(this.drawer && this.drawer.element.open);
+    this.drawer = renderSourceDrawer(this.listingWrap, this.structured, this.settings, {
+      open: wasOpen,
+      warn: !this.sourceLinkWarned
+    });
+    this.sourceLinkWarned = true;
+  }
+  /**
+   * Jump to a source row: page the drawer to it, open it, scroll the row into
+   * view, focus and flash it (design §6.7).
+   * @private
+   */
+  jumpToSource(anchorId) {
+    if (!this.drawer) return false;
+    return this.drawer.jumpTo(anchorId);
+  }
+  /**
+   * Show the one DOM tooltip for a mark and mirror its text into the footnote
+   * with the Open source record button (RF-6, PC-4).
+   * @private
+   */
+  showTooltip(event, button, via) {
+    const lines = this.tooltipText(event, button);
+    this.hoveredEvent = event;
+    this.writeFootnote(event, lines);
+    if (via === "focus" && this.suppressTooltip) return;
+    this.tooltipVia = via;
+    this.tooltipEl.textContent = lines.join("\n");
+    this.tooltipEl.hidden = false;
+    const wrap = this.chartWrap.getBoundingClientRect();
+    const box = button.getBoundingClientRect();
+    const width = this.tooltipEl.offsetWidth || 0;
+    let left = box.left - wrap.left + box.width / 2 - width / 2;
+    left = Math.max(4, Math.min(left, wrap.width - width - 4));
+    this.tooltipEl.style.left = `${Math.round(left)}px`;
+    this.tooltipEl.style.top = `${Math.round(box.bottom - wrap.top + 6)}px`;
+  }
+  /**
+   * The tooltip lines of a mark, with the records stacked on the same day
+   * (from the overlay's `data-same-day`) named before the gesture line.
+   * @private
+   */
+  tooltipText(event, button) {
+    const lines = tooltipLines3(event, this.effectiveSettings(), {
+      ...this.display(),
+      anchor: this.anchoredEvent
+    });
+    const stacked = button && button.dataset ? button.dataset.sameDay : "";
+    if (stacked) {
+      const n = Number(button.dataset.sameDayCount) || stacked.split("; ").length;
+      lines.splice(
+        lines.length - 1,
+        0,
+        `and ${plural3(n, "more record")} on this day: ${stacked.split("; ").join(", ")}`
+      );
+    }
+    return lines;
+  }
+  /**
+   * Write a mark's text into the footnote with the Open source record button.
+   * @private
+   */
+  writeFootnote(event, lines) {
+    const text3 = lines || tooltipLines3(event, this.effectiveSettings(), {
+      ...this.display(),
+      anchor: this.anchoredEvent
+    });
+    this.footnoteEvent = event;
+    this.footnote.innerHTML = "";
+    this.footnote.append(
+      createElement(
+        "span",
+        "sv-pje-footnote-text",
+        text3.filter((line) => line !== GESTURE_LINE).join(" \xB7 ")
+      )
+    );
+    const open = createElement("button", "sv-pje-open-source", "Open source record");
+    open.type = "button";
+    open.setAttribute("data-sv-focus", "open-source");
+    open.onclick = () => this.jumpToSource(event.sourceAnchorId);
+    this.footnote.append(open);
+  }
+  /**
+   * Empty the footnote: the mark it described is no longer on the page.
+   * @private
+   */
+  clearFootnote() {
+    this.footnoteEvent = null;
+    if (this.footnote) this.footnote.innerHTML = "";
+  }
+  /**
+   * Hide the tooltip; the footnote keeps the last mark's text. With `via`, only
+   * the channel that showed the tooltip may hide it, so a pointer wandering
+   * off a mark never dismisses the tooltip a keyboard user is reading.
+   * @private
+   */
+  hideTooltip(via) {
+    if (via && this.tooltipVia && via !== this.tooltipVia) return;
+    this.tooltipEl.hidden = true;
+    this.tooltipVia = null;
+    this.hoveredEvent = null;
+  }
+  /**
+   * Escape, in order (design §6.6): dismiss the tooltip; else clear the
+   * anchor; else collapse the expanded rail; else do nothing.
+   * @private
+   */
+  handleEscape(event) {
+    if (event.key !== "Escape") return;
+    const target = event.target;
+    const textEntry = target && (target.tagName === "INPUT" && !/^(checkbox|radio|button|submit)$/i.test(target.type) || target.tagName === "TEXTAREA");
+    if (textEntry && this.tooltipEl.hidden) return;
+    this.clearCitedMark();
+    if (!this.tooltipEl.hidden) {
+      this.hideTooltip();
+    } else if (this.state.anchorId) {
+      this.anchor(null);
+    } else if (this.root.classList.contains("sv-rail-expanded")) {
+      this.setExpanded(false);
+    } else {
+      return;
+    }
+    event.stopPropagation();
+  }
+  /**
+   * Write to the persistent live region.
+   * @private
+   */
+  announce(text3) {
+    this.liveRegion.textContent = "";
+    this.liveRegion.textContent = text3;
+  }
+  /**
+   * Deliver one event on all three channels (design §3.6): the settings
+   * callback (inside a try/catch that logs and continues), the instance
+   * listeners, and a bubbling CustomEvent on the shell root.
+   * @private
+   */
+  emit(name, detail) {
+    if (this.destroyed) return;
+    const callback2 = CALLBACK_BY_EVENT[name];
+    if (callback2) {
+      try {
+        callback2(this.settings, detail);
+      } catch (error) {
+        warn2(`the ${name} callback threw and was ignored: ${error && error.message}`);
+      }
+    }
+    for (const handler of [...this.listeners.get(name) || []]) {
+      try {
+        handler(detail);
+      } catch (error) {
+        warn2(`a ${name} listener threw and was ignored: ${error && error.message}`);
+      }
+    }
+    if (this.root) {
+      this.root.dispatchEvent(new CustomEvent(name, { detail, bubbles: true }));
+    }
+  }
+  /**
+   * Emit the context bundle again when it changes while anchored.
+   * @private
+   */
+  emitContextIfAnchored() {
+    if (this.anchoredEvent) this.emit("pjeContextChanged", this.context);
+  }
+  /**
+   * Select a subject by id (string-compared). An unknown id changes nothing
+   * and warns. Any anchor is cleared first (with the null anchor and context
+   * events), then the journey is redrawn and pjeSubjectSelected plus the
+   * library's shared participantsSelected event are dispatched.
+   * @param {string|number} subjectId The participant id to select.
+   * @returns {SafetyPatientJourneyExplorer} The instance, for chaining.
+   */
+  selectSubject(subjectId) {
+    const id = String(subjectId);
+    if (!this.domains || !this.subjectList.includes(id)) {
+      warn2(`unknown subject "${id}"; the selection is unchanged.`);
+      return this;
+    }
+    const previous = this.subject;
+    if (this.state.anchorId) {
+      this.state.anchorId = null;
+      this.anchoredEvent = null;
+      this.context = null;
+      this.emit("pjeEventAnchored", { anchor: null, context: null });
+      this.emit("pjeContextChanged", null);
+    }
+    this.state.subject = id;
+    this.clearFootnote();
+    this.render();
+    const { counts, extent } = this.structured;
+    this.emit("pjeSubjectSelected", {
+      subject: this.subject,
+      previous,
+      counts: { ...counts },
+      domainDays: extent ? [extent[0], extent[1]] : null
+    });
+    this.emit("participantsSelected", { data: [this.subject] });
+    this.announce(
+      `Subject ${this.subject}. ` + ["AE", "LB", "EX", "CM"].map((code) => plural3(counts[code] || 0, DOMAIN_NOUNS[code])).join(", ") + "."
+    );
+    return this;
+  }
+  /**
+   * Anchor time on an event by its normalized id (`'AE-7'`): rebuild the
+   * context bundle, redraw the highlight, the axis labels and the panel, and
+   * emit pjeEventAnchored and pjeContextChanged. `anchor(null)` clears the
+   * anchor and emits both with null. An id that is not a placeable event of
+   * the current subject warns and changes nothing.
+   * @param {?string} eventId The event id to anchor on, or null to clear.
+   * @returns {SafetyPatientJourneyExplorer} The instance, for chaining.
+   */
+  anchor(eventId) {
+    if (eventId === null || eventId === void 0) {
+      if (!this.state.anchorId) return this;
+      this.state.anchorId = null;
+      this.render();
+      this.emit("pjeEventAnchored", { anchor: null, context: null });
+      this.emit("pjeContextChanged", null);
+      this.announce("Anchor cleared.");
+      return this;
+    }
+    const id = String(eventId);
+    const event = this.findEvent(id);
+    if (!event || event.placeable === false) {
+      warn2(`"${id}" is not an anchorable event for participant ${this.subject}.`);
+      return this;
+    }
+    this.state.anchorId = id;
+    this.render();
+    if (!this.context) return this;
+    this.emit("pjeEventAnchored", { anchor: this.anchoredEvent, context: this.context });
+    this.emit("pjeContextChanged", this.context);
+    const c = this.context.counts;
+    this.announce(
+      `Anchored on ${this.anchoredEvent.label}, day ${this.anchoredEvent.day}. Window day ${this.context.window.startDay} to day ${this.context.window.endDay}. ${plural3(c.conMeds, "con-med")} active, ${plural3(c.abnormalLabs, "abnormal lab")}, ${plural3(c.doseChanges, "dose change")}, ${plural3(c.priorEvents, "earlier or same-day event")} with this term.`
+    );
+    return this;
+  }
+  /**
+   * Toggle one lane. An unknown key warns and is a no-op. Emits
+   * pjeLaneToggled, and pjeContextChanged when anchored (the window's
+   * contents depend on the enabled lanes).
+   * @param {string} laneKey The lane key (`exposure`, `doseChanges`, `adverseEvents`, `labs`, `conMeds`, `medicalHistory`, `disposition`).
+   * @param {boolean} enabled Whether the lane is shown.
+   * @returns {SafetyPatientJourneyExplorer} The instance, for chaining.
+   */
+  setLaneEnabled(laneKey, enabled) {
+    if (!LANE_KEYS.includes(laneKey)) {
+      warn2(`"${laneKey}" is not a lane; the known lanes are ${LANE_KEYS.join(", ")}.`);
+      return this;
+    }
+    this.state.lanes[laneKey] = Boolean(enabled);
+    this.render();
+    this.emit("pjeLaneToggled", {
+      lane: laneKey,
+      enabled: this.state.lanes[laneKey],
+      lanes: { ...this.state.lanes }
+    });
+    this.emitContextIfAnchored();
+    this.announce(
+      `${this.settings.lanes[laneKey]?.label || laneKey} lane ${enabled ? "on" : "off"}.`
+    );
+    return this;
+  }
+  /**
+   * Switch the time axis between study days and calendar dates. `'date'` is
+   * refused (with a warning) when no reference date resolves for the subject
+   * or date mode is not allowed. Emits pjeTimeModeChanged.
+   * @param {string} mode `'day'` or `'date'`.
+   * @returns {SafetyPatientJourneyExplorer} The instance, for chaining.
+   */
+  setTimeMode(mode) {
+    const next = mode === "date" ? "date" : "day";
+    if (next === "date") {
+      if (!this.settings.time.allow_date_mode) {
+        warn2("calendar-date mode is not allowed by the settings (time.allow_date_mode).");
+        return this;
+      }
+      if (!this.structured || !this.structured.refDate) {
+        warn2(`no reference date resolves for participant ${this.subject}; staying in day mode.`);
+        return this;
+      }
+    }
+    if (next === this.state.mode) return this;
+    this.state.mode = next;
+    this.render();
+    return this;
+  }
+  /**
+   * Set the context-window half-width in elapsed days (coerced as in
+   * syncSettings; 0 means the anchor day only) and re-derive the bundle when
+   * anchored.
+   * @param {number|string} days The half-width in days.
+   * @returns {SafetyPatientJourneyExplorer} The instance, for chaining.
+   */
+  setContextWindowDays(days) {
+    this.state.windowDays = coerceWindowDays(days, this.settings.context_window_days);
+    this.render();
+    this.emitContextIfAnchored();
+    return this;
+  }
+  /**
+   * Set one filter programmatically, using the same grammar filterMatches
+   * accepts (null = no restriction, an array = membership, a scalar =
+   * equality; for a flag filter, its `flag_value` or null). An unknown column
+   * warns and is a no-op. Re-renders, re-derives the bundle when anchored and
+   * emits pjeFilterChanged.
+   * @param {string} valueCol The filter's `value_col`.
+   * @param {*} selection The next selection.
+   * @returns {SafetyPatientJourneyExplorer} The instance, for chaining.
+   */
+  setFilter(valueCol, selection) {
+    const spec = this.settings.filters.find((entry) => entry.value_col === valueCol);
+    if (!spec) {
+      warn2(`"${valueCol}" is not a configured filter column; nothing changed.`);
+      return this;
+    }
+    this.withFocusRestore(() => {
+      this.state.filters[valueCol] = selection === void 0 ? null : selection;
+      if (this.domains) this.buildControls();
+      this.render();
+    });
+    this.emit("pjeFilterChanged", {
+      value_col: valueCol,
+      selection: this.state.filters[valueCol],
+      filters: { ...this.state.filters }
+    });
+    this.emitContextIfAnchored();
+    return this;
+  }
+  /**
+   * A filter change from its own sidebar control: the same state change and
+   * events as setFilter without rebuilding the sidebar (the control keeps its
+   * own DOM under the user's pointer).
+   * @private
+   */
+  updateFilter(valueCol, selection) {
+    this.state.filters[valueCol] = selection === void 0 ? null : selection;
+    this.render();
+    this.emit("pjeFilterChanged", {
+      value_col: valueCol,
+      selection: this.state.filters[valueCol],
+      filters: { ...this.state.filters }
+    });
+    this.emitContextIfAnchored();
+    const spec = this.settings.filters.find((entry) => entry.value_col === valueCol);
+    if (spec) {
+      const shown = this.structured.events.filter((event) => event.domain === spec.domain).length;
+      const all = this.structured.allEvents.filter(
+        (event) => event.domain === spec.domain && !event.flags?.derived
+      ).length;
+      const active = selection !== null && selection !== void 0;
+      this.announce(
+        `${spec.label} ${active ? "on" : "off"}. ${shown} of ${plural3(all, DOMAIN_NOUNS[spec.domain] || "record")} shown.`
+      );
+    }
+  }
+  /**
+   * The current context bundle, or null when nothing is anchored. A read
+   * model: consumers must not mutate it.
+   * @returns {?ContextBundle} The bundle (the ContextBundle typedef in patient-journey-explorer/anchor.js), or null.
+   */
+  getContext() {
+    return this.context;
+  }
+  /**
+   * The active time-axis mode.
+   * @returns {string} `'day'` or `'date'`.
+   */
+  getTimeMode() {
+    return this.effectiveMode();
+  }
+  /**
+   * Register a listener for one of the module events (pjeSubjectSelected,
+   * pjeEventAnchored, pjeContextChanged, pjeLaneToggled, pjeFilterChanged,
+   * pjeTimeModeChanged, pjeNarrativeAction, participantsSelected); the handler receives the
+   * event's detail.
+   * @param {string} name The event name.
+   * @param {Function} handler The listener.
+   * @returns {SafetyPatientJourneyExplorer} The instance, for chaining.
+   */
+  on(name, handler) {
+    if (!EVENT_NAMES.includes(name)) {
+      warn2(`"${name}" is not a module event; the known events are ${EVENT_NAMES.join(", ")}.`);
+      return this;
+    }
+    if (typeof handler !== "function") return this;
+    if (!this.listeners.has(name)) this.listeners.set(name, []);
+    this.listeners.get(name).push(handler);
+    return this;
+  }
+  /**
+   * Remove a listener, or every listener for the event when no handler is
+   * given.
+   * @param {string} name The event name.
+   * @param {Function} [handler] The listener to remove.
+   * @returns {SafetyPatientJourneyExplorer} The instance, for chaining.
+   */
+  off(name, handler) {
+    if (!this.listeners.has(name)) return this;
+    if (typeof handler !== "function") {
+      this.listeners.delete(name);
+      return this;
+    }
+    const kept = this.listeners.get(name).filter((entry) => entry !== handler);
+    if (kept.length) this.listeners.set(name, kept);
+    else this.listeners.delete(name);
+    return this;
+  }
+  /**
+   * Resize every live lane chart and re-sync the keyboard overlay geometry.
+   * For host layouts that change the container size without a window resize
+   * — e.g. the R htmlwidget binding.
+   * @returns {void}
+   */
+  resize() {
+    for (const chart of this.laneCharts.values()) chart.resize();
+    this.syncOverlay();
+  }
+  /**
+   * Destroy the live Chart.js instances and clear the map.
+   * @private
+   */
+  destroyCharts() {
+    for (const chart of this.laneCharts.values()) chart.destroy();
+    this.laneCharts.clear();
+    this.laneEntries = [];
+  }
+  /**
+   * Tear the explorer down: destroy the lane charts, remove the window-resize,
+   * theme and key listeners, drop every registered event listener, and empty
+   * the target element. The instance cannot be reused afterwards — create a
+   * new one via the factory instead.
+   * @returns {void}
+   */
+  destroy() {
+    this.destroyCharts();
+    window.removeEventListener("resize", this.resizeHandler);
+    if (this.stackObserver) this.stackObserver.disconnect();
+    if (this.themeQuery && typeof this.themeQuery.removeEventListener === "function") {
+      this.themeQuery.removeEventListener("change", this.themeHandler);
+    }
+    if (this.root) this.root.removeEventListener("keydown", this.rootKeyHandler);
+    this.overlay.detach();
+    this.listeners.clear();
+    this.narrativeEntries.clear();
+    this.destroyed = true;
+    this.structured = null;
+    this.anchoredEvent = null;
+    this.context = null;
+    this.element.innerHTML = "";
+  }
+  /**
+   * Every participant id present in any domain, sorted ascending.
+   * @type {string[]}
+   */
+  get subjects() {
+    return [...this.subjectList];
+  }
+  /**
+   * The current subject's normalized events, post-filter, in lane order then
+   * day order.
+   * @type {Object[]}
+   */
+  get events() {
+    return this.structured ? this.structured.events : [];
+  }
+  /**
+   * Every dropped source row — the input-form drops and the per-domain drops
+   * — each a copy carrying the reason and domain columns.
+   * @type {Object[]}
+   */
+  get droppedRows() {
+    return [...this.inputDropped, ...this.structured ? this.structured.dropped : []];
+  }
+  /**
+   * The dropped-row counts, study-wide: `{ total, byDomain, byReason }`.
+   * @type {Object}
+   */
+  get droppedCounts() {
+    const base = this.structured ? this.structured.droppedCounts : { total: 0, byDomain: {}, byReason: {} };
+    const counts = {
+      total: base.total + this.inputDropped.length,
+      byDomain: { ...base.byDomain },
+      byReason: { ...base.byReason }
+    };
+    for (const row of this.inputDropped) {
+      const reason = row[DROP_REASON_COLUMN3];
+      counts.byReason[reason] = (counts.byReason[reason] || 0) + 1;
+    }
+    return counts;
+  }
+  /**
+   * Rows kept but not drawn for the current subject: `{ byDomain, byLane }`.
+   * @type {Object}
+   */
+  get unplaceableCounts() {
+    return this.structured ? this.structured.unplaceableCounts : { byDomain: {}, byLane: {} };
+  }
+  /**
+   * The active time-axis mode, `'day'` or `'date'` (the getter behind
+   * getTimeMode).
+   * @type {string}
+   */
+  get timeMode() {
+    return this.effectiveMode();
+  }
+};
+function patientJourneyExplorer(element = "body", settings = {}) {
+  return new SafetyPatientJourneyExplorer(element, settings);
+}
+
+// src/data/portfolio.json
+var portfolio_default = {
+  $schema: "./schema/portfolio.json",
+  version: 1,
+  description: "The standard domain set a study supplies to safety.viz, and what every chart module reads from it. Column names are the ADaM-shaped defaults the modules already expect; each setting is the key in the module\u2019s own data schema (src/data/schema/<module>.json), with the column it defaults to and whether that schema requires it. A test holds the two in agreement.",
+  domains: {
+    subject: {
+      label: "Subject-level",
+      grain: "One row per participant.",
+      demo: "adsl.csv",
+      columns: {
+        USUBJID: {
+          label: "Participant",
+          description: "Unique participant identifier; the key that joins every domain."
+        },
+        ARM: {
+          label: "Treatment arm",
+          description: "Treatment group the participant was assigned to."
+        },
+        SITEID: {
+          label: "Site",
+          description: "Investigational site identifier."
+        },
+        SEX: {
+          label: "Sex",
+          description: "Participant sex."
+        },
+        RACE: {
+          label: "Race",
+          description: "Participant race."
+        },
+        EOSDY: {
+          label: "End-of-study day",
+          description: "Study day follow-up ended (day 1 = first dose); the censoring time for participants with no event."
+        },
+        EOSSTT: {
+          label: "End-of-study status",
+          description: "End-of-study status, shown where a participant is censored."
+        }
+      }
+    },
+    ae: {
+      label: "Adverse events",
+      grain: "One row per adverse event, plus one all-blank placeholder row per participant with no events.",
+      demo: "adae.csv",
+      columns: {
+        USUBJID: {
+          label: "Participant",
+          description: "Unique participant identifier."
+        },
+        AESEQ: {
+          label: "Sequence",
+          description: "Sequence number of the event within the participant."
+        },
+        AEBODSYS: {
+          label: "Body system",
+          description: "System organ class of the event."
+        },
+        AEDECOD: {
+          label: "Preferred term",
+          description: "Dictionary-coded preferred term."
+        },
+        AETERM: {
+          label: "Reported term",
+          description: "Verbatim term as reported."
+        },
+        ASTDY: {
+          label: "Start day",
+          description: "Study day the event started (day 1 = first dose)."
+        },
+        AENDY: {
+          label: "End day",
+          description: "Study day the event ended."
+        },
+        ARM: {
+          label: "Treatment arm",
+          description: "Treatment group the participant was assigned to."
+        },
+        AESEV: {
+          label: "Severity",
+          description: "Severity or intensity of the event."
+        },
+        AESER: {
+          label: "Serious",
+          description: "Whether the event was serious (Y/N)."
+        }
+      }
+    },
+    bds: {
+      label: "Labs and vitals",
+      grain: "One row per participant, measure and visit: laboratory results and vital signs together, in long format.",
+      demo: "adbds.csv",
+      columns: {
+        USUBJID: {
+          label: "Participant",
+          description: "Unique participant identifier."
+        },
+        TEST: {
+          label: "Measure",
+          description: "Name of the laboratory test or vital sign."
+        },
+        STRESN: {
+          label: "Result",
+          description: "Numeric result in standard units."
+        },
+        STRESU: {
+          label: "Unit",
+          description: "Standard unit of the result."
+        },
+        STNRLO: {
+          label: "Lower limit of normal",
+          description: "Lower limit of the normal range."
+        },
+        STNRHI: {
+          label: "Upper limit of normal",
+          description: "Upper limit of the normal range."
+        },
+        VISIT: {
+          label: "Visit",
+          description: "Visit name."
+        },
+        VISITNUM: {
+          label: "Visit order",
+          description: "Numeric visit order."
+        },
+        DY: {
+          label: "Study day",
+          description: "Study day of the measurement (day 1 = first dose)."
+        },
+        ARM: {
+          label: "Treatment arm",
+          description: "Treatment group the participant was assigned to."
+        },
+        SITEID: {
+          label: "Site",
+          description: "Investigational site identifier."
+        },
+        SEX: {
+          label: "Sex",
+          description: "Participant sex."
+        },
+        RACE: {
+          label: "Race",
+          description: "Participant race."
+        }
+      }
+    },
+    eg: {
+      label: "ECG",
+      grain: "One row per participant, ECG interval and visit, in long format.",
+      demo: "adeg.csv",
+      columns: {
+        USUBJID: {
+          label: "Participant",
+          description: "Unique participant identifier."
+        },
+        TEST: {
+          label: "Measure",
+          description: "Name of the ECG interval or parameter."
+        },
+        STRESN: {
+          label: "Result",
+          description: "Numeric result in standard units."
+        },
+        STRESU: {
+          label: "Unit",
+          description: "Standard unit of the result."
+        },
+        BASE: {
+          label: "Baseline value",
+          description: "The participant\u2019s baseline value for the measure."
+        },
+        CHG: {
+          label: "Change from baseline",
+          description: "Result minus baseline."
+        },
+        ABLFL: {
+          label: "Baseline flag",
+          description: "Marks the baseline record (Y)."
+        },
+        ARM: {
+          label: "Treatment arm",
+          description: "Treatment group the participant was assigned to."
+        },
+        VISIT: {
+          label: "Visit",
+          description: "Visit name."
+        },
+        VISITNUM: {
+          label: "Visit order",
+          description: "Numeric visit order."
+        }
+      }
+    }
+  },
+  modules: {
+    histogram: {
+      export: "histogram",
+      title: "Safety Histogram",
+      domains: ["bds"],
+      settings: {
+        measure_col: {
+          domain: "bds",
+          column: "TEST",
+          required: true
+        },
+        value_col: {
+          domain: "bds",
+          column: "STRESN",
+          required: true
+        },
+        id_col: {
+          domain: "bds",
+          column: "USUBJID",
+          required: false
+        },
+        unit_col: {
+          domain: "bds",
+          column: "STRESU",
+          required: false
+        },
+        normal_col_low: {
+          domain: "bds",
+          column: "STNRLO",
+          required: false
+        },
+        normal_col_high: {
+          domain: "bds",
+          column: "STNRHI",
+          required: false
+        }
+      }
+    },
+    "outlier-explorer": {
+      export: "outlierExplorer",
+      title: "Safety Outlier Explorer",
+      domains: ["bds"],
+      settings: {
+        measure_col: {
+          domain: "bds",
+          column: "TEST",
+          required: true
+        },
+        value_col: {
+          domain: "bds",
+          column: "STRESN",
+          required: true
+        },
+        id_col: {
+          domain: "bds",
+          column: "USUBJID",
+          required: false
+        },
+        unit_col: {
+          domain: "bds",
+          column: "STRESU",
+          required: false
+        },
+        normal_col_low: {
+          domain: "bds",
+          column: "STNRLO",
+          required: false
+        },
+        normal_col_high: {
+          domain: "bds",
+          column: "STNRHI",
+          required: false
+        }
+      }
+    },
+    "results-over-time": {
+      export: "resultsOverTime",
+      title: "Safety Results Over Time",
+      domains: ["bds"],
+      settings: {
+        measure_col: {
+          domain: "bds",
+          column: "TEST",
+          required: true
+        },
+        value_col: {
+          domain: "bds",
+          column: "STRESN",
+          required: true
+        },
+        time_col: {
+          domain: "bds",
+          column: "VISIT",
+          required: true
+        },
+        time_order_col: {
+          domain: "bds",
+          column: "VISITNUM",
+          required: false
+        },
+        id_col: {
+          domain: "bds",
+          column: "USUBJID",
+          required: false
+        },
+        unit_col: {
+          domain: "bds",
+          column: "STRESU",
+          required: false
+        }
+      }
+    },
+    "shift-plot": {
+      export: "shiftPlot",
+      title: "Safety Shift Plot",
+      domains: ["bds"],
+      settings: {
+        measure_col: {
+          domain: "bds",
+          column: "TEST",
+          required: true
+        },
+        value_col: {
+          domain: "bds",
+          column: "STRESN",
+          required: true
+        },
+        visit_col: {
+          domain: "bds",
+          column: "VISIT",
+          required: true
+        },
+        visit_order_col: {
+          domain: "bds",
+          column: "VISITNUM",
+          required: false
+        },
+        id_col: {
+          domain: "bds",
+          column: "USUBJID",
+          required: false
+        },
+        unit_col: {
+          domain: "bds",
+          column: "STRESU",
+          required: false
+        }
+      }
+    },
+    "delta-delta": {
+      export: "deltaDelta",
+      title: "Safety Delta-Delta",
+      domains: ["bds"],
+      settings: {
+        measure_col: {
+          domain: "bds",
+          column: "TEST",
+          required: true
+        },
+        value_col: {
+          domain: "bds",
+          column: "STRESN",
+          required: true
+        },
+        id_col: {
+          domain: "bds",
+          column: "USUBJID",
+          required: true
+        },
+        visit_col: {
+          domain: "bds",
+          column: "VISIT",
+          required: true
+        },
+        visitn_col: {
+          domain: "bds",
+          column: "VISITNUM",
+          required: false
+        }
+      }
+    },
+    "hep-explorer": {
+      export: "hepExplorer",
+      title: "Hepatic Safety Explorer",
+      domains: ["bds"],
+      settings: {
+        id_col: {
+          domain: "bds",
+          column: "USUBJID",
+          required: true
+        },
+        measure_col: {
+          domain: "bds",
+          column: "TEST",
+          required: true
+        },
+        value_col: {
+          domain: "bds",
+          column: "STRESN",
+          required: true
+        },
+        unit_col: {
+          domain: "bds",
+          column: "STRESU",
+          required: false
+        },
+        normal_col_high: {
+          domain: "bds",
+          column: "STNRHI",
+          required: true
+        },
+        normal_col_low: {
+          domain: "bds",
+          column: "STNRLO",
+          required: false
+        },
+        studyday_col: {
+          domain: "bds",
+          column: "DY",
+          required: false
+        },
+        visit_col: {
+          domain: "bds",
+          column: "VISIT",
+          required: false
+        },
+        visitn_col: {
+          domain: "bds",
+          column: "VISITNUM",
+          required: false
+        },
+        arm_col: {
+          domain: "bds",
+          column: "ARM",
+          required: false
+        },
+        baseline_col: {
+          domain: "bds",
+          column: null,
+          required: false
+        }
+      }
+    },
+    "hep-waterfall": {
+      export: "hepWaterfall",
+      title: "Hepatic ALT Waterfall",
+      domains: ["bds"],
+      settings: {
+        id_col: {
+          domain: "bds",
+          column: "USUBJID",
+          required: true
+        },
+        measure_col: {
+          domain: "bds",
+          column: "TEST",
+          required: true
+        },
+        value_col: {
+          domain: "bds",
+          column: "STRESN",
+          required: true
+        },
+        unit_col: {
+          domain: "bds",
+          column: "STRESU",
+          required: false
+        },
+        normal_col_high: {
+          domain: "bds",
+          column: "STNRHI",
+          required: true
+        },
+        normal_col_low: {
+          domain: "bds",
+          column: "STNRLO",
+          required: false
+        },
+        studyday_col: {
+          domain: "bds",
+          column: "DY",
+          required: false
+        },
+        visit_col: {
+          domain: "bds",
+          column: "VISIT",
+          required: false
+        },
+        visitn_col: {
+          domain: "bds",
+          column: "VISITNUM",
+          required: false
+        },
+        arm_col: {
+          domain: "bds",
+          column: "ARM",
+          required: true
+        },
+        baseline_col: {
+          domain: "bds",
+          column: null,
+          required: false
+        }
+      },
+      note: "Meaningful for a cohort enrolled with elevated baseline ALT and normal baseline bilirubin; the demo site draws it on the synthetic abnormal-baseline extract adbds-abnbl.csv, which has the same columns as the labs and vitals domain."
+    },
+    "nep-explorer": {
+      export: "nepExplorer",
+      title: "Nephrotoxicity Explorer",
+      domains: ["bds"],
+      settings: {
+        id_col: {
+          domain: "bds",
+          column: "USUBJID",
+          required: true
+        },
+        measure_col: {
+          domain: "bds",
+          column: "TEST",
+          required: true
+        },
+        value_col: {
+          domain: "bds",
+          column: "STRESN",
+          required: true
+        },
+        unit_col: {
+          domain: "bds",
+          column: "STRESU",
+          required: false
+        },
+        baseline_col: {
+          domain: "bds",
+          column: null,
+          required: false
+        },
+        visit_col: {
+          domain: "bds",
+          column: "VISIT",
+          required: false
+        },
+        visitn_col: {
+          domain: "bds",
+          column: "VISITNUM",
+          required: false
+        },
+        studyday_col: {
+          domain: "bds",
+          column: "DY",
+          required: false
+        },
+        arm_col: {
+          domain: "bds",
+          column: "ARM",
+          required: false
+        }
+      }
+    },
+    "participant-profile": {
+      export: "participantProfile",
+      title: "Participant Profile",
+      domains: ["bds"],
+      settings: {
+        id_col: {
+          domain: "bds",
+          column: "USUBJID",
+          required: true
+        },
+        measure_col: {
+          domain: "bds",
+          column: "TEST",
+          required: true
+        },
+        value_col: {
+          domain: "bds",
+          column: "STRESN",
+          required: true
+        },
+        unit_col: {
+          domain: "bds",
+          column: "STRESU",
+          required: false
+        },
+        normal_col_high: {
+          domain: "bds",
+          column: "STNRHI",
+          required: true
+        },
+        normal_col_low: {
+          domain: "bds",
+          column: "STNRLO",
+          required: false
+        },
+        studyday_col: {
+          domain: "bds",
+          column: "DY",
+          required: false
+        },
+        visit_col: {
+          domain: "bds",
+          column: "VISIT",
+          required: false
+        },
+        visitn_col: {
+          domain: "bds",
+          column: "VISITNUM",
+          required: false
+        },
+        baseline_col: {
+          domain: "bds",
+          column: null,
+          required: false
+        },
+        p_alt_col: {
+          domain: "bds",
+          column: null,
+          required: false
+        }
+      },
+      optionalDomains: ["ae"],
+      note: "Adverse events are optional: when supplied, the profile adds their summary and timeline on the labs study-day axis, reading the same columns the adverse-event charts do."
+    },
+    "qt-explorer": {
+      export: "qtExplorer",
+      title: "QT Safety Explorer",
+      domains: ["eg"],
+      settings: {
+        id_col: {
+          domain: "eg",
+          column: "USUBJID",
+          required: false
+        },
+        measure_col: {
+          domain: "eg",
+          column: "TEST",
+          required: true
+        },
+        value_col: {
+          domain: "eg",
+          column: "STRESN",
+          required: true
+        },
+        baseline_col: {
+          domain: "eg",
+          column: "BASE",
+          required: true
+        },
+        change_col: {
+          domain: "eg",
+          column: "CHG",
+          required: false
+        },
+        unit_col: {
+          domain: "eg",
+          column: "STRESU",
+          required: false
+        },
+        arm_col: {
+          domain: "eg",
+          column: "ARM",
+          required: true
+        },
+        visit_col: {
+          domain: "eg",
+          column: "VISIT",
+          required: false
+        },
+        visitn_col: {
+          domain: "eg",
+          column: "VISITNUM",
+          required: false
+        },
+        baseline_flag_col: {
+          domain: "eg",
+          column: "ABLFL",
+          required: false
+        }
+      }
+    },
+    "ae-explorer": {
+      export: "aeExplorer",
+      title: "Adverse Event Explorer",
+      domains: ["ae"],
+      settings: {
+        id_col: {
+          domain: "ae",
+          column: "USUBJID",
+          required: true
+        },
+        major_col: {
+          domain: "ae",
+          column: "AEBODSYS",
+          required: true
+        },
+        minor_col: {
+          domain: "ae",
+          column: "AEDECOD",
+          required: true
+        },
+        group_col: {
+          domain: "ae",
+          column: "ARM",
+          required: true
+        },
+        "placeholder_flag.value_col": {
+          domain: "ae",
+          column: null,
+          required: false
+        }
+      }
+    },
+    "ae-timelines": {
+      export: "aeTimelines",
+      title: "Adverse Event Timelines",
+      domains: ["ae"],
+      settings: {
+        id_col: {
+          domain: "ae",
+          column: "USUBJID",
+          required: true
+        },
+        seq_col: {
+          domain: "ae",
+          column: "AESEQ",
+          required: true
+        },
+        stdy_col: {
+          domain: "ae",
+          column: "ASTDY",
+          required: true
+        },
+        endy_col: {
+          domain: "ae",
+          column: "AENDY",
+          required: true
+        },
+        term_col: {
+          domain: "ae",
+          column: "AETERM",
+          required: true
+        },
+        "color.value_col": {
+          domain: "ae",
+          column: "AESEV",
+          required: true
+        },
+        "highlight.value_col": {
+          domain: "ae",
+          column: "AESER",
+          required: false
+        }
+      }
+    },
+    "time-to-event": {
+      export: "timeToEvent",
+      title: "Time-to-Event Explorer",
+      domains: ["ae", "subject"],
+      settings: {
+        id_col: {
+          domain: ["ae", "subject"],
+          column: "USUBJID",
+          required: false
+        },
+        group_col: {
+          domain: "subject",
+          column: "ARM",
+          required: false
+        },
+        fu_day_col: {
+          domain: "subject",
+          column: "EOSDY",
+          required: false
+        },
+        censor_desc_col: {
+          domain: "subject",
+          column: "EOSSTT",
+          required: false
+        },
+        event_day_col: {
+          domain: "ae",
+          column: "ASTDY",
+          required: false
+        },
+        event_desc_col: {
+          domain: "ae",
+          column: "AEDECOD",
+          required: false
+        }
+      },
+      note: "Takes two tables: the adverse events as the events, without the placeholder rows for event-free participants, and the subject-level table as the population. The participant column must carry the same name in both."
+    },
+    "patient-journey-explorer": {
+      export: "patientJourneyExplorer",
+      title: "Patient Journey Explorer",
+      domains: [],
+      externalDomains: ["ex", "ae", "lb", "cm", "mh", "ds"],
+      settings: {},
+      note: "Reads six domains of its own under SDTM column names: exposure, adverse events, labs, concomitant medications, medical history and disposition. None is supplied by the standard domain set, so its column settings are not mapped here; see its data schema."
+    }
+  }
+};
+
 // src/main.js
 var main_default = {
   histogram,
@@ -32747,7 +44596,10 @@ var main_default = {
   hepWaterfall,
   participantProfile,
   nepExplorer,
-  timeToEvent
+  timeToEvent,
+  patientJourneyExplorer,
+  narratives: patientJourneyNarratives_exports,
+  portfolio: portfolio_default
 };
 export {
   aeExplorer,
@@ -32757,9 +44609,12 @@ export {
   hepExplorer,
   hepWaterfall,
   histogram,
+  patientJourneyNarratives_exports as narratives,
   nepExplorer,
   outlierExplorer,
   participantProfile,
+  patientJourneyExplorer,
+  portfolio_default as portfolio,
   qtExplorer,
   resultsOverTime,
   shiftPlot,
