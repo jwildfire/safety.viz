@@ -1052,6 +1052,37 @@ export function renderDemoPage({ renderer, version }) {
   );
 }
 
+/**
+ * The portfolio app page (#150, obot.roadmap#352): every chart in the portfolio
+ * manifest behind one list, on the demo study. The page is a mount point; the
+ * app bundle the site build writes beside it (scripts/build-app.mjs) does the
+ * rest, loading the demo extracts copied into the same directory.
+ * @param {Object} options Page options.
+ * @param {Object} options.manifest The portfolio manifest (src/data/portfolio.json).
+ * @param {string} options.bundle File name of the app bundle beside the page.
+ * @returns {string} The page content for the site shell.
+ */
+export function renderPortfolioPage({ manifest, bundle }) {
+  const charts = Object.keys(manifest.modules).length;
+  const extracts = Object.values(manifest.domains)
+    .map((domain) => `<code>${escapeHtml(domain.demo)}</code>`)
+    .join(', ');
+  return (
+    `<div class="demo-page portfolio-page">` +
+    `<h1>Portfolio</h1>` +
+    `<p class="tagline">Every safety.viz chart on one page, on one study.</p>` +
+    `<p>The list names all ${charts} charts under the data domain each reads and says whether` +
+    ` the loaded data supports it. Choose a chart to draw it; one is drawn at a time. The page` +
+    ` opens on the demo study (${extracts}), built from the` +
+    ` <a href="https://github.com/pharmaverse/pharmaverseadam">pharmaverseadam</a> CDISC Pilot 01` +
+    ` ADaM datasets. Nothing is sent anywhere: the data is read and drawn in this browser.</p>` +
+    `<div id="app"></div>` +
+    `<script src="./${escapeHtml(bundle)}"></script>` +
+    `<script>window.__safetyVizApp = SafetyVizApp.mount('#app', { demo: { base: './' } });</script>` +
+    `</div>`
+  );
+}
+
 // Build the guide's on-page table of contents from its ## sections and their
 // ### subsections, nested one level (mirroring the API page's sticky TOC). The
 // ids come from extractHeadings, so they match mdBlock's heading ids exactly.

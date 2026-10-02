@@ -21,6 +21,26 @@ test.describe('docs site', () => {
     execSync('npm run site', { stdio: 'inherit', cwd: new URL('../..', import.meta.url) });
   });
 
+  test('APP-PAGE-013: the built portfolio page mounts the app on the demo study with no console errors (#150)', async ({
+    page
+  }) => {
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') errors.push(msg.text());
+    });
+    await page.goto('/_site/portfolio/index.html');
+    await page.evaluate('window.__safetyVizApp.ready');
+    await expect(page.locator('.sva-count')).toHaveText(
+      '13 of 14 charts supported by the loaded data'
+    );
+    await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
+    // The shell's nav reaches the page from anywhere on the site.
+    await page.goto('/_site/index.html');
+    await expect(page.locator('.site-nav a[href="portfolio/index.html"]')).toHaveText('Portfolio');
+    expect(errors).toEqual([]);
+  });
+
   test('gallery shows one card per available renderer (#7)', async ({ page }) => {
     await page.goto('/_site/index.html');
     await expect(page.locator('.card.status-available')).toHaveCount(available.length);

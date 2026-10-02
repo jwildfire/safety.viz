@@ -27,10 +27,12 @@ import {
   renderEvidencePage,
   renderGallery,
   renderGuidePage,
+  renderPortfolioPage,
   renderShell,
   validateEvidenceScreenshots,
   validateSiteLinks
 } from './site-lib.mjs';
+import { APP_BUNDLE, buildApp } from './build-app.mjs';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const siteDir = path.join(rootDir, '_site');
@@ -201,6 +203,24 @@ for (const renderer of config.renderers.filter((entry) => entry.status === 'avai
     }
   }
 }
+
+// Portfolio app (#150): the app bundle is a build product written here, not a
+// committed asset, and the demo extracts are copied beside it so the page
+// loads the demo study from its own directory.
+const manifest = JSON.parse(readFileSync(path.join(rootDir, 'src/data/portfolio.json'), 'utf8'));
+const portfolioDir = path.join(siteDir, 'portfolio');
+await buildApp(portfolioDir);
+for (const domain of Object.values(manifest.domains)) {
+  copyFileSync(path.join(rootDir, 'site/data', domain.demo), path.join(portfolioDir, domain.demo));
+}
+page(
+  path.join(portfolioDir, 'index.html'),
+  'Portfolio · safety.viz',
+  renderPortfolioPage({ manifest, bundle: APP_BUNDLE }),
+  '../',
+  'Every safety.viz chart on one page, on the demo study: which charts the loaded data ' +
+    'supports, and each one drawn from it.'
+);
 
 errors.push(...validateSiteLinks(siteDir));
 
