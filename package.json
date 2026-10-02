@@ -20,7 +20,8 @@
     "evidence:check": "node scripts/evidence.mjs --check",
     "evidence:update": "node scripts/evidence.mjs --update",
     "requirements": "node scripts/requirements.mjs",
-    "requirements:check": "node scripts/requirements.mjs --check"
+    "requirements:check": "node scripts/requirements.mjs --check",
+    "demo-data:check": "node scripts/check-demo-data.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.1",
