@@ -40951,6 +40951,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     ALL_VALUE,
     normalizeFilterSpec,
     initFilterState,
+    reconcileFilters,
     filterMatches,
     renderFilterControl,
     // src/axis-limits.js — the Lower/Upper axis-limit inputs.

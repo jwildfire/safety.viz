@@ -50,7 +50,7 @@ describe('kit API data', () => {
     }
     // Grouped by source, Chart.js first, then the eight modules in kit order.
     expect(model.groups.map((group) => group.source)).toEqual([CHART_SOURCE, ...KIT_SOURCE_FILES]);
-    expect(model.since).toBe('1.10.0');
+    expect(model.since).toBe('1.9.0');
     expect(model.description).toBeTruthy();
   });
 
@@ -177,6 +177,7 @@ describe('site generator: kit page', () => {
     expect(html).toMatch(/a change to any member[^<]*is a breaking change/);
     // What is deliberately left out is named, so its absence reads as a decision.
     expect(html).toContain('<code>prototypeBanner</code>');
+    expect(html).toContain('<code>experimentalBanner</code>');
     expect(html).toContain('<code>hexToRgba</code>');
   });
 

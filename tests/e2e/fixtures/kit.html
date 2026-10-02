@@ -138,25 +138,28 @@
             kit.resetProfileRail(host);
           };
 
-          // One filter, in the sidebar.
+          // One filter, in the sidebar, reconciled with the data as the charts do.
           const { addSection, addControl } = kit.controlBuilders(host.controls);
           const section = addSection('Filters');
-          filterSpecs.forEach((spec) => {
-            const values = [...new Set(rows.map((row) => row[spec.value_col]))].sort();
-            addControl(
-              spec.label,
-              kit.renderFilterControl({
-                spec,
-                values,
-                selected: host.filters[spec.value_col],
-                onChange: (next) => {
-                  host.filters[spec.value_col] = next;
-                  draw();
-                }
-              }),
-              section
-            );
-          });
+          kit
+            .reconcileFilters(host.filters, filterSpecs, (spec) =>
+              [...new Set(rows.map((row) => row[spec.value_col]))].sort()
+            )
+            .forEach(({ spec, values, selected }) => {
+              addControl(
+                spec.label,
+                kit.renderFilterControl({
+                  spec,
+                  values,
+                  selected,
+                  onChange: (next) => {
+                    host.filters[spec.value_col] = next;
+                    draw();
+                  }
+                }),
+                section
+              );
+            });
 
           // A bar chart drawn with the bundle's own Chart.js.
           host.chart = new kit.Chart(host.canvas, {

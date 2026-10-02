@@ -1228,8 +1228,9 @@ export function renderKitPage(model, { repoUrl, version }) {
       `<li>The chart factories. <code>SafetyViz.histogram()</code> and the rest are the` +
       ` library&#39;s own public surface, documented on each chart&#39;s API reference; the kit` +
       ` is what they are built from.</li>` +
-      `<li><code>prototypeBanner</code>, which <code>src/shell.js</code> also exports: its` +
-      ` wording is safety.viz&#39;s own release status.</li>` +
+      `<li><code>prototypeBanner</code> and <code>experimentalBanner</code>, which` +
+      ` <code>src/shell.js</code> also exports: their wording is safety.viz&#39;s own release` +
+      ` status.</li>` +
       `<li><code>hexToRgba</code>, which <code>src/box-whisker.js</code> also exports: a colour` +
       ` helper private to the box drawing.</li>` +
       `<li>Everything else under <code>src/</code>: each chart&#39;s data preparation, scales` +

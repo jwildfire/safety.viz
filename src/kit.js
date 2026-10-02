@@ -16,13 +16,14 @@
 //     its path on the kit changing.
 //   - FROZEN. Two libraries share this object on one page, so neither can
 //     replace, add or remove a member for the other.
-//   - Only what is listed in requirements/kit.md. Two exports of the shared
-//     modules are deliberately left out: shell.js's `prototypeBanner`, whose
-//     wording is safety.viz's own release status, and box-whisker.js's
-//     `hexToRgba`, a private colour helper of the box drawing. Adding a member
-//     later is not a breaking change; removing one is.
+//   - Only what is listed in requirements/kit.md. Three exports of the shared
+//     modules are deliberately left out: shell.js's `prototypeBanner` and
+//     `experimentalBanner`, whose wording is safety.viz's own release status,
+//     and box-whisker.js's `hexToRgba`, a private colour helper of the box
+//     drawing. Adding a member later is not a breaking change; removing one
+//     is.
 //
-// From v1.10.0 the kit is public surface: a change to any member — its name,
+// From v1.9.0 the kit is public surface: a change to any member — its name,
 // its signature, what it returns, the DOM and class names it produces — is a
 // breaking change. tests/unit/kit/ holds the membership and the identity;
 // tests/e2e/kit.spec.js builds a page from the committed bundle and the kit
@@ -43,6 +44,7 @@ import {
   filterMatches,
   initFilterState,
   normalizeFilterSpec,
+  reconcileFilters,
   renderFilterControl
 } from './filters.js';
 import {
@@ -80,7 +82,7 @@ import { kmEstimate } from './time-to-event/km.js';
 /**
  * The shared parts every safety.viz chart is built from, exported so a second chart library on the same page builds from them instead of copying them. Each member is the same function the charts themselves call. The object is flat and frozen.
  * @typedef {Object} Kit
- * @since 1.10.0
+ * @since 1.9.0
  * @property {function} Chart The Chart.js constructor this bundle contains: the one every safety.viz chart draws with, carrying the controllers, elements, scales and plugins the charts registered on it. Draw with it instead of loading a second Chart.js.
  * @property {function} createElement Create a detached element with an optional class and text content.
  * @property {function} option Append an option to a select.
@@ -92,6 +94,7 @@ import { kmEstimate } from './time-to-event/km.js';
  * @property {string} ALL_VALUE The option value that stands for no restriction in a single-value filter.
  * @property {function} normalizeFilterSpec Normalize a column name or a filter spec to the filter contract: `value_col`, `label`, `start`, `all` and `multiple`.
  * @property {function} initFilterState The opening filter state for a list of normalized specs: each spec's start value, or `null` for no restriction.
+ * @property {function} reconcileFilters Reconcile a filter state with the filters about to be drawn, so the selection each control shows is the selection the chart filters by: a filter with no control leaves no restriction behind, a new filter opens on its spec's `start`, a selection the data lacks falls back to All with a console warning, and with `all: false` the first value is selected. Returns the spec, values and selection for each control to draw. It is on the kit because every chart now calls it as it builds its filter controls: it joined the filter contract in the v1.8.0 review (safety.viz #166 and #171), after the kit's member list was first written.
  * @property {function} filterMatches Whether one row's value passes one filter's selection: `null` passes everything, an array is membership, anything else is equality.
  * @property {function} renderFilterControl Build one filter control from its spec: a select with an optional All option, or the multiselect when the spec says `multiple`.
  * @property {function} limitDigits Decimal places for a displayed axis limit: three significant figures of the axis range.
@@ -137,6 +140,7 @@ export const kit = Object.freeze({
   ALL_VALUE,
   normalizeFilterSpec,
   initFilterState,
+  reconcileFilters,
   filterMatches,
   renderFilterControl,
 

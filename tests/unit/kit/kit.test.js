@@ -18,7 +18,7 @@ import * as km from '../../../src/time-to-event/km.js';
 // function the charts import, and the list of members is exactly the one in
 // requirements/kit.md. Adding, dropping or renaming a member fails here until
 // the matrix and the list below say the same thing — which is the point, since
-// from v1.10.0 a change to any member is a breaking change.
+// from v1.9.0 a change to any member is a breaking change.
 
 const { kit } = entry;
 
@@ -40,7 +40,14 @@ const MEMBERS = [
   [
     'src/filters.js',
     filters,
-    ['ALL_VALUE', 'normalizeFilterSpec', 'initFilterState', 'filterMatches', 'renderFilterControl']
+    [
+      'ALL_VALUE',
+      'normalizeFilterSpec',
+      'initFilterState',
+      'reconcileFilters',
+      'filterMatches',
+      'renderFilterControl'
+    ]
   ],
   [
     'src/axis-limits.js',
@@ -85,7 +92,6 @@ const OTHER_EXPORTS = [
   'hepExplorer',
   'hepWaterfall',
   'histogram',
-  'narratives',
   'nepExplorer',
   'outlierExplorer',
   'participantProfile',
@@ -118,7 +124,7 @@ describe('kit: the shared chart parts as one export', () => {
   it('KIT-API-002: the kit holds exactly the listed members, flat, under the names their modules export (#154)', () => {
     expect(Object.keys(kit)).toEqual(EXPECTED_NAMES);
     expect(new Set(EXPECTED_NAMES).size).toBe(EXPECTED_NAMES.length);
-    expect(EXPECTED_NAMES).toHaveLength(35);
+    expect(EXPECTED_NAMES).toHaveLength(36);
   });
 
   it('KIT-API-003: the shell members are the functions src/shell.js exports (#154)', () => {
@@ -159,19 +165,25 @@ describe('kit: the shared chart parts as one export', () => {
     expect(typeof kit.Chart.register).toBe('function');
   });
 
-  it('KIT-API-012: nothing else the shared modules export is on the kit: the prototype banner and the colour helper stay internal (#154)', () => {
+  it('KIT-API-012: nothing else the shared modules export is on the kit: the two status banners and the colour helper stay internal (#154)', () => {
     expect(typeof shell.prototypeBanner).toBe('function');
+    expect(typeof shell.experimentalBanner).toBe('function');
     expect(typeof boxWhisker.hexToRgba).toBe('function');
     expect(kit).not.toHaveProperty('prototypeBanner');
+    expect(kit).not.toHaveProperty('experimentalBanner');
     expect(kit).not.toHaveProperty('hexToRgba');
     // Every other export of the eight modules is a kit member.
     for (const [file, module, names] of MEMBERS) {
       const unlisted = Object.keys(module).filter((name) => !names.includes(name));
       const allowed =
-        { 'src/shell.js': ['prototypeBanner'], 'src/box-whisker.js': ['hexToRgba'] }[file] || [];
-      expect(unlisted, `${file} exports something the kit neither lists nor excludes`).toEqual(
-        allowed
-      );
+        {
+          'src/shell.js': ['experimentalBanner', 'prototypeBanner'],
+          'src/box-whisker.js': ['hexToRgba']
+        }[file] || [];
+      expect(
+        unlisted.sort(),
+        `${file} exports something the kit neither lists nor excludes`
+      ).toEqual(allowed);
     }
   });
 
