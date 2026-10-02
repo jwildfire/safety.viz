@@ -4,6 +4,7 @@ playwright-report/
 test-results/
 package-lock.json
 _site/
+_site.build-*/
 build/
 _api/
 

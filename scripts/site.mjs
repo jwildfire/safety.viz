@@ -13,6 +13,7 @@ import {
   mkdirSync,
   readFileSync,
   readdirSync,
+  renameSync,
   rmSync,
   writeFileSync
 } from 'node:fs';
@@ -37,7 +38,12 @@ import {
 import { APP_BUNDLE, APP_HTML, buildApp } from './build-app.mjs';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const siteDir = path.join(rootDir, '_site');
+// The site is built beside its destination and swapped in at the end, so a
+// reader of _site/ — a browser test in another worker, a second build — never
+// sees a half-written site. The build directory is per process because two
+// builds can run at once (two specs build the site in their beforeAll).
+const publishedDir = path.join(rootDir, '_site');
+const siteDir = path.join(rootDir, `_site.build-${process.pid}`);
 const { version } = JSON.parse(readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
 const config = JSON.parse(readFileSync(path.join(rootDir, 'site/config.json'), 'utf8'));
 const shell = readFileSync(path.join(rootDir, 'site/shell.html'), 'utf8');
@@ -244,8 +250,16 @@ errors.push(...validateSiteLinks(siteDir));
 if (errors.length) {
   console.error('✗ Site build failed validation:');
   errors.forEach((error) => console.error(`  - ${error}`));
+  rmSync(siteDir, { recursive: true, force: true });
   process.exit(1);
 }
+
+// Swap the finished build into place: the old site steps aside, the new one
+// takes its name, and only then is the old one removed.
+const retiredDir = `${siteDir}.old`;
+if (existsSync(publishedDir)) renameSync(publishedDir, retiredDir);
+renameSync(siteDir, publishedDir);
+rmSync(retiredDir, { recursive: true, force: true });
 
 const available = config.renderers.filter((entry) => entry.status === 'available').length;
 console.log(
