@@ -1,16 +1,13 @@
 {
   "module": "participant-profile",
-  "generatedAt": "2026-10-02T20:04:09.842Z",
+  "generatedAt": "2026-10-02T21:54:29.055Z",
   "environment": {
-    "os": "linux 6.17.0-1022-azure",
-    "node": "v22.23.3",
+    "os": "darwin 23.6.0",
+    "node": "v24.14.0",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": {
-    "id": "37058108195",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37058108195"
-  },
+  "run": null,
   "records": [
     {
       "test": "a chart link navigates straight to that renderer demo (#71)",
@@ -554,6 +551,54 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [71],
+      "screenshots": []
+    },
+    {
+      "test": "KIT-DOC-009: the kit page opens from the architecture page and a chart’s API reference, lists every member the bundle carries and fits a 390px phone with no sideways page scroll (#154)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["KIT-DOC-009"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "KIT-USE-001: the fixture page loads the committed bundle and no other script, and builds the shell with its sidebar with no console errors (#154)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["KIT-USE-001"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "KIT-USE-002: the page reads nothing from the bundle but the kit: no chart module is called directly (#154)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["KIT-USE-002"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "KIT-USE-003: the bar chart is drawn with kit.Chart, and the filter narrows it (#154)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["KIT-USE-003"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "KIT-USE-004: clicking a bar fills the record listing with that bar’s records, with search, paging and sort working (#154)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["KIT-USE-004"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "KIT-USE-005: clicking a listing row opens the participant rail on that participant, drawn by the same copy of Chart.js (#154)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["KIT-USE-005"],
+      "issueRefs": [154],
       "screenshots": []
     },
     {
@@ -3989,6 +4034,166 @@
       "screenshots": ["PPRF-ACC-001-keyboard-stepper.png"]
     },
     {
+      "test": "kit API data KIT-DOC-001: every kit member is documented once, with a description, its signature and the module it comes from (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-DOC-001"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "kit API data KIT-DOC-002: a signature is read from the member itself: a function’s parameters, the Chart constructor, a constant’s value (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-DOC-002"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "kit API data KIT-DOC-003: the reference says what the bundled Chart.js can draw, read from the committed bundle (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-DOC-003"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "kit API data KIT-DOC-004: a member that is undocumented, has no description, is documented but absent, or is not a source module’s export is reported as missing (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-DOC-004"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "kit: on the committed bundle KIT-API-015: the script-tag bundle carries SafetyViz.kit with the same members (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-API-015"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "kit: on the committed bundle KIT-API-016: the ES module bundle exports kit with the same members (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-API-016"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "kit: the shared chart parts as one export KIT-API-001: src/main.js exports the kit by name, and the default collection carries the same object (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-API-001"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "kit: the shared chart parts as one export KIT-API-002: the kit holds exactly the listed members, flat, under the names their modules export (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-API-002"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "kit: the shared chart parts as one export KIT-API-003: the shell members are the functions src/shell.js exports (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-API-003"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "kit: the shared chart parts as one export KIT-API-004: the filter contract is the one src/filters.js exports (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-API-004"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "kit: the shared chart parts as one export KIT-API-005: the axis-limit helpers are the functions src/axis-limits.js exports (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-API-005"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "kit: the shared chart parts as one export KIT-API-006: the record listing and its search, sort, paging and CSV functions are the ones src/histogram/listing.js exports (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-API-006"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "kit: the shared chart parts as one export KIT-API-007: the participant rail functions are the ones src/profile-host.js exports (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-API-007"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "kit: the shared chart parts as one export KIT-API-008: the box drawing and its plugin are the functions src/box-whisker.js exports (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-API-008"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "kit: the shared chart parts as one export KIT-API-009: the measure list functions are the ones src/measure-list.js exports (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-API-009"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "kit: the shared chart parts as one export KIT-API-010: the Kaplan–Meier estimator is the function src/time-to-event/km.js exports (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-API-010"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "kit: the shared chart parts as one export KIT-API-011: kit.Chart is the Chart.js constructor the charts import (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-API-011"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "kit: the shared chart parts as one export KIT-API-012: nothing else the shared modules export is on the kit: the two status banners and the colour helper stay internal (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-API-012"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "kit: the shared chart parts as one export KIT-API-013: the kit cannot be changed from outside: a member cannot be replaced, added or removed (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-API-013"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "kit: the shared chart parts as one export KIT-API-014: the kit is the only export added: every other export of src/main.js is still there under its name (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-API-014"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
       "test": "labControl (PPRF-3, PPRF-SPAG-002) reflects a subset and reports selection changes",
       "suite": "unit",
       "status": "pass",
@@ -6258,6 +6463,38 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [7, 29],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: kit page KIT-DOC-005: the page lists every member with its signature and description, under the module it comes from (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-DOC-005"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: kit page KIT-DOC-006: the page says how a second library reaches the kit from each bundle, and which file to load (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-DOC-006"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: kit page KIT-DOC-007: the page states that the kit is public surface and a change to any member is a breaking change, from the release in the typedef (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-DOC-007"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: kit page KIT-DOC-008: the kit page is reachable from the architecture page and from every chart’s API reference (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-DOC-008"],
+      "issueRefs": [154],
       "screenshots": []
     },
     {
