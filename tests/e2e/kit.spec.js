@@ -148,7 +148,11 @@ test.describe('kit: a page built from the bundle alone', () => {
 
     // One filter, built by the kit's filter contract: All plus every value.
     const select = page.locator('.sv-controls select[data-filter="SEX"]');
-    await expect(page.locator('.sv-control', { has: select }).locator('label')).toHaveText('Sex');
+    await expect(
+      page
+        .locator('.sv-control', { has: page.locator('select[data-filter="SEX"]') })
+        .locator('label')
+    ).toHaveText('Sex');
     await expect(select.locator('option')).toHaveText(['All', 'F', 'M']);
 
     const women = rows.filter((row) => row.SEX === 'F');
