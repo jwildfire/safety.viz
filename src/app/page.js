@@ -65,6 +65,13 @@ function tagFor(status) {
   return { text: status.state, className: 'sva-tag' };
 }
 
+/**
+ * A chart's name on its chip in the header. Every chart here is a safety chart,
+ * so the word is dropped; the full title is the view's heading and the chip's
+ * tooltip.
+ */
+const chipLabel = (title) => title.replace(/\bSafety\s+/, '');
+
 /** The hex beside a chart in the list: its domain's hue when ready, red when something is missing, hollow when it has nothing to read. */
 function hexFor(status) {
   if (status.state === 'ready') return 'sva-hex';
@@ -217,7 +224,15 @@ export function mountApp(
 
   function renderHead(current) {
     const { ready, total } = supportedCount(current);
-    count.textContent = state.busy || `${ready} of ${total} charts supported by the loaded data`;
+    // The tail of the sentence is dropped where the bar is short of room.
+    count.replaceChildren(
+      ...(state.busy
+        ? [state.busy]
+        : [
+            `${ready} of ${total} charts supported`,
+            el('span', 'sva-count-rest', ' by the loaded data')
+          ])
+    );
     // The data actions belong to the data view.
     actions.innerHTML = '';
     if (state.selected !== 'data') return;
@@ -237,10 +252,11 @@ export function mountApp(
     }
   }
 
-  function navItem(id, label, tag, hexClass) {
+  function navItem(id, label, tag, hexClass, fullTitle = label) {
     const button = el('button', 'sva-item');
     button.type = 'button';
     button.dataset.view = id;
+    if (fullTitle !== label) button.title = fullTitle;
     if (state.selected === id) button.setAttribute('aria-current', 'page');
     button.append(
       el('span', hexClass),
@@ -300,7 +316,13 @@ export function mountApp(
       section.append(el('h2', 'sva-group-title', groupTitle(group)));
       for (const [module, entry] of members) {
         section.append(
-          navItem(module, entry.title, tagFor(current[module]), hexFor(current[module]))
+          navItem(
+            module,
+            chipLabel(entry.title),
+            tagFor(current[module]),
+            hexFor(current[module]),
+            entry.title
+          )
         );
       }
       chartRow.append(section);

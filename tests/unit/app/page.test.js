@@ -63,8 +63,9 @@ describe('demo app: the page', () => {
       'Adverse events',
       'Outside the standard domains'
     ]);
+    // A chip drops the word every chart shares; see APP-PAGE-023.
     expect(groups.flatMap((group) => group.charts)).toEqual(
-      Object.values(manifest.modules).map((entry) => entry.title)
+      Object.values(manifest.modules).map((entry) => entry.title.replace('Safety ', ''))
     );
     expect(groups[3].charts).toEqual(['Patient Journey Explorer']);
     // Nothing is loaded: the page opens on the data view and no chart is ready.
@@ -317,5 +318,25 @@ describe('demo app: the page', () => {
     app.refresh();
     expect(tab('eg').querySelector('.sva-hex').className).toBe('sva-hex sva-alarm');
     expect(tab('eg').querySelector('.sva-tab-count').textContent).toBe('0 of 1');
+  });
+
+  it('APP-PAGE-023: a chart’s chip drops the word "Safety", and keeps the full title as its tooltip and as the view’s heading (#150)', () => {
+    const { charts } = fakeCharts();
+    const app = mountApp(root, { charts, manifest });
+    app.loadFiles(DEMO);
+    const label = (id) => item(root, id).querySelector('.sva-item-title').textContent;
+    expect(label('histogram')).toBe('Histogram');
+    expect(label('hep-explorer')).toBe('Hepatic Explorer');
+    expect(label('qt-explorer')).toBe('QT Explorer');
+    expect(label('hep-waterfall')).toBe('Hepatic ALT Waterfall');
+    expect(item(root, 'hep-explorer').title).toBe('Hepatic Safety Explorer');
+    // A chip whose label is already the title needs no tooltip.
+    expect(item(root, 'hep-waterfall').hasAttribute('title')).toBe(false);
+    app.select('hep-explorer');
+    expect(root.querySelector('.sva-title').textContent).toBe('Hepatic Safety Explorer');
+    // No chip repeats the word.
+    for (const chip of root.querySelectorAll('.sva-charts .sva-item-title')) {
+      expect(chip.textContent).not.toMatch(/Safety/);
+    }
   });
 });

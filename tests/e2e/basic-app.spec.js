@@ -62,8 +62,9 @@ test.describe('demo app on the demo study', () => {
       'Adverse events',
       'Outside the standard domains'
     ]);
+    // A chip drops the word every chart shares.
     await expect(page.locator('.sva-group .sva-item-title')).toHaveText(
-      modules.map(([, entry]) => entry.title)
+      modules.map(([, entry]) => entry.title.replace('Safety ', ''))
     );
     await expect(page.locator('.sva-group .sva-tag')).toHaveCount(14);
   });
@@ -207,8 +208,23 @@ test.describe('demo app on the demo study', () => {
     expect(header.width).toBe(1440);
     expect(chart.width).toBeGreaterThan(1440 - 80);
     expect(chart.y).toBeGreaterThan(header.y + header.height);
-    // The header stays shallow: the bar, and one or two rows of charts.
-    expect(header.height).toBeLessThan(150);
+    // The header stays shallow: one line for the bar and one for the charts,
+    // even for the nine charts of labs and vitals, down to a 1280-pixel screen.
+    for (const width of [1440, 1280]) {
+      await page.setViewportSize({ width, height: 900 });
+      await tab(page, 'bds').click();
+      const size = await page.evaluate(() => {
+        const row = document.querySelector('.sva-group:not([hidden])');
+        return {
+          header: document.querySelector('.sva-header').getBoundingClientRect().height,
+          row: document.querySelector('.sva-charts').getBoundingClientRect().height,
+          fits: row.scrollWidth <= row.clientWidth
+        };
+      });
+      expect(size.header).toBeLessThan(100);
+      expect(size.row).toBeLessThan(40);
+      expect(size.fits).toBe(true);
+    }
     await expect(page.locator('.sva-footer .sva-pitch')).toHaveText(
       'Everything runs in this browser. Nothing is sent anywhere.'
     );
