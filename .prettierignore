@@ -23,3 +23,7 @@ tests/evals/reports/*.md
 # Generated from skills/patient-journey-narratives/ by scripts/narratives/build-skills.mjs
 # (#146); its bytes are the compiler's, and a test pins them to a fresh compile.
 src/patientJourneyNarratives/skills.generated.js
+
+# The renamed-column study for the portfolio app's browser tests (#151): written
+# by scripts/build-app-fixture.mjs, and a test pins the files to its output.
+tests/e2e/fixtures/app/
