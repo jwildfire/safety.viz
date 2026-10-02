@@ -12855,7 +12855,7 @@ function normalizeFilterSpec(value, fallbackLabel) {
     const raw = Array.isArray(spec.start) ? spec.start : [spec.start];
     start = multiple ? raw.map(String) : String(raw[0]);
   }
-  const all = spec.all === void 0 ? !started : spec.all !== false;
+  const all = spec.all !== false;
   return { ...spec, start, all, multiple };
 }
 function initFilterState(specs) {
@@ -12864,6 +12864,41 @@ function initFilterState(specs) {
     state[spec.value_col] = spec.start === void 0 ? null : spec.start;
   });
   return state;
+}
+function reconcileFilters(state, specs, valuesOf) {
+  const drawn = new Set(specs.map((spec) => spec.value_col));
+  Object.keys(state).forEach((column) => {
+    if (!drawn.has(column)) delete state[column];
+  });
+  return specs.map((spec) => {
+    const values = valuesOf(spec);
+    const has = (value) => values.some((candidate) => String(candidate) === String(value));
+    const missing = (value, fallback) => console.warn(
+      `The [ ${spec.label} ] filter value [ ${value} ] does not exist in the data, so the filter ${fallback}.`
+    );
+    let selected = state[spec.value_col];
+    if (selected === void 0) selected = spec.start;
+    if (spec.multiple) {
+      if (selected === null || selected === void 0 || selected === "") selected = null;
+      else {
+        const list2 = (Array.isArray(selected) ? selected : [selected]).map(String);
+        const kept = list2.filter(has);
+        list2.filter((value) => !has(value)).forEach((value) => missing(value, "opens without it"));
+        selected = kept.length || !list2.length ? kept : null;
+      }
+    } else {
+      if (Array.isArray(selected)) selected = selected.length ? selected[0] : null;
+      if (selected === void 0 || selected === "") selected = null;
+      const first = spec.all || !values.length ? null : String(values[0]);
+      if (selected !== null && !has(selected)) {
+        missing(selected, first === null ? "opens on All" : `opens on [ ${first} ]`);
+        selected = null;
+      }
+      if (selected === null) selected = first;
+    }
+    state[spec.value_col] = selected;
+    return { spec, values, selected };
+  });
 }
 function filterMatches(rowValue, selection) {
   if (selection === null || selection === void 0 || selection === "") return true;
@@ -13021,9 +13056,15 @@ var histogram_default = {
           default: "STNRHI",
           description: "Optional upper limit of normal."
         },
+        measures: {
+          type: ["array", "null"],
+          items: { type: "string" },
+          default: null,
+          description: "Ordered whitelist of measures the Measure control offers: only these appear, and in this order. null or [] offers every measure in the data, alphabetically. Configured measures absent from the data are dropped with a console warning (SH-MEAS-001)."
+        },
         filters: {
-          $ref: "#/$defs/fieldList",
-          description: "Optional filter columns rendered as controls."
+          $ref: "#/$defs/filterList",
+          description: 'Optional filter columns rendered as controls. Each entry is a column name or a { value_col, label, start, all, multiple } spec: `start` is the value the filter opens on, `all` (default true) is whether an "All" option is offered, and `multiple` (default false) makes it a checkbox multiselect.'
         },
         groups: {
           $ref: "#/$defs/fieldList",
@@ -13048,6 +13089,37 @@ var histogram_default = {
             properties: {
               value_col: { type: "string" },
               label: { type: "string" }
+            }
+          }
+        ]
+      }
+    },
+    filterList: {
+      type: "array",
+      items: {
+        anyOf: [
+          { type: "string" },
+          {
+            type: "object",
+            required: ["value_col"],
+            properties: {
+              value_col: { type: "string" },
+              label: { type: "string" },
+              start: {
+                type: ["string", "number", "boolean", "array", "null"],
+                default: null,
+                description: "The value the filter opens on; an array of values for a `multiple` filter. 0 and false are real values, not an absent start. A value the data lacks is dropped with a console warning."
+              },
+              all: {
+                type: "boolean",
+                default: true,
+                description: 'Whether the filter offers an "All" option. false removes it, and the filter then always holds one value: the first, unless `start` names another.'
+              },
+              multiple: {
+                type: "boolean",
+                default: false,
+                description: "Render a checkbox multiselect instead of a dropdown; the rows shown are those matching any selected value."
+              }
             }
           }
         ]
@@ -15886,7 +15958,7 @@ var SafetyParticipantProfile = class {
     try {
       checkInputs2(this.rawData, this.settings);
     } catch (error) {
-      this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+      this.element.replaceChildren(createElement("div", "sv-warning", error.message));
       throw error;
     }
     const { rows, removed } = cleanData2(this.rawData, this.settings);
@@ -16483,7 +16555,7 @@ var SafetyHistogram = class {
     try {
       checkInputs(this.rawData, this.settings);
     } catch (error) {
-      this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+      this.element.replaceChildren(createElement("div", "sv-warning", error.message));
       throw error;
     }
     const { rows, removed } = cleanData(this.rawData, this.settings);
@@ -16564,14 +16636,17 @@ var SafetyHistogram = class {
       return exists;
     });
     const filterParent = filterSpecs.length ? addSection("Filters") : this.controls;
-    filterSpecs.forEach((filter) => {
-      const values = unique(this.cleanData.map((row) => row[filter.value_col])).sort();
+    reconcileFilters(
+      this.state.filters,
+      filterSpecs,
+      (filter) => unique(this.cleanData.map((row) => row[filter.value_col])).sort()
+    ).forEach(({ spec: filter, values, selected }) => {
       addControl(
         filter.label,
         renderFilterControl({
           spec: filter,
           values,
-          selected: this.state.filters[filter.value_col],
+          selected,
           onChange: (next) => {
             this.state.filters[filter.value_col] = next;
             this.render();
@@ -17202,7 +17277,7 @@ function fieldSpec4(value, fallbackLabel) {
 function syncSettings4(settings) {
   const synced = { ...DEFAULT_SETTINGS4, ...settings };
   synced.measures = arrayify4(synced.measures);
-  synced.filters = arrayify4(synced.filters).map((filter) => fieldSpec4(filter)).filter((filter) => filter.value_col);
+  synced.filters = arrayify4(synced.filters).map((filter) => normalizeFilterSpec(filter)).filter((filter) => filter.value_col);
   synced.baseline_visits = synced.baseline_visits == null ? null : arrayify4(synced.baseline_visits);
   synced.comparison_visits = synced.comparison_visits == null ? null : arrayify4(synced.comparison_visits);
   synced.baseline_stat = STATS.includes(synced.baseline_stat) ? synced.baseline_stat : "mean";
@@ -17293,9 +17368,21 @@ var shift_plot_default = {
           default: "mean",
           description: "Summary statistic applied when a participant has several results across the comparison visit(s)."
         },
+        measures: {
+          type: ["array", "null"],
+          items: { type: "string" },
+          default: null,
+          description: "Ordered whitelist of measures the Measure control offers: only these appear, and in this order. null or [] offers every measure in the data, alphabetically. Configured measures absent from the data are dropped with a console warning (SSP-MEAS-001)."
+        },
+        axis_type: {
+          type: "string",
+          enum: ["linear", "log"],
+          default: "linear",
+          description: "Initial scale for both axes; the Axis Type control switches them together because the two axes share one domain. On the log scale a participant pair with a zero or negative value is removed and counted in the note above the chart (SSP-SCALE-001, SSP-SCALE-003)."
+        },
         filters: {
-          $ref: "#/$defs/fieldList",
-          description: "Optional filter columns rendered as controls (SSP-CFG-006)."
+          $ref: "#/$defs/filterList",
+          description: 'Optional filter columns rendered as controls (SSP-CFG-006). Each entry is a column name or a { value_col, label, start, all, multiple } spec: `start` is the value the filter opens on, `all` (default true) is whether an "All" option is offered, and `multiple` (default false) makes it a checkbox multiselect.'
         },
         details: {
           $ref: "#/$defs/fieldList",
@@ -17320,6 +17407,37 @@ var shift_plot_default = {
             properties: {
               value_col: { type: "string" },
               label: { type: "string" }
+            }
+          }
+        ]
+      }
+    },
+    filterList: {
+      type: "array",
+      items: {
+        anyOf: [
+          { type: "string" },
+          {
+            type: "object",
+            required: ["value_col"],
+            properties: {
+              value_col: { type: "string" },
+              label: { type: "string" },
+              start: {
+                type: ["string", "number", "boolean", "array", "null"],
+                default: null,
+                description: "The value the filter opens on; an array of values for a `multiple` filter. 0 and false are real values, not an absent start. A value the data lacks is dropped with a console warning."
+              },
+              all: {
+                type: "boolean",
+                default: true,
+                description: 'Whether the filter offers an "All" option. false removes it, and the filter then always holds one value: the first, unless `start` names another.'
+              },
+              multiple: {
+                type: "boolean",
+                default: false,
+                description: "Render a checkbox multiselect instead of a dropdown; the rows shown are those matching any selected value."
+              }
             }
           }
         ]
@@ -17743,7 +17861,7 @@ var SafetyShiftPlot = class {
     try {
       checkInputs3(this.rawData, this.settings);
     } catch (error) {
-      this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+      this.element.replaceChildren(createElement("div", "sv-warning", error.message));
       throw error;
     }
     const { rows, removed } = cleanData3(this.rawData, this.settings);
@@ -17865,16 +17983,20 @@ var SafetyShiftPlot = class {
         );
       return exists;
     });
-    if (filterSpecs.length) {
+    const filterControls = reconcileFilters(
+      this.state.filters,
+      filterSpecs,
+      (filter) => unique2(this.cleanData.map((row) => row[filter.value_col])).sort()
+    );
+    if (filterControls.length) {
       const filterParent = addSection("Filters");
-      filterSpecs.forEach((filter) => {
-        const values = unique2(this.cleanData.map((row) => row[filter.value_col])).sort();
+      filterControls.forEach(({ spec: filter, values, selected }) => {
         addControl(
           filter.label,
           renderFilterControl({
             spec: filter,
             values,
-            selected: this.state.filters[filter.value_col],
+            selected,
             onChange: (next) => {
               this.state.filters[filter.value_col] = next;
               this.render();
@@ -18328,9 +18450,15 @@ var delta_delta_default = {
           default: true,
           description: "Draw a simple linear regression line with an equation and R\xB2 note (SDD-REG-026)."
         },
+        measures: {
+          type: ["array", "null"],
+          items: { type: "string" },
+          default: null,
+          description: "Ordered whitelist of measures the Measure control offers: only these appear, and in this order. null or [] offers every measure in the data, alphabetically. The first two listed are the comparison the chart opens on unless measure_x / measure_y say otherwise. Configured measures absent from the data are dropped with a console warning (SDD-MEAS-001)."
+        },
         filters: {
-          $ref: "#/$defs/fieldList",
-          description: "Optional filter columns rendered as controls (SDD-CFG-014)."
+          $ref: "#/$defs/filterList",
+          description: 'Optional filter columns rendered as controls (SDD-CFG-014). Each entry is a column name or a { value_col, label, start, all, multiple } spec: `start` is the value the filter opens on, `all` (default true) is whether an "All" option is offered, and `multiple` (default false) makes it a checkbox multiselect.'
         },
         details: {
           $ref: "#/$defs/fieldList",
@@ -18351,6 +18479,37 @@ var delta_delta_default = {
             properties: {
               value_col: { type: "string" },
               label: { type: "string" }
+            }
+          }
+        ]
+      }
+    },
+    filterList: {
+      type: "array",
+      items: {
+        anyOf: [
+          { type: "string" },
+          {
+            type: "object",
+            required: ["value_col"],
+            properties: {
+              value_col: { type: "string" },
+              label: { type: "string" },
+              start: {
+                type: ["string", "number", "boolean", "array", "null"],
+                default: null,
+                description: "The value the filter opens on; an array of values for a `multiple` filter. 0 and false are real values, not an absent start. A value the data lacks is dropped with a console warning."
+              },
+              all: {
+                type: "boolean",
+                default: true,
+                description: 'Whether the filter offers an "All" option. false removes it, and the filter then always holds one value: the first, unless `start` names another.'
+              },
+              multiple: {
+                type: "boolean",
+                default: false,
+                description: "Render a checkbox multiselect instead of a dropdown; the rows shown are those matching any selected value."
+              }
             }
           }
         ]
@@ -18828,7 +18987,7 @@ var SafetyDeltaDelta = class {
     try {
       checkInputs4(this.rawData, this.settings);
     } catch (error) {
-      this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+      this.element.replaceChildren(createElement("div", "sv-warning", error.message));
       throw error;
     }
     let removed = 0;
@@ -18925,16 +19084,20 @@ var SafetyDeltaDelta = class {
         );
       return exists;
     });
-    if (filterSpecs.length) {
+    const filterControls = reconcileFilters(
+      this.state.filters,
+      filterSpecs,
+      (filter) => unique3(this.cleanRows.map((row) => row[filter.value_col])).sort()
+    );
+    if (filterControls.length) {
       const filterParent = addSection("Filters");
-      filterSpecs.forEach((filter) => {
-        const values = unique3(this.cleanRows.map((row) => row[filter.value_col])).sort();
+      filterControls.forEach(({ spec: filter, values, selected }) => {
         addControl(
           filter.label,
           renderFilterControl({
             spec: filter,
             values,
-            selected: this.state.filters[filter.value_col],
+            selected,
             onChange: (next) => {
               this.state.filters[filter.value_col] = next;
               this.render();
@@ -19258,9 +19421,31 @@ var results_over_time_default = {
           default: "STRESU",
           description: "Optional unit column, appended to measure labels and the y-axis title."
         },
+        measures: {
+          type: ["array", "null"],
+          items: { type: "string" },
+          default: null,
+          description: "Ordered whitelist of measures the Measure control offers: only these appear, and in this order. null or [] offers every measure in the data, alphabetically. Configured measures absent from the data are dropped with a console warning (SROT-MEAS-001)."
+        },
+        unscheduled_visits: {
+          type: "boolean",
+          default: false,
+          description: "Show unscheduled visits on the x-axis (matched by unscheduled_visit_values, else by unscheduled_visit_pattern). A display toggle: no statistic is re-derived."
+        },
+        unscheduled_visit_pattern: {
+          type: "string",
+          default: "/unscheduled|early termination/i",
+          description: "Regular expression, in /source/flags string form, identifying an unscheduled visit (SROT-CFG-017)."
+        },
+        unscheduled_visit_values: {
+          type: ["array", "null"],
+          items: { type: "string" },
+          default: null,
+          description: "Explicit list of unscheduled visit names; takes precedence over unscheduled_visit_pattern when set (SROT-CFG-019)."
+        },
         filters: {
-          $ref: "#/$defs/fieldList",
-          description: "Optional filter columns rendered as controls."
+          $ref: "#/$defs/filterList",
+          description: 'Optional filter columns rendered as controls. Each entry is a column name or a { value_col, label, start, all, multiple } spec: `start` is the value the filter opens on, `all` (default true) is whether an "All" option is offered, and `multiple` (default false) makes it a checkbox multiselect.'
         },
         groups: {
           $ref: "#/$defs/fieldList",
@@ -19281,6 +19466,37 @@ var results_over_time_default = {
             properties: {
               value_col: { type: "string" },
               label: { type: "string" }
+            }
+          }
+        ]
+      }
+    },
+    filterList: {
+      type: "array",
+      items: {
+        anyOf: [
+          { type: "string" },
+          {
+            type: "object",
+            required: ["value_col"],
+            properties: {
+              value_col: { type: "string" },
+              label: { type: "string" },
+              start: {
+                type: ["string", "number", "boolean", "array", "null"],
+                default: null,
+                description: "The value the filter opens on; an array of values for a `multiple` filter. 0 and false are real values, not an absent start. A value the data lacks is dropped with a console warning."
+              },
+              all: {
+                type: "boolean",
+                default: true,
+                description: 'Whether the filter offers an "All" option. false removes it, and the filter then always holds one value: the first, unless `start` names another.'
+              },
+              multiple: {
+                type: "boolean",
+                default: false,
+                description: "Render a checkbox multiselect instead of a dropdown; the rows shown are those matching any selected value."
+              }
             }
           }
         ]
@@ -19676,7 +19892,7 @@ var SafetyResultsOverTime = class {
     try {
       checkInputs5(this.rawData, this.settings);
     } catch (error) {
-      this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+      this.element.replaceChildren(createElement("div", "sv-warning", error.message));
       throw error;
     }
     const { rows, removed } = cleanData4(this.rawData, this.settings);
@@ -19761,14 +19977,17 @@ var SafetyResultsOverTime = class {
       return exists;
     });
     const filterParent = filterSpecs.length ? addSection("Filters") : this.controls;
-    filterSpecs.forEach((filter) => {
-      const values = unique4(this.cleanData.map((row) => row[filter.value_col])).sort();
+    reconcileFilters(
+      this.state.filters,
+      filterSpecs,
+      (filter) => unique4(this.cleanData.map((row) => row[filter.value_col])).sort()
+    ).forEach(({ spec: filter, values, selected }) => {
       addControl(
         filter.label,
         renderFilterControl({
           spec: filter,
           values,
-          selected: this.state.filters[filter.value_col],
+          selected,
           onChange: (next) => {
             this.state.filters[filter.value_col] = next;
             this.render();
@@ -20243,9 +20462,15 @@ var outlier_explorer_default = {
           $ref: "#/$defs/fieldList",
           description: "Optional time-axis options ({ value_col, label, type, order_col }); when omitted a derived Measurement sequence is used (SOE-FUNC-004)."
         },
+        measures: {
+          type: ["array", "null"],
+          items: { type: "string" },
+          default: null,
+          description: "Ordered whitelist of measures the Measure control offers: only these appear, and in this order. null or [] offers every measure in the data, alphabetically. Configured measures absent from the data are dropped with a console warning (SOE-MEAS-001)."
+        },
         filters: {
-          $ref: "#/$defs/fieldList",
-          description: "Optional filter columns rendered as controls (SOE-CFG-004)."
+          $ref: "#/$defs/filterList",
+          description: 'Optional filter columns rendered as controls (SOE-CFG-004). Each entry is a column name or a { value_col, label, start, all, multiple } spec: `start` is the value the filter opens on, `all` (default true) is whether an "All" option is offered, and `multiple` (default false) makes it a checkbox multiselect.'
         },
         groups: {
           $ref: "#/$defs/fieldList",
@@ -20274,6 +20499,37 @@ var outlier_explorer_default = {
             properties: {
               value_col: { type: "string" },
               label: { type: "string" }
+            }
+          }
+        ]
+      }
+    },
+    filterList: {
+      type: "array",
+      items: {
+        anyOf: [
+          { type: "string" },
+          {
+            type: "object",
+            required: ["value_col"],
+            properties: {
+              value_col: { type: "string" },
+              label: { type: "string" },
+              start: {
+                type: ["string", "number", "boolean", "array", "null"],
+                default: null,
+                description: "The value the filter opens on; an array of values for a `multiple` filter. 0 and false are real values, not an absent start. A value the data lacks is dropped with a console warning."
+              },
+              all: {
+                type: "boolean",
+                default: true,
+                description: 'Whether the filter offers an "All" option. false removes it, and the filter then always holds one value: the first, unless `start` names another.'
+              },
+              multiple: {
+                type: "boolean",
+                default: false,
+                description: "Render a checkbox multiselect instead of a dropdown; the rows shown are those matching any selected value."
+              }
             }
           }
         ]
@@ -20748,7 +21004,7 @@ var SafetyOutlierExplorer = class {
     try {
       checkInputs6(this.rawData, this.settings);
     } catch (error) {
-      this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+      this.element.replaceChildren(createElement("div", "sv-warning", error.message));
       throw error;
     }
     const { rows, removed } = cleanData5(this.rawData, this.settings);
@@ -20836,14 +21092,17 @@ var SafetyOutlierExplorer = class {
       return exists;
     });
     const filterParent = filterSpecs.length ? addSection("Filters") : this.controls;
-    filterSpecs.forEach((filter) => {
-      const values = unique5(this.cleanData.map((row) => row[filter.value_col])).sort();
+    reconcileFilters(
+      this.state.filters,
+      filterSpecs,
+      (filter) => unique5(this.cleanData.map((row) => row[filter.value_col])).sort()
+    ).forEach(({ spec: filter, values, selected }) => {
       addControl(
         filter.label,
         renderFilterControl({
           spec: filter,
           values,
-          selected: this.state.filters[filter.value_col],
+          selected,
           onChange: (next) => {
             this.state.filters[filter.value_col] = next;
             this.render();
@@ -21465,8 +21724,8 @@ var ae_timelines_default = {
           }
         },
         filters: {
-          $ref: "#/$defs/fieldList",
-          description: "Filter columns rendered as controls (AET-CFG-011); defaults to serious event, severity, and participant identifier."
+          $ref: "#/$defs/filterList",
+          description: 'Filter columns rendered as controls (AET-CFG-011); defaults to serious event, severity, and participant identifier. Each entry is a column name or a { value_col, label, start, all, multiple } spec: `start` is the value the filter opens on, `all` (default true) is whether an "All" option is offered, and `multiple` (default false) makes it a checkbox multiselect.'
         },
         details: {
           $ref: "#/$defs/fieldList",
@@ -21493,6 +21752,37 @@ var ae_timelines_default = {
             properties: {
               value_col: { type: "string" },
               label: { type: "string" }
+            }
+          }
+        ]
+      }
+    },
+    filterList: {
+      type: ["array", "null"],
+      items: {
+        anyOf: [
+          { type: "string" },
+          {
+            type: "object",
+            required: ["value_col"],
+            properties: {
+              value_col: { type: "string" },
+              label: { type: "string" },
+              start: {
+                type: ["string", "number", "boolean", "array", "null"],
+                default: null,
+                description: "The value the filter opens on; an array of values for a `multiple` filter. 0 and false are real values, not an absent start. A value the data lacks is dropped with a console warning."
+              },
+              all: {
+                type: "boolean",
+                default: true,
+                description: 'Whether the filter offers an "All" option. false removes it, and the filter then always holds one value: the first, unless `start` names another.'
+              },
+              multiple: {
+                type: "boolean",
+                default: false,
+                description: "Render a checkbox multiselect instead of a dropdown; the rows shown are those matching any selected value."
+              }
             }
           }
         ]
@@ -21881,7 +22171,7 @@ var AETimelines = class {
     try {
       checkInputs7(this.rawData, this.settings);
     } catch (error) {
-      this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+      this.element.replaceChildren(createElement("div", "sv-warning", error.message));
       throw error;
     }
     this.population = populationCount(this.rawData, this.settings);
@@ -21919,15 +22209,16 @@ var AETimelines = class {
       return true;
     });
     const filterParent = filterSpecs.length ? addSection("Filters") : this.controls;
-    filterSpecs.forEach((filter) => {
+    reconcileFilters(this.state.filters, filterSpecs, (filter) => {
       const values = unique(this.cleanRows.map((row) => row[filter.value_col]));
-      const ordered = filter.value_col === this.settings.color.value_col ? domain.filter((value) => values.includes(value)) : values.sort();
+      return filter.value_col === this.settings.color.value_col ? domain.filter((value) => values.includes(value)) : values.sort();
+    }).forEach(({ spec: filter, values, selected }) => {
       addControl(
         filter.label,
         renderFilterControl({
           spec: filter,
-          values: ordered,
-          selected: this.state.filters[filter.value_col],
+          values,
+          selected,
           onChange: (next) => {
             this.state.filters[filter.value_col] = next;
             this.render();
@@ -21997,7 +22288,10 @@ var AETimelines = class {
       this.removedTerm ? `${this.removedTerm} records without [ ${this.settings.term_col} ] removed.` : "",
       this.removedDay ? `${this.removedDay} records without [ ${this.settings.stdy_col} ] removed.` : ""
     ].filter(Boolean).join(" ");
-    this.notes.innerHTML = `<em>${shown} of ${this.population} participant ID(s) shown (${pct}%)</em>` + (warnings ? `<span class="sv-warning">${warnings}</span>` : "");
+    this.notes.replaceChildren(
+      createElement("em", null, `${shown} of ${this.population} participant ID(s) shown (${pct}%)`)
+    );
+    if (warnings) this.notes.append(createElement("span", "sv-warning", warnings));
   }
   /**
    * Draw one timeline chart — the main participant chart or the detail
@@ -22340,9 +22634,25 @@ var hep_explorer_default = {
           default: [0, null],
           description: "Initial R-Ratio [min, max]; a null max is resolved from the data on first render (HEP-CTRL-010)."
         },
+        unscheduled_visits: {
+          type: "boolean",
+          default: true,
+          description: "Include records taken at an unscheduled visit (matched by unscheduled_visit_values, else by unscheduled_visit_pattern, against visit_col) in the baseline and peak reduction. Included by default, unlike results-over-time: turning it off re-derives every baseline and peak from the scheduled records alone, and the note above the chart states how many records were excluded (HEP-CTRL-018)."
+        },
+        unscheduled_visit_pattern: {
+          type: "string",
+          default: "/unscheduled|early termination/i",
+          description: "Regular expression, in /source/flags string form, identifying an unscheduled visit (HEP-DATA-013)."
+        },
+        unscheduled_visit_values: {
+          type: ["array", "null"],
+          items: { type: "string" },
+          default: null,
+          description: "Explicit list of unscheduled visit names; takes precedence over unscheduled_visit_pattern when set (HEP-DATA-013)."
+        },
         filters: {
-          $ref: "#/$defs/fieldList",
-          description: "Optional filter columns rendered as controls (HEP-CTRL-011)."
+          $ref: "#/$defs/filterList",
+          description: 'Optional filter columns rendered as controls (HEP-CTRL-011). Each entry is a column name or a { value_col, label, start, all, multiple } spec: `start` is the value the filter opens on, `all` (default true) is whether an "All" option is offered, and `multiple` (default false) makes it a checkbox multiselect.'
         },
         groups: {
           $ref: "#/$defs/fieldList",
@@ -22367,6 +22677,37 @@ var hep_explorer_default = {
             properties: {
               value_col: { type: "string" },
               label: { type: "string" }
+            }
+          }
+        ]
+      }
+    },
+    filterList: {
+      type: "array",
+      items: {
+        anyOf: [
+          { type: "string" },
+          {
+            type: "object",
+            required: ["value_col"],
+            properties: {
+              value_col: { type: "string" },
+              label: { type: "string" },
+              start: {
+                type: ["string", "number", "boolean", "array", "null"],
+                default: null,
+                description: "The value the filter opens on; an array of values for a `multiple` filter. 0 and false are real values, not an absent start. A value the data lacks is dropped with a console warning."
+              },
+              all: {
+                type: "boolean",
+                default: true,
+                description: 'Whether the filter offers an "All" option. false removes it, and the filter then always holds one value: the first, unless `start` names another.'
+              },
+              multiple: {
+                type: "boolean",
+                default: false,
+                description: "Render a checkbox multiselect instead of a dropdown; the rows shown are those matching any selected value."
+              }
             }
           }
         ]
@@ -23646,15 +23987,6 @@ function updateNotes(host) {
       );
     }
     host.notes.append(note);
-  }
-  if (host.unscheduledRecords) {
-    host.notes.append(
-      createElement(
-        "span",
-        null,
-        `${host.unscheduledRecords} records at unscheduled visits excluded.`
-      )
-    );
   }
   if (host.droppedParticipants) {
     const dropReason2 = host.state.display === "relative_baseline" ? `missing ${host.state.measureX}/${host.state.measureY} peak or baseline` : `missing ${host.state.measureX}/${host.state.measureY} peak`;
@@ -25105,36 +25437,39 @@ function buildHyLawCaution(host, cells) {
 }
 function renderNotes(host, cohort, summary) {
   const total = unique6(host.cleanRows.map((row) => row[host.settings.id_col])).length;
-  const parts = [
-    `<span>${cohort.plotted.length} of ${total} participants shown in the migration plot.</span>`
-  ];
+  const notes = [];
+  const note = (text3, warning = false) => notes.push(createElement("span", warning ? "sv-warning" : null, text3));
+  note(`${cohort.plotted.length} of ${total} participants shown in the migration plot.`);
   if (cohort.excludedNoData)
-    parts.push(
-      `<span class="sv-warning">${cohort.excludedNoData} participant${cohort.excludedNoData > 1 ? "s" : ""} excluded (missing baseline or on-treatment ALT/total bilirubin).</span>`
+    note(
+      `${cohort.excludedNoData} participant${cohort.excludedNoData > 1 ? "s" : ""} excluded (missing baseline or on-treatment ALT/total bilirubin).`,
+      true
     );
   if (cohort.armExcluded)
-    parts.push(
-      `<span class="sv-warning">${cohort.armExcluded} participant${cohort.armExcluded > 1 ? "s" : ""} excluded: arm not designated placebo or active.</span>`
+    note(
+      `${cohort.armExcluded} participant${cohort.armExcluded > 1 ? "s" : ""} excluded: arm not designated placebo or active.`,
+      true
     );
   if (host.state.hideUnchanged) {
     const hidden = summary.placebo.diagonal + summary.active.diagonal;
-    parts.push(`<span>Hide unchanged is on: ${hidden} no-migration participants hidden.</span>`);
+    note(`Hide unchanged is on: ${hidden} no-migration participants hidden.`);
   }
-  if (cohort.designation.warning)
-    parts.push(`<span class="sv-warning">${cohort.designation.warning}</span>`);
+  if (cohort.designation.warning) note(cohort.designation.warning, true);
   if (cohort.designation.placeboArm && !host.state.activeArms) {
     const pooled = cohort.arms.filter((arm) => arm !== cohort.designation.placeboArm);
     if (pooled.length > 1)
-      parts.push(
-        `<span class="sv-warning">Active side pools ${pooled.join(", ")}; use the Active arm control to compare one at a time.</span>`
+      note(
+        `Active side pools ${pooled.join(", ")}; use the Active arm control to compare one at a time.`,
+        true
       );
   }
   const sidesPresent = SIDES3.filter((side) => summary[side].total > 0);
   if (sidesPresent.length < 2)
-    parts.push(
-      '<span class="sv-warning">Only one treatment side is designated, so the plot is one-directional. Map arm_col and set placebo_arm / active_arms to compare arms.</span>'
+    note(
+      "Only one treatment side is designated, so the plot is one-directional. Map arm_col and set placebo_arm / active_arms to compare arms.",
+      true
     );
-  host.notes.innerHTML = parts.join("");
+  host.notes.replaceChildren(...notes);
 }
 function contributeControls(host, { addControl, settingsParent }) {
   const hide = addControl("Hide unchanged", document.createElement("input"), settingsParent);
@@ -26053,7 +26388,7 @@ var SafetyHepExplorer = class {
     if ("unscheduled_visits" in settings)
       this.state.unscheduledVisits = this.settings.unscheduled_visits;
     if ("details" in settings) this.profileDetails = this.settings.details;
-    this.state.filters = {};
+    this.state.filters = initFilterState(this.settings.filters);
     if (this.rawData.length) this.validateAndCleanData();
     this.syncProfileRail();
     this.buildControls();
@@ -26070,7 +26405,7 @@ var SafetyHepExplorer = class {
     try {
       checkInputs8(this.rawData, this.settings);
     } catch (error) {
-      this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+      this.element.replaceChildren(createElement("div", "sv-warning", error.message));
       throw error;
     }
     const { rows, removed, dropped } = cleanData2(this.rawData, this.settings);
@@ -26202,18 +26537,21 @@ var SafetyHepExplorer = class {
         this.render();
       };
     }
-    const filterSpecs = this.activeFilterSpecs();
+    const filterControls = reconcileFilters(
+      this.state.filters,
+      this.activeFilterSpecs(),
+      (filter) => unique6(this.cleanRows.map((row) => row[filter.value_col])).sort()
+    );
     const showRRatio = this.settings.r_ratio_filter && view.usesRRatioFilter;
-    if (filterSpecs.length || showRRatio) {
+    if (filterControls.length || showRRatio) {
       const filterParent = addSection("Filters");
-      filterSpecs.forEach((filter) => {
-        const values = unique6(this.cleanRows.map((row) => row[filter.value_col])).sort();
+      filterControls.forEach(({ spec: filter, values, selected }) => {
         addControl(
           filter.label,
           renderFilterControl({
             spec: filter,
             values,
-            selected: this.state.filters[filter.value_col],
+            selected,
             onChange: (next) => {
               this.state.filters[filter.value_col] = next;
               this.render();
@@ -26247,7 +26585,7 @@ var SafetyHepExplorer = class {
     clearAxisLimits(this.state.axisY);
     this.state.pointSize = "Uniform";
     this.state.visitWindow = this.settings.visit_window;
-    this.state.filters = {};
+    this.state.filters = initFilterState(this.settings.filters);
     this.state.rRatio = [...this.settings.r_ratio];
     this.state.hideUnchanged = this.settings.hide_unchanged;
     this.state.activeArms = this.settings.active_arms;
@@ -26345,6 +26683,16 @@ var SafetyHepExplorer = class {
     }
     view.teardown(this);
     view.render(this, { carriedIds });
+    if (this.unscheduledRecords) {
+      const count2 = this.unscheduledRecords;
+      this.notes.append(
+        createElement(
+          "span",
+          null,
+          `${count2} record${count2 === 1 ? "" : "s"} at unscheduled visits excluded.`
+        )
+      );
+    }
   }
   /**
    * The selected participant's cleaned lab records, augmented with the derived
@@ -26599,7 +26947,7 @@ var ae_explorer_default = {
         },
         filters: {
           $ref: "#/$defs/filterList",
-          description: "Filter controls (AE-USER-018): column names or { value_col, label, type, start } specs. Type 'event' narrows the events counted; type 'participant' narrows the analysis population and its denominators. Defaults to the four ADAE event filters \u2014 seriousness, severity, relationship, outcome; filters whose column is absent or single-valued are dropped with a console warning."
+          description: "Filter controls (AE-USER-018): column names or { value_col, label, type, start, all, multiple } specs: `start` is the value the filter opens on, `all` (default true) is whether an \"All\" option is offered, and `multiple` (default false) makes it a checkbox multiselect. Type 'event' narrows the events counted; type 'participant' narrows the analysis population and its denominators. Defaults to the four ADAE event filters \u2014 seriousness, severity, relationship, outcome; filters whose column is absent or single-valued are dropped with a console warning."
         },
         details: {
           $ref: "#/$defs/fieldList",
@@ -26717,7 +27065,21 @@ var ae_explorer_default = {
               value_col: { type: "string" },
               label: { type: "string" },
               type: { type: "string", enum: ["event", "participant"], default: "event" },
-              start: { type: ["array", "string", "null"], default: null }
+              start: {
+                type: ["string", "number", "boolean", "array", "null"],
+                default: null,
+                description: "The value the filter opens on; an array of values for a `multiple` filter. 0 and false are real values, not an absent start. A value the data lacks is dropped with a console warning."
+              },
+              all: {
+                type: "boolean",
+                default: true,
+                description: 'Whether the filter offers an "All" option. false removes it, and the filter then always holds one value: the first, unless `start` names another.'
+              },
+              multiple: {
+                type: "boolean",
+                default: false,
+                description: "Render a checkbox multiselect instead of a dropdown; the rows shown are those matching any selected value."
+              }
             }
           }
         ]
@@ -26774,12 +27136,9 @@ function groupLevels(rows, settings) {
   return groups;
 }
 function passesFilters(row, specs, state, kind) {
-  return specs.every((spec) => {
-    if (spec.type !== kind) return true;
-    const value = state[spec.value_col];
-    if (value == null) return true;
-    return String(row[spec.value_col] ?? "") === String(value);
-  });
+  return specs.every(
+    (spec) => spec.type !== kind || filterMatches(row[spec.value_col] ?? "", state[spec.value_col])
+  );
 }
 function populationData(rows, settings, groups, specs, state) {
   return rows.filter(
@@ -27222,7 +27581,7 @@ var AEExplorer = class {
     try {
       checkInputs9(this.rawData, this.settings);
     } catch (error) {
-      this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+      this.element.replaceChildren(createElement("div", "sv-warning", error.message));
       throw error;
     }
     this.cleanRows = flagPlaceholders(this.rawData, this.settings);
@@ -27304,15 +27663,16 @@ var AEExplorer = class {
       }
       return true;
     });
-    this.activeFilterSpecs.forEach((spec) => {
+    reconcileFilters(this.state.filters, this.activeFilterSpecs, (spec) => {
       const source = spec.type === "participant" ? this.cleanRows : eventRows;
-      const values = [
+      return [
         ...new Set(source.map((row) => String(row[spec.value_col] ?? "")).filter(Boolean))
       ].sort();
+    }).forEach(({ spec, values, selected }) => {
       const control = renderFilterControl({
         spec,
         values,
-        selected: this.state.filters[spec.value_col],
+        selected,
         onChange: (next) => {
           this.state.filters[spec.value_col] = next;
           this.render();
@@ -27983,8 +28343,8 @@ var qt_explorer_default = {
           description: "Confidence level for the two-sided CI on the mean change and the mean difference; the ICH-E14 metric reads the upper bound of this interval (QT-CT-005)."
         },
         filters: {
-          $ref: "#/$defs/fieldList",
-          description: "Optional filter columns rendered as controls (QT-CTRL-003)."
+          $ref: "#/$defs/filterList",
+          description: 'Optional filter columns rendered as controls (QT-CTRL-003). Each entry is a column name or a { value_col, label, start, all, multiple } spec: `start` is the value the filter opens on, `all` (default true) is whether an "All" option is offered, and `multiple` (default false) makes it a checkbox multiselect.'
         }
       }
     }
@@ -28001,6 +28361,37 @@ var qt_explorer_default = {
             properties: {
               value_col: { type: "string" },
               label: { type: "string" }
+            }
+          }
+        ]
+      }
+    },
+    filterList: {
+      type: "array",
+      items: {
+        anyOf: [
+          { type: "string" },
+          {
+            type: "object",
+            required: ["value_col"],
+            properties: {
+              value_col: { type: "string" },
+              label: { type: "string" },
+              start: {
+                type: ["string", "number", "boolean", "array", "null"],
+                default: null,
+                description: "The value the filter opens on; an array of values for a `multiple` filter. 0 and false are real values, not an absent start. A value the data lacks is dropped with a console warning."
+              },
+              all: {
+                type: "boolean",
+                default: true,
+                description: 'Whether the filter offers an "All" option. false removes it, and the filter then always holds one value: the first, unless `start` names another.'
+              },
+              multiple: {
+                type: "boolean",
+                default: false,
+                description: "Render a checkbox multiselect instead of a dropdown; the rows shown are those matching any selected value."
+              }
             }
           }
         ]
@@ -28175,6 +28566,7 @@ function cleanData7(data, settings) {
       __qt_value: value,
       __qt_baseline: baseline,
       __qt_change: change,
+      __qt_id: row[settings.id_col],
       __qt_arm: row[settings.arm_col],
       __qt_visit: row[settings.visit_col],
       __qt_postBaseline: !isBaseline
@@ -28234,12 +28626,16 @@ function centralTendencySeries(measureRows2, options) {
     if (!cells.has(visit)) continue;
     const armMap = cells.get(visit);
     const arm = String(row.__qt_arm);
-    if (!armMap.has(arm)) armMap.set(arm, []);
-    armMap.get(arm).push(row.__qt_change);
+    if (!armMap.has(arm)) armMap.set(arm, /* @__PURE__ */ new Map());
+    const readings = armMap.get(arm);
+    const id = row.__qt_id === void 0 || row.__qt_id === null ? row : String(row.__qt_id);
+    if (!readings.has(id)) readings.set(id, []);
+    readings.get(id).push(row.__qt_change);
   }
   const stat = (visit, arm) => {
-    const values = (cells.get(visit) || /* @__PURE__ */ new Map()).get(arm) || [];
-    if (!values.length) return null;
+    const readings = (cells.get(visit) || /* @__PURE__ */ new Map()).get(arm);
+    if (!readings) return null;
+    const values = [...readings.values()].map(mean7);
     const n = values.length;
     const m = mean7(values);
     const s = sd4(values);
@@ -28737,8 +29133,9 @@ var SafetyQtExplorer = class {
    * Return the control state to its opening value: re-seed from the settings,
    * then re-run the available-measure pin so the Correction control lands
    * where it opened rather than on a correction the data lacks (QT-CTRL-004,
-   * #136). The stale-filter prune needs no re-run — the seed's filters come
-   * straight from the configured specs. Cheap enough for a control click:
+   * #136). A configured start value the data lacks is squared with the data
+   * by the same shared reconciliation that runs on load, when buildControls
+   * rebuilds the filters (#166). Cheap enough for a control click:
    * availableMeasures is already cached, and the data is not re-cleaned.
    * @private
    */
@@ -28892,13 +29289,13 @@ var SafetyQtExplorer = class {
     this.render();
     return this;
   }
-  /** Validate + clean; resolve measures, arms, placebo, visits, and prune stale state. @private */
+  /** Validate + clean; resolve measures, arms, placebo and visits. @private */
   validateAndCleanData() {
     try {
       checkInputs10(this.rawData, this.settings);
     } catch (error) {
       this.destroyCharts();
-      this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+      this.element.replaceChildren(createElement("div", "sv-warning", error.message));
       throw error;
     }
     const { rows, removed } = cleanData7(this.rawData, this.settings);
@@ -28913,24 +29310,6 @@ var SafetyQtExplorer = class {
     const available = this.settings.measures.filter((m) => measures.includes(m));
     this.availableMeasures = available.length ? available : measures;
     this.resolveMeasure();
-    const configured = new Set(this.settings.filters.map((f) => f.value_col));
-    for (const col of Object.keys(this.state.filters)) {
-      const selection = this.state.filters[col];
-      if (!configured.has(col)) {
-        delete this.state.filters[col];
-        continue;
-      }
-      if (Array.isArray(selection)) {
-        const kept = selection.filter(
-          (value) => rows.some((row) => String(row[col]) === String(value))
-        );
-        if (kept.length) this.state.filters[col] = kept;
-        else delete this.state.filters[col];
-        continue;
-      }
-      if (!rows.some((row) => String(row[col]) === String(selection)))
-        delete this.state.filters[col];
-    }
   }
   /**
    * Render the View selector into its own section as a visible list of options
@@ -29001,16 +29380,28 @@ var SafetyQtExplorer = class {
         this.render();
       };
     }
-    if (this.settings.filters.length) {
+    const filterSpecs = this.settings.filters.filter((filter) => {
+      const exists = this.cleanRows.some((row) => row[filter.value_col] !== void 0);
+      if (!exists)
+        console.warn(
+          `The [ ${filter.label} ] filter has been removed because the variable does not exist.`
+        );
+      return exists;
+    });
+    const filterControls = reconcileFilters(
+      this.state.filters,
+      filterSpecs,
+      (filter) => unique8(this.cleanRows.map((row) => row[filter.value_col])).map(String).sort()
+    );
+    if (filterControls.length) {
       const filterSection = addSection("Filters");
-      this.settings.filters.forEach((filter) => {
-        const values = unique8(this.cleanRows.map((row) => row[filter.value_col])).map(String).sort();
+      filterControls.forEach(({ spec: filter, values, selected }) => {
         addControl(
           filter.label,
           renderFilterControl({
             spec: filter,
             values,
-            selected: this.state.filters[filter.value_col],
+            selected,
             onChange: (next) => {
               this.state.filters[filter.value_col] = next;
               this.render();
@@ -29283,7 +29674,8 @@ var SafetyQtExplorer = class {
   }
   /**
    * Print the plotted central-tendency values beneath the chart (QT-CT-008):
-   * one row per visit and arm carrying the sample size, the plotted statistic,
+   * one row per visit and arm carrying the number of participants (replicate
+   * readings count once per participant and visit, #166), the plotted statistic,
    * and the two-sided CI bounds the band draws. Built from the SAME
    * centralTendencySeries result the chart consumes, so the printed numbers can
    * never disagree with the graphic — and it therefore inherits the active
@@ -29749,8 +30141,8 @@ var hep_waterfall_default = {
           description: "What the flanking box-and-whisker panels show: 'baseline_peak' gives a baseline box and a maximum-on-treatment box per arm, so the panel summarizes the same shift the bars show per participant; 'peak' gives the single-box reading (HWF-BOX-003)."
         },
         filters: {
-          $ref: "#/$defs/fieldList",
-          description: "Optional filter columns rendered as controls; an active filter restricts the plotted cohort and the counts in the notes (HWF-CTRL-003)."
+          $ref: "#/$defs/filterList",
+          description: 'Optional filter columns rendered as controls; an active filter restricts the plotted cohort and the counts in the notes (HWF-CTRL-003). Each entry is a column name or a { value_col, label, start, all, multiple } spec: `start` is the value the filter opens on, `all` (default true) is whether an "All" option is offered, and `multiple` (default false) makes it a checkbox multiselect.'
         },
         details: {
           $ref: "#/$defs/fieldList",
@@ -29776,6 +30168,37 @@ var hep_waterfall_default = {
             properties: {
               value_col: { type: "string" },
               label: { type: "string" }
+            }
+          }
+        ]
+      }
+    },
+    filterList: {
+      type: "array",
+      items: {
+        anyOf: [
+          { type: "string" },
+          {
+            type: "object",
+            required: ["value_col"],
+            properties: {
+              value_col: { type: "string" },
+              label: { type: "string" },
+              start: {
+                type: ["string", "number", "boolean", "array", "null"],
+                default: null,
+                description: "The value the filter opens on; an array of values for a `multiple` filter. 0 and false are real values, not an absent start. A value the data lacks is dropped with a console warning."
+              },
+              all: {
+                type: "boolean",
+                default: true,
+                description: 'Whether the filter offers an "All" option. false removes it, and the filter then always holds one value: the first, unless `start` names another.'
+              },
+              multiple: {
+                type: "boolean",
+                default: false,
+                description: "Render a checkbox multiselect instead of a dropdown; the rows shown are those matching any selected value."
+              }
             }
           }
         ]
@@ -30686,7 +31109,7 @@ var SafetyHepWaterfall = class {
       checkInputs11(this.rawData, this.settings);
     } catch (error) {
       this.destroyCharts();
-      this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+      this.element.replaceChildren(createElement("div", "sv-warning", error.message));
       throw error;
     }
     const { rows, removed } = prepareData(this.rawData, this.settings);
@@ -30806,16 +31229,20 @@ var SafetyHepWaterfall = class {
     const filterSpecs = this.settings.filters.filter(
       (filter) => this.cleanRows.some((row) => row[filter.value_col] !== void 0)
     );
-    if (filterSpecs.length) {
+    const filterControls = reconcileFilters(
+      this.state.filters,
+      filterSpecs,
+      (filter) => unique6(this.cleanRows.map((row) => row[filter.value_col])).map(String).sort()
+    );
+    if (filterControls.length) {
       const filterSection = addSection("Filters");
-      filterSpecs.forEach((filter) => {
-        const values = unique6(this.cleanRows.map((row) => row[filter.value_col])).map(String).sort();
+      filterControls.forEach(({ spec: filter, values, selected }) => {
         addControl(
           filter.label,
           renderFilterControl({
             spec: filter,
             values,
-            selected: this.state.filters[filter.value_col],
+            selected,
             onChange: (next) => {
               this.state.filters[filter.value_col] = next;
               this.render();
@@ -31371,8 +31798,8 @@ var nep_explorer_default = {
           }
         },
         filters: {
-          $ref: "#/$defs/fieldList",
-          description: "Optional filter columns rendered as controls (NEP-CFG-006)."
+          $ref: "#/$defs/filterList",
+          description: 'Optional filter columns rendered as controls (NEP-CFG-006). Each entry is a column name or a { value_col, label, start, all, multiple } spec: `start` is the value the filter opens on, `all` (default true) is whether an "All" option is offered, and `multiple` (default false) makes it a checkbox multiselect.'
         },
         details: {
           oneOf: [{ $ref: "#/$defs/fieldList" }, { type: "null" }],
@@ -31400,6 +31827,37 @@ var nep_explorer_default = {
             properties: {
               value_col: { type: "string" },
               label: { type: "string" }
+            }
+          }
+        ]
+      }
+    },
+    filterList: {
+      type: "array",
+      items: {
+        anyOf: [
+          { type: "string" },
+          {
+            type: "object",
+            required: ["value_col"],
+            properties: {
+              value_col: { type: "string" },
+              label: { type: "string" },
+              start: {
+                type: ["string", "number", "boolean", "array", "null"],
+                default: null,
+                description: "The value the filter opens on; an array of values for a `multiple` filter. 0 and false are real values, not an absent start. A value the data lacks is dropped with a console warning."
+              },
+              all: {
+                type: "boolean",
+                default: true,
+                description: 'Whether the filter offers an "All" option. false removes it, and the filter then always holds one value: the first, unless `start` names another.'
+              },
+              multiple: {
+                type: "boolean",
+                default: false,
+                description: "Render a checkbox multiselect instead of a dropdown; the rows shown are those matching any selected value."
+              }
             }
           }
         ]
@@ -31975,7 +32433,7 @@ var SafetyNepExplorer = class {
     try {
       checkInputs12(this.rawData, this.settings);
     } catch (error) {
-      this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+      this.element.replaceChildren(createElement("div", "sv-warning", error.message));
       throw error;
     }
     this.hasMeasure = hasCreatinine(this.rawData, this.settings);
@@ -32009,16 +32467,20 @@ var SafetyNepExplorer = class {
         );
       return exists;
     });
-    if (filterSpecs.length) {
+    const filterControls = reconcileFilters(
+      this.state.filters,
+      filterSpecs,
+      (filter) => unique9(this.allPoints.map((point) => point.meta[filter.value_col])).sort()
+    );
+    if (filterControls.length) {
       const filterParent = addSection("Filters");
-      filterSpecs.forEach((filter) => {
-        const values = unique9(this.allPoints.map((point) => point.meta[filter.value_col])).sort();
+      filterControls.forEach(({ spec: filter, values, selected }) => {
         addControl(
           filter.label,
           renderFilterControl({
             spec: filter,
             values,
-            selected: this.state.filters[filter.value_col],
+            selected,
             onChange: (next) => {
               this.state.filters[filter.value_col] = next;
               this.render();
@@ -32234,8 +32696,23 @@ var SafetyNepExplorer = class {
     const rows = summary.rows.map(
       (row) => `<tr><th scope="row">${stageLabel(row.stage)}</th>` + cell2(row.fold) + cell2(row.delta) + cell2(row.combined) + "</tr>"
     ).join("");
-    const suppressed = this.unitsResolved ? "" : `<p class="nep-summary-note sv-warning">Absolute-change staging is suppressed: the unit "${this.nativeUnit}" is not recognized.</p>`;
-    this.listingWrap.innerHTML = `<h3 class="nep-summary-title">KDIGO stage summary (n = ${summary.total})</h3><div class="nep-table-scroll"><table class="nep-summary"><thead><tr><th rowspan="2" scope="col">Stage</th><th colspan="2" scope="colgroup">Fold change</th><th colspan="2" scope="colgroup">Absolute change (${unit})</th><th colspan="2" scope="colgroup">KDIGO stage</th></tr><tr><th scope="col">N</th><th scope="col">%</th><th scope="col">N</th><th scope="col">%</th><th scope="col">N</th><th scope="col">%</th></tr></thead><tbody>${rows}</tbody></table></div><p class="nep-summary-note">The first two column pairs are separate marginal distributions, not a cross-tabulation; the third is the combined stage the zones show \u2014 the worse of the two axes, raised to Stage 3 for any participant whose maximum reached ${formatNumber7(this.settings.stages.absolute)} ${this.settings.units.target}. KDIGO defines no Stage 2 or Stage 3 on absolute change, so those cells are marked \u2014.</p>` + suppressed;
+    this.listingWrap.innerHTML = `<h3 class="nep-summary-title">KDIGO stage summary (n = ${summary.total})</h3><div class="nep-table-scroll"><table class="nep-summary"><thead><tr><th rowspan="2" scope="col">Stage</th><th colspan="2" scope="colgroup">Fold change</th><th colspan="2" scope="colgroup" class="nep-absolute-heading"></th><th colspan="2" scope="colgroup">KDIGO stage</th></tr><tr><th scope="col">N</th><th scope="col">%</th><th scope="col">N</th><th scope="col">%</th><th scope="col">N</th><th scope="col">%</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+    this.listingWrap.querySelector(".nep-absolute-heading").textContent = `Absolute change (${unit})`;
+    this.listingWrap.append(
+      createElement(
+        "p",
+        "nep-summary-note",
+        `The first two column pairs are separate marginal distributions, not a cross-tabulation; the third is the combined stage the zones show \u2014 the worse of the two axes, raised to Stage 3 for any participant whose maximum reached ${formatNumber7(this.settings.stages.absolute)} ${this.settings.units.target}. KDIGO defines no Stage 2 or Stage 3 on absolute change, so those cells are marked \u2014.`
+      )
+    );
+    if (!this.unitsResolved)
+      this.listingWrap.append(
+        createElement(
+          "p",
+          "nep-summary-note sv-warning",
+          `Absolute-change staging is suppressed: the unit "${this.nativeUnit}" is not recognized.`
+        )
+      );
   }
   /**
    * Select a scatter point: highlight it, note the participant, and dispatch
@@ -32454,12 +32931,27 @@ var time_to_event_default = {
                 required: ["value_col"],
                 properties: {
                   value_col: { type: "string" },
-                  label: { type: "string" }
+                  label: { type: "string" },
+                  start: {
+                    type: ["string", "number", "boolean", "array", "null"],
+                    default: null,
+                    description: "The value the filter opens on; an array of values for a `multiple` filter. 0 and false are real values, not an absent start. A value the data lacks is dropped with a console warning."
+                  },
+                  all: {
+                    type: "boolean",
+                    default: true,
+                    description: 'Whether the filter offers an "All" option. false removes it, and the filter then always holds one value: the first, unless `start` names another.'
+                  },
+                  multiple: {
+                    type: "boolean",
+                    default: false,
+                    description: "Render a checkbox multiselect instead of a dropdown; the rows shown are those matching any selected value."
+                  }
                 }
               }
             ]
           },
-          description: "Single-select filter controls over the population rows: column names or { value_col, label } specs. A filter whose column is absent from the population is dropped with a console warning."
+          description: 'Filter controls over the population rows: column names or { value_col, label, start, all, multiple } specs \u2014 `start` is the value the filter opens on, `all` (default true) is whether an "All" option is offered, and `multiple` (default false) makes it a checkbox multiselect. A filter whose column is absent from the population is dropped with a console warning.'
         },
         direction: {
           type: "string",
@@ -33014,7 +33506,7 @@ var SafetyTimeToEvent = class {
     try {
       checkInputs13(data, this.settings);
     } catch (error) {
-      this.element.innerHTML = `<div class="sv-warning">${error.message}</div>`;
+      this.element.replaceChildren(createElement("div", "sv-warning", error.message));
       throw error;
     }
     this.rawEvents = data.events;
@@ -33088,18 +33580,20 @@ var SafetyTimeToEvent = class {
         );
       return exists;
     });
-    if (filterSpecs.length) {
+    const filterControls = reconcileFilters(
+      this.state.filters,
+      filterSpecs,
+      (filter) => unique10(this.rawPopulation.map((row) => row[filter.value_col]).filter((v) => v !== void 0)).map(String).sort()
+    );
+    if (filterControls.length) {
       const filterParent = addSection("Filters");
-      filterSpecs.forEach((filter) => {
-        const values = unique10(
-          this.rawPopulation.map((row) => row[filter.value_col]).filter((v) => v !== void 0)
-        ).map(String).sort();
+      filterControls.forEach(({ spec: filter, values, selected }) => {
         addControl(
           filter.label,
           renderFilterControl({
             spec: filter,
             values,
-            selected: this.state.filters[filter.value_col],
+            selected,
             onChange: (next) => {
               this.state.filters[filter.value_col] = next;
               this.render();
@@ -44570,14 +45064,6 @@ var portfolio_default = {
         }
       },
       note: "Takes two tables: the adverse events as the events, without the placeholder rows for event-free participants, and the subject-level table as the population. The participant column must carry the same name in both."
-    },
-    "patient-journey-explorer": {
-      export: "patientJourneyExplorer",
-      title: "Patient Journey Explorer",
-      domains: [],
-      externalDomains: ["ex", "ae", "lb", "cm", "mh", "ds"],
-      settings: {},
-      note: "Reads six domains of its own under SDTM column names: exposure, adverse events, labs, concomitant medications, medical history and disposition. None is supplied by the standard domain set, so its column settings are not mapped here; see its data schema."
     }
   }
 };
