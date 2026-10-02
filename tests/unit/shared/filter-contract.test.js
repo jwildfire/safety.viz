@@ -162,40 +162,49 @@ const TTE_DATA = {
 
 const ids = (rows, key = 'USUBJID') => [...new Set(rows.map((row) => String(row[key])))].sort();
 
-// One entry per chart: its matrix prefix, how it is mounted on the shared
-// cohort, and — read off what render() left behind, never recomputed here —
-// which participants it drew.
+/** The same data with the filter column removed from the rows that carry it. */
+const withoutSite = (data) => {
+  const strip = (rows) => rows.map(({ SITE: _site, ...row }) => row);
+  return Array.isArray(data) ? strip(data) : { ...data, population: strip(data.population) };
+};
+
+// One entry per chart: its matrix prefix, how it is created, the shared cohort
+// in the shape it reads, and — read off what render() left behind, never
+// recomputed here — which participants it drew.
 const CHARTS = [
   {
     name: 'histogram',
     prefix: 'SH',
-    mount: (element, settings) =>
-      histogram(element, { start_value: `${ALT} (U/L)`, ...settings }).init(LAB_ROWS),
+    create: (element, settings) => histogram(element, { start_value: `${ALT} (U/L)`, ...settings }),
+    data: LAB_ROWS,
     drawn: (instance) => ids(instance.filteredData)
   },
   {
     name: 'results-over-time',
     prefix: 'SROT',
-    mount: (element, settings) => resultsOverTime(element, settings).init(LAB_ROWS),
+    create: (element, settings) => resultsOverTime(element, settings),
+    data: LAB_ROWS,
     drawn: (instance) => ids(instance.filteredData)
   },
   {
     name: 'hep-waterfall',
     prefix: 'HWF',
-    mount: (element, settings) =>
-      hepWaterfall(element, { placebo_arm: 'Placebo', ...settings }).init(LAB_ROWS),
+    create: (element, settings) => hepWaterfall(element, { placebo_arm: 'Placebo', ...settings }),
+    data: LAB_ROWS,
     drawn: (instance) => ids(instance.waterfall.ordered, 'id')
   },
   {
     name: 'qt-explorer',
     prefix: 'QT',
-    mount: (element, settings) => qtExplorer(element, settings).init(ECG_ROWS),
+    create: (element, settings) => qtExplorer(element, settings),
+    data: ECG_ROWS,
     drawn: (instance) => ids(instance.filteredRows)
   },
   {
     name: 'ae-explorer',
     prefix: 'AE',
-    mount: (element, settings) => aeExplorer(element, settings).init(AE_ROWS),
+    create: (element, settings) => aeExplorer(element, settings),
+    data: AE_ROWS,
     drawn: (instance) => ids(instance.currentEvents),
     // The adverse event explorer ships no Reset control.
     reset: null
@@ -203,45 +212,52 @@ const CHARTS = [
   {
     name: 'nep-explorer',
     prefix: 'NEP',
-    mount: (element, settings) => nepExplorer(element, settings).init(LAB_ROWS),
+    create: (element, settings) => nepExplorer(element, settings),
+    data: LAB_ROWS,
     drawn: (instance) => ids(instance.points, 'id')
   },
   {
     name: 'ae-timelines',
     prefix: 'AET',
-    mount: (element, settings) => aeTimelines(element, settings).init(AE_ROWS),
+    create: (element, settings) => aeTimelines(element, settings),
+    data: AE_ROWS,
     drawn: (instance) => ids(instance.filteredData)
   },
   {
     name: 'outlier-explorer',
     prefix: 'SOE',
-    mount: (element, settings) =>
-      outlierExplorer(element, { start_value: `${ALT} (U/L)`, ...settings }).init(LAB_ROWS),
+    create: (element, settings) =>
+      outlierExplorer(element, { start_value: `${ALT} (U/L)`, ...settings }),
+    data: LAB_ROWS,
     drawn: (instance) => ids(instance.filteredData)
   },
   {
     name: 'hep-explorer',
     prefix: 'HEP',
-    mount: (element, settings) => hepExplorer(element, settings).init(LAB_ROWS),
+    create: (element, settings) => hepExplorer(element, settings),
+    data: LAB_ROWS,
     drawn: (instance) => ids(instance.points, 'id'),
     reset: (instance) => instance.resetChart()
   },
   {
     name: 'shift-plot',
     prefix: 'SSP',
-    mount: (element, settings) => shiftPlot(element, settings).init(LAB_ROWS),
+    create: (element, settings) => shiftPlot(element, settings),
+    data: LAB_ROWS,
     drawn: (instance) => ids(instance.chartPairs)
   },
   {
     name: 'delta-delta',
     prefix: 'SDD',
-    mount: (element, settings) => deltaDelta(element, settings).init(LAB_ROWS),
+    create: (element, settings) => deltaDelta(element, settings),
+    data: LAB_ROWS,
     drawn: (instance) => ids(instance.points, 'id')
   },
   {
     name: 'time-to-event',
     prefix: 'TTE',
-    mount: (element, settings) => timeToEvent(element, settings).init(TTE_DATA),
+    create: (element, settings) => timeToEvent(element, settings),
+    data: TTE_DATA,
     drawn: (instance) =>
       ids(
         instance.structured.groups.flatMap((group) => group.observations),
@@ -298,8 +314,9 @@ const choose = (instance, value) => {
 
 describe.each(CHARTS)('$name: the shared filter contract', (chart) => {
   const id = (n) => `${chart.prefix}-FILT-00${n}`;
-  const mount = (spec, extra = {}) =>
-    chart.mount(element, { filters: [{ value_col: 'SITE', label: 'Site', ...spec }], ...extra });
+  const create = (spec) =>
+    chart.create(element, { filters: [{ value_col: 'SITE', label: 'Site', ...spec }] });
+  const mount = (spec) => create(spec).init(chart.data);
 
   it(`${id(1)}: a plain filter offers All, opens unfiltered and draws every participant (#166)`, () => {
     const instance = mount({});
@@ -394,12 +411,18 @@ describe.each(CHARTS)('$name: the shared filter contract', (chart) => {
   });
 
   it(`${id(1)}: a filter whose column the data lacks draws no control and leaves no restriction behind (#166)`, () => {
-    const instance = chart.mount(element, {
-      filters: [{ value_col: 'NOPE', label: 'Site', start: 'S2' }]
-    });
+    const instance = create({ start: 'S2' }).init(withoutSite(chart.data));
     expect(siteControl(instance)).toBeUndefined();
-    expect(instance.state.filters.NOPE ?? null).toBe(null);
+    expect(held(instance)).toBe(null);
     expect(chart.drawn(instance)).toEqual(EVERYONE);
+  });
+
+  it(`${id(2)}: when later data brings the filter's column, the filter opens on its start value (#166)`, () => {
+    const instance = create({ start: 'S2' }).init(withoutSite(chart.data));
+    instance.setData(chart.data);
+    expect(shown(siteControl(instance))).toBe('S2');
+    expect(held(instance)).toBe('S2');
+    expect(chart.drawn(instance)).toEqual(AT.S2);
   });
 
   it.skipIf(chart.reset === null)(
