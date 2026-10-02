@@ -535,7 +535,7 @@ export function mountApp(
       const demoLoaded = studies.find((item) => item.id === state.study);
       if (!study && demoLoaded && data.length) {
         clearFiles();
-        state.notes.push(`The ${demoLoaded.label} demo study was cleared to load your files.`);
+        state.notes.push(`The demo study (${demoLoaded.label}) was cleared to load your files.`);
       }
       if (study || data.length) state.study = study;
       // A mapping file among them is read first, so the data files dropped

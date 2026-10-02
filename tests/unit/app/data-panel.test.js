@@ -673,7 +673,7 @@ describe('demo app: the data panel', () => {
     expect(names()).toEqual(['labs_final.csv']);
     expect(app.state.unplaced).toEqual([]);
     expect(notes()).toEqual([
-      'The Liver cohort, labs only demo study was cleared to load your files.'
+      'The demo study (Liver cohort, labs only) was cleared to load your files.'
     ]);
     app.loadFiles(STUDY);
     expect(names().sort()).toEqual(['ae.csv', 'dm.csv', 'ecg.json', 'labs_final.csv']);
