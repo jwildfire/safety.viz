@@ -296,6 +296,31 @@ test.describe('demo app on the demo study', () => {
     await item(page, 'data').click();
     await expect(page.locator('.sva-charts')).toBeHidden();
   });
+
+  test('APP-PAGE-025: changing the address opens that view without a reload (#163)', async ({
+    page
+  }) => {
+    await openOnDemo(page);
+    await expect(item(page, 'histogram')).toHaveAttribute('aria-current', 'page');
+    await page.evaluate(() => {
+      window.location.hash = '#data';
+    });
+    await expect(item(page, 'data')).toHaveAttribute('aria-current', 'page');
+    await expect(page.locator('.sva-side')).toBeVisible();
+    await page.evaluate(() => {
+      window.location.hash = '#qt-explorer';
+    });
+    await expect(page.locator('.sva-title')).toHaveText('QT Safety Explorer');
+    await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
+    // Back and forward move between the views the address named.
+    await page.goBack();
+    await expect(item(page, 'data')).toHaveAttribute('aria-current', 'page');
+    // A hash that names no view leaves the view as it is.
+    await page.evaluate(() => {
+      window.location.hash = '#no-such-view';
+    });
+    await expect(item(page, 'data')).toHaveAttribute('aria-current', 'page');
+  });
 });
 
 // ---- the data panel (#151) ---------------------------------------------------
@@ -565,7 +590,10 @@ test.describe('demo app data view sidebar', () => {
     await captureEvidence(page, 'APP-LOAD-017', 'sidebar');
 
     await correct(page);
+    // No chart is waiting on a row: the step is done, with its guesses still counted (#163).
     await expect(stepStatus(page, 'map')).toHaveText('23 guessed, 0 needed by a chart');
+    await expect(step(page, 'map')).toHaveAttribute('data-state', 'done');
+    await expect(step(page, 'open')).toHaveAttribute('data-state', 'current');
     await expect(stepStatus(page, 'open')).toHaveText('13 of 14 charts ready');
     await sideAction(page, 'open-chart').click();
     await expect(item(page, 'histogram')).toHaveAttribute('aria-current', 'page');
@@ -632,6 +660,7 @@ test.describe('demo app data view sidebar', () => {
       '110 synthetic liver and kidney participants who are in no other file'
     );
     await expect(stepStatus(page, 'map')).toHaveText('4 guessed, 0 needed by a chart');
+    await expect(step(page, 'map')).toHaveAttribute('data-state', 'done');
 
     await menu.selectOption('renamed');
     await expect(page.locator('.sva-loaded-name')).toHaveText([

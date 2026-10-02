@@ -308,7 +308,9 @@ function sidebar(container, app, { input, domains, rows }) {
   const guessed = total('guessed');
   const needed = total('needed');
   const { ready, total: charts } = supportedCount(app.status());
-  const settled = domains.length > 0 && !guessed && !needed;
+  // The mapping is settled when no chart is waiting on a row. Guesses are
+  // counted and flagged, but they do not hold the step (#163).
+  const settled = domains.length > 0 && !needed;
   const anything =
     domains.length || state.unplaced.length || state.saved !== null || state.notes.length;
 

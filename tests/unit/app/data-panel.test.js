@@ -389,25 +389,35 @@ describe('demo app: the data panel', () => {
     expect(app.state.selected).toBe('histogram');
   });
 
-  it('APP-LOAD-017: the mapping step is done when no row is guessed and no chart is short of one (#159)', () => {
+  it('APP-LOAD-017: the mapping step is done when no chart is waiting on a row; guesses are counted and flagged but do not hold it (#159, #163)', () => {
     app.loadFiles(STUDY);
-    for (const [domain, kind, key, value] of CORRECTIONS) setRow(domain, kind, key, value);
-    expect(steps()[1]).toEqual(['Check the mapping', 'current', '23 guessed, 0 needed by a chart']);
-    // Confirming a guess is choosing it: every guessed row set to the value it already has.
-    for (const [domain, mapping] of Object.entries(app.state.mappings)) {
-      for (const [kind, rows] of [
-        ['column', mapping.columns],
-        ['measure', mapping.measures]
-      ]) {
-        for (const [key, row] of Object.entries(rows)) {
-          if (row.source === 'guessed') setRow(domain, kind, key, row.value);
-        }
-      }
-    }
+    for (const [domain, kind, key, value] of CORRECTIONS.slice(1)) setRow(domain, kind, key, value);
+    // One row a chart needs is still empty.
+    expect(steps().slice(1)).toEqual([
+      ['Check the mapping', 'current', '23 guessed, 1 needed by a chart'],
+      ['Open a chart', 'todo', '10 of 14 charts ready']
+    ]);
+    const [domain, kind, key, value] = CORRECTIONS[0];
+    setRow(domain, kind, key, value);
     expect(steps()).toEqual([
       ['Load your files', 'done', '4 files loaded'],
-      ['Check the mapping', 'done', '0 guessed, 0 needed by a chart'],
+      ['Check the mapping', 'done', '23 guessed, 0 needed by a chart'],
       ['Open a chart', 'current', '13 of 14 charts ready']
+    ]);
+    expect(step('map').getAttribute('aria-current')).toBeNull();
+    expect(step('open').getAttribute('aria-current')).toBe('step');
+    // The guesses are still there to be checked: each file keeps its flag.
+    expect(loaded().map(([, , flags]) => flags)).toEqual([
+      ['1 guessed'],
+      ['4 guessed'],
+      ['8 guessed'],
+      ['10 guessed']
+    ]);
+    // Clearing a row a chart needs reopens the step.
+    setRow('eg', 'column', 'ARM', '');
+    expect(steps().slice(1)).toEqual([
+      ['Check the mapping', 'current', '23 guessed, 1 needed by a chart'],
+      ['Open a chart', 'todo', '12 of 14 charts ready']
     ]);
   });
 
@@ -477,7 +487,11 @@ describe('demo app: the data panel', () => {
     expect(root.querySelector('.sva-study-note').textContent).toContain(
       '110 synthetic liver and kidney participants who are in no other file'
     );
-    expect(steps()[1]).toEqual(['Check the mapping', 'current', '4 guessed, 0 needed by a chart']);
+    // Every row a chart needs is filled, so the mapping step is done; its guesses are still counted.
+    expect(steps().slice(1)).toEqual([
+      ['Check the mapping', 'done', '4 guessed, 0 needed by a chart'],
+      ['Open a chart', 'current', '13 of 14 charts ready']
+    ]);
 
     // Another study replaces it, from its own directory, and the data view stays open.
     setRow('bds', 'measure', 'ALT', 'Albumin');

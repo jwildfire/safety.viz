@@ -688,12 +688,24 @@ export function mountApp(
       render();
     },
 
-    /** Tear the page down: destroy the mounted chart and empty the target. */
+    /** Tear the page down: destroy the mounted chart, stop following the address and empty the target. */
     destroy() {
+      window.removeEventListener('hashchange', followAddress);
       destroyChart();
       root.innerHTML = '';
     }
   };
+
+  // The app follows the address (#163): a hash changed after loading — typed,
+  // followed as a link, or reached by back and forward — opens the view it
+  // names. A hash that names no view is ignored. select() writes the address
+  // with replaceState, which raises no hashchange, so this cannot loop.
+  function followAddress() {
+    const wanted = window.location.hash.slice(1);
+    if (wanted === state.selected) return;
+    if (wanted === 'data' || manifest.modules[wanted]) handle.select(wanted);
+  }
+  window.addEventListener('hashchange', followAddress);
 
   render();
   if (studies.length) handle.loadDemo(studies[0].id, { open: true });

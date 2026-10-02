@@ -343,4 +343,44 @@ describe('demo app: the page', () => {
       expect(chip.textContent).not.toMatch(/Safety/);
     }
   });
+
+  it('APP-PAGE-025: the app follows the address: a change of hash opens that view, and an unknown one changes nothing (#163)', () => {
+    const { charts, calls } = fakeCharts();
+    const app = mountApp(root, { charts, manifest });
+    app.loadFiles(DEMO);
+    const go = (hash) => {
+      window.location.hash = hash;
+      window.dispatchEvent(new Event('hashchange'));
+    };
+    expect(app.state.selected).toBe('data');
+    go('#qt-explorer');
+    expect(app.state.selected).toBe('qt-explorer');
+    expect(item(root, 'qt-explorer').getAttribute('aria-current')).toBe('page');
+    expect(calls.filter((call) => call.mounted).map((call) => call.export)).toEqual([
+      manifest.modules['qt-explorer'].export
+    ]);
+    go('#data');
+    expect(app.state.selected).toBe('data');
+    expect(root.querySelector('.sva-data')).not.toBeNull();
+    // A hash that names no view is ignored: the view stays, and the address is left alone.
+    go('#no-such-view');
+    expect(app.state.selected).toBe('data');
+    expect(window.location.hash).toBe('#no-such-view');
+    // The view already open is not drawn again.
+    go('#histogram');
+    const drawn = calls.length;
+    go('#histogram');
+    expect(calls).toHaveLength(drawn);
+  });
+
+  it('APP-PAGE-025: a destroyed app no longer listens to the address (#163)', () => {
+    const { charts, calls } = fakeCharts();
+    const app = mountApp(root, { charts, manifest });
+    app.loadFiles(DEMO);
+    app.destroy();
+    window.location.hash = '#histogram';
+    window.dispatchEvent(new Event('hashchange'));
+    expect(calls).toHaveLength(0);
+    expect(root.innerHTML).toBe('');
+  });
 });
