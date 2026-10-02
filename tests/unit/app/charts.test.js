@@ -19,6 +19,24 @@ const demoMappings = () =>
     Object.entries(files).map(([domain, file]) => [domain, buildMapping(domain, file, manifest)])
   );
 
+// A made-up chart that reads domains outside the standard set. No chart the
+// app lists does since the experimental Patient Journey Explorer left the
+// manifest (#165); the app's handling of one is kept, and held by this entry.
+const withOutside = {
+  ...manifest,
+  modules: {
+    ...manifest.modules,
+    'visit-calendar': {
+      export: 'visitCalendar',
+      title: 'Visit Calendar',
+      domains: [],
+      externalDomains: ['sv', 'tv'],
+      settings: {},
+      note: 'Reads two domains of its own: subject visits and planned visits.'
+    }
+  }
+};
+
 // A study whose columns carry none of the default names.
 const renamed = {
   columns: ['PT', 'LABNAME', 'RESULT', 'HI', 'WK', 'WKNO', 'GRP', 'GENDER_CD'],
@@ -198,13 +216,17 @@ describe('demo app: chart recipes', () => {
     expect(chartSettings('time-to-event', mappings, manifest).id_col).toBe('USUBJID');
   });
 
-  it('APP-CHART-009: twelve charts are destinations; the participant profile and the Patient Journey Explorer are not (#150)', () => {
+  it('APP-CHART-009: twelve charts are destinations; the participant profile is not, nor is a chart outside the standard domains (#150, #165)', () => {
     const destinations = Object.keys(manifest.modules).filter((module) =>
       isDestination(module, manifest)
     );
     expect(destinations).toHaveLength(12);
-    expect(destinations).not.toContain('participant-profile');
-    expect(destinations).not.toContain('patient-journey-explorer');
+    expect(
+      Object.keys(manifest.modules).filter((module) => !destinations.includes(module))
+    ).toEqual(['participant-profile']);
     expect(chartData('participant-profile', files, demoMappings(), manifest)).toBeNull();
+    // A chart that reads domains of its own is not drawn from the standard set.
+    expect(isDestination('visit-calendar', withOutside)).toBe(false);
+    expect(chartData('visit-calendar', files, demoMappings(), withOutside)).toBeNull();
   });
 });

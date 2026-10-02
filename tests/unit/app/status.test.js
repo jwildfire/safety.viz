@@ -19,18 +19,48 @@ const demoMappings = () =>
     Object.entries(files).map(([domain, file]) => [domain, buildMapping(domain, file, manifest)])
   );
 
+// A made-up chart that reads domains outside the standard set. No chart the
+// app lists does since the experimental Patient Journey Explorer left the
+// manifest (#165); the app's handling of one is kept, and held by this entry.
+const withOutside = {
+  ...manifest,
+  modules: {
+    ...manifest.modules,
+    'visit-calendar': {
+      export: 'visitCalendar',
+      title: 'Visit Calendar',
+      domains: [],
+      externalDomains: ['sv', 'tv'],
+      settings: {},
+      note: 'Reads two domains of its own: subject visits and planned visits.'
+    }
+  }
+};
+
 const states = (status) =>
   Object.fromEntries(Object.entries(status).map(([module, entry]) => [module, entry.state]));
 
 describe('demo app: chart status', () => {
-  it('APP-STAT-001: on the demo study thirteen charts are ready and the Patient Journey Explorer needs more domains (#149)', () => {
+  it('APP-STAT-001: on the demo study all thirteen charts are ready (#149, #165)', () => {
     const status = chartStatus(demoMappings(), manifest);
     expect(Object.keys(status)).toEqual(Object.keys(manifest.modules));
     const ready = Object.entries(states(status)).filter(([, state]) => state === 'ready');
     expect(ready).toHaveLength(13);
-    expect(status['patient-journey-explorer'].state).toBe('needs more domains');
-    expect(status['patient-journey-explorer'].missing).toEqual([]);
-    expect(supportedCount(status)).toEqual({ ready: 13, total: 14 });
+    expect(supportedCount(status)).toEqual({ ready: 13, total: 13 });
+    // The experimental Patient Journey Explorer is not among the charts.
+    expect(status).not.toHaveProperty('patient-journey-explorer');
+  });
+
+  it('APP-STAT-009: a chart that reads domains outside the standard set needs more domains, whatever is loaded (#165)', () => {
+    for (const mappings of [{}, demoMappings()]) {
+      const status = chartStatus(mappings, withOutside);
+      expect(status['visit-calendar']).toEqual({ state: 'needs more domains', missing: [] });
+    }
+    // It is counted among the charts, and never among the ready ones.
+    expect(supportedCount(chartStatus(demoMappings(), withOutside))).toEqual({
+      ready: 13,
+      total: 14
+    });
   });
 
   it('APP-STAT-002: a chart whose domain has no file says which file, and is not an error (#149)', () => {
@@ -48,7 +78,7 @@ describe('demo app: chart status', () => {
     ]);
     // An optional domain never holds a chart back.
     expect(status['participant-profile'].state).toBe('ready');
-    expect(supportedCount(status)).toEqual({ ready: 9, total: 14 });
+    expect(supportedCount(status)).toEqual({ ready: 9, total: 13 });
   });
 
   it('APP-STAT-003: with no upper limit of normal, the two hepatic charts and the participant profile say so by name (#149)', () => {
@@ -107,10 +137,8 @@ describe('demo app: chart status', () => {
 
   it('APP-STAT-007: with nothing loaded no chart is ready and none is in error (#149)', () => {
     const status = chartStatus({}, manifest);
-    expect(supportedCount(status)).toEqual({ ready: 0, total: 14 });
-    expect(new Set(Object.values(states(status)))).toEqual(
-      new Set(['no file', 'needs more domains'])
-    );
+    expect(supportedCount(status)).toEqual({ ready: 0, total: 13 });
+    expect(new Set(Object.values(states(status)))).toEqual(new Set(['no file']));
   });
 });
 

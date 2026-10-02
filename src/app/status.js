@@ -6,7 +6,9 @@
 //   ready               every domain it needs is loaded and everything required is mapped
 //   missing             a domain is loaded and something required is unmapped
 //   no file             no file is placed in a domain it needs — a legitimate final state
-//   needs more domains  it reads domains the standard set does not supply
+//   needs more domains  it reads domains the standard set does not supply; no
+//                       chart in the manifest does (#165), and the state is kept
+//                       for one that may
 //
 // A fifth state, `did not draw`, is set by the page when a ready chart throws:
 // status is corrected by what happened, never left at ready.

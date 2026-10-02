@@ -1074,7 +1074,7 @@ export function renderDemoAppPage({ bundle, download, repoUrl }) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="The safety.viz demo app: load a study, check how its columns map, and review it in fourteen clinical safety charts. It runs in your browser; nothing is uploaded.">
+<meta name="description" content="The safety.viz demo app: load a study, check how its columns map, and review it in thirteen clinical safety charts. It runs in your browser; nothing is uploaded.">
 <title>safety.viz demo</title>
 <link rel="icon" href="data:image/svg+xml,${icon}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1288,8 +1288,9 @@ function chartSection(module, entry, { domains, hasPages, repoUrl, root }) {
  * The Domains page: the standard domain set a study supplies, one section per
  * domain with its columns and the charts it feeds, then one section per chart
  * with the column settings it needs and which of them its schema requires.
- * Charts that read domains outside the standard set (the Patient Journey
- * Explorer) are listed last, under their own heading, with no settings table.
+ * A chart that reads domains outside the standard set would be listed last,
+ * under its own heading, with no settings table; the manifest lists none since
+ * the experimental Patient Journey Explorer left it (#165).
  * @param {Object} options
  * @param {Object} options.manifest The portfolio manifest (src/data/portfolio.json).
  * @param {Object} options.config site/config.json: `repoUrl`, and `renderers` to tell which charts have demo and API pages to link.
@@ -1315,14 +1316,17 @@ export function renderDomainsPage({ manifest, config, root = '../' }) {
       root
     });
 
+  const feeds = outside.length
+    ? `${standard.length} of the ${modules.length}`
+    : `all ${modules.length}`;
   const html = [];
   html.push(
     `<div class="domains-page">`,
     `<h1>Standard domain set</h1>`,
     `<p class="tagline">The standard domain set is the ${domainIds.length} tables a study` +
       ` supplies to safety.viz. Their column names are the ADaM-shaped defaults the charts` +
-      ` already expect, so data in this shape feeds ${standard.length} of the` +
-      ` ${modules.length} charts without renaming a column, and a column under another name` +
+      ` already expect, so data in this shape feeds ${feeds} charts without renaming a` +
+      ` column, and a column under another name` +
       ` is mapped through that chart&#39;s settings.</p>`,
     `<dl class="facts">` +
       `<div class="fact"><dt>Domains</dt><dd>${domainLinks(domainIds, domains)}</dd></div>` +

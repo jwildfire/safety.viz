@@ -15,19 +15,16 @@ const manifest = JSON.parse(
   readFileSync(new URL('../../src/data/portfolio.json', import.meta.url), 'utf8')
 );
 const modules = Object.entries(manifest.modules);
-// Drawn in the main pane: everything but the participant profile (a rail
-// inside its host charts) and the Patient Journey Explorer (its own domains).
-const destinations = modules.filter(
-  ([module, entry]) => module !== 'participant-profile' && !entry.externalDomains
-);
+// Drawn in the main pane: everything but the participant profile, which is a
+// rail inside its host charts.
+const destinations = modules.filter(([module]) => module !== 'participant-profile');
 
 const APP = 'window.__safetyVizApp';
 const item = (page, id) => page.locator(`.sva-item[data-view="${id}"]`);
 const tab = (page, domain) => page.locator(`.sva-tab[data-domain="${domain}"]`);
 
 // A chart sits under its domain's tab: open the tab, then choose the chart.
-const domainOf = (module) =>
-  manifest.modules[module].externalDomains ? 'other' : manifest.modules[module].domains[0];
+const domainOf = (module) => manifest.modules[module].domains[0];
 async function openChart(page, module) {
   await tab(page, domainOf(module)).click();
   await item(page, module).click();
@@ -52,35 +49,33 @@ test.describe('demo app on the demo study', () => {
     execSync('npm run build:app', { stdio: 'inherit', cwd: new URL('../..', import.meta.url) });
   });
 
-  test('APP-PAGE-001: every chart in the manifest is listed under its domain with a status (#150)', async ({
+  test('APP-PAGE-001: every chart in the manifest is listed under its domain with a status: thirteen charts, three domains (#150, #165)', async ({
     page
   }) => {
     await openOnDemo(page);
     await expect(page.locator('.sva-group-title')).toHaveText([
       'Labs and vitals',
       'ECG',
-      'Adverse events',
-      'Outside the standard domains'
+      'Adverse events'
     ]);
     // A chip drops the word every chart shares.
     await expect(page.locator('.sva-group .sva-item-title')).toHaveText(
       modules.map(([, entry]) => entry.title.replace('Safety ', ''))
     );
-    await expect(page.locator('.sva-group .sva-tag')).toHaveCount(14);
+    await expect(page.locator('.sva-group .sva-tag')).toHaveCount(13);
+    // The experimental Patient Journey Explorer is not offered.
+    await expect(page.locator('.sva-app')).not.toContainText('Patient Journey');
   });
 
-  test('APP-PAGE-002: the demo study reads 13 of 14 supported and opens on the first chart (#150)', async ({
+  test('APP-PAGE-002: the demo study reads 13 of 13 supported and opens on the first chart (#150, #165)', async ({
     page
   }) => {
     const errors = watchErrors(page);
     await openOnDemo(page);
     await expect(page.locator('.sva-count')).toHaveText(
-      '13 of 14 charts supported by the loaded data'
+      '13 of 13 charts supported by the loaded data'
     );
     await expect(page.locator('.sva-tag.sva-ready')).toHaveCount(13);
-    await expect(item(page, 'patient-journey-explorer').locator('.sva-tag')).toHaveText(
-      'needs more domains'
-    );
     await expect(item(page, 'data').locator('.sva-tag')).toHaveText('4 files');
     await expect(item(page, 'histogram')).toHaveAttribute('aria-current', 'page');
     await expect(page.locator('.sva-chart .sv-root')).toBeVisible();
@@ -143,7 +138,7 @@ test.describe('demo app on the demo study', () => {
     await expect(item(page, 'shift-plot').locator('.sva-tag')).toHaveText('did not draw');
     await expect(page.locator('.sva-message')).toContainText('Required variable(s) missing: VISIT');
     await expect(page.locator('.sva-count')).toHaveText(
-      '12 of 14 charts supported by the loaded data'
+      '12 of 13 charts supported by the loaded data'
     );
   });
 
@@ -151,8 +146,12 @@ test.describe('demo app on the demo study', () => {
     page
   }) => {
     await openOnDemo(page);
-    await openChart(page, 'patient-journey-explorer');
-    await expect(page.locator('.sva-message')).toContainText('six domains of its own');
+    // The liver cohort is one labs file: the ECG chart has nothing to read.
+    await item(page, 'data').click();
+    await page.locator('.sva-side select.sva-study').selectOption('liver');
+    await expect(page.locator('.sva-loaded-name')).toHaveText(['adbds-abnbl.csv']);
+    await openChart(page, 'qt-explorer');
+    await expect(page.locator('.sva-message')).toHaveText('No file loaded for: ECG.');
     await expect(page.locator('.sva-chart')).toHaveCount(0);
   });
 
@@ -172,7 +171,7 @@ test.describe('demo app on the demo study', () => {
   }) => {
     await page.goto('/tests/e2e/fixtures/basic-app.html?empty');
     await expect(page.locator('.sva-count')).toHaveText(
-      '0 of 14 charts supported by the loaded data'
+      '0 of 13 charts supported by the loaded data'
     );
     await expect(item(page, 'data')).toHaveAttribute('aria-current', 'page');
     await expect(page.locator('.sva-data')).toContainText('No files are loaded.');
@@ -274,14 +273,12 @@ test.describe('demo app on the demo study', () => {
     await expect(page.locator('.sva-tab .sva-tab-title')).toHaveText([
       'Labs and vitals',
       'ECG',
-      'Adverse events',
-      'Other'
+      'Adverse events'
     ]);
     await expect(page.locator('.sva-tab .sva-tab-count')).toHaveText([
       '9 of 9',
       '1 of 1',
-      '3 of 3',
-      '0 of 1'
+      '3 of 3'
     ]);
     // The demo opens on the first chart, so its domain is open.
     await expect(tab(page, 'bds')).toHaveAttribute('aria-pressed', 'true');
@@ -407,7 +404,7 @@ test.describe('demo app data panel on a renamed-column study', () => {
     await openEmpty(page);
     await chooseFiles(page, STUDY);
     await expect(page.locator('.sva-count')).toHaveText(
-      '7 of 14 charts supported by the loaded data'
+      '7 of 13 charts supported by the loaded data'
     );
     for (const [module, sentence] of [
       ['hep-explorer', 'Not mapped yet: Upper limit of normal, Total bilirubin.'],
@@ -449,7 +446,7 @@ test.describe('demo app data panel on a renamed-column study', () => {
     await chooseFiles(page, STUDY);
     await correct(page);
     await expect(page.locator('.sva-count')).toHaveText(
-      '13 of 14 charts supported by the loaded data'
+      '13 of 13 charts supported by the loaded data'
     );
     await expect(mappingRow(page, 'bds', 'column', 'STNRHI').locator('.sva-tag')).toHaveText(
       'chosen'
@@ -510,11 +507,11 @@ test.describe('demo app data panel on a renamed-column study', () => {
     // A fresh page: the files and the mapping file chosen together.
     await page.reload();
     await expect(page.locator('.sva-count')).toHaveText(
-      '0 of 14 charts supported by the loaded data'
+      '0 of 13 charts supported by the loaded data'
     );
     await page.locator('.sva-file-input').setInputFiles([...STUDY, saved]);
     await expect(page.locator('.sva-count')).toHaveText(
-      '13 of 14 charts supported by the loaded data'
+      '13 of 13 charts supported by the loaded data'
     );
     const after = await page.evaluate(`JSON.stringify(${APP}.state.mappings)`);
     expect(JSON.parse(after)).toEqual(JSON.parse(before));
@@ -533,7 +530,7 @@ test.describe('demo app data panel on a renamed-column study', () => {
       'labs.xpt is not a CSV or JSON file. SAS transport and sas7bdat files are not supported yet.'
     ]);
     await expect(page.locator('.sva-count')).toHaveText(
-      '0 of 14 charts supported by the loaded data'
+      '0 of 13 charts supported by the loaded data'
     );
   });
 
@@ -586,7 +583,7 @@ test.describe('demo app data view sidebar', () => {
     await expect(stepStatus(page, 'load')).toHaveText('4 files loaded');
     await expect(step(page, 'map')).toHaveAttribute('data-state', 'current');
     await expect(stepStatus(page, 'map')).toHaveText('23 guessed, 6 needed by a chart');
-    await expect(stepStatus(page, 'open')).toHaveText('7 of 14 charts ready');
+    await expect(stepStatus(page, 'open')).toHaveText('7 of 13 charts ready');
     await captureEvidence(page, 'APP-LOAD-017', 'sidebar');
 
     await correct(page);
@@ -594,7 +591,7 @@ test.describe('demo app data view sidebar', () => {
     await expect(stepStatus(page, 'map')).toHaveText('23 guessed, 0 needed by a chart');
     await expect(step(page, 'map')).toHaveAttribute('data-state', 'done');
     await expect(step(page, 'open')).toHaveAttribute('data-state', 'current');
-    await expect(stepStatus(page, 'open')).toHaveText('13 of 14 charts ready');
+    await expect(stepStatus(page, 'open')).toHaveText('13 of 13 charts ready');
     await sideAction(page, 'open-chart').click();
     await expect(item(page, 'histogram')).toHaveAttribute('aria-current', 'page');
     await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
@@ -634,7 +631,7 @@ test.describe('demo app data view sidebar', () => {
     await expect(page.locator('.sva-loaded-empty')).toHaveText('No files are loaded.');
     await expect(item(page, 'data').locator('.sva-tag')).toHaveText('no files');
     await expect(page.locator('.sva-count')).toHaveText(
-      '0 of 14 charts supported by the loaded data'
+      '0 of 13 charts supported by the loaded data'
     );
     await expect(sideAction(page, 'reset')).toHaveCount(0);
     // The same files can be chosen again, and arrive unmapped as they first did.
@@ -677,12 +674,11 @@ test.describe('demo app data view sidebar', () => {
     await menu.selectOption('liver');
     await expect(page.locator('.sva-loaded-name')).toHaveText(['adbds-abnbl.csv']);
     await expect(stepStatus(page, 'load')).toHaveText('1 file loaded');
-    await expect(stepStatus(page, 'open')).toHaveText('8 of 14 charts ready');
+    await expect(stepStatus(page, 'open')).toHaveText('8 of 13 charts ready');
     await expect(page.locator('.sva-tab .sva-tab-count')).toHaveText([
       '8 of 9',
       '0 of 1',
-      '0 of 3',
-      '0 of 1'
+      '0 of 3'
     ]);
     // It draws: the hepatic explorer from the one labs file.
     await openChart(page, 'hep-explorer');
@@ -695,7 +691,7 @@ test.describe('demo app data view sidebar', () => {
     await expect(page.locator('.sva-file')).toHaveCount(0);
     await menu.selectOption('pilot');
     await expect(page.locator('.sva-count')).toHaveText(
-      '13 of 14 charts supported by the loaded data'
+      '13 of 13 charts supported by the loaded data'
     );
     expect(errors).toEqual([]);
   });
@@ -771,7 +767,7 @@ test.describe('demo app as one file, offline', () => {
       'https://jwildfire.github.io/safety.viz/'
     );
     await expect(page.locator('.sva-count')).toHaveText(
-      '0 of 14 charts supported by the loaded data'
+      '0 of 13 charts supported by the loaded data'
     );
     await expect(page.locator('.sva-drop')).toBeVisible();
     await expect(page.locator('.sva-study')).toHaveCount(0);
@@ -791,11 +787,11 @@ test.describe('demo app as one file, offline', () => {
     page.on('request', (request) => requests.push(request.url()));
     await chooseFiles(page, STUDY);
     await expect(page.locator('.sva-count')).toHaveText(
-      '7 of 14 charts supported by the loaded data'
+      '7 of 13 charts supported by the loaded data'
     );
     await correct(page);
     await expect(page.locator('.sva-count')).toHaveText(
-      '13 of 14 charts supported by the loaded data'
+      '13 of 13 charts supported by the loaded data'
     );
     for (const [module, entry] of destinations) {
       await openChart(page, module);

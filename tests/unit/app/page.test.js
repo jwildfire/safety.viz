@@ -14,12 +14,30 @@ const DEMO = ['adsl.csv', 'adae.csv', 'adbds.csv', 'adeg.csv'].map((name) => ({
   text: demoText(name)
 }));
 
+// A made-up chart that reads domains outside the standard set. No chart the
+// app lists does since the experimental Patient Journey Explorer left the
+// manifest (#165); the app's handling of one is kept, and held by this entry.
+const withOutside = {
+  ...manifest,
+  modules: {
+    ...manifest.modules,
+    'visit-calendar': {
+      export: 'visitCalendar',
+      title: 'Visit Calendar',
+      domains: [],
+      externalDomains: ['sv', 'tv'],
+      settings: {},
+      note: 'Reads two domains of its own: subject visits and planned visits.'
+    }
+  }
+};
+
 // Stand-ins for the chart factories: each records what it was handed and
 // whether it is still mounted, which is all the page's own logic touches.
-function fakeCharts() {
+function fakeCharts(source = manifest) {
   const calls = [];
-  const charts = { portfolio: manifest };
-  for (const entry of Object.values(manifest.modules)) {
+  const charts = { portfolio: source };
+  for (const entry of Object.values(source.modules)) {
     charts[entry.export] = vi.fn((element, settings) => {
       const call = { export: entry.export, settings, data: null, mounted: false };
       calls.push(call);
@@ -50,7 +68,7 @@ describe('demo app: the page', () => {
     window.location.hash = '';
   });
 
-  it('APP-PAGE-001: lists every chart in the manifest under its domain, with a status each (#150)', () => {
+  it('APP-PAGE-001: lists every chart in the manifest under its domain, with a status each: thirteen charts under three domains (#150, #165)', () => {
     const { charts } = fakeCharts();
     mountApp(root, { charts, manifest });
     const groups = [...root.querySelectorAll('.sva-group')].map((group) => ({
@@ -60,29 +78,57 @@ describe('demo app: the page', () => {
     expect(groups.map((group) => group.title)).toEqual([
       'Labs and vitals',
       'ECG',
-      'Adverse events',
-      'Outside the standard domains'
+      'Adverse events'
     ]);
     // A chip drops the word every chart shares; see APP-PAGE-023.
     expect(groups.flatMap((group) => group.charts)).toEqual(
       Object.values(manifest.modules).map((entry) => entry.title.replace('Safety ', ''))
     );
-    expect(groups[3].charts).toEqual(['Patient Journey Explorer']);
+    expect(groups.flatMap((group) => group.charts)).toHaveLength(13);
+    // The experimental Patient Journey Explorer is not among them.
+    expect(item(root, 'patient-journey-explorer')).toBeNull();
     // Nothing is loaded: the page opens on the data view and no chart is ready.
     expect(root.querySelector('.sva-count').textContent).toBe(
-      '0 of 14 charts supported by the loaded data'
+      '0 of 13 charts supported by the loaded data'
     );
     expect(item(root, 'data').getAttribute('aria-current')).toBe('page');
     expect(tag(root, 'histogram')).toBe('no file');
-    expect(tag(root, 'patient-journey-explorer')).toBe('needs more domains');
   });
 
-  it('APP-PAGE-002: on the demo study the supported count reads 13 of 14 (#150)', () => {
+  it('APP-PAGE-026: a chart outside the standard domains has a tab and a heading of its own, reads "needs more domains" and is explained, not drawn (#165)', () => {
+    const { charts, calls } = fakeCharts(withOutside);
+    const app = mountApp(root, { charts, manifest: withOutside });
+    app.loadFiles(DEMO);
+    const tab = root.querySelector('.sva-tab[data-domain="other"]');
+    expect(tab.querySelector('.sva-tab-title').textContent).toBe('Other');
+    expect(tab.querySelector('.sva-tab-count').textContent).toBe('0 of 1');
+    expect(root.querySelector('.sva-count').textContent).toBe(
+      '13 of 14 charts supported by the loaded data'
+    );
+    const group = root.querySelector('.sva-group[data-group="other"]');
+    expect(group.querySelector('.sva-group-title').textContent).toBe(
+      'Outside the standard domains'
+    );
+    expect(tag(root, 'visit-calendar')).toBe('needs more domains');
+    expect(item(root, 'visit-calendar').querySelector('.sva-hex').className).toBe(
+      'sva-hex sva-hollow'
+    );
+    // Its tab opens on it, and the page says why it is not drawn in the chart's own words.
+    tab.click();
+    expect(root.querySelector('.sva-title').textContent).toBe('Visit Calendar');
+    expect(root.querySelector('.sva-message').textContent).toBe(
+      'Reads two domains of its own: subject visits and planned visits.'
+    );
+    expect(root.querySelector('.sva-message').classList.contains('sva-problem')).toBe(false);
+    expect(calls).toHaveLength(0);
+  });
+
+  it('APP-PAGE-002: on the demo study the supported count reads 13 of 13 (#150, #165)', () => {
     const { charts } = fakeCharts();
     const app = mountApp(root, { charts, manifest });
     app.loadFiles(DEMO);
     expect(root.querySelector('.sva-count').textContent).toBe(
-      '13 of 14 charts supported by the loaded data'
+      '13 of 13 charts supported by the loaded data'
     );
     const ready = [...root.querySelectorAll('.sva-tag.sva-ready')];
     expect(ready).toHaveLength(13);
@@ -136,7 +182,7 @@ describe('demo app: the page', () => {
     );
     // The count is corrected by what happened.
     expect(root.querySelector('.sva-count').textContent).toBe(
-      '12 of 14 charts supported by the loaded data'
+      '12 of 13 charts supported by the loaded data'
     );
   });
 
@@ -147,8 +193,6 @@ describe('demo app: the page', () => {
     app.select('qt-explorer');
     expect(calls).toHaveLength(0);
     expect(root.querySelector('.sva-message').textContent).toBe('No file loaded for: ECG.');
-    app.select('patient-journey-explorer');
-    expect(root.querySelector('.sva-message').textContent).toContain('six domains of its own');
     expect(calls).toHaveLength(0);
   });
 
@@ -177,7 +221,7 @@ describe('demo app: the page', () => {
       'labs.xpt is not a CSV or JSON file. SAS transport and sas7bdat files are not supported yet.'
     ]);
     expect(root.querySelector('.sva-count').textContent).toBe(
-      '0 of 14 charts supported by the loaded data'
+      '0 of 13 charts supported by the loaded data'
     );
   });
 
@@ -193,7 +237,7 @@ describe('demo app: the page', () => {
       './data/adeg.csv'
     ]);
     expect(root.querySelector('.sva-count').textContent).toBe(
-      '13 of 14 charts supported by the loaded data'
+      '13 of 13 charts supported by the loaded data'
     );
     expect(calls).toHaveLength(1);
     expect(calls[0].export).toBe('histogram');
@@ -261,7 +305,6 @@ describe('demo app: the page', () => {
     expect(hex('histogram')).toBe('sva-hex sva-hollow');
     app.loadFiles(DEMO);
     expect(hex('histogram')).toBe('sva-hex');
-    expect(hex('patient-journey-explorer')).toBe('sva-hex sva-hollow');
     expect(hex('data')).toBe('sva-hex sva-spectrum');
     // The group carries the domain, which is what gives a ready hex its hue.
     expect(item(root, 'histogram').closest('.sva-group').className).toBe(
@@ -289,14 +332,13 @@ describe('demo app: the page', () => {
     expect(tabs()).toEqual([
       ['Labs and vitals', '0 of 9'],
       ['ECG', '0 of 1'],
-      ['Adverse events', '0 of 3'],
-      ['Other', '0 of 1']
+      ['Adverse events', '0 of 3']
     ]);
     // On the data view no domain is open and no chart row is shown.
     expect(root.querySelector('.sva-charts').hidden).toBe(true);
 
     app.loadFiles(DEMO);
-    expect(tabs().map(([, count]) => count)).toEqual(['9 of 9', '1 of 1', '3 of 3', '0 of 1']);
+    expect(tabs().map(([, count]) => count)).toEqual(['9 of 9', '1 of 1', '3 of 3']);
 
     // Opening a domain shows its charts only, and draws its first ready chart.
     tab('ae').click();
@@ -313,9 +355,12 @@ describe('demo app: the page', () => {
     expect(tab('eg').getAttribute('aria-pressed')).toBe('true');
 
     // A domain with nothing ready opens on its first chart, which says why.
-    tab('other').click();
-    expect(root.querySelector('.sva-title').textContent).toBe('Patient Journey Explorer');
-    expect(root.querySelector('.sva-message').textContent).toContain('six domains of its own');
+    app.placeFileIn({ domain: 'ae' }, null);
+    tab('ae').click();
+    expect(root.querySelector('.sva-title').textContent).toBe('Adverse Event Explorer');
+    expect(root.querySelector('.sva-message').textContent).toBe(
+      'No file loaded for: Adverse events.'
+    );
 
     // A domain with something missing is marked on its tab.
     app.state.mappings.eg.columns.ARM = { value: null, source: null };

@@ -35,7 +35,7 @@ test.describe('docs site', () => {
     await page.evaluate('window.__safetyVizApp.ready');
     await expect(page).toHaveTitle('safety.viz demo');
     await expect(page.locator('.sva-count')).toHaveText(
-      '13 of 14 charts supported by the loaded data'
+      '13 of 13 charts supported by the loaded data'
     );
     await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
     // Its own header, not the docs site's.
@@ -204,15 +204,17 @@ test.describe('docs site', () => {
       await expect(page.locator('h1')).toHaveText('Standard domain set');
 
       const modules = Object.values(manifest.modules);
-      expect(modules).toHaveLength(14);
+      expect(modules).toHaveLength(13);
       await expect(page.locator('section.domain')).toHaveCount(
         Object.keys(manifest.domains).length
       );
-      // Charts on the standard set come first, then those outside it.
-      await expect(page.locator('section.chart-needs h3')).toHaveText([
-        ...modules.filter((entry) => !entry.externalDomains).map((entry) => entry.title),
-        ...modules.filter((entry) => entry.externalDomains).map((entry) => entry.title)
-      ]);
+      // Every chart reads the standard set, so there is no section for charts
+      // outside it, and the experimental Patient Journey Explorer is not listed (#165).
+      await expect(page.locator('section.chart-needs h3')).toHaveText(
+        modules.map((entry) => entry.title)
+      );
+      await expect(page.locator('#outside')).toHaveCount(0);
+      await expect(page.locator('.domains-page')).not.toContainText('Patient Journey');
 
       const layout = await page.evaluate(() => {
         const width = document.documentElement.clientWidth;

@@ -132,7 +132,7 @@ describe('demo app: the data panel', () => {
 
   it('APP-LOAD-003: before any correction the chart list names what each unsupported chart is missing (#151)', () => {
     app.loadFiles(STUDY);
-    expect(count()).toBe('7 of 14 charts supported by the loaded data');
+    expect(count()).toBe('7 of 13 charts supported by the loaded data');
     const missing = Object.fromEntries(
       Object.entries(app.status())
         .filter(([, status]) => status.state === 'missing')
@@ -225,7 +225,7 @@ describe('demo app: the data panel', () => {
     setRow('eg', 'column', 'ARM', 'TREATMENT');
     expect(tag('qt-explorer')).toBe('ready');
     expect(row('eg', 'column', 'ARM').querySelector('.sva-tag').textContent).toBe('chosen');
-    expect(count()).toBe('8 of 14 charts supported by the loaded data');
+    expect(count()).toBe('8 of 13 charts supported by the loaded data');
     // The keyboard stays on the row that was changed.
     expect(document.activeElement).toBe(row('eg', 'column', 'ARM').querySelector('select'));
     // Clearing a guess turns the chart off again, by name.
@@ -236,10 +236,10 @@ describe('demo app: the data panel', () => {
     );
   });
 
-  it('APP-LOAD-007: with the six rows corrected by hand, the renamed study supports 13 of 14 charts (#151)', () => {
+  it('APP-LOAD-007: with the six rows corrected by hand, the renamed study supports all 13 charts (#151, #165)', () => {
     app.loadFiles(STUDY);
     for (const [domain, kind, key, value] of CORRECTIONS) setRow(domain, kind, key, value);
-    expect(count()).toBe('13 of 14 charts supported by the loaded data');
+    expect(count()).toBe('13 of 13 charts supported by the loaded data');
     expect(Object.values(app.status()).filter((status) => status.state === 'missing')).toHaveLength(
       0
     );
@@ -259,7 +259,7 @@ describe('demo app: the data panel', () => {
     again.loadFiles([...STUDY, mappingFile]);
     expect(again.state.mappings).toEqual(before);
     expect(document.querySelector('#again .sva-count').textContent).toBe(
-      '13 of 14 charts supported by the loaded data'
+      '13 of 13 charts supported by the loaded data'
     );
     expect(
       [...document.querySelectorAll('#again .sva-note')].map((node) => node.textContent)
@@ -363,7 +363,7 @@ describe('demo app: the data panel', () => {
     expect(steps()).toEqual([
       ['Load your files', 'current', 'No files loaded'],
       ['Check the mapping', 'todo', 'Nothing to check yet'],
-      ['Open a chart', 'todo', '0 of 14 charts ready']
+      ['Open a chart', 'todo', '0 of 13 charts ready']
     ]);
     expect(action('choose-files')).not.toBeNull();
     for (const name of ['reset', 'download-mapping', 'open-chart']) expect(action(name)).toBeNull();
@@ -373,7 +373,7 @@ describe('demo app: the data panel', () => {
     expect(steps()).toEqual([
       ['Load your files', 'done', '4 files loaded'],
       ['Check the mapping', 'current', '23 guessed, 6 needed by a chart'],
-      ['Open a chart', 'todo', '7 of 14 charts ready']
+      ['Open a chart', 'todo', '7 of 13 charts ready']
     ]);
     for (const name of ['reset', 'download-mapping', 'open-chart']) {
       expect(action(name)).not.toBeNull();
@@ -382,7 +382,7 @@ describe('demo app: the data panel', () => {
     // A correction is counted at once.
     setRow('eg', 'column', 'ARM', 'TREATMENT');
     expect(steps()[1]).toEqual(['Check the mapping', 'current', '23 guessed, 5 needed by a chart']);
-    expect(steps()[2]).toEqual(['Open a chart', 'todo', '8 of 14 charts ready']);
+    expect(steps()[2]).toEqual(['Open a chart', 'todo', '8 of 13 charts ready']);
 
     // The third step opens the first chart the data supports.
     action('open-chart').click();
@@ -395,14 +395,14 @@ describe('demo app: the data panel', () => {
     // One row a chart needs is still empty.
     expect(steps().slice(1)).toEqual([
       ['Check the mapping', 'current', '23 guessed, 1 needed by a chart'],
-      ['Open a chart', 'todo', '10 of 14 charts ready']
+      ['Open a chart', 'todo', '10 of 13 charts ready']
     ]);
     const [domain, kind, key, value] = CORRECTIONS[0];
     setRow(domain, kind, key, value);
     expect(steps()).toEqual([
       ['Load your files', 'done', '4 files loaded'],
       ['Check the mapping', 'done', '23 guessed, 0 needed by a chart'],
-      ['Open a chart', 'current', '13 of 14 charts ready']
+      ['Open a chart', 'current', '13 of 13 charts ready']
     ]);
     expect(step('map').getAttribute('aria-current')).toBeNull();
     expect(step('open').getAttribute('aria-current')).toBe('step');
@@ -417,7 +417,7 @@ describe('demo app: the data panel', () => {
     setRow('eg', 'column', 'ARM', '');
     expect(steps().slice(1)).toEqual([
       ['Check the mapping', 'current', '23 guessed, 1 needed by a chart'],
-      ['Open a chart', 'todo', '12 of 14 charts ready']
+      ['Open a chart', 'todo', '12 of 13 charts ready']
     ]);
   });
 
@@ -458,7 +458,7 @@ describe('demo app: the data panel', () => {
     expect(notes()).toEqual([]);
     expect(root.querySelectorAll('.sva-file')).toHaveLength(0);
     expect(tag('data')).toBe('no files');
-    expect(count()).toBe('0 of 14 charts supported by the loaded data');
+    expect(count()).toBe('0 of 13 charts supported by the loaded data');
     expect(steps()[0]).toEqual(['Load your files', 'current', 'No files loaded']);
     expect(action('reset')).toBeNull();
     // A file loaded afterwards takes no row from the mapping file that was held.
@@ -490,7 +490,7 @@ describe('demo app: the data panel', () => {
     // Every row a chart needs is filled, so the mapping step is done; its guesses are still counted.
     expect(steps().slice(1)).toEqual([
       ['Check the mapping', 'done', '4 guessed, 0 needed by a chart'],
-      ['Open a chart', 'current', '13 of 14 charts ready']
+      ['Open a chart', 'current', '13 of 13 charts ready']
     ]);
 
     // Another study replaces it, from its own directory, and the data view stays open.
@@ -518,7 +518,7 @@ describe('demo app: the data panel', () => {
     expect(steps()).toEqual([
       ['Load your files', 'done', '1 file loaded'],
       ['Check the mapping', 'current', '4 guessed, 1 needed by a chart'],
-      ['Open a chart', 'todo', '8 of 14 charts ready']
+      ['Open a chart', 'todo', '8 of 13 charts ready']
     ]);
 
     // Files of the user's own are no demo study.
