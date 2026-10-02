@@ -60,6 +60,89 @@ test.describe('docs site', () => {
     expect(errors).toEqual([]);
   });
 
+  test('APP-PAGE-028: the hosted app fetches its typefaces from beside it as it opens, and nothing once a file is chosen, whatever script its names are in (#165)', async ({
+    page
+  }) => {
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') errors.push(msg.text());
+    });
+    const opening = [];
+    const record = (list) => (request) => {
+      if (!/^(blob|data):/.test(request.url())) list.push(request.url());
+    };
+    page.on('request', record(opening));
+    await page.goto('/_site/demo/index.html');
+    await page.evaluate('window.__safetyVizApp.ready');
+    await page.evaluate(async () => {
+      await document.fonts.ready;
+    });
+
+    // Nothing is asked of another host: the typefaces are the site's own files.
+    const site = `${new URL(page.url()).origin}/_site/`;
+    expect(opening.filter((url) => !url.startsWith(site))).toEqual([]);
+    // Every face the page declares was fetched as the page opened, and is
+    // loaded — including the weights the first view does not use.
+    const fetched = opening
+      .filter((url) => /\.woff2?$/.test(url))
+      .map((url) => url.slice(site.length));
+    const faces = await page.evaluate(() =>
+      [...document.fonts].map((face) => [face.family.replace(/"/g, ''), face.weight, face.status])
+    );
+    expect(faces).toEqual([
+      ['Instrument Sans', '400 700', 'loaded'],
+      ['Instrument Serif', '400', 'loaded'],
+      ['IBM Plex Mono', '400', 'loaded'],
+      ['IBM Plex Mono', '500', 'loaded'],
+      ['IBM Plex Mono', '600', 'loaded']
+    ]);
+    expect([...new Set(fetched)].sort()).toEqual([
+      'demo/fonts/ibm-plex-mono-latin-400-normal.woff2',
+      'demo/fonts/ibm-plex-mono-latin-500-normal.woff2',
+      'demo/fonts/ibm-plex-mono-latin-600-normal.woff2',
+      'demo/fonts/instrument-sans-latin-wght-normal.woff2',
+      'demo/fonts/instrument-serif-latin-400-normal.woff2'
+    ]);
+    // Each family's licence is served beside its files.
+    for (const family of ['instrument-sans', 'instrument-serif', 'ibm-plex-mono']) {
+      const licence = await page.request.get(`/_site/demo/fonts/LICENSE-${family}.txt`);
+      expect(licence.ok(), family).toBe(true);
+      expect(await licence.text()).toContain('SIL OPEN FONT LICENSE');
+    }
+
+    // A file of the user's own, named and filled in Greek, Cyrillic and
+    // accented Latin: a subsetted web font would fetch more of itself now.
+    const after = [];
+    page.on('request', record(after));
+    await page.locator('.sva-item[data-view="data"]').click();
+    const rows = ['01', '02', '03'].flatMap((id) => [
+      `${id},Креатинин,80,μmol/L,60,110,Wizyta Łódź 1,1,1,Ασθενής,01,F,WHITE`,
+      `${id},Alanine Aminotransferase,20,U/L,5,40,Wizyta Łódź 1,1,1,Ασθενής,01,F,WHITE`
+    ]);
+    await page.locator('.sva-file-input').setInputFiles({
+      name: 'Λαβ-мои.csv',
+      mimeType: 'text/csv',
+      buffer: Buffer.from(
+        `USUBJID,TEST,STRESN,STRESU,STNRLO,STNRHI,VISIT,VISITNUM,DY,ARM,SITEID,SEX,RASĂ\n${rows.join('\n')}\n`
+      )
+    });
+    await expect(page.locator('.sva-file[data-domain="bds"] .sva-file-name')).toHaveText(
+      'Λαβ-мои.csv'
+    );
+    await page.locator('.sva-tab[data-domain="bds"]').click();
+    await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
+    await page.locator('.sva-item[data-view="data"]').click();
+    await expect(page.locator('.sva-loaded-file[data-domain="bds"] .sva-loaded-name')).toHaveText(
+      'Λαβ-мои.csv'
+    );
+    await page.evaluate(async () => {
+      await document.fonts.ready;
+    });
+    expect(after).toEqual([]);
+    expect(errors).toEqual([]);
+  });
+
   test('APP-LOAD-022: the built site serves every demo study beside the app, and the app loads each (#159)', async ({
     page
   }) => {

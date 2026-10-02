@@ -4,7 +4,7 @@
 
 import { LOGO_SVG } from '../src/app/styles.js';
 
-import { copyFileSync, existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 
 export function escapeHtml(text) {
@@ -1055,11 +1055,77 @@ export function renderDemoPage({ renderer, version }) {
 }
 
 /**
+ * The demo app's typefaces (#165): the font files its page declares, served
+ * from the site itself so the page asks no other host for anything. Each is
+ * the Latin subset of one face, from an npm package that carries the family
+ * under the SIL Open Font License; other scripts fall back to system fonts.
+ *
+ *   family   the name the app's stylesheet asks for (src/app/styles.js)
+ *   weight   the weight the file covers; a range for a variable font
+ *   file     the file's name, in the package's files/ and beside the app
+ *   package  the devDependency the site build copies it from
+ *
+ * One file per face and no unicode-range: a face split into subsets fetches
+ * each subset when a character in it first appears, which for a user's own
+ * file and column names is after a file is chosen (APP-LOAD-014).
+ */
+export const DEMO_APP_FONTS = [
+  {
+    family: 'Instrument Sans',
+    weight: '400 700',
+    file: 'instrument-sans-latin-wght-normal.woff2',
+    package: '@fontsource-variable/instrument-sans'
+  },
+  {
+    family: 'Instrument Serif',
+    weight: '400',
+    file: 'instrument-serif-latin-400-normal.woff2',
+    package: '@fontsource/instrument-serif'
+  },
+  ...['400', '500', '600'].map((weight) => ({
+    family: 'IBM Plex Mono',
+    weight,
+    file: `ibm-plex-mono-latin-${weight}-normal.woff2`,
+    package: '@fontsource/ibm-plex-mono'
+  }))
+];
+
+/** The directory beside the app's page that its font files are served from. */
+const DEMO_APP_FONT_DIR = 'fonts';
+
+/**
+ * Copy the demo app's font files beside it, each family's licence with them.
+ * @param {string} rootDir The repository root, whose node_modules holds the font packages.
+ * @param {string} demoDir The app's directory in the site output.
+ * @returns {string[]} Paths of the copied files: the fonts, then one licence per package.
+ */
+export function publishDemoAppFonts(rootDir, demoDir) {
+  const fontDir = path.join(demoDir, DEMO_APP_FONT_DIR);
+  mkdirSync(fontDir, { recursive: true });
+  const packageDir = (name) => path.join(rootDir, 'node_modules', name);
+  const copied = DEMO_APP_FONTS.map((font) => {
+    const served = path.join(fontDir, font.file);
+    copyFileSync(path.join(packageDir(font.package), 'files', font.file), served);
+    return served;
+  });
+  for (const name of new Set(DEMO_APP_FONTS.map((font) => font.package))) {
+    const served = path.join(fontDir, `LICENSE-${name.split('/').pop()}.txt`);
+    copyFileSync(path.join(packageDir(name), 'LICENSE'), served);
+    copied.push(served);
+  }
+  return copied;
+}
+
+/**
  * The demo app's page (#150, #152, obot.roadmap#352): a full-page web app with
  * its own header, so a standalone document and not a page in the docs shell.
  * The app bundle the site build writes beside it (scripts/build-app.mjs) draws
  * everything; this document loads it, the site's three type families and the
  * hex mark, and tells the app where the demo extracts and its links are.
+ *
+ * The typefaces are the site's own files (#165), fetched as the page opens:
+ * each is preloaded, and every declared face is loaded at once rather than
+ * when a weight is first used, so no request follows a user choosing a file.
  * @param {Object} options Page options.
  * @param {string} options.bundle File name of the app bundle beside the page.
  * @param {string} options.download File name of the single-file build beside the page.
@@ -1069,6 +1135,15 @@ export function renderDemoPage({ renderer, version }) {
 export function renderDemoAppPage({ bundle, download, repoUrl }) {
   const icon = encodeURIComponent(LOGO_SVG).replace(/'/g, '%27');
   const js = (value) => `'${String(value).replace(/[\\']/g, '\\$&')}'`;
+  const fontUrl = (font) => `./${DEMO_APP_FONT_DIR}/${font.file}`;
+  const preloads = DEMO_APP_FONTS.map(
+    (font) => `<link rel="preload" href="${fontUrl(font)}" as="font" type="font/woff2" crossorigin>`
+  ).join('\n');
+  const faces = DEMO_APP_FONTS.map(
+    (font) =>
+      `@font-face{font-family:"${font.family}";font-style:normal;font-weight:${font.weight};` +
+      `font-display:swap;src:url(${fontUrl(font)}) format("woff2")}`
+  ).join('\n');
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -1077,10 +1152,12 @@ export function renderDemoAppPage({ bundle, download, repoUrl }) {
 <meta name="description" content="The safety.viz demo app: load a study, check how its columns map, and review it in thirteen clinical safety charts. It runs in your browser; nothing is uploaded.">
 <title>safety.viz demo</title>
 <link rel="icon" href="data:image/svg+xml,${icon}">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<style>body{margin:0;background:#fafaf8}</style>
+${preloads}
+<style>
+${faces}
+body{margin:0;background:#fafaf8}
+</style>
+<script>if (document.fonts) document.fonts.forEach(function (face) { face.load(); });</script>
 </head>
 <body>
 <div id="app"></div>
