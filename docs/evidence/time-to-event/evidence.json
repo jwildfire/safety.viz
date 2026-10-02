@@ -1,16 +1,13 @@
 {
   "module": "time-to-event",
-  "generatedAt": "2026-09-18T17:48:12.012Z",
+  "generatedAt": "2026-10-02T10:09:38.275Z",
   "environment": {
-    "os": "linux 6.17.0-1022-azure",
-    "node": "v22.23.2",
+    "os": "darwin 23.6.0",
+    "node": "v24.14.0",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": {
-    "id": "35376414437",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/35376414437"
-  },
+  "run": null,
   "records": [
     {
       "test": "a chart link navigates straight to that renderer demo (#71)",
@@ -669,6 +666,30 @@
       "screenshots": []
     },
     {
+      "test": "demoDataDrift flags a committed file no generator produces and a generated file that is not committed (#140)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [140],
+      "screenshots": []
+    },
+    {
+      "test": "demoDataDrift names the first differing file and row (#140)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [140],
+      "screenshots": []
+    },
+    {
+      "test": "demoDataDrift reports no drift when every committed file matches its generated twin (#140)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [140],
+      "screenshots": []
+    },
+    {
       "test": "deriveObservations censors event-free participants at the follow-up day with the population censor description (TTE-DERIV-002, #128)",
       "suite": "unit",
       "status": "pass",
@@ -810,6 +831,38 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "firstDifferingRow catches a difference that is only the closing newline, keeping it visible (#140)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [140],
+      "screenshots": []
+    },
+    {
+      "test": "firstDifferingRow counts the header as row 1, so the row is the line an editor shows (#140)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [140],
+      "screenshots": []
+    },
+    {
+      "test": "firstDifferingRow reports a row only one side has as missing from the other (#140)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [140],
+      "screenshots": []
+    },
+    {
+      "test": "firstDifferingRow returns null when the committed and generated text are byte-identical (#140)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [140],
       "screenshots": []
     },
     {
