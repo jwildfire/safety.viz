@@ -37,6 +37,7 @@ import {
   validateSiteLinks
 } from './site-lib.mjs';
 import { APP_BUNDLE, APP_HTML, buildApp } from './build-app.mjs';
+import { DEMO_STUDIES } from '../src/app/studies.js';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 // The site is built beside its destination and swapped in at the end, so a
@@ -252,13 +253,17 @@ for (const renderer of config.renderers.filter((entry) => entry.status === 'avai
 // Demo app (#150, #152): a full-page web app at demo/, with its own header, so
 // it is written as a standalone document and not through the docs shell. The app
 // bundle and the single-file build are build products written here, not
-// committed assets, and the demo extracts are copied beside them so the app
-// loads the demo study from its own directory.
-const manifest = JSON.parse(readFileSync(manifestFile, 'utf8'));
+// committed assets, and the demo studies are copied beside them so the app
+// loads them from its own directory.
 const demoAppDir = path.join(siteDir, 'demo');
 await buildApp(demoAppDir);
-for (const domain of Object.values(manifest.domains)) {
-  copyFileSync(path.join(rootDir, 'site/data', domain.demo), path.join(demoAppDir, domain.demo));
+// Every demo study the app offers (#159) is copied from where the repository
+// keeps it into the study's own directory beside the app.
+for (const study of DEMO_STUDIES) {
+  mkdirSync(path.join(demoAppDir, study.dir), { recursive: true });
+  for (const file of study.files) {
+    copyFileSync(path.join(rootDir, study.source, file), path.join(demoAppDir, study.dir, file));
+  }
 }
 writeFileSync(
   path.join(demoAppDir, 'index.html'),

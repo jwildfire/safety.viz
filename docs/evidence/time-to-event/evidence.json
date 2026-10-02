@@ -1,6 +1,6 @@
 {
   "module": "time-to-event",
-  "generatedAt": "2026-10-02T15:09:20.503Z",
+  "generatedAt": "2026-10-02T15:12:22.936Z",
   "environment": {
     "os": "darwin 23.6.0",
     "node": "v24.14.0",
@@ -111,6 +111,62 @@
       "status": "pass",
       "requirementIds": ["APP-LOAD-015"],
       "issueRefs": [151],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LOAD-017: the sidebar’s steps follow the work: load, check the mapping, open a chart (#159)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-017"],
+      "issueRefs": [159],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LOAD-018: the loaded files are listed with their flags, and choosing one moves to its card (#159)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-018"],
+      "issueRefs": [159],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LOAD-019: Reset returns the data view to the empty drop zone (#159)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-019"],
+      "issueRefs": [159],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LOAD-020: each demo study loads from the menu and replaces the one before it (#159)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-020"],
+      "issueRefs": [159],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LOAD-021: at phone width the sidebar stacks above the drop zone and the page does not scroll sideways (#159)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-021"],
+      "issueRefs": [159],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LOAD-021: the sidebar sits beside the data view on a wide screen and on no chart view (#159)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-021"],
+      "issueRefs": [159],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LOAD-022: the built site serves every demo study beside the app, and the app loads each (#159)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-022"],
+      "issueRefs": [159],
       "screenshots": []
     },
     {
@@ -1362,11 +1418,107 @@
       "screenshots": []
     },
     {
-      "test": "demo app: the data panel APP-LOAD-013: an empty page offers the drop zone and says nothing is loaded (#151)",
+      "test": "demo app: the data panel APP-LOAD-013: an empty page offers the drop zone and a file picker, and says nothing is loaded (#151, #159)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-LOAD-013"],
-      "issueRefs": [151],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: the data panel APP-LOAD-017: the mapping step is done when no row is guessed and no chart is short of one (#159)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-017"],
+      "issueRefs": [159],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: the data panel APP-LOAD-017: the sidebar shows the three steps as live status, each with its own actions (#159)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-017"],
+      "issueRefs": [159],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: the data panel APP-LOAD-018: the sidebar lists each loaded file with its domain and row count, flagged only where a row wants a look (#159)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-018"],
+      "issueRefs": [159],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: the data panel APP-LOAD-019: Reset clears every file, mapping, held mapping file and note, back to the empty drop zone (#159)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-019"],
+      "issueRefs": [159],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: the data panel APP-LOAD-020: a demo study that cannot be fetched is reported in a sentence and loads nothing (#159)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-020"],
+      "issueRefs": [159],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: the data panel APP-LOAD-020: served with demo studies, the sidebar offers each by name, and choosing one replaces what is loaded (#159)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-020"],
+      "issueRefs": [159],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: the data panel APP-LOAD-020: with no demo studies served, no menu is offered (#159)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-020"],
+      "issueRefs": [159],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: the data panel APP-LOAD-021: the sidebar belongs to the data view: a chart view has none (#159)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-021"],
+      "issueRefs": [159],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: the demo studies APP-LOAD-022: a study’s files are fetched from its own directory under the demo base, or from a base of its own (#159)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-022"],
+      "issueRefs": [159],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: the demo studies APP-LOAD-022: each demo study has an id, a name, a description and files the repository keeps (#159)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-022"],
+      "issueRefs": [159],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: the demo studies APP-LOAD-022: the descriptions of the other studies match their files (#159)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-022"],
+      "issueRefs": [159],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: the demo studies APP-LOAD-022: the pilot study is the manifest’s demo extracts, and says its labs file holds participants no other file has (#159)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-022"],
+      "issueRefs": [159],
       "screenshots": []
     },
     {
