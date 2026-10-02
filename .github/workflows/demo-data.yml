@@ -1,0 +1,50 @@
+name: Demo data
+
+# Drift guard for the vendored demo extracts (#140): reruns the pharmaverse
+# generator and the three synthetic-cohort scripts into a temporary directory
+# and fails if any CSV under site/data/ no longer matches what they produce.
+# Kept out of ci.yml and path-filtered because the rebuild downloads ~200 MB of
+# pharmaverse source — only a pull request that can move the extracts (the
+# data, a generator, or this check) pays for it.
+
+on:
+  pull_request:
+    # Explicit types so a draft marked ready for review is checked; the default
+    # set (opened, synchronize, reopened) would leave that transition untested.
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - 'site/data/**'
+      - 'scripts/build-demo-data.mjs'
+      - 'scripts/demo-data-lib.mjs'
+      - 'scripts/build-hep-composite-cohort.mjs'
+      - 'scripts/build-nep-aki-cohort.mjs'
+      - 'scripts/build-hep-abnbl-cohort.mjs'
+      - 'scripts/check-demo-data.mjs'
+      - '.github/workflows/demo-data.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: demo-data-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  demo-data:
+    name: Demo data matches its generators
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # No `npm ci`: the generators and the check use only Node built-ins.
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # Fetches the source fresh on every run (the runner has no cache), so a
+      # moved upstream file shows up here as drift rather than hiding behind a
+      # stale copy.
+      - name: Check site/data/ against a fresh rebuild
+        run: npm run demo-data:check
