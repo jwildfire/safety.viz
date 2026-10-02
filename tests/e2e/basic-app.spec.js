@@ -176,7 +176,7 @@ test.describe('demo app on the demo study', () => {
     );
     await expect(item(page, 'data')).toHaveAttribute('aria-current', 'page');
     await expect(page.locator('.sva-data')).toContainText('No files are loaded.');
-    await expect(page.locator('[data-action="demo"]')).toHaveCount(0);
+    await expect(page.locator('.sva-study')).toHaveCount(0);
   });
 
   test('APP-PAGE-012: at phone width the header’s rows scroll within themselves and the page does not scroll sideways (#150)', async ({
@@ -528,6 +528,189 @@ test.describe('demo app data panel on a renamed-column study', () => {
   });
 });
 
+// ---- the data view's sidebar (#159) ------------------------------------------
+//
+// On the data view only: the three steps as live status with their actions,
+// the loaded files, Reset, and — where the page is served with them — the demo
+// studies by name.
+
+const step = (page, id) => page.locator(`.sva-step[data-step="${id}"]`);
+const stepStatus = (page, id) => step(page, id).locator('.sva-step-status');
+const sideAction = (page, name) => page.locator(`.sva-side [data-action="${name}"]`);
+
+test.describe('demo app data view sidebar', () => {
+  test.beforeAll(() => {
+    execSync('npm run build:app', { stdio: 'inherit', cwd: new URL('../..', import.meta.url) });
+  });
+
+  test('APP-LOAD-017: the sidebar’s steps follow the work: load, check the mapping, open a chart (#159)', async ({
+    page
+  }) => {
+    await openEmpty(page);
+    await expect(step(page, 'load')).toHaveAttribute('data-state', 'current');
+    await expect(stepStatus(page, 'load')).toHaveText('No files loaded');
+    await expect(step(page, 'map')).toHaveAttribute('data-state', 'todo');
+    await expect(sideAction(page, 'reset')).toHaveCount(0);
+    await expect(sideAction(page, 'open-chart')).toHaveCount(0);
+
+    // The picker opens from the first step.
+    const choosing = page.waitForEvent('filechooser');
+    await sideAction(page, 'choose-files').click();
+    await (await choosing).setFiles(STUDY);
+    await expect(step(page, 'load')).toHaveAttribute('data-state', 'done');
+    await expect(stepStatus(page, 'load')).toHaveText('4 files loaded');
+    await expect(step(page, 'map')).toHaveAttribute('data-state', 'current');
+    await expect(stepStatus(page, 'map')).toHaveText('23 guessed, 6 needed by a chart');
+    await expect(stepStatus(page, 'open')).toHaveText('7 of 14 charts ready');
+    await captureEvidence(page, 'APP-LOAD-017', 'sidebar');
+
+    await correct(page);
+    await expect(stepStatus(page, 'map')).toHaveText('23 guessed, 0 needed by a chart');
+    await expect(stepStatus(page, 'open')).toHaveText('13 of 14 charts ready');
+    await sideAction(page, 'open-chart').click();
+    await expect(item(page, 'histogram')).toHaveAttribute('aria-current', 'page');
+    await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
+  });
+
+  test('APP-LOAD-018: the loaded files are listed with their flags, and choosing one moves to its card (#159)', async ({
+    page
+  }) => {
+    await openEmpty(page);
+    await chooseFiles(page, [...STUDY, NO_DOMAIN]);
+    await expect(page.locator('.sva-loaded-name')).toHaveText([
+      'dm.csv',
+      'ae.csv',
+      'labs_final.csv',
+      'ecg.json',
+      'site_notes.csv'
+    ]);
+    const entry = (domain) => page.locator(`.sva-loaded-file[data-domain="${domain}"]`);
+    await expect(entry('bds').locator('.sva-loaded-detail')).toHaveText(
+      'Labs and vitals, 2,223 rows'
+    );
+    await expect(entry('bds').locator('.sva-flag')).toHaveText(['8 guessed', '3 needed']);
+    await entry('eg').click();
+    await expect(card(page, 'eg')).toBeFocused();
+    await expect(card(page, 'eg')).toBeInViewport();
+  });
+
+  test('APP-LOAD-019: Reset returns the data view to the empty drop zone (#159)', async ({
+    page
+  }) => {
+    await openEmpty(page);
+    await chooseFiles(page, [...STUDY, NO_DOMAIN]);
+    await correct(page);
+    await sideAction(page, 'reset').click();
+    await expect(page.locator('.sva-file')).toHaveCount(0);
+    await expect(page.locator('.sva-note')).toHaveCount(0);
+    await expect(page.locator('.sva-loaded-empty')).toHaveText('No files are loaded.');
+    await expect(item(page, 'data').locator('.sva-tag')).toHaveText('no files');
+    await expect(page.locator('.sva-count')).toHaveText(
+      '0 of 14 charts supported by the loaded data'
+    );
+    await expect(sideAction(page, 'reset')).toHaveCount(0);
+    // The same files can be chosen again, and arrive unmapped as they first did.
+    await chooseFiles(page, STUDY);
+    await expect(stepStatus(page, 'map')).toHaveText('23 guessed, 6 needed by a chart');
+  });
+
+  test('APP-LOAD-020: each demo study loads from the menu and replaces the one before it (#159)', async ({
+    page
+  }) => {
+    const errors = watchErrors(page);
+    await openOnDemo(page);
+    await item(page, 'data').click();
+    const menu = page.locator('.sva-side select.sva-study');
+    await expect(menu.locator('option')).toHaveText([
+      'Choose a demo study',
+      'Pilot study',
+      'Renamed columns',
+      'Liver cohort, labs only'
+    ]);
+    await expect(menu).toHaveValue('pilot');
+    await expect(page.locator('.sva-study-note')).toContainText(
+      '110 synthetic liver and kidney participants who are in no other file'
+    );
+    await expect(stepStatus(page, 'map')).toHaveText('4 guessed, 0 needed by a chart');
+
+    await menu.selectOption('renamed');
+    await expect(page.locator('.sva-loaded-name')).toHaveText([
+      'dm.csv',
+      'ae.csv',
+      'labs_final.csv',
+      'ecg.json'
+    ]);
+    await expect(page.locator('.sva-study-note')).toContainText('six rows');
+    await expect(stepStatus(page, 'map')).toHaveText('23 guessed, 6 needed by a chart');
+    // The data view stays open: the mapping is what this study is for.
+    await expect(item(page, 'data')).toHaveAttribute('aria-current', 'page');
+
+    await menu.selectOption('liver');
+    await expect(page.locator('.sva-loaded-name')).toHaveText(['adbds-abnbl.csv']);
+    await expect(stepStatus(page, 'load')).toHaveText('1 file loaded');
+    await expect(stepStatus(page, 'open')).toHaveText('8 of 14 charts ready');
+    await expect(page.locator('.sva-tab .sva-tab-count')).toHaveText([
+      '8 of 9',
+      '0 of 1',
+      '0 of 3',
+      '0 of 1'
+    ]);
+    // It draws: the hepatic explorer from the one labs file.
+    await openChart(page, 'hep-explorer');
+    await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
+
+    // Reset leaves the menu, with no study chosen; the pilot study loads again from it.
+    await item(page, 'data').click();
+    await sideAction(page, 'reset').click();
+    await expect(menu).toHaveValue('');
+    await expect(page.locator('.sva-file')).toHaveCount(0);
+    await menu.selectOption('pilot');
+    await expect(page.locator('.sva-count')).toHaveText(
+      '13 of 14 charts supported by the loaded data'
+    );
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-LOAD-021: the sidebar sits beside the data view on a wide screen and on no chart view (#159)', async ({
+    page
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await openOnDemo(page);
+    // A chart view has no sidebar: the chart keeps the page's width.
+    await expect(page.locator('.sva-chart')).toBeVisible();
+    await expect(page.locator('.sva-side')).toHaveCount(0);
+    await item(page, 'data').click();
+    const side = await page.locator('.sva-side').boundingBox();
+    const drop = await page.locator('.sva-drop').boundingBox();
+    const first = await page.locator('.sva-file').first().boundingBox();
+    expect(side.x + side.width).toBeLessThanOrEqual(drop.x);
+    expect(Math.abs(side.y - drop.y)).toBeLessThan(2);
+    expect(first.x).toBe(drop.x);
+    // It stays in view while the cards scroll under the header.
+    await page.locator('.sva-file').last().scrollIntoViewIfNeeded();
+    await expect(page.locator('.sva-side')).toBeInViewport();
+  });
+
+  test('APP-LOAD-021: at phone width the sidebar stacks above the drop zone and the page does not scroll sideways (#159)', async ({
+    page
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await openOnDemo(page);
+    await item(page, 'data').click();
+    const side = await page.locator('.sva-side').boundingBox();
+    const drop = await page.locator('.sva-drop').boundingBox();
+    expect(side.y + side.height).toBeLessThanOrEqual(drop.y);
+    expect(side.x).toBe(drop.x);
+    expect(side.width).toBe(drop.width);
+    const overflow = () =>
+      page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    expect(await overflow()).toBeLessThanOrEqual(0);
+    await page.locator('.sva-side select.sva-study').selectOption('renamed');
+    await expect(page.locator('.sva-loaded-name')).toHaveCount(4);
+    expect(await overflow()).toBeLessThanOrEqual(0);
+  });
+});
+
 // ---- the single file (#152) --------------------------------------------------
 //
 // `npm run build:app` also writes build/app/safety.viz-app.html: the app inlined
@@ -562,7 +745,7 @@ test.describe('demo app as one file, offline', () => {
       '0 of 14 charts supported by the loaded data'
     );
     await expect(page.locator('.sva-drop')).toBeVisible();
-    await expect(page.locator('[data-action="demo"]')).toHaveCount(0);
+    await expect(page.locator('.sva-study')).toHaveCount(0);
     // The only thing fetched is the file itself.
     expect(requests).toEqual([SINGLE_FILE.href]);
     expect(errors).toEqual([]);

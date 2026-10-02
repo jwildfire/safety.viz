@@ -4,7 +4,8 @@
 // them the charts of the open domain, each with a status saying whether the
 // loaded data supports it. The open chart's chip is emphasised and is the
 // view's visible name. The main area shows the data view or one chart at a
-// time; the footer carries the links.
+// time; the footer carries the links. The data view has a sidebar of its own
+// (data-panel.js, #159); a chart view has none, so the chart keeps the width.
 // This is the only module of the app that touches the document. The parsing,
 // placing, mapping and status rules it shows are the pure modules beside it,
 // and its look is styles.js.
@@ -27,6 +28,7 @@ import {
 import { chartStatus, supportedCount } from './status.js';
 import { chartData, chartSettings, isDestination } from './charts.js';
 import { renderDataPanel } from './data-panel.js';
+import { DEMO_STUDIES, studyUrls } from './studies.js';
 import { el, plural } from './dom.js';
 import { LOGO_SVG, STYLES } from './styles.js';
 
@@ -96,12 +98,12 @@ function sentenceFor(module, status, manifest) {
  * @param {Object} options Mount options.
  * @param {Object} options.charts The chart factories, keyed by export name (the safety.viz module collection).
  * @param {Object} options.manifest The portfolio manifest.
- * @param {{base: string}} [options.demo] Where the demo extracts are served from; when given, the demo study is loaded on mount and a Load demo data button is offered.
+ * @param {{base: string, studies?: Object[]}} [options.demo] Where the demo studies are served from, and which (default: {@link DEMO_STUDIES}); when given, the first study is loaded on mount and the data view offers each by name.
  * @param {{docs?: string, domains?: string, download?: string, github?: string}} [options.links] Where the footer's links go; a link with no address is left out.
  * @param {string} [options.version] The safety.viz version, shown in the footer.
  * @param {(url: string) => Promise<string>} [options.fetchText] Fetches the demo extracts' text; defaults to `fetch`.
  * @param {(container: Element, app: Object) => void} [options.dataView] Renders the data view; defaults to the data panel.
- * @returns {{ready: Promise<void>, loadFiles: Function, loadDemo: Function, select: Function, state: Object, destroy: Function}} The app handle.
+ * @returns {{ready: Promise<void>, loadFiles: Function, loadDemo: Function, reset: Function, select: Function, state: Object, destroy: Function}} The app handle.
  */
 export function mountApp(
   target,
@@ -129,6 +131,7 @@ export function mountApp(
     placements: {}, // domain → the placeFile result for its file
     unplaced: [], // files that matched no domain, kept so they can be placed by hand
     saved: null, // a mapping file's content, applied to each domain as its file loads
+    study: null, // the id of the demo study that is loaded, when what is loaded is one
     notes: [], // sentences about the last load: unplaced, unreadable, replaced
     failed: {}, // module → the message of a chart that was ready and threw
     focus: null, // the mapping row to return the keyboard focus to after a re-render
@@ -136,6 +139,8 @@ export function mountApp(
     busy: ''
   };
   let instance = null;
+  const studies = demo ? demo.studies || DEMO_STUDIES : [];
+  let demoRun = 0; // the latest demo study asked for; an earlier one still loading is dropped
 
   const status = () => {
     const computed = chartStatus(state.mappings, manifest);
@@ -178,13 +183,12 @@ export function mountApp(
   chartRow.setAttribute('aria-label', 'Charts');
   header.append(bar, chartRow);
 
-  // The main area: the view's heading and count for screen readers, the data
-  // view's actions, and the view beneath them.
+  // The main area: the view's heading and count for screen readers, and the
+  // view beneath them.
   const main = el('main', 'sva-main');
   const head = el('div', 'sva-sechead');
   const title = el('h1', 'sva-title');
-  const actions = el('div', 'sva-actions');
-  head.append(title, count, actions);
+  head.append(title, count);
   const content = el('div', 'sva-content');
   main.append(head, content);
 
@@ -230,23 +234,6 @@ export function mountApp(
     const { ready, total } = supportedCount(current);
     // Spoken, not shown: each domain's tab already carries its own count.
     count.textContent = state.busy || `${ready} of ${total} charts supported by the loaded data`;
-    // The data actions belong to the data view.
-    actions.innerHTML = '';
-    if (state.selected !== 'data') return;
-    if (demo) {
-      const button = el('button', 'sva-button', 'Load demo data');
-      button.type = 'button';
-      button.dataset.action = 'demo';
-      button.onclick = () => handle.loadDemo();
-      actions.append(button);
-    }
-    if (Object.keys(state.files).length) {
-      const button = el('button', 'sva-button', 'Download mapping');
-      button.type = 'button';
-      button.dataset.action = 'download-mapping';
-      button.onclick = () => handle.downloadMapping();
-      actions.append(button);
-    }
   }
 
   function navItem(id, label, tag, hexClass, fullTitle = label) {
@@ -419,10 +406,66 @@ export function mountApp(
     }
   }
 
+  /** Forget everything that was loaded: files, mappings, a held mapping file, notes. */
+  function clear() {
+    state.files = {};
+    state.mappings = {};
+    state.placements = {};
+    state.unplaced = [];
+    state.saved = null;
+    state.study = null;
+    state.notes = [];
+    state.failed = {};
+    state.focus = null;
+  }
+
+  /** The first chart the loaded data supports that is drawn in the main pane. */
+  function firstReady() {
+    const current = status();
+    return (
+      Object.keys(manifest.modules).find(
+        (module) => isDestination(module, manifest) && current[module].state === 'ready'
+      ) || null
+    );
+  }
+
+  async function runDemo(id, open) {
+    const study = studies.find((item) => item.id === id) || studies[0];
+    if (!study) return;
+    const run = ++demoRun;
+    state.busy = 'Loading the demo study…';
+    render();
+    let texts;
+    try {
+      texts = await Promise.all(studyUrls(study, demo.base).map((url) => fetchText(url)));
+    } catch (error) {
+      if (run !== demoRun) return;
+      state.busy = '';
+      state.notes = [`The demo study could not be loaded: ${error.message}`];
+      state.selected = 'data';
+      render();
+      return;
+    }
+    if (run !== demoRun) return;
+    state.busy = '';
+    clear();
+    handle.loadFiles(
+      study.files.map((name, index) => ({ name, text: texts[index] })),
+      { study: study.id }
+    );
+    if (!open) return;
+    const wanted = window.location.hash.slice(1);
+    handle.select(manifest.modules[wanted] || wanted === 'data' ? wanted : firstReady() || 'data');
+  }
+
   const handle = {
     state,
     manifest,
+    studies,
     ready: Promise.resolve(),
+
+    /** The first chart the loaded data supports, or null when none is ready. */
+    firstReady,
 
     /** The current status of every chart, including any that did not draw. */
     status,
@@ -432,10 +475,12 @@ export function mountApp(
      * domain and given its pre-filled mapping. A file that cannot be read or
      * placed is reported in a sentence and changes nothing.
      * @param {{name: string, text: string}[]} list The files' names and text.
+     * @param {{notes?: string[], study?: ?string}} [options] Sentences to show with the load, and the demo study these files are, when they are one.
      * @returns {void}
      */
-    loadFiles(list, { notes = [] } = {}) {
+    loadFiles(list, { notes = [], study = null } = {}) {
       state.notes = [...notes];
+      state.study = study;
       // A mapping file among them is read first, so the data files dropped
       // with it land where it says and take its rows.
       const data = [];
@@ -585,31 +630,27 @@ export function mountApp(
     },
 
     /**
-     * Fetch and load the demo study, then open the chart named in the URL's
-     * hash, or the first chart the data supports.
-     * @returns {Promise<void>} Settles when the demo study is on the page.
+     * Fetch and load a demo study, replacing whatever is loaded. A study that
+     * cannot be fetched is reported in a sentence and changes nothing.
+     * @param {string} [id] The study's id; the first study when left out.
+     * @param {{open?: boolean}} [options] `open` then shows the chart named in the URL's hash, or the first chart the data supports; otherwise the view stays where it is.
+     * @returns {Promise<void>} Settles when the study is on the page; also kept as `ready`.
      */
-    async loadDemo() {
-      state.busy = 'Loading the demo study…';
-      render();
-      try {
-        const names = Object.values(manifest.domains).map((domain) => domain.demo);
-        const texts = await Promise.all(names.map((name) => fetchText(`${demo.base}${name}`)));
-        state.busy = '';
-        handle.loadFiles(names.map((name, index) => ({ name, text: texts[index] })));
-      } catch (error) {
-        state.busy = '';
-        state.notes = [`The demo study could not be loaded: ${error.message}`];
-        state.selected = 'data';
-        render();
-        return;
-      }
-      const current = status();
-      const wanted = window.location.hash.slice(1);
-      const first = Object.keys(manifest.modules).find(
-        (module) => isDestination(module, manifest) && current[module].state === 'ready'
-      );
-      handle.select(manifest.modules[wanted] || wanted === 'data' ? wanted : first || 'data');
+    loadDemo(id, { open = false } = {}) {
+      handle.ready = runDemo(id, open);
+      return handle.ready;
+    },
+
+    /**
+     * Clear every file, mapping, held mapping file and note, and show the
+     * empty data view.
+     * @returns {void}
+     */
+    reset() {
+      demoRun += 1;
+      state.busy = '';
+      clear();
+      handle.select('data');
     },
 
     /**
@@ -655,6 +696,6 @@ export function mountApp(
   };
 
   render();
-  if (demo) handle.ready = handle.loadDemo();
+  if (studies.length) handle.loadDemo(studies[0].id, { open: true });
   return handle;
 }
