@@ -36,7 +36,7 @@ import {
   stageZonesPlugin
 } from './nep-explorer/getPlugins.js';
 import { csvDownloadLink, toCsv } from './hep-explorer/dropped.js';
-import { initFilterState, renderFilterControl } from './filters.js';
+import { initFilterState, reconcileFilters, renderFilterControl } from './filters.js';
 
 Chart.register(ScatterController, PointElement, LinearScale, Tooltip);
 
@@ -242,16 +242,18 @@ class SafetyNepExplorer {
         );
       return exists;
     });
-    if (filterSpecs.length) {
+    const filterControls = reconcileFilters(this.state.filters, filterSpecs, (filter) =>
+      unique(this.allPoints.map((point) => point.meta[filter.value_col])).sort()
+    );
+    if (filterControls.length) {
       const filterParent = addSection('Filters');
-      filterSpecs.forEach((filter) => {
-        const values = unique(this.allPoints.map((point) => point.meta[filter.value_col])).sort();
+      filterControls.forEach(({ spec: filter, values, selected }) => {
         addControl(
           filter.label,
           renderFilterControl({
             spec: filter,
-            values: values,
-            selected: this.state.filters[filter.value_col],
+            values,
+            selected,
             onChange: (next) => {
               this.state.filters[filter.value_col] = next;
               this.render();

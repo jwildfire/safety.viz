@@ -73,7 +73,7 @@ import scatterView from './hep-explorer/views/scatter.js';
 import migrationView from './hep-explorer/views/migration.js';
 import compositeView from './hep-explorer/views/composite.js';
 import { renderListing } from './histogram/listing.js';
-import { initFilterState, renderFilterControl } from './filters.js';
+import { initFilterState, reconcileFilters, renderFilterControl } from './filters.js';
 
 Chart.register(
   ScatterController,
@@ -523,7 +523,7 @@ class SafetyHepExplorer {
     if ('unscheduled_visits' in settings)
       this.state.unscheduledVisits = this.settings.unscheduled_visits;
     if ('details' in settings) this.profileDetails = this.settings.details;
-    this.state.filters = {};
+    this.state.filters = initFilterState(this.settings.filters);
     if (this.rawData.length) this.validateAndCleanData();
     this.syncProfileRail();
     this.buildControls();
@@ -732,18 +732,21 @@ class SafetyHepExplorer {
 
     // Filters section (HEP-CTRL-011) plus, for the views that filter on it, the
     // R-Ratio range filter (HEP-CTRL-010).
-    const filterSpecs = this.activeFilterSpecs();
+    const filterControls = reconcileFilters(
+      this.state.filters,
+      this.activeFilterSpecs(),
+      (filter) => unique(this.cleanRows.map((row) => row[filter.value_col])).sort()
+    );
     const showRRatio = this.settings.r_ratio_filter && view.usesRRatioFilter;
-    if (filterSpecs.length || showRRatio) {
+    if (filterControls.length || showRRatio) {
       const filterParent = addSection('Filters');
-      filterSpecs.forEach((filter) => {
-        const values = unique(this.cleanRows.map((row) => row[filter.value_col])).sort();
+      filterControls.forEach(({ spec: filter, values, selected }) => {
         addControl(
           filter.label,
           renderFilterControl({
             spec: filter,
-            values: values,
-            selected: this.state.filters[filter.value_col],
+            values,
+            selected,
             onChange: (next) => {
               this.state.filters[filter.value_col] = next;
               this.render();
@@ -785,7 +788,7 @@ class SafetyHepExplorer {
     clearAxisLimits(this.state.axisY);
     this.state.pointSize = 'Uniform';
     this.state.visitWindow = this.settings.visit_window;
-    this.state.filters = {};
+    this.state.filters = initFilterState(this.settings.filters);
     this.state.rRatio = [...this.settings.r_ratio];
     this.state.hideUnchanged = this.settings.hide_unchanged;
     this.state.activeArms = this.settings.active_arms;

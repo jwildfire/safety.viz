@@ -44,7 +44,7 @@ import {
   outlierTooltip,
   summaryTooltip
 } from './results-over-time/getPlugins.js';
-import { initFilterState, renderFilterControl } from './filters.js';
+import { initFilterState, reconcileFilters, renderFilterControl } from './filters.js';
 
 Chart.register(
   ScatterController,
@@ -289,14 +289,15 @@ class SafetyResultsOverTime {
       return exists;
     });
     const filterParent = filterSpecs.length ? addSection('Filters') : this.controls;
-    filterSpecs.forEach((filter) => {
-      const values = unique(this.cleanData.map((row) => row[filter.value_col])).sort();
+    reconcileFilters(this.state.filters, filterSpecs, (filter) =>
+      unique(this.cleanData.map((row) => row[filter.value_col])).sort()
+    ).forEach(({ spec: filter, values, selected }) => {
       addControl(
         filter.label,
         renderFilterControl({
           spec: filter,
           values,
-          selected: this.state.filters[filter.value_col],
+          selected,
           onChange: (next) => {
             this.state.filters[filter.value_col] = next;
             this.render();

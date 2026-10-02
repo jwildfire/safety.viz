@@ -78,7 +78,7 @@ import {
   syncProfileRail,
   unmountProfileRail
 } from './profile-host.js';
-import { initFilterState, renderFilterControl } from './filters.js';
+import { initFilterState, reconcileFilters, renderFilterControl } from './filters.js';
 
 Chart.register(ScatterController, PointElement, LineElement, LinearScale, Tooltip, Legend);
 
@@ -175,8 +175,9 @@ class SafetyQtExplorer {
    * Return the control state to its opening value: re-seed from the settings,
    * then re-run the available-measure pin so the Correction control lands
    * where it opened rather than on a correction the data lacks (QT-CTRL-004,
-   * #136). The stale-filter prune needs no re-run — the seed's filters come
-   * straight from the configured specs. Cheap enough for a control click:
+   * #136). A configured start value the data lacks is squared with the data
+   * by the same shared reconciliation that runs on load, when buildControls
+   * rebuilds the filters (#166). Cheap enough for a control click:
    * availableMeasures is already cached, and the data is not re-cleaned.
    * @private
    */
@@ -351,7 +352,7 @@ class SafetyQtExplorer {
     return this;
   }
 
-  /** Validate + clean; resolve measures, arms, placebo, visits, and prune stale state. @private */
+  /** Validate + clean; resolve measures, arms, placebo and visits. @private */
   validateAndCleanData() {
     try {
       checkInputs(this.rawData, this.settings);
@@ -374,30 +375,6 @@ class SafetyQtExplorer {
     const available = this.settings.measures.filter((m) => measures.includes(m));
     this.availableMeasures = available.length ? available : measures;
     this.resolveMeasure();
-    // Prune stale filter selections: drop filters no longer configured, or whose
-    // value is absent from the new data, so an invisible filter can never keep
-    // constraining the views to nothing (QT-CTRL-003).
-    const configured = new Set(this.settings.filters.map((f) => f.value_col));
-    for (const col of Object.keys(this.state.filters)) {
-      // A `multiple` filter holds an array, so the staleness test is per value
-      // rather than whole-selection equality; a selection that has lost some of
-      // its values keeps the ones the data still carries (#136).
-      const selection = this.state.filters[col];
-      if (!configured.has(col)) {
-        delete this.state.filters[col];
-        continue;
-      }
-      if (Array.isArray(selection)) {
-        const kept = selection.filter((value) =>
-          rows.some((row) => String(row[col]) === String(value))
-        );
-        if (kept.length) this.state.filters[col] = kept;
-        else delete this.state.filters[col];
-        continue;
-      }
-      if (!rows.some((row) => String(row[col]) === String(selection)))
-        delete this.state.filters[col];
-    }
   }
 
   /**
@@ -479,18 +456,31 @@ class SafetyQtExplorer {
       };
     }
 
-    if (this.settings.filters.length) {
+    const filterSpecs = this.settings.filters.filter((filter) => {
+      const exists = this.cleanRows.some((row) => row[filter.value_col] !== undefined);
+      if (!exists)
+        console.warn(
+          `The [ ${filter.label} ] filter has been removed because the variable does not exist.`
+        );
+      return exists;
+    });
+    // The one place a filter selection is squared with the bound data
+    // (QT-CTRL-003): it runs on load, on setSettings and on Reset alike, so a
+    // selection the data cannot honour never constrains the views to nothing.
+    const filterControls = reconcileFilters(this.state.filters, filterSpecs, (filter) =>
+      unique(this.cleanRows.map((row) => row[filter.value_col]))
+        .map(String)
+        .sort()
+    );
+    if (filterControls.length) {
       const filterSection = addSection('Filters');
-      this.settings.filters.forEach((filter) => {
-        const values = unique(this.cleanRows.map((row) => row[filter.value_col]))
-          .map(String)
-          .sort();
+      filterControls.forEach(({ spec: filter, values, selected }) => {
         addControl(
           filter.label,
           renderFilterControl({
             spec: filter,
-            values: values,
-            selected: this.state.filters[filter.value_col],
+            values,
+            selected,
             onChange: (next) => {
               this.state.filters[filter.value_col] = next;
               this.render();

@@ -45,7 +45,7 @@ import {
   syncProfileRail,
   unmountProfileRail
 } from './profile-host.js';
-import { initFilterState, renderFilterControl } from './filters.js';
+import { initFilterState, reconcileFilters, renderFilterControl } from './filters.js';
 import { presentMeasures, resolveMeasureList } from './measure-list.js';
 
 Chart.register(ScatterController, PointElement, LinearScale, LogarithmicScale, Tooltip, Legend);
@@ -410,16 +410,18 @@ class SafetyShiftPlot {
         );
       return exists;
     });
-    if (filterSpecs.length) {
+    const filterControls = reconcileFilters(this.state.filters, filterSpecs, (filter) =>
+      unique(this.cleanData.map((row) => row[filter.value_col])).sort()
+    );
+    if (filterControls.length) {
       const filterParent = addSection('Filters');
-      filterSpecs.forEach((filter) => {
-        const values = unique(this.cleanData.map((row) => row[filter.value_col])).sort();
+      filterControls.forEach(({ spec: filter, values, selected }) => {
         addControl(
           filter.label,
           renderFilterControl({
             spec: filter,
             values,
-            selected: this.state.filters[filter.value_col],
+            selected,
             onChange: (next) => {
               this.state.filters[filter.value_col] = next;
               this.render();

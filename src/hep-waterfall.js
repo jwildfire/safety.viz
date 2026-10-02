@@ -90,7 +90,7 @@ import {
 } from './hep-waterfall/getPlugins.js';
 import { unique } from './hep-explorer/structureData.js';
 import { renderListing } from './histogram/listing.js';
-import { initFilterState, renderFilterControl } from './filters.js';
+import { initFilterState, reconcileFilters, renderFilterControl } from './filters.js';
 
 Chart.register(
   BarController,
@@ -565,18 +565,20 @@ class SafetyHepWaterfall {
     const filterSpecs = this.settings.filters.filter((filter) =>
       this.cleanRows.some((row) => row[filter.value_col] !== undefined)
     );
-    if (filterSpecs.length) {
+    const filterControls = reconcileFilters(this.state.filters, filterSpecs, (filter) =>
+      unique(this.cleanRows.map((row) => row[filter.value_col]))
+        .map(String)
+        .sort()
+    );
+    if (filterControls.length) {
       const filterSection = addSection('Filters');
-      filterSpecs.forEach((filter) => {
-        const values = unique(this.cleanRows.map((row) => row[filter.value_col]))
-          .map(String)
-          .sort();
+      filterControls.forEach(({ spec: filter, values, selected }) => {
         addControl(
           filter.label,
           renderFilterControl({
             spec: filter,
-            values: values,
-            selected: this.state.filters[filter.value_col],
+            values,
+            selected,
             onChange: (next) => {
               this.state.filters[filter.value_col] = next;
               this.render();

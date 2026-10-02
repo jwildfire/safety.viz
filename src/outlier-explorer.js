@@ -61,7 +61,7 @@ import {
   syncProfileRail,
   unmountProfileRail
 } from './profile-host.js';
-import { initFilterState, renderFilterControl } from './filters.js';
+import { initFilterState, reconcileFilters, renderFilterControl } from './filters.js';
 
 Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip);
 
@@ -386,17 +386,18 @@ class SafetyOutlierExplorer {
       return exists;
     });
     const filterParent = filterSpecs.length ? addSection('Filters') : this.controls;
-    // A filter with a start value offers no "All" option unless the spec asks
-    // for one back (SOE-REG-052, now the shared contract's rule for every
-    // renderer rather than this one's local behaviour).
-    filterSpecs.forEach((filter) => {
-      const values = unique(this.cleanData.map((row) => row[filter.value_col])).sort();
+    // A filter with a start value opens on it and still offers "All", the one
+    // rule every chart follows since #166; only `all: false` removes it
+    // (SOE-REG-052 as restated — the original dropped All on a start value).
+    reconcileFilters(this.state.filters, filterSpecs, (filter) =>
+      unique(this.cleanData.map((row) => row[filter.value_col])).sort()
+    ).forEach(({ spec: filter, values, selected }) => {
       addControl(
         filter.label,
         renderFilterControl({
           spec: filter,
           values,
-          selected: this.state.filters[filter.value_col],
+          selected,
           onChange: (next) => {
             this.state.filters[filter.value_col] = next;
             this.render();

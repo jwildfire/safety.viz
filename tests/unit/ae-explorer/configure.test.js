@@ -69,7 +69,7 @@ describe('ae-explorer configure', () => {
         label: 'Srs?',
         type: 'event',
         start: 'Y',
-        all: false,
+        all: true,
         multiple: false
       },
       {
