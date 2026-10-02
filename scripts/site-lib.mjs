@@ -1074,7 +1074,8 @@ export function renderPortfolioPage({ manifest, bundle, download }) {
     `<p class="tagline">Every safety.viz chart on one page, on one study.</p>` +
     `<p>The list names all ${charts} charts under the data domain each reads and says whether` +
     ` the loaded data supports it. Choose a chart to draw it; one is drawn at a time. The page` +
-    ` opens on the demo study (${extracts}), built from the` +
+    ` opens on the demo study (${extracts}; the <a href="../domains/index.html">Domains</a>` +
+    ` page says what each holds and what each chart needs from it), built from the` +
     ` <a href="https://github.com/pharmaverse/pharmaverseadam">pharmaverseadam</a> CDISC Pilot 01` +
     ` ADaM datasets. Nothing is sent anywhere: the data is read and drawn in this browser.</p>` +
     `<p class="portfolio-download">To use it on your own study without this site,` +

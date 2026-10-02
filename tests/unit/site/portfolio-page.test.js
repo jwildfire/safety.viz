@@ -38,4 +38,8 @@ describe('renderPortfolioPage', () => {
   it('APP-FILE-008: links the single file beside the page as a download (#152)', () => {
     expect(html).toContain('<a href="./safety.viz-app.html" download>download the single file</a>');
   });
+
+  it('APP-PAGE-017: points to the Domains page for what each extract holds (#150)', () => {
+    expect(html).toContain('<a href="../domains/index.html">Domains</a>');
+  });
 });
