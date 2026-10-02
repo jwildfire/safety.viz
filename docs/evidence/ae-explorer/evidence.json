@@ -1,6 +1,6 @@
 {
   "module": "ae-explorer",
-  "generatedAt": "2026-10-02T18:14:27.302Z",
+  "generatedAt": "2026-10-02T18:20:30.597Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "37046012376",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37046012376"
+    "id": "37046679297",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37046679297"
   },
   "records": [
     {
@@ -4197,7 +4197,7 @@
       "screenshots": []
     },
     {
-      "test": "portfolio manifest PF-MAN-003: every chart exported by src/main.js appears exactly once, or is listed as experimental (#138, #165)",
+      "test": "portfolio manifest PF-MAN-003: every chart exported by src/main.js appears exactly once, or is a prototype (#138, #165)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["PF-MAN-003"],
@@ -4245,7 +4245,7 @@
       "screenshots": []
     },
     {
-      "test": "portfolio manifest PF-MAN-009: thirteen modules are listed and all read the standard set; the experimental Patient Journey Explorer is not listed (#138, #165)",
+      "test": "portfolio manifest PF-MAN-009: thirteen modules are listed and all read the standard set; a prototype is left out and an experimental chart is in (#138, #165)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["PF-MAN-009"],
@@ -5029,7 +5029,7 @@
       "screenshots": []
     },
     {
-      "test": "shell: prototypeBanner renders a labelled note element with the default v1.5 copy (#97)",
+      "test": "shell: status banners each banner uses a caller-supplied note verbatim when given (#97)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": [],
@@ -5037,11 +5037,19 @@
       "screenshots": []
     },
     {
-      "test": "shell: prototypeBanner uses a caller-supplied note verbatim when given (#97)",
+      "test": "shell: status banners experimentalBanner renders a labelled note saying the chart may change (#97, #165)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": [],
-      "issueRefs": [97],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "shell: status banners prototypeBanner renders a labelled note saying the chart is not ready for production (#97, #165)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -5237,7 +5245,7 @@
       "screenshots": []
     },
     {
-      "test": "site generator: domains page (#139) PF-SITE-011: renderers the manifest does not list never appear: the planned ones, and the experimental Patient Journey Explorer (#139, #165)",
+      "test": "site generator: domains page (#139) PF-SITE-011: renderers the manifest does not list never appear: the planned ones, and the prototype Patient Journey Explorer (#139, #165)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["PF-SITE-011"],
