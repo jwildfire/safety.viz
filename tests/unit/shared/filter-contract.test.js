@@ -425,9 +425,11 @@ describe.each(CHARTS)('$name: the shared filter contract', (chart) => {
     expect(chart.drawn(instance)).toEqual(AT.S2);
   });
 
-  it.skipIf(chart.reset === null)(
-    `${id(2)}: Reset returns the filter to its opening selection (#166)`,
-    () => {
+  // A chart with no Reset control has no Reset cases: they are not registered,
+  // rather than skipped, because the evidence record counts a skipped test as
+  // one that did not pass.
+  if (chart.reset !== null)
+    it(`${id(2)}: Reset returns the filter to its opening selection (#166)`, () => {
       const instance = mount({ start: 'S2' });
       choose(instance, 'S1');
       expect(chart.drawn(instance)).toEqual(AT.S1);
@@ -436,12 +438,10 @@ describe.each(CHARTS)('$name: the shared filter contract', (chart) => {
       expect(shown(siteControl(instance))).toBe('S2');
       expect(held(instance)).toBe('S2');
       expect(chart.drawn(instance)).toEqual(AT.S2);
-    }
-  );
+    });
 
-  it.skipIf(chart.reset === null)(
-    `${id(2)}: Reset squares a start value the data lacks with the data, exactly as load does (#166)`,
-    () => {
+  if (chart.reset !== null)
+    it(`${id(2)}: Reset squares a start value the data lacks with the data, exactly as load does (#166)`, () => {
       const instance = mount({ start: 'S9' });
       choose(instance, 'S1');
       if (chart.reset) chart.reset(instance);
@@ -449,8 +449,7 @@ describe.each(CHARTS)('$name: the shared filter contract', (chart) => {
       expect(shown(siteControl(instance))).toBe(null);
       expect(held(instance)).toBe(null);
       expect(chart.drawn(instance)).toEqual(EVERYONE);
-    }
-  );
+    });
 
   it(`${id(2)}: setSettings leaves the chart on its opening selection (#166)`, () => {
     const instance = mount({ start: 'S2' });
