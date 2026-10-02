@@ -72,10 +72,13 @@ import { boxWhiskerPlugin, drawBoxWhisker } from './box-whisker.js';
 import { presentMeasures, resolveMeasureList } from './measure-list.js';
 import { kmEstimate } from './time-to-event/km.js';
 
+// The kit's API reference page is generated from the typedef below: its
+// description is the page's overview and each @property is a member's row.
+// `npm run docs:api` fails when a member is missing from it or has no
+// description, so a member cannot be added without being documented.
+
 /**
  * The shared parts every safety.viz chart is built from, exported so a second chart library on the same page builds from them instead of copying them. Each member is the same function the charts themselves call. The object is flat and frozen.
- *
- * The kit's API reference page is generated from this typedef, and `npm run docs:api` fails when a member is missing from it or has no description, so a member cannot be added without being documented.
  * @typedef {Object} Kit
  * @since 1.10.0
  * @property {function} Chart The Chart.js constructor this bundle contains: the one every safety.viz chart draws with, carrying the controllers, elements, scales and plugins the charts registered on it. Draw with it instead of loading a second Chart.js.
