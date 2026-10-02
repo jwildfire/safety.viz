@@ -220,6 +220,49 @@ describe('qt-explorer centralTendencySeries (QT-CT-001/004/005)', () => {
     expect(wk4.lo).toBeCloseTo(60 - 1.6449 * 10, 2);
   });
 
+  it('QT-CT-002: replicate readings average to one value per participant and visit before the mean and CI, and n counts participants (#166)', () => {
+    // Triplicate ECGs: every reading becomes three, spread around the single
+    // reading it replaces (D1 at Week 4: 40, 50, 60 → 50), so the averaged
+    // cohort is the DATA cohort and every statistic must come out unchanged.
+    const triplicate = DATA.flatMap((row) =>
+      [-10, 0, 10].map((offset) =>
+        row.ABLFL === 'Y'
+          ? { ...row }
+          : { ...row, STRESN: row.STRESN + offset, CHG: row.CHG + offset }
+      )
+    );
+    const replicated = forMeasure(cleanData(triplicate, SETTINGS).rows, 'QTcF');
+    const options = {
+      statistic: 'mean',
+      mode: 'delta',
+      arms,
+      visitOrder,
+      placeboArm: 'Placebo',
+      ciLevel: 0.9
+    };
+    const wk4 = centralTendencySeries(replicated, options)
+      .series.find((s) => s.arm === 'Drug')
+      .points.find((p) => p.visit === 'Week 4');
+    // Two participants, not six readings.
+    expect(wk4.n).toBe(2);
+    expect(wk4.value).toBeCloseTo(60, 10);
+    // se = √200/√2 = 10 — the between-participant spread, not the spread of
+    // six readings, which would shrink the interval by treating one
+    // participant's three readings as three independent participants.
+    expect(wk4.hi).toBeCloseTo(60 + 1.6449 * 10, 2);
+    expect(wk4.lo).toBeCloseTo(60 - 1.6449 * 10, 2);
+    // The same holds for the median and for the placebo-corrected difference.
+    const median = centralTendencySeries(replicated, { ...options, statistic: 'median' });
+    expect(
+      median.series.find((s) => s.arm === 'Drug').points.find((p) => p.visit === 'Week 4').value
+    ).toBeCloseTo(60, 10);
+    const dd = centralTendencySeries(replicated, { ...options, mode: 'deltadelta' });
+    const ddWk4 = dd.series[0].points.find((p) => p.visit === 'Week 4');
+    expect(ddWk4.n).toBe(2);
+    expect(ddWk4.value).toBeCloseTo(58, 10);
+    expect(ddWk4.hi).toBeCloseTo(58 + 1.6449 * 10, 2);
+  });
+
   it('QT-CT-004: ΔΔ drops placebo and subtracts placebo mean change', () => {
     const t = centralTendencySeries(measureRows, {
       statistic: 'mean',

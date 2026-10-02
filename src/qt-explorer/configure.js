@@ -83,7 +83,7 @@ export const TIMEPOINT_MAX = '__qt_max';
  * syncSettings fills in the rest. Field-list settings (filters) accept
  * column-name strings or spec objects, singly or as an array.
  * @typedef {Object} QtExplorerSettings
- * @property {string} [id_col='USUBJID'] Participant identifier column; one scatter point per participant and the exceedance denominators (QT-DATA-001).
+ * @property {string} [id_col='USUBJID'] Participant identifier column; one scatter point per participant and the exceedance denominators (QT-DATA-001). The central-tendency view also uses it to average replicate readings to one value per participant and visit, so its n counts participants (#166).
  * @property {string} [measure_col='TEST'] Column holding the ECG parameter name; required in the data. Matched to the correction options (QT-DATA-002).
  * @property {string} [value_col='STRESN'] Column holding the numeric analysis value; required in the data. Missing / non-numeric rows are removed with a console warning (QT-DATA-003).
  * @property {string} [baseline_col='BASE'] Baseline-value column; required in the data — the scatter x-axis and the absolute-threshold diagonals anchor to it (QT-OUT-001).

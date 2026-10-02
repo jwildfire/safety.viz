@@ -794,7 +794,8 @@ class SafetyQtExplorer {
 
   /**
    * Print the plotted central-tendency values beneath the chart (QT-CT-008):
-   * one row per visit and arm carrying the sample size, the plotted statistic,
+   * one row per visit and arm carrying the number of participants (replicate
+   * readings count once per participant and visit, #166), the plotted statistic,
    * and the two-sided CI bounds the band draws. Built from the SAME
    * centralTendencySeries result the chart consumes, so the printed numbers can
    * never disagree with the graphic — and it therefore inherits the active
