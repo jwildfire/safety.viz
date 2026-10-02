@@ -3,7 +3,7 @@ import { mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { publishManifest, renderDomainsPage } from '../../../scripts/site-lib.mjs';
+import { publishManifest, renderDomainsPage, renderShell } from '../../../scripts/site-lib.mjs';
 
 // Domains page (#139, obot.roadmap#325): the site states the standard domain
 // set and what every chart reads from it, generated from the portfolio
@@ -266,5 +266,15 @@ describe('site generator: serving the manifest (#139)', () => {
     const served = publishManifest(source, siteDir);
     expect(served).toBe(path.join(siteDir, 'portfolio.json'));
     expect(readFileSync(served).equals(readFileSync(source))).toBe(true);
+  });
+});
+
+describe('site shell: Domains nav entry (#139)', () => {
+  it('PF-SITE-018: the shell carries a Domains nav entry at every mount depth (#139)', () => {
+    const shell = read('site/shell.html');
+    for (const root of ['', '../']) {
+      const page = renderShell({ shell, title: 'T', content: 'C', root, renderers: [] });
+      expect(page).toContain(`<a href="${root}domains/index.html">Domains</a>`);
+    }
   });
 });
