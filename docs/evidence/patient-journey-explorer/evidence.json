@@ -1,6 +1,6 @@
 {
   "module": "patient-journey-explorer",
-  "generatedAt": "2026-10-02T18:30:09.143Z",
+  "generatedAt": "2026-10-02T18:55:32.188Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "37047789673",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37047789673"
+    "id": "37050636862",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37050636862"
   },
   "records": [
     {
@@ -410,6 +410,14 @@
       "status": "pass",
       "requirementIds": ["APP-PAGE-028"],
       "issueRefs": [165],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-029: the header sets the Demo app link apart with a border and an arrow, and still fits a phone (#172)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-029"],
+      "issueRefs": [172],
       "screenshots": []
     },
     {
@@ -7494,6 +7502,22 @@
       "status": "pass",
       "requirementIds": ["PF-SITE-018"],
       "issueRefs": [139, 139],
+      "screenshots": []
+    },
+    {
+      "test": "site shell: the Demo app nav entry APP-PAGE-029: the shell marks the Demo app link as the app link at every mount depth, and its text stays \"Demo app\" (#172)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-029"],
+      "issueRefs": [172],
+      "screenshots": []
+    },
+    {
+      "test": "site shell: the Demo app nav entry APP-PAGE-029: the stylesheet gives the app link a border and draws its arrow as decoration, not as text (#172)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-029"],
+      "issueRefs": [172],
       "screenshots": []
     },
     {
