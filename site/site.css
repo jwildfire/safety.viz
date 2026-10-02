@@ -946,6 +946,13 @@ ol.pipeline strong {
   letter-spacing: 0.02em;
 }
 
+/* Domains page (#139): its tables are narrow enough to size to content rather
+   than the wide-table 40rem minimum, scrolling only when a phone makes them. */
+
+.domains-page .table-scroll > table {
+  min-width: 0;
+}
+
 /* Demo page: the module brings its own embedded styles; give it room. */
 
 .site-main:has(.demo-page) {

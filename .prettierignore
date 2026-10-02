@@ -4,6 +4,8 @@ playwright-report/
 test-results/
 package-lock.json
 _site/
+_site.build-*/
+build/
 _api/
 
 # Requirement matrices are wide, hand-maintained data tables moved verbatim from
@@ -22,3 +24,7 @@ tests/evals/reports/*.md
 # Generated from skills/patient-journey-narratives/ by scripts/narratives/build-skills.mjs
 # (#146); its bytes are the compiler's, and a test pins them to a fresh compile.
 src/patientJourneyNarratives/skills.generated.js
+
+# The renamed-column study for the demo app's browser tests (#151): written
+# by scripts/build-app-fixture.mjs, and a test pins the files to its output.
+tests/e2e/fixtures/app/

@@ -15,10 +15,49 @@ import { CANONICAL } from './evidence.js';
 
 const config = JSON.parse(readFileSync(new URL('../../site/config.json', import.meta.url), 'utf8'));
 const available = config.renderers.filter((renderer) => renderer.status === 'available');
+const manifestFile = new URL('../../src/data/portfolio.json', import.meta.url);
+const manifest = JSON.parse(readFileSync(manifestFile, 'utf8'));
 
 test.describe('docs site', () => {
   test.beforeAll(() => {
     execSync('npm run site', { stdio: 'inherit', cwd: new URL('../..', import.meta.url) });
+  });
+
+  test('APP-PAGE-013: the built demo app is its own page at demo/, mounted on the demo study with no console errors (#150)', async ({
+    page
+  }) => {
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') errors.push(msg.text());
+    });
+    await page.goto('/_site/demo/index.html');
+    await page.evaluate('window.__safetyVizApp.ready');
+    await expect(page).toHaveTitle('safety.viz demo');
+    await expect(page.locator('.sva-count')).toHaveText(
+      '13 of 14 charts supported by the loaded data'
+    );
+    await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
+    // Its own header, not the docs site's.
+    await expect(page.locator('.sva-header .sva-wordmark')).toHaveText('safety.viz');
+    await expect(page.locator('.site-header')).toHaveCount(0);
+    // Its links lead back into the site, and to the single file as a download (#152).
+    await expect(page.locator('.sva-links a[data-link="docs"]')).toHaveAttribute(
+      'href',
+      '../index.html'
+    );
+    const download = page.locator('.sva-links a[data-link="download"]');
+    await expect(download).toHaveAttribute('href', './safety.viz-app.html');
+    await expect(download).toHaveAttribute('download', '');
+    const response = await page.request.get('/_site/demo/safety.viz-app.html');
+    expect(response.ok()).toBe(true);
+    expect(await response.text()).toContain('<title>safety.viz demo</title>');
+    await page.locator('.sva-links a[data-link="domains"]').click();
+    await expect(page).toHaveURL(/\/_site\/domains\/index\.html$/);
+    // The docs site's nav reaches the app from anywhere.
+    await page.goto('/_site/index.html');
+    await expect(page.locator('.site-nav a[href="demo/index.html"]')).toHaveText('Demo app');
+    expect(errors).toEqual([]);
   });
 
   test('gallery shows one card per available renderer (#7)', async ({ page }) => {
@@ -114,6 +153,77 @@ test.describe('docs site', () => {
       const current = page.locator('.nav-menu a.current');
       await expect(current).toHaveCount(1);
       await expect(current).toHaveText('Safety Histogram');
+    });
+  });
+
+  // Domains page (#139): the standard domain set and every chart's column
+  // needs, generated from the portfolio manifest, which the build also serves
+  // from the site root. The unit suite (tests/unit/site/domains-page.test.js)
+  // holds the content to the manifest; these two hold what only a built site
+  // and a real layout can show — that the nav reaches the page, that its wide
+  // tables scroll inside their own container on a phone instead of pushing the
+  // page sideways, and that the file at the root is the manifest itself.
+  test.describe('domains page (#139)', () => {
+    test('PF-SITE-019: the Domains page opens from the nav, lists every chart in the manifest and fits a 390px phone with no sideways page scroll (#139)', async ({
+      page
+    }) => {
+      const errors = [];
+      page.on('pageerror', (error) => errors.push(error.message));
+      page.on('console', (msg) => {
+        if (msg.type() === 'error') errors.push(msg.text());
+      });
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.goto('/_site/index.html');
+      await page.locator('.site-nav > a', { hasText: 'Domains' }).click();
+      await expect(page).toHaveURL(/\/_site\/domains\/index\.html$/);
+      await expect(page.locator('.site-nav a.current')).toHaveText('Domains');
+      await expect(page.locator('h1')).toHaveText('Standard domain set');
+
+      const modules = Object.values(manifest.modules);
+      expect(modules).toHaveLength(14);
+      await expect(page.locator('section.domain')).toHaveCount(
+        Object.keys(manifest.domains).length
+      );
+      // Charts on the standard set come first, then those outside it.
+      await expect(page.locator('section.chart-needs h3')).toHaveText([
+        ...modules.filter((entry) => !entry.externalDomains).map((entry) => entry.title),
+        ...modules.filter((entry) => entry.externalDomains).map((entry) => entry.title)
+      ]);
+
+      const layout = await page.evaluate(() => {
+        const width = document.documentElement.clientWidth;
+        const scrollers = [...document.querySelectorAll('.table-scroll')];
+        return {
+          width,
+          scrollWidth: document.documentElement.scrollWidth,
+          // Anything not inside a scrolling table container must end within
+          // the viewport; the containers themselves are held to it too.
+          escaping: [...document.querySelectorAll('body *')]
+            .filter((el) => !el.parentElement.closest('.table-scroll'))
+            .filter((el) => el.getBoundingClientRect().right > width + 0.5).length,
+          tables: scrollers.length,
+          scrollingInside: scrollers.filter((el) => el.scrollWidth > el.clientWidth).length
+        };
+      });
+      expect(layout.width).toBe(390);
+      expect(layout.scrollWidth).toBeLessThanOrEqual(layout.width);
+      expect(layout.escaping).toBe(0);
+      // The check above is not vacuous: tables wider than the phone exist, and
+      // their own container is what scrolls.
+      expect(layout.tables).toBeGreaterThan(0);
+      expect(layout.scrollingInside).toBeGreaterThan(0);
+      expect(errors).toEqual([]);
+    });
+
+    test('PF-SITE-020: the Domains page links portfolio.json at the site root, and it is the manifest byte for byte (#139)', async ({
+      page
+    }) => {
+      await page.goto('/_site/domains/index.html');
+      const link = page.locator('.facts a', { hasText: 'portfolio.json' });
+      await expect(link).toHaveAttribute('href', '../portfolio.json');
+      const response = await page.request.get('/_site/portfolio.json');
+      expect(response.ok()).toBe(true);
+      expect((await response.body()).equals(readFileSync(manifestFile))).toBe(true);
     });
   });
 

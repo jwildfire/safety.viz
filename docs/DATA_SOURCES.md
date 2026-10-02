@@ -44,6 +44,18 @@ node scripts/build-hep-composite-cohort.mjs
 node scripts/build-nep-aki-cohort.mjs
 ```
 
+`npm run demo-data:check` ([`scripts/check-demo-data.mjs`](../scripts/check-demo-data.mjs),
+[#140](https://github.com/jwildfire/safety.viz/issues/140)) proves the committed
+files are still what these scripts produce: it reruns that rebuild and the
+abnormal-baseline generator into a temporary directory and compares the result
+byte for byte with `site/data/`, exiting non-zero with each drifted file and its
+first differing row. A CSV here that no generator writes fails the same way. CI
+runs it on any pull request that touches the data, a generator or the check
+([`demo-data.yml`](../.github/workflows/demo-data.yml)). The pharmaverse files
+are fetched from the packages' `main` branches, not a pinned revision, so drift
+that no change in this repository explains means an upstream file moved —
+rebuild with the generators; never edit a CSV by hand.
+
 ## Source: pharmaverseadam (CDISC Pilot 01)
 
 The data is built from **[pharmaverseadam](https://github.com/pharmaverse/pharmaverseadam)**,
