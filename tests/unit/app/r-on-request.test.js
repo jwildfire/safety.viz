@@ -22,19 +22,29 @@ const DEMO = ['adsl.csv', 'adae.csv', 'adbds.csv', 'adeg.csv'].map((name) => ({
 }));
 
 // A stand-in for a library's connection factory: records each connection made
-// and answers every run with "ok".
-function fakeFactory() {
+// and answers every run with "ok", or with what `answer` says for that
+// connection (its index among those made).
+function fakeFactory(answer = () => null) {
   const made = [];
   const createConnection = vi.fn((options) => {
+    const index = made.length;
     const connection = {
       options,
-      run: vi.fn(async (name) => ({ status: 'ok', value: { name }, form: 'browser' }))
+      run: vi.fn(
+        async (name) => answer(index, name) || { status: 'ok', value: { name }, form: 'browser' }
+      )
     };
     made.push(connection);
     return connection;
   });
   return { createConnection, made };
 }
+
+const LOAD_FAILED = {
+  status: 'unavailable',
+  reason: 'load-failed',
+  message: 'bio.viz: R could not be started in the browser: Failed to fetch.'
+};
 
 const OPTIONS = {
   browser: { sourceUrl: './statistics.R', packages: [] },
@@ -63,24 +73,85 @@ describe('R on request', () => {
     expect(r.action.state().note).toBe(answer.message);
   });
 
-  it('APP-R-002: asking makes one connection, with the library’s own factory and the options given; every chart afterwards uses it, and asking again makes no second (#183)', async () => {
+  it('APP-R-002: asking makes one connection, with the library’s own factory and the options given, and starts R at once; every chart afterwards uses it, and asking again makes no second (#183)', async () => {
     const { createConnection, made } = fakeFactory();
     const r = rOnRequest({ createConnection, ...OPTIONS });
     const before = r.settings().connection;
-    r.action.press();
+    const started = r.action.press();
     r.action.press();
     expect(createConnection).toHaveBeenCalledTimes(1);
     expect(createConnection).toHaveBeenCalledWith({ browser: OPTIONS.browser });
+    // Pressing starts R there and then, with one call R already has.
+    expect(made[0].run).toHaveBeenCalledTimes(1);
+    expect(made[0].run.mock.calls[0][0]).toBe('identity');
+    expect(r.action.state()).toMatchObject({ label: 'Starting R…', done: true });
+    await started;
+    expect(r.action.state()).toMatchObject({ label: 'R started', done: true });
     // A chart made before the reader asked, and one made after, reach the same R.
     const after = r.settings().connection;
     await before.run('one', { data: [], args: {} });
     await after.run('two', { data: [], args: {} });
     expect(made).toHaveLength(1);
-    expect(made[0].run.mock.calls.map(([name]) => name)).toEqual(['one', 'two']);
+    expect(made[0].run.mock.calls.map(([name]) => name)).toEqual(['identity', 'one', 'two']);
+  });
+
+  it('APP-R-015: while R starts the waiting note says what it downloads; once R has answered there is no such note, and the control says R is running (#183)', async () => {
+    const { createConnection } = fakeFactory();
+    const r = rOnRequest({ createConnection, ...OPTIONS });
+    expect(r.action.state().hint).toBe('About 13 MB, once');
+    const started = r.action.press();
     expect(r.settings().waiting_note).toBe(
       'R is starting in this browser: about 13 MB to download, once, from webr.r-wasm.org.'
     );
+    await started;
+    expect(r.settings().waiting_note).toBeNull();
+    expect(r.action.state()).toMatchObject({
+      label: 'R started',
+      note: 'R is running in this browser.',
+      hint: null
+    });
+  });
+
+  it('APP-R-016: when R does not start, the control says so and offers to try again, every chart is told without starting R again, and trying again makes one fresh connection (#183)', async () => {
+    // The first connection cannot start R; the second can.
+    const { createConnection, made } = fakeFactory((index) => (index === 0 ? LOAD_FAILED : null));
+    const r = rOnRequest({ createConnection, ...OPTIONS });
+    await r.action.press();
+    expect(r.action.state()).toMatchObject({ label: 'Try R again', done: false });
+    expect(r.action.state().note).toBe(
+      'R did not start: bio.viz: R could not be started in the browser: Failed to fetch. ' +
+        'Try again; if it fails again, reload the page.'
+    );
+    // Charts are answered with that, and R is not asked again until the reader asks.
+    const answer = await r.settings().connection.run('one', { data: [], args: {} });
+    await r.settings().connection.run('two', { data: [], args: {} });
+    expect(answer).toEqual({
+      status: 'unavailable',
+      reason: 'load-failed',
+      message: r.action.state().note
+    });
+    expect(made).toHaveLength(1);
+    expect(made[0].run).toHaveBeenCalledTimes(1);
+    expect(r.settings().waiting_note).toBeNull();
+    // Trying again: one fresh connection, which starts R.
+    await r.action.press();
+    expect(made).toHaveLength(2);
     expect(r.action.state()).toMatchObject({ label: 'R started', done: true });
+    expect((await r.settings().connection.run('three', { data: [], args: {} })).status).toBe('ok');
+    expect(made[1].run.mock.calls.map(([name]) => name)).toEqual(['identity', 'three']);
+  });
+
+  it('APP-R-016: an answer that says R could not start, arriving for a chart after R had started, is treated the same way (#183)', async () => {
+    let fail = false;
+    const { createConnection, made } = fakeFactory(() => (fail ? LOAD_FAILED : null));
+    const r = rOnRequest({ createConnection, ...OPTIONS });
+    await r.action.press();
+    fail = true;
+    const answer = await r.settings().connection.run('one', { data: [], args: {} });
+    expect(answer.reason).toBe('load-failed');
+    expect(r.action.state().label).toBe('Try R again');
+    await r.settings().connection.run('two', { data: [], args: {} });
+    expect(made[0].run).toHaveBeenCalledTimes(2);
   });
 
   it('APP-R-003: where R cannot be started, the connection answers in words why statistics are unavailable, and there is no control (#183)', async () => {
@@ -118,32 +189,59 @@ describe('the page with a library’s settings and control', () => {
     app.destroy();
   });
 
-  it('APP-R-005: a library’s control is shown with its group’s charts; pressing it asks once and draws the open chart again, and it then reads as done (#183)', () => {
-    let done = false;
+  it('APP-R-005: a library’s control is shown with its group’s charts, with what it costs in words beside it; pressing it asks once, hands the open chart its new settings without drawing it again, and the control follows what happened (#183)', async () => {
+    let phase = 'idle';
+    let finish;
     const press = vi.fn(() => {
-      done = true;
+      phase = 'starting';
+      return new Promise((resolve) => {
+        finish = () => {
+          phase = 'done';
+          resolve();
+        };
+      });
     });
     const action = {
       state: () =>
-        done
-          ? { label: 'R started', done: true, note: 'Started.' }
-          : { label: 'Start R', done: false, note: 'Statistics need R.' },
+        ({
+          idle: {
+            label: 'Start R',
+            done: false,
+            note: 'Statistics need R.',
+            hint: 'About 13 MB, once'
+          },
+          starting: { label: 'Starting R…', done: true, note: 'Starting.', hint: null },
+          done: { label: 'R started', done: true, note: 'Running.', hint: null }
+        })[phase],
       press
     };
-    const app = mounted({ ...standIn, action });
+    const settings = vi.fn(() => ({ extra_col: phase }));
+    const app = mounted({ ...standIn, action, settings });
     app.select('stand-in-strip');
-    const button = () => document.querySelector('.sva-group[data-group="stand-in"] .sva-action');
+    const group = () => document.querySelector('.sva-group[data-group="stand-in"]');
+    const button = () => group().querySelector('.sva-action');
     expect(button().textContent).toBe('Start R');
     expect(button().title).toBe('Statistics need R.');
     expect(button().disabled).toBe(false);
+    expect(group().querySelector('.sva-action-hint').textContent).toBe('About 13 MB, once');
     // No other group carries it.
     expect(document.querySelectorAll('.sva-action')).toHaveLength(1);
-    const inits = standInLog.filter((entry) => entry.event === 'init').length;
+    const before = standInLog.length;
     button().click();
     expect(press).toHaveBeenCalledTimes(1);
-    expect(standInLog.filter((entry) => entry.event === 'init').length).toBe(inits + 1);
-    expect(button().textContent).toBe('R started');
+    // The open chart keeps what the reader chose: it is handed the library's
+    // settings as they are now, and is neither destroyed nor drawn again.
+    expect(standInLog.slice(before)).toEqual([
+      { event: 'setSettings', settings: { extra_col: 'starting' } }
+    ]);
+    expect(button().textContent).toBe('Starting R…');
     expect(button().disabled).toBe(true);
+    expect(group().querySelector('.sva-action-hint')).toBeNull();
+    finish();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(button().textContent).toBe('R started');
+    expect(standInLog.slice(before).map((entry) => entry.event)).toEqual(['setSettings']);
     app.destroy();
   });
 });

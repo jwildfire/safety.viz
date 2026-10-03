@@ -45,7 +45,10 @@
         if (record) {
           return {
             run(name, request) {
-              window.__rCalls.push({ name, args: request.args, data: request.data });
+              // The app's own call that starts R on the press is not a chart's.
+              if (name !== 'identity') {
+                window.__rCalls.push({ name, args: request.args, data: request.data });
+              }
               return Promise.resolve({
                 status: 'unavailable',
                 reason: 'no-r-attached',
@@ -58,7 +61,14 @@
         return {
           async run(name, request) {
             const answer = await connection.run(name, request);
-            window.__rAnswers.push({ name, args: request.args, rows: request.data.length, answer });
+            if (name !== 'identity') {
+              window.__rAnswers.push({
+                name,
+                args: request.args,
+                rows: request.data.length,
+                answer
+              });
+            }
             return answer;
           }
         };

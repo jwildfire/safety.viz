@@ -991,15 +991,18 @@ const biomarkerControl = (page) =>
   page
     .locator('.sva-chart .sv-control', { has: page.locator('label:text-is("Biomarker")') })
     .locator('select');
-const settled = (page) =>
+const settled = (page, timeout = 100000) =>
   page.waitForFunction(
     () =>
       ![...document.querySelectorAll('.sva-chart .bv-statistic')].some((line) =>
         /waiting/.test(line.textContent)
       ),
     null,
-    { timeout: 150000 }
+    { timeout }
   );
+// Requests to R's hosts, and the imports of webR itself, which is what starting R costs.
+const rRequests = (requests) => requests.filter((url) => R_HOST.test(url));
+const webrImports = (requests) => requests.filter((url) => /webr\.mjs$/.test(url));
 
 // Two answers agree when every number is the same to twelve significant figures
 // and everything else is the same.
@@ -1047,7 +1050,7 @@ test.describe('demo app with R on request', () => {
       await expect(item(page, module).locator('.sva-tag')).toHaveText('ready');
       if (!bioManifest.modules[module]) continue;
       if (module === 'group-comparison') await biomarkerControl(page).selectOption({ index: 1 });
-      await settled(page);
+      await settled(page, 20000);
       await expect(
         page.locator('.sva-chart .bv-statistic').filter({ hasText: NEED_R }).first()
       ).toBeVisible();
@@ -1073,9 +1076,18 @@ test.describe('demo app with R on request', () => {
     });
     await openOnDemo(page);
     await openChart(page, expectedStatistics.chart);
+    await expect(page.locator('.sva-action-hint')).toHaveText('About 13 MB, once');
+    // Pressed on the overview, which asks R for nothing: R starts all the same,
+    // and the control says so, then that it is running.
     await page.locator('.sva-action').click();
-    await expect(page.locator('.sva-action')).toHaveText('R started');
+    await expect(page.locator('.sva-action')).toHaveText('Starting R…');
+    await expect(page.locator('.sva-action')).toHaveText('R started', { timeout: 150000 });
     await expect(page.locator('.sva-action')).toBeDisabled();
+    await expect(page.locator('.sva-action')).toHaveAttribute(
+      'title',
+      'R is running in this browser.'
+    );
+    expect(transferred).toBeGreaterThan(10e6);
     await biomarkerControl(page).selectOption({ label: expectedStatistics.measure });
     await page.waitForFunction(
       (count) => window.__rAnswers.length >= count,
@@ -1112,6 +1124,100 @@ test.describe('demo app with R on request', () => {
     expect(transferred).toBeGreaterThan(10e6);
     expect(transferred).toBeLessThan(16e6);
     expect(errors).toEqual([]);
+  });
+
+  test('APP-R-017: pressing the control with a biomarker chosen keeps it: the open chart is not drawn again, and prints R’s test for that biomarker (#183)', async ({
+    page
+  }) => {
+    test.setTimeout(240000);
+    const errors = watchErrors(page);
+    await openOnDemo(page);
+    await openChart(page, expectedStatistics.chart);
+    await biomarkerControl(page).selectOption({ label: expectedStatistics.measure });
+    await settled(page, 20000);
+    await expect(
+      page.locator('.sva-chart .bv-statistic').filter({ hasText: NEED_R }).first()
+    ).toBeVisible();
+    await page.locator('.sva-action').click();
+    await page.waitForFunction(
+      (count) => window.__rAnswers.length >= count,
+      expectedStatistics.answers.length,
+      { timeout: 150000 }
+    );
+    await settled(page);
+    // Still the biomarker the reader chose, with R's answers under its visits.
+    await expect(biomarkerControl(page)).toHaveValue(expectedStatistics.measure);
+    const [tested] = expectedStatistics.answers.filter((answer) => answer.value.status === 'ok');
+    await expect(
+      page.locator('.sva-chart .bv-statistic').filter({ hasText: tested.value.method }).first()
+    ).toBeVisible();
+    await expect(page.locator('.sva-chart .bv-statistic').filter({ hasText: NEED_R })).toHaveCount(
+      0
+    );
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-R-018: when R’s host cannot be reached, the control says R did not start and offers to try again, and charts opened afterwards do not try to start R each time (#183)', async ({
+    page,
+    context
+  }) => {
+    test.setTimeout(120000);
+    await context.route(/webr\.r-wasm\.org/, (route) => route.abort());
+    const requests = [];
+    page.on('request', (request) => requests.push(request.url()));
+    await openOnDemo(page);
+    await openChart(page, expectedStatistics.chart);
+    await biomarkerControl(page).selectOption({ label: expectedStatistics.measure });
+    await page.locator('.sva-action').click();
+    const action = page.locator('.sva-action');
+    await expect(action).toHaveText('Try R again', { timeout: 60000 });
+    await expect(action).toBeEnabled();
+    await expect(action).toHaveAttribute(
+      'title',
+      /^R did not start: .* Try again; if it fails again, reload the page\.$/
+    );
+    await settled(page, 30000);
+    await expect(
+      page.locator('.sva-chart .bv-statistic').filter({ hasText: 'R did not start' }).first()
+    ).toBeVisible();
+    const fetched = rRequests(requests).length;
+    for (const module of ['association-scatter', 'correlation-matrix', 'biomarker-screen']) {
+      await item(page, module).click();
+      await settled(page, 30000);
+      await expect(page.locator('.sva-chart .bv-statistic').first()).toContainText(
+        'R did not start'
+      );
+    }
+    expect(rRequests(requests)).toHaveLength(fetched);
+  });
+
+  test('APP-R-019: when the statistics file cannot be read, R is not started again for each chart opened afterwards, and trying again starts it once (#183)', async ({
+    page,
+    context
+  }) => {
+    test.setTimeout(240000);
+    await context.route(/statistics\.R/, (route) =>
+      route.fulfill({ status: 404, body: 'not here' })
+    );
+    const requests = [];
+    page.on('request', (request) => requests.push(request.url()));
+    await openOnDemo(page);
+    await openChart(page, 'association-scatter');
+    await page.locator('.sva-action').click();
+    await expect(page.locator('.sva-action')).toHaveText('Try R again', { timeout: 150000 });
+    await settled(page, 30000);
+    await expect(page.locator('.sva-chart .bv-statistic')).toContainText('R did not start');
+    const first = { all: rRequests(requests).length, webr: webrImports(requests).length };
+    expect(first.webr).toBe(1);
+    for (const module of ['correlation-matrix', 'biomarker-screen', 'group-comparison']) {
+      await item(page, module).click();
+      await settled(page, 30000);
+    }
+    expect(rRequests(requests)).toHaveLength(first.all);
+    // Trying again makes one fresh start: the statistics file is asked for once more.
+    await page.locator('.sva-action').click();
+    await expect(page.locator('.sva-action')).toHaveText('Try R again', { timeout: 150000 });
+    expect(requests.filter((url) => /statistics\.R/.test(url))).toHaveLength(2);
   });
 
   test('APP-R-008: a second biomarker chart opened after R has started uses the same R: no second connection and no second download (#183)', async ({
