@@ -143,6 +143,28 @@ describe('renderDemoAppPage', () => {
     expect(bytes).toBeLessThan(120 * 1024);
   });
 
+  it('APP-BIO-010: loads each further library’s bundle from beside the page after the app’s, hands it to the app when it mounts, and counts its charts in the description (#182)', () => {
+    const page = renderDemoAppPage({
+      bundle: 'safety.viz-app.js',
+      download: 'safety.viz-app.html',
+      repoUrl: 'https://github.com/jwildfire/safety.viz',
+      libraries: [{ name: 'bio.viz', global: 'BioViz', file: 'bio.viz.js' }],
+      charts: 'thirteen clinical safety charts and four biomarker charts'
+    });
+    const app = page.indexOf('<script src="./safety.viz-app.js"></script>');
+    const library = page.indexOf('<script src="./bio.viz.js"></script>');
+    expect(app).toBeGreaterThan(-1);
+    expect(library).toBeGreaterThan(app);
+    expect(page).toContain(
+      'libraries: [{ name: "bio.viz", charts: window.BioViz, manifest: window.BioViz && window.BioViz.portfolio }]'
+    );
+    expect(page).toMatch(
+      /<meta name="description" content="[^"]*thirteen clinical safety charts and four biomarker charts[^"]*">/
+    );
+    // With no library the page is as it was.
+    expect(html).not.toContain('libraries:');
+  });
+
   it('APP-FILE-008: tells the app where the single file is, for its download link (#152)', () => {
     expect(html).toContain("download: './safety.viz-app.html'");
   });
