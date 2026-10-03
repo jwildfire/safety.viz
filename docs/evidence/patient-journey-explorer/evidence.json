@@ -1,6 +1,6 @@
 {
   "module": "patient-journey-explorer",
-  "generatedAt": "2026-10-03T04:23:50.158Z",
+  "generatedAt": "2026-10-03T04:33:13.608Z",
   "environment": {
     "os": "darwin 23.6.0",
     "node": "v24.14.0",
@@ -26,35 +26,35 @@
       "screenshots": []
     },
     {
-      "test": "APP-BIO-005: Association scatter draws on the demo study with no console error, and its statistics line says statistics are unavailable (#182)",
+      "test": "APP-BIO-005: Association scatter draws on the demo study with no console error, and its statistics line says statistics need R until R is started (#182, #183)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-BIO-005"],
-      "issueRefs": [182],
+      "issueRefs": [],
       "screenshots": []
     },
     {
-      "test": "APP-BIO-005: Biomarker screen draws on the demo study with no console error, and its statistics line says statistics are unavailable (#182)",
+      "test": "APP-BIO-005: Biomarker screen draws on the demo study with no console error, and its statistics line says statistics need R until R is started (#182, #183)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-BIO-005"],
-      "issueRefs": [182],
+      "issueRefs": [],
       "screenshots": []
     },
     {
-      "test": "APP-BIO-005: Correlation matrix draws on the demo study with no console error, and its statistics line says statistics are unavailable (#182)",
+      "test": "APP-BIO-005: Correlation matrix draws on the demo study with no console error, and its statistics line says statistics need R until R is started (#182, #183)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-BIO-005"],
-      "issueRefs": [182],
+      "issueRefs": [],
       "screenshots": []
     },
     {
-      "test": "APP-BIO-005: Group comparison draws on the demo study with no console error, and opens on an overview that prints no test; with a biomarker chosen, its lines say statistics are unavailable (#182)",
+      "test": "APP-BIO-005: Group comparison draws on the demo study with no console error, and opens on an overview that prints no test; with a biomarker chosen, its lines say statistics need R until R is started (#182, #183)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-BIO-005"],
-      "issueRefs": [182],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -218,11 +218,11 @@
       "screenshots": []
     },
     {
-      "test": "APP-LOAD-014: no network request leaves the page from the first file selection onward (#151)",
+      "test": "APP-LOAD-014: no network request leaves the page from the first file selection onward, unless the reader starts R (#151, #183)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-LOAD-014"],
-      "issueRefs": [151],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -519,6 +519,46 @@
       "status": "pass",
       "requirementIds": ["APP-PAGE-029"],
       "issueRefs": [172],
+      "screenshots": []
+    },
+    {
+      "test": "APP-R-006: before the control is pressed, no chart of either library asks R’s hosts for anything, and each biomarker chart’s statistics line says statistics need R and what that downloads (#183)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-R-006"],
+      "issueRefs": [183],
+      "screenshots": []
+    },
+    {
+      "test": "APP-R-007: pressing the control starts R once, about 13 MB from webr.r-wasm.org, and the group comparison prints R’s test under each visit, equal to desktop R on the same rows (#183)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-R-007"],
+      "issueRefs": [183],
+      "screenshots": []
+    },
+    {
+      "test": "APP-R-008: a second biomarker chart opened after R has started uses the same R: no second connection and no second download (#183)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-R-008"],
+      "issueRefs": [183],
+      "screenshots": []
+    },
+    {
+      "test": "APP-R-009: offline, the single file shows no control to start R, each biomarker chart says statistics are unavailable in this file and why, and nothing is requested (#183)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-R-009"],
+      "issueRefs": [183],
+      "screenshots": []
+    },
+    {
+      "test": "APP-R-014: the built demo page shows the control that starts R with the biomarker charts, serves the statistics file beside the app as it was vendored, and says what the app promises (#183)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-R-014"],
+      "issueRefs": [183],
       "screenshots": []
     },
     {
@@ -6062,6 +6102,30 @@
       "screenshots": []
     },
     {
+      "test": "R on request APP-R-001: before the reader asks, the connection makes no connection to R and answers that statistics need R, saying what starting it downloads (#183)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-001"],
+      "issueRefs": [183],
+      "screenshots": []
+    },
+    {
+      "test": "R on request APP-R-002: asking makes one connection, with the library’s own factory and the options given; every chart afterwards uses it, and asking again makes no second (#183)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-002"],
+      "issueRefs": [183],
+      "screenshots": []
+    },
+    {
+      "test": "R on request APP-R-003: where R cannot be started, the connection answers in words why statistics are unavailable, and there is no control (#183)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-003"],
+      "issueRefs": [183],
+      "screenshots": []
+    },
+    {
       "test": "ratioLine (PC-29) PJE-CTX-002: \"× ULN\" above the range, \"× LLN\" below it, two decimals, and no line when the relevant limit is missing (#142)",
       "suite": "unit",
       "status": "pass",
@@ -7968,6 +8032,14 @@
       "screenshots": []
     },
     {
+      "test": "the desktop-R results the browser test compares with APP-R-011: the recorded requests and desktop R’s answers are derived from the study, the bundle and the statistics file as they are now (#183)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-011"],
+      "issueRefs": [183],
+      "screenshots": []
+    },
+    {
       "test": "the drawing rule and the fit arithmetic (PJE-LANE-006, PJE-LANE-009) PJE-LANE-006: a closed bar drawn through the end of its end day never leaves the padded shared domain (#142)",
       "suite": "unit",
       "status": "pass",
@@ -7984,6 +8056,22 @@
       "screenshots": ["PJE-LANE-006-dose-change.png", "PJE-LANE-009-one-screen.png"]
     },
     {
+      "test": "the page with a library’s settings and control APP-R-004: a library’s settings are added to each of its charts’ settings when it is drawn, and to no safety chart’s (#183)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-004"],
+      "issueRefs": [183],
+      "screenshots": []
+    },
+    {
+      "test": "the page with a library’s settings and control APP-R-005: a library’s control is shown with its group’s charts; pressing it asks once and draws the open chart again, and it then reads as done (#183)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-005"],
+      "issueRefs": [183],
+      "screenshots": []
+    },
+    {
       "test": "the page with a second library APP-LIB-012: the library’s charts have a tab of their own with its count and hue, and the overall count includes them (#181)",
       "suite": "unit",
       "status": "pass",
@@ -7997,6 +8085,22 @@
       "status": "pass",
       "requirementIds": ["APP-LIB-013"],
       "issueRefs": [181],
+      "screenshots": []
+    },
+    {
+      "test": "the pages APP-R-012: the hosted page hands bio.viz’s charts R on request with the statistics file beside it, and says what the app now promises (#183)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-012"],
+      "issueRefs": [183],
+      "screenshots": []
+    },
+    {
+      "test": "the pages APP-R-013: the single file hands them no R, only the sentence that says why, and says it loads nothing (#183)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-013"],
+      "issueRefs": [183],
       "screenshots": []
     },
     {
@@ -8061,6 +8165,14 @@
       "status": "pass",
       "requirementIds": ["APP-BIO-003"],
       "issueRefs": [182],
+      "screenshots": []
+    },
+    {
+      "test": "the vendored statistics file APP-R-010: gsm.bio’s statistics file is copied from gsm.bio’s dev branch, and matches its record of the commit, checksum and size (#183)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-010"],
+      "issueRefs": [183],
       "screenshots": []
     },
     {
