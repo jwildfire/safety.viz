@@ -20,12 +20,18 @@ npm ci
 | `npm run format` / `npm run format:check` | Prettier write / check                                                                                                                                                                                                           |
 | `npm run evidence` / `evidence:check`     | (Re)build `docs/evidence/<module>/evidence.json` from a fresh run / CI freshness guard                                                                                                                                           |
 | `npm run requirements` / `:check`         | (Re)build `docs/requirements/<module>.json` requirement-text extracts / CI freshness guard                                                                                                                                       |
-| `npm run docs:api`                        | Generate the `_api/<module>.json` API data artifact from JSDoc + the data schema                                                                                                                                                 |
+| `npm run docs:api`                        | Generate the `_api/<module>.json` API data artifact from JSDoc + the data schema, and `_api/kit.json` for the kit                                                                                                                |
 | `npm run site`                            | Build the docs site into `_site/` (gitignored); fails on broken links/missing screenshots                                                                                                                                        |
 
 `dist/` is committed — after any change under `src/`, run `npm run build`
 and commit the regenerated bundle alongside it. CI's drift check fails the
 build otherwise.
+
+## The kit is public surface
+
+`src/kit.js` re-exports, unchanged, the shared parts every chart is built from — the shell and its control builders, the filter contract, the axis-limit helpers, the record listing, the participant rail functions, the box drawing, the measure list, the Kaplan–Meier estimator and the bundled Chart.js constructor — as `SafetyViz.kit`, for a second chart library loaded beside safety.viz. The members are listed in [`requirements/kit.md`](requirements/kit.md) and documented on the site's kit page.
+
+From v1.9.0 a change to any kit member is a breaking change: its name, its signature, what it returns, or the elements and class names it produces. So before editing an exported function in `src/shell.js`, `src/filters.js`, `src/axis-limits.js`, `src/histogram/listing.js`, `src/profile-host.js`, `src/box-whisker.js`, `src/measure-list.js` or `src/time-to-event/km.js`, check whether it is on the kit; if it is, the change needs a NEWS entry that says it breaks the kit. Adding a member is not breaking: add it to `src/kit.js`, to its `Kit` typedef (`npm run docs:api` fails without it), to the matrix and to the list in `tests/unit/kit/kit.test.js`.
 
 ## How a pull request merges
 

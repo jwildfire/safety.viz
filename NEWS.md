@@ -8,7 +8,15 @@ from the section here when the release-candidate PR (dev -> main) merges and is 
 
 # safety.viz v1.9.0 (Upcoming)
 
-_Nothing merged yet._
+safety.viz's shared parts open to a second chart library. No existing chart, setting or API changes.
+
+## What's new
+
+- **The kit: the parts every chart is built from, exported for another library on the same page** ([obot.roadmap#354](https://github.com/jwildfire/obot.roadmap/issues/354), [#154](https://github.com/jwildfire/safety.viz/issues/154)). The bundle now carries `SafetyViz.kit`, and the ESM build exports `kit`: the control sidebar and its builders, the filter contract, the axis-limit helpers, the record listing with its search, sort, paging and CSV export, the participant rail functions, the box-and-whisker drawing, the measure list, the Kaplan–Meier estimator, and the Chart.js constructor the bundle already contains. A library loaded beside safety.viz can now build a chart that looks and behaves like safety.viz's, with the same sidebar, filters, listing and participant rail, without carrying a copy of that code that drifts away from the original. Each member is the very function the charts call, not a copy or a wrapper, and nothing was moved or renamed to make it so. The [kit reference](https://jwildfire.github.io/safety.viz/kit/index.html) lists every member with its signature, and says how to load the bundle beside another library. A test page built from the committed bundle and the kit alone — a sidebar, a filter, a bar chart, a listing, and the participant rail opening from a row — is driven by the browser suite, and fails if it calls a chart directly.
+
+## Breaking-change notice
+
+- **From this release, v1.9.0, the kit is public surface: a change to any kit member is a breaking change.** That covers a member's name, its signature, what it returns, and the elements and class names it produces. These functions were internal until now and could change freely; they no longer can, because another library depends on them. Adding a member is not a breaking change. The members are listed in the [kit reference](https://jwildfire.github.io/safety.viz/kit/index.html) and in [`requirements/kit.md`](requirements/kit.md).
 
 # safety.viz v1.8.0
 

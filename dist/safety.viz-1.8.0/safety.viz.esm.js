@@ -40893,6 +40893,56 @@ var portfolio_default = {
   }
 };
 
+// src/kit.js
+var kit = Object.freeze({
+  // The Chart.js constructor this bundle contains, with the controllers,
+  // elements, scales and plugins the charts registered on it.
+  Chart,
+  // src/shell.js — the control sidebar and the slots a chart draws into.
+  createElement,
+  option,
+  multiSelect,
+  applyShellStyles,
+  renderShell,
+  controlBuilders,
+  renderViewSelector,
+  // src/filters.js — the filter contract.
+  ALL_VALUE,
+  normalizeFilterSpec,
+  initFilterState,
+  reconcileFilters,
+  filterMatches,
+  renderFilterControl,
+  // src/axis-limits.js — the Lower/Upper axis-limit inputs.
+  limitDigits,
+  formatLimit,
+  syncAxisLimits,
+  seedLimitInput,
+  applyLimitEdit,
+  clearAxisLimits,
+  // src/histogram/listing.js — the record listing.
+  renderListing,
+  searchRows,
+  sortRows,
+  paginate,
+  buildCsv,
+  exportCsv,
+  // src/profile-host.js — the participant rail, from the host's side.
+  buildProfileRows,
+  mountProfileRail,
+  unmountProfileRail,
+  syncProfileRail,
+  resetProfileRail,
+  // src/box-whisker.js — the box drawing and its Chart.js plugin.
+  drawBoxWhisker,
+  boxWhiskerPlugin,
+  // src/measure-list.js — the Measure control's list.
+  resolveMeasureList,
+  presentMeasures,
+  // src/time-to-event/km.js — the Kaplan–Meier estimator.
+  kmEstimate
+});
+
 // src/main.js
 var main_default = {
   histogram,
@@ -40909,7 +40959,8 @@ var main_default = {
   nepExplorer,
   timeToEvent,
   patientJourneyExplorer,
-  portfolio: portfolio_default
+  portfolio: portfolio_default,
+  kit
 };
 export {
   aeExplorer,
@@ -40919,6 +40970,7 @@ export {
   hepExplorer,
   hepWaterfall,
   histogram,
+  kit,
   nepExplorer,
   outlierExplorer,
   participantProfile,

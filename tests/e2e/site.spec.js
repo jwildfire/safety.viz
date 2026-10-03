@@ -375,6 +375,66 @@ test.describe('docs site', () => {
     });
   });
 
+  // Kit page (#154): the API reference for the shared parts the bundle exports
+  // as `kit`. The unit suite (tests/unit/kit/reference.test.js) holds its
+  // content to the kit itself; this holds what only a built site and a real
+  // layout can show — that the page exists where the other pages link to it,
+  // lists every member the committed bundle carries, and reads on a phone
+  // without the page scrolling sideways.
+  test.describe('kit page (#154)', () => {
+    test('KIT-DOC-009: the kit page opens from the architecture page and a chart’s API reference, lists every member the bundle carries and fits a 390px phone with no sideways page scroll (#154)', async ({
+      page
+    }) => {
+      const errors = [];
+      page.on('pageerror', (error) => errors.push(error.message));
+      page.on('console', (msg) => {
+        if (msg.type() === 'error') errors.push(msg.text());
+      });
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.goto('/_site/architecture.html');
+      await page.locator('.site-main a', { hasText: /^kit$/ }).click();
+      await expect(page).toHaveURL(/\/_site\/kit\/index\.html$/);
+      await expect(page.locator('h1')).toHaveText('Kit API reference');
+
+      // The members on the page are the members on the bundle the site serves.
+      const { version } = JSON.parse(
+        readFileSync(new URL('../../package.json', import.meta.url), 'utf8')
+      );
+      await page.addScriptTag({ url: `../dist/safety.viz-${version}/safety.viz.js` });
+      const onBundle = await page.evaluate(() => Object.keys(window.SafetyViz.kit));
+      expect(onBundle.length).toBeGreaterThan(0);
+      const onPage = await page
+        .locator('.kit-group tbody tr')
+        .evaluateAll((rows) => rows.map((row) => row.id));
+      expect(onPage).toEqual(onBundle);
+      await expect(page.locator('.facts .fact').first()).toContainText(String(onBundle.length));
+
+      const layout = await page.evaluate(() => {
+        const width = document.documentElement.clientWidth;
+        return {
+          width,
+          scrollWidth: document.documentElement.scrollWidth,
+          // Anything not inside a container that scrolls by itself — a member
+          // table or a code sample — must end within the viewport.
+          escaping: [...document.querySelectorAll('body *')]
+            .filter((el) => !el.parentElement.closest('.table-scroll, pre'))
+            .filter((el) => el.getBoundingClientRect().right > width + 0.5).length,
+          samples: document.querySelectorAll('.kit-page pre').length
+        };
+      });
+      expect(layout.width).toBe(390);
+      expect(layout.scrollWidth).toBeLessThanOrEqual(layout.width);
+      expect(layout.escaping).toBe(0);
+      expect(layout.samples).toBe(2);
+
+      // A chart's API reference links to it too.
+      await page.goto(`/_site/${available[0].module}/api.html`);
+      await page.locator('#overview a', { hasText: 'kit reference' }).click();
+      await expect(page).toHaveURL(/\/_site\/kit\/index\.html$/);
+      expect(errors).toEqual([]);
+    });
+  });
+
   // Patient Journey Explorer against the real demo data (#142, PJE-DEMO-003):
   // the module's own spec runs against a hand-computed fixture and reads
   // every expected number from it, so nothing there proves the Definition of

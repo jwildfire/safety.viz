@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>safety.viz kit fixture page</title>
+  </head>
+  <body>
+    <h1 id="kit-heading">safety.viz kit fixture</h1>
+    <p>
+      Playwright harness page for the kit (#154): what a second chart library on the page does. It
+      loads the committed IIFE bundle and nothing else, and builds a working page from
+      <code>SafetyViz.kit</code> alone — the shell with its sidebar, one filter, a bar chart drawn
+      with <code>kit.Chart</code>, the record listing, and the participant rail opening from a
+      listing row — against the fixture data in <code>adbds.csv</code>. It calls none of
+      safety.viz's chart modules; the browser tests fail if it reads anything but
+      <code>kit</code> from the bundle's global.
+    </p>
+    <div id="container"></div>
+    <!-- Bundle path tracks the package.json version; bump them together. -->
+    <script src="/dist/safety.viz-1.8.0/safety.viz.js"></script>
+    <script>
+      // Everything below reaches safety.viz through this one object.
+      const kit = SafetyViz.kit;
+
+      function parseCsv(text) {
+        const [header, ...lines] = text.trim().split(/\r?\n/);
+        const cols = header.split(',');
+        return lines.map((line) => {
+          const cells = line.split(',');
+          return Object.fromEntries(cols.map((col, i) => [col, cells[i] ?? '']));
+        });
+      }
+
+      const BAR_COL = 'SITE';
+      const filterSpecs = [kit.normalizeFilterSpec({ value_col: 'SEX', label: 'Sex' })];
+
+      // The column mapping the participant rail reads; the names are the
+      // fixture's own, which are also the rail's defaults.
+      const profileSettings = (host) => ({
+        id_col: 'USUBJID',
+        measure_col: 'TEST',
+        value_col: 'STRESN',
+        unit_col: 'STRESU',
+        normal_col_high: 'STNRHI',
+        normal_col_low: 'STNRLO',
+        details: [
+          { value_col: 'SEX', label: 'Sex' },
+          { value_col: 'ARM', label: 'Treatment Group' }
+        ],
+        on_clear: () => host.select(null)
+      });
+
+      const ready = fetch('./adbds.csv')
+        .then((response) => response.text())
+        .then((text) => {
+          const rows = parseCsv(text);
+          const bars = [...new Set(rows.map((row) => row[BAR_COL]))].sort();
+
+          // The host is the object the listing and the rail are handed: the
+          // shell's slots, the settings they read, and the state they keep.
+          const host = {
+            settings: {
+              profile: true,
+              id_col: 'USUBJID',
+              page_size: 5,
+              details: [
+                { value_col: 'USUBJID', label: 'Participant ID' },
+                { value_col: 'TEST', label: 'Measure' },
+                { value_col: 'STRESN', label: 'Result' },
+                { value_col: 'SEX', label: 'Sex' },
+                { value_col: BAR_COL, label: 'Site' }
+              ]
+            },
+            filters: kit.initFilterState(filterSpecs),
+            currentTableData: [],
+            listingSearch: '',
+            listingSort: null,
+            listingSelectedId: null,
+            page: 1,
+            profile: null,
+            profileKey: null,
+            profileRows: [],
+            chart: null
+          };
+
+          // The shell: a collapsible control sidebar beside the chart, the
+          // listing and the rail.
+          Object.assign(
+            host,
+            kit.renderShell(document.querySelector('#container'), {
+              moduleClass: 'kit-fixture',
+              onToggle: () => host.chart && host.chart.resize()
+            })
+          );
+
+          const filtered = () =>
+            rows.filter((row) =>
+              filterSpecs.every((spec) =>
+                kit.filterMatches(row[spec.value_col], host.filters[spec.value_col])
+              )
+            );
+          const recordsFor = (bar) => filtered().filter((row) => row[BAR_COL] === bar);
+
+          // Select one participant, or none: highlight the listing rows and
+          // dispatch the selection event the rail listens for.
+          host.select = (id) => {
+            host.listingSelectedId = id == null ? null : String(id);
+            if (host.currentTableData.length) kit.renderListing(host);
+            host.root.dispatchEvent(
+              new CustomEvent('participantsSelected', {
+                detail: { data: id == null ? [] : [String(id)] },
+                bubbles: true
+              })
+            );
+          };
+          host.onListingRowClick = (row) => host.select(row[host.settings.id_col]);
+
+          const showListing = (bar) => {
+            host.select(null);
+            host.currentTableData = recordsFor(bar);
+            host.listingSearch = '';
+            host.listingSort = null;
+            host.page = 1;
+            host.footnote.textContent = `${host.currentTableData.length} records at site ${bar}.`;
+            kit.renderListing(host);
+          };
+
+          const draw = () => {
+            const current = filtered();
+            host.notes.textContent = `${current.length} of ${rows.length} records shown.`;
+            host.chart.data.datasets[0].data = bars.map((bar) => recordsFor(bar).length);
+            host.chart.update();
+            // A filter change empties the listing and the rail with it.
+            host.currentTableData = [];
+            host.listingSelectedId = null;
+            host.listingWrap.innerHTML = '';
+            host.footnote.textContent = 'Click a bar to list its records.';
+            kit.resetProfileRail(host);
+          };
+
+          // One filter, in the sidebar, reconciled with the data as the charts do.
+          const { addSection, addControl } = kit.controlBuilders(host.controls);
+          const section = addSection('Filters');
+          kit
+            .reconcileFilters(host.filters, filterSpecs, (spec) =>
+              [...new Set(rows.map((row) => row[spec.value_col]))].sort()
+            )
+            .forEach(({ spec, values, selected }) => {
+              addControl(
+                spec.label,
+                kit.renderFilterControl({
+                  spec,
+                  values,
+                  selected,
+                  onChange: (next) => {
+                    host.filters[spec.value_col] = next;
+                    draw();
+                  }
+                }),
+                section
+              );
+            });
+
+          // A bar chart drawn with the bundle's own Chart.js.
+          host.chart = new kit.Chart(host.canvas, {
+            type: 'bar',
+            data: {
+              labels: bars,
+              datasets: [{ label: 'Records', data: [], backgroundColor: '#0b62a4' }]
+            },
+            options: {
+              animation: false,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                x: { title: { display: true, text: 'Site' } },
+                y: { beginAtZero: true, ticks: { precision: 0 } }
+              },
+              onClick: (event, elements) => {
+                if (elements.length) showListing(bars[elements[0].index]);
+              }
+            }
+          });
+
+          // The participant rail: its rows are built once, and it opens on
+          // the selection event.
+          host.profileRows = kit.buildProfileRows(rows, profileSettings(host));
+          kit.mountProfileRail(host, () => profileSettings(host));
+
+          draw();
+          return host;
+        });
+
+      window.__kitFixture = { ready };
+      ready.then((host) => {
+        window.__kitFixture.host = host;
+      });
+    </script>
+  </body>
+</html>

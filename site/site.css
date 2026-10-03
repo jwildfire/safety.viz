@@ -989,6 +989,30 @@ ol.pipeline strong {
   min-width: 0;
 }
 
+/* Kit page (#154): two-column member tables — a signature and what it does —
+   that size to the column on a phone instead of scrolling at the wide-table
+   minimum; a long signature wraps inside its cell. */
+
+.kit-page .table-scroll > table {
+  min-width: 0;
+}
+
+.kit-page table.api td:first-child {
+  width: 42%;
+}
+
+.kit-page table.api td code {
+  overflow-wrap: anywhere;
+}
+
+/* Stacked under the contents list on a phone, the body column is held to the
+   viewport so its code samples scroll inside themselves, not the page. */
+@media (max-width: 52rem) {
+  .kit-page .api-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 /* Demo page: the module brings its own embedded styles; give it room. */
 
 .site-main:has(.demo-page) {

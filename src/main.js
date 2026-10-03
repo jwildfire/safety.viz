@@ -6,7 +6,9 @@
 // hep-waterfall (#93), participant-profile (#98), nep-explorer (#120),
 // time-to-event (#128), patient-journey-explorer (#142). The portfolio manifest
 // (#138) rides along as `portfolio`: the standard domain set and what each
-// module reads from it, for the hosts that put several charts on one page.
+// module reads from it, for the hosts that put several charts on one page. The
+// kit (#154) rides along as `kit`: the shared parts every chart is built from,
+// re-exported unchanged for a second chart library on the same page.
 import histogram from './histogram.js';
 import shiftPlot from './shift-plot.js';
 import deltaDelta from './delta-delta.js';
@@ -22,6 +24,7 @@ import nepExplorer from './nep-explorer.js';
 import timeToEvent from './time-to-event.js';
 import patientJourneyExplorer from './patient-journey-explorer.js';
 import portfolio from './data/portfolio.json';
+import { kit } from './kit.js';
 
 export {
   histogram,
@@ -38,7 +41,8 @@ export {
   nepExplorer,
   timeToEvent,
   patientJourneyExplorer,
-  portfolio
+  portfolio,
+  kit
 };
 export default {
   histogram,
@@ -55,5 +59,6 @@ export default {
   nepExplorer,
   timeToEvent,
   patientJourneyExplorer,
-  portfolio
+  portfolio,
+  kit
 };
