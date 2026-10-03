@@ -200,7 +200,7 @@ export function mergeLibraries(host, hostCharts, libraries = []) {
       // Listed, it would be a chip that opens the data view: say so instead.
       if (module === DATA_VIEW) {
         unloaded.push(
-          `The ${name} chart ${module} is not shown: the app keeps the name ${module} for its data view.`
+          `The ${name} chart “${module}” is not shown: the app keeps the name “${module}” for its data view.`
         );
         warn(`${name}'s chart ${module} takes the name of the data view, and was left out.`);
         continue;

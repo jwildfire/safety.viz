@@ -71,7 +71,8 @@ pending; each row lists the module IDs its test covers.
 | HEP-QUAD-001, HEP-DATA-001/002, HEP-DISPLAY-001, HEP-SELECT-006 (cuts back-fill, mappings) | —                                                      | #43   | `configure.test.js`                               |
 | HEP-DATA-005 (schema required columns)                                                     | —                                                      | #43   | `checkInputs.test.js`                             |
 | HEP-DATA-002/003/004 (measure resolution, cleaning)                                        | —                                                      | #43   | `structureData.test.js`                           |
-| HEP-DISPLAY-001/002/003/004/006 (×ULN, ×Baseline, peaks, R-Ratio)                          | —                                                      | #43   | `structureData.test.js`                           |
+| HEP-DISPLAY-001/002/003/004/007 (×ULN, ×Baseline, peaks, R-Ratio)                          | —                                                      | #43   | `structureData.test.js`                           |
+| HEP-DISPLAY-006 (display availability)                                                     | —                                                      | #55   | `availability.test.js`                            |
 | HEP-CHART-001, HEP-CTRL-008/009/011 (points, timing, group, filters)                       | —                                                      | #43   | `structureData.test.js`                           |
 | HEP-QUAD-004 (quadrant classification counts/percents)                                     | —                                                      | #43   | `structureData.test.js`                           |
 | HEP-QUAD-006 (which cut-line the pointer holds, what a drag to a pixel means)              | —                                                      | #45   | `cutDrag.test.js`                                 |
@@ -107,7 +108,7 @@ repo), so routing is against the port spec's scope rather than matrix rows.
   pickers, reference lines, display type, axis type, point size, timing window,
   grouping, filters, R-Ratio range, and reset (HEP-CTRL-001..012) — the
   ×ULN/×Baseline standardization with baseline and drop handling
-  (HEP-DISPLAY-001..006), the coordinated participant drill-down: point
+  (HEP-DISPLAY-001..007), the coordinated participant drill-down: point
   selection with visit-path overlay, lab-over-time panel, measure summary
   table, and linked listing (HEP-SELECT-001..007), data cleaning and the data
   contract (HEP-DATA-001..005), the lifecycle API + `participantsSelected`

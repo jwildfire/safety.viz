@@ -592,7 +592,7 @@ describe('a library the page cannot use as handed in (#193)', () => {
     expect(problems).not.toHaveProperty('data');
     expect(all.modules).toHaveProperty('stand-in-strip');
     const said =
-      'The stand-in chart data is not shown: the app keeps the name data for its data view.';
+      'The stand-in chart “data” is not shown: the app keeps the name “data” for its data view.';
     expect(unloaded).toEqual([said]);
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('data'));
     // On the page: the line, the library's other chart, and the data view as before.
