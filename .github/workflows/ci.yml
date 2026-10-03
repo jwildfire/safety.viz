@@ -44,14 +44,20 @@ jobs:
         run: npm run build:check-dist
 
       # bio.viz's script-tag bundle is vendored for the demo app (#182): the
-      # copy must equal the file at the bio.viz commit its record names.
+      # copy must equal the file at the bio.viz commit its record names, and
+      # that commit must be on bio.viz's dev branch, as the record says (#193).
       - name: Vendored bio.viz bundle matches its source
         run: npm run bio-viz:check-source
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
       # gsm.bio's statistics file is vendored for R on request (#183): the copy
-      # must equal the file at the gsm.bio commit its record names.
+      # must equal the file at the gsm.bio commit its record names, and that
+      # commit must be on gsm.bio's dev branch, as the record says (#193).
       - name: Vendored gsm.bio statistics file matches its source
         run: npm run statistics:check-source
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
       - name: Run unit tests
         run: npm test

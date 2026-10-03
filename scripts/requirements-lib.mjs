@@ -64,3 +64,51 @@ export function compareRequirements(committed, fresh) {
   }
   return { stale: differences.length > 0, differences };
 }
+
+/**
+ * The IDs that already had two rows when the check below was added (#193),
+ * each two different requirements under one name. They are to be given one
+ * row each under safety.viz#195; until then they are named here, so the check
+ * still fails on any new duplicate, and on one of these once it is fixed and
+ * not taken off this list.
+ */
+export const KNOWN_DUPLICATE_IDS = Object.freeze({
+  'HEP-DISPLAY-006': 'safety.viz#195',
+  'TTE-FILT-001': 'safety.viz#195',
+  'TTE-FILT-002': 'safety.viz#195',
+  'TTE-FILT-003': 'safety.viz#195'
+});
+
+/**
+ * Requirement IDs with more than one row across the matrices (#193): an ID is
+ * one requirement, so two rows under it means two requirements share a name,
+ * and the evidence page would show only the last. Every row whose first cell
+ * is a requirement ID counts, whatever its text.
+ * @param {Array<{file: string, markdown: string}>} matrices Each matrix's file name and text.
+ * @param {{known?: Object<string, string>}} [options] IDs known to have two rows, each with the issue that will fix it: not reported while they still do, and reported once they no longer do.
+ * @returns {string[]} One sentence per duplicated ID, naming each row as file:line.
+ */
+export function duplicateRequirementIds(matrices, { known = {} } = {}) {
+  const seen = new Map();
+  for (const { file, markdown } of matrices) {
+    String(markdown || '')
+      .split('\n')
+      .forEach((line, index) => {
+        const trimmed = line.trim();
+        if (!trimmed.startsWith('|') || SEPARATOR_ROW.test(trimmed)) return;
+        const [id] = splitRow(trimmed);
+        if (!REQUIREMENT_ID.test(id)) return;
+        if (!seen.has(id)) seen.set(id, []);
+        seen.get(id).push(`${file}:${index + 1}`);
+      });
+  }
+  const problems = [...seen]
+    .filter(([id, rows]) => rows.length > 1 && !Object.hasOwn(known, id))
+    .map(([id, rows]) => `${id} has ${rows.length} rows: ${rows.join(', ')}.`);
+  for (const [id, issue] of Object.entries(known)) {
+    if (!seen.has(id) || seen.get(id).length < 2) {
+      problems.push(`${id} no longer has two rows (${issue}): take it off the known duplicates.`);
+    }
+  }
+  return problems;
+}

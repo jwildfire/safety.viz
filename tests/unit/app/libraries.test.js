@@ -19,6 +19,8 @@ import {
   mergeLibraries
 } from '../../../src/app/libraries.js';
 import { mountApp } from '../../../src/app/page.js';
+import * as rModule from '../../../src/app/r-on-request.js';
+import { APP_LIBRARIES, librariesExpression } from '../../../scripts/app-libraries.mjs';
 import standIn, { log as standInLog } from '../../e2e/fixtures/stand-in-library.js';
 
 // A second chart library in the demo app (#181, obot.roadmap#366). The app
@@ -56,6 +58,11 @@ const ownCharts = Object.fromEntries(
   Object.values(manifest.modules).map((entry) => [entry.export, () => ({ init() {} })])
 );
 const merged = () => mergeLibraries(manifest, ownCharts, [standIn]);
+// What the single file hands the app: its libraries are inline, not loaded from a file.
+const singleFileLibraries = librariesExpression(APP_LIBRARIES, {
+  r: 'unavailable',
+  fromFile: false
+});
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -124,7 +131,7 @@ describe('merging a second library', () => {
     expect(mergeLibraries(manifest, ownCharts, []).manifest.modules).toEqual(manifest.modules);
   });
 
-  it('APP-LIB-003: an entry whose name is already listed is left out with a warning, and an entry that names no library takes the one it was handed in with (#181)', () => {
+  it('APP-LIB-019: an entry whose name is already listed is left out with a warning, and an entry that names no library takes the one it was handed in with (#181, #193)', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const other = clone(standIn.manifest);
     other.modules.histogram = { ...other.modules['stand-in-strip'] };
@@ -355,5 +362,238 @@ describe('the page with a second library', () => {
       document.querySelector('.sva-item[data-view="stand-in-absent"] .sva-tag').textContent
     ).toBe('not loaded');
     app.destroy();
+  });
+});
+
+describe('a library the page cannot use as handed in (#193)', () => {
+  const DEMO = ['adsl.csv', 'adae.csv', 'adbds.csv', 'adeg.csv'].map((name) => ({
+    name,
+    text: demoText(name)
+  }));
+  const strip = () => clone(standIn.manifest.modules['stand-in-strip']);
+  const withModules = (modules, extra = {}) => ({
+    name: 'stand-in',
+    charts: standIn.charts,
+    manifest: { ...clone(standIn.manifest), modules, ...extra }
+  });
+  // Mount with these libraries on the demo study: the tabs, the count, and
+  // whatever was thrown, if anything was.
+  const mountWith = (libraries) => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    document.body.innerHTML = '<div id="app"></div>';
+    let app;
+    try {
+      app = mountApp('#app', { charts: ownCharts, manifest, libraries });
+      app.loadFiles(DEMO);
+    } catch (error) {
+      return { thrown: String(error) };
+    }
+    const result = {
+      thrown: null,
+      app,
+      tabs: [...document.querySelectorAll('.sva-tab')].map((tab) => ({
+        group: tab.dataset.domain,
+        title: tab.querySelector('.sva-tab-title').textContent,
+        count: tab.querySelector('.sva-tab-count').textContent
+      })),
+      count: document.querySelector('.sva-count').textContent
+    };
+    return result;
+  };
+  const SAFETY_TABS = [
+    { group: 'bds', title: 'Labs and vitals', count: '9 of 9' },
+    { group: 'eg', title: 'ECG', count: '1 of 1' },
+    { group: 'ae', title: 'Adverse events', count: '3 of 3' }
+  ];
+
+  it('APP-LIB-020: an entry with no domains, no settings, a setting with no domain, no title or no export, or one that is not an object, reads "not loaded" with the reason, and safety.viz’s thirteen charts still mount (#193)', () => {
+    const cases = {
+      'no-domains': (() => {
+        const entry = strip();
+        delete entry.domains;
+        delete entry.tables;
+        return [entry, /does not list the domains it reads/];
+      })(),
+      'no-settings': (() => {
+        const entry = strip();
+        delete entry.settings;
+        return [entry, /does not list its settings/];
+      })(),
+      'setting-no-domain': (() => {
+        const entry = strip();
+        delete entry.settings.value_col.domain;
+        return [entry, /its value_col setting names no domain/];
+      })(),
+      'no-title': (() => {
+        const entry = strip();
+        delete entry.title;
+        return [entry, /has no title/];
+      })(),
+      'empty-column': (() => {
+        // The schema allows an empty column name; no standard domain has one.
+        const entry = strip();
+        entry.settings.value_col.column = '';
+        return [
+          entry,
+          /its value_col setting reads a column with no name, which is not a column of Labs and vitals/
+        ];
+      })(),
+      'no-export': (() => {
+        const entry = strip();
+        delete entry.export;
+        return [entry, /names no export/];
+      })(),
+      'a-null': [null, /is not an object/],
+      'a-list': [[strip()], /is not an object/]
+    };
+    // Each alone: the sentence that says why.
+    for (const [module, [entry, reason]] of Object.entries(cases)) {
+      const { problems } = mergeLibraries(manifest, ownCharts, [withModules({ [module]: entry })]);
+      expect(problems[module], module).toMatch(
+        /^This chart’s entry in the stand-in chart list cannot be used: /
+      );
+      expect(problems[module], module).toMatch(reason);
+    }
+    // All of them in one chart list, on the page: it mounts, the safety charts
+    // are as before, and each reads "not loaded" and, opened, says why.
+    const mounted = mountWith([
+      withModules(
+        Object.fromEntries(Object.entries(cases).map(([module, [entry]]) => [module, entry]))
+      )
+    ]);
+    expect(mounted.thrown).toBeNull();
+    expect(mounted.tabs.slice(0, 3)).toEqual(SAFETY_TABS);
+    for (const [module, [, reason]] of Object.entries(cases)) {
+      const tag = document.querySelector(`.sva-item[data-view="${module}"] .sva-tag`);
+      expect(tag.textContent, module).toBe('not loaded');
+      expect(() => mounted.app.select(module), module).not.toThrow();
+      expect(document.querySelector('.sva-message').textContent, module).toMatch(reason);
+    }
+    mounted.app.destroy();
+    // An entry with no group and no first domain to list it under is listed
+    // apart, never under a tab called "undefined".
+    const loose = strip();
+    delete loose.group;
+    delete loose.domains;
+    delete loose.tables;
+    const none = { ...strip(), domains: [], settings: {} };
+    delete none.group;
+    delete none.tables;
+    const apart = mountWith([withModules({ loose, none })]);
+    expect(apart.tabs.map((tab) => tab.group)).toEqual(['bds', 'eg', 'ae', 'other']);
+    expect(apart.tabs.map((tab) => tab.title)).toEqual([
+      'Labs and vitals',
+      'ECG',
+      'Adverse events',
+      'Other'
+    ]);
+    apart.app.destroy();
+  });
+
+  it('APP-LIB-021: a chart list whose modules are not an object of entries, or that is not an object, is not used, and the page says so in words; one that lists no charts says that; safety.viz’s charts still mount (#193)', () => {
+    for (const given of ['oops', { version: 2, description: 'x', modules: [strip()] }]) {
+      const mounted = mountWith([{ name: 'stand-in', charts: standIn.charts, manifest: given }]);
+      expect(mounted.thrown).toBeNull();
+      expect(mounted.tabs).toEqual(SAFETY_TABS);
+      expect(document.querySelector('.sva-library-notes').textContent).toBe(
+        'The stand-in charts are not shown: the stand-in library on this page has no chart list the app can read.'
+      );
+      mounted.app.destroy();
+    }
+    for (const modules of [undefined, {}]) {
+      const given = { version: 2, description: 'x' };
+      if (modules) given.modules = modules;
+      const mounted = mountWith([{ name: 'stand-in', charts: standIn.charts, manifest: given }]);
+      expect(mounted.thrown).toBeNull();
+      expect(mounted.tabs).toEqual(SAFETY_TABS);
+      expect(document.querySelector('.sva-library-notes').textContent).toBe(
+        'The stand-in charts are not shown: the stand-in library on this page lists no charts.'
+      );
+      mounted.app.destroy();
+    }
+  });
+
+  it('APP-LIB-022: a library that declares a group with a standard domain’s id or the id of the group outside the set is refused that group, and safety.viz’s tabs keep their names and hues (#193)', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    for (const id of ['ae', 'bds', 'other']) {
+      const library = withModules(
+        { 'stand-in-strip': strip() },
+        { groups: { ...clone(standIn.manifest.groups), [id]: { label: 'HIJACK', order: 0 } } }
+      );
+      const { manifest: all } = mergeLibraries(manifest, ownCharts, [library]);
+      expect(Object.keys(all.groups), id).toEqual(['stand-in']);
+      expect(groupLabel(id === 'other' ? 'other' : id, all), id).not.toBe('HIJACK');
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining(`the group ${id}`));
+      if (id !== 'other') expect(hueClass(id, all), id).toBe(`sva-domain-${id}`);
+    }
+    const mounted = mountWith([
+      withModules(
+        { 'stand-in-strip': strip() },
+        { groups: { ...clone(standIn.manifest.groups), ae: { label: 'HIJACK', order: 0 } } }
+      )
+    ]);
+    expect(mounted.tabs.slice(0, 3)).toEqual(SAFETY_TABS);
+    mounted.app.destroy();
+  });
+
+  it('APP-LIB-023: a library that was asked for but did not load is named on the page, with why, in every view, and safety.viz’s charts are as before (#193)', () => {
+    const mounted = mountWith([
+      { name: 'stand-in', charts: undefined, manifest: undefined, file: 'stand-in.js' }
+    ]);
+    expect(mounted.thrown).toBeNull();
+    expect(mounted.tabs).toEqual(SAFETY_TABS);
+    expect(mounted.count).toBe('13 of 13 charts supported by the loaded data');
+    const said =
+      'The stand-in charts are not shown: stand-in.js did not load on this page, or failed as it loaded.';
+    expect(document.querySelector('.sva-library-notes').textContent).toBe(said);
+    mounted.app.select('histogram');
+    expect(document.querySelector('.sva-library-notes').textContent).toBe(said);
+    mounted.app.select('data');
+    expect(document.querySelector('.sva-library-notes').textContent).toBe(said);
+    mounted.app.destroy();
+    // Without the file's name, the sentence still says which library.
+    mountWith([{ name: 'stand-in' }]);
+    expect(document.querySelector('.sva-library-notes').textContent).toBe(
+      'The stand-in charts are not shown: the stand-in library did not load on this page, or failed as it loaded.'
+    );
+    // The single file loads no file, so it names none: its libraries are inline.
+    const [inline] = new Function('window', 'SafetyVizApp', `return ${singleFileLibraries};`)(
+      {},
+      rModule
+    );
+    expect(inline).not.toHaveProperty('file');
+    mountWith([inline]);
+    expect(document.querySelector('.sva-library-notes').textContent).toBe(
+      'The bio.viz charts are not shown: the bio.viz library did not load on this page, or failed as it loaded.'
+    );
+    // With every library there, no such line.
+    mountWith([standIn]);
+    expect(document.querySelector('.sva-library-notes')).toBeNull();
+  });
+
+  it('APP-LIB-024: when two libraries share a name, the first is used for its charts, its settings and its control alike, and the second is left out with a warning (#193)', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const first = { ...standIn, settings: () => ({ extra_col: 'first' }) };
+    const second = { ...standIn, settings: () => ({ extra_col: 'second' }) };
+    document.body.innerHTML = '<div id="app"></div>';
+    const app = mountApp('#app', { charts: ownCharts, manifest, libraries: [first, second] });
+    app.loadFiles(DEMO);
+    app.select('stand-in-strip');
+    expect(standInLog[0].settings.extra_col).toBe('first');
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('a name already used (stand-in)'));
+    app.destroy();
+  });
+
+  it('APP-LIB-025: a chart whose export is a name every object inherits, such as constructor or toString, reads "not loaded": only the library’s own charts count (#193)', () => {
+    for (const name of ['constructor', 'toString', 'hasOwnProperty']) {
+      const entry = { ...strip(), export: name };
+      const { problems, factoryOf } = mergeLibraries(manifest, ownCharts, [
+        withModules({ odd: entry })
+      ]);
+      expect(problems.odd, name).toBe(
+        `The stand-in library on this page has no chart called ${name}, so this chart cannot be drawn.`
+      );
+      expect(factoryOf('odd'), name).toBeNull();
+    }
   });
 });

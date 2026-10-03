@@ -3,9 +3,10 @@
 // tests is handed, through the second-library seam, a connection to R that
 // starts nothing until the reader asks: before the reader presses the one
 // control, every chart draws and its statistics line says that statistics need
-// R and what starting it downloads, and nothing is fetched. Pressing it makes
-// one connection, with the library's own connection factory and the options
-// given, and every chart drawn afterwards reaches R through it.
+// R and what starting it downloads, and R's hosts are asked for nothing.
+// Pressing it makes one connection, with the library's own connection factory
+// and the options given, and every chart drawn afterwards reaches R through
+// it. A factory that throws is R that did not start, and the control says why.
 //
 // The app computes no statistic here or anywhere: the connection is the
 // library's, R answers, and the chart prints what R said. This module only
@@ -44,23 +45,39 @@ export function rOnRequest({ createConnection, browser, megabytes, host }) {
     `from ${host}, and the study’s data stays in this browser.`;
   const starting = `R is starting in this browser: about ${megabytes} MB to download, once, from ${host}.`;
   const failed = (message) =>
-    `R did not start: ${String(message).replace(/\.?$/, '.')} ` +
+    (message
+      ? `R did not start: ${String(message).replace(/\.?$/, '.')} `
+      : 'R did not start, and no reason was given. ') +
     'Try again; if it fails again, reload the page.';
+  // What was thrown, as words: its message, or itself when it is words (#193).
+  const reasonOf = (error) =>
+    (error && typeof error.message === 'string' && error.message) ||
+    (typeof error === 'string' && error) ||
+    null;
   const didNotStart = () => ({ status: 'unavailable', reason: 'load-failed', message: failure });
 
   // Ask R through one connection, and learn from its answer whether R is up.
+  // A run that throws, at once or later, is R that could not answer: the same
+  // as an answer that says R could not start, so nothing sticks at "starting"
+  // (#193).
   const ask = (connection, name, request) =>
-    connection.run(name, request).then((answer) => {
-      if (connection !== real) return answer;
-      if (answer && answer.status === 'unavailable' && answer.reason === 'load-failed') {
-        phase = 'failed';
-        failure = failed(answer.message);
-        return didNotStart();
-      }
-      // R answered, with a value or with R's own error: it is running.
-      if (phase === 'starting' && answer && answer.status !== 'unavailable') phase = 'running';
-      return answer;
-    });
+    new Promise((resolve) => resolve(connection.run(name, request)))
+      .catch((error) => ({
+        status: 'unavailable',
+        reason: 'load-failed',
+        message: reasonOf(error)
+      }))
+      .then((answer) => {
+        if (connection !== real) return answer;
+        if (answer && answer.status === 'unavailable' && answer.reason === 'load-failed') {
+          phase = 'failed';
+          failure = failed(answer.message);
+          return didNotStart();
+        }
+        // R answered, with a value or with R's own error: it is running.
+        if (phase === 'starting' && answer && answer.status !== 'unavailable') phase = 'running';
+        return answer;
+      });
 
   // One connection object for every chart, before and after the reader asks:
   // a chart drawn before still reaches R once R is there.
@@ -89,7 +106,16 @@ export function rOnRequest({ createConnection, browser, megabytes, host }) {
         })[phase],
       press() {
         if (phase === 'starting' || phase === 'running') return started;
-        real = createConnection({ browser });
+        // A factory that throws is R that did not start, and says why (#193).
+        try {
+          real = createConnection({ browser });
+        } catch (error) {
+          real = null;
+          phase = 'failed';
+          failure = failed(reasonOf(error));
+          started = Promise.resolve();
+          return started;
+        }
         phase = 'starting';
         failure = null;
         started = ask(real, 'identity', { data: [], args: {} }).then(() => undefined);

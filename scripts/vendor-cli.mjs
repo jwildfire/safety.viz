@@ -8,7 +8,10 @@
 //   --check                            change nothing: fail if a file and its
 //                                      record disagree (no network)
 //   --check-source                     change nothing: also fetch the recorded
-//                                      commit's files and fail on a difference
+//                                      commit's files and fail on a difference,
+//                                      and ask GitHub whether a commit recorded
+//                                      as on dev is on dev (#193); a token in
+//                                      GITHUB_TOKEN or GH_TOKEN is used if set
 //
 // Each script passes what it vendors, and how to describe a commit (`describe`).
 
@@ -17,8 +20,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   buildRecord,
+  compareWithDev,
   readRecord,
   verifyAgainstSource,
+  verifyOnDev,
   verifyVendored,
   writeVendored
 } from './vendor-lib.mjs';
@@ -45,6 +50,10 @@ export async function runVendorCli(source, { describe }) {
     if (!response.ok) throw new Error(`${url} answered ${response.status}.`);
     return Buffer.from(await response.arrayBuffer());
   }
+
+  // How dev stands to a commit, from GitHub's compare API (vendor-lib.mjs).
+  const compare = (commit) =>
+    compareWithDev({ slug, commit, token: process.env.GITHUB_TOKEN || process.env.GH_TOKEN });
 
   function resolveCommit(ref) {
     if (/^[0-9a-f]{40}$/.test(ref)) return ref;
@@ -75,6 +84,7 @@ export async function runVendorCli(source, { describe }) {
       const problems = verifyVendored(directory);
       if (!problems.length && flag('--check-source')) {
         problems.push(...(await verifyAgainstSource(directory, readAt)));
+        problems.push(...(await verifyOnDev(readRecord(directory), compare)));
       }
       const record = problems.length ? null : readRecord(directory);
       report(
@@ -82,7 +92,8 @@ export async function runVendorCli(source, { describe }) {
         record &&
           `✓ ${source.directory}: ${record.files.map((entry) => entry.file).join(', ')} ` +
             (flag('--check-source')
-              ? `equals ${slug} at ${record.commit.slice(0, 7)}, byte for byte.`
+              ? `equals ${slug} at ${record.commit.slice(0, 7)}, byte for byte` +
+                (record.merged_to_dev ? ', and that commit is on dev.' : ', a commit not on dev.')
               : `matches its recorded checksum (copied from ${slug} at ${record.commit.slice(0, 7)}).`)
       );
       return;

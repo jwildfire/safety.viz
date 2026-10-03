@@ -181,6 +181,30 @@ describe('site generator: kit page', () => {
     expect(html).toContain('<code>hexToRgba</code>');
   });
 
+  it('KIT-DOC-010: the page says the Kaplan–Meier estimator follows the Time-to-Event Explorer’s Experimental status: its estimates, intervals and at-risk counts may change after the external clinical review without counting as a breaking change, its row is styled to say so, and the other members are full public surface (#193)', () => {
+    const contract = html.match(/<h2 id="contract">[\s\S]*?<\/ul>/)[0];
+    expect(contract).toContain(
+      '<code>kmEstimate</code> follows the Time-to-Event Explorer&#39;s Experimental status'
+    );
+    expect(contract).toContain('https://github.com/jwildfire/obot.roadmap/issues/182');
+    // What obot.roadmap#182 withholds confidence in: the curves, the bands and
+    // the at-risk arithmetic.
+    expect(contract).toMatch(
+      /its estimates, intervals and at-risk counts may change after that review without counting as a breaking change/
+    );
+    // Said once: no "until that review lands … after that review".
+    expect(contract).not.toMatch(/until that review lands/);
+    expect(contract).toContain(`The other ${model.count - 1} members are public surface in full.`);
+    // The member's own row says so too.
+    const row = html.match(/<tr id="kmEstimate">[\s\S]*?<\/tr>/)[0];
+    expect(row).toContain('class="kit-status"');
+    expect(row).toContain('Experimental');
+    expect(html.match(/class="kit-status"/g)).toHaveLength(1);
+    // And the site's stylesheet gives that note a rule of its own.
+    const css = readFileSync(new URL('../../../site/site.css', import.meta.url), 'utf8');
+    expect(css).toMatch(/\.kit-status\s*\{[^}]+\}/);
+  });
+
   it('KIT-DOC-008: the kit page is reachable from the architecture page and from every chart’s API reference (#154)', () => {
     expect(renderArchitecturePage({ config, version })).toContain('href="kit/index.html"');
     const api = renderApiPage({

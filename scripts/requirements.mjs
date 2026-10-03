@@ -10,7 +10,10 @@
 //                                           compare against every committed
 //                                           extract (exit 1 on drift); with no
 //                                           source present, validate that the
-//                                           committed extracts are well-formed
+//                                           committed extracts are well-formed;
+//                                           and, either way, fail when any
+//                                           requirement ID has two rows across
+//                                           the matrices (#193)
 //
 // The matrix source root is REQUIREMENTS_SRC (default the in-repo requirements/
 // directory — the matrices moved here from obot.agent in hub#64 so a behavior
@@ -22,11 +25,16 @@
 // renderer whose matrix has not been harvested yet) are reported and skipped,
 // and their evidence page degrades to IDs-only.
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildRequirementSet, compareRequirements } from './requirements-lib.mjs';
+import {
+  buildRequirementSet,
+  compareRequirements,
+  duplicateRequirementIds,
+  KNOWN_DUPLICATE_IDS
+} from './requirements-lib.mjs';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const outputRoot = path.join(rootDir, 'docs', 'requirements');
@@ -99,6 +107,25 @@ if (mode === 'check') {
     } else {
       console.log(
         `· ${module}: no matrix at source and no committed extract — evidence page shows IDs only.`
+      );
+    }
+  }
+  // Every matrix, renderer or not (the demo app's and the kit's included): an
+  // ID names one requirement.
+  if (sourceAvailable) {
+    const matrices = readdirSync(sourceRoot)
+      .filter((file) => file.endsWith('.md') && file !== 'README.md')
+      .map((file) => ({ file, markdown: readFileSync(path.join(sourceRoot, file), 'utf8') }));
+    const duplicates = duplicateRequirementIds(matrices, { known: KNOWN_DUPLICATE_IDS });
+    if (duplicates.length) {
+      stale = true;
+      console.error('✗ A requirement ID has more than one row; give each its own:');
+      duplicates.forEach((d) => console.error(`  - ${d}`));
+    } else {
+      const known = Object.keys(KNOWN_DUPLICATE_IDS).length;
+      console.log(
+        `✓ ${matrices.length} matrices: every requirement ID has one row` +
+          (known ? `, but for ${known} known to have two (safety.viz#195).` : '.')
       );
     }
   }

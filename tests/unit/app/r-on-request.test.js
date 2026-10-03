@@ -241,7 +241,146 @@ describe('the page with a library’s settings and control', () => {
     await Promise.resolve();
     await Promise.resolve();
     expect(button().textContent).toBe('R started');
-    expect(standInLog.slice(before).map((entry) => entry.event)).toEqual(['setSettings']);
+    // Once what it started has settled, the open chart is handed the settings
+    // as they are then, still without being drawn again (#193).
+    expect(standInLog.slice(before)).toEqual([
+      { event: 'setSettings', settings: { extra_col: 'starting' } },
+      { event: 'setSettings', settings: { extra_col: 'done' } }
+    ]);
+    app.destroy();
+  });
+
+  it('APP-R-020: the chart open when R is started is handed no waiting note once R has started, so its statistics line stops saying R is starting (#193)', async () => {
+    let release;
+    const gate = new Promise((resolve) => (release = resolve));
+    const { createConnection } = fakeFactory();
+    const slow = vi.fn((options) => {
+      const connection = createConnection(options);
+      const run = connection.run;
+      return { ...connection, run: (...args) => gate.then(() => run(...args)) };
+    });
+    const r = rOnRequest({ createConnection: slow, ...OPTIONS });
+    // The stand-in refuses a setting passed as null when it is drawn, so "no
+    // note" reaches it as a note left out.
+    const settings = () => {
+      const given = r.settings();
+      return {
+        ...given,
+        waiting_note: given.waiting_note === null ? undefined : given.waiting_note
+      };
+    };
+    const app = mounted({ ...standIn, action: r.action, settings });
+    app.select('stand-in-strip');
+    const button = () => document.querySelector('.sva-action');
+    const before = standInLog.length;
+    button().click();
+    const notes = () =>
+      standInLog
+        .slice(before)
+        .filter((entry) => entry.event === 'setSettings')
+        .map((entry) => entry.settings.waiting_note);
+    expect(notes()).toEqual([
+      'R is starting in this browser: about 13 MB to download, once, from webr.r-wasm.org.'
+    ]);
+    release();
+    await vi.waitFor(() => expect(button().textContent).toBe('R started'));
+    expect(notes()).toEqual([
+      'R is starting in this browser: about 13 MB to download, once, from webr.r-wasm.org.',
+      undefined
+    ]);
+    // Still the one chart, not drawn again.
+    expect(standInLog.slice(before).map((entry) => entry.event)).toEqual([
+      'setSettings',
+      'setSettings'
+    ]);
+    app.destroy();
+  });
+
+  it('APP-R-022: when the library’s connection factory throws, the control says R did not start and why, and offers to try again; the page keeps working (#193)', async () => {
+    const createConnection = vi.fn(() => {
+      throw new Error('bio.viz: webR is not available');
+    });
+    const r = rOnRequest({ createConnection, ...OPTIONS });
+    await expect(r.action.press()).resolves.toBeUndefined();
+    expect(r.action.state()).toMatchObject({ label: 'Try R again', done: false });
+    expect(r.action.state().note).toBe(
+      'R did not start: bio.viz: webR is not available. Try again; if it fails again, reload the page.'
+    );
+    expect(await r.settings().connection.run('one', { data: [], args: {} })).toEqual({
+      status: 'unavailable',
+      reason: 'load-failed',
+      message: r.action.state().note
+    });
+    // On the page: pressing it changes the control, and nothing is thrown.
+    const fresh = rOnRequest({ createConnection, ...OPTIONS });
+    const app = mounted({ ...standIn, action: fresh.action });
+    app.select('stand-in-strip');
+    expect(() => document.querySelector('.sva-action').click()).not.toThrow();
+    await vi.waitFor(() =>
+      expect(document.querySelector('.sva-action').textContent).toBe('Try R again')
+    );
+    app.destroy();
+  });
+
+  it('APP-R-024: when the connection’s run throws or rejects as R starts, or the factory throws with no reason, the control says R did not start and offers to try again, never sticking at “Starting R…” (#193)', async () => {
+    const throwing = {
+      'throws at once': () => ({
+        run: () => {
+          throw new Error('webR could not be created');
+        }
+      }),
+      rejects: () => ({ run: () => Promise.reject(new Error('the worker stopped')) })
+    };
+    for (const [how, make] of Object.entries(throwing)) {
+      const r = rOnRequest({ createConnection: make, ...OPTIONS });
+      await r.action.press();
+      expect(r.action.state().label, how).toBe('Try R again');
+      expect(r.action.state().note, how).toMatch(
+        /^R did not start: (webR could not be created|the worker stopped)\. Try again;/
+      );
+      expect((await r.settings().connection.run('one', {})).reason, how).toBe('load-failed');
+    }
+    // A factory that throws nothing usable still gives a sentence, not "undefined".
+    for (const thrown of [undefined, null, '']) {
+      const r = rOnRequest({
+        createConnection: () => {
+          throw thrown;
+        },
+        ...OPTIONS
+      });
+      await r.action.press();
+      expect(r.action.state().note).toBe(
+        'R did not start, and no reason was given. Try again; if it fails again, reload the page.'
+      );
+    }
+  });
+
+  it('APP-R-025: a library control whose press throws leaves the page working: nothing is thrown out of the click, a warning says why, and the control shows what it now says (#193)', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    let label = 'Start R';
+    const action = {
+      state: () => ({ label, done: false, note: null, hint: null }),
+      press: () => {
+        label = 'Try R again';
+        throw new Error('the control broke');
+      }
+    };
+    const app = mounted({ ...standIn, action });
+    app.select('stand-in-strip');
+    const errors = [];
+    const onError = (event) => errors.push(event.error);
+    window.addEventListener('error', onError);
+    document.querySelector('.sva-action').click();
+    window.removeEventListener('error', onError);
+    expect(errors).toEqual([]);
+    expect(warn).toHaveBeenCalledWith(
+      'safety.viz app: a library’s control failed when pressed.',
+      expect.objectContaining({ message: 'the control broke' })
+    );
+    expect(document.querySelector('.sva-action').textContent).toBe('Try R again');
+    // The chart is still open and still answers.
+    expect(document.querySelector('.sva-chart .stand-in-strip')).not.toBeNull();
+    warn.mockRestore();
     app.destroy();
   });
 });

@@ -28,11 +28,11 @@
   },
   {
    "file": "src/app/libraries.js",
-   "sha256": "796c529a69afea2a85d59734e818185081e5f263631ed61621c29453e29b5f5f"
+   "sha256": "eac1039caaf126ce7b6d8e455b23de2e3dc1703ff9402fa44ab06de5892f5edd"
   },
   {
    "file": "src/app/page.js",
-   "sha256": "a0b1c15cbbfb18afc6cc71368db91fe455eb9ce3865999c7b370a77db4cbb0da"
+   "sha256": "b9df5d8ddf192aca17ef1586c9385b6dddc15d07aa75fc4d248139040ac7e5f3"
   },
   {
    "file": "site/vendor/bio.viz/bio.viz.js",

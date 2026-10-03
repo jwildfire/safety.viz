@@ -120,7 +120,7 @@ test.describe('docs site', () => {
     await page.evaluate('window.__safetyVizApp.ready');
     await expect(page.locator('meta[name="description"]')).toHaveAttribute(
       'content',
-      /nothing is fetched unless you start R/
+      /the page fetches nothing from any other host unless you start R/
     );
     await expect(page.locator('.sva-footer .sva-pitch')).toHaveText(HOSTED_PITCH);
     await page.locator('.sva-tab[data-domain="biomarkers"]').click();
@@ -141,6 +141,31 @@ test.describe('docs site', () => {
       'R started'
     );
     expect(requests).toContain(new URL('/_site/demo/statistics.R', page.url()).href);
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-LIB-026: on the built demo page, when bio.viz’s script does not load, the safety charts mount as before and the page says the biomarker charts are not shown and why, in every view (#193)', async ({
+    page
+  }) => {
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    await page.route(/\/bio\.viz\.js$/, (route) =>
+      route.fulfill({ status: 404, body: 'not here' })
+    );
+    await page.goto('/_site/demo/index.html');
+    await page.evaluate('window.__safetyVizApp.ready');
+    const said =
+      'The bio.viz charts are not shown: bio.viz.js did not load on this page, or failed as it loaded.';
+    await expect(page.locator('.sva-library-notes')).toHaveText(said);
+    await expect(page.locator('.sva-tab')).toHaveCount(3);
+    await expect(page.locator('.sva-count')).toHaveText(
+      `${Object.keys(manifest.modules).length} of ${Object.keys(manifest.modules).length} charts supported by the loaded data`
+    );
+    await page.evaluate(() => window.__safetyVizApp.select('data'));
+    await expect(page.locator('.sva-library-notes')).toHaveText(said);
+    await page.evaluate(() => window.__safetyVizApp.select('histogram'));
+    await expect(page.locator('.sva-library-notes')).toHaveText(said);
+    await expect(page.locator('.sva-chart .sv-root')).toBeVisible();
     expect(errors).toEqual([]);
   });
 

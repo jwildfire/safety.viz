@@ -1086,6 +1086,26 @@ const KIT_GROUPS = {
   }
 };
 
+// Members whose promise is narrower than the rest of the kit's (#193). The
+// Kaplan–Meier estimator is the Time-to-Event Explorer's, which ships
+// Experimental until an external clinical review confirms the implementation
+// (obot.roadmap#182): it is on the kit, and follows that status.
+const KIT_STATUS = {
+  kmEstimate: {
+    contract:
+      `<code>kmEstimate</code> follows the Time-to-Event Explorer&#39;s Experimental status,` +
+      ` which holds until an external clinical review confirms its Kaplan–Meier implementation` +
+      ` (<a href="https://github.com/jwildfire/obot.roadmap/issues/182">obot.roadmap#182</a>):` +
+      ` its estimates, intervals and at-risk counts may change after that review without` +
+      ` counting as a breaking change. Its name and its arguments are kept.`,
+    // A function: the badge's wording is defined further down this file.
+    row: () =>
+      `Follows the Time-to-Event Explorer&#39;s` +
+      ` <span class="site-badge" title="${STATUS_MEANING.experimental}">Experimental</span>` +
+      ` status: see <a href="#contract">what is promised</a>.`
+  }
+};
+
 const kitGroupMeta = (source) =>
   KIT_GROUPS[source] || { id: slugify(source), title: source, blurb: '' };
 
@@ -1189,6 +1209,12 @@ export function renderKitPage(model, { repoUrl, version }) {
       `<li>The kit is flat and frozen: members sit directly on it under the names below, and a` +
       ` library on the page cannot replace, add or remove one.</li>` +
       `<li>Adding a member is not a breaking change.</li>` +
+      Object.values(KIT_STATUS)
+        .map((status) => `<li>${status.contract}</li>`)
+        .join('') +
+      (Object.keys(KIT_STATUS).length
+        ? `<li>The other ${model.count - Object.keys(KIT_STATUS).length} members are public surface in full.</li>`
+        : '') +
       `</ul>`
   );
 
@@ -1210,7 +1236,11 @@ export function renderKitPage(model, { repoUrl, version }) {
         (member) =>
           `<tr id="${escapeHtml(member.name)}">` +
           `<td><code>${escapeHtml(member.signature)}</code></td>` +
-          `<td>${mdInline(member.description)}</td></tr>`
+          `<td>${mdInline(member.description)}` +
+          (KIT_STATUS[member.name]
+            ? ` <span class="kit-status">${KIT_STATUS[member.name].row()}</span>`
+            : '') +
+          `</td></tr>`
       )
       .join('');
     body.push(
@@ -1417,7 +1447,7 @@ export function renderDemoAppPage({
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="The safety.viz demo app: load a study, check how its columns map, and review it in ${escapeHtml(charts)}. ${libraries.length ? 'Your study’s data stays in your browser; nothing is fetched unless you start R.' : 'It runs in your browser; nothing is uploaded.'}">
+<meta name="description" content="The safety.viz demo app: load a study, check how its columns map, and review it in ${escapeHtml(charts)}. ${libraries.length ? 'Your study’s data stays in your browser, and the page fetches nothing from any other host unless you start R.' : 'It runs in your browser; nothing is uploaded.'}">
 <title>safety.viz demo</title>
 <link rel="icon" href="data:image/svg+xml,${icon}">
 ${preloads}

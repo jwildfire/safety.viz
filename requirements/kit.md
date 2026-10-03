@@ -14,6 +14,8 @@
 
 **The kit is public surface from v1.9.0.** A change to any member — its name, its signature, what it returns, or the elements and class names it produces — is a breaking change. Adding a member is not.
 
+**One member follows a chart's Experimental status.** `kmEstimate` is the Time-to-Event Explorer's estimator, and the Explorer ships Experimental until an external clinical review confirms its Kaplan–Meier implementation ([obot.roadmap#182](https://github.com/jwildfire/obot.roadmap/issues/182)). Its estimates, intervals and at-risk counts may change after that review without counting as a breaking change; its name and arguments are kept. The other thirty-five members are public surface in full ([#193](https://github.com/jwildfire/safety.viz/issues/193)).
+
 ## The shape, and why
 
 - **Flat.** Members sit directly on the kit under the names their modules already export (`SafetyViz.kit.renderShell`, not `SafetyViz.kit.shell.renderShell`). The names are unique across the eight modules, and a flat list keeps the layout of `src/` out of the contract: a function can move between files without its path on the kit changing.
@@ -74,3 +76,4 @@ Thirty-six, in the kit's own order.
 | KIT-DOC-007 | DOC | The kit page states that the kit is public surface and that a change to any member is a breaking change, from the release named in the typedef, and names what was left out. | safety.viz scripts/site-lib.mjs::renderKitPage | unit | tests/unit/kit/reference.test.js | ai-reviewed | OK for human review. | |
 | KIT-DOC-008 | DOC | The kit page is reachable from the architecture page and from every chart's API reference. | safety.viz scripts/site-lib.mjs | unit | tests/unit/kit/reference.test.js | ai-reviewed | OK for human review. | |
 | KIT-DOC-009 | DOC | On the built site the kit page opens from the architecture page and from a chart's API reference, lists every member the bundle carries, and fits a 390px phone with no sideways page scroll. | safety.viz scripts/site.mjs | browser | tests/e2e/site.spec.js | ai-reviewed | OK for human review. | |
+| KIT-DOC-010 | DOC | The kit page says `kmEstimate` follows the Time-to-Event Explorer's Experimental status: its estimates, intervals and at-risk counts may change after the external clinical review without counting as a breaking change, its row says so in a note styled as one, and the other members are public surface in full. | safety.viz scripts/site-lib.mjs::renderKitPage | unit | tests/unit/kit/reference.test.js | ai-reviewed | OK for human review. | RC1 review (#193), S1. |

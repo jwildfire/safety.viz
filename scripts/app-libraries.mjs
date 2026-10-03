@@ -53,6 +53,17 @@ export const FILE_NO_R =
   'The hosted demo app can start R in your browser.';
 
 /**
+ * What a library's statistics lines say when the library on the page has no
+ * connection factory where the page looks for one (#193): the page still
+ * mounts, and the charts say why they have no statistics.
+ * @param {Object} library An entry of APP_LIBRARIES.
+ * @returns {string} The sentence.
+ */
+export const noRFactory = (library) =>
+  `Statistics are unavailable: the ${library.name} on this page has no connection to R ` +
+  `(${library.name}’s ${library.r.factory} is missing).`;
+
+/**
  * A library's vendored bundle, as text.
  * @param {Object} library An entry of APP_LIBRARIES.
  * @returns {string} The script.
@@ -89,21 +100,30 @@ export function libraryManifest(library) {
  * connection that waits for the reader and the control that starts it;
  * `'unavailable'` for the single file, whose charts say why they have no
  * statistics.
+ *
+ * Nothing in the expression throws when a library is missing or is not what
+ * the page expects (#193): on a page that loads each library from a file
+ * (`fromFile`, the default), each entry names that file, so a library whose
+ * script did not load is named on the page with it; the single file, whose
+ * libraries are inline, names none. A
+ * library with no connection factory where the page looks for one is handed
+ * the sentence that says so rather than stopping the mount.
  * @param {Object[]} [libraries] Entries of APP_LIBRARIES.
- * @param {{r?: ?('request'|'unavailable'), statisticsUrl?: (library: Object) => string, createConnection?: (library: Object) => string}} [options]
+ * @param {{r?: ?('request'|'unavailable'), fromFile?: boolean, statisticsUrl?: (library: Object) => string, createConnection?: (library: Object) => string}} [options]
  * @returns {string} A JavaScript array expression.
  */
 export function librariesExpression(
   libraries = APP_LIBRARIES,
-  { r = null, statisticsUrl, createConnection } = {}
+  { r = null, fromFile = true, statisticsUrl, createConnection } = {}
 ) {
   const entries = libraries.map((library) => {
     const global = `window.${library.global}`;
     let statistics = '';
     if (r && library.r) {
+      // Read with optional chaining: a library without it reads as no factory.
       const factory = createConnection
         ? createConnection(library)
-        : `${global}.${library.r.factory}`;
+        : `${global}?.${library.r.factory.split('.').join('?.')}`;
       const options =
         `{ createConnection: ${factory}, browser: { sourceUrl: ${JSON.stringify(
           statisticsUrl ? statisticsUrl(library) : `./${library.r.statistics.file}`
@@ -111,12 +131,14 @@ export function librariesExpression(
         `host: ${JSON.stringify(library.r.host)} }`;
       statistics =
         r === 'request'
-          ? `, ...(${global} ? SafetyVizApp.rOnRequest(${options}) : {})`
+          ? `, ...(${global} ? (typeof (${factory}) === 'function' ? SafetyVizApp.rOnRequest(${options}) ` +
+            `: SafetyVizApp.rUnavailable(${JSON.stringify(noRFactory(library))})) : {})`
           : `, ...SafetyVizApp.rUnavailable(${JSON.stringify(FILE_NO_R)})`;
     }
     return (
-      `{ name: ${JSON.stringify(library.name)}, charts: ${global}, ` +
-      `manifest: ${global} && ${global}.portfolio${statistics} }`
+      `{ name: ${JSON.stringify(library.name)}, ` +
+      (fromFile ? `file: ${JSON.stringify(library.file)}, ` : '') +
+      `charts: ${global}, manifest: ${global} && ${global}.portfolio${statistics} }`
     );
   });
   return `[${entries.join(', ')}]`;

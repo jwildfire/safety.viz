@@ -109,8 +109,14 @@ function tagFor(status) {
  * charts, so the word is dropped from theirs; the full title is the view's
  * heading and the chip's tooltip. Another library's titles are its own.
  */
-const chipLabel = (entry) =>
-  libraryOf(entry) === OWN_LIBRARY ? entry.title.replace(/\bSafety\s+/, '') : entry.title;
+const chipLabel = (entry, module) =>
+  libraryOf(entry) === OWN_LIBRARY
+    ? entry.title.replace(/\bSafety\s+/, '')
+    : titleOf(entry, module);
+
+/** A chart's title, or its module name when its entry gives none it can use (#193). */
+const titleOf = (entry, module) =>
+  typeof entry.title === 'string' && entry.title ? entry.title : module;
 
 /** The hex beside a chart in the list: its domain's hue when ready, red when something is missing, hollow when it has nothing to read. */
 function hexFor(status) {
@@ -136,7 +142,7 @@ function sentenceFor(module, status, manifest) {
  * @param {Object} options Mount options.
  * @param {Object} options.charts The chart factories, keyed by export name (the safety.viz module collection).
  * @param {Object} options.manifest The portfolio manifest.
- * @param {Array<{name: string, charts: ?Object, manifest: Object, settings?: (Object|function(string): Object), action?: {state: function(): {label: string, done: boolean, note: string}, press: function(): void}}>} [options.libraries] Further chart libraries, each its name, its chart factories keyed by export name, and its chart list in the portfolio manifest's format (version 2). Their charts are listed after safety.viz's, under the groups their entries name; a chart whose library or factory is missing reads "not loaded". A library may also bring `settings` added to each of its charts' settings when the chart is drawn (an object, or a function of the module name), and one `action`, a control shown with its charts that redraws the open chart when pressed (#183).
+ * @param {Array<{name: string, charts: ?Object, manifest: ?Object, file?: string, settings?: (Object|function(string): Object), action?: {state: function(): {label: string, done: boolean, note: string}, press: function(): void}}>} [options.libraries] Further chart libraries, each its name, its chart factories keyed by export name, and its chart list in the portfolio manifest's format (version 2). Their charts are listed after safety.viz's, under the groups their entries name; a chart whose library or factory is missing, or whose entry cannot be read, reads "not loaded". A library handed in with no chart list the app can read is named on the page in every view, with `file`, the script the page loaded it from, when given (#193). A library may also bring `settings` added to each of its charts' settings when the chart is drawn (an object, or a function of the module name), and one `action`, a control shown with its charts that redraws the open chart when pressed (#183).
  * @param {{base: string, studies?: Object[]}} [options.demo] Where the demo studies are served from, and which (default: {@link DEMO_STUDIES}); when given, the first study is loaded on mount and the data view offers each by name.
  * @param {{docs?: string, domains?: string, download?: string, github?: string}} [options.links] Where the footer's links go; a link with no address is left out.
  * @param {string} [options.version] The safety.viz version, shown in the footer.
@@ -167,14 +173,17 @@ export function mountApp(
   const root = typeof target === 'string' ? document.querySelector(target) : target;
   // Every chart the page lists, safety.viz's and any other library's, in one
   // manifest; and for those that cannot be drawn, why.
-  const { manifest, problems, factoryOf } = mergeLibraries(ownManifest, charts, libraries);
+  const {
+    manifest,
+    problems,
+    unloaded,
+    libraries: extras,
+    factoryOf
+  } = mergeLibraries(ownManifest, charts, Array.isArray(libraries) ? libraries : []);
   // What a library brings besides its charts (#183): settings for each of its
-  // charts, and one control. Looked up by the library a chart's entry names.
-  const extras = new Map(
-    libraries
-      .filter((library) => library && library.name && library.name !== OWN_LIBRARY)
-      .map((library) => [library.name, library])
-  );
+  // charts, and one control. Looked up by the library a chart's entry names,
+  // among the libraries the merge used, so a second library of the same name
+  // brings nothing, as it brings no charts (#193).
   const extraSettings = (module, entry) => {
     const library = extras.get(libraryOf(entry));
     if (!library || !library.settings) return {};
@@ -252,7 +261,16 @@ export function mountApp(
   const title = el('h1', 'sva-title');
   head.append(title, count);
   const content = el('div', 'sva-content');
-  main.append(head, content);
+  main.append(head);
+  // A library the page asked for whose charts are not listed says so in every
+  // view, with why: it is not left out without a word (#193).
+  if (unloaded.length) {
+    const notes = el('ul', 'sva-notes sva-library-notes');
+    notes.setAttribute('role', 'status');
+    for (const sentence of unloaded) notes.append(el('li', 'sva-note', sentence));
+    main.append(notes);
+  }
+  main.append(content);
 
   // The footer: what the app does with your data, and the links.
   const footer = el('footer', 'sva-footer');
@@ -354,10 +372,10 @@ export function mountApp(
         section.append(
           navItem(
             module,
-            chipLabel(entry),
+            chipLabel(entry, module),
             tagFor(current[module]),
             hexFor(current[module]),
-            entry.title
+            titleOf(entry, module)
           )
         );
       }
@@ -377,13 +395,15 @@ export function mountApp(
    * After a library's control was pressed, and again when what it started has
    * settled: the header says what the control now says, and the open chart, if
    * it is one of that library's, is handed the library's settings as they now
-   * are — not drawn again, so it keeps what the reader chose in it.
+   * are — not drawn again, so it keeps what the reader chose in it. Handed
+   * them again once the start has settled, it no longer carries what was true
+   * only while it ran, such as a note that R is starting (#193).
    */
-  function afterAction(name, { handOver }) {
+  function afterAction(name) {
     const current = status();
     renderHead(current);
     renderNav(current);
-    if (!handOver || state.selected === 'data') return;
+    if (state.selected === 'data') return;
     const entry = manifest.modules[state.selected];
     if (!entry || libraryOf(entry) !== name || !instance) return;
     if (typeof instance.setSettings !== 'function') {
@@ -409,10 +429,15 @@ export function mountApp(
     button.disabled = Boolean(done);
     if (note) button.title = note;
     button.onclick = () => {
-      const settled = action.press();
-      afterAction(name, { handOver: true });
+      let settled;
+      try {
+        settled = action.press();
+      } catch (error) {
+        console.warn('safety.viz app: a library’s control failed when pressed.', error);
+      }
+      afterAction(name);
       if (settled && typeof settled.then === 'function') {
-        const update = () => afterAction(name, { handOver: false });
+        const update = () => afterAction(name);
         settled.then(update, update);
       }
     };
@@ -441,7 +466,7 @@ export function mountApp(
 
     const module = state.selected;
     const entry = manifest.modules[module];
-    title.textContent = entry.title;
+    title.textContent = titleOf(entry, module);
 
     if (module === 'participant-profile' && libraryOf(entry) === OWN_LIBRARY) {
       const hosts = Object.entries(manifest.modules)

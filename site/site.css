@@ -95,6 +95,15 @@ h1 {
 }
 
 /* "Experimental" pill next to an exploratory renderer's page title. */
+/* A kit member whose promise is narrower than the rest's (#193): the note
+   under its description, with the Experimental badge in it. */
+.kit-status {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
 .site-badge {
   display: inline-block;
   vertical-align: middle;

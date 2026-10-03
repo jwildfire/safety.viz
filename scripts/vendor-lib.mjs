@@ -182,3 +182,69 @@ export async function verifyAgainstSource(directory, read) {
   if (!(record.files || []).length) problems.push(`${RECORD_FILE} records no files.`);
   return problems;
 }
+
+/**
+ * The third check, of the record's word that its commit is on the source's
+ * `dev` branch (#193): a record that says `merged_to_dev: true` is asked about,
+ * and fails when `dev` neither is that commit nor has it in its history. A
+ * record that says it was copied from elsewhere (`merged_to_dev: false`, with
+ * its note saying why) is not asked about; one that says neither fails.
+ * @param {Object} record A vendor record.
+ * @param {(commit: string) => Promise<string>} compare How `dev` stands to the commit, as GitHub's compare API says it: `ahead` or `identical` when the commit is on `dev`, `behind` or `diverged` when it is not.
+ * @returns {Promise<string[]>} The problems, each a sentence.
+ */
+export async function verifyOnDev(record, compare) {
+  const short = String(record.commit).slice(0, 7);
+  if (record.merged_to_dev === false) return [];
+  if (record.merged_to_dev !== true) {
+    return [`${RECORD_FILE} does not say whether ${short} is on dev.`];
+  }
+  const status = await compare(record.commit);
+  if (status === 'ahead' || status === 'identical') return [];
+  return [
+    `${RECORD_FILE} says ${short} is on ${record.repository}’s dev branch, but it is not (dev is ${status}).`
+  ];
+}
+
+/**
+ * How the source's `dev` branch stands to a commit, from GitHub's compare API
+ * (#193): `ahead` or `identical` when the commit is on `dev`. With a token it
+ * asks with it, and asks again without it when GitHub refuses the token. When
+ * it cannot learn the answer it throws, saying why — the rate limit, the
+ * network, or an answer with no status — so the check fails rather than
+ * passing on nothing.
+ * @param {{slug: string, commit: string, fetch?: Function, token?: string}} options The repository as owner/name, the commit, the fetch to use, and a token.
+ * @returns {Promise<string>} The comparison's status.
+ */
+export async function compareWithDev({ slug, commit, fetch = globalThis.fetch, token }) {
+  const url = `https://api.github.com/repos/${slug}/compare/${commit}...dev`;
+  const unknown = 'so whether the commit is on dev is unknown';
+  const ask = async (withToken) => {
+    const headers = { accept: 'application/vnd.github+json' };
+    if (withToken) headers.authorization = `Bearer ${withToken}`;
+    try {
+      return await fetch(url, { headers });
+    } catch (error) {
+      throw new Error(`${url} could not be reached (${error && error.message}), ${unknown}.`);
+    }
+  };
+  let response = await ask(token);
+  if (response.status === 401 && token) response = await ask(null);
+  if (!response.ok) {
+    const header = (name) => (response.headers ? response.headers.get(name) : null);
+    if (header('x-ratelimit-remaining') === '0') {
+      const reset = Number(header('x-ratelimit-reset'));
+      const until =
+        Number.isFinite(reset) && reset > 0 ? ` until ${new Date(reset * 1000).toISOString()}` : '';
+      throw new Error(
+        `${url} answered ${response.status}: GitHub's API rate limit is used up${until}, ${unknown}. Set GITHUB_TOKEN to ask with a token.`
+      );
+    }
+    throw new Error(`${url} answered ${response.status}, ${unknown}.`);
+  }
+  const body = await response.json().catch(() => null);
+  if (!body || typeof body.status !== 'string' || !body.status) {
+    throw new Error(`${url} answered with no comparison status, ${unknown}.`);
+  }
+  return body.status;
+}

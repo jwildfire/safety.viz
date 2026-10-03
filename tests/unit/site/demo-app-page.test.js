@@ -186,7 +186,7 @@ describe('renderDemoAppPage', () => {
     expect(app).toBeGreaterThan(-1);
     expect(library).toBeGreaterThan(app);
     expect(page).toContain(
-      'libraries: [{ name: "bio.viz", charts: window.BioViz, manifest: window.BioViz && window.BioViz.portfolio }]'
+      'libraries: [{ name: "bio.viz", file: "bio.viz.js", charts: window.BioViz, manifest: window.BioViz && window.BioViz.portfolio }]'
     );
     expect(page).toMatch(
       /<meta name="description" content="[^"]*thirteen clinical safety charts and four biomarker charts[^"]*">/
