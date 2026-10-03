@@ -1,16 +1,13 @@
 {
   "module": "hep-explorer",
-  "generatedAt": "2026-10-03T00:45:36.139Z",
+  "generatedAt": "2026-10-03T01:26:14.540Z",
   "environment": {
-    "os": "linux 6.17.0-1022-azure",
-    "node": "v22.23.3",
+    "os": "darwin 23.6.0",
+    "node": "v24.14.0",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": {
-    "id": "37083354159",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37083354159"
-  },
+  "run": null,
   "records": [
     {
       "test": "a chart link navigates straight to that renderer demo (#71)",
@@ -58,6 +55,38 @@
       "status": "pass",
       "requirementIds": ["APP-FILE-007"],
       "issueRefs": [152],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LIB-015: on the demo study the library’s charts have their own tab with a status each, after the three domains, and the count includes them (#181)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-015"],
+      "issueRefs": [181],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LIB-016: its chart is mounted with its named tables built from the loaded files, an unmapped optional setting left out, and removed when a safety chart is opened (#181)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-016"],
+      "issueRefs": [181],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LIB-017: with the labs file alone its chart still draws, handed only the table it needs (#181)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-017"],
+      "issueRefs": [181],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LIB-018: a chart whose factory the library does not have reads \"not loaded\" in words, and nothing throws (#181)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-018"],
+      "issueRefs": [181],
       "screenshots": []
     },
     {
@@ -2575,6 +2604,62 @@
       "status": "pass",
       "requirementIds": ["TTE-FILT-004"],
       "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "a second library’s chart: settings, data and status from its entry APP-LIB-005: its settings are its entry’s column settings under the mapping and nothing else: no recipe, even under a safety chart’s name (#181)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-005"],
+      "issueRefs": [181],
+      "screenshots": []
+    },
+    {
+      "test": "a second library’s chart: settings, data and status from its entry APP-LIB-006: under `unmappedSettings: \"omit\"` an unmapped setting is left out, not passed as null; without it, as for safety.viz’s charts, it is null (#181)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-006"],
+      "issueRefs": [181],
+      "screenshots": []
+    },
+    {
+      "test": "a second library’s chart: settings, data and status from its entry APP-LIB-007: its data is an object of its named tables, each the loaded file’s rows untouched; an optional table with no file is left out (#181)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-007"],
+      "issueRefs": [181],
+      "screenshots": []
+    },
+    {
+      "test": "a second library’s chart: settings, data and status from its entry APP-LIB-008: its status is worked out from the entry alone: ready on the demo study, no file without its required table, ready without its optional one, missing a required column by name (#181)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-008"],
+      "issueRefs": [181],
+      "screenshots": []
+    },
+    {
+      "test": "a second library’s chart: settings, data and status from its entry APP-LIB-009: a chart whose factory is missing, or whose library is not on the page, reads \"not loaded\" in words, and nothing throws (#181)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-009"],
+      "issueRefs": [181],
+      "screenshots": []
+    },
+    {
+      "test": "a second library’s chart: settings, data and status from its entry APP-LIB-010: the counts include the second library’s charts, and the mapping table counts its chart among those that need a column (#181)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-010"],
+      "issueRefs": [181],
+      "screenshots": []
+    },
+    {
+      "test": "a second library’s chart: settings, data and status from its entry APP-LIB-011: safety.viz’s thirteen charts get the same settings, data and status with a second library handed in as without one (#181)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-011"],
+      "issueRefs": [181],
       "screenshots": []
     },
     {
@@ -6202,6 +6287,22 @@
       "screenshots": ["HEP-CTRL-017-log-base-doublings.png"]
     },
     {
+      "test": "manifest format version 2 APP-LIB-001: an entry may name its library, its group, the named tables its init takes and that unmapped settings are left out; a library’s manifest may leave out the domains (#181)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-001"],
+      "issueRefs": [181],
+      "screenshots": []
+    },
+    {
+      "test": "manifest format version 2 APP-LIB-002: the format stays strict: an unknown field, a group with no label, a table outside the standard domains, an unknown rule for unmapped settings, a version-1 document using a version-2 field and an unknown version are all refused (#181)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-002"],
+      "issueRefs": [181],
+      "screenshots": []
+    },
+    {
       "test": "manual axis limits on the eDISH scatter (HEP-AXIS-001..004, #54) derives both bounds when neither limit is overridden",
       "suite": "unit",
       "status": "pass",
@@ -6530,6 +6631,30 @@
       "screenshots": []
     },
     {
+      "test": "merging a second library APP-LIB-003: a library’s charts follow safety.viz’s, each under its own library, and safety.viz’s thirteen entries are carried unchanged (#181)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-003"],
+      "issueRefs": [181],
+      "screenshots": []
+    },
+    {
+      "test": "merging a second library APP-LIB-003: an entry whose name is already listed is left out with a warning, and an entry that names no library takes the one it was handed in with (#181)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-003"],
+      "issueRefs": [181],
+      "screenshots": []
+    },
+    {
+      "test": "merging a second library APP-LIB-004: the tabs list safety.viz’s domains first, as today, then each declared group by its order, under its own label and hue (#181)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-004"],
+      "issueRefs": [181],
+      "screenshots": []
+    },
+    {
       "test": "portfolio manifest PF-MAN-001: validates against its JSON Schema (#138)",
       "suite": "unit",
       "status": "pass",
@@ -6607,6 +6732,14 @@
       "status": "pass",
       "requirementIds": ["PF-MAN-010"],
       "issueRefs": [138],
+      "screenshots": []
+    },
+    {
+      "test": "portfolio manifest PF-MAN-013: the manifest is written in format version 2, and its thirteen entries use none of what version 2 added, so each means what it meant in version 1 (#181)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PF-MAN-013"],
+      "issueRefs": [181],
       "screenshots": []
     },
     {
@@ -7722,6 +7855,14 @@
       "screenshots": []
     },
     {
+      "test": "site generator: domains page (#139) APP-LIB-014: the page says the manifest is format version 2, and describes each field version 2 adds (#181)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-014"],
+      "issueRefs": [139, 181],
+      "screenshots": []
+    },
+    {
       "test": "site generator: domains page (#139) PF-SITE-001: the page lists every module in the manifest (#139)",
       "suite": "unit",
       "status": "pass",
@@ -8183,6 +8324,22 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "the page with a second library APP-LIB-012: the library’s charts have a tab of their own with its count and hue, and the overall count includes them (#181)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-012"],
+      "issueRefs": [181],
+      "screenshots": []
+    },
+    {
+      "test": "the page with a second library APP-LIB-013: opening its chart mounts it with its tables and settings; opening a safety chart destroys it; the missing one reads \"not loaded\" and throws nothing (#181)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-013"],
+      "issueRefs": [181],
       "screenshots": []
     },
     {
