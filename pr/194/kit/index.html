@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="The safety.viz kit: the shared sidebar, filters, record listing, participant rail and Chart.js constructor the bundle exports for a second chart library on the same page." />
+    <title>Kit API reference · safety.viz</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23271810'/%3E%3Crect x='2.5' y='8' width='3' height='5.5' fill='%23f97316'/%3E%3Crect x='6.5' y='3.5' width='3' height='10' fill='%23fb923c'/%3E%3Crect x='10.5' y='6' width='3' height='7.5' fill='%23f97316'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="../site.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="site-name" href="../index.html">
+        safety.viz
+        <span class="site-version">v1.9.0</span>
+      </a>
+      <nav class="site-nav" aria-label="Primary">
+        <a class="nav-app" href="../demo/index.html">Demo app</a>
+        <div class="nav-group"><a href="../index.html">Gallery</a><button type="button" class="nav-disclosure" aria-expanded="false" aria-controls="gallery-menu" aria-label="Show charts"><span class="nav-caret" aria-hidden="true"></span></button><ul id="gallery-menu" class="nav-menu"><li><a href="../histogram/index.html">Safety Histogram</a></li><li><a href="../outlier-explorer/index.html">Safety Outlier Explorer</a></li><li><a href="../results-over-time/index.html">Safety Results Over Time</a></li><li><a href="../shift-plot/index.html">Safety Shift Plot</a></li><li><a href="../delta-delta/index.html">Safety Delta-Delta</a></li><li><a href="../hep-explorer/index.html">Hepatic Safety Explorer</a></li><li><a href="../hep-waterfall/index.html">Hepatic ALT Waterfall</a></li><li><a href="../participant-profile/index.html">Participant Profile</a></li><li><a href="../nep-explorer/index.html">Nephrotoxicity Explorer</a></li><li><a href="../time-to-event/index.html">Time-to-Event Explorer</a></li><li><a href="../ae-explorer/index.html">Adverse Event Explorer</a></li><li><a href="../ae-timelines/index.html">Adverse Event Timelines</a></li><li><a href="../qt-explorer/index.html">QT Safety Explorer</a></li><li><a href="../patient-journey-explorer/index.html">Patient Journey Explorer</a></li></ul></div>
+        <a href="../domains/index.html">Domains</a>
+        <a href="../architecture.html">Architecture</a>
+        <a href="../about.html">About</a>
+        <a
+          href="https://github.com/jwildfire/safety.viz"
+          aria-label="GitHub"
+          title="GitHub"
+          style="display: inline-flex; align-items: center"
+          ><svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor" aria-hidden="true">
+            <title>GitHub</title>
+            <path
+              d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"
+            /></svg
+        ></a>
+        <a
+          href="https://jwildfire.github.io/obot.roadmap/"
+          aria-label="obot roadmap"
+          title="obot roadmap"
+          style="font-size: 1.05rem; line-height: 1; display: inline-flex; align-items: center"
+          ><span aria-hidden="true">🍊😺</span></a
+        >
+      </nav>
+    </header>
+    <main class="site-main"><div class="kit-page">
+<h1>Kit API reference</h1>
+<p class="tagline">The parts every safety.viz chart is built from, exported for a second chart library on the same page. Generated from <code>src/kit.js</code> — <code>npm run docs:api</code> fails on an undocumented member.</p>
+<dl class="facts"><div class="fact"><dt>Members</dt><dd>36<span class="sub">from 8 shared modules and Chart.js</span></dd></div><div class="fact"><dt>Reached as</dt><dd><code>SafetyViz.kit</code><span class="sub">or the <code>kit</code> export of the ES module bundle</span></dd></div><div class="fact"><dt>Draws with</dt><dd>Chart.js 4.5.1<span class="sub">the copy every chart in the bundle uses</span></dd></div><div class="fact"><dt>Public surface</dt><dd>from v1.9.0<span class="sub">a change to a member is a breaking change</span></dd></div></dl>
+<div class="api-layout"><nav class="api-toc" aria-label="On this page"><h2>On this page</h2><ul><li><a href="#overview">Overview</a></li><li><a href="#loading">Loading it</a></li><li><a href="#contract">What is promised</a></li><li><a href="#members">Members</a><ul><li><a href="#chart">Chart.js</a></li><li><a href="#shell">Shell and controls</a></li><li><a href="#filters">Filters</a></li><li><a href="#axis-limits">Axis limits</a></li><li><a href="#listing">Record listing</a></li><li><a href="#participant-rail">Participant rail</a></li><li><a href="#box-drawing">Box drawing</a></li><li><a href="#measure-list">Measure list</a></li><li><a href="#kaplan-meier">Kaplan–Meier estimator</a></li></ul></li><li><a href="#not-in-the-kit">Not in the kit</a></li></ul></nav><div class="api-body"><section id="overview"><h2>Overview</h2><p>The shared parts every safety.viz chart is built from, exported so a second chart library on the same page builds from them instead of copying them. Each member is the same function the charts themselves call. The object is flat and frozen.</p></section>
+<h2 id="loading">Loading it beside another library</h2>
+<p>The kit is part of the safety.viz bundle, so there is nothing else to load. Put safety.viz first, then the library that builds on it:</p>
+<pre><code>&lt;script src=&quot;dist/safety.viz-1.9.0/safety.viz.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;your-library.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+  const { renderShell, renderFilterControl, Chart } = SafetyViz.kit;
+&lt;/script&gt;</code></pre>
+<p>Or, from the ES module bundle:</p>
+<pre><code>import { kit } from &#39;./dist/safety.viz-1.9.0/safety.viz.esm.js&#39;;
+const { renderShell, renderFilterControl, Chart } = kit;</code></pre>
+<ul><li>One file is needed: <code>dist/safety.viz-1.9.0/safety.viz.js</code> for a script tag, or <code>safety.viz.esm.js</code> from the same folder for an import. The <code>.map</code> file beside each is its source map and is optional.</li><li>Use one bundle on a page, not both. The script-tag bundle and the ES module bundle are separate copies, each with its own Chart.js.</li><li>Take everything from that one copy. A library that brings its own Chart.js, or its own copy of these functions, draws charts and controls that drift from safety.viz&#39;s.</li><li><code>kit.Chart</code> is Chart.js 4.5.1 with what the charts registered on it: the <code>bar</code>, <code>line</code>, <code>scatter</code> controllers, the <code>bar</code>, <code>line</code>, <code>point</code> elements, the <code>category</code>, <code>linear</code>, <code>logarithmic</code> scales, and the <code>legend</code>, <code>title</code>, <code>tooltip</code> plugins. A chart of one of those types needs nothing more; anything else is registered on the same constructor with <code>kit.Chart.register()</code>.</li><li>A working page built this way is the fixture the browser tests drive, <a href="https://github.com/jwildfire/safety.viz/blob/HEAD/tests/e2e/fixtures/kit.html">tests/e2e/fixtures/kit.html</a>: a sidebar, a filter, a bar chart, a record listing and the participant rail, from the kit alone.</li></ul>
+<h2 id="contract">What is promised</h2>
+<ul><li>The kit is public surface from v1.9.0: a change to any member, whether its name, its signature, what it returns or the elements and class names it produces, is a breaking change, and the release notes say so.</li><li>Every member is the function the charts in the bundle call, not a copy or a wrapper, so a page built from the kit behaves as the charts do. Unit tests hold each member to its module&#39;s export, and browser tests build a page from the committed bundle and the kit alone.</li><li>The kit is flat and frozen: members sit directly on it under the names below, and a library on the page cannot replace, add or remove one.</li><li>Adding a member is not a breaking change.</li><li><code>kmEstimate</code> follows the Time-to-Event Explorer&#39;s Experimental status: until the external clinical review of its Kaplan–Meier implementation lands (<a href="https://github.com/jwildfire/obot.roadmap/issues/182">obot.roadmap#182</a>), its standard errors and pointwise 95% intervals may change after that review without counting as a breaking change. Its name and its arguments are kept.</li><li>The other 35 members are public surface in full.</li></ul>
+<h2 id="members">Members</h2>
+<p>36 members, grouped by where they come from. Each signature is read from the function itself.</p>
+<section class="kit-group" data-source="chart.js" id="chart"><h3>Chart.js</h3><p class="section-summary">From <a href="https://www.chartjs.org/">Chart.js</a> 4.5.1. The constructor the bundle contains, so a second library draws with the same copy.</p><div class="table-scroll"><table class="api"><thead><tr><th>Member</th><th>What it does</th></tr></thead><tbody><tr id="Chart"><td><code>new Chart(item, userConfig)</code></td><td>The Chart.js constructor this bundle contains: the one every safety.viz chart draws with, carrying the controllers, elements, scales and plugins the charts registered on it. Draw with it instead of loading a second Chart.js.</td></tr></tbody></table></div></section>
+<section class="kit-group" data-source="src/shell.js" id="shell"><h3>Shell and controls</h3><p class="section-summary">From <a href="https://github.com/jwildfire/safety.viz/blob/HEAD/src/shell.js"><code>src/shell.js</code></a>. The collapsible control sidebar, the slots a chart draws into, and the control builders.</p><div class="table-scroll"><table class="api"><thead><tr><th>Member</th><th>What it does</th></tr></thead><tbody><tr id="createElement"><td><code>createElement(tag, className, text)</code></td><td>Create a detached element with an optional class and text content.</td></tr><tr id="option"><td><code>option(select, value, label, selected)</code></td><td>Append an option to a select.</td></tr><tr id="multiSelect"><td><code>multiSelect({ values, selected, onChange })</code></td><td>Build the multiselect control: a collapsible checkbox list with an All row and a live summary. The selection is <code>null</code> for everything, or an array of the chosen values.</td></tr><tr id="applyShellStyles"><td><code>applyShellStyles()</code></td><td>Inject the shared <code>sv-</code> stylesheet once per document. <code>renderShell</code> calls it, so a page that builds a shell need not.</td></tr><tr id="renderShell"><td><code>renderShell(element, { moduleClass = &#39;&#39;, onToggle } = {})</code></td><td>Empty a container and build the shared layout into it: the collapsible control sidebar, the main column of notes, chart canvas, footnote, small multiples and listing, and the participant rail. Returns those slots by name.</td></tr><tr id="controlBuilders"><td><code>controlBuilders(controls)</code></td><td>The control builders bound to a shell&#39;s controls container: <code>addSection</code>, <code>addRow</code>, <code>addControl</code> and <code>addReset</code>.</td></tr><tr id="renderViewSelector"><td><code>renderViewSelector(addSection, { options, active, onChange, title = &#39;View&#39; })</code></td><td>Render a view selector into its own sidebar section: one button per view, the active one marked.</td></tr></tbody></table></div></section>
+<section class="kit-group" data-source="src/filters.js" id="filters"><h3>Filters</h3><p class="section-summary">From <a href="https://github.com/jwildfire/safety.viz/blob/HEAD/src/filters.js"><code>src/filters.js</code></a>. The filter contract: what a filter spec means, its opening state, its control and its test.</p><div class="table-scroll"><table class="api"><thead><tr><th>Member</th><th>What it does</th></tr></thead><tbody><tr id="ALL_VALUE"><td><code>ALL_VALUE = &quot;__all__&quot;</code></td><td>The option value that stands for no restriction in a single-value filter.</td></tr><tr id="normalizeFilterSpec"><td><code>normalizeFilterSpec(value, fallbackLabel)</code></td><td>Normalize a column name or a filter spec to the filter contract: <code>value_col</code>, <code>label</code>, <code>start</code>, <code>all</code> and <code>multiple</code>.</td></tr><tr id="initFilterState"><td><code>initFilterState(specs)</code></td><td>The opening filter state for a list of normalized specs: each spec&#39;s start value, or <code>null</code> for no restriction.</td></tr><tr id="reconcileFilters"><td><code>reconcileFilters(state, specs, valuesOf)</code></td><td>Reconcile a filter state with the filters about to be drawn, so the selection each control shows is the selection the chart filters by: a filter with no control leaves no restriction behind, a new filter opens on its spec&#39;s <code>start</code>, a selection the data lacks falls back to All with a console warning, and with <code>all: false</code> the first value is selected. Returns the spec, values and selection for each control to draw. It is on the kit because every chart now calls it as it builds its filter controls: it joined the filter contract in the v1.8.0 review (safety.viz #166 and #171), after the kit&#39;s member list was first written.</td></tr><tr id="filterMatches"><td><code>filterMatches(rowValue, selection)</code></td><td>Whether one row&#39;s value passes one filter&#39;s selection: <code>null</code> passes everything, an array is membership, anything else is equality.</td></tr><tr id="renderFilterControl"><td><code>renderFilterControl({ spec, values, selected, onChange })</code></td><td>Build one filter control from its spec: a select with an optional All option, or the multiselect when the spec says <code>multiple</code>.</td></tr></tbody></table></div></section>
+<section class="kit-group" data-source="src/axis-limits.js" id="axis-limits"><h3>Axis limits</h3><p class="section-summary">From <a href="https://github.com/jwildfire/safety.viz/blob/HEAD/src/axis-limits.js"><code>src/axis-limits.js</code></a>. The Lower and Upper inputs that show the limit in force and keep only what was edited.</p><div class="table-scroll"><table class="api"><thead><tr><th>Member</th><th>What it does</th></tr></thead><tbody><tr id="limitDigits"><td><code>limitDigits(domain)</code></td><td>Decimal places for a displayed axis limit: three significant figures of the axis range.</td></tr><tr id="formatLimit"><td><code>formatLimit(value, digits)</code></td><td>Format a limit for its number input, dropping trailing zeros; blank when the value is not finite.</td></tr><tr id="syncAxisLimits"><td><code>syncAxisLimits(state, domain, inputs = {})</code></td><td>Record the domain a render resolved on <code>state.axisDomain</code> and write it into the Lower and Upper inputs.</td></tr><tr id="seedLimitInput"><td><code>seedLimitInput(state, key)</code></td><td>The value a limit input carries when the controls are rebuilt: the user&#39;s override, or else the domain last in force.</td></tr><tr id="applyLimitEdit"><td><code>applyLimitEdit(state, key, raw)</code></td><td>Apply an edited limit to <code>state.lower</code> or <code>state.upper</code>: an empty entry returns that side to automatic, and a pair that crosses is swapped.</td></tr><tr id="clearAxisLimits"><td><code>clearAxisLimits(state)</code></td><td>Drop both overrides and the recorded domain, so the next render derives the limits from the data.</td></tr></tbody></table></div></section>
+<section class="kit-group" data-source="src/histogram/listing.js" id="listing"><h3>Record listing</h3><p class="section-summary">From <a href="https://github.com/jwildfire/safety.viz/blob/HEAD/src/histogram/listing.js"><code>src/histogram/listing.js</code></a>. The linked listing, with its search, sort, paging and CSV functions.</p><div class="table-scroll"><table class="api"><thead><tr><th>Member</th><th>What it does</th></tr></thead><tbody><tr id="renderListing"><td><code>renderListing(instance)</code></td><td>Draw the record listing into <code>instance.listingWrap</code>, with its search box, paging buttons, sortable headers and CSV export. It reads the columns from <code>instance.settings.details</code>, the page size from <code>settings.page_size</code>, and the rows and view state from <code>instance.currentTableData</code>, <code>listingSearch</code>, <code>listingSort</code> and <code>page</code>. When <code>instance.onListingRowClick</code> is a function the rows are clickable and keyboard-focusable, and rows whose <code>settings.id_col</code> value equals <code>instance.listingSelectedId</code> are marked.</td></tr><tr id="searchRows"><td><code>searchRows(rows, cols, query)</code></td><td>The rows in which any listed column contains the query, ignoring case.</td></tr><tr id="sortRows"><td><code>sortRows(rows, sort)</code></td><td>A sorted copy of the rows by one column, ascending or descending: numeric when both values are numbers, otherwise as text.</td></tr><tr id="paginate"><td><code>paginate(rows, page, pageSize)</code></td><td>One page of rows, with the number of pages and the page number held within it.</td></tr><tr id="buildCsv"><td><code>buildCsv(rows, cols)</code></td><td>The listing as CSV text: a header of column labels, then one line of quoted values per row.</td></tr><tr id="exportCsv"><td><code>exportCsv(rows, cols)</code></td><td>Download the listing as a CSV file. The file is named <code>safety-histogram-listing.csv</code>.</td></tr></tbody></table></div></section>
+<section class="kit-group" data-source="src/profile-host.js" id="participant-rail"><h3>Participant rail</h3><p class="section-summary">From <a href="https://github.com/jwildfire/safety.viz/blob/HEAD/src/profile-host.js"><code>src/profile-host.js</code></a>. What a host chart calls to open the participant profile beside itself.</p><div class="table-scroll"><table class="api"><thead><tr><th>Member</th><th>What it does</th></tr></thead><tbody><tr id="buildProfileRows"><td><code>buildProfileRows(rawData, mapping)</code></td><td>Build the rows the participant rail reads, from a host&#39;s raw lab records and its column mapping, once per data load. Rows with no positive upper limit of normal are dropped.</td></tr><tr id="mountProfileRail"><td><code>mountProfileRail(host, settingsFn, { target = null } = {})</code></td><td>Mount the participant rail into <code>host.railWrap</code> and subscribe it to the <code>participantsSelected</code> event on <code>host.root</code>, or on <code>options.target</code>. The event&#39;s <code>detail.data</code> is the list of participant ids, and an empty list clears the rail. It does nothing unless <code>host.settings.profile</code> is set, and reads the rows from <code>host.profileRows</code>.</td></tr><tr id="unmountProfileRail"><td><code>unmountProfileRail(host)</code></td><td>Unsubscribe the rail, destroy its charts and empty its slot.</td></tr><tr id="syncProfileRail"><td><code>syncProfileRail(host, settingsFn)</code></td><td>Reconcile the rail with the host&#39;s current settings: mount or unmount it when <code>profile</code> changes, otherwise hand it the current rows and settings.</td></tr><tr id="resetProfileRail"><td><code>resetProfileRail(host)</code></td><td>Empty the rail when the host resets its own selection.</td></tr></tbody></table></div></section>
+<section class="kit-group" data-source="src/box-whisker.js" id="box-drawing"><h3>Box drawing</h3><p class="section-summary">From <a href="https://github.com/jwildfire/safety.viz/blob/HEAD/src/box-whisker.js"><code>src/box-whisker.js</code></a>. Box-and-whisker marks on a Chart.js canvas, and the plugin that draws them.</p><div class="table-scroll"><table class="api"><thead><tr><th>Member</th><th>What it does</th></tr></thead><tbody><tr id="drawBoxWhisker"><td><code>drawBoxWhisker(ctx, { scales, chartArea }, specs)</code></td><td>Draw box-and-whisker marks on a canvas through a chart&#39;s x and y scales: for each spec a box from the first to the third quartile, whiskers to the 5th and 95th percentiles, a median line and a mean marker.</td></tr><tr id="boxWhiskerPlugin"><td><code>boxWhiskerPlugin(idPrefix, getSpecs)</code></td><td>A Chart.js plugin that draws the box-and-whisker marks for whatever specs its getter returns at draw time.</td></tr></tbody></table></div></section>
+<section class="kit-group" data-source="src/measure-list.js" id="measure-list"><h3>Measure list</h3><p class="section-summary">From <a href="https://github.com/jwildfire/safety.viz/blob/HEAD/src/measure-list.js"><code>src/measure-list.js</code></a>. Which measures a Measure control offers, and in what order.</p><div class="table-scroll"><table class="api"><thead><tr><th>Member</th><th>What it does</th></tr></thead><tbody><tr id="resolveMeasureList"><td><code>resolveMeasureList(present, configured, { warn = true } = {})</code></td><td>The labels a Measure control offers: the configured measures in their order, or every measure in the data, sorted, when none is configured or none is found.</td></tr><tr id="presentMeasures"><td><code>presentMeasures(rows, settings, label)</code></td><td>The distinct measures in cleaned rows, in first-seen order, as the label and raw name that <code>resolveMeasureList</code> takes.</td></tr></tbody></table></div></section>
+<section class="kit-group" data-source="src/time-to-event/km.js" id="kaplan-meier"><h3>Kaplan–Meier estimator</h3><p class="section-summary">From <a href="https://github.com/jwildfire/safety.viz/blob/HEAD/src/time-to-event/km.js"><code>src/time-to-event/km.js</code></a>. The estimator behind the Time-to-Event Explorer.</p><div class="table-scroll"><table class="api"><thead><tr><th>Member</th><th>What it does</th></tr></thead><tbody><tr id="kmEstimate"><td><code>kmEstimate(observations)</code></td><td>The Kaplan–Meier estimate for one group, from one observation per participant of a time, whether it ends in the event, and an id: the steps with their at-risk and event counts, standard errors and pointwise 95% intervals, the censoring times, and a reader for the at-risk table. <span class="kit-status">Follows the Time-to-Event Explorer&#39;s <span class="site-badge" title="Still being worked on, and fine to use: its behaviour and settings may change.">Experimental</span> status: see <a href="#contract">what is promised</a>.</span></td></tr></tbody></table></div></section>
+<h2 id="not-in-the-kit">Not in the kit</h2>
+<ul><li>The chart factories. <code>SafetyViz.histogram()</code> and the rest are the library&#39;s own public surface, documented on each chart&#39;s API reference; the kit is what they are built from.</li><li><code>prototypeBanner</code> and <code>experimentalBanner</code>, which <code>src/shell.js</code> also exports: their wording is safety.viz&#39;s own release status.</li><li><code>hexToRgba</code>, which <code>src/box-whisker.js</code> also exports: a colour helper private to the box drawing.</li><li>Everything else under <code>src/</code>: each chart&#39;s data preparation, scales and plugins stay internal and can change without notice.</li></ul></div></div>
+</div></main>
+    <footer class="site-footer">
+      <p>
+        safety.viz v1.9.0 — clinical safety graphics on one modern charting stack, migrated
+        from the <a href="https://github.com/SafetyGraphics">safetyGraphics</a> ecosystem originally
+        built by <a href="https://github.com/RhoInc">Rho, Inc.</a> (<a href="../about.html"
+          >credits</a
+        >).
+      </p>
+      <p>
+        Built in the open for the R/Pharma 2026 keynote — follow the
+        <a href="https://jwildfire.github.io/obot.roadmap/">obot roadmap</a> ·
+        <a href="https://github.com/jwildfire/safety.viz">source on GitHub</a> ·
+        <a href="https://github.com/jwildfire/safety.viz/releases">releases</a>.
+      </p>
+    </footer>
+    <script>
+      // Mark the nav link whose resolved URL is this page; works at any mount
+      // depth (site root, /dev/, /pr/N/). Renderer sub-pages match a chart link
+      // inside the Gallery dropdown, highlighting the current chart.
+      (function () {
+        var here = location.pathname.replace(/\/$/, '/index.html');
+        var links = document.querySelectorAll('.site-nav a');
+        for (var i = 0; i < links.length; i += 1) {
+          var href = links[i].getAttribute('href');
+          if (!href || href.indexOf('http') === 0) continue;
+          if (new URL(href, location.href).pathname === here) {
+            links[i].classList.add('current');
+            links[i].setAttribute('aria-current', 'page');
+            break;
+          }
+        }
+      })();
+
+      // Gallery dropdown (#71): progressive enhancement over the hover/focus CSS.
+      // The disclosure button toggles aria-expanded (which drives the menu open
+      // via CSS), supports keyboard access (Enter/Space toggle, Arrow keys to
+      // enter and move through items, Escape to close), and closes on outside
+      // click or when focus leaves the group. With JS off, hover/focus still
+      // reveal the menu and the Gallery link still works.
+      (function () {
+        var group = document.querySelector('.site-nav .nav-group');
+        if (!group) return;
+        var button = group.querySelector('.nav-disclosure');
+        var menu = group.querySelector('.nav-menu');
+        if (!button || !menu) return;
+        var items = Array.prototype.slice.call(menu.querySelectorAll('a'));
+
+        var isOpen = function () {
+          return button.getAttribute('aria-expanded') === 'true';
+        };
+        var setOpen = function (open) {
+          button.setAttribute('aria-expanded', open ? 'true' : 'false');
+        };
+        var focusItem = function (index) {
+          if (!items.length) return;
+          setOpen(true);
+          items[(index + items.length) % items.length].focus();
+        };
+
+        button.addEventListener('click', function () {
+          setOpen(!isOpen());
+        });
+        button.addEventListener('keydown', function (event) {
+          if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            focusItem(0);
+          } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            focusItem(items.length - 1);
+          } else if (event.key === 'Escape') {
+            setOpen(false);
+          }
+        });
+        menu.addEventListener('keydown', function (event) {
+          var index = items.indexOf(document.activeElement);
+          if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            focusItem(index + 1);
+          } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            focusItem(index - 1);
+          } else if (event.key === 'Home') {
+            event.preventDefault();
+            focusItem(0);
+          } else if (event.key === 'End') {
+            event.preventDefault();
+            focusItem(items.length - 1);
+          } else if (event.key === 'Escape') {
+            event.preventDefault();
+            setOpen(false);
+            button.focus();
+          }
+        });
+
+        // Close when focus leaves the group or on an outside pointer press.
+        group.addEventListener('focusout', function (event) {
+          if (!group.contains(event.relatedTarget)) setOpen(false);
+        });
+        document.addEventListener('click', function (event) {
+          if (!group.contains(event.target)) setOpen(false);
+        });
+      })();
+    </script>
+  </body>
+</html>
