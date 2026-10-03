@@ -3,7 +3,7 @@
 // relative, so one build serves the site root, /dev/, and /pr/{N}/ unchanged.
 
 import { LOGO_SVG } from '../src/app/styles.js';
-import { librariesExpression } from './app-libraries.mjs';
+import { HOSTED_PITCH, librariesExpression } from './app-libraries.mjs';
 
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
@@ -1417,7 +1417,7 @@ export function renderDemoAppPage({
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="The safety.viz demo app: load a study, check how its columns map, and review it in ${escapeHtml(charts)}. It runs in your browser; nothing is uploaded.">
+<meta name="description" content="The safety.viz demo app: load a study, check how its columns map, and review it in ${escapeHtml(charts)}. ${libraries.length ? 'Your study’s data stays in your browser; nothing is fetched unless you start R.' : 'It runs in your browser; nothing is uploaded.'}">
 <title>safety.viz demo</title>
 <link rel="icon" href="data:image/svg+xml,${icon}">
 ${preloads}
@@ -1433,7 +1433,7 @@ body{margin:0;background:#fafaf8}
 <script src="./${escapeHtml(bundle)}"></script>
 ${libraries.map((library) => `<script src="./${escapeHtml(library.file)}"></script>\n`).join('')}<script>
 window.__safetyVizApp = SafetyVizApp.mount('#app', {
-  demo: { base: './' },${libraries.length ? `\n  libraries: ${librariesExpression(libraries)},` : ''}
+  demo: { base: './' },${libraries.length ? `\n  libraries: ${librariesExpression(libraries, { r: 'request' })},\n  pitch: ${js(HOSTED_PITCH)},` : ''}
   links: {
     docs: '../index.html',
     domains: '../domains/index.html',

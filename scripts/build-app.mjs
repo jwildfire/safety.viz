@@ -17,7 +17,7 @@ import { build } from 'esbuild';
 import { mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { APP_LIBRARIES, librariesExpression, libraryScript } from './app-libraries.mjs';
+import { APP_LIBRARIES, FILE_PITCH, librariesExpression, libraryScript } from './app-libraries.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..');
@@ -48,8 +48,10 @@ export function renderAppHtml({ script, libraries = [] }) {
   const others = libraries
     .map((library) => `<script>${inlineScript(library.script)}</script>\n`)
     .join('');
+  // The file loads nothing, so its biomarker charts cannot start R: each
+  // statistics line says so, and there is no control (#183).
   const mount = libraries.length
-    ? `SafetyVizApp.mount('#app', { libraries: ${librariesExpression(libraries)} })`
+    ? `SafetyVizApp.mount('#app', { libraries: ${librariesExpression(libraries, { r: 'unavailable' })}, pitch: ${JSON.stringify(FILE_PITCH)} })`
     : `SafetyVizApp.mount('#app')`;
   return `<!doctype html>
 <html lang="en">

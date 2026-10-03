@@ -8,7 +8,7 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { BIO_VIZ } from './vendor-lib.mjs';
+import { BIO_VIZ, GSM_BIO_STATISTICS } from './vendor-lib.mjs';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -22,9 +22,35 @@ export const APP_LIBRARIES = [
     // What the charts are, in a phrase: "four biomarker charts".
     kind: 'biomarker',
     site: 'https://jwildfire.github.io/bio.viz/dev/',
-    repository: BIO_VIZ.repository
+    repository: BIO_VIZ.repository,
+    // R on request (#183): the library's own connection factory, on its global,
+    // and the one file R in the browser is given, gsm.bio's statistics
+    // functions as vendored. Base R only: no package is installed, so starting
+    // R downloads webR alone, about 13 MB, from its public host.
+    r: {
+      factory: 'r.createConnection',
+      statistics: {
+        file: GSM_BIO_STATISTICS.files[0].file,
+        path: path.join(GSM_BIO_STATISTICS.directory, GSM_BIO_STATISTICS.files[0].file)
+      },
+      packages: [],
+      megabytes: 13,
+      host: 'webr.r-wasm.org'
+    }
   }
 ];
+
+/** What the hosted app's footer says it does with a study (#183; amended at @jwildfire's word, 2026-10-02). */
+export const HOSTED_PITCH =
+  'The study’s data never leaves this browser. No request leaves the page unless you start R.';
+
+/** What the single file's footer says. */
+export const FILE_PITCH = 'Everything runs in this browser, and this file loads nothing.';
+
+/** What a statistics line says in the single file, which cannot start R. */
+export const FILE_NO_R =
+  'Statistics are unavailable in this file: it loads nothing, so it cannot start R. ' +
+  'The hosted demo app can start R in your browser.';
 
 /**
  * A library's vendored bundle, as text.
@@ -47,14 +73,42 @@ export function libraryManifest(library) {
 /**
  * The `libraries` option a page passes `SafetyVizApp.mount`, as source text: one
  * entry per library, its factories and chart list read from its global.
+ *
+ * With `r` (#183), a library that has an R connection is also handed its
+ * statistics settings: `'request'` for a page that can start R, with the
+ * statistics file at `statisticsUrl`, which gives the library's charts the
+ * connection that waits for the reader and the control that starts it;
+ * `'unavailable'` for the single file, whose charts say why they have no
+ * statistics.
  * @param {Object[]} [libraries] Entries of APP_LIBRARIES.
+ * @param {{r?: ?('request'|'unavailable'), statisticsUrl?: (library: Object) => string, createConnection?: (library: Object) => string}} [options]
  * @returns {string} A JavaScript array expression.
  */
-export function librariesExpression(libraries = APP_LIBRARIES) {
-  const entries = libraries.map(
-    (library) =>
-      `{ name: ${JSON.stringify(library.name)}, charts: window.${library.global}, ` +
-      `manifest: window.${library.global} && window.${library.global}.portfolio }`
-  );
+export function librariesExpression(
+  libraries = APP_LIBRARIES,
+  { r = null, statisticsUrl, createConnection } = {}
+) {
+  const entries = libraries.map((library) => {
+    const global = `window.${library.global}`;
+    let statistics = '';
+    if (r && library.r) {
+      const factory = createConnection
+        ? createConnection(library)
+        : `${global}.${library.r.factory}`;
+      const options =
+        `{ createConnection: ${factory}, browser: { sourceUrl: ${JSON.stringify(
+          statisticsUrl ? statisticsUrl(library) : `./${library.r.statistics.file}`
+        )}, packages: ${JSON.stringify(library.r.packages)} }, megabytes: ${library.r.megabytes}, ` +
+        `host: ${JSON.stringify(library.r.host)} }`;
+      statistics =
+        r === 'request'
+          ? `, ...(${global} ? SafetyVizApp.rOnRequest(${options}) : {})`
+          : `, ...SafetyVizApp.rUnavailable(${JSON.stringify(FILE_NO_R)})`;
+    }
+    return (
+      `{ name: ${JSON.stringify(library.name)}, charts: ${global}, ` +
+      `manifest: ${global} && ${global}.portfolio${statistics} }`
+    );
+  });
   return `[${entries.join(', ')}]`;
 }

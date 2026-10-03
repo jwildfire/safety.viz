@@ -281,6 +281,13 @@ publishDemoAppFonts(rootDir, demoAppDir);
 // and loaded after it; the page's description counts every chart it carries.
 for (const library of APP_LIBRARIES) {
   copyFileSync(path.join(rootDir, library.path), path.join(demoAppDir, library.file));
+  // The statistics file R in the browser is given when the reader starts R (#183).
+  if (library.r) {
+    copyFileSync(
+      path.join(rootDir, library.r.statistics.path),
+      path.join(demoAppDir, library.r.statistics.file)
+    );
+  }
 }
 const WORDS = [
   'no',
