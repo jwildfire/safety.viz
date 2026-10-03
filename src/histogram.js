@@ -17,7 +17,7 @@ import {
 import { controlBuilders, createElement, option, renderShell } from './shell.js';
 import { presentMeasures, resolveMeasureList } from './measure-list.js';
 import { applyLimitEdit, clearAxisLimits, seedLimitInput, syncAxisLimits } from './axis-limits.js';
-import { ALGORITHMS, syncSettings } from './histogram/configure.js';
+import { ALGORITHMS, NORMALITY_DEPRECATED, syncSettings } from './histogram/configure.js';
 import { checkInputs } from './histogram/checkInputs.js';
 import {
   applyFilters,
@@ -74,6 +74,8 @@ class SafetyHistogram {
     this.element = typeof element === 'string' ? document.querySelector(element) : element;
     if (!this.element) throw new Error(`Safety Histogram target not found: ${element}`);
     this.settings = syncSettings(settings);
+    this.normalityWarned = false;
+    this.warnDeprecated();
     this.rawData = [];
     this.cleanData = [];
     this.availableMeasures = [];
@@ -262,6 +264,7 @@ class SafetyHistogram {
    */
   setSettings(settings) {
     this.settings = syncSettings({ ...this.settings, ...settings });
+    this.warnDeprecated();
     if (this.rawData.length) this.validateAndCleanData();
     this.buildProfileRows();
     syncProfileRail(this, () => this.profileSettings());
@@ -757,7 +760,18 @@ class SafetyHistogram {
   }
 
   /**
-   * Annotate the main chart with the normality screen when enabled.
+   * Say once, in the console, that `test_normality` is deprecated (#188).
+   * @private
+   */
+  warnDeprecated() {
+    if (!this.settings.test_normality || this.normalityWarned) return;
+    this.normalityWarned = true;
+    console.warn(NORMALITY_DEPRECATED);
+  }
+
+  /**
+   * Annotate the main chart with the normality screen when enabled, and say
+   * beside it that the screen is deprecated (#188).
    * @private
    */
   drawMainAnnotation(rows) {
@@ -770,6 +784,11 @@ class SafetyHistogram {
         pValue,
         'Approximate Jarque-Bera normality screen',
         'https://en.wikipedia.org/wiki/Jarque%E2%80%93Bera_test'
+      ),
+      createElement(
+        'p',
+        'sv-deprecation',
+        'Deprecated: this normality screen (test_normality) will be removed in a later release.'
       )
     );
   }
