@@ -302,6 +302,72 @@ describe('site generator: domains page (#139)', () => {
     );
   });
 
+  it('APP-BIO-011: the page lists another library’s charts under its own heading, each with what it reads and a link to its reference, and the lead counts them (#182)', () => {
+    const bio = {
+      name: 'bio.viz',
+      site: 'https://jwildfire.github.io/bio.viz/dev/',
+      repository: 'https://github.com/jwildfire/bio.viz',
+      manifest: {
+        version: 2,
+        description: 'Two charts.',
+        groups: { biomarkers: { label: 'Biomarkers', order: 0 } },
+        modules: {
+          'group-comparison': {
+            library: 'bio.viz',
+            export: 'groupComparison',
+            title: 'Group comparison',
+            group: 'biomarkers',
+            domains: ['bds'],
+            optionalDomains: ['subject'],
+            tables: {
+              results: { domain: 'bds', required: true },
+              participants: { domain: 'subject', required: false }
+            },
+            unmappedSettings: 'omit',
+            settings: {
+              value_col: { domain: 'bds', column: 'STRESN', required: true },
+              participant_id_col: { domain: 'subject', column: 'USUBJID', required: false }
+            }
+          },
+          'association-scatter': {
+            library: 'bio.viz',
+            export: 'associationScatter',
+            title: 'Association scatter',
+            group: 'biomarkers',
+            domains: ['bds'],
+            settings: { value_col: { domain: 'bds', column: 'STRESN', required: true } }
+          }
+        }
+      }
+    };
+    const page = renderDomainsPage({ manifest, config, libraries: [bio] });
+    const section = page.match(
+      /<section class="library-charts" id="library-bio-viz">[\s\S]*?<\/section>\n/
+    );
+    expect(section, 'the library has no section').not.toBeNull();
+    expect(section[0]).toContain('<h2>Biomarkers, from bio.viz</h2>');
+    expect(section[0]).toContain('href="https://github.com/jwildfire/bio.viz"');
+    for (const [module, entry] of Object.entries(bio.manifest.modules)) {
+      const chart = sectionOf(page, `chart-${module}`);
+      expect(chart, `${module} has no section`).not.toBe('');
+      expect(chart).toContain(`>${entry.title}</h3>`);
+      expect(chart).toContain(`href="https://jwildfire.github.io/bio.viz/dev/${module}/api.html"`);
+      expect(chart).toContain(
+        `href="https://jwildfire.github.io/bio.viz/dev/${module}/index.html"`
+      );
+      for (const key of Object.keys(entry.settings)) expect(rowOf(chart, key)).not.toBe('');
+    }
+    // The tables a chart takes are named, with whether each is required.
+    expect(sectionOf(page, 'chart-group-comparison')).toContain('results');
+    expect(sectionOf(page, 'chart-group-comparison')).toContain('participants');
+    // The lead counts both libraries' charts, and each domain names the charts it feeds.
+    expect(page).toContain(`feeds all ${modules.length + 2} charts without renaming a column`);
+    expect(sectionOf(page, 'domain-bds')).toContain('href="#chart-group-comparison"');
+    expect(sectionOf(page, 'domain-subject')).toContain('href="#chart-group-comparison"');
+    // With no library the page is as it was.
+    expect(html).not.toContain('library-charts');
+  });
+
   it('PF-SITE-016: wide tables sit in the scrolling container so the page never scrolls sideways (#139)', () => {
     const tables = html.match(/<table\b/g);
     expect(tables).toHaveLength(domains.length + onStandardSet.length);

@@ -3,6 +3,7 @@
 // relative, so one build serves the site root, /dev/, and /pr/{N}/ unchanged.
 
 import { LOGO_SVG } from '../src/app/styles.js';
+import { librariesExpression } from './app-libraries.mjs';
 
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
@@ -1389,9 +1390,17 @@ export function publishDemoAppFonts(rootDir, demoDir) {
  * @param {string} options.bundle File name of the app bundle beside the page.
  * @param {string} options.download File name of the single-file build beside the page.
  * @param {string} options.repoUrl The repository URL, for the app's source link.
+ * @param {Array<{name: string, global: string, file: string}>} [options.libraries] Further chart libraries (#182): each bundle is loaded from beside the page after the app's and handed to the app when it mounts.
+ * @param {string} [options.charts] What the app reviews a study in, for the page's description: its charts, counted.
  * @returns {string} The complete HTML document.
  */
-export function renderDemoAppPage({ bundle, download, repoUrl }) {
+export function renderDemoAppPage({
+  bundle,
+  download,
+  repoUrl,
+  libraries = [],
+  charts = 'thirteen clinical safety charts'
+}) {
   const icon = encodeURIComponent(LOGO_SVG).replace(/'/g, '%27');
   const js = (value) => `'${String(value).replace(/[\\']/g, '\\$&')}'`;
   const fontUrl = (font) => `./${DEMO_APP_FONT_DIR}/${font.file}`;
@@ -1408,7 +1417,7 @@ export function renderDemoAppPage({ bundle, download, repoUrl }) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="The safety.viz demo app: load a study, check how its columns map, and review it in thirteen clinical safety charts. It runs in your browser; nothing is uploaded.">
+<meta name="description" content="The safety.viz demo app: load a study, check how its columns map, and review it in ${escapeHtml(charts)}. It runs in your browser; nothing is uploaded.">
 <title>safety.viz demo</title>
 <link rel="icon" href="data:image/svg+xml,${icon}">
 ${preloads}
@@ -1422,9 +1431,9 @@ body{margin:0;background:#fafaf8}
 <div id="app"></div>
 <noscript>The safety.viz demo app needs JavaScript: it reads and draws your data in this browser.</noscript>
 <script src="./${escapeHtml(bundle)}"></script>
-<script>
+${libraries.map((library) => `<script src="./${escapeHtml(library.file)}"></script>\n`).join('')}<script>
 window.__safetyVizApp = SafetyVizApp.mount('#app', {
-  demo: { base: './' },
+  demo: { base: './' },${libraries.length ? `\n  libraries: ${librariesExpression(libraries)},` : ''}
   links: {
     docs: '../index.html',
     domains: '../domains/index.html',
@@ -1578,19 +1587,37 @@ function settingRows(settings, domains) {
 // its column settings. A chart outside the standard set names its own domains
 // and maps no settings, so it gets no table — only a pointer to where its
 // columns are documented.
-function chartSection(module, entry, { domains, hasPages, repoUrl, root }) {
-  const links = [
-    ...(hasPages
+//
+// A chart of another library (#182) links to its pages on that library's own
+// site (`site`) and has no data schema here; it names the tables it takes.
+function chartSection(module, entry, { domains, hasPages, repoUrl, root, site = null }) {
+  const links = (
+    site
       ? [
-          `<a href="${root}${module}/index.html">Live demo</a>`,
-          `<a href="${root}${module}/api.html">API reference</a>`
+          `<a href="${site}${module}/index.html">Live demo</a>`,
+          `<a href="${site}${module}/api.html">API reference</a>`
         ]
-      : []),
-    `<a href="${repoUrl}/blob/HEAD/src/data/schema/${module}.json">Data schema</a>`
-  ].join(' · ');
+      : [
+          ...(hasPages
+            ? [
+                `<a href="${root}${module}/index.html">Live demo</a>`,
+                `<a href="${root}${module}/api.html">API reference</a>`
+              ]
+            : []),
+          `<a href="${repoUrl}/blob/HEAD/src/data/schema/${module}.json">Data schema</a>`
+        ]
+  ).join(' · ');
+  const tables = Object.entries(entry.tables || {})
+    .map(
+      ([name, table]) =>
+        `<code>${escapeHtml(name)}</code> from ${domainLinks([table.domain], domains)}` +
+        (table.required ? '' : ', when supplied')
+    )
+    .join('; ');
   const external = entry.externalDomains || [];
   const optional = entry.optionalDomains || [];
   const reads =
+    (tables ? `<li>Takes the tables: ${tables}</li>` : '') +
     (entry.domains.length ? `<li>Reads: ${domainLinks(entry.domains, domains)}</li>` : '') +
     (optional.length
       ? `<li>Also reads, when supplied: ${domainLinks(optional, domains)}</li>`
@@ -1633,10 +1660,19 @@ function chartSection(module, entry, { domains, hasPages, repoUrl, root }) {
  * @param {string} [options.root='../'] Prefix from the page to the site root; the page is built at domains/index.html.
  * @returns {string} The page content, for the shared shell.
  */
-export function renderDomainsPage({ manifest, config, root = '../' }) {
+export function renderDomainsPage({ manifest, config, root = '../', libraries = [] }) {
   const { domains } = manifest;
   const domainIds = Object.keys(domains);
-  const modules = Object.entries(manifest.modules);
+  // Other libraries' charts (#182) read the same domains, so they are counted
+  // and named wherever the page says what the domains feed.
+  const fromLibraries = libraries.map((library) => ({
+    library,
+    charts: Object.entries(library.manifest.modules)
+  }));
+  const modules = [
+    ...Object.entries(manifest.modules),
+    ...fromLibraries.flatMap(({ charts }) => charts)
+  ];
   const standard = modules.filter(([, entry]) => !entry.externalDomains);
   const outside = modules.filter(([, entry]) => entry.externalDomains);
   const withPages = new Set(
@@ -1685,8 +1721,34 @@ export function renderDomainsPage({ manifest, config, root = '../' }) {
       ` column shown. Required marks the settings the chart&#39;s own data schema lists as` +
       ` required; the rest are optional. A setting shown with no default reads no column until` +
       ` one is named, and the chart&#39;s API reference says what each setting does.</p>`,
-    ...standard.map(section)
+    ...standard.filter(([module]) => manifest.modules[module]).map(section)
   );
+  for (const { library, charts } of fromLibraries) {
+    const groups = Object.values(library.manifest.groups || {}).map((group) => group.label);
+    const heading = groups.length
+      ? `${groups.join(', ')}, from ${library.name}`
+      : `Charts from ${library.name}`;
+    html.push(
+      `<section class="library-charts" id="library-${slugify(library.name)}">` +
+        `<h2>${escapeHtml(heading)}</h2>` +
+        `<p>${charts.length} ${charts.length === 1 ? 'chart' : 'charts'} from` +
+        ` <a href="${library.repository}">${escapeHtml(library.name)}</a>, a second chart library` +
+        ` the demo app carries beside these and lists in a tab of its own. They read the` +
+        ` standard domains through the same mapping, so a study mapped for the safety charts` +
+        ` is mapped for them. Each links to its demo and its reference on` +
+        ` <a href="${library.site}">${escapeHtml(library.name)}&#39;s site</a>.</p>` +
+        `</section>`,
+      ...charts.map(([module, entry]) =>
+        chartSection(module, entry, {
+          domains,
+          hasPages: true,
+          repoUrl: config.repoUrl,
+          root,
+          site: library.site
+        })
+      )
+    );
+  }
   if (outside.length) {
     html.push(
       `<h2 id="outside">Outside the standard set</h2>`,

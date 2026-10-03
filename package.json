@@ -20,7 +20,9 @@
     "evidence:update": "node scripts/evidence.mjs --update",
     "requirements": "node scripts/requirements.mjs",
     "requirements:check": "node scripts/requirements.mjs --check",
-    "demo-data:check": "node scripts/check-demo-data.mjs"
+    "demo-data:check": "node scripts/check-demo-data.mjs",
+    "bio-viz:check": "node scripts/vendor-bio-viz.mjs --check",
+    "bio-viz:check-source": "node scripts/vendor-bio-viz.mjs --check-source"
   },
   "devDependencies": {
     "@fontsource-variable/instrument-sans": "^5.3.0",

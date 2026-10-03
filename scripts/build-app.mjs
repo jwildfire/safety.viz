@@ -4,7 +4,10 @@
 //   safety.viz-app.js     one IIFE script with the global `SafetyVizApp`, for
 //                         the site's demo app page and the browser tests
 //   safety.viz-app.html   the same script inlined into one HTML file that opens
-//                         from disk with no network and no demo study
+//                         from disk with no network and no demo study, with
+//                         the vendored bundle of every chart library the app
+//                         ships with (scripts/app-libraries.mjs, #182) inlined
+//                         beside it
 //
 // Unlike dist/, both are build products and are not committed: the site build
 // writes them into _site/demo/, and `npm run build:app` writes them to
@@ -14,6 +17,7 @@ import { build } from 'esbuild';
 import { mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import { APP_LIBRARIES, librariesExpression, libraryScript } from './app-libraries.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..');
@@ -21,33 +25,45 @@ const rootDir = path.resolve(__dirname, '..');
 export const APP_BUNDLE = 'safety.viz-app.js';
 export const APP_HTML = 'safety.viz-app.html';
 
-/**
- * Wrap the app script in the single file's HTML. The file makes no request of
- * any kind: the script is inline, the app draws its own header and injects its
- * own styles, and any source-map comment is dropped. A closing script tag inside the bundle is
- * escaped so it cannot end the inline script.
- * @param {Object} options Wrapper options.
- * @param {string} options.script The bundled app script.
- * @returns {string} The HTML document.
- */
-export function renderAppHtml({ script }) {
-  const inline = script
+// A script made safe to inline: any source-map comment dropped, and a closing
+// script tag inside it escaped so it cannot end the inline script.
+const inlineScript = (script) =>
+  script
     .replace(/^\/\/# sourceMappingURL=.*$/gm, '')
     .replace(/<\/script/gi, '<\\/script')
     .trim();
+
+/**
+ * Wrap the app script in the single file's HTML. The file makes no request of
+ * any kind: the scripts are inline, the app draws its own header and injects
+ * its own styles, and any source-map comment is dropped. Each further chart
+ * library's bundle is inlined after the app's and handed to it when it mounts.
+ * @param {Object} options Wrapper options.
+ * @param {string} options.script The bundled app script.
+ * @param {Array<{name: string, global: string, script: string}>} [options.libraries] Further libraries: name, the global their bundle defines, and the bundle.
+ * @returns {string} The HTML document.
+ */
+export function renderAppHtml({ script, libraries = [] }) {
+  const inline = inlineScript(script);
+  const others = libraries
+    .map((library) => `<script>${inlineScript(library.script)}</script>\n`)
+    .join('');
+  const mount = libraries.length
+    ? `SafetyVizApp.mount('#app', { libraries: ${librariesExpression(libraries)} })`
+    : `SafetyVizApp.mount('#app')`;
   return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="The safety.viz demo app in one file: load a study, map its columns and review it in the safety charts. It runs in this browser with no network; nothing is sent anywhere.">
+<meta name="description" content="The safety.viz demo app in one file: load a study, map its columns and review it in the safety and biomarker charts. It runs in this browser with no network; nothing is sent anywhere.">
 <title>safety.viz demo</title>
 <style>body{margin:0;background:#fafaf8}</style>
 </head>
 <body>
 <div id="app"></div>
 <script>${inline}</script>
-<script>window.__safetyVizApp = SafetyVizApp.mount('#app');</script>
+${others}<script>window.__safetyVizApp = ${mount};</script>
 </body>
 </html>
 `;
@@ -80,7 +96,11 @@ export async function buildApp(outDir) {
   // be the one thing in the file that points somewhere else.
   const { outputFiles } = await build({ ...bundleOptions, sourcemap: false, write: false });
   const htmlFile = path.join(outDir, APP_HTML);
-  writeFileSync(htmlFile, renderAppHtml({ script: outputFiles[0].text }));
+  const libraries = APP_LIBRARIES.map((library) => ({
+    ...library,
+    script: libraryScript(library)
+  }));
+  writeFileSync(htmlFile, renderAppHtml({ script: outputFiles[0].text, libraries }));
 
   return {
     file,
