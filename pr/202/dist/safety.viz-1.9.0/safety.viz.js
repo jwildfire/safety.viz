@@ -12969,6 +12969,7 @@ var SafetyViz = (() => {
   }
 
   // src/histogram/configure.js
+  var COMPARISON_DEPRECATED = "safety.viz histogram: `compare_distributions` is deprecated and will be removed in a later release. Its group comparison is an approximation computed in JavaScript, and safety.viz is to compute no statistical test there.";
   var NORMALITY_DEPRECATED = "safety.viz histogram: `test_normality` is deprecated and will be removed in a later release. Its normality screen is an approximation computed in JavaScript, and safety.viz is to compute no statistical test there.";
   var DEFAULT_SETTINGS = {
     measure_col: "TEST",
@@ -16429,6 +16430,7 @@ var SafetyViz = (() => {
       if (!this.element) throw new Error(`Safety Histogram target not found: ${element}`);
       this.settings = syncSettings(settings);
       this.normalityWarned = false;
+      this.comparisonWarned = false;
       this.warnDeprecated();
       this.rawData = [];
       this.cleanData = [];
@@ -17023,36 +17025,54 @@ var SafetyViz = (() => {
       chart.update();
     }
     /**
-     * Say once, in the console, that `test_normality` is deprecated (#188).
+     * Say once per chart, in the console, that `test_normality` or
+     * `compare_distributions` is deprecated, for each that is on (#188).
      * @private
      */
     warnDeprecated() {
-      if (!this.settings.test_normality || this.normalityWarned) return;
-      this.normalityWarned = true;
-      console.warn(NORMALITY_DEPRECATED);
+      if (this.settings.test_normality && !this.normalityWarned) {
+        this.normalityWarned = true;
+        console.warn(NORMALITY_DEPRECATED);
+      }
+      if (this.settings.compare_distributions && !this.comparisonWarned) {
+        this.comparisonWarned = true;
+        console.warn(COMPARISON_DEPRECATED);
+      }
     }
     /**
      * Annotate the main chart with the normality screen when enabled, and say
-     * beside it that the screen is deprecated (#188).
+     * beside it that the screen, and the grouped panels' comparison when it is
+     * on, are deprecated (#188).
      * @private
      */
     drawMainAnnotation(rows) {
       this.mainAnnotation.innerHTML = "";
-      if (!this.settings.test_normality) return;
-      const pValue = approximateNormalityP(rows.map((row) => row.__sh_value));
-      this.mainAnnotation.append(
-        statisticalAnnotation(
-          "Normality",
-          pValue,
-          "Approximate Jarque-Bera normality screen",
-          "https://en.wikipedia.org/wiki/Jarque%E2%80%93Bera_test"
-        ),
-        createElement(
-          "p",
-          "sv-deprecation",
-          "Deprecated: this normality screen (test_normality) will be removed in a later release."
-        )
-      );
+      if (this.settings.test_normality) {
+        const pValue = approximateNormalityP(rows.map((row) => row.__sh_value));
+        this.mainAnnotation.append(
+          statisticalAnnotation(
+            "Normality",
+            pValue,
+            "Approximate Jarque-Bera normality screen",
+            "https://en.wikipedia.org/wiki/Jarque%E2%80%93Bera_test"
+          ),
+          createElement(
+            "p",
+            "sv-deprecation",
+            "Deprecated: this normality screen (test_normality) will be removed in a later release."
+          )
+        );
+      }
+      const grouped = this.state.groupBy && this.state.groupBy !== "sh_none";
+      if (this.settings.compare_distributions && grouped) {
+        this.mainAnnotation.append(
+          createElement(
+            "p",
+            "sv-deprecation",
+            "Deprecated: the group comparison (compare_distributions) will be removed in a later release."
+          )
+        );
+      }
     }
     /**
      * Draw one small-multiple panel per group value when grouping is active.
