@@ -12,7 +12,9 @@
 //
 // The chart factories and the manifest are passed in rather than imported, so
 // the page's own logic is testable without the charts and the same page serves
-// the site and the single-file build.
+// the site and the single-file build. Further chart libraries can be passed in
+// beside safety.viz's own (#181): their charts are listed, counted, mapped,
+// drawn and destroyed exactly as its own are (libraries.js).
 
 import { parseFile } from './parse.js';
 import { placeFile } from './detect.js';
@@ -27,6 +29,16 @@ import {
 } from './mapping.js';
 import { chartStatus, supportedCount } from './status.js';
 import { chartData, chartSettings, isDestination } from './charts.js';
+import {
+  OTHER_GROUP,
+  OWN_LIBRARY,
+  chartGroups as groupCharts,
+  groupLabel,
+  groupOf,
+  hueClass,
+  libraryOf,
+  mergeLibraries
+} from './libraries.js';
 import { renderDataPanel } from './data-panel.js';
 import { DEMO_STUDIES, studyUrls } from './studies.js';
 import { el, plural } from './dom.js';
@@ -36,8 +48,6 @@ const STYLE_ID = 'safety-viz-app-styles';
 
 /** The name the mapping file is offered for download under. */
 export const MAPPING_FILE_NAME = 'safety-viz-mapping.json';
-
-const OTHER_GROUP = 'other';
 
 // Whether an object has a key of its own. A name from the address or from a
 // file is looked up this way, never with a bare `object[name]`: "constructor"
@@ -95,11 +105,12 @@ function tagFor(status) {
 }
 
 /**
- * A chart's name on its chip in the header. Every chart here is a safety chart,
- * so the word is dropped; the full title is the view's heading and the chip's
- * tooltip.
+ * A chart's name on its chip in the header. safety.viz's charts are safety
+ * charts, so the word is dropped from theirs; the full title is the view's
+ * heading and the chip's tooltip. Another library's titles are its own.
  */
-const chipLabel = (title) => title.replace(/\bSafety\s+/, '');
+const chipLabel = (entry) =>
+  libraryOf(entry) === OWN_LIBRARY ? entry.title.replace(/\bSafety\s+/, '') : entry.title;
 
 /** The hex beside a chart in the list: its domain's hue when ready, red when something is missing, hollow when it has nothing to read. */
 function hexFor(status) {
@@ -114,6 +125,7 @@ function sentenceFor(module, status, manifest) {
   if (status.state === 'missing') return `Not mapped yet: ${labels}.`;
   if (status.state === 'no file') return `No file loaded for: ${labels}.`;
   if (status.state === 'did not draw') return `Did not draw. ${status.message}`;
+  if (status.state === 'not loaded') return status.message;
   if (status.state === 'needs more domains') return manifest.modules[module].note;
   return '';
 }
@@ -124,6 +136,7 @@ function sentenceFor(module, status, manifest) {
  * @param {Object} options Mount options.
  * @param {Object} options.charts The chart factories, keyed by export name (the safety.viz module collection).
  * @param {Object} options.manifest The portfolio manifest.
+ * @param {Array<{name: string, charts: ?Object, manifest: Object}>} [options.libraries] Further chart libraries, each its name, its chart factories keyed by export name, and its chart list in the portfolio manifest's format (version 2). Their charts are listed after safety.viz's, under the groups their entries name; a chart whose library or factory is missing reads "not loaded".
  * @param {{base: string, studies?: Object[]}} [options.demo] Where the demo studies are served from, and which (default: {@link DEMO_STUDIES}); when given, the first study is loaded on mount and the data view offers each by name.
  * @param {{docs?: string, domains?: string, download?: string, github?: string}} [options.links] Where the footer's links go; a link with no address is left out.
  * @param {string} [options.version] The safety.viz version, shown in the footer.
@@ -135,7 +148,8 @@ export function mountApp(
   target,
   {
     charts,
-    manifest,
+    manifest: ownManifest,
+    libraries = [],
     demo = null,
     links = {},
     version = '',
@@ -149,6 +163,9 @@ export function mountApp(
   } = {}
 ) {
   const root = typeof target === 'string' ? document.querySelector(target) : target;
+  // Every chart the page lists, safety.viz's and any other library's, in one
+  // manifest; and for those that cannot be drawn, why.
+  const { manifest, problems, factoryOf } = mergeLibraries(ownManifest, charts, libraries);
   if (!document.getElementById(STYLE_ID)) {
     const style = el('style');
     style.id = STYLE_ID;
@@ -174,7 +191,7 @@ export function mountApp(
   let demoRun = 0; // the latest demo study asked for; an earlier one still loading is dropped
 
   const status = () => {
-    const computed = chartStatus(state.mappings, manifest);
+    const computed = chartStatus(state.mappings, manifest, problems);
     for (const [module, message] of Object.entries(state.failed)) {
       if (computed[module].state === 'ready') {
         computed[module] = { state: 'did not draw', missing: [], message };
@@ -184,10 +201,9 @@ export function mountApp(
   };
 
   const isChart = (id) => has(manifest.modules, id);
-  const groupOf = (entry) => (entry.externalDomains ? OTHER_GROUP : entry.domains[0]);
-  const tabTitle = (group) => (group === OTHER_GROUP ? 'Other' : manifest.domains[group].label);
+  const tabTitle = (group) => groupLabel(group, manifest);
   const groupTitle = (group) =>
-    group === OTHER_GROUP ? 'Outside the standard domains' : manifest.domains[group].label;
+    group === OTHER_GROUP ? 'Outside the standard domains' : groupLabel(group, manifest);
 
   root.innerHTML = '';
   const app = el('div', 'sva-app');
@@ -283,16 +299,8 @@ export function mountApp(
     return button;
   }
 
-  /** The charts of each group, in manifest order. */
-  function chartGroups() {
-    const groups = new Map();
-    for (const [module, entry] of Object.entries(manifest.modules)) {
-      const group = groupOf(entry);
-      if (!groups.has(group)) groups.set(group, []);
-      groups.get(group).push([module, entry]);
-    }
-    return groups;
-  }
+  /** The charts of each group, in the order their tabs come (libraries.js). */
+  const chartGroups = () => new Map(groupCharts(manifest));
 
   function renderNav(current) {
     const open = state.selected === 'data' ? null : groupOf(manifest.modules[state.selected]);
@@ -312,7 +320,7 @@ export function mountApp(
       // The tab: the domain, and how many of its charts the data supports.
       const states = members.map(([module]) => current[module].state);
       const readyHere = states.filter((value) => value === 'ready').length;
-      const tab = el('button', `sva-tab sva-domain-${group}`);
+      const tab = el('button', `sva-tab ${hueClass(group, manifest)}`);
       tab.type = 'button';
       tab.dataset.domain = group;
       tab.setAttribute('aria-pressed', String(open === group));
@@ -326,7 +334,7 @@ export function mountApp(
       tabs.append(tab);
 
       // Its charts: on the page for every domain, shown for the open one.
-      const section = el('div', `sva-group sva-domain-${group}`);
+      const section = el('div', `sva-group ${hueClass(group, manifest)}`);
       section.dataset.group = group;
       section.hidden = open !== group;
       section.append(el('h2', 'sva-group-title', groupTitle(group)));
@@ -334,7 +342,7 @@ export function mountApp(
         section.append(
           navItem(
             module,
-            chipLabel(entry.title),
+            chipLabel(entry),
             tagFor(current[module]),
             hexFor(current[module]),
             entry.title
@@ -369,9 +377,10 @@ export function mountApp(
     const entry = manifest.modules[module];
     title.textContent = entry.title;
 
-    if (module === 'participant-profile') {
+    if (module === 'participant-profile' && libraryOf(entry) === OWN_LIBRARY) {
       const hosts = Object.entries(manifest.modules)
-        .filter(([id]) => id !== module && isDestination(id, manifest))
+        .filter(([id, host]) => libraryOf(host) === OWN_LIBRARY && id !== module)
+        .filter(([id]) => isDestination(id, manifest))
         .filter(([, host]) => host.domains.includes('bds') || host.domains.includes('eg'))
         .map(([, host]) => host.title);
       const sentence =
@@ -385,15 +394,17 @@ export function mountApp(
 
     if (current[module].state !== 'ready') {
       const message = el('p', 'sva-message', sentenceFor(module, current[module], manifest));
-      if (current[module].state !== 'needs more domains') message.classList.add('sva-problem');
+      if (!['needs more domains', 'not loaded'].includes(current[module].state)) {
+        message.classList.add('sva-problem');
+      }
       content.append(message);
       return;
     }
 
-    const mount = el('div', `sva-chart sva-domain-${groupOf(entry)}`);
+    const mount = el('div', `sva-chart ${hueClass(groupOf(entry), manifest)}`);
     content.append(mount);
     try {
-      instance = charts[entry.export](mount, chartSettings(module, state.mappings, manifest));
+      instance = factoryOf(module)(mount, chartSettings(module, state.mappings, manifest));
       instance.init(chartData(module, state.files, state.mappings, manifest));
     } catch (error) {
       destroyChart();
@@ -498,6 +509,7 @@ export function mountApp(
   const handle = {
     state,
     manifest,
+    problems,
     studies,
     ready: Promise.resolve(),
 

@@ -24,7 +24,7 @@ export const DEFAULT_LINKS = {
 /**
  * Mount the demo app with the bundled charts and manifest.
  * @param {string|Element} target The element, or a selector for it, to mount into.
- * @param {Object} [options] Mount options; see {@link mountApp}. `demo: { base }` serves the demo studies from that path and loads the first; `links` overrides where the footer's links go.
+ * @param {Object} [options] Mount options; see {@link mountApp}. `demo: { base }` serves the demo studies from that path and loads the first; `links` overrides where the footer's links go; `libraries: [{ name, charts, manifest }]` lists further chart libraries' charts beside safety.viz's (#181).
  * @returns {Object} The app handle.
  */
 export function mount(target, options = {}) {

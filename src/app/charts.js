@@ -9,6 +9,7 @@
 // the railed participant profile reads.
 
 import { MEASURES } from './mapping.js';
+import { OWN_LIBRARY, libraryOf } from './libraries.js';
 
 /** Demographic columns offered as filters and groups, when mapped. */
 const DEMOGRAPHICS = ['SITEID', 'SEX', 'RACE', 'ARM'];
@@ -85,16 +86,21 @@ function fieldSpecs(columns, domain, mappings, manifest) {
     }));
 }
 
+const isOwn = (entry) => libraryOf(entry) === OWN_LIBRARY;
+
 /**
  * Whether a chart is drawn in the page's main pane. The participant profile is
  * not: it is the rail that opens beside the charts that host it. Nor is a chart
- * that reads domains outside the standard set.
+ * that reads domains outside the standard set. A chart of another library
+ * (#181) is drawn unless it reads such domains: recipes are safety.viz's.
  * @param {string} module The module name, as keyed in the manifest.
- * @param {Object} manifest The portfolio manifest.
- * @returns {boolean} True when the chart has a recipe.
+ * @param {Object} manifest The portfolio manifest, with any further libraries' charts merged in.
+ * @returns {boolean} True when the chart is drawn in the main pane.
  */
 export function isDestination(module, manifest) {
-  return has(RECIPES, module) && !manifest.modules[module].externalDomains;
+  const entry = manifest.modules[module];
+  if (entry.externalDomains) return false;
+  return isOwn(entry) ? has(RECIPES, module) : true;
 }
 
 /**
@@ -107,14 +113,22 @@ export function isDestination(module, manifest) {
  * mapped". The chart degrades as it does for any absent optional column.
  * Settings of a domain with no file are left out: there is no row to clear and
  * no column to read. Nested settings (`color.value_col`) become nested objects.
+ *
+ * An entry may say `unmappedSettings: "omit"` (manifest format 2, #181): then
+ * an unmapped setting is left out instead, for a chart that refuses a null
+ * column setting. A chart of another library is handed its entry's column
+ * settings and nothing more: the recipes and the per-chart additions below are
+ * safety.viz's own.
  * @param {string} module The module name, as keyed in the manifest.
  * @param {Object<string, Object>} mappings The mapping for each loaded domain.
- * @param {Object} manifest The portfolio manifest.
+ * @param {Object} manifest The portfolio manifest, with any further libraries' charts merged in.
  * @returns {Object} Settings to pass the chart's factory.
  */
 export function chartSettings(module, mappings, manifest) {
   const entry = manifest.modules[module];
-  const recipe = has(RECIPES, module) ? RECIPES[module] : {};
+  const own = isOwn(entry);
+  const recipe = own && has(RECIPES, module) ? RECIPES[module] : {};
+  const omit = entry.unmappedSettings === 'omit';
   const settings = {};
 
   for (const [key, setting] of Object.entries(entry.settings)) {
@@ -122,6 +136,7 @@ export function chartSettings(module, mappings, manifest) {
     const domain = asList(setting.domain).find((id) => mappings[id]);
     if (!domain) continue;
     const value = mapped(mappings, domain, setting.column);
+    if (value === null && omit) continue;
     const [outer, inner] = key.split('.');
     if (inner) settings[outer] = { ...(settings[outer] || {}), [inner]: value };
     else settings[key] = value;
@@ -158,14 +173,14 @@ export function chartSettings(module, mappings, manifest) {
       (recipe.studyDay === 'none' ? null : mapped(mappings, domain, 'VISITNUM'));
   }
 
-  if (module === 'qt-explorer') {
+  if (own && module === 'qt-explorer') {
     const measures = ['QTcF', 'QTcB', 'HR'].map((key) => mappedMeasure(mappings, key));
     settings.measures = measures.filter(Boolean);
     settings.qtc_measures = measures.slice(0, 2).filter(Boolean);
     settings.start_measure = settings.qtc_measures[0] || null;
   }
 
-  if (module === 'time-to-event') {
+  if (own && module === 'time-to-event') {
     settings.event_filters = fieldSpecs(EVENT_FILTERS, 'ae', mappings, manifest);
     settings.filters = fieldSpecs(['ARM'], 'subject', mappings, manifest);
   }
@@ -174,8 +189,11 @@ export function chartSettings(module, mappings, manifest) {
 }
 
 /**
- * The data to hand one chart's `init`. Most charts take the rows of the one
- * domain they read. The time-to-event explorer takes two tables: the adverse
+ * The data to hand one chart's `init`. A chart whose entry names its tables
+ * (manifest format 2, #181) takes an object of them, each the rows of its
+ * domain's file as loaded; an optional table with no file is left out. Most
+ * other charts take the rows of the one domain they read. safety.viz's
+ * time-to-event explorer takes two tables: the adverse
  * events without the all-blank placeholder rows that stand for event-free
  * participants, and the subject-level table as its population — with the
  * participant column carried under the events' name when the two files call
@@ -184,11 +202,19 @@ export function chartSettings(module, mappings, manifest) {
  * @param {Object<string, {rows: Object[]}>} files The parsed file for each loaded domain.
  * @param {Object<string, Object>} mappings The mapping for each loaded domain.
  * @param {Object} manifest The portfolio manifest.
- * @returns {?(Object[]|{events: Object[], population: Object[]})} The data, or null for a chart that is not drawn in the main pane.
+ * @returns {?(Object[]|Object<string, Object[]>)} The data, or null for a chart that is not drawn in the main pane.
  */
 export function chartData(module, files, mappings, manifest) {
   if (!isDestination(module, manifest)) return null;
-  if (module !== 'time-to-event') return files[manifest.modules[module].domains[0]].rows;
+  const entry = manifest.modules[module];
+  if (entry.tables) {
+    const tables = {};
+    for (const [name, table] of Object.entries(entry.tables)) {
+      if (files[table.domain]) tables[name] = files[table.domain].rows;
+    }
+    return tables;
+  }
+  if (!isOwn(entry) || module !== 'time-to-event') return files[entry.domains[0]].rows;
 
   const term = mapped(mappings, 'ae', 'AEDECOD') || mapped(mappings, 'ae', 'AETERM');
   const events = term ? files.ae.rows.filter((row) => row[term] !== '') : files.ae.rows;
