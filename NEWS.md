@@ -10,7 +10,7 @@ from the section here when the release-candidate PR (dev -> main) merges and is 
 
 ## Deprecated
 
-- **The histogram's `test_normality` setting is deprecated, and the next release removes it.** Its normality screen is an approximate p-value computed in JavaScript, and safety.viz is to compute no statistical test there. Until the screen is removed it still works, and the chart and the console say it is deprecated. [#188](https://github.com/jwildfire/safety.viz/issues/188)
+- **The histogram's `test_normality` and `compare_distributions` settings are deprecated, and a later release removes them together.** Each draws an approximate p-value computed in JavaScript, the normality screen and the group comparison, and safety.viz is to compute no statistical test there. Until they are removed they still work, and the chart and the console say each is deprecated. [#188](https://github.com/jwildfire/safety.viz/issues/188)
 
 ## Also in this release
 

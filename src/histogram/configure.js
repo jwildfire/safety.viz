@@ -2,10 +2,16 @@
 // (dev @ a3ff9f7) under #2.
 
 /**
- * What the console says, once per chart, when `test_normality` is on (#188;
- * @jwildfire, 2026-10-03): the setting is deprecated, and the release after
- * this one removes it and the p-values it computes.
+ * What the console says, once per chart, when `compare_distributions` is on
+ * (#188; @jwildfire, 2026-10-03): like `test_normality`, it is deprecated,
+ * and both are removed together, with the p-values they compute, in a later
+ * release.
  */
+export const COMPARISON_DEPRECATED =
+  'safety.viz histogram: `compare_distributions` is deprecated and will be removed in a later release. ' +
+  'Its group comparison is an approximation computed in JavaScript, and safety.viz is to compute no statistical test there.';
+
+/** What the console says, once per chart, when `test_normality` is on (#188). */
 export const NORMALITY_DEPRECATED =
   'safety.viz histogram: `test_normality` is deprecated and will be removed in a later release. ' +
   'Its normality screen is an approximation computed in JavaScript, and safety.viz is to compute no statistical test there.';
@@ -34,7 +40,7 @@ export const NORMALITY_DEPRECATED =
  * @property {boolean} [annotate_bin_boundaries=false] Label the x-axis with bin boundaries instead of linear ticks on first render.
  * @property {boolean} [test_normality=false] Deprecated, and to be removed in a later release (#188). Annotate the main chart with an approximate Jarque-Bera normality screen, computed in JavaScript; while it is on, the chart and the console say it is deprecated.
  * @property {string} [group_by='sh_none'] Column the small multiples are grouped by on first render; 'sh_none' disables grouping. Unknown columns are added to the group options as-is.
- * @property {boolean} [compare_distributions=false] When grouped, annotate each panel with an approximate one-way ANOVA screen comparing the groups.
+ * @property {boolean} [compare_distributions=false] Deprecated, and to be removed in a later release (#188). When grouped, annotate each panel with an approximate one-way ANOVA screen comparing the groups, computed in JavaScript; while it is on, the chart and the console say it is deprecated.
  * @property {?string} [studyday_col=null] Numeric study-day column for the docked profile's labs-over-time x-axis; when null the profile falls back to input order (#99, PPRF-SH-001).
  * @property {?string} [visit_col=null] Visit-name column passed to the docked profile for point tooltips (#99, PPRF-SH-001).
  * @property {?string} [visitn_col=null] Numeric visit column passed to the docked profile for point ordering context (#99, PPRF-SH-001).

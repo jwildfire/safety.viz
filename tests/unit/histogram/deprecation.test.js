@@ -46,7 +46,8 @@ vi.mock('chart.js', () => {
 });
 
 const { default: histogram } = await import('../../../src/histogram.js');
-const { NORMALITY_DEPRECATED } = await import('../../../src/histogram/configure.js');
+const { NORMALITY_DEPRECATED, COMPARISON_DEPRECATED } =
+  await import('../../../src/histogram/configure.js');
 const { makeRows, ALT_TEST } = await import('../participant-profile/fixture.js');
 
 let warn;
@@ -107,5 +108,51 @@ describe('the deprecated normality screen', () => {
     instance.setSettings({ test_normality: true });
     expect(deprecations()).toEqual([[NORMALITY_DEPRECATED]]);
     expect(instance.mainAnnotation.querySelector('.sv-deprecation')).not.toBeNull();
+  });
+
+  it('SH-CHART-007: with compare_distributions the chart says the group comparison is deprecated and will be removed, once in its annotation while grouped, and the console says so once (#188)', () => {
+    expect(COMPARISON_DEPRECATED).toBe(
+      'safety.viz histogram: `compare_distributions` is deprecated and will be removed in a later release. ' +
+        'Its group comparison is an approximation computed in JavaScript, and safety.viz is to compute no statistical test there.'
+    );
+    const comparisons = () =>
+      warn.mock.calls.filter(([message]) => /compare_distributions/.test(message));
+    const instance = build({ compare_distributions: true, group_by: 'SEX' });
+    const notes = instance.mainAnnotation.querySelectorAll('.sv-deprecation');
+    expect([...notes].map((note) => note.textContent)).toEqual([
+      'Deprecated: the group comparison (compare_distributions) will be removed in a later release.'
+    ]);
+    // Not repeated in the panels.
+    expect(instance.multiplesWrap.querySelector('.sv-deprecation')).toBeNull();
+    // The comparison itself is still drawn in each panel in this release.
+    expect(instance.multiplesWrap.textContent).toMatch(/Group comparison: p=/);
+    expect(comparisons()).toEqual([[COMPARISON_DEPRECATED]]);
+    instance.render();
+    expect(comparisons()).toHaveLength(1);
+    // Only the setting that is on is warned about.
+    expect(deprecations()).toEqual([]);
+  });
+
+  it('SH-CHART-007: without it, nothing is said; turned on later, it is said then (#188)', () => {
+    const comparisons = () =>
+      warn.mock.calls.filter(([message]) => /compare_distributions/.test(message));
+    const instance = build({ group_by: 'SEX' });
+    expect(instance.mainAnnotation.querySelector('.sv-deprecation')).toBeNull();
+    expect(comparisons()).toEqual([]);
+    instance.setSettings({ compare_distributions: true });
+    expect(comparisons()).toEqual([[COMPARISON_DEPRECATED]]);
+    expect(instance.mainAnnotation.querySelector('.sv-deprecation').textContent).toMatch(
+      /compare_distributions/
+    );
+    const source = readFileSync(
+      path.join(
+        path.dirname(fileURLToPath(import.meta.url)),
+        '../../../src/histogram/configure.js'
+      ),
+      'utf8'
+    );
+    expect(source).toMatch(
+      /@property \{boolean\} \[compare_distributions=false\] Deprecated, and to be removed in a later release \(#188\)\./
+    );
   });
 });
