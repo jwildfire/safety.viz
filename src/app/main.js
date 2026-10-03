@@ -4,10 +4,18 @@
 // scripts/build-app.mjs into a global `SafetyVizApp`; not committed.
 
 import charts from '../main.js';
+import * as bundle from '../main.js';
 import { mountApp } from './page.js';
 import { DEMO_STUDIES } from './studies.js';
 
 /* global __SAFETY_VIZ_VERSION__ */
+
+// The app carries safety.viz's charts, so a page that loads only the app has
+// no `SafetyViz` of its own; a second chart library built from safety.viz's kit
+// (#182) looks for `SafetyViz.kit` on the page. The app bundle therefore makes
+// the bundle it carries reachable there, as the script-tag bundle does, unless
+// the page already loaded safety.viz itself.
+if (typeof globalThis !== 'undefined' && !globalThis.SafetyViz) globalThis.SafetyViz = bundle;
 
 const SITE = 'https://jwildfire.github.io/safety.viz/';
 
