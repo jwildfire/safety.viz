@@ -835,9 +835,11 @@ test.describe('demo app with the biomarker charts', () => {
   });
 
   for (const [module, entry] of bioCharts) {
-    test(`APP-BIO-005: ${entry.title} draws on the demo study with no console error, and its statistics line says statistics are unavailable (#182)`, async ({
-      page
-    }) => {
+    test(`APP-BIO-005: ${entry.title} draws on the demo study with no console error, and ${
+      module === 'group-comparison'
+        ? 'opens on an overview that prints no test; with a biomarker chosen, its lines say statistics are unavailable'
+        : 'its statistics line says statistics are unavailable'
+    } (#182)`, async ({ page }) => {
       const errors = watchErrors(page);
       await openOnDemo(page);
       await openChart(page, module);
@@ -847,7 +849,12 @@ test.describe('demo app with the biomarker charts', () => {
       // Drawn with safety.viz's kit, as the safety charts are.
       await expect(page.locator('.sva-chart .sv-root .sv-sidebar')).toBeVisible();
       if (module === 'group-comparison') {
-        // It opens on its overview: every measure, every visit, by arm.
+        // It opens on its overview: every measure, every visit, by arm. The
+        // overview asks R for nothing, so it prints no test.
+        expect(
+          (await statistics(page).allTextContents()).every((text) => text === ''),
+          'the overview prints a statistics line'
+        ).toBe(true);
         const measures = new Set(
           readFileSync(new URL('../../site/data/adbds.csv', import.meta.url), 'utf8')
             .trim()
@@ -1420,15 +1427,19 @@ test.describe('demo app as one file, offline', () => {
     // Three script elements: the inlined app, bio.viz's inlined bundle, and the
     // one line that mounts the app with it.
     expect(html.match(/<script>/g)).toHaveLength(3);
+    // The second is bio.viz's bundle, whole, as it was vendored, less only its
+    // source-map comment line, with any closing script tag escaped.
     const vendored = readFileSync(
       new URL(`../../${APP_LIBRARIES[0].path}`, import.meta.url),
       'utf8'
     );
-    expect(html).toContain(
+    expect(vendored).toContain('//# sourceMappingURL=');
+    const inlined = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1]);
+    expect(inlined[1]).toBe(
       vendored
+        .replace(/^\/\/# sourceMappingURL=.*$/gm, '')
         .replace(/<\/script/gi, '<\\/script')
         .trim()
-        .slice(0, 2000)
     );
   });
 });

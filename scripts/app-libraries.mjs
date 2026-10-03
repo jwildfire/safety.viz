@@ -60,6 +60,15 @@ export const FILE_NO_R =
 export const libraryScript = (library) => readFileSync(path.join(rootDir, library.path), 'utf8');
 
 /**
+ * A script without its source-map comment line: a page that serves or inlines
+ * a vendored bundle serves no map beside it, so the comment would point at
+ * nothing. Nothing else of the script is changed.
+ * @param {string} script The script.
+ * @returns {string} The script, less any `//# sourceMappingURL=` line.
+ */
+export const withoutSourceMap = (script) => script.replace(/^\/\/# sourceMappingURL=.*$\n?/gm, '');
+
+/**
  * A library's chart list, read from its vendored bundle: the bundle is run, as
  * a page runs it, and its `portfolio` is taken. Nothing else of it is used.
  * @param {Object} library An entry of APP_LIBRARIES.
