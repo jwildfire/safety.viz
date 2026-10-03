@@ -2,6 +2,13 @@ import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { test, expect } from '@playwright/test';
 import { captureEvidence } from './evidence.js';
+import {
+  APP_LIBRARIES,
+  FILE_NO_R,
+  FILE_PITCH,
+  HOSTED_PITCH,
+  libraryManifest
+} from '../../scripts/app-libraries.mjs';
 
 // Browser evidence for the demo app (#150, obot.roadmap#352): a full-page app
 // that lists every chart in the portfolio manifest by domain, says which the
@@ -9,7 +16,8 @@ import { captureEvidence } from './evidence.js';
 // APP-* rows in requirements/demo-app.md.
 //
 // The harness page (fixtures/basic-app.html) mounts the real app bundle on the
-// vendored demo extracts. The bundle is a build product, so it is built here.
+// vendored demo extracts, with bio.viz's vendored bundle beside it as the demo
+// page has it (#182). The app bundle is a build product, so it is built here.
 
 const manifest = JSON.parse(
   readFileSync(new URL('../../src/data/portfolio.json', import.meta.url), 'utf8')
@@ -18,13 +26,33 @@ const modules = Object.entries(manifest.modules);
 // Drawn in the main pane: everything but the participant profile, which is a
 // rail inside its host charts.
 const destinations = modules.filter(([module]) => module !== 'participant-profile');
+// bio.viz's charts, from the chart list in its vendored bundle (#182): listed in
+// their own Biomarkers tab after safety.viz's three domains.
+const bioManifest = libraryManifest(APP_LIBRARIES[0]);
+const bioCharts = Object.entries(bioManifest.modules);
+
+// What a drawn chart puts on the page: a canvas, or a table for the table-led
+// adverse-event explorer; bio.viz's correlation matrix and biomarker screen
+// draw grids and lists of their own.
+const DRAWN = 'canvas:visible, table:visible, .bv-matrix-grid:visible, .bv-screen:visible';
+
+// A test that opens every chart in turn is given longer than the default: on
+// CI's runner, beside a test starting R, opening seventeen charts has come
+// close to 30 s (the slowest so far, 22.6 s). 60 s leaves room without hiding
+// a hang (#193).
+const MANY_CHARTS = 60000;
 
 const APP = 'window.__safetyVizApp';
 const item = (page, id) => page.locator(`.sva-item[data-view="${id}"]`);
 const tab = (page, domain) => page.locator(`.sva-tab[data-domain="${domain}"]`);
 
-// A chart sits under its domain's tab: open the tab, then choose the chart.
-const domainOf = (module) => manifest.modules[module].domains[0];
+// A chart sits under its group's tab: open the tab, then choose the chart. A
+// safety chart's group is the first domain it reads; a biomarker chart's is the
+// group its entry names.
+const domainOf = (module) =>
+  manifest.modules[module]
+    ? manifest.modules[module].domains[0]
+    : bioManifest.modules[module].group;
 async function openChart(page, module) {
   await tab(page, domainOf(module)).click();
   await item(page, module).click();
@@ -49,33 +77,35 @@ test.describe('demo app on the demo study', () => {
     execSync('npm run build:app', { stdio: 'inherit', cwd: new URL('../..', import.meta.url) });
   });
 
-  test('APP-PAGE-001: every chart in the manifest is listed under its domain with a status: thirteen charts, three domains (#150, #165)', async ({
+  test('APP-PAGE-001: every chart is listed under its group with a status: thirteen safety charts under three domains, and four biomarker charts in their own tab (#150, #165, #182)', async ({
     page
   }) => {
     await openOnDemo(page);
     await expect(page.locator('.sva-group-title')).toHaveText([
       'Labs and vitals',
       'ECG',
-      'Adverse events'
+      'Adverse events',
+      'Biomarkers'
     ]);
-    // A chip drops the word every chart shares.
-    await expect(page.locator('.sva-group .sva-item-title')).toHaveText(
-      modules.map(([, entry]) => entry.title.replace('Safety ', ''))
-    );
-    await expect(page.locator('.sva-group .sva-tag')).toHaveCount(13);
+    // A safety chart's chip drops the word every safety chart shares.
+    await expect(page.locator('.sva-group .sva-item-title')).toHaveText([
+      ...modules.map(([, entry]) => entry.title.replace('Safety ', '')),
+      ...bioCharts.map(([, entry]) => entry.title)
+    ]);
+    await expect(page.locator('.sva-group .sva-tag')).toHaveCount(17);
     // The experimental Patient Journey Explorer is not offered.
     await expect(page.locator('.sva-app')).not.toContainText('Patient Journey');
   });
 
-  test('APP-PAGE-002: the demo study reads 13 of 13 supported and opens on the first chart (#150, #165)', async ({
+  test('APP-PAGE-002: the demo study reads 17 of 17 supported and opens on the first chart (#150, #165, #182)', async ({
     page
   }) => {
     const errors = watchErrors(page);
     await openOnDemo(page);
     await expect(page.locator('.sva-count')).toHaveText(
-      '13 of 13 charts supported by the loaded data'
+      '17 of 17 charts supported by the loaded data'
     );
-    await expect(page.locator('.sva-tag.sva-ready')).toHaveCount(13);
+    await expect(page.locator('.sva-tag.sva-ready')).toHaveCount(17);
     await expect(item(page, 'data').locator('.sva-tag')).toHaveText('4 files');
     await expect(item(page, 'histogram')).toHaveAttribute('aria-current', 'page');
     await expect(page.locator('.sva-chart .sv-root')).toBeVisible();
@@ -138,7 +168,7 @@ test.describe('demo app on the demo study', () => {
     await expect(item(page, 'shift-plot').locator('.sva-tag')).toHaveText('did not draw');
     await expect(page.locator('.sva-message')).toContainText('Required variable(s) missing: VISIT');
     await expect(page.locator('.sva-count')).toHaveText(
-      '12 of 13 charts supported by the loaded data'
+      '16 of 17 charts supported by the loaded data'
     );
   });
 
@@ -171,7 +201,7 @@ test.describe('demo app on the demo study', () => {
   }) => {
     await page.goto('/tests/e2e/fixtures/basic-app.html?empty');
     await expect(page.locator('.sva-count')).toHaveText(
-      '0 of 13 charts supported by the loaded data'
+      '0 of 17 charts supported by the loaded data'
     );
     await expect(item(page, 'data')).toHaveAttribute('aria-current', 'page');
     await expect(page.locator('.sva-data')).toContainText('No files are loaded.');
@@ -233,9 +263,8 @@ test.describe('demo app on the demo study', () => {
       expect(size.overflow).toBeLessThanOrEqual(0);
       if (width === 1440) expect(size.fits).toBe(true);
     }
-    await expect(page.locator('.sva-footer .sva-pitch')).toHaveText(
-      'Everything runs in this browser. Nothing is sent anywhere.'
-    );
+    // The hosted app's promise, as the harness page mounts it (#183).
+    await expect(page.locator('.sva-footer .sva-pitch')).toHaveText(HOSTED_PITCH);
   });
 
   test('APP-PAGE-024: the open chart’s chip is the view’s visible name: no heading and no count line take up the page (#150)', async ({
@@ -273,12 +302,14 @@ test.describe('demo app on the demo study', () => {
     await expect(page.locator('.sva-tab .sva-tab-title')).toHaveText([
       'Labs and vitals',
       'ECG',
-      'Adverse events'
+      'Adverse events',
+      'Biomarkers'
     ]);
     await expect(page.locator('.sva-tab .sva-tab-count')).toHaveText([
       '9 of 9',
       '1 of 1',
-      '3 of 3'
+      '3 of 3',
+      '4 of 4'
     ]);
     // The demo opens on the first chart, so its domain is open.
     await expect(tab(page, 'bds')).toHaveAttribute('aria-pressed', 'true');
@@ -337,6 +368,8 @@ test.describe('demo app on the demo study', () => {
   test('APP-CHART-003: with every optional row cleared by hand, every chart still draws, reading none of them (#165)', async ({
     page
   }) => {
+    // It opens every chart, one after another: more than the default allows on a busy runner.
+    test.setTimeout(MANY_CHARTS);
     const errors = watchErrors(page);
     await openOnDemo(page);
     // On the data view, where a mapping edit redraws the table and no chart.
@@ -346,12 +379,13 @@ test.describe('demo app on the demo study', () => {
       const app = ${APP};
       const ready = () =>
         Object.values(app.status()).filter((status) => status.state === 'ready').length;
+      const all = ready();
       const done = [];
       for (const [domain, mapping] of Object.entries(app.state.mappings)) {
         for (const [column, row] of Object.entries(mapping.columns)) {
           if (!row.value) continue;
           app.setColumn(domain, column, null);
-          if (ready() < 13) app.setColumn(domain, column, row.value);
+          if (ready() < all) app.setColumn(domain, column, row.value);
           else done.push(domain + '.' + column);
         }
       }
@@ -362,14 +396,12 @@ test.describe('demo app on the demo study', () => {
       expect.arrayContaining(['bds.STRESU', 'bds.STNRLO', 'bds.VISITNUM', 'eg.CHG', 'ae.AESER'])
     );
     await expect(page.locator('.sva-count')).toHaveText(
-      '13 of 13 charts supported by the loaded data'
+      '17 of 17 charts supported by the loaded data'
     );
-    for (const [module, entry] of destinations) {
+    for (const [module, entry] of [...destinations, ...bioCharts]) {
       await openChart(page, module);
       await expect(page.locator('.sva-title')).toHaveText(entry.title);
-      await expect(
-        page.locator('.sva-chart').locator('canvas:visible, table:visible').first()
-      ).toBeVisible();
+      await expect(page.locator('.sva-chart').locator(DRAWN).first()).toBeVisible();
       await expect(item(page, module).locator('.sva-tag')).toHaveText('ready');
     }
     // The histogram names its measures without the unit it was told not to
@@ -461,6 +493,122 @@ async function correct(page) {
   }
 }
 
+// A second chart library (#181, obot.roadmap#366): the harness page hands the
+// app the stand-in library (fixtures/stand-in-library.js) beside safety.viz's
+// own charts, on the pilot demo study. Its one drawing chart takes named
+// tables and refuses a null setting; its other entry names a factory the
+// library does not have.
+test.describe('demo app with a second chart library', () => {
+  test.beforeAll(() => {
+    execSync('npm run build:app', { stdio: 'inherit', cwd: new URL('../..', import.meta.url) });
+  });
+
+  async function openWithLibrary(page) {
+    await page.goto('/tests/e2e/fixtures/basic-app-library.html');
+    await page.waitForFunction(() => window.__safetyVizApp);
+    await page.evaluate(`${APP}.ready`);
+  }
+  const standInLog = (page) => page.evaluate(() => JSON.parse(JSON.stringify(window.__standInLog)));
+
+  test('APP-LIB-015: on the demo study the library’s charts have their own tab with a status each, after the three domains, and the count includes them (#181)', async ({
+    page
+  }) => {
+    const errors = watchErrors(page);
+    await openWithLibrary(page);
+    await expect(page.locator('.sva-tab .sva-tab-title')).toHaveText([
+      'Labs and vitals',
+      'ECG',
+      'Adverse events',
+      'Stand-in charts'
+    ]);
+    await expect(tab(page, 'stand-in').locator('.sva-tab-count')).toHaveText('1 of 2');
+    await expect(page.locator('.sva-count')).toHaveText(
+      '14 of 15 charts supported by the loaded data'
+    );
+    await tab(page, 'stand-in').click();
+    await expect(item(page, 'stand-in-strip').locator('.sva-tag')).toHaveText('ready');
+    await expect(item(page, 'stand-in-absent').locator('.sva-tag')).toHaveText('not loaded');
+    // The thirteen safety charts are listed as before, each ready.
+    await expect(page.locator('.sva-group:not([data-group="stand-in"]) .sva-item')).toHaveCount(13);
+    await expect(
+      page.locator('.sva-group:not([data-group="stand-in"]) .sva-tag.sva-ready')
+    ).toHaveCount(13);
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-LIB-016: its chart is mounted with its named tables built from the loaded files, an unmapped optional setting left out, and removed when a safety chart is opened (#181)', async ({
+    page
+  }) => {
+    const errors = watchErrors(page);
+    await openWithLibrary(page);
+    await tab(page, 'stand-in').click();
+    await expect(item(page, 'stand-in-strip')).toHaveAttribute('aria-current', 'page');
+    await expect(page.locator('.sva-chart .stand-in-strip')).toHaveAttribute(
+      'data-tables',
+      'results,participants'
+    );
+    const [init] = await standInLog(page);
+    const counts = await page.evaluate(() => ({
+      results: window.__safetyVizApp.state.files.bds.rows.length,
+      participants: window.__safetyVizApp.state.files.subject.rows.length
+    }));
+    expect(init).toMatchObject({
+      event: 'init',
+      tables: ['results', 'participants'],
+      rows: counts
+    });
+    // The demo labs file has no study day: day_col is unmapped, and left out, not null.
+    expect(init.settings).toEqual({
+      id_col: 'USUBJID',
+      measure_col: 'TEST',
+      value_col: 'STRESN',
+      visit_col: 'VISIT',
+      group_col: 'ARM'
+    });
+    // Back to a safety chart: the stand-in is destroyed and the histogram draws.
+    await tab(page, 'bds').click();
+    await item(page, 'histogram').click();
+    await expect(page.locator('.stand-in-strip')).toHaveCount(0);
+    expect((await standInLog(page)).at(-1)).toEqual({ event: 'destroy' });
+    await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-LIB-017: with the labs file alone its chart still draws, handed only the table it needs (#181)', async ({
+    page
+  }) => {
+    const errors = watchErrors(page);
+    await openWithLibrary(page);
+    await page.evaluate(async () => {
+      const text = await fetch('/site/data/adbds.csv').then((response) => response.text());
+      window.__safetyVizApp.loadFiles([{ name: 'adbds.csv', text }]);
+      window.__safetyVizApp.select('stand-in-strip');
+    });
+    await expect(page.locator('.sva-chart .stand-in-strip')).toHaveAttribute(
+      'data-tables',
+      'results'
+    );
+    expect((await standInLog(page)).at(-1)).toMatchObject({ event: 'init', tables: ['results'] });
+    // Its optional participant table's group setting has no file, so it is not passed either.
+    expect((await standInLog(page)).at(-1).settings).not.toHaveProperty('group_col');
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-LIB-018: a chart whose factory the library does not have reads "not loaded" in words, and nothing throws (#181)', async ({
+    page
+  }) => {
+    const errors = watchErrors(page);
+    await openWithLibrary(page);
+    await tab(page, 'stand-in').click();
+    await item(page, 'stand-in-absent').click();
+    await expect(page.locator('.sva-message')).toHaveText(
+      'The stand-in library on this page has no chart called absent, so this chart cannot be drawn.'
+    );
+    await expect(page.locator('.sva-chart')).toHaveCount(0);
+    expect(errors).toEqual([]);
+  });
+});
+
 test.describe('demo app data panel on a renamed-column study', () => {
   test.beforeAll(() => {
     execSync('npm run build:app', { stdio: 'inherit', cwd: new URL('../..', import.meta.url) });
@@ -503,8 +651,9 @@ test.describe('demo app data panel on a renamed-column study', () => {
   }) => {
     await openEmpty(page);
     await chooseFiles(page, STUDY);
+    // The biomarker charts read columns the renamed study's guesses already fill.
     await expect(page.locator('.sva-count')).toHaveText(
-      '7 of 13 charts supported by the loaded data'
+      '11 of 17 charts supported by the loaded data'
     );
     for (const [module, sentence] of [
       ['hep-explorer', 'Not mapped yet: Upper limit of normal, Total bilirubin.'],
@@ -541,12 +690,14 @@ test.describe('demo app data panel on a renamed-column study', () => {
   test('APP-LOAD-007: with the mapping corrected by hand, every chart the study supports draws (#151)', async ({
     page
   }) => {
+    // It opens every chart, one after another: more than the default allows on a busy runner.
+    test.setTimeout(MANY_CHARTS);
     const errors = watchErrors(page);
     await openEmpty(page);
     await chooseFiles(page, STUDY);
     await correct(page);
     await expect(page.locator('.sva-count')).toHaveText(
-      '13 of 13 charts supported by the loaded data'
+      '17 of 17 charts supported by the loaded data'
     );
     await expect(mappingRow(page, 'bds', 'column', 'STNRHI').locator('.sva-tag')).toHaveText(
       'chosen'
@@ -565,15 +716,17 @@ test.describe('demo app data panel on a renamed-column study', () => {
     await captureEvidence(page, 'APP-LOAD-007', 'renamed-study-chart');
   });
 
-  test('APP-LOAD-014: no network request leaves the page from the first file selection onward (#151)', async ({
+  test('APP-LOAD-014: no network request leaves the page from the first file selection onward, unless the reader starts R (#151, #183)', async ({
     page
   }) => {
+    // It opens every chart, one after another: more than the default allows on a busy runner.
+    test.setTimeout(MANY_CHARTS);
     await openEmpty(page);
     const requests = [];
     page.on('request', (request) => requests.push(`${request.method()} ${request.url()}`));
     await chooseFiles(page, [...STUDY, NO_DOMAIN]);
     await correct(page);
-    for (const [module] of destinations) await openChart(page, module);
+    for (const [module] of [...destinations, ...bioCharts]) await openChart(page, module);
     await item(page, 'data').click();
     const download = page.waitForEvent('download');
     await page.locator('[data-action="download-mapping"]').click();
@@ -607,11 +760,11 @@ test.describe('demo app data panel on a renamed-column study', () => {
     // A fresh page: the files and the mapping file chosen together.
     await page.reload();
     await expect(page.locator('.sva-count')).toHaveText(
-      '0 of 13 charts supported by the loaded data'
+      '0 of 17 charts supported by the loaded data'
     );
     await page.locator('.sva-file-input').setInputFiles([...STUDY, saved]);
     await expect(page.locator('.sva-count')).toHaveText(
-      '13 of 13 charts supported by the loaded data'
+      '17 of 17 charts supported by the loaded data'
     );
     const after = await page.evaluate(`JSON.stringify(${APP}.state.mappings)`);
     expect(JSON.parse(after)).toEqual(JSON.parse(before));
@@ -630,7 +783,7 @@ test.describe('demo app data panel on a renamed-column study', () => {
       'labs.xpt is not a CSV or JSON file. SAS transport and sas7bdat files are not supported yet.'
     ]);
     await expect(page.locator('.sva-count')).toHaveText(
-      '0 of 13 charts supported by the loaded data'
+      '0 of 17 charts supported by the loaded data'
     );
   });
 
@@ -660,6 +813,479 @@ const step = (page, id) => page.locator(`.sva-step[data-step="${id}"]`);
 const stepStatus = (page, id) => step(page, id).locator('.sva-step-status');
 const sideAction = (page, name) => page.locator(`.sva-side [data-action="${name}"]`);
 
+// The biomarker charts (#182, obot.roadmap#366): bio.viz's charts in the app,
+// from its vendored bundle, handed in through the second-library seam. No R is
+// on the page in this task, so each chart draws and its statistics line says
+// statistics are unavailable. The sentence is bio.viz's own.
+// Since R on request (#183) the hosted app hands the charts a connection that
+// waits for the reader, so until R is started each line says statistics need
+// R and what starting it downloads (APP-R-006).
+const NO_R =
+  'Statistics need R. Start R to compute them: it downloads about 13 MB, once, from ' +
+  'webr.r-wasm.org, and the study’s data stays in this browser.';
+
+test.describe('demo app with the biomarker charts', () => {
+  test.beforeAll(() => {
+    execSync('npm run build:app', { stdio: 'inherit', cwd: new URL('../..', import.meta.url) });
+  });
+
+  const statistics = (page) => page.locator('.sva-chart .bv-statistic');
+  const sections = (page) => page.locator('.sva-chart .sv-section-title');
+
+  test('APP-BIO-004: on the demo study the four biomarker charts have a tab of their own after the three domains, each ready, and the count includes them (#182)', async ({
+    page
+  }) => {
+    await openOnDemo(page);
+    expect(bioCharts).toHaveLength(4);
+    await expect(tab(page, 'biomarkers').locator('.sva-tab-title')).toHaveText('Biomarkers');
+    await expect(tab(page, 'biomarkers').locator('.sva-tab-count')).toHaveText('4 of 4');
+    await expect(tab(page, 'biomarkers')).toHaveClass(/sva-library-group/);
+    await expect(page.locator('.sva-tab').last()).toHaveAttribute('data-domain', 'biomarkers');
+    await tab(page, 'biomarkers').click();
+    for (const [module, entry] of bioCharts) {
+      await expect(item(page, module).locator('.sva-item-title')).toHaveText(entry.title);
+      await expect(item(page, module).locator('.sva-tag')).toHaveText('ready');
+    }
+    await expect(page.locator('.sva-count')).toHaveText(
+      '17 of 17 charts supported by the loaded data'
+    );
+  });
+
+  for (const [module, entry] of bioCharts) {
+    test(`APP-BIO-005: ${entry.title} draws on the demo study with no console error, and ${
+      module === 'group-comparison'
+        ? 'opens on an overview that prints no test; with a biomarker chosen, its lines say statistics need R until R is started'
+        : 'its statistics line says statistics need R until R is started'
+    } (#182, #183)`, async ({ page }) => {
+      const errors = watchErrors(page);
+      await openOnDemo(page);
+      await openChart(page, module);
+      await expect(page.locator('.sva-title')).toHaveText(entry.title);
+      await expect(page.locator('.sva-chart').locator(DRAWN).first()).toBeVisible();
+      await expect(item(page, module).locator('.sva-tag')).toHaveText('ready');
+      // Drawn with safety.viz's kit, as the safety charts are.
+      await expect(page.locator('.sva-chart .sv-root .sv-sidebar')).toBeVisible();
+      if (module === 'group-comparison') {
+        // It opens on its overview: every measure, every visit, by arm. The
+        // overview asks R for nothing, so it prints no test.
+        expect(
+          (await statistics(page).allTextContents()).every((text) => text === ''),
+          'the overview prints a statistics line'
+        ).toBe(true);
+        const measures = new Set(
+          readFileSync(new URL('../../site/data/adbds.csv', import.meta.url), 'utf8')
+            .trim()
+            .split(/\r?\n/)
+            .slice(1)
+            .map((line) => line.split(',')[8])
+        ).size;
+        await expect(page.locator('.sva-chart .bv-overview-count').first()).toContainText(
+          `of ${measures} biomarkers shown`
+        );
+        await expect(page.locator('.sva-chart .bv-overview-panel').first()).toBeVisible();
+        const groupBy = page
+          .locator('.sva-chart .sv-control', { has: page.locator('label:text-is("Group by")') })
+          .locator('select');
+        await expect(groupBy).toHaveValue('ARM');
+        // One biomarker open: each visit's line, where a test applies, says so.
+        await page
+          .locator('.sva-chart .sv-control', { has: page.locator('label:text-is("Biomarker")') })
+          .locator('select')
+          .selectOption({ index: 1 });
+        await expect(statistics(page).filter({ hasText: NO_R }).first()).toBeVisible();
+        for (const text of await statistics(page).allTextContents()) {
+          expect(text === '' || text === NO_R || text.startsWith('Statistics: no test')).toBe(true);
+        }
+      } else {
+        await expect(statistics(page)).toHaveText(NO_R);
+      }
+      expect(errors).toEqual([]);
+    });
+  }
+
+  test('APP-BIO-006: with the labs and vitals file alone every biomarker chart draws, with no filters (#182)', async ({
+    page
+  }) => {
+    // It opens every chart, one after another: more than the default allows on a busy runner.
+    test.setTimeout(MANY_CHARTS);
+    const errors = watchErrors(page);
+    await openOnDemo(page);
+    // On the demo study the participant file gives the group comparison its filters.
+    await openChart(page, 'group-comparison');
+    await expect(sections(page)).toContainText(['Filters']);
+    await page.evaluate(async () => {
+      const text = await fetch('/site/data/adbds.csv').then((response) => response.text());
+      window.__safetyVizApp.loadFiles([{ name: 'adbds.csv', text }]);
+    });
+    for (const [module, entry] of bioCharts) {
+      await openChart(page, module);
+      await expect(page.locator('.sva-title')).toHaveText(entry.title);
+      await expect(item(page, module).locator('.sva-tag')).toHaveText('ready');
+      await expect(page.locator('.sva-chart').locator(DRAWN).first()).toBeVisible();
+      await expect(sections(page).first()).toBeVisible();
+      expect(await sections(page).allTextContents()).not.toContain('Filters');
+    }
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-BIO-007: on the study with renamed columns, the one mapping readies both libraries’ charts, and each biomarker chart draws (#182)', async ({
+    page
+  }) => {
+    // It opens every chart, one after another: more than the default allows on a busy runner.
+    test.setTimeout(MANY_CHARTS);
+    const errors = watchErrors(page);
+    await openEmpty(page);
+    await chooseFiles(page, STUDY);
+    await correct(page);
+    await expect(page.locator('.sva-count')).toHaveText(
+      '17 of 17 charts supported by the loaded data'
+    );
+    for (const [module, entry] of bioCharts) {
+      await openChart(page, module);
+      await expect(page.locator('.sva-title')).toHaveText(entry.title);
+      await expect(item(page, module).locator('.sva-tag')).toHaveText('ready');
+      await expect(page.locator('.sva-chart').locator(DRAWN).first()).toBeVisible();
+    }
+    // The group comparison reads the renamed files through the same mapping:
+    // its measures are the labs file's own.
+    await openChart(page, 'group-comparison');
+    const options = await page
+      .locator('.sva-chart .sv-control', { has: page.locator('label:text-is("Biomarker")') })
+      .locator('option')
+      .allTextContents();
+    expect(options.length).toBeGreaterThan(1);
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-BIO-008: at phone width, with the Biomarkers tab and a biomarker chart open, the page does not scroll sideways (#182)', async ({
+    page
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await openOnDemo(page);
+    const overflow = () =>
+      page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    await tab(page, 'biomarkers').scrollIntoViewIfNeeded();
+    await tab(page, 'biomarkers').click();
+    await expect(page.locator('.sva-title')).toHaveText(bioCharts[0][1].title);
+    await expect(page.locator('.sva-chart').locator(DRAWN).first()).toBeVisible();
+    expect(await overflow()).toBeLessThanOrEqual(0);
+    for (const [module] of bioCharts.slice(1)) {
+      await item(page, module).scrollIntoViewIfNeeded();
+      await item(page, module).click();
+      await expect(page.locator('.sva-chart').locator(DRAWN).first()).toBeVisible();
+      expect(await overflow(), `${module} scrolls the page sideways`).toBeLessThanOrEqual(0);
+    }
+  });
+});
+
+// R on request (#183, obot.roadmap#366; @jwildfire, 2026-10-02: "R on
+// request"). The biomarker tab has one control that starts R in the browser,
+// with bio.viz's own connection and the vendored gsm.bio statistics file.
+// Before it is pressed nothing is fetched; after, one R answers every chart.
+// The comparison with desktop R reads tests/fixtures/app-statistics/, written
+// from the app by scripts/derive-app-statistics.mjs and scripts/app-statistics.R.
+const R_HOST = /webr\.r-wasm\.org|statistics\.R/;
+const NEED_R = NO_R;
+const expectedStatistics = JSON.parse(
+  readFileSync(new URL('./../fixtures/app-statistics/expected.json', import.meta.url), 'utf8')
+);
+const biomarkerControl = (page) =>
+  page
+    .locator('.sva-chart .sv-control', { has: page.locator('label:text-is("Biomarker")') })
+    .locator('select');
+const settled = (page, timeout = 100000) =>
+  page.waitForFunction(
+    () =>
+      ![...document.querySelectorAll('.sva-chart .bv-statistic')].some((line) =>
+        /waiting/.test(line.textContent)
+      ),
+    null,
+    { timeout }
+  );
+// Requests to R's hosts, and the imports of webR itself, which is what starting R costs.
+const rRequests = (requests) => requests.filter((url) => R_HOST.test(url));
+const webrImports = (requests) => requests.filter((url) => /webr\.mjs$/.test(url));
+
+// Two answers agree when every number is the same to twelve significant figures
+// and everything else is the same.
+function same(actual, expected, where = 'value') {
+  if (typeof expected === 'number' && typeof actual === 'number') {
+    const scale = Math.max(Math.abs(expected), Number.MIN_VALUE);
+    expect(
+      Math.abs(actual - expected) / scale,
+      `${where}: ${actual} against ${expected}`
+    ).toBeLessThan(1e-12);
+    return;
+  }
+  if (Array.isArray(expected)) {
+    expect(Array.isArray(actual), `${where} is not a list`).toBe(true);
+    expect(actual.length, `${where}: length`).toBe(expected.length);
+    expected.forEach((item, index) => same(actual[index], item, `${where}[${index}]`));
+    return;
+  }
+  if (expected && typeof expected === 'object') {
+    expect(Object.keys(actual || {}).sort(), `${where}: keys`).toEqual(
+      Object.keys(expected).sort()
+    );
+    for (const key of Object.keys(expected)) same(actual[key], expected[key], `${where}.${key}`);
+    return;
+  }
+  expect(actual, where).toEqual(expected);
+}
+
+test.describe('demo app with R on request', () => {
+  test.beforeAll(() => {
+    execSync('npm run build:app', { stdio: 'inherit', cwd: new URL('../..', import.meta.url) });
+  });
+
+  test('APP-R-006: before the control is pressed, no chart of either library asks R’s hosts for anything, and each biomarker chart’s statistics line says statistics need R and what that downloads (#183)', async ({
+    page
+  }) => {
+    // It opens every chart, one after another: more than the default allows on a busy runner.
+    test.setTimeout(MANY_CHARTS);
+    const errors = watchErrors(page);
+    const requests = [];
+    page.on('request', (request) => requests.push(request.url()));
+    await openOnDemo(page);
+    for (const [module] of [...destinations, ...bioCharts]) {
+      await openChart(page, module);
+      await expect(item(page, module).locator('.sva-tag')).toHaveText('ready');
+      if (!bioManifest.modules[module]) continue;
+      if (module === 'group-comparison') await biomarkerControl(page).selectOption({ index: 1 });
+      await settled(page, 20000);
+      await expect(
+        page.locator('.sva-chart .bv-statistic').filter({ hasText: NEED_R }).first()
+      ).toBeVisible();
+    }
+    await tab(page, 'biomarkers').click();
+    await expect(page.locator('.sva-action')).toHaveText('Start R');
+    await expect(page.locator('.sva-action')).toHaveAttribute('title', NEED_R);
+    expect(requests.filter((url) => R_HOST.test(url))).toEqual([]);
+    expect(await page.evaluate(() => window.__rConnections)).toBe(0);
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-R-007: pressing the control starts R once, about 13 MB from webr.r-wasm.org, and the group comparison prints R’s test under each visit, equal to desktop R on the same rows (#183)', async ({
+    page,
+    context
+  }) => {
+    test.setTimeout(240000);
+    const errors = watchErrors(page);
+    let transferred = 0;
+    context.on('requestfinished', async (request) => {
+      if (/webr\.r-wasm\.org/.test(request.url()))
+        transferred += (await request.sizes()).responseBodySize;
+    });
+    await openOnDemo(page);
+    await openChart(page, expectedStatistics.chart);
+    await expect(page.locator('.sva-action-hint')).toHaveText('About 13 MB, once');
+    // Pressed on the overview, which asks R for nothing: R starts all the same,
+    // and the control says so, then that it is running.
+    await page.locator('.sva-action').click();
+    await expect(page.locator('.sva-action')).toHaveText('Starting R…');
+    await expect(page.locator('.sva-action')).toHaveText('R started', { timeout: 150000 });
+    await expect(page.locator('.sva-action')).toBeDisabled();
+    await expect(page.locator('.sva-action')).toHaveAttribute(
+      'title',
+      'R is running in this browser.'
+    );
+    expect(transferred).toBeGreaterThan(10e6);
+    await biomarkerControl(page).selectOption({ label: expectedStatistics.measure });
+    await page.waitForFunction(
+      (count) => window.__rAnswers.length >= count,
+      expectedStatistics.answers.length,
+      { timeout: 150000 }
+    );
+    await settled(page);
+    expect(await page.evaluate(() => window.__rConnections)).toBe(1);
+    const answers = await page.evaluate(() => window.__rAnswers);
+    expect(answers).toHaveLength(expectedStatistics.answers.length);
+    answers.forEach((answer, index) => {
+      const expected = expectedStatistics.answers[index];
+      expect(answer.name).toBe(expected.name);
+      expect(answer.args).toEqual(expected.args);
+      expect(answer.rows).toBe(expected.rows);
+      expect(answer.answer.status).toBe('ok');
+      expect(answer.answer.form).toBe('browser');
+      same(answer.answer.value, expected.value, `answer ${index}`);
+    });
+    // What the chart prints is R's: each panel R tested names R's method and counts.
+    const printed = await page.locator('.sva-chart .bv-statistic').allTextContents();
+    const tested = expectedStatistics.answers.filter((answer) => answer.value.status === 'ok');
+    expect(tested.length).toBeGreaterThan(0);
+    for (const answer of tested) {
+      const counts = Object.entries(answer.value.counts)
+        .map(([group, n]) => `${group} n = ${n}`)
+        .join(', ');
+      expect(
+        printed.some((line) => line.startsWith(answer.value.method) && line.includes(counts)),
+        `no line prints ${answer.value.method} with ${counts}`
+      ).toBe(true);
+    }
+    // About 13 MB, as the statistics line and the control say.
+    expect(transferred).toBeGreaterThan(10e6);
+    expect(transferred).toBeLessThan(16e6);
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-R-017: pressing the control with a biomarker chosen keeps it: the open chart is not drawn again, and prints R’s test for that biomarker (#183)', async ({
+    page
+  }) => {
+    test.setTimeout(240000);
+    const errors = watchErrors(page);
+    await openOnDemo(page);
+    await openChart(page, expectedStatistics.chart);
+    await biomarkerControl(page).selectOption({ label: expectedStatistics.measure });
+    await settled(page, 20000);
+    await expect(
+      page.locator('.sva-chart .bv-statistic').filter({ hasText: NEED_R }).first()
+    ).toBeVisible();
+    await page.locator('.sva-action').click();
+    await page.waitForFunction(
+      (count) => window.__rAnswers.length >= count,
+      expectedStatistics.answers.length,
+      { timeout: 150000 }
+    );
+    await settled(page);
+    // Still the biomarker the reader chose, with R's answers under its visits.
+    await expect(biomarkerControl(page)).toHaveValue(expectedStatistics.measure);
+    const [tested] = expectedStatistics.answers.filter((answer) => answer.value.status === 'ok');
+    await expect(
+      page.locator('.sva-chart .bv-statistic').filter({ hasText: tested.value.method }).first()
+    ).toBeVisible();
+    await expect(page.locator('.sva-chart .bv-statistic').filter({ hasText: NEED_R })).toHaveCount(
+      0
+    );
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-R-021: the chart open when R is started stops saying R is starting once R has started: no statistics line it prints afterwards carries the starting note (#193)', async ({
+    page
+  }) => {
+    test.setTimeout(240000);
+    const errors = watchErrors(page);
+    await openOnDemo(page);
+    await openChart(page, expectedStatistics.chart);
+    await page.locator('.sva-action').click();
+    await expect(page.locator('.sva-action')).toHaveText('R started', { timeout: 150000 });
+    // Every statistics line the open chart prints from here on is recorded.
+    await page.evaluate(() => {
+      window.__lines = [];
+      const record = () => {
+        for (const line of document.querySelectorAll('.sva-chart .bv-statistic')) {
+          window.__lines.push(line.textContent);
+        }
+      };
+      new MutationObserver(record).observe(document.querySelector('.sva-content'), {
+        subtree: true,
+        childList: true,
+        characterData: true
+      });
+    });
+    await biomarkerControl(page).selectOption({ label: expectedStatistics.measure });
+    await page.waitForFunction(
+      (count) => window.__rAnswers.length >= count,
+      expectedStatistics.answers.length,
+      { timeout: 150000 }
+    );
+    await settled(page);
+    const lines = await page.evaluate(() => window.__lines);
+    expect(lines.length).toBeGreaterThan(0);
+    expect(lines.filter((line) => /R is starting/.test(line))).toEqual([]);
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-R-018: when R’s host cannot be reached, the control says R did not start and offers to try again, and charts opened afterwards do not try to start R each time (#183)', async ({
+    page,
+    context
+  }) => {
+    test.setTimeout(120000);
+    await context.route(/webr\.r-wasm\.org/, (route) => route.abort());
+    const requests = [];
+    page.on('request', (request) => requests.push(request.url()));
+    await openOnDemo(page);
+    await openChart(page, expectedStatistics.chart);
+    await biomarkerControl(page).selectOption({ label: expectedStatistics.measure });
+    await page.locator('.sva-action').click();
+    const action = page.locator('.sva-action');
+    await expect(action).toHaveText('Try R again', { timeout: 60000 });
+    await expect(action).toBeEnabled();
+    await expect(action).toHaveAttribute(
+      'title',
+      /^R did not start: .* Try again; if it fails again, reload the page\.$/
+    );
+    await settled(page, 30000);
+    await expect(
+      page.locator('.sva-chart .bv-statistic').filter({ hasText: 'R did not start' }).first()
+    ).toBeVisible();
+    const fetched = rRequests(requests).length;
+    for (const module of ['association-scatter', 'correlation-matrix', 'biomarker-screen']) {
+      await item(page, module).click();
+      await settled(page, 30000);
+      await expect(page.locator('.sva-chart .bv-statistic').first()).toContainText(
+        'R did not start'
+      );
+    }
+    expect(rRequests(requests)).toHaveLength(fetched);
+  });
+
+  test('APP-R-019: when the statistics file cannot be read, R is not started again for each chart opened afterwards, and trying again starts it once (#183)', async ({
+    page,
+    context
+  }) => {
+    test.setTimeout(240000);
+    await context.route(/statistics\.R/, (route) =>
+      route.fulfill({ status: 404, body: 'not here' })
+    );
+    const requests = [];
+    page.on('request', (request) => requests.push(request.url()));
+    await openOnDemo(page);
+    await openChart(page, 'association-scatter');
+    await page.locator('.sva-action').click();
+    await expect(page.locator('.sva-action')).toHaveText('Try R again', { timeout: 150000 });
+    await settled(page, 30000);
+    await expect(page.locator('.sva-chart .bv-statistic')).toContainText('R did not start');
+    const first = { all: rRequests(requests).length, webr: webrImports(requests).length };
+    expect(first.webr).toBe(1);
+    for (const module of ['correlation-matrix', 'biomarker-screen', 'group-comparison']) {
+      await item(page, module).click();
+      await settled(page, 30000);
+    }
+    expect(rRequests(requests)).toHaveLength(first.all);
+    // Trying again makes one fresh start: the statistics file is asked for once more.
+    await page.locator('.sva-action').click();
+    await expect(page.locator('.sva-action')).toHaveText('Try R again', { timeout: 150000 });
+    expect(requests.filter((url) => /statistics\.R/.test(url))).toHaveLength(2);
+  });
+
+  test('APP-R-008: a second biomarker chart opened after R has started uses the same R: no second connection and no second download (#183)', async ({
+    page
+  }) => {
+    test.setTimeout(240000);
+    const errors = watchErrors(page);
+    const requests = [];
+    page.on('request', (request) => requests.push(request.url()));
+    await openOnDemo(page);
+    await openChart(page, 'association-scatter');
+    await page.locator('.sva-action').click();
+    await expect(page.locator('.sva-chart .bv-statistic')).toContainText('correlation', {
+      timeout: 150000
+    });
+    const fetched = requests.filter((url) => R_HOST.test(url)).length;
+    expect(fetched).toBeGreaterThan(0);
+    for (const module of ['correlation-matrix', 'biomarker-screen']) {
+      await item(page, module).click();
+      await settled(page);
+      const lines = await page.locator('.sva-chart .bv-statistic').allTextContents();
+      expect(lines.join(' ')).not.toContain('Statistics need R');
+      expect(lines.join(' ')).not.toContain('no R is attached');
+    }
+    expect(requests.filter((url) => R_HOST.test(url))).toHaveLength(fetched);
+    expect(await page.evaluate(() => window.__rConnections)).toBe(1);
+    expect(errors).toEqual([]);
+  });
+});
+
 test.describe('demo app data view sidebar', () => {
   test.beforeAll(() => {
     execSync('npm run build:app', { stdio: 'inherit', cwd: new URL('../..', import.meta.url) });
@@ -683,7 +1309,7 @@ test.describe('demo app data view sidebar', () => {
     await expect(stepStatus(page, 'load')).toHaveText('4 files loaded');
     await expect(step(page, 'map')).toHaveAttribute('data-state', 'current');
     await expect(stepStatus(page, 'map')).toHaveText('23 guessed, 6 needed by a chart');
-    await expect(stepStatus(page, 'open')).toHaveText('7 of 13 charts ready');
+    await expect(stepStatus(page, 'open')).toHaveText('11 of 17 charts ready');
     await captureEvidence(page, 'APP-LOAD-017', 'sidebar');
 
     await correct(page);
@@ -691,7 +1317,7 @@ test.describe('demo app data view sidebar', () => {
     await expect(stepStatus(page, 'map')).toHaveText('23 guessed, 0 needed by a chart');
     await expect(step(page, 'map')).toHaveAttribute('data-state', 'done');
     await expect(step(page, 'open')).toHaveAttribute('data-state', 'current');
-    await expect(stepStatus(page, 'open')).toHaveText('13 of 13 charts ready');
+    await expect(stepStatus(page, 'open')).toHaveText('17 of 17 charts ready');
     await sideAction(page, 'open-chart').click();
     await expect(item(page, 'histogram')).toHaveAttribute('aria-current', 'page');
     await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
@@ -731,7 +1357,7 @@ test.describe('demo app data view sidebar', () => {
     await expect(page.locator('.sva-loaded-empty')).toHaveText('No files are loaded.');
     await expect(item(page, 'data').locator('.sva-tag')).toHaveText('no files');
     await expect(page.locator('.sva-count')).toHaveText(
-      '0 of 13 charts supported by the loaded data'
+      '0 of 17 charts supported by the loaded data'
     );
     await expect(sideAction(page, 'reset')).toHaveCount(0);
     // The same files can be chosen again, and arrive unmapped as they first did.
@@ -774,11 +1400,12 @@ test.describe('demo app data view sidebar', () => {
     await menu.selectOption('liver');
     await expect(page.locator('.sva-loaded-name')).toHaveText(['adbds-abnbl.csv']);
     await expect(stepStatus(page, 'load')).toHaveText('1 file loaded');
-    await expect(stepStatus(page, 'open')).toHaveText('8 of 13 charts ready');
+    await expect(stepStatus(page, 'open')).toHaveText('12 of 17 charts ready');
     await expect(page.locator('.sva-tab .sva-tab-count')).toHaveText([
       '8 of 9',
       '0 of 1',
-      '0 of 3'
+      '0 of 3',
+      '4 of 4'
     ]);
     // It draws: the hepatic explorer from the one labs file.
     await openChart(page, 'hep-explorer');
@@ -791,7 +1418,7 @@ test.describe('demo app data view sidebar', () => {
     await expect(page.locator('.sva-file')).toHaveCount(0);
     await menu.selectOption('pilot');
     await expect(page.locator('.sva-count')).toHaveText(
-      '13 of 13 charts supported by the loaded data'
+      '17 of 17 charts supported by the loaded data'
     );
     expect(errors).toEqual([]);
   });
@@ -888,7 +1515,7 @@ test.describe('demo app as one file, offline', () => {
       'https://jwildfire.github.io/safety.viz/'
     );
     await expect(page.locator('.sva-count')).toHaveText(
-      '0 of 13 charts supported by the loaded data'
+      '0 of 17 charts supported by the loaded data'
     );
     await expect(page.locator('.sva-drop')).toBeVisible();
     await expect(page.locator('.sva-study')).toHaveCount(0);
@@ -897,7 +1524,37 @@ test.describe('demo app as one file, offline', () => {
     expect(errors).toEqual([]);
   });
 
-  test('APP-FILE-006: offline, the file loads the renamed study, takes the corrections and draws its charts (#152)', async ({
+  test('APP-FILE-006: offline, the file loads the renamed study, takes the corrections and draws every chart of both libraries (#152, #182)', async ({
+    page,
+    context
+  }) => {
+    // It opens every chart, one after another: more than the default allows on a busy runner.
+    test.setTimeout(MANY_CHARTS);
+    const errors = watchErrors(page);
+    await context.setOffline(true);
+    await page.goto(SINGLE_FILE.href);
+    const requests = [];
+    page.on('request', (request) => requests.push(request.url()));
+    await chooseFiles(page, STUDY);
+    await expect(page.locator('.sva-count')).toHaveText(
+      '11 of 17 charts supported by the loaded data'
+    );
+    await correct(page);
+    await expect(page.locator('.sva-count')).toHaveText(
+      '17 of 17 charts supported by the loaded data'
+    );
+    // Every chart of both libraries draws, with no request but the file itself.
+    for (const [module, entry] of [...destinations, ...bioCharts]) {
+      await openChart(page, module);
+      await expect(page.locator('.sva-title')).toHaveText(entry.title);
+      await expect(page.locator('.sva-chart').locator(DRAWN).first()).toBeVisible();
+      await expect(item(page, module).locator('.sva-tag')).toHaveText('ready');
+    }
+    expect(requests.filter((url) => !/^(blob|data):/.test(url))).toEqual([]);
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-R-009: offline, the single file shows no control to start R, each biomarker chart says statistics are unavailable in this file and why, and nothing is requested (#183)', async ({
     page,
     context
   }) => {
@@ -906,33 +1563,48 @@ test.describe('demo app as one file, offline', () => {
     await page.goto(SINGLE_FILE.href);
     const requests = [];
     page.on('request', (request) => requests.push(request.url()));
+    await expect(page.locator('.sva-footer .sva-pitch')).toHaveText(FILE_PITCH);
     await chooseFiles(page, STUDY);
-    await expect(page.locator('.sva-count')).toHaveText(
-      '7 of 13 charts supported by the loaded data'
-    );
     await correct(page);
-    await expect(page.locator('.sva-count')).toHaveText(
-      '13 of 13 charts supported by the loaded data'
-    );
-    for (const [module, entry] of destinations) {
+    for (const [module] of bioCharts) {
       await openChart(page, module);
-      await expect(page.locator('.sva-title')).toHaveText(entry.title);
+      await expect(page.locator('.sva-action')).toHaveCount(0);
+      if (module === 'group-comparison') {
+        await page
+          .locator('.sva-chart .sv-control', { has: page.locator('label:text-is("Biomarker")') })
+          .locator('select')
+          .selectOption({ index: 1 });
+      }
       await expect(
-        page.locator('.sva-chart').locator('canvas:visible, table:visible').first()
+        page.locator('.sva-chart .bv-statistic').filter({ hasText: FILE_NO_R }).first()
       ).toBeVisible();
-      await expect(item(page, module).locator('.sva-tag')).toHaveText('ready');
     }
     expect(requests.filter((url) => !/^(blob|data):/.test(url))).toEqual([]);
     expect(errors).toEqual([]);
   });
 
-  test('APP-FILE-007: the built file holds no script, stylesheet or image reference to another URL (#152)', async () => {
+  test('APP-FILE-007: the built file holds no script, stylesheet or image reference to another URL, and inlines bio.viz’s bundle as it was vendored (#152, #182)', async () => {
     const html = readFileSync(SINGLE_FILE, 'utf8');
     expect(html).not.toMatch(/<script[^>]*\ssrc=/i);
     expect(html).not.toMatch(/<link\b[^>]*\shref=/i);
     expect(html).not.toMatch(/<img\b[^>]*\ssrc=["']?https?:/i);
     expect(html).not.toContain('sourceMappingURL');
-    // Two script elements: the inlined app, and the one line that mounts it.
-    expect(html.match(/<script>/g)).toHaveLength(2);
+    // Three script elements: the inlined app, bio.viz's inlined bundle, and the
+    // one line that mounts the app with it.
+    expect(html.match(/<script>/g)).toHaveLength(3);
+    // The second is bio.viz's bundle, whole, as it was vendored, less only its
+    // source-map comment line, with any closing script tag escaped.
+    const vendored = readFileSync(
+      new URL(`../../${APP_LIBRARIES[0].path}`, import.meta.url),
+      'utf8'
+    );
+    expect(vendored).toContain('//# sourceMappingURL=');
+    const inlined = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((match) => match[1]);
+    expect(inlined[1]).toBe(
+      vendored
+        .replace(/^\/\/# sourceMappingURL=.*$/gm, '')
+        .replace(/<\/script/gi, '<\\/script')
+        .trim()
+    );
   });
 });

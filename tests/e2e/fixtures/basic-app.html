@@ -20,15 +20,75 @@
     -->
     <div id="app"></div>
     <script src="/build/app/safety.viz-app.js"></script>
+    <script src="/site/vendor/bio.viz/bio.viz.js"></script>
     <script>
       const empty = new URLSearchParams(window.location.search).has('empty');
+      const pitch =
+        'The study’s data never leaves this browser. No request leaves the page unless you start R.';
       const studies = SafetyVizApp.DEMO_STUDIES.map((study) => ({
         ...study,
         base: `/${study.source}/`
       }));
+      // bio.viz's charts, from the vendored bundle, as the demo page hands them in
+      // (#182), with R on request (#183): the statistics file is the vendored one,
+      // and each connection made is counted for the tests.
+      // `?record` hands the charts a stand-in for R that records what each chart
+      // asks and answers nothing, for scripts/derive-app-statistics.mjs. Every
+      // answer real R gives is recorded too, for the browser tests to compare
+      // with desktop R.
+      const record = new URLSearchParams(window.location.search).has('record');
+      window.__rConnections = 0;
+      window.__rCalls = [];
+      window.__rAnswers = [];
+      const factory = (options) => {
+        window.__rConnections += 1;
+        if (record) {
+          return {
+            run(name, request) {
+              // The app's own call that starts R on the press is not a chart's.
+              if (name !== 'identity') {
+                window.__rCalls.push({ name, args: request.args, data: request.data });
+              }
+              return Promise.resolve({
+                status: 'unavailable',
+                reason: 'no-r-attached',
+                message: 'Recorded.'
+              });
+            }
+          };
+        }
+        const connection = BioViz.r.createConnection(options);
+        return {
+          async run(name, request) {
+            const answer = await connection.run(name, request);
+            if (name !== 'identity') {
+              window.__rAnswers.push({
+                name,
+                args: request.args,
+                rows: request.data.length,
+                answer
+              });
+            }
+            return answer;
+          }
+        };
+      };
+      const libraries = [
+        {
+          name: 'bio.viz',
+          charts: BioViz,
+          manifest: BioViz.portfolio,
+          ...SafetyVizApp.rOnRequest({
+            createConnection: factory,
+            browser: { sourceUrl: '/site/vendor/gsm.bio/statistics.R', packages: [] },
+            megabytes: 13,
+            host: 'webr.r-wasm.org'
+          })
+        }
+      ];
       window.__safetyVizApp = SafetyVizApp.mount(
         '#app',
-        empty ? {} : { demo: { base: '/site/data/', studies } }
+        empty ? { libraries, pitch } : { demo: { base: '/site/data/', studies }, libraries, pitch }
       );
     </script>
   </body>

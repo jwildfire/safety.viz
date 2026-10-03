@@ -11,9 +11,18 @@
 //                       for one that may
 //
 // A fifth state, `did not draw`, is set by the page when a ready chart throws:
-// status is corrected by what happened, never left at ready.
+// status is corrected by what happened, never left at ready. A sixth, `not
+// loaded`, is a chart of another library (#181) that the page cannot draw: its
+// library or its factory is not there, or its entry cannot be read. It says
+// why in words, and comes before everything else, since no data can fix it.
+//
+// What a chart needs is read from its entry: its domains and its required
+// settings. CHART_NEEDS adds what some of safety.viz's own charts need beyond
+// their schemas; it applies to safety.viz's charts only, so a second
+// library's chart is never looked up in it by name.
 
 import { MEASURES } from './mapping.js';
+import { OWN_LIBRARY, libraryOf } from './libraries.js';
 
 /**
  * What a chart cannot draw without, beyond its schema's required settings.
@@ -36,15 +45,23 @@ export const CHART_NEEDS = {
 const measureByKey = Object.fromEntries(MEASURES.map((measure) => [measure.key, measure]));
 const asList = (value) => [].concat(value);
 
+/** What a chart needs beyond its entry: CHART_NEEDS, for safety.viz's own charts only. */
+const needsOf = (module, entry) => (libraryOf(entry) === OWN_LIBRARY && CHART_NEEDS[module]) || {};
+
 /**
  * Status of every chart in the manifest.
  * @param {Object<string, Object>} mappings The mapping for each loaded domain, keyed by domain id; a domain with no file is absent.
- * @param {Object} manifest The portfolio manifest.
- * @returns {Object<string, {state: string, missing: {kind: string, domain: string, key?: string, label: string}[]}>} Per module, in manifest order: its state and what it is missing.
+ * @param {Object} manifest The portfolio manifest, with any further libraries' charts merged in (libraries.js).
+ * @param {Object<string, string>} [problems] For each chart that cannot be drawn whatever is loaded, the sentence that says why (libraries.js::mergeLibraries).
+ * @returns {Object<string, {state: string, missing: {kind: string, domain: string, key?: string, label: string}[], message?: string}>} Per module, in manifest order: its state and what it is missing.
  */
-export function chartStatus(mappings, manifest) {
+export function chartStatus(mappings, manifest, problems = {}) {
   const status = {};
   for (const [module, entry] of Object.entries(manifest.modules)) {
+    if (Object.prototype.hasOwnProperty.call(problems, module)) {
+      status[module] = { state: 'not loaded', missing: [], message: problems[module] };
+      continue;
+    }
     if (entry.externalDomains) {
       status[module] = { state: 'needs more domains', missing: [] };
       continue;
@@ -62,7 +79,7 @@ export function chartStatus(mappings, manifest) {
       continue;
     }
 
-    const needs = CHART_NEEDS[module] || {};
+    const needs = needsOf(module, entry);
     const missing = [];
     const seen = new Set();
     for (const [key, setting] of Object.entries(entry.settings)) {
@@ -123,10 +140,12 @@ export function supportedCount(status) {
  * schema requires the setting it backs, plus the settings {@link CHART_NEEDS}
  * adds; a measure by the charts that find it by name. Charts for which one of
  * several measures is enough are listed apart, since no single measure is needed.
- * @param {Object} manifest The portfolio manifest.
+ * A chart that cannot be drawn whatever is mapped needs nothing.
+ * @param {Object} manifest The portfolio manifest, with any further libraries' charts merged in.
+ * @param {Object<string, string>} [problems] The charts that cannot be drawn (libraries.js::mergeLibraries).
  * @returns {{columns: Object<string, Object<string, string[]>>, measures: Object<string, string[]>, anyMeasure: {keys: string[], charts: string[]}[]}} Chart titles per domain column and per measure key, in manifest order.
  */
-export function neededBy(manifest) {
+export function neededBy(manifest, problems = {}) {
   const columns = Object.fromEntries(
     Object.entries(manifest.domains).map(([domain, definition]) => [
       domain,
@@ -136,7 +155,8 @@ export function neededBy(manifest) {
   const measures = Object.fromEntries(MEASURES.map((measure) => [measure.key, []]));
   const anyMeasure = [];
   for (const [module, entry] of Object.entries(manifest.modules)) {
-    const needs = CHART_NEEDS[module] || {};
+    if (Object.prototype.hasOwnProperty.call(problems, module)) continue;
+    const needs = needsOf(module, entry);
     for (const [key, setting] of Object.entries(entry.settings)) {
       if (!setting.required && !(needs.settings || []).includes(key)) continue;
       for (const domain of asList(setting.domain)) {

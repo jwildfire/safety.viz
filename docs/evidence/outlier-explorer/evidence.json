@@ -1,6 +1,6 @@
 {
   "module": "outlier-explorer",
-  "generatedAt": "2026-10-02T20:04:09.842Z",
+  "generatedAt": "2026-10-03T12:32:05.559Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "37058108195",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37058108195"
+    "id": "37123154366",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37123154366"
   },
   "records": [
     {
@@ -18,6 +18,78 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [71],
+      "screenshots": []
+    },
+    {
+      "test": "APP-BIO-004: on the demo study the four biomarker charts have a tab of their own after the three domains, each ready, and the count includes them (#182)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-004"],
+      "issueRefs": [182],
+      "screenshots": []
+    },
+    {
+      "test": "APP-BIO-005: Association scatter draws on the demo study with no console error, and its statistics line says statistics need R until R is started (#182, #183)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "APP-BIO-005: Biomarker screen draws on the demo study with no console error, and its statistics line says statistics need R until R is started (#182, #183)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "APP-BIO-005: Correlation matrix draws on the demo study with no console error, and its statistics line says statistics need R until R is started (#182, #183)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "APP-BIO-005: Group comparison draws on the demo study with no console error, and opens on an overview that prints no test; with a biomarker chosen, its lines say statistics need R until R is started (#182, #183)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "APP-BIO-006: with the labs and vitals file alone every biomarker chart draws, with no filters (#182)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-006"],
+      "issueRefs": [182],
+      "screenshots": []
+    },
+    {
+      "test": "APP-BIO-007: on the study with renamed columns, the one mapping readies both libraries’ charts, and each biomarker chart draws (#182)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-007"],
+      "issueRefs": [182],
+      "screenshots": []
+    },
+    {
+      "test": "APP-BIO-008: at phone width, with the Biomarkers tab and a biomarker chart open, the page does not scroll sideways (#182)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-008"],
+      "issueRefs": [182],
+      "screenshots": []
+    },
+    {
+      "test": "APP-BIO-012: the built demo page serves bio.viz’s vendored bundle beside the app, whole but for its source-map comment, lists the biomarker charts in their own tab and holds at a 390px viewport (#182)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-012"],
+      "issueRefs": [182],
       "screenshots": []
     },
     {
@@ -45,19 +117,59 @@
       "screenshots": []
     },
     {
-      "test": "APP-FILE-006: offline, the file loads the renamed study, takes the corrections and draws its charts (#152)",
+      "test": "APP-FILE-006: offline, the file loads the renamed study, takes the corrections and draws every chart of both libraries (#152, #182)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-FILE-006"],
-      "issueRefs": [152],
+      "issueRefs": [],
       "screenshots": []
     },
     {
-      "test": "APP-FILE-007: the built file holds no script, stylesheet or image reference to another URL (#152)",
+      "test": "APP-FILE-007: the built file holds no script, stylesheet or image reference to another URL, and inlines bio.viz’s bundle as it was vendored (#152, #182)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-FILE-007"],
-      "issueRefs": [152],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LIB-015: on the demo study the library’s charts have their own tab with a status each, after the three domains, and the count includes them (#181)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-015"],
+      "issueRefs": [181],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LIB-016: its chart is mounted with its named tables built from the loaded files, an unmapped optional setting left out, and removed when a safety chart is opened (#181)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-016"],
+      "issueRefs": [181],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LIB-017: with the labs file alone its chart still draws, handed only the table it needs (#181)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-017"],
+      "issueRefs": [181],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LIB-018: a chart whose factory the library does not have reads \"not loaded\" in words, and nothing throws (#181)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-018"],
+      "issueRefs": [181],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LIB-026: on the built demo page, when bio.viz’s script does not load, the safety charts mount as before and the page says the biomarker charts are not shown and why, in every view (#193)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-026"],
+      "issueRefs": [193],
       "screenshots": []
     },
     {
@@ -117,11 +229,11 @@
       "screenshots": []
     },
     {
-      "test": "APP-LOAD-014: no network request leaves the page from the first file selection onward (#151)",
+      "test": "APP-LOAD-014: no network request leaves the page from the first file selection onward, unless the reader starts R (#151, #183)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-LOAD-014"],
-      "issueRefs": [151],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -197,7 +309,7 @@
       "screenshots": []
     },
     {
-      "test": "APP-PAGE-001: every chart in the manifest is listed under its domain with a status: thirteen charts, three domains (#150, #165)",
+      "test": "APP-PAGE-001: every chart is listed under its group with a status: thirteen safety charts under three domains, and four biomarker charts in their own tab (#150, #165, #182)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-PAGE-001"],
@@ -205,7 +317,7 @@
       "screenshots": []
     },
     {
-      "test": "APP-PAGE-002: the demo study reads 13 of 13 supported and opens on the first chart (#150, #165)",
+      "test": "APP-PAGE-002: the demo study reads 17 of 17 supported and opens on the first chart (#150, #165, #182)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-PAGE-002"],
@@ -357,11 +469,11 @@
       "screenshots": []
     },
     {
-      "test": "APP-PAGE-013: the built demo app is its own page at demo/, mounted on the demo study with no console errors (#150)",
+      "test": "APP-PAGE-013: the built demo app is its own page at demo/, mounted on the demo study with every chart of both libraries and no console errors (#150, #182)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-PAGE-013"],
-      "issueRefs": [150],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -418,6 +530,78 @@
       "status": "pass",
       "requirementIds": ["APP-PAGE-029"],
       "issueRefs": [172],
+      "screenshots": []
+    },
+    {
+      "test": "APP-R-006: before the control is pressed, no chart of either library asks R’s hosts for anything, and each biomarker chart’s statistics line says statistics need R and what that downloads (#183)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-R-006"],
+      "issueRefs": [183],
+      "screenshots": []
+    },
+    {
+      "test": "APP-R-007: pressing the control starts R once, about 13 MB from webr.r-wasm.org, and the group comparison prints R’s test under each visit, equal to desktop R on the same rows (#183)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-R-007"],
+      "issueRefs": [183],
+      "screenshots": []
+    },
+    {
+      "test": "APP-R-008: a second biomarker chart opened after R has started uses the same R: no second connection and no second download (#183)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-R-008"],
+      "issueRefs": [183],
+      "screenshots": []
+    },
+    {
+      "test": "APP-R-009: offline, the single file shows no control to start R, each biomarker chart says statistics are unavailable in this file and why, and nothing is requested (#183)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-R-009"],
+      "issueRefs": [183],
+      "screenshots": []
+    },
+    {
+      "test": "APP-R-014: the built demo page shows the control that starts R with the biomarker charts, serves the statistics file beside the app as it was vendored, says what the app promises, and starts R when pressed (#183)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-R-014"],
+      "issueRefs": [183],
+      "screenshots": []
+    },
+    {
+      "test": "APP-R-017: pressing the control with a biomarker chosen keeps it: the open chart is not drawn again, and prints R’s test for that biomarker (#183)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-R-017"],
+      "issueRefs": [183],
+      "screenshots": []
+    },
+    {
+      "test": "APP-R-018: when R’s host cannot be reached, the control says R did not start and offers to try again, and charts opened afterwards do not try to start R each time (#183)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-R-018"],
+      "issueRefs": [183],
+      "screenshots": []
+    },
+    {
+      "test": "APP-R-019: when the statistics file cannot be read, R is not started again for each chart opened afterwards, and trying again starts it once (#183)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-R-019"],
+      "issueRefs": [183],
+      "screenshots": []
+    },
+    {
+      "test": "APP-R-021: the chart open when R is started stops saying R is starting once R has started: no statistics line it prints afterwards carries the starting note (#193)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-R-021"],
+      "issueRefs": [193],
       "screenshots": []
     },
     {
@@ -554,6 +738,54 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [71],
+      "screenshots": []
+    },
+    {
+      "test": "KIT-DOC-009: the kit page opens from the architecture page and a chart’s API reference, lists every member the bundle carries and fits a 390px phone with no sideways page scroll (#154)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["KIT-DOC-009"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "KIT-USE-001: the fixture page loads the committed bundle and no other script, and builds the shell with its sidebar with no console errors (#154)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["KIT-USE-001"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "KIT-USE-002: the page reads nothing from the bundle but the kit: no chart module is called directly (#154)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["KIT-USE-002"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "KIT-USE-003: the bar chart is drawn with kit.Chart, and the filter narrows it (#154)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["KIT-USE-003"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "KIT-USE-004: clicking a bar fills the record listing with that bar’s records, with search, paging and sort working (#154)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["KIT-USE-004"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "KIT-USE-005: clicking a listing row opens the participant rail on that participant, drawn by the same copy of Chart.js (#154)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["KIT-USE-005"],
+      "issueRefs": [154],
       "screenshots": []
     },
     {
@@ -2288,6 +2520,110 @@
       "screenshots": []
     },
     {
+      "test": "a library the page cannot use as handed in (#193) APP-LIB-020: an entry with no domains, no settings, a setting with no domain, no title or no export, or one that is not an object, reads \"not loaded\" with the reason, and safety.viz’s thirteen charts still mount (#193)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-020"],
+      "issueRefs": [193, 193],
+      "screenshots": []
+    },
+    {
+      "test": "a library the page cannot use as handed in (#193) APP-LIB-021: a chart list whose modules are not an object of entries, or that is not an object, is not used, and the page says so in words; one that lists no charts says that; safety.viz’s charts still mount (#193)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-021"],
+      "issueRefs": [193, 193],
+      "screenshots": []
+    },
+    {
+      "test": "a library the page cannot use as handed in (#193) APP-LIB-022: a library that declares a group with a standard domain’s id or the id of the group outside the set is refused that group, and safety.viz’s tabs keep their names and hues (#193)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-022"],
+      "issueRefs": [193, 193],
+      "screenshots": []
+    },
+    {
+      "test": "a library the page cannot use as handed in (#193) APP-LIB-023: a library that was asked for but did not load is named on the page, with why, in every view, and safety.viz’s charts are as before (#193)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-023"],
+      "issueRefs": [193, 193],
+      "screenshots": []
+    },
+    {
+      "test": "a library the page cannot use as handed in (#193) APP-LIB-024: when two libraries share a name, the first is used for its charts, its settings and its control alike, and the second is left out with a warning (#193)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-024"],
+      "issueRefs": [193, 193],
+      "screenshots": []
+    },
+    {
+      "test": "a library the page cannot use as handed in (#193) APP-LIB-025: a chart whose export is a name every object inherits, such as constructor or toString, reads \"not loaded\": only the library’s own charts count (#193)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-025"],
+      "issueRefs": [193, 193],
+      "screenshots": []
+    },
+    {
+      "test": "a second library’s chart: settings, data and status from its entry APP-LIB-005: its settings are its entry’s column settings under the mapping and nothing else: no recipe, even under a safety chart’s name (#181)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-005"],
+      "issueRefs": [181],
+      "screenshots": []
+    },
+    {
+      "test": "a second library’s chart: settings, data and status from its entry APP-LIB-006: under `unmappedSettings: \"omit\"` an unmapped setting is left out, not passed as null; without it, as for safety.viz’s charts, it is null (#181)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-006"],
+      "issueRefs": [181],
+      "screenshots": []
+    },
+    {
+      "test": "a second library’s chart: settings, data and status from its entry APP-LIB-007: its data is an object of its named tables, each the loaded file’s rows untouched; an optional table with no file is left out (#181)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-007"],
+      "issueRefs": [181],
+      "screenshots": []
+    },
+    {
+      "test": "a second library’s chart: settings, data and status from its entry APP-LIB-008: its status is worked out from the entry alone: ready on the demo study, no file without its required table, ready without its optional one, missing a required column by name (#181)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-008"],
+      "issueRefs": [181],
+      "screenshots": []
+    },
+    {
+      "test": "a second library’s chart: settings, data and status from its entry APP-LIB-009: a chart whose factory is missing, or whose library is not on the page, reads \"not loaded\" in words, and nothing throws (#181)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-009"],
+      "issueRefs": [181],
+      "screenshots": []
+    },
+    {
+      "test": "a second library’s chart: settings, data and status from its entry APP-LIB-010: the counts include the second library’s charts, and the mapping table counts its chart among those that need a column (#181)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-010"],
+      "issueRefs": [181],
+      "screenshots": []
+    },
+    {
+      "test": "a second library’s chart: settings, data and status from its entry APP-LIB-011: safety.viz’s thirteen charts get the same settings, data and status with a second library handed in as without one (#181)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-011"],
+      "issueRefs": [181],
+      "screenshots": []
+    },
+    {
       "test": "buildAdslRecords derives EOSDY = EOSDT − TRTSDT + 1 and carries the end-of-study status (#128)",
       "suite": "unit",
       "status": "pass",
@@ -3472,6 +3808,182 @@
       "screenshots": []
     },
     {
+      "test": "kit API data KIT-DOC-001: every kit member is documented once, with a description, its signature and the module it comes from (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-DOC-001"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "kit API data KIT-DOC-002: a signature is read from the member itself: a function’s parameters, the Chart constructor, a constant’s value (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-DOC-002"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "kit API data KIT-DOC-003: the reference says what the bundled Chart.js can draw, read from the committed bundle (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-DOC-003"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "kit API data KIT-DOC-004: a member that is undocumented, has no description, is documented but absent, or is not a source module’s export is reported as missing (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-DOC-004"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "kit: on the committed bundle KIT-API-015: the script-tag bundle carries SafetyViz.kit with the same members (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-API-015"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "kit: on the committed bundle KIT-API-016: the ES module bundle exports kit with the same members (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-API-016"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "kit: the shared chart parts as one export KIT-API-001: src/main.js exports the kit by name, and the default collection carries the same object (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-API-001"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "kit: the shared chart parts as one export KIT-API-002: the kit holds exactly the listed members, flat, under the names their modules export (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-API-002"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "kit: the shared chart parts as one export KIT-API-003: the shell members are the functions src/shell.js exports (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-API-003"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "kit: the shared chart parts as one export KIT-API-004: the filter contract is the one src/filters.js exports (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-API-004"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "kit: the shared chart parts as one export KIT-API-005: the axis-limit helpers are the functions src/axis-limits.js exports (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-API-005"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "kit: the shared chart parts as one export KIT-API-006: the record listing and its search, sort, paging and CSV functions are the ones src/histogram/listing.js exports (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-API-006"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "kit: the shared chart parts as one export KIT-API-007: the participant rail functions are the ones src/profile-host.js exports (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-API-007"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "kit: the shared chart parts as one export KIT-API-008: the box drawing and its plugin are the functions src/box-whisker.js exports (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-API-008"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "kit: the shared chart parts as one export KIT-API-009: the measure list functions are the ones src/measure-list.js exports (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-API-009"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "kit: the shared chart parts as one export KIT-API-010: the Kaplan–Meier estimator is the function src/time-to-event/km.js exports (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-API-010"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "kit: the shared chart parts as one export KIT-API-011: kit.Chart is the Chart.js constructor the charts import (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-API-011"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "kit: the shared chart parts as one export KIT-API-012: nothing else the shared modules export is on the kit: the two status banners and the colour helper stay internal (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-API-012"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "kit: the shared chart parts as one export KIT-API-013: the kit cannot be changed from outside: a member cannot be replaced, added or removed (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-API-013"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "kit: the shared chart parts as one export KIT-API-014: the kit is the only export added: every other export of src/main.js is still there under its name (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-API-014"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "manifest format version 2 APP-LIB-001: an entry may name its library, its group, the named tables its init takes and that unmapped settings are left out; a library’s manifest may leave out the domains (#181)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-001"],
+      "issueRefs": [181],
+      "screenshots": []
+    },
+    {
+      "test": "manifest format version 2 APP-LIB-002: the format stays strict: an unknown field, a group with no label, a table outside the standard domains, an unknown rule for unmapped settings, a version-1 document using a version-2 field and an unknown version are all refused (#181)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-002"],
+      "issueRefs": [181],
+      "screenshots": []
+    },
+    {
       "test": "markup safety: the missing-variable message AE-DATA-001: ae-explorer writes a missing column name as text, never as markup (#166)",
       "suite": "unit",
       "status": "pass",
@@ -3756,6 +4268,30 @@
       "suite": "unit",
       "status": "pass",
       "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "merging a second library APP-LIB-003: a library’s charts follow safety.viz’s, each under its own library, and safety.viz’s thirteen entries are carried unchanged (#181)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-003"],
+      "issueRefs": [181],
+      "screenshots": []
+    },
+    {
+      "test": "merging a second library APP-LIB-004: the tabs list safety.viz’s domains first, as today, then each declared group by its order, under its own label and hue (#181)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-004"],
+      "issueRefs": [181],
+      "screenshots": []
+    },
+    {
+      "test": "merging a second library APP-LIB-019: an entry whose name is already listed is left out with a warning, and an entry that names no library takes the one it was handed in with (#181, #193)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-019"],
       "issueRefs": [],
       "screenshots": []
     },
@@ -4336,6 +4872,70 @@
       "screenshots": []
     },
     {
+      "test": "portfolio manifest PF-MAN-013: the manifest is written in format version 2, and its thirteen entries use none of what version 2 added, so each means what it meant in version 1 (#181)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PF-MAN-013"],
+      "issueRefs": [181],
+      "screenshots": []
+    },
+    {
+      "test": "R on request APP-R-001: before the reader asks, the connection makes no connection to R and answers that statistics need R, saying what starting it downloads (#183)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-001"],
+      "issueRefs": [183],
+      "screenshots": []
+    },
+    {
+      "test": "R on request APP-R-002: asking makes one connection, with the library’s own factory and the options given, and starts R at once; every chart afterwards uses it, and asking again makes no second (#183)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-002"],
+      "issueRefs": [183],
+      "screenshots": []
+    },
+    {
+      "test": "R on request APP-R-003: where R cannot be started, the connection answers in words why statistics are unavailable, and there is no control (#183)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-003"],
+      "issueRefs": [183],
+      "screenshots": []
+    },
+    {
+      "test": "R on request APP-R-015: while R starts the waiting note says what it downloads; once R has answered there is no such note, and the control says R is running (#183)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-015"],
+      "issueRefs": [183],
+      "screenshots": []
+    },
+    {
+      "test": "R on request APP-R-016: an answer that says R could not start, arriving for a chart after R had started, is treated the same way (#183)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-016"],
+      "issueRefs": [183],
+      "screenshots": []
+    },
+    {
+      "test": "R on request APP-R-016: when R does not start, the control says so and offers to try again, every chart is told without starting R again, and trying again makes one fresh connection (#183)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-016"],
+      "issueRefs": [183],
+      "screenshots": []
+    },
+    {
+      "test": "renderDemoAppPage APP-BIO-010: loads each further library’s bundle from beside the page after the app’s, hands it to the app when it mounts, and counts its charts in the description (#182)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-010"],
+      "issueRefs": [182],
+      "screenshots": []
+    },
+    {
       "test": "renderDemoAppPage APP-FILE-008: tells the app where the single file is, for its download link (#152)",
       "suite": "unit",
       "status": "pass",
@@ -4381,6 +4981,14 @@
       "status": "pass",
       "requirementIds": ["APP-PAGE-017"],
       "issueRefs": [165],
+      "screenshots": []
+    },
+    {
+      "test": "renderDemoAppPage APP-PAGE-017: the page as the site builds it, with bio.viz’s charts and R on request, names exactly two other hosts: the repository’s and R’s (#165, #183)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-017"],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -4525,6 +5133,30 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "requirements-lib: one row per requirement ID across the matrices (#193) finds none in the repository’s matrices but the ones known before the check (safety.viz#195)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [193],
+      "screenshots": []
+    },
+    {
+      "test": "requirements-lib: one row per requirement ID across the matrices (#193) passes an ID known to have two rows while it does, and says so once it no longer does",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [193],
+      "screenshots": []
+    },
+    {
+      "test": "requirements-lib: one row per requirement ID across the matrices (#193) reports an ID that has two rows, in one matrix or in two, with where each is",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [193],
       "screenshots": []
     },
     {
@@ -5240,6 +5872,22 @@
       "screenshots": []
     },
     {
+      "test": "site generator: domains page (#139) APP-BIO-011: the page lists another library’s charts under its own heading, each with what it reads and a link to its reference, and the lead counts them (#182)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-011"],
+      "issueRefs": [139, 182],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: domains page (#139) APP-LIB-014: the page says the manifest is format version 2, and describes each field version 2 adds (#181)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-014"],
+      "issueRefs": [139, 181],
+      "screenshots": []
+    },
+    {
       "test": "site generator: domains page (#139) PF-SITE-001: the page lists every module in the manifest (#139)",
       "suite": "unit",
       "status": "pass",
@@ -5560,6 +6208,46 @@
       "screenshots": []
     },
     {
+      "test": "site generator: kit page KIT-DOC-005: the page lists every member with its signature and description, under the module it comes from (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-DOC-005"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: kit page KIT-DOC-006: the page says how a second library reaches the kit from each bundle, and which file to load (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-DOC-006"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: kit page KIT-DOC-007: the page states that the kit is public surface and a change to any member is a breaking change, from the release in the typedef (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-DOC-007"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: kit page KIT-DOC-008: the kit page is reachable from the architecture page and from every chart’s API reference (#154)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-DOC-008"],
+      "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: kit page KIT-DOC-010: the page says the Kaplan–Meier estimator follows the Time-to-Event Explorer’s Experimental status: its estimates, intervals and at-risk counts may change after the external clinical review without counting as a breaking change, its row is styled to say so, and the other members are full public surface (#193)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-DOC-010"],
+      "issueRefs": [193],
+      "screenshots": []
+    },
+    {
       "test": "site generator: requirement text (#63) degrades to IDs-only when no requirements map is supplied",
       "suite": "unit",
       "status": "pass",
@@ -5669,6 +6357,158 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [7],
+      "screenshots": []
+    },
+    {
+      "test": "the desktop-R results the browser test compares with APP-R-011: the recorded requests and desktop R’s answers are derived from the study, the app code that shapes the rows, the bundle and the statistics file as they are now (#183)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-011"],
+      "issueRefs": [183],
+      "screenshots": []
+    },
+    {
+      "test": "the page with a library’s settings and control APP-R-004: a library’s settings are added to each of its charts’ settings when it is drawn, and to no safety chart’s (#183)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-004"],
+      "issueRefs": [183],
+      "screenshots": []
+    },
+    {
+      "test": "the page with a library’s settings and control APP-R-005: a library’s control is shown with its group’s charts, with what it costs in words beside it; pressing it asks once, hands the open chart its new settings without drawing it again, and the control follows what happened (#183)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-005"],
+      "issueRefs": [183],
+      "screenshots": []
+    },
+    {
+      "test": "the page with a library’s settings and control APP-R-020: the chart open when R is started is handed no waiting note once R has started, so its statistics line stops saying R is starting (#193)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-020"],
+      "issueRefs": [193],
+      "screenshots": []
+    },
+    {
+      "test": "the page with a library’s settings and control APP-R-022: when the library’s connection factory throws, the control says R did not start and why, and offers to try again; the page keeps working (#193)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-022"],
+      "issueRefs": [193],
+      "screenshots": []
+    },
+    {
+      "test": "the page with a library’s settings and control APP-R-024: when the connection’s run throws or rejects as R starts, or the factory throws with no reason, the control says R did not start and offers to try again, never sticking at “Starting R…” (#193)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-024"],
+      "issueRefs": [193],
+      "screenshots": []
+    },
+    {
+      "test": "the page with a library’s settings and control APP-R-025: a library control whose press throws leaves the page working: nothing is thrown out of the click, a warning says why, and the control shows what it now says (#193)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-025"],
+      "issueRefs": [193],
+      "screenshots": []
+    },
+    {
+      "test": "the page with a second library APP-LIB-012: the library’s charts have a tab of their own with its count and hue, and the overall count includes them (#181)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-012"],
+      "issueRefs": [181],
+      "screenshots": []
+    },
+    {
+      "test": "the page with a second library APP-LIB-013: opening its chart mounts it with its tables and settings; opening a safety chart destroys it; the missing one reads \"not loaded\" and throws nothing (#181)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-013"],
+      "issueRefs": [181],
+      "screenshots": []
+    },
+    {
+      "test": "the pages APP-R-012: the hosted page hands bio.viz’s charts R on request with the statistics file beside it, and says what the app now promises (#183)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-012"],
+      "issueRefs": [183],
+      "screenshots": []
+    },
+    {
+      "test": "the pages APP-R-013: the single file hands them no R, only the sentence that says why, and says it loads nothing (#183)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-013"],
+      "issueRefs": [183],
+      "screenshots": []
+    },
+    {
+      "test": "the pages APP-R-023: the hosted page mounts when a library is missing or has no connection to R: a missing one is handed in by name and file, and one with no connection factory says statistics are unavailable and why (#193)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-023"],
+      "issueRefs": [193],
+      "screenshots": []
+    },
+    {
+      "test": "the single file with the biomarker charts APP-BIO-009: each library’s bundle is inlined after the app’s, and the app is mounted with it; nothing points at another URL (#182)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-009"],
+      "issueRefs": [182],
+      "screenshots": []
+    },
+    {
+      "test": "the vendored bio.viz bundle APP-BIO-001: the copy matches its record, which names bio.viz, the full commit, its dev branch and the file’s checksum and size (#182)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-001"],
+      "issueRefs": [182],
+      "screenshots": []
+    },
+    {
+      "test": "the vendored bio.viz bundle APP-BIO-002: the check fails when a byte of the copy changes, a file is there unrecorded, or the record is missing (#182)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-002"],
+      "issueRefs": [182],
+      "screenshots": []
+    },
+    {
+      "test": "the vendored bio.viz bundle APP-BIO-003: its chart list is format version 2 and valid, lists four charts under one Biomarkers group, and merges into the app with every factory present (#182)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-003"],
+      "issueRefs": [182],
+      "screenshots": []
+    },
+    {
+      "test": "the vendored bio.viz bundle APP-BIO-013: the source check asks whether a commit recorded as on dev is on dev, and fails when it is not or when the record does not say; a commit recorded as off dev is not asked (#193)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-013"],
+      "issueRefs": [193],
+      "screenshots": []
+    },
+    {
+      "test": "the vendored bio.viz bundle APP-BIO-014: the on-dev check asks GitHub with the token when there is one and without it when GitHub refuses the token, and fails saying why when it cannot ask: the rate limit, the network, or an answer with no status (#193)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-014"],
+      "issueRefs": [193],
+      "screenshots": []
+    },
+    {
+      "test": "the vendored statistics file APP-R-010: gsm.bio’s statistics file is copied from gsm.bio’s dev branch, and matches its record of the commit, checksum and size (#183)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-010"],
+      "issueRefs": [183],
       "screenshots": []
     },
     {

@@ -3,6 +3,7 @@
 // relative, so one build serves the site root, /dev/, and /pr/{N}/ unchanged.
 
 import { LOGO_SVG } from '../src/app/styles.js';
+import { HOSTED_PITCH, librariesExpression } from './app-libraries.mjs';
 
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
@@ -886,7 +887,9 @@ export function renderArchitecturePage({ config, version }) {
       ` <code>controlBuilders</code> helpers (sections, rows, labeled inputs) and draws into the` +
       ` main-column slots. One stylesheet is injected per document by whichever module mounts` +
       ` first, and the browser suite enforces per available renderer that its demo renders this` +
-      ` shared chrome.</p>`,
+      ` shared chrome. The same parts are exported from the bundle as the` +
+      ` <a href="kit/index.html">kit</a>, so a second chart library on the page builds from` +
+      ` them instead of copying them.</p>`,
 
     `<h2 id="quality">Quality machinery</h2>`,
     `<p>Each migration starts from a` +
@@ -968,7 +971,9 @@ export function renderApiPage(
       ` column mappings follow ADaM naming out of the box. The same lifecycle` +
       ` (<code>${model.methods.map((method) => escapeHtml(method.name)).join('</code>, <code>')}</code>)` +
       ` is shared by every module and consumed unchanged by the gsm.safety R bindings.` +
-      ` See <a href="../architecture.html">Architecture</a> for how the pieces fit together.</p>` +
+      ` See <a href="../architecture.html">Architecture</a> for how the pieces fit together.` +
+      ` The shared parts it is built from are public surface of their own, listed in the` +
+      ` <a href="../kit/index.html">kit reference</a>.</p>` +
       `</section>`
   );
   body.push(`<h2 id="factory">Factory</h2>`, methodSection(model.factory));
@@ -1018,6 +1023,276 @@ export function renderApiPage(
   );
   html.push(moduleTabs('api', hasGuide));
   html.push(`<div class="api-layout">${toc}<div class="api-body">${body.join('\n')}</div></div>`);
+  return html.join('\n');
+}
+
+// Kit page (#154, obot.roadmap#354): the API reference for the shared parts
+// the bundle exports as `kit`. Built from the _api/kit.json artifact
+// (scripts/api/kit.mjs) — member names, signatures, descriptions, source
+// modules and the Chart.js facts all come from there. What is written here is
+// the framing a reader needs around that list: how to load the bundle beside
+// another library, what the contract promises, and what was left out on
+// purpose.
+
+// A heading and one line for each source the kit re-exports from. A source
+// with no entry falls back to its file path, so a new one still renders.
+const KIT_GROUPS = {
+  'chart.js': {
+    id: 'chart',
+    title: 'Chart.js',
+    blurb: 'The constructor the bundle contains, so a second library draws with the same copy.'
+  },
+  'src/shell.js': {
+    id: 'shell',
+    title: 'Shell and controls',
+    blurb:
+      'The collapsible control sidebar, the slots a chart draws into, and the control builders.'
+  },
+  'src/filters.js': {
+    id: 'filters',
+    title: 'Filters',
+    blurb:
+      'The filter contract: what a filter spec means, its opening state, its control and its test.'
+  },
+  'src/axis-limits.js': {
+    id: 'axis-limits',
+    title: 'Axis limits',
+    blurb: 'The Lower and Upper inputs that show the limit in force and keep only what was edited.'
+  },
+  'src/histogram/listing.js': {
+    id: 'listing',
+    title: 'Record listing',
+    blurb: 'The linked listing, with its search, sort, paging and CSV functions.'
+  },
+  'src/profile-host.js': {
+    id: 'participant-rail',
+    title: 'Participant rail',
+    blurb: 'What a host chart calls to open the participant profile beside itself.'
+  },
+  'src/box-whisker.js': {
+    id: 'box-drawing',
+    title: 'Box drawing',
+    blurb: 'Box-and-whisker marks on a Chart.js canvas, and the plugin that draws them.'
+  },
+  'src/measure-list.js': {
+    id: 'measure-list',
+    title: 'Measure list',
+    blurb: 'Which measures a Measure control offers, and in what order.'
+  },
+  'src/time-to-event/km.js': {
+    id: 'kaplan-meier',
+    title: 'Kaplan–Meier estimator',
+    blurb: 'The estimator behind the Time-to-Event Explorer.'
+  }
+};
+
+// Members whose promise is narrower than the rest of the kit's (#193). The
+// Kaplan–Meier estimator is the Time-to-Event Explorer's, which ships
+// Experimental until an external clinical review confirms the implementation
+// (obot.roadmap#182): it is on the kit, and follows that status.
+const KIT_STATUS = {
+  kmEstimate: {
+    contract:
+      `<code>kmEstimate</code> follows the Time-to-Event Explorer&#39;s Experimental status,` +
+      ` which holds until an external clinical review confirms its Kaplan–Meier implementation` +
+      ` (<a href="https://github.com/jwildfire/obot.roadmap/issues/182">obot.roadmap#182</a>):` +
+      ` its estimates, intervals and at-risk counts may change after that review without` +
+      ` counting as a breaking change. Its name and its arguments are kept.`,
+    // A function: the badge's wording is defined further down this file.
+    row: () =>
+      `Follows the Time-to-Event Explorer&#39;s` +
+      ` <span class="site-badge" title="${STATUS_MEANING.experimental}">Experimental</span>` +
+      ` status: see <a href="#contract">what is promised</a>.`
+  }
+};
+
+const kitGroupMeta = (source) =>
+  KIT_GROUPS[source] || { id: slugify(source), title: source, blurb: '' };
+
+const codeList = (names) => names.map((name) => `<code>${escapeHtml(name)}</code>`).join(', ');
+
+/**
+ * The kit's API reference page: how a second library loads and reaches the
+ * kit, what the contract promises, then every member grouped by the module it
+ * comes from, with its signature and what it does.
+ * @param {Object} model The _api/kit.json artifact (scripts/api/kit.mjs::buildKitModel).
+ * @param {Object} options Page options.
+ * @param {string} options.repoUrl The repository URL, for links to the source files.
+ * @param {string} options.version The package version, which names the committed bundle's folder.
+ * @returns {string} The page content, for the shared shell.
+ */
+export function renderKitPage(model, { repoUrl, version }) {
+  const bundleDir = `dist/safety.viz-${version}`;
+  const modules = model.groups.filter((group) => group.source !== 'chart.js').length;
+  const { chart } = model;
+  const since = model.since ? `from v${escapeHtml(model.since)}` : 'from this release';
+
+  const toc =
+    `<nav class="api-toc" aria-label="On this page"><h2>On this page</h2><ul>` +
+    `<li><a href="#overview">Overview</a></li>` +
+    `<li><a href="#loading">Loading it</a></li>` +
+    `<li><a href="#contract">What is promised</a></li>` +
+    `<li><a href="#members">Members</a><ul>` +
+    model.groups
+      .map((group) => {
+        const meta = kitGroupMeta(group.source);
+        return `<li><a href="#${meta.id}">${escapeHtml(meta.title)}</a></li>`;
+      })
+      .join('') +
+    `</ul></li>` +
+    `<li><a href="#not-in-the-kit">Not in the kit</a></li>` +
+    `</ul></nav>`;
+
+  const scriptExample = [
+    `<script src="${bundleDir}/safety.viz.js"></script>`,
+    `<script src="your-library.js"></script>`,
+    `<script>`,
+    `  const { renderShell, renderFilterControl, Chart } = SafetyViz.kit;`,
+    `</script>`
+  ].join('\n');
+  const moduleExample = [
+    `import { kit } from './${bundleDir}/safety.viz.esm.js';`,
+    `const { renderShell, renderFilterControl, Chart } = kit;`
+  ].join('\n');
+
+  const body = [];
+  body.push(
+    `<section id="overview"><h2>Overview</h2>` +
+      model.description
+        .split(/\n\s*\n/)
+        .map((paragraph) => `<p>${mdInline(paragraph.replace(/\s+/g, ' ').trim())}</p>`)
+        .join('') +
+      `</section>`
+  );
+
+  body.push(
+    `<h2 id="loading">Loading it beside another library</h2>`,
+    `<p>The kit is part of the safety.viz bundle, so there is nothing else to load. Put` +
+      ` safety.viz first, then the library that builds on it:</p>`,
+    `<pre><code>${escapeHtml(scriptExample)}</code></pre>`,
+    `<p>Or, from the ES module bundle:</p>`,
+    `<pre><code>${escapeHtml(moduleExample)}</code></pre>`,
+    `<ul>` +
+      `<li>One file is needed: <code>${bundleDir}/safety.viz.js</code> for a script tag, or` +
+      ` <code>safety.viz.esm.js</code> from the same folder for an import. The` +
+      ` <code>.map</code> file beside each is its source map and is optional.</li>` +
+      `<li>Use one bundle on a page, not both. The script-tag bundle and the ES module bundle` +
+      ` are separate copies, each with its own Chart.js.</li>` +
+      `<li>Take everything from that one copy. A library that brings its own Chart.js, or its` +
+      ` own copy of these functions, draws charts and controls that drift from safety.viz&#39;s.</li>` +
+      (chart
+        ? `<li><code>kit.Chart</code> is Chart.js ${escapeHtml(chart.version)} with what the` +
+          ` charts registered on it: the ${codeList(chart.registered.controllers)} controllers,` +
+          ` the ${codeList(chart.registered.elements)} elements, the` +
+          ` ${codeList(chart.registered.scales)} scales, and the` +
+          ` ${codeList(chart.registered.plugins)} plugins. A chart of one of those types needs` +
+          ` nothing more; anything else is registered on the same constructor with` +
+          ` <code>kit.Chart.register()</code>.</li>`
+        : '') +
+      `<li>A working page built this way is the fixture the browser tests drive,` +
+      ` <a href="${repoUrl}/blob/HEAD/tests/e2e/fixtures/kit.html">tests/e2e/fixtures/kit.html</a>:` +
+      ` a sidebar, a filter, a bar chart, a record listing and the participant rail, from the` +
+      ` kit alone.</li>` +
+      `</ul>`
+  );
+
+  body.push(
+    `<h2 id="contract">What is promised</h2>`,
+    `<ul>` +
+      `<li>The kit is public surface ${since}: a change to any member, whether its name, its` +
+      ` signature, what it returns or the elements and class names it produces, is a breaking` +
+      ` change, and the release notes say so.</li>` +
+      `<li>Every member is the function the charts in the bundle call, not a copy or a wrapper,` +
+      ` so a page built from the kit behaves as the charts do. Unit tests hold each member to` +
+      ` its module&#39;s export, and browser tests build a page from the committed bundle and` +
+      ` the kit alone.</li>` +
+      `<li>The kit is flat and frozen: members sit directly on it under the names below, and a` +
+      ` library on the page cannot replace, add or remove one.</li>` +
+      `<li>Adding a member is not a breaking change.</li>` +
+      Object.values(KIT_STATUS)
+        .map((status) => `<li>${status.contract}</li>`)
+        .join('') +
+      (Object.keys(KIT_STATUS).length
+        ? `<li>The other ${model.count - Object.keys(KIT_STATUS).length} members are public surface in full.</li>`
+        : '') +
+      `</ul>`
+  );
+
+  body.push(
+    `<h2 id="members">Members</h2>`,
+    `<p>${model.count} members, grouped by where they come from. Each signature is read from` +
+      ` the function itself.</p>`
+  );
+  for (const group of model.groups) {
+    const meta = kitGroupMeta(group.source);
+    const from =
+      group.source === 'chart.js'
+        ? `From <a href="https://www.chartjs.org/">Chart.js</a>` +
+          (chart ? ` ${escapeHtml(chart.version)}` : '') +
+          `.`
+        : `From <a href="${repoUrl}/blob/HEAD/${group.source}"><code>${escapeHtml(group.source)}</code></a>.`;
+    const rows = group.members
+      .map(
+        (member) =>
+          `<tr id="${escapeHtml(member.name)}">` +
+          `<td><code>${escapeHtml(member.signature)}</code></td>` +
+          `<td>${mdInline(member.description)}` +
+          (KIT_STATUS[member.name]
+            ? ` <span class="kit-status">${KIT_STATUS[member.name].row()}</span>`
+            : '') +
+          `</td></tr>`
+      )
+      .join('');
+    body.push(
+      `<section class="kit-group" data-source="${escapeHtml(group.source)}" id="${meta.id}">` +
+        `<h3>${escapeHtml(meta.title)}</h3>` +
+        `<p class="section-summary">${from}${meta.blurb ? ` ${escapeHtml(meta.blurb)}` : ''}</p>` +
+        `<div class="table-scroll"><table class="api"><thead><tr><th>Member</th>` +
+        `<th>What it does</th></tr></thead><tbody>${rows}</tbody></table></div>` +
+        `</section>`
+    );
+  }
+
+  body.push(
+    `<h2 id="not-in-the-kit">Not in the kit</h2>`,
+    `<ul>` +
+      `<li>The chart factories. <code>SafetyViz.histogram()</code> and the rest are the` +
+      ` library&#39;s own public surface, documented on each chart&#39;s API reference; the kit` +
+      ` is what they are built from.</li>` +
+      `<li><code>prototypeBanner</code> and <code>experimentalBanner</code>, which` +
+      ` <code>src/shell.js</code> also exports: their wording is safety.viz&#39;s own release` +
+      ` status.</li>` +
+      `<li><code>hexToRgba</code>, which <code>src/box-whisker.js</code> also exports: a colour` +
+      ` helper private to the box drawing.</li>` +
+      `<li>Everything else under <code>src/</code>: each chart&#39;s data preparation, scales` +
+      ` and plugins stay internal and can change without notice.</li>` +
+      `</ul>`
+  );
+
+  const html = [];
+  html.push(`<div class="kit-page">`);
+  html.push(`<h1>Kit API reference</h1>`);
+  html.push(
+    `<p class="tagline">The parts every safety.viz chart is built from, exported for a second` +
+      ` chart library on the same page. Generated from <code>src/kit.js</code> —` +
+      ` <code>npm run docs:api</code> fails on an undocumented member.</p>`
+  );
+  html.push(
+    `<dl class="facts">` +
+      `<div class="fact"><dt>Members</dt><dd>${model.count}<span class="sub">from ${modules}` +
+      ` shared modules and Chart.js</span></dd></div>` +
+      `<div class="fact"><dt>Reached as</dt><dd><code>SafetyViz.kit</code><span class="sub">or` +
+      ` the <code>kit</code> export of the ES module bundle</span></dd></div>` +
+      (chart
+        ? `<div class="fact"><dt>Draws with</dt><dd>Chart.js ${escapeHtml(chart.version)}` +
+          `<span class="sub">the copy every chart in the bundle uses</span></dd></div>`
+        : '') +
+      `<div class="fact"><dt>Public surface</dt><dd>${since}<span class="sub">a change to a` +
+      ` member is a breaking change</span></dd></div>` +
+      `</dl>`
+  );
+  html.push(`<div class="api-layout">${toc}<div class="api-body">${body.join('\n')}</div></div>`);
+  html.push(`</div>`);
   return html.join('\n');
 }
 
@@ -1145,9 +1420,17 @@ export function publishDemoAppFonts(rootDir, demoDir) {
  * @param {string} options.bundle File name of the app bundle beside the page.
  * @param {string} options.download File name of the single-file build beside the page.
  * @param {string} options.repoUrl The repository URL, for the app's source link.
+ * @param {Array<{name: string, global: string, file: string}>} [options.libraries] Further chart libraries (#182): each bundle is loaded from beside the page after the app's and handed to the app when it mounts.
+ * @param {string} [options.charts] What the app reviews a study in, for the page's description: its charts, counted.
  * @returns {string} The complete HTML document.
  */
-export function renderDemoAppPage({ bundle, download, repoUrl }) {
+export function renderDemoAppPage({
+  bundle,
+  download,
+  repoUrl,
+  libraries = [],
+  charts = 'thirteen clinical safety charts'
+}) {
   const icon = encodeURIComponent(LOGO_SVG).replace(/'/g, '%27');
   const js = (value) => `'${String(value).replace(/[\\']/g, '\\$&')}'`;
   const fontUrl = (font) => `./${DEMO_APP_FONT_DIR}/${font.file}`;
@@ -1164,7 +1447,7 @@ export function renderDemoAppPage({ bundle, download, repoUrl }) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="The safety.viz demo app: load a study, check how its columns map, and review it in thirteen clinical safety charts. It runs in your browser; nothing is uploaded.">
+<meta name="description" content="The safety.viz demo app: load a study, check how its columns map, and review it in ${escapeHtml(charts)}. ${libraries.length ? 'Your study’s data stays in your browser, and the page fetches nothing from any other host unless you start R.' : 'It runs in your browser; nothing is uploaded.'}">
 <title>safety.viz demo</title>
 <link rel="icon" href="data:image/svg+xml,${icon}">
 ${preloads}
@@ -1178,9 +1461,9 @@ body{margin:0;background:#fafaf8}
 <div id="app"></div>
 <noscript>The safety.viz demo app needs JavaScript: it reads and draws your data in this browser.</noscript>
 <script src="./${escapeHtml(bundle)}"></script>
-<script>
+${libraries.map((library) => `<script src="./${escapeHtml(library.file)}"></script>\n`).join('')}<script>
 window.__safetyVizApp = SafetyVizApp.mount('#app', {
-  demo: { base: './' },
+  demo: { base: './' },${libraries.length ? `\n  libraries: ${librariesExpression(libraries, { r: 'request' })},\n  pitch: ${js(HOSTED_PITCH)},` : ''}
   links: {
     docs: '../index.html',
     domains: '../domains/index.html',
@@ -1334,19 +1617,37 @@ function settingRows(settings, domains) {
 // its column settings. A chart outside the standard set names its own domains
 // and maps no settings, so it gets no table — only a pointer to where its
 // columns are documented.
-function chartSection(module, entry, { domains, hasPages, repoUrl, root }) {
-  const links = [
-    ...(hasPages
+//
+// A chart of another library (#182) links to its pages on that library's own
+// site (`site`) and has no data schema here; it names the tables it takes.
+function chartSection(module, entry, { domains, hasPages, repoUrl, root, site = null }) {
+  const links = (
+    site
       ? [
-          `<a href="${root}${module}/index.html">Live demo</a>`,
-          `<a href="${root}${module}/api.html">API reference</a>`
+          `<a href="${site}${module}/index.html">Live demo</a>`,
+          `<a href="${site}${module}/api.html">API reference</a>`
         ]
-      : []),
-    `<a href="${repoUrl}/blob/HEAD/src/data/schema/${module}.json">Data schema</a>`
-  ].join(' · ');
+      : [
+          ...(hasPages
+            ? [
+                `<a href="${root}${module}/index.html">Live demo</a>`,
+                `<a href="${root}${module}/api.html">API reference</a>`
+              ]
+            : []),
+          `<a href="${repoUrl}/blob/HEAD/src/data/schema/${module}.json">Data schema</a>`
+        ]
+  ).join(' · ');
+  const tables = Object.entries(entry.tables || {})
+    .map(
+      ([name, table]) =>
+        `<code>${escapeHtml(name)}</code> from ${domainLinks([table.domain], domains)}` +
+        (table.required ? '' : ', when supplied')
+    )
+    .join('; ');
   const external = entry.externalDomains || [];
   const optional = entry.optionalDomains || [];
   const reads =
+    (tables ? `<li>Takes the tables: ${tables}</li>` : '') +
     (entry.domains.length ? `<li>Reads: ${domainLinks(entry.domains, domains)}</li>` : '') +
     (optional.length
       ? `<li>Also reads, when supplied: ${domainLinks(optional, domains)}</li>`
@@ -1389,10 +1690,19 @@ function chartSection(module, entry, { domains, hasPages, repoUrl, root }) {
  * @param {string} [options.root='../'] Prefix from the page to the site root; the page is built at domains/index.html.
  * @returns {string} The page content, for the shared shell.
  */
-export function renderDomainsPage({ manifest, config, root = '../' }) {
+export function renderDomainsPage({ manifest, config, root = '../', libraries = [] }) {
   const { domains } = manifest;
   const domainIds = Object.keys(domains);
-  const modules = Object.entries(manifest.modules);
+  // Other libraries' charts (#182) read the same domains, so they are counted
+  // and named wherever the page says what the domains feed.
+  const fromLibraries = libraries.map((library) => ({
+    library,
+    charts: Object.entries(library.manifest.modules)
+  }));
+  const modules = [
+    ...Object.entries(manifest.modules),
+    ...fromLibraries.flatMap(({ charts }) => charts)
+  ];
   const standard = modules.filter(([, entry]) => !entry.externalDomains);
   const outside = modules.filter(([, entry]) => entry.externalDomains);
   const withPages = new Set(
@@ -1431,7 +1741,8 @@ export function renderDomainsPage({ manifest, config, root = '../' }) {
       `</dd></div>` +
       `<div class="fact"><dt>Manifest</dt><dd><a href="${root}portfolio.json">portfolio.json</a>` +
       `<span class="sub">The file this page is generated from, described by its` +
-      ` <a href="${config.repoUrl}/blob/HEAD/src/data/schema/portfolio.json">JSON Schema</a>` +
+      ` <a href="${config.repoUrl}/blob/HEAD/src/data/schema/portfolio.json">JSON Schema</a>,` +
+      ` in <a href="#format">format version ${escapeHtml(manifest.version)}</a>` +
       `</span></dd></div>` +
       `</dl>`,
     ...domainIds.map((id) => domainSection(id, domains[id], modules, config.repoUrl)),
@@ -1440,8 +1751,34 @@ export function renderDomainsPage({ manifest, config, root = '../' }) {
       ` column shown. Required marks the settings the chart&#39;s own data schema lists as` +
       ` required; the rest are optional. A setting shown with no default reads no column until` +
       ` one is named, and the chart&#39;s API reference says what each setting does.</p>`,
-    ...standard.map(section)
+    ...standard.filter(([module]) => manifest.modules[module]).map(section)
   );
+  for (const { library, charts } of fromLibraries) {
+    const groups = Object.values(library.manifest.groups || {}).map((group) => group.label);
+    const heading = groups.length
+      ? `${groups.join(', ')}, from ${library.name}`
+      : `Charts from ${library.name}`;
+    html.push(
+      `<section class="library-charts" id="library-${slugify(library.name)}">` +
+        `<h2>${escapeHtml(heading)}</h2>` +
+        `<p>${charts.length} ${charts.length === 1 ? 'chart' : 'charts'} from` +
+        ` <a href="${library.repository}">${escapeHtml(library.name)}</a>, a second chart library` +
+        ` the demo app carries beside these and lists in a tab of its own. They read the` +
+        ` standard domains through the same mapping, so a study mapped for the safety charts` +
+        ` is mapped for them. Each links to its demo and its reference on` +
+        ` <a href="${library.site}">${escapeHtml(library.name)}&#39;s site</a>.</p>` +
+        `</section>`,
+      ...charts.map(([module, entry]) =>
+        chartSection(module, entry, {
+          domains,
+          hasPages: true,
+          repoUrl: config.repoUrl,
+          root,
+          site: library.site
+        })
+      )
+    );
+  }
   if (outside.length) {
     html.push(
       `<h2 id="outside">Outside the standard set</h2>`,
@@ -1451,8 +1788,50 @@ export function renderDomainsPage({ manifest, config, root = '../' }) {
       ...outside.map(section)
     );
   }
-  html.push(`</div>`);
+  html.push(manifestFormatSection(manifest.version), `</div>`);
   return html.join('\n');
+}
+
+// The manifest's format (#181): what an entry can say, so that another chart
+// library can publish its chart list in the same format and the demo app can
+// list its charts beside these. The fields are described here in words; the
+// JSON Schema linked from the lead is the exact statement.
+function manifestFormatSection(version) {
+  const field = (name, text) => `<li><code>${name}</code> ${text}</li>`;
+  return (
+    `<section class="manifest-format" id="format">` +
+    `<h2>The manifest&#39;s format</h2>` +
+    `<p>The manifest is written in format version ${escapeHtml(version)}. Version 2 lets a` +
+    ` second chart library publish its own chart list in the same format, so the demo app can` +
+    ` list its charts beside these, read from the same files through the same mapping. A` +
+    ` library&#39;s chart list may leave out the domains: its charts read this standard set.` +
+    ` The charts on this page use none of the fields version 2 adds, and each means what it` +
+    ` meant in version 1. What a chart entry can say besides its domains and settings:</p>` +
+    `<ul>` +
+    field('library', 'names the chart library the chart comes from. Left out, it is safety.viz.') +
+    field(
+      'group',
+      'names the group the chart is listed under: a standard domain, or one of the' +
+        ' manifest&#39;s <code>groups</code>, each with the <code>label</code> on its tab and an' +
+        ' <code>order</code> among such groups, which come after the domains. Left out, a chart' +
+        ' is listed under the first domain it reads.'
+    ) +
+    field(
+      'tables',
+      'names the tables the chart&#39;s <code>init</code> takes when it takes several, each' +
+        ' read from one standard domain and marked required or not. The chart is handed an' +
+        ' object of those tables built from the loaded files, and an optional table with no' +
+        ' file is left out of it.'
+    ) +
+    field(
+      'unmappedSettings',
+      'says what the chart is handed for a setting with nothing mapped: <code>"null"</code>,' +
+        ' no column, as when it is left out; or <code>"omit"</code>, nothing at all, for a' +
+        ' chart that refuses a null column setting.'
+    ) +
+    `</ul>` +
+    `</section>`
+  );
 }
 
 /**

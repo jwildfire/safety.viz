@@ -1,6 +1,6 @@
 {
   "name": "safety.viz",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "description": "Consolidated Chart.js charting library for clinical safety graphics.",
   "private": true,
   "type": "module",
@@ -20,7 +20,11 @@
     "evidence:update": "node scripts/evidence.mjs --update",
     "requirements": "node scripts/requirements.mjs",
     "requirements:check": "node scripts/requirements.mjs --check",
-    "demo-data:check": "node scripts/check-demo-data.mjs"
+    "demo-data:check": "node scripts/check-demo-data.mjs",
+    "bio-viz:check": "node scripts/vendor-bio-viz.mjs --check",
+    "bio-viz:check-source": "node scripts/vendor-bio-viz.mjs --check-source",
+    "statistics:check": "node scripts/vendor-statistics.mjs --check",
+    "statistics:check-source": "node scripts/vendor-statistics.mjs --check-source"
   },
   "devDependencies": {
     "@fontsource-variable/instrument-sans": "^5.3.0",

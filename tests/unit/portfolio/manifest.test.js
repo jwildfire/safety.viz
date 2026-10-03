@@ -178,6 +178,19 @@ describe('portfolio manifest', () => {
     expect(portfolio).toEqual(manifest);
     expect(safetyViz.portfolio).toBe(portfolio);
   });
+
+  it('PF-MAN-013: the manifest is written in format version 2, and its thirteen entries use none of what version 2 added, so each means what it meant in version 1 (#181)', () => {
+    expect(manifest.version).toBe(2);
+    expect(manifest.groups).toBeUndefined();
+    for (const [module, entry] of modules) {
+      for (const field of ['library', 'group', 'tables', 'unmappedSettings']) {
+        expect(entry[field], `${module} uses the version-2 field ${field}`).toBeUndefined();
+      }
+    }
+    // The same document, called version 1, is a valid version-1 manifest.
+    const validate = new Ajv2020({ allErrors: true }).compile(manifestSchema);
+    expect(validate({ ...manifest, version: 1 })).toBe(true);
+  });
 });
 
 describe('columnSettings', () => {

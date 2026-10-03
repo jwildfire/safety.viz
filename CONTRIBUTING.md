@@ -13,6 +13,9 @@ npm ci
 | `npm run build`                           | esbuild `src/main.js` into versioned IIFE + ESM bundles under `dist/safety.viz-{version}/`                                                                                                                                       |
 | `npm run build:check-dist`                | Rebuild to a temp dir and fail if committed `dist/` has drifted from `src/`                                                                                                                                                      |
 | `npm run demo-data:check`                 | Rerun the demo-data generators to a temp dir and fail if `site/data/` has drifted                                                                                                                                                |
+| `npm run bio-viz:check` / `:check-source` | Fail if `site/vendor/bio.viz/`, bio.viz's vendored bundle for the demo app, differs from its record / from the bio.viz commit the record names; `node scripts/vendor-bio-viz.mjs` copies it again from bio.viz `dev`             |
+| `npm run statistics:check`                | Same for `site/vendor/gsm.bio/statistics.R`, the file R on request gives R (`:check-source` against the commit); `node scripts/vendor-statistics.mjs` copies it again from gsm.bio `dev`                                         |
+| `node scripts/derive-app-statistics.mjs`  | Record what the app's group comparison asks R for, then `Rscript scripts/app-statistics.R` answers it in desktop R (`tests/fixtures/app-statistics/`)                                                                            |
 | `npm run build:app`                       | Bundle the demo app (`src/app/`) into `build/app/` (gitignored): `safety.viz-app.js` for the browser tests and `safety.viz-app.html`, the single file that runs offline; the site build writes its own copies into `_site/demo/` |
 | `node scripts/build-app-fixture.mjs`      | Regenerate the renamed-column study under `tests/e2e/fixtures/app/` that the demo app's browser tests load                                                                                                                       |
 | `npm test`                                | Vitest unit tests (`tests/unit/`)                                                                                                                                                                                                |
@@ -20,12 +23,18 @@ npm ci
 | `npm run format` / `npm run format:check` | Prettier write / check                                                                                                                                                                                                           |
 | `npm run evidence` / `evidence:check`     | (Re)build `docs/evidence/<module>/evidence.json` from a fresh run / CI freshness guard                                                                                                                                           |
 | `npm run requirements` / `:check`         | (Re)build `docs/requirements/<module>.json` requirement-text extracts / CI freshness guard                                                                                                                                       |
-| `npm run docs:api`                        | Generate the `_api/<module>.json` API data artifact from JSDoc + the data schema                                                                                                                                                 |
+| `npm run docs:api`                        | Generate the `_api/<module>.json` API data artifact from JSDoc + the data schema, and `_api/kit.json` for the kit                                                                                                                |
 | `npm run site`                            | Build the docs site into `_site/` (gitignored); fails on broken links/missing screenshots                                                                                                                                        |
 
 `dist/` is committed — after any change under `src/`, run `npm run build`
 and commit the regenerated bundle alongside it. CI's drift check fails the
 build otherwise.
+
+## The kit is public surface
+
+`src/kit.js` re-exports, unchanged, the shared parts every chart is built from — the shell and its control builders, the filter contract, the axis-limit helpers, the record listing, the participant rail functions, the box drawing, the measure list, the Kaplan–Meier estimator and the bundled Chart.js constructor — as `SafetyViz.kit`, for a second chart library loaded beside safety.viz. The members are listed in [`requirements/kit.md`](requirements/kit.md) and documented on the site's kit page.
+
+From v1.9.0 a change to any kit member is a breaking change: its name, its signature, what it returns, or the elements and class names it produces. So before editing an exported function in `src/shell.js`, `src/filters.js`, `src/axis-limits.js`, `src/histogram/listing.js`, `src/profile-host.js`, `src/box-whisker.js`, `src/measure-list.js` or `src/time-to-event/km.js`, check whether it is on the kit; if it is, the change needs a NEWS entry that says it breaks the kit. Adding a member is not breaking: add it to `src/kit.js`, to its `Kit` typedef (`npm run docs:api` fails without it), to the matrix and to the list in `tests/unit/kit/kit.test.js`.
 
 ## How a pull request merges
 

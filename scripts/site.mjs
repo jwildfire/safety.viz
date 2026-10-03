@@ -32,11 +32,18 @@ import {
   renderEvidencePage,
   renderGallery,
   renderGuidePage,
+  renderKitPage,
   renderShell,
   validateEvidenceScreenshots,
   validateSiteLinks
 } from './site-lib.mjs';
 import { APP_BUNDLE, APP_HTML, buildApp } from './build-app.mjs';
+import {
+  APP_LIBRARIES,
+  libraryManifest,
+  libraryScript,
+  withoutSourceMap
+} from './app-libraries.mjs';
 import { DEMO_STUDIES } from '../src/app/studies.js';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -101,17 +108,45 @@ page(
 // Domains page (#139): the standard domain set and every chart's column needs,
 // rendered from the portfolio manifest — which is also served from the site
 // root, so a URL can quote the same file the bundle exports as `portfolio`.
+// The charts of the libraries the demo app carries (#182) are listed too, from
+// the chart list in each library's vendored bundle.
 const manifestFile = path.join(rootDir, 'src/data/portfolio.json');
+const ownManifest = JSON.parse(readFileSync(manifestFile, 'utf8'));
+const libraries = APP_LIBRARIES.map((library) => ({
+  ...library,
+  manifest: libraryManifest(library)
+}));
 publishManifest(manifestFile, siteDir);
 mkdirSync(path.join(siteDir, 'domains'), { recursive: true });
 page(
   path.join(siteDir, 'domains/index.html'),
   'Standard domain set · safety.viz',
-  renderDomainsPage({ manifest: JSON.parse(readFileSync(manifestFile, 'utf8')), config }),
+  renderDomainsPage({ manifest: ownManifest, config, libraries }),
   '../',
   'The standard domain set a study supplies to safety.viz: its tables and their columns, ' +
     'the charts each one feeds, and the column settings every chart needs.'
 );
+
+// Kit page (#154): the API reference for the shared parts the bundle exports
+// as `kit`, from the _api/kit.json artifact. The architecture page and every
+// chart's API reference link to it, so it is written whenever the site is.
+const kitApiFile = path.join(rootDir, '_api', 'kit.json');
+if (!existsSync(kitApiFile)) {
+  errors.push(`missing ${path.relative(rootDir, kitApiFile)} — run \`npm run docs:api\` first`);
+} else {
+  mkdirSync(path.join(siteDir, 'kit'), { recursive: true });
+  page(
+    path.join(siteDir, 'kit/index.html'),
+    'Kit API reference · safety.viz',
+    renderKitPage(JSON.parse(readFileSync(kitApiFile, 'utf8')), {
+      repoUrl: config.repoUrl,
+      version
+    }),
+    '../',
+    'The safety.viz kit: the shared sidebar, filters, record listing, participant rail and ' +
+      'Chart.js constructor the bundle exports for a second chart library on the same page.'
+  );
+}
 
 // Shared dist bundle for the demo pages (IIFE + source map).
 const distDir = path.join(rootDir, `dist/safety.viz-${version}`);
@@ -247,9 +282,59 @@ for (const study of DEMO_STUDIES) {
 // The app's typefaces (#165) are served from beside it, with their licences,
 // so its page asks no other host for anything.
 publishDemoAppFonts(rootDir, demoAppDir);
+// Each further chart library's vendored bundle (#182) is served beside the app
+// and loaded after it; the page's description counts every chart it carries.
+// The copy served drops the bundle's source-map comment line, since no map is
+// served beside it; the vendored file itself stays bio.viz's, byte for byte.
+for (const library of APP_LIBRARIES) {
+  writeFileSync(path.join(demoAppDir, library.file), withoutSourceMap(libraryScript(library)));
+  // The statistics file R in the browser is given when the reader starts R (#183).
+  if (library.r) {
+    copyFileSync(
+      path.join(rootDir, library.r.statistics.path),
+      path.join(demoAppDir, library.r.statistics.file)
+    );
+  }
+}
+const WORDS = [
+  'no',
+  'one',
+  'two',
+  'three',
+  'four',
+  'five',
+  'six',
+  'seven',
+  'eight',
+  'nine',
+  'ten',
+  'eleven',
+  'twelve',
+  'thirteen',
+  'fourteen',
+  'fifteen',
+  'sixteen',
+  'seventeen',
+  'eighteen',
+  'nineteen',
+  'twenty'
+];
+const counted = (count, noun) => `${WORDS[count] || count} ${noun}${count === 1 ? '' : 's'}`;
+const chartsCarried = [
+  counted(Object.keys(ownManifest.modules).length, 'clinical safety chart'),
+  ...libraries.map((library) =>
+    counted(Object.keys(library.manifest.modules).length, `${library.kind} chart`)
+  )
+].join(' and ');
 writeFileSync(
   path.join(demoAppDir, 'index.html'),
-  renderDemoAppPage({ bundle: APP_BUNDLE, download: APP_HTML, repoUrl: config.repoUrl })
+  renderDemoAppPage({
+    bundle: APP_BUNDLE,
+    download: APP_HTML,
+    repoUrl: config.repoUrl,
+    libraries: APP_LIBRARIES,
+    charts: chartsCarried
+  })
 );
 
 errors.push(...validateSiteLinks(siteDir));

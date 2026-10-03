@@ -2,6 +2,7 @@ import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { test, expect } from '@playwright/test';
 import { CANONICAL } from './evidence.js';
+import { APP_LIBRARIES, HOSTED_PITCH, libraryManifest } from '../../scripts/app-libraries.mjs';
 
 // Docs-site smoke (#7): every available renderer's built demo page must mount
 // from the committed dist/ bundle with no console errors, served straight out
@@ -17,13 +18,16 @@ const config = JSON.parse(readFileSync(new URL('../../site/config.json', import.
 const available = config.renderers.filter((renderer) => renderer.status === 'available');
 const manifestFile = new URL('../../src/data/portfolio.json', import.meta.url);
 const manifest = JSON.parse(readFileSync(manifestFile, 'utf8'));
+// bio.viz's chart list, from its vendored bundle: the demo app carries its
+// charts and the Domains page lists them (#182).
+const bioManifest = libraryManifest(APP_LIBRARIES[0]);
 
 test.describe('docs site', () => {
   test.beforeAll(() => {
     execSync('npm run site', { stdio: 'inherit', cwd: new URL('../..', import.meta.url) });
   });
 
-  test('APP-PAGE-013: the built demo app is its own page at demo/, mounted on the demo study with no console errors (#150)', async ({
+  test('APP-PAGE-013: the built demo app is its own page at demo/, mounted on the demo study with every chart of both libraries and no console errors (#150, #182)', async ({
     page
   }) => {
     const errors = [];
@@ -35,9 +39,12 @@ test.describe('docs site', () => {
     await page.evaluate('window.__safetyVizApp.ready');
     await expect(page).toHaveTitle('safety.viz demo');
     await expect(page.locator('.sva-count')).toHaveText(
-      '13 of 13 charts supported by the loaded data'
+      '17 of 17 charts supported by the loaded data'
     );
     await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
+    await expect(page.locator('.sva-tab[data-domain="biomarkers"] .sva-tab-count')).toHaveText(
+      '4 of 4'
+    );
     // Its own header, not the docs site's.
     await expect(page.locator('.sva-header .sva-wordmark')).toHaveText('safety.viz');
     await expect(page.locator('.site-header')).toHaveCount(0);
@@ -57,6 +64,108 @@ test.describe('docs site', () => {
     // The docs site's nav reaches the app from anywhere.
     await page.goto('/_site/index.html');
     await expect(page.locator('.site-nav a[href="demo/index.html"]')).toHaveText('Demo app');
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-BIO-012: the built demo page serves bio.viz’s vendored bundle beside the app, whole but for its source-map comment, lists the biomarker charts in their own tab and holds at a 390px viewport (#182)', async ({
+    page
+  }) => {
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') errors.push(msg.text());
+    });
+    const [bioViz] = APP_LIBRARIES;
+    const response = await page.request.get(`/_site/demo/${bioViz.file}`);
+    expect(response.ok()).toBe(true);
+    // Served whole, less only the source-map comment line: no map is served.
+    const served = await response.text();
+    const vendored = readFileSync(new URL(`../../${bioViz.path}`, import.meta.url), 'utf8');
+    expect(vendored).toContain('//# sourceMappingURL=');
+    expect(served).not.toContain('sourceMappingURL');
+    expect(served).toBe(vendored.replace(/^\/\/# sourceMappingURL=.*$\n?/gm, ''));
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/_site/demo/index.html');
+    await page.evaluate('window.__safetyVizApp.ready');
+    const biomarkers = page.locator('.sva-tab[data-domain="biomarkers"]');
+    await biomarkers.scrollIntoViewIfNeeded();
+    await biomarkers.click();
+    await expect(page.locator('.sva-group[data-group="biomarkers"] .sva-item-title')).toHaveText(
+      Object.values(bioManifest.modules).map((entry) => entry.title)
+    );
+    await expect(page.locator('.sva-chart .sv-root')).toBeVisible();
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
+    ).toBeLessThanOrEqual(0);
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-R-014: the built demo page shows the control that starts R with the biomarker charts, serves the statistics file beside the app as it was vendored, says what the app promises, and starts R when pressed (#183)', async ({
+    page
+  }) => {
+    test.setTimeout(240000);
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    const requests = [];
+    page.on('request', (request) => requests.push(request.url()));
+    const [bioViz] = APP_LIBRARIES;
+    const response = await page.request.get(`/_site/demo/${bioViz.r.statistics.file}`);
+    expect(response.ok()).toBe(true);
+    expect(
+      (await response.body()).equals(
+        readFileSync(new URL(`../../${bioViz.r.statistics.path}`, import.meta.url))
+      )
+    ).toBe(true);
+    await page.goto('/_site/demo/index.html');
+    await page.evaluate('window.__safetyVizApp.ready');
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+      'content',
+      /the page fetches nothing from any other host unless you start R/
+    );
+    await expect(page.locator('.sva-footer .sva-pitch')).toHaveText(HOSTED_PITCH);
+    await page.locator('.sva-tab[data-domain="biomarkers"]').click();
+    await expect(page.locator('.sva-group[data-group="biomarkers"] .sva-action')).toHaveText(
+      'Start R'
+    );
+    // Shown, not pressed: nothing is asked of R's hosts.
+    expect(requests.filter((url) => /webr\.r-wasm\.org|statistics\.R/.test(url))).toEqual([]);
+    // Pressed on the page as built: its own factory and its own `./statistics.R`
+    // start R, and a chart prints R's answer.
+    await page.evaluate(() => window.__safetyVizApp.select('association-scatter'));
+    await page.locator('.sva-group[data-group="biomarkers"] .sva-action').click();
+    await expect(page.locator('.sva-chart .bv-statistic').first()).toContainText(
+      "Pearson's product-moment correlation",
+      { timeout: 150000 }
+    );
+    await expect(page.locator('.sva-group[data-group="biomarkers"] .sva-action')).toHaveText(
+      'R started'
+    );
+    expect(requests).toContain(new URL('/_site/demo/statistics.R', page.url()).href);
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-LIB-026: on the built demo page, when bio.viz’s script does not load, the safety charts mount as before and the page says the biomarker charts are not shown and why, in every view (#193)', async ({
+    page
+  }) => {
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    await page.route(/\/bio\.viz\.js$/, (route) =>
+      route.fulfill({ status: 404, body: 'not here' })
+    );
+    await page.goto('/_site/demo/index.html');
+    await page.evaluate('window.__safetyVizApp.ready');
+    const said =
+      'The bio.viz charts are not shown: bio.viz.js did not load on this page, or failed as it loaded.';
+    await expect(page.locator('.sva-library-notes')).toHaveText(said);
+    await expect(page.locator('.sva-tab')).toHaveCount(3);
+    await expect(page.locator('.sva-count')).toHaveText(
+      `${Object.keys(manifest.modules).length} of ${Object.keys(manifest.modules).length} charts supported by the loaded data`
+    );
+    await page.evaluate(() => window.__safetyVizApp.select('data'));
+    await expect(page.locator('.sva-library-notes')).toHaveText(said);
+    await page.evaluate(() => window.__safetyVizApp.select('histogram'));
+    await expect(page.locator('.sva-library-notes')).toHaveText(said);
+    await expect(page.locator('.sva-chart .sv-root')).toBeVisible();
     expect(errors).toEqual([]);
   });
 
@@ -332,9 +441,11 @@ test.describe('docs site', () => {
       );
       // Every chart reads the standard set, so there is no section for charts
       // outside it, and the experimental Patient Journey Explorer is not listed (#165).
-      await expect(page.locator('section.chart-needs h3')).toHaveText(
-        modules.map((entry) => entry.title)
-      );
+      // The biomarker charts the demo app carries follow safety.viz's (#182).
+      await expect(page.locator('section.chart-needs h3')).toHaveText([
+        ...modules.map((entry) => entry.title),
+        ...Object.values(bioManifest.modules).map((entry) => entry.title)
+      ]);
       await expect(page.locator('#outside')).toHaveCount(0);
       await expect(page.locator('.domains-page')).not.toContainText('Patient Journey');
 
@@ -372,6 +483,66 @@ test.describe('docs site', () => {
       const response = await page.request.get('/_site/portfolio.json');
       expect(response.ok()).toBe(true);
       expect((await response.body()).equals(readFileSync(manifestFile))).toBe(true);
+    });
+  });
+
+  // Kit page (#154): the API reference for the shared parts the bundle exports
+  // as `kit`. The unit suite (tests/unit/kit/reference.test.js) holds its
+  // content to the kit itself; this holds what only a built site and a real
+  // layout can show — that the page exists where the other pages link to it,
+  // lists every member the committed bundle carries, and reads on a phone
+  // without the page scrolling sideways.
+  test.describe('kit page (#154)', () => {
+    test('KIT-DOC-009: the kit page opens from the architecture page and a chart’s API reference, lists every member the bundle carries and fits a 390px phone with no sideways page scroll (#154)', async ({
+      page
+    }) => {
+      const errors = [];
+      page.on('pageerror', (error) => errors.push(error.message));
+      page.on('console', (msg) => {
+        if (msg.type() === 'error') errors.push(msg.text());
+      });
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.goto('/_site/architecture.html');
+      await page.locator('.site-main a', { hasText: /^kit$/ }).click();
+      await expect(page).toHaveURL(/\/_site\/kit\/index\.html$/);
+      await expect(page.locator('h1')).toHaveText('Kit API reference');
+
+      // The members on the page are the members on the bundle the site serves.
+      const { version } = JSON.parse(
+        readFileSync(new URL('../../package.json', import.meta.url), 'utf8')
+      );
+      await page.addScriptTag({ url: `../dist/safety.viz-${version}/safety.viz.js` });
+      const onBundle = await page.evaluate(() => Object.keys(window.SafetyViz.kit));
+      expect(onBundle.length).toBeGreaterThan(0);
+      const onPage = await page
+        .locator('.kit-group tbody tr')
+        .evaluateAll((rows) => rows.map((row) => row.id));
+      expect(onPage).toEqual(onBundle);
+      await expect(page.locator('.facts .fact').first()).toContainText(String(onBundle.length));
+
+      const layout = await page.evaluate(() => {
+        const width = document.documentElement.clientWidth;
+        return {
+          width,
+          scrollWidth: document.documentElement.scrollWidth,
+          // Anything not inside a container that scrolls by itself — a member
+          // table or a code sample — must end within the viewport.
+          escaping: [...document.querySelectorAll('body *')]
+            .filter((el) => !el.parentElement.closest('.table-scroll, pre'))
+            .filter((el) => el.getBoundingClientRect().right > width + 0.5).length,
+          samples: document.querySelectorAll('.kit-page pre').length
+        };
+      });
+      expect(layout.width).toBe(390);
+      expect(layout.scrollWidth).toBeLessThanOrEqual(layout.width);
+      expect(layout.escaping).toBe(0);
+      expect(layout.samples).toBe(2);
+
+      // A chart's API reference links to it too.
+      await page.goto(`/_site/${available[0].module}/api.html`);
+      await page.locator('#overview a', { hasText: 'kit reference' }).click();
+      await expect(page).toHaveURL(/\/_site\/kit\/index\.html$/);
+      expect(errors).toEqual([]);
     });
   });
 
