@@ -1,6 +1,6 @@
 {
   "module": "ae-explorer",
-  "generatedAt": "2026-10-03T13:45:20.292Z",
+  "generatedAt": "2026-10-03T13:52:26.336Z",
   "environment": {
     "os": "darwin 23.6.0",
     "node": "v24.14.0",
@@ -471,6 +471,14 @@
       "status": "pass",
       "requirementIds": ["APP-LOAD-022"],
       "issueRefs": [159],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LOAD-026: loading a study and starting R send no request that carries the study’s data: no request has a body, and no address carries a value from the study (#196)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-026"],
+      "issueRefs": [196],
       "screenshots": []
     },
     {
@@ -6359,6 +6367,14 @@
       "status": "pass",
       "requirementIds": ["APP-LIB-013"],
       "issueRefs": [181],
+      "screenshots": []
+    },
+    {
+      "test": "the pages APP-LOAD-027: the hosted footer, the single file’s footer and the hosted page’s description say what happens to the data a reader loads, in plain words (#196)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-027"],
+      "issueRefs": [196],
       "screenshots": []
     },
     {

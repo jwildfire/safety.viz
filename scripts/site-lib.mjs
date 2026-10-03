@@ -1447,7 +1447,7 @@ export function renderDemoAppPage({
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="The safety.viz demo app: load a study, check how its columns map, and review it in ${escapeHtml(charts)}. ${libraries.length ? 'Your study’s data stays in your browser, and the page fetches nothing from any other host unless you start R.' : 'It runs in your browser; nothing is uploaded.'}">
+<meta name="description" content="The safety.viz demo app: load a study, check how its columns map, and review it in ${escapeHtml(charts)}. ${libraries.length ? 'Files you load are read in your browser and never uploaded; starting R downloads R from webr.r-wasm.org, and your data stays in your browser.' : 'It runs in your browser; nothing is uploaded.'}">
 <title>safety.viz demo</title>
 <link rel="icon" href="data:image/svg+xml,${icon}">
 ${preloads}

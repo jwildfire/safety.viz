@@ -8,7 +8,9 @@ from the section here when the release-candidate PR (dev -> main) merges and is 
 
 # safety.viz v1.10.0 (Upcoming)
 
-_Nothing merged yet._
+## Also in this release
+
+- **The demo app says what happens to your data.** Its footer reads: "Files you load are read in this browser and never uploaded. Starting R downloads R from webr.r-wasm.org; your data stays in the browser, and R runs here." The single file's reads: "This file loads nothing; files you add are read here and never leave this computer." A browser test holds that loading a study and starting R send no request carrying the study's data. [#196](https://github.com/jwildfire/safety.viz/issues/196)
 
 # safety.viz v1.9.0
 
