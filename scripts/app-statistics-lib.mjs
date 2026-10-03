@@ -9,11 +9,18 @@ export const APP_STATISTICS = {
   chart: 'group-comparison',
   measure: 'Alanine Aminotransferase',
   directory: 'tests/fixtures/app-statistics',
-  // What the recorded requests depend on: the study, the charts that ask, the
-  // app that hands them their rows, and the R that answers.
+  // What the recorded requests depend on: the study; the app code that reads
+  // its files, places and maps them, and hands each chart its settings and its
+  // tables; the charts that ask; and the R that answers.
   sources: [
     'site/data/adbds.csv',
     'site/data/adsl.csv',
+    'src/app/parse.js',
+    'src/app/detect.js',
+    'src/app/mapping.js',
+    'src/app/charts.js',
+    'src/app/libraries.js',
+    'src/app/page.js',
     'site/vendor/bio.viz/bio.viz.js',
     'site/vendor/gsm.bio/statistics.R'
   ]

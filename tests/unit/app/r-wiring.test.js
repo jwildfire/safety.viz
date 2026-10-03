@@ -57,7 +57,7 @@ describe('the desktop-R results the browser test compares with', () => {
   const requests = JSON.parse(read(`${APP_STATISTICS.directory}/requests.json`));
   const expected = JSON.parse(read(`${APP_STATISTICS.directory}/expected.json`));
 
-  it('APP-R-011: the recorded requests and desktop R’s answers are derived from the study, the bundle and the statistics file as they are now (#183)', () => {
+  it('APP-R-011: the recorded requests and desktop R’s answers are derived from the study, the app code that shapes the rows, the bundle and the statistics file as they are now (#183)', () => {
     const now = derivedFrom(read);
     expect(requests.derived_from, 'rerun scripts/derive-app-statistics.mjs').toEqual(now);
     expect(expected.derived_from, 'rerun scripts/app-statistics.R').toEqual(now);

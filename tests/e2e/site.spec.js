@@ -100,9 +100,10 @@ test.describe('docs site', () => {
     expect(errors).toEqual([]);
   });
 
-  test('APP-R-014: the built demo page shows the control that starts R with the biomarker charts, serves the statistics file beside the app as it was vendored, and says what the app promises (#183)', async ({
+  test('APP-R-014: the built demo page shows the control that starts R with the biomarker charts, serves the statistics file beside the app as it was vendored, says what the app promises, and starts R when pressed (#183)', async ({
     page
   }) => {
+    test.setTimeout(240000);
     const errors = [];
     page.on('pageerror', (error) => errors.push(error.message));
     const requests = [];
@@ -128,6 +129,18 @@ test.describe('docs site', () => {
     );
     // Shown, not pressed: nothing is asked of R's hosts.
     expect(requests.filter((url) => /webr\.r-wasm\.org|statistics\.R/.test(url))).toEqual([]);
+    // Pressed on the page as built: its own factory and its own `./statistics.R`
+    // start R, and a chart prints R's answer.
+    await page.evaluate(() => window.__safetyVizApp.select('association-scatter'));
+    await page.locator('.sva-group[data-group="biomarkers"] .sva-action').click();
+    await expect(page.locator('.sva-chart .bv-statistic').first()).toContainText(
+      "Pearson's product-moment correlation",
+      { timeout: 150000 }
+    );
+    await expect(page.locator('.sva-group[data-group="biomarkers"] .sva-action')).toHaveText(
+      'R started'
+    );
+    expect(requests).toContain(new URL('/_site/demo/statistics.R', page.url()).href);
     expect(errors).toEqual([]);
   });
 

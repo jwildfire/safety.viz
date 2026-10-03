@@ -11,6 +11,30 @@
    "sha256": "d2d198906aa06ace5e0fda08442ad234c5835ec7cf19378737db7274ffd54f04"
   },
   {
+   "file": "src/app/parse.js",
+   "sha256": "26158b2c99410ad3adff567bd882beddee214a06664af4562c085c16edc20790"
+  },
+  {
+   "file": "src/app/detect.js",
+   "sha256": "809f7af72964bbad2f3cae6bfb52bcfb9421a70a7f3d2f37bf5ae36f027887a6"
+  },
+  {
+   "file": "src/app/mapping.js",
+   "sha256": "6ace4cad4707a31da71826ffd8186bea5a1d444077b703a71e7d9e6c82a96049"
+  },
+  {
+   "file": "src/app/charts.js",
+   "sha256": "783ec529c7a819c17c6a4b14c89591afef854d293a694f5355409d3f60077b6a"
+  },
+  {
+   "file": "src/app/libraries.js",
+   "sha256": "796c529a69afea2a85d59734e818185081e5f263631ed61621c29453e29b5f5f"
+  },
+  {
+   "file": "src/app/page.js",
+   "sha256": "a0b1c15cbbfb18afc6cc71368db91fe455eb9ce3865999c7b370a77db4cbb0da"
+  },
+  {
    "file": "site/vendor/bio.viz/bio.viz.js",
    "sha256": "bbc93e78d6a3c315f219bfe986a820de72941846ad825ce2b6096b01e11b44a9"
   },
