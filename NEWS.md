@@ -6,7 +6,7 @@ functionality-first account of what a user can now do. The GitHub release publis
 from the section here when the release-candidate PR (dev -> main) merges and is tagged.
 -->
 
-# safety.viz v1.10.0 (Upcoming)
+# safety.viz v1.9.1 (Upcoming)
 
 ## Also in this release
 
