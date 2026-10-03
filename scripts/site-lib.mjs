@@ -1675,7 +1675,8 @@ export function renderDomainsPage({ manifest, config, root = '../' }) {
       `</dd></div>` +
       `<div class="fact"><dt>Manifest</dt><dd><a href="${root}portfolio.json">portfolio.json</a>` +
       `<span class="sub">The file this page is generated from, described by its` +
-      ` <a href="${config.repoUrl}/blob/HEAD/src/data/schema/portfolio.json">JSON Schema</a>` +
+      ` <a href="${config.repoUrl}/blob/HEAD/src/data/schema/portfolio.json">JSON Schema</a>,` +
+      ` in <a href="#format">format version ${escapeHtml(manifest.version)}</a>` +
       `</span></dd></div>` +
       `</dl>`,
     ...domainIds.map((id) => domainSection(id, domains[id], modules, config.repoUrl)),
@@ -1695,8 +1696,50 @@ export function renderDomainsPage({ manifest, config, root = '../' }) {
       ...outside.map(section)
     );
   }
-  html.push(`</div>`);
+  html.push(manifestFormatSection(manifest.version), `</div>`);
   return html.join('\n');
+}
+
+// The manifest's format (#181): what an entry can say, so that another chart
+// library can publish its chart list in the same format and the demo app can
+// list its charts beside these. The fields are described here in words; the
+// JSON Schema linked from the lead is the exact statement.
+function manifestFormatSection(version) {
+  const field = (name, text) => `<li><code>${name}</code> ${text}</li>`;
+  return (
+    `<section class="manifest-format" id="format">` +
+    `<h2>The manifest&#39;s format</h2>` +
+    `<p>The manifest is written in format version ${escapeHtml(version)}. Version 2 lets a` +
+    ` second chart library publish its own chart list in the same format, so the demo app can` +
+    ` list its charts beside these, read from the same files through the same mapping. A` +
+    ` library&#39;s chart list may leave out the domains: its charts read this standard set.` +
+    ` The charts on this page use none of the fields version 2 adds, and each means what it` +
+    ` meant in version 1. What a chart entry can say besides its domains and settings:</p>` +
+    `<ul>` +
+    field('library', 'names the chart library the chart comes from. Left out, it is safety.viz.') +
+    field(
+      'group',
+      'names the group the chart is listed under: a standard domain, or one of the' +
+        ' manifest&#39;s <code>groups</code>, each with the <code>label</code> on its tab and an' +
+        ' <code>order</code> among such groups, which come after the domains. Left out, a chart' +
+        ' is listed under the first domain it reads.'
+    ) +
+    field(
+      'tables',
+      'names the tables the chart&#39;s <code>init</code> takes when it takes several, each' +
+        ' read from one standard domain and marked required or not. The chart is handed an' +
+        ' object of those tables built from the loaded files, and an optional table with no' +
+        ' file is left out of it.'
+    ) +
+    field(
+      'unmappedSettings',
+      'says what the chart is handed for a setting with nothing mapped: <code>"null"</code>,' +
+        ' no column, as when it is left out; or <code>"omit"</code>, nothing at all, for a' +
+        ' chart that refuses a null column setting.'
+    ) +
+    `</ul>` +
+    `</section>`
+  );
 }
 
 /**
