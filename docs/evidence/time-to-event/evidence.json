@@ -1,16 +1,13 @@
 {
   "module": "time-to-event",
-  "generatedAt": "2026-10-03T12:32:05.559Z",
+  "generatedAt": "2026-10-03T18:41:50.964Z",
   "environment": {
-    "os": "linux 6.17.0-1022-azure",
-    "node": "v22.23.3",
+    "os": "darwin 23.6.0",
+    "node": "v24.14.0",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": {
-    "id": "37123154366",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37123154366"
-  },
+  "run": null,
   "records": [
     {
       "test": "a chart link navigates straight to that renderer demo (#71)",
@@ -306,6 +303,14 @@
       "status": "pass",
       "requirementIds": ["APP-LOAD-022"],
       "issueRefs": [159],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LOAD-026: loading a study and starting R send no request that carries the study’s data: from the first file chosen, every request is a GET or HEAD with no body and no query, to the page’s own host for the statistics file only or to webr.r-wasm.org for R, no address names a participant, and no socket is opened (#196)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-026"],
+      "issueRefs": [196],
       "screenshots": []
     },
     {
@@ -2381,130 +2386,130 @@
       "screenshots": []
     },
     {
-      "test": "'time-to-event': the shared filter contract TTE-FILT-001: a filter whose column the data lacks draws no control and leaves no restriction behind (#166)",
+      "test": "'time-to-event': the shared filter contract TTE-FILT-005: a filter whose column the data lacks draws no control and leaves no restriction behind (#166)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["TTE-FILT-001"],
-      "issueRefs": [166],
-      "screenshots": ["TTE-FILT-001-serious-only-composed-endpoint.png"]
-    },
-    {
-      "test": "'time-to-event': the shared filter contract TTE-FILT-001: a plain filter offers All, opens unfiltered and draws every participant (#166)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["TTE-FILT-001"],
-      "issueRefs": [166],
-      "screenshots": ["TTE-FILT-001-serious-only-composed-endpoint.png"]
-    },
-    {
-      "test": "'time-to-event': the shared filter contract TTE-FILT-001: choosing a value filters the chart, and choosing All brings everyone back (#166)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["TTE-FILT-001"],
-      "issueRefs": [166],
-      "screenshots": ["TTE-FILT-001-serious-only-composed-endpoint.png"]
-    },
-    {
-      "test": "'time-to-event': the shared filter contract TTE-FILT-002: a start value opens the chart filtered, with All still on offer (#166)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["TTE-FILT-002"],
+      "requirementIds": ["TTE-FILT-005"],
       "issueRefs": [166],
       "screenshots": []
     },
     {
-      "test": "'time-to-event': the shared filter contract TTE-FILT-002: a start value the data lacks warns by name and opens on All (#166)",
+      "test": "'time-to-event': the shared filter contract TTE-FILT-005: a plain filter offers All, opens unfiltered and draws every participant (#166)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["TTE-FILT-002"],
+      "requirementIds": ["TTE-FILT-005"],
       "issueRefs": [166],
       "screenshots": []
     },
     {
-      "test": "'time-to-event': the shared filter contract TTE-FILT-002: after a reader's own choice, setSettings still leaves the control and the chart agreeing (#166)",
+      "test": "'time-to-event': the shared filter contract TTE-FILT-005: choosing a value filters the chart, and choosing All brings everyone back (#166)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["TTE-FILT-002"],
+      "requirementIds": ["TTE-FILT-005"],
       "issueRefs": [166],
       "screenshots": []
     },
     {
-      "test": "'time-to-event': the shared filter contract TTE-FILT-002: Reset returns the filter to its opening selection (#166)",
+      "test": "'time-to-event': the shared filter contract TTE-FILT-006: a start value opens the chart filtered, with All still on offer (#166)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["TTE-FILT-002"],
+      "requirementIds": ["TTE-FILT-006"],
       "issueRefs": [166],
       "screenshots": []
     },
     {
-      "test": "'time-to-event': the shared filter contract TTE-FILT-002: Reset squares a start value the data lacks with the data, exactly as load does (#166)",
+      "test": "'time-to-event': the shared filter contract TTE-FILT-006: a start value the data lacks warns by name and opens on All (#166)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["TTE-FILT-002"],
+      "requirementIds": ["TTE-FILT-006"],
       "issueRefs": [166],
       "screenshots": []
     },
     {
-      "test": "'time-to-event': the shared filter contract TTE-FILT-002: setSettings leaves the chart on its opening selection (#166)",
+      "test": "'time-to-event': the shared filter contract TTE-FILT-006: after a reader's own choice, setSettings still leaves the control and the chart agreeing (#166)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["TTE-FILT-002"],
+      "requirementIds": ["TTE-FILT-006"],
       "issueRefs": [166],
       "screenshots": []
     },
     {
-      "test": "'time-to-event': the shared filter contract TTE-FILT-002: when later data brings the filter's column, the filter opens on its start value (#166)",
+      "test": "'time-to-event': the shared filter contract TTE-FILT-006: Reset returns the filter to its opening selection (#166)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["TTE-FILT-002"],
+      "requirementIds": ["TTE-FILT-006"],
       "issueRefs": [166],
       "screenshots": []
     },
     {
-      "test": "'time-to-event': the shared filter contract TTE-FILT-003: all:false offers no All, selects the first value and filters to it (#166)",
+      "test": "'time-to-event': the shared filter contract TTE-FILT-006: Reset squares a start value the data lacks with the data, exactly as load does (#166)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["TTE-FILT-003"],
+      "requirementIds": ["TTE-FILT-006"],
       "issueRefs": [166],
       "screenshots": []
     },
     {
-      "test": "'time-to-event': the shared filter contract TTE-FILT-003: all:false with a start the data lacks falls back to the first value (#166)",
+      "test": "'time-to-event': the shared filter contract TTE-FILT-006: setSettings leaves the chart on its opening selection (#166)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["TTE-FILT-003"],
+      "requirementIds": ["TTE-FILT-006"],
       "issueRefs": [166],
       "screenshots": []
     },
     {
-      "test": "'time-to-event': the shared filter contract TTE-FILT-004: a multiple filter emptied by hand keeps meaning nothing is selected (#166)",
+      "test": "'time-to-event': the shared filter contract TTE-FILT-006: when later data brings the filter's column, the filter opens on its start value (#166)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["TTE-FILT-004"],
+      "requirementIds": ["TTE-FILT-006"],
       "issueRefs": [166],
       "screenshots": []
     },
     {
-      "test": "'time-to-event': the shared filter contract TTE-FILT-004: multiple drops start values the data lacks, and keeps the rest (#166)",
+      "test": "'time-to-event': the shared filter contract TTE-FILT-007: all:false offers no All, selects the first value and filters to it (#166)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["TTE-FILT-004"],
+      "requirementIds": ["TTE-FILT-007"],
       "issueRefs": [166],
       "screenshots": []
     },
     {
-      "test": "'time-to-event': the shared filter contract TTE-FILT-004: multiple opens on its start list and draws every checked value (#166)",
+      "test": "'time-to-event': the shared filter contract TTE-FILT-007: all:false with a start the data lacks falls back to the first value (#166)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["TTE-FILT-004"],
+      "requirementIds": ["TTE-FILT-007"],
       "issueRefs": [166],
       "screenshots": []
     },
     {
-      "test": "'time-to-event': the shared filter contract TTE-FILT-004: multiple with no start value left in the data places no restriction (#166)",
+      "test": "'time-to-event': the shared filter contract TTE-FILT-008: a multiple filter emptied by hand keeps meaning nothing is selected (#166)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["TTE-FILT-004"],
+      "requirementIds": ["TTE-FILT-008"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'time-to-event': the shared filter contract TTE-FILT-008: multiple drops start values the data lacks, and keeps the rest (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-FILT-008"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'time-to-event': the shared filter contract TTE-FILT-008: multiple opens on its start list and draws every checked value (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-FILT-008"],
+      "issueRefs": [166],
+      "screenshots": []
+    },
+    {
+      "test": "'time-to-event': the shared filter contract TTE-FILT-008: multiple with no start value left in the data places no restriction (#166)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["TTE-FILT-008"],
       "issueRefs": [166],
       "screenshots": []
     },
@@ -2554,6 +2559,14 @@
       "status": "pass",
       "requirementIds": ["APP-LIB-025"],
       "issueRefs": [193, 193],
+      "screenshots": []
+    },
+    {
+      "test": "a library the page cannot use as handed in (#193) APP-LIB-027: a library chart named data, the name the app keeps for its data view, is not listed, the page says why, and the data view is as before (#197)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-027"],
+      "issueRefs": [193, 197],
       "screenshots": []
     },
     {
@@ -3877,6 +3890,30 @@
       "screenshots": []
     },
     {
+      "test": "every recorded requirement ID is on its module’s evidence page (#195) holds for every module’s committed evidence, with the gaps known before the check (#206)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [195, 206],
+      "screenshots": []
+    },
+    {
+      "test": "every recorded requirement ID is on its module’s evidence page (#195) names a module’s recorded ID that no coverage row lists, and ignores other modules’ IDs",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [195],
+      "screenshots": []
+    },
+    {
+      "test": "every recorded requirement ID is on its module’s evidence page (#195) passes a known gap while it is one, and says so once it is listed",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [195],
+      "screenshots": []
+    },
+    {
       "test": "evidence normalizer buildEvidenceSets splits records per module and duplicates shared scaffold records (#20)",
       "suite": "unit",
       "status": "pass",
@@ -5061,7 +5098,7 @@
       "screenshots": []
     },
     {
-      "test": "requirements-lib: one row per requirement ID across the matrices (#193) finds none in the repository’s matrices but the ones known before the check (safety.viz#195)",
+      "test": "requirements-lib: one row per requirement ID across the matrices (#193) finds none in the repository’s matrices, and none is known to have two (safety.viz#195)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": [],
@@ -6442,6 +6479,14 @@
       "status": "pass",
       "requirementIds": ["APP-LIB-013"],
       "issueRefs": [181],
+      "screenshots": []
+    },
+    {
+      "test": "the pages APP-LOAD-027: the hosted footer, the single file’s footer and the hosted page’s description say what happens to the data a reader loads, in plain words (#196)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-027"],
+      "issueRefs": [196],
       "screenshots": []
     },
     {

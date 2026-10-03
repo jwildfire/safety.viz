@@ -584,6 +584,30 @@ describe('a library the page cannot use as handed in (#193)', () => {
     app.destroy();
   });
 
+  it('APP-LIB-027: a library chart named data, the name the app keeps for its data view, is not listed, the page says why, and the data view is as before (#197)', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const library = withModules({ data: strip(), 'stand-in-strip': strip() });
+    const { manifest: all, problems, unloaded } = mergeLibraries(manifest, ownCharts, [library]);
+    expect(all.modules).not.toHaveProperty('data');
+    expect(problems).not.toHaveProperty('data');
+    expect(all.modules).toHaveProperty('stand-in-strip');
+    const said =
+      'The stand-in chart “data” is not shown: the app keeps the name “data” for its data view.';
+    expect(unloaded).toEqual([said]);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('data'));
+    // On the page: the line, the library's other chart, and the data view as before.
+    const mounted = mountWith([library]);
+    expect(mounted.thrown).toBeNull();
+    expect(document.querySelector('.sva-library-notes').textContent).toBe(said);
+    expect(document.querySelectorAll('[data-view="data"]')).toHaveLength(1);
+    expect(document.querySelector('.sva-item[data-view="stand-in-strip"]')).not.toBeNull();
+    mounted.app.select('stand-in-strip');
+    mounted.app.select('data');
+    expect(document.querySelector('.sva-title').textContent).toBe('Data');
+    expect(document.querySelectorAll('[aria-current="page"]')).toHaveLength(1);
+    mounted.app.destroy();
+  });
+
   it('APP-LIB-025: a chart whose export is a name every object inherits, such as constructor or toString, reads "not loaded": only the library’s own charts count (#193)', () => {
     for (const name of ['constructor', 'toString', 'hasOwnProperty']) {
       const entry = { ...strip(), export: name };

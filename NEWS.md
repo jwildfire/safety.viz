@@ -6,9 +6,16 @@ functionality-first account of what a user can now do. The GitHub release publis
 from the section here when the release-candidate PR (dev -> main) merges and is tagged.
 -->
 
-# safety.viz v1.10.0 (Upcoming)
+# safety.viz v1.9.1 (Upcoming)
 
-_Nothing merged yet._
+## Deprecated
+
+- **The histogram's `test_normality` and `compare_distributions` settings are deprecated, and a later release removes them together.** Each draws an approximate p-value computed in JavaScript, the normality screen and the group comparison, and safety.viz is to compute no statistical test there. Until they are removed they still work, and the chart and the console say each is deprecated. [#188](https://github.com/jwildfire/safety.viz/issues/188)
+
+## Also in this release
+
+- **The demo app says what happens to your data.** Its footer reads: "Files you load are read in this browser and never uploaded. Starting R downloads R from webr.r-wasm.org; your data stays in the browser, and R runs here." The single file's reads: "This file loads nothing; files you add are read here and never leave this computer." A browser test holds that, once a file is chosen, the page asks only its own host for the statistics file and webr.r-wasm.org for R, with no body, no query and no socket. [#196](https://github.com/jwildfire/safety.viz/issues/196)
+- **A library chart named `data` is refused.** The app keeps the name "data" for its data view: such a chart is left out, and the page says why. [#197](https://github.com/jwildfire/safety.viz/issues/197)
 
 # safety.viz v1.9.0
 

@@ -66,18 +66,12 @@ export function compareRequirements(committed, fresh) {
 }
 
 /**
- * The IDs that already had two rows when the check below was added (#193),
- * each two different requirements under one name. They are to be given one
- * row each under safety.viz#195; until then they are named here, so the check
- * still fails on any new duplicate, and on one of these once it is fixed and
- * not taken off this list.
+ * IDs known to have two rows, each with the issue that will give it one: the
+ * check passes them while they still do, and fails once they no longer do, so
+ * the list cannot outlive its reason. Empty since #195 gave the four older
+ * duplicates (HEP-DISPLAY-006, TTE-FILT-001 to 003) one row each.
  */
-export const KNOWN_DUPLICATE_IDS = Object.freeze({
-  'HEP-DISPLAY-006': 'safety.viz#195',
-  'TTE-FILT-001': 'safety.viz#195',
-  'TTE-FILT-002': 'safety.viz#195',
-  'TTE-FILT-003': 'safety.viz#195'
-});
+export const KNOWN_DUPLICATE_IDS = Object.freeze({});
 
 /**
  * Requirement IDs with more than one row across the matrices (#193): an ID is
