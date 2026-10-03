@@ -10,7 +10,7 @@
 // participantPeak, displayField, and dayThenIndex travel along as load-bearing
 // dependencies of the listed functions.
 //
-// Requirement groups: HEP-DATA-* (cleaning/derivation), HEP-DISPLAY-006
+// Requirement groups: HEP-DATA-* (cleaning/derivation), HEP-DISPLAY-007
 // (R-Ratio), HEP-QUAD-001 (cutpoints), HEP-SELECT-002/005 (drill-down series).
 
 import { median } from './stats.js';
@@ -261,7 +261,7 @@ export function participantPeak(rows, key, display) {
 }
 
 /**
- * Participant R-Ratio (HEP-DISPLAY-006): the peak ALT ×ULN divided by the peak
+ * Participant R-Ratio (HEP-DISPLAY-007): the peak ALT ×ULN divided by the peak
  * ALP ×ULN. NaN when either peak is missing or ALP's peak is ≤ 0. Always
  * computed on the ULN scale regardless of the active display mode.
  * @param {Object[]} participantRows One participant's cleaned records (all measures).

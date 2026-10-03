@@ -205,7 +205,7 @@ describe('hep-explorer structureData', () => {
     expect(participantPeak([], 'ALT', 'relative_uln')).toBeNull();
   });
 
-  it('HEP-DISPLAY-006: computeRRatio is peak ALT xULN over peak ALP xULN, NaN without ALP (port)', () => {
+  it('HEP-DISPLAY-007: computeRRatio is peak ALT xULN over peak ALP xULN, NaN without ALP (port)', () => {
     const p1Rows = prepared.filter((r) => r.USUBJID === 'P1');
     // 4xULN ALT / 1.2xULN ALP.
     expect(computeRRatio(p1Rows, settings)).toBeCloseTo(4 / 1.2, 10);

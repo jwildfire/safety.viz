@@ -95,12 +95,37 @@ describe('the pages', () => {
         'browser: { sourceUrl: "./statistics.R", packages: [] }, megabytes: 13, host: "webr.r-wasm.org" })'
     );
     expect(html).toContain(`pitch: '${HOSTED_PITCH.replace(/'/g, "\\'")}'`);
-    // The page fetches its own fonts, bundles and demo files from its own host:
-    // what it promises is that nothing else is asked for until R is (#193).
+    // It says what starting R downloads, and from where (#196).
     expect(html).toMatch(
-      /<meta name="description" content="[^"]*the page fetches nothing from any other host unless you start R[^"]*">/
+      /<meta name="description" content="[^"]*starting R downloads R from webr\.r-wasm\.org[^"]*">/
     );
     expect(html).not.toContain('nothing is fetched');
+  });
+
+  it('APP-LOAD-027: the hosted footer, the single file’s footer and the hosted page’s description say what happens to the data a reader loads, in plain words (#196)', () => {
+    expect(HOSTED_PITCH).toBe(
+      'Files you load are read in this browser and never uploaded. Starting R downloads R from webr.r-wasm.org; your data stays in the browser, and R runs here.'
+    );
+    expect(FILE_PITCH).toBe(
+      'This file loads nothing; files you add are read here and never leave this computer.'
+    );
+    const html = renderDemoAppPage({
+      bundle: 'safety.viz-app.js',
+      download: 'safety.viz-app.html',
+      repoUrl: 'https://github.com/jwildfire/safety.viz',
+      libraries: APP_LIBRARIES,
+      charts: 'thirteen clinical safety charts and four biomarker charts'
+    });
+    const [, description] = html.match(/<meta name="description" content="([^"]*)">/);
+    expect(description).toContain(
+      'Files you load are read in your browser and never uploaded; starting R downloads R from webr.r-wasm.org, and your data stays in your browser.'
+    );
+    expect(description).not.toMatch(/fetches nothing|No request leaves/);
+    const file = renderAppHtml({
+      script: 'window.SafetyVizApp={mount(){}};',
+      libraries: [{ ...bioViz, script: libraryScript(bioViz) }]
+    });
+    expect(file).toContain(`pitch: ${JSON.stringify(FILE_PITCH)}`);
   });
 
   it('APP-R-023: the hosted page mounts when a library is missing or has no connection to R: a missing one is handed in by name and file, and one with no connection factory says statistics are unavailable and why (#193)', async () => {
