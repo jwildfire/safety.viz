@@ -51,7 +51,7 @@ export function renderAppHtml({ script, libraries = [] }) {
   // The file loads nothing, so its biomarker charts cannot start R: each
   // statistics line says so, and there is no control (#183).
   const mount = libraries.length
-    ? `SafetyVizApp.mount('#app', { libraries: ${librariesExpression(libraries, { r: 'unavailable' })}, pitch: ${JSON.stringify(FILE_PITCH)} })`
+    ? `SafetyVizApp.mount('#app', { libraries: ${librariesExpression(libraries, { r: 'unavailable', fromFile: false })}, pitch: ${JSON.stringify(FILE_PITCH)} })`
     : `SafetyVizApp.mount('#app')`;
   return `<!doctype html>
 <html lang="en">

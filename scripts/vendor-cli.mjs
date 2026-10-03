@@ -20,6 +20,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   buildRecord,
+  compareWithDev,
   readRecord,
   verifyAgainstSource,
   verifyOnDev,
@@ -50,21 +51,9 @@ export async function runVendorCli(source, { describe }) {
     return Buffer.from(await response.arrayBuffer());
   }
 
-  // How dev stands to a commit, from GitHub's compare API: `ahead` or
-  // `identical` when the commit is on dev.
-  async function compareWithDev(commit) {
-    const url = `https://api.github.com/repos/${slug}/compare/${commit}...dev`;
-    const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
-    const headers = { accept: 'application/vnd.github+json' };
-    if (token) headers.authorization = `Bearer ${token}`;
-    const response = await fetch(url, { headers });
-    if (!response.ok) {
-      throw new Error(
-        `${url} answered ${response.status}, so whether the commit is on dev is unknown.`
-      );
-    }
-    return (await response.json()).status;
-  }
+  // How dev stands to a commit, from GitHub's compare API (vendor-lib.mjs).
+  const compare = (commit) =>
+    compareWithDev({ slug, commit, token: process.env.GITHUB_TOKEN || process.env.GH_TOKEN });
 
   function resolveCommit(ref) {
     if (/^[0-9a-f]{40}$/.test(ref)) return ref;
@@ -95,7 +84,7 @@ export async function runVendorCli(source, { describe }) {
       const problems = verifyVendored(directory);
       if (!problems.length && flag('--check-source')) {
         problems.push(...(await verifyAgainstSource(directory, readAt)));
-        problems.push(...(await verifyOnDev(readRecord(directory), compareWithDev)));
+        problems.push(...(await verifyOnDev(readRecord(directory), compare)));
       }
       const record = problems.length ? null : readRecord(directory);
       report(

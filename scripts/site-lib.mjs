@@ -1093,10 +1093,10 @@ const KIT_GROUPS = {
 const KIT_STATUS = {
   kmEstimate: {
     contract:
-      `<code>kmEstimate</code> follows the Time-to-Event Explorer&#39;s Experimental status:` +
-      ` until the external clinical review of its Kaplan–Meier implementation lands` +
-      ` (<a href="https://github.com/jwildfire/obot.roadmap/issues/182">obot.roadmap#182</a>),` +
-      ` its standard errors and pointwise 95% intervals may change after that review without` +
+      `<code>kmEstimate</code> follows the Time-to-Event Explorer&#39;s Experimental status,` +
+      ` which holds until an external clinical review confirms its Kaplan–Meier implementation` +
+      ` (<a href="https://github.com/jwildfire/obot.roadmap/issues/182">obot.roadmap#182</a>):` +
+      ` its estimates, intervals and at-risk counts may change after that review without` +
       ` counting as a breaking change. Its name and its arguments are kept.`,
     // A function: the badge's wording is defined further down this file.
     row: () =>

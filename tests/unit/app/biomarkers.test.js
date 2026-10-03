@@ -12,6 +12,7 @@ import {
   RECORD_FILE,
   readRecord,
   sha256,
+  compareWithDev,
   verifyOnDev,
   verifyVendored
 } from '../../../scripts/vendor-lib.mjs';
@@ -76,7 +77,7 @@ describe('the vendored bio.viz bundle', () => {
     ]);
   });
 
-  it('APP-BIO-011: the source check asks whether a commit recorded as on dev is on dev, and fails when it is not or when the record does not say; a commit recorded as off dev is not asked (#193)', async () => {
+  it('APP-BIO-013: the source check asks whether a commit recorded as on dev is on dev, and fails when it is not or when the record does not say; a commit recorded as off dev is not asked (#193)', async () => {
     const record = { ...readRecord(vendorDir) };
     expect(record.merged_to_dev).toBe(true);
     // GitHub's compare of the commit with dev: dev is ahead of it, or is it.
@@ -103,6 +104,60 @@ describe('the vendored bio.viz bundle', () => {
     expect(await verifyOnDev(silent, asked)).toEqual([
       `${RECORD_FILE} does not say whether ${silent.commit.slice(0, 7)} is on dev.`
     ]);
+  });
+
+  it('APP-BIO-014: the on-dev check asks GitHub with the token when there is one and without it when GitHub refuses the token, and fails saying why when it cannot ask: the rate limit, the network, or an answer with no status (#193)', async () => {
+    const commit = 'a'.repeat(40);
+    const url = `https://api.github.com/repos/jwildfire/bio.viz/compare/${commit}...dev`;
+    const answer = (status, body, headers = {}) => ({
+      ok: status >= 200 && status < 300,
+      status,
+      headers: { get: (name) => headers[name.toLowerCase()] ?? null },
+      json: async () => body
+    });
+    const ask = (fetch, token) =>
+      compareWithDev({ slug: 'jwildfire/bio.viz', commit, fetch, token });
+    // With a token, and an answer.
+    const seen = [];
+    const fetch = vi.fn(async (given, { headers }) => {
+      seen.push(headers.authorization || null);
+      return answer(200, { status: 'ahead' });
+    });
+    expect(await ask(fetch, 'secret')).toBe('ahead');
+    expect(fetch).toHaveBeenCalledWith(url, expect.anything());
+    expect(seen).toEqual(['Bearer secret']);
+    // A token GitHub refuses: asked again without it.
+    const tries = [];
+    const refused = async (given, { headers }) => {
+      tries.push(Boolean(headers.authorization));
+      return headers.authorization ? answer(401, {}) : answer(200, { status: 'identical' });
+    };
+    expect(await ask(refused, 'stale')).toBe('identical');
+    expect(tries).toEqual([true, false]);
+    // The rate limit, named.
+    await expect(
+      ask(async () =>
+        answer(403, {}, { 'x-ratelimit-remaining': '0', 'x-ratelimit-reset': '1791000000' })
+      )
+    ).rejects.toThrow(
+      `${url} answered 403: GitHub's API rate limit is used up until ${new Date(1791000000 * 1000).toISOString()}, so whether the commit is on dev is unknown. Set GITHUB_TOKEN to ask with a token.`
+    );
+    // The network, with the address.
+    await expect(
+      ask(async () => {
+        throw new TypeError('fetch failed');
+      })
+    ).rejects.toThrow(
+      `${url} could not be reached (fetch failed), so whether the commit is on dev is unknown.`
+    );
+    // An answer that says nothing.
+    await expect(ask(async () => answer(200, { message: 'odd' }))).rejects.toThrow(
+      `${url} answered with no comparison status, so whether the commit is on dev is unknown.`
+    );
+    // Any other refusal.
+    await expect(ask(async () => answer(404, {}))).rejects.toThrow(
+      `${url} answered 404, so whether the commit is on dev is unknown.`
+    );
   });
 
   it('APP-BIO-003: its chart list is format version 2 and valid, lists four charts under one Biomarkers group, and merges into the app with every factory present (#182)', () => {
@@ -161,7 +216,7 @@ describe('the single file with the biomarker charts', () => {
     expect(library).toBeGreaterThan(app);
     expect(html).toContain(
       // The single file cannot start R (#183): its biomarker charts are told so.
-      `window.__safetyVizApp = SafetyVizApp.mount('#app', { libraries: ${librariesExpression([bioViz], { r: 'unavailable' })}, pitch: ${JSON.stringify(FILE_PITCH)} });`
+      `window.__safetyVizApp = SafetyVizApp.mount('#app', { libraries: ${librariesExpression([bioViz], { r: 'unavailable', fromFile: false })}, pitch: ${JSON.stringify(FILE_PITCH)} });`
     );
     expect(html).not.toContain('sourceMappingURL');
     expect(html).not.toMatch(/<script[^>]*\ssrc=/i);

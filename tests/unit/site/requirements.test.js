@@ -1,9 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import {
   parseRequirementMatrix,
   buildRequirementSet,
-  compareRequirements
+  compareRequirements,
+  duplicateRequirementIds,
+  KNOWN_DUPLICATE_IDS
 } from '../../../scripts/requirements-lib.mjs';
 
 // Requirement-text sync (#63): extract the reviewed requirement text from the
@@ -93,5 +95,58 @@ describe('requirements-lib: freshness guard (#63)', () => {
       requirements: { ...base.requirements, 'SH-NEW-001': 'A new requirement.' }
     };
     expect(compareRequirements(base, added).stale).toBe(true);
+  });
+});
+
+describe('requirements-lib: one row per requirement ID across the matrices (#193)', () => {
+  const row = (id, text) => `| ${id} | AREA | ${text} | src | unit | test | ai-reviewed | OK. |  |`;
+
+  it('reports an ID that has two rows, in one matrix or in two, with where each is', () => {
+    const one = [
+      '| ID | Area | Requirement |',
+      '|---|---|---|',
+      row('APP-BIO-011', 'A.'),
+      row('APP-BIO-012', 'B.'),
+      row('APP-BIO-011', 'C.')
+    ].join('\n');
+    const other = [row('KIT-DOC-001', 'D.'), row('APP-BIO-012', 'E.')].join('\n');
+    expect(
+      duplicateRequirementIds([
+        { file: 'demo-app.md', markdown: one },
+        { file: 'kit.md', markdown: other }
+      ])
+    ).toEqual([
+      'APP-BIO-011 has 2 rows: demo-app.md:3, demo-app.md:5.',
+      'APP-BIO-012 has 2 rows: demo-app.md:4, kit.md:2.'
+    ]);
+    expect(duplicateRequirementIds([{ file: 'kit.md', markdown: other }])).toEqual([]);
+  });
+
+  it('passes an ID known to have two rows while it does, and says so once it no longer does', () => {
+    const twice = [row('HEP-DISPLAY-006', 'A.'), row('HEP-DISPLAY-006', 'B.')].join('\n');
+    const known = { 'HEP-DISPLAY-006': 'safety.viz#195' };
+    expect(duplicateRequirementIds([{ file: 'hep.md', markdown: twice }], { known })).toEqual([]);
+    expect(
+      duplicateRequirementIds([{ file: 'hep.md', markdown: row('HEP-DISPLAY-006', 'A.') }], {
+        known
+      })
+    ).toEqual([
+      'HEP-DISPLAY-006 no longer has two rows (safety.viz#195): take it off the known duplicates.'
+    ]);
+  });
+
+  it('finds none in the repository’s matrices but the ones known before the check (safety.viz#195)', () => {
+    const dir = new URL('../../../requirements/', import.meta.url);
+    const matrices = readdirSync(dir)
+      .filter((file) => file.endsWith('.md') && file !== 'README.md')
+      .map((file) => ({ file, markdown: readFileSync(new URL(file, dir), 'utf8') }));
+    expect(matrices.length).toBeGreaterThan(10);
+    expect(duplicateRequirementIds(matrices, { known: KNOWN_DUPLICATE_IDS })).toEqual([]);
+    expect(Object.keys(KNOWN_DUPLICATE_IDS)).toEqual([
+      'HEP-DISPLAY-006',
+      'TTE-FILT-001',
+      'TTE-FILT-002',
+      'TTE-FILT-003'
+    ]);
   });
 });

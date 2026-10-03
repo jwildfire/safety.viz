@@ -321,4 +321,66 @@ describe('the page with a library’s settings and control', () => {
     );
     app.destroy();
   });
+
+  it('APP-R-024: when the connection’s run throws or rejects as R starts, or the factory throws with no reason, the control says R did not start and offers to try again, never sticking at “Starting R…” (#193)', async () => {
+    const throwing = {
+      'throws at once': () => ({
+        run: () => {
+          throw new Error('webR could not be created');
+        }
+      }),
+      rejects: () => ({ run: () => Promise.reject(new Error('the worker stopped')) })
+    };
+    for (const [how, make] of Object.entries(throwing)) {
+      const r = rOnRequest({ createConnection: make, ...OPTIONS });
+      await r.action.press();
+      expect(r.action.state().label, how).toBe('Try R again');
+      expect(r.action.state().note, how).toMatch(
+        /^R did not start: (webR could not be created|the worker stopped)\. Try again;/
+      );
+      expect((await r.settings().connection.run('one', {})).reason, how).toBe('load-failed');
+    }
+    // A factory that throws nothing usable still gives a sentence, not "undefined".
+    for (const thrown of [undefined, null, '']) {
+      const r = rOnRequest({
+        createConnection: () => {
+          throw thrown;
+        },
+        ...OPTIONS
+      });
+      await r.action.press();
+      expect(r.action.state().note).toBe(
+        'R did not start, and no reason was given. Try again; if it fails again, reload the page.'
+      );
+    }
+  });
+
+  it('APP-R-025: a library control whose press throws leaves the page working: nothing is thrown out of the click, a warning says why, and the control shows what it now says (#193)', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    let label = 'Start R';
+    const action = {
+      state: () => ({ label, done: false, note: null, hint: null }),
+      press: () => {
+        label = 'Try R again';
+        throw new Error('the control broke');
+      }
+    };
+    const app = mounted({ ...standIn, action });
+    app.select('stand-in-strip');
+    const errors = [];
+    const onError = (event) => errors.push(event.error);
+    window.addEventListener('error', onError);
+    document.querySelector('.sva-action').click();
+    window.removeEventListener('error', onError);
+    expect(errors).toEqual([]);
+    expect(warn).toHaveBeenCalledWith(
+      'safety.viz app: a library’s control failed when pressed.',
+      expect.objectContaining({ message: 'the control broke' })
+    );
+    expect(document.querySelector('.sva-action').textContent).toBe('Try R again');
+    // The chart is still open and still answers.
+    expect(document.querySelector('.sva-chart .stand-in-strip')).not.toBeNull();
+    warn.mockRestore();
+    app.destroy();
+  });
 });

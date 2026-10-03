@@ -56,7 +56,9 @@ function shapeProblem(entry) {
     if (!isText(setting.domain) && !isTextList(setting.domain)) {
       return `its ${key} setting names no domain`;
     }
-    if (setting.column !== null && !isText(setting.column)) {
+    // A string or null, as the schema says: an empty name is a column no
+    // domain has, which entryProblem says in words.
+    if (setting.column !== null && typeof setting.column !== 'string') {
       return `its ${key} setting names no column`;
     }
   }
@@ -83,6 +85,9 @@ function entryProblem(entry, domains, groups) {
     for (const id of asList(setting.domain)) {
       if (!has(domains, id))
         return `its ${key} setting reads ${id}, which is not a standard domain`;
+      if (setting.column === '') {
+        return `its ${key} setting reads a column with no name, which is not a column of ${label(id)}`;
+      }
       if (setting.column !== null && !has(domains[id].columns, setting.column)) {
         return `its ${key} setting reads ${setting.column}, but ${setting.column} is not a column of ${label(id)}`;
       }
@@ -153,11 +158,13 @@ export function mergeLibraries(host, hostCharts, libraries = []) {
     if (!isRecord(list) || (list.modules !== undefined && !isRecord(list.modules))) {
       // Asked for by name, and nothing to list: say so on the page, and why.
       charts[name] = null;
+      // A script that did not load and one that threw as it ran look the same
+      // from here: neither defined the library.
       if (!library.charts && list === undefined) {
         unloaded.push(
           isText(library.file)
-            ? `The ${name} charts are not shown: ${library.file} did not load on this page, so the ${name} library is not here.`
-            : `The ${name} charts are not shown: the ${name} library did not load on this page.`
+            ? `The ${name} charts are not shown: ${library.file} did not load on this page, or failed as it loaded.`
+            : `The ${name} charts are not shown: the ${name} library did not load on this page, or failed as it loaded.`
         );
       } else {
         unloaded.push(
@@ -165,6 +172,14 @@ export function mergeLibraries(host, hostCharts, libraries = []) {
         );
       }
       warn(`${name} was handed in with no chart list the app can read; its charts are not listed.`);
+      continue;
+    }
+    if (!isRecord(list.modules) || !Object.keys(list.modules).length) {
+      charts[name] = null;
+      unloaded.push(
+        `The ${name} charts are not shown: the ${name} library on this page lists no charts.`
+      );
+      warn(`${name} was handed in with a chart list that lists no charts.`);
       continue;
     }
     charts[name] = library.charts || null;
@@ -176,7 +191,7 @@ export function mergeLibraries(host, hostCharts, libraries = []) {
         warn(`${name} declares the group ${id}, which is already declared.`);
       } else groups[id] = group;
     }
-    for (const [module, entry] of Object.entries(list.modules || {})) {
+    for (const [module, entry] of Object.entries(list.modules)) {
       if (has(modules, module)) {
         warn(
           `${name}'s chart ${module} has the same name as a chart already listed, and was left out.`

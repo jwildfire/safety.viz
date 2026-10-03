@@ -19,6 +19,8 @@ import {
   mergeLibraries
 } from '../../../src/app/libraries.js';
 import { mountApp } from '../../../src/app/page.js';
+import * as rModule from '../../../src/app/r-on-request.js';
+import { APP_LIBRARIES, librariesExpression } from '../../../scripts/app-libraries.mjs';
 import standIn, { log as standInLog } from '../../e2e/fixtures/stand-in-library.js';
 
 // A second chart library in the demo app (#181, obot.roadmap#366). The app
@@ -56,6 +58,11 @@ const ownCharts = Object.fromEntries(
   Object.values(manifest.modules).map((entry) => [entry.export, () => ({ init() {} })])
 );
 const merged = () => mergeLibraries(manifest, ownCharts, [standIn]);
+// What the single file hands the app: its libraries are inline, not loaded from a file.
+const singleFileLibraries = librariesExpression(APP_LIBRARIES, {
+  r: 'unavailable',
+  fromFile: false
+});
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -422,6 +429,15 @@ describe('a library the page cannot use as handed in (#193)', () => {
         delete entry.title;
         return [entry, /has no title/];
       })(),
+      'empty-column': (() => {
+        // The schema allows an empty column name; no standard domain has one.
+        const entry = strip();
+        entry.settings.value_col.column = '';
+        return [
+          entry,
+          /its value_col setting reads a column with no name, which is not a column of Labs and vitals/
+        ];
+      })(),
       'no-export': (() => {
         const entry = strip();
         delete entry.export;
@@ -474,13 +490,24 @@ describe('a library the page cannot use as handed in (#193)', () => {
     apart.app.destroy();
   });
 
-  it('APP-LIB-021: a chart list whose modules are not an object of entries, or that is not an object, is not used, and the page says so in words; safety.viz’s charts still mount (#193)', () => {
+  it('APP-LIB-021: a chart list whose modules are not an object of entries, or that is not an object, is not used, and the page says so in words; one that lists no charts says that; safety.viz’s charts still mount (#193)', () => {
     for (const given of ['oops', { version: 2, description: 'x', modules: [strip()] }]) {
       const mounted = mountWith([{ name: 'stand-in', charts: standIn.charts, manifest: given }]);
       expect(mounted.thrown).toBeNull();
       expect(mounted.tabs).toEqual(SAFETY_TABS);
       expect(document.querySelector('.sva-library-notes').textContent).toBe(
         'The stand-in charts are not shown: the stand-in library on this page has no chart list the app can read.'
+      );
+      mounted.app.destroy();
+    }
+    for (const modules of [undefined, {}]) {
+      const given = { version: 2, description: 'x' };
+      if (modules) given.modules = modules;
+      const mounted = mountWith([{ name: 'stand-in', charts: standIn.charts, manifest: given }]);
+      expect(mounted.thrown).toBeNull();
+      expect(mounted.tabs).toEqual(SAFETY_TABS);
+      expect(document.querySelector('.sva-library-notes').textContent).toBe(
+        'The stand-in charts are not shown: the stand-in library on this page lists no charts.'
       );
       mounted.app.destroy();
     }
@@ -517,7 +544,7 @@ describe('a library the page cannot use as handed in (#193)', () => {
     expect(mounted.tabs).toEqual(SAFETY_TABS);
     expect(mounted.count).toBe('13 of 13 charts supported by the loaded data');
     const said =
-      'The stand-in charts are not shown: stand-in.js did not load on this page, so the stand-in library is not here.';
+      'The stand-in charts are not shown: stand-in.js did not load on this page, or failed as it loaded.';
     expect(document.querySelector('.sva-library-notes').textContent).toBe(said);
     mounted.app.select('histogram');
     expect(document.querySelector('.sva-library-notes').textContent).toBe(said);
@@ -527,7 +554,17 @@ describe('a library the page cannot use as handed in (#193)', () => {
     // Without the file's name, the sentence still says which library.
     mountWith([{ name: 'stand-in' }]);
     expect(document.querySelector('.sva-library-notes').textContent).toBe(
-      'The stand-in charts are not shown: the stand-in library did not load on this page.'
+      'The stand-in charts are not shown: the stand-in library did not load on this page, or failed as it loaded.'
+    );
+    // The single file loads no file, so it names none: its libraries are inline.
+    const [inline] = new Function('window', 'SafetyVizApp', `return ${singleFileLibraries};`)(
+      {},
+      rModule
+    );
+    expect(inline).not.toHaveProperty('file');
+    mountWith([inline]);
+    expect(document.querySelector('.sva-library-notes').textContent).toBe(
+      'The bio.viz charts are not shown: the bio.viz library did not load on this page, or failed as it loaded.'
     );
     // With every library there, no such line.
     mountWith([standIn]);

@@ -102,17 +102,19 @@ export function libraryManifest(library) {
  * statistics.
  *
  * Nothing in the expression throws when a library is missing or is not what
- * the page expects (#193): each entry names the file the library is loaded
- * from, so a library whose script did not load is named on the page, and a
+ * the page expects (#193): on a page that loads each library from a file
+ * (`fromFile`, the default), each entry names that file, so a library whose
+ * script did not load is named on the page with it; the single file, whose
+ * libraries are inline, names none. A
  * library with no connection factory where the page looks for one is handed
  * the sentence that says so rather than stopping the mount.
  * @param {Object[]} [libraries] Entries of APP_LIBRARIES.
- * @param {{r?: ?('request'|'unavailable'), statisticsUrl?: (library: Object) => string, createConnection?: (library: Object) => string}} [options]
+ * @param {{r?: ?('request'|'unavailable'), fromFile?: boolean, statisticsUrl?: (library: Object) => string, createConnection?: (library: Object) => string}} [options]
  * @returns {string} A JavaScript array expression.
  */
 export function librariesExpression(
   libraries = APP_LIBRARIES,
-  { r = null, statisticsUrl, createConnection } = {}
+  { r = null, fromFile = true, statisticsUrl, createConnection } = {}
 ) {
   const entries = libraries.map((library) => {
     const global = `window.${library.global}`;
@@ -134,7 +136,8 @@ export function librariesExpression(
           : `, ...SafetyVizApp.rUnavailable(${JSON.stringify(FILE_NO_R)})`;
     }
     return (
-      `{ name: ${JSON.stringify(library.name)}, file: ${JSON.stringify(library.file)}, ` +
+      `{ name: ${JSON.stringify(library.name)}, ` +
+      (fromFile ? `file: ${JSON.stringify(library.file)}, ` : '') +
       `charts: ${global}, manifest: ${global} && ${global}.portfolio${statistics} }`
     );
   });

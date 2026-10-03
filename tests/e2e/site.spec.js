@@ -155,7 +155,7 @@ test.describe('docs site', () => {
     await page.goto('/_site/demo/index.html');
     await page.evaluate('window.__safetyVizApp.ready');
     const said =
-      'The bio.viz charts are not shown: bio.viz.js did not load on this page, so the bio.viz library is not here.';
+      'The bio.viz charts are not shown: bio.viz.js did not load on this page, or failed as it loaded.';
     await expect(page.locator('.sva-library-notes')).toHaveText(said);
     await expect(page.locator('.sva-tab')).toHaveCount(3);
     await expect(page.locator('.sva-count')).toHaveText(
