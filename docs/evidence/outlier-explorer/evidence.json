@@ -1,16 +1,13 @@
 {
   "module": "outlier-explorer",
-  "generatedAt": "2026-10-03T01:53:02.135Z",
+  "generatedAt": "2026-10-03T03:51:57.772Z",
   "environment": {
-    "os": "linux 6.17.0-1022-azure",
-    "node": "v22.23.3",
+    "os": "darwin 23.6.0",
+    "node": "v24.14.0",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": {
-    "id": "37087738324",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37087738324"
-  },
+  "run": null,
   "records": [
     {
       "test": "a chart link navigates straight to that renderer demo (#71)",
@@ -18,6 +15,78 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [71],
+      "screenshots": []
+    },
+    {
+      "test": "APP-BIO-004: on the demo study the four biomarker charts have a tab of their own after the three domains, each ready, and the count includes them (#182)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-004"],
+      "issueRefs": [182],
+      "screenshots": []
+    },
+    {
+      "test": "APP-BIO-005: Association scatter draws on the demo study with no console error, and its statistics line says statistics are unavailable (#182)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-005"],
+      "issueRefs": [182],
+      "screenshots": []
+    },
+    {
+      "test": "APP-BIO-005: Biomarker screen draws on the demo study with no console error, and its statistics line says statistics are unavailable (#182)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-005"],
+      "issueRefs": [182],
+      "screenshots": []
+    },
+    {
+      "test": "APP-BIO-005: Correlation matrix draws on the demo study with no console error, and its statistics line says statistics are unavailable (#182)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-005"],
+      "issueRefs": [182],
+      "screenshots": []
+    },
+    {
+      "test": "APP-BIO-005: Group comparison draws on the demo study with no console error, and its statistics line says statistics are unavailable (#182)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-005"],
+      "issueRefs": [182],
+      "screenshots": []
+    },
+    {
+      "test": "APP-BIO-006: with the labs and vitals file alone every biomarker chart draws, with no filters (#182)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-006"],
+      "issueRefs": [182],
+      "screenshots": []
+    },
+    {
+      "test": "APP-BIO-007: on the study with renamed columns, the one mapping readies both libraries’ charts, and each biomarker chart draws (#182)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-007"],
+      "issueRefs": [182],
+      "screenshots": []
+    },
+    {
+      "test": "APP-BIO-008: at phone width, with the Biomarkers tab and a biomarker chart open, the page does not scroll sideways (#182)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-008"],
+      "issueRefs": [182],
+      "screenshots": []
+    },
+    {
+      "test": "APP-BIO-012: the built demo page serves bio.viz’s vendored bundle beside the app byte for byte, lists the biomarker charts in their own tab and holds at a 390px viewport (#182)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-012"],
+      "issueRefs": [182],
       "screenshots": []
     },
     {
@@ -45,19 +114,19 @@
       "screenshots": []
     },
     {
-      "test": "APP-FILE-006: offline, the file loads the renamed study, takes the corrections and draws its charts (#152)",
+      "test": "APP-FILE-006: offline, the file loads the renamed study, takes the corrections and draws every chart of both libraries (#152, #182)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-FILE-006"],
-      "issueRefs": [152],
+      "issueRefs": [],
       "screenshots": []
     },
     {
-      "test": "APP-FILE-007: the built file holds no script, stylesheet or image reference to another URL (#152)",
+      "test": "APP-FILE-007: the built file holds no script, stylesheet or image reference to another URL, and inlines bio.viz’s bundle as it was vendored (#152, #182)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-FILE-007"],
-      "issueRefs": [152],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -229,7 +298,7 @@
       "screenshots": []
     },
     {
-      "test": "APP-PAGE-001: every chart in the manifest is listed under its domain with a status: thirteen charts, three domains (#150, #165)",
+      "test": "APP-PAGE-001: every chart is listed under its group with a status: thirteen safety charts under three domains, and four biomarker charts in their own tab (#150, #165, #182)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-PAGE-001"],
@@ -237,7 +306,7 @@
       "screenshots": []
     },
     {
-      "test": "APP-PAGE-002: the demo study reads 13 of 13 supported and opens on the first chart (#150, #165)",
+      "test": "APP-PAGE-002: the demo study reads 17 of 17 supported and opens on the first chart (#150, #165, #182)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-PAGE-002"],
@@ -389,11 +458,11 @@
       "screenshots": []
     },
     {
-      "test": "APP-PAGE-013: the built demo app is its own page at demo/, mounted on the demo study with no console errors (#150)",
+      "test": "APP-PAGE-013: the built demo app is its own page at demo/, mounted on the demo study with every chart of both libraries and no console errors (#150, #182)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-PAGE-013"],
-      "issueRefs": [150],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -4680,6 +4749,14 @@
       "screenshots": []
     },
     {
+      "test": "renderDemoAppPage APP-BIO-010: loads each further library’s bundle from beside the page after the app’s, hands it to the app when it mounts, and counts its charts in the description (#182)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-010"],
+      "issueRefs": [182],
+      "screenshots": []
+    },
+    {
       "test": "renderDemoAppPage APP-FILE-008: tells the app where the single file is, for its download link (#152)",
       "suite": "unit",
       "status": "pass",
@@ -5584,6 +5661,14 @@
       "screenshots": []
     },
     {
+      "test": "site generator: domains page (#139) APP-BIO-011: the page lists another library’s charts under its own heading, each with what it reads and a link to its reference, and the lead counts them (#182)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-011"],
+      "issueRefs": [139, 182],
+      "screenshots": []
+    },
+    {
       "test": "site generator: domains page (#139) APP-LIB-014: the page says the manifest is format version 2, and describes each field version 2 adds (#181)",
       "suite": "unit",
       "status": "pass",
@@ -6069,6 +6154,38 @@
       "status": "pass",
       "requirementIds": ["APP-LIB-013"],
       "issueRefs": [181],
+      "screenshots": []
+    },
+    {
+      "test": "the single file with the biomarker charts APP-BIO-009: each library’s bundle is inlined after the app’s, and the app is mounted with it; nothing points at another URL (#182)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-009"],
+      "issueRefs": [182],
+      "screenshots": []
+    },
+    {
+      "test": "the vendored bio.viz bundle APP-BIO-001: the copy matches its record, which names bio.viz, the full commit, its dev branch and the file’s checksum and size (#182)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-001"],
+      "issueRefs": [182],
+      "screenshots": []
+    },
+    {
+      "test": "the vendored bio.viz bundle APP-BIO-002: the check fails when a byte of the copy changes, a file is there unrecorded, or the record is missing (#182)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-002"],
+      "issueRefs": [182],
+      "screenshots": []
+    },
+    {
+      "test": "the vendored bio.viz bundle APP-BIO-003: its chart list is format version 2 and valid, lists four charts under one Biomarkers group, and merges into the app with every factory present (#182)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-003"],
+      "issueRefs": [182],
       "screenshots": []
     },
     {
