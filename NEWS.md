@@ -30,7 +30,7 @@ bio.viz v0.1.0 needs safety.viz v1.9.0: its charts are built from this release's
 
 ## Tests and provenance
 
-2,159 unit and 371 browser tests pass, including the browser tests that start real R and compare its answers with desktop R's.
+2,170 unit and 373 browser tests pass. Some browser tests start real R in the browser, and one of them compares the group comparison's answers for one measure with desktop R's. The release candidate was reviewed in three parts, and every finding was fixed first: [#193](https://github.com/jwildfire/safety.viz/issues/193).
 
 # safety.viz v1.8.0
 
