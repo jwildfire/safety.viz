@@ -7724,4 +7724,3 @@ ${C2}.sv-collapsed .sv-sidebar{padding:.5rem .9rem}
   var version = "0.1.0";
   return __toCommonJS(main_exports);
 })();
-//# sourceMappingURL=bio.viz.js.map
