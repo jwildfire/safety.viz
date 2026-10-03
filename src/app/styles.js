@@ -82,6 +82,7 @@ display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:v
 .sva-charts .sva-action{flex:none;margin-right:.45rem;font:500 .66rem/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--accent);background:var(--card);border:1px solid var(--accent);border-radius:999px;padding:.36rem .7rem;cursor:pointer;white-space:nowrap}
 .sva-charts .sva-action:hover:not(:disabled){background:var(--accent-soft)}
 .sva-charts .sva-action:disabled{color:var(--soft);border-color:var(--line);cursor:default}
+.sva-charts .sva-action-hint{flex:none;margin-right:.6rem;font-family:var(--mono);font-size:.64rem;letter-spacing:.04em;color:var(--soft);white-space:nowrap}
 .sva-app .sva-group-title,.sva-app .sva-title,.sva-count,.sva-charts .sva-tag.sva-ready{position:absolute;width:1px;height:1px;margin:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 
 .sva-main{flex:1;min-width:0;padding:1.1rem var(--gutter) 2.2rem}

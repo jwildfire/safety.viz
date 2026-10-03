@@ -367,24 +367,56 @@ export function mountApp(
         const library = extras.get(name);
         if (!library || !library.action || placed.has(name)) continue;
         placed.add(name);
-        section.querySelector('.sva-group-title').after(actionButton(library.action));
+        section.querySelector('.sva-group-title').after(...actionControl(name, library.action));
       }
       chartRow.append(section);
     }
   }
 
-  /** A library's control: its label and note as it says them now; pressing it redraws the open chart. */
-  function actionButton(action) {
-    const { label, done, note } = action.state();
+  /**
+   * After a library's control was pressed, and again when what it started has
+   * settled: the header says what the control now says, and the open chart, if
+   * it is one of that library's, is handed the library's settings as they now
+   * are — not drawn again, so it keeps what the reader chose in it.
+   */
+  function afterAction(name, { handOver }) {
+    const current = status();
+    renderHead(current);
+    renderNav(current);
+    if (!handOver || state.selected === 'data') return;
+    const entry = manifest.modules[state.selected];
+    if (!entry || libraryOf(entry) !== name || !instance) return;
+    if (typeof instance.setSettings !== 'function') {
+      render();
+      return;
+    }
+    try {
+      instance.setSettings(extraSettings(state.selected, entry));
+    } catch (error) {
+      console.warn(
+        'safety.viz app: a chart did not take its new settings; it is drawn again.',
+        error
+      );
+      render();
+    }
+  }
+
+  /** A library's control as it says itself now: its button, and what it costs in words beside it. */
+  function actionControl(name, action) {
+    const { label, done, note, hint } = action.state();
     const button = el('button', 'sva-action', label);
     button.type = 'button';
     button.disabled = Boolean(done);
     if (note) button.title = note;
     button.onclick = () => {
-      action.press();
-      render();
+      const settled = action.press();
+      afterAction(name, { handOver: true });
+      if (settled && typeof settled.then === 'function') {
+        const update = () => afterAction(name, { handOver: false });
+        settled.then(update, update);
+      }
     };
-    return button;
+    return hint ? [button, el('span', 'sva-action-hint', hint)] : [button];
   }
 
   function renderNotes(container) {
