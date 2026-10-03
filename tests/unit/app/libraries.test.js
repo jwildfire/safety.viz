@@ -430,22 +430,30 @@ describe('a library the page cannot use as handed in (#193)', () => {
       'a-null': [null, /is not an object/],
       'a-list': [[strip()], /is not an object/]
     };
+    // Each alone: the sentence that says why.
     for (const [module, [entry, reason]] of Object.entries(cases)) {
-      const mounted = mountWith([withModules({ [module]: entry })]);
-      expect(mounted.thrown, module).toBeNull();
-      expect(mounted.tabs.slice(0, 3), module).toEqual(SAFETY_TABS);
       const { problems } = mergeLibraries(manifest, ownCharts, [withModules({ [module]: entry })]);
       expect(problems[module], module).toMatch(
         /^This chart’s entry in the stand-in chart list cannot be used: /
       );
       expect(problems[module], module).toMatch(reason);
+    }
+    // All of them in one chart list, on the page: it mounts, the safety charts
+    // are as before, and each reads "not loaded" and, opened, says why.
+    const mounted = mountWith([
+      withModules(
+        Object.fromEntries(Object.entries(cases).map(([module, [entry]]) => [module, entry]))
+      )
+    ]);
+    expect(mounted.thrown).toBeNull();
+    expect(mounted.tabs.slice(0, 3)).toEqual(SAFETY_TABS);
+    for (const [module, [, reason]] of Object.entries(cases)) {
       const tag = document.querySelector(`.sva-item[data-view="${module}"] .sva-tag`);
       expect(tag.textContent, module).toBe('not loaded');
-      // Opening it says why; nothing is thrown.
       expect(() => mounted.app.select(module), module).not.toThrow();
       expect(document.querySelector('.sva-message').textContent, module).toMatch(reason);
-      mounted.app.destroy();
     }
+    mounted.app.destroy();
     // An entry with no group and no first domain to list it under is listed
     // apart, never under a tab called "undefined".
     const loose = strip();
@@ -455,15 +463,15 @@ describe('a library the page cannot use as handed in (#193)', () => {
     const none = { ...strip(), domains: [], settings: {} };
     delete none.group;
     delete none.tables;
-    const mounted = mountWith([withModules({ loose, none })]);
-    expect(mounted.tabs.map((tab) => tab.group)).toEqual(['bds', 'eg', 'ae', 'other']);
-    expect(mounted.tabs.map((tab) => tab.title)).toEqual([
+    const apart = mountWith([withModules({ loose, none })]);
+    expect(apart.tabs.map((tab) => tab.group)).toEqual(['bds', 'eg', 'ae', 'other']);
+    expect(apart.tabs.map((tab) => tab.title)).toEqual([
       'Labs and vitals',
       'ECG',
       'Adverse events',
       'Other'
     ]);
-    mounted.app.destroy();
+    apart.app.destroy();
   });
 
   it('APP-LIB-021: a chart list whose modules are not an object of entries, or that is not an object, is not used, and the page says so in words; safety.viz’s charts still mount (#193)', () => {
