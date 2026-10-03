@@ -43,6 +43,11 @@ jobs:
       - name: Check dist/ matches a fresh build
         run: npm run build:check-dist
 
+      # bio.viz's script-tag bundle is vendored for the demo app (#182): the
+      # copy must equal the file at the bio.viz commit its record names.
+      - name: Vendored bio.viz bundle matches its source
+        run: npm run bio-viz:check-source
+
       - name: Run unit tests
         run: npm test
 

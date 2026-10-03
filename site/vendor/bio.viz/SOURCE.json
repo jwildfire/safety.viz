@@ -1,0 +1,17 @@
+{
+  "bundle": "bio.viz script-tag bundle",
+  "repository": "https://github.com/jwildfire/bio.viz",
+  "ref": "32-portfolio",
+  "commit": "5ca97d3de5218687f40d1a14cb647d679050082c",
+  "version": "0.1.0",
+  "merged_to_dev": false,
+  "note": "bio.viz#42, which publishes BioViz.portfolio, is not yet on bio.viz dev; copy again from dev once it merges.",
+  "files": [
+    {
+      "file": "bio.viz.js",
+      "source": "dist/bio.viz-0.1.0/bio.viz.js",
+      "sha256": "bbc93e78d6a3c315f219bfe986a820de72941846ad825ce2b6096b01e11b44a9",
+      "bytes": 315897
+    }
+  ]
+}
