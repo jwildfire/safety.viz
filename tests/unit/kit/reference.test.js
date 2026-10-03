@@ -181,6 +181,23 @@ describe('site generator: kit page', () => {
     expect(html).toContain('<code>hexToRgba</code>');
   });
 
+  it('KIT-DOC-010: the page says the Kaplan–Meier estimator follows the Time-to-Event Explorer’s Experimental status: its interval method may change after the external clinical review without counting as a breaking change, and the other members are full public surface (#193)', () => {
+    const contract = html.match(/<h2 id="contract">[\s\S]*?<\/ul>/)[0];
+    expect(contract).toContain(
+      '<code>kmEstimate</code> follows the Time-to-Event Explorer&#39;s Experimental status'
+    );
+    expect(contract).toContain('https://github.com/jwildfire/obot.roadmap/issues/182');
+    expect(contract).toMatch(
+      /its standard errors and pointwise 95% intervals may change after that review without counting as a breaking change/
+    );
+    expect(contract).toContain(`The other ${model.count - 1} members are public surface in full.`);
+    // The member's own row says so too.
+    const row = html.match(/<tr id="kmEstimate">[\s\S]*?<\/tr>/)[0];
+    expect(row).toContain('class="kit-status"');
+    expect(row).toContain('Experimental');
+    expect(html.match(/class="kit-status"/g)).toHaveLength(1);
+  });
+
   it('KIT-DOC-008: the kit page is reachable from the architecture page and from every chart’s API reference (#154)', () => {
     expect(renderArchitecturePage({ config, version })).toContain('href="kit/index.html"');
     const api = renderApiPage({

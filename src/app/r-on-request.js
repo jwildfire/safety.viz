@@ -3,9 +3,10 @@
 // tests is handed, through the second-library seam, a connection to R that
 // starts nothing until the reader asks: before the reader presses the one
 // control, every chart draws and its statistics line says that statistics need
-// R and what starting it downloads, and nothing is fetched. Pressing it makes
-// one connection, with the library's own connection factory and the options
-// given, and every chart drawn afterwards reaches R through it.
+// R and what starting it downloads, and R's hosts are asked for nothing.
+// Pressing it makes one connection, with the library's own connection factory
+// and the options given, and every chart drawn afterwards reaches R through
+// it. A factory that throws is R that did not start, and the control says why.
 //
 // The app computes no statistic here or anywhere: the connection is the
 // library's, R answers, and the chart prints what R said. This module only
@@ -89,7 +90,16 @@ export function rOnRequest({ createConnection, browser, megabytes, host }) {
         })[phase],
       press() {
         if (phase === 'starting' || phase === 'running') return started;
-        real = createConnection({ browser });
+        // A factory that throws is R that did not start, and says why (#193).
+        try {
+          real = createConnection({ browser });
+        } catch (error) {
+          real = null;
+          phase = 'failed';
+          failure = failed(error && error.message ? error.message : error);
+          started = Promise.resolve();
+          return started;
+        }
         phase = 'starting';
         failure = null;
         started = ask(real, 'identity', { data: [], args: {} }).then(() => undefined);

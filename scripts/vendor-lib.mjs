@@ -182,3 +182,26 @@ export async function verifyAgainstSource(directory, read) {
   if (!(record.files || []).length) problems.push(`${RECORD_FILE} records no files.`);
   return problems;
 }
+
+/**
+ * The third check, of the record's word that its commit is on the source's
+ * `dev` branch (#193): a record that says `merged_to_dev: true` is asked about,
+ * and fails when `dev` neither is that commit nor has it in its history. A
+ * record that says it was copied from elsewhere (`merged_to_dev: false`, with
+ * its note saying why) is not asked about; one that says neither fails.
+ * @param {Object} record A vendor record.
+ * @param {(commit: string) => Promise<string>} compare How `dev` stands to the commit, as GitHub's compare API says it: `ahead` or `identical` when the commit is on `dev`, `behind` or `diverged` when it is not.
+ * @returns {Promise<string[]>} The problems, each a sentence.
+ */
+export async function verifyOnDev(record, compare) {
+  const short = String(record.commit).slice(0, 7);
+  if (record.merged_to_dev === false) return [];
+  if (record.merged_to_dev !== true) {
+    return [`${RECORD_FILE} does not say whether ${short} is on dev.`];
+  }
+  const status = await compare(record.commit);
+  if (status === 'ahead' || status === 'identical') return [];
+  return [
+    `${RECORD_FILE} says ${short} is on ${record.repository}’s dev branch, but it is not (dev is ${status}).`
+  ];
+}

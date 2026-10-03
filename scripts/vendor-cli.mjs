@@ -8,7 +8,10 @@
 //   --check                            change nothing: fail if a file and its
 //                                      record disagree (no network)
 //   --check-source                     change nothing: also fetch the recorded
-//                                      commit's files and fail on a difference
+//                                      commit's files and fail on a difference,
+//                                      and ask GitHub whether a commit recorded
+//                                      as on dev is on dev (#193); a token in
+//                                      GITHUB_TOKEN or GH_TOKEN is used if set
 //
 // Each script passes what it vendors, and how to describe a commit (`describe`).
 
@@ -19,6 +22,7 @@ import {
   buildRecord,
   readRecord,
   verifyAgainstSource,
+  verifyOnDev,
   verifyVendored,
   writeVendored
 } from './vendor-lib.mjs';
@@ -44,6 +48,22 @@ export async function runVendorCli(source, { describe }) {
     const response = await fetch(url);
     if (!response.ok) throw new Error(`${url} answered ${response.status}.`);
     return Buffer.from(await response.arrayBuffer());
+  }
+
+  // How dev stands to a commit, from GitHub's compare API: `ahead` or
+  // `identical` when the commit is on dev.
+  async function compareWithDev(commit) {
+    const url = `https://api.github.com/repos/${slug}/compare/${commit}...dev`;
+    const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
+    const headers = { accept: 'application/vnd.github+json' };
+    if (token) headers.authorization = `Bearer ${token}`;
+    const response = await fetch(url, { headers });
+    if (!response.ok) {
+      throw new Error(
+        `${url} answered ${response.status}, so whether the commit is on dev is unknown.`
+      );
+    }
+    return (await response.json()).status;
   }
 
   function resolveCommit(ref) {
@@ -75,6 +95,7 @@ export async function runVendorCli(source, { describe }) {
       const problems = verifyVendored(directory);
       if (!problems.length && flag('--check-source')) {
         problems.push(...(await verifyAgainstSource(directory, readAt)));
+        problems.push(...(await verifyOnDev(readRecord(directory), compareWithDev)));
       }
       const record = problems.length ? null : readRecord(directory);
       report(
@@ -82,7 +103,8 @@ export async function runVendorCli(source, { describe }) {
         record &&
           `✓ ${source.directory}: ${record.files.map((entry) => entry.file).join(', ')} ` +
             (flag('--check-source')
-              ? `equals ${slug} at ${record.commit.slice(0, 7)}, byte for byte.`
+              ? `equals ${slug} at ${record.commit.slice(0, 7)}, byte for byte` +
+                (record.merged_to_dev ? ', and that commit is on dev.' : ', a commit not on dev.')
               : `matches its recorded checksum (copied from ${slug} at ${record.commit.slice(0, 7)}).`)
       );
       return;

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { cpSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -12,6 +12,7 @@ import {
   RECORD_FILE,
   readRecord,
   sha256,
+  verifyOnDev,
   verifyVendored
 } from '../../../scripts/vendor-lib.mjs';
 import {
@@ -72,6 +73,35 @@ describe('the vendored bio.viz bundle', () => {
     const bare = mkdtempSync(path.join(tmpdir(), 'vendor-bio-viz-'));
     expect(verifyVendored(bare)).toEqual([
       `${RECORD_FILE} is missing: the files have no source record.`
+    ]);
+  });
+
+  it('APP-BIO-011: the source check asks whether a commit recorded as on dev is on dev, and fails when it is not or when the record does not say; a commit recorded as off dev is not asked (#193)', async () => {
+    const record = { ...readRecord(vendorDir) };
+    expect(record.merged_to_dev).toBe(true);
+    // GitHub's compare of the commit with dev: dev is ahead of it, or is it.
+    const asked = vi.fn(async () => 'ahead');
+    expect(await verifyOnDev(record, asked)).toEqual([]);
+    expect(asked).toHaveBeenCalledWith(record.commit);
+    expect(await verifyOnDev(record, async () => 'identical')).toEqual([]);
+    for (const status of ['behind', 'diverged']) {
+      expect(await verifyOnDev(record, async () => status), status).toEqual([
+        `${RECORD_FILE} says ${record.commit.slice(0, 7)} is on ${record.repository}’s dev branch, but it is not (dev is ${status}).`
+      ]);
+    }
+    // A commit copied from elsewhere says so, and why; it is not asked about.
+    const elsewhere = vi.fn();
+    expect(
+      await verifyOnDev(
+        { ...record, merged_to_dev: false, note: 'a fix not yet merged' },
+        elsewhere
+      )
+    ).toEqual([]);
+    expect(elsewhere).not.toHaveBeenCalled();
+    const silent = { ...record };
+    delete silent.merged_to_dev;
+    expect(await verifyOnDev(silent, asked)).toEqual([
+      `${RECORD_FILE} does not say whether ${silent.commit.slice(0, 7)} is on dev.`
     ]);
   });
 
@@ -137,7 +167,7 @@ describe('the single file with the biomarker charts', () => {
     expect(html).not.toMatch(/<script[^>]*\ssrc=/i);
     expect(html.match(/<script>/g)).toHaveLength(3);
     expect(librariesExpression([bioViz])).toBe(
-      '[{ name: "bio.viz", charts: window.BioViz, manifest: window.BioViz && window.BioViz.portfolio }]'
+      '[{ name: "bio.viz", file: "bio.viz.js", charts: window.BioViz, manifest: window.BioViz && window.BioViz.portfolio }]'
     );
   });
 });

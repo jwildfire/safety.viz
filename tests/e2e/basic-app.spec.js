@@ -37,8 +37,10 @@ const bioCharts = Object.entries(bioManifest.modules);
 const DRAWN = 'canvas:visible, table:visible, .bv-matrix-grid:visible, .bv-screen:visible';
 
 // A test that opens every chart in turn is given longer than the default: on
-// CI's runner, beside a test starting R, opening seventeen charts can pass 30 s.
-const MANY_CHARTS = 120000;
+// CI's runner, beside a test starting R, opening seventeen charts has come
+// close to 30 s (the slowest so far, 22.6 s). 60 s leaves room without hiding
+// a hang (#193).
+const MANY_CHARTS = 60000;
 
 const APP = 'window.__safetyVizApp';
 const item = (page, id) => page.locator(`.sva-item[data-view="${id}"]`);
@@ -1154,6 +1156,42 @@ test.describe('demo app with R on request', () => {
     await expect(page.locator('.sva-chart .bv-statistic').filter({ hasText: NEED_R })).toHaveCount(
       0
     );
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-R-021: the chart open when R is started stops saying R is starting once R has started: no statistics line it prints afterwards carries the starting note (#193)', async ({
+    page
+  }) => {
+    test.setTimeout(240000);
+    const errors = watchErrors(page);
+    await openOnDemo(page);
+    await openChart(page, expectedStatistics.chart);
+    await page.locator('.sva-action').click();
+    await expect(page.locator('.sva-action')).toHaveText('R started', { timeout: 150000 });
+    // Every statistics line the open chart prints from here on is recorded.
+    await page.evaluate(() => {
+      window.__lines = [];
+      const record = () => {
+        for (const line of document.querySelectorAll('.sva-chart .bv-statistic')) {
+          window.__lines.push(line.textContent);
+        }
+      };
+      new MutationObserver(record).observe(document.querySelector('.sva-content'), {
+        subtree: true,
+        childList: true,
+        characterData: true
+      });
+    });
+    await biomarkerControl(page).selectOption({ label: expectedStatistics.measure });
+    await page.waitForFunction(
+      (count) => window.__rAnswers.length >= count,
+      expectedStatistics.answers.length,
+      { timeout: 150000 }
+    );
+    await settled(page);
+    const lines = await page.evaluate(() => window.__lines);
+    expect(lines.length).toBeGreaterThan(0);
+    expect(lines.filter((line) => /R is starting/.test(line))).toEqual([]);
     expect(errors).toEqual([]);
   });
 

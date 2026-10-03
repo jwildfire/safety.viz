@@ -14,7 +14,8 @@ import {
   FILE_PITCH,
   HOSTED_PITCH,
   librariesExpression,
-  libraryScript
+  libraryScript,
+  noRFactory
 } from '../../../scripts/app-libraries.mjs';
 import { APP_STATISTICS, derivedFrom } from '../../../scripts/app-statistics-lib.mjs';
 import { renderAppHtml } from '../../../scripts/build-app.mjs';
@@ -90,13 +91,47 @@ describe('the pages', () => {
     });
     expect(html).toContain(`libraries: ${librariesExpression(APP_LIBRARIES, { r: 'request' })}`);
     expect(html).toContain(
-      'SafetyVizApp.rOnRequest({ createConnection: window.BioViz.r.createConnection, ' +
+      'SafetyVizApp.rOnRequest({ createConnection: window.BioViz?.r?.createConnection, ' +
         'browser: { sourceUrl: "./statistics.R", packages: [] }, megabytes: 13, host: "webr.r-wasm.org" })'
     );
     expect(html).toContain(`pitch: '${HOSTED_PITCH.replace(/'/g, "\\'")}'`);
+    // The page fetches its own fonts, bundles and demo files from its own host:
+    // what it promises is that nothing else is asked for until R is (#193).
     expect(html).toMatch(
-      /<meta name="description" content="[^"]*nothing is fetched unless you start R[^"]*">/
+      /<meta name="description" content="[^"]*the page fetches nothing from any other host unless you start R[^"]*">/
     );
+    expect(html).not.toContain('nothing is fetched');
+  });
+
+  it('APP-R-023: the hosted page mounts when a library is missing or has no connection to R: a missing one is handed in by name and file, and one with no connection factory says statistics are unavailable and why (#193)', async () => {
+    const SafetyVizApp = await import('../../../src/app/r-on-request.js');
+    const evaluate = (window) =>
+      new Function(
+        'window',
+        'SafetyVizApp',
+        `return ${librariesExpression(APP_LIBRARIES, { r: 'request' })};`
+      )(window, SafetyVizApp);
+    // bio.viz did not load.
+    expect(() => evaluate({})).not.toThrow();
+    const [missing] = evaluate({});
+    expect(missing).toMatchObject({ name: 'bio.viz', file: 'bio.viz.js' });
+    expect(missing.charts).toBeUndefined();
+    expect(missing.manifest).toBeUndefined();
+    // bio.viz loaded, but with no connection to R.
+    const portfolio = { version: 2, modules: {} };
+    expect(() => evaluate({ BioViz: { portfolio } })).not.toThrow();
+    const [noR] = evaluate({ BioViz: { portfolio } });
+    expect(noR.manifest).toBe(portfolio);
+    expect(noR.action).toBeUndefined();
+    const answer = await noR.settings().connection.run('anything', { data: [], args: {} });
+    expect(answer).toMatchObject({ status: 'unavailable' });
+    expect(answer.message).toBe(noRFactory(bioViz));
+    expect(answer.message).toBe(
+      'Statistics are unavailable: the bio.viz on this page has no connection to R (bio.viz’s r.createConnection is missing).'
+    );
+    // With the factory there, the control is offered.
+    const [withR] = evaluate({ BioViz: { portfolio, r: { createConnection: () => ({}) } } });
+    expect(withR.action.state().label).toBe('Start R');
   });
 
   it('APP-R-013: the single file hands them no R, only the sentence that says why, and says it loads nothing (#183)', () => {
