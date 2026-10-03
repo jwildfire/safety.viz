@@ -38,7 +38,12 @@ import {
   validateSiteLinks
 } from './site-lib.mjs';
 import { APP_BUNDLE, APP_HTML, buildApp } from './build-app.mjs';
-import { APP_LIBRARIES, libraryManifest } from './app-libraries.mjs';
+import {
+  APP_LIBRARIES,
+  libraryManifest,
+  libraryScript,
+  withoutSourceMap
+} from './app-libraries.mjs';
 import { DEMO_STUDIES } from '../src/app/studies.js';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -279,8 +284,10 @@ for (const study of DEMO_STUDIES) {
 publishDemoAppFonts(rootDir, demoAppDir);
 // Each further chart library's vendored bundle (#182) is served beside the app
 // and loaded after it; the page's description counts every chart it carries.
+// The copy served drops the bundle's source-map comment line, since no map is
+// served beside it; the vendored file itself stays bio.viz's, byte for byte.
 for (const library of APP_LIBRARIES) {
-  copyFileSync(path.join(rootDir, library.path), path.join(demoAppDir, library.file));
+  writeFileSync(path.join(demoAppDir, library.file), withoutSourceMap(libraryScript(library)));
 }
 const WORDS = [
   'no',

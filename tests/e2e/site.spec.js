@@ -67,7 +67,7 @@ test.describe('docs site', () => {
     expect(errors).toEqual([]);
   });
 
-  test('APP-BIO-012: the built demo page serves bio.viz’s vendored bundle beside the app byte for byte, lists the biomarker charts in their own tab and holds at a 390px viewport (#182)', async ({
+  test('APP-BIO-012: the built demo page serves bio.viz’s vendored bundle beside the app, whole but for its source-map comment, lists the biomarker charts in their own tab and holds at a 390px viewport (#182)', async ({
     page
   }) => {
     const errors = [];
@@ -78,9 +78,12 @@ test.describe('docs site', () => {
     const [bioViz] = APP_LIBRARIES;
     const response = await page.request.get(`/_site/demo/${bioViz.file}`);
     expect(response.ok()).toBe(true);
-    expect(
-      (await response.body()).equals(readFileSync(new URL(`../../${bioViz.path}`, import.meta.url)))
-    ).toBe(true);
+    // Served whole, less only the source-map comment line: no map is served.
+    const served = await response.text();
+    const vendored = readFileSync(new URL(`../../${bioViz.path}`, import.meta.url), 'utf8');
+    expect(vendored).toContain('//# sourceMappingURL=');
+    expect(served).not.toContain('sourceMappingURL');
+    expect(served).toBe(vendored.replace(/^\/\/# sourceMappingURL=.*$\n?/gm, ''));
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/_site/demo/index.html');
     await page.evaluate('window.__safetyVizApp.ready');
