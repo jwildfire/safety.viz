@@ -21,6 +21,9 @@ export const OWN_LIBRARY = 'safety.viz';
 /** The group of the charts that read domains outside the standard set. */
 export const OTHER_GROUP = 'other';
 
+/** The view id the app keeps for its data view: no library chart may take it (#197). */
+export const DATA_VIEW = 'data';
+
 const has = (object, key) => Boolean(object) && Object.prototype.hasOwnProperty.call(object, key);
 const asList = (value) => [].concat(value);
 const isRecord = (value) => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
@@ -120,7 +123,9 @@ function entryProblem(entry, domains, groups) {
  * whose name is already listed, a library with no name or with a name already
  * used (the first library of a name is the one used, #193), and a group
  * already declared, or named like a standard domain or the group outside the
- * set, are left out with a console warning: the page still mounts. The domains
+ * set, are left out with a console warning: the page still mounts. A library
+ * chart named `data`, the data view's id, is left out too, and `unloaded` says
+ * why (#197). The domains
  * are always the host's: a library's charts read the standard set.
  *
  * A library handed in by name with no chart list the app can read — its
@@ -192,6 +197,14 @@ export function mergeLibraries(host, hostCharts, libraries = []) {
       } else groups[id] = group;
     }
     for (const [module, entry] of Object.entries(list.modules)) {
+      // Listed, it would be a chip that opens the data view: say so instead.
+      if (module === DATA_VIEW) {
+        unloaded.push(
+          `The ${name} chart ${module} is not shown: the app keeps the name ${module} for its data view.`
+        );
+        warn(`${name}'s chart ${module} takes the name of the data view, and was left out.`);
+        continue;
+      }
       if (has(modules, module)) {
         warn(
           `${name}'s chart ${module} has the same name as a chart already listed, and was left out.`
