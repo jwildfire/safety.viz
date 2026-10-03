@@ -12603,6 +12603,7 @@ var SHELL_STYLES = `
 .sv-annotation,.sv-main-annotation{font-size:.85rem;background:rgba(255,255,255,.92);border:1px solid #d8dee4;border-radius:6px;padding:.25rem .4rem}
 .sv-main-annotation{position:absolute;right:1.25rem;top:1.25rem;z-index:2}
 .sv-main-annotation:empty{display:none}
+.sv-deprecation{margin:.2rem 0 0;max-width:16rem;font-size:.75rem;line-height:1.3;color:#8a4600}
 .sv-info{text-decoration:none}
 .sv-hidden{display:none!important}
 .sv-view-list{display:flex;flex-direction:column;gap:.35rem}
@@ -12927,6 +12928,8 @@ function renderFilterControl({ spec, values, selected, onChange }) {
 }
 
 // src/histogram/configure.js
+var COMPARISON_DEPRECATED = "safety.viz histogram: `compare_distributions` is deprecated and will be removed in a later release. Its group comparison is an approximation computed in JavaScript, and safety.viz is to compute no statistical test there.";
+var NORMALITY_DEPRECATED = "safety.viz histogram: `test_normality` is deprecated and will be removed in a later release. Its normality screen is an approximation computed in JavaScript, and safety.viz is to compute no statistical test there.";
 var DEFAULT_SETTINGS = {
   measure_col: "TEST",
   value_col: "STRESN",
@@ -16385,6 +16388,9 @@ var SafetyHistogram = class {
     this.element = typeof element === "string" ? document.querySelector(element) : element;
     if (!this.element) throw new Error(`Safety Histogram target not found: ${element}`);
     this.settings = syncSettings(settings);
+    this.normalityWarned = false;
+    this.comparisonWarned = false;
+    this.warnDeprecated();
     this.rawData = [];
     this.cleanData = [];
     this.availableMeasures = [];
@@ -16541,6 +16547,7 @@ var SafetyHistogram = class {
    */
   setSettings(settings) {
     this.settings = syncSettings({ ...this.settings, ...settings });
+    this.warnDeprecated();
     if (this.rawData.length) this.validateAndCleanData();
     this.buildProfileRows();
     syncProfileRail(this, () => this.profileSettings());
@@ -16977,21 +16984,54 @@ var SafetyHistogram = class {
     chart.update();
   }
   /**
-   * Annotate the main chart with the normality screen when enabled.
+   * Say once per chart, in the console, that `test_normality` or
+   * `compare_distributions` is deprecated, for each that is on (#188).
+   * @private
+   */
+  warnDeprecated() {
+    if (this.settings.test_normality && !this.normalityWarned) {
+      this.normalityWarned = true;
+      console.warn(NORMALITY_DEPRECATED);
+    }
+    if (this.settings.compare_distributions && !this.comparisonWarned) {
+      this.comparisonWarned = true;
+      console.warn(COMPARISON_DEPRECATED);
+    }
+  }
+  /**
+   * Annotate the main chart with the normality screen when enabled, and say
+   * beside it that the screen, and the grouped panels' comparison when it is
+   * on, are deprecated (#188).
    * @private
    */
   drawMainAnnotation(rows) {
     this.mainAnnotation.innerHTML = "";
-    if (!this.settings.test_normality) return;
-    const pValue = approximateNormalityP(rows.map((row) => row.__sh_value));
-    this.mainAnnotation.append(
-      statisticalAnnotation(
-        "Normality",
-        pValue,
-        "Approximate Jarque-Bera normality screen",
-        "https://en.wikipedia.org/wiki/Jarque%E2%80%93Bera_test"
-      )
-    );
+    if (this.settings.test_normality) {
+      const pValue = approximateNormalityP(rows.map((row) => row.__sh_value));
+      this.mainAnnotation.append(
+        statisticalAnnotation(
+          "Normality",
+          pValue,
+          "Approximate Jarque-Bera normality screen",
+          "https://en.wikipedia.org/wiki/Jarque%E2%80%93Bera_test"
+        ),
+        createElement(
+          "p",
+          "sv-deprecation",
+          "Deprecated: this normality screen (test_normality) will be removed in a later release."
+        )
+      );
+    }
+    const grouped = this.state.groupBy && this.state.groupBy !== "sh_none";
+    if (this.settings.compare_distributions && grouped) {
+      this.mainAnnotation.append(
+        createElement(
+          "p",
+          "sv-deprecation",
+          "Deprecated: the group comparison (compare_distributions) will be removed in a later release."
+        )
+      );
+    }
   }
   /**
    * Draw one small-multiple panel per group value when grouping is active.

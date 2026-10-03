@@ -24,7 +24,7 @@
     <script>
       const empty = new URLSearchParams(window.location.search).has('empty');
       const pitch =
-        'The study’s data never leaves this browser. No request leaves the page unless you start R.';
+        'Files you load are read in this browser and never uploaded. Starting R downloads R from webr.r-wasm.org; your data stays in the browser, and R runs here.';
       const studies = SafetyVizApp.DEMO_STUDIES.map((study) => ({
         ...study,
         base: `/${study.source}/`

@@ -1,9 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import {
+  KNOWN_UNLISTED_IDS,
   expandRequirementIds,
   parseCoverage,
-  renderEvidencePage
+  renderEvidencePage,
+  unlistedRequirementIds
 } from '../../../scripts/site-lib.mjs';
 
 // Evidence-page generator (#7): joins the coverage table
@@ -206,5 +208,79 @@ describe('site generator: requirement text (#63)', () => {
     expect(html).toContain('SH-CTRL-004');
     expect(html).not.toContain('class="req-text"');
     expect(html).not.toContain('undefined');
+  });
+});
+
+describe('every recorded requirement ID is on its module’s evidence page (#195)', () => {
+  const coverage = (rows) =>
+    parseCoverage(
+      [
+        '# x coverage',
+        '## Unit evidence',
+        '| Requirement ID | Source matrix rows | Issue | Test file |',
+        '|---|---|---|---|',
+        ...rows.map((id) => `| ${id} | — | #1 | \`x.test.js\` |`)
+      ].join('\n')
+    );
+  const record = (ids) => ({
+    test: ids.join('/'),
+    suite: 'unit',
+    status: 'pass',
+    requirementIds: ids
+  });
+
+  it('names a module’s recorded ID that no coverage row lists, and ignores other modules’ IDs', () => {
+    expect(
+      unlistedRequirementIds({
+        coverage: coverage(['SH-CHART-001', 'SH-CHART-002']),
+        records: [record(['SH-CHART-001']), record(['SH-CHART-003']), record(['APP-LIB-001'])]
+      })
+    ).toEqual([
+      'SH-CHART-003 is recorded, but no row of the coverage doc lists it, so the evidence page does not show it.'
+    ]);
+  });
+
+  it('passes a known gap while it is one, and says so once it is listed', () => {
+    const records = [record(['SH-CHART-001']), record(['SH-CHART-003'])];
+    expect(
+      unlistedRequirementIds({
+        coverage: coverage(['SH-CHART-001']),
+        records,
+        known: ['SH-CHART-003']
+      })
+    ).toEqual([]);
+    expect(
+      unlistedRequirementIds({
+        coverage: coverage(['SH-CHART-001', 'SH-CHART-003']),
+        records,
+        known: ['SH-CHART-003']
+      })
+    ).toEqual(['SH-CHART-003 is listed now (#206): take it off the known gaps.']);
+  });
+
+  it('holds for every module’s committed evidence, with the gaps known before the check (#206)', () => {
+    const site = JSON.parse(
+      readFileSync(new URL('../../../site/config.json', import.meta.url), 'utf8')
+    );
+    const modules = site.renderers.filter((renderer) => renderer.status === 'available');
+    expect(modules.length).toBeGreaterThan(10);
+    for (const { module } of modules) {
+      const problems = unlistedRequirementIds({
+        coverage: parseCoverage(
+          readFileSync(new URL(`../../../docs/${module}-coverage.md`, import.meta.url), 'utf8')
+        ),
+        records: JSON.parse(
+          readFileSync(
+            new URL(`../../../docs/evidence/${module}/evidence.json`, import.meta.url),
+            'utf8'
+          )
+        ).records,
+        known: KNOWN_UNLISTED_IDS[module] || []
+      });
+      expect(problems, module).toEqual([]);
+    }
+    // The renamed R-Ratio requirement is on its page, not a known gap.
+    expect(KNOWN_UNLISTED_IDS['hep-explorer']).not.toContain('HEP-DISPLAY-007');
+    expect(Object.values(KNOWN_UNLISTED_IDS).flat()).toHaveLength(102);
   });
 });
