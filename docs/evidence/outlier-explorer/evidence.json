@@ -1,6 +1,6 @@
 {
   "module": "outlier-explorer",
-  "generatedAt": "2026-10-03T08:20:15.812Z",
+  "generatedAt": "2026-10-03T09:07:54.582Z",
   "environment": {
     "os": "darwin 23.6.0",
     "node": "v24.14.0",
@@ -2525,7 +2525,7 @@
       "screenshots": []
     },
     {
-      "test": "a library the page cannot use as handed in (#193) APP-LIB-021: a chart list whose modules are not an object of entries, or that is not an object, is not used, and the page says so in words; safety.viz’s charts still mount (#193)",
+      "test": "a library the page cannot use as handed in (#193) APP-LIB-021: a chart list whose modules are not an object of entries, or that is not an object, is not used, and the page says so in words; one that lists no charts says that; safety.viz’s charts still mount (#193)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-LIB-021"],
@@ -5133,6 +5133,30 @@
       "screenshots": []
     },
     {
+      "test": "requirements-lib: one row per requirement ID across the matrices (#193) finds none in the repository’s matrices but the ones known before the check (safety.viz#195)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [193],
+      "screenshots": []
+    },
+    {
+      "test": "requirements-lib: one row per requirement ID across the matrices (#193) passes an ID known to have two rows while it does, and says so once it no longer does",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [193],
+      "screenshots": []
+    },
+    {
+      "test": "requirements-lib: one row per requirement ID across the matrices (#193) reports an ID that has two rows, in one matrix or in two, with where each is",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [193],
+      "screenshots": []
+    },
+    {
       "test": "requirements-lib: requirement set (#63) wraps the parsed map with module + matrix provenance",
       "suite": "unit",
       "status": "pass",
@@ -6213,7 +6237,7 @@
       "screenshots": []
     },
     {
-      "test": "site generator: kit page KIT-DOC-010: the page says the Kaplan–Meier estimator follows the Time-to-Event Explorer’s Experimental status: its interval method may change after the external clinical review without counting as a breaking change, and the other members are full public surface (#193)",
+      "test": "site generator: kit page KIT-DOC-010: the page says the Kaplan–Meier estimator follows the Time-to-Event Explorer’s Experimental status: its estimates, intervals and at-risk counts may change after the external clinical review without counting as a breaking change, its row is styled to say so, and the other members are full public surface (#193)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["KIT-DOC-010"],
@@ -6373,6 +6397,22 @@
       "screenshots": []
     },
     {
+      "test": "the page with a library’s settings and control APP-R-024: when the connection’s run throws or rejects as R starts, or the factory throws with no reason, the control says R did not start and offers to try again, never sticking at “Starting R…” (#193)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-024"],
+      "issueRefs": [193],
+      "screenshots": []
+    },
+    {
+      "test": "the page with a library’s settings and control APP-R-025: a library control whose press throws leaves the page working: nothing is thrown out of the click, a warning says why, and the control shows what it now says (#193)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-025"],
+      "issueRefs": [193],
+      "screenshots": []
+    },
+    {
       "test": "the page with a second library APP-LIB-012: the library’s charts have a tab of their own with its count and hue, and the overall count includes them (#181)",
       "suite": "unit",
       "status": "pass",
@@ -6445,10 +6485,18 @@
       "screenshots": []
     },
     {
-      "test": "the vendored bio.viz bundle APP-BIO-011: the source check asks whether a commit recorded as on dev is on dev, and fails when it is not or when the record does not say; a commit recorded as off dev is not asked (#193)",
+      "test": "the vendored bio.viz bundle APP-BIO-013: the source check asks whether a commit recorded as on dev is on dev, and fails when it is not or when the record does not say; a commit recorded as off dev is not asked (#193)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["APP-BIO-011"],
+      "requirementIds": ["APP-BIO-013"],
+      "issueRefs": [193],
+      "screenshots": []
+    },
+    {
+      "test": "the vendored bio.viz bundle APP-BIO-014: the on-dev check asks GitHub with the token when there is one and without it when GitHub refuses the token, and fails saying why when it cannot ask: the rate limit, the network, or an answer with no status (#193)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-014"],
       "issueRefs": [193],
       "screenshots": []
     },
