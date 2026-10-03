@@ -9,6 +9,7 @@ import {
   renderDemoAppPage,
   renderShell
 } from '../../../scripts/site-lib.mjs';
+import { APP_LIBRARIES } from '../../../scripts/app-libraries.mjs';
 import { STYLES } from '../../../src/app/styles.js';
 
 const rootDir = fileURLToPath(new URL('../../../', import.meta.url));
@@ -84,6 +85,35 @@ describe('renderDemoAppPage', () => {
       'https://github.com/jwildfire/safety.viz'
     ]);
     expect(html).toMatch(/<link rel="icon" href="data:image\/svg\+xml,[^"]+">/);
+  });
+
+  it('APP-PAGE-017: the page as the site builds it, with bio.viz’s charts and R on request, names exactly two other hosts: the repository’s and R’s (#165, #183)', () => {
+    const built = renderDemoAppPage({
+      bundle: 'safety.viz-app.js',
+      download: 'safety.viz-app.html',
+      repoUrl: 'https://github.com/jwildfire/safety.viz',
+      libraries: APP_LIBRARIES,
+      charts: 'thirteen clinical safety charts and four biomarker charts'
+    });
+    // Every host the page names, with or without a scheme; the icon's data URI
+    // (whose SVG namespace is not a request) is left out.
+    const hosts = (page) =>
+      [
+        ...new Set(
+          [
+            ...page
+              .replace(/href="data:[^"]*"/g, '')
+              .matchAll(/\b(?:[a-z0-9-]+\.)+(?:com|org|net|io|dev)\b/g)
+          ].map(([host]) => host)
+        )
+      ].sort();
+    expect(hosts(built)).toEqual(['github.com', 'webr.r-wasm.org']);
+    // R's host is named only as where R comes from, fetched by bio.viz's own
+    // connection when the reader presses Start R; the page links nothing there.
+    expect(built).not.toMatch(/https?:\/\/webr\.r-wasm\.org/);
+    expect(built).toContain('host: "webr.r-wasm.org"');
+    // Without a library the page names the repository alone, as before.
+    expect(hosts(html)).toEqual(['github.com']);
   });
 
   it('APP-PAGE-017: every weight the app’s stylesheet sets in a web typeface is one the page declares (#165)', () => {

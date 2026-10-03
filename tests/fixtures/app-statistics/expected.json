@@ -1,0 +1,956 @@
+{
+ "chart": "group-comparison",
+ "measure": "Alanine Aminotransferase",
+ "derived_from": [
+  {
+   "file": "site/data/adbds.csv",
+   "sha256": "8d35ce8a4727e4bcfb26481ebdfba50c2d666c3c7d39a6092b53a860962140c6"
+  },
+  {
+   "file": "site/data/adsl.csv",
+   "sha256": "d2d198906aa06ace5e0fda08442ad234c5835ec7cf19378737db7274ffd54f04"
+  },
+  {
+   "file": "src/app/parse.js",
+   "sha256": "26158b2c99410ad3adff567bd882beddee214a06664af4562c085c16edc20790"
+  },
+  {
+   "file": "src/app/detect.js",
+   "sha256": "809f7af72964bbad2f3cae6bfb52bcfb9421a70a7f3d2f37bf5ae36f027887a6"
+  },
+  {
+   "file": "src/app/mapping.js",
+   "sha256": "6ace4cad4707a31da71826ffd8186bea5a1d444077b703a71e7d9e6c82a96049"
+  },
+  {
+   "file": "src/app/charts.js",
+   "sha256": "783ec529c7a819c17c6a4b14c89591afef854d293a694f5355409d3f60077b6a"
+  },
+  {
+   "file": "src/app/libraries.js",
+   "sha256": "796c529a69afea2a85d59734e818185081e5f263631ed61621c29453e29b5f5f"
+  },
+  {
+   "file": "src/app/page.js",
+   "sha256": "a0b1c15cbbfb18afc6cc71368db91fe455eb9ce3865999c7b370a77db4cbb0da"
+  },
+  {
+   "file": "site/vendor/bio.viz/bio.viz.js",
+   "sha256": "bbc93e78d6a3c315f219bfe986a820de72941846ad825ce2b6096b01e11b44a9"
+  },
+  {
+   "file": "site/vendor/gsm.bio/statistics.R",
+   "sha256": "ea129ee3a8b852eaa1a475692bf80ef021638bfa8e0f82db3bca2a0c113184a2"
+  }
+ ],
+ "r": "4.3.3",
+ "statistics": "site/vendor/gsm.bio/statistics.R",
+ "answers": [
+  {
+   "name": "Analyze_GroupDifference",
+   "args": {
+    "strValueCol": "y",
+    "strGroupCol": "x",
+    "strMethod": "anova",
+    "bPairwise": false
+   },
+   "rows": 230,
+   "value": {
+    "status": "ok",
+    "reason": null,
+    "test": "anova",
+    "method": "One-way analysis of variance",
+    "estimates": [
+     {
+      "name": "Mean",
+      "group": "Placebo",
+      "estimate": 17.0789473684211,
+      "lower": null,
+      "upper": null,
+      "level": null
+     },
+     {
+      "name": "Mean",
+      "group": "Xanomeline High Dose",
+      "estimate": 18.6515151515151,
+      "lower": null,
+      "upper": null,
+      "level": null
+     },
+     {
+      "name": "Mean",
+      "group": "Xanomeline Low Dose",
+      "estimate": 17.6818181818182,
+      "lower": null,
+      "upper": null,
+      "level": null
+     }
+    ],
+    "statistic": [
+     {
+      "name": "F",
+      "value": 0.666056521847723
+     },
+     {
+      "name": "num df",
+      "value": 2
+     },
+     {
+      "name": "denom df",
+      "value": 227
+     }
+    ],
+    "p_value": 0.51473153204417,
+    "adjustment": "none",
+    "counts": {
+     "Placebo": 76,
+     "Xanomeline High Dose": 66,
+     "Xanomeline Low Dose": 88
+    },
+    "dropped": [],
+    "warnings": [],
+    "notes": [],
+    "rows": []
+   }
+  },
+  {
+   "name": "Analyze_GroupDifference",
+   "args": {
+    "strValueCol": "y",
+    "strGroupCol": "x",
+    "strMethod": "anova",
+    "bPairwise": false
+   },
+   "rows": 18,
+   "value": {
+    "status": "ok",
+    "reason": null,
+    "test": "anova",
+    "method": "One-way analysis of variance",
+    "estimates": [
+     {
+      "name": "Mean",
+      "group": "Placebo",
+      "estimate": 22.125,
+      "lower": null,
+      "upper": null,
+      "level": null
+     },
+     {
+      "name": "Mean",
+      "group": "Xanomeline High Dose",
+      "estimate": 25.4,
+      "lower": null,
+      "upper": null,
+      "level": null
+     },
+     {
+      "name": "Mean",
+      "group": "Xanomeline Low Dose",
+      "estimate": 26.2,
+      "lower": null,
+      "upper": null,
+      "level": null
+     }
+    ],
+    "statistic": [
+     {
+      "name": "F",
+      "value": 0.125769583999456
+     },
+     {
+      "name": "num df",
+      "value": 2
+     },
+     {
+      "name": "denom df",
+      "value": 15
+     }
+    ],
+    "p_value": 0.88273812697644,
+    "adjustment": "none",
+    "counts": {
+     "Placebo": 8,
+     "Xanomeline High Dose": 5,
+     "Xanomeline Low Dose": 5
+    },
+    "dropped": [],
+    "warnings": [],
+    "notes": [],
+    "rows": []
+   }
+  },
+  {
+   "name": "Analyze_GroupDifference",
+   "args": {
+    "strValueCol": "y",
+    "strGroupCol": "x",
+    "strMethod": "anova",
+    "bPairwise": false
+   },
+   "rows": 4,
+   "value": {
+    "status": "too_small",
+    "reason": "Not computed: Placebo has 1; Xanomeline High Dose has 1; Xanomeline Low Dose has 2. The minimum group size is 5.",
+    "test": "anova",
+    "method": null,
+    "estimates": [],
+    "statistic": [],
+    "p_value": null,
+    "adjustment": "none",
+    "counts": {
+     "Placebo": 1,
+     "Xanomeline High Dose": 1,
+     "Xanomeline Low Dose": 2
+    },
+    "dropped": [],
+    "warnings": [],
+    "notes": [],
+    "rows": []
+   }
+  },
+  {
+   "name": "Analyze_GroupDifference",
+   "args": {
+    "strValueCol": "y",
+    "strGroupCol": "x",
+    "strMethod": "anova",
+    "bPairwise": false
+   },
+   "rows": 2,
+   "value": {
+    "status": "too_small",
+    "reason": "Not computed: Placebo has 1; Xanomeline Low Dose has 1. The minimum group size is 5.",
+    "test": "anova",
+    "method": null,
+    "estimates": [],
+    "statistic": [],
+    "p_value": null,
+    "adjustment": "none",
+    "counts": {
+     "Placebo": 1,
+     "Xanomeline Low Dose": 1
+    },
+    "dropped": [],
+    "warnings": [],
+    "notes": [],
+    "rows": []
+   }
+  },
+  {
+   "name": "Analyze_GroupDifference",
+   "args": {
+    "strValueCol": "y",
+    "strGroupCol": "x",
+    "strMethod": "anova",
+    "bPairwise": false
+   },
+   "rows": 225,
+   "value": {
+    "status": "ok",
+    "reason": null,
+    "test": "anova",
+    "method": "One-way analysis of variance",
+    "estimates": [
+     {
+      "name": "Mean",
+      "group": "Placebo",
+      "estimate": 18.0487804878049,
+      "lower": null,
+      "upper": null,
+      "level": null
+     },
+     {
+      "name": "Mean",
+      "group": "Xanomeline High Dose",
+      "estimate": 21.1714285714286,
+      "lower": null,
+      "upper": null,
+      "level": null
+     },
+     {
+      "name": "Mean",
+      "group": "Xanomeline Low Dose",
+      "estimate": 21.1095890410959,
+      "lower": null,
+      "upper": null,
+      "level": null
+     }
+    ],
+    "statistic": [
+     {
+      "name": "F",
+      "value": 2.08092682653491
+     },
+     {
+      "name": "num df",
+      "value": 2
+     },
+     {
+      "name": "denom df",
+      "value": 222
+     }
+    ],
+    "p_value": 0.127242371705195,
+    "adjustment": "none",
+    "counts": {
+     "Placebo": 82,
+     "Xanomeline High Dose": 70,
+     "Xanomeline Low Dose": 73
+    },
+    "dropped": [],
+    "warnings": [],
+    "notes": [],
+    "rows": []
+   }
+  },
+  {
+   "name": "Analyze_GroupDifference",
+   "args": {
+    "strValueCol": "y",
+    "strGroupCol": "x",
+    "strMethod": "anova",
+    "bPairwise": false
+   },
+   "rows": 2,
+   "value": {
+    "status": "too_small",
+    "reason": "Not computed: Placebo has 1; Xanomeline Low Dose has 1. The minimum group size is 5.",
+    "test": "anova",
+    "method": null,
+    "estimates": [],
+    "statistic": [],
+    "p_value": null,
+    "adjustment": "none",
+    "counts": {
+     "Placebo": 1,
+     "Xanomeline Low Dose": 1
+    },
+    "dropped": [],
+    "warnings": [],
+    "notes": [],
+    "rows": []
+   }
+  },
+  {
+   "name": "Analyze_GroupDifference",
+   "args": {
+    "strValueCol": "y",
+    "strGroupCol": "x",
+    "strMethod": "anova",
+    "bPairwise": false
+   },
+   "rows": 207,
+   "value": {
+    "status": "ok",
+    "reason": null,
+    "test": "anova",
+    "method": "One-way analysis of variance",
+    "estimates": [
+     {
+      "name": "Mean",
+      "group": "Placebo",
+      "estimate": 17.24,
+      "lower": null,
+      "upper": null,
+      "level": null
+     },
+     {
+      "name": "Mean",
+      "group": "Xanomeline High Dose",
+      "estimate": 21.5074626865672,
+      "lower": null,
+      "upper": null,
+      "level": null
+     },
+     {
+      "name": "Mean",
+      "group": "Xanomeline Low Dose",
+      "estimate": 17.4,
+      "lower": null,
+      "upper": null,
+      "level": null
+     }
+    ],
+    "statistic": [
+     {
+      "name": "F",
+      "value": 5.46104741502294
+     },
+     {
+      "name": "num df",
+      "value": 2
+     },
+     {
+      "name": "denom df",
+      "value": 204
+     }
+    ],
+    "p_value": 0.00489337447349664,
+    "adjustment": "none",
+    "counts": {
+     "Placebo": 75,
+     "Xanomeline High Dose": 67,
+     "Xanomeline Low Dose": 65
+    },
+    "dropped": [],
+    "warnings": [],
+    "notes": [],
+    "rows": []
+   }
+  },
+  {
+   "name": "Analyze_GroupDifference",
+   "args": {
+    "strValueCol": "y",
+    "strGroupCol": "x",
+    "strMethod": "anova",
+    "bPairwise": false
+   },
+   "rows": 184,
+   "value": {
+    "status": "ok",
+    "reason": null,
+    "test": "anova",
+    "method": "One-way analysis of variance",
+    "estimates": [
+     {
+      "name": "Mean",
+      "group": "Placebo",
+      "estimate": 16.9859154929577,
+      "lower": null,
+      "upper": null,
+      "level": null
+     },
+     {
+      "name": "Mean",
+      "group": "Xanomeline High Dose",
+      "estimate": 20.9818181818182,
+      "lower": null,
+      "upper": null,
+      "level": null
+     },
+     {
+      "name": "Mean",
+      "group": "Xanomeline Low Dose",
+      "estimate": 17.0172413793103,
+      "lower": null,
+      "upper": null,
+      "level": null
+     }
+    ],
+    "statistic": [
+     {
+      "name": "F",
+      "value": 3.36789418692642
+     },
+     {
+      "name": "num df",
+      "value": 2
+     },
+     {
+      "name": "denom df",
+      "value": 181
+     }
+    ],
+    "p_value": 0.0366354154920035,
+    "adjustment": "none",
+    "counts": {
+     "Placebo": 71,
+     "Xanomeline High Dose": 55,
+     "Xanomeline Low Dose": 58
+    },
+    "dropped": [],
+    "warnings": [],
+    "notes": [],
+    "rows": []
+   }
+  },
+  {
+   "name": "Analyze_GroupDifference",
+   "args": {
+    "strValueCol": "y",
+    "strGroupCol": "x",
+    "strMethod": "anova",
+    "bPairwise": false
+   },
+   "rows": 3,
+   "value": {
+    "status": "too_small",
+    "reason": "Not computed: Xanomeline High Dose has 1; Xanomeline Low Dose has 2. The minimum group size is 5.",
+    "test": "anova",
+    "method": null,
+    "estimates": [],
+    "statistic": [],
+    "p_value": null,
+    "adjustment": "none",
+    "counts": {
+     "Xanomeline High Dose": 1,
+     "Xanomeline Low Dose": 2
+    },
+    "dropped": [],
+    "warnings": [],
+    "notes": [],
+    "rows": []
+   }
+  },
+  {
+   "name": "Analyze_GroupDifference",
+   "args": {
+    "strValueCol": "y",
+    "strGroupCol": "x",
+    "strMethod": "anova",
+    "bPairwise": false
+   },
+   "rows": 176,
+   "value": {
+    "status": "ok",
+    "reason": null,
+    "test": "anova",
+    "method": "One-way analysis of variance",
+    "estimates": [
+     {
+      "name": "Mean",
+      "group": "Placebo",
+      "estimate": 16.9285714285714,
+      "lower": null,
+      "upper": null,
+      "level": null
+     },
+     {
+      "name": "Mean",
+      "group": "Xanomeline High Dose",
+      "estimate": 23.3846153846154,
+      "lower": null,
+      "upper": null,
+      "level": null
+     },
+     {
+      "name": "Mean",
+      "group": "Xanomeline Low Dose",
+      "estimate": 18.0185185185185,
+      "lower": null,
+      "upper": null,
+      "level": null
+     }
+    ],
+    "statistic": [
+     {
+      "name": "F",
+      "value": 4.47262394545128
+     },
+     {
+      "name": "num df",
+      "value": 2
+     },
+     {
+      "name": "denom df",
+      "value": 173
+     }
+    ],
+    "p_value": 0.0127677949322804,
+    "adjustment": "none",
+    "counts": {
+     "Placebo": 70,
+     "Xanomeline High Dose": 52,
+     "Xanomeline Low Dose": 54
+    },
+    "dropped": [],
+    "warnings": [],
+    "notes": [],
+    "rows": []
+   }
+  },
+  {
+   "name": "Analyze_GroupDifference",
+   "args": {
+    "strValueCol": "y",
+    "strGroupCol": "x",
+    "strMethod": "anova",
+    "bPairwise": false
+   },
+   "rows": 2,
+   "value": {
+    "status": "too_small",
+    "reason": "Not computed: Placebo has 1; Xanomeline High Dose has 1. The minimum group size is 5.",
+    "test": "anova",
+    "method": null,
+    "estimates": [],
+    "statistic": [],
+    "p_value": null,
+    "adjustment": "none",
+    "counts": {
+     "Placebo": 1,
+     "Xanomeline High Dose": 1
+    },
+    "dropped": [],
+    "warnings": [],
+    "notes": [],
+    "rows": []
+   }
+  },
+  {
+   "name": "Analyze_GroupDifference",
+   "args": {
+    "strValueCol": "y",
+    "strGroupCol": "x",
+    "strMethod": "anova",
+    "bPairwise": false
+   },
+   "rows": 148,
+   "value": {
+    "status": "ok",
+    "reason": null,
+    "test": "anova",
+    "method": "One-way analysis of variance",
+    "estimates": [
+     {
+      "name": "Mean",
+      "group": "Placebo",
+      "estimate": 18.1363636363636,
+      "lower": null,
+      "upper": null,
+      "level": null
+     },
+     {
+      "name": "Mean",
+      "group": "Xanomeline High Dose",
+      "estimate": 21.047619047619,
+      "lower": null,
+      "upper": null,
+      "level": null
+     },
+     {
+      "name": "Mean",
+      "group": "Xanomeline Low Dose",
+      "estimate": 18.675,
+      "lower": null,
+      "upper": null,
+      "level": null
+     }
+    ],
+    "statistic": [
+     {
+      "name": "F",
+      "value": 0.973038107694924
+     },
+     {
+      "name": "num df",
+      "value": 2
+     },
+     {
+      "name": "denom df",
+      "value": 145
+     }
+    ],
+    "p_value": 0.380386943104017,
+    "adjustment": "none",
+    "counts": {
+     "Placebo": 66,
+     "Xanomeline High Dose": 42,
+     "Xanomeline Low Dose": 40
+    },
+    "dropped": [],
+    "warnings": [],
+    "notes": [],
+    "rows": []
+   }
+  },
+  {
+   "name": "Analyze_GroupDifference",
+   "args": {
+    "strValueCol": "y",
+    "strGroupCol": "x",
+    "strMethod": "anova",
+    "bPairwise": false
+   },
+   "rows": 132,
+   "value": {
+    "status": "ok",
+    "reason": null,
+    "test": "anova",
+    "method": "One-way analysis of variance",
+    "estimates": [
+     {
+      "name": "Mean",
+      "group": "Placebo",
+      "estimate": 17.089552238806,
+      "lower": null,
+      "upper": null,
+      "level": null
+     },
+     {
+      "name": "Mean",
+      "group": "Xanomeline High Dose",
+      "estimate": 20.030303030303,
+      "lower": null,
+      "upper": null,
+      "level": null
+     },
+     {
+      "name": "Mean",
+      "group": "Xanomeline Low Dose",
+      "estimate": 17.03125,
+      "lower": null,
+      "upper": null,
+      "level": null
+     }
+    ],
+    "statistic": [
+     {
+      "name": "F",
+      "value": 1.79943488304654
+     },
+     {
+      "name": "num df",
+      "value": 2
+     },
+     {
+      "name": "denom df",
+      "value": 129
+     }
+    ],
+    "p_value": 0.169518763884345,
+    "adjustment": "none",
+    "counts": {
+     "Placebo": 67,
+     "Xanomeline High Dose": 33,
+     "Xanomeline Low Dose": 32
+    },
+    "dropped": [],
+    "warnings": [],
+    "notes": [],
+    "rows": []
+   }
+  },
+  {
+   "name": "Analyze_GroupDifference",
+   "args": {
+    "strValueCol": "y",
+    "strGroupCol": "x",
+    "strMethod": "anova",
+    "bPairwise": false
+   },
+   "rows": 116,
+   "value": {
+    "status": "ok",
+    "reason": null,
+    "test": "anova",
+    "method": "One-way analysis of variance",
+    "estimates": [
+     {
+      "name": "Mean",
+      "group": "Placebo",
+      "estimate": 16.2622950819672,
+      "lower": null,
+      "upper": null,
+      "level": null
+     },
+     {
+      "name": "Mean",
+      "group": "Xanomeline High Dose",
+      "estimate": 19.9310344827586,
+      "lower": null,
+      "upper": null,
+      "level": null
+     },
+     {
+      "name": "Mean",
+      "group": "Xanomeline Low Dose",
+      "estimate": 16.9230769230769,
+      "lower": null,
+      "upper": null,
+      "level": null
+     }
+    ],
+    "statistic": [
+     {
+      "name": "F",
+      "value": 3.07141162620848
+     },
+     {
+      "name": "num df",
+      "value": 2
+     },
+     {
+      "name": "denom df",
+      "value": 113
+     }
+    ],
+    "p_value": 0.0502454148562088,
+    "adjustment": "none",
+    "counts": {
+     "Placebo": 61,
+     "Xanomeline High Dose": 29,
+     "Xanomeline Low Dose": 26
+    },
+    "dropped": [],
+    "warnings": [],
+    "notes": [],
+    "rows": []
+   }
+  },
+  {
+   "name": "Analyze_GroupDifference",
+   "args": {
+    "strValueCol": "y",
+    "strGroupCol": "x",
+    "strMethod": "anova",
+    "bPairwise": false
+   },
+   "rows": 109,
+   "value": {
+    "status": "ok",
+    "reason": null,
+    "test": "anova",
+    "method": "One-way analysis of variance",
+    "estimates": [
+     {
+      "name": "Mean",
+      "group": "Placebo",
+      "estimate": 17.859649122807,
+      "lower": null,
+      "upper": null,
+      "level": null
+     },
+     {
+      "name": "Mean",
+      "group": "Xanomeline High Dose",
+      "estimate": 21.2857142857143,
+      "lower": null,
+      "upper": null,
+      "level": null
+     },
+     {
+      "name": "Mean",
+      "group": "Xanomeline Low Dose",
+      "estimate": 18.625,
+      "lower": null,
+      "upper": null,
+      "level": null
+     }
+    ],
+    "statistic": [
+     {
+      "name": "F",
+      "value": 0.664253682324271
+     },
+     {
+      "name": "num df",
+      "value": 2
+     },
+     {
+      "name": "denom df",
+      "value": 106
+     }
+    ],
+    "p_value": 0.516786440878532,
+    "adjustment": "none",
+    "counts": {
+     "Placebo": 57,
+     "Xanomeline High Dose": 28,
+     "Xanomeline Low Dose": 24
+    },
+    "dropped": [],
+    "warnings": [],
+    "notes": [],
+    "rows": []
+   }
+  },
+  {
+   "name": "Analyze_GroupDifference",
+   "args": {
+    "strValueCol": "y",
+    "strGroupCol": "x",
+    "strMethod": "anova",
+    "bPairwise": false
+   },
+   "rows": 2,
+   "value": {
+    "status": "too_small",
+    "reason": "Not computed: Placebo has 1; Xanomeline Low Dose has 1. The minimum group size is 5.",
+    "test": "anova",
+    "method": null,
+    "estimates": [],
+    "statistic": [],
+    "p_value": null,
+    "adjustment": "none",
+    "counts": {
+     "Placebo": 1,
+     "Xanomeline Low Dose": 1
+    },
+    "dropped": [],
+    "warnings": [],
+    "notes": [],
+    "rows": []
+   }
+  },
+  {
+   "name": "Analyze_GroupDifference",
+   "args": {
+    "strValueCol": "y",
+    "strGroupCol": "x",
+    "strMethod": "anova",
+    "bPairwise": false
+   },
+   "rows": 96,
+   "value": {
+    "status": "ok",
+    "reason": null,
+    "test": "anova",
+    "method": "One-way analysis of variance",
+    "estimates": [
+     {
+      "name": "Mean",
+      "group": "Placebo",
+      "estimate": 15.82,
+      "lower": null,
+      "upper": null,
+      "level": null
+     },
+     {
+      "name": "Mean",
+      "group": "Xanomeline High Dose",
+      "estimate": 18.3333333333333,
+      "lower": null,
+      "upper": null,
+      "level": null
+     },
+     {
+      "name": "Mean",
+      "group": "Xanomeline Low Dose",
+      "estimate": 16.3181818181818,
+      "lower": null,
+      "upper": null,
+      "level": null
+     }
+    ],
+    "statistic": [
+     {
+      "name": "F",
+      "value": 1.39895426329416
+     },
+     {
+      "name": "num df",
+      "value": 2
+     },
+     {
+      "name": "denom df",
+      "value": 93
+     }
+    ],
+    "p_value": 0.252000744694633,
+    "adjustment": "none",
+    "counts": {
+     "Placebo": 50,
+     "Xanomeline High Dose": 24,
+     "Xanomeline Low Dose": 22
+    },
+    "dropped": [],
+    "warnings": [],
+    "notes": [],
+    "rows": []
+   }
+  }
+ ]
+}

@@ -288,6 +288,13 @@ publishDemoAppFonts(rootDir, demoAppDir);
 // served beside it; the vendored file itself stays bio.viz's, byte for byte.
 for (const library of APP_LIBRARIES) {
   writeFileSync(path.join(demoAppDir, library.file), withoutSourceMap(libraryScript(library)));
+  // The statistics file R in the browser is given when the reader starts R (#183).
+  if (library.r) {
+    copyFileSync(
+      path.join(rootDir, library.r.statistics.path),
+      path.join(demoAppDir, library.r.statistics.file)
+    );
+  }
 }
 const WORDS = [
   'no',

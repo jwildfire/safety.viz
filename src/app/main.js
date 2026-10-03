@@ -46,3 +46,8 @@ export function mount(target, options = {}) {
 }
 
 export { charts, DEMO_STUDIES };
+
+// R on request for a second library's charts (#183): the page that mounts the
+// app makes the connection settings and the control with these and passes them
+// in the library's entry.
+export { rOnRequest, rUnavailable } from './r-on-request.js';

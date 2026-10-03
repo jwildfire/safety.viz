@@ -49,6 +49,12 @@ function strip(element, settings) {
         (data.participants ? ` and ${data.participants.length} participants` : '');
       target.append(box);
     },
+    // New settings for the drawn chart, kept as they come: what a page hands
+    // a chart it does not want drawn again (#183).
+    setSettings(next) {
+      log.push({ event: 'setSettings', settings: { ...next } });
+      return this;
+    },
     destroy() {
       log.push({ event: 'destroy' });
       target.innerHTML = '';

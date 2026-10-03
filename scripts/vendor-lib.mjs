@@ -9,8 +9,9 @@
 // The record's shape is the one bio.viz keeps for its copy of safety.viz's
 // bundle, so the two repositories describe their copies of each other alike.
 //
-// Pure functions over bytes and a folder; scripts/vendor-bio-viz.mjs is the
-// command line that fetches the bytes.
+// Pure functions over bytes and a folder; scripts/vendor-cli.mjs is the
+// command line that fetches the bytes, run by scripts/vendor-bio-viz.mjs and
+// scripts/vendor-statistics.mjs (#183).
 
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
@@ -31,6 +32,21 @@ export const BIO_VIZ = {
   repository: 'https://github.com/jwildfire/bio.viz',
   directory: 'site/vendor/bio.viz',
   files: [{ file: 'bio.viz.js', source: 'dist/bio.viz-{version}/bio.viz.js' }]
+};
+
+/**
+ * gsm.bio's statistics functions: one file of R that defines every Analyze_*
+ * function bio.viz's charts ask for, written to stand alone with base R. When
+ * the reader starts R in the demo app (#183), R in the browser is given this
+ * file; the desktop-R script that writes the app's expected results sources the
+ * same copy. It is never edited here.
+ */
+export const GSM_BIO_STATISTICS = {
+  name: 'gsm.bio statistics functions',
+  label: 'statistics',
+  repository: 'https://github.com/jwildfire/gsm.bio',
+  directory: 'site/vendor/gsm.bio',
+  files: [{ file: 'statistics.R', source: 'inst/statistics/statistics.R' }]
 };
 
 /**

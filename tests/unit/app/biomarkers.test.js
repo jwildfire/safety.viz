@@ -16,6 +16,7 @@ import {
 } from '../../../scripts/vendor-lib.mjs';
 import {
   APP_LIBRARIES,
+  FILE_PITCH,
   librariesExpression,
   libraryManifest,
   libraryScript
@@ -129,7 +130,8 @@ describe('the single file with the biomarker charts', () => {
     expect(app).toBeGreaterThan(-1);
     expect(library).toBeGreaterThan(app);
     expect(html).toContain(
-      `window.__safetyVizApp = SafetyVizApp.mount('#app', { libraries: ${librariesExpression([bioViz])} });`
+      // The single file cannot start R (#183): its biomarker charts are told so.
+      `window.__safetyVizApp = SafetyVizApp.mount('#app', { libraries: ${librariesExpression([bioViz], { r: 'unavailable' })}, pitch: ${JSON.stringify(FILE_PITCH)} });`
     );
     expect(html).not.toContain('sourceMappingURL');
     expect(html).not.toMatch(/<script[^>]*\ssrc=/i);
