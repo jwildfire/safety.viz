@@ -40,12 +40,17 @@ export const APP_LIBRARIES = [
   }
 ];
 
-/** What the hosted app's footer says it does with a study (#183; amended at @jwildfire's word, 2026-10-02). */
+/**
+ * What the hosted app's footer says happens to the data a reader loads (#196;
+ * @jwildfire, 2026-10-03): the files are read here and never uploaded, and
+ * starting R downloads R, not the data. APP-LOAD-014 and APP-LOAD-026 hold it.
+ */
 export const HOSTED_PITCH =
-  'The study’s data never leaves this browser. No request leaves the page unless you start R.';
+  'Files you load are read in this browser and never uploaded. Starting R downloads R from webr.r-wasm.org; your data stays in the browser, and R runs here.';
 
-/** What the single file's footer says. */
-export const FILE_PITCH = 'Everything runs in this browser, and this file loads nothing.';
+/** What the single file's footer says (#196). */
+export const FILE_PITCH =
+  'This file loads nothing; files you add are read here and never leave this computer.';
 
 /** What a statistics line says in the single file, which cannot start R. */
 export const FILE_NO_R =

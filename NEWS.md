@@ -6,9 +6,11 @@ functionality-first account of what a user can now do. The GitHub release publis
 from the section here when the release-candidate PR (dev -> main) merges and is tagged.
 -->
 
-# safety.viz v1.10.0 (Upcoming)
+# safety.viz v1.9.1 (Upcoming)
 
-_Nothing merged yet._
+## Also in this release
+
+- **The demo app says what happens to your data.** Its footer reads: "Files you load are read in this browser and never uploaded. Starting R downloads R from webr.r-wasm.org; your data stays in the browser, and R runs here." The single file's reads: "This file loads nothing; files you add are read here and never leave this computer." A browser test holds that, once a file is chosen, the page asks only its own host for the statistics file and webr.r-wasm.org for R, with no body, no query and no socket. [#196](https://github.com/jwildfire/safety.viz/issues/196)
 
 # safety.viz v1.9.0
 

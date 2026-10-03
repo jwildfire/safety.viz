@@ -135,18 +135,15 @@ describe('requirements-lib: one row per requirement ID across the matrices (#193
     ]);
   });
 
-  it('finds none in the repository’s matrices but the ones known before the check (safety.viz#195)', () => {
+  it('finds none in the repository’s matrices, and none is known to have two (safety.viz#195)', () => {
     const dir = new URL('../../../requirements/', import.meta.url);
     const matrices = readdirSync(dir)
       .filter((file) => file.endsWith('.md') && file !== 'README.md')
       .map((file) => ({ file, markdown: readFileSync(new URL(file, dir), 'utf8') }));
     expect(matrices.length).toBeGreaterThan(10);
     expect(duplicateRequirementIds(matrices, { known: KNOWN_DUPLICATE_IDS })).toEqual([]);
-    expect(Object.keys(KNOWN_DUPLICATE_IDS)).toEqual([
-      'HEP-DISPLAY-006',
-      'TTE-FILT-001',
-      'TTE-FILT-002',
-      'TTE-FILT-003'
-    ]);
+    // The four that had two rows when the check came in are each one row now (#195).
+    expect(Object.keys(KNOWN_DUPLICATE_IDS)).toEqual([]);
+    expect(duplicateRequirementIds(matrices)).toEqual([]);
   });
 });
