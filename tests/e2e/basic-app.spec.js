@@ -36,6 +36,10 @@ const bioCharts = Object.entries(bioManifest.modules);
 // draw grids and lists of their own.
 const DRAWN = 'canvas:visible, table:visible, .bv-matrix-grid:visible, .bv-screen:visible';
 
+// A test that opens every chart in turn is given longer than the default: on
+// CI's runner, beside a test starting R, opening seventeen charts can pass 30 s.
+const MANY_CHARTS = 120000;
+
 const APP = 'window.__safetyVizApp';
 const item = (page, id) => page.locator(`.sva-item[data-view="${id}"]`);
 const tab = (page, domain) => page.locator(`.sva-tab[data-domain="${domain}"]`);
@@ -362,6 +366,8 @@ test.describe('demo app on the demo study', () => {
   test('APP-CHART-003: with every optional row cleared by hand, every chart still draws, reading none of them (#165)', async ({
     page
   }) => {
+    // It opens every chart, one after another: more than the default allows on a busy runner.
+    test.setTimeout(MANY_CHARTS);
     const errors = watchErrors(page);
     await openOnDemo(page);
     // On the data view, where a mapping edit redraws the table and no chart.
@@ -682,6 +688,8 @@ test.describe('demo app data panel on a renamed-column study', () => {
   test('APP-LOAD-007: with the mapping corrected by hand, every chart the study supports draws (#151)', async ({
     page
   }) => {
+    // It opens every chart, one after another: more than the default allows on a busy runner.
+    test.setTimeout(MANY_CHARTS);
     const errors = watchErrors(page);
     await openEmpty(page);
     await chooseFiles(page, STUDY);
@@ -709,6 +717,8 @@ test.describe('demo app data panel on a renamed-column study', () => {
   test('APP-LOAD-014: no network request leaves the page from the first file selection onward, unless the reader starts R (#151, #183)', async ({
     page
   }) => {
+    // It opens every chart, one after another: more than the default allows on a busy runner.
+    test.setTimeout(MANY_CHARTS);
     await openEmpty(page);
     const requests = [];
     page.on('request', (request) => requests.push(`${request.method()} ${request.url()}`));
@@ -894,6 +904,8 @@ test.describe('demo app with the biomarker charts', () => {
   test('APP-BIO-006: with the labs and vitals file alone every biomarker chart draws, with no filters (#182)', async ({
     page
   }) => {
+    // It opens every chart, one after another: more than the default allows on a busy runner.
+    test.setTimeout(MANY_CHARTS);
     const errors = watchErrors(page);
     await openOnDemo(page);
     // On the demo study the participant file gives the group comparison its filters.
@@ -917,6 +929,8 @@ test.describe('demo app with the biomarker charts', () => {
   test('APP-BIO-007: on the study with renamed columns, the one mapping readies both libraries’ charts, and each biomarker chart draws (#182)', async ({
     page
   }) => {
+    // It opens every chart, one after another: more than the default allows on a busy runner.
+    test.setTimeout(MANY_CHARTS);
     const errors = watchErrors(page);
     await openEmpty(page);
     await chooseFiles(page, STUDY);
@@ -1022,6 +1036,8 @@ test.describe('demo app with R on request', () => {
   test('APP-R-006: before the control is pressed, no chart of either library asks R’s hosts for anything, and each biomarker chart’s statistics line says statistics need R and what that downloads (#183)', async ({
     page
   }) => {
+    // It opens every chart, one after another: more than the default allows on a busy runner.
+    test.setTimeout(MANY_CHARTS);
     const errors = watchErrors(page);
     const requests = [];
     page.on('request', (request) => requests.push(request.url()));
@@ -1368,6 +1384,8 @@ test.describe('demo app as one file, offline', () => {
     page,
     context
   }) => {
+    // It opens every chart, one after another: more than the default allows on a busy runner.
+    test.setTimeout(MANY_CHARTS);
     const errors = watchErrors(page);
     await context.setOffline(true);
     await page.goto(SINGLE_FILE.href);
