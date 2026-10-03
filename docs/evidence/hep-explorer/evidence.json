@@ -1,6 +1,6 @@
 {
   "module": "hep-explorer",
-  "generatedAt": "2026-10-03T14:21:54.733Z",
+  "generatedAt": "2026-10-03T18:45:31.804Z",
   "environment": {
     "os": "darwin 23.6.0",
     "node": "v24.14.0",
@@ -306,7 +306,7 @@
       "screenshots": []
     },
     {
-      "test": "APP-LOAD-026: loading a study and starting R send no request that carries the study’s data: no request has a body, and no address carries a value from the study (#196)",
+      "test": "APP-LOAD-026: loading a study and starting R send no request that carries the study’s data: from the first file chosen, every request is a GET or HEAD with no body and no query, to the page’s own host for the statistics file only or to webr.r-wasm.org for R, no address names a participant, and no socket is opened (#196)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-LOAD-026"],
@@ -4060,6 +4060,30 @@
       "status": "pass",
       "requirementIds": ["PPRF-HEP-001"],
       "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "every recorded requirement ID is on its module’s evidence page (#195) holds for every module’s committed evidence, with the gaps known before the check (#206)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [195, 206],
+      "screenshots": []
+    },
+    {
+      "test": "every recorded requirement ID is on its module’s evidence page (#195) names a module’s recorded ID that no coverage row lists, and ignores other modules’ IDs",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [195],
+      "screenshots": []
+    },
+    {
+      "test": "every recorded requirement ID is on its module’s evidence page (#195) passes a known gap while it is one, and says so once it is listed",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [195],
       "screenshots": []
     },
     {
