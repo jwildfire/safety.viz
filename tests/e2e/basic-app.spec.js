@@ -805,7 +805,12 @@ const sideAction = (page, name) => page.locator(`.sva-side [data-action="${name}
 // from its vendored bundle, handed in through the second-library seam. No R is
 // on the page in this task, so each chart draws and its statistics line says
 // statistics are unavailable. The sentence is bio.viz's own.
-const NO_R = 'Statistics are unavailable: no R is attached to this chart.';
+// Since R on request (#183) the hosted app hands the charts a connection that
+// waits for the reader, so until R is started each line says statistics need
+// R and what starting it downloads (APP-R-006).
+const NO_R =
+  'Statistics need R. Start R to compute them: it downloads about 13 MB, once, from ' +
+  'webr.r-wasm.org, and the study’s data stays in this browser.';
 
 test.describe('demo app with the biomarker charts', () => {
   test.beforeAll(() => {
@@ -837,9 +842,9 @@ test.describe('demo app with the biomarker charts', () => {
   for (const [module, entry] of bioCharts) {
     test(`APP-BIO-005: ${entry.title} draws on the demo study with no console error, and ${
       module === 'group-comparison'
-        ? 'opens on an overview that prints no test; with a biomarker chosen, its lines say statistics are unavailable'
-        : 'its statistics line says statistics are unavailable'
-    } (#182)`, async ({ page }) => {
+        ? 'opens on an overview that prints no test; with a biomarker chosen, its lines say statistics need R until R is started'
+        : 'its statistics line says statistics need R until R is started'
+    } (#182, #183)`, async ({ page }) => {
       const errors = watchErrors(page);
       await openOnDemo(page);
       await openChart(page, module);
@@ -964,9 +969,7 @@ test.describe('demo app with the biomarker charts', () => {
 // The comparison with desktop R reads tests/fixtures/app-statistics/, written
 // from the app by scripts/derive-app-statistics.mjs and scripts/app-statistics.R.
 const R_HOST = /webr\.r-wasm\.org|statistics\.R/;
-const NEED_R =
-  'Statistics need R. Start R to compute them: it downloads about 13 MB, once, from ' +
-  'webr.r-wasm.org, and the study’s data stays in this browser.';
+const NEED_R = NO_R;
 const expectedStatistics = JSON.parse(
   readFileSync(new URL('./../fixtures/app-statistics/expected.json', import.meta.url), 'utf8')
 );
