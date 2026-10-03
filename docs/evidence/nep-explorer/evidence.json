@@ -1,6 +1,6 @@
 {
   "module": "nep-explorer",
-  "generatedAt": "2026-10-03T03:51:57.772Z",
+  "generatedAt": "2026-10-03T04:23:50.158Z",
   "environment": {
     "os": "darwin 23.6.0",
     "node": "v24.14.0",
@@ -50,7 +50,7 @@
       "screenshots": []
     },
     {
-      "test": "APP-BIO-005: Group comparison draws on the demo study with no console error, and its statistics line says statistics are unavailable (#182)",
+      "test": "APP-BIO-005: Group comparison draws on the demo study with no console error, and opens on an overview that prints no test; with a biomarker chosen, its lines say statistics are unavailable (#182)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-BIO-005"],
@@ -82,7 +82,7 @@
       "screenshots": []
     },
     {
-      "test": "APP-BIO-012: the built demo page serves bio.viz’s vendored bundle beside the app byte for byte, lists the biomarker charts in their own tab and holds at a 390px viewport (#182)",
+      "test": "APP-BIO-012: the built demo page serves bio.viz’s vendored bundle beside the app, whole but for its source-map comment, lists the biomarker charts in their own tab and holds at a 390px viewport (#182)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-BIO-012"],
