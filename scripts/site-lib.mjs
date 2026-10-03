@@ -289,6 +289,170 @@ export function expandRequirementIds(cell) {
   return [...new Set(ids)];
 }
 
+/**
+ * Requirement IDs a module's own evidence records carried, but no row of its
+ * coverage doc listed, when the check below came in (#195): the evidence page
+ * did not show them. They are to be listed under safety.viz#206. Until then
+ * they are named here, so the check fails on any new gap, and on a known one
+ * once it is listed.
+ */
+export const KNOWN_UNLISTED_IDS = Object.freeze({
+  histogram: [
+    'SH-FUNC-004A',
+    'SH-FUNC-004B',
+    'SH-FUNC-004C',
+    'SH-FUNC-005A',
+    'SH-FUNC-005B',
+    'SH-FUNC-005C',
+    'SH-FUNC-005D',
+    'SH-FUNC-006',
+    'SH-FUNC-010',
+    'SH-FUNC-011',
+    'SH-FUNC-012',
+    'SH-OVW-001',
+    'SH-OVW-002',
+    'SH-OVW-003',
+    'SH-OVW-004',
+    'SH-OVW-005',
+    'SH-REG-020',
+    'SH-REG-024',
+    'SH-REG-025',
+    'SH-REG-026'
+  ],
+  'outlier-explorer': [
+    'SOE-API-003',
+    'SOE-FUNC-001',
+    'SOE-FUNC-002',
+    'SOE-FUNC-003',
+    'SOE-FUNC-010',
+    'SOE-FUNC-012',
+    'SOE-REG-001',
+    'SOE-REG-002',
+    'SOE-REG-003',
+    'SOE-REG-005',
+    'SOE-REG-006',
+    'SOE-REG-012',
+    'SOE-REG-013',
+    'SOE-REG-014',
+    'SOE-REG-016',
+    'SOE-REG-020',
+    'SOE-REG-025',
+    'SOE-REG-026',
+    'SOE-REG-027',
+    'SOE-REG-034',
+    'SOE-REG-050',
+    'SOE-REG-051',
+    'SOE-REG-052',
+    'SOE-REG-053'
+  ],
+  'delta-delta': ['SDD-FUNC-006'],
+  'hep-explorer': [
+    'HEP-ARM-001',
+    'HEP-ARM-002',
+    'HEP-ARM-008',
+    'HEP-CORE-001',
+    'HEP-CORE-002',
+    'HEP-CORE-003',
+    'HEP-CORE-004',
+    'HEP-CORE-005',
+    'HEP-CORE-006',
+    'HEP-CORE-007',
+    'HEP-CORE-008',
+    'HEP-CORE-009',
+    'HEP-CORE-010',
+    'HEP-CORE-011',
+    'HEP-CORE-012',
+    'HEP-CORE-013',
+    'HEP-CORE-014',
+    'HEP-CORE-015',
+    'HEP-CORE-016',
+    'HEP-CORE-017',
+    'HEP-CORE-018',
+    'HEP-CORE-019',
+    'HEP-CTRL-015',
+    'HEP-CTRL-016',
+    'HEP-DROP-001',
+    'HEP-DROP-002',
+    'HEP-DROP-003',
+    'HEP-IMPUTE-001',
+    'HEP-IMPUTE-002',
+    'HEP-IMPUTE-003',
+    'HEP-SELECT-004'
+  ],
+  'participant-profile': [
+    'PPRF-ACC-001',
+    'PPRF-AE-001',
+    'PPRF-AE-002',
+    'PPRF-AE-003',
+    'PPRF-AE-004',
+    'PPRF-AE-005',
+    'PPRF-AESUM-001',
+    'PPRF-AETL-001',
+    'PPRF-AETL-002',
+    'PPRF-AXIS-001',
+    'PPRF-EXP-001',
+    'PPRF-GATE-001',
+    'PPRF-HDR-003',
+    'PPRF-RAIL-002',
+    'PPRF-RAIL-005',
+    'PPRF-STEP-003'
+  ],
+  'ae-explorer': ['AE-CFG-009'],
+  'ae-timelines': [
+    'AET-API-003',
+    'AET-REG-002',
+    'AET-REG-003',
+    'AET-REG-004',
+    'AET-REG-008',
+    'AET-REG-012',
+    'AET-REG-013'
+  ],
+  'qt-explorer': ['QT-DATA-001', 'QT-OUT-005']
+});
+
+/**
+ * Requirement IDs a module's evidence page would leave out (#195): those its
+ * own records carry — the IDs with the module's prefix, the one most of its
+ * coverage rows use — that no row of its coverage doc lists. The page shows a
+ * record only through a row that lists one of its IDs, so a requirement whose
+ * ID no row lists drops off the page without a word.
+ * @param {{coverage: Object, records: Object[], known?: string[]}} options The parsed coverage doc, the module's evidence records, and the IDs known to be unlisted.
+ * @returns {string[]} One sentence per ID left out, and per known ID that is now listed or no longer recorded.
+ */
+export function unlistedRequirementIds({ coverage, records, known = [] }) {
+  const listed = new Set();
+  const prefixes = {};
+  for (const section of coverage.sections) {
+    for (const row of section.rows) {
+      for (const id of row.requirementIds) {
+        listed.add(id);
+        const prefix = id.split('-')[0];
+        prefixes[prefix] = (prefixes[prefix] || 0) + 1;
+      }
+    }
+  }
+  const [prefix] = Object.entries(prefixes).sort((a, b) => b[1] - a[1])[0] || [];
+  if (!prefix) return [];
+  const recorded = new Set(
+    records
+      .flatMap((record) => record.requirementIds || [])
+      .filter((id) => id.startsWith(`${prefix}-`))
+  );
+  const problems = [...recorded]
+    .filter((id) => !listed.has(id) && !known.includes(id))
+    .sort()
+    .map(
+      (id) =>
+        `${id} is recorded, but no row of the coverage doc lists it, so the evidence page does not show it.`
+    );
+  for (const id of known) {
+    if (listed.has(id)) problems.push(`${id} is listed now (#206): take it off the known gaps.`);
+    else if (!recorded.has(id))
+      problems.push(`${id} is no longer recorded (#206): take it off the known gaps.`);
+  }
+  return problems;
+}
+
 function parseTableRows(lines) {
   return lines
     .filter((line) => line.trim().startsWith('|') && !/^\|[\s\-|]+\|$/.test(line.trim()))
