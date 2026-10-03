@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>safety.viz demo app harness page with a second library</title>
+    <style>
+      body {
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <!--
+      Playwright harness page for the demo app with a second chart library
+      (#181): the app bundle that `npm run build:app` writes to build/app/, mounted
+      on the pilot demo study with the stand-in library (stand-in-library.js)
+      handed in beside safety.viz's own charts, as a host page hands in another
+      library. The stand-in's log of what its charts were given is exposed for
+      the tests to read.
+    -->
+    <div id="app"></div>
+    <script src="/build/app/safety.viz-app.js"></script>
+    <script type="module">
+      import standIn, { log } from './stand-in-library.js';
+
+      const studies = SafetyVizApp.DEMO_STUDIES.map((study) => ({
+        ...study,
+        base: `/${study.source}/`
+      }));
+      window.__standInLog = log;
+      window.__safetyVizApp = SafetyVizApp.mount('#app', {
+        demo: { base: '/site/data/', studies },
+        libraries: [standIn]
+      });
+    </script>
+  </body>
+</html>

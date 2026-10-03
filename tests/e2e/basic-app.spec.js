@@ -461,6 +461,122 @@ async function correct(page) {
   }
 }
 
+// A second chart library (#181, obot.roadmap#366): the harness page hands the
+// app the stand-in library (fixtures/stand-in-library.js) beside safety.viz's
+// own charts, on the pilot demo study. Its one drawing chart takes named
+// tables and refuses a null setting; its other entry names a factory the
+// library does not have.
+test.describe('demo app with a second chart library', () => {
+  test.beforeAll(() => {
+    execSync('npm run build:app', { stdio: 'inherit', cwd: new URL('../..', import.meta.url) });
+  });
+
+  async function openWithLibrary(page) {
+    await page.goto('/tests/e2e/fixtures/basic-app-library.html');
+    await page.waitForFunction(() => window.__safetyVizApp);
+    await page.evaluate(`${APP}.ready`);
+  }
+  const standInLog = (page) => page.evaluate(() => JSON.parse(JSON.stringify(window.__standInLog)));
+
+  test('APP-LIB-015: on the demo study the library’s charts have their own tab with a status each, after the three domains, and the count includes them (#181)', async ({
+    page
+  }) => {
+    const errors = watchErrors(page);
+    await openWithLibrary(page);
+    await expect(page.locator('.sva-tab .sva-tab-title')).toHaveText([
+      'Labs and vitals',
+      'ECG',
+      'Adverse events',
+      'Stand-in charts'
+    ]);
+    await expect(tab(page, 'stand-in').locator('.sva-tab-count')).toHaveText('1 of 2');
+    await expect(page.locator('.sva-count')).toHaveText(
+      '14 of 15 charts supported by the loaded data'
+    );
+    await tab(page, 'stand-in').click();
+    await expect(item(page, 'stand-in-strip').locator('.sva-tag')).toHaveText('ready');
+    await expect(item(page, 'stand-in-absent').locator('.sva-tag')).toHaveText('not loaded');
+    // The thirteen safety charts are listed as before, each ready.
+    await expect(page.locator('.sva-group:not([data-group="stand-in"]) .sva-item')).toHaveCount(13);
+    await expect(
+      page.locator('.sva-group:not([data-group="stand-in"]) .sva-tag.sva-ready')
+    ).toHaveCount(13);
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-LIB-016: its chart is mounted with its named tables built from the loaded files, an unmapped optional setting left out, and removed when a safety chart is opened (#181)', async ({
+    page
+  }) => {
+    const errors = watchErrors(page);
+    await openWithLibrary(page);
+    await tab(page, 'stand-in').click();
+    await expect(item(page, 'stand-in-strip')).toHaveAttribute('aria-current', 'page');
+    await expect(page.locator('.sva-chart .stand-in-strip')).toHaveAttribute(
+      'data-tables',
+      'results,participants'
+    );
+    const [init] = await standInLog(page);
+    const counts = await page.evaluate(() => ({
+      results: window.__safetyVizApp.state.files.bds.rows.length,
+      participants: window.__safetyVizApp.state.files.subject.rows.length
+    }));
+    expect(init).toMatchObject({
+      event: 'init',
+      tables: ['results', 'participants'],
+      rows: counts
+    });
+    // The demo labs file has no study day: day_col is unmapped, and left out, not null.
+    expect(init.settings).toEqual({
+      id_col: 'USUBJID',
+      measure_col: 'TEST',
+      value_col: 'STRESN',
+      visit_col: 'VISIT',
+      group_col: 'ARM'
+    });
+    // Back to a safety chart: the stand-in is destroyed and the histogram draws.
+    await tab(page, 'bds').click();
+    await item(page, 'histogram').click();
+    await expect(page.locator('.stand-in-strip')).toHaveCount(0);
+    expect((await standInLog(page)).at(-1)).toEqual({ event: 'destroy' });
+    await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-LIB-017: with the labs file alone its chart still draws, handed only the table it needs (#181)', async ({
+    page
+  }) => {
+    const errors = watchErrors(page);
+    await openWithLibrary(page);
+    await page.evaluate(async () => {
+      const text = await fetch('/site/data/adbds.csv').then((response) => response.text());
+      window.__safetyVizApp.loadFiles([{ name: 'adbds.csv', text }]);
+      window.__safetyVizApp.select('stand-in-strip');
+    });
+    await expect(page.locator('.sva-chart .stand-in-strip')).toHaveAttribute(
+      'data-tables',
+      'results'
+    );
+    expect((await standInLog(page)).at(-1)).toMatchObject({ event: 'init', tables: ['results'] });
+    // Its optional participant table's group setting has no file, so it is not passed either.
+    expect((await standInLog(page)).at(-1).settings).not.toHaveProperty('group_col');
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-LIB-018: a chart whose factory the library does not have reads "not loaded" in words, and nothing throws (#181)', async ({
+    page
+  }) => {
+    const errors = watchErrors(page);
+    await openWithLibrary(page);
+    await tab(page, 'stand-in').click();
+    await item(page, 'stand-in-absent').click();
+    await expect(page.locator('.sva-message')).toHaveText(
+      'The stand-in library on this page has no chart called absent, so this chart cannot be drawn.'
+    );
+    await expect(page.locator('.sva-chart')).toHaveCount(0);
+    expect(errors).toEqual([]);
+  });
+});
+
 test.describe('demo app data panel on a renamed-column study', () => {
   test.beforeAll(() => {
     execSync('npm run build:app', { stdio: 'inherit', cwd: new URL('../..', import.meta.url) });
