@@ -40107,7 +40107,7 @@ function patientJourneyExplorer(element = "body", settings = {}) {
 // src/data/portfolio.json
 var portfolio_default = {
   $schema: "./schema/portfolio.json",
-  version: 1,
+  version: 2,
   description: "The standard domain set a study supplies to safety.viz, and what every chart module reads from it. Column names are the ADaM-shaped defaults the modules already expect; each setting is the key in the module\u2019s own data schema (src/data/schema/<module>.json), with the column it defaults to and whether that schema requires it. A test holds the two in agreement.",
   domains: {
     subject: {

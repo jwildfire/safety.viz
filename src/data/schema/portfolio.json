@@ -2,21 +2,21 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/jwildfire/safety.viz/main/src/data/schema/portfolio.json",
   "title": "safety.viz portfolio manifest",
-  "description": "The shape of src/data/portfolio.json: the standard domain set a study supplies, and for every chart module the domains it reads and the column each of its settings defaults to. Unlike its neighbours in this directory, this is not a chart's data contract; it describes the manifest that sits across all of them.",
+  "description": "The shape of src/data/portfolio.json, and of any chart library's chart list in the same format: the standard domain set a study supplies, and for every chart the domains it reads and the column each of its settings defaults to. Unlike its neighbours in this directory, this is not a chart's data contract; it describes the manifest that sits across all of them. Version 2 adds what lets a second chart library list its charts beside safety.viz's: an entry's library, its group, the named tables its init takes, and whether an unmapped setting is left out. A version-1 document is a version-2 document that uses none of them.",
   "type": "object",
-  "required": ["version", "description", "domains", "modules"],
+  "required": ["version", "description", "modules"],
   "additionalProperties": false,
   "properties": {
     "$schema": { "type": "string" },
     "version": {
       "type": "integer",
-      "minimum": 1,
-      "description": "Manifest format version; raised when the shape below changes."
+      "enum": [1, 2],
+      "description": "Manifest format version; raised when the shape below changes. Version 2 adds library, group, tables and unmappedSettings to an entry, and the groups map."
     },
     "description": { "type": "string", "minLength": 1 },
     "domains": {
       "type": "object",
-      "description": "The standard domain set, keyed by domain id.",
+      "description": "The standard domain set, keyed by domain id. Required in version 1; in version 2 a library's chart list may leave it out, and its charts read the standard set of the app that lists them.",
       "required": ["subject", "ae", "bds", "eg"],
       "additionalProperties": false,
       "properties": {
@@ -26,14 +26,62 @@
         "eg": { "$ref": "#/$defs/domain" }
       }
     },
+    "groups": {
+      "type": "object",
+      "description": "Version 2. Groups of charts other than the standard domains, keyed by group id: the label the app lists them under and where among such groups they come. A chart joins one with its entry's group.",
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9-]*$",
+        "not": { "enum": ["subject", "ae", "bds", "eg", "other"] }
+      },
+      "additionalProperties": {
+        "type": "object",
+        "required": ["label", "order"],
+        "additionalProperties": false,
+        "properties": {
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The group's name on its tab."
+          },
+          "order": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Where the group comes among the declared groups, lowest first; the standard domains' groups always come first."
+          }
+        }
+      }
+    },
     "modules": {
       "type": "object",
-      "description": "Every chart module, keyed by its module name (the name of its data schema file).",
+      "description": "Every chart, keyed by its module name (for safety.viz, the name of its data schema file).",
       "minProperties": 1,
       "propertyNames": { "pattern": "^[a-z][a-z0-9-]*$" },
       "additionalProperties": { "$ref": "#/$defs/module" }
     }
   },
+  "allOf": [
+    {
+      "if": { "properties": { "version": { "const": 1 } }, "required": ["version"] },
+      "then": {
+        "required": ["domains"],
+        "not": { "required": ["groups"] },
+        "properties": {
+          "modules": {
+            "additionalProperties": {
+              "not": {
+                "anyOf": [
+                  { "required": ["library"] },
+                  { "required": ["group"] },
+                  { "required": ["tables"] },
+                  { "required": ["unmappedSettings"] }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
   "$defs": {
     "domainId": { "enum": ["subject", "ae", "bds", "eg"] },
     "domain": {
@@ -69,12 +117,22 @@
       "required": ["export", "title", "domains", "settings"],
       "additionalProperties": false,
       "properties": {
+        "library": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9.-]*$",
+          "description": "Version 2. The chart library the chart comes from, as the app was handed it: safety.viz when left out of safety.viz's own manifest, and the library a chart list was handed in with when left out of another's."
+        },
         "export": {
           "type": "string",
           "pattern": "^[a-z][A-Za-z0-9]*$",
-          "description": "The name the module is exported under from src/main.js."
+          "description": "The name the chart's factory is exported under in its library's chart collection (for safety.viz, src/main.js)."
         },
         "title": { "type": "string", "minLength": 1 },
+        "group": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "Version 2. The group the chart is listed under: a key of the manifest's groups, or a standard domain id. Left out, a chart is listed under the first domain it reads."
+        },
         "domains": {
           "type": "array",
           "description": "The standard domains the module cannot draw without. Empty only for a module that reads none of them.",
@@ -93,6 +151,28 @@
           "items": { "type": "string", "minLength": 1 },
           "minItems": 1,
           "uniqueItems": true
+        },
+        "tables": {
+          "type": "object",
+          "description": "Version 2. The named tables the chart's init takes, when it takes an object of tables rather than one domain's rows: each read from one standard domain, and required or not. An optional table with no file is left out of the object. The required tables' domains are the entry's domains, and the optional ones' its optionalDomains.",
+          "minProperties": 1,
+          "propertyNames": { "pattern": "^[A-Za-z][A-Za-z0-9_]*$" },
+          "additionalProperties": {
+            "type": "object",
+            "required": ["domain", "required"],
+            "additionalProperties": false,
+            "properties": {
+              "domain": { "$ref": "#/$defs/domainId" },
+              "required": {
+                "type": "boolean",
+                "description": "Whether the chart cannot draw without the table."
+              }
+            }
+          }
+        },
+        "unmappedSettings": {
+          "enum": ["null", "omit"],
+          "description": "Version 2. What the chart is passed for a setting with nothing mapped: null, meaning no column, as when this is left out; or nothing at all (omit), for a chart that refuses a null column setting."
         },
         "settings": {
           "type": "object",

@@ -287,6 +287,21 @@ describe('site generator: domains page (#139)', () => {
     expect(html).not.toMatch(/<(strong|b)\b/);
   });
 
+  it('APP-LIB-014: the page says the manifest is format version 2, and describes each field version 2 adds (#181)', () => {
+    const format = html.match(/<section class="manifest-format" id="format">[\s\S]*?<\/section>/);
+    expect(format, 'the page has no format section').not.toBeNull();
+    expect(manifest.version).toBe(2);
+    expect(format[0]).toContain('format version 2');
+    for (const field of ['library', 'group', 'groups', 'tables', 'unmappedSettings']) {
+      expect(format[0]).toContain(`<code>${field}</code>`);
+    }
+    expect(html).toContain('<a href="#format">format version 2</a>');
+    // The version is read from the manifest, not written into the page.
+    expect(renderDomainsPage({ manifest: { ...manifest, version: 7 }, config })).toContain(
+      'format version 7'
+    );
+  });
+
   it('PF-SITE-016: wide tables sit in the scrolling container so the page never scrolls sideways (#139)', () => {
     const tables = html.match(/<table\b/g);
     expect(tables).toHaveLength(domains.length + onStandardSet.length);

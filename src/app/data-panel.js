@@ -468,7 +468,7 @@ export function renderDataPanel(container, app) {
   main.append(drop);
 
   const domains = Object.keys(manifest.domains).filter((domain) => state.files[domain]);
-  const needed = neededBy(manifest);
+  const needed = neededBy(manifest, app.problems);
   const rows = Object.fromEntries(
     domains.map((domain) => [domain, mappingRows(domain, app, needed)])
   );
