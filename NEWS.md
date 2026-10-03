@@ -24,11 +24,11 @@ A patch release on v1.9.0. The demo app says plainly what happens to the data yo
 ## Also in this release
 
 - **Each requirement ID names one requirement, and every evidence page shows its own.** Four IDs had two rows each: the participant R-Ratio is now HEP-DISPLAY-007, and the time-to-event shared filter contract is TTE-FILT-005 to 008 (TTE-FILT-004 is retired). A check fails on any ID with two rows, and another on any ID a module records that its evidence page does not show; 102 such older gaps are listed, to be filled under [#206](https://github.com/jwildfire/safety.viz/issues/206). [#195](https://github.com/jwildfire/safety.viz/issues/195), PR [#200](https://github.com/jwildfire/safety.viz/pull/200)
-- **Release bundles.** `dist/safety.viz-1.9.0/` is restored to the bytes v1.9.0 shipped, and `dist/safety.viz-1.9.1/` is the release bundle. The single file is SIZE bytes. [#204](https://github.com/jwildfire/safety.viz/issues/204), PR [#205](https://github.com/jwildfire/safety.viz/pull/205)
+- **Release bundles.** `dist/safety.viz-1.9.0/` is restored to the bytes v1.9.0 shipped, and `dist/safety.viz-1.9.1/` is the release bundle. The single file is 1,169,968 bytes. [#204](https://github.com/jwildfire/safety.viz/issues/204), PR [#205](https://github.com/jwildfire/safety.viz/pull/205)
 
 ## Tests and provenance
 
-COUNTS
+2,185 unit and 374 browser tests pass.
 
 # safety.viz v1.9.0
 
