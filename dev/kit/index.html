@@ -15,7 +15,7 @@
     <header class="site-header">
       <a class="site-name" href="../index.html">
         safety.viz
-        <span class="site-version">v1.9.0</span>
+        <span class="site-version">v1.9.1</span>
       </a>
       <nav class="site-nav" aria-label="Primary">
         <a class="nav-app" href="../demo/index.html">Demo app</a>
@@ -50,15 +50,15 @@
 <div class="api-layout"><nav class="api-toc" aria-label="On this page"><h2>On this page</h2><ul><li><a href="#overview">Overview</a></li><li><a href="#loading">Loading it</a></li><li><a href="#contract">What is promised</a></li><li><a href="#members">Members</a><ul><li><a href="#chart">Chart.js</a></li><li><a href="#shell">Shell and controls</a></li><li><a href="#filters">Filters</a></li><li><a href="#axis-limits">Axis limits</a></li><li><a href="#listing">Record listing</a></li><li><a href="#participant-rail">Participant rail</a></li><li><a href="#box-drawing">Box drawing</a></li><li><a href="#measure-list">Measure list</a></li><li><a href="#kaplan-meier">Kaplan–Meier estimator</a></li></ul></li><li><a href="#not-in-the-kit">Not in the kit</a></li></ul></nav><div class="api-body"><section id="overview"><h2>Overview</h2><p>The shared parts every safety.viz chart is built from, exported so a second chart library on the same page builds from them instead of copying them. Each member is the same function the charts themselves call. The object is flat and frozen.</p></section>
 <h2 id="loading">Loading it beside another library</h2>
 <p>The kit is part of the safety.viz bundle, so there is nothing else to load. Put safety.viz first, then the library that builds on it:</p>
-<pre><code>&lt;script src=&quot;dist/safety.viz-1.9.0/safety.viz.js&quot;&gt;&lt;/script&gt;
+<pre><code>&lt;script src=&quot;dist/safety.viz-1.9.1/safety.viz.js&quot;&gt;&lt;/script&gt;
 &lt;script src=&quot;your-library.js&quot;&gt;&lt;/script&gt;
 &lt;script&gt;
   const { renderShell, renderFilterControl, Chart } = SafetyViz.kit;
 &lt;/script&gt;</code></pre>
 <p>Or, from the ES module bundle:</p>
-<pre><code>import { kit } from &#39;./dist/safety.viz-1.9.0/safety.viz.esm.js&#39;;
+<pre><code>import { kit } from &#39;./dist/safety.viz-1.9.1/safety.viz.esm.js&#39;;
 const { renderShell, renderFilterControl, Chart } = kit;</code></pre>
-<ul><li>One file is needed: <code>dist/safety.viz-1.9.0/safety.viz.js</code> for a script tag, or <code>safety.viz.esm.js</code> from the same folder for an import. The <code>.map</code> file beside each is its source map and is optional.</li><li>Use one bundle on a page, not both. The script-tag bundle and the ES module bundle are separate copies, each with its own Chart.js.</li><li>Take everything from that one copy. A library that brings its own Chart.js, or its own copy of these functions, draws charts and controls that drift from safety.viz&#39;s.</li><li><code>kit.Chart</code> is Chart.js 4.5.1 with what the charts registered on it: the <code>bar</code>, <code>line</code>, <code>scatter</code> controllers, the <code>bar</code>, <code>line</code>, <code>point</code> elements, the <code>category</code>, <code>linear</code>, <code>logarithmic</code> scales, and the <code>legend</code>, <code>title</code>, <code>tooltip</code> plugins. A chart of one of those types needs nothing more; anything else is registered on the same constructor with <code>kit.Chart.register()</code>.</li><li>A working page built this way is the fixture the browser tests drive, <a href="https://github.com/jwildfire/safety.viz/blob/HEAD/tests/e2e/fixtures/kit.html">tests/e2e/fixtures/kit.html</a>: a sidebar, a filter, a bar chart, a record listing and the participant rail, from the kit alone.</li></ul>
+<ul><li>One file is needed: <code>dist/safety.viz-1.9.1/safety.viz.js</code> for a script tag, or <code>safety.viz.esm.js</code> from the same folder for an import. The <code>.map</code> file beside each is its source map and is optional.</li><li>Use one bundle on a page, not both. The script-tag bundle and the ES module bundle are separate copies, each with its own Chart.js.</li><li>Take everything from that one copy. A library that brings its own Chart.js, or its own copy of these functions, draws charts and controls that drift from safety.viz&#39;s.</li><li><code>kit.Chart</code> is Chart.js 4.5.1 with what the charts registered on it: the <code>bar</code>, <code>line</code>, <code>scatter</code> controllers, the <code>bar</code>, <code>line</code>, <code>point</code> elements, the <code>category</code>, <code>linear</code>, <code>logarithmic</code> scales, and the <code>legend</code>, <code>title</code>, <code>tooltip</code> plugins. A chart of one of those types needs nothing more; anything else is registered on the same constructor with <code>kit.Chart.register()</code>.</li><li>A working page built this way is the fixture the browser tests drive, <a href="https://github.com/jwildfire/safety.viz/blob/HEAD/tests/e2e/fixtures/kit.html">tests/e2e/fixtures/kit.html</a>: a sidebar, a filter, a bar chart, a record listing and the participant rail, from the kit alone.</li></ul>
 <h2 id="contract">What is promised</h2>
 <ul><li>The kit is public surface from v1.9.0: a change to any member, whether its name, its signature, what it returns or the elements and class names it produces, is a breaking change, and the release notes say so.</li><li>Every member is the function the charts in the bundle call, not a copy or a wrapper, so a page built from the kit behaves as the charts do. Unit tests hold each member to its module&#39;s export, and browser tests build a page from the committed bundle and the kit alone.</li><li>The kit is flat and frozen: members sit directly on it under the names below, and a library on the page cannot replace, add or remove one.</li><li>Adding a member is not a breaking change.</li><li><code>kmEstimate</code> follows the Time-to-Event Explorer&#39;s Experimental status, which holds until an external clinical review confirms its Kaplan–Meier implementation (<a href="https://github.com/jwildfire/obot.roadmap/issues/182">obot.roadmap#182</a>): its estimates, intervals and at-risk counts may change after that review without counting as a breaking change. Its name and its arguments are kept.</li><li>The other 35 members are public surface in full.</li></ul>
 <h2 id="members">Members</h2>
@@ -77,7 +77,7 @@ const { renderShell, renderFilterControl, Chart } = kit;</code></pre>
 </div></main>
     <footer class="site-footer">
       <p>
-        safety.viz v1.9.0 — clinical safety graphics on one modern charting stack, migrated
+        safety.viz v1.9.1 — clinical safety graphics on one modern charting stack, migrated
         from the <a href="https://github.com/SafetyGraphics">safetyGraphics</a> ecosystem originally
         built by <a href="https://github.com/RhoInc">Rho, Inc.</a> (<a href="../about.html"
           >credits</a
