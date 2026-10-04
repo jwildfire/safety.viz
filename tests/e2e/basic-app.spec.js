@@ -1214,15 +1214,27 @@ test.describe('demo app with R on request', () => {
     // marked by whether a file had been chosen yet.
     let chosen = false;
     const requests = [];
-    const record = (request) =>
-      requests.push({
+    // Every header as sent, cookies included: request.headers() leaves out
+    // the ones the network stack adds, such as `cookie` (#211 review). A
+    // request whose headers cannot be read fails the header check.
+    const reading = [];
+    const record = (request) => {
+      const entry = {
         method: request.method(),
         url: request.url(),
         body: request.postData(),
-        headers: request.headers(),
+        headers: null,
         type: request.resourceType(),
         chosen
-      });
+      };
+      requests.push(entry);
+      reading.push(
+        request
+          .allHeaders()
+          .then((headers) => (entry.headers = headers))
+          .catch((error) => (entry.headers = { unreadable: error.message }))
+      );
+    };
     context.on('request', record);
     const sockets = [];
     page.on('websocket', (socket) => sockets.push(socket.url()));
@@ -1253,6 +1265,7 @@ test.describe('demo app with R on request', () => {
       )
       .toBe(true);
     context.off('request', record);
+    await Promise.all(reading);
     // The page's own document is the one request the browser made with nothing
     // set by a script: the headers it carries are the browser's own.
     const page0 = requests.find((request) => request.type === 'document');
@@ -1269,21 +1282,37 @@ test.describe('demo app with R on request', () => {
     expect(after.filter((request) => new URL(request.url).search !== '')).toEqual([]);
     // Nothing carried in a header: each one is a header the browser sets, with
     // the value it gave the page's own document, or, for the referrer and
-    // origin, the page's own address. A script's header, or a script's value
-    // in a browser header, fails it.
+    // origin, the page's own address. A script's header, a script's value in a
+    // browser header, or any cookie fails it. The network stack's own headers
+    // (host, connection, accept-encoding, sec-fetch-*, HTTP/2's pseudo-headers)
+    // cannot be set by a script, and must still name the request they are on.
+    const fetchMetadata = /^[a-z-]+$|^\?[01]$/;
     const browserSet = {
+      host: (value, request) => value === new URL(request.url).host,
+      ':authority': (value, request) => value === new URL(request.url).host,
+      ':scheme': (value, request) => `${value}:` === new URL(request.url).protocol,
+      ':method': (value, request) => value === request.method,
+      ':path': (value, request) => value === new URL(request.url).pathname,
+      priority: (value) => /^u=[0-7](, i)?$/.test(value),
+      connection: (value) => value === 'keep-alive',
+      'accept-encoding': (value) => value === page0.headers['accept-encoding'],
       'user-agent': (value) => value === page0.headers['user-agent'],
       'accept-language': (value) => value === page0.headers['accept-language'],
       'sec-ch-ua': (value) => value === page0.headers['sec-ch-ua'],
       'sec-ch-ua-mobile': (value) => value === page0.headers['sec-ch-ua-mobile'],
       'sec-ch-ua-platform': (value) => value === page0.headers['sec-ch-ua-platform'],
       accept: (value) => value === '*/*',
+      cookie: () => false,
       origin: (value) => value === own,
       referer: (value) => ['', `${own}/`, page0.url].includes(value)
     };
+    // Fetch metadata (sec-fetch-site, -mode, -dest, -user, -storage-access, …)
+    // is the browser's, and holds only a short token.
+    const allowed = (name) =>
+      browserSet[name] || (name.startsWith('sec-fetch-') && ((value) => fetchMetadata.test(value)));
     const headed = after.filter((request) =>
       Object.entries(request.headers).some(
-        ([name, value]) => !browserSet[name] || !browserSet[name](value)
+        ([name, value]) => !allowed(name) || !allowed(name)(value, request)
       )
     );
     expect(headed).toEqual([]);

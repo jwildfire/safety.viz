@@ -14,7 +14,7 @@ A patch release on v1.9.0. The demo app says plainly what happens to the data yo
 
 ## What's new
 
-- **The demo app says what happens to your data.** The hosted app's footer says your files are never uploaded and starting R downloads only R, and the single file's footer reads "This file loads nothing; files you add are read here and never leave this computer." [#196](https://github.com/jwildfire/safety.viz/issues/196), PR [#201](https://github.com/jwildfire/safety.viz/pull/201)
+- **The demo app says what happens to your data.** The hosted app's footer says your files are never uploaded and starting R downloads R, not your data, and the single file's footer reads "This file loads nothing; files you add are read here and never leave this computer." [#196](https://github.com/jwildfire/safety.viz/issues/196), PR [#201](https://github.com/jwildfire/safety.viz/pull/201)
 - **A library chart named `data` is refused.** The app keeps the name "data" for its data view: such a chart is left out, and the page says why. [#197](https://github.com/jwildfire/safety.viz/issues/197), PR [#203](https://github.com/jwildfire/safety.viz/pull/203)
 
 ## Deprecated
@@ -29,7 +29,7 @@ A patch release on v1.9.0. The demo app says plainly what happens to the data yo
 
 ## Tests and provenance
 
-2,185 unit and 374 browser tests pass. A browser test holds the demo app's footer to its word: from the first file chosen until the page goes quiet after the last action, it asks only its own host for the statistics file and webr.r-wasm.org for the files webR fetches, with no body, query or added header, and opens no socket. Each leak the release-candidate review found it would miss was put into the app and failed it. A check lists the 102 requirement IDs a module records but its evidence page does not show, to be filled under [#206](https://github.com/jwildfire/safety.viz/issues/206). [#196](https://github.com/jwildfire/safety.viz/issues/196), [#210](https://github.com/jwildfire/safety.viz/issues/210), PR [#211](https://github.com/jwildfire/safety.viz/pull/211)
+2,185 unit and 374 browser tests pass. A browser test holds the demo app's footer to its word: from the first file chosen until the page goes quiet after the last action, it asks only its own host for the statistics file and webr.r-wasm.org for the files webR fetches, with no body, query, cookie or added header, and opens no socket. Each leak the release-candidate review found it would miss was put into the app and failed it. A check lists the 102 requirement IDs a module records but its evidence page does not show, to be filled under [#206](https://github.com/jwildfire/safety.viz/issues/206). [#196](https://github.com/jwildfire/safety.viz/issues/196), [#210](https://github.com/jwildfire/safety.viz/issues/210), PR [#211](https://github.com/jwildfire/safety.viz/pull/211)
 
 # safety.viz v1.9.0
 
