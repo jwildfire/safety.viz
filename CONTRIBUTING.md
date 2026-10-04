@@ -126,6 +126,18 @@ a visual-regression assertion; on macOS it writes a preview under
 `npm run evidence:update` on the canonical environment and commits
 `docs/evidence/` back to the branch.
 
+That run rewrites only the baselines whose capture now differs beyond the 2%
+comparison limit. A visible change that stays under the limit leaves its
+baseline stale. To rewrite named baselines whatever the difference, give the
+workflow's optional `refresh` input a Playwright `--grep` pattern: after the
+default run it reruns the matching tests with `--update-snapshots=all`, then
+rebuilds `evidence.json`. Every other baseline is left as the default run left
+it.
+
+```bash
+gh workflow run evidence-update.yml -R jwildfire/safety.viz --ref <branch> -f refresh='SH-CTRL-006'
+```
+
 Besides `module` and `records`, each `evidence.json` carries provenance in
 three top-level keys — `generatedAt` (ISO timestamp), `environment`
 (`{ os, node, playwright, chromium }` versions), and `run` (`{ id, url }` of

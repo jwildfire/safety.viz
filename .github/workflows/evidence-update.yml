@@ -5,9 +5,26 @@ name: Update evidence baselines
 # canonical rendering environment) and commits the refreshed screenshots +
 # evidence.json back to the selected branch. Run it from the Actions tab
 # against a feature branch whenever captures change.
+#
+# A default run rewrites only the baselines whose capture now differs beyond
+# the comparison limit (Playwright's --update-snapshots "changed" mode). A
+# change that stays under the limit leaves its baseline stale. For those,
+# `refresh` takes a Playwright --grep pattern: after the default run, the
+# tests it matches are run again with --update-snapshots=all, so only their
+# baselines are rewritten whatever the difference, and evidence.json is then
+# rebuilt (#204). Left empty, the run is exactly the default one.
+#
+#   gh workflow run evidence-update.yml -R jwildfire/safety.viz \
+#     --ref <branch> -f refresh='SH-CTRL-006'
 
 on:
   workflow_dispatch:
+    inputs:
+      refresh:
+        description: 'Optional Playwright --grep pattern. The baselines of the tests it matches are force-rewritten (--update-snapshots=all) after the default run. Leave empty for the default run.'
+        required: false
+        default: ''
+        type: string
 
 permissions:
   contents: write
@@ -40,6 +57,19 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Regenerate baselines and evidence.json
+        run: npm run evidence:update
+
+      # Only when `refresh` is given: force-rewrite the matching tests'
+      # baselines, then rebuild evidence.json so its records match them. The
+      # pattern is passed through the environment, never into the script text.
+      - name: Force-refresh the named baselines
+        if: ${{ inputs.refresh != '' }}
+        env:
+          REFRESH: ${{ inputs.refresh }}
+        run: npx playwright test --grep "$REFRESH" --update-snapshots=all
+
+      - name: Rebuild evidence.json after the forced refresh
+        if: ${{ inputs.refresh != '' }}
         run: npm run evidence:update
 
       - name: Commit refreshed evidence
