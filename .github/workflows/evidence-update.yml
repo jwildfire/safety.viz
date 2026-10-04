@@ -23,12 +23,17 @@ name: Update evidence baselines
 # the branch and, optionally, the pattern:
 #
 #   gh api repos/jwildfire/safety.viz/dispatches -f event_type=evidence-update \
-#     -F 'client_payload[ref]=<branch>' -F 'client_payload[refresh]=SH-CTRL-006'
+#     -f 'client_payload[ref]=<branch>' -f 'client_payload[refresh]=SH-CTRL-006'
 #
 # A repository_dispatch run always uses this file as it is on the default
-# branch, so the event works once this version is on main. It refuses the
-# integration and release branches (dev, main, stable), since evidence reaches
-# them through a pull request, and a branch that does not exist.
+# branch, which is dev, so the event works once this version is on dev.
+#
+# Either way the run first checks its target, and refuses: the integration and
+# release branches (dev, main, stable), since evidence reaches them through a
+# pull request; any name starting with refs/; a name git does not accept as a
+# branch; a branch that does not exist, or whose name the branches API does
+# not return unchanged; and, from the Actions tab, a run started on a tag, so
+# no push can create a branch named like the tag (#210).
 
 on:
   workflow_dispatch:
@@ -60,22 +65,30 @@ jobs:
     name: Refresh baselines and evidence.json
     runs-on: ubuntu-latest
     steps:
+      # Runs for both events, before anything is checked out or pushed.
       - name: Check the target branch
-        if: ${{ github.event_name == 'repository_dispatch' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ] && [ "$GITHUB_REF" != "refs/heads/${TARGET_REF}" ]; then
+            echo "::error::Start this run on a feature branch, not '${GITHUB_REF}'."
+            exit 1
+          fi
           case "$TARGET_REF" in
-            ''|main|stable|dev)
-              echo "::error::The event must name a feature branch in client_payload.ref, not '${TARGET_REF}'."
+            ''|main|stable|dev|refs/*)
+              echo "::error::The run must name a feature branch, not '${TARGET_REF}'."
               exit 1 ;;
           esac
           if ! git check-ref-format --branch "$TARGET_REF" > /dev/null; then
             echo "::error::'${TARGET_REF}' is not a branch name."
             exit 1
           fi
-          if ! gh api "repos/${GITHUB_REPOSITORY}/branches/${TARGET_REF}" --silent; then
+          if ! FOUND=$(gh api "repos/${GITHUB_REPOSITORY}/branches/${TARGET_REF}" --jq .name); then
             echo "::error::There is no branch '${TARGET_REF}' in ${GITHUB_REPOSITORY}."
+            exit 1
+          fi
+          if [ "$FOUND" != "$TARGET_REF" ]; then
+            echo "::error::The branches API answered '${FOUND}' for '${TARGET_REF}'; name the branch exactly."
             exit 1
           fi
           echo "Refreshing evidence on ${TARGET_REF} (pattern: '${REFRESH}')."

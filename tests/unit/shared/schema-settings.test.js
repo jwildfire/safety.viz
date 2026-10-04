@@ -32,26 +32,28 @@ const validSettings = (schema, settings) => {
   return validate.errors || [];
 };
 
-// Matrix prefix, module — the twelve charts that build filter controls.
+// Requirement ID of the shared filter contract, module — the twelve charts that
+// build filter controls. It is FILT-001 everywhere but time-to-event, whose
+// FILT-001 is the endpoint composer; its shared contract is TTE-FILT-005 (#210).
 const FILTER_CHARTS = [
-  ['SH', 'histogram'],
-  ['SROT', 'results-over-time'],
-  ['HWF', 'hep-waterfall'],
-  ['QT', 'qt-explorer'],
-  ['AE', 'ae-explorer'],
-  ['NEP', 'nep-explorer'],
-  ['AET', 'ae-timelines'],
-  ['SOE', 'outlier-explorer'],
-  ['HEP', 'hep-explorer'],
-  ['SSP', 'shift-plot'],
-  ['SDD', 'delta-delta'],
-  ['TTE', 'time-to-event']
+  ['SH-FILT-001', 'histogram'],
+  ['SROT-FILT-001', 'results-over-time'],
+  ['HWF-FILT-001', 'hep-waterfall'],
+  ['QT-FILT-001', 'qt-explorer'],
+  ['AE-FILT-001', 'ae-explorer'],
+  ['NEP-FILT-001', 'nep-explorer'],
+  ['AET-FILT-001', 'ae-timelines'],
+  ['SOE-FILT-001', 'outlier-explorer'],
+  ['HEP-FILT-001', 'hep-explorer'],
+  ['SSP-FILT-001', 'shift-plot'],
+  ['SDD-FILT-001', 'delta-delta'],
+  ['TTE-FILT-005', 'time-to-event']
 ];
 
 describe('schemas: a filter spec', () => {
   it.each(FILTER_CHARTS)(
-    '%s-FILT-001: the %s schema lists start, all and multiple on a filter spec (#166)',
-    (_prefix, module) => {
+    '%s: the %s schema lists start, all and multiple on a filter spec (#166)',
+    (_id, module) => {
       const schema = schemaOf(module);
       const filters = resolve(schema, settingsOf(schema).filters);
       const spec = (filters.items.anyOf || filters.items.oneOf).find(
