@@ -734,6 +734,10 @@ test.describe('demo app data panel on a renamed-column study', () => {
     await item(page, 'data').click();
     // blob: and data: URLs are the page talking to itself, not the network.
     expect(requests.filter((entry) => !/^GET (blob|data):/.test(entry))).toEqual([]);
+    // And the footer says so, in these words (#196).
+    await expect(page.locator('.sva-footer .sva-pitch')).toHaveText(
+      'Files you load are read in this browser and never uploaded. Starting R downloads R from webr.r-wasm.org; your data stays in the browser, and R runs here.'
+    );
   });
 
   test('APP-LOAD-008: the mapping downloads, and dropping it back with the files restores it (#151)', async ({
@@ -1192,6 +1196,177 @@ test.describe('demo app with R on request', () => {
     const lines = await page.evaluate(() => window.__lines);
     expect(lines.length).toBeGreaterThan(0);
     expect(lines.filter((line) => /R is starting/.test(line))).toEqual([]);
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-LOAD-026: loading a study and starting R send nothing beyond what R and its statistics file need: from the first file chosen until five quiet seconds after the last action, every request the page and its workers make is a GET or HEAD with no body, no query and no header the browser did not set itself, for the statistics file on the page’s own host or for one of the files webR asks for on webr.r-wasm.org; no address names a participant, and neither the page nor its workers open a socket (#196)', async ({
+    page,
+    context
+  }) => {
+    test.setTimeout(240000);
+    // Tightened after the v1.9.1 release-candidate review (#210): a custom
+    // header to the page's own host, a worker's fetch of an unlisted path on
+    // webr.r-wasm.org, and a request sent after the last action each passed the
+    // earlier version. Each was put into src/app/ and fails this one, as do a
+    // WebSocket opened by the page and one opened by a worker.
+    const errors = watchErrors(page);
+    // Every request the page and its workers make, R's download included,
+    // marked by whether a file had been chosen yet.
+    let chosen = false;
+    const requests = [];
+    // Every header as sent, cookies included: request.headers() leaves out
+    // the ones the network stack adds, such as `cookie` (#211 review). A
+    // request whose headers cannot be read fails the header check.
+    const reading = [];
+    const record = (request) => {
+      const entry = {
+        method: request.method(),
+        url: request.url(),
+        body: request.postData(),
+        headers: null,
+        type: request.resourceType(),
+        chosen
+      };
+      requests.push(entry);
+      reading.push(
+        request
+          .allHeaders()
+          .then((headers) => (entry.headers = headers))
+          .catch((error) => (entry.headers = { unreadable: error.message }))
+      );
+    };
+    context.on('request', record);
+    const sockets = [];
+    page.on('websocket', (socket) => sockets.push(socket.url()));
+    await openEmpty(page);
+    const own = new URL(page.url()).origin;
+    chosen = true;
+    await chooseFiles(page, STUDY);
+    await correct(page);
+    await openChart(page, expectedStatistics.chart);
+    await page.locator('.sva-action').click();
+    await expect(page.locator('.sva-action')).toHaveText('R started', { timeout: 150000 });
+    await biomarkerControl(page).selectOption({ index: 1 });
+    await expect(
+      page.locator('.sva-chart .bv-statistic').filter({ hasText: /p = / }).first()
+    ).toBeVisible({ timeout: 150000 });
+    // That was the last action. Keep listening after it until nothing has been
+    // asked for in five seconds (at most a minute), so a request sent late is
+    // still seen: the claim holds until then, not forever.
+    let quietSince = Date.now();
+    let seen = requests.length;
+    await expect
+      .poll(
+        () => {
+          if (requests.length !== seen) [seen, quietSince] = [requests.length, Date.now()];
+          return Date.now() - quietSince >= 5000;
+        },
+        { timeout: 60000, intervals: [250] }
+      )
+      .toBe(true);
+    context.off('request', record);
+    await Promise.all(reading);
+    // The page's own document is the one request the browser made with nothing
+    // set by a script: the headers it carries are the browser's own.
+    const page0 = requests.find((request) => request.type === 'document');
+    // R was asked for, and answered, in this browser.
+    expect(requests.some((request) => /webr\.r-wasm\.org/.test(request.url))).toBe(true);
+    // blob: and data: URLs are the page talking to itself, not the network.
+    const after = requests.filter(
+      (request) => request.chosen && !/^(blob|data):/.test(request.url)
+    );
+    expect(after.filter((request) => request.body)).toEqual([]);
+    // Only reads: webR also asks with HEAD whether a file is there.
+    expect(after.filter((request) => !['GET', 'HEAD'].includes(request.method))).toEqual([]);
+    // Nothing carried in a query, to any host.
+    expect(after.filter((request) => new URL(request.url).search !== '')).toEqual([]);
+    // Nothing carried in a header: each one is a header the browser sets, with
+    // the value it gave the page's own document, or, for the referrer and
+    // origin, the page's own address. A script's header, a script's value in a
+    // browser header, or any cookie fails it. The network stack's own headers
+    // (host, connection, accept-encoding, sec-fetch-*, HTTP/2's pseudo-headers)
+    // cannot be set by a script, and must still name the request they are on.
+    const fetchMetadata = /^[a-z-]+$|^\?[01]$/;
+    const browserSet = {
+      host: (value, request) => value === new URL(request.url).host,
+      ':authority': (value, request) => value === new URL(request.url).host,
+      ':scheme': (value, request) => `${value}:` === new URL(request.url).protocol,
+      ':method': (value, request) => value === request.method,
+      ':path': (value, request) => value === new URL(request.url).pathname,
+      priority: (value) => /^u=[0-7](, i)?$/.test(value),
+      connection: (value) => value === 'keep-alive',
+      'accept-encoding': (value) => value === page0.headers['accept-encoding'],
+      'user-agent': (value) => value === page0.headers['user-agent'],
+      'accept-language': (value) => value === page0.headers['accept-language'],
+      'sec-ch-ua': (value) => value === page0.headers['sec-ch-ua'],
+      'sec-ch-ua-mobile': (value) => value === page0.headers['sec-ch-ua-mobile'],
+      'sec-ch-ua-platform': (value) => value === page0.headers['sec-ch-ua-platform'],
+      accept: (value) => value === '*/*',
+      cookie: () => false,
+      origin: (value) => value === own,
+      referer: (value) => ['', `${own}/`, page0.url].includes(value)
+    };
+    // Fetch metadata (sec-fetch-site, -mode, -dest, -user, -storage-access, …)
+    // is the browser's, and holds only a short token.
+    const allowed = (name) =>
+      browserSet[name] || (name.startsWith('sec-fetch-') && ((value) => fetchMetadata.test(value)));
+    const headed = after.filter((request) =>
+      Object.entries(request.headers).some(
+        ([name, value]) => !allowed(name) || !allowed(name)(value, request)
+      )
+    );
+    expect(headed).toEqual([]);
+    // Only two places, and only the files each is asked for: the page's own
+    // host for the statistics file R is given, and R's public host for the
+    // files webR fetches as it starts (one version, and nothing else).
+    const ownAsked = after.filter((request) => new URL(request.url).origin === own);
+    expect([...new Set(ownAsked.map((request) => new URL(request.url).pathname))]).toEqual([
+      '/site/vendor/gsm.bio/statistics.R'
+    ]);
+    const webrAsked = after.filter(
+      (request) => new URL(request.url).origin === 'https://webr.r-wasm.org'
+    );
+    const versions = new Set(
+      webrAsked.map((request) => new URL(request.url).pathname.split('/')[1])
+    );
+    expect(versions.size).toBe(1);
+    const [version] = versions;
+    expect(version).toMatch(/^v\d+\.\d+\.\d+$/);
+    const webrFiles = [
+      ...new Set(
+        webrAsked.map(
+          (request) =>
+            `${request.method} ${new URL(request.url).pathname.slice(version.length + 2)}`
+        )
+      )
+    ].sort();
+    expect(webrFiles).toEqual([
+      'GET R.js',
+      'GET R.wasm',
+      'GET libRblas.so',
+      'GET libRlapack.so',
+      'GET webr-worker.js',
+      'GET webr.mjs',
+      'HEAD vfs/usr/lib/R/library/translations/DESCRIPTION'
+    ]);
+    expect(
+      after.filter(
+        (request) => ![own, 'https://webr.r-wasm.org'].includes(new URL(request.url).origin)
+      )
+    ).toEqual([]);
+    // No address names a participant of the study, written with or without its hyphens.
+    const subjects = readFileSync(new URL('./fixtures/app/dm.csv', import.meta.url), 'utf8')
+      .trim()
+      .split('\n')
+      .slice(1)
+      .map((line) => line.split(',')[0]);
+    expect(subjects.length).toBeGreaterThan(10);
+    const named = after.filter((request) => {
+      const url = decodeURIComponent(request.url);
+      return subjects.some((id) => url.includes(id) || url.includes(id.replace(/-/g, '')));
+    });
+    expect(named).toEqual([]);
+    expect(sockets).toEqual([]);
     expect(errors).toEqual([]);
   });
 

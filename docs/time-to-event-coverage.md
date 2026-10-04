@@ -84,7 +84,7 @@ than re-deriving expectations.
 | TTE-USER-005                               | TTE-USER-005                                           | #128  | `getPlugins.test.js` — event tooltip with the pointwise interval                                |
 | TTE-USER-006                               | TTE-USER-006                                           | #128  | `getPlugins.test.js` — censor tooltip with count and reasons                                    |
 | TTE-DEMO-002                               | TTE-DEMO-002                                           | #128  | `adsl.test.js` — EOSDY derivation rules plus the committed-file drift guard                     |
-| TTE-FILT-001..004 (shared filter contract) | TTE-FILT-001, TTE-FILT-002, TTE-FILT-003, TTE-FILT-004 | #166  | `../shared/filter-contract.test.js`                                                             |
+| TTE-FILT-005..008 (shared filter contract) | TTE-FILT-005, TTE-FILT-006, TTE-FILT-007, TTE-FILT-008 | #166  | `../shared/filter-contract.test.js`                                                             |
 | TTE-CTRL-001                               | TTE-CTRL-001                                           | #136  | `reset.test.js` — the reset control sits last, restores every control, and clears the selection |
 
 ## Known gaps, stated

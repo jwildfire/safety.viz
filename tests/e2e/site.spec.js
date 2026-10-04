@@ -120,7 +120,7 @@ test.describe('docs site', () => {
     await page.evaluate('window.__safetyVizApp.ready');
     await expect(page.locator('meta[name="description"]')).toHaveAttribute(
       'content',
-      /the page fetches nothing from any other host unless you start R/
+      /Files you load are read in your browser and never uploaded; starting R downloads R from webr\.r-wasm\.org/
     );
     await expect(page.locator('.sva-footer .sva-pitch')).toHaveText(HOSTED_PITCH);
     await page.locator('.sva-tab[data-domain="biomarkers"]').click();

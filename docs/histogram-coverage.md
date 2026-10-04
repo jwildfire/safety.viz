@@ -71,6 +71,7 @@ schemes appear:
 | SH-MEAS-001/002 (measures whitelist)      | SH-MEAS-001, SH-MEAS-002                           | #136  | `measure-list.test.js`                                 |
 | SH-FILT-001..004 (shared filter contract) | SH-FILT-001, SH-FILT-002, SH-FILT-003, SH-FILT-004 | #166  | `filters.test.js`, `../shared/filter-contract.test.js` |
 | SH-CTRL-009 (whole-chart reset)           | —                                                  | #136  | `reset.test.js`                                        |
+| SH-CHART-006/007 (deprecation notices)    | —                                                  | #188  | `deprecation.test.js`                                  |
 
 ## Railed participant profile (#99, PPRF-SH)
 

@@ -256,6 +256,9 @@ const CHARTS = [
   {
     name: 'time-to-event',
     prefix: 'TTE',
+    // TTE-FILT-001 to 003 are the endpoint composer's (#128), which came first;
+    // the shared contract's are TTE-FILT-005 to 008 (#195).
+    first: 5,
     create: (element, settings) => timeToEvent(element, settings),
     data: TTE_DATA,
     drawn: (instance) =>
@@ -313,7 +316,7 @@ const choose = (instance, value) => {
 };
 
 describe.each(CHARTS)('$name: the shared filter contract', (chart) => {
-  const id = (n) => `${chart.prefix}-FILT-00${n}`;
+  const id = (n) => `${chart.prefix}-FILT-${String(n - 1 + (chart.first || 1)).padStart(3, '0')}`;
   const create = (spec) =>
     chart.create(element, { filters: [{ value_col: 'SITE', label: 'Site', ...spec }] });
   const mount = (spec) => create(spec).init(chart.data);
