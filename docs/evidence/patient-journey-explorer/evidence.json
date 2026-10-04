@@ -1,6 +1,6 @@
 {
   "module": "patient-journey-explorer",
-  "generatedAt": "2026-10-04T00:07:52.667Z",
+  "generatedAt": "2026-10-04T10:48:22.898Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "37163938223",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37163938223"
+    "id": "37196191161",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37196191161"
   },
   "records": [
     {
