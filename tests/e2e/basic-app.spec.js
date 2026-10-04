@@ -734,6 +734,10 @@ test.describe('demo app data panel on a renamed-column study', () => {
     await item(page, 'data').click();
     // blob: and data: URLs are the page talking to itself, not the network.
     expect(requests.filter((entry) => !/^GET (blob|data):/.test(entry))).toEqual([]);
+    // And the footer says so, in these words (#196).
+    await expect(page.locator('.sva-footer .sva-pitch')).toHaveText(
+      'Files you load are read in this browser and never uploaded. Starting R downloads R from webr.r-wasm.org; your data stays in the browser, and R runs here.'
+    );
   });
 
   test('APP-LOAD-008: the mapping downloads, and dropping it back with the files restores it (#151)', async ({
@@ -1192,6 +1196,75 @@ test.describe('demo app with R on request', () => {
     const lines = await page.evaluate(() => window.__lines);
     expect(lines.length).toBeGreaterThan(0);
     expect(lines.filter((line) => /R is starting/.test(line))).toEqual([]);
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-LOAD-026: loading a study and starting R send no request that carries the study’s data: from the first file chosen, every request is a GET or HEAD with no body and no query, to the page’s own host for the statistics file only or to webr.r-wasm.org for R, no address names a participant, and no socket is opened (#196)', async ({
+    page,
+    context
+  }) => {
+    test.setTimeout(240000);
+    const errors = watchErrors(page);
+    // Every request the page and its workers make, R's download included,
+    // marked by whether a file had been chosen yet.
+    let chosen = false;
+    const requests = [];
+    context.on('request', (request) =>
+      requests.push({
+        method: request.method(),
+        url: request.url(),
+        body: request.postData(),
+        chosen
+      })
+    );
+    const sockets = [];
+    page.on('websocket', (socket) => sockets.push(socket.url()));
+    await openEmpty(page);
+    const own = new URL(page.url()).origin;
+    chosen = true;
+    await chooseFiles(page, STUDY);
+    await correct(page);
+    await openChart(page, expectedStatistics.chart);
+    await page.locator('.sva-action').click();
+    await expect(page.locator('.sva-action')).toHaveText('R started', { timeout: 150000 });
+    await biomarkerControl(page).selectOption({ index: 1 });
+    await expect(
+      page.locator('.sva-chart .bv-statistic').filter({ hasText: /p = / }).first()
+    ).toBeVisible({ timeout: 150000 });
+    // R was asked for, and answered, in this browser.
+    expect(requests.some((request) => /webr\.r-wasm\.org/.test(request.url))).toBe(true);
+    // blob: and data: URLs are the page talking to itself, not the network.
+    const after = requests.filter(
+      (request) => request.chosen && !/^(blob|data):/.test(request.url)
+    );
+    expect(after.filter((request) => request.body)).toEqual([]);
+    // Only reads: webR also asks with HEAD whether a file is there.
+    expect(after.filter((request) => !['GET', 'HEAD'].includes(request.method))).toEqual([]);
+    // Nothing carried in a query, to any host.
+    expect(after.filter((request) => new URL(request.url).search !== '')).toEqual([]);
+    // Only two places: the page's own host, for the statistics file R is
+    // given, and R's public host, for R's own files.
+    const elsewhere = after.filter((request) => {
+      const url = new URL(request.url);
+      if (url.origin === own) return url.pathname !== '/site/vendor/gsm.bio/statistics.R';
+      if (url.origin === 'https://webr.r-wasm.org')
+        return !/^\/v\d+\.\d+\.\d+\//.test(url.pathname);
+      return true;
+    });
+    expect(elsewhere).toEqual([]);
+    // No address names a participant of the study, written with or without its hyphens.
+    const subjects = readFileSync(new URL('./fixtures/app/dm.csv', import.meta.url), 'utf8')
+      .trim()
+      .split('\n')
+      .slice(1)
+      .map((line) => line.split(',')[0]);
+    expect(subjects.length).toBeGreaterThan(10);
+    const named = after.filter((request) => {
+      const url = decodeURIComponent(request.url);
+      return subjects.some((id) => url.includes(id) || url.includes(id.replace(/-/g, '')));
+    });
+    expect(named).toEqual([]);
+    expect(sockets).toEqual([]);
     expect(errors).toEqual([]);
   });
 

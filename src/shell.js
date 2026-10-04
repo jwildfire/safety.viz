@@ -221,6 +221,7 @@ const SHELL_STYLES = `
 .sv-annotation,.sv-main-annotation{font-size:.85rem;background:rgba(255,255,255,.92);border:1px solid #d8dee4;border-radius:6px;padding:.25rem .4rem}
 .sv-main-annotation{position:absolute;right:1.25rem;top:1.25rem;z-index:2}
 .sv-main-annotation:empty{display:none}
+.sv-deprecation{margin:.2rem 0 0;max-width:16rem;font-size:.75rem;line-height:1.3;color:#8a4600}
 .sv-info{text-decoration:none}
 .sv-hidden{display:none!important}
 .sv-view-list{display:flex;flex-direction:column;gap:.35rem}

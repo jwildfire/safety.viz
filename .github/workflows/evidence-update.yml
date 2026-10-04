@@ -5,15 +5,54 @@ name: Update evidence baselines
 # canonical rendering environment) and commits the refreshed screenshots +
 # evidence.json back to the selected branch. Run it from the Actions tab
 # against a feature branch whenever captures change.
+#
+# A default run rewrites only the baselines whose capture now differs beyond
+# the comparison limit (Playwright's --update-snapshots "changed" mode). A
+# change that stays under the limit leaves its baseline stale. For those,
+# `refresh` takes a Playwright --grep pattern: after the default run, the
+# tests it matches are run again with --update-snapshots=all, so only their
+# baselines are rewritten whatever the difference, and evidence.json is then
+# rebuilt (#204). Left empty, the run is exactly the default one.
+#
+#   gh workflow run evidence-update.yml -R jwildfire/safety.viz \
+#     --ref <branch> -f refresh='SH-CTRL-006'
+#
+# The obot app cannot start a workflow_dispatch run (it has no actions:write),
+# but it can send a repository_dispatch event, which needs only contents:write.
+# So the same run starts from an `evidence-update` event whose payload names
+# the branch and, optionally, the pattern:
+#
+#   gh api repos/jwildfire/safety.viz/dispatches -f event_type=evidence-update \
+#     -F 'client_payload[ref]=<branch>' -F 'client_payload[refresh]=SH-CTRL-006'
+#
+# A repository_dispatch run always uses this file as it is on the default
+# branch, so the event works once this version is on main. It refuses the
+# integration and release branches (dev, main, stable), since evidence reaches
+# them through a pull request, and a branch that does not exist.
 
 on:
   workflow_dispatch:
+    inputs:
+      refresh:
+        description: 'Optional Playwright --grep pattern. The baselines of the tests it matches are force-rewritten (--update-snapshots=all) after the default run. Leave empty for the default run.'
+        required: false
+        default: ''
+        type: string
+  repository_dispatch:
+    types: [evidence-update]
 
 permissions:
   contents: write
 
+# The branch and pattern come from the dispatch form or from the event's
+# payload, whichever started the run. They reach every script through the
+# environment, never into the script text.
+env:
+  TARGET_REF: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.ref || github.ref_name }}
+  REFRESH: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.refresh || inputs.refresh }}
+
 concurrency:
-  group: evidence-update-${{ github.ref }}
+  group: evidence-update-${{ github.event_name == 'repository_dispatch' && github.event.client_payload.ref || github.ref_name }}
   cancel-in-progress: false
 
 jobs:
@@ -21,8 +60,30 @@ jobs:
     name: Refresh baselines and evidence.json
     runs-on: ubuntu-latest
     steps:
+      - name: Check the target branch
+        if: ${{ github.event_name == 'repository_dispatch' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          case "$TARGET_REF" in
+            ''|main|stable|dev)
+              echo "::error::The event must name a feature branch in client_payload.ref, not '${TARGET_REF}'."
+              exit 1 ;;
+          esac
+          if ! git check-ref-format --branch "$TARGET_REF" > /dev/null; then
+            echo "::error::'${TARGET_REF}' is not a branch name."
+            exit 1
+          fi
+          if ! gh api "repos/${GITHUB_REPOSITORY}/branches/${TARGET_REF}" --silent; then
+            echo "::error::There is no branch '${TARGET_REF}' in ${GITHUB_REPOSITORY}."
+            exit 1
+          fi
+          echo "Refreshing evidence on ${TARGET_REF} (pattern: '${REFRESH}')."
+
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TARGET_REF }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -42,6 +103,17 @@ jobs:
       - name: Regenerate baselines and evidence.json
         run: npm run evidence:update
 
+      # Only when `refresh` is given: force-rewrite the matching tests'
+      # baselines, then rebuild evidence.json so its records match them. The
+      # pattern is passed through the environment, never into the script text.
+      - name: Force-refresh the named baselines
+        if: ${{ env.REFRESH != '' }}
+        run: npx playwright test --grep "$REFRESH" --update-snapshots=all
+
+      - name: Rebuild evidence.json after the forced refresh
+        if: ${{ env.REFRESH != '' }}
+        run: npm run evidence:update
+
       - name: Commit refreshed evidence
         run: |
           git config user.name "github-actions[bot]"
@@ -51,5 +123,5 @@ jobs:
             echo "Evidence already up to date — nothing to commit."
           else
             git commit -m "Update evidence baselines (canonical environment refresh)"
-            git push
+            git push origin "HEAD:refs/heads/${TARGET_REF}"
           fi

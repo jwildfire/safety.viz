@@ -6,9 +6,30 @@ functionality-first account of what a user can now do. The GitHub release publis
 from the section here when the release-candidate PR (dev -> main) merges and is tagged.
 -->
 
-# safety.viz v1.10.0 (Upcoming)
+# safety.viz v1.9.1 (Upcoming)
 
-_Nothing merged yet._
+**See it move:** the [annotated v1.9.0 demo](https://jwildfire.github.io/obot.roadmap/reports/sv-v1.9-demo/) has a note on this patch release.
+
+A patch release on v1.9.0. The demo app says plainly what happens to the data you load, the histogram's two JavaScript p-values are deprecated and say so on the chart, and a library chart can no longer take the data view's name. Nothing is removed.
+
+## What's new
+
+- **The demo app says what happens to your data.** Its footer reads: "Files you load are read in this browser and never uploaded. Starting R downloads R from webr.r-wasm.org; your data stays in the browser, and R runs here." The single file's reads: "This file loads nothing; files you add are read here and never leave this computer." A browser test holds that, once a file is chosen, the page asks only its own host for the statistics file and webr.r-wasm.org for R, with no body, no query and no socket. [#196](https://github.com/jwildfire/safety.viz/issues/196), PR [#201](https://github.com/jwildfire/safety.viz/pull/201)
+- **A library chart named `data` is refused.** The app keeps the name "data" for its data view: such a chart is left out, and the page says why. [#197](https://github.com/jwildfire/safety.viz/issues/197), PR [#203](https://github.com/jwildfire/safety.viz/pull/203)
+
+## Deprecated
+
+- **The histogram's `test_normality` and `compare_distributions` settings are deprecated, and a later release removes them together.** Each draws an approximate p-value computed in JavaScript, the normality screen and the group comparison, and safety.viz is to compute no statistical test there. Until they are removed they still work, and the chart and the console say each is deprecated. The histogram demo no longer turns them on. [#188](https://github.com/jwildfire/safety.viz/issues/188), PR [#202](https://github.com/jwildfire/safety.viz/pull/202)
+
+## Also in this release
+
+- **Each requirement ID names one requirement, and every evidence page shows its own.** Four IDs had two rows each: the participant R-Ratio is now HEP-DISPLAY-007, and the time-to-event shared filter contract is TTE-FILT-005 to 008 (TTE-FILT-004 is retired). A check fails on any ID with two rows, and another on any ID a module records that its evidence page does not show; 102 such older gaps are listed, to be filled under [#206](https://github.com/jwildfire/safety.viz/issues/206). [#195](https://github.com/jwildfire/safety.viz/issues/195), PR [#200](https://github.com/jwildfire/safety.viz/pull/200)
+- **Release bundles.** `dist/safety.viz-1.9.0/` is restored to the bytes v1.9.0 shipped, and `dist/safety.viz-1.9.1/` is the release bundle. The single file is 1,169,968 bytes. [#204](https://github.com/jwildfire/safety.viz/issues/204), PR [#205](https://github.com/jwildfire/safety.viz/pull/205)
+- **Evidence refreshes on request.** The evidence workflow's `refresh` input names tests whose baselines are rewritten whatever the difference, for a change too small for the comparison limit to catch ([#204](https://github.com/jwildfire/safety.viz/issues/204)). The workflow also starts from an `evidence-update` repository_dispatch event naming a feature branch, so a contributor without permission to run workflows can refresh one; it refuses `dev`, `main` and `stable`. [#207](https://github.com/jwildfire/safety.viz/issues/207), PR [#205](https://github.com/jwildfire/safety.viz/pull/205)
+
+## Tests and provenance
+
+2,185 unit and 374 browser tests pass.
 
 # safety.viz v1.9.0
 
