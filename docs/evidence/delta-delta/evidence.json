@@ -1,16 +1,13 @@
 {
   "module": "delta-delta",
-  "generatedAt": "2026-10-04T10:48:22.898Z",
+  "generatedAt": "2026-10-04T11:44:51.768Z",
   "environment": {
-    "os": "linux 6.17.0-1022-azure",
-    "node": "v22.23.3",
+    "os": "darwin 23.6.0",
+    "node": "v24.14.0",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
-  "run": {
-    "id": "37196191161",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37196191161"
-  },
+  "run": null,
   "records": [
     {
       "test": "a chart link navigates straight to that renderer demo (#71)",
@@ -309,7 +306,7 @@
       "screenshots": []
     },
     {
-      "test": "APP-LOAD-026: loading a study and starting R send no request that carries the study’s data: from the first file chosen, every request is a GET or HEAD with no body and no query, to the page’s own host for the statistics file only or to webr.r-wasm.org for R, no address names a participant, and no socket is opened (#196)",
+      "test": "APP-LOAD-026: loading a study and starting R send nothing beyond what R and its statistics file need: from the first file chosen until five quiet seconds after the last action, every request the page and its workers make is a GET or HEAD with no body, no query and no header the browser did not set itself, for the statistics file on the page’s own host or for one of the files webR asks for on webr.r-wasm.org; no address names a participant, and neither the page nor its workers open a socket (#196)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-LOAD-026"],
@@ -5241,10 +5238,10 @@
       "screenshots": []
     },
     {
-      "test": "schemas: a filter spec TTE-FILT-001: the time-to-event schema lists start, all and multiple on a filter spec (#166)",
+      "test": "schemas: a filter spec TTE-FILT-005: the time-to-event schema lists start, all and multiple on a filter spec (#166)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["TTE-FILT-001"],
+      "requirementIds": ["TTE-FILT-005"],
       "issueRefs": [166],
       "screenshots": []
     },
