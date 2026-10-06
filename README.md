@@ -71,6 +71,42 @@ library on the page builds from them instead of copying them. The
 [kit reference](https://jwildfire.github.io/safety.viz/kit/index.html) lists
 every member; a change to one is a breaking change.
 
+## Run the demo app on your own machine
+
+The [demo app](https://jwildfire.github.io/safety.viz/demo/) loads a study,
+checks how its columns map, and draws it in every chart. One script puts the
+same page on your own computer. You need [Node.js](https://nodejs.org) 22 or
+later and [git](https://git-scm.com/downloads).
+
+```sh
+curl -fsSLO https://raw.githubusercontent.com/jwildfire/safety.viz/main/scripts/install-demo.mjs
+node install-demo.mjs
+```
+
+The script checks for Node and git, clones the latest release into
+`./safety.viz`, installs it, builds the demo and opens it in your browser at an
+address it prints, `http://127.0.0.1:8642/` unless that port is busy. The
+download is about 45 MB and the whole run takes a minute or two.
+
+- **Stop and start.** Ctrl+C stops it. `cd safety.viz` and `npm run demo`
+  starts it again without the download.
+- **Options.** `--ref v1.9.2` installs that release rather than the latest,
+  `--dir <path>` installs somewhere else, `--port <number>` names the port and
+  `--no-open` leaves the browser alone. `node install-demo.mjs --help` lists
+  them.
+- **Already have a clone?** `npm ci`, then `npm run demo`.
+- **Your data stays with you.** The page is served to your own computer and to
+  nothing else, and files you load are read in your browser. The one thing it
+  asks the network for is R, from webr.r-wasm.org, and only when you press
+  Start R for the biomarker charts.
+- **Windows.** The script is plain Node and is written to run there, but it has
+  been run on macOS and Linux only so far. In Windows PowerShell write
+  `curl.exe` in place of `curl`.
+- **Nothing to install?** Download
+  [the single file](https://jwildfire.github.io/safety.viz/demo/safety.viz-app.html)
+  and open it: the same app in one HTML file that runs with no network. It
+  carries no demo study and cannot start R, so load your own files.
+
 ## Example data
 
 The demos and evidence reports run on

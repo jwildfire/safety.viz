@@ -6,6 +6,14 @@ functionality-first account of what a user can now do. The GitHub release publis
 from the section here when the release-candidate PR (dev -> main) merges and is tagged.
 -->
 
+# safety.viz v1.9.2 (Upcoming)
+
+A patch release on v1.9.1. The demo app can be installed and run on your own machine with one script.
+
+## What's new
+
+- **Run the demo app on your own machine.** Download one file, `scripts/install-demo.mjs`, and run it with Node: it checks for Node 22 and git, clones the latest release, installs it, builds the demo app and opens it in your browser at an address on your own computer, with the pilot study loaded as on the site. `npm run demo` does the build-and-serve step in a clone you already have. The page is served to your computer and to nothing else, and it is the page the site serves, built by the same recipe. If Node or git is missing, or the directory already holds something else, the script says what to do and changes nothing. The README's new section has the commands. It has been run on macOS and Linux; Windows is written for and not yet tried. [#214](https://github.com/jwildfire/safety.viz/issues/214)
+
 # safety.viz v1.9.1 (Upcoming)
 
 **See it move:** the [annotated v1.9.0 demo's note on v1.9.1](https://jwildfire.github.io/obot.roadmap/reports/sv-v1.9-demo/#v191) shows this patch release.
