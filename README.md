@@ -86,7 +86,7 @@ node install-demo.mjs
 The script checks for Node and git, clones the latest release into
 `./safety.viz`, installs it, builds the demo and opens it in your browser at an
 address it prints, `http://127.0.0.1:8642/` unless that port is busy. The
-download is about 45 MB and the whole run takes a minute or two.
+install takes about 275 MB of disk, most of it the tools that build the demo.
 
 - **Stop and start.** Ctrl+C stops it. `cd safety.viz` and `npm run demo`
   starts it again without the download.

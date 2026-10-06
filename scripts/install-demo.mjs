@@ -163,7 +163,7 @@ export function steps(options, target) {
           }
         ]),
     {
-      say: 'Installing what it needs to build (a minute or so)…',
+      say: 'Installing what it needs to build (this can take a minute)…',
       command: 'npm',
       args: ['ci', '--no-audit', '--no-fund'],
       cwd: options.dir
