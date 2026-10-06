@@ -2,15 +2,15 @@
   "bundle": "bio.viz script-tag bundle",
   "repository": "https://github.com/jwildfire/bio.viz",
   "ref": "dev",
-  "commit": "29ac72265d86ac5a5e91e14336f7bf45d34b75dc",
-  "version": "0.1.0",
+  "commit": "f3aa6f30e5a76f58feae705bb72f618f107f46f5",
+  "version": "0.2.0",
   "merged_to_dev": true,
   "files": [
     {
       "file": "bio.viz.js",
-      "source": "dist/bio.viz-0.1.0/bio.viz.js",
-      "sha256": "bbc93e78d6a3c315f219bfe986a820de72941846ad825ce2b6096b01e11b44a9",
-      "bytes": 315897
+      "source": "dist/bio.viz-0.2.0/bio.viz.js",
+      "sha256": "1b1a4cf1818762155f56e794522fa5e2320f18a0350be4893898d816fbb55c21",
+      "bytes": 578436
     }
   ]
 }
