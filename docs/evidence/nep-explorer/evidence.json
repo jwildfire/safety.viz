@@ -1,6 +1,6 @@
 {
   "module": "nep-explorer",
-  "generatedAt": "2026-10-04T12:03:44.121Z",
+  "generatedAt": "2026-10-06T14:14:09.034Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "37200787716",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37200787716"
+    "id": "37477154770",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37477154770"
   },
   "records": [
     {
@@ -314,6 +314,46 @@
       "status": "pass",
       "requirementIds": ["APP-LOAD-026"],
       "issueRefs": [196],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LOCAL-002: with no docs site beside it, the page’s links lead to the published site, and the single file is served beside it (#214)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-002"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LOCAL-004: the running server gives nothing from outside the demo (#214)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-004"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LOCAL-006: every demo study in the menu loads from the local server (#214)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-006"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LOCAL-006: R starts on request from the local page, with the statistics file the local server gives it (#214)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-006"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LOCAL-006: the page opens on the pilot study with every chart supported, draws one, and reports no error (#214)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-006"],
+      "issueRefs": [214],
       "screenshots": []
     },
     {
@@ -2621,6 +2661,30 @@
       "screenshots": []
     },
     {
+      "test": "buildDemoAppDir APP-LOCAL-001: the directory built for a reader’s machine holds the same files as the site’s, byte for byte but for the page (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-001"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "buildDemoAppDir APP-LOCAL-001: writes the page, the app, the single file, every demo study, the typefaces and each library with its statistics file (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-001"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "buildDemoAppDir APP-LOCAL-002: the site’s page links into the site beside it; the local page, which has no site beside it, leaves those links to the published site (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-002"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
       "test": "buildEcgRecords anchors BASE and CHG on each participant baseline record (#79)",
       "suite": "unit",
       "status": "pass",
@@ -2677,6 +2741,30 @@
       "screenshots": []
     },
     {
+      "test": "checkPrerequisites APP-LOCAL-007: a missing git or npm is named with where to get it, each in its own sentence (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-007"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "checkPrerequisites APP-LOCAL-007: an older Node is named with the version found and where to get a newer one (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-007"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "checkPrerequisites APP-LOCAL-007: passes on the Node it asks for with git and npm present (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-007"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
       "test": "columnSettings PF-MAN-011: reads column-name settings and skips toggles and field lists (#138)",
       "suite": "unit",
       "status": "pass",
@@ -2706,6 +2794,14 @@
       "status": "pass",
       "requirementIds": ["TTE-DEMO-002"],
       "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "contentType APP-LOCAL-003: names a type for every kind of file the demo directory holds (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-003"],
+      "issueRefs": [214],
       "screenshots": []
     },
     {
@@ -3773,6 +3869,30 @@
       "screenshots": []
     },
     {
+      "test": "inspectTarget APP-LOCAL-007: tells a directory that is not there, an empty one, a safety.viz checkout and anything else apart (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-007"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "inspectTarget APP-LOCAL-008: a checkout’s packages count as installed only once npm has finished writing them (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-008"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "isLocalHost APP-LOCAL-003: only this machine’s own names, with or without a port (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-003"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
       "test": "kit API data KIT-DOC-001: every kit member is documented once, with a description, its signature and the module it comes from (#154)",
       "suite": "unit",
       "status": "pass",
@@ -4741,6 +4861,78 @@
       "screenshots": ["NEP-UNIT-003-unknown-unit-suppression.png"]
     },
     {
+      "test": "openCommand APP-LOCAL-006: opens the address with each system’s own command (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-006"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "parseDemoArgs APP-LOCAL-006: reads a port, either way of writing it, and --no-open (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-006"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "parseDemoArgs APP-LOCAL-006: refuses a port that is not one, and an argument it does not know, naming it (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-006"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "parseDemoArgs APP-LOCAL-006: the usage names every argument (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-006"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "parseDemoArgs APP-LOCAL-006: with no arguments it serves on the default port and opens the browser (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-006"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "parseInstallArgs APP-LOCAL-008: reads a directory, a release, a port and --no-open (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-008"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "parseInstallArgs APP-LOCAL-008: refuses an argument it does not know, a value left out, and a port that is not one (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-008"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "parseInstallArgs APP-LOCAL-008: the usage names every argument (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-008"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "parseInstallArgs APP-LOCAL-008: with no arguments it installs the latest release into ./safety.viz (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-008"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
       "test": "portfolio manifest PF-MAN-001: validates against its JSON Schema (#138)",
       "suite": "unit",
       "status": "pass",
@@ -4877,6 +5069,22 @@
       "screenshots": []
     },
     {
+      "test": "readRequestPath APP-LOCAL-004: a path that cannot be decoded, holds a null, or does not start at the root is no path (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-004"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "readRequestPath APP-LOCAL-004: drops the query, decodes once, and reads a backslash as a separator, so a climb written with one is seen as a climb (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-004"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
       "test": "renderDemoAppPage APP-BIO-010: loads each further library’s bundle from beside the page after the app’s, hands it to the app when it mounts, and counts its charts in the description (#182)",
       "suite": "unit",
       "status": "pass",
@@ -4946,6 +5154,14 @@
       "status": "pass",
       "requirementIds": ["APP-PAGE-028"],
       "issueRefs": [165],
+      "screenshots": []
+    },
+    {
+      "test": "renderDemoAppPage links APP-LOCAL-002: a link given no address is left out, so the app’s own default stands; one given an address is written (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-002"],
+      "issueRefs": [214],
       "screenshots": []
     },
     {
@@ -5114,6 +5330,102 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [63],
+      "screenshots": []
+    },
+    {
+      "test": "resolveServedFile APP-LOCAL-004: resolves a path inside the directory and nothing outside it (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-004"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "running the installer APP-LOCAL-007: a directory that holds something else is left as it was, and named (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-007"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "running the installer APP-LOCAL-007: with no git or npm to be found it stops before it changes anything, saying what to install (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-007"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "running the installer APP-LOCAL-008: --help prints the usage and changes nothing (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-008"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "running the installer APP-LOCAL-008: a release from before the demo command says so before anything is installed for it (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-008"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "running the installer APP-LOCAL-008: a release that does not exist stops it with git’s own reason, and leaves no clone behind (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-008"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "running the installer APP-LOCAL-008: an argument it does not know stops it with the usage, and changes nothing (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-008"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "running the installer APP-LOCAL-008: from an empty directory it clones the release alone, installs it and starts its demo with what was asked, ending as the demo ends (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-008"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "running the installer APP-LOCAL-008: naming a release where a checkout already is stops it: the checkout is not moved to another release, and it says where to install one (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-008"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "running the installer APP-LOCAL-008: run again where a checkout is, it uses it as it is: nothing is cloned or installed, and the demo starts (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-008"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "running the installer APP-LOCAL-008: stopping the installer alone stops the demo it started (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-008"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "running the installer APP-LOCAL-009: piped to Node as readers of a one-line install do, it runs and reads its arguments (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-009"],
+      "issueRefs": [214],
       "screenshots": []
     },
     {
@@ -6309,6 +6621,30 @@
       "screenshots": []
     },
     {
+      "test": "spawnable APP-LOCAL-008: npm is started through a shell on Windows, as one string of its own fixed arguments; everything else is started directly (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-008"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "steps APP-LOCAL-008: a checkout already there is not cloned again, nor installed twice, and the port and --no-open reach the demo (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-008"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "steps APP-LOCAL-008: clones the named release alone, installs what its lock file names, and starts the demo’s own script (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-008"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
       "test": "synthetic AKI demo cohort NEP-COHORT-001: the cohort is present, labelled synthetic, and carries the shared measure contract (#120)",
       "suite": "unit",
       "status": "pass",
@@ -6410,6 +6746,118 @@
       "status": "pass",
       "requirementIds": ["APP-R-011"],
       "issueRefs": [183],
+      "screenshots": []
+    },
+    {
+      "test": "the installer file APP-LOCAL-009: asks for the Node the repository is tested on (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-009"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "the installer file APP-LOCAL-009: is one file that imports nothing but Node’s own modules, so it runs before anything is installed (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-009"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "the installer file APP-LOCAL-009: is written so an old Node can read it and reach the sentence that says it is too old (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-009"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "the local demo server APP-LOCAL-003: a file that is not there is a 404 that says so, and a directory with no page is one too (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-003"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "the local demo server APP-LOCAL-003: a request that names another host is refused; this machine’s own names are answered (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-003"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "the local demo server APP-LOCAL-003: answers a HEAD with the headers and no body, and refuses to be written to (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-003"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "the local demo server APP-LOCAL-003: answers on this machine’s own address and no other (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-003"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "the local demo server APP-LOCAL-003: serves the page at the directory’s address, and each file with its type (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-003"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "the local demo server APP-LOCAL-003: tells the browser to keep no copy, so a rebuilt demo is the one shown (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-003"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "the local demo server APP-LOCAL-004: a link inside the directory that leads out of it is refused; one that stays inside is served (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-004"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "the local demo server APP-LOCAL-004: a path that cannot be read as one is refused, not thrown on (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-004"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "the local demo server APP-LOCAL-004: refuses every path that leads outside the directory it serves (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-004"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "the local demo server APP-LOCAL-005: a port already in use is stepped past, and the port returned is the one answering (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-005"],
+      "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "the local demo server APP-LOCAL-005: with no port left to try, it says which ports were busy (#214)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-005"],
+      "issueRefs": [214],
       "screenshots": []
     },
     {
