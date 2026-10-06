@@ -31,16 +31,20 @@ const read = (file) => readFileSync(path.join(root, file));
 const [bioViz] = APP_LIBRARIES;
 
 describe('the vendored statistics file', () => {
-  it('APP-R-010: gsm.bio’s statistics file is copied from gsm.bio’s dev branch, and matches its record of the commit, checksum and size (#183)', () => {
+  it('APP-R-010: gsm.bio’s statistics file is copied from gsm.bio’s dev branch or from a release tag of the version it records, and matches its record of the commit, checksum and size (#183, #212)', () => {
     const directory = path.join(root, GSM_BIO_STATISTICS.directory);
     expect(verifyVendored(directory)).toEqual([]);
     const record = readRecord(directory);
     expect(record).toMatchObject({
       statistics: 'gsm.bio statistics functions',
-      repository: 'https://github.com/jwildfire/gsm.bio',
-      ref: 'dev',
-      merged_to_dev: true
+      repository: 'https://github.com/jwildfire/gsm.bio'
     });
+    // From the head of dev, or from a release: the record says which.
+    expect(record).toMatchObject(
+      record.tag === undefined
+        ? { ref: 'dev', merged_to_dev: true }
+        : { ref: `v${record.version}`, tag: `v${record.version}`, merged_to_dev: false }
+    );
     expect(record.commit).toMatch(/^[0-9a-f]{40}$/);
     expect(record.files).toEqual([
       expect.objectContaining({
