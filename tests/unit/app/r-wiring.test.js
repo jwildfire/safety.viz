@@ -17,7 +17,7 @@ import {
   libraryScript,
   noRFactory
 } from '../../../scripts/app-libraries.mjs';
-import { APP_STATISTICS, derivedFrom } from '../../../scripts/app-statistics-lib.mjs';
+import { APP_STATISTICS, SCENARIO, derivedFrom } from '../../../scripts/app-statistics-lib.mjs';
 import { renderAppHtml } from '../../../scripts/build-app.mjs';
 import { renderDemoAppPage } from '../../../scripts/site-lib.mjs';
 
@@ -58,25 +58,56 @@ describe('the desktop-R results the browser test compares with', () => {
   const requests = JSON.parse(read(`${APP_STATISTICS.directory}/requests.json`));
   const expected = JSON.parse(read(`${APP_STATISTICS.directory}/expected.json`));
 
-  it('APP-R-011: the recorded requests and desktop R’s answers are derived from the study, the app code that shapes the rows, the bundle and the statistics file as they are now (#183)', () => {
+  it('APP-R-011: the recorded requests and desktop R’s answers are derived from the study, the app code that shapes the rows, the bundle and the statistics file as they are now, over every step of the walk (#183, #212)', () => {
     const now = derivedFrom(read);
     expect(requests.derived_from, 'rerun scripts/derive-app-statistics.mjs').toEqual(now);
     expect(expected.derived_from, 'rerun scripts/app-statistics.R').toEqual(now);
     expect(requests).toMatchObject({
-      chart: APP_STATISTICS.chart,
-      measure: APP_STATISTICS.measure
+      measure: APP_STATISTICS.measure,
+      visit: APP_STATISTICS.visit
     });
     expect(expected.statistics).toBe('site/vendor/gsm.bio/statistics.R');
-    // One answer per request, for the same function, arguments and rows.
+    // The steps recorded are the walk's, each asking R for the function it is
+    // listed with: the row of visits, one visit, and the two-way table.
+    const steps = SCENARIO.map(({ id, chart, asks, what }) => ({ id, chart, asks, what }));
+    expect(requests.steps, 'rerun scripts/derive-app-statistics.mjs').toEqual(steps);
+    expect(expected.steps, 'rerun scripts/app-statistics.R').toEqual(steps);
+    expect(steps.map((step) => step.asks)).toEqual(
+      expect.arrayContaining([
+        'Analyze_GroupDifferenceBy',
+        'Analyze_GroupDifference',
+        'Analyze_Contingency'
+      ])
+    );
+    for (const step of steps) {
+      const asked = requests.requests.filter((request) => request.step === step.id);
+      expect(asked.length, step.id).toBeGreaterThan(0);
+      for (const request of asked) expect(request.name, step.id).toBe(step.asks);
+    }
+    // One answer per request, for the same step, function, arguments and rows.
     expect(expected.answers).toHaveLength(requests.requests.length);
     requests.requests.forEach((request, index) => {
       const answer = expected.answers[index];
+      expect(answer.step).toBe(request.step);
       expect(answer.name).toBe(request.name);
       expect(answer.args).toEqual(request.args);
       expect(answer.rows).toBe(request.data.length);
+      // Desktop R answered each of them with a test.
+      expect(answer.value.status, `${request.step}: ${answer.value.reason}`).toBe('ok');
     });
-    // Desktop R tested at least one visit.
-    expect(expected.answers.some((answer) => answer.value.status === 'ok')).toBe(true);
+  });
+
+  it('APP-R-027: every function the walk asks R for is defined in the vendored statistics file, the one the picture over time needs among them, which the 0.1.0 file did not have (#212)', () => {
+    const statistics = read('site/vendor/gsm.bio/statistics.R').toString('utf8');
+    const defined = (name) => new RegExp(`^${name} <- function\\(`, 'm').test(statistics);
+    expect(SCENARIO.map((step) => [step.id, step.chart, step.asks])).toEqual([
+      ['over-time', 'group-comparison', 'Analyze_GroupDifferenceBy'],
+      ['one-visit', 'group-comparison', 'Analyze_GroupDifference'],
+      ['cross-tab', 'cross-tab', 'Analyze_Contingency']
+    ]);
+    for (const step of SCENARIO) expect(defined(step.asks), step.asks).toBe(true);
+    // The check can fail: a function the file does not define is not found.
+    expect(defined('Analyze_NoSuchFunction')).toBe(false);
   });
 });
 
@@ -87,7 +118,7 @@ describe('the pages', () => {
       download: 'safety.viz-app.html',
       repoUrl: 'https://github.com/jwildfire/safety.viz',
       libraries: APP_LIBRARIES,
-      charts: 'thirteen clinical safety charts and four biomarker charts'
+      charts: 'thirteen clinical safety charts and five biomarker charts'
     });
     expect(html).toContain(`libraries: ${librariesExpression(APP_LIBRARIES, { r: 'request' })}`);
     expect(html).toContain(
@@ -114,7 +145,7 @@ describe('the pages', () => {
       download: 'safety.viz-app.html',
       repoUrl: 'https://github.com/jwildfire/safety.viz',
       libraries: APP_LIBRARIES,
-      charts: 'thirteen clinical safety charts and four biomarker charts'
+      charts: 'thirteen clinical safety charts and five biomarker charts'
     });
     const [, description] = html.match(/<meta name="description" content="([^"]*)">/);
     expect(description).toContain(

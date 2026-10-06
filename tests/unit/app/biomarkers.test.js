@@ -9,6 +9,7 @@ import schema from '../../../src/data/schema/portfolio.json';
 import { mergeLibraries, chartGroups } from '../../../src/app/libraries.js';
 import {
   BIO_VIZ,
+  GSM_BIO_STATISTICS,
   RECORD_FILE,
   readRecord,
   sha256,
@@ -160,13 +161,21 @@ describe('the vendored bio.viz bundle', () => {
     );
   });
 
-  it('APP-BIO-003: its chart list is format version 2 and valid, lists four charts under one Biomarkers group, and merges into the app with every factory present (#182)', () => {
+  it('APP-BIO-003: its chart list is format version 2 and valid, lists five charts under one Biomarkers group, the cross-tabulation among them, and merges into the app with every factory present and every entry usable (#182, #212)', () => {
     const validate = new Ajv2020({ allErrors: true, strict: false }).compile(schema);
     expect(validate(bioManifest), JSON.stringify(validate.errors)).toBe(true);
     expect(bioManifest.version).toBe(2);
     expect(bioManifest.groups).toEqual({ biomarkers: { label: 'Biomarkers', order: 0 } });
+    expect(
+      Object.entries(bioManifest.modules).map(([module, entry]) => [module, entry.title])
+    ).toEqual([
+      ['group-comparison', 'Group comparison'],
+      ['association-scatter', 'Association scatter'],
+      ['correlation-matrix', 'Correlation matrix'],
+      ['biomarker-screen', 'Biomarker screen'],
+      ['cross-tab', 'Cross-tabulation']
+    ]);
     const entries = Object.values(bioManifest.modules);
-    expect(entries).toHaveLength(4);
     for (const entry of entries) {
       expect(entry).toMatchObject({
         library: 'bio.viz',
@@ -189,6 +198,7 @@ describe('the vendored bio.viz bundle', () => {
     } = mergeLibraries(manifest, ownCharts, [
       { name: bioViz.name, charts: exports, manifest: exports.portfolio }
     ]);
+    // No entry is refused: each reads only columns the standard domains have.
     expect(problems).toEqual({});
     for (const module of Object.keys(bioManifest.modules)) {
       expect(typeof factoryOf(module)).toBe('function');
@@ -197,8 +207,25 @@ describe('the vendored bio.viz bundle', () => {
       ['bds', 9],
       ['eg', 1],
       ['ae', 3],
-      ['biomarkers', 4]
+      ['biomarkers', 5]
     ]);
+  });
+
+  it('APP-BIO-019: the copied bundle is at least bio.viz 0.2.0, the first with the cross-tabulation, and the statistics file beside it is no older: each record names its version (#212)', () => {
+    const parts = (version) => String(version).split('.').slice(0, 3).map(Number);
+    const atLeast = (version, least) => {
+      const [a, b] = [parts(version), parts(least)];
+      const at = a.findIndex((part, index) => part !== b[index]);
+      return at === -1 || a[at] > b[at];
+    };
+    const bundle = readRecord(vendorDir);
+    const statistics = readRecord(path.join(root, GSM_BIO_STATISTICS.directory));
+    expect(atLeast(bundle.version, '0.2.0'), `bio.viz ${bundle.version}`).toBe(true);
+    expect(atLeast(statistics.version, '0.2.0'), `gsm.bio ${statistics.version}`).toBe(true);
+    // The version the bundle says of itself is the record's.
+    const exports = new Function(`${libraryScript(bioViz)}\nreturn BioViz;`)();
+    expect(exports.version).toBe(bundle.version);
+    expect(typeof exports.crossTab).toBe('function');
   });
 });
 
