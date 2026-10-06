@@ -2047,7 +2047,7 @@ test.describe('demo app as one file, offline', () => {
     expect(errors).toEqual([]);
   });
 
-  test('APP-FILE-006: offline, the file loads the renamed study, takes the corrections and draws every chart of both libraries (#152, #182)', async ({
+  test('APP-FILE-006: offline, the file loads the renamed study, takes the corrections and draws every chart of both libraries, the group comparison’s three levels among them, and sends no request (#152, #182, #212)', async ({
     page,
     context
   }) => {
@@ -2073,6 +2073,15 @@ test.describe('demo app as one file, offline', () => {
       await expect(page.locator('.sva-chart').locator(DRAWN).first()).toBeVisible();
       await expect(item(page, module).locator('.sva-tag')).toHaveText('ready');
     }
+    // The group comparison's levels too: a tile opens its biomarker over time,
+    // and a visit opens alone (#212).
+    await openChart(page, 'group-comparison');
+    await tiles(page).first().click();
+    await expect(trail(page)).toHaveAttribute('data-level', 'over-time');
+    await expect(page.locator('.sva-chart .bv-time-table')).toBeVisible();
+    await page.locator('.sva-chart .bv-time-visit').first().click();
+    await expect(trail(page)).toHaveAttribute('data-level', 'visits');
+    await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
     expect(requests.filter((url) => !/^(blob|data):/.test(url))).toEqual([]);
     expect(errors).toEqual([]);
   });
@@ -2097,6 +2106,11 @@ test.describe('demo app as one file, offline', () => {
           .locator('.sva-chart .sv-control', { has: page.locator('label:text-is("Biomarker")') })
           .locator('select')
           .selectOption({ index: 1 });
+      }
+      if (module === 'cross-tab') {
+        // The table it opens on here has one column, the study's one centre,
+        // and no test applies to that. Sex has two values.
+        await controlOf(page, 'Columns').locator('select').selectOption('SEX');
       }
       await expect(
         page.locator('.sva-chart .bv-statistic').filter({ hasText: FILE_NO_R }).first()
