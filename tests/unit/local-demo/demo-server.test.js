@@ -1,12 +1,14 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import http from 'node:http';
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import {
   contentType,
   createDemoServer,
+  isLocalHost,
   listen,
+  readRequestPath,
   resolveServedFile
 } from '../../../scripts/demo-server.mjs';
 
@@ -16,10 +18,10 @@ import {
 
 // A request made with the path exactly as written: `fetch` and `new URL`
 // normalise `..` away before the server ever sees it.
-const raw = (port, requestPath, method = 'GET') =>
+const raw = (port, requestPath, method = 'GET', headers = {}) =>
   new Promise((resolve, reject) => {
     const request = http.request(
-      { host: '127.0.0.1', port, path: requestPath, method },
+      { host: '127.0.0.1', port, path: requestPath, method, headers },
       (response) => {
         const chunks = [];
         response.on('data', (chunk) => chunks.push(chunk));
@@ -43,6 +45,7 @@ describe('the local demo server', () => {
   let served;
   let server;
   let port;
+  let linked;
 
   beforeAll(async () => {
     parent = mkdtempSync(path.join(tmpdir(), 'sv-demo-server-'));
@@ -59,6 +62,16 @@ describe('the local demo server', () => {
     writeFileSync(path.join(parent, 'secret.txt'), 'not served');
     mkdirSync(path.join(parent, 'demo-private'));
     writeFileSync(path.join(parent, 'demo-private', 'secret.txt'), 'not served either');
+    // Links inside the served directory that lead out of it. Making a link
+    // needs a privilege on Windows that a test run may not have.
+    try {
+      symlinkSync(path.join(parent, 'secret.txt'), path.join(served, 'link.txt'));
+      symlinkSync(path.join(parent, 'demo-private'), path.join(served, 'up'), 'dir');
+      symlinkSync(path.join(served, 'adsl.csv'), path.join(served, 'same.csv'));
+      linked = true;
+    } catch {
+      linked = false;
+    }
     server = createDemoServer(served);
     port = await listen(server, { port: 0 });
   });
@@ -131,6 +144,30 @@ describe('the local demo server', () => {
     }
   });
 
+  it('APP-LOCAL-004: a link inside the directory that leads out of it is refused; one that stays inside is served (#214)', async (context) => {
+    if (!linked) return context.skip();
+    for (const requestPath of ['/link.txt', '/up/secret.txt']) {
+      const response = await raw(port, requestPath);
+      expect(response.status, requestPath).toBe(403);
+      expect(response.body, requestPath).not.toContain('not served');
+    }
+    const same = await raw(port, '/same.csv');
+    expect(same.status).toBe(200);
+    expect(same.body).toBe('USUBJID,ARM\n01,Placebo\n');
+    return undefined;
+  });
+
+  it('APP-LOCAL-003: a request that names another host is refused; this machine’s own names are answered (#214)', async () => {
+    for (const host of ['evil.example', `evil.example:${port}`, '127.0.0.1.evil.example']) {
+      const response = await raw(port, '/adsl.csv', 'GET', { Host: host });
+      expect(response.status, host).toBe(403);
+      expect(response.body, host).not.toContain('USUBJID');
+    }
+    for (const host of [`127.0.0.1:${port}`, `localhost:${port}`, 'LOCALHOST']) {
+      expect((await raw(port, '/adsl.csv', 'GET', { Host: host })).status, host).toBe(200);
+    }
+  });
+
   it('APP-LOCAL-004: a path that cannot be read as one is refused, not thrown on (#214)', async () => {
     for (const requestPath of ['/%E0%A4%A', '/adsl.csv%00.html', '/%00']) {
       const response = await raw(port, requestPath);
@@ -146,6 +183,9 @@ describe('the local demo server', () => {
     expect(missing.headers['content-type']).toBe('text/plain; charset=utf-8');
     expect((await raw(port, '/fonts/')).status).toBe(404);
     expect((await raw(port, '/fonts')).status).toBe(404);
+    // A file is not a directory: its address with a slash after it is nothing.
+    expect((await raw(port, '/index.html/')).status).toBe(404);
+    expect((await raw(port, '/adsl.csv/')).status).toBe(404);
   });
 
   it('APP-LOCAL-005: a port already in use is stepped past, and the port returned is the one answering (#214)', async () => {
@@ -178,6 +218,37 @@ describe('resolveServedFile', () => {
     expect(resolveServedFile(root, '/../demo-private/secret.txt')).toBeNull();
     expect(resolveServedFile(root, '/..')).toBeNull();
     expect(resolveServedFile(root, '/a/../../b')).toBeNull();
+  });
+});
+
+describe('readRequestPath', () => {
+  it('APP-LOCAL-004: drops the query, decodes once, and reads a backslash as a separator, so a climb written with one is seen as a climb (#214)', () => {
+    expect(readRequestPath('/adsl.csv?v=1#top')).toBe('/adsl.csv');
+    expect(readRequestPath('/a%20b.csv')).toBe('/a b.csv');
+    expect(readRequestPath('/..%5csecret.txt')).toBe('/../secret.txt');
+    expect(readRequestPath('/..\\..\\secret.txt')).toBe('/../../secret.txt');
+    // Decoded once: a doubly encoded dot stays a literal percent sign and digits.
+    expect(readRequestPath('/%252e%252e/secret.txt')).toBe('/%2e%2e/secret.txt');
+    const root = path.resolve('/srv/demo');
+    expect(resolveServedFile(root, readRequestPath('/..%5csecret.txt'))).toBeNull();
+  });
+
+  it('APP-LOCAL-004: a path that cannot be decoded, holds a null, or does not start at the root is no path (#214)', () => {
+    expect(readRequestPath('/%E0%A4%A')).toBeNull();
+    expect(readRequestPath('/%00')).toBeNull();
+    expect(readRequestPath('*')).toBeNull();
+    expect(readRequestPath('http://other.example/adsl.csv')).toBeNull();
+  });
+});
+
+describe('isLocalHost', () => {
+  it('APP-LOCAL-003: only this machine’s own names, with or without a port (#214)', () => {
+    for (const host of ['127.0.0.1', '127.0.0.1:8642', 'localhost:8642', '[::1]:8642']) {
+      expect(isLocalHost(host), host).toBe(true);
+    }
+    for (const host of [undefined, '', 'example.com', '127.0.0.1.example.com', '127.0.0.1:x']) {
+      expect(isLocalHost(host), String(host)).toBe(false);
+    }
   });
 });
 

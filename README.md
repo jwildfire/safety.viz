@@ -88,15 +88,19 @@ The script checks for Node and git, clones the latest release into
 address it prints, `http://127.0.0.1:8642/` unless that port is busy. The
 install takes about 275 MB of disk, most of it the tools that build the demo.
 
-- **Stop and start.** Ctrl+C stops it. `cd safety.viz` and `npm run demo`
-  starts it again without the download.
+- **Stop and start.** Ctrl+C stops it. Run the script again, or `cd safety.viz`
+  and `npm run demo`, to start it again: what is already there is used as it
+  is, with nothing downloaded or installed a second time.
 - **Options.** `--ref v1.9.2` installs that release rather than the latest,
   `--dir <path>` installs somewhere else, `--port <number>` names the port and
   `--no-open` leaves the browser alone. `node install-demo.mjs --help` lists
   them.
+- **Another release later.** An install is never moved to another release:
+  give the new one its own directory, `--ref v1.9.3 --dir safety.viz-1.9.3`.
 - **Already have a clone?** `npm ci`, then `npm run demo`.
-- **Your data stays with you.** The page is served to your own computer and to
-  nothing else, and files you load are read in your browser. The one thing it
+- **Your data stays with you.** The page is served to your own computer, at
+  its own address, and to nothing else, and files you load are read in your
+  browser. The one thing it
   asks the network for is R, from webr.r-wasm.org, and only when you press
   Start R for the biomarker charts.
 - **Windows.** The script is plain Node and is written to run there, but it has

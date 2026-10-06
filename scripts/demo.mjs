@@ -72,8 +72,9 @@ export function parseDemoArgs(argv) {
  */
 export function openCommand(platform, url) {
   if (platform === 'darwin') return { command: 'open', args: [url] };
-  // `start` is a builtin of cmd; its first quoted argument is a window title.
-  if (platform === 'win32') return { command: 'cmd', args: ['/c', 'start', '""', url] };
+  // `start` is a builtin of cmd; its first quoted argument is a window title,
+  // here an empty one.
+  if (platform === 'win32') return { command: 'cmd', args: ['/c', 'start', '', url] };
   return { command: 'xdg-open', args: [url] };
 }
 
@@ -81,7 +82,13 @@ export function openCommand(platform, url) {
 function openBrowser(url) {
   try {
     const { command, args } = openCommand(process.platform, url);
-    const child = spawn(command, args, { stdio: 'ignore', detached: true });
+    const child = spawn(command, args, {
+      stdio: 'ignore',
+      // Left running when this command ends; on Windows that would open a
+      // console window of its own, so there it is only hidden.
+      detached: process.platform !== 'win32',
+      windowsHide: true
+    });
     child.on('error', () => {});
     child.unref();
   } catch {
@@ -128,5 +135,12 @@ async function main() {
   process.on('SIGTERM', stop);
 }
 
-const invoked = process.argv[1] ? realpathSync(process.argv[1]) : '';
-if (invoked === fileURLToPath(import.meta.url)) await main();
+// Run when this file is what Node was started on, not when it is imported.
+const startedDirectly = () => {
+  try {
+    return realpathSync(process.argv[1]) === fileURLToPath(import.meta.url);
+  } catch {
+    return false;
+  }
+};
+if (startedDirectly()) await main();

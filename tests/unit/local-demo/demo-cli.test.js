@@ -42,7 +42,7 @@ describe('openCommand', () => {
     expect(openCommand('linux', url)).toEqual({ command: 'xdg-open', args: [url] });
     expect(openCommand('win32', url)).toEqual({
       command: 'cmd',
-      args: ['/c', 'start', '""', url]
+      args: ['/c', 'start', '', url]
     });
   });
 });

@@ -1,5 +1,6 @@
 import { spawn } from 'node:child_process';
 import { readFileSync } from 'node:fs';
+import http from 'node:http';
 import { fileURLToPath } from 'node:url';
 import { test, expect } from '@playwright/test';
 import { APP_LIBRARIES } from '../../scripts/app-libraries.mjs';
@@ -108,15 +109,35 @@ test.describe('the demo app served by `npm run demo`', () => {
     expect(single.headers()['content-type']).toBe('text/html; charset=utf-8');
   });
 
-  test('APP-LOCAL-004: the running server gives nothing from outside the demo (#214)', async ({
-    request
-  }) => {
+  test('APP-LOCAL-004: the running server gives nothing from outside the demo (#214)', async () => {
+    // Sent as written, on a bare request: a browser, like Playwright's own
+    // client, tidies `..` out of an address before it is sent.
+    const asWritten = (path, headers = {}) =>
+      new Promise((resolve, reject) => {
+        const { hostname, port } = new URL(base);
+        const request = http.request({ host: hostname, port, path, headers }, (response) => {
+          let body = '';
+          response.on('data', (chunk) => (body += chunk));
+          response.on('end', () => resolve({ status: response.statusCode, body }));
+        });
+        request.on('error', reject);
+        request.end();
+      });
     // package.json is one directory above build/, two above the demo.
-    for (const path of ['%2e%2e/%2e%2e/package.json', '..%2f..%2fpackage.json']) {
-      const response = await request.get(`${base}${path}`);
-      expect(response.ok(), path).toBe(false);
-      expect(await response.text(), path).not.toContain('"name": "safety.viz"');
+    for (const path of [
+      '/../../package.json',
+      '/%2e%2e/%2e%2e/package.json',
+      '/..%2f..%2fpackage.json',
+      '/..%5c..%5cpackage.json'
+    ]) {
+      const response = await asWritten(path);
+      expect(response.status, path).toBe(403);
+      expect(response.body, path).not.toContain('"name": "safety.viz"');
     }
+    // And nothing to a page that reaches this machine under another name.
+    const foreign = await asWritten('/adsl.csv', { Host: 'elsewhere.example' });
+    expect(foreign.status).toBe(403);
+    expect((await asWritten('/adsl.csv')).status).toBe(200);
   });
 
   test('APP-LOCAL-006: R starts on request from the local page, with the statistics file the local server gives it (#214)', async ({

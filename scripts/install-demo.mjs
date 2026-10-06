@@ -8,17 +8,20 @@
 // ./safety.viz, installs what the release's lock file names, builds the demo
 // app and serves it to this machine only, at an address it prints and opens in
 // your browser. Run it again to start the demo again: a clone already there is
-// not cloned twice.
+// used as it is, and what is already installed is not installed twice.
 //
 //   node install-demo.mjs --ref v1.9.2 --dir my-demo --port 5050 --no-open
 //
 // It imports nothing but Node's own modules, because it runs before anything
-// is installed; so it shares no code with the scripts beside it.
+// is installed; so it shares no code with the scripts beside it. And it is
+// written in the JavaScript an old Node can read (no `node:` prefix, no `??`,
+// no top-level await), so that a Node too old for the demo is told so in a
+// sentence and not in a syntax error.
 
-import { spawn, spawnSync } from 'node:child_process';
-import { existsSync, readFileSync, readdirSync, realpathSync, rmSync, statSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import path from 'node:path';
+import { spawn, spawnSync } from 'child_process';
+import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from 'fs';
+import { fileURLToPath } from 'url';
+import path from 'path';
 
 /** The oldest Node the demo is built and tested on: the one CI runs. */
 export const MINIMUM_NODE = 22;
@@ -33,6 +36,9 @@ export const DEFAULTS = Object.freeze({
   open: true
 });
 
+/** The script the installer starts, in the release it installed. */
+const DEMO_SCRIPT = 'scripts/demo.mjs';
+
 export const USAGE = `Usage: node install-demo.mjs [options]
 
 Installs the safety.viz demo app into a directory and starts it on this machine.
@@ -43,15 +49,17 @@ Needs Node.js ${MINIMUM_NODE} or later, and git.
   --port <number>   the port to serve the demo on
   --no-open         do not open the browser
   --help            show this
+
+Run it again to start the demo again: a clone already in the directory is used as it is.
 `;
 
 /**
  * Read the installer's arguments.
  * @param {string[]} argv The arguments after the script's name.
- * @returns {{dir: string, ref: string, repo: string, port: ?number, open: boolean, help: boolean}} What was asked for.
+ * @returns {{dir: string, ref: string, refGiven: boolean, repo: string, port: ?number, open: boolean, help: boolean}} What was asked for; `refGiven` when a release was named.
  */
 export function parseInstallArgs(argv) {
-  const options = { ...DEFAULTS, help: false };
+  const options = { ...DEFAULTS, refGiven: false, help: false };
   for (let index = 0; index < argv.length; index += 1) {
     const [flag, inline] = argv[index].split(/=(.*)/s);
     const value = () => {
@@ -62,8 +70,10 @@ export function parseInstallArgs(argv) {
       return given;
     };
     if (flag === '--dir') options.dir = value();
-    else if (flag === '--ref') options.ref = value();
-    else if (flag === '--repo') options.repo = value();
+    else if (flag === '--ref') {
+      options.ref = value();
+      options.refGiven = true;
+    } else if (flag === '--repo') options.repo = value();
     else if (flag === '--port') {
       const port = value();
       if (!/^\d+$/.test(port) || Number(port) < 1 || Number(port) > 65535) {
@@ -77,11 +87,24 @@ export function parseInstallArgs(argv) {
   return options;
 }
 
-// npm is a .cmd file on Windows, which Node starts only through a shell.
-const viaShell = (command) => process.platform === 'win32' && command === 'npm';
+/**
+ * How a command is handed to `spawn`. npm is a .cmd file on Windows, which
+ * Node starts only through a shell, and a shell is given one string. Nothing
+ * a reader typed is in that string: only npm's own fixed arguments are.
+ * @param {string} command The command.
+ * @param {string[]} args Its arguments.
+ * @param {string} [platform] `process.platform`.
+ * @returns {{command: string, args: string[], shell: boolean}} What to spawn.
+ */
+export function spawnable(command, args, platform = process.platform) {
+  return platform === 'win32' && command === 'npm'
+    ? { command: [command, ...args].join(' '), args: [], shell: true }
+    : { command, args, shell: false };
+}
 
-const hasCommand = (command) => {
-  const result = spawnSync(command, ['--version'], { stdio: 'ignore', shell: viaShell(command) });
+const hasCommand = (name) => {
+  const { command, args, shell } = spawnable(name, ['--version']);
+  const result = spawnSync(command, args, { stdio: 'ignore', shell });
   return !result.error && result.status === 0;
 };
 
@@ -132,46 +155,70 @@ export function inspectTarget(dir) {
 }
 
 /**
+ * Whether a checkout's packages are installed: npm writes this file last, so
+ * an install that was interrupted does not have it.
+ * @param {string} dir The checkout.
+ * @returns {boolean} Whether they are.
+ */
+export const isInstalled = (dir) =>
+  existsSync(path.join(dir, 'node_modules', '.package-lock.json'));
+
+/**
  * The commands the install runs, in order.
  * @param {{dir: string, ref: string, repo: string, port: ?number, open: boolean}} options What was asked for; `dir` absolute.
- * @param {'absent'|'empty'|'checkout'} target What is at the directory.
- * @returns {Array<{say: string, command: string, args: string[], cwd?: string, last?: boolean}>} Each step: what to tell the reader, and the command. The last one runs until the reader stops it.
+ * @param {Object} found What is at the directory.
+ * @param {'absent'|'empty'|'checkout'} found.target What is there.
+ * @param {boolean} [found.installed] Whether a checkout there has its packages.
+ * @returns {Array<{say: string, command: string, args: string[], cwd?: string, last?: boolean}>} Each step: what to tell the reader, and the command. `node` is the Node running this. The last step runs until the reader stops it.
  */
-export function steps(options, target) {
-  const demoArgs = [
-    ...(options.port ? ['--port', String(options.port)] : []),
-    ...(options.open ? [] : ['--no-open'])
-  ];
+export function steps(options, { target, installed = false }) {
+  const cloned = target === 'checkout';
   return [
-    ...(target === 'checkout'
+    ...(cloned
       ? []
       : [
           {
             say: `Downloading safety.viz (${options.ref}) into ${options.dir}…`,
             command: 'git',
-            // The one release, without its history.
             args: [
               'clone',
+              // The one release, without its history.
               '--depth',
               '1',
               '--branch',
               options.ref,
+              // The files as the repository holds them, on Windows too, and
+              // none of git's advice about a tag not being a branch.
+              '--config',
+              'core.autocrlf=false',
+              '--config',
+              'advice.detachedHead=false',
               '--',
               options.repo,
               options.dir
             ]
           }
         ]),
-    {
-      say: 'Installing what it needs to build (this can take a minute)…',
-      command: 'npm',
-      args: ['ci', '--no-audit', '--no-fund'],
-      cwd: options.dir
-    },
+    ...(cloned && installed
+      ? []
+      : [
+          {
+            say: 'Installing what it needs to build (this can take a minute)…',
+            command: 'npm',
+            args: ['ci', '--no-audit', '--no-fund'],
+            cwd: options.dir
+          }
+        ]),
     {
       say: 'Starting the demo…',
-      command: 'npm',
-      args: ['run', 'demo', ...(demoArgs.length ? ['--', ...demoArgs] : [])],
+      // The demo's own script, started directly: nothing stands between this
+      // process and it, so stopping one stops the other.
+      command: 'node',
+      args: [
+        DEMO_SCRIPT,
+        ...(options.port ? ['--port', String(options.port)] : []),
+        ...(options.open ? [] : ['--no-open'])
+      ],
       cwd: options.dir,
       last: true
     }
@@ -183,7 +230,21 @@ const fail = (lines, code = 1) => {
   process.exit(code);
 };
 
-async function main() {
+const versionIn = (dir) => JSON.parse(readFileSync(path.join(dir, 'package.json'), 'utf8')).version;
+
+// The demo runs until the reader stops it. Ctrl+C reaches it directly; a
+// signal sent to this process alone is passed on, so the demo never outlives
+// the command that started it. This process ends as the demo ends.
+function runUntilStopped(command, args, cwd) {
+  const child = spawn(command, args, { cwd, stdio: 'inherit' });
+  for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
+    process.on(signal, () => child.kill(signal));
+  }
+  child.on('error', (error) => fail(`The demo did not start: ${error.message}`));
+  child.on('close', (status) => process.exit(status === null ? 0 : status));
+}
+
+function main() {
   let options;
   try {
     options = parseInstallArgs(process.argv.slice(2));
@@ -206,45 +267,48 @@ async function main() {
       'Name another directory with --dir. Nothing was changed.'
     ]);
   }
-  if (target === 'checkout') console.log(`safety.viz is already in ${options.dir}; using it.`);
-
-  for (const step of steps(options, target)) {
-    console.log(step.say);
-    const spawnOptions = { cwd: step.cwd, stdio: 'inherit', shell: viaShell(step.command) };
-    if (step.last) {
-      const { scripts = {}, version } = JSON.parse(
-        readFileSync(path.join(options.dir, 'package.json'), 'utf8')
-      );
-      if (!scripts.demo) {
-        fail([
-          `safety.viz ${version} has no demo command: it came in v1.9.2.`,
-          `Name a later release with --ref. The clone is in ${options.dir}.`
-        ]);
-      }
-      // The demo runs until the reader stops it. Ctrl+C reaches it directly, so
-      // this process waits for it to end and ends the same way.
-      process.on('SIGINT', () => {});
-      const child = spawn(step.command, step.args, spawnOptions);
-      const code = await new Promise((resolve) => {
-        child.on('error', () => resolve(1));
-        child.on('close', (status) => resolve(status ?? 0));
-      });
-      process.exit(code);
+  if (target === 'checkout') {
+    // A clone already there is run as it is; it is not moved to another release.
+    if (options.refGiven) {
+      fail([
+        `${options.dir} already holds safety.viz ${versionIn(options.dir)}, and it is used as it is.`,
+        `To install ${options.ref}, name another directory with --dir. Nothing was changed.`
+      ]);
     }
-    const result = spawnSync(step.command, step.args, spawnOptions);
+    console.log(`safety.viz ${versionIn(options.dir)} is already in ${options.dir}; using it.`);
+  }
+
+  for (const step of steps(options, { target, installed: isInstalled(options.dir) })) {
+    // Asked before anything is installed: a release from before the demo
+    // command cannot be started, whatever is installed for it.
+    if (step.command !== 'git' && !existsSync(path.join(options.dir, DEMO_SCRIPT))) {
+      fail([
+        `safety.viz ${versionIn(options.dir)}, in ${options.dir}, has no demo command: it came in v1.9.2.`,
+        'Install a later release into another directory, with --ref and --dir.'
+      ]);
+    }
+    console.log(step.say);
+    if (step.last) return runUntilStopped(process.execPath, step.args, step.cwd);
+    const { command, args, shell } = spawnable(step.command, step.args);
+    const result = spawnSync(command, args, { cwd: step.cwd, stdio: 'inherit', shell });
     if (result.error || result.status !== 0) {
-      // A clone that failed leaves nothing behind: git removes what it made,
-      // and an empty directory this run found is still empty.
-      if (step.command === 'git' && target === 'absent' && inspectTarget(options.dir) === 'empty') {
-        rmSync(options.dir, { recursive: true });
-      }
       fail(
         `\`${step.command} ${step.args.join(' ')}\` did not finish` +
           `${result.error ? `: ${result.error.message}` : ''}. Its own message is above.`
       );
     }
   }
+  return undefined;
 }
 
-const invoked = process.argv[1] ? realpathSync(process.argv[1]) : '';
-if (invoked === fileURLToPath(import.meta.url)) await main();
+// Run when this file is what Node was started on, by name or piped to it, and
+// not when another script imports it.
+function startedDirectly() {
+  if (/\/\[(eval\d*|stdin)\]$/.test(import.meta.url)) return true;
+  try {
+    return realpathSync(process.argv[1]) === fileURLToPath(import.meta.url);
+  } catch {
+    return false;
+  }
+}
+if (startedDirectly()) main();

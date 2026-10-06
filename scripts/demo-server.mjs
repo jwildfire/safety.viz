@@ -2,11 +2,13 @@
 // the browser on the machine it runs on. Written here on Node's own modules so
 // running the demo installs nothing more.
 //
-// It answers this machine only (127.0.0.1), reads and never writes (GET and
-// HEAD), and serves no file outside the directory it was given.
+// It answers this machine only (127.0.0.1) and only when asked by that name,
+// reads and never writes (GET and HEAD), and serves no file outside the
+// directory it was given: not by a path that climbs out of it, and not by a
+// link inside it that points out of it.
 
 import http from 'node:http';
-import { createReadStream, statSync } from 'node:fs';
+import { createReadStream, realpathSync, statSync } from 'node:fs';
 import path from 'node:path';
 
 /** The address the server answers on: this machine and no other. */
@@ -37,6 +39,33 @@ export const contentType = (file) =>
   TYPES[path.extname(file).toLowerCase()] || 'application/octet-stream';
 
 /**
+ * The path a request asks for, as the server reads it: the address less any
+ * query, decoded once, with a backslash read as a separator, as Windows reads
+ * it, so that no path means one thing here and another to the file system.
+ * @param {string} url The request's address, as sent.
+ * @returns {?string} The path, starting with `/`; null when it cannot be read as one.
+ */
+export function readRequestPath(url) {
+  let requestPath;
+  try {
+    requestPath = decodeURIComponent(String(url).split(/[?#]/)[0]).replace(/\\/g, '/');
+  } catch {
+    return null;
+  }
+  return requestPath.startsWith('/') && !requestPath.includes('\0') ? requestPath : null;
+}
+
+/**
+ * Whether a request names this machine as its host. A page on another site
+ * can be pointed at 127.0.0.1 by a name of its own; a request under such a
+ * name is refused, so only a page opened at this machine's address reads the
+ * demo.
+ * @param {string|undefined} host The request's Host header.
+ * @returns {boolean} Whether it is 127.0.0.1 or localhost, with or without a port.
+ */
+export const isLocalHost = (host) => /^(127\.0\.0\.1|localhost|\[::1\])(:\d+)?$/i.test(host || '');
+
+/**
  * The file a request path names, if it is inside the served directory.
  * @param {string} rootDir The served directory, absolute.
  * @param {string} requestPath The request's path, already decoded, starting with `/`.
@@ -57,6 +86,15 @@ const statOf = (file) => {
   }
 };
 
+// Where a path leads once every link in it is followed; null when it leads nowhere.
+const realOf = (file) => {
+  try {
+    return realpathSync(file);
+  } catch {
+    return null;
+  }
+};
+
 /**
  * A server for one directory.
  * @param {string} dir The directory to serve.
@@ -64,6 +102,11 @@ const statOf = (file) => {
  */
 export function createDemoServer(dir) {
   const rootDir = path.resolve(dir);
+  const inside = (file) => {
+    const root = realOf(rootDir);
+    const real = realOf(file);
+    return Boolean(root && real && (real === root || real.startsWith(root + path.sep)));
+  };
   return http.createServer((request, response) => {
     const answer = (status, text, headers = {}) => {
       response.writeHead(status, {
@@ -79,29 +122,31 @@ export function createDemoServer(dir) {
       return answer(405, 'This server only reads: GET and HEAD.\n', { Allow: 'GET, HEAD' });
     }
 
-    // The path as sent, less any query. It is decoded once, and a backslash is
-    // read as a separator, as Windows would read it.
-    let requestPath;
-    try {
-      requestPath = decodeURIComponent(request.url.split(/[?#]/)[0]).replace(/\\/g, '/');
-    } catch {
-      return answer(400, 'That address cannot be read.\n');
+    if (!isLocalHost(request.headers.host)) {
+      return answer(403, 'This server answers only at 127.0.0.1 and localhost.\n');
     }
-    if (!requestPath.startsWith('/') || requestPath.includes('\0')) {
-      return answer(400, 'That address cannot be read.\n');
-    }
+
+    const requestPath = readRequestPath(request.url);
+    if (requestPath === null) return answer(400, 'That address cannot be read.\n');
 
     let file = resolveServedFile(rootDir, requestPath);
     if (!file) return answer(403, 'That is outside the demo.\n');
     let stat = statOf(file);
-    if (stat && stat.isDirectory()) {
-      // Only an address ending in a slash is a directory's page: the page's own
-      // links are relative, and would resolve against the wrong directory.
-      file = requestPath.endsWith('/') ? path.join(file, 'index.html') : null;
-      stat = file && statOf(file);
+    // An address ending in a slash is a directory's page and nothing else: a
+    // directory without the slash is not served, because the page's own links
+    // are relative and would resolve against the wrong directory.
+    const asDirectory = requestPath.endsWith('/');
+    if (stat && stat.isDirectory() === asDirectory) {
+      if (asDirectory) {
+        file = path.join(file, 'index.html');
+        stat = statOf(file);
+      }
+    } else {
+      stat = null;
     }
-    if (!file || !stat || !stat.isFile())
-      return answer(404, 'There is no such file in the demo.\n');
+    if (!stat || !stat.isFile()) return answer(404, 'There is no such file in the demo.\n');
+    // A link inside the directory that leads out of it is outside it.
+    if (!inside(file)) return answer(403, 'That is outside the demo.\n');
 
     response.writeHead(200, {
       'Content-Type': contentType(file),
