@@ -5,13 +5,17 @@
 //
 //   (no flag)                          copy from the head of the source's `dev`
 //   --ref <ref> --unmerged "<why>"     copy from a commit not on `dev`, and say why
+//   --tag <tag>                        copy from a release tag, such as v0.3.0,
+//                                      and record the tag (#212)
 //   --check                            change nothing: fail if a file and its
 //                                      record disagree (no network)
 //   --check-source                     change nothing: also fetch the recorded
 //                                      commit's files and fail on a difference,
 //                                      and ask GitHub whether a commit recorded
-//                                      as on dev is on dev (#193); a token in
-//                                      GITHUB_TOKEN or GH_TOKEN is used if set
+//                                      as on dev is on dev (#193), and whether
+//                                      a recorded tag points at the recorded
+//                                      commit (#212); a token in GITHUB_TOKEN or
+//                                      GH_TOKEN is used if set
 //
 // Each script passes what it vendors, and how to describe a commit (`describe`).
 
@@ -22,8 +26,10 @@ import {
   buildRecord,
   compareWithDev,
   readRecord,
+  tagCommitFrom,
   verifyAgainstSource,
   verifyOnDev,
+  verifyTag,
   verifyVendored,
   writeVendored
 } from './vendor-lib.mjs';
@@ -70,6 +76,16 @@ export async function runVendorCli(source, { describe }) {
     return commit;
   }
 
+  // The commit one of the source's tags points at, or null when it has none of that name.
+  async function tagCommit(tag) {
+    const listed = execFileSync(
+      'git',
+      ['ls-remote', `${source.repository}.git`, `refs/tags/${tag}`, `refs/tags/${tag}^{}`],
+      { stdio: ['ignore', 'pipe', 'pipe'] }
+    ).toString();
+    return tagCommitFrom(listed, tag);
+  }
+
   function report(problems, passed) {
     if (problems.length) {
       console.error(`✗ ${source.directory} does not match its source record:`);
@@ -85,6 +101,7 @@ export async function runVendorCli(source, { describe }) {
       if (!problems.length && flag('--check-source')) {
         problems.push(...(await verifyAgainstSource(directory, readAt)));
         problems.push(...(await verifyOnDev(readRecord(directory), compare)));
+        problems.push(...(await verifyTag(readRecord(directory), tagCommit)));
       }
       const record = problems.length ? null : readRecord(directory);
       report(
@@ -93,15 +110,33 @@ export async function runVendorCli(source, { describe }) {
           `✓ ${source.directory}: ${record.files.map((entry) => entry.file).join(', ')} ` +
             (flag('--check-source')
               ? `equals ${slug} at ${record.commit.slice(0, 7)}, byte for byte` +
-                (record.merged_to_dev ? ', and that commit is on dev.' : ', a commit not on dev.')
+                (record.merged_to_dev
+                  ? ', and that commit is on dev.'
+                  : record.tag
+                    ? `, and that commit is its tag ${record.tag}.`
+                    : ', a commit not on dev.')
               : `matches its recorded checksum (copied from ${slug} at ${record.commit.slice(0, 7)}).`)
       );
       return;
     }
-    const ref = option('--ref') || 'dev';
-    const commit = resolveCommit(ref);
+    const tag = option('--tag');
+    if (flag('--tag') && (!tag || tag.startsWith('--'))) {
+      throw new Error('--tag needs the name of a release tag, such as v0.3.0.');
+    }
+    if (tag && (flag('--ref') || flag('--unmerged'))) {
+      throw new Error('--tag names what to copy by itself: leave out --ref and --unmerged.');
+    }
+    const ref = tag || option('--ref') || 'dev';
+    const commit = tag ? await tagCommit(tag) : resolveCommit(ref);
+    if (!commit) throw new Error(`${source.repository} has no tag "${tag}".`);
     const { more, files } = await describe({ commit, readAt });
-    if (flag('--unmerged')) {
+    if (tag) {
+      // A release is cut on the source's main branch, so its commit is not on dev.
+      if (more.version !== undefined && tag !== `v${more.version}`) {
+        throw new Error(`${slug}'s tag ${tag} is of version ${more.version}, not of its own name.`);
+      }
+      Object.assign(more, { tag, merged_to_dev: false });
+    } else if (flag('--unmerged')) {
       const note = option('--unmerged');
       if (!note || note.startsWith('--')) {
         throw new Error('--unmerged needs a sentence saying why, and what is to be done later.');

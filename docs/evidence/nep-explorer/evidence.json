@@ -1,6 +1,6 @@
 {
   "module": "nep-explorer",
-  "generatedAt": "2026-10-06T14:14:09.034Z",
+  "generatedAt": "2026-10-07T04:00:46.808Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "37477154770",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37477154770"
+    "id": "37568932732",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37568932732"
   },
   "records": [
     {
@@ -21,11 +21,11 @@
       "screenshots": []
     },
     {
-      "test": "APP-BIO-004: on the demo study the four biomarker charts have a tab of their own after the three domains, each ready, and the count includes them (#182)",
+      "test": "APP-BIO-004: on the demo study the five biomarker charts have a tab of their own after the three domains, each ready, and the count includes them (#182, #212)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-BIO-004"],
-      "issueRefs": [182],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -53,7 +53,15 @@
       "screenshots": []
     },
     {
-      "test": "APP-BIO-005: Group comparison draws on the demo study with no console error, and opens on an overview that prints no test; with a biomarker chosen, its lines say statistics need R until R is started (#182, #183)",
+      "test": "APP-BIO-005: Cross-tabulation draws on the demo study with no console error, and its statistics line says statistics need R until R is started (#182, #183, #212)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-005"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "APP-BIO-005: Group comparison draws on the demo study with no console error, and opens on trend tiles that print no test; with a biomarker chosen, its line says statistics need R until R is started (#182, #183, #212)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-BIO-005"],
@@ -77,11 +85,11 @@
       "screenshots": []
     },
     {
-      "test": "APP-BIO-008: at phone width, with the Biomarkers tab and a biomarker chart open, the page does not scroll sideways (#182)",
+      "test": "APP-BIO-008: at phone width, with the Biomarkers tab open, no biomarker chart and no level of the group comparison scrolls the page sideways (#182, #212)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-BIO-008"],
-      "issueRefs": [182],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -90,6 +98,38 @@
       "status": "pass",
       "requirementIds": ["APP-BIO-012"],
       "issueRefs": [182],
+      "screenshots": []
+    },
+    {
+      "test": "APP-BIO-015: the group comparison opens on trend tiles: one for each biomarker of the study, in the Biomarker control’s order, each a button named for its biomarker and drawing a line per arm across the scheduled visits; no test is printed and nothing is asked of R (#212)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-015"],
+      "issueRefs": [212],
+      "screenshots": []
+    },
+    {
+      "test": "APP-BIO-016: a tile opens its biomarker over time: the scheduled visits along the bottom, the arms side by side, and under each visit the number in each arm, which is the study’s rows counted; the row for R’s test says statistics need R (#212)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-016"],
+      "issueRefs": [212],
+      "screenshots": []
+    },
+    {
+      "test": "APP-BIO-017: a visit under the picture opens that visit alone, with the single-visit view’s own controls and the study’s counts, and the trail leads back to the picture over time and to the tiles (#212)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-017"],
+      "issueRefs": [212],
+      "screenshots": []
+    },
+    {
+      "test": "APP-BIO-018: the cross-tabulation is listed with the biomarker charts and draws a two-way table of two columns of the study, where every count, every total and every percentage of its row is the study’s rows counted; choosing another column draws that table (#212)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-018"],
+      "issueRefs": [212],
       "screenshots": []
     },
     {
@@ -117,7 +157,7 @@
       "screenshots": []
     },
     {
-      "test": "APP-FILE-006: offline, the file loads the renamed study, takes the corrections and draws every chart of both libraries (#152, #182)",
+      "test": "APP-FILE-006: offline, the file loads the renamed study, takes the corrections and draws every chart of both libraries, the group comparison’s three levels among them, and sends no request (#152, #182, #212)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-FILE-006"],
@@ -357,7 +397,7 @@
       "screenshots": []
     },
     {
-      "test": "APP-PAGE-001: every chart is listed under its group with a status: thirteen safety charts under three domains, and four biomarker charts in their own tab (#150, #165, #182)",
+      "test": "APP-PAGE-001: every chart is listed under its group with a status: thirteen safety charts under three domains, and five biomarker charts in their own tab (#150, #165, #182, #212)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-PAGE-001"],
@@ -365,7 +405,7 @@
       "screenshots": []
     },
     {
-      "test": "APP-PAGE-002: the demo study reads 17 of 17 supported and opens on the first chart (#150, #165, #182)",
+      "test": "APP-PAGE-002: the demo study reads 18 of 18 supported and opens on the first chart (#150, #165, #182, #212)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-PAGE-002"],
@@ -589,11 +629,11 @@
       "screenshots": []
     },
     {
-      "test": "APP-R-007: pressing the control starts R once, about 13 MB from webr.r-wasm.org, and the group comparison prints R’s test under each visit, equal to desktop R on the same rows (#183)",
+      "test": "APP-R-007: pressing the control starts R once, about 13 MB from webr.r-wasm.org; a trend tile then opens its biomarker over time with R’s p-value under each visit, a visit opens with R’s test of it, and the cross-tabulation prints R’s test of its table; every answer real webR gives equals desktop R’s on the same rows (#183, #212)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-R-007"],
-      "issueRefs": [183],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -621,11 +661,11 @@
       "screenshots": []
     },
     {
-      "test": "APP-R-017: pressing the control with a biomarker chosen keeps it: the open chart is not drawn again, and prints R’s test for that biomarker (#183)",
+      "test": "APP-R-017: pressing the control with a biomarker chosen keeps it: the open chart is not drawn again, and the row under its visits fills with R’s test for that biomarker (#183, #212)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-R-017"],
-      "issueRefs": [183],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -650,6 +690,14 @@
       "status": "pass",
       "requirementIds": ["APP-R-021"],
       "issueRefs": [193],
+      "screenshots": []
+    },
+    {
+      "test": "APP-R-026: the cross-tabulation says statistics need R until R is started, then prints R’s chi-square test of the table drawn; choosing Fisher’s exact test asks R again and prints that (#212)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-R-026"],
+      "issueRefs": [212],
       "screenshots": []
     },
     {
@@ -6741,11 +6789,19 @@
       "screenshots": []
     },
     {
-      "test": "the desktop-R results the browser test compares with APP-R-011: the recorded requests and desktop R’s answers are derived from the study, the app code that shapes the rows, the bundle and the statistics file as they are now (#183)",
+      "test": "the desktop-R results the browser test compares with APP-R-011: the recorded requests and desktop R’s answers are derived from the study, the app code that shapes the rows, the bundle and the statistics file as they are now, over every step of the walk (#183, #212)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-R-011"],
-      "issueRefs": [183],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "the desktop-R results the browser test compares with APP-R-027: every function the walk asks R for is defined in the vendored statistics file, the one the picture over time needs among them, which the 0.1.0 file did not have (#212)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-027"],
+      "issueRefs": [212],
       "screenshots": []
     },
     {
@@ -6965,11 +7021,11 @@
       "screenshots": []
     },
     {
-      "test": "the vendored bio.viz bundle APP-BIO-001: the copy matches its record, which names bio.viz, the full commit, its dev branch and the file’s checksum and size (#182)",
+      "test": "the vendored bio.viz bundle APP-BIO-001: the copy matches its record, which names bio.viz, the full commit, where it was copied from (the dev branch, or a release tag of the version it records) and the file’s checksum and size (#182, #212)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-BIO-001"],
-      "issueRefs": [182],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -6981,11 +7037,11 @@
       "screenshots": []
     },
     {
-      "test": "the vendored bio.viz bundle APP-BIO-003: its chart list is format version 2 and valid, lists four charts under one Biomarkers group, and merges into the app with every factory present (#182)",
+      "test": "the vendored bio.viz bundle APP-BIO-003: its chart list is format version 2 and valid, lists five charts under one Biomarkers group, the cross-tabulation among them, and merges into the app with every factory present and every entry usable (#182, #212)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-BIO-003"],
-      "issueRefs": [182],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -7005,11 +7061,27 @@
       "screenshots": []
     },
     {
-      "test": "the vendored statistics file APP-R-010: gsm.bio’s statistics file is copied from gsm.bio’s dev branch, and matches its record of the commit, checksum and size (#183)",
+      "test": "the vendored bio.viz bundle APP-BIO-019: the copied bundle is at least bio.viz 0.2.0, the first with the cross-tabulation, and the statistics file beside it is no older: each record names its version (#212)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-019"],
+      "issueRefs": [212],
+      "screenshots": []
+    },
+    {
+      "test": "the vendored bio.viz bundle APP-BIO-020: a copy from a release tag records the tag; the source check asks the repository what that tag points at, and fails when it is another commit, when there is no such tag, or when the tag is not the recorded version’s; a record that names no tag is not asked (#212)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-BIO-020"],
+      "issueRefs": [212],
+      "screenshots": []
+    },
+    {
+      "test": "the vendored statistics file APP-R-010: gsm.bio’s statistics file is copied from gsm.bio’s dev branch or from a release tag of the version it records, and matches its record of the commit, checksum and size (#183, #212)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-R-010"],
-      "issueRefs": [183],
+      "issueRefs": [],
       "screenshots": []
     },
     {

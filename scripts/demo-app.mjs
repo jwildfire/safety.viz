@@ -62,7 +62,7 @@ const counted = (count, noun) => `${WORDS[count] || count} ${noun}${count === 1 
 
 /**
  * What the app reviews a study in, for its page's description: every chart it
- * carries, counted by library, as "thirteen clinical safety charts and four
+ * carries, counted by library, as "thirteen clinical safety charts and five
  * biomarker charts".
  * @returns {string} The phrase.
  */

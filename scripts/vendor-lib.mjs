@@ -6,6 +6,8 @@
 // commit is on the library's `dev` branch, and the file's checksum and size.
 // `verifyVendored` is the check that fails when the file and its record no
 // longer agree; `verifyAgainstSource` compares the file with the commit itself.
+// A copy is made from the head of the library's `dev` branch, or from one of
+// its release tags (#212), and its record says which.
 // The record's shape is the one bio.viz keeps for its copy of safety.viz's
 // bundle, so the two repositories describe their copies of each other alike.
 //
@@ -204,6 +206,58 @@ export async function verifyOnDev(record, compare) {
   return [
     `${RECORD_FILE} says ${short} is on ${record.repository}’s dev branch, but it is not (dev is ${status}).`
   ];
+}
+
+/**
+ * The commit a tag points at, read from what `git ls-remote <repository>
+ * refs/tags/<tag> refs/tags/<tag>^{}` prints (#212). An annotated tag is
+ * listed twice, once as the tag object and once peeled, `refs/tags/<tag>^{}`,
+ * which is the commit; a lightweight tag is listed once, as the commit.
+ * @param {string} listed The command's output.
+ * @param {string} tag The tag's name.
+ * @returns {?string} The full commit, or null when the repository has no such tag.
+ */
+export function tagCommitFrom(listed, tag) {
+  const lines = String(listed)
+    .split(/\r?\n/)
+    .map((line) => line.trim().split(/\s+/))
+    .filter(([commit, name]) => /^[0-9a-f]{40}$/.test(commit || '') && name);
+  const named = (name) => (lines.find(([, listedName]) => listedName === name) || [])[0];
+  return named(`refs/tags/${tag}^{}`) || named(`refs/tags/${tag}`) || null;
+}
+
+/**
+ * The fourth check, of a record copied from a release (#212): a record that
+ * names a `tag` is asked about, and fails when the source's tag of that name
+ * points at another commit, or is not there. The tag must also be the tag of
+ * the version the record names. A record that names no tag is not asked about.
+ * @param {Object} record A vendor record.
+ * @param {(tag: string) => Promise<?string>} tagCommit The commit the source's tag points at, or null when it has no such tag.
+ * @returns {Promise<string[]>} The problems, each a sentence.
+ */
+export async function verifyTag(record, tagCommit) {
+  if (record.tag === undefined) return [];
+  const short = String(record.commit).slice(0, 7);
+  if (typeof record.tag !== 'string' || !record.tag) {
+    return [`${RECORD_FILE} names a tag that is not a name.`];
+  }
+  const problems = [];
+  if (record.version !== undefined && record.tag !== `v${record.version}`) {
+    problems.push(
+      `${RECORD_FILE} names the tag ${record.tag} and version ${record.version}, which is not that tag's version.`
+    );
+  }
+  const commit = await tagCommit(record.tag);
+  if (!commit) {
+    problems.push(
+      `${RECORD_FILE} says ${short} is ${record.repository}’s tag ${record.tag}, but there is no such tag.`
+    );
+  } else if (commit !== record.commit) {
+    problems.push(
+      `${RECORD_FILE} says ${short} is ${record.repository}’s tag ${record.tag}, but that tag is ${commit.slice(0, 7)}.`
+    );
+  }
+  return problems;
 }
 
 /**

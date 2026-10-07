@@ -1,13 +1,15 @@
-// Writes what the group comparison chart asks R for in the demo app, so desktop
-// R can answer the same requests (#183, obot.roadmap#366). Nothing is typed by
-// hand: the app itself, on its pilot demo study, opens the group comparison on
-// one measure with R started, and every request the chart makes — the R
-// function, its arguments and the rows of one visit's panel — is recorded by
-// the harness page's stand-in for R (tests/e2e/fixtures/basic-app.html?record)
-// and written to tests/fixtures/app-statistics/requests.json, with checksums of
-// what it was derived from. scripts/app-statistics.R then answers each request
-// with the vendored gsm.bio statistics file in desktop R, and the browser tests
-// compare real webR's answers with desktop R's.
+// Writes what the biomarker charts ask R for in the demo app, so desktop R can
+// answer the same requests (#183, #212). Nothing is typed by hand: the app
+// itself, on its pilot demo study, is walked through the steps listed in
+// scripts/app-statistics-lib.mjs with R started — a trend tile opened into one
+// biomarker over time, a visit opened from it, the cross-tabulation — and every
+// request a chart makes on the way, the R function, its arguments and its rows,
+// is recorded by the harness page's stand-in for R
+// (tests/e2e/fixtures/basic-app.html?record) and written to
+// tests/fixtures/app-statistics/requests.json under the step that made it, with
+// checksums of what it was derived from. scripts/app-statistics.R then answers
+// each request with the vendored gsm.bio statistics file in desktop R, and the
+// browser tests compare real webR's answers with desktop R's.
 //
 //   npm run build:app && node scripts/derive-app-statistics.mjs && Rscript scripts/app-statistics.R
 //
@@ -19,7 +21,13 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from '@playwright/test';
-import { APP_STATISTICS, derivedFrom } from './app-statistics-lib.mjs';
+import {
+  APP_STATISTICS,
+  SCENARIO,
+  derivedFrom,
+  openAndStartR,
+  playScenario
+} from './app-statistics-lib.mjs';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const port = Number(process.env.PW_PORT || 8199);
@@ -32,31 +40,37 @@ try {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   await page.goto(`http://127.0.0.1:${port}/tests/e2e/fixtures/basic-app.html?record`);
   await page.evaluate('window.__safetyVizApp.ready');
-  await page.evaluate((module) => window.__safetyVizApp.select(module), APP_STATISTICS.chart);
-  await page.locator('.sva-action').click();
-  await page
-    .locator('.sva-chart .sv-control', { has: page.locator('label:text-is("Biomarker")') })
-    .locator('select')
-    .selectOption({ label: APP_STATISTICS.measure });
-  await page.waitForFunction(
-    () =>
-      window.__rCalls.length > 0 &&
-      ![...document.querySelectorAll('.sva-chart .bv-statistic')].some((line) =>
-        /waiting/.test(line.textContent)
-      )
-  );
-  const requests = await page.evaluate(() => window.__rCalls);
+  await openAndStartR(page);
+  const steps = SCENARIO;
+  const ranges = await playScenario(page, { log: '__rCalls', steps, timeout: 30000 });
+  const calls = await page.evaluate(() => window.__rCalls);
   await browser.close();
+  const requests = ranges.flatMap(({ id, from, to }) =>
+    calls.slice(from, to).map((call) => ({ step: id, ...call }))
+  );
+  // Each step asks for the function it is listed with, and for nothing else.
+  for (const step of steps) {
+    const asked = requests.filter((request) => request.step === step.id);
+    if (!asked.length || asked.some((request) => request.name !== step.asks)) {
+      throw new Error(
+        `The step "${step.id}" was expected to ask R for ${step.asks}, and asked for: ` +
+          `${asked.map((request) => request.name).join(', ') || 'nothing'}.`
+      );
+    }
+  }
   const directory = path.join(rootDir, APP_STATISTICS.directory);
   mkdirSync(directory, { recursive: true });
   const document = {
-    chart: APP_STATISTICS.chart,
     measure: APP_STATISTICS.measure,
+    visit: APP_STATISTICS.visit,
+    steps: steps.map(({ id, chart, asks, what }) => ({ id, chart, asks, what })),
     derived_from: derivedFrom((file) => readFileSync(path.join(rootDir, file))),
     requests
   };
   writeFileSync(path.join(directory, 'requests.json'), `${JSON.stringify(document, null, 1)}\n`);
-  console.log(`✓ Wrote ${APP_STATISTICS.directory}/requests.json — ${requests.length} requests`);
+  console.log(
+    `✓ Wrote ${APP_STATISTICS.directory}/requests.json — ${requests.length} requests over ${steps.length} steps`
+  );
 } finally {
   server.kill();
 }
