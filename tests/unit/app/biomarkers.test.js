@@ -9,11 +9,14 @@ import schema from '../../../src/data/schema/portfolio.json';
 import { mergeLibraries, chartGroups } from '../../../src/app/libraries.js';
 import {
   BIO_VIZ,
+  GSM_BIO_STATISTICS,
   RECORD_FILE,
   readRecord,
   sha256,
   compareWithDev,
+  tagCommitFrom,
   verifyOnDev,
+  verifyTag,
   verifyVendored
 } from '../../../scripts/vendor-lib.mjs';
 import {
@@ -38,15 +41,19 @@ const [bioViz] = APP_LIBRARIES;
 const bioManifest = libraryManifest(bioViz);
 
 describe('the vendored bio.viz bundle', () => {
-  it('APP-BIO-001: the copy matches its record, which names bio.viz, the full commit, its dev branch and the file’s checksum and size (#182)', () => {
+  it('APP-BIO-001: the copy matches its record, which names bio.viz, the full commit, where it was copied from (the dev branch, or a release tag of the version it records) and the file’s checksum and size (#182, #212)', () => {
     expect(verifyVendored(vendorDir)).toEqual([]);
     const record = readRecord(vendorDir);
     expect(record).toMatchObject({
       bundle: 'bio.viz script-tag bundle',
-      repository: 'https://github.com/jwildfire/bio.viz',
-      ref: 'dev',
-      merged_to_dev: true
+      repository: 'https://github.com/jwildfire/bio.viz'
     });
+    // From the head of dev, or from a release: the record says which.
+    expect(record).toMatchObject(
+      record.tag === undefined
+        ? { ref: 'dev', merged_to_dev: true }
+        : { ref: `v${record.version}`, tag: `v${record.version}`, merged_to_dev: false }
+    );
     expect(record.commit).toMatch(/^[0-9a-f]{40}$/);
     const [file] = record.files;
     expect(file).toMatchObject({
@@ -78,8 +85,10 @@ describe('the vendored bio.viz bundle', () => {
   });
 
   it('APP-BIO-013: the source check asks whether a commit recorded as on dev is on dev, and fails when it is not or when the record does not say; a commit recorded as off dev is not asked (#193)', async () => {
-    const record = { ...readRecord(vendorDir) };
-    expect(record.merged_to_dev).toBe(true);
+    // The copy's own record, as one made from the head of dev says it (the
+    // copy may be from a release tag, which APP-BIO-020 holds).
+    const record = { ...readRecord(vendorDir), merged_to_dev: true };
+    delete record.tag;
     // GitHub's compare of the commit with dev: dev is ahead of it, or is it.
     const asked = vi.fn(async () => 'ahead');
     expect(await verifyOnDev(record, asked)).toEqual([]);
@@ -104,6 +113,52 @@ describe('the vendored bio.viz bundle', () => {
     expect(await verifyOnDev(silent, asked)).toEqual([
       `${RECORD_FILE} does not say whether ${silent.commit.slice(0, 7)} is on dev.`
     ]);
+  });
+
+  it('APP-BIO-020: a copy from a release tag records the tag; the source check asks the repository what that tag points at, and fails when it is another commit, when there is no such tag, or when the tag is not the recorded version’s; a record that names no tag is not asked (#212)', async () => {
+    const commit = 'a'.repeat(40);
+    const other = 'b'.repeat(40);
+    const record = {
+      repository: 'https://github.com/jwildfire/bio.viz',
+      ref: 'v0.3.0',
+      commit,
+      version: '0.3.0',
+      tag: 'v0.3.0',
+      merged_to_dev: false
+    };
+    const asked = vi.fn(async () => commit);
+    expect(await verifyTag(record, asked)).toEqual([]);
+    expect(asked).toHaveBeenCalledWith('v0.3.0');
+    // A release is not on dev, and the record says so: the on-dev check asks nothing.
+    const compare = vi.fn();
+    expect(await verifyOnDev(record, compare)).toEqual([]);
+    expect(compare).not.toHaveBeenCalled();
+    expect(await verifyTag(record, async () => other)).toEqual([
+      `${RECORD_FILE} says aaaaaaa is ${record.repository}’s tag v0.3.0, but that tag is bbbbbbb.`
+    ]);
+    expect(await verifyTag(record, async () => null)).toEqual([
+      `${RECORD_FILE} says aaaaaaa is ${record.repository}’s tag v0.3.0, but there is no such tag.`
+    ]);
+    expect(await verifyTag({ ...record, version: '0.2.0' }, asked)).toEqual([
+      `${RECORD_FILE} names the tag v0.3.0 and version 0.2.0, which is not that tag's version.`
+    ]);
+    expect(await verifyTag({ ...record, tag: '' }, asked)).toEqual([
+      `${RECORD_FILE} names a tag that is not a name.`
+    ]);
+    // A copy from dev names no tag, and is not asked about one.
+    const unasked = vi.fn();
+    expect(
+      await verifyTag(readRecord(vendorDir).tag ? { commit } : readRecord(vendorDir), unasked)
+    ).toEqual([]);
+    expect(unasked).not.toHaveBeenCalled();
+    // What git lists for a tag: an annotated tag's commit is its peeled line.
+    const tagObject = 'c'.repeat(40);
+    expect(
+      tagCommitFrom(`${tagObject}\trefs/tags/v0.3.0\n${commit}\trefs/tags/v0.3.0^{}\n`, 'v0.3.0')
+    ).toBe(commit);
+    expect(tagCommitFrom(`${commit}\trefs/tags/v0.3.0\n`, 'v0.3.0')).toBe(commit);
+    expect(tagCommitFrom(`${commit}\trefs/tags/v0.3.0-rc1\n`, 'v0.3.0')).toBe(null);
+    expect(tagCommitFrom('', 'v0.3.0')).toBe(null);
   });
 
   it('APP-BIO-014: the on-dev check asks GitHub with the token when there is one and without it when GitHub refuses the token, and fails saying why when it cannot ask: the rate limit, the network, or an answer with no status (#193)', async () => {
@@ -160,13 +215,21 @@ describe('the vendored bio.viz bundle', () => {
     );
   });
 
-  it('APP-BIO-003: its chart list is format version 2 and valid, lists four charts under one Biomarkers group, and merges into the app with every factory present (#182)', () => {
+  it('APP-BIO-003: its chart list is format version 2 and valid, lists five charts under one Biomarkers group, the cross-tabulation among them, and merges into the app with every factory present and every entry usable (#182, #212)', () => {
     const validate = new Ajv2020({ allErrors: true, strict: false }).compile(schema);
     expect(validate(bioManifest), JSON.stringify(validate.errors)).toBe(true);
     expect(bioManifest.version).toBe(2);
     expect(bioManifest.groups).toEqual({ biomarkers: { label: 'Biomarkers', order: 0 } });
+    expect(
+      Object.entries(bioManifest.modules).map(([module, entry]) => [module, entry.title])
+    ).toEqual([
+      ['group-comparison', 'Group comparison'],
+      ['association-scatter', 'Association scatter'],
+      ['correlation-matrix', 'Correlation matrix'],
+      ['biomarker-screen', 'Biomarker screen'],
+      ['cross-tab', 'Cross-tabulation']
+    ]);
     const entries = Object.values(bioManifest.modules);
-    expect(entries).toHaveLength(4);
     for (const entry of entries) {
       expect(entry).toMatchObject({
         library: 'bio.viz',
@@ -189,6 +252,7 @@ describe('the vendored bio.viz bundle', () => {
     } = mergeLibraries(manifest, ownCharts, [
       { name: bioViz.name, charts: exports, manifest: exports.portfolio }
     ]);
+    // No entry is refused: each reads only columns the standard domains have.
     expect(problems).toEqual({});
     for (const module of Object.keys(bioManifest.modules)) {
       expect(typeof factoryOf(module)).toBe('function');
@@ -197,8 +261,25 @@ describe('the vendored bio.viz bundle', () => {
       ['bds', 9],
       ['eg', 1],
       ['ae', 3],
-      ['biomarkers', 4]
+      ['biomarkers', 5]
     ]);
+  });
+
+  it('APP-BIO-019: the copied bundle is at least bio.viz 0.2.0, the first with the cross-tabulation, and the statistics file beside it is no older: each record names its version (#212)', () => {
+    const parts = (version) => String(version).split('.').slice(0, 3).map(Number);
+    const atLeast = (version, least) => {
+      const [a, b] = [parts(version), parts(least)];
+      const at = a.findIndex((part, index) => part !== b[index]);
+      return at === -1 || a[at] > b[at];
+    };
+    const bundle = readRecord(vendorDir);
+    const statistics = readRecord(path.join(root, GSM_BIO_STATISTICS.directory));
+    expect(atLeast(bundle.version, '0.2.0'), `bio.viz ${bundle.version}`).toBe(true);
+    expect(atLeast(statistics.version, '0.2.0'), `gsm.bio ${statistics.version}`).toBe(true);
+    // The version the bundle says of itself is the record's.
+    const exports = new Function(`${libraryScript(bioViz)}\nreturn BioViz;`)();
+    expect(exports.version).toBe(bundle.version);
+    expect(typeof exports.crossTab).toBe('function');
   });
 });
 

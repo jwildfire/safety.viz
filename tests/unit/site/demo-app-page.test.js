@@ -93,7 +93,7 @@ describe('renderDemoAppPage', () => {
       download: 'safety.viz-app.html',
       repoUrl: 'https://github.com/jwildfire/safety.viz',
       libraries: APP_LIBRARIES,
-      charts: 'thirteen clinical safety charts and four biomarker charts'
+      charts: 'thirteen clinical safety charts and five biomarker charts'
     });
     // Every host the page names, with or without a scheme; the icon's data URI
     // (whose SVG namespace is not a request) is left out.
@@ -179,7 +179,7 @@ describe('renderDemoAppPage', () => {
       download: 'safety.viz-app.html',
       repoUrl: 'https://github.com/jwildfire/safety.viz',
       libraries: [{ name: 'bio.viz', global: 'BioViz', file: 'bio.viz.js' }],
-      charts: 'thirteen clinical safety charts and four biomarker charts'
+      charts: 'thirteen clinical safety charts and five biomarker charts'
     });
     const app = page.indexOf('<script src="./safety.viz-app.js"></script>');
     const library = page.indexOf('<script src="./bio.viz.js"></script>');
@@ -189,7 +189,7 @@ describe('renderDemoAppPage', () => {
       'libraries: [{ name: "bio.viz", file: "bio.viz.js", charts: window.BioViz, manifest: window.BioViz && window.BioViz.portfolio }]'
     );
     expect(page).toMatch(
-      /<meta name="description" content="[^"]*thirteen clinical safety charts and four biomarker charts[^"]*">/
+      /<meta name="description" content="[^"]*thirteen clinical safety charts and five biomarker charts[^"]*">/
     );
     // With no library the page is as it was.
     expect(html).not.toContain('libraries:');

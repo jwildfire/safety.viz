@@ -1,6 +1,6 @@
 {
   "name": "safety.viz",
-  "version": "1.9.1",
+  "version": "1.9.2",
   "description": "Consolidated Chart.js charting library for clinical safety graphics.",
   "private": true,
   "type": "module",
@@ -8,6 +8,7 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "build:app": "node scripts/build-app.mjs",
+    "demo": "node scripts/demo.mjs",
     "build:check-dist": "node scripts/check-dist-drift.mjs",
     "docs:api": "node scripts/api/build-api-data.mjs",
     "site": "node scripts/api/build-api-data.mjs && node scripts/site.mjs",

@@ -9,6 +9,8 @@
 //       copy from the head of bio.viz's `dev` branch on GitHub
 //   node scripts/vendor-bio-viz.mjs --ref <branch or commit> --unmerged "<why, and what to do later>"
 //       copy from a commit not on bio.viz's `dev`, and record why
+//   node scripts/vendor-bio-viz.mjs --tag v0.3.0
+//       copy from one of bio.viz's release tags, and record the tag (#212)
 //   node scripts/vendor-bio-viz.mjs --check
 //       change nothing: fail if the file and its record disagree (no network;
 //       `npm test` makes the same check)

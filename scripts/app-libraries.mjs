@@ -19,7 +19,7 @@ export const APP_LIBRARIES = [
     global: 'BioViz',
     file: BIO_VIZ.files[0].file,
     path: path.join(BIO_VIZ.directory, BIO_VIZ.files[0].file),
-    // What the charts are, in a phrase: "four biomarker charts".
+    // What the charts are, in a phrase: "five biomarker charts".
     kind: 'biomarker',
     site: 'https://jwildfire.github.io/bio.viz/dev/',
     repository: BIO_VIZ.repository,

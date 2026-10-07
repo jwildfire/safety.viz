@@ -6,7 +6,29 @@ functionality-first account of what a user can now do. The GitHub release publis
 from the section here when the release-candidate PR (dev -> main) merges and is tagged.
 -->
 
-# safety.viz v1.9.1 (Upcoming)
+# safety.viz v1.9.2 (Upcoming)
+
+**See it move:** the [annotated v1.9.0 demo's note on v1.9.2](https://jwildfire.github.io/obot.roadmap/reports/sv-v1.9-demo/#v192) shows this patch release.
+
+A patch release on v1.9.1. The demo app can be installed and run on your own machine with one script, and its biomarker charts are rebuilt on bio.viz v0.3.0 and gsm.bio v0.3.0. No safety chart changes, and nothing in the library's API changes.
+
+## What's new
+
+- **Run the demo app on your own machine.** Download `scripts/install-demo.mjs` and run it with Node: it clones the latest release, builds the demo app and opens it in your browser, served to your computer alone. In a clone, `npm run demo` does the same. Run end to end on macOS; its tests run on Linux; Windows is written for and not yet tried. [#214](https://github.com/jwildfire/safety.viz/issues/214), PR [#215](https://github.com/jwildfire/safety.viz/pull/215); [#219](https://github.com/jwildfire/safety.viz/issues/219), PR [#225](https://github.com/jwildfire/safety.viz/pull/225)
+- **In the demo app, the group comparison opens on trends and drills down.** A tile per biomarker opens that biomarker across the visits, with R's test under each visit once you start R, and a visit opens alone. [obot.roadmap#367](https://github.com/jwildfire/obot.roadmap/issues/367), [#212](https://github.com/jwildfire/safety.viz/issues/212), PR [#213](https://github.com/jwildfire/safety.viz/pull/213)
+- **The cross-tabulation joins the demo app as a fifth biomarker chart.** It is a two-way table of counts with R's chi-square or Fisher's exact test. The biomarker screen stays listed. [obot.roadmap#367](https://github.com/jwildfire/obot.roadmap/issues/367), [#212](https://github.com/jwildfire/safety.viz/issues/212), PR [#213](https://github.com/jwildfire/safety.viz/pull/213)
+
+## Also in this release
+
+- **Known and not fixed, each in bio.viz's backlog.** The biomarker screen tells a reader with no outcomes table to call `init()` ([bio.viz#119](https://github.com/jwildfire/bio.viz/issues/119)). On a phone, long row labels under the picture over time break inside a word ([bio.viz#120](https://github.com/jwildfire/bio.viz/issues/120)). bio.viz's sixth chart, the stratified survival chart, is not listed in the app ([bio.viz#63](https://github.com/jwildfire/bio.viz/issues/63)).
+- **Not in this release: the group comparison's difference grid.** It is paused, with a requirement of its own. [obot.roadmap#371](https://github.com/jwildfire/obot.roadmap/issues/371)
+- **Release bundles.** `dist/safety.viz-1.9.2/` is the release bundle, the library's bundle is byte for byte v1.9.1's, and the single file is 1.4 MB, up from 1.2 MB, because it carries bio.viz v0.3.0. [#216](https://github.com/jwildfire/safety.viz/issues/216), PR [#217](https://github.com/jwildfire/safety.viz/pull/217)
+
+## Tests and provenance
+
+2,242 unit and 385 browser tests pass. One browser test walks the Biomarkers tab with real R started in the browser and holds each of R's answers to desktop R's on the same rows. bio.viz's bundle and gsm.bio's statistics file are copied from their v0.3.0 tags, [4a85d61](https://github.com/jwildfire/bio.viz/releases/tag/v0.3.0) and [09743c7](https://github.com/jwildfire/gsm.bio/releases/tag/v0.3.0), and CI holds each copy to its tag. [#212](https://github.com/jwildfire/safety.viz/issues/212), [#214](https://github.com/jwildfire/safety.viz/issues/214), [#219](https://github.com/jwildfire/safety.viz/issues/219)
+
+# safety.viz v1.9.1
 
 **See it move:** the [annotated v1.9.0 demo's note on v1.9.1](https://jwildfire.github.io/obot.roadmap/reports/sv-v1.9-demo/#v191) shows this patch release.
 

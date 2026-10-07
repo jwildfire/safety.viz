@@ -7,6 +7,7 @@
 // (scripts/app-statistics.R) sources to write the expected results.
 //
 //   node scripts/vendor-statistics.mjs                 copy from gsm.bio `dev`
+//   node scripts/vendor-statistics.mjs --tag v0.3.0    copy from a release tag (#212)
 //   node scripts/vendor-statistics.mjs --check         the record check (no network)
 //   node scripts/vendor-statistics.mjs --check-source  also compare with the commit
 //

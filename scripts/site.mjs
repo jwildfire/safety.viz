@@ -21,12 +21,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   parseCoverage,
-  publishDemoAppFonts,
   publishManifest,
   renderAboutPage,
   renderApiPage,
   renderArchitecturePage,
-  renderDemoAppPage,
   renderDemoPage,
   renderDomainsPage,
   renderEvidencePage,
@@ -37,14 +35,8 @@ import {
   validateEvidenceScreenshots,
   validateSiteLinks
 } from './site-lib.mjs';
-import { APP_BUNDLE, APP_HTML, buildApp } from './build-app.mjs';
-import {
-  APP_LIBRARIES,
-  libraryManifest,
-  libraryScript,
-  withoutSourceMap
-} from './app-libraries.mjs';
-import { DEMO_STUDIES } from '../src/app/studies.js';
+import { APP_LIBRARIES, libraryManifest } from './app-libraries.mjs';
+import { buildDemoAppDir } from './demo-app.mjs';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 // The site is built beside its destination and swapped in at the end, so a
@@ -265,77 +257,10 @@ for (const renderer of config.renderers.filter((entry) => entry.status === 'avai
 }
 
 // Demo app (#150, #152): a full-page web app at demo/, with its own header, so
-// it is written as a standalone document and not through the docs shell. The app
-// bundle and the single-file build are build products written here, not
-// committed assets, and the demo studies are copied beside them so the app
-// loads them from its own directory.
-const demoAppDir = path.join(siteDir, 'demo');
-await buildApp(demoAppDir);
-// Every demo study the app offers (#159) is copied from where the repository
-// keeps it into the study's own directory beside the app.
-for (const study of DEMO_STUDIES) {
-  mkdirSync(path.join(demoAppDir, study.dir), { recursive: true });
-  for (const file of study.files) {
-    copyFileSync(path.join(rootDir, study.source, file), path.join(demoAppDir, study.dir, file));
-  }
-}
-// The app's typefaces (#165) are served from beside it, with their licences,
-// so its page asks no other host for anything.
-publishDemoAppFonts(rootDir, demoAppDir);
-// Each further chart library's vendored bundle (#182) is served beside the app
-// and loaded after it; the page's description counts every chart it carries.
-// The copy served drops the bundle's source-map comment line, since no map is
-// served beside it; the vendored file itself stays bio.viz's, byte for byte.
-for (const library of APP_LIBRARIES) {
-  writeFileSync(path.join(demoAppDir, library.file), withoutSourceMap(libraryScript(library)));
-  // The statistics file R in the browser is given when the reader starts R (#183).
-  if (library.r) {
-    copyFileSync(
-      path.join(rootDir, library.r.statistics.path),
-      path.join(demoAppDir, library.r.statistics.file)
-    );
-  }
-}
-const WORDS = [
-  'no',
-  'one',
-  'two',
-  'three',
-  'four',
-  'five',
-  'six',
-  'seven',
-  'eight',
-  'nine',
-  'ten',
-  'eleven',
-  'twelve',
-  'thirteen',
-  'fourteen',
-  'fifteen',
-  'sixteen',
-  'seventeen',
-  'eighteen',
-  'nineteen',
-  'twenty'
-];
-const counted = (count, noun) => `${WORDS[count] || count} ${noun}${count === 1 ? '' : 's'}`;
-const chartsCarried = [
-  counted(Object.keys(ownManifest.modules).length, 'clinical safety chart'),
-  ...libraries.map((library) =>
-    counted(Object.keys(library.manifest.modules).length, `${library.kind} chart`)
-  )
-].join(' and ');
-writeFileSync(
-  path.join(demoAppDir, 'index.html'),
-  renderDemoAppPage({
-    bundle: APP_BUNDLE,
-    download: APP_HTML,
-    repoUrl: config.repoUrl,
-    libraries: APP_LIBRARIES,
-    charts: chartsCarried
-  })
-);
+// it is written as a standalone document and not through the docs shell. The
+// directory is built by the recipe `npm run demo` also uses (#214), so the
+// page a reader runs on their own machine is this one.
+await buildDemoAppDir(path.join(siteDir, 'demo'));
 
 errors.push(...validateSiteLinks(siteDir));
 

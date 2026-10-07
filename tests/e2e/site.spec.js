@@ -39,11 +39,16 @@ test.describe('docs site', () => {
     await page.evaluate('window.__safetyVizApp.ready');
     await expect(page).toHaveTitle('safety.viz demo');
     await expect(page.locator('.sva-count')).toHaveText(
-      '17 of 17 charts supported by the loaded data'
+      '18 of 18 charts supported by the loaded data'
     );
     await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
     await expect(page.locator('.sva-tab[data-domain="biomarkers"] .sva-tab-count')).toHaveText(
-      '4 of 4'
+      '5 of 5'
+    );
+    // Its description counts the charts it carries (#212).
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+      'content',
+      /thirteen clinical safety charts and five biomarker charts/
     );
     // Its own header, not the docs site's.
     await expect(page.locator('.sva-header .sva-wordmark')).toHaveText('safety.viz');
@@ -94,9 +99,21 @@ test.describe('docs site', () => {
       Object.values(bioManifest.modules).map((entry) => entry.title)
     );
     await expect(page.locator('.sva-chart .sv-root')).toBeVisible();
-    expect(
-      await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
-    ).toBeLessThanOrEqual(0);
+    const overflow = () =>
+      page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    expect(await overflow()).toBeLessThanOrEqual(0);
+    // As built, the group comparison opens on its trend tiles, a tile opens its
+    // biomarker over time, and the cross-tabulation draws its table (#212).
+    await expect(page.locator('.sva-chart .bv-tile').first()).toBeVisible();
+    await page.locator('.sva-chart .bv-tile').first().click();
+    await expect(page.locator('.sva-chart .bv-trail')).toHaveAttribute('data-level', 'over-time');
+    await expect(page.locator('.sva-chart .bv-time-table')).toBeVisible();
+    expect(await overflow()).toBeLessThanOrEqual(0);
+    const crossTab = page.locator('.sva-item[data-view="cross-tab"]');
+    await crossTab.scrollIntoViewIfNeeded();
+    await crossTab.click();
+    await expect(page.locator('.sva-chart table.bv-crosstab')).toBeVisible();
+    expect(await overflow()).toBeLessThanOrEqual(0);
     expect(errors).toEqual([]);
   });
 

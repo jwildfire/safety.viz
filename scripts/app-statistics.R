@@ -1,5 +1,5 @@
-# Desktop R's answers to what the demo app's group comparison asks R for
-# (#183, obot.roadmap#366). Reads tests/fixtures/app-statistics/requests.json,
+# Desktop R's answers to what the demo app's biomarker charts ask R for
+# (#183, #212). Reads tests/fixtures/app-statistics/requests.json,
 # written from the app itself by scripts/derive-app-statistics.mjs; sources the
 # vendored gsm.bio statistics file, site/vendor/gsm.bio/statistics.R, the same
 # file R in the browser is given when the reader starts R; calls each function
@@ -44,18 +44,29 @@ ToJs <- function(x) {
   lapply(x, function(v) if (is.na(v)) NULL else v)
 }
 
+# One argument as R in the browser receives it from bio.viz's connection: a
+# JavaScript array arrives as a vector, not a list, and anything else as it is.
+FromJs <- function(x) {
+  if (is.list(x) && is.null(names(x))) return(unlist(x))
+  x
+}
+
 lRequests <- jsonlite::fromJSON(file.path(strDir, "requests.json"), simplifyVector = FALSE)
 lAnswers <- lapply(lRequests$requests, function(lRequest) {
   dfData <- do.call(rbind, lapply(lRequest$data, function(lRow) {
     as.data.frame(lapply(lRow, function(v) if (is.null(v)) NA else v), stringsAsFactors = FALSE)
   }))
-  xValue <- do.call(lRequest$name, c(list(dfData), lRequest$args))
-  list(name = lRequest$name, args = lRequest$args, rows = length(lRequest$data), value = ToJs(xValue))
+  xValue <- do.call(lRequest$name, c(list(dfData), lapply(lRequest$args, FromJs)))
+  list(
+    step = lRequest$step, name = lRequest$name, args = lRequest$args,
+    rows = length(lRequest$data), value = ToJs(xValue)
+  )
 })
 
 lExpected <- list(
-  chart = lRequests$chart,
   measure = lRequests$measure,
+  visit = lRequests$visit,
+  steps = lRequests$steps,
   derived_from = lRequests$derived_from,
   r = paste(R.version$major, R.version$minor, sep = "."),
   statistics = strStatistics,

@@ -9,6 +9,7 @@ import {
   HOSTED_PITCH,
   libraryManifest
 } from '../../scripts/app-libraries.mjs';
+import { SCENARIO, openAndStartR, playScenario } from '../../scripts/app-statistics-lib.mjs';
 
 // Browser evidence for the demo app (#150, obot.roadmap#352): a full-page app
 // that lists every chart in the portfolio manifest by domain, says which the
@@ -39,7 +40,7 @@ const DRAWN = 'canvas:visible, table:visible, .bv-matrix-grid:visible, .bv-scree
 // A test that opens every chart in turn is given longer than the default: on
 // CI's runner, beside a test starting R, opening seventeen charts has come
 // close to 30 s (the slowest so far, 22.6 s). 60 s leaves room without hiding
-// a hang (#193).
+// a hang (#193). There are eighteen since the cross-tabulation (#212).
 const MANY_CHARTS = 60000;
 
 const APP = 'window.__safetyVizApp';
@@ -77,7 +78,7 @@ test.describe('demo app on the demo study', () => {
     execSync('npm run build:app', { stdio: 'inherit', cwd: new URL('../..', import.meta.url) });
   });
 
-  test('APP-PAGE-001: every chart is listed under its group with a status: thirteen safety charts under three domains, and four biomarker charts in their own tab (#150, #165, #182)', async ({
+  test('APP-PAGE-001: every chart is listed under its group with a status: thirteen safety charts under three domains, and five biomarker charts in their own tab (#150, #165, #182, #212)', async ({
     page
   }) => {
     await openOnDemo(page);
@@ -92,20 +93,20 @@ test.describe('demo app on the demo study', () => {
       ...modules.map(([, entry]) => entry.title.replace('Safety ', '')),
       ...bioCharts.map(([, entry]) => entry.title)
     ]);
-    await expect(page.locator('.sva-group .sva-tag')).toHaveCount(17);
+    await expect(page.locator('.sva-group .sva-tag')).toHaveCount(18);
     // The experimental Patient Journey Explorer is not offered.
     await expect(page.locator('.sva-app')).not.toContainText('Patient Journey');
   });
 
-  test('APP-PAGE-002: the demo study reads 17 of 17 supported and opens on the first chart (#150, #165, #182)', async ({
+  test('APP-PAGE-002: the demo study reads 18 of 18 supported and opens on the first chart (#150, #165, #182, #212)', async ({
     page
   }) => {
     const errors = watchErrors(page);
     await openOnDemo(page);
     await expect(page.locator('.sva-count')).toHaveText(
-      '17 of 17 charts supported by the loaded data'
+      '18 of 18 charts supported by the loaded data'
     );
-    await expect(page.locator('.sva-tag.sva-ready')).toHaveCount(17);
+    await expect(page.locator('.sva-tag.sva-ready')).toHaveCount(18);
     await expect(item(page, 'data').locator('.sva-tag')).toHaveText('4 files');
     await expect(item(page, 'histogram')).toHaveAttribute('aria-current', 'page');
     await expect(page.locator('.sva-chart .sv-root')).toBeVisible();
@@ -168,7 +169,7 @@ test.describe('demo app on the demo study', () => {
     await expect(item(page, 'shift-plot').locator('.sva-tag')).toHaveText('did not draw');
     await expect(page.locator('.sva-message')).toContainText('Required variable(s) missing: VISIT');
     await expect(page.locator('.sva-count')).toHaveText(
-      '16 of 17 charts supported by the loaded data'
+      '17 of 18 charts supported by the loaded data'
     );
   });
 
@@ -201,7 +202,7 @@ test.describe('demo app on the demo study', () => {
   }) => {
     await page.goto('/tests/e2e/fixtures/basic-app.html?empty');
     await expect(page.locator('.sva-count')).toHaveText(
-      '0 of 17 charts supported by the loaded data'
+      '0 of 18 charts supported by the loaded data'
     );
     await expect(item(page, 'data')).toHaveAttribute('aria-current', 'page');
     await expect(page.locator('.sva-data')).toContainText('No files are loaded.');
@@ -309,7 +310,7 @@ test.describe('demo app on the demo study', () => {
       '9 of 9',
       '1 of 1',
       '3 of 3',
-      '4 of 4'
+      '5 of 5'
     ]);
     // The demo opens on the first chart, so its domain is open.
     await expect(tab(page, 'bds')).toHaveAttribute('aria-pressed', 'true');
@@ -396,7 +397,7 @@ test.describe('demo app on the demo study', () => {
       expect.arrayContaining(['bds.STRESU', 'bds.STNRLO', 'bds.VISITNUM', 'eg.CHG', 'ae.AESER'])
     );
     await expect(page.locator('.sva-count')).toHaveText(
-      '17 of 17 charts supported by the loaded data'
+      '18 of 18 charts supported by the loaded data'
     );
     for (const [module, entry] of [...destinations, ...bioCharts]) {
       await openChart(page, module);
@@ -653,7 +654,7 @@ test.describe('demo app data panel on a renamed-column study', () => {
     await chooseFiles(page, STUDY);
     // The biomarker charts read columns the renamed study's guesses already fill.
     await expect(page.locator('.sva-count')).toHaveText(
-      '11 of 17 charts supported by the loaded data'
+      '12 of 18 charts supported by the loaded data'
     );
     for (const [module, sentence] of [
       ['hep-explorer', 'Not mapped yet: Upper limit of normal, Total bilirubin.'],
@@ -697,7 +698,7 @@ test.describe('demo app data panel on a renamed-column study', () => {
     await chooseFiles(page, STUDY);
     await correct(page);
     await expect(page.locator('.sva-count')).toHaveText(
-      '17 of 17 charts supported by the loaded data'
+      '18 of 18 charts supported by the loaded data'
     );
     await expect(mappingRow(page, 'bds', 'column', 'STNRHI').locator('.sva-tag')).toHaveText(
       'chosen'
@@ -764,11 +765,11 @@ test.describe('demo app data panel on a renamed-column study', () => {
     // A fresh page: the files and the mapping file chosen together.
     await page.reload();
     await expect(page.locator('.sva-count')).toHaveText(
-      '0 of 17 charts supported by the loaded data'
+      '0 of 18 charts supported by the loaded data'
     );
     await page.locator('.sva-file-input').setInputFiles([...STUDY, saved]);
     await expect(page.locator('.sva-count')).toHaveText(
-      '17 of 17 charts supported by the loaded data'
+      '18 of 18 charts supported by the loaded data'
     );
     const after = await page.evaluate(`JSON.stringify(${APP}.state.mappings)`);
     expect(JSON.parse(after)).toEqual(JSON.parse(before));
@@ -787,7 +788,7 @@ test.describe('demo app data panel on a renamed-column study', () => {
       'labs.xpt is not a CSV or JSON file. SAS transport and sas7bdat files are not supported yet.'
     ]);
     await expect(page.locator('.sva-count')).toHaveText(
-      '0 of 17 charts supported by the loaded data'
+      '0 of 18 charts supported by the loaded data'
     );
   });
 
@@ -824,9 +825,59 @@ const sideAction = (page, name) => page.locator(`.sva-side [data-action="${name}
 // Since R on request (#183) the hosted app hands the charts a connection that
 // waits for the reader, so until R is started each line says statistics need
 // R and what starting it downloads (APP-R-006).
+// Since the copy of bio.viz was made again (#212, obot.roadmap#367) there are
+// five: the cross-tabulation is listed, and the group comparison has three
+// levels: trend tiles, one biomarker over time, and one visit.
 const NO_R =
   'Statistics need R. Start R to compute them: it downloads about 13 MB, once, from ' +
   'webr.r-wasm.org, and the study’s data stays in this browser.';
+
+// The pilot demo study's own rows, read here as the tests' side of every count
+// the charts print. Neither file quotes a field.
+const studyRows = (file) => {
+  const [head, ...lines] = readFileSync(new URL(`../../site/data/${file}`, import.meta.url), 'utf8')
+    .trim()
+    .split(/\r?\n/);
+  const keys = head.split(',');
+  return lines.map((line) => {
+    const values = line.split(',');
+    return Object.fromEntries(keys.map((key, index) => [key, values[index]]));
+  });
+};
+const results = studyRows('adbds.csv');
+const participants = studyRows('adsl.csv');
+const armOf = new Map(participants.map((row) => [row.USUBJID, row.ARM]));
+const arms = [...new Set(participants.map((row) => row.ARM))].sort();
+const measures = [...new Set(results.map((row) => row.TEST))];
+// A visit named as unscheduled is left out of every level until the reader asks for it.
+const unscheduled = (visit) => /unscheduled/i.test(visit);
+const MEASURE = 'Alanine Aminotransferase';
+const VISIT = 'Week 4';
+// The measure's results that have a number, from participants the subject-level file has.
+const drawn = results.filter(
+  (row) =>
+    row.TEST === MEASURE &&
+    row.STRESN !== '' &&
+    Number.isFinite(Number(row.STRESN)) &&
+    armOf.has(row.USUBJID) &&
+    !unscheduled(row.VISIT)
+);
+// Its scheduled visits, in visit order, and how many participants each arm has at each.
+const visits = [...new Map(drawn.map((row) => [row.VISIT, Number(row.VISITNUM)]))]
+  .sort(([, a], [, b]) => a - b)
+  .map(([visit]) => visit);
+const inArm = (visit, arm) =>
+  new Set(
+    drawn
+      .filter((row) => row.VISIT === visit && armOf.get(row.USUBJID) === arm)
+      .map((row) => row.USUBJID)
+  ).size;
+
+const controlOf = (page, label) =>
+  page.locator('.sva-chart .sv-control', { has: page.locator(`label:text-is("${label}")`) });
+const trail = (page) => page.locator('.sva-chart .bv-trail');
+const tiles = (page) => page.locator('.sva-chart .bv-tile');
+const testRow = (page) => page.locator('.sva-chart .bv-time-table tr[data-row="test"]');
 
 test.describe('demo app with the biomarker charts', () => {
   test.beforeAll(() => {
@@ -836,13 +887,19 @@ test.describe('demo app with the biomarker charts', () => {
   const statistics = (page) => page.locator('.sva-chart .bv-statistic');
   const sections = (page) => page.locator('.sva-chart .sv-section-title');
 
-  test('APP-BIO-004: on the demo study the four biomarker charts have a tab of their own after the three domains, each ready, and the count includes them (#182)', async ({
+  test('APP-BIO-004: on the demo study the five biomarker charts have a tab of their own after the three domains, each ready, and the count includes them (#182, #212)', async ({
     page
   }) => {
     await openOnDemo(page);
-    expect(bioCharts).toHaveLength(4);
+    expect(bioCharts.map(([module]) => module)).toEqual([
+      'group-comparison',
+      'association-scatter',
+      'correlation-matrix',
+      'biomarker-screen',
+      'cross-tab'
+    ]);
     await expect(tab(page, 'biomarkers').locator('.sva-tab-title')).toHaveText('Biomarkers');
-    await expect(tab(page, 'biomarkers').locator('.sva-tab-count')).toHaveText('4 of 4');
+    await expect(tab(page, 'biomarkers').locator('.sva-tab-count')).toHaveText('5 of 5');
     await expect(tab(page, 'biomarkers')).toHaveClass(/sva-library-group/);
     await expect(page.locator('.sva-tab').last()).toHaveAttribute('data-domain', 'biomarkers');
     await tab(page, 'biomarkers').click();
@@ -851,16 +908,18 @@ test.describe('demo app with the biomarker charts', () => {
       await expect(item(page, module).locator('.sva-tag')).toHaveText('ready');
     }
     await expect(page.locator('.sva-count')).toHaveText(
-      '17 of 17 charts supported by the loaded data'
+      '18 of 18 charts supported by the loaded data'
     );
   });
 
   for (const [module, entry] of bioCharts) {
     test(`APP-BIO-005: ${entry.title} draws on the demo study with no console error, and ${
       module === 'group-comparison'
-        ? 'opens on an overview that prints no test; with a biomarker chosen, its lines say statistics need R until R is started'
+        ? 'opens on trend tiles that print no test; with a biomarker chosen, its line says statistics need R until R is started'
         : 'its statistics line says statistics need R until R is started'
-    } (#182, #183)`, async ({ page }) => {
+    } (#182, #183${module === 'group-comparison' || module === 'cross-tab' ? ', #212' : ''})`, async ({
+      page
+    }) => {
       const errors = watchErrors(page);
       await openOnDemo(page);
       await openChart(page, module);
@@ -870,32 +929,16 @@ test.describe('demo app with the biomarker charts', () => {
       // Drawn with safety.viz's kit, as the safety charts are.
       await expect(page.locator('.sva-chart .sv-root .sv-sidebar')).toBeVisible();
       if (module === 'group-comparison') {
-        // It opens on its overview: every measure, every visit, by arm. The
-        // overview asks R for nothing, so it prints no test.
+        // It opens on its trend tiles: every biomarker, by arm. The tiles ask R
+        // for nothing, so no test is printed.
+        await expect(tiles(page).first()).toBeVisible();
         expect(
           (await statistics(page).allTextContents()).every((text) => text === ''),
-          'the overview prints a statistics line'
+          'the tiles print a statistics line'
         ).toBe(true);
-        const measures = new Set(
-          readFileSync(new URL('../../site/data/adbds.csv', import.meta.url), 'utf8')
-            .trim()
-            .split(/\r?\n/)
-            .slice(1)
-            .map((line) => line.split(',')[8])
-        ).size;
-        await expect(page.locator('.sva-chart .bv-overview-count').first()).toContainText(
-          `of ${measures} biomarkers shown`
-        );
-        await expect(page.locator('.sva-chart .bv-overview-panel').first()).toBeVisible();
-        const groupBy = page
-          .locator('.sva-chart .sv-control', { has: page.locator('label:text-is("Group by")') })
-          .locator('select');
-        await expect(groupBy).toHaveValue('ARM');
-        // One biomarker open: each visit's line, where a test applies, says so.
-        await page
-          .locator('.sva-chart .sv-control', { has: page.locator('label:text-is("Biomarker")') })
-          .locator('select')
-          .selectOption({ index: 1 });
+        await expect(controlOf(page, 'Group by').locator('select')).toHaveValue('ARM');
+        // One biomarker open, across the visits: its line says statistics need R.
+        await controlOf(page, 'Biomarker').locator('select').selectOption({ index: 1 });
         await expect(statistics(page).filter({ hasText: NO_R }).first()).toBeVisible();
         for (const text of await statistics(page).allTextContents()) {
           expect(text === '' || text === NO_R || text.startsWith('Statistics: no test')).toBe(true);
@@ -906,6 +949,186 @@ test.describe('demo app with the biomarker charts', () => {
       expect(errors).toEqual([]);
     });
   }
+
+  test('APP-BIO-015: the group comparison opens on trend tiles: one for each biomarker of the study, in the Biomarker control’s order, each a button named for its biomarker and drawing a line per arm across the scheduled visits; no test is printed and nothing is asked of R (#212)', async ({
+    page
+  }) => {
+    const errors = watchErrors(page);
+    const requests = [];
+    page.on('request', (request) => requests.push(request.url()));
+    await openOnDemo(page);
+    await openChart(page, 'group-comparison');
+    await expect(tiles(page)).toHaveCount(measures.length);
+    // No level is open, so nothing leads back from here.
+    await expect(trail(page)).toHaveCount(0);
+    const options = await controlOf(page, 'Biomarker').locator('option').allTextContents();
+    expect(options[0]).toBe('All Biomarkers');
+    expect(options.slice(1).sort()).toEqual([...measures].sort());
+    await expect(page.locator('.sva-chart .bv-tile-name')).toHaveText(options.slice(1));
+    // One key for every tile: the arms of the subject-level file.
+    await expect(page.locator('.sva-chart .bv-tile-key [data-group]')).toHaveText(arms);
+    const tile = page.locator(`.sva-chart .bv-tile[data-measure="${MEASURE}"]`);
+    await expect(tile).toHaveAttribute('aria-label', `View ${MEASURE}`);
+    // The tile's picture names each arm, and no visit named as unscheduled.
+    const picture = await tile.locator('canvas').getAttribute('aria-label');
+    for (const arm of arms) expect(picture).toContain(arm);
+    for (const visit of visits) expect(picture).toContain(visit);
+    expect(picture).not.toMatch(/unscheduled/i);
+    const hidden = new Set(results.map((row) => row.VISIT).filter(unscheduled)).size;
+    expect(hidden).toBeGreaterThan(0);
+    await expect(page.locator('.sva-chart .bv-hidden-visits')).toContainText(
+      `${hidden} unscheduled visits not drawn`
+    );
+    // No statistic: no line, no connection to R, and nothing fetched for one.
+    expect((await statistics(page).allTextContents()).every((text) => text === '')).toBe(true);
+    await expect(page.locator('.sva-chart .bv-foot')).toContainText('No statistic was asked of R.');
+    expect(await page.evaluate(() => window.__rConnections)).toBe(0);
+    expect(requests.filter((url) => /webr\.r-wasm\.org|statistics\.R/.test(url))).toEqual([]);
+    expect(errors).toEqual([]);
+    await captureEvidence(page.locator('.sva-chart .bv-tiles'), 'APP-BIO-015', 'trend-tiles');
+  });
+
+  test('APP-BIO-016: a tile opens its biomarker over time: the scheduled visits along the bottom, the arms side by side, and under each visit the number in each arm, which is the study’s rows counted; the row for R’s test says statistics need R (#212)', async ({
+    page
+  }) => {
+    const errors = watchErrors(page);
+    await openOnDemo(page);
+    await openChart(page, 'group-comparison');
+    await page.locator(`.sva-chart .bv-tile[data-measure="${MEASURE}"]`).click();
+    await expect(trail(page)).toHaveAttribute('data-level', 'over-time');
+    await expect(trail(page).locator('[aria-current]')).toHaveText(`${MEASURE} over time`);
+    await expect(controlOf(page, 'Biomarker').locator('select')).toHaveValue(MEASURE);
+    await expect(page.locator('.sva-chart .bv-time canvas:visible').first()).toBeVisible();
+    // The visits are the study's scheduled visits that have this biomarker, in order.
+    expect(visits.length).toBeGreaterThan(1);
+    await expect(page.locator('.sva-chart .bv-time-visit')).toHaveText(visits);
+    // Under each visit, the number in each arm.
+    const table = page.locator('.sva-chart .bv-time-table');
+    await expect(table.locator('tr[data-row="n"]')).toHaveCount(arms.length);
+    for (const arm of arms) {
+      await expect(
+        table.locator(`tr[data-row="n"][data-group="${arm}"] td[data-visit]`),
+        arm
+      ).toHaveText(visits.map((visit) => `n = ${inArm(visit, arm)}`));
+    }
+    // The row for R's test is there, and says why it is empty.
+    await expect(testRow(page)).toHaveAttribute('data-state', 'unavailable');
+    await expect(testRow(page)).toContainText('Statistics unavailable');
+    await expect(statistics(page).filter({ hasText: NO_R })).toHaveCount(1);
+    expect(await page.evaluate(() => window.__rConnections)).toBe(0);
+    expect(errors).toEqual([]);
+    await captureEvidence(page.locator('.sva-chart .bv-time'), 'APP-BIO-016', 'over-time');
+  });
+
+  test('APP-BIO-017: a visit under the picture opens that visit alone, with the single-visit view’s own controls and the study’s counts, and the trail leads back to the picture over time and to the tiles (#212)', async ({
+    page
+  }) => {
+    const errors = watchErrors(page);
+    await openOnDemo(page);
+    await openChart(page, 'group-comparison');
+    await page.locator(`.sva-chart .bv-tile[data-measure="${MEASURE}"]`).click();
+    await page.locator(`.sva-chart .bv-time-visit[data-visit="${VISIT}"]`).click();
+    await expect(trail(page)).toHaveAttribute('data-level', 'visits');
+    await expect(trail(page).locator('[aria-current]')).toHaveText(VISIT);
+    await expect(controlOf(page, 'Visit').locator('summary')).toHaveText(`1 of ${visits.length}`);
+    // The view the chart has always drawn for one visit: its test menu and its
+    // pairwise comparisons are offered here, and its picture names each arm's number.
+    await expect(sections(page)).toContainText(['Statistics']);
+    await expect(controlOf(page, 'Test').locator('select')).toBeVisible();
+    await expect(page.locator('.sva-chart canvas:visible').first()).toHaveAttribute(
+      'aria-label',
+      new RegExp(`${arms.map((arm) => `${arm} n = ${inArm(VISIT, arm)}`).join('; ')}$`)
+    );
+    await expect(statistics(page).filter({ hasText: NO_R })).toHaveCount(1);
+    // Back to the picture over time, and from there to the tiles.
+    await trail(page)
+      .getByRole('button', { name: `${MEASURE} over time` })
+      .click();
+    await expect(trail(page)).toHaveAttribute('data-level', 'over-time');
+    await expect(page.locator('.sva-chart .bv-time-visit')).toHaveText(visits);
+    await trail(page).getByRole('button', { name: 'All biomarkers' }).click();
+    await expect(tiles(page)).toHaveCount(measures.length);
+    await expect(controlOf(page, 'Biomarker').locator('option:checked')).toHaveText(
+      'All Biomarkers'
+    );
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-BIO-018: the cross-tabulation is listed with the biomarker charts and draws a two-way table of two columns of the study, where every count, every total and every percentage of its row is the study’s rows counted; choosing another column draws that table (#212)', async ({
+    page
+  }) => {
+    const errors = watchErrors(page);
+    await openOnDemo(page);
+    await tab(page, 'biomarkers').click();
+    await expect(item(page, 'cross-tab').locator('.sva-item-title')).toHaveText('Cross-tabulation');
+    await item(page, 'cross-tab').click();
+    await expect(page.locator('.sva-title')).toHaveText('Cross-tabulation');
+    const table = page.locator('.sva-chart table.bv-crosstab');
+    await expect(table).toBeVisible();
+    // The two columns it opens on are columns of the subject-level file.
+    const rowCol = await controlOf(page, 'Rows').locator('select').inputValue();
+    const colCol = await controlOf(page, 'Columns').locator('select').inputValue();
+    expect(rowCol).not.toBe(colCol);
+    for (const column of [rowCol, colCol]) expect(Object.keys(participants[0])).toContain(column);
+    await expect(table.locator('caption')).toHaveText(`${rowCol} by ${colCol}`);
+    // The participants in the table: those of the subject-level file who have results.
+    const withResults = new Set(results.map((row) => row.USUBJID));
+    const tabled = participants.filter((row) => withResults.has(row.USUBJID));
+    const levels = (column) => [...new Set(tabled.map((row) => row[column]))].sort();
+    const count = (where) =>
+      tabled.filter((row) => Object.entries(where).every(([key, value]) => row[key] === value))
+        .length;
+    await expect(table.locator('thead th[scope="col"]')).toHaveText([
+      `${rowCol} \\ ${colCol}`,
+      ...levels(colCol),
+      'Total'
+    ]);
+    await expect(table.locator('tbody th[scope="row"]')).toHaveText(levels(rowCol));
+    for (const row of levels(rowCol)) {
+      const total = count({ [rowCol]: row });
+      for (const col of levels(colCol)) {
+        const n = count({ [rowCol]: row, [colCol]: col });
+        const cell = table.locator(`button[data-row="${row}"][data-col="${col}"]`);
+        // The count, then its share of the row.
+        await expect(cell, `${row}, ${col}`).toHaveText(`${n}${((100 * n) / total).toFixed(1)}%`);
+      }
+      await expect(
+        table
+          .locator('tbody tr', { has: page.locator(`th:text-is("${row}")`) })
+          .locator('td.bv-total')
+      ).toHaveText(String(total));
+    }
+    await expect(table.locator('tfoot td')).toHaveText([
+      ...levels(colCol).map((col) => String(count({ [colCol]: col }))),
+      String(tabled.length)
+    ]);
+    await expect(page.locator('.sva-chart .sv-notes')).toContainText(
+      `${tabled.length} of ${withResults.size} participants in the table.`
+    );
+    // The same table again as bars, and R's test not yet asked for.
+    await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
+    await expect(statistics(page)).toHaveText(NO_R);
+    await captureEvidence(
+      page.locator('.sva-chart .bv-crosstab-wrap'),
+      'APP-BIO-018',
+      'cross-tabulation'
+    );
+    // Another column: the table is of that column, and still of everyone in it.
+    const other = (
+      await controlOf(page, 'Columns')
+        .locator('option')
+        .evaluateAll((list) => list.map((option) => option.value))
+    ).find((value) => value !== rowCol && value !== colCol);
+    await controlOf(page, 'Columns').locator('select').selectOption(other);
+    await expect(table.locator('caption')).toHaveText(`${rowCol} by ${other}`);
+    const cells = await table
+      .locator('button[data-row][data-col]')
+      .evaluateAll((list) => list.map((button) => Number(button.firstChild.textContent)));
+    expect(cells.reduce((sum, n) => sum + n, 0)).toBe(
+      Number(await table.locator('tfoot td').last().textContent())
+    );
+    expect(errors).toEqual([]);
+  });
 
   test('APP-BIO-006: with the labs and vitals file alone every biomarker chart draws, with no filters (#182)', async ({
     page
@@ -942,7 +1165,7 @@ test.describe('demo app with the biomarker charts', () => {
     await chooseFiles(page, STUDY);
     await correct(page);
     await expect(page.locator('.sva-count')).toHaveText(
-      '17 of 17 charts supported by the loaded data'
+      '18 of 18 charts supported by the loaded data'
     );
     for (const [module, entry] of bioCharts) {
       await openChart(page, module);
@@ -951,19 +1174,26 @@ test.describe('demo app with the biomarker charts', () => {
       await expect(page.locator('.sva-chart').locator(DRAWN).first()).toBeVisible();
     }
     // The group comparison reads the renamed files through the same mapping:
-    // its measures are the labs file's own.
+    // its tiles are the labs file's own measures, and one opens over time.
     await openChart(page, 'group-comparison');
-    const options = await page
-      .locator('.sva-chart .sv-control', { has: page.locator('label:text-is("Biomarker")') })
-      .locator('option')
-      .allTextContents();
+    const options = await controlOf(page, 'Biomarker').locator('option').allTextContents();
     expect(options.length).toBeGreaterThan(1);
+    await expect(tiles(page)).toHaveCount(options.length - 1);
+    await tiles(page).first().click();
+    await expect(trail(page)).toHaveAttribute('data-level', 'over-time');
+    await expect(page.locator('.sva-chart .bv-time-visit').first()).toBeVisible();
+    // The cross-tabulation's columns are the subject-level file's own names.
+    await openChart(page, 'cross-tab');
+    await expect(page.locator('.sva-chart table.bv-crosstab caption')).toHaveText(
+      /^(TREATMENT|STATUS|SEX|RACE|CENTRE) by (TREATMENT|STATUS|SEX|RACE|CENTRE)$/
+    );
     expect(errors).toEqual([]);
   });
 
-  test('APP-BIO-008: at phone width, with the Biomarkers tab and a biomarker chart open, the page does not scroll sideways (#182)', async ({
+  test('APP-BIO-008: at phone width, with the Biomarkers tab open, no biomarker chart and no level of the group comparison scrolls the page sideways (#182, #212)', async ({
     page
   }) => {
+    test.setTimeout(MANY_CHARTS);
     await page.setViewportSize({ width: 390, height: 844 });
     await openOnDemo(page);
     const overflow = () =>
@@ -972,7 +1202,17 @@ test.describe('demo app with the biomarker charts', () => {
     await tab(page, 'biomarkers').click();
     await expect(page.locator('.sva-title')).toHaveText(bioCharts[0][1].title);
     await expect(page.locator('.sva-chart').locator(DRAWN).first()).toBeVisible();
-    expect(await overflow()).toBeLessThanOrEqual(0);
+    expect(await overflow(), 'the trend tiles scroll the page sideways').toBeLessThanOrEqual(0);
+    // One biomarker over time, then one visit of it.
+    await page.locator(`.sva-chart .bv-tile[data-measure="${MEASURE}"]`).click();
+    await expect(page.locator('.sva-chart .bv-time-table')).toBeVisible();
+    expect(await overflow(), 'the picture over time scrolls the page sideways').toBeLessThanOrEqual(
+      0
+    );
+    await page.locator(`.sva-chart .bv-time-visit[data-visit="${VISIT}"]`).click();
+    await expect(trail(page)).toHaveAttribute('data-level', 'visits');
+    await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
+    expect(await overflow(), 'one visit scrolls the page sideways').toBeLessThanOrEqual(0);
     for (const [module] of bioCharts.slice(1)) {
       await item(page, module).scrollIntoViewIfNeeded();
       await item(page, module).click();
@@ -987,12 +1227,15 @@ test.describe('demo app with the biomarker charts', () => {
 // with bio.viz's own connection and the vendored gsm.bio statistics file.
 // Before it is pressed nothing is fetched; after, one R answers every chart.
 // The comparison with desktop R reads tests/fixtures/app-statistics/, written
-// from the app by scripts/derive-app-statistics.mjs and scripts/app-statistics.R.
+// from the app by scripts/derive-app-statistics.mjs and scripts/app-statistics.R:
+// one walk through the biomarker charts (scripts/app-statistics-lib.mjs), played
+// there against a stand-in that records what is asked and here against real R.
 const R_HOST = /webr\.r-wasm\.org|statistics\.R/;
 const NEED_R = NO_R;
 const expectedStatistics = JSON.parse(
   readFileSync(new URL('./../fixtures/app-statistics/expected.json', import.meta.url), 'utf8')
 );
+const answersOf = (step) => expectedStatistics.answers.filter((answer) => answer.step === step);
 const biomarkerControl = (page) =>
   page
     .locator('.sva-chart .sv-control', { has: page.locator('label:text-is("Biomarker")') })
@@ -1002,13 +1245,15 @@ const settled = (page, timeout = 100000) =>
     () =>
       ![...document.querySelectorAll('.sva-chart .bv-statistic')].some((line) =>
         /waiting/.test(line.textContent)
-      ),
+      ) && !document.querySelector('.sva-chart [data-row="test"][data-state="waiting"]'),
     null,
     { timeout }
   );
 // Requests to R's hosts, and the imports of webR itself, which is what starting R costs.
 const rRequests = (requests) => requests.filter((url) => R_HOST.test(url));
 const webrImports = (requests) => requests.filter((url) => /webr\.mjs$/.test(url));
+// A p-value as the charts print it.
+const printedP = (p) => (p < 0.001 ? 'p < 0.001' : `p = ${p.toFixed(3)}`);
 
 // Two answers agree when every number is the same to twelve significant figures
 // and everything else is the same.
@@ -1069,11 +1314,11 @@ test.describe('demo app with R on request', () => {
     expect(errors).toEqual([]);
   });
 
-  test('APP-R-007: pressing the control starts R once, about 13 MB from webr.r-wasm.org, and the group comparison prints R’s test under each visit, equal to desktop R on the same rows (#183)', async ({
+  test('APP-R-007: pressing the control starts R once, about 13 MB from webr.r-wasm.org; a trend tile then opens its biomarker over time with R’s p-value under each visit, a visit opens with R’s test of it, and the cross-tabulation prints R’s test of its table; every answer real webR gives equals desktop R’s on the same rows (#183, #212)', async ({
     page,
     context
   }) => {
-    test.setTimeout(240000);
+    test.setTimeout(300000);
     const errors = watchErrors(page);
     let transferred = 0;
     context.on('requestfinished', async (request) => {
@@ -1081,11 +1326,11 @@ test.describe('demo app with R on request', () => {
         transferred += (await request.sizes()).responseBodySize;
     });
     await openOnDemo(page);
-    await openChart(page, expectedStatistics.chart);
+    await tab(page, 'biomarkers').click();
     await expect(page.locator('.sva-action-hint')).toHaveText('About 13 MB, once');
-    // Pressed on the overview, which asks R for nothing: R starts all the same,
-    // and the control says so, then that it is running.
-    await page.locator('.sva-action').click();
+    // Pressed on the trend tiles, which ask R for nothing: R starts all the
+    // same, and the control says so, then that it is running.
+    await openAndStartR(page);
     await expect(page.locator('.sva-action')).toHaveText('Starting R…');
     await expect(page.locator('.sva-action')).toHaveText('R started', { timeout: 150000 });
     await expect(page.locator('.sva-action')).toBeDisabled();
@@ -1094,37 +1339,67 @@ test.describe('demo app with R on request', () => {
       'R is running in this browser.'
     );
     expect(transferred).toBeGreaterThan(10e6);
-    await biomarkerControl(page).selectOption({ label: expectedStatistics.measure });
-    await page.waitForFunction(
-      (count) => window.__rAnswers.length >= count,
-      expectedStatistics.answers.length,
-      { timeout: 150000 }
-    );
-    await settled(page);
+    expect(await page.evaluate(() => window.__rAnswers)).toEqual([]);
+    // The walk the requests were recorded on, now with real R. What each step
+    // prints is R's answer, as desktop R gave it.
+    const steps = SCENARIO;
+    expect(expectedStatistics.steps.map((step) => step.id)).toEqual(steps.map((step) => step.id));
+    const printed = {
+      'over-time': async () => {
+        const [{ value }] = answersOf('over-time');
+        await expect(testRow(page)).toHaveAttribute('data-state', 'shown');
+        await expect(testRow(page).locator('td[data-visit]')).toHaveText(
+          value.rows.map((row) => printedP(row.p_value))
+        );
+        expect(value.rows.map((row) => row.by)).toEqual(visits);
+        // R's counts at each visit are the numbers the table prints above them.
+        for (const row of value.rows) {
+          expect([row.n_1, row.n_2, row.n_3]).toEqual(
+            [row.group_1, row.group_2, row.group_3].map((arm) => inArm(row.by, arm))
+          );
+        }
+        await expect(page.locator('.sva-chart .bv-statistic').last()).toContainText(
+          `${value.method} at each visit`
+        );
+      },
+      'one-visit': async () => {
+        const [{ value }] = answersOf('one-visit');
+        const counts = Object.entries(value.counts)
+          .map(([group, n]) => `${group} n = ${n}`)
+          .join(', ');
+        await expect(page.locator('.sva-chart .bv-statistic').last()).toContainText(
+          `${value.method}: ${printedP(value.p_value)} (${counts})`
+        );
+      },
+      'cross-tab': async () => {
+        const [{ value }] = answersOf('cross-tab');
+        await expect(page.locator('.sva-chart .bv-statistic')).toContainText(
+          `${value.method}: ${printedP(value.p_value)} (n = ${value.counts})`
+        );
+      }
+    };
+    const ranges = await playScenario(page, {
+      log: '__rAnswers',
+      steps,
+      counts: Object.fromEntries(steps.map((step) => [step.id, answersOf(step.id).length])),
+      afterStep: (step) => printed[step.id]()
+    });
     expect(await page.evaluate(() => window.__rConnections)).toBe(1);
     const answers = await page.evaluate(() => window.__rAnswers);
     expect(answers).toHaveLength(expectedStatistics.answers.length);
-    answers.forEach((answer, index) => {
-      const expected = expectedStatistics.answers[index];
-      expect(answer.name).toBe(expected.name);
-      expect(answer.args).toEqual(expected.args);
-      expect(answer.rows).toBe(expected.rows);
-      expect(answer.answer.status).toBe('ok');
-      expect(answer.answer.form).toBe('browser');
-      same(answer.answer.value, expected.value, `answer ${index}`);
-    });
-    // What the chart prints is R's: each panel R tested names R's method and counts.
-    const printed = await page.locator('.sva-chart .bv-statistic').allTextContents();
-    const tested = expectedStatistics.answers.filter((answer) => answer.value.status === 'ok');
-    expect(tested.length).toBeGreaterThan(0);
-    for (const answer of tested) {
-      const counts = Object.entries(answer.value.counts)
-        .map(([group, n]) => `${group} n = ${n}`)
-        .join(', ');
-      expect(
-        printed.some((line) => line.startsWith(answer.value.method) && line.includes(counts)),
-        `no line prints ${answer.value.method} with ${counts}`
-      ).toBe(true);
+    for (const { id, from, to } of ranges) {
+      const expected = answersOf(id);
+      expect(expected.length, `desktop R has no answer for the step ${id}`).toBeGreaterThan(0);
+      expect(to - from, `${id}: answers`).toBe(expected.length);
+      answers.slice(from, to).forEach((answer, index) => {
+        expect(answer.name).toBe(expected[index].name);
+        expect(answer.args).toEqual(expected[index].args);
+        expect(answer.rows).toBe(expected[index].rows);
+        expect(answer.answer.status).toBe('ok');
+        expect(answer.answer.form).toBe('browser');
+        expect(expected[index].value.status, `${id}: desktop R’s status`).toBe('ok');
+        same(answer.answer.value, expected[index].value, `${id}, answer ${index}`);
+      });
     }
     // About 13 MB, as the statistics line and the control say.
     expect(transferred).toBeGreaterThan(10e6);
@@ -1132,31 +1407,34 @@ test.describe('demo app with R on request', () => {
     expect(errors).toEqual([]);
   });
 
-  test('APP-R-017: pressing the control with a biomarker chosen keeps it: the open chart is not drawn again, and prints R’s test for that biomarker (#183)', async ({
+  test('APP-R-017: pressing the control with a biomarker chosen keeps it: the open chart is not drawn again, and the row under its visits fills with R’s test for that biomarker (#183, #212)', async ({
     page
   }) => {
     test.setTimeout(240000);
     const errors = watchErrors(page);
+    const [{ value }] = answersOf('over-time');
     await openOnDemo(page);
-    await openChart(page, expectedStatistics.chart);
+    await openChart(page, 'group-comparison');
     await biomarkerControl(page).selectOption({ label: expectedStatistics.measure });
     await settled(page, 20000);
+    await expect(testRow(page)).toHaveAttribute('data-state', 'unavailable');
     await expect(
       page.locator('.sva-chart .bv-statistic').filter({ hasText: NEED_R }).first()
     ).toBeVisible();
+    // The picture is marked, so a second drawing of it would show.
+    await page.evaluate(() => {
+      document.querySelector('.sva-chart .sv-root').dataset.kept = 'yes';
+    });
     await page.locator('.sva-action').click();
-    await page.waitForFunction(
-      (count) => window.__rAnswers.length >= count,
-      expectedStatistics.answers.length,
-      { timeout: 150000 }
-    );
+    await expect(testRow(page)).toHaveAttribute('data-state', 'shown', { timeout: 150000 });
     await settled(page);
     // Still the biomarker the reader chose, with R's answers under its visits.
     await expect(biomarkerControl(page)).toHaveValue(expectedStatistics.measure);
-    const [tested] = expectedStatistics.answers.filter((answer) => answer.value.status === 'ok');
-    await expect(
-      page.locator('.sva-chart .bv-statistic').filter({ hasText: tested.value.method }).first()
-    ).toBeVisible();
+    await expect(trail(page)).toHaveAttribute('data-level', 'over-time');
+    await expect(page.locator('.sva-chart .sv-root')).toHaveAttribute('data-kept', 'yes');
+    await expect(testRow(page).locator('td[data-visit]')).toHaveText(
+      value.rows.map((row) => printedP(row.p_value))
+    );
     await expect(page.locator('.sva-chart .bv-statistic').filter({ hasText: NEED_R })).toHaveCount(
       0
     );
@@ -1169,14 +1447,16 @@ test.describe('demo app with R on request', () => {
     test.setTimeout(240000);
     const errors = watchErrors(page);
     await openOnDemo(page);
-    await openChart(page, expectedStatistics.chart);
+    await openChart(page, 'group-comparison');
     await page.locator('.sva-action').click();
     await expect(page.locator('.sva-action')).toHaveText('R started', { timeout: 150000 });
     // Every statistics line the open chart prints from here on is recorded.
     await page.evaluate(() => {
       window.__lines = [];
       const record = () => {
-        for (const line of document.querySelectorAll('.sva-chart .bv-statistic')) {
+        for (const line of document.querySelectorAll(
+          '.sva-chart .bv-statistic, .sva-chart [data-row="test"]'
+        )) {
           window.__lines.push(line.textContent);
         }
       };
@@ -1187,15 +1467,67 @@ test.describe('demo app with R on request', () => {
       });
     });
     await biomarkerControl(page).selectOption({ label: expectedStatistics.measure });
-    await page.waitForFunction(
-      (count) => window.__rAnswers.length >= count,
-      expectedStatistics.answers.length,
-      { timeout: 150000 }
-    );
+    await expect(testRow(page)).toHaveAttribute('data-state', 'shown', { timeout: 150000 });
     await settled(page);
     const lines = await page.evaluate(() => window.__lines);
     expect(lines.length).toBeGreaterThan(0);
     expect(lines.filter((line) => /R is starting/.test(line))).toEqual([]);
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-R-026: the cross-tabulation says statistics need R until R is started, then prints R’s chi-square test of the table drawn; choosing Fisher’s exact test asks R again and prints that (#212)', async ({
+    page
+  }) => {
+    test.setTimeout(240000);
+    const errors = watchErrors(page);
+    await openOnDemo(page);
+    await openChart(page, 'cross-tab');
+    const line = page.locator('.sva-chart .bv-statistic');
+    await expect(line).toHaveText(NEED_R);
+    const total = Number(
+      await page.locator('.sva-chart table.bv-crosstab tfoot td').last().textContent()
+    );
+    await page.locator('.sva-action').click();
+    await expect(line).toContainText("Pearson's Chi-squared test: p ", { timeout: 150000 });
+    await expect(line).toContainText(`(n = ${total})`);
+    // What is printed is what R answered, for the rows of the table drawn.
+    const asked = async (method) =>
+      (await page.evaluate(() => window.__rAnswers))
+        .filter((answer) => answer.name === 'Analyze_Contingency')
+        .filter((answer) => answer.args.strMethod === method)
+        .pop();
+    const chisq = await asked('chisq');
+    expect(chisq.rows).toBe(total);
+    expect(chisq.answer.status).toBe('ok');
+    expect(chisq.answer.value.status).toBe('ok');
+    expect(chisq.answer.value.counts).toBe(total);
+    await expect(line).toContainText(printedP(chisq.answer.value.p_value));
+    // The counts R tabulated are the counts in the table.
+    const drawnCells = await page
+      .locator('.sva-chart table.bv-crosstab button[data-row][data-col]')
+      .evaluateAll((list) =>
+        list.map((button) => ({
+          row: button.dataset.row,
+          col: button.dataset.col,
+          n: Number(button.firstChild.textContent)
+        }))
+      );
+    const byCell = (a, b) => `${a.row}|${a.col}`.localeCompare(`${b.row}|${b.col}`);
+    expect([...drawnCells].sort(byCell)).toEqual(
+      chisq.answer.value.rows.map(({ row, col, n }) => ({ row, col, n })).sort(byCell)
+    );
+    await page
+      .locator('.sva-chart .sv-control', { has: page.locator('label:text-is("Test")') })
+      .locator('select')
+      .selectOption({ label: "Fisher's exact test" });
+    await expect(line).toContainText('Fisher', { timeout: 60000 });
+    await settled(page);
+    const fisher = await asked('fisher');
+    expect(fisher.answer.value.status).toBe('ok');
+    await expect(line).toContainText(
+      `${fisher.answer.value.method}: ${printedP(fisher.answer.value.p_value)}`
+    );
+    expect(await page.evaluate(() => window.__rConnections)).toBe(1);
     expect(errors).toEqual([]);
   });
 
@@ -1243,13 +1575,19 @@ test.describe('demo app with R on request', () => {
     chosen = true;
     await chooseFiles(page, STUDY);
     await correct(page);
-    await openChart(page, expectedStatistics.chart);
+    await openChart(page, 'group-comparison');
     await page.locator('.sva-action').click();
     await expect(page.locator('.sva-action')).toHaveText('R started', { timeout: 150000 });
     await biomarkerControl(page).selectOption({ index: 1 });
+    // The biomarker opens across its visits, and R's p-value is under each (#212).
     await expect(
-      page.locator('.sva-chart .bv-statistic').filter({ hasText: /p = / }).first()
-    ).toBeVisible({ timeout: 150000 });
+      testRow(page)
+        .locator('td[data-visit]')
+        .filter({ hasText: /p [=<] / })
+        .first()
+    ).toBeVisible({
+      timeout: 150000
+    });
     // That was the last action. Keep listening after it until nothing has been
     // asked for in five seconds (at most a minute), so a request sent late is
     // still seen: the claim holds until then, not forever.
@@ -1379,7 +1717,7 @@ test.describe('demo app with R on request', () => {
     const requests = [];
     page.on('request', (request) => requests.push(request.url()));
     await openOnDemo(page);
-    await openChart(page, expectedStatistics.chart);
+    await openChart(page, 'group-comparison');
     await biomarkerControl(page).selectOption({ label: expectedStatistics.measure });
     await page.locator('.sva-action').click();
     const action = page.locator('.sva-action');
@@ -1394,7 +1732,12 @@ test.describe('demo app with R on request', () => {
       page.locator('.sva-chart .bv-statistic').filter({ hasText: 'R did not start' }).first()
     ).toBeVisible();
     const fetched = rRequests(requests).length;
-    for (const module of ['association-scatter', 'correlation-matrix', 'biomarker-screen']) {
+    for (const module of [
+      'association-scatter',
+      'correlation-matrix',
+      'cross-tab',
+      'biomarker-screen'
+    ]) {
       await item(page, module).click();
       await settled(page, 30000);
       await expect(page.locator('.sva-chart .bv-statistic').first()).toContainText(
@@ -1422,7 +1765,12 @@ test.describe('demo app with R on request', () => {
     await expect(page.locator('.sva-chart .bv-statistic')).toContainText('R did not start');
     const first = { all: rRequests(requests).length, webr: webrImports(requests).length };
     expect(first.webr).toBe(1);
-    for (const module of ['correlation-matrix', 'biomarker-screen', 'group-comparison']) {
+    for (const module of [
+      'correlation-matrix',
+      'cross-tab',
+      'group-comparison',
+      'biomarker-screen'
+    ]) {
       await item(page, module).click();
       await settled(page, 30000);
     }
@@ -1448,7 +1796,7 @@ test.describe('demo app with R on request', () => {
     });
     const fetched = requests.filter((url) => R_HOST.test(url)).length;
     expect(fetched).toBeGreaterThan(0);
-    for (const module of ['correlation-matrix', 'biomarker-screen']) {
+    for (const module of ['correlation-matrix', 'cross-tab', 'biomarker-screen']) {
       await item(page, module).click();
       await settled(page);
       const lines = await page.locator('.sva-chart .bv-statistic').allTextContents();
@@ -1484,7 +1832,7 @@ test.describe('demo app data view sidebar', () => {
     await expect(stepStatus(page, 'load')).toHaveText('4 files loaded');
     await expect(step(page, 'map')).toHaveAttribute('data-state', 'current');
     await expect(stepStatus(page, 'map')).toHaveText('23 guessed, 6 needed by a chart');
-    await expect(stepStatus(page, 'open')).toHaveText('11 of 17 charts ready');
+    await expect(stepStatus(page, 'open')).toHaveText('12 of 18 charts ready');
     await captureEvidence(page, 'APP-LOAD-017', 'sidebar');
 
     await correct(page);
@@ -1492,7 +1840,7 @@ test.describe('demo app data view sidebar', () => {
     await expect(stepStatus(page, 'map')).toHaveText('23 guessed, 0 needed by a chart');
     await expect(step(page, 'map')).toHaveAttribute('data-state', 'done');
     await expect(step(page, 'open')).toHaveAttribute('data-state', 'current');
-    await expect(stepStatus(page, 'open')).toHaveText('17 of 17 charts ready');
+    await expect(stepStatus(page, 'open')).toHaveText('18 of 18 charts ready');
     await sideAction(page, 'open-chart').click();
     await expect(item(page, 'histogram')).toHaveAttribute('aria-current', 'page');
     await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
@@ -1532,7 +1880,7 @@ test.describe('demo app data view sidebar', () => {
     await expect(page.locator('.sva-loaded-empty')).toHaveText('No files are loaded.');
     await expect(item(page, 'data').locator('.sva-tag')).toHaveText('no files');
     await expect(page.locator('.sva-count')).toHaveText(
-      '0 of 17 charts supported by the loaded data'
+      '0 of 18 charts supported by the loaded data'
     );
     await expect(sideAction(page, 'reset')).toHaveCount(0);
     // The same files can be chosen again, and arrive unmapped as they first did.
@@ -1575,12 +1923,12 @@ test.describe('demo app data view sidebar', () => {
     await menu.selectOption('liver');
     await expect(page.locator('.sva-loaded-name')).toHaveText(['adbds-abnbl.csv']);
     await expect(stepStatus(page, 'load')).toHaveText('1 file loaded');
-    await expect(stepStatus(page, 'open')).toHaveText('12 of 17 charts ready');
+    await expect(stepStatus(page, 'open')).toHaveText('13 of 18 charts ready');
     await expect(page.locator('.sva-tab .sva-tab-count')).toHaveText([
       '8 of 9',
       '0 of 1',
       '0 of 3',
-      '4 of 4'
+      '5 of 5'
     ]);
     // It draws: the hepatic explorer from the one labs file.
     await openChart(page, 'hep-explorer');
@@ -1593,7 +1941,7 @@ test.describe('demo app data view sidebar', () => {
     await expect(page.locator('.sva-file')).toHaveCount(0);
     await menu.selectOption('pilot');
     await expect(page.locator('.sva-count')).toHaveText(
-      '17 of 17 charts supported by the loaded data'
+      '18 of 18 charts supported by the loaded data'
     );
     expect(errors).toEqual([]);
   });
@@ -1690,7 +2038,7 @@ test.describe('demo app as one file, offline', () => {
       'https://jwildfire.github.io/safety.viz/'
     );
     await expect(page.locator('.sva-count')).toHaveText(
-      '0 of 17 charts supported by the loaded data'
+      '0 of 18 charts supported by the loaded data'
     );
     await expect(page.locator('.sva-drop')).toBeVisible();
     await expect(page.locator('.sva-study')).toHaveCount(0);
@@ -1699,7 +2047,7 @@ test.describe('demo app as one file, offline', () => {
     expect(errors).toEqual([]);
   });
 
-  test('APP-FILE-006: offline, the file loads the renamed study, takes the corrections and draws every chart of both libraries (#152, #182)', async ({
+  test('APP-FILE-006: offline, the file loads the renamed study, takes the corrections and draws every chart of both libraries, the group comparison’s three levels among them, and sends no request (#152, #182, #212)', async ({
     page,
     context
   }) => {
@@ -1712,11 +2060,11 @@ test.describe('demo app as one file, offline', () => {
     page.on('request', (request) => requests.push(request.url()));
     await chooseFiles(page, STUDY);
     await expect(page.locator('.sva-count')).toHaveText(
-      '11 of 17 charts supported by the loaded data'
+      '12 of 18 charts supported by the loaded data'
     );
     await correct(page);
     await expect(page.locator('.sva-count')).toHaveText(
-      '17 of 17 charts supported by the loaded data'
+      '18 of 18 charts supported by the loaded data'
     );
     // Every chart of both libraries draws, with no request but the file itself.
     for (const [module, entry] of [...destinations, ...bioCharts]) {
@@ -1725,6 +2073,15 @@ test.describe('demo app as one file, offline', () => {
       await expect(page.locator('.sva-chart').locator(DRAWN).first()).toBeVisible();
       await expect(item(page, module).locator('.sva-tag')).toHaveText('ready');
     }
+    // The group comparison's levels too: a tile opens its biomarker over time,
+    // and a visit opens alone (#212).
+    await openChart(page, 'group-comparison');
+    await tiles(page).first().click();
+    await expect(trail(page)).toHaveAttribute('data-level', 'over-time');
+    await expect(page.locator('.sva-chart .bv-time-table')).toBeVisible();
+    await page.locator('.sva-chart .bv-time-visit').first().click();
+    await expect(trail(page)).toHaveAttribute('data-level', 'visits');
+    await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
     expect(requests.filter((url) => !/^(blob|data):/.test(url))).toEqual([]);
     expect(errors).toEqual([]);
   });
@@ -1749,6 +2106,11 @@ test.describe('demo app as one file, offline', () => {
           .locator('.sva-chart .sv-control', { has: page.locator('label:text-is("Biomarker")') })
           .locator('select')
           .selectOption({ index: 1 });
+      }
+      if (module === 'cross-tab') {
+        // The table it opens on here has one column, the study's one centre,
+        // and no test applies to that. Sex has two values.
+        await controlOf(page, 'Columns').locator('select').selectOption('SEX');
       }
       await expect(
         page.locator('.sva-chart .bv-statistic').filter({ hasText: FILE_NO_R }).first()
