@@ -1,6 +1,6 @@
 {
   "module": "nep-explorer",
-  "generatedAt": "2026-10-07T06:24:35.103Z",
+  "generatedAt": "2026-10-07T12:31:52.106Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "37581278363",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37581278363"
+    "id": "37621567034",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37621567034"
   },
   "records": [
     {
@@ -698,6 +698,14 @@
       "status": "pass",
       "requirementIds": ["APP-R-026"],
       "issueRefs": [212],
+      "screenshots": []
+    },
+    {
+      "test": "APP-R-032: R in the browser installs workr, gsm.core, gsm.mapping and gsm.reporting from the page’s own address and their dependencies from repo.r-wasm.org, at the pinned versions; they attach with duckdb, and a query runs through workr (#229)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-R-032"],
+      "issueRefs": [229],
       "screenshots": []
     },
     {
@@ -6941,6 +6949,78 @@
       "screenshots": []
     },
     {
+      "test": "the package repository beside the demo app (#229) APP-R-031: the demo app’s directory serves the packages as a package repository, as R reads one, with the record of what each file was built from (#229)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-031"],
+      "issueRefs": [229, 229],
+      "screenshots": []
+    },
+    {
+      "test": "the package repository beside the demo app (#229) APP-R-031: the directory is not built when the packages, their record and the pins disagree (#229)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-031"],
+      "issueRefs": [229, 229],
+      "screenshots": []
+    },
+    {
+      "test": "the package repository, its record and the pins (#229) APP-R-029: a folder as the build leaves one passes the check (#229)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-029"],
+      "issueRefs": [229, 229],
+      "screenshots": []
+    },
+    {
+      "test": "the package repository, its record and the pins (#229) APP-R-029: an R package index is read as one entry per package, whatever else each block holds (#229)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-029"],
+      "issueRefs": [229, 229],
+      "screenshots": []
+    },
+    {
+      "test": "the package repository, its record and the pins (#229) APP-R-029: the check fails when a pinned package was not built, or the index lists something else (#229)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-029"],
+      "issueRefs": [229, 229],
+      "screenshots": []
+    },
+    {
+      "test": "the package repository, its record and the pins (#229) APP-R-029: the check fails when a served file is not the one that was built, or was never recorded (#229)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-029"],
+      "issueRefs": [229, 229],
+      "screenshots": []
+    },
+    {
+      "test": "the package repository, its record and the pins (#229) APP-R-029: the check fails when the pins change after the build (#229)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-029"],
+      "issueRefs": [229, 229],
+      "screenshots": []
+    },
+    {
+      "test": "the package repository, its record and the pins (#229) APP-R-029: the check never passes by comparing nothing (#229)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-029"],
+      "issueRefs": [229, 229],
+      "screenshots": []
+    },
+    {
+      "test": "the package repository, its record and the pins (#229) APP-R-029: the packages as committed, their record and the pins agree: every pinned package is there, built from its pinned commit at its pinned version, and nothing else is served (#229)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-029"],
+      "issueRefs": [229, 229],
+      "screenshots": []
+    },
+    {
       "test": "the page with a library’s settings and control APP-R-004: a library’s settings are added to each of its charts’ settings when it is drawn, and to no safety chart’s (#183)",
       "suite": "unit",
       "status": "pass",
@@ -7034,6 +7114,38 @@
       "status": "pass",
       "requirementIds": ["APP-R-023"],
       "issueRefs": [193],
+      "screenshots": []
+    },
+    {
+      "test": "the pins against the repositories they name (#229) APP-R-030: the pins agree with the repositories they name when each tag names its pinned commit and the package gives its pinned version (#229)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-030"],
+      "issueRefs": [229, 229],
+      "screenshots": []
+    },
+    {
+      "test": "the pins against the repositories they name (#229) APP-R-030: the pins disagree when a tag has moved, has gone, or the package gives another version (#229)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-030"],
+      "issueRefs": [229, 229],
+      "screenshots": []
+    },
+    {
+      "test": "the pins for the gsm packages built for R in the browser (#229) APP-R-028: a pin a build could not be made from is refused, and why is said in words (#229)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-028"],
+      "issueRefs": [229, 229],
+      "screenshots": []
+    },
+    {
+      "test": "the pins for the gsm packages built for R in the browser (#229) APP-R-028: workr, gsm.core, gsm.mapping and gsm.reporting are each pinned to a repository, a release tag, the full commit and a version (#229)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-028"],
+      "issueRefs": [229, 229],
       "screenshots": []
     },
     {

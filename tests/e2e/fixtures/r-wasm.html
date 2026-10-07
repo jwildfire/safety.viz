@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>gsm packages for R in the browser: harness page</title>
+  </head>
+  <body>
+    <!--
+      Playwright harness page for the gsm packages built for R in the browser
+      (#229). Starts webR at the version the pins name, installs the pinned
+      packages from the package repository the repository keeps (the site
+      build serves it beside the demo app) with their dependencies from the
+      public index, and leaves what R then says on window.__rWasm.
+    -->
+    <p id="state">starting R</p>
+    <script type="module">
+      const state = document.getElementById('state');
+      const result = { done: false, error: null };
+      window.__rWasm = result;
+      try {
+        const pins = await (await fetch('/site/vendor/r-wasm/pins.json')).json();
+        const base = `https://webr.r-wasm.org/v${pins.webr}/`;
+        const { WebR, ChannelType } = await import(`${base}webr.mjs`);
+        // The channel that needs no cross-origin isolation headers: GitHub
+        // Pages sends none.
+        const webR = new WebR({ baseUrl: base, channelType: ChannelType.PostMessage });
+        await webR.init();
+        const names = pins.packages.map((pin) => pin.package);
+        const own = new URL('/site/vendor/r-wasm/repo', window.location.href).href;
+        state.textContent = 'installing';
+        await webR.installPackages(names, {
+          repos: [own, 'https://repo.r-wasm.org'],
+          quiet: true
+        });
+        state.textContent = 'asking R';
+        const text = async (code) => (await webR.evalRString(code)).trim();
+        result.r = await text('paste(R.version$major, R.version$minor, sep = ".")');
+        result.versions = {};
+        for (const name of names) {
+          result.versions[name] = await text(`as.character(utils::packageVersion("${name}"))`);
+        }
+        // Attached, as a workflow that calls a function without its package's
+        // name needs them; and one query through workr, which opens duckdb.
+        result.loaded = await text(`tryCatch({
+          suppressPackageStartupMessages({
+            library(workr); library(gsm.core); library(gsm.mapping); library(gsm.reporting); library(duckdb)
+          })
+          "loaded"
+        }, error = function(e) conditionMessage(e))`);
+        result.query = await text(`tryCatch(
+          as.character(suppressMessages(workr::RunQuery("SELECT COUNT(*) AS n FROM df WHERE x > 1", data.frame(x = 1:3)))$n),
+          error = function(e) conditionMessage(e)
+        )`);
+      } catch (error) {
+        result.error = String((error && error.message) || error);
+      }
+      result.done = true;
+      state.textContent = result.error ? `failed: ${result.error}` : 'done';
+    </script>
+  </body>
+</html>
