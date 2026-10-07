@@ -11,6 +11,7 @@ from the section here when the release-candidate PR (dev -> main) merges and is 
 ## Also in this release
 
 - **The playbook for porting a legacy renderer now lives in this repository.** It is the `port-a-renderer` skill, with the wiki-harvest script and the record of the first matrix review beside the matrices. obot.agent removed them in its v0.5.0. No chart, test or evidence file changes. [#228](https://github.com/jwildfire/safety.viz/issues/228), PR [#237](https://github.com/jwildfire/safety.viz/pull/237)
+- **The gsm packages that R in the browser needs are built and served with the demo app.** gsm.core, gsm.mapping, gsm.reporting and workr have no WebAssembly build elsewhere, so each is built from a pinned release tag and served beside the app. No page uses them yet. [obot.roadmap#373](https://github.com/jwildfire/obot.roadmap/issues/373), [#229](https://github.com/jwildfire/safety.viz/issues/229), PR [#241](https://github.com/jwildfire/safety.viz/pull/241)
 
 # safety.viz v1.9.2
 
