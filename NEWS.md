@@ -17,6 +17,10 @@ A patch release on v1.9.1. The demo app can be installed and run on your own mac
 - **Run the demo app on your own machine.** Download one file, `scripts/install-demo.mjs`, and run it with Node: it clones the latest release, builds the demo app and opens it in your browser with the pilot study loaded, served to your computer and to nothing else. `npm run demo` does the same in a clone you already have. Run on macOS and Linux; Windows is written for and not yet tried. [#214](https://github.com/jwildfire/safety.viz/issues/214)
 - **In the demo app, the group comparison opens on trends and drills down, and the cross-tabulation joins the biomarker charts.** A tile per biomarker opens that biomarker across the visits, with R's test under each visit once you start R, and a visit opens alone. The cross-tabulation is a two-way table of counts with R's chi-square or Fisher's exact test. The biomarker screen stays listed: five biomarker charts in all. [obot.roadmap#367](https://github.com/jwildfire/obot.roadmap/issues/367), [#212](https://github.com/jwildfire/safety.viz/issues/212), PR [#213](https://github.com/jwildfire/safety.viz/pull/213)
 
+## Tests and provenance
+
+2,239 unit and 385 browser tests pass. One browser test walks the Biomarkers tab with real R started in the browser and holds each of R's answers to desktop R's on the same rows. bio.viz's bundle and gsm.bio's statistics file are copied from their v0.3.0 tags, [4a85d61](https://github.com/jwildfire/bio.viz/releases/tag/v0.3.0) and [09743c7](https://github.com/jwildfire/gsm.bio/releases/tag/v0.3.0), and CI holds each copy to its tag. [#212](https://github.com/jwildfire/safety.viz/issues/212), [#214](https://github.com/jwildfire/safety.viz/issues/214)
+
 # safety.viz v1.9.1
 
 **See it move:** the [annotated v1.9.0 demo's note on v1.9.1](https://jwildfire.github.io/obot.roadmap/reports/sv-v1.9-demo/#v191) shows this patch release.
