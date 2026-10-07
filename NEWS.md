@@ -10,7 +10,7 @@ from the section here when the release-candidate PR (dev -> main) merges and is 
 
 ## Also in this release
 
-- **The playbook for porting a legacy renderer now lives in this repository.** It is the `port-a-renderer` skill, with the wiki-harvest script and the record of the first matrix review beside the matrices. obot.agent removed them in its v0.5.0. No chart, test or evidence file changes. [#228](https://github.com/jwildfire/safety.viz/issues/228), PR [#237](https://github.com/jwildfire/safety.viz/pull/237)
+- **The playbook for porting a legacy renderer now lives in this repository.** It is the `port-a-renderer` skill, with the wiki-harvest script and the record of the first matrix review beside the matrices. obot.agent removed them in its v0.5.0. No chart, test or evidence file changes. [#228](https://github.com/jwildfire/safety.viz/issues/228), [#238](https://github.com/jwildfire/safety.viz/issues/238), PR [#237](https://github.com/jwildfire/safety.viz/pull/237)
 
 # safety.viz v1.9.2
 

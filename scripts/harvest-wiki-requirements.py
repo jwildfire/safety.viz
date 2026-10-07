@@ -55,8 +55,33 @@ AREA_HINTS = [
 
 SKIP_LINES = {"", "---"}
 
+# A destination may hold one level of parentheses, as `javascript:alert(1)` does.
+DEST = r"(?:[^()\s]|\([^()]*\))*"
+IMAGE = re.compile(r"!\[([^\]]*)\]\(" + DEST + r"(?:\s[^)]*)?\)")
+LINK = re.compile(r"\[([^\]]+)\]\((" + DEST + r")(?:\s[^)]*)?\)")
+SCHEME = re.compile(r"^[A-Za-z][A-Za-z0-9+.-]*:")
+
+def safe_links(text: str) -> str:
+    """Keep a link only when its destination is http(s) or relative (#238).
+
+    A matrix row is published: the site build turns `[label](destination)` into a
+    live link. Wiki text is not ours, so a destination with any other scheme is
+    reduced to its label, and an image, which a requirement never needs, to its alt
+    text.
+    """
+    text = IMAGE.sub(lambda m: m.group(1), text)
+
+    def keep(m: re.Match) -> str:
+        label, dest = m.group(1), m.group(2)
+        if SCHEME.match(dest) and not re.match(r"^https?://", dest, re.I):
+            return label
+        return m.group(0)
+
+    return LINK.sub(keep, text)
+
 def clean(text: str) -> str:
     text = re.sub(r"\s+", " ", text.strip())
+    text = safe_links(text)
     text = text.replace("|", "\\|")
     return text
 
