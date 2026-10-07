@@ -6,6 +6,7 @@ import {
   mkdtempSync,
   readFileSync,
   readdirSync,
+  realpathSync,
   writeFileSync
 } from 'node:fs';
 import { builtinModules } from 'node:module';
@@ -13,8 +14,10 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
+  branchIn,
   checkPrerequisites,
   DEFAULTS,
+  holdsRelease,
   inspectTarget,
   isInstalled,
   MINIMUM_NODE,
@@ -56,8 +59,8 @@ function checkout(dir, { demo = demoThat('process.exit(7);'), installed = true }
 }
 
 // A made-up release: a git repository of two commits holding a package with
-// nothing to install.
-function release(dir, { demo = demoThat('process.exit(0);') } = {}) {
+// nothing to install, tagged and branched as the test asks.
+function release(dir, { demo = demoThat('process.exit(0);'), tag, branch } = {}) {
   const git = (...args) => {
     const result = spawnSync(
       'git',
@@ -85,6 +88,8 @@ function release(dir, { demo = demoThat('process.exit(0);') } = {}) {
   }
   git('add', '.');
   git('commit', '--quiet', '-m', 'second');
+  if (tag) git('tag', tag);
+  if (branch) git('branch', branch);
   return pathToFileURL(dir).href;
 }
 
@@ -217,6 +222,24 @@ describe('inspectTarget', () => {
     expect(isInstalled(path.join(dir, 'checkout'))).toBe(false);
     writeFileSync(path.join(dir, 'checkout', 'node_modules', '.package-lock.json'), '{}');
     expect(isInstalled(path.join(dir, 'checkout'))).toBe(true);
+  });
+});
+
+describe('holdsRelease', () => {
+  it('APP-LOCAL-008: a release named with --ref is the one installed when its tag names the installed version, or its name is the branch the clone was made from (#219)', () => {
+    // A clone of the tag is on no branch; `main` is the release branch.
+    expect(holdsRelease('v1.9.2', { version: '1.9.2', branch: null })).toBe(true);
+    expect(holdsRelease('v1.9.2', { version: '1.9.2', branch: 'main' })).toBe(true);
+    expect(holdsRelease('dev', { version: '1.9.2', branch: 'dev' })).toBe(true);
+    expect(holdsRelease('main', { version: '1.9.2', branch: 'main' })).toBe(true);
+    // Another version, another branch, and a name the install has no record of.
+    expect(holdsRelease('v1.9.3', { version: '1.9.2', branch: null })).toBe(false);
+    expect(holdsRelease('v1.9.1', { version: '1.9.2', branch: 'main' })).toBe(false);
+    expect(holdsRelease('dev', { version: '1.9.2', branch: 'main' })).toBe(false);
+    expect(holdsRelease('main', { version: '1.9.2', branch: null })).toBe(false);
+    expect(holdsRelease('1.9.2', { version: '1.9.2', branch: null })).toBe(false);
+    // A branch that is not the release branch holds a version before and after its tag.
+    expect(holdsRelease('v1.9.2', { version: '1.9.2', branch: 'dev' })).toBe(false);
   });
 });
 
@@ -379,15 +402,61 @@ describe('running the installer', () => {
     expect(readdirSync(path.join(cwd, 'safety.viz', 'node_modules'))).toEqual(before);
   });
 
-  it('APP-LOCAL-008: naming a release where a checkout already is stops it: the checkout is not moved to another release, and it says where to install one (#214)', () => {
+  it('APP-LOCAL-008: naming another release where a checkout already is stops it: the checkout is not moved to another release, and it says where to install one (#214)', () => {
     const cwd = scratch('ref');
     checkout(path.join(cwd, 'safety.viz'));
+    const before = readdirSync(path.join(cwd, 'safety.viz'));
     const result = run(['--ref', 'v1.9.2'], { cwd });
     expect(result.status).toBe(1);
-    expect(result.stderr).toContain('already holds safety.viz 9.9.9');
-    expect(result.stderr).toContain('To install v1.9.2, name another directory with --dir');
+    expect(result.stderr).toBe(
+      `${path.join(realpathSync(cwd), 'safety.viz')} already holds safety.viz 9.9.9, and it is used as it is.\n` +
+        'To install v1.9.2, name another directory with --dir. Nothing was changed.\n'
+    );
+    expect(result.stdout).not.toContain('demo started');
+    // A branch the checkout has no record of being a clone of is another release too.
+    const branch = run(['--ref', 'dev'], { cwd });
+    expect(branch.status).toBe(1);
+    expect(branch.stderr).toContain('already holds safety.viz 9.9.9, and it is used as it is.');
+    expect(branch.stderr).toContain('To install dev, name another directory with --dir');
+    expect(branch.stdout).not.toContain('demo started');
+    expect(readdirSync(path.join(cwd, 'safety.viz'))).toEqual(before);
+  });
+
+  it('APP-LOCAL-008: run again with the --ref it was installed with, a tag or a branch, it uses the install as it does with none, and the demo starts (#219)', () => {
+    const repo = release(scratch('release'), {
+      demo: demoThat('process.exit(7);'),
+      tag: 'v9.9.9',
+      branch: 'dev'
+    });
+    for (const ref of ['v9.9.9', 'dev']) {
+      const cwd = scratch('same');
+      const args = ['--repo', repo, '--ref', ref, '--no-open'];
+      const first = run(args, { cwd });
+      expect(first.stdout).toContain(`Downloading safety.viz (${ref})`);
+      expect(first.status).toBe(7);
+      const again = run(args, { cwd });
+      expect(again.stderr).toBe('');
+      expect(again.stdout).toContain('safety.viz 9.9.9 is already in');
+      expect(again.stdout).not.toContain('Downloading');
+      expect(again.stdout).toContain('demo started ["--no-open"]');
+      expect(again.status).toBe(7);
+      // What the clone says of itself: a branch's name, and nothing for a tag.
+      expect(branchIn(path.join(cwd, 'safety.viz'))).toBe(ref === 'dev' ? 'dev' : null);
+    }
+  });
+
+  it('APP-LOCAL-008: a release tag named over a clone of another branch stops it though the version is the same, and it says which branch the clone is of (#219)', () => {
+    const cwd = scratch('branch');
+    const repo = release(scratch('release'), { tag: 'v9.9.9', branch: 'dev' });
+    expect(run(['--repo', repo, '--ref', 'dev', '--no-open'], { cwd }).status).toBe(0);
+    const result = run(['--repo', repo, '--ref', 'v9.9.9', '--no-open'], { cwd });
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain('already holds safety.viz 9.9.9 from the dev branch');
+    expect(result.stderr).toContain('To install v9.9.9, name another directory with --dir');
     expect(result.stderr).toContain('Nothing was changed');
     expect(result.stdout).not.toContain('demo started');
+    // A directory with no git record of its own names no branch.
+    expect(branchIn(checkout(path.join(scratch('norecord'), 'safety.viz')))).toBe(null);
   });
 
   it.skipIf(process.platform === 'win32')(
