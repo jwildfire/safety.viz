@@ -29,7 +29,9 @@
     "r-wasm:check": "node scripts/r-wasm.mjs --check",
     "r-wasm:check-source": "node scripts/r-wasm.mjs --check-source",
     "gsm-workflows:check": "node scripts/vendor-gsm-workflows.mjs --check",
-    "gsm-workflows:check-source": "node scripts/vendor-gsm-workflows.mjs --check-source"
+    "gsm-workflows:check-source": "node scripts/vendor-gsm-workflows.mjs --check-source",
+    "rbqm-study:check": "node scripts/vendor-rbqm-study.mjs --check",
+    "rbqm-study:check-source": "node scripts/vendor-rbqm-study.mjs --check-source"
   },
   "devDependencies": {
     "@fontsource-variable/instrument-sans": "^5.3.0",

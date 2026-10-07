@@ -1,6 +1,6 @@
 {
   "module": "delta-delta",
-  "generatedAt": "2026-10-07T12:48:59.145Z",
+  "generatedAt": "2026-10-07T13:05:43.479Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "37623663540",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37623663540"
+    "id": "37625725220",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37625725220"
   },
   "records": [
     {
@@ -706,6 +706,14 @@
       "status": "pass",
       "requirementIds": ["APP-R-032"],
       "issueRefs": [229],
+      "screenshots": []
+    },
+    {
+      "test": "APP-R-037: rbqm pipeline: R in the browser runs the mapping, metric and reporting workflows for adverse event rate by site through workr on the demo study’s raw files, and its Results rows are desktop R’s: the same sites, and for each the same numerator, denominator, metric, score and flag to eight decimal places; before R is asked for, nothing is asked of R’s hosts, and R asks no host but webR’s, the public index and the page’s own (#231)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-R-037"],
+      "issueRefs": [231],
       "screenshots": []
     },
     {
@@ -2721,6 +2729,38 @@
       "screenshots": []
     },
     {
+      "test": "an R value carried to JavaScript (#231) APP-R-034: reads a data frame as one object per row, every row carrying every column, NA as null",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-034"],
+      "issueRefs": [231],
+      "screenshots": []
+    },
+    {
+      "test": "an R value carried to JavaScript (#231) APP-R-034: reads a named list as an object, an unnamed list as an array, and tables at any depth",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-034"],
+      "issueRefs": [231],
+      "screenshots": []
+    },
+    {
+      "test": "an R value carried to JavaScript (#231) APP-R-034: reads a table of one row as an array of one object, and of no rows as an empty array",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-034"],
+      "issueRefs": [231],
+      "screenshots": []
+    },
+    {
+      "test": "an R value carried to JavaScript (#231) APP-R-034: reads a vector of length one as a single value, a longer one as an array, a named one as an object, and NULL as null",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-034"],
+      "issueRefs": [231],
+      "screenshots": []
+    },
+    {
       "test": "buildAdslRecords derives EOSDY = EOSDT − TRTSDT + 1 and carries the end-of-study status (#128)",
       "suite": "unit",
       "status": "pass",
@@ -4238,6 +4278,22 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [140],
+      "screenshots": []
+    },
+    {
+      "test": "desktop R’s rows for the RBQM pipeline (#231) APP-R-038: desktop R’s rows are derived from the pipeline’s R, the copied workflows and the demo study’s raw files as they are now, by checksum of every one (#231)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-038"],
+      "issueRefs": [231, 231],
+      "screenshots": []
+    },
+    {
+      "test": "desktop R’s rows for the RBQM pipeline (#231) APP-R-038: they are adverse event rate for 148 sites, each row with its site, numerator, denominator, metric, score and flag, beside the Bounds, Groups and Metrics tables, from the pinned versions of the gsm packages (#231)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-038"],
+      "issueRefs": [231, 231],
       "screenshots": []
     },
     {
@@ -6745,6 +6801,78 @@
       "screenshots": []
     },
     {
+      "test": "the connection to R in the browser (#231) APP-R-033: answers that R did not start, with the cause, when webR cannot be fetched, a package cannot be installed or a file cannot be read; and the next run tries again",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-033"],
+      "issueRefs": [231],
+      "screenshots": []
+    },
+    {
+      "test": "the connection to R in the browser (#231) APP-R-033: answers with R’s own message when R runs and stops, and with a message of its own when the call cannot be made",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-033"],
+      "issueRefs": [231],
+      "screenshots": []
+    },
+    {
+      "test": "the connection to R in the browser (#231) APP-R-033: calls the one R function named, with the named arguments, and carries its answer back",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-033"],
+      "issueRefs": [231],
+      "screenshots": []
+    },
+    {
+      "test": "the connection to R in the browser (#231) APP-R-033: is written for one version of webR, fetched from its public host",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-033"],
+      "issueRefs": [231],
+      "screenshots": []
+    },
+    {
+      "test": "the connection to R in the browser (#231) APP-R-033: lists a path’s folders shallowest first",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-033"],
+      "issueRefs": [231],
+      "screenshots": []
+    },
+    {
+      "test": "the connection to R in the browser (#231) APP-R-033: on the first run starts R on the channel that needs no special headers, installs the packages from the repositories given, writes the files and sources the R, in that order",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-033"],
+      "issueRefs": [231],
+      "screenshots": []
+    },
+    {
+      "test": "the connection to R in the browser (#231) APP-R-033: refuses options it cannot use, when it is made",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-033"],
+      "issueRefs": [231],
+      "screenshots": []
+    },
+    {
+      "test": "the connection to R in the browser (#231) APP-R-033: starts nothing and asks for nothing when it is made",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-033"],
+      "issueRefs": [231],
+      "screenshots": []
+    },
+    {
+      "test": "the connection to R in the browser (#231) APP-R-033: starts R once: a second run installs nothing and writes only what it is given",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-033"],
+      "issueRefs": [231],
+      "screenshots": []
+    },
+    {
       "test": "the copied gsm workflows APP-WF-001: each folder matches its record, which names the package’s repository, its release tag, the full commit and every file’s checksum and size; the files are the ten mapping workflows, the eight metrics with the one R file, and the four reporting tables (#230)",
       "suite": "unit",
       "status": "pass",
@@ -7134,6 +7262,30 @@
       "status": "pass",
       "requirementIds": ["APP-R-028"],
       "issueRefs": [229, 229],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM demo study’s raw files (#231) APP-R-035: the five raw files adverse event rate by site needs are copied by script from jwildfire/demo-301, and match their record of the commit, checksum and size (#231)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-035"],
+      "issueRefs": [231, 231],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM pipeline’s run, as R is given it (#231) APP-R-036: R is given the pipeline’s one R file first, then every copied mapping, metric and reporting workflow and gsm.kri’s one R file, each a file the repository holds, each at a place of its own under one root (#231)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-036"],
+      "issueRefs": [231, 231],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM pipeline’s run, as R is given it (#231) APP-R-036: the one call names where each stage’s workflows and the raw files are, the metric to run and the snapshot’s date; desktop R is given the same call, with each place read from the repository (#231)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-036"],
+      "issueRefs": [231, 231],
       "screenshots": []
     },
     {

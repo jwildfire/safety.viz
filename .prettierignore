@@ -33,3 +33,7 @@ site/vendor/
 # scripts/derive-app-statistics.mjs and scripts/app-statistics.R, and held to
 # what they are derived from by a test.
 tests/fixtures/app-statistics/
+
+# Desktop R's rows for the RBQM pipeline (#231): written by
+# scripts/rbqm-reference.mjs, and held to what they are derived from by a test.
+tests/fixtures/rbqm/

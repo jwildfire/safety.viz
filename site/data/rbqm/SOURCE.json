@@ -1,0 +1,40 @@
+{
+  "study": "RBQM demo study raw files",
+  "repository": "https://github.com/jwildfire/demo-301",
+  "ref": "4810a4c517e93e9ab4778d4024fa24f5eb021876",
+  "commit": "4810a4c517e93e9ab4778d4024fa24f5eb021876",
+  "merged_to_dev": false,
+  "note": "demo-301 has no dev branch: this is the head of main, its only branch, on 2026-10-07. Copy again from main when the study changes.",
+  "files": [
+    {
+      "file": "Raw_SUBJ.csv",
+      "source": "input/Raw_SUBJ.csv",
+      "sha256": "2730e393790230ef30f1677ed950b826da51b7e312304b513e85ffdee1093d6b",
+      "bytes": 141430
+    },
+    {
+      "file": "Raw_AE.csv",
+      "source": "input/Raw_AE.csv",
+      "sha256": "52fd1486c25b258ffa2d7236da9e79169965b9e2bbaf92b1b12ce59f31cd45d5",
+      "bytes": 446066
+    },
+    {
+      "file": "Raw_SITE.csv",
+      "source": "input/Raw_SITE.csv",
+      "sha256": "71d108238241aa880e14e39553bb360b0eab62e92ced909adefc238a5689c118",
+      "bytes": 14164
+    },
+    {
+      "file": "Raw_STUDY.csv",
+      "source": "input/Raw_STUDY.csv",
+      "sha256": "f2cd9110f54ae32e6be1467668c2cede654c1ea2348fde9e90677a96fa094867",
+      "bytes": 360
+    },
+    {
+      "file": "Raw_ENROLL.csv",
+      "source": "input/Raw_ENROLL.csv",
+      "sha256": "8d69fc5a156b391ecb8cf2d1a701e387fb74a3a7d793c23b051cc527d2d1c000",
+      "bytes": 72007
+    }
+  ]
+}
