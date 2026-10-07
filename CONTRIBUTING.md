@@ -44,7 +44,7 @@ Branch rulesets run the merge. An increment pull request targets `dev`, opens no
 ## Traceability convention
 
 Test names are keyed to requirement IDs from the
-[safety.agent matrices](https://github.com/jwildfire/safety.agent/tree/main/docs/requirements)
+[requirement matrices](https://github.com/jwildfire/safety.viz/tree/HEAD/requirements)
 and reference the GitHub issue(s) they evidence, in qcthat's `(#N)` style:
 
 ```js

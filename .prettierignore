@@ -14,6 +14,11 @@ _api/
 requirements/*.md
 !requirements/README.md
 
+# The harvest and review record (#228): three files kept byte for byte as they
+# stood in obot.agent, for the same audit-trail reason.
+requirements/history/*.md
+!requirements/history/README.md
+
 # The renamed-column study for the demo app's browser tests (#151): written
 # by scripts/build-app-fixture.mjs, and a test pins the files to its output.
 tests/e2e/fixtures/app/
