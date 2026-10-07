@@ -1,6 +1,6 @@
 {
   "module": "ae-timelines",
-  "generatedAt": "2026-10-07T12:31:52.106Z",
+  "generatedAt": "2026-10-07T12:48:59.145Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "37621567034",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37621567034"
+    "id": "37623663540",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37623663540"
   },
   "records": [
     {
@@ -6498,6 +6498,70 @@
       "status": "pass",
       "requirementIds": ["APP-LOCAL-008"],
       "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "the copied gsm workflows APP-WF-001: each folder matches its record, which names the package’s repository, its release tag, the full commit and every file’s checksum and size; the files are the ten mapping workflows, the eight metrics with the one R file, and the four reporting tables (#230)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-WF-001"],
+      "issueRefs": [230],
+      "screenshots": []
+    },
+    {
+      "test": "the copied gsm workflows APP-WF-002: a one-byte change to any copied file fails the record check and the source check, each naming the file; so does a file in a subfolder that the record does not list, and a listed file that is gone (#230)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-WF-002"],
+      "issueRefs": [230],
+      "screenshots": []
+    },
+    {
+      "test": "the copied gsm workflows APP-WF-003: one line of one file differs from its tag, the line of the Results workflow that names FilterByLatestSnapshotDate, and the record lists the line as it was, as it is and why; the function it names is defined in the R file copied from gsm.kri’s tag (#230)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-WF-003"],
+      "issueRefs": [230],
+      "screenshots": []
+    },
+    {
+      "test": "the copied gsm workflows APP-WF-004: a second changed line in the Results workflow fails both checks, even when its checksum in the record is rewritten to match; written into the record as a change, it fails because the script declares one change; putting the changed line back as the tag has it fails too (#230)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-WF-004"],
+      "issueRefs": [230],
+      "screenshots": []
+    },
+    {
+      "test": "the copied gsm workflows APP-WF-005: a recorded change is refused when the line it replaces is not in the source exactly once, as a whole line: absent, there twice, or there only as part of a line; a change with no reason, of more than one line or that changes nothing is refused too, and nothing is written (#230)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-WF-005"],
+      "issueRefs": [230],
+      "screenshots": []
+    },
+    {
+      "test": "the copied gsm workflows APP-WF-006: every mapped table a copied metric or reporting workflow reads is made by a copied mapping workflow, the country table among them, which the Groups workflow reads and gsm.mapping makes from the mapped participants alone (#230)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-WF-006"],
+      "issueRefs": [230],
+      "screenshots": []
+    },
+    {
+      "test": "the copied gsm workflows APP-WF-007: the version and licence a record names are read from the package’s DESCRIPTION file at the tag (#230)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-WF-007"],
+      "issueRefs": [230],
+      "screenshots": []
+    },
+    {
+      "test": "the copied gsm workflows APP-WF-008: one command checks all three folders and says so of each; with a line changed in one it exits 1 naming that file, and still reports the other two; asked to copy from anywhere but the tags it names, it refuses (#230)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-WF-008"],
+      "issueRefs": [230],
       "screenshots": []
     },
     {
