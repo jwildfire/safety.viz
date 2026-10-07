@@ -56,11 +56,11 @@
   },
   {
    "file": "site/vendor/bio.viz/bio.viz.js",
-   "sha256": "1b1a4cf1818762155f56e794522fa5e2320f18a0350be4893898d816fbb55c21"
+   "sha256": "bddc0d0eb3cd8dca74ab9eae4c99e3cd516252d1f752bebb03adbfb1c73560c9"
   },
   {
    "file": "site/vendor/gsm.bio/statistics.R",
-   "sha256": "8ddc81cdaf2a5d9bf7fd171e05c75fee8c36c139d555680c0175ca45e0c7f254"
+   "sha256": "8c4d5b2f83a1fe6f8024d381f017fef149217c8c52f705822af68d2a61b82670"
   }
  ],
  "requests": [

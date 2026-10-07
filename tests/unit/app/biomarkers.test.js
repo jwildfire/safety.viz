@@ -85,8 +85,10 @@ describe('the vendored bio.viz bundle', () => {
   });
 
   it('APP-BIO-013: the source check asks whether a commit recorded as on dev is on dev, and fails when it is not or when the record does not say; a commit recorded as off dev is not asked (#193)', async () => {
-    const record = { ...readRecord(vendorDir) };
-    expect(record.merged_to_dev).toBe(true);
+    // The copy's own record, as one made from the head of dev says it (the
+    // copy may be from a release tag, which APP-BIO-020 holds).
+    const record = { ...readRecord(vendorDir), merged_to_dev: true };
+    delete record.tag;
     // GitHub's compare of the commit with dev: dev is ahead of it, or is it.
     const asked = vi.fn(async () => 'ahead');
     expect(await verifyOnDev(record, asked)).toEqual([]);
