@@ -164,6 +164,35 @@ export const isInstalled = (dir) =>
   existsSync(path.join(dir, 'node_modules', '.package-lock.json'));
 
 /**
+ * The branch a checkout is a clone of, as its own git record names it.
+ * @param {string} dir The checkout.
+ * @returns {?string} The branch; null for a clone of a tag, which is on no branch, and for a directory with no git record of its own.
+ */
+export function branchIn(dir) {
+  if (!existsSync(path.join(dir, '.git'))) return null;
+  const result = spawnSync('git', ['symbolic-ref', '--quiet', '--short', 'HEAD'], {
+    cwd: dir,
+    encoding: 'utf8'
+  });
+  return (result.status === 0 && result.stdout.trim()) || null;
+}
+
+/**
+ * Whether the release named with --ref is the one a checkout already holds,
+ * decided from what the checkout says of itself, so nothing is asked of the
+ * network. A release's tag is `v` and its version; a branch is its own name.
+ * @param {string} ref The release named.
+ * @param {{version: string, branch: ?string}} held The checkout's version, and the branch it is a clone of.
+ * @returns {boolean} Whether it is.
+ */
+export function holdsRelease(ref, { version, branch }) {
+  // A branch other than the release branch holds a version before its tag and
+  // after it, so the version alone does not make its clone that release.
+  if (ref === `v${version}`) return branch === null || branch === DEFAULTS.ref;
+  return ref === branch;
+}
+
+/**
  * The commands the install runs, in order.
  * @param {{dir: string, ref: string, repo: string, port: ?number, open: boolean}} options What was asked for; `dir` absolute.
  * @param {Object} found What is at the directory.
@@ -268,14 +297,18 @@ function main() {
     ]);
   }
   if (target === 'checkout') {
-    // A clone already there is run as it is; it is not moved to another release.
-    if (options.refGiven) {
+    const held = { version: versionIn(options.dir), branch: branchIn(options.dir) };
+    // A clone already there is run as it is; it is not moved to another
+    // release. Naming the release it holds is not asking for another.
+    if (options.refGiven && !holdsRelease(options.ref, held)) {
+      // Where the version is the one asked for, the branch is why it is not that release.
+      const from = options.ref === `v${held.version}` ? ` from the ${held.branch} branch` : '';
       fail([
-        `${options.dir} already holds safety.viz ${versionIn(options.dir)}, and it is used as it is.`,
+        `${options.dir} already holds safety.viz ${held.version}${from}, and it is used as it is.`,
         `To install ${options.ref}, name another directory with --dir. Nothing was changed.`
       ]);
     }
-    console.log(`safety.viz ${versionIn(options.dir)} is already in ${options.dir}; using it.`);
+    console.log(`safety.viz ${held.version} is already in ${options.dir}; using it.`);
   }
 
   for (const step of steps(options, { target, installed: isInstalled(options.dir) })) {

@@ -86,11 +86,12 @@ node install-demo.mjs
 The script checks for Node and git, clones the latest release into
 `./safety.viz`, installs it, builds the demo and opens it in your browser at an
 address it prints, `http://127.0.0.1:8642/` unless that port is busy. The
-install takes about 275 MB of disk, most of it the tools that build the demo.
+install takes about 285 MB of disk, most of it the tools that build the demo.
 
-- **Stop and start.** Ctrl+C stops it. Run the script again, or `cd safety.viz`
-  and `npm run demo`, to start it again: what is already there is used as it
-  is, with nothing downloaded or installed a second time.
+- **Stop and start.** Ctrl+C stops it. Run the script again, with the same
+  `--ref` if you named one, or `cd safety.viz` and `npm run demo`, to start it
+  again: what is already there is used as it is, with nothing downloaded or
+  installed a second time.
 - **Options.** `--ref v1.9.2` installs that release rather than the latest,
   `--dir <path>` installs somewhere else, `--port <number>` names the port and
   `--no-open` leaves the browser alone. `node install-demo.mjs --help` lists
@@ -104,8 +105,8 @@ install takes about 275 MB of disk, most of it the tools that build the demo.
   asks the network for is R, from webr.r-wasm.org, and only when you press
   Start R for the biomarker charts.
 - **Windows.** The script is plain Node and is written to run there, but it has
-  been run on macOS and Linux only so far. In Windows PowerShell write
-  `curl.exe` in place of `curl`.
+  not been tried there yet: it has been run end to end on macOS, and its tests
+  run on Linux. In Windows PowerShell write `curl.exe` in place of `curl`.
 - **Nothing to install?** Download
   [the single file](https://jwildfire.github.io/safety.viz/demo/safety.viz-app.html)
   and open it: the same app in one HTML file that runs with no network. It

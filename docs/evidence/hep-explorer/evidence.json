@@ -1,6 +1,6 @@
 {
   "module": "hep-explorer",
-  "generatedAt": "2026-10-07T04:00:46.808Z",
+  "generatedAt": "2026-10-07T06:24:35.103Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "37568932732",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37568932732"
+    "id": "37581278363",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37581278363"
   },
   "records": [
     {
@@ -6450,6 +6450,14 @@
       "screenshots": []
     },
     {
+      "test": "holdsRelease APP-LOCAL-008: a release named with --ref is the one installed when its tag names the installed version, or its name is the branch the clone was made from (#219)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-008"],
+      "issueRefs": [219],
+      "screenshots": []
+    },
+    {
       "test": "inspectTarget APP-LOCAL-007: tells a directory that is not there, an empty one, a safety.viz checkout and anything else apart (#214)",
       "suite": "unit",
       "status": "pass",
@@ -7610,6 +7618,14 @@
       "screenshots": []
     },
     {
+      "test": "running the installer APP-LOCAL-008: a release tag named over a clone of another branch stops it though the version is the same, and it says which branch the clone is of (#219)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-008"],
+      "issueRefs": [219],
+      "screenshots": []
+    },
+    {
       "test": "running the installer APP-LOCAL-008: a release that does not exist stops it with git’s own reason, and leaves no clone behind (#214)",
       "suite": "unit",
       "status": "pass",
@@ -7634,7 +7650,7 @@
       "screenshots": []
     },
     {
-      "test": "running the installer APP-LOCAL-008: naming a release where a checkout already is stops it: the checkout is not moved to another release, and it says where to install one (#214)",
+      "test": "running the installer APP-LOCAL-008: naming another release where a checkout already is stops it: the checkout is not moved to another release, and it says where to install one (#214)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-LOCAL-008"],
@@ -7647,6 +7663,14 @@
       "status": "pass",
       "requirementIds": ["APP-LOCAL-008"],
       "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "running the installer APP-LOCAL-008: run again with the --ref it was installed with, a tag or a branch, it uses the install as it does with none, and the demo starts (#219)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOCAL-008"],
+      "issueRefs": [219],
       "screenshots": []
     },
     {
