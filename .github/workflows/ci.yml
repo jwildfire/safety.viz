@@ -74,6 +74,12 @@ jobs:
       - name: Vendored gsm workflows match their source tags
         run: npm run gsm-workflows:check-source
 
+      # The RBQM demo study's raw files are vendored for the pipeline's test
+      # (#231): each copy must equal the file at the jwildfire/demo-301 commit
+      # its record names. demo-301 is public, and is read without a token.
+      - name: Vendored RBQM demo study matches its source
+        run: npm run rbqm-study:check-source
+
       - name: Run unit tests
         run: npm test
 

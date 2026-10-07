@@ -141,6 +141,24 @@ export const GSM_REPORTING_WORKFLOWS = {
 export const GSM_WORKFLOWS = [GSM_MAPPING_WORKFLOWS, GSM_KRI_WORKFLOWS, GSM_REPORTING_WORKFLOWS];
 
 /**
+ * The RBQM demo study's raw files (#231, obot.roadmap#373): gsm's raw domains
+ * for one synthetic study of 1,005 screened participants at 150 sites, made by
+ * jwildfire/demo-301's own script and kept in its `input/` folder. These five
+ * are what adverse event rate by site needs: subjects and adverse events for
+ * the metric, sites, the study and enrolment for the Groups table. They are
+ * copied whole, from a commit of demo-301's `main`, its only branch.
+ */
+export const RBQM_STUDY = {
+  name: 'RBQM demo study raw files',
+  label: 'study',
+  repository: 'https://github.com/jwildfire/demo-301',
+  directory: 'site/data/rbqm',
+  files: 'SUBJ AE SITE STUDY ENROLL'
+    .split(' ')
+    .map((domain) => ({ file: `Raw_${domain}.csv`, source: `input/Raw_${domain}.csv` }))
+};
+
+/**
  * A file's checksum.
  * @param {Uint8Array} bytes The file's bytes.
  * @returns {string} Its SHA-256, in hex.
