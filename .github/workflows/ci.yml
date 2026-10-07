@@ -65,6 +65,15 @@ jobs:
       - name: Pins for the gsm packages built for R in the browser match their source
         run: npm run r-wasm:check-source
 
+      # The gsm pipeline's workflow files are vendored for R in the browser
+      # (#230): each copy must equal the file at the release tag its record
+      # names, in gsm.mapping, gsm.kri and gsm.reporting, and the tag must still
+      # be that commit. One line of the Results workflow is changed, and must
+      # be exactly the change its record lists. The three are public, and are
+      # read without a token.
+      - name: Vendored gsm workflows match their source tags
+        run: npm run gsm-workflows:check-source
+
       - name: Run unit tests
         run: npm test
 

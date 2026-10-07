@@ -1,0 +1,72 @@
+{
+  "workflows": "gsm.mapping mapping workflows",
+  "repository": "https://github.com/Gilead-Public/gsm.mapping",
+  "ref": "v1.1.6",
+  "commit": "25d6a082da95f2675fb8980b5ab6cfd51d634fd1",
+  "version": "1.1.6",
+  "license": "Apache License (>= 2)",
+  "tag": "v1.1.6",
+  "merged_to_dev": false,
+  "files": [
+    {
+      "file": "workflow/1_mappings/SUBJ.yaml",
+      "source": "inst/workflow/1_mappings/SUBJ.yaml",
+      "sha256": "a3e6556057545aea37ad8ccd4d8d7b8eac3932b3ed86b8918d209660bd1753ae",
+      "bytes": 751
+    },
+    {
+      "file": "workflow/1_mappings/AE.yaml",
+      "source": "inst/workflow/1_mappings/AE.yaml",
+      "sha256": "83f40131a96dcc3b0bcf2a4e04cfb358e4ac278d9b03a705239b4c0e80069e4e",
+      "bytes": 573
+    },
+    {
+      "file": "workflow/1_mappings/PD.yaml",
+      "source": "inst/workflow/1_mappings/PD.yaml",
+      "sha256": "d2a64ab188db8749db3d724a84bfb2916f023d3daff869dd11c40ff41f5f9358",
+      "bytes": 547
+    },
+    {
+      "file": "workflow/1_mappings/LB.yaml",
+      "source": "inst/workflow/1_mappings/LB.yaml",
+      "sha256": "9699babd87d616cbeff928d7392e720eb9ec1d69cb77c5f7f5d0187c1d98fd41",
+      "bytes": 319
+    },
+    {
+      "file": "workflow/1_mappings/STUDCOMP.yaml",
+      "source": "inst/workflow/1_mappings/STUDCOMP.yaml",
+      "sha256": "2aa856b4e59583564937dc451a3fb198eb8e38bcf9ffc21e5f4863c5feecb8a7",
+      "bytes": 441
+    },
+    {
+      "file": "workflow/1_mappings/SDRGCOMP.yaml",
+      "source": "inst/workflow/1_mappings/SDRGCOMP.yaml",
+      "sha256": "c27d8d9ac88b432a0c6e37048131fe09c5432c473c95d5b3a5b0ffdd2658f9b5",
+      "bytes": 409
+    },
+    {
+      "file": "workflow/1_mappings/SITE.yaml",
+      "source": "inst/workflow/1_mappings/SITE.yaml",
+      "sha256": "83087c2bb5b7afd9abb354b636afe48eeb5ead1e83f72eed85dced4cb760e2e7",
+      "bytes": 1535
+    },
+    {
+      "file": "workflow/1_mappings/STUDY.yaml",
+      "source": "inst/workflow/1_mappings/STUDY.yaml",
+      "sha256": "3902723c7c9ac69af76510081420b2044306e48ab352301de238d433ebd99be8",
+      "bytes": 2612
+    },
+    {
+      "file": "workflow/1_mappings/ENROLL.yaml",
+      "source": "inst/workflow/1_mappings/ENROLL.yaml",
+      "sha256": "d3e0302605ff3c87a5bca73021c55a56df8a983504496ada90e7d2d8a394d6ba",
+      "bytes": 453
+    },
+    {
+      "file": "workflow/1_mappings/COUNTRY.yaml",
+      "source": "inst/workflow/1_mappings/COUNTRY.yaml",
+      "sha256": "70e4d86db8b9821d36059f5cb4d0035d389645e3a9821b7c323dd8138deacee6",
+      "bytes": 635
+    }
+  ]
+}

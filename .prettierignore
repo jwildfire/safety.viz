@@ -25,7 +25,8 @@ tests/e2e/fixtures/app/
 
 # Vendored chart-library bundles (#182): copied byte for byte from their own
 # repositories by scripts/vendor-bio-viz.mjs and held to a recorded checksum,
-# so formatting them would break the record.
+# so formatting them would break the record. The same holds for the gsm
+# workflow files copied by scripts/vendor-gsm-workflows.mjs (#230).
 site/vendor/
 
 # The desktop-R comparison for R on request (#183): written by
