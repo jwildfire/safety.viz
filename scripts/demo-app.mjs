@@ -10,6 +10,8 @@
 //   fonts/                 the app's typefaces and their licences (#165)
 //   bio.viz.js             each further chart library's vendored bundle (#182)
 //   statistics.R           the file R in the browser is given (#183)
+//   r-wasm/                the gsm packages built for R in the browser, as a
+//                          package repository, and their record (#229)
 //
 // The app bundle and the single file are build products written here, not
 // committed assets.
@@ -25,6 +27,7 @@ import {
   libraryScript,
   withoutSourceMap
 } from './app-libraries.mjs';
+import { R_WASM_DIRECTORY, publishRWasm } from './r-wasm-lib.mjs';
 import { DEMO_STUDIES } from '../src/app/studies.js';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -114,6 +117,9 @@ export async function buildDemoAppDir(outDir, { links } = {}) {
       );
     }
   }
+  // The gsm packages built for R in the browser (#229) are served beside the
+  // app as a package repository, so R installs them from the page's own address.
+  publishRWasm(path.join(rootDir, R_WASM_DIRECTORY), outDir);
   const page = path.join(outDir, 'index.html');
   writeFileSync(
     page,

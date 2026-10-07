@@ -17,7 +17,7 @@
 // Pure functions over a folder and what a caller fetched; scripts/r-wasm.mjs
 // is the command line.
 
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { cpSync, copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { sha256 } from './vendor-lib.mjs';
 
@@ -234,4 +234,26 @@ export async function verifyPins(pins, { commitOfTag, description }) {
     }
   }
   return problems;
+}
+
+/**
+ * Serve the package repository beside the demo app: the repository as R reads
+ * one, and the record of what each file was built from. Refused when the
+ * packages, their record and the pins disagree, so a site is never built on
+ * packages nothing vouches for.
+ * @param {string} directory The folder: R_WASM_DIRECTORY under the repository root.
+ * @param {string} outDir The demo app's directory.
+ * @returns {void}
+ */
+export function publishRWasm(directory, outDir) {
+  const problems = verifyRWasm(directory);
+  if (problems.length) {
+    throw new Error(
+      `The gsm packages for R in the browser cannot be served: ${problems.join(' ')}`
+    );
+  }
+  const served = path.join(outDir, SERVED_AS);
+  mkdirSync(served, { recursive: true });
+  cpSync(path.join(directory, REPOSITORY_DIRECTORY), served, { recursive: true });
+  copyFileSync(path.join(directory, RECORD_FILE), path.join(served, RECORD_FILE));
 }

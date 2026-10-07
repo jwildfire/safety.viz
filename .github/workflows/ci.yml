@@ -59,6 +59,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
+      # The gsm packages built for R in the browser (#229) are built from pinned
+      # release tags: each tag must still name its pinned commit, and the
+      # package's own DESCRIPTION there must give the pinned version.
+      - name: Pins for the gsm packages built for R in the browser match their source
+        run: npm run r-wasm:check-source
+
       - name: Run unit tests
         run: npm test
 

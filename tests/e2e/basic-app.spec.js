@@ -1809,6 +1809,49 @@ test.describe('demo app with R on request', () => {
   });
 });
 
+// The gsm packages built for R in the browser (#229, obot.roadmap#373):
+// gsm.core, gsm.mapping, gsm.reporting and workr, built from pinned release
+// tags and kept as a package repository the site serves beside the app. The
+// harness page (fixtures/r-wasm.html) starts real webR and installs them.
+test.describe('gsm packages for R in the browser', () => {
+  const pins = JSON.parse(
+    readFileSync(new URL('../../site/vendor/r-wasm/pins.json', import.meta.url), 'utf8')
+  );
+
+  test('APP-R-032: R in the browser installs workr, gsm.core, gsm.mapping and gsm.reporting from the page’s own address and their dependencies from repo.r-wasm.org, at the pinned versions; they attach with duckdb, and a query runs through workr (#229)', async ({
+    page,
+    context
+  }) => {
+    // It downloads R and some forty packages: far more than the default allows.
+    test.setTimeout(360_000);
+    const requests = [];
+    context.on('request', (request) => requests.push(request.url()));
+    await page.goto('/tests/e2e/fixtures/r-wasm.html');
+    await page.waitForFunction(() => window.__rWasm && window.__rWasm.done, null, {
+      timeout: 330_000
+    });
+    const result = await page.evaluate(() => window.__rWasm);
+    expect(result.error).toBeNull();
+    expect(result.versions).toEqual(
+      Object.fromEntries(pins.packages.map((pin) => [pin.package, pin.version]))
+    );
+    expect(result.loaded).toBe('loaded');
+    expect(result.query).toBe('2');
+
+    // Each of the four came from the page's own address, and none from the
+    // public index, which has no build of them; everything else R asked for
+    // came from webR's host or the public index.
+    const own = new URL(page.url()).origin;
+    const packageFile = (pin) => `${pin.package}_${pin.version}.tgz`;
+    for (const pin of pins.packages) {
+      const asked = requests.filter((url) => url.endsWith(`/${packageFile(pin)}`));
+      expect(asked.map((url) => new URL(url).origin)).toEqual([own]);
+    }
+    const origins = [...new Set(requests.map((url) => new URL(url).origin))].sort();
+    expect(origins).toEqual([own, 'https://repo.r-wasm.org', `https://webr.r-wasm.org`].sort());
+  });
+});
+
 test.describe('demo app data view sidebar', () => {
   test.beforeAll(() => {
     execSync('npm run build:app', { stdio: 'inherit', cwd: new URL('../..', import.meta.url) });
