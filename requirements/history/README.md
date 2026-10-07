@@ -1,0 +1,11 @@
+# Harvest and review record
+
+How the matrices in [`requirements/`](../) were prepared for review, and what @jwildfire decided along the way. These three files are a record, not a working surface: they are kept byte for byte as they stood in [`jwildfire/obot.agent`](https://github.com/jwildfire/obot.agent) at its `v0.4.0` tag, which removed them in v0.5.0, and they moved here on 2026-10-07 ([#228](https://github.com/jwildfire/safety.viz/issues/228)).
+
+| File                                               | What it holds                                                                                                                                                                                                      | Was in obot.agent at                     |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------- |
+| [`agentic-ai-review.md`](agentic-ai-review.md)     | The harvest-phase AI review: reviewer scopes, the cross-renderer decisions it surfaced, and the recommended edits per renderer.                                                                                    | `docs/requirements/agentic-ai-review.md` |
+| [`p004-grill-queue.md`](p004-grill-queue.md)       | The questions that review produced for @jwildfire: ten cross-renderer and histogram decisions he answered in May 2026, and the per-renderer questions still to ask, including those for the two planned renderers. | `interviews/p004-grill-queue.md`         |
+| [`p004-open-questions.md`](p004-open-questions.md) | Five architecture decisions for the migration (repository structure, Chart.js scope, the testing standard, legacy API compatibility, where the static charts live), each with his answer.                          | `interviews/p004-open-questions.md`      |
+
+They name things that no longer exist: Telegram as the channel for questions, one repository per renderer, and paths inside obot.agent. Read them for the decisions and the reasoning. The procedure for a port today is the [`port-a-renderer`](../../.claude/skills/port-a-renderer/SKILL.md) skill.

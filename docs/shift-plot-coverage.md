@@ -4,7 +4,7 @@ Traceability for the shift-plot module (#14) — the second full renderer, built
 on the framework proven by the histogram (#2) — per the convention in
 [CONTRIBUTING.md](../CONTRIBUTING.md). Requirement IDs are the `SSP-*` rows of
 the 45-row matrix at
-[safety.agent `docs/requirements/safety-shift-plot.md`](https://github.com/jwildfire/safety.agent/blob/main/docs/requirements/safety-shift-plot.md)
+[`requirements/safety-shift-plot.md`](https://github.com/jwildfire/safety.viz/blob/HEAD/requirements/safety-shift-plot.md)
 — 39 harvested and reviewed from the RhoInc wiki, plus six added locally in
 [#136](https://github.com/jwildfire/safety.viz/issues/136) (`SSP-CHART-001/002`
 backfilled, `SSP-SCALE-001..004` new). One module-scheme ID remains outside the

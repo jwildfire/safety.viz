@@ -1,6 +1,6 @@
 <!--
 NEWS.md is the running release log and the draft of each release's notes.
-Shape (per the RC framework, obot.agent/docs/rc-framework.md): newest release first;
+Shape (per the hub's developer guidelines, Releases section): newest release first;
 every release section opens with its demo-artifact link, then a text-only,
 functionality-first account of what a user can now do. The GitHub release publishes
 from the section here when the release-candidate PR (dev -> main) merges and is tagged.
@@ -8,7 +8,9 @@ from the section here when the release-candidate PR (dev -> main) merges and is 
 
 # safety.viz v1.10.0 (Upcoming)
 
-_Nothing merged yet._
+## Also in this release
+
+- **The playbook for porting a legacy renderer now lives in this repository.** It is the `port-a-renderer` skill, with the wiki-harvest script and the record of the first matrix review beside the matrices. obot.agent removed them in its v0.5.0. No chart, test or evidence file changes. [#228](https://github.com/jwildfire/safety.viz/issues/228)
 
 # safety.viz v1.9.2
 

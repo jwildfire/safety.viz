@@ -5,7 +5,7 @@ Traceability for the results-over-time module (a Chart.js reimplementation of
 under [#27](https://github.com/jwildfire/safety.viz/issues/27)), per the
 convention in [CONTRIBUTING.md](../CONTRIBUTING.md). Requirement IDs (`SROT-*`)
 come from the reviewed 58-row matrix at
-[safety.agent `docs/requirements/safety-results-over-time.md`](https://github.com/jwildfire/safety.agent/blob/main/docs/requirements/safety-results-over-time.md),
+[`requirements/safety-results-over-time.md`](https://github.com/jwildfire/safety.viz/blob/HEAD/requirements/safety-results-over-time.md),
 whose `Evidence Type` column routes rows (`unit` → Vitest, `browser` →
 Playwright).
 
