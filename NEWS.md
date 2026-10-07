@@ -8,13 +8,13 @@ from the section here when the release-candidate PR (dev -> main) merges and is 
 
 # safety.viz v1.9.2 (Upcoming)
 
-**See it move:** the [demo app on the dev site](https://jwildfire.github.io/safety.viz/dev/demo/) opens on the pilot study; the new charts are in its Biomarkers tab.
+**See it move:** the [annotated v1.9.0 demo's note on v1.9.2](https://jwildfire.github.io/obot.roadmap/reports/sv-v1.9-demo/#v192) shows this patch release.
 
 A patch release on v1.9.1. The demo app can be installed and run on your own machine with one script, and its biomarker charts are rebuilt on bio.viz v0.3.0 and gsm.bio v0.3.0. No safety chart changes, and nothing in the library's API changes.
 
 ## What's new
 
-- **Run the demo app on your own machine.** Download one file, `scripts/install-demo.mjs`, and run it with Node: it clones the latest release, builds the demo app and opens it in your browser with the pilot study loaded, served to your computer and to nothing else. `npm run demo` does the same in a clone you already have. Run on macOS and Linux; Windows is written for and not yet tried. [#214](https://github.com/jwildfire/safety.viz/issues/214)
+- **Run the demo app on your own machine.** Download one file, `scripts/install-demo.mjs`, and run it with Node: it clones the latest release, builds the demo app and opens it in your browser with the pilot study loaded, served to your computer and to nothing else. `npm run demo` does the same in a clone you already have. Run on macOS and Linux; Windows is written for and not yet tried. [#214](https://github.com/jwildfire/safety.viz/issues/214), PR [#215](https://github.com/jwildfire/safety.viz/pull/215)
 - **In the demo app, the group comparison opens on trends and drills down, and the cross-tabulation joins the biomarker charts.** A tile per biomarker opens that biomarker across the visits, with R's test under each visit once you start R, and a visit opens alone. The cross-tabulation is a two-way table of counts with R's chi-square or Fisher's exact test. The biomarker screen stays listed: five biomarker charts in all. [obot.roadmap#367](https://github.com/jwildfire/obot.roadmap/issues/367), [#212](https://github.com/jwildfire/safety.viz/issues/212), PR [#213](https://github.com/jwildfire/safety.viz/pull/213)
 
 ## Tests and provenance
