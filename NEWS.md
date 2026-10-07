@@ -8,25 +8,16 @@ from the section here when the release-candidate PR (dev -> main) merges and is 
 
 # safety.viz v1.9.2 (Upcoming)
 
-**See it move:** the [demo app on the dev site](https://jwildfire.github.io/safety.viz/dev/demo/), in its Biomarkers tab, on the pilot study it opens with.
+**See it move:** the [demo app on the dev site](https://jwildfire.github.io/safety.viz/dev/demo/) opens on the pilot study; the new charts are in its Biomarkers tab.
 
-A patch release on v1.9.1. The demo app is rebuilt on bio.viz's and gsm.bio's later work: the group comparison opens on a trend for every biomarker and drills down to one visit, and the cross-tabulation joins the biomarker charts. No safety chart changes, and nothing in the library's API changes.
+A patch release on v1.9.1. The demo app can be installed and run on your own machine with one script, and its biomarker charts are rebuilt on bio.viz v0.3.0 and gsm.bio v0.3.0. No safety chart changes, and nothing in the library's API changes.
 
 ## What's new
 
-- **The group comparison opens on trends, and drills down.** In the demo app's Biomarkers tab the chart opens on one small tile per biomarker, a line per group across the scheduled visits, where it used to draw a panel for every visit of every biomarker. A tile opens that biomarker across the visits, the groups side by side, with the number in each group under each visit and, once you start R, R's test of the groups under each visit. A visit opens the single-visit view the chart has always drawn, with its test menu and pairwise comparisons. Unscheduled visits are left out until you ask for them, and the chart says how many. ([obot.roadmap#367](https://github.com/jwildfire/obot.roadmap/issues/367), [#212](https://github.com/jwildfire/safety.viz/issues/212))
-- **The cross-tabulation.** A fifth biomarker chart: a two-way table of counts for two columns of the study, the same table as bars, and, once you start R, R's chi-square or Fisher's exact test of it. A count lists its participants. The demo study now reads 18 of 18. ([#212](https://github.com/jwildfire/safety.viz/issues/212))
+- **Run the demo app on your own machine.** Download one file, `scripts/install-demo.mjs`, and run it with Node: it clones the latest release, builds the demo app and opens it in your browser with the pilot study loaded, served to your computer and to nothing else. `npm run demo` does the same in a clone you already have. Run on macOS and Linux; Windows is written for and not yet tried. [#214](https://github.com/jwildfire/safety.viz/issues/214)
+- **In the demo app, the group comparison opens on trends and drills down, and the cross-tabulation joins the biomarker charts.** A tile per biomarker opens that biomarker across the visits, with R's test under each visit once you start R, and a visit opens alone. The cross-tabulation is a two-way table of counts with R's chi-square or Fisher's exact test. The biomarker screen stays listed: five biomarker charts in all. [obot.roadmap#367](https://github.com/jwildfire/obot.roadmap/issues/367), [#212](https://github.com/jwildfire/safety.viz/issues/212), PR [#213](https://github.com/jwildfire/safety.viz/pull/213)
 
-## Also in this release
-
-- **Copied again, not rebuilt.** bio.viz's bundle and gsm.bio's statistics file are copied by script as before, each with its commit and checksum recorded and checked in CI: bio.viz 0.2.0 from its `dev` branch at f3aa6f3 and gsm.bio 0.2.0.9000 from its `dev` branch at f7dee4c. The scripts can now also copy from a release tag (`--tag v0.3.0`), and the check then holds the record to what the tag points at. The single file is 1,432,507 bytes, about 1.4 MB. [#212](https://github.com/jwildfire/safety.viz/issues/212)
-- **R still starts on request.** The picture of one biomarker over time asks R for a whole row of visits in one request, which the earlier statistics file could not answer; the copied file can. Starting R still downloads about 13 MB, once, and nothing else. [#212](https://github.com/jwildfire/safety.viz/issues/212)
-
-## Tests and provenance
-
-A browser test walks the Biomarkers tab with real R started in the browser (a tile opened into one biomarker over time, a visit opened from it, the cross-tabulation) and holds each of R's answers to desktop R's on the same rows. Others hold the numbers under each visit, and every count, total and percentage of the cross-tabulation, to the pilot study's rows. [#212](https://github.com/jwildfire/safety.viz/issues/212)
-
-# safety.viz v1.9.1 (Upcoming)
+# safety.viz v1.9.1
 
 **See it move:** the [annotated v1.9.0 demo's note on v1.9.1](https://jwildfire.github.io/obot.roadmap/reports/sv-v1.9-demo/#v191) shows this patch release.
 
