@@ -1,0 +1,98 @@
+# Builds the gsm packages for R in the browser (#229, obot.roadmap#373).
+#
+# gsm.core, gsm.mapping, gsm.reporting and workr have no WebAssembly build
+# anywhere, so this builds one of each from the commits pinned in
+# site/vendor/r-wasm/pins.json, in the webR build image the pins name, and
+# commits the package repository and its record back to the branch that
+# changed the pins. The site build serves it beside the demo app.
+#
+# It starts when a branch pushes a change to the pins, the build script or
+# this file: a push is a trigger the obot app can pull, and the run uses this
+# file as it is on that branch. It builds only when the record was not made
+# from the pins as they are, so the push that merges a built branch into dev
+# checks and builds nothing. On dev, main and stable it never builds: built
+# packages reach them through a pull request, like everything else.
+#
+# The commit this makes is pushed with the workflow's own token, which starts
+# no other workflow: push again, or open the pull request afterwards, for CI
+# to run on the built packages.
+
+name: R packages for the browser
+
+on:
+  push:
+    paths:
+      - site/vendor/r-wasm/pins.json
+      - scripts/r-wasm/build.R
+      - .github/workflows/r-wasm.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: r-wasm-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build and commit
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Every pin's tag names its commit
+        run: node scripts/r-wasm.mjs --check-source
+
+      - name: Is the record made from these pins?
+        id: record
+        run: |
+          if node scripts/r-wasm.mjs --check; then
+            echo "current=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "current=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Refuse to build on an integration or release branch
+        if: steps.record.outputs.current == 'false' && contains(fromJSON('["dev", "main", "stable"]'), github.ref_name)
+        run: |
+          echo "::error::The packages on ${GITHUB_REF_NAME} do not match their pins. Rebuild on a branch and merge it."
+          exit 1
+
+      - name: Build the packages
+        if: steps.record.outputs.current == 'false'
+        env:
+          GITHUB_PAT: ${{ github.token }}
+          R_WASM_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          image=$(node -p "require('./site/vendor/r-wasm/pins.json').image")
+          docker run --rm \
+            -v "$PWD":/github/workspace --workdir /github/workspace \
+            -e GITHUB_PAT -e R_WASM_RUN_URL \
+            "$image" Rscript scripts/r-wasm/build.R
+          sudo chown -R "$(id -u):$(id -g)" site/vendor/r-wasm
+
+      - name: The packages, their record and the pins agree
+        run: node scripts/r-wasm.mjs --check
+
+      - name: Commit the packages
+        if: steps.record.outputs.current == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add site/vendor/r-wasm
+          if git diff --cached --quiet; then
+            echo "Nothing changed."
+            exit 0
+          fi
+          git commit -m "Build the gsm packages for R in the browser from their pins (#229)"
+          git push origin "HEAD:refs/heads/${GITHUB_REF_NAME}"
