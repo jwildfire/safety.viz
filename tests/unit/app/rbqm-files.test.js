@@ -64,7 +64,7 @@ describe('placing a raw file in a gsm raw domain', () => {
       table: 'Raw_SUBJ',
       by: 'name'
     });
-    expect(placeRaw(file('C:\\study\\Raw_PD.csv', []), needs).table).toBe('Raw_PD');
+    expect(placeRaw(file('study\\Raw_PD.csv', []), needs).table).toBe('Raw_PD');
     // Named for nothing gsm knows, but holding every column of the labs domain and one more.
     expect(
       placeRaw(file('central_lab.csv', [...columnsOf('Raw_LB'), 'visit']), needs)
