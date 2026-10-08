@@ -10,7 +10,7 @@ import { spawn } from 'node:child_process';
 import { realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { buildDemoAppDir, LOCAL_LINKS } from './demo-app.mjs';
+import { buildDemoAppDir, LOCAL_LINKS, LOCAL_SITE } from './demo-app.mjs';
 import { createDemoServer, HOST, listen } from './demo-server.mjs';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -110,7 +110,7 @@ async function main() {
   }
 
   console.log('Building the demo app…');
-  await buildDemoAppDir(DEMO_DIR, { links: LOCAL_LINKS });
+  await buildDemoAppDir(DEMO_DIR, { links: LOCAL_LINKS, site: LOCAL_SITE });
   const server = createDemoServer(DEMO_DIR);
   let port;
   try {

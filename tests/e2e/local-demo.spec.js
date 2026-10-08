@@ -109,6 +109,23 @@ test.describe('the demo app served by `npm run demo`', () => {
     expect(single.headers()['content-type']).toBe('text/html; charset=utf-8');
   });
 
+  test('APP-PAGE-031: with no docs site beside it, a chart’s footnote leads to the chart’s pages on the published site (#246)', async ({
+    page
+  }) => {
+    await page.goto(`${base}#hep-explorer`);
+    await page.evaluate('window.__safetyVizApp.ready');
+    const footnote = page.locator('.sva-chart-links');
+    await expect(footnote).toHaveText('Hepatic Safety Explorer: Clinical guide · Test evidence');
+    await expect(footnote.locator('a[data-link="guide"]')).toHaveAttribute(
+      'href',
+      'https://jwildfire.github.io/safety.viz/hep-explorer/guide.html'
+    );
+    await expect(footnote.locator('a[data-link="evidence"]')).toHaveAttribute(
+      'href',
+      'https://jwildfire.github.io/safety.viz/hep-explorer/evidence.html'
+    );
+  });
+
   test('APP-LOCAL-004: the running server gives nothing from outside the demo (#214)', async () => {
     // Sent as written, on a bare request: a browser, like Playwright's own
     // client, tidies `..` out of an address before it is sent.

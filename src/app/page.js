@@ -114,6 +114,12 @@ const chipLabel = (entry, module) =>
     ? entry.title.replace(/\bSafety\s+/, '')
     : titleOf(entry, module);
 
+/** A chart's own pages a footnote can link (#246), in the order shown: the key the page is given under, and the link's words. */
+const CHART_PAGES = [
+  ['guide', 'Clinical guide'],
+  ['evidence', 'Test evidence']
+];
+
 /** A chart's title, or its module name when its entry gives none it can use (#193). */
 const titleOf = (entry, module) =>
   typeof entry.title === 'string' && entry.title ? entry.title : module;
@@ -145,6 +151,7 @@ function sentenceFor(module, status, manifest) {
  * @param {Array<{name: string, charts: ?Object, manifest: ?Object, file?: string, settings?: (Object|function(string): Object), action?: {state: function(): {label: string, done: boolean, note: string}, press: function(): void}}>} [options.libraries] Further chart libraries, each its name, its chart factories keyed by export name, and its chart list in the portfolio manifest's format (version 2). Their charts are listed after safety.viz's, under the groups their entries name; a chart whose library or factory is missing, or whose entry cannot be read, reads "not loaded". A library handed in with no chart list the app can read is named on the page in every view, with `file`, the script the page loaded it from, when given (#193). A library may also bring `settings` added to each of its charts' settings when the chart is drawn (an object, or a function of the module name), and one `action`, a control shown with its charts that redraws the open chart when pressed (#183).
  * @param {{base: string, studies?: Object[]}} [options.demo] Where the demo studies are served from, and which (default: {@link DEMO_STUDIES}); when given, the first study is loaded on mount and the data view offers each by name.
  * @param {{docs?: string, domains?: string, download?: string, github?: string}} [options.links] Where the footer's links go; a link with no address is left out.
+ * @param {Object<string, {guide?: string, evidence?: string}>} [options.chartLinks] Each chart's own pages, keyed by module name: its clinical guide and its test evidence. A chart's view carries a footnote linking those it was given an address for (#246).
  * @param {string} [options.version] The safety.viz version, shown in the footer.
  * @param {string} [options.pitch] What the footer says the app does with a study; the page that mounts it says what is true there (#183).
  * @param {(url: string) => Promise<string>} [options.fetchText] Fetches the demo extracts' text; defaults to `fetch`, refusing an answer that is not a success.
@@ -159,6 +166,7 @@ export function mountApp(
     libraries = [],
     demo = null,
     links = {},
+    chartLinks = {},
     version = '',
     pitch = 'Everything runs in this browser. Nothing is sent anywhere.',
     // An error page is not the file: a 404's body would otherwise be read as data.
@@ -445,6 +453,31 @@ export function mountApp(
     return hint ? [button, el('span', 'sva-action-hint', hint)] : [button];
   }
 
+  /**
+   * The footnote of a chart's view (#246): the chart's name and a link to each
+   * of its own pages the app was given an address for. A link opens in a new
+   * tab, so a study the reader loaded stays loaded. Null when the chart was
+   * given no address.
+   */
+  function chartFootnote(module, entry) {
+    const given = has(chartLinks, module) && isRecord(chartLinks[module]) ? chartLinks[module] : {};
+    const anchors = CHART_PAGES.filter(([key]) => given[key] && typeof given[key] === 'string').map(
+      ([key, label]) => {
+        const anchor = el('a', null, label);
+        anchor.href = given[key];
+        anchor.dataset.link = key;
+        anchor.target = '_blank';
+        anchor.rel = 'noopener';
+        return anchor;
+      }
+    );
+    if (!anchors.length) return null;
+    const footnote = el('p', 'sva-chart-links');
+    footnote.append(el('span', 'sva-chart-links-title', `${titleOf(entry, module)}:`));
+    anchors.forEach((anchor, index) => footnote.append(index ? ' · ' : ' ', anchor));
+    return footnote;
+  }
+
   function renderNotes(container) {
     if (!state.notes.length) return;
     const list = el('ul', 'sva-notes');
@@ -468,7 +501,20 @@ export function mountApp(
     const module = state.selected;
     const entry = manifest.modules[module];
     title.textContent = titleOf(entry, module);
+    // A chart that threw is drawn again as one that did not draw, footnote and all.
+    if (!renderChart(current, module, entry)) {
+      render();
+      return;
+    }
+    const footnote = chartFootnote(module, entry);
+    if (footnote) content.append(footnote);
+  }
 
+  /**
+   * Draw the open chart, or the sentence that says why it is not drawn.
+   * @returns {boolean} False when the chart was ready and threw: its message is kept, and the view is to be rendered again.
+   */
+  function renderChart(current, module, entry) {
     if (module === 'participant-profile' && libraryOf(entry) === OWN_LIBRARY) {
       const hosts = Object.entries(manifest.modules)
         .filter(([id, host]) => libraryOf(host) === OWN_LIBRARY && id !== module)
@@ -481,7 +527,7 @@ export function mountApp(
             `Choose one of these charts and select a point or a row: ${hosts.join(', ')}.`
           : sentenceFor(module, current[module], manifest);
       content.append(el('p', 'sva-message', sentence));
-      return;
+      return true;
     }
 
     if (current[module].state !== 'ready') {
@@ -490,7 +536,7 @@ export function mountApp(
         message.classList.add('sva-problem');
       }
       content.append(message);
-      return;
+      return true;
     }
 
     const mount = el('div', `sva-chart ${hueClass(groupOf(entry), manifest)}`);
@@ -504,8 +550,9 @@ export function mountApp(
     } catch (error) {
       destroyChart();
       state.failed[module] = error && error.message ? error.message : String(error);
-      render();
+      return false;
     }
+    return true;
   }
 
   function render() {

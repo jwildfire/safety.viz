@@ -9,6 +9,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { BIO_VIZ, GSM_BIO_STATISTICS, GSM_VIZ } from './vendor-lib.mjs';
+import { SITE } from '../src/app/site.js';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -163,4 +164,50 @@ export function librariesExpression(
     );
   });
   return `[${entries.join(', ')}]`;
+}
+
+/**
+ * A value as the source text of a JavaScript literal an inline script can
+ * carry: JSON, with every less-than sign escaped so nothing in it can end the
+ * script element.
+ * @param {*} value The value.
+ * @returns {string} The literal.
+ */
+export const inlineJson = (value) => JSON.stringify(value).replace(/</g, '\\u003c');
+
+/**
+ * Where each chart's own pages are (#246), for the footnote under a chart in
+ * the app: its test evidence, and its clinical guide where it has one.
+ *
+ * A safety.viz chart has the pages the site build writes for it: test evidence
+ * for every available renderer, and a guide where its entry in
+ * site/config.json names one, which is where the docs site reads it. A chart
+ * the site has no pages for is left out. A further library's charts have test
+ * evidence on that library's own site, wherever the app's page is.
+ * @param {Object} [options] Options.
+ * @param {string} [options.site] The docs site as the app's page reaches it, with its trailing slash: `'../'` for the page the site serves at demo/; by default the published site, for a page with no site beside it.
+ * @param {Object[]} [options.libraries] Entries of APP_LIBRARIES.
+ * @param {Object} [options.config] The site's configuration; by default site/config.json.
+ * @param {Object} [options.manifest] safety.viz's portfolio manifest; by default src/data/portfolio.json.
+ * @returns {Object<string, {guide?: string, evidence: string}>} Module name → the addresses of its pages.
+ */
+export function chartLinks({ site = SITE, libraries = APP_LIBRARIES, config, manifest } = {}) {
+  const read = (file) => JSON.parse(readFileSync(path.join(rootDir, file), 'utf8'));
+  const { renderers } = config || read('site/config.json');
+  const { modules } = manifest || read('src/data/portfolio.json');
+  const links = {};
+  for (const module of Object.keys(modules)) {
+    const renderer = renderers.find((entry) => entry.module === module);
+    if (!renderer || renderer.status !== 'available') continue;
+    links[module] = {
+      ...(renderer.guide ? { guide: `${site}${module}/guide.html` } : {}),
+      evidence: `${site}${module}/evidence.html`
+    };
+  }
+  for (const library of libraries) {
+    for (const module of Object.keys(libraryManifest(library).modules)) {
+      links[module] = { evidence: `${library.site}${module}/evidence.html` };
+    }
+  }
+  return links;
 }

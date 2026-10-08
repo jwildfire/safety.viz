@@ -7,6 +7,7 @@ import charts from '../main.js';
 import * as bundle from '../main.js';
 import { mountApp } from './page.js';
 import { DEMO_STUDIES } from './studies.js';
+import { SITE } from './site.js';
 
 /* global __SAFETY_VIZ_VERSION__ */
 
@@ -16,8 +17,6 @@ import { DEMO_STUDIES } from './studies.js';
 // the bundle it carries reachable there, as the script-tag bundle does, unless
 // the page already loaded safety.viz itself.
 if (typeof globalThis !== 'undefined' && !globalThis.SafetyViz) globalThis.SafetyViz = bundle;
-
-const SITE = 'https://jwildfire.github.io/safety.viz/';
 
 /**
  * Where the footer's links go when the host page does not say: the published
@@ -32,7 +31,7 @@ export const DEFAULT_LINKS = {
 /**
  * Mount the demo app with the bundled charts and manifest.
  * @param {string|Element} target The element, or a selector for it, to mount into.
- * @param {Object} [options] Mount options; see {@link mountApp}. `demo: { base }` serves the demo studies from that path and loads the first; `links` overrides where the footer's links go; `libraries: [{ name, charts, manifest }]` lists further chart libraries' charts beside safety.viz's (#181).
+ * @param {Object} [options] Mount options; see {@link mountApp}. `demo: { base }` serves the demo studies from that path and loads the first; `links` overrides where the footer's links go; `chartLinks: { module: { guide, evidence } }` gives each chart's own pages for the footnote under it (#246); `libraries: [{ name, charts, manifest }]` lists further chart libraries' charts beside safety.viz's (#181).
  * @returns {Object} The app handle.
  */
 export function mount(target, options = {}) {

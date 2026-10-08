@@ -2,9 +2,9 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { mkdtempSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { buildDemoAppDir, LOCAL_LINKS } from '../../../scripts/demo-app.mjs';
+import { buildDemoAppDir, LOCAL_LINKS, LOCAL_SITE } from '../../../scripts/demo-app.mjs';
 import { renderDemoAppPage } from '../../../scripts/site-lib.mjs';
-import { APP_LIBRARIES, RBQM_CHARTS } from '../../../scripts/app-libraries.mjs';
+import { APP_LIBRARIES, RBQM_CHARTS, chartLinks } from '../../../scripts/app-libraries.mjs';
 import { DEMO_STUDIES } from '../../../src/app/studies.js';
 
 // One recipe for the demo app's directory (#214): the site build writes it to
@@ -28,7 +28,7 @@ describe('buildDemoAppDir', () => {
     hosted = mkdtempSync(path.join(tmpdir(), 'sv-demo-hosted-'));
     local = mkdtempSync(path.join(tmpdir(), 'sv-demo-local-'));
     await buildDemoAppDir(hosted);
-    await buildDemoAppDir(local, { links: LOCAL_LINKS });
+    await buildDemoAppDir(local, { links: LOCAL_LINKS, site: LOCAL_SITE });
   });
 
   it('APP-LOCAL-001: writes the page, the app, the single file, every demo study, the typefaces and each library with its statistics file (#214)', () => {
@@ -87,8 +87,23 @@ describe('buildDemoAppDir', () => {
     expect(localPage).toContain("download: './safety.viz-app.html'");
     expect(localPage).toContain("github: 'https://github.com/jwildfire/safety.viz'");
     // Nothing else of the page differs.
-    const withoutLinks = (html) => html.replace(/^\s*(docs|domains): .*\n/gm, '');
+    const withoutLinks = (html) => html.replace(/^\s*(docs|domains|chartLinks): .*\n/gm, '');
     expect(withoutLinks(localPage)).toBe(withoutLinks(hostedPage));
+  });
+
+  it('APP-PAGE-031: the site’s page gives each safety chart’s pages as addresses in the site beside it; the local page and the single file, which have no site beside them, give the published site’s (#246)', () => {
+    const written = (html) => JSON.parse(html.match(/^ {2}chartLinks: (.*),$/m)[1]);
+    expect(written(readFileSync(path.join(hosted, 'index.html'), 'utf8'))).toEqual(
+      chartLinks({ site: '../' })
+    );
+    expect(written(readFileSync(path.join(local, 'index.html'), 'utf8'))).toEqual(chartLinks());
+    expect(LOCAL_SITE).toBe('https://jwildfire.github.io/safety.viz/');
+    // The single file is the same file in both, and its addresses are the published site's.
+    for (const dir of [hosted, local]) {
+      const single = readFileSync(path.join(dir, 'safety.viz-app.html'), 'utf8');
+      const [, inFile] = single.match(/chartLinks: (\{.*\}) \}\);<\/script>/);
+      expect(JSON.parse(inFile)).toEqual(chartLinks());
+    }
   });
 });
 
