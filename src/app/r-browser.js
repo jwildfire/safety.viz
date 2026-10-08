@@ -103,6 +103,9 @@ function optionProblem(options) {
   const relative = files.find((file) => !file.path.startsWith('/'));
   if (relative) return `the file path ${relative.path} is not absolute`;
   if (!Array.isArray(source) || !source.every(isText)) return 'source is not a list of paths';
+  if (options.onStage != null && typeof options.onStage !== 'function') {
+    return 'onStage is not a function';
+  }
   return null;
 }
 
@@ -114,6 +117,7 @@ function optionProblem(options) {
  * @param {string[]} [options.repos] The package repositories to install from, first one first. Relative addresses resolve against the page.
  * @param {Array<{path: string, url?: string, text?: string}>} [options.files] Files to put in R's file system when R starts: each fetched from its url, or written from its text.
  * @param {string[]} [options.source] Paths, among those files, of R source to evaluate once the packages are installed.
+ * @param {(stage: 'runtime'|'packages'|'files'|'source') => void} [options.onStage] Told each step of starting R as it begins, so a page can say what R is doing: fetching and starting R itself, installing the packages, fetching the files, evaluating the R source. A step with nothing to do is not named.
  * @param {(url: string) => Promise<Object>} [options.importWebR] Something else to import webR with; used by the tests.
  * @param {(url: string) => Promise<Response>} [options.fetch] Something else to fetch the files with; used by the tests.
  * @returns {{run: (name: string, request?: {files?: Object<string, string>, args?: Object}) => Promise<Object>}} The connection.
@@ -127,12 +131,22 @@ export function createConnection(options = {}) {
     repos = [],
     files = [],
     source = [],
+    onStage = null,
     importWebR = importFromUrl,
     fetch: fetchFile = (url) => globalThis.fetch(url)
   } = options;
 
   let started = null;
   const encoder = new TextEncoder();
+  // What the page does with a step's name is the page's: it cannot stop R starting.
+  const stage = (name) => {
+    if (typeof onStage !== 'function') return;
+    try {
+      onStage(name);
+    } catch {
+      // Nothing to do: R starts all the same.
+    }
+  };
 
   async function write(webR, file, text) {
     for (const folder of foldersOf(file)) {
@@ -143,6 +157,7 @@ export function createConnection(options = {}) {
   }
 
   async function start() {
+    stage('runtime');
     const { WebR, ChannelType } = await importWebR(`${baseUrl}webr.mjs`);
     // The channel that needs no cross-origin isolation headers: a static host
     // such as GitHub Pages sends none.
@@ -153,11 +168,13 @@ export function createConnection(options = {}) {
       const from = repos.map((repo) =>
         new URL(repo, globalThis.location?.href).href.replace(/\/$/, '')
       );
+      stage('packages');
       await webR.installPackages(packages, {
         quiet: true,
         ...(from.length ? { repos: from } : {})
       });
     }
+    if (files.length) stage('files');
     for (const file of files) {
       let text = file.text;
       if (typeof text !== 'string') {
@@ -168,6 +185,7 @@ export function createConnection(options = {}) {
       await write(webR, file.path, text);
     }
     await webR.evalRVoid(R_WIRE);
+    if (source.length) stage('source');
     for (const path of source) {
       await webR.evalRVoid(`source(${JSON.stringify(path)}, local = FALSE)`);
     }

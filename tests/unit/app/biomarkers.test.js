@@ -24,7 +24,8 @@ import {
   FILE_PITCH,
   librariesExpression,
   libraryManifest,
-  libraryScript
+  libraryScript,
+  rbqmTabExpression
 } from '../../../scripts/app-libraries.mjs';
 import { renderAppHtml } from '../../../scripts/build-app.mjs';
 
@@ -297,7 +298,8 @@ describe('the single file with the biomarker charts', () => {
     expect(library).toBeGreaterThan(app);
     expect(html).toContain(
       // The single file cannot start R (#183): its biomarker charts are told so.
-      `window.__safetyVizApp = SafetyVizApp.mount('#app', { libraries: ${librariesExpression([bioViz], { r: 'unavailable', fromFile: false })}, pitch: ${JSON.stringify(FILE_PITCH)} });`
+      // The RBQM tab's entry follows, and says the same of itself (#235).
+      `window.__safetyVizApp = SafetyVizApp.mount('#app', { libraries: ${librariesExpression([bioViz], { r: 'unavailable', fromFile: false, more: [rbqmTabExpression({ r: 'unavailable' })] })}, pitch: ${JSON.stringify(FILE_PITCH)} });`
     );
     expect(html).not.toContain('sourceMappingURL');
     expect(html).not.toMatch(/<script[^>]*\ssrc=/i);

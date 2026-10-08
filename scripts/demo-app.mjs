@@ -12,6 +12,9 @@
 //   statistics.R           the file R in the browser is given (#183)
 //   gsm.viz.js             gsm.viz's vendored bundle, for the RBQM tab, and
 //                          its licence (#232)
+//   rbqm/pipeline.R,       what R is given to run the RBQM tab's metrics
+//   rbqm/gsm.*/            (#235): the pipeline's R and gsm's own workflow
+//                          files, each under the path R keeps it at
 //   r-wasm/                the gsm packages built for R in the browser, as a
 //                          package repository, and their record (#229)
 //
@@ -29,8 +32,10 @@ import {
   chartLinks,
   libraryManifest,
   libraryScript,
+  servedBesideTheApp,
   withoutSourceMap
 } from './app-libraries.mjs';
+import { pipelineFiles } from './rbqm-lib.mjs';
 import { R_WASM_DIRECTORY, publishRWasm } from './r-wasm-lib.mjs';
 import { DEMO_STUDIES } from '../src/app/studies.js';
 import { SITE } from '../src/app/site.js';
@@ -137,6 +142,14 @@ export async function buildDemoAppDir(outDir, { links, site = '../' } = {}) {
     path.join(rootDir, RBQM_CHARTS.license.path),
     path.join(outDir, RBQM_CHARTS.license.file)
   );
+  // What R is given for the RBQM tab (#235): the pipeline's R and gsm's
+  // workflow files, each served under the path R keeps it at, so the page asks
+  // its own address for them when the reader starts R.
+  for (const entry of pipelineFiles()) {
+    const served = path.join(outDir, servedBesideTheApp(entry));
+    mkdirSync(path.dirname(served), { recursive: true });
+    copyFileSync(path.join(rootDir, entry.file), served);
+  }
   // The gsm packages built for R in the browser (#229) are served beside the
   // app as a package repository, so R installs them from the page's own address.
   publishRWasm(path.join(rootDir, R_WASM_DIRECTORY), outDir);

@@ -49,6 +49,47 @@
           const again = await connection.run(call, { files: raw, args });
           state.textContent = answer.status === 'ok' ? 'done' : 'R stopped';
           return { started, start, answer, run, rerun: seconds(since), again: again.status };
+        },
+
+        // The tab's run (#234): R is started once, the packages are attached
+        // with a call of their own, as a page would to say what R is doing, and
+        // then each study is run in turn, each from a folder of its own. A
+        // study's files are fetched here as text; one the test has changed is
+        // passed in as text instead.
+        async runTab({ packages, repos, files, attach, call, studies }) {
+          const connection = createConnection({
+            packages,
+            repos,
+            files: files.map(({ file, path }) => ({ path, url: `/${file}` })),
+            source: [files[0].path]
+          });
+          state.textContent = 'starting R';
+          let since = performance.now();
+          const started = await connection.run('Sys.time');
+          const start = seconds(since);
+          if (started.status !== 'ok') {
+            state.textContent = 'R did not start';
+            return { started, start };
+          }
+          state.textContent = 'attaching the packages';
+          since = performance.now();
+          const attached = await connection.run(attach);
+          const attaching = seconds(since);
+          const answers = {};
+          const took = {};
+          for (const study of studies) {
+            state.textContent = `running ${study.id}`;
+            const raw = {};
+            for (const { name, url, text } of study.files) {
+              raw[`${study.folder}/${name}`] =
+                typeof text === 'string' ? text : await (await fetch(url)).text();
+            }
+            since = performance.now();
+            answers[study.id] = await connection.run(call, { files: raw, args: study.args });
+            took[study.id] = seconds(since);
+          }
+          state.textContent = 'done';
+          return { started, start, attached, attaching, answers, took };
         }
       };
     </script>

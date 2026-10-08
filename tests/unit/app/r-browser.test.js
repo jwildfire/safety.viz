@@ -165,6 +165,42 @@ describe('the connection to R in the browser (#231)', () => {
     );
   });
 
+  it('APP-RBQM-029: a connection handed `onStage` names each step of starting R as it begins and in order, the runtime, the packages, the files and the R source; a step with nothing to do is not named, a callback that throws does not stop R starting, and anything but a function is refused (#235)', async () => {
+    const webR = standIn();
+    const stages = [];
+    const connection = createConnection(
+      options(webR, {
+        onStage(stage) {
+          // What R had done when the step was named.
+          stages.push([stage, webR.calls.map(([call]) => call).filter((call) => call !== 'mkdir')]);
+          throw new Error('the page could not say so');
+        }
+      })
+    );
+    expect(stages).toEqual([]);
+    expect((await connection.run('rbqm_run')).status).toBe('ok');
+    expect(stages.map(([stage]) => stage)).toEqual(['runtime', 'packages', 'files', 'source']);
+    const before = Object.fromEntries(stages);
+    expect(before.runtime).toEqual([]);
+    expect(before.packages).toEqual(['new', 'init']);
+    expect(before.files).toEqual(['new', 'init', 'install']);
+    expect(before.source.filter((call) => call === 'write')).toHaveLength(2);
+    // A second run starts nothing again, so names nothing.
+    await connection.run('rbqm_run');
+    expect(stages).toHaveLength(4);
+    // With no package, file or source there is one step.
+    const bare = [];
+    const plain = standIn();
+    await createConnection({
+      importWebR: plain.importWebR,
+      onStage: (stage) => bare.push(stage)
+    }).run('identity');
+    expect(bare).toEqual(['runtime']);
+    expect(() => createConnection({ onStage: 'say' })).toThrow(
+      'r-browser: onStage is not a function.'
+    );
+  });
+
   it('APP-R-033: on the first run starts R on the channel that needs no special headers, installs the packages from the repositories given, writes the files and sources the R, in that order', async () => {
     const webR = standIn();
     const connection = createConnection(options(webR));

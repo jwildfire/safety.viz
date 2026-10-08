@@ -21,10 +21,11 @@
     <div id="app"></div>
     <script src="/build/app/safety.viz-app.js"></script>
     <script src="/site/vendor/bio.viz/bio.viz.js"></script>
+    <script src="/build/app/rbqm-tab-options.js"></script>
     <script>
       const empty = new URLSearchParams(window.location.search).has('empty');
       const pitch =
-        'Files you load are read in this browser and never uploaded. Starting R downloads R from webr.r-wasm.org; your data stays in the browser, and R runs here.';
+        'Files you load are read in this browser and never uploaded. Starting R downloads R from webr.r-wasm.org and, for the RBQM tab, its packages from repo.r-wasm.org; your data stays in the browser, and R runs here.';
       const studies = SafetyVizApp.DEMO_STUDIES.map((study) => ({
         ...study,
         base: `/${study.source}/`
@@ -86,6 +87,77 @@
           })
         }
       ];
+      // The RBQM tab (#235), as the demo page mounts it, with every file where
+      // the repository keeps it. `?rbqm=recorded` gives it a stand-in for R
+      // that answers at once with desktop R's answer for the study loaded
+      // (tests/fixtures/rbqm/expected-tab.json), so a test of the tab's page
+      // need not start R; `?rbqm=recorded&slow` makes each step wait until the
+      // test lets it go. Without it the tab starts real R.
+      const rbqmMode = new URLSearchParams(window.location.search).get('rbqm');
+      window.__rbqmSteps = [];
+      const recordedR = (options) => {
+        const gate = () =>
+          new URLSearchParams(window.location.search).has('slow')
+            ? new Promise((resolve) => (window.__rbqmLetGo = resolve))
+            : Promise.resolve();
+        let fixture = null;
+        return {
+          async run(name, request = {}) {
+            window.__rbqmSteps.push(name);
+            if (name === 'Sys.time') {
+              for (const stage of ['runtime', 'packages', 'files', 'source']) {
+                options.onStage(stage);
+                await gate();
+              }
+              if (window.__rbqmFails === 'start') {
+                return { status: 'unavailable', reason: 'load-failed', message: 'Failed to fetch' };
+              }
+              return { status: 'ok', value: '2026-10-07 12:00:00' };
+            }
+            await gate();
+            if (name !== window.__rbqmTabOptions.r.call) return { status: 'ok', value: null };
+            if (window.__rbqmFails === 'run') {
+              return { status: 'error', message: 'Error in rbqm_run: something gave way' };
+            }
+            fixture =
+              fixture || (await (await fetch('/tests/fixtures/rbqm/expected-tab.json')).json());
+            window.__rbqmRequest = request;
+            // Which of desktop R's answers: the whole study's, or the one for
+            // the files this run was handed.
+            const names = Object.keys(request.files).map((file) => file.split('/').pop());
+            const whole = fixture.whole;
+            if (names.length === 9) return { status: 'ok', value: whole };
+            const scenario = names.length === 2 ? 'two-files' : 'no-labs';
+            const partial = fixture.partial[scenario];
+            const ran = new Set(partial.ran.metrics.map((id) => `Analysis_${id}`));
+            const kept = (rows) => rows.filter((row) => ran.has(row.MetricID));
+            return {
+              status: 'ok',
+              value: {
+                ...whole,
+                Results: kept(whole.Results),
+                Bounds: kept(whole.Bounds),
+                Metrics: kept(whole.Metrics),
+                Groups: partial.rows.Groups ? whole.Groups : [],
+                status: partial.status,
+                groups: partial.groups,
+                notes: partial.notes,
+                thresholds: partial.thresholds,
+                ran: partial.ran
+              }
+            };
+          }
+        };
+      };
+      // The view is kept where a test can read what R returned to it. With the
+      // stand-in the clock stands still too, so what the tab says is the same
+      // every time it is captured.
+      window.__rbqmView = SafetyVizApp.rbqmTab({
+        createConnection: rbqmMode === 'recorded' ? recordedR : SafetyVizApp.createRConnection,
+        ...window.__rbqmTabOptions,
+        ...(rbqmMode === 'recorded' ? { now: () => new Date(2026, 9, 7, 9, 0, 0) } : {})
+      });
+      libraries.push({ name: 'gsm.viz', view: window.__rbqmView });
       window.__safetyVizApp = SafetyVizApp.mount(
         '#app',
         empty ? { libraries, pitch } : { demo: { base: '/site/data/', studies }, libraries, pitch }

@@ -1,0 +1,40 @@
+{
+  "megabytes": {
+    "webr.r-wasm.org": 13.08,
+    "repo.r-wasm.org": 39.97,
+    "page": 2.24,
+    "files": 12.07
+  },
+  "seconds": {
+    "startRToFirstResult": 47.3,
+    "asTheTabSays": 47,
+    "eightMetrics": 8.6,
+    "eightMetricsInR": {
+      "attach": 0,
+      "duckdb": 0.45,
+      "read": 0.11,
+      "mapping": 2.17,
+      "metrics": 4.85,
+      "reporting": 0.54,
+      "thresholds": 0.13
+    }
+  },
+  "rows": {
+    "Results": 1186,
+    "Bounds": 7666,
+    "Groups": 1675,
+    "Metrics": 8
+  },
+  "overviewCellsChecked": 1186,
+  "versions": {
+    "R": "4.6.0",
+    "workr": "1.1.0",
+    "gsm.core": "1.3.1",
+    "gsm.mapping": "1.1.6",
+    "gsm.reporting": "1.1.7",
+    "duckdb": "1.5.2",
+    "DBI": "1.3.0",
+    "dplyr": "1.2.1"
+  },
+  "platform": "linux"
+}

@@ -14,7 +14,10 @@
 // the page's own logic is testable without the charts and the same page serves
 // the site and the single-file build. Further chart libraries can be passed in
 // beside safety.viz's own (#181): their charts are listed, counted, mapped,
-// drawn and destroyed exactly as its own are (libraries.js).
+// drawn and destroyed exactly as its own are (libraries.js). A library whose
+// charts take something other than a study's standard domains brings one view
+// instead, a tab of its own (#235): the page gives it the main area and the
+// app handle, and the view draws itself.
 
 import { parseFile } from './parse.js';
 import { placeFile } from './detect.js';
@@ -148,7 +151,7 @@ function sentenceFor(module, status, manifest) {
  * @param {Object} options Mount options.
  * @param {Object} options.charts The chart factories, keyed by export name (the safety.viz module collection).
  * @param {Object} options.manifest The portfolio manifest.
- * @param {Array<{name: string, charts: ?Object, manifest: ?Object, file?: string, settings?: (Object|function(string): Object), action?: {state: function(): {label: string, done: boolean, note: string}, press: function(): void}}>} [options.libraries] Further chart libraries, each its name, its chart factories keyed by export name, and its chart list in the portfolio manifest's format (version 2). Their charts are listed after safety.viz's, under the groups their entries name; a chart whose library or factory is missing, or whose entry cannot be read, reads "not loaded". A library handed in with no chart list the app can read is named on the page in every view, with `file`, the script the page loaded it from, when given (#193). A library may also bring `settings` added to each of its charts' settings when the chart is drawn (an object, or a function of the module name), and one `action`, a control shown with its charts that redraws the open chart when pressed (#183).
+ * @param {Array<{name: string, charts: ?Object, manifest: ?Object, file?: string, settings?: (Object|function(string): Object), action?: {state: function(): {label: string, done: boolean, note: string}, press: function(): void}, view?: {id: string, title: string, badge?: ?{text: string, title: string}, tag: function(): string, render: function(Element, Object): ?{destroy: Function}}}>} [options.libraries] Further chart libraries, each its name, its chart factories keyed by export name, and its chart list in the portfolio manifest's format (version 2). Their charts are listed after safety.viz's, under the groups their entries name; a chart whose library or factory is missing, or whose entry cannot be read, reads "not loaded". A library handed in with no chart list the app can read is named on the page in every view, with `file`, the script the page loaded it from, when given (#193). A library may also bring `settings` added to each of its charts' settings when the chart is drawn (an object, or a function of the module name), and one `action`, a control shown with its charts that redraws the open chart when pressed (#183). A library that brings a `view` (#235) brings a tab of its own in place of charts: its `id` is the tab's address, `title` its name, `badge` a status shown beside the name, `tag()` what the tab's count says, and `render(container, app)` draws it and returns what tears it down. A view whose id is the data view's, a chart's or another view's is left out with a console warning.
  * @param {{base: string, studies?: Object[]}} [options.demo] Where the demo studies are served from, and which (default: {@link DEMO_STUDIES}); when given, the first study is loaded on mount and the data view offers each by name.
  * @param {{docs?: string, domains?: string, download?: string, github?: string}} [options.links] Where the footer's links go; a link with no address is left out.
  * @param {Object<string, {guide?: string, evidence?: string}>} [options.chartLinks] Each chart's own pages, keyed by module name: its clinical guide and its test evidence. A chart's view carries a footnote linking those it was given an address for (#246).
@@ -179,6 +182,10 @@ export function mountApp(
   } = {}
 ) {
   const root = typeof target === 'string' ? document.querySelector(target) : target;
+  // A library that brings a view brings a tab of its own, not charts (#235).
+  const handed = Array.isArray(libraries) ? libraries : [];
+  const bringsView = (library) =>
+    isRecord(library) && isRecord(library.view) && typeof library.view.render === 'function';
   // Every chart the page lists, safety.viz's and any other library's, in one
   // manifest; and for those that cannot be drawn, why.
   const {
@@ -187,7 +194,22 @@ export function mountApp(
     unloaded,
     libraries: extras,
     factoryOf
-  } = mergeLibraries(ownManifest, charts, Array.isArray(libraries) ? libraries : []);
+  } = mergeLibraries(
+    ownManifest,
+    charts,
+    handed.filter((library) => !bringsView(library))
+  );
+  const views = new Map();
+  for (const { view } of handed.filter(bringsView)) {
+    const id = typeof view.id === 'string' ? view.id : '';
+    if (!id || id === 'data' || has(manifest.modules, id) || views.has(id)) {
+      console.warn(
+        `safety.viz app: a view was handed in with no id or an id already used (${id}); it was left out.`
+      );
+      continue;
+    }
+    views.set(id, view);
+  }
   // What a library brings besides its charts (#183): settings for each of its
   // charts, and one control. Looked up by the library a chart's entry names,
   // among the libraries the merge used, so a second library of the same name
@@ -233,6 +255,7 @@ export function mountApp(
   };
 
   const isChart = (id) => has(manifest.modules, id);
+  const isView = (id) => views.has(id);
   const tabTitle = (group) => groupLabel(group, manifest);
   const groupTitle = (group) =>
     group === OTHER_GROUP ? 'Outside the standard domains' : groupLabel(group, manifest);
@@ -341,7 +364,7 @@ export function mountApp(
   const chartGroups = () => new Map(groupCharts(manifest));
 
   function renderNav(current) {
-    const open = state.selected === 'data' ? null : groupOf(manifest.modules[state.selected]);
+    const open = isChart(state.selected) ? groupOf(manifest.modules[state.selected]) : null;
     const loaded = Object.keys(state.files).length + state.raw.length;
     tabs.innerHTML = '';
     tabs.append(
@@ -398,6 +421,26 @@ export function mountApp(
       }
       chartRow.append(section);
     }
+    // A library's view (#235): a tab after the domains', with what the view
+    // says of itself where a domain's tab counts its charts.
+    for (const [id, view] of views) {
+      const tab = el('button', 'sva-tab sva-view-tab sva-library-group');
+      tab.type = 'button';
+      tab.dataset.tab = id;
+      tab.setAttribute('aria-pressed', String(state.selected === id));
+      tab.append(el('span', 'sva-hex'), el('span', 'sva-tab-title', view.title));
+      if (view.badge) {
+        // Shown where the header has room for it on one line (styles.js); the
+        // tab says it on hover at any width, and the view carries it too.
+        const pill = el('span', 'sva-badge', view.badge.text);
+        pill.title = view.badge.title;
+        tab.title = `${view.badge.text}: ${view.badge.title}`;
+        tab.append(pill);
+      }
+      tab.append(el('span', 'sva-tab-count', String(view.tag())));
+      tab.onclick = () => handle.select(id);
+      tabs.append(tab);
+    }
   }
 
   /**
@@ -412,7 +455,7 @@ export function mountApp(
     const current = status();
     renderHead(current);
     renderNav(current);
-    if (state.selected === 'data') return;
+    if (!isChart(state.selected)) return;
     const entry = manifest.modules[state.selected];
     if (!entry || libraryOf(entry) !== name || !instance) return;
     if (typeof instance.setSettings !== 'function') {
@@ -495,6 +538,26 @@ export function mountApp(
       const container = el('div', 'sva-data');
       content.append(container);
       dataView(container, handle);
+      return;
+    }
+    if (isView(state.selected)) {
+      const view = views.get(state.selected);
+      title.textContent = view.title;
+      renderNotes(content);
+      const container = el('div', 'sva-view');
+      content.append(container);
+      try {
+        instance = view.render(container, handle) || null;
+      } catch (error) {
+        instance = null;
+        container.append(
+          el(
+            'p',
+            'sva-message sva-problem',
+            `Did not draw. ${error && error.message ? error.message : String(error)}`
+          )
+        );
+      }
       return;
     }
 
@@ -646,7 +709,9 @@ export function mountApp(
     else handle.loadFiles(list, { study: study.id });
     if (!open) return;
     const wanted = window.location.hash.slice(1);
-    handle.select(isChart(wanted) || wanted === 'data' ? wanted : firstReady() || 'data');
+    handle.select(
+      isChart(wanted) || isView(wanted) || wanted === 'data' ? wanted : firstReady() || 'data'
+    );
   }
 
   const handle = {
@@ -960,11 +1025,11 @@ export function mountApp(
 
     /**
      * Show the data view or one chart.
-     * @param {string} id `'data'` or a module name from the manifest.
+     * @param {string} id `'data'`, a module name from the manifest, or the id of a library's view.
      * @returns {void}
      */
     select(id) {
-      state.selected = id === 'data' || isChart(id) ? id : 'data';
+      state.selected = id === 'data' || isChart(id) || isView(id) ? id : 'data';
       if (window.history && window.history.replaceState) {
         window.history.replaceState(null, '', `#${state.selected}`);
       }
@@ -975,6 +1040,25 @@ export function mountApp(
     refresh() {
       state.failed = {};
       render();
+    },
+
+    /** Say again what each tab says of itself, and leave the open view as it is. */
+    retag() {
+      const current = status();
+      renderHead(current);
+      renderNav(current);
+    },
+
+    /**
+     * A library's view changed (#235): its tab says what it now says, and the
+     * view is drawn again if it is the one open. Any other open view is left
+     * as it is.
+     * @param {string} id The view's id.
+     * @returns {void}
+     */
+    redrawView(id) {
+      if (state.selected === id && isView(id)) render();
+      else handle.retag();
     },
 
     /** Tear the page down: destroy the mounted chart, stop following the address and empty the target. */
@@ -992,7 +1076,7 @@ export function mountApp(
   function followAddress() {
     const wanted = window.location.hash.slice(1);
     if (wanted === state.selected) return;
-    if (wanted === 'data' || isChart(wanted)) handle.select(wanted);
+    if (wanted === 'data' || isChart(wanted) || isView(wanted)) handle.select(wanted);
   }
   window.addEventListener('hashchange', followAddress);
 

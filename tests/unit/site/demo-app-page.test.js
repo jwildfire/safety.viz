@@ -88,7 +88,7 @@ describe('renderDemoAppPage', () => {
     expect(html).toMatch(/<link rel="icon" href="data:image\/svg\+xml,[^"]+">/);
   });
 
-  it('APP-PAGE-017: the page as the site builds it, with bio.viz’s charts, R on request and each chart’s pages, names exactly three other hosts: the repository’s, R’s and, in links alone, the one bio.viz’s site is on (#165, #183, #246)', () => {
+  it('APP-PAGE-017: the page as the site builds it, with bio.viz’s charts, the RBQM tab, R on request and each chart’s pages, names exactly four other hosts: the repository’s, the two R is downloaded from and, in links alone, the one bio.viz’s site is on (#165, #183, #235, #246)', () => {
     const built = renderDemoAppPage({
       bundle: 'safety.viz-app.js',
       download: 'safety.viz-app.html',
@@ -109,8 +109,13 @@ describe('renderDemoAppPage', () => {
           ].map(([host]) => host)
         )
       ].sort();
-    expect(hosts(built)).toEqual(['github.com', 'jwildfire.github.io', 'webr.r-wasm.org']);
-    // The third is named only in the addresses of the biomarker charts' test
+    expect(hosts(built)).toEqual([
+      'github.com',
+      'jwildfire.github.io',
+      'repo.r-wasm.org',
+      'webr.r-wasm.org'
+    ]);
+    // The second is named only in the addresses of the biomarker charts' test
     // evidence, on bio.viz's site (#246): links a reader may follow, which the
     // page asks nothing of. The safety charts' own pages are beside the app.
     const addresses = [...built.matchAll(/https?:\/\/[^\s"')]+/g)].map(([url]) => url);
@@ -199,7 +204,7 @@ describe('renderDemoAppPage', () => {
     expect(app).toBeGreaterThan(-1);
     expect(library).toBeGreaterThan(app);
     expect(page).toContain(
-      'libraries: [{ name: "bio.viz", file: "bio.viz.js", charts: window.BioViz, manifest: window.BioViz && window.BioViz.portfolio }]'
+      'libraries: [{ name: "bio.viz", file: "bio.viz.js", charts: window.BioViz, manifest: window.BioViz && window.BioViz.portfolio }, { name: "gsm.viz", view: SafetyVizApp.rbqmTab('
     );
     expect(page).toMatch(
       /<meta name="description" content="[^"]*thirteen clinical safety charts and five biomarker charts[^"]*">/
