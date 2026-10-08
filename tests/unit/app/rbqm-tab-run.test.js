@@ -149,7 +149,7 @@ describe('the one R function behind the tab (#234)', () => {
     }
   });
 
-  it('APP-RBQM-014: it computes nothing itself: every workflow is run through workr, and it calls no statistical or arithmetic function on the data (#234)', () => {
+  it('APP-RBQM-014: it computes nothing itself: every workflow is run through workr, it calls no statistical or arithmetic function on the data, and the one gsm function it names parses a metric’s thresholds from text to numbers (#234)', () => {
     expect(code).toContain('workr::RunWorkflows(');
     expect(code).toContain('workr::MakeWorkflowList(');
     for (const call of [
@@ -164,8 +164,11 @@ describe('the one R function behind the tab (#234)', () => {
     ]) {
       expect(code, call).not.toContain(call);
     }
-    // No gsm.core function is called by name here: the workflows' steps call them.
-    expect(code).not.toMatch(/gsm\.(core|mapping|reporting)::/);
+    // One gsm function is called by name, the one gsm's own bar chart binding
+    // parses a metric's thresholds with: every other is a workflow's step.
+    expect([...new Set(code.match(/gsm\.(core|mapping|reporting)::\w+/g))]).toEqual([
+      'gsm.core::ParseThreshold'
+    ]);
   });
 });
 
@@ -179,8 +182,19 @@ describe('desktop R’s answers for the RBQM tab (#234)', () => {
   });
 
   it('APP-RBQM-015: on the whole study all eight metrics ran: 1,186 Results rows, a row for each of 148 sites for seven metrics and 150 for the screen failure rate, each with its site, numerator, denominator, metric, score and flag, beside the Bounds, Groups and Metrics tables, with nothing warned of (#234)', () => {
-    const { Results, Bounds, Groups, Metrics, status, groups, notes, ran, versions, warnings } =
-      expected.whole;
+    const {
+      Results,
+      Bounds,
+      Groups,
+      Metrics,
+      status,
+      groups,
+      thresholds,
+      notes,
+      ran,
+      versions,
+      warnings
+    } = expected.whole;
     expect(Results).toHaveLength(1186);
     const sites = {};
     for (const row of Results) {
@@ -229,6 +243,12 @@ describe('desktop R’s answers for the RBQM tab (#234)', () => {
       }))
     );
     expect(groups).toEqual({ state: 'ran', files: [], columns: [], message: '' });
+    // Each metric's thresholds as numbers, in the order its workflow writes them.
+    expect(thresholds).toEqual(
+      Object.fromEntries(Metrics.map((row) => [row.MetricID, row.Threshold.split(',').map(Number)]))
+    );
+    expect(thresholds.Analysis_kri0001).toEqual([-2, -1, 2, 3]);
+    expect(thresholds.Analysis_kri0012).toEqual([-3, -2, 2, 3]);
     expect(notes).toEqual([]);
     expect(ran.metrics).toEqual(RBQM_METRICS);
     expect(ran.mappings).toHaveLength(10);
@@ -310,6 +330,7 @@ describe('desktop R’s answers for the RBQM tab (#234)', () => {
       message: 'The Groups table needs Raw_STUDY.csv and Raw_SITE.csv, which are not loaded.'
     });
     expect(two.rows).toMatchObject({ Results: 296, Groups: 0, Metrics: 2 });
+    expect(Object.keys(two.thresholds)).toEqual(['Analysis_kri0001', 'Analysis_kri0002']);
     expect(two.notes).toEqual([
       "No study table was made, so the study's ID, AA-AA-000-0000, is read from the study ID column of the loaded files."
     ]);

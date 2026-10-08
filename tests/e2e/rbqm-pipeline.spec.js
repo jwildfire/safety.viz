@@ -127,6 +127,9 @@ test.describe('the RBQM tab’s run in R in the browser', () => {
       RBQM_TAB.metrics.map((id) => [id, 'ran'])
     );
     expect(whole.groups).toEqual(desktop.groups);
+    // Each metric's thresholds, as numbers, are R's own parsing of the workflow's text.
+    expect(whole.thresholds).toEqual(desktop.thresholds);
+    expect(whole.thresholds.Analysis_kri0001).toEqual([-2, -1, 2, 3]);
     expect(whole.notes).toEqual([]);
     expect(whole.ran).toEqual(desktop.ran);
     expect(whole.warnings).toEqual([]);
@@ -143,6 +146,7 @@ test.describe('the RBQM tab’s run in R in the browser', () => {
       expect(answer.status, id).toEqual(wanted.status);
       expect(answer.groups, id).toEqual(wanted.groups);
       expect(answer.notes, id).toEqual(wanted.notes);
+      expect(answer.thresholds, id).toEqual(wanted.thresholds);
       expect(answer.ran, id).toEqual(wanted.ran);
       expect(answer.warnings, id).toEqual([]);
       for (const table of ['Results', 'Bounds', 'Groups', 'Metrics']) {

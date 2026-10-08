@@ -62,6 +62,8 @@ rbqm_attach <- function() {
 #'   `no file`, `no column` or `stopped`), the `files` it needs that are not
 #'   loaded, the `columns` it needs that a loaded file lacks, and the `message`
 #'   that says so in a sentence; `groups`, the same for the Groups table;
+#'   `thresholds`, for each metric that ran, by its ID in the tables, its
+#'   thresholds as numbers, for the bar chart's lines;
 #'   `notes`, sentences about how the run was made; `ran`, the mapping and
 #'   metric workflows that ran; `seconds`, how long each stage took;
 #'   `versions`, the R and package versions; and `warnings`, what R warned of
@@ -307,6 +309,17 @@ rbqm_run <- function(data, mappings, metrics, reporting, helpers,
     rownames(df) <- NULL
     df
   }
+  # A metric's thresholds are text in its workflow ("-2,-1,2,3"). gsm's bar
+  # chart draws a line at each, and is handed them as numbers by gsm's own R
+  # binding, which parses them with this gsm.core function, in the order they
+  # are written. It is the one gsm function named here: it is no workflow's
+  # step to run, and the page parses no number itself.
+  thresholds <- stage("thresholds", stats::setNames(
+    lapply(lRan, function(workflow) {
+      as.list(gsm.core::ParseThreshold(workflow$meta$Threshold, bSort = FALSE))
+    }),
+    vapply(lRan, made_by, character(1))
+  ))
   packages <- c(rbqm_packages, "duckdb", "DBI", "dplyr")
   groups_made <- !is.null(lReporting$Reporting_Groups)
   list(
@@ -326,6 +339,7 @@ rbqm_run <- function(data, mappings, metrics, reporting, helpers,
         c("state", "files", "columns", "message")
       ]
     },
+    thresholds = thresholds,
     notes = as.list(notes),
     ran = list(
       mappings = as.list(names(lMapped)),

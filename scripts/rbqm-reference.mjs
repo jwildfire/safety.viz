@@ -132,6 +132,7 @@ for (const scenario of RBQM_TAB.scenarios.filter((item) => item.id !== 'whole'))
     status: answer.status,
     groups: answer.groups,
     notes: answer.notes,
+    thresholds: answer.thresholds,
     ran: answer.ran,
     warnings: answer.warnings,
     rows: {
