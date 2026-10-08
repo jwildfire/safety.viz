@@ -1,0 +1,44 @@
+{
+  "megabytes": {
+    "runtime": 13.01,
+    "publicIndex": 39.97,
+    "gsmPackages": 2.24,
+    "page": 3.41,
+    "total": 58.63
+  },
+  "seconds": {
+    "startR": 6.59,
+    "attachPackages": 40.99,
+    "eightMetrics": 11.15,
+    "eightMetricsInR": {
+      "attach": 0,
+      "duckdb": 0.46,
+      "read": 0.11,
+      "mapping": 2.53,
+      "metrics": 6.57,
+      "reporting": 0.94,
+      "thresholds": 0.21
+    },
+    "sevenMetrics": 9.81,
+    "sixMetrics": 9.37,
+    "twoMetrics": 2.3,
+    "startToFirstResult": 58.73
+  },
+  "rows": {
+    "Results": 1186,
+    "Bounds": 7666,
+    "Groups": 1675,
+    "Metrics": 8
+  },
+  "versions": {
+    "R": "4.6.0",
+    "workr": "1.1.0",
+    "gsm.core": "1.3.1",
+    "gsm.mapping": "1.1.6",
+    "gsm.reporting": "1.1.7",
+    "duckdb": "1.5.2",
+    "DBI": "1.3.0",
+    "dplyr": "1.2.1"
+  },
+  "platform": "linux"
+}
