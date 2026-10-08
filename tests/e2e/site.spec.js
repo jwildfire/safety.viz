@@ -174,7 +174,9 @@ test.describe('docs site', () => {
     const said =
       'The bio.viz charts are not shown: bio.viz.js did not load on this page, or failed as it loaded.';
     await expect(page.locator('.sva-library-notes')).toHaveText(said);
-    await expect(page.locator('.sva-tab')).toHaveCount(3);
+    // The three domains' tabs and the RBQM tab, which is no chart of bio.viz's (#235).
+    await expect(page.locator('.sva-tab')).toHaveCount(4);
+    await expect(page.locator('.sva-tab[data-domain]')).toHaveCount(3);
     await expect(page.locator('.sva-count')).toHaveText(
       `${Object.keys(manifest.modules).length} of ${Object.keys(manifest.modules).length} charts supported by the loaded data`
     );

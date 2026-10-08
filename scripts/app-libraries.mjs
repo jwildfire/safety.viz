@@ -9,6 +9,8 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { BIO_VIZ, GSM_BIO_STATISTICS, GSM_VIZ } from './vendor-lib.mjs';
+import { RBQM_TAB, pipelineFiles, tabArgs } from './rbqm-lib.mjs';
+import { SERVED_AS } from './r-wasm-lib.mjs';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -62,7 +64,11 @@ export const RBQM_CHARTS = {
  * starting R downloads R, not the data. APP-LOAD-014 and APP-LOAD-026 hold it.
  */
 export const HOSTED_PITCH =
-  'Files you load are read in this browser and never uploaded. Starting R downloads R from webr.r-wasm.org; your data stays in the browser, and R runs here.';
+  'Files you load are read in this browser and never uploaded. Starting R downloads R from webr.r-wasm.org and, for the RBQM tab, its packages from repo.r-wasm.org; your data stays in the browser, and R runs here.';
+
+/** The same, as the hosted page's description says it to a search engine. */
+export const HOSTED_DESCRIPTION =
+  'Files you load are read in your browser and never uploaded; starting R downloads R from webr.r-wasm.org and, for the RBQM tab, its packages from repo.r-wasm.org, and your data stays in your browser.';
 
 /** What the single file's footer says (#196). */
 export const FILE_PITCH =
@@ -83,6 +89,104 @@ export const FILE_NO_R =
 export const noRFactory = (library) =>
   `Statistics are unavailable: the ${library.name} on this page has no connection to R ` +
   `(${library.name}’s ${library.r.factory} is missing).`;
+
+// ---- The RBQM tab (#235, obot.roadmap#374) ----
+
+/**
+ * What starting R for the RBQM tab downloads, in the order it downloads it:
+ * R itself, the packages gsm's depend on from the public index, and gsm's own
+ * four from the page. The megabytes are what the tab says; the browser test
+ * APP-RBQM-021 measures each as it starts R and fails when one is off by more
+ * than a megabyte and a half.
+ */
+export const RBQM_DOWNLOADS = [
+  { what: 'R itself', host: 'webr.r-wasm.org', megabytes: 13 },
+  { what: 'its packages', host: new URL(RBQM_TAB.publicIndex).host, megabytes: 40 },
+  { what: 'gsm’s packages', host: null, megabytes: 2 }
+];
+
+/** What the tab is in the app: its place in site/config.json's `appTabs`. */
+export const RBQM_TAB_ID = 'rbqm';
+
+/** What the Experimental pill means, for whoever hovers it; the docs site says the same. */
+export const EXPERIMENTAL_MEANING =
+  'Still being worked on, and fine to use: its behaviour and settings may change.';
+
+/** What the RBQM tab says in the single file, which cannot start R. */
+export const FILE_NO_RBQM =
+  'The RBQM tab needs R, and this file loads nothing, so it cannot start R. ' +
+  'The hosted demo app can start R in your browser.';
+
+/**
+ * The tab's status badge, from site/config.json: the tab ships Experimental
+ * while its entry there says so.
+ * @returns {?{text: string, title: string}} The badge, or null for a stable tab.
+ */
+export function rbqmBadge() {
+  const config = JSON.parse(readFileSync(path.join(rootDir, 'site/config.json'), 'utf8'));
+  const entry = (config.appTabs || []).find((tab) => tab.id === RBQM_TAB_ID);
+  return entry && entry.experimental ? { text: 'Experimental', title: EXPERIMENTAL_MEANING } : null;
+}
+
+/**
+ * Where the demo app's directory serves a file R is given: under the path R
+ * keeps it at, beside the app (`./rbqm/pipeline.R`).
+ * @param {{path: string}} entry An entry of pipelineFiles().
+ * @returns {string} The address, relative to the page.
+ */
+export const servedBesideTheApp = (entry) => `.${entry.path}`;
+
+/**
+ * The options the RBQM tab is mounted with, as plain values: what R is given
+ * and from where, gsm.viz's bundle, what starting R downloads, and the badge.
+ * The connection factory is the app's own and is added by the page.
+ * @param {Object} [where] Where the page serves each thing; the demo app's directory by default.
+ * @param {(entry: {file: string, path: string}) => string} [where.fileUrl] The address of one file R is given.
+ * @param {string} [where.repository] The address of gsm's packages, as a package repository.
+ * @param {string} [where.chartsUrl] The address of gsm.viz's bundle.
+ * @returns {Object} The options, less `createConnection`.
+ */
+export function rbqmTabOptions({
+  fileUrl = servedBesideTheApp,
+  repository = `./${SERVED_AS}`,
+  chartsUrl = `./${RBQM_CHARTS.file}`
+} = {}) {
+  const files = pipelineFiles();
+  const folder = path.posix.dirname(files[0].path);
+  // The data folder and the snapshot's date are set by the tab at each run.
+  const { data: _data, snapshot_date: _date, ...args } = tabArgs('');
+  return {
+    r: {
+      packages: RBQM_TAB.packages,
+      repos: [repository, RBQM_TAB.publicIndex],
+      files: files.map((entry) => ({ path: entry.path, url: fileUrl(entry) })),
+      source: [files[0].path],
+      attach: RBQM_TAB.attach,
+      call: RBQM_TAB.call,
+      args,
+      data: `${folder}/runs`
+    },
+    charts: { url: chartsUrl, global: RBQM_CHARTS.global },
+    downloads: RBQM_DOWNLOADS,
+    badge: rbqmBadge()
+  };
+}
+
+/**
+ * The RBQM tab's entry in the `libraries` option, as source text: a library
+ * that brings a view (src/app/page.js). On a page that can start R the view is
+ * given the app's own connection to R in the browser; in the single file it
+ * says why it cannot start R.
+ * @param {{r?: 'request'|'unavailable', where?: Object}} [options]
+ * @returns {string} A JavaScript object expression.
+ */
+export function rbqmTabExpression({ r = 'request', where } = {}) {
+  const options =
+    r === 'request'
+      ? `{ createConnection: SafetyVizApp.createRConnection, ...${JSON.stringify(rbqmTabOptions(where))} }`
+      : JSON.stringify({ unavailable: FILE_NO_RBQM, badge: rbqmBadge() });
+  return `{ name: ${JSON.stringify(RBQM_CHARTS.name)}, view: SafetyVizApp.rbqmTab(${options}) }`;
+}
 
 /**
  * A library's vendored bundle, as text.
@@ -130,12 +234,12 @@ export function libraryManifest(library) {
  * library with no connection factory where the page looks for one is handed
  * the sentence that says so rather than stopping the mount.
  * @param {Object[]} [libraries] Entries of APP_LIBRARIES.
- * @param {{r?: ?('request'|'unavailable'), fromFile?: boolean, statisticsUrl?: (library: Object) => string, createConnection?: (library: Object) => string}} [options]
+ * @param {{r?: ?('request'|'unavailable'), fromFile?: boolean, statisticsUrl?: (library: Object) => string, createConnection?: (library: Object) => string, more?: string[]}} [options] `more` is further entries, each as source text, listed after the libraries': the RBQM tab's (rbqmTabExpression).
  * @returns {string} A JavaScript array expression.
  */
 export function librariesExpression(
   libraries = APP_LIBRARIES,
-  { r = null, fromFile = true, statisticsUrl, createConnection } = {}
+  { r = null, fromFile = true, statisticsUrl, createConnection, more = [] } = {}
 ) {
   const entries = libraries.map((library) => {
     const global = `window.${library.global}`;
@@ -162,5 +266,5 @@ export function librariesExpression(
       `charts: ${global}, manifest: ${global} && ${global}.portfolio${statistics} }`
     );
   });
-  return `[${entries.join(', ')}]`;
+  return `[${[...entries, ...more].join(', ')}]`;
 }

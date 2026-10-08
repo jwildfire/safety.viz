@@ -15,7 +15,8 @@ import {
   HOSTED_PITCH,
   librariesExpression,
   libraryScript,
-  noRFactory
+  noRFactory,
+  rbqmTabExpression
 } from '../../../scripts/app-libraries.mjs';
 import { APP_STATISTICS, SCENARIO, derivedFrom } from '../../../scripts/app-statistics-lib.mjs';
 import { renderAppHtml } from '../../../scripts/build-app.mjs';
@@ -124,7 +125,10 @@ describe('the pages', () => {
       libraries: APP_LIBRARIES,
       charts: 'thirteen clinical safety charts and five biomarker charts'
     });
-    expect(html).toContain(`libraries: ${librariesExpression(APP_LIBRARIES, { r: 'request' })}`);
+    // After bio.viz's entry comes the RBQM tab's, a library that brings a view (#235).
+    expect(html).toContain(
+      `libraries: ${librariesExpression(APP_LIBRARIES, { r: 'request', more: [rbqmTabExpression()] })}`
+    );
     expect(html).toContain(
       'SafetyVizApp.rOnRequest({ createConnection: window.BioViz?.r?.createConnection, ' +
         'browser: { sourceUrl: "./statistics.R", packages: [] }, megabytes: 13, host: "webr.r-wasm.org" })'
@@ -138,8 +142,10 @@ describe('the pages', () => {
   });
 
   it('APP-LOAD-027: the hosted footer, the single file’s footer and the hosted page’s description say what happens to the data a reader loads, in plain words (#196)', () => {
+    // Every address R is downloaded from is named: the RBQM tab's packages
+    // come from a second one (#235).
     expect(HOSTED_PITCH).toBe(
-      'Files you load are read in this browser and never uploaded. Starting R downloads R from webr.r-wasm.org; your data stays in the browser, and R runs here.'
+      'Files you load are read in this browser and never uploaded. Starting R downloads R from webr.r-wasm.org and, for the RBQM tab, its packages from repo.r-wasm.org; your data stays in the browser, and R runs here.'
     );
     expect(FILE_PITCH).toBe(
       'This file loads nothing; files you add are read here and never leave this computer.'
@@ -153,7 +159,7 @@ describe('the pages', () => {
     });
     const [, description] = html.match(/<meta name="description" content="([^"]*)">/);
     expect(description).toContain(
-      'Files you load are read in your browser and never uploaded; starting R downloads R from webr.r-wasm.org, and your data stays in your browser.'
+      'Files you load are read in your browser and never uploaded; starting R downloads R from webr.r-wasm.org and, for the RBQM tab, its packages from repo.r-wasm.org, and your data stays in your browser.'
     );
     expect(description).not.toMatch(/fetches nothing|No request leaves/);
     const file = renderAppHtml({

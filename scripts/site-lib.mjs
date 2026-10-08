@@ -3,7 +3,13 @@
 // relative, so one build serves the site root, /dev/, and /pr/{N}/ unchanged.
 
 import { LOGO_SVG } from '../src/app/styles.js';
-import { HOSTED_PITCH, librariesExpression } from './app-libraries.mjs';
+import {
+  EXPERIMENTAL_MEANING,
+  HOSTED_DESCRIPTION,
+  HOSTED_PITCH,
+  librariesExpression,
+  rbqmTabExpression
+} from './app-libraries.mjs';
 
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
@@ -1480,7 +1486,7 @@ export function renderKitPage(model, { repoUrl, version }) {
 // tier means, for whoever hovers it.
 export const STATUS_MEANING = {
   prototype: 'Not ready for production: on the docs site only, and not in the demo app.',
-  experimental: 'Still being worked on, and fine to use: its behaviour and settings may change.'
+  experimental: EXPERIMENTAL_MEANING
 };
 export function experimentalBadge(renderer) {
   if (renderer && renderer.prototype) {
@@ -1623,7 +1629,7 @@ export function renderDemoAppPage({
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="The safety.viz demo app: load a study, check how its columns map, and review it in ${escapeHtml(charts)}. ${libraries.length ? 'Files you load are read in your browser and never uploaded; starting R downloads R from webr.r-wasm.org, and your data stays in your browser.' : 'It runs in your browser; nothing is uploaded.'}">
+<meta name="description" content="The safety.viz demo app: load a study, check how its columns map, and review it in ${escapeHtml(charts)}. ${libraries.length ? HOSTED_DESCRIPTION : 'It runs in your browser; nothing is uploaded.'}">
 <title>safety.viz demo</title>
 <link rel="icon" href="data:image/svg+xml,${icon}">
 ${preloads}
@@ -1639,7 +1645,7 @@ body{margin:0;background:#fafaf8}
 <script src="./${escapeHtml(bundle)}"></script>
 ${libraries.map((library) => `<script src="./${escapeHtml(library.file)}"></script>\n`).join('')}<script>
 window.__safetyVizApp = SafetyVizApp.mount('#app', {
-  demo: { base: './' },${libraries.length ? `\n  libraries: ${librariesExpression(libraries, { r: 'request' })},\n  pitch: ${js(HOSTED_PITCH)},` : ''}
+  demo: { base: './' },${libraries.length ? `\n  libraries: ${librariesExpression(libraries, { r: 'request', more: [rbqmTabExpression()] })},\n  pitch: ${js(HOSTED_PITCH)},` : ''}
   links: {${Object.keys(DEMO_APP_SITE_LINKS)
     .filter((name) => siteLinks[name])
     .map((name) => `\n    ${name}: ${js(siteLinks[name])},`)

@@ -17,7 +17,16 @@ import { build } from 'esbuild';
 import { mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { APP_LIBRARIES, FILE_PITCH, librariesExpression, libraryScript } from './app-libraries.mjs';
+import {
+  APP_LIBRARIES,
+  FILE_PITCH,
+  RBQM_CHARTS,
+  librariesExpression,
+  libraryScript,
+  rbqmTabExpression,
+  rbqmTabOptions
+} from './app-libraries.mjs';
+import { RBQM_TAB } from './rbqm-lib.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..');
@@ -51,7 +60,7 @@ export function renderAppHtml({ script, libraries = [] }) {
   // The file loads nothing, so its biomarker charts cannot start R: each
   // statistics line says so, and there is no control (#183).
   const mount = libraries.length
-    ? `SafetyVizApp.mount('#app', { libraries: ${librariesExpression(libraries, { r: 'unavailable', fromFile: false })}, pitch: ${JSON.stringify(FILE_PITCH)} })`
+    ? `SafetyVizApp.mount('#app', { libraries: ${librariesExpression(libraries, { r: 'unavailable', fromFile: false, more: [rbqmTabExpression({ r: 'unavailable' })] })}, pitch: ${JSON.stringify(FILE_PITCH)} })`
     : `SafetyVizApp.mount('#app')`;
   return `<!doctype html>
 <html lang="en">
@@ -70,6 +79,9 @@ ${others}<script>window.__safetyVizApp = ${mount};</script>
 </html>
 `;
 }
+
+/** The RBQM tab's options as the test harness page loads them; written by `npm run build:app`. */
+export const RBQM_HARNESS = 'rbqm-tab-options.js';
 
 const { version } = JSON.parse(readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
 
@@ -116,4 +128,21 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const size = (count) => `${count.toLocaleString('en-US')} bytes`;
   console.log(`Built ${path.relative(rootDir, file)} (${size(bytes)}).`);
   console.log(`Built ${path.relative(rootDir, html.file)} (${size(html.bytes)}), the single file.`);
+  // The RBQM tab's options for the browser tests' harness page (#235), with
+  // every file where the repository keeps it: the page a test opens is served
+  // from the repository's root, not from a built demo directory.
+  const harness = path.join(rootDir, 'build/app', RBQM_HARNESS);
+  writeFileSync(
+    harness,
+    `window.__rbqmTabOptions = ${JSON.stringify(
+      rbqmTabOptions({
+        fileUrl: (entry) => `/${entry.file}`,
+        repository: `/${RBQM_TAB.repository}`,
+        chartsUrl: `/${RBQM_CHARTS.path}`
+      })
+    )};\n`
+  );
+  console.log(
+    `Wrote ${path.relative(rootDir, harness)}, the RBQM tab's options for the test page.`
+  );
 }

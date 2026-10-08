@@ -51,3 +51,8 @@ export { charts, DEMO_STUDIES };
 // app makes the connection settings and the control with these and passes them
 // in the library's entry.
 export { rOnRequest, rUnavailable } from './r-on-request.js';
+// The RBQM tab (#235): a view a library brings, and the connection to R in the
+// browser it starts when the reader asks. The page that mounts the app says
+// where R's files and gsm.viz's bundle are served from.
+export { rbqmTab } from './rbqm-view.js';
+export { createConnection as createRConnection } from './r-browser.js';

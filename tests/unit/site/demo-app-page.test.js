@@ -87,7 +87,7 @@ describe('renderDemoAppPage', () => {
     expect(html).toMatch(/<link rel="icon" href="data:image\/svg\+xml,[^"]+">/);
   });
 
-  it('APP-PAGE-017: the page as the site builds it, with bio.viz’s charts and R on request, names exactly two other hosts: the repository’s and R’s (#165, #183)', () => {
+  it('APP-PAGE-017: the page as the site builds it, with bio.viz’s charts, the RBQM tab and R on request, names exactly three other hosts: the repository’s and the two R is downloaded from (#165, #183, #235)', () => {
     const built = renderDemoAppPage({
       bundle: 'safety.viz-app.js',
       download: 'safety.viz-app.html',
@@ -107,7 +107,7 @@ describe('renderDemoAppPage', () => {
           ].map(([host]) => host)
         )
       ].sort();
-    expect(hosts(built)).toEqual(['github.com', 'webr.r-wasm.org']);
+    expect(hosts(built)).toEqual(['github.com', 'repo.r-wasm.org', 'webr.r-wasm.org']);
     // R's host is named only as where R comes from, fetched by bio.viz's own
     // connection when the reader presses Start R; the page links nothing there.
     expect(built).not.toMatch(/https?:\/\/webr\.r-wasm\.org/);
@@ -186,7 +186,7 @@ describe('renderDemoAppPage', () => {
     expect(app).toBeGreaterThan(-1);
     expect(library).toBeGreaterThan(app);
     expect(page).toContain(
-      'libraries: [{ name: "bio.viz", file: "bio.viz.js", charts: window.BioViz, manifest: window.BioViz && window.BioViz.portfolio }]'
+      'libraries: [{ name: "bio.viz", file: "bio.viz.js", charts: window.BioViz, manifest: window.BioViz && window.BioViz.portfolio }, { name: "gsm.viz", view: SafetyVizApp.rbqmTab('
     );
     expect(page).toMatch(
       /<meta name="description" content="[^"]*thirteen clinical safety charts and five biomarker charts[^"]*">/

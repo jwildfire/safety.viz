@@ -6,17 +6,22 @@ import {
   APP_LIBRARIES,
   FILE_NO_R,
   FILE_PITCH,
+  FILE_NO_RBQM,
   HOSTED_PITCH,
+  RBQM_CHARTS,
+  RBQM_DOWNLOADS,
   libraryManifest
 } from '../../scripts/app-libraries.mjs';
 import { SCENARIO, openAndStartR, playScenario } from '../../scripts/app-statistics-lib.mjs';
 import {
   RBQM_GATE,
+  RBQM_TAB,
   RESULT_KEYS,
   RESULT_NUMBERS,
   pipelineArgs,
   pipelineFiles,
-  studyFiles
+  studyFiles,
+  tabStudyFiles
 } from '../../scripts/rbqm-lib.mjs';
 
 // Browser evidence for the demo app (#150, obot.roadmap#352): a full-page app
@@ -308,17 +313,20 @@ test.describe('demo app on the demo study', () => {
     page
   }) => {
     await openOnDemo(page);
+    // After the domains' tabs comes the RBQM tab, a view of its own (#235).
     await expect(page.locator('.sva-tab .sva-tab-title')).toHaveText([
       'Labs and vitals',
       'ECG',
       'Adverse events',
-      'Biomarkers'
+      'Biomarkers',
+      'RBQM'
     ]);
     await expect(page.locator('.sva-tab .sva-tab-count')).toHaveText([
       '9 of 9',
       '1 of 1',
       '3 of 3',
-      '5 of 5'
+      '5 of 5',
+      'R not started'
     ]);
     // The demo opens on the first chart, so its domain is open.
     await expect(tab(page, 'bds')).toHaveAttribute('aria-pressed', 'true');
@@ -725,7 +733,7 @@ test.describe('demo app data panel on a renamed-column study', () => {
     await captureEvidence(page, 'APP-LOAD-007', 'renamed-study-chart');
   });
 
-  test('APP-LOAD-014: no network request leaves the page from the first file selection onward, unless the reader starts R (#151, #183)', async ({
+  test('APP-LOAD-014: no network request leaves the page from the first file selection onward, unless the reader starts R: every chart and the RBQM tab are opened, and the footer names every address R is downloaded from (#151, #183, #235)', async ({
     page
   }) => {
     // It opens every chart, one after another: more than the default allows on a busy runner.
@@ -736,6 +744,9 @@ test.describe('demo app data panel on a renamed-column study', () => {
     await chooseFiles(page, [...STUDY, NO_DOMAIN]);
     await correct(page);
     for (const [module] of [...destinations, ...bioCharts]) await openChart(page, module);
+    // The RBQM tab too: opened, it asks for nothing until Start R is pressed (#235).
+    await page.locator('.sva-tab[data-tab="rbqm"]').click();
+    await expect(page.locator('.sva-rbqm-status')).toBeVisible();
     await item(page, 'data').click();
     const download = page.waitForEvent('download');
     await page.locator('[data-action="download-mapping"]').click();
@@ -745,8 +756,9 @@ test.describe('demo app data panel on a renamed-column study', () => {
     expect(requests.filter((entry) => !/^GET (blob|data):/.test(entry))).toEqual([]);
     // And the footer says so, in these words (#196).
     await expect(page.locator('.sva-footer .sva-pitch')).toHaveText(
-      'Files you load are read in this browser and never uploaded. Starting R downloads R from webr.r-wasm.org; your data stays in the browser, and R runs here.'
+      'Files you load are read in this browser and never uploaded. Starting R downloads R from webr.r-wasm.org and, for the RBQM tab, its packages from repo.r-wasm.org; your data stays in the browser, and R runs here.'
     );
+    await expect(page.locator('.sva-footer .sva-pitch')).toHaveText(HOSTED_PITCH);
   });
 
   test('APP-LOAD-008: the mapping downloads, and dropping it back with the files restores it (#151)', async ({
@@ -1548,39 +1560,14 @@ test.describe('demo app with R on request', () => {
     // header to the page's own host, a worker's fetch of an unlisted path on
     // webr.r-wasm.org, and a request sent after the last action each passed the
     // earlier version. Each was put into src/app/ and fails this one, as do a
-    // WebSocket opened by the page and one opened by a worker.
+    // WebSocket opened by the page and one opened by a worker. The RBQM tab's
+    // walk is held the same way, to its three addresses, by APP-RBQM-030.
     const errors = watchErrors(page);
-    // Every request the page and its workers make, R's download included,
-    // marked by whether a file had been chosen yet.
-    let chosen = false;
-    const requests = [];
-    // Every header as sent, cookies included: request.headers() leaves out
-    // the ones the network stack adds, such as `cookie` (#211 review). A
-    // request whose headers cannot be read fails the header check.
-    const reading = [];
-    const record = (request) => {
-      const entry = {
-        method: request.method(),
-        url: request.url(),
-        body: request.postData(),
-        headers: null,
-        type: request.resourceType(),
-        chosen
-      };
-      requests.push(entry);
-      reading.push(
-        request
-          .allHeaders()
-          .then((headers) => (entry.headers = headers))
-          .catch((error) => (entry.headers = { unreadable: error.message }))
-      );
-    };
-    context.on('request', record);
-    const sockets = [];
-    page.on('websocket', (socket) => sockets.push(socket.url()));
+    const watch = watchRequests(page, context);
+    const { requests, sockets } = watch;
     await openEmpty(page);
     const own = new URL(page.url()).origin;
-    chosen = true;
+    watch.chosen = true;
     await chooseFiles(page, STUDY);
     await correct(page);
     await openChart(page, 'group-comparison');
@@ -1596,72 +1583,11 @@ test.describe('demo app with R on request', () => {
     ).toBeVisible({
       timeout: 150000
     });
-    // That was the last action. Keep listening after it until nothing has been
-    // asked for in five seconds (at most a minute), so a request sent late is
-    // still seen: the claim holds until then, not forever.
-    let quietSince = Date.now();
-    let seen = requests.length;
-    await expect
-      .poll(
-        () => {
-          if (requests.length !== seen) [seen, quietSince] = [requests.length, Date.now()];
-          return Date.now() - quietSince >= 5000;
-        },
-        { timeout: 60000, intervals: [250] }
-      )
-      .toBe(true);
-    context.off('request', record);
-    await Promise.all(reading);
-    // The page's own document is the one request the browser made with nothing
-    // set by a script: the headers it carries are the browser's own.
-    const page0 = requests.find((request) => request.type === 'document');
+    // That was the last action.
+    await watch.quiet();
     // R was asked for, and answered, in this browser.
     expect(requests.some((request) => /webr\.r-wasm\.org/.test(request.url))).toBe(true);
-    // blob: and data: URLs are the page talking to itself, not the network.
-    const after = requests.filter(
-      (request) => request.chosen && !/^(blob|data):/.test(request.url)
-    );
-    expect(after.filter((request) => request.body)).toEqual([]);
-    // Only reads: webR also asks with HEAD whether a file is there.
-    expect(after.filter((request) => !['GET', 'HEAD'].includes(request.method))).toEqual([]);
-    // Nothing carried in a query, to any host.
-    expect(after.filter((request) => new URL(request.url).search !== '')).toEqual([]);
-    // Nothing carried in a header: each one is a header the browser sets, with
-    // the value it gave the page's own document, or, for the referrer and
-    // origin, the page's own address. A script's header, a script's value in a
-    // browser header, or any cookie fails it. The network stack's own headers
-    // (host, connection, accept-encoding, sec-fetch-*, HTTP/2's pseudo-headers)
-    // cannot be set by a script, and must still name the request they are on.
-    const fetchMetadata = /^[a-z-]+$|^\?[01]$/;
-    const browserSet = {
-      host: (value, request) => value === new URL(request.url).host,
-      ':authority': (value, request) => value === new URL(request.url).host,
-      ':scheme': (value, request) => `${value}:` === new URL(request.url).protocol,
-      ':method': (value, request) => value === request.method,
-      ':path': (value, request) => value === new URL(request.url).pathname,
-      priority: (value) => /^u=[0-7](, i)?$/.test(value),
-      connection: (value) => value === 'keep-alive',
-      'accept-encoding': (value) => value === page0.headers['accept-encoding'],
-      'user-agent': (value) => value === page0.headers['user-agent'],
-      'accept-language': (value) => value === page0.headers['accept-language'],
-      'sec-ch-ua': (value) => value === page0.headers['sec-ch-ua'],
-      'sec-ch-ua-mobile': (value) => value === page0.headers['sec-ch-ua-mobile'],
-      'sec-ch-ua-platform': (value) => value === page0.headers['sec-ch-ua-platform'],
-      accept: (value) => value === '*/*',
-      cookie: () => false,
-      origin: (value) => value === own,
-      referer: (value) => ['', `${own}/`, page0.url].includes(value)
-    };
-    // Fetch metadata (sec-fetch-site, -mode, -dest, -user, -storage-access, …)
-    // is the browser's, and holds only a short token.
-    const allowed = (name) =>
-      browserSet[name] || (name.startsWith('sec-fetch-') && ((value) => fetchMetadata.test(value)));
-    const headed = after.filter((request) =>
-      Object.entries(request.headers).some(
-        ([name, value]) => !allowed(name) || !allowed(name)(value, request)
-      )
-    );
-    expect(headed).toEqual([]);
+    const after = watch.onlyReads(own);
     // Only two places, and only the files each is asked for: the page's own
     // host for the statistics file R is given, and R's public host for the
     // files webR fetches as it starts (one version, and nothing else).
@@ -2173,7 +2099,8 @@ test.describe('demo app data view sidebar', () => {
       '8 of 9',
       '0 of 1',
       '0 of 3',
-      '5 of 5'
+      '5 of 5',
+      'R not started'
     ]);
     // It draws: the hepatic explorer from the one labs file.
     await openChart(page, 'hep-explorer');
@@ -2249,6 +2176,763 @@ test.describe('demo app data view sidebar', () => {
     await page.locator('.sva-side select.sva-study').selectOption('renamed');
     await expect(page.locator('.sva-loaded-name')).toHaveCount(4);
     expect(await overflow()).toBeLessThanOrEqual(0);
+  });
+});
+
+// Every request a page and its workers make, R's downloads included, marked
+// by whether a file had been chosen yet, and what holds them to reads that
+// carry nothing (#196, #210). Used by the two walks that start R: the
+// biomarker charts' (APP-LOAD-026) and the RBQM tab's (APP-RBQM-030).
+function watchRequests(page, context) {
+  const requests = [];
+  // Every header as sent, cookies included: request.headers() leaves out
+  // the ones the network stack adds, such as `cookie` (#211 review). A
+  // request whose headers cannot be read fails the header check.
+  const reading = [];
+  const sockets = [];
+  const watch = { requests, sockets, chosen: false };
+  const record = (request) => {
+    const entry = {
+      method: request.method(),
+      url: request.url(),
+      body: request.postData(),
+      headers: null,
+      type: request.resourceType(),
+      chosen: watch.chosen
+    };
+    requests.push(entry);
+    reading.push(
+      request
+        .allHeaders()
+        .then((headers) => (entry.headers = headers))
+        .catch((error) => (entry.headers = { unreadable: error.message }))
+    );
+  };
+  context.on('request', record);
+  page.on('websocket', (socket) => sockets.push(socket.url()));
+
+  // Keep listening after the last action until nothing has been asked for in
+  // five seconds (at most a minute), so a request sent late is still seen: the
+  // claim holds until then, not forever.
+  watch.quiet = async () => {
+    let quietSince = Date.now();
+    let seen = requests.length;
+    await expect
+      .poll(
+        () => {
+          if (requests.length !== seen) [seen, quietSince] = [requests.length, Date.now()];
+          return Date.now() - quietSince >= 5000;
+        },
+        { timeout: 60000, intervals: [250] }
+      )
+      .toBe(true);
+    context.off('request', record);
+    await Promise.all(reading);
+  };
+
+  // The requests made once a file was chosen, each held to a read: a GET or
+  // HEAD with no body, no query and no header the browser did not set itself.
+  watch.onlyReads = (own) => {
+    // The page's own document is the one request the browser made with nothing
+    // set by a script: the headers it carries are the browser's own.
+    const page0 = requests.find((request) => request.type === 'document');
+    // blob: and data: URLs are the page talking to itself, not the network.
+    const after = requests.filter(
+      (request) => request.chosen && !/^(blob|data):/.test(request.url)
+    );
+    expect(after.filter((request) => request.body)).toEqual([]);
+    // Only reads: webR also asks with HEAD whether a file is there.
+    expect(after.filter((request) => !['GET', 'HEAD'].includes(request.method))).toEqual([]);
+    // Nothing carried in a query, to any host.
+    expect(after.filter((request) => new URL(request.url).search !== '')).toEqual([]);
+    // Nothing carried in a header: each one is a header the browser sets, with
+    // the value it gave the page's own document, or, for the referrer and
+    // origin, the page's own address. A script's header, a script's value in a
+    // browser header, or any cookie fails it. The network stack's own headers
+    // (host, connection, accept-encoding, sec-fetch-*, HTTP/2's pseudo-headers)
+    // cannot be set by a script, and must still name the request they are on.
+    const fetchMetadata = /^[a-z-]+$|^\?[01]$/;
+    const browserSet = {
+      host: (value, request) => value === new URL(request.url).host,
+      ':authority': (value, request) => value === new URL(request.url).host,
+      ':scheme': (value, request) => `${value}:` === new URL(request.url).protocol,
+      ':method': (value, request) => value === request.method,
+      ':path': (value, request) => value === new URL(request.url).pathname,
+      priority: (value) => /^u=[0-7](, i)?$/.test(value),
+      connection: (value) => value === 'keep-alive',
+      'accept-encoding': (value) => value === page0.headers['accept-encoding'],
+      'user-agent': (value) => value === page0.headers['user-agent'],
+      'accept-language': (value) => value === page0.headers['accept-language'],
+      'sec-ch-ua': (value) => value === page0.headers['sec-ch-ua'],
+      'sec-ch-ua-mobile': (value) => value === page0.headers['sec-ch-ua-mobile'],
+      'sec-ch-ua-platform': (value) => value === page0.headers['sec-ch-ua-platform'],
+      accept: (value) => value === '*/*',
+      cookie: () => false,
+      origin: (value) => value === own,
+      referer: (value) => ['', `${own}/`, page0.url].includes(value)
+    };
+    // Fetch metadata (sec-fetch-site, -mode, -dest, -user, -storage-access, …)
+    // is the browser's, and holds only a short token.
+    const allowed = (name) =>
+      browserSet[name] || (name.startsWith('sec-fetch-') && ((value) => fetchMetadata.test(value)));
+    const headed = after.filter((request) =>
+      Object.entries(request.headers).some(
+        ([name, value]) => !allowed(name) || !allowed(name)(value, request)
+      )
+    );
+    expect(headed).toEqual([]);
+    return after;
+  };
+  return watch;
+}
+
+// What R asks webR's host for when it starts for the RBQM tab: webR itself,
+// as for the biomarker charts, and the shared files of R's own library, which
+// R reads when a package is installed. Nothing else.
+const WEBR_FILES_FOR_PACKAGES = [
+  'GET R.js',
+  'GET R.wasm',
+  'GET libRblas.so',
+  'GET libRlapack.so',
+  'GET vfs/usr/lib/R/share.data.gz',
+  'GET vfs/usr/lib/R/share.js.metadata',
+  'GET webr-worker.js',
+  'GET webr.mjs',
+  'HEAD vfs/usr/lib/R/library/translations/DESCRIPTION'
+];
+
+// ---- the RBQM tab (#235, obot.roadmap#374) ----------------------------------
+//
+// A tab of its own, brought by a library through the second-library seam. It
+// starts R in the browser when the reader asks, runs gsm's workflows on the
+// loaded raw files and draws what R returns with gsm.viz. Most of these tests
+// give the tab a stand-in for R (`?rbqm=recorded` on the harness page), which
+// answers at once with desktop R's answer for the same files, so they hold the
+// page and not R. APP-RBQM-021 and APP-LOAD-026 start real R.
+
+const rbqmTab = (page) => page.locator('.sva-tab[data-tab="rbqm"]');
+const rbqmStatus = (page) => page.locator('.sva-rbqm-status');
+const rbqmStart = (page) => page.locator('.sva-rbqm-start');
+const rbqmChoice = (page, id) => page.locator(`.sva-rbqm-choice[data-metric="${id}"]`);
+const RBQM_NEED =
+  'Start R to run gsm’s workflows on the 9 loaded raw files. It downloads about 55 MB, once: ' +
+  'R itself from webr.r-wasm.org (about 13 MB), its packages from repo.r-wasm.org (about 40 MB) ' +
+  'and gsm’s packages from this page (about 2 MB). The files stay in this browser, and R runs here.';
+// A site's row of the overview table is keyed by the site's ID, the first word of its label.
+const overviewRows = (page) =>
+  page.evaluate(() =>
+    [...document.querySelectorAll('.sva-rbqm-table tbody tr')].map((row) => ({
+      label: row.children[0].textContent.trim(),
+      cells: [...row.children].map((cell) => ({
+        text: cell.textContent.trim(),
+        title: cell.getAttribute('title')
+      }))
+    }))
+  );
+// A number as gsm.viz prints one in a cell's tooltip: a whole number with
+// thousands separators, any other to two decimal places, and a dash for none.
+const printed = (value) =>
+  value === null || value === undefined
+    ? '—'
+    : Number.isInteger(value)
+      ? value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+      : value.toFixed(2);
+// Whether a chart's canvas has something drawn on it.
+const inked = (canvas) =>
+  canvas.evaluate((node) => {
+    const { data } = node.getContext('2d').getImageData(0, 0, node.width, node.height);
+    for (let index = 3; index < data.length; index += 4) if (data[index]) return true;
+    return false;
+  });
+const sidewaysScroll = (page) =>
+  page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+
+async function openRbqm(page, query = '') {
+  await page.goto(`/tests/e2e/fixtures/basic-app.html${query}`);
+  await page.evaluate(`${APP}.ready`);
+  await item(page, 'data').click();
+  await page.locator('.sva-side select.sva-study').selectOption('rbqm');
+  await expect(page.locator('.sva-loaded-name')).toHaveCount(9);
+  await rbqmTab(page).click();
+}
+
+test.describe('demo app: the RBQM tab', () => {
+  const tabExpected = JSON.parse(
+    readFileSync(new URL(`../../${RBQM_TAB.expected}`, import.meta.url), 'utf8')
+  );
+  // Where the measurements of the canonical environment are kept, written once.
+  const TAB_MEASURED = new URL(
+    '../../docs/evidence/basic-app/APP-RBQM-021-rbqm-tab-measurements.json',
+    import.meta.url
+  );
+
+  test.beforeAll(() => {
+    execSync('npm run build:app', { stdio: 'inherit', cwd: new URL('../..', import.meta.url) });
+  });
+
+  test('APP-RBQM-018: the RBQM tab follows the domains’ tabs with its Experimental badge; before Start R is pressed it says what starting R downloads and from where, and the page has asked nothing of R’s hosts, nor its own address for gsm.viz, R’s packages or R’s files (#235)', async ({
+    page
+  }) => {
+    const errors = watchErrors(page);
+    const requests = [];
+    page.on('request', (request) => requests.push(request.url()));
+    await page.goto('/tests/e2e/fixtures/basic-app.html');
+    await page.evaluate(`${APP}.ready`);
+    await expect(page.locator('.sva-tab .sva-tab-title')).toHaveText([
+      'Labs and vitals',
+      'ECG',
+      'Adverse events',
+      'Biomarkers',
+      'RBQM'
+    ]);
+    await expect(rbqmTab(page).locator('.sva-badge')).toHaveText('Experimental');
+    await expect(rbqmTab(page).locator('.sva-badge')).toHaveAttribute(
+      'title',
+      'Still being worked on, and fine to use: its behaviour and settings may change.'
+    );
+    await expect(rbqmTab(page).locator('.sva-tab-count')).toHaveText('R not started');
+    // On the pilot study there is no raw file to run, and the tab says where one is.
+    await rbqmTab(page).click();
+    await expect(page).toHaveURL(/#rbqm$/);
+    await expect(page.locator('.sva-title')).toHaveText('RBQM');
+    await expect(page.locator('.sva-charts')).toBeHidden();
+    await expect(rbqmStatus(page)).toHaveText(
+      'No gsm raw files are loaded. Choose the RBQM study on the Data tab; the metrics run on its files.'
+    );
+    await expect(rbqmStart(page)).toBeDisabled();
+    // With the RBQM study loaded it says what the press costs.
+    await item(page, 'data').click();
+    await page.locator('.sva-side select.sva-study').selectOption('rbqm');
+    await expect(page.locator('.sva-loaded-name')).toHaveCount(9);
+    await rbqmTab(page).click();
+    await expect(rbqmStatus(page)).toHaveText(RBQM_NEED);
+    await expect(rbqmStart(page)).toHaveText('Start R');
+    await expect(rbqmStart(page)).toBeEnabled();
+    await expect(page.locator('.sva-rbqm-lede .sva-badge')).toHaveText('Experimental');
+    await expect(page.locator('.sva-rbqm-results')).toHaveCount(0);
+    // Nothing has been asked of R's hosts, and nothing of R's has been fetched from the page.
+    await page.waitForLoadState('networkidle');
+    expect(requests.filter((url) => /r-wasm\.org/.test(url))).toEqual([]);
+    expect(
+      requests.filter((url) => /gsm\.viz|\/r-wasm\/|pipeline\.R|\.yaml$|webr/.test(url))
+    ).toEqual([]);
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-RBQM-019: from the press to the first result the tab says what R is doing at every step: downloading R, installing its packages, fetching the workflow files, reading the pipeline, loading the packages and running the workflows; its control cannot be pressed meanwhile, and its tab says R is starting, then running (#235)', async ({
+    page
+  }) => {
+    const errors = watchErrors(page);
+    await openRbqm(page, '?rbqm=recorded&slow');
+    await rbqmStart(page).click();
+    const letGo = () => page.evaluate(() => window.__rbqmLetGo());
+    const steps = [
+      'Starting R: downloading R itself, about 13 MB from webr.r-wasm.org. 0 seconds so far.',
+      'Starting R: installing its packages, about 40 MB from repo.r-wasm.org and about 2 MB from this page. This is the longest step. 0 seconds so far.',
+      'Starting R: fetching gsm’s workflow files from this page. 0 seconds so far.',
+      'Starting R: reading the pipeline’s R. 0 seconds so far.'
+    ];
+    for (const step of steps) {
+      await expect(rbqmStatus(page)).toHaveText(step);
+      await expect(rbqmStart(page)).toHaveText('Starting R…');
+      await expect(rbqmStart(page)).toBeDisabled();
+      await expect(rbqmTab(page).locator('.sva-tab-count')).toHaveText('starting R');
+      await letGo();
+    }
+    await expect(rbqmStatus(page)).toHaveText(
+      'R has started. Loading gsm’s packages in R; the database they query with takes the longest. 0 seconds so far.'
+    );
+    await letGo();
+    await expect(rbqmStatus(page)).toHaveText(
+      'Running gsm’s workflows on the 9 loaded files: the mappings, then each metric, then the reporting tables. 0 seconds so far.'
+    );
+    await expect(rbqmStart(page)).toHaveText('Running…');
+    await expect(rbqmTab(page).locator('.sva-tab-count')).toHaveText('running');
+    await letGo();
+    await expect(rbqmStatus(page)).toHaveText(/^R ran 8 of 8 metrics on the 9 loaded files/);
+    await expect(rbqmTab(page).locator('.sva-tab-count')).toHaveText('8 of 8');
+    // R was asked three things, in this order, and once each.
+    expect(await page.evaluate(() => window.__rbqmSteps)).toEqual([
+      'Sys.time',
+      'rbqm_attach',
+      'rbqm_run'
+    ]);
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-RBQM-020: the tab draws what R returned with gsm.viz: the site overview with a row per site and a column per metric, and the chosen metric’s scatter plot and bar chart; each of the eight metrics in turn draws both, from a metric’s button or from a cell of the overview, and R is not asked again (#235)', async ({
+    page
+  }) => {
+    test.setTimeout(MANY_CHARTS);
+    const errors = watchErrors(page);
+    await openRbqm(page, '?rbqm=recorded');
+    await rbqmStart(page).click();
+    await expect(page.locator('.sva-rbqm-table table.group-overview')).toBeVisible();
+    const { whole } = tabExpected;
+    await expect(page.locator('.sva-rbqm-table tbody tr')).toHaveCount(150);
+    await expect(page.locator('.sva-rbqm-table thead th')).toHaveText([
+      'Group',
+      'Enrolled',
+      'Red Flags',
+      'Amber Flags',
+      ...whole.Metrics.map((metric) => metric.Abbreviation)
+    ]);
+    await expect(page.locator('.sva-rbqm-choice')).toHaveCount(8);
+    for (const metric of whole.Metrics) {
+      await rbqmChoice(page, metric.ID).click();
+      await expect(rbqmChoice(page, metric.ID)).toHaveAttribute('aria-pressed', 'true');
+      await expect(page.locator('.sva-rbqm-metric-name')).toHaveText(metric.Metric);
+      const canvases = page.locator('.sva-rbqm-figures canvas');
+      await expect(canvases).toHaveCount(2);
+      for (const index of [0, 1]) {
+        await expect(canvases.nth(index)).toBeVisible();
+        await expect.poll(() => inked(canvases.nth(index))).toBe(true);
+      }
+    }
+    await expect(page.locator('.sva-rbqm-caption')).toHaveText(
+      'Point size is relative to the number of enrolled participants.'
+    );
+    // A cell of the overview opens its metric: the first site's serious adverse events.
+    await page
+      .locator('.sva-rbqm-table tbody tr')
+      .first()
+      .locator('td.group-overview--metric')
+      .nth(1)
+      .click();
+    await expect(page.locator('.sva-rbqm-metric-name')).toHaveText('Serious Adverse Event Rate');
+    await expect(rbqmChoice(page, 'kri0002')).toHaveAttribute('aria-pressed', 'true');
+    expect(await page.evaluate(() => window.__rbqmSteps)).toEqual([
+      'Sys.time',
+      'rbqm_attach',
+      'rbqm_run'
+    ]);
+    // Leaving the tab and coming back shows the results again without asking R.
+    await item(page, 'data').click();
+    await rbqmTab(page).click();
+    await expect(page.locator('.sva-rbqm-table tbody tr')).toHaveCount(150);
+    expect(await page.evaluate(() => window.__rbqmSteps)).toHaveLength(3);
+    await page.setViewportSize({ width: 1280, height: 1400 });
+    await rbqmChoice(page, 'kri0001').click();
+    await expect.poll(() => inked(page.locator('.sva-rbqm-figures canvas').nth(1))).toBe(true);
+    await captureEvidence(page, 'APP-RBQM-020', 'rbqm-tab');
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-RBQM-022: a metric that did not run shows R’s sentence saying why in place of its charts, and with no Groups table the overview still has a row for every site R scored and the tab says what is missing (#235)', async ({
+    page
+  }) => {
+    const errors = watchErrors(page);
+    await openRbqm(page, '?rbqm=recorded');
+    // Two of the study's files alone, as a reader might load them: the page is
+    // handed them here, since the tab's own way to load files comes with #236.
+    await page.evaluate(() => {
+      const app = window.__safetyVizApp;
+      const two = app.state.raw.filter((file) => /Raw_(SUBJ|AE)\.csv/.test(file.name));
+      app.reset();
+      app.loadRaw(two.map(({ name, text }) => ({ name, text })));
+      app.select('rbqm');
+    });
+    await expect(rbqmStatus(page)).toContainText('on the 2 loaded raw files');
+    await rbqmStart(page).click();
+    await expect(rbqmStatus(page)).toHaveText(/^R ran 2 of 8 metrics on the 2 loaded files/);
+    await expect(rbqmTab(page).locator('.sva-tab-count')).toHaveText('2 of 8');
+    await expect(page.locator('.sva-rbqm-choice .sva-tag')).toHaveText([
+      'ran',
+      'ran',
+      ...Array(6).fill('did not run')
+    ]);
+    const two = tabExpected.partial['two-files'];
+    for (const entry of two.status.filter((metric) => metric.state !== 'ran')) {
+      await rbqmChoice(page, entry.id).click();
+      await expect(page.locator('.sva-rbqm-metric-name')).toHaveText(entry.metric);
+      await expect(page.locator('.sva-rbqm-why')).toHaveText(entry.message);
+      await expect(page.locator('.sva-rbqm-figures')).toHaveCount(0);
+      await expect(page.locator('.sva-rbqm-metric canvas')).toHaveCount(0);
+    }
+    await expect(page.locator('.sva-rbqm-why')).toHaveText(
+      'Screen Failure Rate needs Raw_ENROLL.csv, which is not loaded.'
+    );
+    // What R said beside its tables, and what the overview then lacks.
+    await expect(page.locator('.sva-rbqm-notes .sva-note')).toHaveText([
+      ...two.notes,
+      two.groups.message,
+      'With no Groups table, the overview names each site by its ID alone and shows no enrolment.'
+    ]);
+    await expect(page.locator('.sva-rbqm-table tbody tr')).toHaveCount(148);
+    await expect(page.locator('.sva-rbqm-table thead th')).toHaveText([
+      'Group',
+      'Red Flags',
+      'Amber Flags',
+      'AE',
+      'SAE'
+    ]);
+    // A metric that ran still draws, with no group table to size its points by.
+    await rbqmChoice(page, 'kri0001').click();
+    await expect(page.locator('.sva-rbqm-figures canvas')).toHaveCount(2);
+    await expect(page.locator('.sva-rbqm-caption')).toHaveCount(0);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await rbqmChoice(page, 'kri0012').click();
+    expect(await sidewaysScroll(page)).toBeLessThanOrEqual(0);
+    await captureEvidence(page.locator('.sva-rbqm-metric'), 'APP-RBQM-022', 'metric-did-not-run');
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-RBQM-023: at a 390-pixel viewport the tab does not scroll sideways before the press, while R starts or with the results drawn, and the overview table and both charts fit the width (#235)', async ({
+    page
+  }) => {
+    const errors = watchErrors(page);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await openRbqm(page, '?rbqm=recorded');
+    expect(await sidewaysScroll(page)).toBeLessThanOrEqual(0);
+    await rbqmStart(page).click();
+    await expect(page.locator('.sva-rbqm-figures canvas')).toHaveCount(2);
+    await expect.poll(() => inked(page.locator('.sva-rbqm-figures canvas').nth(1))).toBe(true);
+    expect(await sidewaysScroll(page)).toBeLessThanOrEqual(0);
+    // The table fits its box: nothing of it is off to the side.
+    const table = await page
+      .locator('.sva-rbqm-table')
+      .evaluate((node) => ({ inner: node.scrollWidth, box: node.clientWidth }));
+    expect(table.inner).toBeLessThanOrEqual(table.box);
+    for (const box of await page.locator('.sva-rbqm-figures canvas').all()) {
+      const { x, width } = await box.boundingBox();
+      expect(x).toBeGreaterThanOrEqual(0);
+      expect(x + width).toBeLessThanOrEqual(390);
+    }
+    await captureEvidence(page, 'APP-RBQM-023', 'rbqm-tab-390');
+    await page.locator('.sva-rbqm-metric').scrollIntoViewIfNeeded();
+    await captureEvidence(page.locator('.sva-rbqm-metric'), 'APP-RBQM-023', 'rbqm-charts-390');
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-RBQM-024: when R does not start the tab says so and why and offers to try again; when R stops during the run it says R stopped and why, and offers to run again (#235)', async ({
+    page
+  }) => {
+    const errors = watchErrors(page);
+    await openRbqm(page, '?rbqm=recorded');
+    await page.evaluate(() => (window.__rbqmFails = 'start'));
+    await rbqmStart(page).click();
+    await expect(rbqmStatus(page)).toHaveText(
+      'R did not start: Failed to fetch. Try again; if it fails again, reload the page.'
+    );
+    await expect(rbqmStart(page)).toHaveText('Try R again');
+    await expect(rbqmTab(page).locator('.sva-tab-count')).toHaveText('R did not start');
+    await expect(page.locator('.sva-rbqm-results')).toHaveCount(0);
+    await page.evaluate(() => (window.__rbqmFails = 'run'));
+    await rbqmStart(page).click();
+    await expect(rbqmStatus(page)).toHaveText(
+      'R stopped while running the workflows: Error in rbqm_run: something gave way.'
+    );
+    await expect(rbqmStart(page)).toHaveText('Run again');
+    await expect(rbqmTab(page).locator('.sva-tab-count')).toHaveText('R stopped');
+    await page.evaluate(() => (window.__rbqmFails = null));
+    await rbqmStart(page).click();
+    await expect(page.locator('.sva-rbqm-table tbody tr')).toHaveCount(150);
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-RBQM-030: choosing the RBQM study and starting R send nothing beyond what R needs: from the study’s choice until five quiet seconds after the charts are drawn, every request the page and its workers make is a GET or HEAD with no body, no query and no header the browser did not set itself, to three addresses and no other: the page’s own, for the study’s files, gsm.viz’s bundle, the files R is given and gsm’s four packages; webr.r-wasm.org, for R; and repo.r-wasm.org, for packages. No address names a participant, and neither the page nor its workers open a socket (#235)', async ({
+    page,
+    context
+  }) => {
+    test.setTimeout(480000);
+    const errors = watchErrors(page);
+    const watch = watchRequests(page, context);
+    const { requests, sockets } = watch;
+    await page.goto('/tests/e2e/fixtures/basic-app.html');
+    await page.evaluate(`${APP}.ready`);
+    const own = new URL(page.url()).origin;
+    await item(page, 'data').click();
+    watch.chosen = true;
+    await page.locator('.sva-side select.sva-study').selectOption('rbqm');
+    await expect(page.locator('.sva-loaded-name')).toHaveCount(9);
+    await rbqmTab(page).click();
+    await rbqmStart(page).click();
+    await expect(page.locator('.sva-rbqm-table table.group-overview')).toBeVisible({
+      timeout: 360000
+    });
+    await expect(page.locator('.sva-rbqm-figures canvas')).toHaveCount(2);
+    for (const metric of RBQM_TAB.metrics) await rbqmChoice(page, metric).click();
+    // That was the last action.
+    await watch.quiet();
+    const after = watch.onlyReads(own);
+    const asked = (origin) => [
+      ...new Set(
+        after
+          .filter((request) => new URL(request.url).origin === origin)
+          .map((request) => `${request.method} ${new URL(request.url).pathname}`)
+      )
+    ];
+    // Three addresses, and no other.
+    const index = RBQM_TAB.publicIndex;
+    expect([...new Set(after.map((request) => new URL(request.url).origin))].sort()).toEqual(
+      [own, 'https://webr.r-wasm.org', index].sort()
+    );
+    // The page's own: the study's nine files, gsm.viz's bundle, each file R
+    // is given, and gsm's four packages with the list that names them.
+    const repository = `/${RBQM_TAB.repository}/`;
+    const ownAsked = asked(own);
+    expect(ownAsked.filter((entry) => !entry.includes(repository)).sort()).toEqual(
+      [
+        ...tabStudyFiles().map(({ file }) => `GET /${file}`),
+        `GET /${RBQM_CHARTS.path}`,
+        ...pipelineFiles().map(({ file }) => `GET /${file}`)
+      ].sort()
+    );
+    const fromRepository = ownAsked.filter((entry) => entry.includes(repository));
+    const tarballs = fromRepository.filter((entry) => entry.endsWith('.tgz'));
+    expect(tarballs).toHaveLength(RBQM_TAB.packages.length);
+    for (const name of RBQM_TAB.packages) {
+      expect(
+        tarballs.filter((entry) => entry.split('/').pop().startsWith(`${name}_`)),
+        name
+      ).toHaveLength(1);
+    }
+    const inARepository =
+      /\/bin\/emscripten\/contrib\/\d+\.\d+\/(PACKAGES(\.gz|\.rds)?|[A-Za-z0-9.]+_[\w.-]+\.(tgz|js\.metadata|data(\.gz)?))$/;
+    for (const entry of fromRepository) expect(entry).toMatch(inARepository);
+    // The public index: its list of packages, and packages; nothing else.
+    const indexAsked = asked(index);
+    expect(indexAsked.length).toBeGreaterThan(20);
+    for (const entry of indexAsked) expect(entry).toMatch(inARepository);
+    // None of gsm's four came from the public index, which has no build of them.
+    for (const name of RBQM_TAB.packages) {
+      expect(indexAsked.filter((entry) => entry.includes(`/${name}_`))).toEqual([]);
+    }
+    // webR's host: one version of webR, and the files R asks it for.
+    const webrAsked = after.filter(
+      (request) => new URL(request.url).origin === 'https://webr.r-wasm.org'
+    );
+    const versions = new Set(
+      webrAsked.map((request) => new URL(request.url).pathname.split('/')[1])
+    );
+    expect(versions.size).toBe(1);
+    const [version] = versions;
+    expect(version).toMatch(/^v\d+\.\d+\.\d+$/);
+    const webrFiles = [
+      ...new Set(
+        webrAsked.map(
+          (request) =>
+            `${request.method} ${new URL(request.url).pathname.slice(version.length + 2)}`
+        )
+      )
+    ].sort();
+    expect(webrFiles).toEqual(WEBR_FILES_FOR_PACKAGES);
+    // No address names a participant of the study: no ID of one is a word of any address.
+    const columnOf = (file, name) => {
+      const [header, ...lines] = readFileSync(new URL(file, import.meta.url), 'utf8')
+        .trim()
+        .split('\n')
+        .map((line) => line.split(',').map((field) => field.replace(/"/g, '')));
+      return lines.map((fields) => fields[header.indexOf(name)]);
+    };
+    const subjects = new Set([
+      ...columnOf('../../site/data/rbqm/Raw_ENROLL.csv', 'subjid'),
+      ...columnOf('../../site/data/rbqm/Raw_ENROLL.csv', 'subjectid')
+    ]);
+    expect(subjects.size).toBeGreaterThan(2000);
+    const named = after.filter((request) =>
+      decodeURIComponent(request.url)
+        .split(/[^A-Za-z0-9-]+/)
+        .some((word) => subjects.has(word))
+    );
+    expect(named).toEqual([]);
+    expect(requests.length).toBeGreaterThan(60);
+    expect(sockets).toEqual([]);
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-RBQM-021: rbqm tab in real R: on the RBQM study, pressing Start R starts R in the browser, says what it is doing meanwhile, and draws the overview, the scatter plot and the bar chart; every number in the overview table is R’s: each cell prints the score, metric, numerator and denominator of the Results row R returned for that site and metric, the enrolment is the Groups table’s, and the red and amber counts are R’s flags counted; R’s rows are desktop R’s to eight decimal places; each of the eight metrics draws; what the tab says R downloads is what was downloaded (#235)', async ({
+    page,
+    context
+  }, testInfo) => {
+    // It downloads R and some forty packages, then runs every workflow.
+    test.setTimeout(420_000);
+    const errors = watchErrors(page);
+    const finished = [];
+    context.on('requestfinished', (request) => finished.push(request));
+    await openRbqm(page);
+    await expect(rbqmStatus(page)).toHaveText(RBQM_NEED);
+    const pressed = Date.now();
+    await rbqmStart(page).click();
+    // It says what R is doing from the first moment, and counts the seconds.
+    await expect(rbqmStatus(page)).toHaveText(/^Starting R: .* \d+ seconds? so far\.$/);
+    await expect(rbqmStart(page)).toBeDisabled();
+    const said = new Set();
+    const listen = setInterval(async () => {
+      const text = await rbqmStatus(page)
+        .textContent()
+        .catch(() => '');
+      said.add(text.replace(/ \d+ seconds? so far\.$/, ''));
+    }, 500);
+    await expect(page.locator('.sva-rbqm-table table.group-overview')).toBeVisible({
+      timeout: 360_000
+    });
+    clearInterval(listen);
+    const firstResult = (Date.now() - pressed) / 1000;
+    await expect(rbqmStatus(page)).toHaveText(
+      /^R ran 8 of 8 metrics on the 9 loaded files in [\d.]+ seconds?, \d+ seconds after Start R was pressed\. The snapshot is dated \d{4}-\d\d-\d\d\. R 4\.\d+\.\d+, gsm\.core [\d.]+, gsm\.mapping [\d.]+, gsm\.reporting [\d.]+ and workr [\d.]+\.$/
+    );
+    // Every step was said while it happened.
+    for (const step of [
+      'Starting R: installing its packages',
+      'R has started. Loading gsm’s packages in R',
+      'Running gsm’s workflows on the 9 loaded files'
+    ]) {
+      expect(
+        [...said].some((text) => text.startsWith(step)),
+        step
+      ).toBe(true);
+    }
+
+    // What R returned to the tab.
+    const answer = await page.evaluate(() => window.__rbqmView.state().result.answer);
+    expect(answer.warnings).toEqual([]);
+    expect(answer.status.map((metric) => metric.state)).toEqual(Array(8).fill('ran'));
+    const key = (row) => `${row.MetricID} ${row.GroupID}`;
+    const results = new Map(answer.Results.map((row) => [key(row), row]));
+    // R's rows on the tab are desktop R's, to eight decimal places.
+    const desktop = new Map(tabExpected.whole.Results.map((row) => [key(row), row]));
+    expect([...results.keys()].sort()).toEqual([...desktop.keys()].sort());
+    for (const [id, row] of desktop) {
+      for (const column of RESULT_NUMBERS) {
+        if (row[column] === null) expect(results.get(id)[column], `${id} ${column}`).toBeNull();
+        else expect(results.get(id)[column], `${id} ${column}`).toBeCloseTo(row[column], 8);
+      }
+    }
+
+    // Every number in the overview table is R's.
+    const sites = [...new Set(answer.Results.map((row) => row.GroupID))];
+    const enrolled = new Map(
+      answer.Groups.filter(
+        (row) => row.GroupLevel === 'Site' && row.Param === 'ParticipantCount'
+      ).map((row) => [row.GroupID, row.Value])
+    );
+    const lastName = new Map(
+      answer.Groups.filter(
+        (row) => row.GroupLevel === 'Site' && row.Param === 'InvestigatorLastName'
+      ).map((row) => [row.GroupID, row.Value])
+    );
+    const rows = await overviewRows(page);
+    // A row per site: every site the Groups table names, which holds every site R scored.
+    const named = new Set(
+      answer.Groups.filter((row) => row.GroupLevel === 'Site').map((row) => row.GroupID)
+    );
+    expect(rows).toHaveLength(150);
+    expect(rows.map((row) => row.label.split(' ')[0]).sort()).toEqual([...named].sort());
+    for (const site of sites) expect(named.has(site), site).toBe(true);
+    let cellsChecked = 0;
+    for (const row of rows) {
+      const site = row.label.split(' ')[0];
+      expect(row.label, site).toBe(`${site} (${lastName.get(site)})`);
+      const [, enrolment, red, amber, ...metricCells] = row.cells;
+      // A site with nobody enrolled has no count in the Groups table, and none is printed.
+      if (enrolled.has(site)) {
+        expect(enrolment.text, `${site} enrolled`).toBe(String(enrolled.get(site)));
+      } else expect(enrolment.text, `${site} enrolled`).not.toMatch(/\d/);
+      const flags = answer.Results.filter((result) => result.GroupID === site).map(
+        (result) => result.Flag
+      );
+      expect(red.text, `${site} red flags`).toBe(
+        String(flags.filter((flag) => Math.abs(flag) === 2).length)
+      );
+      expect(amber.text, `${site} amber flags`).toBe(
+        String(flags.filter((flag) => Math.abs(flag) === 1).length)
+      );
+      expect(metricCells).toHaveLength(8);
+      answer.Metrics.forEach((metric, index) => {
+        const result = results.get(`${metric.MetricID} ${site}`);
+        const cell = metricCells[index];
+        if (!result) {
+          // R returned no row for this site and metric: the cell prints no number.
+          expect(cell.title || '', `${site} ${metric.Abbreviation}`).not.toMatch(/\d/);
+          return;
+        }
+        expect(cell.title, `${site} ${metric.Abbreviation}`).toBe(
+          [
+            `${metric.Score}: ${printed(result.Score)}`,
+            `${metric.Metric}: ${printed(result.Metric)}`,
+            `${metric.Numerator}: ${printed(result.Numerator)}`,
+            `${metric.Denominator}: ${printed(result.Denominator)}`
+          ].join('\n')
+        );
+        cellsChecked += 1;
+      });
+    }
+    // Every Results row R returned was read off the table.
+    expect(cellsChecked).toBe(answer.Results.length);
+    expect(cellsChecked).toBe(1186);
+
+    // The scatter plot and the bar chart of each of the eight metrics in turn.
+    for (const metric of answer.Metrics) {
+      await rbqmChoice(page, metric.ID).click();
+      await expect(page.locator('.sva-rbqm-metric-name')).toHaveText(metric.Metric);
+      const canvases = page.locator('.sva-rbqm-figures canvas');
+      await expect(canvases).toHaveCount(2);
+      for (const index of [0, 1]) await expect.poll(() => inked(canvases.nth(index))).toBe(true);
+    }
+    // And on a phone the tab still does not scroll sideways.
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(page.locator('.sva-rbqm-figures canvas')).toHaveCount(2);
+    expect(await sidewaysScroll(page)).toBeLessThanOrEqual(0);
+
+    // What starting R downloaded, by where it came from, beside what the tab says.
+    const own = new URL(page.url()).origin;
+    const megabytes = { 'webr.r-wasm.org': 0, 'repo.r-wasm.org': 0, page: 0, files: 0 };
+    for (const request of finished) {
+      const url = new URL(request.url());
+      const sizes = await request.sizes().catch(() => null);
+      const bytes = sizes ? sizes.responseBodySize + sizes.responseHeadersSize : 0;
+      if (url.origin !== own) megabytes[url.host] = (megabytes[url.host] || 0) + bytes;
+      else if (url.pathname.includes(`/${RBQM_TAB.repository}/`)) megabytes.page += bytes;
+      else megabytes.files += bytes;
+    }
+    for (const name of Object.keys(megabytes)) {
+      megabytes[name] = Math.round(megabytes[name] / 10485.76) / 100;
+    }
+    expect(Object.keys(megabytes).sort()).toEqual(
+      ['files', 'page', 'repo.r-wasm.org', 'webr.r-wasm.org'].sort()
+    );
+    for (const download of RBQM_DOWNLOADS) {
+      const measured = megabytes[download.host || 'page'];
+      expect(
+        Math.abs(measured - download.megabytes),
+        `${download.what}: ${measured} MB`
+      ).toBeLessThan(1.5);
+    }
+    const state = await page.evaluate(() => {
+      const { result } = window.__rbqmView.state();
+      return { seconds: result.seconds, sinceStart: result.sinceStart, inR: result.answer.seconds };
+    });
+    const measured = {
+      megabytes,
+      seconds: {
+        startRToFirstResult: Math.round(firstResult * 10) / 10,
+        asTheTabSays: state.sinceStart,
+        eightMetrics: state.seconds,
+        eightMetricsInR: state.inR
+      },
+      rows: {
+        Results: answer.Results.length,
+        Bounds: answer.Bounds.length,
+        Groups: answer.Groups.length,
+        Metrics: answer.Metrics.length
+      },
+      overviewCellsChecked: cellsChecked,
+      versions: answer.versions,
+      platform: process.platform
+    };
+    await testInfo.attach('rbqm-tab-measurements', {
+      body: JSON.stringify(measured, null, 2),
+      contentType: 'application/json'
+    });
+    console.log(`rbqm tab on the page, measurements: ${JSON.stringify(measured)}`);
+    // Kept with the evidence, from the canonical environment, the first time
+    // it runs there; remove the file to have it measured again.
+    if (CANONICAL && !existsSync(TAB_MEASURED)) {
+      mkdirSync(new URL('.', TAB_MEASURED), { recursive: true });
+      writeFileSync(TAB_MEASURED, `${JSON.stringify(measured, null, 2)}\n`);
+    }
+    expect(errors).toEqual([]);
   });
 });
 
@@ -2361,6 +3045,30 @@ test.describe('demo app as one file, offline', () => {
         page.locator('.sva-chart .bv-statistic').filter({ hasText: FILE_NO_R }).first()
       ).toBeVisible();
     }
+    expect(requests.filter((url) => !/^(blob|data):/.test(url))).toEqual([]);
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-RBQM-025: offline, the single file’s RBQM tab says it needs R and that the file loads nothing, offers no control to start R, and requests nothing (#235)', async ({
+    page,
+    context
+  }) => {
+    const errors = watchErrors(page);
+    await context.setOffline(true);
+    await page.goto(SINGLE_FILE.href);
+    const requests = [];
+    page.on('request', (request) => requests.push(request.url()));
+    const tabOfIts = page.locator('.sva-tab[data-tab="rbqm"]');
+    await expect(tabOfIts.locator('.sva-tab-title')).toHaveText('RBQM');
+    await expect(tabOfIts.locator('.sva-badge')).toHaveText('Experimental');
+    await expect(tabOfIts.locator('.sva-tab-count')).toHaveText('needs R');
+    await tabOfIts.click();
+    await expect(page.locator('.sva-rbqm-status')).toHaveText(FILE_NO_RBQM);
+    await expect(page.locator('.sva-rbqm-status')).toHaveText(
+      'The RBQM tab needs R, and this file loads nothing, so it cannot start R. The hosted demo app can start R in your browser.'
+    );
+    await expect(page.locator('.sva-rbqm-start')).toHaveCount(0);
+    await expect(page.locator('.sva-rbqm-results')).toHaveCount(0);
     expect(requests.filter((url) => !/^(blob|data):/.test(url))).toEqual([]);
     expect(errors).toEqual([]);
   });

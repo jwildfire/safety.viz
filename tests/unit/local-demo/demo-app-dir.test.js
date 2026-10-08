@@ -4,7 +4,8 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { buildDemoAppDir, LOCAL_LINKS } from '../../../scripts/demo-app.mjs';
 import { renderDemoAppPage } from '../../../scripts/site-lib.mjs';
-import { APP_LIBRARIES, RBQM_CHARTS } from '../../../scripts/app-libraries.mjs';
+import { APP_LIBRARIES, RBQM_CHARTS, rbqmTabOptions } from '../../../scripts/app-libraries.mjs';
+import { pipelineFiles } from '../../../scripts/rbqm-lib.mjs';
 import { DEMO_STUDIES } from '../../../src/app/studies.js';
 
 // One recipe for the demo app's directory (#214): the site build writes it to
@@ -61,6 +62,40 @@ describe('buildDemoAppDir', () => {
     for (const [, href] of page.matchAll(/(?:src|href)="\.\/([^"]+)"/g)) {
       expect(files, href).toContain(href);
     }
+  });
+
+  it('APP-RBQM-027: the directory serves what R is given for the RBQM tab, the pipeline’s R and each of gsm’s workflow files, under the path R keeps it at and byte for byte as the repository has it; the page hands the tab exactly those addresses, gsm’s packages beside the app and gsm.viz’s bundle, which no script tag loads (#235)', () => {
+    const files = filesOf(hosted);
+    const given = pipelineFiles();
+    expect(given.length).toBeGreaterThan(20);
+    expect(given[0]).toEqual({ file: 'site/rbqm/pipeline.R', path: '/rbqm/pipeline.R' });
+    for (const { file, path: inR } of given) {
+      expect(files, inR).toContain(inR.slice(1));
+      expect(
+        readFileSync(path.join(hosted, inR)).equals(readFileSync(file)),
+        `${inR} is ${file}`
+      ).toBe(true);
+    }
+    const options = rbqmTabOptions();
+    expect(options.r.files).toEqual(given.map(({ path: inR }) => ({ path: inR, url: `.${inR}` })));
+    expect(options.r.source).toEqual(['/rbqm/pipeline.R']);
+    expect(options.r.repos).toEqual(['./r-wasm', 'https://repo.r-wasm.org']);
+    expect(files.some((file) => file.startsWith('r-wasm/bin/emscripten/contrib/'))).toBe(true);
+    expect(options.charts.url).toBe(`./${RBQM_CHARTS.file}`);
+    // The page is mounted with those options, and asks for none of it as it loads.
+    const page = readFileSync(path.join(hosted, 'index.html'), 'utf8');
+    expect(page).toContain(
+      `SafetyVizApp.rbqmTab({ createConnection: SafetyVizApp.createRConnection, ...${JSON.stringify(options)} })`
+    );
+    expect(page).not.toContain(`<script src="./${RBQM_CHARTS.file}">`);
+    expect(page).not.toMatch(/<script[^>]*pipeline\.R/);
+    // The single file beside it says the tab cannot start R, and carries none of it.
+    const single = readFileSync(path.join(hosted, 'safety.viz-app.html'), 'utf8');
+    expect(single).toContain(
+      'SafetyVizApp.rbqmTab({"unavailable":"The RBQM tab needs R, and this file loads nothing, so it cannot start R. The hosted demo app can start R in your browser.","badge":{"text":"Experimental"'
+    );
+    expect(single).not.toContain('createRConnection, ...');
+    expect(single).not.toContain('repo.r-wasm.org');
   });
 
   it('APP-LOCAL-001: the directory built for a reader’s machine holds the same files as the site’s, byte for byte but for the page (#214)', () => {
