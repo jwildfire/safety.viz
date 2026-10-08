@@ -463,6 +463,27 @@ churn their evidence baselines for a figure none of them draws.
   everything else as shared scaffold, so a `demo-data/` directory would have
   copied these eleven cohort records into **every** renderer's evidence page.
 
+## RBQM demo study raw files (#231)
+
+`site/data/rbqm/` holds five raw files in gsm's standard raw domains
+(`Raw_SUBJ.csv`, `Raw_AE.csv`, `Raw_SITE.csv`, `Raw_STUDY.csv`,
+`Raw_ENROLL.csv`): one synthetic study of 1,005 screened and 765 enrolled
+participants at 150 sites. They are not generated here. They are copied byte
+for byte from [jwildfire/demo-301](https://github.com/jwildfire/demo-301)'s
+`input/` folder, where that repository's own script makes them, and
+`site/data/rbqm/SOURCE.json` records the commit and each file's checksum:
+
+```bash
+node scripts/vendor-rbqm-study.mjs --ref <commit> --unmerged "<why>"   # copy again
+npm run rbqm-study:check                                               # files against the record
+npm run rbqm-study:check-source                                        # files against the commit
+```
+
+The RBQM pipeline's browser test runs the gsm workflows on them in R in the
+browser, and `tests/fixtures/rbqm/expected.json` holds desktop R's rows for the
+same files (`node scripts/rbqm-reference.mjs`). No demo page or chart reads
+them yet, and they are not among the eleven datasets above.
+
 ## License and attribution
 
 - **pharmaverseadam** is licensed **Apache-2.0**

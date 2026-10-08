@@ -14,19 +14,13 @@
 // Run by hand when gsm.bio's statistics change; the output is committed.
 
 import { runVendorCli } from './vendor-cli.mjs';
-import { GSM_BIO_STATISTICS } from './vendor-lib.mjs';
-
-// One field of an R package's DESCRIPTION file.
-const field = (text, name) => {
-  const match = text.match(new RegExp(`^${name}:\\s*(.+)$`, 'm'));
-  return match ? match[1].trim() : undefined;
-};
+import { GSM_BIO_STATISTICS, descriptionField } from './vendor-lib.mjs';
 
 await runVendorCli(GSM_BIO_STATISTICS, {
   async describe({ commit, readAt }) {
     const description = (await readAt(commit, 'DESCRIPTION')).toString('utf8');
-    const more = { version: field(description, 'Version') };
-    const license = field(description, 'License');
+    const more = { version: descriptionField(description, 'Version') };
+    const license = descriptionField(description, 'License');
     if (license) more.license = license;
     return { more, files: GSM_BIO_STATISTICS.files };
   }

@@ -1,0 +1,38 @@
+{
+  "megabytes": {
+    "runtime": 13.01,
+    "publicIndex": 39.97,
+    "gsmPackages": 2.24,
+    "page": 0.7,
+    "total": 55.92
+  },
+  "packagesFromThePublicIndex": 35,
+  "seconds": {
+    "startR": 4.13,
+    "firstRun": 29.31,
+    "secondRun": 1.78,
+    "inR": {
+      "attach": 27.14,
+      "duckdb": 0.38,
+      "read": 0.02,
+      "mapping": 1.33,
+      "metrics": 0.27,
+      "reporting": 0.12
+    }
+  },
+  "requestsBeforeR": {
+    "toThePage": 2,
+    "toRsHosts": 0
+  },
+  "versions": {
+    "R": "4.6.0",
+    "workr": "1.1.0",
+    "gsm.core": "1.3.1",
+    "gsm.mapping": "1.1.6",
+    "gsm.reporting": "1.1.7",
+    "duckdb": "1.5.2",
+    "DBI": "1.3.0",
+    "dplyr": "1.2.1"
+  },
+  "platform": "linux"
+}

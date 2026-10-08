@@ -1,14 +1,16 @@
 // The command line behind the vendoring scripts (scripts/vendor-*.mjs, #182,
 // #183): fetch files from one commit of another repository on GitHub, write
 // them unchanged with a record beside them, or check what is there against the
-// record or against the source.
+// record or against the source. A file the source object lists a change for
+// (#230) is written with that one line changed, and the record lists it.
 //
 //   (no flag)                          copy from the head of the source's `dev`
 //   --ref <ref> --unmerged "<why>"     copy from a commit not on `dev`, and say why
 //   --tag <tag>                        copy from a release tag, such as v0.3.0,
 //                                      and record the tag (#212)
 //   --check                            change nothing: fail if a file and its
-//                                      record disagree (no network)
+//                                      record disagree, or the record lists a
+//                                      change the script does not (no network)
 //   --check-source                     change nothing: also fetch the recorded
 //                                      commit's files and fail on a difference,
 //                                      and ask GitHub whether a commit recorded
@@ -18,6 +20,9 @@
 //                                      GH_TOKEN is used if set
 //
 // Each script passes what it vendors, and how to describe a commit (`describe`).
+// A script that vendors from several sources (#230) runs this once for each,
+// passing the arguments itself; a failure sets the exit code and returns, so
+// every source is reported.
 
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
@@ -28,6 +33,7 @@ import {
   readRecord,
   tagCommitFrom,
   verifyAgainstSource,
+  verifyDeclaredChanges,
   verifyOnDev,
   verifyTag,
   verifyVendored,
@@ -41,12 +47,12 @@ const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
  * @param {Object} source What is vendored: { name, label, repository, directory, files }.
  * @param {Object} options
  * @param {(context: {commit: string, readAt: Function}) => Promise<{more: Object, files: Object[]}>} options.describe What to record about the commit beside `ref`, `commit` and `merged_to_dev`, and the files to copy with their source paths resolved.
- * @returns {Promise<void>}
+ * @param {string[]} [options.args] The command line's arguments, when they are not the process's own.
+ * @returns {Promise<boolean>} Whether it passed; when it did not, the process's exit code is set to 1.
  */
-export async function runVendorCli(source, { describe }) {
+export async function runVendorCli(source, { describe, args = process.argv.slice(2) }) {
   const directory = path.join(rootDir, source.directory);
   const slug = source.repository.replace('https://github.com/', '');
-  const args = process.argv.slice(2);
   const flag = (name) => args.includes(name);
   const option = (name) => (args.includes(name) ? args[args.indexOf(name) + 1] : undefined);
 
@@ -90,34 +96,49 @@ export async function runVendorCli(source, { describe }) {
     if (problems.length) {
       console.error(`✗ ${source.directory} does not match its source record:`);
       problems.forEach((problem) => console.error(`  - ${problem}`));
-      process.exit(1);
+      process.exitCode = 1;
+      return false;
     }
     console.log(passed);
+    return true;
+  }
+
+  // Which of a record's files differ from the source by a recorded line (#230), in words.
+  function recordedChanges(record) {
+    const changed = record.files.filter((entry) => entry.patches !== undefined);
+    const lines = changed.reduce((count, entry) => count + entry.patches.length, 0);
+    return changed.length
+      ? ` but for the ${lines === 1 ? 'one line' : `${lines} lines`} the record lists as changed in ` +
+          changed.map((entry) => entry.file).join(', ')
+      : '';
   }
 
   try {
     if (flag('--check') || flag('--check-source')) {
       const problems = verifyVendored(directory);
+      // A change the record lists must be one this script declares (#230).
+      if (!problems.length) problems.push(...verifyDeclaredChanges(readRecord(directory), source));
       if (!problems.length && flag('--check-source')) {
         problems.push(...(await verifyAgainstSource(directory, readAt)));
         problems.push(...(await verifyOnDev(readRecord(directory), compare)));
         problems.push(...(await verifyTag(readRecord(directory), tagCommit)));
       }
       const record = problems.length ? null : readRecord(directory);
-      report(
+      return report(
         problems,
         record &&
           `✓ ${source.directory}: ${record.files.map((entry) => entry.file).join(', ')} ` +
             (flag('--check-source')
               ? `equals ${slug} at ${record.commit.slice(0, 7)}, byte for byte` +
+                recordedChanges(record) +
                 (record.merged_to_dev
                   ? ', and that commit is on dev.'
                   : record.tag
                     ? `, and that commit is its tag ${record.tag}.`
                     : ', a commit not on dev.')
-              : `matches its recorded checksum (copied from ${slug} at ${record.commit.slice(0, 7)}).`)
+              : `matches its recorded checksum (copied from ${slug} at ${record.commit.slice(0, 7)}` +
+                `${recordedChanges(record)}).`)
       );
-      return;
     }
     const tag = option('--tag');
     if (flag('--tag') && (!tag || tag.startsWith('--'))) {
@@ -162,9 +183,10 @@ export async function runVendorCli(source, { describe }) {
       console.log(`✓ Wrote ${source.directory}/${entry.file} — ${entry.bytes} bytes`);
     }
     console.log(`✓ Wrote ${source.directory}/SOURCE.json — ${slug} at ${commit}`);
-    report(verifyVendored(directory), '✓ Every file matches its record.');
+    return report(verifyVendored(directory), '✓ Every file matches its record.');
   } catch (error) {
     console.error(`✗ ${error.message}`);
-    process.exit(1);
+    process.exitCode = 1;
+    return false;
   }
 }

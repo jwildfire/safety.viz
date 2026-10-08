@@ -1,0 +1,45 @@
+{
+  "workflows": "gsm.reporting reporting workflows",
+  "repository": "https://github.com/Gilead-Public/gsm.reporting",
+  "ref": "v1.1.7",
+  "commit": "b3fa1339f900c5093a1e6553bdf4892d608fe389",
+  "version": "1.1.7",
+  "license": "Apache License (>= 2)",
+  "tag": "v1.1.7",
+  "merged_to_dev": false,
+  "files": [
+    {
+      "file": "workflow/3_reporting/Results.yaml",
+      "source": "inst/workflow/3_reporting/Results.yaml",
+      "sha256": "9af4f317bef0acd16a4098417aa5c1a7cb4bd945bd00d560b2ef4c8a7f7b1d36",
+      "bytes": 1061,
+      "source_sha256": "2d54b5c7e41d1564f83884bef93941cfde3ea9973dcee86ef1d7ecc51fb9c6b1",
+      "source_bytes": 1070,
+      "patches": [
+        {
+          "original": "    name: gsm.kri::FilterByLatestSnapshotDate",
+          "replacement": "    name: FilterByLatestSnapshotDate",
+          "reason": "gsm.kri is not installed in browser R, so the function cannot be named by its package. The browser run sources site/vendor/gsm.kri/R/util-Report.R, copied from gsm.kri’s v1.7.0 tag, which defines FilterByLatestSnapshotDate, and the bare name resolves to it."
+        }
+      ]
+    },
+    {
+      "file": "workflow/3_reporting/Bounds.yaml",
+      "source": "inst/workflow/3_reporting/Bounds.yaml",
+      "sha256": "e135ba9a945ff844878560101605d448edfd992c07a127697d2baa358cd2f2ce",
+      "bytes": 753
+    },
+    {
+      "file": "workflow/3_reporting/Groups.yaml",
+      "source": "inst/workflow/3_reporting/Groups.yaml",
+      "sha256": "aa6b4440c67a6b94d7f89c638b9fe42d87bc3949dd3f1b812ffc4705ce0d31ca",
+      "bytes": 410
+    },
+    {
+      "file": "workflow/3_reporting/Metrics.yaml",
+      "source": "inst/workflow/3_reporting/Metrics.yaml",
+      "sha256": "e96d36a9aa8656e8d3ed4a0e7ffb02161b4384cc5c6cd6d9050b0f4cfe2df41f",
+      "bytes": 272
+    }
+  ]
+}

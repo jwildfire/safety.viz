@@ -1,6 +1,6 @@
 {
   "module": "results-over-time",
-  "generatedAt": "2026-10-07T06:24:35.103Z",
+  "generatedAt": "2026-10-07T13:05:43.479Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "37581278363",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37581278363"
+    "id": "37625725220",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37625725220"
   },
   "records": [
     {
@@ -698,6 +698,22 @@
       "status": "pass",
       "requirementIds": ["APP-R-026"],
       "issueRefs": [212],
+      "screenshots": []
+    },
+    {
+      "test": "APP-R-032: R in the browser installs workr, gsm.core, gsm.mapping and gsm.reporting from the page’s own address and their dependencies from repo.r-wasm.org, at the pinned versions; they attach with duckdb, and a query runs through workr (#229)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-R-032"],
+      "issueRefs": [229],
+      "screenshots": []
+    },
+    {
+      "test": "APP-R-037: rbqm pipeline: R in the browser runs the mapping, metric and reporting workflows for adverse event rate by site through workr on the demo study’s raw files, and its Results rows are desktop R’s: the same sites, and for each the same numerator, denominator, metric, score and flag to eight decimal places; before R is asked for, nothing is asked of R’s hosts, and R asks no host but webR’s, the public index and the page’s own (#231)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-R-037"],
+      "issueRefs": [231],
       "screenshots": []
     },
     {
@@ -2701,6 +2717,38 @@
       "screenshots": []
     },
     {
+      "test": "an R value carried to JavaScript (#231) APP-R-034: reads a data frame as one object per row, every row carrying every column, NA as null",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-034"],
+      "issueRefs": [231],
+      "screenshots": []
+    },
+    {
+      "test": "an R value carried to JavaScript (#231) APP-R-034: reads a named list as an object, an unnamed list as an array, and tables at any depth",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-034"],
+      "issueRefs": [231],
+      "screenshots": []
+    },
+    {
+      "test": "an R value carried to JavaScript (#231) APP-R-034: reads a table of one row as an array of one object, and of no rows as an empty array",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-034"],
+      "issueRefs": [231],
+      "screenshots": []
+    },
+    {
+      "test": "an R value carried to JavaScript (#231) APP-R-034: reads a vector of length one as a single value, a longer one as an array, a named one as an object, and NULL as null",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-034"],
+      "issueRefs": [231],
+      "screenshots": []
+    },
+    {
       "test": "buildAdslRecords derives EOSDY = EOSDT − TRTSDT + 1 and carries the end-of-study status (#128)",
       "suite": "unit",
       "status": "pass",
@@ -3778,6 +3826,22 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [140],
+      "screenshots": []
+    },
+    {
+      "test": "desktop R’s rows for the RBQM pipeline (#231) APP-R-038: desktop R’s rows are derived from the pipeline’s R, the copied workflows and the demo study’s raw files as they are now, by checksum of every one (#231)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-038"],
+      "issueRefs": [231, 231],
+      "screenshots": []
+    },
+    {
+      "test": "desktop R’s rows for the RBQM pipeline (#231) APP-R-038: they are adverse event rate for 148 sites, each row with its site, numerator, denominator, metric, score and flag, beside the Bounds, Groups and Metrics tables, from the pinned versions of the gsm packages (#231)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-038"],
+      "issueRefs": [231, 231],
       "screenshots": []
     },
     {
@@ -6693,6 +6757,142 @@
       "screenshots": []
     },
     {
+      "test": "the connection to R in the browser (#231) APP-R-033: answers that R did not start, with the cause, when webR cannot be fetched, a package cannot be installed or a file cannot be read; and the next run tries again",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-033"],
+      "issueRefs": [231],
+      "screenshots": []
+    },
+    {
+      "test": "the connection to R in the browser (#231) APP-R-033: answers with R’s own message when R runs and stops, and with a message of its own when the call cannot be made",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-033"],
+      "issueRefs": [231],
+      "screenshots": []
+    },
+    {
+      "test": "the connection to R in the browser (#231) APP-R-033: calls the one R function named, with the named arguments, and carries its answer back",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-033"],
+      "issueRefs": [231],
+      "screenshots": []
+    },
+    {
+      "test": "the connection to R in the browser (#231) APP-R-033: is written for one version of webR, fetched from its public host",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-033"],
+      "issueRefs": [231],
+      "screenshots": []
+    },
+    {
+      "test": "the connection to R in the browser (#231) APP-R-033: lists a path’s folders shallowest first",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-033"],
+      "issueRefs": [231],
+      "screenshots": []
+    },
+    {
+      "test": "the connection to R in the browser (#231) APP-R-033: on the first run starts R on the channel that needs no special headers, installs the packages from the repositories given, writes the files and sources the R, in that order",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-033"],
+      "issueRefs": [231],
+      "screenshots": []
+    },
+    {
+      "test": "the connection to R in the browser (#231) APP-R-033: refuses options it cannot use, when it is made",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-033"],
+      "issueRefs": [231],
+      "screenshots": []
+    },
+    {
+      "test": "the connection to R in the browser (#231) APP-R-033: starts nothing and asks for nothing when it is made",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-033"],
+      "issueRefs": [231],
+      "screenshots": []
+    },
+    {
+      "test": "the connection to R in the browser (#231) APP-R-033: starts R once: a second run installs nothing and writes only what it is given",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-033"],
+      "issueRefs": [231],
+      "screenshots": []
+    },
+    {
+      "test": "the copied gsm workflows APP-WF-001: each folder matches its record, which names the package’s repository, its release tag, the full commit and every file’s checksum and size; the files are the ten mapping workflows, the eight metrics with the one R file, and the four reporting tables (#230)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-WF-001"],
+      "issueRefs": [230],
+      "screenshots": []
+    },
+    {
+      "test": "the copied gsm workflows APP-WF-002: a one-byte change to any copied file fails the record check and the source check, each naming the file; so does a file in a subfolder that the record does not list, and a listed file that is gone (#230)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-WF-002"],
+      "issueRefs": [230],
+      "screenshots": []
+    },
+    {
+      "test": "the copied gsm workflows APP-WF-003: one line of one file differs from its tag, the line of the Results workflow that names FilterByLatestSnapshotDate, and the record lists the line as it was, as it is and why; the function it names is defined in the R file copied from gsm.kri’s tag (#230)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-WF-003"],
+      "issueRefs": [230],
+      "screenshots": []
+    },
+    {
+      "test": "the copied gsm workflows APP-WF-004: a second changed line in the Results workflow fails both checks, even when its checksum in the record is rewritten to match; written into the record as a change, it fails because the script declares one change; putting the changed line back as the tag has it fails too (#230)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-WF-004"],
+      "issueRefs": [230],
+      "screenshots": []
+    },
+    {
+      "test": "the copied gsm workflows APP-WF-005: a recorded change is refused when the line it replaces is not in the source exactly once, as a whole line: absent, there twice, or there only as part of a line; a change with no reason, of more than one line or that changes nothing is refused too, and nothing is written (#230)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-WF-005"],
+      "issueRefs": [230],
+      "screenshots": []
+    },
+    {
+      "test": "the copied gsm workflows APP-WF-006: every mapped table a copied metric or reporting workflow reads is made by a copied mapping workflow, the country table among them, which the Groups workflow reads and gsm.mapping makes from the mapped participants alone (#230)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-WF-006"],
+      "issueRefs": [230],
+      "screenshots": []
+    },
+    {
+      "test": "the copied gsm workflows APP-WF-007: the version and licence a record names are read from the package’s DESCRIPTION file at the tag (#230)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-WF-007"],
+      "issueRefs": [230],
+      "screenshots": []
+    },
+    {
+      "test": "the copied gsm workflows APP-WF-008: one command checks all three folders and says so of each; with a line changed in one it exits 1 naming that file, and still reports the other two; asked to copy from anywhere but the tags it names, it refuses (#230)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-WF-008"],
+      "issueRefs": [230],
+      "screenshots": []
+    },
+    {
       "test": "the desktop-R results the browser test compares with APP-R-011: the recorded requests and desktop R’s answers are derived from the study, the app code that shapes the rows, the bundle and the statistics file as they are now, over every step of the walk (#183, #212)",
       "suite": "unit",
       "status": "pass",
@@ -6821,6 +7021,78 @@
       "screenshots": []
     },
     {
+      "test": "the package repository beside the demo app (#229) APP-R-031: the demo app’s directory serves the packages as a package repository, as R reads one, with the record of what each file was built from (#229)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-031"],
+      "issueRefs": [229, 229],
+      "screenshots": []
+    },
+    {
+      "test": "the package repository beside the demo app (#229) APP-R-031: the directory is not built when the packages, their record and the pins disagree (#229)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-031"],
+      "issueRefs": [229, 229],
+      "screenshots": []
+    },
+    {
+      "test": "the package repository, its record and the pins (#229) APP-R-029: a folder as the build leaves one passes the check (#229)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-029"],
+      "issueRefs": [229, 229],
+      "screenshots": []
+    },
+    {
+      "test": "the package repository, its record and the pins (#229) APP-R-029: an R package index is read as one entry per package, whatever else each block holds (#229)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-029"],
+      "issueRefs": [229, 229],
+      "screenshots": []
+    },
+    {
+      "test": "the package repository, its record and the pins (#229) APP-R-029: the check fails when a pinned package was not built, or the index lists something else (#229)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-029"],
+      "issueRefs": [229, 229],
+      "screenshots": []
+    },
+    {
+      "test": "the package repository, its record and the pins (#229) APP-R-029: the check fails when a served file is not the one that was built, or was never recorded (#229)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-029"],
+      "issueRefs": [229, 229],
+      "screenshots": []
+    },
+    {
+      "test": "the package repository, its record and the pins (#229) APP-R-029: the check fails when the pins change after the build (#229)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-029"],
+      "issueRefs": [229, 229],
+      "screenshots": []
+    },
+    {
+      "test": "the package repository, its record and the pins (#229) APP-R-029: the check never passes by comparing nothing (#229)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-029"],
+      "issueRefs": [229, 229],
+      "screenshots": []
+    },
+    {
+      "test": "the package repository, its record and the pins (#229) APP-R-029: the packages as committed, their record and the pins agree: every pinned package is there, built from its pinned commit at its pinned version, and nothing else is served (#229)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-029"],
+      "issueRefs": [229, 229],
+      "screenshots": []
+    },
+    {
       "test": "the page with a library’s settings and control APP-R-004: a library’s settings are added to each of its charts’ settings when it is drawn, and to no safety chart’s (#183)",
       "suite": "unit",
       "status": "pass",
@@ -6914,6 +7186,62 @@
       "status": "pass",
       "requirementIds": ["APP-R-023"],
       "issueRefs": [193],
+      "screenshots": []
+    },
+    {
+      "test": "the pins against the repositories they name (#229) APP-R-030: the pins agree with the repositories they name when each tag names its pinned commit and the package gives its pinned version (#229)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-030"],
+      "issueRefs": [229, 229],
+      "screenshots": []
+    },
+    {
+      "test": "the pins against the repositories they name (#229) APP-R-030: the pins disagree when a tag has moved, has gone, or the package gives another version (#229)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-030"],
+      "issueRefs": [229, 229],
+      "screenshots": []
+    },
+    {
+      "test": "the pins for the gsm packages built for R in the browser (#229) APP-R-028: a pin a build could not be made from is refused, and why is said in words (#229)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-028"],
+      "issueRefs": [229, 229],
+      "screenshots": []
+    },
+    {
+      "test": "the pins for the gsm packages built for R in the browser (#229) APP-R-028: workr, gsm.core, gsm.mapping and gsm.reporting are each pinned to a repository, a release tag, the full commit and a version (#229)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-028"],
+      "issueRefs": [229, 229],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM demo study’s raw files (#231) APP-R-035: the five raw files adverse event rate by site needs are copied by script from jwildfire/demo-301, and match their record of the commit, checksum and size (#231)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-035"],
+      "issueRefs": [231, 231],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM pipeline’s run, as R is given it (#231) APP-R-036: R is given the pipeline’s one R file first, then every copied mapping, metric and reporting workflow and gsm.kri’s one R file, each a file the repository holds, each at a place of its own under one root (#231)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-036"],
+      "issueRefs": [231, 231],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM pipeline’s run, as R is given it (#231) APP-R-036: the one call names where each stage’s workflows and the raw files are, the metric to run and the snapshot’s date; desktop R is given the same call, with each place read from the repository (#231)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-036"],
+      "issueRefs": [231, 231],
       "screenshots": []
     },
     {

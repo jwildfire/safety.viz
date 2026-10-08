@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>RBQM pipeline in R in the browser: harness page</title>
+  </head>
+  <body>
+    <!--
+      Playwright harness page for the RBQM pipeline (#231). It loads the app's
+      connection to R in the browser (src/app/r-browser.js) and nothing else:
+      until the test calls window.__rbqm.run, nothing is asked of R's hosts.
+      The test passes the run in, as scripts/rbqm-lib.mjs describes it: the
+      packages, the files R is given and where each goes, the raw files, and
+      the one call. The raw files are fetched here as text, as a reader's own
+      would be read, and handed to R in this page.
+    -->
+    <p id="state">R not started</p>
+    <script type="module">
+      import { createConnection } from '/src/app/r-browser.js';
+
+      const state = document.getElementById('state');
+      const seconds = (since) => Math.round((performance.now() - since) / 10) / 100;
+      window.__rbqm = {
+        async run({ packages, repos, files, study, call, args }) {
+          const connection = createConnection({
+            packages,
+            repos,
+            files: files.map(({ file, path }) => ({ path, url: `/${file}` })),
+            source: [files[0].path]
+          });
+          const raw = {};
+          for (const { file, path } of study) raw[path] = await (await fetch(`/${file}`)).text();
+          // Start R with one call every R has, so starting it is timed apart
+          // from the run.
+          state.textContent = 'starting R';
+          let since = performance.now();
+          const started = await connection.run('Sys.time');
+          const start = seconds(since);
+          if (started.status !== 'ok') {
+            state.textContent = 'R did not start';
+            return { started, start };
+          }
+          state.textContent = 'running';
+          since = performance.now();
+          const answer = await connection.run(call, { files: raw, args });
+          const run = seconds(since);
+          // Again, now that every package is loaded: what a second run costs.
+          since = performance.now();
+          const again = await connection.run(call, { files: raw, args });
+          state.textContent = answer.status === 'ok' ? 'done' : 'R stopped';
+          return { started, start, answer, run, rerun: seconds(since), again: again.status };
+        }
+      };
+    </script>
+  </body>
+</html>

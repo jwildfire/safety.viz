@@ -1,7 +1,7 @@
 import { execSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { test, expect } from '@playwright/test';
-import { captureEvidence } from './evidence.js';
+import { CANONICAL, captureEvidence } from './evidence.js';
 import {
   APP_LIBRARIES,
   FILE_NO_R,
@@ -10,6 +10,14 @@ import {
   libraryManifest
 } from '../../scripts/app-libraries.mjs';
 import { SCENARIO, openAndStartR, playScenario } from '../../scripts/app-statistics-lib.mjs';
+import {
+  RBQM_GATE,
+  RESULT_KEYS,
+  RESULT_NUMBERS,
+  pipelineArgs,
+  pipelineFiles,
+  studyFiles
+} from '../../scripts/rbqm-lib.mjs';
 
 // Browser evidence for the demo app (#150, obot.roadmap#352): a full-page app
 // that lists every chart in the portfolio manifest by domain, says which the
@@ -1806,6 +1814,197 @@ test.describe('demo app with R on request', () => {
     expect(requests.filter((url) => R_HOST.test(url))).toHaveLength(fetched);
     expect(await page.evaluate(() => window.__rConnections)).toBe(1);
     expect(errors).toEqual([]);
+  });
+});
+
+// The gsm packages built for R in the browser (#229, obot.roadmap#373):
+// gsm.core, gsm.mapping, gsm.reporting and workr, built from pinned release
+// tags and kept as a package repository the site serves beside the app. The
+// harness page (fixtures/r-wasm.html) starts real webR and installs them.
+test.describe('gsm packages for R in the browser', () => {
+  const pins = JSON.parse(
+    readFileSync(new URL('../../site/vendor/r-wasm/pins.json', import.meta.url), 'utf8')
+  );
+
+  test('APP-R-032: R in the browser installs workr, gsm.core, gsm.mapping and gsm.reporting from the page’s own address and their dependencies from repo.r-wasm.org, at the pinned versions; they attach with duckdb, and a query runs through workr (#229)', async ({
+    page,
+    context
+  }) => {
+    // It downloads R and some forty packages: far more than the default allows.
+    test.setTimeout(360_000);
+    const requests = [];
+    context.on('request', (request) => requests.push(request.url()));
+    await page.goto('/tests/e2e/fixtures/r-wasm.html');
+    await page.waitForFunction(() => window.__rWasm && window.__rWasm.done, null, {
+      timeout: 330_000
+    });
+    const result = await page.evaluate(() => window.__rWasm);
+    expect(result.error).toBeNull();
+    expect(result.versions).toEqual(
+      Object.fromEntries(pins.packages.map((pin) => [pin.package, pin.version]))
+    );
+    expect(result.loaded).toBe('loaded');
+    expect(result.query).toBe('2');
+
+    // Each of the four came from the page's own address, and none from the
+    // public index, which has no build of them; everything else R asked for
+    // came from webR's host or the public index.
+    const own = new URL(page.url()).origin;
+    const packageFile = (pin) => `${pin.package}_${pin.version}.tgz`;
+    for (const pin of pins.packages) {
+      const asked = requests.filter((url) => url.endsWith(`/${packageFile(pin)}`));
+      expect(asked.map((url) => new URL(url).origin)).toEqual([own]);
+    }
+    const origins = [...new Set(requests.map((url) => new URL(url).origin))].sort();
+    expect(origins).toEqual([own, 'https://repo.r-wasm.org', `https://webr.r-wasm.org`].sort());
+  });
+});
+
+// The RBQM pipeline in R in the browser (#231, obot.roadmap#373): the gate. The
+// harness page (fixtures/rbqm-pipeline.html) hands real webR the four gsm
+// packages, the packages' own workflow files as copied from their tags, and
+// the demo study's raw files, and runs adverse event rate by site end to end
+// through workr. Desktop R's rows for the same files are in
+// tests/fixtures/rbqm/expected.json (scripts/rbqm-reference.mjs).
+test.describe('rbqm pipeline in R in the browser', () => {
+  const expected = JSON.parse(
+    readFileSync(new URL(`../../${RBQM_GATE.expected}`, import.meta.url), 'utf8')
+  ).answer;
+  const R_HOSTS = ['https://webr.r-wasm.org', RBQM_GATE.publicIndex];
+  // Where the measurements of the canonical environment are kept, written once.
+  const MEASURED = new URL(
+    '../../docs/evidence/basic-app/APP-R-037-rbqm-pipeline-measurements.json',
+    import.meta.url
+  );
+  // A table as a sorted list of its rows, each number to eight decimal places:
+  // two tables are the same rows whatever order R gave them in.
+  const canonical = (rows) =>
+    rows
+      .map((row) =>
+        JSON.stringify(
+          Object.keys(row)
+            .sort()
+            .map((key) => [key, typeof row[key] === 'number' ? row[key].toFixed(8) : row[key]])
+        )
+      )
+      .sort();
+
+  test('APP-R-037: rbqm pipeline: R in the browser runs the mapping, metric and reporting workflows for adverse event rate by site through workr on the demo study’s raw files, and its Results rows are desktop R’s: the same sites, and for each the same numerator, denominator, metric, score and flag to eight decimal places; before R is asked for, nothing is asked of R’s hosts, and R asks no host but webR’s, the public index and the page’s own (#231)', async ({
+    page,
+    context
+  }, testInfo) => {
+    // It downloads R and some forty packages, then runs the pipeline.
+    test.setTimeout(480_000);
+    const requests = [];
+    const finished = [];
+    context.on('request', (request) => requests.push(request.url()));
+    context.on('requestfinished', (request) => finished.push(request));
+    await page.goto('/tests/e2e/fixtures/rbqm-pipeline.html');
+    await page.waitForLoadState('networkidle');
+    const own = new URL(page.url()).origin;
+
+    // Before R is asked for, the page has asked its own address only.
+    const before = [...requests];
+    expect(before.filter((url) => new URL(url).origin !== own)).toEqual([]);
+    expect(before.filter((url) => /r-wasm\/repo|\.tgz$/.test(url))).toEqual([]);
+
+    const outcome = await page.evaluate((run) => window.__rbqm.run(run), {
+      packages: RBQM_GATE.packages,
+      repos: [`/${RBQM_GATE.repository}`, RBQM_GATE.publicIndex],
+      files: pipelineFiles(),
+      study: studyFiles(),
+      call: RBQM_GATE.call,
+      args: pipelineArgs()
+    });
+    expect(outcome.started.message || outcome.started.status).toBe('ok');
+    expect(outcome.answer.message || outcome.answer.status).toBe('ok');
+    const answer = outcome.answer.value;
+
+    // The Results rows are desktop R's: the same sites, and each site's row.
+    const keyed = (rows) => new Map(rows.map((row) => [`${row.MetricID} ${row.GroupID}`, row]));
+    const [browser, desktop] = [keyed(answer.Results), keyed(expected.Results)];
+    expect(answer.Results).toHaveLength(expected.Results.length);
+    expect(expected.Results.length).toBeGreaterThan(100);
+    expect([...browser.keys()].sort()).toEqual([...desktop.keys()].sort());
+    for (const [key, row] of desktop) {
+      const got = browser.get(key);
+      for (const column of RESULT_KEYS) expect(got[column], `${key} ${column}`).toBe(row[column]);
+      for (const column of RESULT_NUMBERS) {
+        if (row[column] === null) expect(got[column], `${key} ${column}`).toBeNull();
+        else expect(got[column], `${key} ${column}`).toBeCloseTo(row[column], 8);
+      }
+    }
+    // So are the three tables the charts will draw beside them.
+    for (const table of ['Bounds', 'Groups', 'Metrics']) {
+      expect(canonical(answer[table]), table).toEqual(canonical(expected[table]));
+    }
+    expect(answer.ran).toEqual(expected.ran);
+    expect(answer.warnings).toEqual([]);
+    // The gsm packages are the pinned ones in both; what they stand on is whatever each R has.
+    for (const name of RBQM_GATE.packages)
+      expect(answer.versions[name]).toBe(expected.versions[name]);
+
+    // Everything R asked for came from webR's host, the public index or the
+    // page's own address: duckdb, for one, fetched nothing from anywhere else.
+    await page.waitForLoadState('networkidle');
+    const origins = [...new Set(requests.map((url) => new URL(url).origin))].sort();
+    expect(origins).toEqual([own, ...R_HOSTS].sort());
+
+    // What it cost, measured here: bytes over the wire by where they came
+    // from, and seconds for each step.
+    const megabytes = { runtime: 0, publicIndex: 0, gsmPackages: 0, page: 0 };
+    let publicPackages = 0;
+    for (const request of finished) {
+      const url = new URL(request.url());
+      const sizes = await request.sizes().catch(() => null);
+      const bytes = sizes ? sizes.responseBodySize + sizes.responseHeadersSize : 0;
+      if (url.origin === R_HOSTS[0]) megabytes.runtime += bytes;
+      else if (url.origin === R_HOSTS[1]) {
+        megabytes.publicIndex += bytes;
+        if (url.pathname.endsWith('.tgz')) publicPackages += 1;
+      } else if (url.pathname.includes(`/${RBQM_GATE.repository}/`)) megabytes.gsmPackages += bytes;
+      else megabytes.page += bytes;
+    }
+    for (const key of Object.keys(megabytes)) {
+      megabytes[key] = Math.round(megabytes[key] / 10485.76) / 100;
+    }
+    const measured = {
+      megabytes: {
+        ...megabytes,
+        total:
+          Math.round(Object.values(megabytes).reduce((sum, value) => sum + value, 0) * 100) / 100
+      },
+      packagesFromThePublicIndex: publicPackages,
+      seconds: {
+        startR: outcome.start,
+        firstRun: outcome.run,
+        secondRun: outcome.rerun,
+        inR: answer.seconds
+      },
+      requestsBeforeR: { toThePage: before.length, toRsHosts: 0 },
+      versions: answer.versions,
+      platform: process.platform
+    };
+    await testInfo.attach('rbqm-pipeline-measurements', {
+      body: JSON.stringify(measured, null, 2),
+      contentType: 'application/json'
+    });
+    console.log(`rbqm pipeline measurements: ${JSON.stringify(measured)}`);
+    // The limit @jwildfire set on the gate (obot.roadmap#373): starting R for
+    // this stack downloads no more than 80 MB.
+    expect(measured.megabytes.total).toBeLessThan(80);
+    expect(measured.megabytes.total).toBeGreaterThan(10);
+    // The gate's limit on time was a minute, and the first run passed it at 29
+    // to 50 seconds on the CI runner. A busy runner is slow, so this fails at
+    // two minutes: double what was measured, not a slow day (#244).
+    expect(outcome.run).toBeLessThan(120);
+    expect(outcome.again).toBe('ok');
+    // Kept with the evidence, from the canonical environment, the first time
+    // it runs there; remove the file to have it measured again.
+    if (CANONICAL && !existsSync(MEASURED)) {
+      mkdirSync(new URL('.', MEASURED), { recursive: true });
+      writeFileSync(MEASURED, `${JSON.stringify(measured, null, 2)}\n`);
+    }
   });
 });
 
