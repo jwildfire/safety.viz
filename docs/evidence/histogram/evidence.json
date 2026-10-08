@@ -1,6 +1,6 @@
 {
   "module": "histogram",
-  "generatedAt": "2026-10-08T06:02:30.354Z",
+  "generatedAt": "2026-10-08T12:40:16.832Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "37735386247",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37735386247"
+    "id": "37777164714",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37777164714"
   },
   "records": [
     {
@@ -1176,12 +1176,12 @@
       "screenshots": ["SH-CHART-004-grouped-multiples.png", "SH-CTRL-006-shared-bin-multiples.png"]
     },
     {
-      "test": "SH-CHART-005: p-value annotations display the approximation and validation disclaimer (#2)",
+      "test": "SH-CHART-008: the histogram draws no p-value: given the two removed settings, the main chart and each grouped panel carry no annotation, and the console says once for each that it was removed and is ignored (#188)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["SH-CHART-005"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CHART-005-pvalue-disclaimer.png"]
+      "requirementIds": ["SH-CHART-008"],
+      "issueRefs": [188],
+      "screenshots": ["SH-CHART-008-no-pvalue.png"]
     },
     {
       "test": "SH-CTRL-001/SH-CTRL-002/SH-CTRL-006: renders measure, filter, axis, bin, and group controls (#2)",
@@ -4624,30 +4624,6 @@
       "screenshots": []
     },
     {
-      "test": "histogram getPlugins SH-CHART-005: p-values format with bounded precision (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CHART-005"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CHART-005-pvalue-disclaimer.png"]
-    },
-    {
-      "test": "histogram getPlugins SH-CHART-005: the group-comparison screen needs 2+ groups and separates distinct groups (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CHART-005"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CHART-005-pvalue-disclaimer.png"]
-    },
-    {
-      "test": "histogram getPlugins SH-CHART-005: the normality screen needs at least 3 values and stays within (0, 1) (#2)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CHART-005"],
-      "issueRefs": [2],
-      "screenshots": ["SH-CHART-005-pvalue-disclaimer.png"]
-    },
-    {
       "test": "histogram getPlugins SH-FUNC-011: selection colors keep the selected bar and fade the rest (#2)",
       "suite": "unit",
       "status": "pass",
@@ -7607,38 +7583,6 @@
       "screenshots": []
     },
     {
-      "test": "the deprecated normality screen SH-CHART-006: with test_normality the chart says the screen is deprecated and will be removed, beside the screen, and the console says so once (#188)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CHART-006"],
-      "issueRefs": [188],
-      "screenshots": []
-    },
-    {
-      "test": "the deprecated normality screen SH-CHART-006: without it, nothing is said; turned on later, it is said then (#188)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CHART-006"],
-      "issueRefs": [188],
-      "screenshots": []
-    },
-    {
-      "test": "the deprecated normality screen SH-CHART-007: with compare_distributions the chart says the group comparison is deprecated and will be removed, once in its annotation while grouped, and the console says so once (#188)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CHART-007"],
-      "issueRefs": [188],
-      "screenshots": []
-    },
-    {
-      "test": "the deprecated normality screen SH-CHART-007: without it, nothing is said; turned on later, it is said then (#188)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-CHART-007"],
-      "issueRefs": [188],
-      "screenshots": []
-    },
-    {
       "test": "the desktop-R results the browser test compares with APP-R-011: the recorded requests and desktop R’s answers are derived from the study, the app code that shapes the rows, the bundle and the statistics file as they are now, over every step of the walk (#183, #212)",
       "suite": "unit",
       "status": "pass",
@@ -7653,6 +7597,30 @@
       "requirementIds": ["APP-R-027"],
       "issueRefs": [212],
       "screenshots": []
+    },
+    {
+      "test": "the histogram’s removed p-value settings SH-CHART-008: a chart given `test_normality` draws with no annotation and no p-value, and says once in the console that the setting was removed and is ignored (#188)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-CHART-008"],
+      "issueRefs": [188],
+      "screenshots": ["SH-CHART-008-no-pvalue.png"]
+    },
+    {
+      "test": "the histogram’s removed p-value settings SH-CHART-008: a grouped chart given `compare_distributions` draws its panels with no comparison, and says so once in the console; a chart given neither says nothing (#188)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-CHART-008"],
+      "issueRefs": [188],
+      "screenshots": ["SH-CHART-008-no-pvalue.png"]
+    },
+    {
+      "test": "the histogram’s removed p-value settings SH-CHART-008: the histogram has no `test_normality` or `compare_distributions` setting and computes no p-value: neither is a default, neither is kept when passed, and no p-value function is left in the module (#188)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-CHART-008"],
+      "issueRefs": [188],
+      "screenshots": ["SH-CHART-008-no-pvalue.png"]
     },
     {
       "test": "the installer file APP-LOCAL-009: asks for the Node the repository is tested on (#214)",
@@ -8183,6 +8151,14 @@
       "screenshots": []
     },
     {
+      "test": "the RBQM tab on the page APP-RBQM-048: once R has answered, the tab names beside R’s own versions what is copied in and not installed in R: gsm.kri’s metric workflows and gsm.viz’s charts, each at the version the record of its copy names (#255)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-048"],
+      "issueRefs": [255],
+      "screenshots": []
+    },
+    {
       "test": "the RBQM tab: a reader’s own raw files APP-RBQM-034: a file that lacks a column its workflow names is listed with the column, and each metric that needs it says so before the press (#236)",
       "suite": "unit",
       "status": "pass",
@@ -8332,6 +8308,14 @@
       "status": "pass",
       "requirementIds": ["APP-RBQM-024"],
       "issueRefs": [235],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab: what it says APP-RBQM-048: beside the versions R reports the tab names what is copied in and not installed in R, which R cannot report: whose the metric workflows are and whose the charts are, each with its version (#255)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-048"],
+      "issueRefs": [255],
       "screenshots": []
     },
     {

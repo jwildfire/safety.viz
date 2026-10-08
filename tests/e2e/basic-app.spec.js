@@ -3349,7 +3349,7 @@ test.describe('demo app: the RBQM tab', () => {
     clearInterval(listen);
     const firstResult = (Date.now() - pressed) / 1000;
     await expect(rbqmStatus(page)).toHaveText(
-      /^R ran 8 of 8 metrics on the 9 loaded files in [\d.]+ seconds?, \d+ seconds after Start R was pressed\. The snapshot is dated \d{4}-\d\d-\d\d\. R 4\.\d+\.\d+, gsm\.core [\d.]+, gsm\.mapping [\d.]+, gsm\.reporting [\d.]+ and workr [\d.]+\.$/
+      /^R ran 8 of 8 metrics on the 9 loaded files in [\d.]+ seconds?, \d+ seconds after Start R was pressed\. The snapshot is dated \d{4}-\d\d-\d\d\. R 4\.\d+\.\d+, gsm\.core [\d.]+, gsm\.mapping [\d.]+, gsm\.reporting [\d.]+ and workr [\d.]+\. The metric workflows are gsm\.kri 1\.7\.0’s and the charts gsm\.viz 2\.4\.1’s\.$/
     );
     // Every step was said while it happened.
     for (const step of [

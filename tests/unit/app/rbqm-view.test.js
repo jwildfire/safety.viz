@@ -7,7 +7,12 @@ import manifest from '../../../src/data/portfolio.json';
 import { mountApp } from '../../../src/app/page.js';
 import { rbqmTab } from '../../../src/app/rbqm-view.js';
 import { RBQM_DOWNLOADS, rbqmTabOptions } from '../../../scripts/app-libraries.mjs';
-import { RBQM_STUDY } from '../../../scripts/vendor-lib.mjs';
+import {
+  GSM_KRI_WORKFLOWS,
+  GSM_VIZ,
+  RBQM_STUDY,
+  readRecord
+} from '../../../scripts/vendor-lib.mjs';
 import { RBQM_NEEDS, RBQM_PILOT, RBQM_TAB, standardFiles } from '../../../scripts/rbqm-lib.mjs';
 
 // The RBQM tab on the page (#235, obot.roadmap#374): a tab a library brings
@@ -544,6 +549,35 @@ describe('the RBQM tab on the page', () => {
     expect(OPTIONS.charts).toEqual({ url: './gsm.viz.js', global: 'gsmViz' });
     expect(OPTIONS.r.attach).toBe('rbqm_attach');
     expect(OPTIONS.r.call).toBe('rbqm_run');
+  });
+
+  it('APP-RBQM-048: once R has answered, the tab names beside R’s own versions what is copied in and not installed in R: gsm.kri’s metric workflows and gsm.viz’s charts, each at the version the record of its copy names (#255)', async () => {
+    const kri = readRecord(path.join(root, GSM_KRI_WORKFLOWS.directory));
+    const viz = readRecord(path.join(root, GSM_VIZ.directory));
+    expect(OPTIONS.copies).toEqual({
+      workflows: { name: 'gsm.kri', version: kri.version },
+      charts: { name: 'gsm.viz', version: viz.version }
+    });
+    // The records are of the tags the copies are held to.
+    expect(kri.tag).toBe(`v${kri.version}`);
+    expect(viz.tag).toBe(`v${viz.version}`);
+    fakeViz();
+    const { app, r, $ } = mount({ answers: RUN_OK });
+    app.loadRaw(STUDY);
+    app.select('rbqm');
+    // Before R has answered nothing is said of versions.
+    expect($('.sva-rbqm-status').textContent).not.toMatch(/gsm\.kri/);
+    $('.sva-rbqm-start').click();
+    const [connection] = r.made;
+    for (let step = 0; step < 3; step += 1) await connection.letGo();
+    expect($('.sva-rbqm-status').textContent).toMatch(
+      new RegExp(
+        `gsm\\.reporting ${whole.versions['gsm.reporting']} and workr ${whole.versions.workr}\\. ` +
+          `The metric workflows are gsm\\.kri ${kri.version}’s and the charts gsm\\.viz ${viz.version}’s\\.$`
+      )
+    );
+    // R reported no version of gsm.kri: the package is not installed there.
+    expect(Object.keys(whole.versions)).not.toContain('gsm.kri');
   });
 
   it('APP-RBQM-018: what the tab places a reader’s files with is what desktop R read from the workflows (#236)', () => {
