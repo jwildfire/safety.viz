@@ -8,7 +8,7 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { BIO_VIZ, GSM_BIO_STATISTICS } from './vendor-lib.mjs';
+import { BIO_VIZ, GSM_BIO_STATISTICS, GSM_VIZ } from './vendor-lib.mjs';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -39,6 +39,22 @@ export const APP_LIBRARIES = [
     }
   }
 ];
+
+/**
+ * gsm.viz's bundle, as the demo app's directory serves it (#232,
+ * obot.roadmap#374): under a name of its own beside the app, with the licence
+ * its repository carries. It is not one of APP_LIBRARIES: its charts take the
+ * reporting tables R returns, not a study's domains, so no page loads it with
+ * the app. The RBQM tab asks for it when it has tables to draw.
+ */
+export const RBQM_CHARTS = {
+  name: 'gsm.viz',
+  global: GSM_VIZ.global,
+  file: 'gsm.viz.js',
+  path: path.join(GSM_VIZ.directory, 'index.js'),
+  license: { file: 'gsm.viz.LICENSE.txt', path: path.join(GSM_VIZ.directory, 'LICENSE') },
+  repository: GSM_VIZ.repository
+};
 
 /**
  * What the hosted app's footer says happens to the data a reader loads (#196;

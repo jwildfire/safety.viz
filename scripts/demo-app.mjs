@@ -10,6 +10,8 @@
 //   fonts/                 the app's typefaces and their licences (#165)
 //   bio.viz.js             each further chart library's vendored bundle (#182)
 //   statistics.R           the file R in the browser is given (#183)
+//   gsm.viz.js             gsm.viz's vendored bundle, for the RBQM tab, and
+//                          its licence (#232)
 //   r-wasm/                the gsm packages built for R in the browser, as a
 //                          package repository, and their record (#229)
 //
@@ -23,6 +25,7 @@ import { publishDemoAppFonts, renderDemoAppPage } from './site-lib.mjs';
 import { APP_BUNDLE, APP_HTML, buildApp } from './build-app.mjs';
 import {
   APP_LIBRARIES,
+  RBQM_CHARTS,
   libraryManifest,
   libraryScript,
   withoutSourceMap
@@ -117,6 +120,14 @@ export async function buildDemoAppDir(outDir, { links } = {}) {
       );
     }
   }
+  // gsm.viz's vendored bundle (#232) is served beside the app with its licence,
+  // for the RBQM tab. Like the libraries' bundles, the copy served drops the
+  // source-map comment line; the vendored file stays gsm.viz's, byte for byte.
+  writeFileSync(path.join(outDir, RBQM_CHARTS.file), withoutSourceMap(libraryScript(RBQM_CHARTS)));
+  copyFileSync(
+    path.join(rootDir, RBQM_CHARTS.license.path),
+    path.join(outDir, RBQM_CHARTS.license.file)
+  );
   // The gsm packages built for R in the browser (#229) are served beside the
   // app as a package repository, so R installs them from the page's own address.
   publishRWasm(path.join(rootDir, R_WASM_DIRECTORY), outDir);
