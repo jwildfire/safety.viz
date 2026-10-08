@@ -1,6 +1,6 @@
 {
   "module": "participant-profile",
-  "generatedAt": "2026-10-08T01:43:25.689Z",
+  "generatedAt": "2026-10-08T02:14:24.435Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "37714292389",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37714292389"
+    "id": "37716835063",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37716835063"
   },
   "records": [
     {
@@ -269,7 +269,7 @@
       "screenshots": []
     },
     {
-      "test": "APP-LOAD-014: no network request leaves the page from the first file selection onward, unless the reader starts R (#151, #183)",
+      "test": "APP-LOAD-014: no network request leaves the page from the first file selection onward, unless the reader starts R: every chart and the RBQM tab are opened, and the footer names every address R is downloaded from (#151, #183, #235)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-LOAD-014"],
@@ -746,6 +746,94 @@
       "status": "pass",
       "requirementIds": ["APP-RBQM-007"],
       "issueRefs": [233],
+      "screenshots": []
+    },
+    {
+      "test": "APP-RBQM-012: rbqm tab pipeline: R in the browser runs every mapping, metric and reporting workflow in scope through workr on the demo study’s nine raw files, and every one of the eight metrics’ Results rows is desktop R’s: the same sites, and for each the same numerator, denominator, metric, score and flag to eight decimal places; with the labs file left out seven metrics run and the lab metric says it needs the labs file; with a column taken out of the adverse events file the two adverse event metrics name the column; with two files alone the two metrics they support run; R asks no host but webR’s, the public index and the page’s own (#234)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-012"],
+      "issueRefs": [234],
+      "screenshots": []
+    },
+    {
+      "test": "APP-RBQM-018: the RBQM tab follows the domains’ tabs with its Experimental badge; before Start R is pressed it says what starting R downloads and from where, and the page has asked nothing of R’s hosts, nor its own address for gsm.viz, R’s packages or R’s files (#235)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-018"],
+      "issueRefs": [235],
+      "screenshots": []
+    },
+    {
+      "test": "APP-RBQM-019: from the press to the first result the tab says what R is doing at every step: downloading R, installing its packages, fetching the workflow files, reading the pipeline, loading the packages and running the workflows; its control cannot be pressed meanwhile, and its tab says R is starting, then running (#235)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-019"],
+      "issueRefs": [235],
+      "screenshots": []
+    },
+    {
+      "test": "APP-RBQM-020: the tab draws what R returned with gsm.viz: the site overview with a row per site and a column per metric, and the chosen metric’s scatter plot and bar chart; each of the eight metrics in turn draws both, from a metric’s button or from a cell of the overview, and R is not asked again (#235)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-020"],
+      "issueRefs": [235],
+      "screenshots": []
+    },
+    {
+      "test": "APP-RBQM-021: rbqm tab in real R: on the RBQM study, pressing Start R starts R in the browser, says what it is doing meanwhile, and draws the overview, the scatter plot and the bar chart; every number in the overview table is R’s: each cell prints the score, metric, numerator and denominator of the Results row R returned for that site and metric, the enrolment is the Groups table’s, and the red and amber counts are R’s flags counted; R’s rows are desktop R’s to eight decimal places; each of the eight metrics draws; what the tab says R downloads is what was downloaded (#235)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-021"],
+      "issueRefs": [235],
+      "screenshots": []
+    },
+    {
+      "test": "APP-RBQM-022: a metric that did not run shows R’s sentence saying why in place of its charts, and with no Groups table the overview still has a row for every site R scored and the tab says what is missing (#235)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-022"],
+      "issueRefs": [235],
+      "screenshots": []
+    },
+    {
+      "test": "APP-RBQM-023: at a 390-pixel viewport the tab does not scroll sideways before the press, while R starts or with the results drawn, and the overview table and both charts fit the width (#235)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-023"],
+      "issueRefs": [235],
+      "screenshots": []
+    },
+    {
+      "test": "APP-RBQM-024: when R does not start the tab says so and why and offers to try again; when R stops during the run it says R stopped and why, and offers to run again (#235)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-024"],
+      "issueRefs": [235],
+      "screenshots": []
+    },
+    {
+      "test": "APP-RBQM-025: offline, the single file’s RBQM tab says it needs R and that the file loads nothing, offers no control to start R, and requests nothing (#235)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-025"],
+      "issueRefs": [235],
+      "screenshots": []
+    },
+    {
+      "test": "APP-RBQM-030: choosing the RBQM study and starting R send nothing beyond what R needs: from the study’s choice until five quiet seconds after the charts are drawn, every request the page and its workers make is a GET or HEAD with no body, no query and no header the browser did not set itself, to three addresses and no other: the page’s own, for the study’s files, gsm.viz’s bundle, the files R is given and gsm’s four packages; webr.r-wasm.org, for R; and repo.r-wasm.org, for packages. No address names a participant, and neither the page nor its workers open a socket (#235)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-030"],
+      "issueRefs": [235],
+      "screenshots": []
+    },
+    {
+      "test": "APP-RBQM-031: the built demo page carries the RBQM tab with its Experimental badge and serves everything the tab asks for from beside the app: the pipeline’s R and each workflow file as the repository has it, and gsm.viz’s bundle. Nothing of it is asked for before the press. On the RBQM study, Start R starts real R from the page as built, with gsm’s packages from beside the app, and the overview, the scatter plot and the bar chart are drawn (#235)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-031"],
+      "issueRefs": [235],
       "screenshots": []
     },
     {
@@ -2973,6 +3061,14 @@
       "screenshots": []
     },
     {
+      "test": "buildDemoAppDir APP-RBQM-027: the directory serves what R is given for the RBQM tab, the pipeline’s R and each of gsm’s workflow files, under the path R keeps it at and byte for byte as the repository has it; the page hands the tab exactly those addresses, gsm’s packages beside the app and gsm.viz’s bundle, which no script tag loads (#235)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-027"],
+      "issueRefs": [235],
+      "screenshots": []
+    },
+    {
       "test": "buildEcgRecords anchors BASE and CHG on each participant baseline record (#79)",
       "suite": "unit",
       "status": "pass",
@@ -4378,6 +4474,38 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [140],
+      "screenshots": []
+    },
+    {
+      "test": "desktop R’s answers for the RBQM tab (#234) APP-RBQM-015: desktop R’s answers are derived from the pipeline’s R, the copied workflows and the demo study’s nine raw files as they are now, by checksum of every one (#234)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-015"],
+      "issueRefs": [234, 234],
+      "screenshots": []
+    },
+    {
+      "test": "desktop R’s answers for the RBQM tab (#234) APP-RBQM-015: on the whole study all eight metrics ran: 1,186 Results rows, a row for each of 148 sites for seven metrics and 150 for the screen failure rate, each with its site, numerator, denominator, metric, score and flag, beside the Bounds, Groups and Metrics tables, with nothing warned of (#234)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-015"],
+      "issueRefs": [234, 234],
+      "screenshots": []
+    },
+    {
+      "test": "desktop R’s answers for the RBQM tab (#234) APP-RBQM-016: with the labs file left out seven metrics ran and the lab metric says it needs the labs file; with the seriousness column taken out of the adverse events file six ran and the two adverse event metrics name the column and the file; every metric that ran gave the rows it gives on the whole study (#234)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-016"],
+      "issueRefs": [234, 234],
+      "screenshots": []
+    },
+    {
+      "test": "desktop R’s answers for the RBQM tab (#234) APP-RBQM-016: with the subjects and adverse events files alone the two adverse event metrics ran, each other metric names the file it needs, the Groups table says which files it needs, and the run says the study’s ID was read from the loaded files (#234)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-016"],
+      "issueRefs": [234, 234],
       "screenshots": []
     },
     {
@@ -6045,7 +6173,7 @@
       "screenshots": []
     },
     {
-      "test": "renderDemoAppPage APP-PAGE-017: the page as the site builds it, with bio.viz’s charts, R on request and each chart’s pages, names exactly three other hosts: the repository’s, R’s and, in links alone, the one bio.viz’s site is on (#165, #183, #246)",
+      "test": "renderDemoAppPage APP-PAGE-017: the page as the site builds it, with bio.viz’s charts, the RBQM tab, R on request and each chart’s pages, names exactly four other hosts: the repository’s, the two R is downloaded from and, in links alone, the one bio.viz’s site is on (#165, #183, #235, #246)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-PAGE-017"],
@@ -8101,6 +8229,14 @@
       "screenshots": []
     },
     {
+      "test": "the connection to R in the browser (#231) APP-RBQM-029: a connection handed `onStage` names each step of starting R as it begins and in order, the runtime, the packages, the files and the R source; a step with nothing to do is not named, a callback that throws does not stop R starting, and anything but a function is refused (#235)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-029"],
+      "issueRefs": [231, 235],
+      "screenshots": []
+    },
+    {
       "test": "the copied gsm workflows APP-WF-001: each folder matches its record, which names the package’s repository, its release tag, the full commit and every file’s checksum and size; the files are the ten mapping workflows, the eight metrics with the one R file, and the four reporting tables (#230)",
       "suite": "unit",
       "status": "pass",
@@ -8309,6 +8445,22 @@
       "screenshots": []
     },
     {
+      "test": "the one R function behind the tab (#234) APP-RBQM-014: it computes nothing itself: every workflow is run through workr, it calls no statistical or arithmetic function on the data, and the one gsm function it names parses a metric’s thresholds from text to numbers (#234)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-014"],
+      "issueRefs": [234, 234],
+      "screenshots": []
+    },
+    {
+      "test": "the one R function behind the tab (#234) APP-RBQM-014: the R function names no raw domain and no column of one: what a workflow needs is read from its own spec, and a raw file is any file named Raw_<DOMAIN>.csv; the one mapped table it names is the study’s, which the Results workflow reads the study’s ID from (#234)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-014"],
+      "issueRefs": [234, 234],
+      "screenshots": []
+    },
+    {
       "test": "the package repository beside the demo app (#229) APP-R-031: the demo app’s directory serves the packages as a package repository, as R reads one, with the record of what each file was built from (#229)",
       "suite": "unit",
       "status": "pass",
@@ -8442,6 +8594,30 @@
       "status": "pass",
       "requirementIds": ["APP-LIB-013"],
       "issueRefs": [181],
+      "screenshots": []
+    },
+    {
+      "test": "the page: a library that brings a view APP-RBQM-017: a library may bring a view in place of charts: a tab of its own after the domains’ tabs, with its name, its status badge and what it says of itself; opening it draws the view in the main area, hides the chart row and writes its address (#235)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-017"],
+      "issueRefs": [235],
+      "screenshots": []
+    },
+    {
+      "test": "the page: a library that brings a view APP-RBQM-017: a view that throws as it draws says so in the main area and the page stays up (#235)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-017"],
+      "issueRefs": [235],
+      "screenshots": []
+    },
+    {
+      "test": "the page: a library that brings a view APP-RBQM-017: a view with no id, or the id of the data view, a chart or another view, is left out with a warning, and the page still mounts (#235)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-017"],
+      "issueRefs": [235],
       "screenshots": []
     },
     {
@@ -8586,6 +8762,198 @@
       "status": "pass",
       "requirementIds": ["APP-R-036"],
       "issueRefs": [231, 231],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab on the page APP-RBQM-018: before the press the tab says what starting R downloads and from where, makes no connection and loads no chart library; with no raw file loaded it says so and its control cannot be pressed (#235)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-018"],
+      "issueRefs": [235],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab on the page APP-RBQM-018: what the tab says starting R downloads is what the page is built to say (#235)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-018"],
+      "issueRefs": [235],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab on the page APP-RBQM-019: the press makes one connection, with the packages, the two repositories, gsm’s workflow files and the pipeline’s R, and asks for gsm.viz from the page’s own address; until R answers the tab says the step R is at and the seconds since the press, and its control cannot be pressed again (#235)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-019"],
+      "issueRefs": [235],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab on the page APP-RBQM-020: what R returns is drawn by gsm.viz: the overview is handed every Results row with the Groups and Metrics tables, and the chosen metric’s scatter plot and bar chart its own rows, R’s bounds and R’s thresholds; choosing another metric draws that one’s, and R’s answer is not changed by any of it (#235)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-020"],
+      "issueRefs": [235],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab on the page APP-RBQM-022: a metric that did not run is listed as one that did not, and choosing it shows R’s sentence saying why in place of its charts (#235)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-022"],
+      "issueRefs": [235],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab on the page APP-RBQM-024: when R does not start the tab says so and why, and offers to try again; trying again makes one fresh connection (#235)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-024"],
+      "issueRefs": [235],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab on the page APP-RBQM-024: when R stops during the run the tab says R stopped and why, keeps R, and offers to run again without starting R again (#235)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-024"],
+      "issueRefs": [235],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab on the page APP-RBQM-025: on a page that cannot start R the tab says so in a sentence and offers no control; nothing is connected and no chart library is asked for (#235)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-025"],
+      "issueRefs": [235],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab on the page APP-RBQM-026: the tab carries the Experimental badge site/config.json gives it, on its tab and in its view, with what the word means (#235)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-026"],
+      "issueRefs": [235],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab on the page APP-RBQM-027: when gsm.viz does not load the tab says the charts are not drawn and why, and still lists every metric with what R said of it (#235)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-027"],
+      "issueRefs": [235],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab on the page APP-RBQM-028: once R is up, a study loaded afterwards is run at once without starting R again, and the results of the study before it are not shown as its own (#235)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-028"],
+      "issueRefs": [235],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab on the page APP-RBQM-028: R is handed each loaded file as text in a folder of this run’s own, the folders of gsm’s workflows, and the reader’s own day as the snapshot’s date; no metric is named, so R tries every one (#235)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-028"],
+      "issueRefs": [235],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab: what gsm.viz is handed APP-RBQM-020: a metric’s scatter plot and bar chart are handed its own Results rows, its row of the Metrics table, R’s Bounds rows for it and its thresholds as the numbers R parsed (#235)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-020"],
+      "issueRefs": [235],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab: what gsm.viz is handed APP-RBQM-020: the metrics are listed as R reports them, each with the ID its rows carry in R’s tables, read from R’s Metrics table and not put together by the app (#234, #235)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-020"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab: what gsm.viz is handed APP-RBQM-020: the overview is handed every Results row, the Groups table and the Metrics table as R returned them, and each chart copies of the rows, so drawing changes nothing R returned (#235)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-020"],
+      "issueRefs": [235],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab: what gsm.viz is handed APP-RBQM-022: a metric that did not run is listed with R’s sentence saying why and no ID, since R’s tables hold no row of it (#235)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-022"],
+      "issueRefs": [235],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab: what gsm.viz is handed APP-RBQM-022: with no Groups table the overview is handed one row per site R scored, naming the site and nothing else, and the charts no group table; the tab is told so (#235)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-022"],
+      "issueRefs": [235],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab: what gsm.viz is handed APP-RBQM-028: a study is the one that was run only when it is the same loaded files, each the very one, in the same order (#235)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-028"],
+      "issueRefs": [235],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab: what it says APP-RBQM-018: before R is started the tab says what starting R downloads, how much and from where, and that the files stay in the browser (#235)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-018"],
+      "issueRefs": [235],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab: what it says APP-RBQM-019: from the press to the first result the tab says what R is doing at every step, with where each download comes from and how long it has been (#235)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-019"],
+      "issueRefs": [235],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab: what it says APP-RBQM-020: once R has answered the tab says how many metrics ran, on how many files, how long R took and the versions R reports; the snapshot’s date is the reader’s own day (#235)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-020"],
+      "issueRefs": [235],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab: what it says APP-RBQM-024: R that did not start, packages that did not load and a run that stopped each say which it was and why, in one sentence each (#235)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-024"],
+      "issueRefs": [235],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab’s run, as R is given it (#234) APP-RBQM-013: four studies are run, each from a folder of its own: the demo study whole, without its labs file, with the seriousness column taken out of its adverse events file and nothing else changed, and its subjects and adverse events files alone (#234)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-013"],
+      "issueRefs": [234, 234],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab’s run, as R is given it (#234) APP-RBQM-013: the tab’s run is the gate’s with every metric workflow there is: the same R function, packages and workflow folders, no metric named, and the raw files from a folder of the study’s own; the eight metrics in scope are the eight copied workflows (#234)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-013"],
+      "issueRefs": [234, 234],
       "screenshots": []
     },
     {
