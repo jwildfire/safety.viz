@@ -1,5 +1,6 @@
 import { execSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { test, expect } from '@playwright/test';
 import { CANONICAL, captureEvidence } from './evidence.js';
 import {
@@ -20,6 +21,7 @@ import {
   RESULT_NUMBERS,
   pipelineArgs,
   pipelineFiles,
+  scenarioFiles,
   studyFiles,
   tabStudyFiles
 } from '../../scripts/rbqm-lib.mjs';
@@ -2349,6 +2351,27 @@ const inked = (canvas) =>
 const sidewaysScroll = (page) =>
   page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
 
+// A reader's own files, where they are on disk (#236): two of the RBQM study's
+// files as gsm names them, a file of no raw domain, and, written for the test,
+// the study's adverse events file with one column taken out.
+const onDisk = (file) => fileURLToPath(new URL(`../../${file}`, import.meta.url));
+const OWN_SUBJ = onDisk('site/data/rbqm/Raw_SUBJ.csv');
+const OWN_AE = onDisk('site/data/rbqm/Raw_AE.csv');
+const OWN_NOTES = onDisk('tests/e2e/fixtures/app/site_notes.csv');
+const NOTES_UNPLACED =
+  'site_notes.csv is not recognised: its name and its columns match no gsm raw domain.';
+function withoutAColumn(testInfo) {
+  const scenario = RBQM_TAB.scenarios.find((entry) => entry.id === 'no-column');
+  const files = scenarioFiles(scenario, (file) =>
+    readFileSync(new URL(`../../${file}`, import.meta.url))
+  );
+  const written = testInfo.outputPath('Raw_AE.csv');
+  writeFileSync(written, files['Raw_AE.csv']);
+  return written;
+}
+const rbqmFiles = (page) => page.locator('.sva-rbqm-files');
+const rbqmSupport = (page, id) => page.locator(`.sva-rbqm-support li[data-metric="${id}"]`);
+
 async function openRbqm(page, query = '') {
   await page.goto(`/tests/e2e/fixtures/basic-app.html${query}`);
   await page.evaluate(`${APP}.ready`);
@@ -2423,7 +2446,7 @@ test.describe('demo app: the RBQM tab', () => {
     await expect(page.locator('.sva-title')).toHaveText('RBQM');
     await expect(page.locator('.sva-charts')).toBeHidden();
     await expect(rbqmStatus(page)).toHaveText(
-      'No gsm raw files are loaded. Choose the RBQM study on the Data tab; the metrics run on its files.'
+      'No gsm raw files are loaded. Drop your own here, or choose the RBQM study on the Data tab; the metrics run on those files.'
     );
     await expect(rbqmStart(page)).toBeDisabled();
     // With the RBQM study loaded it says what the press costs.
@@ -2550,15 +2573,12 @@ test.describe('demo app: the RBQM tab', () => {
   }) => {
     const errors = watchErrors(page);
     await openRbqm(page, '?rbqm=recorded');
-    // Two of the study's files alone, as a reader might load them: the page is
-    // handed them here, since the tab's own way to load files comes with #236.
-    await page.evaluate(() => {
-      const app = window.__safetyVizApp;
-      const two = app.state.raw.filter((file) => /Raw_(SUBJ|AE)\.csv/.test(file.name));
-      app.reset();
-      app.loadRaw(two.map(({ name, text }) => ({ name, text })));
-      app.select('rbqm');
-    });
+    // Two files of the reader's own, chosen on the tab: they take the demo
+    // study's place, and the page says so.
+    await page.locator('.sva-rbqm-input').setInputFiles([OWN_SUBJ, OWN_AE]);
+    await expect(page.locator('.sva-content > .sva-notes .sva-note')).toHaveText([
+      'The demo study (RBQM study) was cleared to load your files.'
+    ]);
     await expect(rbqmStatus(page)).toContainText('on the 2 loaded raw files');
     await rbqmStart(page).click();
     await expect(rbqmStatus(page)).toHaveText(/^R ran 2 of 8 metrics on the 2 loaded files/);
@@ -2764,6 +2784,231 @@ test.describe('demo app: the RBQM tab', () => {
     );
     expect(named).toEqual([]);
     expect(requests.length).toBeGreaterThan(60);
+    expect(sockets).toEqual([]);
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-RBQM-036: a reader’s own files on the tab, with no demo study: files chosen from disk and a file dropped are listed with the raw domain each was placed in, a file of no raw domain is named as not recognised and one that lacks a column is named with the column; the tab says which metrics the files support before R is started; Start R then draws the two adverse event metrics and says of each other metric which file it needs (#236)', async ({
+    page
+  }, testInfo) => {
+    const errors = watchErrors(page);
+    await page.goto('/tests/e2e/fixtures/basic-app.html?empty&rbqm=recorded');
+    await page.evaluate(`${APP}.ready`);
+    await rbqmTab(page).click();
+    await expect(rbqmFiles(page).locator('summary')).toHaveText('No files are loaded.');
+    await expect(rbqmFiles(page)).toHaveAttribute('open', '');
+    await expect(rbqmStart(page)).toBeDisabled();
+
+    // Chosen from disk, with the browser's own file chooser.
+    const chooser = page.waitForEvent('filechooser');
+    await page.locator('.sva-rbqm-choose').click();
+    await (await chooser).setFiles([OWN_SUBJ, withoutAColumn(testInfo)]);
+    await expect(page.locator('.sva-rbqm-file')).toHaveText([
+      'Raw_SUBJ.csv is Raw_SUBJ, by its name.',
+      'Raw_AE.csv is Raw_AE, by its name. It lacks the column aeser.'
+    ]);
+    await expect(rbqmFiles(page).locator('summary')).toHaveText(
+      '2 files loaded, 2 placed in a gsm raw domain. They support 0 of 8 metrics.'
+    );
+    await expect(rbqmSupport(page, 'kri0001')).toHaveText(
+      'AE Adverse Event Rate needs the column aeser, which Raw_AE.csv does not have.'
+    );
+    await expect(rbqmSupport(page, 'kri0002')).toHaveText(
+      'SAE Serious Adverse Event Rate needs the column aeser, which Raw_AE.csv does not have.'
+    );
+
+    // The whole file of the same name takes its place; a file of no raw domain
+    // is dropped on the tab, as a reader drops one.
+    await page.locator('.sva-rbqm-input').setInputFiles([OWN_AE]);
+    const dropped = await page.evaluateHandle(
+      (text) => {
+        const transfer = new DataTransfer();
+        transfer.items.add(new File([text], 'site_notes.csv', { type: 'text/csv' }));
+        return transfer;
+      },
+      readFileSync(OWN_NOTES, 'utf8')
+    );
+    await page.dispatchEvent('.sva-rbqm-drop', 'drop', { dataTransfer: dropped });
+    await expect(page.locator('.sva-rbqm-file')).toHaveText([
+      'Raw_SUBJ.csv is Raw_SUBJ, by its name.',
+      'Raw_AE.csv is Raw_AE, by its name.',
+      NOTES_UNPLACED
+    ]);
+    await expect(page.locator('.sva-rbqm-unused')).toHaveText([NOTES_UNPLACED]);
+    await expect(rbqmFiles(page).locator('summary')).toHaveText(
+      '3 files loaded, 2 placed in a gsm raw domain. They support 2 of 8 metrics.'
+    );
+    // Said before R is started, in the words desktop R said after running.
+    const two = tabExpected.partial['two-files'];
+    for (const entry of two.status) {
+      await expect(rbqmSupport(page, entry.id)).toHaveText(
+        entry.state === 'ran'
+          ? `${entry.abbreviation} ${entry.metric}: the files and columns it needs are loaded.`
+          : `${entry.abbreviation} ${entry.message}`
+      );
+    }
+    await expect(page.locator('.sva-rbqm-support .sva-rbqm-groups')).toHaveText(two.groups.message);
+    await expect(rbqmStatus(page)).toContainText('on the 2 loaded raw files.');
+    expect(await page.evaluate(() => window.__rbqmSteps)).toEqual([]);
+    // None was placed in a safety domain or given a mapping.
+    expect(
+      await page.evaluate(() => {
+        const { files, unplaced, raw } = window.__safetyVizApp.state;
+        return [Object.keys(files), unplaced.length, raw.map((file) => file.name)];
+      })
+    ).toEqual([[], 0, ['Raw_SUBJ.csv', 'Raw_AE.csv', 'site_notes.csv']]);
+    await captureEvidence(page.locator('.sva-rbqm'), 'APP-RBQM-036', 'own-files-before-r');
+
+    await rbqmStart(page).click();
+    await expect(rbqmStatus(page)).toHaveText(/^R ran 2 of 8 metrics on the 2 loaded files/);
+    // R was handed the two files it can use, under gsm's names, and not the third.
+    expect(
+      await page.evaluate(() =>
+        Object.keys(window.__rbqmRequest.files).map((file) => file.split('/').pop())
+      )
+    ).toEqual(['Raw_SUBJ.csv', 'Raw_AE.csv']);
+    await expect(rbqmFiles(page)).not.toHaveAttribute('open', '');
+    for (const entry of two.status) {
+      await rbqmChoice(page, entry.id).click();
+      await expect(page.locator('.sva-rbqm-metric-name')).toHaveText(entry.metric);
+      if (entry.state === 'ran') {
+        const canvases = page.locator('.sva-rbqm-figures canvas');
+        await expect(canvases).toHaveCount(2);
+        await expect.poll(() => inked(canvases.nth(0))).toBe(true);
+        await expect.poll(() => inked(canvases.nth(1))).toBe(true);
+      } else {
+        await expect(page.locator('.sva-rbqm-why')).toHaveText(entry.message);
+        await expect(page.locator('.sva-rbqm-figures')).toHaveCount(0);
+      }
+    }
+    await rbqmChoice(page, 'kri0001').click();
+    await expect(page.locator('.sva-rbqm-figures canvas')).toHaveCount(2);
+    await captureEvidence(page.locator('.sva-rbqm'), 'APP-RBQM-036', 'own-files-two');
+
+    // At a phone's width the list of files and what they support fits.
+    await page.setViewportSize({ width: 390, height: 844 });
+    await rbqmFiles(page).locator('summary').click();
+    await expect(rbqmFiles(page)).toHaveAttribute('open', '');
+    expect(await sidewaysScroll(page)).toBeLessThanOrEqual(0);
+    await captureEvidence(rbqmFiles(page), 'APP-RBQM-036', 'own-files-390');
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-RBQM-039: a reader’s own files in real R, and what leaves the browser: with no demo study, the subjects and adverse events files chosen from disk and Start R pressed, R draws the two adverse event metrics and says of each other metric what the tab said before R started; the same adverse events file with a column taken out is run at once and R names the column. From the first file chosen until five quiet seconds after, every request is a GET or HEAD with no body, no query and no header the browser did not set itself, to the page’s own address, webr.r-wasm.org and repo.r-wasm.org and no other; the page’s own address is asked for gsm.viz’s bundle, the files R is given and gsm’s packages, and for nothing of the reader’s; no address names a file of theirs or a participant in them (#236)', async ({
+    page,
+    context
+  }, testInfo) => {
+    test.setTimeout(480000);
+    const errors = watchErrors(page);
+    const watch = watchRequests(page, context);
+    const { sockets } = watch;
+    await page.goto('/tests/e2e/fixtures/basic-app.html?empty');
+    await page.evaluate(`${APP}.ready`);
+    const own = new URL(page.url()).origin;
+    await rbqmTab(page).click();
+    watch.chosen = true;
+    await page.locator('.sva-rbqm-input').setInputFiles([OWN_SUBJ, OWN_AE, OWN_NOTES]);
+    await expect(rbqmFiles(page).locator('summary')).toHaveText(
+      '3 files loaded, 2 placed in a gsm raw domain. They support 2 of 8 metrics.'
+    );
+    const two = tabExpected.partial['two-files'];
+    const before = await page.evaluate(() =>
+      [...document.querySelectorAll('.sva-rbqm-support li[data-metric]')].map((item) => [
+        item.dataset.metric,
+        item.classList.contains('sva-rbqm-can'),
+        item.classList.contains('sva-rbqm-can') ? '' : item.lastChild.textContent
+      ])
+    );
+    await rbqmStart(page).click();
+    await expect(page.locator('.sva-rbqm-table table.group-overview')).toBeVisible({
+      timeout: 360000
+    });
+    await expect(rbqmStatus(page)).toHaveText(/^R ran 2 of 8 metrics on the 2 loaded files/);
+    // What R said of each metric is what the tab said before R was started,
+    // and what desktop R said of the same two files.
+    const said = await page.evaluate(() => {
+      const { status, groups } = window.__rbqmView.state().result.answer;
+      return {
+        status: status.map((entry) => [entry.id, entry.state === 'ran', entry.message]),
+        groups: groups.message
+      };
+    });
+    expect(said.status).toEqual(before);
+    expect(said.status).toEqual(
+      two.status.map((entry) => [entry.id, entry.state === 'ran', entry.message])
+    );
+    expect(said.groups).toBe(two.groups.message);
+    await expect(page.locator('.sva-rbqm-table tbody tr')).toHaveCount(148);
+    for (const entry of two.status) {
+      await rbqmChoice(page, entry.id).click();
+      if (entry.state === 'ran') {
+        const canvases = page.locator('.sva-rbqm-figures canvas');
+        await expect(canvases).toHaveCount(2);
+        await expect.poll(() => inked(canvases.nth(0))).toBe(true);
+        await expect.poll(() => inked(canvases.nth(1))).toBe(true);
+      } else {
+        await expect(page.locator('.sva-rbqm-why')).toHaveText(entry.message);
+        await expect(page.locator('.sva-rbqm-metric canvas')).toHaveCount(0);
+      }
+    }
+
+    // The adverse events file with a column taken out: R is up, so it is run
+    // at once, and R names the column as the tab did.
+    await page.locator('.sva-rbqm-input').setInputFiles([withoutAColumn(testInfo)]);
+    await expect(rbqmStatus(page)).toHaveText(/^R ran 0 of 8 metrics on the 2 loaded files/, {
+      timeout: 120000
+    });
+    await rbqmChoice(page, 'kri0001').click();
+    await expect(page.locator('.sva-rbqm-why')).toHaveText(
+      'Adverse Event Rate needs the column aeser, which Raw_AE.csv does not have.'
+    );
+    await rbqmFiles(page).locator('summary').click();
+    await expect(rbqmSupport(page, 'kri0001')).toHaveText(
+      'AE Adverse Event Rate needs the column aeser, which Raw_AE.csv does not have.'
+    );
+    await expect(page.locator('.sva-rbqm-overview .sva-problem')).toHaveText(
+      'No metric ran, so there is no overview to draw.'
+    );
+
+    // That was the last action.
+    await watch.quiet();
+    const after = watch.onlyReads(own);
+    const index = RBQM_TAB.publicIndex;
+    expect([...new Set(after.map((request) => new URL(request.url).origin))].sort()).toEqual(
+      [own, 'https://webr.r-wasm.org', index].sort()
+    );
+    // The page's own address: gsm.viz's bundle, each file R is given, and
+    // gsm's packages. No study file is asked for: the files came from disk.
+    const repository = `/${RBQM_TAB.repository}/`;
+    const ownAsked = [
+      ...new Set(
+        after
+          .filter((request) => new URL(request.url).origin === own)
+          .map((request) => `${request.method} ${new URL(request.url).pathname}`)
+      )
+    ];
+    expect(ownAsked.filter((entry) => !entry.includes(repository)).sort()).toEqual(
+      [`GET /${RBQM_CHARTS.path}`, ...pipelineFiles().map(({ file }) => `GET /${file}`)].sort()
+    );
+    // No address names a file of the reader's, or a participant or site in them.
+    const fields = (file) =>
+      readFileSync(file, 'utf8')
+        .trim()
+        .split('\n')
+        .map((line) => line.split(',').map((field) => field.replace(/"/g, '')));
+    const [header, ...rows] = fields(OWN_SUBJ);
+    const ids = new Set(
+      ['subjid', 'subjectid', 'invid'].flatMap((name) =>
+        rows.map((row) => row[header.indexOf(name)])
+      )
+    );
+    expect(ids.size).toBeGreaterThan(2000);
+    const words = (url) => decodeURIComponent(url).split(/[^A-Za-z0-9_-]+/);
+    expect(after.filter((request) => words(request.url).some((word) => ids.has(word)))).toEqual([]);
+    expect(
+      after.filter((request) => /Raw_(SUBJ|AE)|site_notes/i.test(decodeURIComponent(request.url)))
+    ).toEqual([]);
+    expect(after.length).toBeGreaterThan(60);
     expect(sockets).toEqual([]);
     expect(errors).toEqual([]);
   });

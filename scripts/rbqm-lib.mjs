@@ -246,3 +246,37 @@ export const tabDerivedFrom = (read) =>
     file,
     sha256: sha256(read(file))
   }));
+
+// ---- What each workflow needs, for the tab to say before R is started (#236) ----
+
+/**
+ * What each mapping and metric workflow needs, as desktop R reads it from the
+ * workflows' own specs (`rbqm_needs` in the pipeline's R). The tab is built
+ * with it, so it can say which metrics the loaded files support before the
+ * reader starts R, and place a file in a raw domain by its columns. Written by
+ * scripts/rbqm-reference.mjs; a unit test fails when a workflow or the
+ * pipeline's R changes and it has not been written again.
+ */
+export const RBQM_NEEDS = {
+  call: 'rbqm_needs',
+  pipeline: PIPELINE,
+  file: 'site/rbqm/needs.json'
+};
+
+/**
+ * The arguments `rbqm_needs` is called with: the three folders of workflows.
+ * @param {(path: string) => string} [place] Where a path of R's file system is, for desktop R.
+ * @returns {{mappings: string, metrics: string, reporting: string}} The named arguments.
+ */
+export function needsArgs(place = (path) => path) {
+  const { mappings, metrics, reporting } = pipelineArgs(place);
+  return { mappings, metrics, reporting };
+}
+
+/**
+ * What the needs are derived from: the pipeline's R and every copied workflow.
+ * @param {(file: string) => Uint8Array} read The bytes of one repository file.
+ * @returns {Array<{file: string, sha256: string}>} One entry per file.
+ */
+export const needsDerivedFrom = (read) =>
+  pipelineFiles().map(({ file }) => ({ file, sha256: sha256(read(file)) }));

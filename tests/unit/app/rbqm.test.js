@@ -66,7 +66,7 @@ describe('the RBQM tab: what it says', () => {
     expect(needSentence(1, RBQM_DOWNLOADS)).toContain('on the 1 loaded raw file.');
     // With nothing loaded there is nothing to run, and it says where a study is.
     expect(NO_FILES).toBe(
-      'No gsm raw files are loaded. Choose the RBQM study on the Data tab; the metrics run on its files.'
+      'No gsm raw files are loaded. Drop your own here, or choose the RBQM study on the Data tab; the metrics run on those files.'
     );
     expect(listed([])).toBe('');
     expect(listed(['a'])).toBe('a');

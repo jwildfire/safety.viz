@@ -60,7 +60,11 @@ export function needSentence(files, downloads) {
 
 /** What the tab says when no raw file is loaded: there is nothing to run. */
 export const NO_FILES =
-  'No gsm raw files are loaded. Choose the RBQM study on the Data tab; the metrics run on its files.';
+  'No gsm raw files are loaded. Drop your own here, or choose the RBQM study on the Data tab; the metrics run on those files.';
+
+/** What the tab says when files are loaded and none is a gsm raw file. */
+export const NONE_PLACED =
+  'None of the loaded files was placed in a gsm raw domain, so there is nothing for R to run.';
 
 /**
  * What the tab says R is doing, for every step from the press to the first

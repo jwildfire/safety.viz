@@ -1,7 +1,9 @@
 // Writes desktop R's rows for the RBQM pipeline (#231, #234, obot.roadmap#374):
 // tests/fixtures/rbqm/expected.json, the gate's one metric on five raw files,
 // and tests/fixtures/rbqm/expected-tab.json, the tab's run of every metric on
-// the whole demo study and on two studies with something missing. Desktop R is
+// the whole demo study and on two studies with something missing. It also
+// writes site/rbqm/needs.json (#236): what each workflow needs, as R reads it
+// from the workflows' own specs, which the tab is built with. Desktop R is
 // given the runs that R in the browser is given (scripts/rbqm-lib.mjs), on the
 // repository's own copies of the files, by scripts/rbqm-reference.R; this adds
 // the checksums of every file the rows are derived from. The browser tests
@@ -21,10 +23,13 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   RBQM_GATE,
+  RBQM_NEEDS,
   RBQM_TAB,
   RESULT_NUMBERS,
   derivedFrom,
   inRepository,
+  needsArgs,
+  needsDerivedFrom,
   pipelineArgs,
   scenarioFiles,
   studyFiles,
@@ -172,4 +177,30 @@ console.log(
       .map(([id, item]) => `${id}: ${item.ran.metrics.length} metrics ran`)
       .join(', ') +
     '.'
+);
+
+// ---- What each workflow needs, read by R from the workflows' specs (#236) ----
+
+const needsRequest = path.join(work, 'needs-arguments.json');
+const needsReply = path.join(work, 'needs-answer.json');
+writeFileSync(
+  needsRequest,
+  JSON.stringify({
+    pipeline: RBQM_NEEDS.pipeline,
+    call: RBQM_NEEDS.call,
+    args: needsArgs(inRepository)
+  })
+);
+execFileSync('Rscript', ['scripts/rbqm-reference.R', needsRequest, needsReply], {
+  cwd: rootDir,
+  stdio: ['ignore', 'inherit', 'inherit']
+});
+const needs = JSON.parse(readFileSync(needsReply, 'utf8'));
+writeFileSync(
+  path.join(rootDir, RBQM_NEEDS.file),
+  `${JSON.stringify({ derived_from: needsDerivedFrom(read), needs }, null, 1)}\n`
+);
+console.log(
+  `✓ Wrote ${RBQM_NEEDS.file} — what ${needs.mappings.length} mapping workflows and ` +
+    `${needs.metrics.length} metric workflows need, of ${needs.raw.length} raw tables.`
 );

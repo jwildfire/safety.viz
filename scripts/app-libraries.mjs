@@ -9,7 +9,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { BIO_VIZ, GSM_BIO_STATISTICS, GSM_VIZ } from './vendor-lib.mjs';
-import { RBQM_TAB, pipelineFiles, tabArgs } from './rbqm-lib.mjs';
+import { RBQM_NEEDS, RBQM_TAB, pipelineFiles, tabArgs } from './rbqm-lib.mjs';
 import { SERVED_AS } from './r-wasm-lib.mjs';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -168,6 +168,9 @@ export function rbqmTabOptions({
     },
     charts: { url: chartsUrl, global: RBQM_CHARTS.global },
     downloads: RBQM_DOWNLOADS,
+    // What each workflow needs, as desktop R read it from gsm's specs: the tab
+    // places a reader's own files and says what they support with it (#236).
+    needs: JSON.parse(readFileSync(path.join(rootDir, RBQM_NEEDS.file), 'utf8')).needs,
     badge: rbqmBadge()
   };
 }

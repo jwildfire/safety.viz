@@ -43,6 +43,66 @@ rbqm_attach <- function() {
   as.list(rbqm_packages)
 }
 
+#' What each workflow needs, read from the workflows' own specs.
+#'
+#' Nothing is run: the YAML is read, and for each mapping workflow, each metric
+#' workflow and the Groups workflow the tables its spec names are listed, each
+#' with the columns the spec names. A page can then say, before R is started,
+#' which metrics the loaded files support, by the rule `rbqm_run` follows: a
+#' raw table that is not there is a file not loaded, a mapped table is there
+#' when its mapping workflow's own needs are met, and a column a raw file
+#' lacks is named with the file.
+#'
+#' @param mappings Folder of mapping workflows (gsm.mapping `1_mappings`).
+#' @param metrics Folder of metric workflows (gsm.kri `2_metrics`).
+#' @param reporting Folder of reporting workflows (gsm.reporting `3_reporting`).
+#'
+#' @return A list: `raw`, one entry per raw table any mapping workflow reads,
+#'   its `table`, its `file` and every column a workflow names of it;
+#'   `mappings`, one entry per mapping workflow in the order they run, the
+#'   table it makes (`output`) and what it `needs`; `metrics`, one entry per
+#'   metric workflow, its `id`, `metric`, `abbreviation` and what it `needs`;
+#'   and `groups`, what the Groups workflow needs. Each `needs` is a list of
+#'   tables, each its `table` and the `columns` named.
+rbqm_needs <- function(mappings, metrics, reporting) {
+  needs_of <- function(workflow) {
+    lapply(names(workflow$spec), function(table) {
+      list(
+        table = table,
+        columns = as.list(setdiff(names(workflow$spec[[table]]), "_all"))
+      )
+    })
+  }
+  made_by <- function(workflow) paste0(workflow$meta$Type, "_", workflow$meta$ID)
+  all_mappings <- suppressMessages(workr::MakeWorkflowList(strPath = mappings))
+  all_metrics <- suppressMessages(workr::MakeWorkflowList(strPath = metrics))
+  all_reporting <- suppressMessages(workr::MakeWorkflowList(strPath = reporting))
+  raw <- list()
+  for (workflow in all_mappings) {
+    for (need in needs_of(workflow)) {
+      if (!startsWith(need$table, "Raw_")) next
+      raw[[need$table]] <- unique(c(raw[[need$table]], unlist(need$columns)))
+    }
+  }
+  list(
+    raw = lapply(names(raw), function(table) {
+      list(table = table, file = paste0(table, ".csv"), columns = as.list(raw[[table]]))
+    }),
+    mappings = unname(lapply(all_mappings, function(workflow) {
+      list(output = made_by(workflow), needs = needs_of(workflow))
+    })),
+    metrics = unname(lapply(all_metrics, function(workflow) {
+      list(
+        id = workflow$meta$ID,
+        metric = workflow$meta$Metric,
+        abbreviation = workflow$meta$Abbreviation,
+        needs = needs_of(workflow)
+      )
+    })),
+    groups = list(needs = needs_of(all_reporting$Groups))
+  )
+}
+
 #' Run the mapping, metric and reporting workflows on a folder of raw files.
 #'
 #' @param data Folder holding the raw files, each named `Raw_<DOMAIN>.csv`.
