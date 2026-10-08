@@ -124,7 +124,7 @@ describe('the page: a library that brings a view', () => {
     expect(tab.dataset.tab).toBe('rbqm');
     expect(tabs.slice(0, -1).every((node) => node.dataset.domain)).toBe(true);
     expect(tab.querySelector('.sva-tab-title').textContent).toBe('RBQM');
-    expect(tab.querySelector('.sva-tab-count').textContent).toBe('R not started');
+    expect(tab.querySelector('.sva-tab-count').textContent).toBe('not run');
     expect(tab.getAttribute('aria-pressed')).toBe('false');
     tab.click();
     expect(app.state.selected).toBe('rbqm');
@@ -209,6 +209,8 @@ describe('the RBQM tab on the page', () => {
     const onTab = $('.sva-tab[data-tab="rbqm"] .sva-badge');
     expect(onTab.textContent).toBe('Experimental');
     expect(onTab.title).toBe(OPTIONS.badge.title);
+    // The tab says it on hover too, at widths where the word itself has no room.
+    expect($('.sva-tab[data-tab="rbqm"]').title).toBe(`Experimental: ${OPTIONS.badge.title}`);
     app.select('rbqm');
     expect($('.sva-rbqm-lede .sva-badge').textContent).toBe('Experimental');
     expect($('.sva-rbqm-lede .sva-badge').title).toBe(OPTIONS.badge.title);
@@ -261,7 +263,7 @@ describe('the RBQM tab on the page', () => {
     expect(connection.runs.map((run) => run.name)).toEqual(['Sys.time']);
     expect($('.sva-rbqm-start').textContent).toBe('Starting R…');
     expect($('.sva-rbqm-start').disabled).toBe(true);
-    expect($('.sva-tab[data-tab="rbqm"] .sva-tab-count').textContent).toBe('starting R');
+    expect($('.sva-tab[data-tab="rbqm"] .sva-tab-count').textContent).toBe('starting');
     expect($('.sva-rbqm-status').textContent).toBe(
       'Starting R: downloading R itself, about 13 MB from webr.r-wasm.org. 0 seconds so far.'
     );
@@ -430,7 +432,7 @@ describe('the RBQM tab on the page', () => {
     expect($('.sva-rbqm-status').classList.contains('sva-rbqm-problem')).toBe(true);
     expect($('.sva-rbqm-start').textContent).toBe('Try R again');
     expect($('.sva-rbqm-start').disabled).toBe(false);
-    expect($('.sva-tab[data-tab="rbqm"] .sva-tab-count').textContent).toBe('R did not start');
+    expect($('.sva-tab[data-tab="rbqm"] .sva-tab-count').textContent).toBe('no R');
     $('.sva-rbqm-start').click();
     expect(r.createConnection).toHaveBeenCalledTimes(2);
     for (let step = 0; step < 3; step += 1) await r.made[1].letGo();

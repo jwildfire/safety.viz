@@ -392,17 +392,20 @@ export function rbqmTab({
     title: 'RBQM',
     badge,
 
-    /** What the tab's own count says. */
+    /**
+     * What the tab's own count says, in a word or two: the header keeps to one
+     * line, so there is no room for a sentence. The view says the rest.
+     */
     tag() {
       if (unavailable) return 'needs R';
       if (phase === 'done' && result) {
         const metrics = metricList(result.answer);
         return `${metrics.filter((metric) => metric.ran).length} of ${metrics.length}`;
       }
-      if (phase === 'failed') return 'R did not start';
-      if (phase === 'stopped') return 'R stopped';
-      if (busy()) return phase === 'running' ? 'running' : 'starting R';
-      return up ? 'R started' : 'R not started';
+      if (phase === 'failed') return 'no R';
+      if (phase === 'stopped') return 'stopped';
+      if (busy()) return phase === 'running' ? 'running' : 'starting';
+      return 'not run';
     },
 
     /** What the tab holds now, for the tests: the phase, and what R returned. */

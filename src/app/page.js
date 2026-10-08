@@ -422,8 +422,11 @@ export function mountApp(
       tab.setAttribute('aria-pressed', String(state.selected === id));
       tab.append(el('span', 'sva-hex'), el('span', 'sva-tab-title', view.title));
       if (view.badge) {
+        // Shown where the header has room for it on one line (styles.js); the
+        // tab says it on hover at any width, and the view carries it too.
         const pill = el('span', 'sva-badge', view.badge.text);
         pill.title = view.badge.title;
+        tab.title = `${view.badge.text}: ${view.badge.title}`;
         tab.append(pill);
       }
       tab.append(el('span', 'sva-tab-count', String(view.tag())));

@@ -326,7 +326,7 @@ test.describe('demo app on the demo study', () => {
       '1 of 1',
       '3 of 3',
       '5 of 5',
-      'R not started'
+      'not run'
     ]);
     // The demo opens on the first chart, so its domain is open.
     await expect(tab(page, 'bds')).toHaveAttribute('aria-pressed', 'true');
@@ -921,7 +921,11 @@ test.describe('demo app with the biomarker charts', () => {
     await expect(tab(page, 'biomarkers').locator('.sva-tab-title')).toHaveText('Biomarkers');
     await expect(tab(page, 'biomarkers').locator('.sva-tab-count')).toHaveText('5 of 5');
     await expect(tab(page, 'biomarkers')).toHaveClass(/sva-library-group/);
-    await expect(page.locator('.sva-tab').last()).toHaveAttribute('data-domain', 'biomarkers');
+    // The last of the domains' tabs: the RBQM tab, a view of its own, follows it (#235).
+    await expect(page.locator('.sva-tab[data-domain]').last()).toHaveAttribute(
+      'data-domain',
+      'biomarkers'
+    );
     await tab(page, 'biomarkers').click();
     for (const [module, entry] of bioCharts) {
       await expect(item(page, module).locator('.sva-item-title')).toHaveText(entry.title);
@@ -1663,7 +1667,7 @@ test.describe('demo app with R on request', () => {
     );
     await settled(page, 30000);
     await expect(
-      page.locator('.sva-chart .bv-statistic').filter({ hasText: 'R did not start' }).first()
+      page.locator('.sva-chart .bv-statistic').filter({ hasText: 'no R' }).first()
     ).toBeVisible();
     const fetched = rRequests(requests).length;
     for (const module of [
@@ -1674,9 +1678,7 @@ test.describe('demo app with R on request', () => {
     ]) {
       await item(page, module).click();
       await settled(page, 30000);
-      await expect(page.locator('.sva-chart .bv-statistic').first()).toContainText(
-        'R did not start'
-      );
+      await expect(page.locator('.sva-chart .bv-statistic').first()).toContainText('no R');
     }
     expect(rRequests(requests)).toHaveLength(fetched);
   });
@@ -1696,7 +1698,7 @@ test.describe('demo app with R on request', () => {
     await page.locator('.sva-action').click();
     await expect(page.locator('.sva-action')).toHaveText('Try R again', { timeout: 150000 });
     await settled(page, 30000);
-    await expect(page.locator('.sva-chart .bv-statistic')).toContainText('R did not start');
+    await expect(page.locator('.sva-chart .bv-statistic')).toContainText('no R');
     const first = { all: rRequests(requests).length, webr: webrImports(requests).length };
     expect(first.webr).toBe(1);
     for (const module of [
@@ -2100,7 +2102,7 @@ test.describe('demo app data view sidebar', () => {
       '0 of 1',
       '0 of 3',
       '5 of 5',
-      'R not started'
+      'not run'
     ]);
     // It draws: the hepatic explorer from the one labs file.
     await openChart(page, 'hep-explorer');
@@ -2390,7 +2392,31 @@ test.describe('demo app: the RBQM tab', () => {
       'title',
       'Still being worked on, and fine to use: its behaviour and settings may change.'
     );
-    await expect(rbqmTab(page).locator('.sva-tab-count')).toHaveText('R not started');
+    // At this width the header has no room for the word on one line, so the tab
+    // says it on hover and its view carries the badge; from 1,340 pixels the
+    // tab shows it, and on a phone, where the tabs scroll.
+    await expect(rbqmTab(page).locator('.sva-badge')).toBeHidden();
+    await expect(rbqmTab(page)).toHaveAttribute(
+      'title',
+      'Experimental: Still being worked on, and fine to use: its behaviour and settings may change.'
+    );
+    for (const [width, shown] of [
+      [1440, true],
+      [390, true],
+      [1280, false]
+    ]) {
+      await page.setViewportSize({ width, height: 800 });
+      await expect(rbqmTab(page).locator('.sva-badge')).toBeVisible({ visible: shown });
+      // The header's bar is one line at a desktop's width, with the tab in it.
+      if (width > 760) {
+        expect(
+          await page.evaluate(
+            () => document.querySelector('.sva-bar').getBoundingClientRect().height
+          )
+        ).toBeLessThan(60);
+      }
+    }
+    await expect(rbqmTab(page).locator('.sva-tab-count')).toHaveText('not run');
     // On the pilot study there is no raw file to run, and the tab says where one is.
     await rbqmTab(page).click();
     await expect(page).toHaveURL(/#rbqm$/);
@@ -2408,6 +2434,7 @@ test.describe('demo app: the RBQM tab', () => {
     await expect(rbqmStatus(page)).toHaveText(RBQM_NEED);
     await expect(rbqmStart(page)).toHaveText('Start R');
     await expect(rbqmStart(page)).toBeEnabled();
+    await expect(page.locator('.sva-rbqm-lede .sva-badge')).toBeVisible();
     await expect(page.locator('.sva-rbqm-lede .sva-badge')).toHaveText('Experimental');
     await expect(page.locator('.sva-rbqm-results')).toHaveCount(0);
     // Nothing has been asked of R's hosts, and nothing of R's has been fetched from the page.
@@ -2436,7 +2463,7 @@ test.describe('demo app: the RBQM tab', () => {
       await expect(rbqmStatus(page)).toHaveText(step);
       await expect(rbqmStart(page)).toHaveText('Starting R…');
       await expect(rbqmStart(page)).toBeDisabled();
-      await expect(rbqmTab(page).locator('.sva-tab-count')).toHaveText('starting R');
+      await expect(rbqmTab(page).locator('.sva-tab-count')).toHaveText('starting');
       await letGo();
     }
     await expect(rbqmStatus(page)).toHaveText(
@@ -2615,7 +2642,7 @@ test.describe('demo app: the RBQM tab', () => {
       'R did not start: Failed to fetch. Try again; if it fails again, reload the page.'
     );
     await expect(rbqmStart(page)).toHaveText('Try R again');
-    await expect(rbqmTab(page).locator('.sva-tab-count')).toHaveText('R did not start');
+    await expect(rbqmTab(page).locator('.sva-tab-count')).toHaveText('no R');
     await expect(page.locator('.sva-rbqm-results')).toHaveCount(0);
     await page.evaluate(() => (window.__rbqmFails = 'run'));
     await rbqmStart(page).click();
@@ -2623,7 +2650,7 @@ test.describe('demo app: the RBQM tab', () => {
       'R stopped while running the workflows: Error in rbqm_run: something gave way.'
     );
     await expect(rbqmStart(page)).toHaveText('Run again');
-    await expect(rbqmTab(page).locator('.sva-tab-count')).toHaveText('R stopped');
+    await expect(rbqmTab(page).locator('.sva-tab-count')).toHaveText('stopped');
     await page.evaluate(() => (window.__rbqmFails = null));
     await rbqmStart(page).click();
     await expect(page.locator('.sva-rbqm-table tbody tr')).toHaveCount(150);

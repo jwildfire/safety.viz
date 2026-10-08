@@ -197,6 +197,9 @@ display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:v
 .sva-loaded-file{display:flex;flex-wrap:wrap;gap:.1rem .55rem}
 .sva-loaded-file .sva-flags{flex-basis:100%;padding-left:1.25rem}
 }
+@media (min-width:761px) and (max-width:1339px){
+.sva-view-tab .sva-badge{display:none}
+}
 @media (max-width:520px){
 .sva-rbqm-table table{font-size:.7rem}
 .sva-rbqm-table th{font-size:.5rem;letter-spacing:0;white-space:normal;vertical-align:bottom;padding:.25rem .08rem}
