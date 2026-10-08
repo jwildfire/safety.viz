@@ -7,6 +7,13 @@
 # and one line of status for each metric: that it ran, or which file it needs,
 # or which column a loaded file lacks.
 #
+# The folder may also hold the demo app's standard domains, the files its
+# other charts read (Standard_subject.csv, Standard_ae.csv; #253,
+# obot.roadmap#398). A first stage then makes each raw table that was not
+# loaded from the standard domain that can give it, by workflows of our own in
+# the same dialect (site/rbqm/standard), so the metrics run on the study the
+# other charts use. A raw file that is loaded is always used as it is.
+#
 # R in the browser and desktop R source this one file, so the two runs differ
 # only in the R that runs them. Nothing here computes a number: every number
 # is a gsm.core function's, called by a workflow step. This file reads the
@@ -56,15 +63,19 @@ rbqm_attach <- function() {
 #' @param mappings Folder of mapping workflows (gsm.mapping `1_mappings`).
 #' @param metrics Folder of metric workflows (gsm.kri `2_metrics`).
 #' @param reporting Folder of reporting workflows (gsm.reporting `3_reporting`).
+#' @param standard Folder of the workflows that make a raw table from a
+#'   standard domain; `NULL` for none.
 #'
-#' @return A list: `raw`, one entry per raw table any mapping workflow reads,
+#' @return A list: `standard`, one entry per workflow that makes a raw table
+#'   from a standard domain, the raw table it makes (`output`), what it
+#'   `needs` and the columns the table it makes has (`provides`); `raw`, one entry per raw table any mapping workflow reads,
 #'   its `table`, its `file` and every column a workflow names of it;
 #'   `mappings`, one entry per mapping workflow in the order they run, the
 #'   table it makes (`output`) and what it `needs`; `metrics`, one entry per
 #'   metric workflow, its `id`, `metric`, `abbreviation` and what it `needs`;
 #'   and `groups`, what the Groups workflow needs. Each `needs` is a list of
 #'   tables, each its `table` and the `columns` named.
-rbqm_needs <- function(mappings, metrics, reporting) {
+rbqm_needs <- function(mappings, metrics, reporting, standard = NULL) {
   needs_of <- function(workflow) {
     lapply(names(workflow$spec), function(table) {
       list(
@@ -77,6 +88,11 @@ rbqm_needs <- function(mappings, metrics, reporting) {
   all_mappings <- suppressMessages(workr::MakeWorkflowList(strPath = mappings))
   all_metrics <- suppressMessages(workr::MakeWorkflowList(strPath = metrics))
   all_reporting <- suppressMessages(workr::MakeWorkflowList(strPath = reporting))
+  all_standard <- if (is.null(standard)) {
+    list()
+  } else {
+    suppressMessages(workr::MakeWorkflowList(strPath = standard))
+  }
   raw <- list()
   for (workflow in all_mappings) {
     for (need in needs_of(workflow)) {
@@ -85,6 +101,24 @@ rbqm_needs <- function(mappings, metrics, reporting) {
     }
   }
   list(
+    # What columns the raw table it makes has is asked of the workflow itself:
+    # it is run once on one blank row of the columns its spec names.
+    standard = unname(lapply(all_standard, function(workflow) {
+      rbqm_attach()
+      blank <- stats::setNames(lapply(names(workflow$spec), function(table) {
+        columns <- setdiff(names(workflow$spec[[table]]), "_all")
+        as.data.frame(
+          stats::setNames(as.list(rep("", length(columns))), columns),
+          stringsAsFactors = FALSE
+        )
+      }), names(workflow$spec))
+      made <- suppressMessages(workr::RunWorkflows(list(workflow), blank))
+      list(
+        output = made_by(workflow),
+        needs = needs_of(workflow),
+        provides = as.list(names(made[[made_by(workflow)]]))
+      )
+    })),
     raw = lapply(names(raw), function(table) {
       list(table = table, file = paste0(table, ".csv"), columns = as.list(raw[[table]]))
     }),
@@ -105,7 +139,9 @@ rbqm_needs <- function(mappings, metrics, reporting) {
 
 #' Run the mapping, metric and reporting workflows on a folder of raw files.
 #'
-#' @param data Folder holding the raw files, each named `Raw_<DOMAIN>.csv`.
+#' @param data Folder holding the raw files, each named `Raw_<DOMAIN>.csv`,
+#'   and the standard domains, each named `Standard_<domain>.csv` with the
+#'   demo app's standard column names.
 #' @param mappings Folder of mapping workflows (gsm.mapping `1_mappings`).
 #' @param metrics Folder of metric workflows (gsm.kri `2_metrics`).
 #' @param reporting Folder of reporting workflows (gsm.reporting `3_reporting`).
@@ -114,6 +150,10 @@ rbqm_needs <- function(mappings, metrics, reporting) {
 #' @param metric_ids Metric workflows to run, by ID (`"kri0001"`); `NULL` for
 #'   every one in `metrics`.
 #' @param snapshot_date The snapshot's date, as text (`"2026-10-07"`) or a Date.
+#' @param standard Folder of the workflows that make a raw table from a
+#'   standard domain; `NULL` to make none.
+#' @param labels What to call each standard domain when a column it lacks is
+#'   named, by table (`Standard_subject = "adsl.csv"`): the reader's own file.
 #'
 #' @return A list: `Results`, `Bounds`, `Groups` and `Metrics`, each a data
 #'   frame with dates as text, and with no rows when the workflow that makes it
@@ -125,11 +165,12 @@ rbqm_needs <- function(mappings, metrics, reporting) {
 #'   `thresholds`, for each metric that ran, by its ID in the tables, its
 #'   thresholds as numbers, for the bar chart's lines;
 #'   `notes`, sentences about how the run was made; `ran`, the mapping and
-#'   metric workflows that ran; `seconds`, how long each stage took;
+#'   metric workflows that ran, and the raw tables made from standard domains; `seconds`, how long each stage took;
 #'   `versions`, the R and package versions; and `warnings`, what R warned of
 #'   along the way.
 rbqm_run <- function(data, mappings, metrics, reporting, helpers,
-                     metric_ids = NULL, snapshot_date = Sys.Date()) {
+                     metric_ids = NULL, snapshot_date = Sys.Date(),
+                     standard = NULL, labels = NULL) {
   warned <- character()
   notes <- character()
   seconds <- list()
@@ -170,6 +211,23 @@ rbqm_run <- function(data, mappings, metrics, reporting, helpers,
       sub("\\.csv$", "", files)
     )
   })
+  # A standard domain is read as text, every column: the workflow that makes a
+  # raw table from it casts what it needs, so a site numbered 701 and a site
+  # named 701 are the same site, and a column of Y and N is not read as a logical.
+  lStandard <- stage("read standard", {
+    files <- list.files(data, pattern = "^Standard_.+\\.csv$")
+    stats::setNames(
+      lapply(
+        file.path(data, files), utils::read.csv,
+        stringsAsFactors = FALSE, colClasses = "character", check.names = FALSE
+      ),
+      sub("\\.csv$", "", files)
+    )
+  })
+  # What a standard domain is called when it is named: the reader's own file.
+  called <- function(table) {
+    if (!is.null(labels[[table]])) labels[[table]] else table
+  }
 
   # ---- Why a workflow was not run, in terms of the files a reader loads ----
 
@@ -178,24 +236,34 @@ rbqm_run <- function(data, mappings, metrics, reporting, helpers,
     if (length(x) < 2) return(paste(x))
     paste(paste(x[-length(x)], collapse = ", "), "and", x[length(x)])
   }
-  no_reason <- function() list(files = character(), columns = list(), stopped = character())
-  # Two reasons as one: every file not loaded, and every column a file lacks.
+  no_reason <- function() {
+    list(files = character(), columns = list(), unmapped = list(), stopped = character())
+  }
+  # Two reasons as one: every file not loaded, every column a file lacks, and
+  # every standard column the reader's mapping gives no column for.
   both <- function(a, b) {
-    columns <- a$columns
-    for (file in names(b$columns)) columns[[file]] <- unique(c(columns[[file]], b$columns[[file]]))
+    joined <- function(left, right) {
+      for (file in names(right)) left[[file]] <- unique(c(left[[file]], right[[file]]))
+      left
+    }
     list(
       files = unique(c(a$files, b$files)),
-      columns = columns,
+      columns = joined(a$columns, b$columns),
+      unmapped = joined(a$unmapped, b$unmapped),
       stopped = unique(c(a$stopped, b$stopped))
     )
   }
   has_reason <- function(why) {
-    length(why$files) > 0 || length(why$columns) > 0 || length(why$stopped) > 0
+    length(why$files) > 0 || length(why$columns) > 0 || length(why$unmapped) > 0 ||
+      length(why$stopped) > 0
   }
   # What a workflow's own spec asks for that is not there. A raw table that is
   # not there is a file that is not loaded; a mapped table that is not there
   # was not made, for the reason its mapping workflow was not run; a column
-  # the spec names that a table lacks is named with the table's file.
+  # the spec names that a table lacks is named with the table's file. A
+  # standard domain is handed only the columns the reader's mapping gives, so a
+  # column it lacks is one that is not mapped, and is said so: the reader's
+  # file may well hold it under another name.
   gaps <- function(workflow, tables, unmade) {
     why <- no_reason()
     for (table in names(workflow$spec)) {
@@ -208,7 +276,10 @@ rbqm_run <- function(data, mappings, metrics, reporting, helpers,
         next
       }
       lacking <- setdiff(setdiff(names(workflow$spec[[table]]), "_all"), names(tables[[table]]))
-      if (length(lacking)) {
+      if (length(lacking) && startsWith(table, "Standard_")) {
+        file <- called(table)
+        why$unmapped[[file]] <- unique(c(why$unmapped[[file]], lacking))
+      } else if (length(lacking)) {
         file <- if (startsWith(table, "Raw_")) paste0(table, ".csv") else table
         why$columns[[file]] <- unique(c(why$columns[[file]], lacking))
       }
@@ -231,6 +302,13 @@ rbqm_run <- function(data, mappings, metrics, reporting, helpers,
         listed(columns), ", which ", file, " does not have."
       ))
     }
+    for (file in names(why$unmapped)) {
+      columns <- why$unmapped[[file]]
+      said <- c(said, paste0(
+        name, " needs the ", if (length(columns) == 1) "column " else "columns ",
+        listed(columns), ", which no column of ", file, " is mapped to."
+      ))
+    }
     for (message in why$stopped) {
       said <- c(said, paste0(name, " stopped in R: ", sub("[.]*$", ".", message)))
     }
@@ -238,7 +316,7 @@ rbqm_run <- function(data, mappings, metrics, reporting, helpers,
   }
   state_of <- function(why) {
     if (length(why$files)) return("no file")
-    if (length(why$columns)) return("no column")
+    if (length(why$columns) || length(why$unmapped)) return("no column")
     if (length(why$stopped)) return("stopped")
     "ran"
   }
@@ -252,6 +330,9 @@ rbqm_run <- function(data, mappings, metrics, reporting, helpers,
       files = as.list(why$files),
       columns = lapply(names(why$columns), function(file) {
         list(file = file, columns = as.list(why$columns[[file]]))
+      }),
+      unmapped = lapply(names(why$unmapped), function(file) {
+        list(file = file, columns = as.list(why$unmapped[[file]]))
       }),
       message = sentence(name, why)
     )
@@ -272,6 +353,36 @@ rbqm_run <- function(data, mappings, metrics, reporting, helpers,
   # follows it. Each is checked against the tables there are by then.
   lMapped <- list()
   unmade <- list()
+
+  # ---- Standard: each raw table that is not loaded, from the standard domain
+  # that can give it ----
+
+  # A raw file that is loaded is used as it is. A raw table whose standard
+  # domain is not loaded is simply not there, and what needs it says its file
+  # is not loaded. One whose standard domain lacks a column is not made, and
+  # what needs it names the column and the reader's file.
+  lFromStandard <- list()
+  if (!is.null(standard) && length(lStandard)) {
+    stage("standard", {
+      for (workflow in workr::MakeWorkflowList(strPath = standard)) {
+        output <- made_by(workflow)
+        if (output %in% names(lRaw)) next
+        if (!all(names(workflow$spec) %in% names(lStandard))) next
+        why <- gaps(workflow, lStandard, list())
+        if (!has_reason(why)) {
+          made <- run_one(workflow, lStandard)
+          if (inherits(made, "rbqm_stopped")) {
+            why$stopped <- made$message
+          } else {
+            lRaw[[output]] <- as.data.frame(made[[output]], stringsAsFactors = FALSE)
+            lFromStandard[[output]] <- names(workflow$spec)
+          }
+        }
+        if (has_reason(why)) unmade[[output]] <- why
+      }
+    })
+  }
+
   stage("mapping", {
     for (workflow in workr::MakeWorkflowList(strPath = mappings)) {
       output <- made_by(workflow)
@@ -391,17 +502,18 @@ rbqm_run <- function(data, mappings, metrics, reporting, helpers,
     groups = if (!groups_made && !has_reason(groups_why)) {
       # Its inputs are there, and nothing was reported: no metric ran.
       list(
-        state = "not run", files = list(), columns = list(),
+        state = "not run", files = list(), columns = list(), unmapped = list(),
         message = "The Groups table was not made: no metric ran."
       )
     } else {
       status_line("Groups", "The Groups table", "Groups", groups_why)[
-        c("state", "files", "columns", "message")
+        c("state", "files", "columns", "unmapped", "message")
       ]
     },
     thresholds = thresholds,
     notes = as.list(notes),
     ran = list(
+      standard = as.list(names(lFromStandard)),
       mappings = as.list(names(lMapped)),
       metrics = as.list(names(lRan))
     ),
