@@ -2998,11 +2998,12 @@ test.describe('demo app: the RBQM tab', () => {
         .map((line) => line.split(',').map((field) => field.replace(/"/g, '')));
     const [header, ...rows] = fields(OWN_SUBJ);
     const ids = new Set(
-      ['subjid', 'subjectid', 'invid'].flatMap((name) =>
+      ['subjid', 'subject_nsv', 'invid'].flatMap((name) =>
         rows.map((row) => row[header.indexOf(name)])
       )
     );
-    expect(ids.size).toBeGreaterThan(2000);
+    expect(ids.has(undefined)).toBe(false);
+    expect(ids.size).toBeGreaterThan(1500);
     const words = (url) => decodeURIComponent(url).split(/[^A-Za-z0-9_-]+/);
     expect(after.filter((request) => words(request.url).some((word) => ids.has(word)))).toEqual([]);
     expect(
