@@ -1,12 +1,27 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { filesForR, placeRaw, rawStudy, supportOf } from '../../../src/app/rbqm-files.js';
+import {
+  filesForR,
+  filesSentence,
+  placeRaw,
+  rawStudy,
+  standardCsv,
+  standardSentence,
+  standardStudy,
+  supportOf
+} from '../../../src/app/rbqm-files.js';
 import { parseFile } from '../../../src/app/parse.js';
+import { buildMapping, setColumn } from '../../../src/app/mapping.js';
+import manifest from '../../../src/data/portfolio.json';
 import {
   RBQM_NEEDS,
+  RBQM_PILOT,
+  RBQM_STANDARD,
   RBQM_TAB,
   needsDerivedFrom,
-  scenarioFiles
+  pipelineFiles,
+  scenarioFiles,
+  standardFiles
 } from '../../../scripts/rbqm-lib.mjs';
 
 // A reader's own raw files on the RBQM tab (#236, obot.roadmap#374): each file
@@ -161,5 +176,198 @@ describe('what the loaded files support, said before R is started', () => {
     );
     const study = rawStudy([file('site_notes.csv', ['SITE', 'NOTE'])], needs);
     expect(supportOf(study.tables, needs).metrics.some((metric) => metric.supported)).toBe(false);
+  });
+});
+
+// ---- The study the other charts use (#253, obot.roadmap#398) ----
+
+const pilot = JSON.parse(read(RBQM_PILOT.expected).toString('utf8'));
+// A study's files as the page holds them once loaded: parsed, each with the
+// mapping the page fills in for it.
+function study(entries, unmap = {}) {
+  const files = {};
+  const mappings = {};
+  for (const { domain, file: source } of entries) {
+    files[domain] = parseFile(source.split('/').pop(), read(source).toString('utf8'));
+    mappings[domain] = buildMapping(domain, files[domain], manifest);
+    for (const column of unmap[domain] || []) {
+      mappings[domain] = setColumn(mappings[domain], column, null, files[domain]);
+    }
+  }
+  return { files, mappings };
+}
+const NO_RAW = { files: [], tables: new Map() };
+const spoken = (support) => support.metrics.map((m) => [m.id, m.supported, m.message]);
+const said = (status) => status.map((line) => [line.id, line.state === 'ran', line.message]);
+
+describe('the loaded study’s standard domains, as gsm’s raw tables', () => {
+  it('APP-RBQM-041: five workflows of the repository’s own make gsm’s raw tables from the standard subject-level and adverse events domains; R reads from their specs which standard columns each needs, and each gives every column gsm’s mapping workflow names for its raw table; they are served beside the app with the pipeline’s R (#253)', () => {
+    expect(needs.standard.map((workflow) => [workflow.output, workflow.needs])).toEqual([
+      ['Raw_AE', [{ table: 'Standard_ae', columns: ['USUBJID', 'AEDECOD', 'AESER'] }]],
+      ['Raw_SITE', [{ table: 'Standard_subject', columns: ['SITEID'] }]],
+      ['Raw_STUDCOMP', [{ table: 'Standard_subject', columns: ['USUBJID', 'SITEID', 'EOSSTT'] }]],
+      ['Raw_STUDY', [{ table: 'Standard_subject', columns: ['USUBJID'] }]],
+      ['Raw_SUBJ', [{ table: 'Standard_subject', columns: ['USUBJID', 'SITEID', 'EOSDY'] }]]
+    ]);
+    // What R learned each workflow gives, by running it: no less than gsm's mapping reads.
+    for (const workflow of needs.standard) {
+      expect(workflow.provides, workflow.output).toEqual(
+        expect.arrayContaining(columnsOf(workflow.output))
+      );
+    }
+    // Every standard column asked for is one the app's mapping table has for that domain.
+    for (const workflow of needs.standard) {
+      for (const need of workflow.needs) {
+        const domain = manifest.domains[need.table.replace('Standard_', '')];
+        expect(Object.keys(domain.columns), need.table).toEqual(
+          expect.arrayContaining(need.columns)
+        );
+      }
+    }
+    const served = pipelineFiles().map((entry) => entry.file);
+    expect(served.filter((file) => file.startsWith(`${RBQM_STANDARD.directory}/`))).toEqual(
+      RBQM_STANDARD.files.map((file) => `${RBQM_STANDARD.directory}/${file}`)
+    );
+    expect(derivedFrom.map((entry) => entry.file)).toEqual(expect.arrayContaining(served));
+  });
+
+  it('APP-RBQM-042: R is handed each standard domain the workflows read as CSV: the reader’s rows, only the columns the workflows ask for, each under its standard name whatever the reader’s file calls it, and nothing of a value changed; a domain no workflow reads is not handed over (#253)', () => {
+    const { files, mappings } = study([
+      { domain: 'subject', file: 'site/data/adsl.csv' },
+      { domain: 'ae', file: 'site/data/adae.csv' },
+      { domain: 'bds', file: 'site/data/adbds.csv' }
+    ]);
+    const standard = standardStudy(files, mappings, needs);
+    expect([...standard.keys()]).toEqual(['Standard_subject', 'Standard_ae']);
+    const subject = standard.get('Standard_subject');
+    expect(subject).toMatchObject({ domain: 'subject', name: 'adsl.csv' });
+    const lines = standardCsv(subject).trimEnd().split('\n');
+    expect(lines[0]).toBe('SITEID,USUBJID,EOSSTT,EOSDY');
+    expect(lines).toHaveLength(1 + files.subject.rows.length);
+    files.subject.rows.forEach((row, index) => {
+      expect(lines[index + 1]).toBe([row.SITEID, row.USUBJID, row.EOSSTT, row.EOSDY].join(','));
+    });
+    // The treatment arm is in the file, no workflow asks for it, and R is not handed it.
+    expect(files.subject.columns).toContain('ARM');
+    expect(lines[0]).not.toContain('ARM');
+    // The same bytes desktop R was given for the reference.
+    const handed = standardFiles(RBQM_PILOT.files, needs, manifest, read);
+    expect(handed.files).toEqual({
+      'Standard_subject.csv': standardCsv(subject),
+      'Standard_ae.csv': standardCsv(standard.get('Standard_ae'))
+    });
+    expect(handed.labels).toEqual({ Standard_subject: 'adsl.csv', Standard_ae: 'adae.csv' });
+    expect(handed.labels).toEqual(pilot.labels);
+
+    // A file with its own column names, mapped by the reader: the standard names go to R.
+    const renamed = study([{ domain: 'subject', file: 'tests/e2e/fixtures/app/dm.csv' }]);
+    expect(renamed.files.subject.columns).toEqual(
+      'SUBJID TREATMENT CENTRE SEX RACE LASTDAY STATUS'.split(' ')
+    );
+    let mapping = renamed.mappings.subject;
+    for (const [standardName, own] of [
+      ['SITEID', 'CENTRE'],
+      ['EOSDY', 'LASTDAY'],
+      ['EOSSTT', 'STATUS']
+    ]) {
+      mapping = setColumn(mapping, standardName, own, renamed.files.subject);
+    }
+    const mapped = standardStudy(renamed.files, { subject: mapping }, needs).get(
+      'Standard_subject'
+    );
+    expect(mapped.from).toEqual({
+      SITEID: 'CENTRE',
+      USUBJID: 'SUBJID',
+      EOSSTT: 'STATUS',
+      EOSDY: 'LASTDAY'
+    });
+    const [header, first] = standardCsv(mapped).split('\n');
+    const [row] = renamed.files.subject.rows;
+    expect(header).toBe('SITEID,USUBJID,EOSSTT,EOSDY');
+    expect(first).toBe([row.CENTRE, row.SUBJID, row.STATUS, row.LASTDAY].join(','));
+
+    // A value with a comma, a quote or a line break is quoted, as CSV asks.
+    const odd = {
+      file: {
+        rows: [
+          { a: 'x, y', b: 'said "no"' },
+          { a: null, b: 'two\nlines' }
+        ]
+      },
+      columns: ['A', 'B'],
+      from: { A: 'a', B: 'b' }
+    };
+    expect(standardCsv(odd)).toBe('A,B\n"x, y","said ""no"""\n,"two\nlines"\n');
+  });
+
+  it('APP-RBQM-043: before R is started the tab says what the loaded study supports in the words R then says: for the pilot study three of the eight metrics and the Groups table, and of each other metric the file it needs, word for word what desktop R said after running; with the site not mapped, every sentence names the column and the reader’s file, as desktop R’s do (#253)', () => {
+    const { files, mappings } = study(RBQM_PILOT.files);
+    const standard = standardStudy(files, mappings, needs);
+    const support = supportOf(new Map(), needs, standard);
+    expect(spoken(support)).toEqual(said(pilot.answer.status));
+    expect(support.metrics.filter((m) => m.supported).map((m) => m.id)).toEqual(RBQM_PILOT.metrics);
+    expect(pilot.answer.ran.metrics).toEqual(RBQM_PILOT.metrics);
+    expect(support.groups).toEqual({ supported: true, message: '' });
+    expect(pilot.answer.groups.state).toBe('ran');
+    // The raw tables R made are the ones the tab said it would.
+    expect([...support.made.keys()]).toEqual(pilot.answer.ran.standard);
+    expect(filesSentence(NO_RAW, support, standard)).toBe(
+      'The loaded study supports 3 of 8 metrics. R makes gsm’s raw tables from its adsl.csv and adae.csv.'
+    );
+    expect(standardSentence(standard.get('Standard_subject'), 'Subject-level', support)).toBe(
+      'adsl.csv, the Subject-level file, gives Raw_SITE, Raw_STUDCOMP, Raw_STUDY and Raw_SUBJ.'
+    );
+    expect(standardSentence(standard.get('Standard_ae'), 'Adverse events', support)).toBe(
+      'adae.csv, the Adverse events file, gives Raw_AE.'
+    );
+
+    // The site's mapping cleared, as when a file's site column is not recognised.
+    const noSite = study(RBQM_PILOT.files, RBQM_PILOT.noSite.unmap);
+    const lacking = standardStudy(noSite.files, noSite.mappings, needs);
+    const less = supportOf(new Map(), needs, lacking);
+    expect(spoken(less)).toEqual(said(pilot.no_site.status));
+    expect(less.metrics[0].message).toBe(
+      'Adverse Event Rate needs the column SITEID, which no column of adsl.csv is mapped to.'
+    );
+    expect(less.groups).toEqual({ supported: false, message: pilot.no_site.groups.message });
+    expect([...less.made.keys()]).toEqual(pilot.no_site.ran.standard);
+    expect(pilot.no_site.rows).toBe(0);
+    expect(filesSentence(NO_RAW, less, lacking)).toBe(
+      'The loaded study supports 0 of 8 metrics. R makes gsm’s raw tables from its adsl.csv and adae.csv.'
+    );
+    expect(standardSentence(lacking.get('Standard_subject'), 'Subject-level', less)).toBe(
+      'adsl.csv, the Subject-level file, gives Raw_STUDY. It has no column mapped to SITEID, ' +
+        'so Raw_SITE, Raw_STUDCOMP and Raw_SUBJ are not made. Map it on the Data tab.'
+    );
+  });
+
+  it('APP-RBQM-043: a raw file that is loaded is used as it is and the study’s file is not read for that table; a study with no subject-level or adverse events file gives R nothing, and each metric names the raw files it needs (#253)', () => {
+    const { files, mappings } = study(RBQM_PILOT.files);
+    const standard = standardStudy(files, mappings, needs);
+    // gsm's own adverse events file beside the pilot study: Raw_AE is the file's.
+    const raw = rawStudy(
+      loaded(scenario('two-files')).filter((entry) => entry.name === 'Raw_AE.csv'),
+      needs
+    );
+    const mixed = supportOf(raw.tables, needs, standard);
+    expect([...mixed.made.keys()]).toEqual(['Raw_SITE', 'Raw_STUDCOMP', 'Raw_STUDY', 'Raw_SUBJ']);
+    expect([...mixed.reads]).toEqual(['Standard_subject']);
+    expect(filesSentence(raw, mixed, standard)).toBe(
+      '1 file loaded, 1 placed in a gsm raw domain. R makes gsm’s raw tables from the loaded study’s adsl.csv. Together they support 3 of 8 metrics.'
+    );
+    // With every raw table loaded nothing of the study is read.
+    const whole = rawStudy(loaded(scenario('whole')), needs);
+    const all = supportOf(whole.tables, needs, standard);
+    expect(all.made.size).toBe(0);
+    expect(all.reads.size).toBe(0);
+    expect(spoken(all)).toEqual(spoken(supportOf(whole.tables, needs)));
+    // A study of labs alone has no domain a workflow reads.
+    const labs = study([{ domain: 'bds', file: 'site/data/adbds-abnbl.csv' }]);
+    const none = standardStudy(labs.files, labs.mappings, needs);
+    expect(none.size).toBe(0);
+    expect(spoken(supportOf(new Map(), needs, none))).toEqual(spoken(supportOf(new Map(), needs)));
+    expect(filesSentence(NO_RAW, supportOf(new Map(), needs, none), none)).toBe(
+      'No files are loaded.'
+    );
   });
 });

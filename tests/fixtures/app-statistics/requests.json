@@ -28,7 +28,7 @@
   },
   {
    "file": "site/data/adsl.csv",
-   "sha256": "d2d198906aa06ace5e0fda08442ad234c5835ec7cf19378737db7274ffd54f04"
+   "sha256": "898d324b198ce76f01f28b2be2b890ea4f0d77f357a3d5f0a49440625b176aac"
   },
   {
    "file": "src/app/parse.js",

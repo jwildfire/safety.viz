@@ -198,6 +198,7 @@ test.describe('the RBQM tab’s run in R in the browser', () => {
       state: 'no file',
       files: ['Raw_STUDY.csv', 'Raw_SITE.csv'],
       columns: [],
+      unmapped: [],
       message: 'The Groups table needs Raw_STUDY.csv and Raw_SITE.csv, which are not loaded.'
     });
     expect(two.notes).toEqual([

@@ -38,7 +38,7 @@ describe('buildAdslRecords', () => {
   it('writes one row per safety participant in adsl input order, in the declared columns (#128)', () => {
     const { columns, records } = buildAdslRecords([subject({ id: '01' }), subject({ id: '02' })]);
     expect(columns).toEqual(ADSL_COLUMNS);
-    expect(ADSL_COLUMNS).toEqual(['USUBJID', 'ARM', 'EOSDY', 'EOSSTT']);
+    expect(ADSL_COLUMNS).toEqual(['USUBJID', 'SITEID', 'ARM', 'EOSDY', 'EOSSTT']);
     expect(records.map((r) => r.USUBJID)).toEqual(['01', '02']);
   });
 

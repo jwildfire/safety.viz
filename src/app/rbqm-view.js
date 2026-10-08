@@ -12,6 +12,12 @@
 // the metric chosen. A metric that did not run shows R's sentence saying why in
 // place of its charts.
 //
+// The tab runs on the study the other charts use (#253, obot.roadmap#398): R
+// is handed the loaded study's Subject-level and Adverse events files, under
+// the column names the reader mapped on the Data tab, and makes gsm's raw
+// tables from them before gsm's own workflows run. There is no second study to
+// load. gsm raw files are the other way in, and run every metric:
+//
 // The files are the RBQM study's, or the reader's own (#236): CSV files dropped
 // on the tab are read with the browser's file reader and kept as raw files, not
 // passed through the mapping table. Each is placed in a gsm raw domain by its
@@ -25,7 +31,16 @@
 
 import { readFiles } from './data-panel.js';
 import { el } from './dom.js';
-import { NOT_CSV, filesForR, filesSentence, rawStudy, supportOf } from './rbqm-files.js';
+import {
+  NOT_CSV,
+  filesForR,
+  filesSentence,
+  rawStudy,
+  standardCsv,
+  standardSentence,
+  standardStudy,
+  supportOf
+} from './rbqm-files.js';
 import {
   NONE_PLACED,
   NO_FILES,
@@ -36,6 +51,7 @@ import {
   metricList,
   needSentence,
   overviewInputs,
+  ranOn,
   sameFiles,
   stepSentence
 } from './rbqm.js';
@@ -88,16 +104,41 @@ export function rbqmTab({
   const loaded = (app) => (app && Array.isArray(app.state.raw) ? app.state.raw : []);
 
   /**
-   * The files R is handed for the loaded study, and the loaded files they are:
-   * the one file of each raw domain, under gsm's name for it.
+   * What R is handed for what is loaded, and the loaded things it is made of:
+   * the one file of each raw domain, under gsm's name for it, and each file of
+   * the loaded study that a raw table can be made from, with the reader's
+   * mapping of it. `count` is the raw files, `study` the study's files by name.
    */
   function handed(app) {
     const all = loaded(app);
     if (!needs) {
-      return { sources: [...all], files: all.map(({ name, text }) => ({ name, text })) };
+      return {
+        sources: [...all],
+        files: all.map(({ name, text }) => ({ name, text })),
+        count: all.length,
+        study: [],
+        labels: {},
+        used: []
+      };
     }
-    const { tables } = rawStudy(all, needs);
-    return { sources: [...tables.values()], files: filesForR(tables) };
+    const raw = rawStudy(all, needs);
+    const standard = standardStudy(app && app.state.files, app && app.state.mappings, needs);
+    const support = supportOf(raw.tables, needs, standard);
+    const used = [...standard.values()].filter((entry) => support.reads.has(entry.table));
+    return {
+      raw,
+      standard,
+      support,
+      used,
+      sources: [...raw.tables.values(), ...used.flatMap((entry) => [entry.file, entry.mapping])],
+      files: [
+        ...filesForR(raw.tables),
+        ...used.map((entry) => ({ name: `${entry.table}.csv`, entry }))
+      ],
+      count: raw.tables.size,
+      study: used.map((entry) => entry.name),
+      labels: Object.fromEntries(used.map((entry) => [entry.table, entry.name]))
+    };
   }
 
   /** gsm.viz, loaded once from the page's own address when it is first needed. */
@@ -126,21 +167,26 @@ export function rbqmTab({
   }
 
   function statusText(app) {
-    const files = handed(app).files.length;
     if (unavailable) return unavailable;
+    const given = handed(app);
+    const files = given.files.length;
     if (busy()) {
       return stepSentence(phase === 'starting' ? step : phase === 'attaching' ? 'attach' : 'run', {
         seconds: seconds(),
-        files,
+        files: given.count,
+        study: given.study,
         downloads
       });
     }
     if (phase === 'failed' || phase === 'stopped') return failure;
     if (phase === 'done' && result) return doneSentence(result.answer, result);
-    if (!files) return loaded(app).length ? NONE_PLACED : NO_FILES;
+    if (!files) {
+      const any = loaded(app).length || Object.keys((app && app.state.files) || {}).length;
+      return any ? NONE_PLACED : NO_FILES;
+    }
     return up
-      ? 'R is running in this browser. Its workflows run on the loaded raw files.'
-      : needSentence(files, downloads);
+      ? `R is running in this browser. Its workflows run on ${ranOn(given.count, given.study, 'loaded raw file')}.`
+      : needSentence(given.count, downloads, given.study);
   }
 
   /** Say what is true now, where the view is on the page, without drawing it again. */
@@ -161,7 +207,7 @@ export function rbqmTab({
   }
 
   async function run(app) {
-    const { sources, files } = handed(app);
+    const { sources, files, count, study, labels } = handed(app);
     if (!files.length) {
       phase = 'idle';
       result = null;
@@ -176,8 +222,20 @@ export function rbqmTab({
     const snapshotDate = isoDay(now());
     const since = now().getTime();
     const answer = await connection.run(r.call, {
-      files: Object.fromEntries(files.map((file) => [`${folder}/${file.name}`, file.text])),
-      args: { ...r.args, data: folder, snapshot_date: snapshotDate }
+      files: Object.fromEntries(
+        files.map((file) => [
+          `${folder}/${file.name}`,
+          // A file of the loaded study goes as text under the standard names.
+          file.entry ? standardCsv(file.entry) : file.text
+        ])
+      ),
+      args: {
+        ...r.args,
+        data: folder,
+        snapshot_date: snapshotDate,
+        // What R calls each of the study's files when it names a column one lacks.
+        ...(Object.keys(labels).length ? { labels } : {})
+      }
     });
     if (!answer || answer.status !== 'ok' || !answer.value || !answer.value.status) {
       phase = 'stopped';
@@ -188,7 +246,8 @@ export function rbqmTab({
     const took = Math.round((now().getTime() - since) / 100) / 10;
     result = {
       answer: answer.value,
-      files: files.length,
+      files: count,
+      study,
       loaded: sources,
       seconds: took,
       sinceStart: runs === 1 ? seconds() : null,
@@ -414,17 +473,21 @@ export function rbqmTab({
   }
 
   /**
-   * The reader's files: where to drop them, each loaded file with the raw
-   * domain it was placed in, and which metrics the placed files support. All
-   * of it is said from the files' names and columns, before R is started.
+   * What the metrics run on: which metrics the loaded study and the loaded raw
+   * files support, each file of the study that stands in for raw tables, each
+   * raw file with the domain it was placed in, and where to drop raw files.
+   * All of it is said from the files' names and columns, before R is started.
    */
   function filesSection(app) {
-    const study = rawStudy(loaded(app), needs);
-    const support = supportOf(study.tables, needs);
+    const { raw: study, support, standard, used } = handed(app);
     const section = el('details', 'sva-rbqm-files');
     // Once R has answered, the metrics below say the same with R's own words.
-    section.open = !(phase === 'done' && result);
-    section.append(el('summary', 'sva-rbqm-files-summary', filesSentence(study, support)));
+    // And a study that runs as it is needs nothing of the reader here: the
+    // list opens when raw files are loaded, or when there is nothing to run.
+    section.open = !(phase === 'done' && result) && (study.files.length > 0 || !used.length);
+    section.append(
+      el('summary', 'sva-rbqm-files-summary', filesSentence(study, support, standard))
+    );
 
     const drop = el('div', 'sva-drop sva-rbqm-drop');
     const input = el('input');
@@ -465,6 +528,16 @@ export function rbqmTab({
     );
     section.append(drop);
 
+    if (used.length) {
+      const fromStudy = el('ul', 'sva-rbqm-loaded sva-rbqm-standard');
+      for (const entry of used) {
+        const label = app.manifest.domains[entry.domain].label;
+        const item = el('li', 'sva-rbqm-study-file', standardSentence(entry, label, support));
+        item.dataset.table = entry.table;
+        fromStudy.append(item);
+      }
+      section.append(el('h3', 'sva-rbqm-subheading', 'From the loaded study'), fromStudy);
+    }
     if (study.files.length) {
       const files = el('ul', 'sva-rbqm-loaded');
       for (const entry of study.files) {
@@ -476,9 +549,10 @@ export function rbqmTab({
         if (entry.table) item.dataset.table = entry.table;
         files.append(item);
       }
+      section.append(el('h3', 'sva-rbqm-subheading', 'Loaded files'), files);
+    }
+    if (study.files.length || used.length) {
       section.append(
-        el('h3', 'sva-rbqm-subheading', 'Loaded files'),
-        files,
         el('h3', 'sva-rbqm-subheading', 'What they support'),
         el(
           'p',
@@ -544,7 +618,7 @@ export function rbqmTab({
       const root = el('div', 'sva-rbqm');
       const lede = el('p', 'sva-rbqm-lede');
       lede.append(
-        'Risk-based quality monitoring: gsm’s site metrics, worked out by R in this browser on gsm’s raw files and drawn with gsm.viz.'
+        'Risk-based quality monitoring: gsm’s site metrics, worked out by R in this browser on the loaded study and drawn with gsm.viz.'
       );
       if (badge) {
         const pill = el('span', 'sva-badge', badge.text);

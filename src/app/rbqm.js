@@ -44,36 +44,52 @@ export const totalMegabytes = (downloads) =>
   downloads.reduce((sum, { megabytes }) => sum + megabytes, 0);
 
 /**
+ * What the workflows run on, in a phrase: the raw files that are loaded, the
+ * files of the loaded study that stand in for raw tables (#253), or both.
+ * @param {number} files How many raw files R is handed.
+ * @param {string[]} [study] The loaded study's files R is handed, by name.
+ * @param {string} [word] What a raw file is called here.
+ * @returns {string} "the 9 loaded files", "the loaded study’s adsl.csv and adae.csv", or the two joined.
+ */
+export function ranOn(files, study = [], word = 'loaded file') {
+  const parts = [];
+  if (files || !study.length) parts.push(`the ${counted(files, word)}`);
+  if (study.length) parts.push(`the loaded study’s ${listed(study)}`);
+  return parts.join(' and ');
+}
+
+/**
  * What the tab says before R is started: what starting it downloads, and from
  * where, and that the files stay here.
  * @param {number} files How many raw files are loaded.
  * @param {Array<{what: string, host: ?string, megabytes: number}>} downloads The downloads.
+ * @param {string[]} [study] The loaded study's files that stand in for raw tables, by name.
  * @returns {string} The sentences.
  */
-export function needSentence(files, downloads) {
+export function needSentence(files, downloads, study = []) {
   return (
-    `Start R to run gsm’s workflows on the ${counted(files, 'loaded raw file')}. ` +
+    `Start R to run gsm’s workflows on ${ranOn(files, study, 'loaded raw file')}. ` +
     `It downloads about ${totalMegabytes(downloads)} MB, once: ${downloadsPhrase(downloads)}. ` +
     'The files stay in this browser, and R runs here.'
   );
 }
 
-/** What the tab says when no raw file is loaded: there is nothing to run. */
+/** What the tab says when nothing the metrics can run on is loaded. */
 export const NO_FILES =
-  'No gsm raw files are loaded. Drop your own here, or choose the RBQM study on the Data tab; the metrics run on those files.';
+  'Nothing the metrics can run on is loaded. Load a study on the Data tab: the metrics run on its subject-level and adverse events files. Or drop gsm raw files here.';
 
-/** What the tab says when files are loaded and none is a gsm raw file. */
+/** What the tab says when files are loaded and none is one the metrics can run on. */
 export const NONE_PLACED =
-  'None of the loaded files was placed in a gsm raw domain, so there is nothing for R to run.';
+  'None of the loaded files is a subject-level or adverse events file, or a gsm raw file, so there is nothing for R to run.';
 
 /**
  * What the tab says R is doing, for every step from the press to the first
  * result, with how long it has been since the press.
  * @param {string} step `runtime`, `packages`, `files`, `source`, `attach` or `run`.
- * @param {{seconds: number, files: number, downloads: Array<{what: string, host: ?string, megabytes: number}>}} context Whole seconds since the press, how many raw files are loaded, and the downloads.
+ * @param {{seconds: number, files: number, study?: string[], downloads: Array<{what: string, host: ?string, megabytes: number}>}} context Whole seconds since the press, how many raw files are loaded, the loaded study's files that stand in for raw tables, and the downloads.
  * @returns {string} The sentence.
  */
-export function stepSentence(step, { seconds, files, downloads }) {
+export function stepSentence(step, { seconds, files, study = [], downloads }) {
   const from = (index) =>
     `about ${downloads[index].megabytes} MB from ${downloads[index].host || 'this page'}`;
   const packages = downloads.slice(1).map((_, index) => from(index + 1));
@@ -84,7 +100,7 @@ export function stepSentence(step, { seconds, files, downloads }) {
     source: 'Starting R: reading the pipeline’s R.',
     attach:
       'R has started. Loading gsm’s packages in R; the database they query with takes the longest.',
-    run: `Running gsm’s workflows on the ${counted(files, 'loaded file')}: the mappings, then each metric, then the reporting tables.`
+    run: `Running gsm’s workflows on ${ranOn(files, study)}: the mappings, then each metric, then the reporting tables.`
   }[step];
   return `${doing || 'Starting R.'} ${counted(seconds, 'second')} so far.`;
 }
@@ -147,8 +163,15 @@ export function overviewInputs(answer) {
   const groups = rowsOf(answer.Groups);
   const level = metrics.length ? metrics[0].GroupLevel : 'Site';
   const standIn = !groups.some((row) => row.GroupLevel === level);
+  // A site is labelled with its investigator's name only when R's Groups table
+  // has one: a table made from a study's subject-level file names no one.
   const named = groups.some(
-    (row) => row.GroupLevel === level && row.Param === 'InvestigatorLastName'
+    (row) =>
+      row.GroupLevel === level &&
+      row.Param === 'InvestigatorLastName' &&
+      row.Value !== null &&
+      row.Value !== undefined &&
+      row.Value !== ''
   );
   return {
     results: copies(results),
@@ -194,10 +217,10 @@ export function metricInputs(answer, metricId) {
  * What the tab says once R has answered: how many metrics ran, on how many
  * files, how long R took, and the versions R reports.
  * @param {Object} answer What `rbqm_run` returned.
- * @param {{files: number, seconds: number, sinceStart: ?number, snapshotDate: string}} run The files the run was given, how long the run took, how long it was from the press that started R to this result (null for a later run), and the snapshot's date.
+ * @param {{files: number, study?: string[], seconds: number, sinceStart: ?number, snapshotDate: string}} run The raw files the run was given, the loaded study's files that stood in for raw tables, how long the run took, how long it was from the press that started R to this result (null for a later run), and the snapshot's date.
  * @returns {string} The sentences.
  */
-export function doneSentence(answer, { files, seconds, sinceStart, snapshotDate }) {
+export function doneSentence(answer, { files, study = [], seconds, sinceStart, snapshotDate }) {
   const metrics = metricList(answer);
   const ran = metrics.filter((metric) => metric.ran).length;
   const versions = isRecord(answer.versions) ? answer.versions : {};
@@ -205,7 +228,7 @@ export function doneSentence(answer, { files, seconds, sinceStart, snapshotDate 
     .filter((name) => versions[name])
     .map((name) => `${name} ${versions[name]}`);
   return (
-    `R ran ${ran} of ${counted(metrics.length, 'metric')} on the ${counted(files, 'loaded file')} ` +
+    `R ran ${ran} of ${counted(metrics.length, 'metric')} on ${ranOn(files, study)} ` +
     `in ${counted(seconds, 'second')}` +
     (sinceStart === null || sinceStart === undefined
       ? '.'

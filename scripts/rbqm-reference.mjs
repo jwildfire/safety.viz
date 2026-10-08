@@ -3,7 +3,9 @@
 // and tests/fixtures/rbqm/expected-tab.json, the tab's run of every metric on
 // the whole demo study and on two studies with something missing. It also
 // writes site/rbqm/needs.json (#236): what each workflow needs, as R reads it
-// from the workflows' own specs, which the tab is built with. Desktop R is
+// from the workflows' own specs, which the tab is built with; and
+// tests/fixtures/rbqm/expected-standard.json (#253), the tab's run on the
+// pilot study the other charts use, handed to R as the app hands it. Desktop R is
 // given the runs that R in the browser is given (scripts/rbqm-lib.mjs), on the
 // repository's own copies of the files, by scripts/rbqm-reference.R; this adds
 // the checksums of every file the rows are derived from. The browser tests
@@ -24,14 +26,17 @@ import { fileURLToPath } from 'node:url';
 import {
   RBQM_GATE,
   RBQM_NEEDS,
+  RBQM_PILOT,
   RBQM_TAB,
   RESULT_NUMBERS,
   derivedFrom,
   inRepository,
   needsArgs,
   needsDerivedFrom,
+  pilotDerivedFrom,
   pipelineArgs,
   scenarioFiles,
+  standardFiles,
   studyFiles,
   tabArgs,
   tabDerivedFrom
@@ -204,3 +209,60 @@ console.log(
   `✓ Wrote ${RBQM_NEEDS.file} — what ${needs.mappings.length} mapping workflows and ` +
     `${needs.metrics.length} metric workflows need, of ${needs.raw.length} raw tables.`
 );
+
+// ---- The pilot study, the one the other charts use (#253) ----
+
+const manifest = JSON.parse(readFileSync(path.join(rootDir, 'src/data/portfolio.json'), 'utf8'));
+// One run of the pilot study as the app hands it, with or without a mapping cleared.
+function runPilot(id, unmap) {
+  const folder = path.join(work, id);
+  mkdirSync(folder);
+  const handed = standardFiles(RBQM_PILOT.files, needs, manifest, read, unmap);
+  for (const [name, text] of Object.entries(handed.files)) {
+    writeFileSync(path.join(folder, name), text);
+  }
+  const request = path.join(work, `${id}-arguments.json`);
+  const reply = path.join(work, `${id}-answer.json`);
+  writeFileSync(
+    request,
+    JSON.stringify({
+      pipeline: RBQM_TAB.pipeline,
+      call: RBQM_TAB.call,
+      args: { ...tabArgs(folder, inRepository), labels: handed.labels }
+    })
+  );
+  execFileSync('Rscript', ['scripts/rbqm-reference.R', request, reply], {
+    cwd: rootDir,
+    stdio: ['ignore', 'inherit', 'inherit']
+  });
+  const answer = JSON.parse(readFileSync(reply, 'utf8'));
+  delete answer.seconds;
+  return { handed, answer };
+}
+const { handed: pilot, answer: pilotAnswer } = runPilot(RBQM_PILOT.id);
+// With the site's mapping cleared: only what R said, the rows being none of the claim.
+const noSite = runPilot(RBQM_PILOT.noSite.id, RBQM_PILOT.noSite.unmap).answer;
+{
+  const { Results, Bounds, Groups, Metrics, ...rest } = pilotAnswer;
+  writeFileSync(
+    path.join(rootDir, RBQM_PILOT.expected),
+    `{\n "snapshot_date": ${JSON.stringify(RBQM_TAB.snapshotDate)},\n` +
+      ` "derived_from": ${JSON.stringify(pilotDerivedFrom(read), null, 1).replace(/\n/g, '\n ')},\n` +
+      ` "labels": ${JSON.stringify(pilot.labels)},\n` +
+      ` "answer": {\n` +
+      `  "Results": ${table(Results)},\n` +
+      `  "Bounds": ${table(Bounds)},\n` +
+      `  "Groups": ${table(Groups)},\n` +
+      `  "Metrics": ${table(Metrics)},\n` +
+      Object.entries(rest)
+        .map(([key, value]) => `  ${JSON.stringify(key)}: ${JSON.stringify(value)}`)
+        .join(',\n') +
+      `\n },\n` +
+      ` "no_site": ${JSON.stringify({ status: noSite.status, groups: noSite.groups, ran: noSite.ran, rows: noSite.Results.length })}\n}\n`
+  );
+  console.log(
+    `✓ Wrote ${RBQM_PILOT.expected} — ${Results.length} Results rows for ` +
+      `${pilotAnswer.ran.metrics.length} metrics on the pilot study, ${Bounds.length} Bounds, ` +
+      `${Groups.length} Groups; with the site unmapped ${noSite.ran.metrics.length} metrics ran.`
+  );
+}

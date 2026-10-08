@@ -5,10 +5,12 @@ import { fileURLToPath } from 'node:url';
 import {
   RBQM_GATE,
   RBQM_METRICS,
+  RBQM_PILOT,
   RBQM_TAB,
   RESULT_KEYS,
   RESULT_NUMBERS,
   inRepository,
+  pilotDerivedFrom,
   scenarioFiles,
   scenarioFolder,
   tabArgs,
@@ -17,6 +19,7 @@ import {
 } from '../../../scripts/rbqm-lib.mjs';
 import { GSM_KRI_WORKFLOWS, RBQM_STUDY } from '../../../scripts/vendor-lib.mjs';
 import { readPins } from '../../../scripts/r-wasm-lib.mjs';
+import { parseFile } from '../../../src/app/parse.js';
 
 // The RBQM tab's run (#234, obot.roadmap#374): every metric workflow in scope,
 // on whatever raw files are loaded, with a line of status for each metric. The
@@ -76,6 +79,7 @@ describe('the RBQM tab’s run, as R is given it (#234)', () => {
       metrics: '/rbqm/gsm.kri/workflow/2_metrics',
       reporting: '/rbqm/gsm.reporting/workflow/3_reporting',
       helpers: '/rbqm/gsm.kri/R/util-Report.R',
+      standard: '/rbqm/standard',
       snapshot_date: '2026-10-07'
     });
     expect(Object.keys(args)).not.toContain('metric_ids');
@@ -176,7 +180,7 @@ describe('desktop R’s answers for the RBQM tab (#234)', () => {
   it('APP-RBQM-015: desktop R’s answers are derived from the pipeline’s R, the copied workflows and the demo study’s nine raw files as they are now, by checksum of every one (#234)', () => {
     // Rerun `node scripts/rbqm-reference.mjs` when this fails.
     expect(expected.derived_from).toEqual(tabDerivedFrom(read));
-    expect(expected.derived_from).toHaveLength(1 + 10 + 9 + 4 + 9);
+    expect(expected.derived_from).toHaveLength(1 + 5 + 10 + 9 + 4 + 9);
     expect(expected.metrics).toEqual(RBQM_METRICS);
     expect(expected.snapshot_date).toBe(RBQM_TAB.snapshotDate);
   });
@@ -239,10 +243,11 @@ describe('desktop R’s answers for the RBQM tab (#234)', () => {
         state: 'ran',
         files: [],
         columns: [],
+        unmapped: [],
         message: ''
       }))
     );
-    expect(groups).toEqual({ state: 'ran', files: [], columns: [], message: '' });
+    expect(groups).toEqual({ state: 'ran', files: [], columns: [], unmapped: [], message: '' });
     // Each metric's thresholds as numbers, in the order its workflow writes them.
     expect(thresholds).toEqual(
       Object.fromEntries(Metrics.map((row) => [row.MetricID, row.Threshold.split(',').map(Number)]))
@@ -268,6 +273,7 @@ describe('desktop R’s answers for the RBQM tab (#234)', () => {
         state: 'no file',
         files: ['Raw_LB.csv'],
         columns: [],
+        unmapped: [],
         message: 'Grade 3+ Lab Abnormality Rate needs Raw_LB.csv, which is not loaded.'
       }
     ]);
@@ -287,6 +293,7 @@ describe('desktop R’s answers for the RBQM tab (#234)', () => {
         state: 'no column',
         files: [],
         columns: [{ file: 'Raw_AE.csv', columns: ['aeser'] }],
+        unmapped: [],
         message: 'Adverse Event Rate needs the column aeser, which Raw_AE.csv does not have.'
       },
       {
@@ -296,6 +303,7 @@ describe('desktop R’s answers for the RBQM tab (#234)', () => {
         state: 'no column',
         files: [],
         columns: [{ file: 'Raw_AE.csv', columns: ['aeser'] }],
+        unmapped: [],
         message:
           'Serious Adverse Event Rate needs the column aeser, which Raw_AE.csv does not have.'
       }
@@ -327,6 +335,7 @@ describe('desktop R’s answers for the RBQM tab (#234)', () => {
       state: 'no file',
       files: ['Raw_STUDY.csv', 'Raw_SITE.csv'],
       columns: [],
+      unmapped: [],
       message: 'The Groups table needs Raw_STUDY.csv and Raw_SITE.csv, which are not loaded.'
     });
     expect(two.rows).toMatchObject({ Results: 296, Groups: 0, Metrics: 2 });
@@ -334,5 +343,81 @@ describe('desktop R’s answers for the RBQM tab (#234)', () => {
     expect(two.notes).toEqual([
       "No study table was made, so the study's ID, AA-AA-000-0000, is read from the study ID column of the loaded files."
     ]);
+  });
+});
+
+describe('desktop R’s answer for the pilot study, the one the other charts use (#253)', () => {
+  const pilot = JSON.parse(read(RBQM_PILOT.expected).toString('utf8'));
+  const { answer } = pilot;
+  const rows = (file) => parseFile(file, read(`site/data/${file}`).toString('utf8')).rows;
+  const of = (id) => answer.Results.filter((row) => row.MetricID === `Analysis_${id}`);
+  const total = (id, column) => of(id).reduce((sum, row) => sum + row[column], 0);
+
+  it('APP-RBQM-044: desktop R’s answer for the pilot study is derived from the pipeline’s R, every workflow and the study’s two files as they are now, by checksum; R made the five raw tables from the two files and ran the adverse event, serious adverse event and study discontinuation metrics, a row for each of 17 sites, with nothing warned (#253)', () => {
+    expect(pilot.derived_from, 'rerun scripts/rbqm-reference.mjs').toEqual(pilotDerivedFrom(read));
+    expect(pilot.derived_from).toHaveLength(1 + 5 + 10 + 9 + 4 + 2);
+    expect(pilot.snapshot_date).toBe(RBQM_TAB.snapshotDate);
+    expect(answer.ran).toEqual({
+      standard: ['Raw_AE', 'Raw_SITE', 'Raw_STUDCOMP', 'Raw_STUDY', 'Raw_SUBJ'],
+      mappings: [
+        'Mapped_AE',
+        'Mapped_STUDCOMP',
+        'Mapped_SUBJ',
+        'Mapped_COUNTRY',
+        'Mapped_SITE',
+        'Mapped_STUDY'
+      ],
+      metrics: RBQM_PILOT.metrics
+    });
+    expect(answer.Results).toHaveLength(3 * 17);
+    for (const id of RBQM_PILOT.metrics) {
+      expect(new Set(of(id).map((row) => row.GroupID)).size, id).toBe(17);
+    }
+    expect(answer.Metrics.map((row) => row.ID)).toEqual(RBQM_PILOT.metrics);
+    expect(answer.warnings).toEqual([]);
+    expect(answer.notes).toEqual([]);
+    // The versions are the ones the browser is given.
+    const pins = readPins(path.join(root, 'site/vendor/r-wasm')).packages;
+    for (const pin of pins) expect(answer.versions[pin.package], pin.package).toBe(pin.version);
+  });
+
+  it('APP-RBQM-044: what R counted is what the study’s files hold, counted here from the files by another route: 1,122 adverse events and 3 serious ones over the days on study of 254 participants, and 144 of the 254 who left the study early; each site’s participants in the Groups table are the file’s (#253)', () => {
+    const subjects = rows('adsl.csv');
+    // The app's charts drop the placeholder rows of a participant with no event, and so does R's query.
+    const events = rows('adae.csv').filter((row) => row.AEDECOD.trim() !== '');
+    const days = subjects.reduce((sum, row) => sum + Number(row.EOSDY), 0);
+    expect(subjects).toHaveLength(254);
+    expect(events).toHaveLength(1122);
+    expect(total('kri0001', 'Numerator')).toBe(events.length);
+    expect(total('kri0001', 'Denominator')).toBe(days);
+    expect(total('kri0002', 'Numerator')).toBe(events.filter((row) => row.AESER === 'Y').length);
+    expect(total('kri0002', 'Numerator')).toBe(3);
+    expect(total('kri0002', 'Denominator')).toBe(days);
+    const left = subjects.filter((row) => row.EOSSTT === 'DISCONTINUED');
+    expect(left).toHaveLength(144);
+    expect(total('kri0006', 'Numerator')).toBe(left.length);
+    expect(total('kri0006', 'Denominator')).toBe(subjects.length);
+    // Site by site: the events, the days and the participants.
+    const siteOf = new Map(subjects.map((row) => [row.USUBJID, row.SITEID]));
+    for (const row of of('kri0001')) {
+      const here = subjects.filter((subject) => subject.SITEID === row.GroupID);
+      expect(row.Numerator, row.GroupID).toBe(
+        events.filter((event) => siteOf.get(event.USUBJID) === row.GroupID).length
+      );
+      expect(row.Denominator, row.GroupID).toBe(
+        here.reduce((sum, subject) => sum + Number(subject.EOSDY), 0)
+      );
+      const count = answer.Groups.find(
+        (group) =>
+          group.GroupLevel === 'Site' &&
+          group.GroupID === row.GroupID &&
+          group.Param === 'ParticipantCount'
+      );
+      expect(count.Value, row.GroupID).toBe(String(here.length));
+    }
+    const study = (param) =>
+      answer.Groups.find((group) => group.GroupLevel === 'Study' && group.Param === param).Value;
+    expect(study('ParticipantCount')).toBe('254');
+    expect(study('SiteCount')).toBe('17');
   });
 });

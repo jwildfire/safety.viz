@@ -125,6 +125,14 @@
             // Which of desktop R's answers: the whole study's, or the one for
             // the files this run was handed.
             const names = Object.keys(request.files).map((file) => file.split('/').pop());
+            // A study of standard domains (#253): desktop R's answer for the
+            // pilot study, handed to R as the app hands it.
+            if (names.some((file) => file.startsWith('Standard_'))) {
+              const standard = await (
+                await fetch('/tests/fixtures/rbqm/expected-standard.json')
+              ).json();
+              return { status: 'ok', value: standard.answer };
+            }
             const whole = fixture.whole;
             if (names.length === 9) return { status: 'ok', value: whole };
             const scenario = names.length === 2 ? 'two-files' : 'no-labs';

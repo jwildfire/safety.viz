@@ -57,10 +57,13 @@ describe('the RBQM demo study’s raw files (#231)', () => {
 });
 
 describe('the RBQM pipeline’s run, as R is given it (#231)', () => {
-  it('APP-R-036: R is given the pipeline’s one R file first, then every copied mapping, metric and reporting workflow and gsm.kri’s one R file, each a file the repository holds, each at a place of its own under one root (#231)', () => {
+  it('APP-R-036: R is given the pipeline’s one R file first, then our five workflows that make a raw table from a standard domain, then every copied mapping, metric and reporting workflow and gsm.kri’s one R file, each a file the repository holds, each at a place of its own under one root (#231, #253)', () => {
     const files = pipelineFiles();
     expect(files[0]).toEqual({ file: 'site/rbqm/pipeline.R', path: '/rbqm/pipeline.R' });
-    expect(files).toHaveLength(1 + 10 + 9 + 4);
+    expect(files).toHaveLength(1 + 5 + 10 + 9 + 4);
+    expect(files.slice(1, 6).map((entry) => entry.path)).toEqual(
+      ['AE', 'SITE', 'STUDCOMP', 'STUDY', 'SUBJ'].map((id) => `/rbqm/standard/${id}.yaml`)
+    );
     for (const { file, path: place } of [...files, ...studyFiles()]) {
       expect(existsSync(path.join(root, file)), file).toBe(true);
       expect(place.startsWith('/rbqm/'), place).toBe(true);
@@ -88,6 +91,7 @@ describe('the RBQM pipeline’s run, as R is given it (#231)', () => {
       metrics: '/rbqm/gsm.kri/workflow/2_metrics',
       reporting: '/rbqm/gsm.reporting/workflow/3_reporting',
       helpers: '/rbqm/gsm.kri/R/util-Report.R',
+      standard: '/rbqm/standard',
       metric_ids: ['kri0001'],
       snapshot_date: '2026-10-07'
     });
@@ -98,10 +102,11 @@ describe('the RBQM pipeline’s run, as R is given it (#231)', () => {
       metrics: 'site/vendor/gsm.kri/workflow/2_metrics',
       reporting: 'site/vendor/gsm.reporting/workflow/3_reporting',
       helpers: 'site/vendor/gsm.kri/R/util-Report.R',
+      standard: 'site/rbqm/standard',
       metric_ids: ['kri0001'],
       snapshot_date: '2026-10-07'
     });
-    for (const key of ['data', 'mappings', 'metrics', 'reporting', 'helpers']) {
+    for (const key of ['data', 'mappings', 'metrics', 'reporting', 'helpers', 'standard']) {
       expect(existsSync(path.join(root, desktop[key])), desktop[key]).toBe(true);
     }
     expect(() => inRepository('/rbqm/elsewhere/file')).toThrow(/not a place/);

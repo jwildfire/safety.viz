@@ -6,6 +6,8 @@
 //
 // What R is given:
 //   site/rbqm/pipeline.R            the one R function, `rbqm_run`
+//   site/rbqm/standard/...          our own workflows, which make a raw table
+//                                   from one of the app's standard domains (#253)
 //   site/vendor/gsm.mapping/...     the mapping workflows, as copied from the tag
 //   site/vendor/gsm.kri/...         the metric workflows, and the one R file of
 //                                   gsm.kri's the Results workflow needs
@@ -24,10 +26,24 @@ import {
   sha256
 } from './vendor-lib.mjs';
 import { R_WASM_DIRECTORY, REPOSITORY_DIRECTORY } from './r-wasm-lib.mjs';
+import { buildMapping, setColumn } from '../src/app/mapping.js';
+import { parseFile } from '../src/app/parse.js';
+import { standardCsv, standardStudy, supportOf } from '../src/app/rbqm-files.js';
 
 /** Where everything goes in R's file system. */
 const ROOT = '/rbqm';
 const PIPELINE = 'site/rbqm/pipeline.R';
+/**
+ * The workflows that make a gsm raw table from one of the demo app's standard
+ * domains (#253, obot.roadmap#398), so the metrics run on the study the other
+ * charts use. They are ours, written in gsm's dialect and run by workr.
+ */
+export const RBQM_STANDARD = {
+  directory: 'site/rbqm/standard',
+  files: ['AE.yaml', 'SITE.yaml', 'STUDCOMP.yaml', 'STUDY.yaml', 'SUBJ.yaml']
+};
+/** A standard domain's table in R, and its file in the run's folder. */
+export const standardTable = (domain) => `Standard_${domain}`;
 const inR = (source, file) => `${ROOT}/${source.directory.split('/').pop()}/${file}`;
 
 /** The gate's one metric: adverse event rate by site. */
@@ -60,6 +76,10 @@ export const RBQM_GATE = {
 export function pipelineFiles() {
   return [
     { file: PIPELINE, path: `${ROOT}/pipeline.R` },
+    ...RBQM_STANDARD.files.map((file) => ({
+      file: `${RBQM_STANDARD.directory}/${file}`,
+      path: `${ROOT}/standard/${file}`
+    })),
     ...[GSM_MAPPING_WORKFLOWS, GSM_KRI_WORKFLOWS, GSM_REPORTING_WORKFLOWS].flatMap((source) =>
       source.files.map((entry) => ({
         file: `${source.directory}/${entry.file}`,
@@ -94,6 +114,7 @@ export function pipelineArgs(place = (path) => path) {
     metrics: place(inR(GSM_KRI_WORKFLOWS, 'workflow/2_metrics')),
     reporting: place(inR(GSM_REPORTING_WORKFLOWS, 'workflow/3_reporting')),
     helpers: place(inR(GSM_KRI_WORKFLOWS, 'R/util-Report.R')),
+    standard: place(`${ROOT}/standard`),
     metric_ids: RBQM_GATE.metrics,
     snapshot_date: RBQM_GATE.snapshotDate
   };
@@ -108,6 +129,7 @@ export function pipelineArgs(place = (path) => path) {
 export function inRepository(path) {
   const rest = path.slice(ROOT.length + 1);
   if (rest === 'data') return RBQM_STUDY.directory;
+  if (rest === 'standard') return RBQM_STANDARD.directory;
   const source = [GSM_MAPPING_WORKFLOWS, GSM_KRI_WORKFLOWS, GSM_REPORTING_WORKFLOWS].find(
     (candidate) => rest.startsWith(`${candidate.directory.split('/').pop()}/`)
   );
@@ -269,8 +291,8 @@ export const RBQM_NEEDS = {
  * @returns {{mappings: string, metrics: string, reporting: string}} The named arguments.
  */
 export function needsArgs(place = (path) => path) {
-  const { mappings, metrics, reporting } = pipelineArgs(place);
-  return { mappings, metrics, reporting };
+  const { mappings, metrics, reporting, standard } = pipelineArgs(place);
+  return { mappings, metrics, reporting, standard };
 }
 
 /**
@@ -280,3 +302,75 @@ export function needsArgs(place = (path) => path) {
  */
 export const needsDerivedFrom = (read) =>
   pipelineFiles().map(({ file }) => ({ file, sha256: sha256(read(file)) }));
+
+// ---- The study the other charts use (#253, obot.roadmap#398) ----
+
+/**
+ * The run the RBQM tab makes on the pilot study, the one the app opens on: no
+ * raw file, and the study's Subject-level and Adverse events files handed to R
+ * as the app hands them, under the standard column names. Desktop R's answer
+ * is written by scripts/rbqm-reference.mjs, and the browser test holds real R
+ * on the tab to it.
+ */
+export const RBQM_PILOT = {
+  id: 'pilot',
+  label: 'the pilot study, as the app hands it to R',
+  files: [
+    { domain: 'subject', file: 'site/data/adsl.csv' },
+    { domain: 'ae', file: 'site/data/adae.csv' }
+  ],
+  /** The metrics the pilot study supports: adverse events, serious ones, study discontinuation. */
+  metrics: ['kri0001', 'kri0002', 'kri0006'],
+  /**
+   * The same study with the reader's mapping of the site cleared, as it is
+   * when a file's site column was not recognised: what R then says is what
+   * the tab says before R is started.
+   */
+  noSite: { id: 'no-site', unmap: { subject: ['SITEID'] } },
+  expected: 'tests/fixtures/rbqm/expected-standard.json'
+};
+
+/**
+ * What R is handed for a study of standard domains: each standard table the
+ * workflows read, as CSV text under the standard names, and what each is
+ * called. The app's own code makes them (src/app/rbqm-files.js), from the
+ * mapping the app pre-fills, so desktop R and R in the browser are given the
+ * same bytes.
+ * @param {Array<{domain: string, file: string}>} study The study's files, each with its domain.
+ * @param {Object} needs What the workflows need, as R reads it (site/rbqm/needs.json).
+ * @param {Object} manifest The portfolio manifest.
+ * @param {(file: string) => Uint8Array} read The bytes of one repository file.
+ * @param {Object<string, string[]>} [unmap] Standard columns whose mapping is cleared, by domain.
+ * @returns {{files: Object<string, string>, labels: Object<string, string>}} Each file's text by its name in R, and each table's label.
+ */
+export function standardFiles(study, needs, manifest, read, unmap = {}) {
+  const files = {};
+  const mappings = {};
+  for (const { domain, file } of study) {
+    const name = file.split('/').pop();
+    files[domain] = parseFile(name, Buffer.from(read(file)).toString('utf8'));
+    mappings[domain] = buildMapping(domain, files[domain], manifest);
+    for (const column of unmap[domain] || []) {
+      mappings[domain] = setColumn(mappings[domain], column, null, files[domain]);
+    }
+  }
+  const standard = standardStudy(files, mappings, needs);
+  const { reads } = supportOf(new Map(), needs, standard);
+  const used = [...standard.values()].filter((entry) => reads.has(entry.table));
+  return {
+    files: Object.fromEntries(used.map((entry) => [`${entry.table}.csv`, standardCsv(entry)])),
+    labels: Object.fromEntries(used.map((entry) => [entry.table, entry.name]))
+  };
+}
+
+/**
+ * What desktop R's answer for the pilot study is derived from: the pipeline's
+ * R, every workflow, and the study's two files as the repository has them.
+ * @param {(file: string) => Uint8Array} read The bytes of one repository file.
+ * @returns {Array<{file: string, sha256: string}>} One entry per file.
+ */
+export const pilotDerivedFrom = (read) =>
+  [...pipelineFiles(), ...RBQM_PILOT.files].map(({ file }) => ({
+    file,
+    sha256: sha256(read(file))
+  }));

@@ -239,9 +239,10 @@ export function buildEcgRecords(sourceRecords, { log = () => {}, warn = () => {}
 // EOSDT − TRTSDT + 1, falling back to TRTEDT when EOSDT is missing; a
 // participant with neither date keeps a blank EOSDY (with a build warning) and
 // the renderer counts the exclusion downstream (TTE-DERIV-002). EOSSTT rides
-// along as the censoring description shown in censor-mark tooltips.
+// along as the censoring description shown in censor-mark tooltips. SITEID is
+// the source's own, for the demo app's RBQM tab, which scores sites (#253).
 
-export const ADSL_COLUMNS = ['USUBJID', 'ARM', 'EOSDY', 'EOSSTT'];
+export const ADSL_COLUMNS = ['USUBJID', 'SITEID', 'ARM', 'EOSDY', 'EOSSTT'];
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const dateOrNull = (v) => {
@@ -266,6 +267,8 @@ export function buildAdslRecords(adslRecords, { warn = () => {} } = {}) {
       if (end === null) noEnd.push(id);
       return {
         USUBJID: id,
+        // The investigational site (#253): what gsm's site metrics group by.
+        SITEID: clean(r.SITEID),
         ARM: clean(r.TRT01A) || clean(r.ARM),
         EOSDY: end === null ? '' : Math.round((end - start) / MS_PER_DAY) + 1,
         EOSSTT: clean(r.EOSSTT)
