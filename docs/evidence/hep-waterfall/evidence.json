@@ -1,6 +1,6 @@
 {
   "module": "hep-waterfall",
-  "generatedAt": "2026-10-08T00:51:11.929Z",
+  "generatedAt": "2026-10-08T01:37:26.815Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "37709854114",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37709854114"
+    "id": "37713805441",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37713805441"
   },
   "records": [
     {
@@ -722,6 +722,14 @@
       "status": "pass",
       "requirementIds": ["APP-RBQM-007"],
       "issueRefs": [233],
+      "screenshots": []
+    },
+    {
+      "test": "APP-RBQM-012: rbqm tab pipeline: R in the browser runs every mapping, metric and reporting workflow in scope through workr on the demo study’s nine raw files, and every one of the eight metrics’ Results rows is desktop R’s: the same sites, and for each the same numerator, denominator, metric, score and flag to eight decimal places; with the labs file left out seven metrics run and the lab metric says it needs the labs file; with a column taken out of the adverse events file the two adverse event metrics name the column; with two files alone the two metrics they support run; R asks no host but webR’s, the public index and the page’s own (#234)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-012"],
+      "issueRefs": [234],
       "screenshots": []
     },
     {
@@ -4034,6 +4042,38 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [140],
+      "screenshots": []
+    },
+    {
+      "test": "desktop R’s answers for the RBQM tab (#234) APP-RBQM-015: desktop R’s answers are derived from the pipeline’s R, the copied workflows and the demo study’s nine raw files as they are now, by checksum of every one (#234)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-015"],
+      "issueRefs": [234, 234],
+      "screenshots": []
+    },
+    {
+      "test": "desktop R’s answers for the RBQM tab (#234) APP-RBQM-015: on the whole study all eight metrics ran: 1,186 Results rows, a row for each of 148 sites for seven metrics and 150 for the screen failure rate, each with its site, numerator, denominator, metric, score and flag, beside the Bounds, Groups and Metrics tables, with nothing warned of (#234)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-015"],
+      "issueRefs": [234, 234],
+      "screenshots": []
+    },
+    {
+      "test": "desktop R’s answers for the RBQM tab (#234) APP-RBQM-016: with the labs file left out seven metrics ran and the lab metric says it needs the labs file; with the seriousness column taken out of the adverse events file six ran and the two adverse event metrics name the column and the file; every metric that ran gave the rows it gives on the whole study (#234)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-016"],
+      "issueRefs": [234, 234],
+      "screenshots": []
+    },
+    {
+      "test": "desktop R’s answers for the RBQM tab (#234) APP-RBQM-016: with the subjects and adverse events files alone the two adverse event metrics ran, each other metric names the file it needs, the Groups table says which files it needs, and the run says the study’s ID was read from the loaded files (#234)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-016"],
+      "issueRefs": [234, 234],
       "screenshots": []
     },
     {
@@ -7389,6 +7429,22 @@
       "screenshots": []
     },
     {
+      "test": "the one R function behind the tab (#234) APP-RBQM-014: it computes nothing itself: every workflow is run through workr, it calls no statistical or arithmetic function on the data, and the one gsm function it names parses a metric’s thresholds from text to numbers (#234)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-014"],
+      "issueRefs": [234, 234],
+      "screenshots": []
+    },
+    {
+      "test": "the one R function behind the tab (#234) APP-RBQM-014: the R function names no raw domain and no column of one: what a workflow needs is read from its own spec, and a raw file is any file named Raw_<DOMAIN>.csv; the one mapped table it names is the study’s, which the Results workflow reads the study’s ID from (#234)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-014"],
+      "issueRefs": [234, 234],
+      "screenshots": []
+    },
+    {
       "test": "the package repository beside the demo app (#229) APP-R-031: the demo app’s directory serves the packages as a package repository, as R reads one, with the record of what each file was built from (#229)",
       "suite": "unit",
       "status": "pass",
@@ -7626,6 +7682,22 @@
       "status": "pass",
       "requirementIds": ["APP-R-036"],
       "issueRefs": [231, 231],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab’s run, as R is given it (#234) APP-RBQM-013: four studies are run, each from a folder of its own: the demo study whole, without its labs file, with the seriousness column taken out of its adverse events file and nothing else changed, and its subjects and adverse events files alone (#234)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-013"],
+      "issueRefs": [234, 234],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab’s run, as R is given it (#234) APP-RBQM-013: the tab’s run is the gate’s with every metric workflow there is: the same R function, packages and workflow folders, no metric named, and the raw files from a folder of the study’s own; the eight metrics in scope are the eight copied workflows (#234)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-013"],
+      "issueRefs": [234, 234],
       "screenshots": []
     },
     {
