@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { buildDemoAppDir, LOCAL_LINKS } from '../../../scripts/demo-app.mjs';
 import { renderDemoAppPage } from '../../../scripts/site-lib.mjs';
-import { APP_LIBRARIES } from '../../../scripts/app-libraries.mjs';
+import { APP_LIBRARIES, RBQM_CHARTS } from '../../../scripts/app-libraries.mjs';
 import { DEMO_STUDIES } from '../../../src/app/studies.js';
 
 // One recipe for the demo app's directory (#214): the site build writes it to
@@ -51,6 +51,11 @@ describe('buildDemoAppDir', () => {
     expect(
       files.filter((file) => file.startsWith('fonts/') && file.endsWith('.woff2'))
     ).toHaveLength(5);
+    // gsm.viz's bundle for the RBQM tab, with its licence (#232, APP-RBQM-004).
+    expect(files).toEqual(expect.arrayContaining([RBQM_CHARTS.file, RBQM_CHARTS.license.file]));
+    expect(readFileSync(path.join(hosted, RBQM_CHARTS.file), 'utf8')).not.toMatch(
+      /sourceMappingURL/
+    );
     // Every file the page names beside itself is there.
     const page = readFileSync(path.join(hosted, 'index.html'), 'utf8');
     for (const [, href] of page.matchAll(/(?:src|href)="\.\/([^"]+)"/g)) {

@@ -17,8 +17,8 @@
 //
 // Pure functions over bytes and a folder; scripts/vendor-cli.mjs is the
 // command line that fetches the bytes, run by scripts/vendor-bio-viz.mjs,
-// scripts/vendor-statistics.mjs (#183) and scripts/vendor-gsm-workflows.mjs
-// (#230).
+// scripts/vendor-statistics.mjs (#183), scripts/vendor-gsm-workflows.mjs
+// (#230) and scripts/vendor-gsm-viz.mjs (#232).
 
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
@@ -156,6 +156,28 @@ export const RBQM_STUDY = {
   files: 'SUBJ AE SITE STUDY ENROLL'
     .split(' ')
     .map((domain) => ({ file: `Raw_${domain}.csv`, source: `input/Raw_${domain}.csv` }))
+};
+
+/**
+ * gsm.viz's script-tag bundle (#232, obot.roadmap#374): the global `gsmViz`,
+ * whose `default` carries `groupOverview`, `scatterPlot` and `barChart`, which
+ * draw the RBQM tab from the reporting tables R returns. It is the built `index.js` gsm.viz keeps at
+ * the root of its repository, copied from the release tag named here with the
+ * repository's licence file beside it. It is not rebuilt or edited, and it
+ * carries its own Chart.js. gsm.viz is public, in the Gilead-Public
+ * organisation, and is only ever read.
+ */
+export const GSM_VIZ = {
+  name: 'gsm.viz script-tag bundle',
+  label: 'bundle',
+  repository: 'https://github.com/Gilead-Public/gsm.viz',
+  directory: 'site/vendor/gsm.viz',
+  tag: 'v2.4.1',
+  global: 'gsmViz',
+  files: [
+    { file: 'index.js', source: 'index.js' },
+    { file: 'LICENSE', source: 'LICENSE' }
+  ]
 };
 
 /**
