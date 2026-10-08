@@ -1,6 +1,6 @@
 {
   "module": "histogram",
-  "generatedAt": "2026-10-08T02:14:24.435Z",
+  "generatedAt": "2026-10-08T02:27:04.387Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "37716835063",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37716835063"
+    "id": "37717845772",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37717845772"
   },
   "records": [
     {
@@ -834,6 +834,22 @@
       "status": "pass",
       "requirementIds": ["APP-RBQM-031"],
       "issueRefs": [235],
+      "screenshots": []
+    },
+    {
+      "test": "APP-RBQM-036: a reader’s own files on the tab, with no demo study: files chosen from disk and a file dropped are listed with the raw domain each was placed in, a file of no raw domain is named as not recognised and one that lacks a column is named with the column; the tab says which metrics the files support before R is started; Start R then draws the two adverse event metrics and says of each other metric which file it needs (#236)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-036"],
+      "issueRefs": [236],
+      "screenshots": []
+    },
+    {
+      "test": "APP-RBQM-039: a reader’s own files in real R, and what leaves the browser: with no demo study, the subjects and adverse events files chosen from disk and Start R pressed, R draws the two adverse event metrics and says of each other metric what the tab said before R started; the same adverse events file with a column taken out is run at once and R names the column. From the first file chosen until five quiet seconds after, every request is a GET or HEAD with no body, no query and no header the browser did not set itself, to the page’s own address, webr.r-wasm.org and repo.r-wasm.org and no other; the page’s own address is asked for gsm.viz’s bundle, the files R is given and gsm’s packages, and for nothing of the reader’s; no address names a file of theirs or a participant in them (#236)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-039"],
+      "issueRefs": [236],
       "screenshots": []
     },
     {
@@ -5655,6 +5671,30 @@
       "screenshots": []
     },
     {
+      "test": "placing a raw file in a gsm raw domain APP-RBQM-033: a file is placed by its name, with or without `Raw_` and in any case, whatever its columns; else by its columns, when every column of exactly one raw domain is there (#236)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-033"],
+      "issueRefs": [236],
+      "screenshots": []
+    },
+    {
+      "test": "placing a raw file in a gsm raw domain APP-RBQM-033: a file whose name and columns match no raw domain is named as not recognised; one whose columns match more than one is named with the domains it could be; a file of a domain already loaded replaces the earlier one, and the tab says so (#236)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-033"],
+      "issueRefs": [236],
+      "screenshots": []
+    },
+    {
+      "test": "placing a raw file in a gsm raw domain APP-RBQM-034: a file placed by its name that lacks a column its domain’s workflow names is listed with the column (#236)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-034"],
+      "issueRefs": [236],
+      "screenshots": []
+    },
+    {
       "test": "portfolio manifest PF-MAN-001: validates against its JSON Schema (#138)",
       "suite": "unit",
       "status": "pass",
@@ -7975,6 +8015,14 @@
       "screenshots": []
     },
     {
+      "test": "the RBQM tab on the page APP-RBQM-018: what the tab places a reader’s files with is what desktop R read from the workflows (#236)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-018"],
+      "issueRefs": [236],
+      "screenshots": []
+    },
+    {
       "test": "the RBQM tab on the page APP-RBQM-018: what the tab says starting R downloads is what the page is built to say (#235)",
       "suite": "unit",
       "status": "pass",
@@ -8060,6 +8108,46 @@
       "status": "pass",
       "requirementIds": ["APP-RBQM-028"],
       "issueRefs": [235],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab: a reader’s own raw files APP-RBQM-034: a file that lacks a column its workflow names is listed with the column, and each metric that needs it says so before the press (#236)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-034"],
+      "issueRefs": [236],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab: a reader’s own raw files APP-RBQM-036: before R is started the tab lists each loaded file with the raw domain it was placed in and which metrics the files support, and makes no connection; with no file it shows where to drop them (#236)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-036"],
+      "issueRefs": [236],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab: a reader’s own raw files APP-RBQM-037: files dropped on the tab, or chosen there, are read with the browser’s file reader and kept as raw files: none is placed in a safety domain or given a mapping; a file that is not a CSV is named and not kept (#236)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-037"],
+      "issueRefs": [236],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab: a reader’s own raw files APP-RBQM-038: R is handed the one file of each raw domain under gsm’s name for it, whatever the reader called it, and no file that was not placed; the tab says before the press which metrics the files support and of each other which file it needs, in the words R then says (#236)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-038"],
+      "issueRefs": [236],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab: a reader’s own raw files APP-RBQM-038: when no loaded file is a gsm raw file the tab says there is nothing for R to run, and its control cannot be pressed (#236)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-038"],
+      "issueRefs": [236],
       "screenshots": []
     },
     {
@@ -8388,6 +8476,30 @@
       "status": "pass",
       "requirementIds": ["API-SCHEMA-006"],
       "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "what each workflow needs, as R reads it from the specs APP-RBQM-032: the needs the tab is built with are desktop R’s reading of the workflows as they are now: the pipeline’s R and every copied workflow, by checksum (#236)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-032"],
+      "issueRefs": [236],
+      "screenshots": []
+    },
+    {
+      "test": "what the loaded files support, said before R is started APP-RBQM-035: for the demo study whole, with its labs file left out, with a column taken out of its adverse events file, and for two of its files alone, what the tab says of each metric and of the Groups table before R starts is what desktop R said after running: the same metrics supported, and of each other the same sentence, word for word (#236)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-035"],
+      "issueRefs": [236],
+      "screenshots": []
+    },
+    {
+      "test": "what the loaded files support, said before R is started APP-RBQM-035: with nothing loaded every metric names the files it needs, and a file not placed supports nothing (#236)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-035"],
+      "issueRefs": [236],
       "screenshots": []
     }
   ]
