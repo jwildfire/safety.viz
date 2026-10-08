@@ -2241,6 +2241,16 @@ test.describe('demo app as one file, offline', () => {
     );
     await expect(page.locator('.sva-drop')).toBeVisible();
     await expect(page.locator('.sva-study')).toHaveCount(0);
+    // A chart's footnote leads to the published site too (#246), and showing it asks for nothing.
+    await page.evaluate(() => window.__safetyVizApp.select('hep-explorer'));
+    await expect(page.locator('.sva-chart-links')).toHaveText(
+      'Hepatic Safety Explorer: Clinical guide · Test evidence'
+    );
+    await expect(page.locator('.sva-chart-links a[data-link="evidence"]')).toHaveAttribute(
+      'href',
+      'https://jwildfire.github.io/safety.viz/hep-explorer/evidence.html'
+    );
+    await page.evaluate(() => window.__safetyVizApp.select('data'));
     // The only thing fetched is the file itself.
     expect(requests).toEqual([SINGLE_FILE.href]);
     expect(errors).toEqual([]);

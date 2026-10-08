@@ -384,6 +384,83 @@ describe('demo app: the page', () => {
     expect(anchors[1].hasAttribute('download')).toBe(true);
   });
 
+  it('APP-PAGE-030: a chart’s view carries a footnote linking the chart’s clinical guide and test evidence, each only where it was given an address and each opening in a new tab; the data view has none (#246)', () => {
+    const { charts } = fakeCharts();
+    const chartLinks = {
+      'hep-explorer': {
+        guide: '../hep-explorer/guide.html',
+        evidence: '../hep-explorer/evidence.html'
+      },
+      histogram: { evidence: '../histogram/evidence.html' },
+      'participant-profile': { guide: '../participant-profile/guide.html' },
+      // No address at all, and an address that is not text: neither is a link.
+      'shift-plot': {},
+      'delta-delta': { guide: null, evidence: 7 }
+    };
+    const app = mountApp(root, { charts, manifest, chartLinks });
+    const footnotes = () => root.querySelectorAll('.sva-chart-links');
+    const links = () =>
+      [...root.querySelectorAll('.sva-chart-links a')].map((a) => [
+        a.dataset.link,
+        a.getAttribute('href'),
+        a.textContent
+      ]);
+    // The data view is no chart's view.
+    expect(footnotes()).toHaveLength(0);
+
+    // A chart with nothing to read still says where its pages are.
+    app.select('hep-explorer');
+    expect(root.querySelector('.sva-chart')).toBeNull();
+    expect(links()).toEqual([
+      ['guide', '../hep-explorer/guide.html', 'Clinical guide'],
+      ['evidence', '../hep-explorer/evidence.html', 'Test evidence']
+    ]);
+
+    app.loadFiles(DEMO);
+    app.select('hep-explorer');
+    expect(footnotes()).toHaveLength(1);
+    const footnote = root.querySelector('.sva-chart-links');
+    // Under the chart, and it names the chart it is about.
+    expect(footnote.previousElementSibling).toBe(root.querySelector('.sva-chart'));
+    expect(footnote.textContent).toBe('Hepatic Safety Explorer: Clinical guide · Test evidence');
+    expect(links()).toHaveLength(2);
+    // A new tab, so the loaded study stays loaded; the new page is handed nothing of this one.
+    for (const anchor of footnote.querySelectorAll('a')) {
+      expect(anchor.getAttribute('target')).toBe('_blank');
+      expect(anchor.getAttribute('rel')).toBe('noopener');
+    }
+
+    app.select('histogram');
+    expect(footnotes()).toHaveLength(1);
+    expect(root.querySelector('.sva-chart-links').textContent).toBe(
+      'Safety Histogram: Test evidence'
+    );
+    expect(links()).toEqual([['evidence', '../histogram/evidence.html', 'Test evidence']]);
+
+    // The participant profile is not drawn as a page of its own; its view has the footnote too.
+    app.select('participant-profile');
+    expect(links()).toEqual([['guide', '../participant-profile/guide.html', 'Clinical guide']]);
+
+    // Given no address, or none that is text, a chart has no footnote; nor has one the page was told nothing of.
+    for (const module of ['shift-plot', 'delta-delta', 'outlier-explorer']) {
+      app.select(module);
+      expect(root.querySelector('.sva-chart')).not.toBeNull();
+      expect(footnotes()).toHaveLength(0);
+    }
+    app.select('data');
+    expect(footnotes()).toHaveLength(0);
+  });
+
+  it('APP-PAGE-030: told of no chart’s pages, the app has no footnote on any view (#246)', () => {
+    const { charts } = fakeCharts();
+    const app = mountApp(root, { charts, manifest });
+    app.loadFiles(DEMO);
+    for (const module of Object.keys(manifest.modules)) {
+      app.select(module);
+      expect(root.querySelectorAll('.sva-chart-links')).toHaveLength(0);
+    }
+  });
+
   it('APP-PAGE-020: each chart’s hex says its state beside the words: its domain’s hue when ready, red when something is missing, hollow with nothing to read (#150)', () => {
     const { charts } = fakeCharts();
     const app = mountApp(root, { charts, manifest });
