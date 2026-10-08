@@ -6,6 +6,7 @@ import {
   APP_LIBRARIES,
   HOSTED_PITCH,
   RBQM_CHARTS,
+  chartLinks,
   libraryManifest,
   rbqmTabOptions
 } from '../../scripts/app-libraries.mjs';
@@ -28,6 +29,7 @@ const manifest = JSON.parse(readFileSync(manifestFile, 'utf8'));
 // bio.viz's chart list, from its vendored bundle: the demo app carries its
 // charts and the Domains page lists them (#182).
 const bioManifest = libraryManifest(APP_LIBRARIES[0]);
+const has = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
 
 test.describe('docs site', () => {
   test.beforeAll(() => {
@@ -77,6 +79,111 @@ test.describe('docs site', () => {
     await page.goto('/_site/index.html');
     await expect(page.locator('.site-nav a[href="demo/index.html"]')).toHaveText('Demo app');
     expect(errors).toEqual([]);
+  });
+
+  test('APP-PAGE-031: on the built demo page every chart’s footnote leads where its pages are: each safety chart’s test evidence, and the clinical guide of the six that have one, are pages the site serves; a biomarker chart’s test evidence is on bio.viz’s site (#246)', async ({
+    page
+  }) => {
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') errors.push(msg.text());
+    });
+    await page.goto('/_site/demo/index.html');
+    await page.evaluate('window.__safetyVizApp.ready');
+    const expected = chartLinks({ site: '../' });
+    const guided = [];
+    for (const [module, entry] of Object.entries({ ...manifest.modules, ...bioManifest.modules })) {
+      await page.evaluate((id) => window.__safetyVizApp.select(id), module);
+      const footnote = page.locator('.sva-chart-links');
+      await expect(footnote, module).toHaveCount(1);
+      await expect(footnote.locator('.sva-chart-links-title')).toHaveText(`${entry.title}:`);
+      const links = await footnote
+        .locator('a')
+        .evaluateAll((anchors) =>
+          anchors.map((a) => [a.dataset.link, a.getAttribute('href'), a.href, a.textContent])
+        );
+      expect(Object.fromEntries(links.map(([key, href]) => [key, href])), module).toEqual(
+        expected[module]
+      );
+      if (has(bioManifest.modules, module)) {
+        // Another site: the address is held to bio.viz's, and not asked for here.
+        expect(links).toEqual([
+          [
+            'evidence',
+            `${APP_LIBRARIES[0].site}${module}/evidence.html`,
+            `${APP_LIBRARIES[0].site}${module}/evidence.html`,
+            'Test evidence'
+          ]
+        ]);
+        continue;
+      }
+      // The address as the browser resolves it from the app's page is a page the site serves.
+      const titles = { guide: 'clinical guide', evidence: 'test evidence' };
+      for (const [key, , resolved, words] of links) {
+        expect(new URL(resolved).pathname, module).toBe(`/_site/${module}/${key}.html`);
+        const response = await page.request.get(resolved);
+        expect(response.ok(), resolved).toBe(true);
+        expect(await response.text(), resolved).toContain(
+          `<title>${entry.title} ${titles[key]} · safety.viz</title>`
+        );
+        expect(words).toBe(key === 'guide' ? 'Clinical guide' : 'Test evidence');
+      }
+      if (links.some(([key]) => key === 'guide')) guided.push(module);
+    }
+    expect(guided).toEqual(
+      available
+        .filter((renderer) => renderer.guide && has(manifest.modules, renderer.module))
+        .map((renderer) => renderer.module)
+        .sort(
+          (a, b) =>
+            Object.keys(manifest.modules).indexOf(a) - Object.keys(manifest.modules).indexOf(b)
+        )
+    );
+    expect(guided).toHaveLength(6);
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-PAGE-030: on the built demo page a chart’s footnote sits under the chart, its link opens in a new tab and the app keeps its study and its chart; at a 390px viewport the footnote wraps and the page does not scroll sideways (#246)', async ({
+    page,
+    context
+  }) => {
+    await page.goto('/_site/demo/index.html#hep-explorer');
+    await page.evaluate('window.__safetyVizApp.ready');
+    const chart = page.locator('.sva-chart');
+    const footnote = page.locator('.sva-chart-links');
+    await expect(chart.locator('canvas:visible').first()).toBeVisible();
+    await expect(footnote).toHaveText('Hepatic Safety Explorer: Clinical guide · Test evidence');
+    const box = async (locator) => locator.boundingBox();
+    expect((await box(footnote)).y).toBeGreaterThanOrEqual(
+      (await box(chart)).y + (await box(chart)).height
+    );
+    const [guide] = await Promise.all([
+      context.waitForEvent('page'),
+      footnote.locator('a[data-link="guide"]').click()
+    ]);
+    await guide.waitForLoadState();
+    await expect(guide).toHaveURL(/\/_site\/hep-explorer\/guide\.html$/);
+    await expect(guide).toHaveTitle('Hepatic Safety Explorer clinical guide · safety.viz');
+    // The new tab was handed nothing of the app's page.
+    expect(await guide.evaluate(() => window.opener)).toBeNull();
+    await guide.close();
+    // The app's page did not move: the same address, study and chart.
+    await expect(page).toHaveURL(/\/_site\/demo\/index\.html#hep-explorer$/);
+    await expect(page.locator('.sva-count')).toHaveText(
+      '18 of 18 charts supported by the loaded data'
+    );
+    await expect(chart.locator('canvas:visible').first()).toBeVisible();
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(footnote).toBeVisible();
+    await footnote.scrollIntoViewIfNeeded();
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
+    ).toBeLessThanOrEqual(0);
+    const narrow = await box(footnote);
+    expect(narrow.x).toBeGreaterThanOrEqual(0);
+    expect(narrow.x + narrow.width).toBeLessThanOrEqual(390);
   });
 
   test('APP-BIO-012: the built demo page serves bio.viz’s vendored bundle beside the app, whole but for its source-map comment, lists the biomarker charts in their own tab and holds at a 390px viewport (#182)', async ({

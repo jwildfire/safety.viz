@@ -93,6 +93,9 @@ display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:v
 .sva-chart{background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:1rem;min-width:0}
 .sva-message{margin:0 0 1rem;max-width:62rem;padding:.9rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:10px}
 .sva-message.sva-problem{border-left-color:var(--s0)}
+.sva-chart-links{margin:.75rem 0 0;font-family:var(--mono);font-size:.72rem;line-height:1.6;color:var(--soft)}
+.sva-chart-links a{white-space:nowrap;color:var(--ink);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:.2em}
+.sva-chart-links a:hover{color:var(--accent);text-decoration-color:var(--accent)}
 .sva-notes{margin:0 0 1rem;padding:0;list-style:none;max-width:62rem}
 .sva-note{margin:0 0 .45rem;padding:.6rem 1rem;background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--s1);border-radius:10px;font-size:.92rem}
 

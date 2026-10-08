@@ -16,6 +16,7 @@ The demo app gains an RBQM tab: gsm's site metrics, worked out by R in your brow
 
 - **The demo app has an RBQM tab.** Choose the RBQM study and press Start R: R runs gsm's own workflows in your browser and the tab draws a site overview across eight metrics, with a scatter plot and a bar chart for the metric you choose. A metric that could not run says which file or column it needs. [obot.roadmap#374](https://github.com/jwildfire/obot.roadmap/issues/374), [#234](https://github.com/jwildfire/safety.viz/issues/234), [#235](https://github.com/jwildfire/safety.viz/issues/235)
 - **The demo app has a fourth demo study, the RBQM study.** It is gsm's nine raw files for 765 enrolled participants at 150 sites, copied from the forkable demo study. The app keeps them as they are and maps none. [obot.roadmap#374](https://github.com/jwildfire/obot.roadmap/issues/374), [#233](https://github.com/jwildfire/safety.viz/issues/233), PR [#249](https://github.com/jwildfire/safety.viz/pull/249)
+- **In the demo app, each chart links to its clinical guide and its test evidence.** A footnote under the chart carries the links, which open in a new tab so a study you loaded stays loaded. Six charts have a guide; every chart has test evidence, the five biomarker charts' on bio.viz's site. [#246](https://github.com/jwildfire/safety.viz/issues/246)
 
 ## Also in this release
 
