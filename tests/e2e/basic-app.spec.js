@@ -1667,7 +1667,7 @@ test.describe('demo app with R on request', () => {
     );
     await settled(page, 30000);
     await expect(
-      page.locator('.sva-chart .bv-statistic').filter({ hasText: 'no R' }).first()
+      page.locator('.sva-chart .bv-statistic').filter({ hasText: 'R did not start' }).first()
     ).toBeVisible();
     const fetched = rRequests(requests).length;
     for (const module of [
@@ -1678,7 +1678,9 @@ test.describe('demo app with R on request', () => {
     ]) {
       await item(page, module).click();
       await settled(page, 30000);
-      await expect(page.locator('.sva-chart .bv-statistic').first()).toContainText('no R');
+      await expect(page.locator('.sva-chart .bv-statistic').first()).toContainText(
+        'R did not start'
+      );
     }
     expect(rRequests(requests)).toHaveLength(fetched);
   });
@@ -1698,7 +1700,7 @@ test.describe('demo app with R on request', () => {
     await page.locator('.sva-action').click();
     await expect(page.locator('.sva-action')).toHaveText('Try R again', { timeout: 150000 });
     await settled(page, 30000);
-    await expect(page.locator('.sva-chart .bv-statistic')).toContainText('no R');
+    await expect(page.locator('.sva-chart .bv-statistic')).toContainText('R did not start');
     const first = { all: rRequests(requests).length, webr: webrImports(requests).length };
     expect(first.webr).toBe(1);
     for (const module of [
