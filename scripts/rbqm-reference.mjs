@@ -13,23 +13,31 @@
 // fails until it is.
 
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { RBQM_GATE, derivedFrom, inRepository, pipelineArgs } from './rbqm-lib.mjs';
+import { RBQM_GATE, derivedFrom, inRepository, pipelineArgs, studyFiles } from './rbqm-lib.mjs';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const work = mkdtempSync(path.join(tmpdir(), 'rbqm-reference-'));
 const requestFile = path.join(work, 'arguments.json');
 const answerFile = path.join(work, 'answer.json');
 
+// The gate's run is given five of the study's nine raw files (#233), so they
+// are copied to a folder of their own: desktop R reads every raw file in the
+// folder it is given, as R in the browser does.
+const gateData = path.join(work, 'gate');
+mkdirSync(gateData);
+for (const { file } of studyFiles()) {
+  copyFileSync(path.join(rootDir, file), path.join(gateData, path.basename(file)));
+}
 writeFileSync(
   requestFile,
   JSON.stringify({
     pipeline: RBQM_GATE.pipeline,
     call: RBQM_GATE.call,
-    args: pipelineArgs(inRepository)
+    args: { ...pipelineArgs(inRepository), data: gateData }
   })
 );
 execFileSync('Rscript', ['scripts/rbqm-reference.R', requestFile, answerFile], {

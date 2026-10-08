@@ -19,6 +19,41 @@
       "bytes": 446066
     },
     {
+      "file": "Raw_PD.csv",
+      "source": "input/Raw_PD.csv",
+      "sha256": "5637b424a8d9f3a5d377d292a133d9081e69e34312eb3c08b7ba091f600e4027",
+      "bytes": 283059
+    },
+    {
+      "file": "Raw_LB.csv",
+      "source": "input/Raw_LB.csv",
+      "sha256": "5483b3d1473e341cac993229cd340c406ba8a11d32f4b37bb2420b691b2e195d",
+      "bytes": 2453976,
+      "source_sha256": "a7248d4c2bb56fc7c2e9e644e54db45cc61428ef9dbc7a25a872538b5f0e1216",
+      "source_bytes": 7320300,
+      "columns": {
+        "keep": [
+          "studyid",
+          "subjid",
+          "lb_dt",
+          "toxgrg_nsv"
+        ],
+        "reason": "The whole labs file is 7.3 MB. gsm.mapping’s labs workflow (LB.yaml, v1.1.6) names these four columns in its spec, and the lab metric (kri0005) reads no other, so its Results rows are the same from this file as from the whole one. Every row is kept."
+      }
+    },
+    {
+      "file": "Raw_STUDCOMP.csv",
+      "source": "input/Raw_STUDCOMP.csv",
+      "sha256": "e08904bb4b96fda764eb62519c2e27ff7ab1a24da2a6b5076124b4a676700988",
+      "bytes": 45775
+    },
+    {
+      "file": "Raw_SDRGCOMP.csv",
+      "source": "input/Raw_SDRGCOMP.csv",
+      "sha256": "5626bbcbfbf237a3450bad88feabc43a3f8278d410b3e9f38d8cfc9913b48621",
+      "bytes": 50422
+    },
+    {
       "file": "Raw_SITE.csv",
       "source": "input/Raw_SITE.csv",
       "sha256": "71d108238241aa880e14e39553bb360b0eab62e92ced909adefc238a5689c118",

@@ -2087,6 +2087,51 @@ test.describe('demo app data view sidebar', () => {
     await expect(stepStatus(page, 'map')).toHaveText('23 guessed, 6 needed by a chart');
   });
 
+  test('APP-RBQM-007: choosing the RBQM study loads gsm’s nine raw files and keeps them as they are: each is listed with its rows, none is placed in a domain or mapped, no safety chart reads them, and the view fits a 390-pixel screen (#233)', async ({
+    page
+  }) => {
+    const errors = watchErrors(page);
+    await openOnDemo(page);
+    await item(page, 'data').click();
+    const menu = page.locator('.sva-side select.sva-study');
+    await menu.selectOption('rbqm');
+    await expect(page.locator('.sva-loaded-name')).toHaveText([
+      'Raw_SUBJ.csv',
+      'Raw_AE.csv',
+      'Raw_PD.csv',
+      'Raw_LB.csv',
+      'Raw_STUDCOMP.csv',
+      'Raw_SDRGCOMP.csv',
+      'Raw_SITE.csv',
+      'Raw_STUDY.csv',
+      'Raw_ENROLL.csv'
+    ]);
+    await expect(page.locator('.sva-study-note')).toContainText(
+      '765 enrolled participants at 150 sites, of 1,005 screened, as gsm’s raw domains'
+    );
+    await expect(page.locator('.sva-loaded-detail').nth(3)).toHaveText('gsm raw file, 57,200 rows');
+    await expect(page.locator('.sva-file.sva-raw')).toHaveCount(9);
+    await expect(page.locator('.sva-file[data-domain]')).toHaveCount(0);
+    await expect(page.locator('.sva-map')).toHaveCount(0);
+    await expect(stepStatus(page, 'load')).toHaveText('9 files loaded');
+    await expect(stepStatus(page, 'map')).toHaveText(
+      'Nothing to map: gsm’s raw files are kept as they are'
+    );
+    await expect(stepStatus(page, 'open')).toHaveText('0 of 18 charts ready');
+    await expect(item(page, 'data').locator('.sva-tag')).toHaveText('9 files');
+    // On a phone the nine cards and the sidebar fit the screen's width.
+    await page.setViewportSize({ width: 390, height: 844 });
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
+    ).toBeLessThanOrEqual(0);
+    await page.setViewportSize({ width: 1280, height: 720 });
+    // The pilot study replaces it whole.
+    await menu.selectOption('pilot');
+    await expect(page.locator('.sva-file.sva-raw')).toHaveCount(0);
+    await expect(stepStatus(page, 'open')).toHaveText('18 of 18 charts ready');
+    expect(errors).toEqual([]);
+  });
+
   test('APP-LOAD-020: each demo study loads from the menu and replaces the one before it (#159)', async ({
     page
   }) => {
@@ -2098,7 +2143,8 @@ test.describe('demo app data view sidebar', () => {
       'Choose a demo study',
       'Pilot study',
       'Renamed columns',
-      'Liver cohort, labs only'
+      'Liver cohort, labs only',
+      'RBQM study'
     ]);
     await expect(menu).toHaveValue('pilot');
     await expect(page.locator('.sva-study-note')).toContainText(

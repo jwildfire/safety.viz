@@ -149,7 +149,7 @@ function sentenceFor(module, status, manifest) {
  * @param {string} [options.pitch] What the footer says the app does with a study; the page that mounts it says what is true there (#183).
  * @param {(url: string) => Promise<string>} [options.fetchText] Fetches the demo extracts' text; defaults to `fetch`, refusing an answer that is not a success.
  * @param {(container: Element, app: Object) => void} [options.dataView] Renders the data view; defaults to the data panel.
- * @returns {{ready: Promise<void>, loadFiles: Function, loadDemo: Function, reset: Function, select: Function, state: Object, destroy: Function}} The app handle.
+ * @returns {{ready: Promise<void>, loadFiles: Function, loadRaw: Function, loadDemo: Function, reset: Function, select: Function, state: Object, destroy: Function}} The app handle.
  */
 export function mountApp(
   target,
@@ -201,6 +201,7 @@ export function mountApp(
     mappings: {}, // domain → mapping
     placements: {}, // domain → the placeFile result for its file
     unplaced: [], // files that matched no domain, kept so they can be placed by hand
+    raw: [], // gsm's raw files, kept as they are: { name, text, columns, rows }, rows a count
     saved: null, // a mapping file's content, applied to each domain as its file loads
     study: null, // the id of the demo study that is loaded, when what is loaded is one
     notes: [], // sentences about the last load: unplaced, unreadable, replaced
@@ -333,7 +334,7 @@ export function mountApp(
 
   function renderNav(current) {
     const open = state.selected === 'data' ? null : groupOf(manifest.modules[state.selected]);
-    const loaded = Object.keys(state.files).length;
+    const loaded = Object.keys(state.files).length + state.raw.length;
     tabs.innerHTML = '';
     tabs.append(
       navItem(
@@ -549,6 +550,7 @@ export function mountApp(
     state.mappings = {};
     state.placements = {};
     state.unplaced = [];
+    state.raw = [];
   }
 
   /** Forget everything that was loaded: files, mappings, a held mapping file, notes. */
@@ -591,10 +593,10 @@ export function mountApp(
     if (run !== demoRun) return;
     state.busy = '';
     clear();
-    handle.loadFiles(
-      study.files.map((name, index) => ({ name, text: texts[index] })),
-      { study: study.id }
-    );
+    const list = study.files.map((name, index) => ({ name, text: texts[index] }));
+    // A study of gsm's raw domains (#233) is kept as it is; any other is placed and mapped.
+    if (study.raw) handle.loadRaw(list, { study: study.id });
+    else handle.loadFiles(list, { study: study.id });
     if (!open) return;
     const wanted = window.location.hash.slice(1);
     handle.select(isChart(wanted) || wanted === 'data' ? wanted : firstReady() || 'data');
@@ -672,6 +674,48 @@ export function mountApp(
           continue;
         }
         handle.setFile(domain, file, placement);
+      }
+      state.failed = {};
+      render();
+    },
+
+    /**
+     * Keep gsm's raw files as they are (#233, obot.roadmap#374): each
+     * `{ name, text }` is read for its column names and its count of rows, and
+     * kept with its text. None is placed in a standard domain or given a
+     * mapping: gsm's raw domains are not the standard domains, and nothing in
+     * the mapping table applies to them. A file of a name already kept replaces
+     * it; a file that cannot be read is reported in a sentence and changes
+     * nothing.
+     * @param {{name: string, text: string}[]} list The files' names and text.
+     * @param {{notes?: string[], study?: ?string}} [options] Sentences to show with the load, and the demo study these files are, when they are one.
+     * @returns {void}
+     */
+    loadRaw(list, { notes = [], study = null } = {}) {
+      if (!study) {
+        demoRun += 1;
+        state.busy = '';
+      }
+      state.notes = [...notes];
+      // Files of the user's own replace a demo study whole, as loadFiles does.
+      const demoLoaded = studies.find((item) => item.id === state.study);
+      if (!study && demoLoaded && list.length) {
+        clearFiles();
+        state.notes.push(`The demo study (${demoLoaded.label}) was cleared to load your files.`);
+      }
+      if (study || list.length) state.study = study;
+      for (const { name, text } of list) {
+        let file;
+        try {
+          file = parseFile(name, text);
+        } catch (error) {
+          state.notes.push(error.message);
+          continue;
+        }
+        const kept = { name, text, columns: file.columns, rows: file.rows.length };
+        const at = state.raw.findIndex((item) => item.name === name);
+        if (at === -1) state.raw.push(kept);
+        else state.raw[at] = kept;
       }
       state.failed = {};
       render();
