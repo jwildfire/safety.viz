@@ -34,6 +34,7 @@ schemes appear:
 | —                                   | SH-FUNC-005C                                          | #2    | x-axis limit inputs support stepper increments of 1                               |
 | SH-CTRL-007                         | —                                                     | #2    | x-axis tick mode switches labels between centers and bin boundaries               |
 | SH-CHART-008                        | —                                                     | #188  | the histogram draws no p-value; the two removed settings are ignored, and said so |
+| SH-CHART-005/006/007                | —                                                     | #188  | retired in v1.10.0 with the p-value settings they covered: see SH-CHART-008       |
 | SH-CHART-004                        | —                                                     | #2    | group-by renders grouped histograms                                               |
 | SH-CHART-004/SH-CTRL-006            | —                                                     | #19   | grouped small multiples share the main chart's bin boundaries                     |
 | SH-CTRL-006                         | —                                                     | #19   | bin boundaries anchor to the measure results, not the filtered subset             |
