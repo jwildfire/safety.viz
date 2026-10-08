@@ -12644,7 +12644,6 @@ var SafetyViz = (() => {
 .sv-annotation,.sv-main-annotation{font-size:.85rem;background:rgba(255,255,255,.92);border:1px solid #d8dee4;border-radius:6px;padding:.25rem .4rem}
 .sv-main-annotation{position:absolute;right:1.25rem;top:1.25rem;z-index:2}
 .sv-main-annotation:empty{display:none}
-.sv-deprecation{margin:.2rem 0 0;max-width:16rem;font-size:.75rem;line-height:1.3;color:#8a4600}
 .sv-info{text-decoration:none}
 .sv-hidden{display:none!important}
 .sv-view-list{display:flex;flex-direction:column;gap:.35rem}
@@ -12969,8 +12968,8 @@ var SafetyViz = (() => {
   }
 
   // src/histogram/configure.js
-  var COMPARISON_DEPRECATED = "safety.viz histogram: `compare_distributions` is deprecated and will be removed in a later release. Its group comparison is an approximation computed in JavaScript, and safety.viz is to compute no statistical test there.";
-  var NORMALITY_DEPRECATED = "safety.viz histogram: `test_normality` is deprecated and will be removed in a later release. Its normality screen is an approximation computed in JavaScript, and safety.viz is to compute no statistical test there.";
+  var REMOVED_SETTINGS = ["test_normality", "compare_distributions"];
+  var removedSetting = (name) => `safety.viz histogram: \`${name}\` was removed in v1.10.0 and is ignored. safety.viz computes no statistical test in JavaScript: run the test in R.`;
   var DEFAULT_SETTINGS = {
     measure_col: "TEST",
     value_col: "STRESN",
@@ -12987,9 +12986,7 @@ var SafetyViz = (() => {
     normal_range: true,
     display_normal_range: false,
     annotate_bin_boundaries: false,
-    test_normality: false,
     group_by: "sh_none",
-    compare_distributions: false,
     studyday_col: null,
     visit_col: null,
     visitn_col: null,
@@ -13020,6 +13017,7 @@ var SafetyViz = (() => {
   }
   function syncSettings(settings) {
     const synced = { ...DEFAULT_SETTINGS, ...settings };
+    for (const name of REMOVED_SETTINGS) delete synced[name];
     synced.measures = arrayify(synced.measures);
     synced.filters = arrayify(synced.filters).map((value) => normalizeFilterSpec(value)).filter((d) => d.value_col);
     const defaultGroup = { value_col: "sh_none", label: "None" };
@@ -13352,51 +13350,6 @@ var SafetyViz = (() => {
   }
 
   // src/histogram/getPlugins.js
-  function formatPValue(value) {
-    if (!Number.isFinite(value)) return "NA";
-    if (value < 1e-3) return "<0.001";
-    if (value > 0.999) return ">0.999";
-    return value.toFixed(3);
-  }
-  function approximateNormalityP(values) {
-    const vals = values.map(Number).filter(Number.isFinite);
-    if (vals.length < 3) return NaN;
-    const m = mean(vals);
-    const s = sd(vals) || Number.EPSILON;
-    const skew = vals.reduce((sum, v) => sum + Math.pow((v - m) / s, 3), 0) / vals.length;
-    const kurtosis = vals.reduce((sum, v) => sum + Math.pow((v - m) / s, 4), 0) / vals.length;
-    const jb = vals.length / 6 * (Math.pow(skew, 2) + Math.pow(kurtosis - 3, 2) / 4);
-    return Math.max(1e-4, Math.min(0.9999, Math.exp(-0.5 * jb)));
-  }
-  function approximateGroupP(groups) {
-    const entries2 = Object.entries(groups).map(([key, vals]) => [key, vals.map(Number).filter(Number.isFinite)]).filter(([, vals]) => vals.length);
-    if (entries2.length < 2) return NaN;
-    const all = entries2.flatMap(([, vals]) => vals);
-    const grand = mean(all);
-    const between = entries2.reduce(
-      (sum, [, vals]) => sum + vals.length * Math.pow(mean(vals) - grand, 2),
-      0
-    );
-    const within = entries2.reduce(
-      (sum, [, vals]) => sum + vals.reduce((inner, v) => inner + Math.pow(v - mean(vals), 2), 0),
-      0
-    );
-    const f = between / Math.max(1, entries2.length - 1) / (within / Math.max(1, all.length - entries2.length) || Number.EPSILON);
-    return Math.max(1e-4, Math.min(0.9999, Math.exp(-0.5 * f)));
-  }
-  function statisticalAnnotation(label, pValue, testName, url) {
-    const text3 = `${label}: p=${formatPValue(pValue)}`;
-    const annotation = createElement("div", "sv-annotation");
-    const value = createElement("span", null, text3);
-    value.title = `${testName}. Caution: This graphic has been thoroughly tested, but is not validated.`;
-    const link = createElement("a", "sv-info", "\u24D8");
-    link.href = url;
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
-    link.title = `${testName}. Caution: This graphic has been thoroughly tested, but is not validated.`;
-    annotation.append(value, document.createTextNode(" "), link);
-    return annotation;
-  }
   function binDescription(bin, measure, digits) {
     return `${bin.records.length} records with ${measure} values >= ${formatNumber2(bin.lower, digits)} and <= ${formatNumber2(bin.upper, digits)}`;
   }
@@ -16428,10 +16381,9 @@ var SafetyViz = (() => {
     constructor(element = "body", settings = {}) {
       this.element = typeof element === "string" ? document.querySelector(element) : element;
       if (!this.element) throw new Error(`Safety Histogram target not found: ${element}`);
+      this.removedWarned = /* @__PURE__ */ new Set();
+      this.warnRemoved(settings);
       this.settings = syncSettings(settings);
-      this.normalityWarned = false;
-      this.comparisonWarned = false;
-      this.warnDeprecated();
       this.rawData = [];
       this.cleanData = [];
       this.availableMeasures = [];
@@ -16587,8 +16539,8 @@ var SafetyViz = (() => {
      * @returns {SafetyHistogram} The instance, for chaining.
      */
     setSettings(settings) {
+      this.warnRemoved(settings);
       this.settings = syncSettings({ ...this.settings, ...settings });
-      this.warnDeprecated();
       if (this.rawData.length) this.validateAndCleanData();
       this.buildProfileRows();
       syncProfileRail(this, () => this.profileSettings());
@@ -17009,7 +16961,6 @@ var SafetyViz = (() => {
       chart.$shBins = inputs.bins;
       this.chart = chart;
       this.charts.push(chart);
-      this.drawMainAnnotation(this.filteredData);
     }
     /**
      * De-emphasizes the bars outside the linked listing (SH-FUNC-011);
@@ -17025,53 +16976,15 @@ var SafetyViz = (() => {
       chart.update();
     }
     /**
-     * Say once per chart, in the console, that `test_normality` or
-     * `compare_distributions` is deprecated, for each that is on (#188).
+     * Say once per chart, in the console, that a setting the caller passed was
+     * removed and is ignored (#188).
      * @private
      */
-    warnDeprecated() {
-      if (this.settings.test_normality && !this.normalityWarned) {
-        this.normalityWarned = true;
-        console.warn(NORMALITY_DEPRECATED);
-      }
-      if (this.settings.compare_distributions && !this.comparisonWarned) {
-        this.comparisonWarned = true;
-        console.warn(COMPARISON_DEPRECATED);
-      }
-    }
-    /**
-     * Annotate the main chart with the normality screen when enabled, and say
-     * beside it that the screen, and the grouped panels' comparison when it is
-     * on, are deprecated (#188).
-     * @private
-     */
-    drawMainAnnotation(rows) {
-      this.mainAnnotation.innerHTML = "";
-      if (this.settings.test_normality) {
-        const pValue = approximateNormalityP(rows.map((row) => row.__sh_value));
-        this.mainAnnotation.append(
-          statisticalAnnotation(
-            "Normality",
-            pValue,
-            "Approximate Jarque-Bera normality screen",
-            "https://en.wikipedia.org/wiki/Jarque%E2%80%93Bera_test"
-          ),
-          createElement(
-            "p",
-            "sv-deprecation",
-            "Deprecated: this normality screen (test_normality) will be removed in a later release."
-          )
-        );
-      }
-      const grouped = this.state.groupBy && this.state.groupBy !== "sh_none";
-      if (this.settings.compare_distributions && grouped) {
-        this.mainAnnotation.append(
-          createElement(
-            "p",
-            "sv-deprecation",
-            "Deprecated: the group comparison (compare_distributions) will be removed in a later release."
-          )
-        );
+    warnRemoved(settings) {
+      for (const name of REMOVED_SETTINGS) {
+        if (!settings || !settings[name] || this.removedWarned.has(name)) continue;
+        this.removedWarned.add(name);
+        console.warn(removedSetting(name));
       }
     }
     /**
@@ -17088,22 +17001,6 @@ var SafetyViz = (() => {
         );
         const panel = createElement("div", "sv-multiple");
         panel.append(createElement("h3", null, `${groupValue} (${rows.length} records)`));
-        if (this.settings.compare_distributions) {
-          const groupedValues = Object.fromEntries(
-            groups.map((value) => [
-              value,
-              this.filteredData.filter((row) => String(row[this.state.groupBy]) === String(value)).map((row) => row.__sh_value)
-            ])
-          );
-          panel.append(
-            statisticalAnnotation(
-              "Group comparison",
-              approximateGroupP(groupedValues),
-              "Approximate one-way ANOVA screen",
-              "https://en.wikipedia.org/wiki/One-way_analysis_of_variance"
-            )
-          );
-        }
         const canvasWrap = createElement("div", "sv-multiple-canvas");
         const canvas = document.createElement("canvas");
         canvasWrap.append(canvas);
