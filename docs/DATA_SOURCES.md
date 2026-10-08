@@ -187,6 +187,12 @@ STRESU, STRESN, BASE, CHG, ABLFL`). Three parameters are kept for the QT Safety
   `tests/unit/demo-data/adsl.test.js`, and the committed file is guarded there
   against silent upstream drift (participant count, arms, follow-up-day range).
   Rebuild just this file with `node scripts/build-demo-data.mjs --only adsl`.
+  Since #253 it also carries the source's own `SITEID` (17 sites), so the demo
+  app's RBQM tab can score sites on the study the other charts use: R makes
+  gsm's raw tables from this file and `adae.csv` with the workflows in
+  `site/rbqm/standard/`, taking days on study from `EOSDY` and study completion
+  from `EOSSTT`. No safety chart reads the column, and the file is otherwise
+  byte for byte what it was (`tests/unit/app/studies.test.js`, APP-RBQM-040).
   (An earlier increment vendored a pre-derived `adtte.csv` with three fixed
   endpoints; the sv#131 review replaced it with this live composition. The
   frozen copy at `tests/unit/time-to-event/fixtures/adtte.csv` remains the

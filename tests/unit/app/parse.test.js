@@ -85,7 +85,7 @@ describe('demo app: parsing', () => {
 
   it('APP-PARSE-007: reads the vendored demo extracts whole (#149)', () => {
     const adsl = parseFile('adsl.csv', demo('adsl.csv'));
-    expect(adsl.columns).toEqual(['USUBJID', 'ARM', 'EOSDY', 'EOSSTT']);
+    expect(adsl.columns).toEqual(['USUBJID', 'SITEID', 'ARM', 'EOSDY', 'EOSSTT']);
     expect(adsl.rows.length).toBeGreaterThan(200);
     const adbds = parseFile('adbds.csv', demo('adbds.csv'));
     expect(adbds.columns).toContain('STNRHI');

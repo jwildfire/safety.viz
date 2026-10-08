@@ -8,7 +8,7 @@ import { mountApp } from '../../../src/app/page.js';
 import { rbqmTab } from '../../../src/app/rbqm-view.js';
 import { RBQM_DOWNLOADS, rbqmTabOptions } from '../../../scripts/app-libraries.mjs';
 import { RBQM_STUDY } from '../../../scripts/vendor-lib.mjs';
-import { RBQM_NEEDS, RBQM_TAB } from '../../../scripts/rbqm-lib.mjs';
+import { RBQM_NEEDS, RBQM_PILOT, RBQM_TAB, standardFiles } from '../../../scripts/rbqm-lib.mjs';
 
 // The RBQM tab on the page (#235, obot.roadmap#374): a tab a library brings
 // through the second-library seam, which starts R only when the reader asks,
@@ -220,7 +220,7 @@ describe('the RBQM tab on the page', () => {
     const { app, r, $ } = mount();
     app.select('rbqm');
     expect($('.sva-rbqm-status').textContent).toBe(
-      'No gsm raw files are loaded. Drop your own here, or choose the RBQM study on the Data tab; the metrics run on those files.'
+      'Nothing the metrics can run on is loaded. Load a study on the Data tab: the metrics run on its subject-level and adverse events files. Or drop gsm raw files here.'
     );
     expect($('.sva-rbqm-start').textContent).toBe('Start R');
     expect($('.sva-rbqm-start').disabled).toBe(true);
@@ -321,6 +321,7 @@ describe('the RBQM tab on the page', () => {
       metrics: '/rbqm/gsm.kri/workflow/2_metrics',
       reporting: '/rbqm/gsm.reporting/workflow/3_reporting',
       helpers: '/rbqm/gsm.kri/R/util-Report.R',
+      standard: '/rbqm/standard',
       snapshot_date: '2026-10-07'
     });
   });
@@ -721,7 +722,7 @@ describe('the RBQM tab: a reader’s own raw files', () => {
     app.select('rbqm');
     app.loadRaw([NOTES]);
     expect($('.sva-rbqm-status').textContent).toBe(
-      'None of the loaded files was placed in a gsm raw domain, so there is nothing for R to run.'
+      'None of the loaded files is a subject-level or adverse events file, or a gsm raw file, so there is nothing for R to run.'
     );
     expect($('.sva-rbqm-start').disabled).toBe(true);
     expect($('.sva-rbqm-files-summary').textContent).toBe(
@@ -754,5 +755,213 @@ describe('the RBQM tab: a reader’s own raw files', () => {
     expect($('.sva-rbqm-files-summary').textContent).toBe(
       '2 files loaded, 2 placed in a gsm raw domain. They support 0 of 8 metrics.'
     );
+  });
+});
+
+describe('the RBQM tab: the study the other charts use', () => {
+  const pilot = JSON.parse(readFileSync(path.join(root, RBQM_PILOT.expected), 'utf8'));
+  const PILOT = RBQM_PILOT.files.map(({ file }) => ({
+    name: path.basename(file),
+    text: readFileSync(path.join(root, file), 'utf8')
+  }));
+  const LABS = {
+    name: 'adbds.csv',
+    text: readFileSync(path.join(root, 'site/data/adbds.csv'), 'utf8')
+      .split('\n')
+      .slice(0, 40)
+      .join('\n')
+  };
+  // The stand-in answers as desktop R did: the pilot study as it is, or with no site mapped.
+  const noSite = {
+    ...pilot.answer,
+    Results: [],
+    Bounds: [],
+    Groups: [],
+    Metrics: [],
+    thresholds: {},
+    status: pilot.no_site.status,
+    groups: pilot.no_site.groups,
+    ran: pilot.no_site.ran
+  };
+  const ANSWERS = {
+    rbqm_run: (request) => ({
+      status: 'ok',
+      form: 'browser',
+      value: Object.values(request.files).some((text) => text.startsWith('SITEID,'))
+        ? pilot.answer
+        : noSite
+    })
+  };
+  const settle = async () => {
+    for (let turn = 0; turn < 20; turn += 1) await Promise.resolve();
+  };
+
+  it('APP-RBQM-045: with the study the other charts use loaded and nothing else, the tab says R will run on its subject-level and adverse events files, lists what each gives and which metrics the study supports, and its control can be pressed; the list is closed, the study needing nothing more of the reader (#253)', () => {
+    const { app, r, $, $$ } = mount();
+    app.loadFiles([...PILOT, LABS]);
+    app.select('rbqm');
+    expect($('.sva-rbqm-status').textContent).toBe(
+      'Start R to run gsm’s workflows on the loaded study’s adsl.csv and adae.csv. It downloads about 55 MB, once: ' +
+        'R itself from webr.r-wasm.org (about 13 MB), its packages from repo.r-wasm.org (about 40 MB) ' +
+        'and gsm’s packages from this page (about 2 MB). The files stay in this browser, and R runs here.'
+    );
+    expect($('.sva-rbqm-start').disabled).toBe(false);
+    expect($('.sva-rbqm-files').open).toBe(false);
+    expect($('.sva-rbqm-files-summary').textContent).toBe(
+      'The loaded study supports 3 of 8 metrics. R makes gsm’s raw tables from its adsl.csv and adae.csv.'
+    );
+    expect(
+      $$('.sva-rbqm-study-file').map((node) => [node.dataset.table, node.textContent])
+    ).toEqual([
+      [
+        'Standard_subject',
+        'adsl.csv, the Subject-level file, gives Raw_SITE, Raw_STUDCOMP, Raw_STUDY and Raw_SUBJ.'
+      ],
+      ['Standard_ae', 'adae.csv, the Adverse events file, gives Raw_AE.']
+    ]);
+    // No raw file is loaded, so none is listed; the place to drop one is still there.
+    expect($$('.sva-rbqm-file')).toHaveLength(0);
+    expect($('.sva-rbqm-drop')).not.toBeNull();
+    expect(
+      $$('.sva-rbqm-support li[data-metric]').map((node) => [
+        node.dataset.metric,
+        node.classList.contains('sva-rbqm-can'),
+        node.textContent
+      ])
+    ).toEqual(
+      pilot.answer.status.map((line) => [
+        line.id,
+        line.state === 'ran',
+        line.state === 'ran'
+          ? `${line.abbreviation} ${line.metric}: the files and columns it needs are loaded.`
+          : `${line.abbreviation} ${line.message}`
+      ])
+    );
+    expect($$('.sva-rbqm-support .sva-rbqm-can').map((node) => node.dataset.metric)).toEqual(
+      RBQM_PILOT.metrics
+    );
+    expect(r.createConnection).not.toHaveBeenCalled();
+    expect(document.querySelector('script[src]')).toBeNull();
+  });
+
+  it('APP-RBQM-045: R is handed the study’s two files under the standard column names, in a folder of the run’s own, with the folder of the workflows that make gsm’s raw tables and what each file is called; no other file of the study goes to R, and the tab then says what R ran on (#253)', async () => {
+    fakeViz();
+    const { app, r, $, $$ } = mount({ answers: ANSWERS });
+    app.loadFiles([...PILOT, LABS]);
+    app.select('rbqm');
+    $('.sva-rbqm-start').click();
+    const [connection] = r.made;
+    for (let step = 0; step < 3; step += 1) await connection.letGo();
+    const { request } = connection.runs.at(-1);
+    expect(Object.keys(request.files)).toEqual([
+      '/rbqm/runs/1/Standard_subject.csv',
+      '/rbqm/runs/1/Standard_ae.csv'
+    ]);
+    // The bytes desktop R was given for the reference.
+    const needs = JSON.parse(readFileSync(path.join(root, RBQM_NEEDS.file), 'utf8')).needs;
+    const given = standardFiles(RBQM_PILOT.files, needs, manifest, (file) =>
+      readFileSync(path.join(root, file))
+    );
+    expect(request.files).toEqual(
+      Object.fromEntries(
+        Object.entries(given.files).map(([name, text]) => [`/rbqm/runs/1/${name}`, text])
+      )
+    );
+    expect(request.args).toMatchObject({
+      data: '/rbqm/runs/1',
+      standard: '/rbqm/standard',
+      labels: { Standard_subject: 'adsl.csv', Standard_ae: 'adae.csv' }
+    });
+    expect($('.sva-rbqm-status').textContent).toMatch(
+      /^R ran 3 of 8 metrics on the loaded study’s adsl\.csv and adae\.csv in /
+    );
+    expect($('.sva-tab[data-tab="rbqm"] .sva-tab-count').textContent).toBe('3 of 8');
+    expect($('.sva-rbqm-files').open).toBe(false);
+    expect($$('.sva-rbqm-choice').map((button) => [button.dataset.metric, button.title])).toEqual(
+      pilot.answer.status.map((line) => [
+        line.id,
+        line.state === 'ran' ? line.metric : line.message
+      ])
+    );
+    // R's own Groups table is handed to the overview: no stand-in row, and no name where R has none.
+    expect($('.sva-rbqm-note')).toBeNull();
+    const overview = globalThis.gsmViz.default.groupOverview.mock.calls.at(-1);
+    expect(overview[1]).toHaveLength(51);
+    expect(overview[2]).toMatchObject({ GroupLevel: 'Site', groupLabelKey: null });
+    expect(overview[3].filter((row) => row.Param === 'ParticipantCount')).toHaveLength(17 + 1 + 1);
+  });
+
+  it('APP-RBQM-045: a mapping changed on the Data tab is a different study to R: once R is up it is run again at once, and with the site not mapped the tab says of each metric the column no column of the file is mapped to (#253)', async () => {
+    fakeViz();
+    const { app, r, $, $$ } = mount({ answers: ANSWERS });
+    app.loadFiles(PILOT);
+    app.select('rbqm');
+    $('.sva-rbqm-start').click();
+    const [connection] = r.made;
+    for (let step = 0; step < 3; step += 1) await connection.letGo();
+    expect($('.sva-tab[data-tab="rbqm"] .sva-tab-count').textContent).toBe('3 of 8');
+    // The reader clears the site's row of the mapping table.
+    app.select('data');
+    app.setColumn('subject', 'SITEID', null);
+    app.select('rbqm');
+    await settle();
+    await connection.letGo();
+    expect(r.createConnection).toHaveBeenCalledTimes(1);
+    expect(connection.runs.map((run) => run.name)).toEqual([
+      'Sys.time',
+      'rbqm_attach',
+      'rbqm_run',
+      'rbqm_run'
+    ]);
+    const { request } = connection.runs.at(-1);
+    expect(request.args.data).toBe('/rbqm/runs/2');
+    expect(request.files['/rbqm/runs/2/Standard_subject.csv'].split('\n')[0]).toBe(
+      'USUBJID,EOSSTT,EOSDY'
+    );
+    expect($('.sva-tab[data-tab="rbqm"] .sva-tab-count').textContent).toBe('0 of 8');
+    expect($('.sva-rbqm-choice[data-metric="kri0001"]').title).toBe(
+      'Adverse Event Rate needs the column SITEID, which no column of adsl.csv is mapped to.'
+    );
+    expect($$('.sva-rbqm-study-file')[0].textContent).toBe(
+      'adsl.csv, the Subject-level file, gives Raw_STUDY. It has no column mapped to SITEID, ' +
+        'so Raw_SITE, Raw_STUDCOMP and Raw_SUBJ are not made. Map it on the Data tab.'
+    );
+    // Mapped again, it is the study it was, and R runs it a third time.
+    app.select('data');
+    app.setColumn('subject', 'SITEID', 'SITEID');
+    app.select('rbqm');
+    await settle();
+    await connection.letGo();
+    expect(connection.runs).toHaveLength(5);
+    expect($('.sva-tab[data-tab="rbqm"] .sva-tab-count').textContent).toBe('3 of 8');
+  });
+
+  it('APP-RBQM-045: a study with no subject-level or adverse events file has nothing for R to run, and the tab says which files the metrics run on; gsm raw files loaded beside a study are used as they are, and the study’s files only for the raw tables that are not loaded (#253)', () => {
+    const { app, $, $$ } = mount();
+    app.loadFiles([LABS]);
+    app.select('rbqm');
+    expect($('.sva-rbqm-status').textContent).toBe(
+      'None of the loaded files is a subject-level or adverse events file, or a gsm raw file, so there is nothing for R to run.'
+    );
+    expect($('.sva-rbqm-start').disabled).toBe(true);
+    expect($('.sva-rbqm-files').open).toBe(true);
+    app.reset();
+    app.loadFiles(PILOT);
+    app.loadRaw([STUDY.find((file) => file.name === 'Raw_AE.csv')]);
+    app.select('rbqm');
+    expect($('.sva-rbqm-status').textContent).toContain(
+      'on the 1 loaded raw file and the loaded study’s adsl.csv.'
+    );
+    expect($('.sva-rbqm-files-summary').textContent).toBe(
+      '1 file loaded, 1 placed in a gsm raw domain. R makes gsm’s raw tables from the loaded study’s adsl.csv. Together they support 3 of 8 metrics.'
+    );
+    // With raw files to check, the list is open.
+    expect($('.sva-rbqm-files').open).toBe(true);
+    expect($$('.sva-rbqm-study-file').map((node) => node.dataset.table)).toEqual([
+      'Standard_subject'
+    ]);
+    expect($$('.sva-rbqm-file').map((node) => node.textContent)).toEqual([
+      'Raw_AE.csv is Raw_AE, by its name.'
+    ]);
   });
 });

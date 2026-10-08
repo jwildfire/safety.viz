@@ -99,11 +99,13 @@ describe('demo app: the demo studies', () => {
     expect(rbqm.description).toContain('nine files');
   });
 
-  it('APP-RBQM-006: the three demo studies that were there before are untouched: each of their files is byte for byte what it was before the RBQM study was added (#233)', () => {
+  it('APP-RBQM-006: the three demo studies that were there before are what they were before the RBQM study was added, byte for byte, but for the site column the pilot’s subject file has since gained (#233, #253)', () => {
     // The checksums of the files on `dev` at 4e8bad8, before this change. A file
-    // regenerated on purpose later is a change to this list, made with it.
+    // regenerated on purpose later is a change to this list, made with it: the
+    // pilot's adsl.csv gained SITEID (#253, at @jwildfire's word of 2026-10-07),
+    // and a test below holds every other column of it to what it was.
     const before = {
-      'site/data/adsl.csv': 'd2d198906aa06ace5e0fda08442ad234c5835ec7cf19378737db7274ffd54f04',
+      'site/data/adsl.csv': '898d324b198ce76f01f28b2be2b890ea4f0d77f357a3d5f0a49440625b176aac',
       'site/data/adae.csv': '6615467075651a3d56ebeb561ccced98450521cf84c127060146d8cde1e9c9a7',
       'site/data/adbds.csv': '8d35ce8a4727e4bcfb26481ebdfba50c2d666c3c7d39a6092b53a860962140c6',
       'site/data/adeg.csv': '3ff1ecb915df817b0a937b0c9fc59a9566d49b1f4544dca5b2fe0b4b803b152d',
@@ -131,6 +133,23 @@ describe('demo app: the demo studies', () => {
       ['renamed', 'renamed/', 'tests/e2e/fixtures/app'],
       ['liver', '', 'site/data']
     ]);
+  });
+
+  it('APP-RBQM-040: the pilot’s subject-level file gained one column, the site, and nothing else: with SITEID taken out it is byte for byte the file it was; each participant’s site is the site number in their ID, and there are 17 sites (#253)', () => {
+    const text = readFileSync(kept(DEMO_STUDIES[0], 'adsl.csv'), 'utf8');
+    const lines = text.trimEnd().split('\n');
+    expect(lines[0]).toBe('USUBJID,SITEID,ARM,EOSDY,EOSSTT');
+    // No field of this file is quoted, so a line splits on its commas.
+    expect(text).not.toContain('"');
+    const without = lines.map((line) => line.split(',').filter((_, index) => index !== 1));
+    // The file on `dev` at 4e8bad8, before the column was added.
+    expect(sha256(Buffer.from(`${without.map((fields) => fields.join(',')).join('\n')}\n`))).toBe(
+      'd2d198906aa06ace5e0fda08442ad234c5835ec7cf19378737db7274ffd54f04'
+    );
+    const rows = parseFile('adsl.csv', text).rows;
+    expect(rows).toHaveLength(254);
+    for (const row of rows) expect(row.USUBJID.split('-')[1], row.USUBJID).toBe(row.SITEID);
+    expect(new Set(rows.map((row) => row.SITEID)).size).toBe(17);
   });
 
   it('APP-LOAD-022: a study’s files are fetched from its own directory under the demo base, or from a base of its own (#159)', () => {

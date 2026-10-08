@@ -8,7 +8,7 @@
       "id": "rbqm",
       "title": "RBQM",
       "experimental": true,
-      "blurb": "Risk-based quality monitoring in the demo app: gsm's site metrics, run by R in the browser on gsm's raw files and drawn with gsm.viz."
+      "blurb": "Risk-based quality monitoring in the demo app: gsm's site metrics, run by R in the browser on the loaded study and drawn with gsm.viz."
     }
   ],
   "renderers": [

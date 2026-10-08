@@ -2,7 +2,27 @@
  "derived_from": [
   {
    "file": "site/rbqm/pipeline.R",
-   "sha256": "ca5b7ddbdf3ae0d8d0a3c44951edcb8b99efcc7ef073eb1b55735a0e0de7a554"
+   "sha256": "e35c04f4512726a1cd24cbec50bea69a3cf97dc287b8550576e21aee1e68bb98"
+  },
+  {
+   "file": "site/rbqm/standard/AE.yaml",
+   "sha256": "6a7cd09d0fe99f10e989340aed63bea4e7d889261fb16141c8b2ca757a5a4e16"
+  },
+  {
+   "file": "site/rbqm/standard/SITE.yaml",
+   "sha256": "606ffa556fb49f369f08299ced1392e3c1a996a5c3814a4402a71600f85f7519"
+  },
+  {
+   "file": "site/rbqm/standard/STUDCOMP.yaml",
+   "sha256": "17ea4aab94af3c79c74e708504b1abfefa36aca56eab635d318e72cabc1aa39d"
+  },
+  {
+   "file": "site/rbqm/standard/STUDY.yaml",
+   "sha256": "9cc2a7d6b25925f1912914771b13b4733285f0506d8e0b26dffd9ed154dced20"
+  },
+  {
+   "file": "site/rbqm/standard/SUBJ.yaml",
+   "sha256": "5b4037f2b66498b0b0fc344bdc32e9bbc785633831f2ee61de8137841046433c"
   },
   {
    "file": "site/vendor/gsm.mapping/workflow/1_mappings/SUBJ.yaml",
@@ -98,6 +118,134 @@
   }
  ],
  "needs": {
+  "standard": [
+   {
+    "output": "Raw_AE",
+    "needs": [
+     {
+      "table": "Standard_ae",
+      "columns": [
+       "USUBJID",
+       "AEDECOD",
+       "AESER"
+      ]
+     }
+    ],
+    "provides": [
+     "studyid",
+     "subjid",
+     "aeser",
+     "aest_dt",
+     "aeen_dt",
+     "mdrpt_nsv",
+     "mdrsoc_nsv",
+     "aetoxgr",
+     "aeongo",
+     "aerel",
+     "mincreated_dts"
+    ]
+   },
+   {
+    "output": "Raw_SITE",
+    "needs": [
+     {
+      "table": "Standard_subject",
+      "columns": [
+       "SITEID"
+      ]
+     }
+    ],
+    "provides": [
+     "studyid",
+     "invid",
+     "InvestigatorFirstName",
+     "InvestigatorLastName",
+     "site_status",
+     "City",
+     "State",
+     "Country",
+     "site_active_dt"
+    ]
+   },
+   {
+    "output": "Raw_STUDCOMP",
+    "needs": [
+     {
+      "table": "Standard_subject",
+      "columns": [
+       "USUBJID",
+       "SITEID",
+       "EOSSTT"
+      ]
+     }
+    ],
+    "provides": [
+     "studyid",
+     "invid",
+     "subjid",
+     "compyn",
+     "compreas",
+     "mincreated_dts"
+    ]
+   },
+   {
+    "output": "Raw_STUDY",
+    "needs": [
+     {
+      "table": "Standard_subject",
+      "columns": [
+       "USUBJID"
+      ]
+     }
+    ],
+    "provides": [
+     "studyid",
+     "nickname",
+     "protocol_title",
+     "status",
+     "num_plan_site",
+     "num_plan_subj",
+     "act_fpfv",
+     "est_fpfv",
+     "est_lplv",
+     "est_lpfv",
+     "db_lock_dt",
+     "therapeutic_area",
+     "protocol_indication",
+     "phase",
+     "product"
+    ]
+   },
+   {
+    "output": "Raw_SUBJ",
+    "needs": [
+     {
+      "table": "Standard_subject",
+      "columns": [
+       "USUBJID",
+       "SITEID",
+       "EOSDY"
+      ]
+     }
+    ],
+    "provides": [
+     "studyid",
+     "invid",
+     "country",
+     "subjid",
+     "subject_nsv",
+     "enrollyn",
+     "timeonstudy",
+     "firstparticipantdate",
+     "firstdosedate",
+     "timeontreatment",
+     "agerep",
+     "sex",
+     "race",
+     "mincreated_dts"
+    ]
+   }
+  ],
   "raw": [
    {
     "table": "Raw_AE",
