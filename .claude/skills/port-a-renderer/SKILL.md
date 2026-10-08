@@ -99,8 +99,12 @@ therefore be rows and tests rather than configuration:
 @jwildfire answered the cross-renderer policy questions in May 2026. They are recorded in
 [`requirements/history/`](../../../requirements/history/) and apply to every port:
 
-- Keep a thin legacy factory wrapper where practical; design the internals around the new
-  API.
+- Legacy API compatibility is recorded twice, and the two records disagree. On
+  2026-05-20 (`p004-open-questions.md`, P004-API-Q004): no compatibility wrapper by
+  default, breaking changes are fine, design a clean new API. On 2026-05-26
+  (`p004-grill-queue.md`, Q-P004-001): keep a thin legacy factory wrapper where
+  practical, around a clean new API. Both agree on the clean new API. Ask @jwildfire
+  before building or dropping a wrapper for a renderer.
 - Translate a documented subset of legacy Webcharts settings (data mapping, filters,
   controls, display). Mark the rest `replaced` or `deferred`.
 - Rewrite CAT and viz-library regression tests as standalone browser tests, unless they
