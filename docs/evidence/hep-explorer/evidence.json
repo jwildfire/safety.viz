@@ -1,6 +1,6 @@
 {
   "module": "hep-explorer",
-  "generatedAt": "2026-10-08T06:02:30.354Z",
+  "generatedAt": "2026-10-08T11:58:20.676Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "37735386247",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37735386247"
+    "id": "37773482931",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37773482931"
   },
   "records": [
     {
@@ -10226,6 +10226,14 @@
       "screenshots": []
     },
     {
+      "test": "the RBQM tab on the page APP-RBQM-048: once R has answered, the tab names beside R’s own versions what is copied in and not installed in R: gsm.kri’s metric workflows and gsm.viz’s charts, each at the version the record of its copy names (#255)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-048"],
+      "issueRefs": [255],
+      "screenshots": []
+    },
+    {
       "test": "the RBQM tab: a reader’s own raw files APP-RBQM-034: a file that lacks a column its workflow names is listed with the column, and each metric that needs it says so before the press (#236)",
       "suite": "unit",
       "status": "pass",
@@ -10375,6 +10383,14 @@
       "status": "pass",
       "requirementIds": ["APP-RBQM-024"],
       "issueRefs": [235],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab: what it says APP-RBQM-048: beside the versions R reports the tab names what is copied in and not installed in R, which R cannot report: whose the metric workflows are and whose the charts are, each with its version (#255)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-048"],
+      "issueRefs": [255],
       "screenshots": []
     },
     {
