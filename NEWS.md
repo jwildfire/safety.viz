@@ -22,7 +22,7 @@ The demo app gains an RBQM tab: gsm's site metrics, worked out by R in your brow
 
 ## Removed
 
-- **The histogram's `test_normality` and `compare_distributions` settings are removed, as the v1.9.1 notes said.** Take both out of your histogram settings: nothing in safety.viz replaces them. A chart still given one draws without the p-value and says so once in the console. safety.viz now computes no statistical test in JavaScript; run the test in R. [#188](https://github.com/jwildfire/safety.viz/issues/188)
+- **The histogram's `test_normality` and `compare_distributions` settings are removed, as the v1.9.1 notes said.** Take both out of your histogram settings: nothing in safety.viz replaces them. A chart still given one draws without the p-value and says so once in the console. safety.viz now computes no statistical test in JavaScript; run the test in R. [#188](https://github.com/jwildfire/safety.viz/issues/188), PR [#256](https://github.com/jwildfire/safety.viz/pull/256)
 
 ## Also in this release
 
@@ -33,7 +33,7 @@ The demo app gains an RBQM tab: gsm's site metrics, worked out by R in your brow
 
 ## Tests and provenance
 
-2,363 unit and 406 browser tests pass. R computes every number the RBQM tab shows. Browser tests start real R and hold all 1,186 site rows of the eight metrics on the RBQM study, and the 51 of three metrics on the pilot study, to desktop R's, to eight decimal places. Another holds every request the tab makes to three addresses: the page's own, webr.r-wasm.org and repo.r-wasm.org. `dist/safety.viz-1.10.0/` is the release bundle. [#231](https://github.com/jwildfire/safety.viz/issues/231), PR [#243](https://github.com/jwildfire/safety.viz/pull/243), [#255](https://github.com/jwildfire/safety.viz/issues/255)
+2,363 unit and 406 browser tests pass. R computes every number the RBQM tab shows. Browser tests start real R and hold all 1,186 site rows of the eight metrics on the RBQM study, and the 51 of three metrics on the pilot study, to desktop R's, to eight decimal places. Another holds every request the tab makes to three addresses: the page's own, webr.r-wasm.org and repo.r-wasm.org. `dist/safety.viz-1.10.0/` is the release bundle. [#231](https://github.com/jwildfire/safety.viz/issues/231), PR [#243](https://github.com/jwildfire/safety.viz/pull/243), [#255](https://github.com/jwildfire/safety.viz/issues/255), PR [#256](https://github.com/jwildfire/safety.viz/pull/256)
 
 # safety.viz v1.9.2
 
