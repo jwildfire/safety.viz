@@ -26,7 +26,8 @@ tests/e2e/fixtures/app/
 # Vendored chart-library bundles (#182): copied byte for byte from their own
 # repositories by scripts/vendor-bio-viz.mjs and held to a recorded checksum,
 # so formatting them would break the record. The same holds for the gsm
-# workflow files copied by scripts/vendor-gsm-workflows.mjs (#230).
+# workflow files copied by scripts/vendor-gsm-workflows.mjs (#230) and for
+# gsm.viz's bundle, copied by scripts/vendor-gsm-viz.mjs (#232).
 site/vendor/
 
 # The desktop-R comparison for R on request (#183): written by
@@ -37,3 +38,7 @@ tests/fixtures/app-statistics/
 # Desktop R's rows for the RBQM pipeline (#231): written by
 # scripts/rbqm-reference.mjs, and held to what they are derived from by a test.
 tests/fixtures/rbqm/
+
+# The RBQM demo study's source record (#233): written by
+# scripts/vendor-rbqm-study.mjs, which lists the kept columns one to a line.
+site/data/rbqm/SOURCE.json

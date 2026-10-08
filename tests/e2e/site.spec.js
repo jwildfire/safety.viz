@@ -434,12 +434,19 @@ test.describe('docs site', () => {
     for (const [study, files] of [
       ['renamed', ['dm.csv', 'ae.csv', 'labs_final.csv', 'ecg.json']],
       ['liver', ['adbds-abnbl.csv']],
+      [
+        'rbqm',
+        'SUBJ AE PD LB STUDCOMP SDRGCOMP SITE STUDY ENROLL'
+          .split(' ')
+          .map((domain) => `Raw_${domain}.csv`)
+      ],
       ['pilot', ['adsl.csv', 'adae.csv', 'adbds.csv', 'adeg.csv']]
     ]) {
       await menu.selectOption(study);
       await expect(page.locator('.sva-loaded-name')).toHaveText(files);
     }
     expect((await page.request.get('/_site/demo/renamed/dm.csv')).ok()).toBe(true);
+    expect((await page.request.get('/_site/demo/rbqm/Raw_LB.csv')).ok()).toBe(true);
     expect(errors).toEqual([]);
   });
 

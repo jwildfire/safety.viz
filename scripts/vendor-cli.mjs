@@ -113,6 +113,14 @@ export async function runVendorCli(source, { describe, args = process.argv.slice
       : '';
   }
 
+  // Which of a record's files keep only some of their source's columns (#233), in words.
+  function recordedColumns(record) {
+    const cut = record.files.filter((entry) => entry.columns !== undefined);
+    return cut.length
+      ? ` with ${cut.map((entry) => `${entry.file} kept to ${entry.columns.keep.length} of its columns, every row`).join(', ')}`
+      : '';
+  }
+
   try {
     if (flag('--check') || flag('--check-source')) {
       const problems = verifyVendored(directory);
@@ -131,13 +139,14 @@ export async function runVendorCli(source, { describe, args = process.argv.slice
             (flag('--check-source')
               ? `equals ${slug} at ${record.commit.slice(0, 7)}, byte for byte` +
                 recordedChanges(record) +
+                recordedColumns(record) +
                 (record.merged_to_dev
                   ? ', and that commit is on dev.'
                   : record.tag
                     ? `, and that commit is its tag ${record.tag}.`
                     : ', a commit not on dev.')
               : `matches its recorded checksum (copied from ${slug} at ${record.commit.slice(0, 7)}` +
-                `${recordedChanges(record)}).`)
+                `${recordedChanges(record)}${recordedColumns(record)}).`)
       );
     }
     const tag = option('--tag');

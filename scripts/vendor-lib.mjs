@@ -14,11 +14,15 @@
 // differ from its source when the record lists the line as it was, as it is
 // and why: both checks then hold the file to its source with that change made,
 // and to nothing else.
+// A copy of a CSV file may keep only some of its source's columns (#233), every
+// row kept, when the record names the columns and why: the record keeps the
+// whole file's checksum beside the copy's, and the comparison with the source
+// cuts the source the same way and holds the copy to that.
 //
 // Pure functions over bytes and a folder; scripts/vendor-cli.mjs is the
 // command line that fetches the bytes, run by scripts/vendor-bio-viz.mjs,
-// scripts/vendor-statistics.mjs (#183) and scripts/vendor-gsm-workflows.mjs
-// (#230).
+// scripts/vendor-statistics.mjs (#183), scripts/vendor-gsm-workflows.mjs
+// (#230) and scripts/vendor-gsm-viz.mjs (#232).
 
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
@@ -141,21 +145,62 @@ export const GSM_REPORTING_WORKFLOWS = {
 export const GSM_WORKFLOWS = [GSM_MAPPING_WORKFLOWS, GSM_KRI_WORKFLOWS, GSM_REPORTING_WORKFLOWS];
 
 /**
- * The RBQM demo study's raw files (#231, obot.roadmap#373): gsm's raw domains
- * for one synthetic study of 1,005 screened participants at 150 sites, made by
- * jwildfire/demo-301's own script and kept in its `input/` folder. These five
- * are what adverse event rate by site needs: subjects and adverse events for
- * the metric, sites, the study and enrolment for the Groups table. They are
- * copied whole, from a commit of demo-301's `main`, its only branch.
+ * The RBQM demo study's raw files (#231, #233, obot.roadmap#374): gsm's raw
+ * domains for one synthetic study of 1,005 screened participants, 765 of them
+ * enrolled, at 150 sites, made by jwildfire/demo-301's own script and kept in
+ * its `input/` folder. These nine are what the eight site-level metrics in
+ * scope need: subjects, adverse events, protocol deviations, labs and the two
+ * completion tables for the metrics, and sites, the study and enrolment for
+ * the Groups table and the screen failure rate. They are copied from a commit
+ * of demo-301's `main`, its only branch.
+ *
+ * Eight are copied whole. The labs file is 7.3 MB as demo-301 keeps it, and is
+ * kept here to the four columns gsm.mapping's labs workflow names in its spec,
+ * every row kept: the lab metric reads no other column, so its Results rows
+ * are the same from either file, which scripts/rbqm-labs-check.R shows.
  */
 export const RBQM_STUDY = {
   name: 'RBQM demo study raw files',
   label: 'study',
   repository: 'https://github.com/jwildfire/demo-301',
   directory: 'site/data/rbqm',
-  files: 'SUBJ AE SITE STUDY ENROLL'
-    .split(' ')
-    .map((domain) => ({ file: `Raw_${domain}.csv`, source: `input/Raw_${domain}.csv` }))
+  files: 'SUBJ AE PD LB STUDCOMP SDRGCOMP SITE STUDY ENROLL'.split(' ').map((domain) => ({
+    file: `Raw_${domain}.csv`,
+    source: `input/Raw_${domain}.csv`,
+    ...(domain === 'LB'
+      ? {
+          columns: {
+            keep: ['studyid', 'subjid', 'lb_dt', 'toxgrg_nsv'],
+            reason:
+              'The whole labs file is 7.3 MB. gsm.mapping’s labs workflow (LB.yaml, v1.1.6) names ' +
+              'these four columns in its spec, and the lab metric (kri0005) reads no other, so its ' +
+              'Results rows are the same from this file as from the whole one. Every row is kept.'
+          }
+        }
+      : {})
+  }))
+};
+
+/**
+ * gsm.viz's script-tag bundle (#232, obot.roadmap#374): the global `gsmViz`,
+ * whose `default` carries `groupOverview`, `scatterPlot` and `barChart`, which
+ * draw the RBQM tab from the reporting tables R returns. It is the built `index.js` gsm.viz keeps at
+ * the root of its repository, copied from the release tag named here with the
+ * repository's licence file beside it. It is not rebuilt or edited, and it
+ * carries its own Chart.js. gsm.viz is public, in the Gilead-Public
+ * organisation, and is only ever read.
+ */
+export const GSM_VIZ = {
+  name: 'gsm.viz script-tag bundle',
+  label: 'bundle',
+  repository: 'https://github.com/Gilead-Public/gsm.viz',
+  directory: 'site/vendor/gsm.viz',
+  tag: 'v2.4.1',
+  global: 'gsmViz',
+  files: [
+    { file: 'index.js', source: 'index.js' },
+    { file: 'LICENSE', source: 'LICENSE' }
+  ]
 };
 
 /**
@@ -249,6 +294,97 @@ export function undoPatches(bytes, patches) {
   );
 }
 
+// A CSV file as its records, each a list of its fields exactly as the file
+// has them, quotes and all: the file is read one byte to a character, so every
+// byte of a field comes back as it went in. A quoted field may hold a comma, a
+// doubled quote or a line break. The last record need not end in a line feed.
+function csvRecords(bytes) {
+  const text = Buffer.from(bytes).toString('latin1');
+  const records = [];
+  let fields = [];
+  let start = 0;
+  let quoted = false;
+  for (let index = 0; index < text.length; index += 1) {
+    const char = text[index];
+    if (quoted) {
+      if (char === '"') quoted = false;
+    } else if (char === '"') quoted = true;
+    else if (char === ',' || char === '\n') {
+      fields.push(text.slice(start, index));
+      start = index + 1;
+      if (char === '\n') {
+        records.push(fields);
+        fields = [];
+      }
+    }
+  }
+  if (quoted) throw new Error('the file ends inside a quoted field.');
+  if (start < text.length || fields.length) {
+    fields.push(text.slice(start));
+    records.push(fields);
+  }
+  return records;
+}
+
+// A record's declared columns to keep, checked to be something that can be
+// held to: a list of distinct column names, with the reason said.
+function declaredColumns(columns) {
+  const { keep, reason } = columns || {};
+  const name = (value) => typeof value === 'string' && value !== '' && !/[",\r\n]/.test(value);
+  if (!Array.isArray(keep) || !keep.length || !keep.every(name)) {
+    throw new Error('the columns to keep are not a list of column names.');
+  }
+  if (new Set(keep).size !== keep.length) throw new Error('a column to keep is named twice.');
+  if (typeof reason !== 'string' || !reason.trim()) {
+    throw new Error('Keeping only some columns needs its reason.');
+  }
+  return keep;
+}
+
+/**
+ * A CSV file cut to some of its columns (#233): every record is kept, in the
+ * source's order, and of each only the fields of the columns named, in the
+ * order they are named, each byte for byte as the source has it. The header
+ * names a column bare or in double quotes. With no columns to keep, the bytes
+ * as they are.
+ * @param {Uint8Array} bytes The file as its source holds it.
+ * @param {{keep: string[], reason: string}} [columns] The columns to keep, and why.
+ * @returns {Buffer} The file as it is kept here.
+ * @throws {Error} When the columns are not a list of distinct names with a reason, a column named is not in the header exactly once, or a record has fewer or more fields than the header.
+ */
+export function keepColumns(bytes, columns) {
+  if (columns === undefined) return Buffer.from(bytes);
+  const keep = declaredColumns(columns);
+  const records = csvRecords(bytes);
+  if (!records.length) throw new Error('the file has no header.');
+  const bare = (field) => field.replace(/\r$/, '').replace(/^"(.*)"$/, '$1');
+  const header = records[0].map(bare);
+  const places = keep.map((column) => {
+    const found = header.flatMap((name, index) => (name === column ? [index] : []));
+    if (found.length !== 1) {
+      throw new Error(
+        `the column ${column} is in the header ${found.length} times, and must be there once.`
+      );
+    }
+    return found[0];
+  });
+  // A line that ends in a carriage return keeps it, whichever field is last.
+  const ending = /\r$/.test(records[0][records[0].length - 1]) ? '\r' : '';
+  const lines = records.map((fields, row) => {
+    if (fields.length !== header.length) {
+      throw new Error(
+        `record ${row + 1} has ${fields.length} fields, and the header has ${header.length}.`
+      );
+    }
+    return places.map((place) => fields[place].replace(/\r$/, '')).join(',') + ending;
+  });
+  return Buffer.from(`${lines.join('\n')}\n`, 'latin1');
+}
+
+// A source file as it is kept here: cut to its declared columns, then with its
+// declared line changes made. Most files have neither, and are kept whole.
+const asKept = (bytes, entry) => applyPatches(keepColumns(bytes, entry.columns), entry.patches);
+
 /**
  * The record for files as they were read from one commit.
  * @param {Object} options
@@ -269,7 +405,7 @@ export function buildRecord({ source, ref, commit, read, more = {} }) {
   const contents = source.files.map((entry) => {
     const theirs = Buffer.from(read(entry.source));
     try {
-      return { entry, theirs, bytes: applyPatches(theirs, entry.patches) };
+      return { entry, theirs, bytes: asKept(theirs, entry) };
     } catch (error) {
       throw new Error(`${entry.source}: ${error.message}`);
     }
@@ -286,9 +422,11 @@ export function buildRecord({ source, ref, commit, read, more = {} }) {
         source: entry.source,
         sha256: sha256(bytes),
         bytes: bytes.length,
-        ...(entry.patches === undefined
+        ...(entry.patches === undefined && entry.columns === undefined
           ? {}
-          : { source_sha256: sha256(theirs), source_bytes: theirs.length, patches: entry.patches })
+          : { source_sha256: sha256(theirs), source_bytes: theirs.length }),
+        ...(entry.columns === undefined ? {} : { columns: entry.columns }),
+        ...(entry.patches === undefined ? {} : { patches: entry.patches })
       }))
     },
     contents
@@ -347,6 +485,31 @@ function changeProblems(entry, bytes) {
   ];
 }
 
+// What is wrong with a cut file's own record (#233), the file being the one its
+// checksum names: its header must be the columns the record says were kept,
+// and the record must name the whole source file it was cut from. That the
+// rows are the source's is the comparison with the source's to show.
+function columnProblems(entry, bytes) {
+  let keep;
+  try {
+    keep = declaredColumns(entry.columns);
+  } catch (error) {
+    return [`${entry.file}: ${error.message}`];
+  }
+  const problems = [];
+  const [header = []] = csvRecords(bytes.subarray(0, bytes.indexOf(10) + 1 || bytes.length));
+  const names = header.map((field) => field.replace(/\r$/, '').replace(/^"(.*)"$/, '$1'));
+  if (JSON.stringify(names) !== JSON.stringify(keep)) {
+    problems.push(
+      `${entry.file}: its columns are ${names.join(', ')}, and the record says ${keep.join(', ')} were kept.`
+    );
+  }
+  if (!/^[0-9a-f]{64}$/.test(entry.source_sha256 || '') || !Number.isInteger(entry.source_bytes)) {
+    problems.push(`${entry.file}: the record does not name the whole file it was cut from.`);
+  }
+  return problems;
+}
+
 /**
  * Every way a vendor folder and its record disagree; an empty list means every
  * recorded file is present and unchanged and nothing else is there, in the
@@ -391,6 +554,8 @@ export function verifyVendored(directory) {
       problems.push(`${entry.file}: ${bytes.length} bytes, and the record says ${entry.bytes}.`);
     } else if (entry.patches !== undefined) {
       problems.push(...changeProblems(entry, bytes));
+    } else if (entry.columns !== undefined) {
+      problems.push(...columnProblems(entry, bytes));
     }
   }
   const recorded = new Set(files.map((entry) => entry.file));
@@ -412,14 +577,26 @@ export function verifyVendored(directory) {
  */
 export function verifyDeclaredChanges(record, source) {
   const declared = new Map(source.files.map((entry) => [entry.file, entry.patches]));
+  const declaredCut = new Map(source.files.map((entry) => [entry.file, entry.columns]));
   const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
-  return (Array.isArray(record.files) ? record.files : [])
-    .filter((entry) => !same(entry.patches, declared.get(entry.file)))
-    .map((entry) =>
-      declared.get(entry.file) === undefined
-        ? `${entry.file}: ${RECORD_FILE} lists a change to it, and the script that copies it declares none.`
-        : `${entry.file}: ${RECORD_FILE} does not list the change the script that copies it declares, as it declares it.`
-    );
+  const files = Array.isArray(record.files) ? record.files : [];
+  return [
+    ...files
+      .filter((entry) => !same(entry.patches, declared.get(entry.file)))
+      .map((entry) =>
+        declared.get(entry.file) === undefined
+          ? `${entry.file}: ${RECORD_FILE} lists a change to it, and the script that copies it declares none.`
+          : `${entry.file}: ${RECORD_FILE} does not list the change the script that copies it declares, as it declares it.`
+      ),
+    // The same of a file cut to some of its columns (#233).
+    ...files
+      .filter((entry) => !same(entry.columns, declaredCut.get(entry.file)))
+      .map((entry) =>
+        declaredCut.get(entry.file) === undefined
+          ? `${entry.file}: ${RECORD_FILE} says only some of its columns are kept, and the script that copies it keeps them all.`
+          : `${entry.file}: ${RECORD_FILE} does not name the columns the script that copies it keeps, as it declares them.`
+      )
+  ];
 }
 
 /**
@@ -438,17 +615,26 @@ export async function verifyAgainstSource(directory, read) {
     const at = `${entry.source} at ${record.commit.slice(0, 7)} of ${record.repository}`;
     let theirs = Buffer.from(await read(record.commit, entry.source));
     const changed = entry.patches !== undefined;
+    const cut = entry.columns !== undefined;
+    // A file cut to some columns (#233) names the whole file it was cut from.
+    if (cut && sha256(theirs) !== entry.source_sha256) {
+      problems.push(`${entry.file}: ${at} is not the whole file the record says it was cut from.`);
+      continue;
+    }
     try {
-      theirs = applyPatches(theirs, entry.patches);
+      theirs = asKept(theirs, entry);
     } catch (error) {
-      problems.push(`${entry.file}: ${at} does not take its recorded change: ${error.message}`);
+      problems.push(
+        `${entry.file}: ${at} does not take its recorded ${cut ? 'columns' : 'change'}: ${error.message}`
+      );
       continue;
     }
     const file = path.join(directory, entry.file);
     const ours = existsSync(file) ? readFileSync(file) : null;
     if (!ours || !ours.equals(theirs)) {
       problems.push(
-        `${entry.file}: differs from ${at}${changed ? ', with its recorded change made' : ''}.`
+        `${entry.file}: differs from ${at}` +
+          `${cut ? ', cut to its recorded columns' : ''}${changed ? ', with its recorded change made' : ''}.`
       );
     }
   }

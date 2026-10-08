@@ -2,7 +2,12 @@ import { describe, it, expect } from 'vitest';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { RBQM_STUDY, readRecord, verifyVendored } from '../../../scripts/vendor-lib.mjs';
+import {
+  RBQM_STUDY,
+  readRecord,
+  verifyDeclaredChanges,
+  verifyVendored
+} from '../../../scripts/vendor-lib.mjs';
 import {
   RBQM_GATE,
   RESULT_KEYS,
@@ -26,15 +31,20 @@ const read = (file) => readFileSync(path.join(root, file));
 const expected = JSON.parse(read(RBQM_GATE.expected).toString('utf8'));
 
 describe('the RBQM demo study’s raw files (#231)', () => {
-  it('APP-R-035: the five raw files adverse event rate by site needs are copied by script from jwildfire/demo-301, and match their record of the commit, checksum and size (#231)', () => {
+  it('APP-R-035: the demo study’s nine raw files are copied by script from jwildfire/demo-301, and match their record of the commit, checksum and size; the gate’s run is given the five that adverse event rate by site needs (#231, #233)', () => {
     const directory = path.join(root, RBQM_STUDY.directory);
     expect(verifyVendored(directory)).toEqual([]);
+    expect(verifyDeclaredChanges(readRecord(directory), RBQM_STUDY)).toEqual([]);
     const record = readRecord(directory);
     expect(record.repository).toBe('https://github.com/jwildfire/demo-301');
     expect(record.commit).toMatch(/^[0-9a-f]{40}$/);
     expect(record.files.map((entry) => `${entry.source} -> ${entry.file}`)).toEqual([
       'input/Raw_SUBJ.csv -> Raw_SUBJ.csv',
       'input/Raw_AE.csv -> Raw_AE.csv',
+      'input/Raw_PD.csv -> Raw_PD.csv',
+      'input/Raw_LB.csv -> Raw_LB.csv',
+      'input/Raw_STUDCOMP.csv -> Raw_STUDCOMP.csv',
+      'input/Raw_SDRGCOMP.csv -> Raw_SDRGCOMP.csv',
       'input/Raw_SITE.csv -> Raw_SITE.csv',
       'input/Raw_STUDY.csv -> Raw_STUDY.csv',
       'input/Raw_ENROLL.csv -> Raw_ENROLL.csv'
@@ -42,6 +52,7 @@ describe('the RBQM demo study’s raw files (#231)', () => {
     // demo-301 has no dev branch, and the record says why the copy is not from one.
     expect(record.merged_to_dev).toBe(false);
     expect(record.note).toMatch(/main/);
+    expect(RBQM_GATE.domains).toEqual(['SUBJ', 'AE', 'SITE', 'STUDY', 'ENROLL']);
   });
 });
 
