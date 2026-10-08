@@ -1,6 +1,6 @@
 {
   "module": "qt-explorer",
-  "generatedAt": "2026-10-08T11:58:20.676Z",
+  "generatedAt": "2026-10-08T12:40:16.832Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "37773482931",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37773482931"
+    "id": "37777164714",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37777164714"
   },
   "records": [
     {
