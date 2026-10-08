@@ -1,6 +1,6 @@
 {
   "module": "qt-explorer",
-  "generatedAt": "2026-10-08T00:24:26.793Z",
+  "generatedAt": "2026-10-08T00:51:11.929Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "37707536802",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37707536802"
+    "id": "37709854114",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37709854114"
   },
   "records": [
     {
@@ -714,6 +714,14 @@
       "status": "pass",
       "requirementIds": ["APP-R-037"],
       "issueRefs": [231],
+      "screenshots": []
+    },
+    {
+      "test": "APP-RBQM-007: choosing the RBQM study loads gsm’s nine raw files and keeps them as they are: each is listed with its rows, none is placed in a domain or mapped, no safety chart reads them, and the view fits a 390-pixel screen (#233)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-007"],
+      "issueRefs": [233],
       "screenshots": []
     },
     {
@@ -2584,6 +2592,46 @@
       "screenshots": []
     },
     {
+      "test": "a copied CSV file kept to some of its columns (#233) APP-RBQM-008: a cut is refused when a named column is not in the header exactly once, a row has more or fewer fields than the header, the file ends inside a quoted field, or no reason is given (#233)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-008"],
+      "issueRefs": [233, 233],
+      "screenshots": []
+    },
+    {
+      "test": "a copied CSV file kept to some of its columns (#233) APP-RBQM-008: every row is kept, in the source’s order, and of each only the named columns, in the order named, each field byte for byte as the source has it (#233)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-008"],
+      "issueRefs": [233, 233],
+      "screenshots": []
+    },
+    {
+      "test": "a copied CSV file kept to some of its columns (#233) APP-RBQM-009: a cut the record lists must be the one the script declares, and a file the script keeps whole may not be recorded as cut (#233)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-009"],
+      "issueRefs": [233, 233],
+      "screenshots": []
+    },
+    {
+      "test": "a copied CSV file kept to some of its columns (#233) APP-RBQM-009: the record of a cut file names the columns kept and why, and the whole file’s checksum and size beside the copy’s; the record check fails when the copy’s columns are not the ones recorded (#233)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-009"],
+      "issueRefs": [233, 233],
+      "screenshots": []
+    },
+    {
+      "test": "a copied CSV file kept to some of its columns (#233) APP-RBQM-010: the comparison with the source cuts the source’s whole file the same way and holds the copy to it: a row changed, added or dropped in the copy fails, and so does a source that is no longer the whole file the record names (#233)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-010"],
+      "issueRefs": [233, 233],
+      "screenshots": []
+    },
+    {
       "test": "a library the page cannot use as handed in (#193) APP-LIB-020: an entry with no domains, no settings, a setting with no domain, no title or no export, or one that is not an object, reads \"not loaded\" with the reason, and safety.viz’s thirteen charts still mount (#193)",
       "suite": "unit",
       "status": "pass",
@@ -3448,6 +3496,22 @@
       "screenshots": []
     },
     {
+      "test": "demo app: the data panel APP-RBQM-007: a raw file that cannot be read is refused in a sentence, and one loaded again replaces itself (#233)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-007"],
+      "issueRefs": [233],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: the data panel APP-RBQM-007: the RBQM study’s nine files are kept as they are: none is placed in a standard domain or mapped, each is listed with its rows and columns, and no safety chart reads them (#233)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-007"],
+      "issueRefs": [233],
+      "screenshots": []
+    },
+    {
       "test": "demo app: the demo studies APP-LOAD-022: a study’s files are fetched from its own directory under the demo base, or from a base of its own (#159)",
       "suite": "unit",
       "status": "pass",
@@ -3477,6 +3541,30 @@
       "status": "pass",
       "requirementIds": ["APP-LOAD-022"],
       "issueRefs": [159],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: the demo studies APP-RBQM-005: its sentence is held to its files: 1,005 screened participants, 765 of them enrolled, at 150 sites (#233)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-005"],
+      "issueRefs": [233],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: the demo studies APP-RBQM-005: the RBQM study is the fourth demo study: gsm’s nine raw files, each the file the record of the demo-301 commit names, by checksum and size, in a directory of its own, and marked as raw (#233)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-005"],
+      "issueRefs": [233],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: the demo studies APP-RBQM-006: the three demo studies that were there before are untouched: each of their files is byte for byte what it was before the RBQM study was added (#233)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-006"],
+      "issueRefs": [233],
       "screenshots": []
     },
     {
@@ -7561,11 +7649,27 @@
       "screenshots": []
     },
     {
-      "test": "the RBQM demo study’s raw files (#231) APP-R-035: the five raw files adverse event rate by site needs are copied by script from jwildfire/demo-301, and match their record of the commit, checksum and size (#231)",
+      "test": "the RBQM demo study’s labs file (#233) APP-RBQM-011: the labs file is kept to the four columns gsm.mapping’s labs workflow names in its spec, with every one of its 57,200 rows, and its record names the whole file it was cut from and why; the other eight files are kept whole (#233)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-011"],
+      "issueRefs": [233, 233],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM demo study’s labs file (#233) APP-RBQM-011: with one row of the labs file changed the record check fails and names the file (#233)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-011"],
+      "issueRefs": [233, 233],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM demo study’s raw files (#231) APP-R-035: the demo study’s nine raw files are copied by script from jwildfire/demo-301, and match their record of the commit, checksum and size; the gate’s run is given the five that adverse event rate by site needs (#231, #233)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-R-035"],
-      "issueRefs": [231, 231],
+      "issueRefs": [231],
       "screenshots": []
     },
     {
