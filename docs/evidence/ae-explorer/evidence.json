@@ -1,6 +1,6 @@
 {
   "module": "ae-explorer",
-  "generatedAt": "2026-10-08T02:27:04.387Z",
+  "generatedAt": "2026-10-08T06:02:30.354Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "37717845772",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37717845772"
+    "id": "37735386247",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37735386247"
   },
   "records": [
     {
@@ -1018,6 +1018,22 @@
       "status": "pass",
       "requirementIds": ["APP-RBQM-039"],
       "issueRefs": [236],
+      "screenshots": []
+    },
+    {
+      "test": "APP-RBQM-046: on the app as it opens, with the study the other charts use and nothing else loaded, the RBQM tab says R will run on that study’s subject-level and adverse events files and which three of the eight metrics it supports; Start R draws the overview with a row for each of 17 sites and a column for each of the three metrics, every cell R’s own row, and the scatter plot and bar chart of each; each other metric says which file it needs; nothing scrolls sideways at 390 pixels; and the RBQM study, chosen afterwards, still runs all eight (#253)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-046"],
+      "issueRefs": [253],
+      "screenshots": []
+    },
+    {
+      "test": "APP-RBQM-047: the study the other charts use in real R, and what leaves the browser: on the app as it opens, Start R runs gsm’s workflows on the study’s subject-level and adverse events files and draws three metrics at 17 sites; every Results row is desktop R’s to eight decimal places, and what R says of each metric is what the tab said before R started; with the site’s mapping cleared on the Data tab R runs at once and names the column. From the tab’s opening until five quiet seconds after, every request is a GET or HEAD with no body, no query and no header the browser did not set itself, to the page’s own address, webr.r-wasm.org and repo.r-wasm.org and no other; the page’s own address is asked for gsm.viz’s bundle, the files R is given and gsm’s packages, and no address names a participant (#253)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-047"],
+      "issueRefs": [253],
       "screenshots": []
     },
     {
@@ -4221,11 +4237,19 @@
       "screenshots": []
     },
     {
-      "test": "demo app: the demo studies APP-RBQM-006: the three demo studies that were there before are untouched: each of their files is byte for byte what it was before the RBQM study was added (#233)",
+      "test": "demo app: the demo studies APP-RBQM-006: the three demo studies that were there before are what they were before the RBQM study was added, byte for byte, but for the site column the pilot’s subject file has since gained (#233, #253)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-RBQM-006"],
-      "issueRefs": [233],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: the demo studies APP-RBQM-040: the pilot’s subject-level file gained one column, the site, and nothing else: with SITEID taken out it is byte for byte the file it was; each participant’s site is the site number in their ID, and there are 17 sites (#253)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-040"],
+      "issueRefs": [253],
       "screenshots": []
     },
     {
@@ -4578,6 +4602,22 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [140],
+      "screenshots": []
+    },
+    {
+      "test": "desktop R’s answer for the pilot study, the one the other charts use (#253) APP-RBQM-044: desktop R’s answer for the pilot study is derived from the pipeline’s R, every workflow and the study’s two files as they are now, by checksum; R made the five raw tables from the two files and ran the adverse event, serious adverse event and study discontinuation metrics, a row for each of 17 sites, with nothing warned (#253)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-044"],
+      "issueRefs": [253, 253],
+      "screenshots": []
+    },
+    {
+      "test": "desktop R’s answer for the pilot study, the one the other charts use (#253) APP-RBQM-044: what R counted is what the study’s files hold, counted here from the files by another route: 1,122 adverse events and 3 serious ones over the days on study of 254 participants, and 144 of the 254 who left the study early; each site’s participants in the Groups table are the file’s (#253)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-044"],
+      "issueRefs": [253, 253],
       "screenshots": []
     },
     {
@@ -7341,6 +7381,38 @@
       "screenshots": []
     },
     {
+      "test": "the loaded study’s standard domains, as gsm’s raw tables APP-RBQM-041: five workflows of the repository’s own make gsm’s raw tables from the standard subject-level and adverse events domains; R reads from their specs which standard columns each needs, and each gives every column gsm’s mapping workflow names for its raw table; they are served beside the app with the pipeline’s R (#253)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-041"],
+      "issueRefs": [253],
+      "screenshots": []
+    },
+    {
+      "test": "the loaded study’s standard domains, as gsm’s raw tables APP-RBQM-042: R is handed each standard domain the workflows read as CSV: the reader’s rows, only the columns the workflows ask for, each under its standard name whatever the reader’s file calls it, and nothing of a value changed; a domain no workflow reads is not handed over (#253)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-042"],
+      "issueRefs": [253],
+      "screenshots": []
+    },
+    {
+      "test": "the loaded study’s standard domains, as gsm’s raw tables APP-RBQM-043: a raw file that is loaded is used as it is and the study’s file is not read for that table; a study with no subject-level or adverse events file gives R nothing, and each metric names the raw files it needs (#253)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-043"],
+      "issueRefs": [253],
+      "screenshots": []
+    },
+    {
+      "test": "the loaded study’s standard domains, as gsm’s raw tables APP-RBQM-043: before R is started the tab says what the loaded study supports in the words R then says: for the pilot study three of the eight metrics and the Groups table, and of each other metric the file it needs, word for word what desktop R said after running; with the site not mapped, every sentence names the column and the reader’s file, as desktop R’s do (#253)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-043"],
+      "issueRefs": [253],
+      "screenshots": []
+    },
+    {
       "test": "the local demo server APP-LOCAL-003: a file that is not there is a 404 that says so, and a directory with no page is one too (#214)",
       "suite": "unit",
       "status": "pass",
@@ -7693,11 +7765,11 @@
       "screenshots": []
     },
     {
-      "test": "the RBQM pipeline’s run, as R is given it (#231) APP-R-036: R is given the pipeline’s one R file first, then every copied mapping, metric and reporting workflow and gsm.kri’s one R file, each a file the repository holds, each at a place of its own under one root (#231)",
+      "test": "the RBQM pipeline’s run, as R is given it (#231) APP-R-036: R is given the pipeline’s one R file first, then our five workflows that make a raw table from a standard domain, then every copied mapping, metric and reporting workflow and gsm.kri’s one R file, each a file the repository holds, each at a place of its own under one root (#231, #253)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-R-036"],
-      "issueRefs": [231, 231],
+      "issueRefs": [231],
       "screenshots": []
     },
     {
@@ -7850,6 +7922,38 @@
       "status": "pass",
       "requirementIds": ["APP-RBQM-038"],
       "issueRefs": [236],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab: the study the other charts use APP-RBQM-045: a mapping changed on the Data tab is a different study to R: once R is up it is run again at once, and with the site not mapped the tab says of each metric the column no column of the file is mapped to (#253)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-045"],
+      "issueRefs": [253],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab: the study the other charts use APP-RBQM-045: a study with no subject-level or adverse events file has nothing for R to run, and the tab says which files the metrics run on; gsm raw files loaded beside a study are used as they are, and the study’s files only for the raw tables that are not loaded (#253)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-045"],
+      "issueRefs": [253],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab: the study the other charts use APP-RBQM-045: R is handed the study’s two files under the standard column names, in a folder of the run’s own, with the folder of the workflows that make gsm’s raw tables and what each file is called; no other file of the study goes to R, and the tab then says what R ran on (#253)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-045"],
+      "issueRefs": [253],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab: the study the other charts use APP-RBQM-045: with the study the other charts use loaded and nothing else, the tab says R will run on its subject-level and adverse events files, lists what each gives and which metrics the study supports, and its control can be pressed; the list is closed, the study needing nothing more of the reader (#253)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-045"],
+      "issueRefs": [253],
       "screenshots": []
     },
     {
