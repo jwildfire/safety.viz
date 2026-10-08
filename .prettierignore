@@ -42,3 +42,8 @@ tests/fixtures/rbqm/
 # The RBQM demo study's source record (#233): written by
 # scripts/vendor-rbqm-study.mjs, which lists the kept columns one to a line.
 site/data/rbqm/SOURCE.json
+
+# What each gsm workflow needs, as desktop R reads it from the specs (#236):
+# written by scripts/rbqm-reference.mjs, and held to what it is derived from
+# by a test.
+site/rbqm/needs.json

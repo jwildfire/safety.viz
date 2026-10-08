@@ -107,6 +107,19 @@ display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:v
 .sva-rbqm-start:disabled{color:var(--soft);border-color:var(--line);cursor:default}
 .sva-app .sva-rbqm-status{flex:1 1 16rem;min-width:0;margin:0;font-size:.92rem}
 .sva-app .sva-rbqm-status.sva-rbqm-problem{color:var(--alarm)}
+.sva-rbqm-files{margin:0 0 1.1rem;max-width:62rem;padding:.7rem 1rem;background:var(--card);border:1px solid var(--rule);border-radius:10px;min-width:0}
+.sva-rbqm-files-summary{cursor:pointer;font-size:.92rem}
+.sva-rbqm-files[open] .sva-rbqm-files-summary{margin:0 0 .7rem}
+.sva-rbqm-files .sva-rbqm-drop{margin:0 0 .8rem;padding:.9rem .8rem}
+.sva-rbqm-files .sva-rbqm-drop p{font-size:1.05rem}
+.sva-rbqm-choose{margin:0 0 .5rem}
+.sva-app .sva-rbqm-subheading{margin:.7rem 0 .3rem;font-family:var(--mono);font-size:.68rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--soft)}
+.sva-app .sva-rbqm-aside{margin:0 0 .4rem;font-size:.8rem;color:var(--soft)}
+.sva-rbqm-loaded,.sva-rbqm-support{margin:0;padding:0;list-style:none;font-size:.88rem}
+.sva-rbqm-loaded li,.sva-rbqm-support li{padding:.22rem 0;border-bottom:1px solid var(--rule);overflow-wrap:anywhere}
+.sva-rbqm-loaded li:last-child,.sva-rbqm-support li:last-child{border-bottom:0}
+.sva-rbqm-unused{color:var(--alarm)}
+.sva-rbqm-cannot{color:var(--soft)}
 .sva-rbqm-section{margin:0 0 1.1rem;padding:1rem;background:var(--card);border:1px solid var(--rule);border-radius:10px;min-width:0}
 .sva-app .sva-rbqm-heading{margin:0 0 .6rem;font-family:var(--serif);font-weight:normal;font-size:1.35rem;line-height:1.2}
 .sva-rbqm-table{max-height:26rem;overflow:auto;border:1px solid var(--rule);border-radius:8px}
