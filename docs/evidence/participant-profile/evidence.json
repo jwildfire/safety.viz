@@ -1,6 +1,6 @@
 {
   "module": "participant-profile",
-  "generatedAt": "2026-10-07T13:05:43.479Z",
+  "generatedAt": "2026-10-08T00:24:26.793Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "37625725220",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37625725220"
+    "id": "37707536802",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37707536802"
   },
   "records": [
     {
@@ -8450,6 +8450,46 @@
       "status": "pass",
       "requirementIds": ["APP-BIO-020"],
       "issueRefs": [212],
+      "screenshots": []
+    },
+    {
+      "test": "the vendored gsm.viz bundle (#232) APP-RBQM-001: the bundle and the repository’s licence are copied from gsm.viz’s v2.4.1 tag, and match their record of the repository, the tag, the full commit, the version, the licence and each file’s checksum and size (#232)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-001"],
+      "issueRefs": [232, 232],
+      "screenshots": []
+    },
+    {
+      "test": "the vendored gsm.viz bundle (#232) APP-RBQM-002: one command makes the check and says the copy matches; with a byte changed it exits 1 naming the file; asked to copy from anywhere but the tag it names, it refuses (#232)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-002"],
+      "issueRefs": [232, 232],
+      "screenshots": []
+    },
+    {
+      "test": "the vendored gsm.viz bundle (#232) APP-RBQM-002: the check fails when a byte of the bundle changes, a file is there unrecorded, or the record is missing (#232)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-002"],
+      "issueRefs": [232, 232],
+      "screenshots": []
+    },
+    {
+      "test": "the vendored gsm.viz bundle (#232) APP-RBQM-003: run as a page runs it, the bundle defines the global gsmViz, and the three charts the tab draws, groupOverview, scatterPlot and barChart, are functions on its `default`, where gsm.viz’s own R bindings call them (#232)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-003"],
+      "issueRefs": [232, 232],
+      "screenshots": []
+    },
+    {
+      "test": "the vendored gsm.viz bundle (#232) APP-RBQM-004: the demo app’s directory serves the bundle beside the app under a name of its own, the copy but for its source-map line, with the licence byte for byte (#232)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-004"],
+      "issueRefs": [232, 232],
       "screenshots": []
     },
     {
