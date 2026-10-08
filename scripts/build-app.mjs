@@ -21,6 +21,8 @@ import {
   APP_LIBRARIES,
   FILE_PITCH,
   RBQM_CHARTS,
+  chartLinks as chartLinksFor,
+  inlineJson,
   librariesExpression,
   libraryScript,
   rbqmTabExpression,
@@ -50,17 +52,27 @@ const inlineScript = (script) =>
  * @param {Object} options Wrapper options.
  * @param {string} options.script The bundled app script.
  * @param {Array<{name: string, global: string, script: string}>} [options.libraries] Further libraries: name, the global their bundle defines, and the bundle.
+ * @param {Object<string, {guide?: string, evidence?: string}>} [options.chartLinks] Each chart's own pages (#246), handed to the app for the footnote under each chart: addresses a reader may follow, which the file asks nothing of.
  * @returns {string} The HTML document.
  */
-export function renderAppHtml({ script, libraries = [] }) {
+export function renderAppHtml({ script, libraries = [], chartLinks = {} }) {
   const inline = inlineScript(script);
   const others = libraries
     .map((library) => `<script>${inlineScript(library.script)}</script>\n`)
     .join('');
   // The file loads nothing, so its biomarker charts cannot start R: each
   // statistics line says so, and there is no control (#183).
-  const mount = libraries.length
-    ? `SafetyVizApp.mount('#app', { libraries: ${librariesExpression(libraries, { r: 'unavailable', fromFile: false, more: [rbqmTabExpression({ r: 'unavailable' })] })}, pitch: ${JSON.stringify(FILE_PITCH)} })`
+  const options = [
+    ...(libraries.length
+      ? [
+          `libraries: ${librariesExpression(libraries, { r: 'unavailable', fromFile: false, more: [rbqmTabExpression({ r: 'unavailable' })] })}`,
+          `pitch: ${JSON.stringify(FILE_PITCH)}`
+        ]
+      : []),
+    ...(Object.keys(chartLinks).length ? [`chartLinks: ${inlineJson(chartLinks)}`] : [])
+  ];
+  const mount = options.length
+    ? `SafetyVizApp.mount('#app', { ${options.join(', ')} })`
     : `SafetyVizApp.mount('#app')`;
   return `<!doctype html>
 <html lang="en">
@@ -114,7 +126,11 @@ export async function buildApp(outDir) {
     ...library,
     script: libraryScript(library)
   }));
-  writeFileSync(htmlFile, renderAppHtml({ script: outputFiles[0].text, libraries }));
+  // The file has no site beside it, so its charts' pages are the published site's (#246).
+  writeFileSync(
+    htmlFile,
+    renderAppHtml({ script: outputFiles[0].text, libraries, chartLinks: chartLinksFor() })
+  );
 
   return {
     file,

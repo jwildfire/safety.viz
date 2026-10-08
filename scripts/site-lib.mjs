@@ -7,6 +7,7 @@ import {
   EXPERIMENTAL_MEANING,
   HOSTED_DESCRIPTION,
   HOSTED_PITCH,
+  inlineJson,
   librariesExpression,
   rbqmTabExpression
 } from './app-libraries.mjs';
@@ -1601,6 +1602,7 @@ export function publishDemoAppFonts(rootDir, demoDir) {
  * @param {string} options.repoUrl The repository URL, for the app's source link.
  * @param {Array<{name: string, global: string, file: string}>} [options.libraries] Further chart libraries (#182): each bundle is loaded from beside the page after the app's and handed to the app when it mounts.
  * @param {string} [options.charts] What the app reviews a study in, for the page's description: its charts, counted.
+ * @param {Object<string, {guide?: string, evidence?: string}>} [options.chartLinks] Each chart's own pages (#246), as scripts/app-libraries.mjs::chartLinks gives them: handed to the app for the footnote under each chart. Given none, the app is told of none.
  * @param {{docs?: ?string, domains?: ?string}} [options.links] Where the app's links to the docs site and the Domains page lead: by default into the site the page is part of. One given no address is left out, and the app's own default, the published site, stands (#214): the page `npm run demo` serves has no site beside it.
  * @returns {string} The complete HTML document.
  */
@@ -1610,7 +1612,8 @@ export function renderDemoAppPage({
   repoUrl,
   libraries = [],
   charts = 'thirteen clinical safety charts',
-  links = {}
+  links = {},
+  chartLinks = {}
 }) {
   const siteLinks = { ...DEMO_APP_SITE_LINKS, ...links };
   const icon = encodeURIComponent(LOGO_SVG).replace(/'/g, '%27');
@@ -1645,7 +1648,7 @@ body{margin:0;background:#fafaf8}
 <script src="./${escapeHtml(bundle)}"></script>
 ${libraries.map((library) => `<script src="./${escapeHtml(library.file)}"></script>\n`).join('')}<script>
 window.__safetyVizApp = SafetyVizApp.mount('#app', {
-  demo: { base: './' },${libraries.length ? `\n  libraries: ${librariesExpression(libraries, { r: 'request', more: [rbqmTabExpression()] })},\n  pitch: ${js(HOSTED_PITCH)},` : ''}
+  demo: { base: './' },${libraries.length ? `\n  libraries: ${librariesExpression(libraries, { r: 'request', more: [rbqmTabExpression()] })},\n  pitch: ${js(HOSTED_PITCH)},` : ''}${Object.keys(chartLinks).length ? `\n  chartLinks: ${inlineJson(chartLinks)},` : ''}
   links: {${Object.keys(DEMO_APP_SITE_LINKS)
     .filter((name) => siteLinks[name])
     .map((name) => `\n    ${name}: ${js(siteLinks[name])},`)
