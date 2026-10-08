@@ -327,8 +327,78 @@ export const RBQM_PILOT = {
    * the tab says before R is started.
    */
   noSite: { id: 'no-site', unmap: { subject: ['SITEID'] } },
+  /**
+   * With none of the subject-level file's columns mapped: R is handed a table
+   * of no columns, reads on, and each metric names the columns (#258).
+   */
+  noColumns: {
+    id: 'no-columns',
+    unmap: { subject: ['USUBJID', 'SITEID', 'EOSDY', 'EOSSTT'] }
+  },
+  /**
+   * With the site blank for every tenth participant: gsm leaves them out of
+   * each metric and warns that it did (#258).
+   */
+  someSitesBlank: { id: 'some-sites-blank', blank: { column: 'SITEID', every: 10 } },
+  /**
+   * With the site blank for every participant: each metric runs on nobody and
+   * gsm's reporting workflows stop (#258).
+   */
+  allSitesBlank: { id: 'all-sites-blank', blank: { column: 'SITEID', every: 1 } },
+  /**
+   * With seriousness typed in small letters and padded (" y ", " n "): it is
+   * read trimmed and in capitals, so gsm counts the same serious events (#258).
+   */
+  seriousnessAsTyped: { id: 'seriousness-as-typed', typed: true },
   expected: 'tests/fixtures/rbqm/expected-standard.json'
 };
+
+/**
+ * A CSV file with one column emptied on every nth row, the first row first.
+ * For a study file as the repository holds it: no quoted field.
+ * @param {string} text The file.
+ * @param {string} column The column to empty.
+ * @param {number} every Empty it on rows 0, n, 2n, ...
+ * @returns {string} The file, with those cells empty.
+ */
+/**
+ * The pilot study's adverse events file with each seriousness value typed in
+ * small letters between spaces. Seriousness is the third column from the end,
+ * and the two after it hold no comma, so it is found from the end of the line:
+ * an earlier field may be quoted.
+ * @param {string} text The file.
+ * @returns {string} The file, with seriousness retyped on every row.
+ */
+export function seriousnessTyped(text) {
+  const [header, ...rows] = text.replace(/\r?\n$/, '').split(/\r?\n/);
+  if (header.split(',').slice(-3)[0] !== 'AESER') {
+    throw new Error('seriousnessTyped: AESER is not the third column from the end.');
+  }
+  // A row that stands for a participant with no event has no seriousness, and is left.
+  const retyped = rows.map((row) =>
+    row.replace(/,([YN]),([^,"]*),([^,"]*)$/, (_, value, a, b) =>
+      [``, ` ${value.toLowerCase()} `, a, b].join(',')
+    )
+  );
+  if (retyped.every((row, index) => row === rows[index])) {
+    throw new Error('seriousnessTyped: no row has a seriousness of Y or N.');
+  }
+  return `${[header, ...retyped].join('\n')}\n`;
+}
+
+export function blankColumn(text, column, every) {
+  if (text.includes('"')) throw new Error('blankColumn: the file has a quoted field.');
+  const [header, ...rows] = text.replace(/\r?\n$/, '').split(/\r?\n/);
+  const at = header.split(',').indexOf(column);
+  if (at < 0) throw new Error(`blankColumn: the file has no column ${column}.`);
+  const emptied = rows.map((row, index) => {
+    if (index % every) return row;
+    const cells = row.split(',');
+    cells[at] = '';
+    return cells.join(',');
+  });
+  return `${[header, ...emptied].join('\n')}\n`;
+}
 
 /**
  * What R is handed for a study of standard domains: each standard table the

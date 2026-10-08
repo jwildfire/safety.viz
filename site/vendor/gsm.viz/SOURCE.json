@@ -4,7 +4,8 @@
   "ref": "v2.4.1",
   "commit": "e4c9d9f7fbfb0da8efd4e27cf8985ee14dd2e233",
   "version": "2.4.1",
-  "license": "ISC",
+  "license": "Apache-2.0",
+  "license_in_package_json": "ISC",
   "tag": "v2.4.1",
   "merged_to_dev": false,
   "files": [

@@ -36,6 +36,8 @@ import {
   pilotDerivedFrom,
   pipelineArgs,
   scenarioFiles,
+  blankColumn,
+  seriousnessTyped,
   standardFiles,
   studyFiles,
   tabArgs,
@@ -214,10 +216,20 @@ console.log(
 
 const manifest = JSON.parse(readFileSync(path.join(rootDir, 'src/data/portfolio.json'), 'utf8'));
 // One run of the pilot study as the app hands it, with or without a mapping cleared.
-function runPilot(id, unmap) {
+function runPilot(id, unmap, blank, typed) {
   const folder = path.join(work, id);
   mkdirSync(folder);
-  const handed = standardFiles(RBQM_PILOT.files, needs, manifest, read, unmap);
+  // A scenario may empty one column of the subject-level file on some rows.
+  const subject = RBQM_PILOT.files.find(({ domain }) => domain === 'subject').file;
+  const events = RBQM_PILOT.files.find(({ domain }) => domain === 'ae').file;
+  const reading = (file) => {
+    if (blank && file === subject) {
+      return Buffer.from(blankColumn(read(file).toString('utf8'), blank.column, blank.every));
+    }
+    if (typed && file === events) return Buffer.from(seriousnessTyped(read(file).toString('utf8')));
+    return read(file);
+  };
+  const handed = standardFiles(RBQM_PILOT.files, needs, manifest, reading, unmap);
   for (const [name, text] of Object.entries(handed.files)) {
     writeFileSync(path.join(folder, name), text);
   }
@@ -242,6 +254,33 @@ function runPilot(id, unmap) {
 const { handed: pilot, answer: pilotAnswer } = runPilot(RBQM_PILOT.id);
 // With the site's mapping cleared: only what R said, the rows being none of the claim.
 const noSite = runPilot(RBQM_PILOT.noSite.id, RBQM_PILOT.noSite.unmap).answer;
+// What R said, and how many rows it returned, on three studies it once stopped
+// on or said nothing of (#258).
+const said = ({ status, groups, ran, warnings, Results }) => ({
+  status,
+  groups,
+  ran,
+  warnings,
+  rows: Results.length
+});
+const noColumns = runPilot(RBQM_PILOT.noColumns.id, RBQM_PILOT.noColumns.unmap).answer;
+const someSitesBlank = runPilot(
+  RBQM_PILOT.someSitesBlank.id,
+  undefined,
+  RBQM_PILOT.someSitesBlank.blank
+).answer;
+const allSitesBlank = runPilot(
+  RBQM_PILOT.allSitesBlank.id,
+  undefined,
+  RBQM_PILOT.allSitesBlank.blank
+).answer;
+// Every serious event R counted, across the sites.
+const seriousEvents = ({ Results }) =>
+  Results.filter((row) => row.MetricID === 'Analysis_kri0002').reduce(
+    (sum, row) => sum + row.Numerator,
+    0
+  );
+const asTyped = runPilot(RBQM_PILOT.seriousnessAsTyped.id, undefined, undefined, true).answer;
 {
   const { Results, Bounds, Groups, Metrics, ...rest } = pilotAnswer;
   writeFileSync(
@@ -258,7 +297,11 @@ const noSite = runPilot(RBQM_PILOT.noSite.id, RBQM_PILOT.noSite.unmap).answer;
         .map(([key, value]) => `  ${JSON.stringify(key)}: ${JSON.stringify(value)}`)
         .join(',\n') +
       `\n },\n` +
-      ` "no_site": ${JSON.stringify({ status: noSite.status, groups: noSite.groups, ran: noSite.ran, rows: noSite.Results.length })}\n}\n`
+      ` "no_site": ${JSON.stringify({ status: noSite.status, groups: noSite.groups, ran: noSite.ran, rows: noSite.Results.length })},\n` +
+      ` "no_columns": ${JSON.stringify(said(noColumns))},\n` +
+      ` "some_sites_blank": ${JSON.stringify(said(someSitesBlank))},\n` +
+      ` "all_sites_blank": ${JSON.stringify(said(allSitesBlank))},\n` +
+      ` "seriousness_as_typed": ${JSON.stringify({ ...said(asTyped), serious_events: seriousEvents(asTyped), serious_events_as_held: seriousEvents(pilotAnswer) })}\n}\n`
   );
   console.log(
     `✓ Wrote ${RBQM_PILOT.expected} — ${Results.length} Results rows for ` +

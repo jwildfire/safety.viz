@@ -366,8 +366,8 @@ test.describe('safety.viz histogram module', () => {
     await setHarnessSettings(page, { group_by: 'ARM', test_normality: true });
     expect(warnings.filter((text) => /was removed in v1\.10\.0 and is ignored/.test(text))).toEqual(
       [
-        'safety.viz histogram: `test_normality` was removed in v1.10.0 and is ignored. safety.viz computes no statistical test in JavaScript: run the test in R.',
-        'safety.viz histogram: `compare_distributions` was removed in v1.10.0 and is ignored. safety.viz computes no statistical test in JavaScript: run the test in R.'
+        'safety.viz histogram: `test_normality` was removed in v1.10.0 and is ignored. The histogram draws no p-value: run the test in R.',
+        'safety.viz histogram: `compare_distributions` was removed in v1.10.0 and is ignored. The histogram draws no p-value: run the test in R.'
       ]
     );
     await captureEvidence(page, 'SH-CHART-008', 'no-pvalue');

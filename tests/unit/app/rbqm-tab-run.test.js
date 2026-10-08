@@ -421,3 +421,66 @@ describe('desktop R’s answer for the pilot study, the one the other charts use
     expect(study('SiteCount')).toBe('17');
   });
 });
+
+describe('desktop R on a study it once stopped on, or said nothing of (#258)', () => {
+  const pilot = JSON.parse(read(RBQM_PILOT.expected).toString('utf8'));
+  const states = (status) => status.map((line) => [line.id, line.state]);
+
+  it('APP-RBQM-049: with the site blank for every tenth participant gsm leaves them out of each metric and R says so in a warning, which it returns: the three metrics still ran, a row for each of 17 sites', () => {
+    const blank = pilot.some_sites_blank;
+    expect(blank.warnings).toEqual(["26 cases of NA's in GroupID, cases are removed in output"]);
+    expect(blank.ran.metrics).toEqual(RBQM_PILOT.metrics);
+    expect(blank.rows).toBe(51);
+    // The study as it is held warns of nothing.
+    expect(pilot.answer.warnings).toEqual([]);
+  });
+
+  it('APP-RBQM-050: with none of the subject-level file’s columns mapped R is handed a table of no columns and reads on: no metric ran, and each that needs the file names the columns and the reader’s file', () => {
+    const none = pilot.no_columns;
+    expect(none.rows).toBe(0);
+    expect(none.ran.metrics).toEqual([]);
+    // The adverse events file was still read and mapped.
+    expect(none.ran.standard).toEqual(['Raw_AE']);
+    expect(none.status.find((line) => line.id === 'kri0001').message).toBe(
+      'Adverse Event Rate needs the columns USUBJID, SITEID and EOSDY, which no column of adsl.csv is mapped to.'
+    );
+    expect(none.status.find((line) => line.id === 'kri0006').message).toBe(
+      'Study Discontinuation Rate needs the columns USUBJID, SITEID, EOSDY and EOSSTT, which no column of adsl.csv is mapped to.'
+    );
+    expect(none.groups.state).toBe('no column');
+  });
+
+  it('APP-RBQM-050: with the site blank for every participant gsm’s reporting workflows stop, and R returns that of each metric that ran in place of one error for the run: the metrics that need a file not loaded still say so, and R’s warning says who was left out', () => {
+    const all = pilot.all_sites_blank;
+    expect(all.rows).toBe(0);
+    expect(all.ran.metrics).toEqual([]);
+    expect(states(all.status)).toEqual([
+      ['kri0001', 'stopped'],
+      ['kri0002', 'stopped'],
+      ['kri0003', 'no file'],
+      ['kri0004', 'no file'],
+      ['kri0005', 'no file'],
+      ['kri0006', 'stopped'],
+      ['kri0007', 'no file'],
+      ['kri0012', 'no file']
+    ]);
+    for (const line of all.status.filter((entry) => entry.state === 'stopped')) {
+      expect(line.message).toMatch(
+        new RegExp(`^${line.metric} stopped in R: gsm's reporting workflows stopped\\. .+\\.$`)
+      );
+    }
+    expect(all.warnings).toEqual(["254 cases of NA's in GroupID, cases are removed in output"]);
+    expect(all.groups.message).toBe('The Groups table was not made: no metric ran.');
+  });
+
+  it('APP-RBQM-053: seriousness typed in small letters between spaces is read trimmed and in capitals, as the end-of-study status is: R counts the same three serious events, and the same rows', () => {
+    const typed = pilot.seriousness_as_typed;
+    expect(typed.serious_events).toBe(3);
+    expect(typed.serious_events_as_held).toBe(3);
+    expect(typed.rows).toBe(51);
+    expect(typed.warnings).toEqual([]);
+    expect(read('site/rbqm/standard/AE.yaml').toString('utf8')).toContain(
+      "NULLIF(UPPER(TRIM(AESER)), '') AS aeser"
+    );
+  });
+});

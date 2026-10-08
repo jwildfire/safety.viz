@@ -437,7 +437,7 @@ export function mountApp(
         tab.title = `${view.badge.text}: ${view.badge.title}`;
         tab.append(pill);
       }
-      tab.append(el('span', 'sva-tab-count', String(view.tag())));
+      tab.append(el('span', 'sva-tab-count', String(view.tag(handle))));
       tab.onclick = () => handle.select(id);
       tabs.append(tab);
     }

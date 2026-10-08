@@ -518,6 +518,38 @@ above.
 - The underlying study data is the **CDISC SDTM/ADaM Pilot 01** reference study,
   redistributed by pharmaverse; the same study is also mirrored under a permissive
   license by [PHUSE](https://github.com/phuse-org/phuse-scripts).
+- The **RBQM demo study** under `site/data/rbqm/` is synthetic. It is copied
+  from [jwildfire/demo-301](https://github.com/jwildfire/demo-301), whose script
+  builds it from the sample study that ships with
+  [gsm.core](https://github.com/Gilead-Public/gsm.core), which is licensed
+  **Apache-2.0**. demo-301 itself states no licence.
+
+## Copied code and its licences
+
+The demo app's RBQM tab runs and draws with other projects' code, each copied
+or built from a release tag. safety.viz changes none of it.
+
+| What                                                            | Version | Licence, as the project states it                               | How it is here                                                              |
+| --------------------------------------------------------------- | ------- | --------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| [gsm.core](https://github.com/Gilead-Public/gsm.core)           | 1.3.1   | Apache License (>= 2)                                           | Built for R in the browser, served under `r-wasm/`                          |
+| [gsm.mapping](https://github.com/Gilead-Public/gsm.mapping)     | 1.1.6   | Apache License (>= 2)                                           | Built for R in the browser; its mapping workflows are also copied           |
+| [gsm.reporting](https://github.com/Gilead-Public/gsm.reporting) | 1.1.7   | Apache License (>= 2)                                           | Built for R in the browser; its reporting workflows are also copied         |
+| [workr](https://github.com/Gilead-Public/workr)                 | 1.1.0   | MIT + file LICENSE                                              | Built for R in the browser                                                  |
+| [gsm.kri](https://github.com/Gilead-Public/gsm.kri)             | 1.7.0   | Apache License (>= 2)                                           | Eight metric workflows and one R file, copied; the package is not installed |
+| [gsm.viz](https://github.com/Gilead-Public/gsm.viz)             | 2.4.1   | Apache-2.0, by its `LICENSE` file; its `package.json` names ISC | Its built bundle, copied                                                    |
+
+- The versions and tags are in `site/vendor/r-wasm/pins.json` and in the
+  `SOURCE.json` beside each copy. Each licence above was read from the
+  project's `DESCRIPTION` or `LICENSE` at that tag.
+- The Apache-2.0 text is served beside the app as `gsm.viz.LICENSE.txt`. Each
+  built package carries its own `DESCRIPTION`, and workr its `LICENSE` file.
+- R itself ([webR](https://github.com/r-wasm/webr)) and R's other packages are
+  not copied here: the reader's browser fetches them from webr.r-wasm.org and
+  repo.r-wasm.org when R is started.
+- Not yet done, and tracked: the record of the four built packages does not
+  name their licences, no notice file is served beside the copied workflows,
+  and safety.viz states no licence of its own
+  ([#263](https://github.com/jwildfire/safety.viz/issues/263)).
 
 ## History
 

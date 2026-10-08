@@ -371,3 +371,42 @@ describe('the loaded study’s standard domains, as gsm’s raw tables', () => {
     );
   });
 });
+
+describe('a study the reader’s mapping gives R little of (#258)', () => {
+  it('APP-RBQM-050: with none of the subject-level file’s columns mapped the tab says before R is started what desktop R then says, word for word, of every metric and of the Groups table; R is handed that file with no column and no cell', () => {
+    const none = study(RBQM_PILOT.files, RBQM_PILOT.noColumns.unmap);
+    const standard = standardStudy(none.files, none.mappings, needs);
+    const support = supportOf(new Map(), needs, standard);
+    expect(spoken(support)).toEqual(said(pilot.no_columns.status));
+    expect(support.groups).toEqual({ supported: false, message: pilot.no_columns.groups.message });
+    expect([...support.made.keys()]).toEqual(pilot.no_columns.ran.standard);
+    const subject = standard.get('Standard_subject');
+    expect(subject.columns).toEqual([]);
+    expect(standardCsv(subject).trim()).toBe('');
+  });
+
+  it('APP-RBQM-042: a column the mapping names that the file does not have is not handed to R, which then says the column is not mapped (#258)', () => {
+    const { files, mappings } = study(RBQM_PILOT.files);
+    // The mapping kept from a file that had the column, over a file that lacks it.
+    const stale = {
+      ...mappings,
+      subject: {
+        ...mappings.subject,
+        columns: {
+          ...mappings.subject.columns,
+          SITEID: { ...mappings.subject.columns.SITEID, value: 'CENTRE' }
+        }
+      }
+    };
+    expect(files.subject.columns).not.toContain('CENTRE');
+    const standard = standardStudy(files, stale, needs);
+    const subject = standard.get('Standard_subject');
+    expect(subject.columns).not.toContain('SITEID');
+    expect(subject.from.SITEID).toBeUndefined();
+    expect(standardCsv(subject).split('\n')[0]).not.toMatch(/SITEID|CENTRE/);
+    const support = supportOf(new Map(), needs, standard);
+    expect(support.metrics[0].message).toBe(
+      'Adverse Event Rate needs the column SITEID, which no column of adsl.csv is mapped to.'
+    );
+  });
+});

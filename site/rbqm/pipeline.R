@@ -154,6 +154,9 @@ rbqm_needs <- function(mappings, metrics, reporting, standard = NULL) {
 #'   standard domain; `NULL` to make none.
 #' @param labels What to call each standard domain when a column it lacks is
 #'   named, by table (`Standard_subject = "adsl.csv"`): the reader's own file.
+#' @param forget A folder of an earlier run's files to remove before this run;
+#'   `NULL` to remove nothing. R in the browser keeps its files in memory, and
+#'   the page names the folder it wrote the run before. Desktop R names none.
 #'
 #' @return A list: `Results`, `Bounds`, `Groups` and `Metrics`, each a data
 #'   frame with dates as text, and with no rows when the workflow that makes it
@@ -165,12 +168,17 @@ rbqm_needs <- function(mappings, metrics, reporting, standard = NULL) {
 #'   `thresholds`, for each metric that ran, by its ID in the tables, its
 #'   thresholds as numbers, for the bar chart's lines;
 #'   `notes`, sentences about how the run was made; `ran`, the mapping and
-#'   metric workflows that ran, and the raw tables made from standard domains; `seconds`, how long each stage took;
+#'   metric workflows that ran, and the raw tables made from standard domains;
+#'   `seconds`, how long each stage took;
 #'   `versions`, the R and package versions; and `warnings`, what R warned of
 #'   along the way.
 rbqm_run <- function(data, mappings, metrics, reporting, helpers,
                      metric_ids = NULL, snapshot_date = Sys.Date(),
-                     standard = NULL, labels = NULL) {
+                     standard = NULL, labels = NULL, forget = NULL) {
+  if (!is.null(forget) && !identical(normalizePath(forget, mustWork = FALSE),
+                                     normalizePath(data, mustWork = FALSE))) {
+    unlink(forget, recursive = TRUE)
+  }
   warned <- character()
   notes <- character()
   seconds <- list()
@@ -214,15 +222,19 @@ rbqm_run <- function(data, mappings, metrics, reporting, helpers,
   # A standard domain is read as text, every column: the workflow that makes a
   # raw table from it casts what it needs, so a site numbered 701 and a site
   # named 701 are the same site, and a column of Y and N is not read as a logical.
+  # A cell that reads NA is a missing value, as R writes one and as a raw file's
+  # is read. A domain none of whose columns is mapped arrives with no header: it
+  # is a table of no columns, so what needs one names the column, and R reads on.
+  read_standard <- function(path) {
+    first <- readLines(path, n = 1L, warn = FALSE)
+    if (!length(first) || !nzchar(trimws(first))) return(data.frame())
+    utils::read.csv(
+      path, stringsAsFactors = FALSE, colClasses = "character", check.names = FALSE
+    )
+  }
   lStandard <- stage("read standard", {
     files <- list.files(data, pattern = "^Standard_.+\\.csv$")
-    stats::setNames(
-      lapply(
-        file.path(data, files), utils::read.csv,
-        stringsAsFactors = FALSE, colClasses = "character", check.names = FALSE
-      ),
-      sub("\\.csv$", "", files)
-    )
+    stats::setNames(lapply(file.path(data, files), read_standard), sub("\\.csv$", "", files))
   })
   # What a standard domain is called when it is named: the reader's own file.
   called <- function(table) {
@@ -434,8 +446,9 @@ rbqm_run <- function(data, mappings, metrics, reporting, helpers,
   all_reporting <- workr::MakeWorkflowList(strPath = reporting)
   groups_why <- gaps(all_reporting$Groups, lMapped, unmade)
   lReporting <- list()
+  reporting_stopped <- NULL
   if (length(lRan)) {
-    lReporting <- stage("reporting", {
+    lReporting <- stage("reporting", tryCatch({
       lData <- lMapped
       # The Results workflow reads the study's ID from the mapped study table.
       # With no study file loaded there is no such table, so it is handed the
@@ -463,7 +476,23 @@ rbqm_run <- function(data, mappings, metrics, reporting, helpers,
           dSnapshotDate = as.Date(snapshot_date)
         ))
       )
+    }, error = function(e) {
+      reporting_stopped <<- conditionMessage(e)
+      list()
+    }))
+  }
+  # The reporting workflows run together, over every metric that ran. When they
+  # stop there is no row to show for any of them, so each says so, with R's
+  # words, in place of one bare error for the whole run.
+  if (!is.null(reporting_stopped)) {
+    why <- no_reason()
+    why$stopped <- paste0("gsm's reporting workflows stopped. ", reporting_stopped)
+    ran <- vapply(lRan, function(workflow) workflow$meta$ID, character(1))
+    status <- lapply(status, function(line) {
+      if (!line$id %in% ran) return(line)
+      status_line(line$id, line$metric, line$abbreviation, why)
     })
+    lRan <- list()
   }
 
   # Dates and factors leave as text, so a table reads the same wherever it is

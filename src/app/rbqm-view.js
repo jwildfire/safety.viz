@@ -26,8 +26,9 @@
 // one file of each domain under gsm's name for it; a file not placed is named
 // and stays out of R.
 //
-// R computes every number shown. This module decides when R is asked, hands
-// R's tables to gsm.viz (rbqm.js says which rows), and writes the sentences.
+// R computes every rate, score and flag shown. This module decides when R is
+// asked, hands R's tables to gsm.viz (rbqm.js says which rows), and writes the
+// sentences. gsm.viz counts each site's red and amber flags for its overview.
 
 import { readFiles } from './data-panel.js';
 import { el } from './dom.js';
@@ -53,7 +54,8 @@ import {
   overviewInputs,
   ranOn,
   sameFiles,
-  stepSentence
+  stepSentence,
+  warningsSaid
 } from './rbqm.js';
 
 const messageOf = (error) =>
@@ -96,6 +98,7 @@ export function rbqmTab({
   let result = null; // { answer, files, seconds, sinceStart, snapshotDate }
   let chosen = null; // the id of the metric whose charts are shown
   let runs = 0;
+  let kept = null; // the folder of R's file system the last run's files are in
   let library = null; // the promise of gsm.viz
   let libraryProblem = '';
   let shown = null; // { app, status } of the view as it is on the page now
@@ -208,7 +211,7 @@ export function rbqmTab({
     shown.app.redrawView(view.id);
   }
 
-  async function run(app) {
+  async function run(app, startedR = false) {
     const { sources, files, count, study, labels } = handed(app);
     if (!files.length) {
       phase = 'idle';
@@ -221,6 +224,10 @@ export function rbqmTab({
     // Each run's files go in a folder of their own: a file of an earlier study
     // must not be read as one of this study's.
     const folder = `${r.data}/${runs}`;
+    // The run before this one left its files in R's memory: R removes them as
+    // this run begins, so a reader who runs again and again fills nothing up.
+    const earlier = kept;
+    kept = folder;
     const snapshotDate = isoDay(now());
     const since = now().getTime();
     const answer = await connection.run(r.call, {
@@ -236,7 +243,8 @@ export function rbqmTab({
         data: folder,
         snapshot_date: snapshotDate,
         // What R calls each of the study's files when it names a column one lacks.
-        ...(Object.keys(labels).length ? { labels } : {})
+        ...(Object.keys(labels).length ? { labels } : {}),
+        ...(earlier ? { forget: earlier } : {})
       }
     });
     if (!answer || answer.status !== 'ok' || !answer.value || !answer.value.status) {
@@ -252,12 +260,13 @@ export function rbqmTab({
       study,
       loaded: sources,
       seconds: took,
-      sinceStart: runs === 1 ? seconds() : null,
+      // Said only of the press that started R: a later press started nothing.
+      sinceStart: startedR ? seconds() : null,
       snapshotDate
     };
     phase = 'done';
     // The reader loaded other files while R ran: those are the ones to show.
-    if (!sameFiles(handed(app).sources, sources)) await run(app);
+    if (!sameFiles(handed(app).sources, sources)) await run(app, startedR);
   }
 
   async function press(app) {
@@ -265,12 +274,16 @@ export function rbqmTab({
     pressedAt = now().getTime();
     failure = '';
     tick(true);
+    const starting = !up;
     try {
       if (!up) {
         phase = 'starting';
         step = 'runtime';
         redraw();
         loadLibrary();
+        // An R that did not come up is closed before another is started.
+        if (connection && typeof connection.close === 'function') await connection.close();
+        kept = null;
         connection = createConnection({
           packages: r.packages,
           repos: r.repos,
@@ -299,7 +312,7 @@ export function rbqmTab({
         }
         up = true;
       }
-      await run(app);
+      await run(app, starting);
     } catch (error) {
       phase = up ? 'stopped' : 'failed';
       failure = failureSentence(up ? 'run' : 'start', messageOf(error));
@@ -383,6 +396,7 @@ export function rbqmTab({
     // What R said beside its tables: a note, and why no Groups table was made.
     const said = [
       ...(Array.isArray(answer.notes) ? answer.notes : []),
+      ...warningsSaid(answer),
       ...(answer.groups && answer.groups.state !== 'ran' && answer.groups.message
         ? [answer.groups.message]
         : [])
@@ -593,8 +607,12 @@ export function rbqmTab({
      * What the tab's own count says, in a word or two: the header keeps to one
      * line, so there is no room for a sentence. The view says the rest.
      */
-    tag() {
+    tag(app) {
       if (unavailable) return 'needs R';
+      // Results of a study that is no longer the one loaded are not this study's.
+      if (phase === 'done' && result && app && !sameFiles(handed(app).sources, result.loaded)) {
+        return 'not run';
+      }
       if (phase === 'done' && result) {
         const metrics = metricList(result.answer);
         return `${metrics.filter((metric) => metric.ran).length} of ${metrics.length}`;
@@ -617,6 +635,15 @@ export function rbqmTab({
     render(container, app) {
       const drawn = [];
       let live = true;
+      // A study loaded since the last run is run at once when R is up; until
+      // R is up its results are simply not there. Settled before anything is
+      // drawn, so the control and the list of files say what is true now.
+      const files = handed(app);
+      const changed = phase === 'done' && result && !sameFiles(files.sources, result.loaded);
+      if (changed) {
+        result = null;
+        phase = 'idle';
+      }
       const root = el('div', 'sva-rbqm');
       const lede = el('p', 'sva-rbqm-lede');
       lede.append(
@@ -640,18 +667,9 @@ export function rbqmTab({
       status.textContent = statusText(app);
       if (phase === 'failed' || phase === 'stopped') status.classList.add('sva-rbqm-problem');
 
-      // A study loaded since the last run is run at once when R is up; until
-      // R is up its results are simply not there.
-      const files = handed(app);
-      if (phase === 'done' && result && !sameFiles(files.sources, result.loaded)) {
-        result = null;
-        phase = 'idle';
-        if (up && files.files.length) {
-          queueMicrotask(() => press(app));
-        } else {
-          status.textContent = statusText(app);
-          app.retag();
-        }
+      if (changed) {
+        if (up && files.files.length) queueMicrotask(() => press(app));
+        else app.retag();
       }
 
       if (phase === 'done' && result) {

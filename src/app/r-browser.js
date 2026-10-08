@@ -120,7 +120,7 @@ function optionProblem(options) {
  * @param {(stage: 'runtime'|'packages'|'files'|'source') => void} [options.onStage] Told each step of starting R as it begins, so a page can say what R is doing: fetching and starting R itself, installing the packages, fetching the files, evaluating the R source. A step with nothing to do is not named.
  * @param {(url: string) => Promise<Object>} [options.importWebR] Something else to import webR with; used by the tests.
  * @param {(url: string) => Promise<Response>} [options.fetch] Something else to fetch the files with; used by the tests.
- * @returns {{run: (name: string, request?: {files?: Object<string, string>, args?: Object}) => Promise<Object>}} The connection.
+ * @returns {{run: (name: string, request?: {files?: Object<string, string>, args?: Object}) => Promise<Object>, close: () => Promise<void>}} The connection.
  */
 export function createConnection(options = {}) {
   const problem = optionProblem(options);
@@ -163,6 +163,25 @@ export function createConnection(options = {}) {
     // such as GitHub Pages sends none.
     const webR = new WebR({ baseUrl, channelType: ChannelType.PostMessage });
     await webR.init();
+    try {
+      await prepare(webR);
+    } catch (error) {
+      // An R that could not be made ready is closed: the next run starts another.
+      shut(webR);
+      throw error;
+    }
+    return webR;
+  }
+
+  function shut(webR) {
+    try {
+      if (webR && typeof webR.close === 'function') webR.close();
+    } catch {
+      // Nothing to do: it is being let go of either way.
+    }
+  }
+
+  async function prepare(webR) {
     if (packages.length) {
       // As R reads a repository's address: absolute, and with no trailing slash.
       const from = repos.map((repo) =>
@@ -189,7 +208,6 @@ export function createConnection(options = {}) {
     for (const path of source) {
       await webR.evalRVoid(`source(${JSON.stringify(path)}, local = FALSE)`);
     }
-    return webR;
   }
 
   return Object.freeze({
@@ -231,6 +249,18 @@ export function createConnection(options = {}) {
       } finally {
         if (shelter) await shelter.purge().catch(() => {});
       }
+    },
+
+    /**
+     * Let go of R: its worker is closed, and the next run starts R again.
+     * A connection that never started R has nothing to close.
+     * @returns {Promise<void>} Settled when R is closed; it never rejects.
+     */
+    async close() {
+      const starting = started;
+      started = null;
+      if (!starting) return;
+      shut(await starting.catch(() => null));
     }
   });
 }
