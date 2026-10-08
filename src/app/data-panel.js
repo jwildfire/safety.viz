@@ -249,6 +249,23 @@ function unplacedCard(item, index, app) {
   return card;
 }
 
+/** One of gsm's raw files (#233): named, with its rows and columns, kept as it is. */
+function rawCard(file) {
+  const card = el('section', 'sva-file sva-raw');
+  card.dataset.raw = file.name;
+  card.tabIndex = -1;
+  card.setAttribute('aria-label', `${file.name}, a gsm raw file`);
+  const head = el('div', 'sva-file-head');
+  head.append(
+    el('span', 'sva-hex sva-hollow'),
+    el('span', 'sva-file-name', file.name),
+    el('span', 'sva-tag', 'gsm raw file, kept as it is'),
+    el('span', 'sva-file-rows', `${rowCount(file.rows)}, ${plural(file.columns.length, 'column')}`)
+  );
+  card.append(head);
+  return card;
+}
+
 /** A button of the sidebar, keyed by the action it takes. */
 function actionButton(name, label, onClick) {
   const button = el('button', 'sva-button', label);
@@ -319,8 +336,9 @@ function sidebar(container, app, { input, domains, rows }) {
   // The mapping is settled when no chart is waiting on a row. Guesses are
   // counted and flagged, but they do not hold the step (#163).
   const settled = domains.length > 0 && !needed;
-  const anything =
-    domains.length || state.unplaced.length || state.saved !== null || state.notes.length;
+  // gsm's raw files (#233) are loaded files too, with nothing to map.
+  const files = domains.length + state.raw.length;
+  const anything = files || state.unplaced.length || state.saved !== null || state.notes.length;
 
   // Step one: load. The demo studies, where the page is served with any; the
   // file picker; and Reset, once there is something to clear.
@@ -352,9 +370,9 @@ function sidebar(container, app, { input, domains, rows }) {
     workflowStep(
       'load',
       0,
-      domains.length ? 'done' : 'current',
+      files ? 'done' : 'current',
       'Load your files',
-      domains.length ? `${plural(domains.length, 'file')} loaded` : 'No files loaded',
+      files ? `${plural(files, 'file')} loaded` : 'No files loaded',
       extras,
       loadActions
     ),
@@ -363,7 +381,11 @@ function sidebar(container, app, { input, domains, rows }) {
       1,
       !domains.length ? 'todo' : settled ? 'done' : 'current',
       'Check the mapping',
-      domains.length ? `${guessed} guessed, ${needed} needed by a chart` : 'Nothing to check yet',
+      domains.length
+        ? `${guessed} guessed, ${needed} needed by a chart`
+        : state.raw.length
+          ? 'Nothing to map: gsm’s raw files are kept as they are'
+          : 'Nothing to check yet',
       [],
       domains.length
         ? [actionButton('download-mapping', 'Download mapping', () => app.downloadMapping())]
@@ -386,7 +408,7 @@ function sidebar(container, app, { input, domains, rows }) {
 
   const loaded = el('section', 'sva-side-section');
   loaded.append(el('h2', 'sva-side-title', 'Loaded data'));
-  if (!domains.length && !state.unplaced.length) {
+  if (!files && !state.unplaced.length) {
     loaded.append(el('p', 'sva-loaded-empty', 'No files are loaded.'));
   } else {
     const list = el('ul', 'sva-loaded');
@@ -418,6 +440,17 @@ function sidebar(container, app, { input, domains, rows }) {
       );
       button.querySelector('.sva-hex').classList.add('sva-hollow');
       button.dataset.unplaced = file.name;
+      list.append(item);
+    });
+    state.raw.forEach((file, index) => {
+      const { item, button } = loadedEntry(
+        file.name,
+        `gsm raw file, ${rowCount(file.rows)}`,
+        [],
+        () => container.querySelectorAll('.sva-file.sva-raw')[index]
+      );
+      button.querySelector('.sva-hex').classList.add('sva-hollow');
+      button.dataset.raw = file.name;
       list.append(item);
     });
     loaded.append(list);
@@ -474,6 +507,7 @@ export function renderDataPanel(container, app) {
   );
   for (const domain of domains) main.append(fileCard(domain, app, rows[domain]));
   state.unplaced.forEach((item, index) => main.append(unplacedCard(item, index, app)));
+  for (const file of state.raw) main.append(rawCard(file));
 
   container.append(sidebar(container, app, { input, domains, rows }), main);
 

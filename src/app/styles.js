@@ -139,6 +139,7 @@ display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:v
 .sva-file{scroll-margin-top:1rem;margin:0 0 1.1rem;border:1px solid var(--rule);border-radius:10px;background:var(--card);overflow:hidden}
 .sva-file-head{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem .8rem;padding:.7rem 1rem;border-bottom:1px solid var(--rule)}
 .sva-file.sva-unplaced .sva-file-head{border-bottom:0}
+.sva-file.sva-raw .sva-file-head{border-bottom:0}
 .sva-file-name{font-family:var(--mono);font-weight:600;font-size:.86rem;overflow-wrap:anywhere}
 .sva-file-rows{font-family:var(--mono);font-size:.72rem;color:var(--soft)}
 .sva-file-head .sva-tag{font-size:.7rem}

@@ -38,3 +38,7 @@ tests/fixtures/app-statistics/
 # Desktop R's rows for the RBQM pipeline (#231): written by
 # scripts/rbqm-reference.mjs, and held to what they are derived from by a test.
 tests/fixtures/rbqm/
+
+# The RBQM demo study's source record (#233): written by
+# scripts/vendor-rbqm-study.mjs, which lists the kept columns one to a line.
+site/data/rbqm/SOURCE.json

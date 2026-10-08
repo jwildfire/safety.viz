@@ -36,6 +36,12 @@ export const RBQM_GATE = {
   pipeline: PIPELINE,
   /** The metric workflows run. */
   metrics: ['kri0001'],
+  /**
+   * The raw files it is given, of the demo study's nine (#233): subjects and
+   * adverse events for the metric, and sites, the study and enrolment for the
+   * Groups table.
+   */
+  domains: ['SUBJ', 'AE', 'SITE', 'STUDY', 'ENROLL'],
   /** One snapshot, on a date that is given so two runs give the same rows. */
   snapshotDate: '2026-10-07',
   /** The packages R installs, and the public index their dependencies come from. */
@@ -63,14 +69,15 @@ export function pipelineFiles() {
 }
 
 /**
- * The demo study's raw files, with where each goes in R's file system.
+ * The demo study's raw files the run is given, with where each goes in R's
+ * file system.
  * @returns {Array<{file: string, path: string}>} The repository's path and R's.
  */
 export const studyFiles = () =>
-  RBQM_STUDY.files.map((entry) => ({
-    file: `${RBQM_STUDY.directory}/${entry.file}`,
-    path: `${ROOT}/data/${entry.file}`
-  }));
+  RBQM_GATE.domains.map((domain) => {
+    const entry = RBQM_STUDY.files.find((candidate) => candidate.file === `Raw_${domain}.csv`);
+    return { file: `${RBQM_STUDY.directory}/${entry.file}`, path: `${ROOT}/data/${entry.file}` };
+  });
 
 /**
  * The arguments `rbqm_run` is called with: where in R's file system the raw

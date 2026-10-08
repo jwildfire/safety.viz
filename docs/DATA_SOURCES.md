@@ -463,14 +463,15 @@ churn their evidence baselines for a figure none of them draws.
   everything else as shared scaffold, so a `demo-data/` directory would have
   copied these eleven cohort records into **every** renderer's evidence page.
 
-## RBQM demo study raw files (#231)
+## RBQM demo study raw files (#231, #233)
 
-`site/data/rbqm/` holds five raw files in gsm's standard raw domains
-(`Raw_SUBJ.csv`, `Raw_AE.csv`, `Raw_SITE.csv`, `Raw_STUDY.csv`,
-`Raw_ENROLL.csv`): one synthetic study of 1,005 screened and 765 enrolled
-participants at 150 sites. They are not generated here. They are copied byte
-for byte from [jwildfire/demo-301](https://github.com/jwildfire/demo-301)'s
-`input/` folder, where that repository's own script makes them, and
+`site/data/rbqm/` holds nine raw files in gsm's standard raw domains
+(`Raw_SUBJ.csv`, `Raw_AE.csv`, `Raw_PD.csv`, `Raw_LB.csv`, `Raw_STUDCOMP.csv`,
+`Raw_SDRGCOMP.csv`, `Raw_SITE.csv`, `Raw_STUDY.csv`, `Raw_ENROLL.csv`): one
+synthetic study of 1,005 screened and 765 enrolled participants at 150 sites.
+They are not generated here. They are copied from
+[jwildfire/demo-301](https://github.com/jwildfire/demo-301)'s `input/` folder,
+where that repository's own script makes them, and
 `site/data/rbqm/SOURCE.json` records the commit and each file's checksum:
 
 ```bash
@@ -479,10 +480,23 @@ npm run rbqm-study:check                                               # files a
 npm run rbqm-study:check-source                                        # files against the commit
 ```
 
-The RBQM pipeline's browser test runs the gsm workflows on them in R in the
-browser, and `tests/fixtures/rbqm/expected.json` holds desktop R's rows for the
-same files (`node scripts/rbqm-reference.mjs`). No demo page or chart reads
-them yet, and they are not among the eleven datasets above.
+Eight are copied byte for byte. The labs file is 7.3 MB and fourteen columns in
+demo-301; the copy keeps the four columns gsm.mapping's labs workflow names in
+its spec (`studyid`, `subjid`, `lb_dt`, `toxgrg_nsv`) and every one of its
+57,200 rows, at 2.5 MB. The record names the columns kept, why, and the whole
+file's checksum, and the comparison with the commit cuts demo-301's file the
+same way and holds the copy to it. The lab metric reads no other column, so its
+Results rows are the same from either file: `Rscript scripts/rbqm-labs-check.R
+<the whole Raw_LB.csv>` runs it on both in desktop R and stops if they differ.
+The nine files together are 3,507,259 bytes.
+
+The demo app offers them as its fourth demo study, the RBQM study, and keeps
+them as they are: gsm's raw domains are not the app's standard domains, so none
+is placed in one or mapped. The RBQM pipeline's browser test runs the gsm
+workflows on five of them in R in the browser, and
+`tests/fixtures/rbqm/expected.json` holds desktop R's rows for the same files
+(`node scripts/rbqm-reference.mjs`). They are not among the eleven datasets
+above.
 
 ## License and attribution
 

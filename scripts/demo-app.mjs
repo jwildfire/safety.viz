@@ -6,7 +6,7 @@
 //   index.html             the app's page (scripts/site-lib.mjs::renderDemoAppPage)
 //   safety.viz-app.js      the app bundle, with its source map
 //   safety.viz-app.html    the single file, offered as a download
-//   *.csv, renamed/        every demo study the app offers (#159)
+//   *.csv, renamed/, rbqm/ every demo study the app offers (#159, #233)
 //   fonts/                 the app's typefaces and their licences (#165)
 //   bio.viz.js             each further chart library's vendored bundle (#182)
 //   statistics.R           the file R in the browser is given (#183)
