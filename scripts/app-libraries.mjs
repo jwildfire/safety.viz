@@ -8,7 +8,13 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { BIO_VIZ, GSM_BIO_STATISTICS, GSM_VIZ } from './vendor-lib.mjs';
+import {
+  BIO_VIZ,
+  GSM_BIO_STATISTICS,
+  GSM_KRI_WORKFLOWS,
+  GSM_VIZ,
+  readRecord
+} from './vendor-lib.mjs';
 import { RBQM_NEEDS, RBQM_TAB, pipelineFiles, tabArgs } from './rbqm-lib.mjs';
 import { SERVED_AS } from './r-wasm-lib.mjs';
 import { SITE } from '../src/app/site.js';
@@ -169,11 +175,23 @@ export function rbqmTabOptions({
     },
     charts: { url: chartsUrl, global: RBQM_CHARTS.global },
     downloads: RBQM_DOWNLOADS,
+    // What is copied in and not installed in R, so R cannot report its version:
+    // gsm.kri's metric workflows and gsm.viz's charts, each at the tag its
+    // record names (#255). The tab says so beside R's own versions.
+    copies: {
+      workflows: copyOf('gsm.kri', GSM_KRI_WORKFLOWS),
+      charts: copyOf('gsm.viz', GSM_VIZ)
+    },
     // What each workflow needs, as desktop R read it from gsm's specs: the tab
     // places a reader's own files and says what they support with it (#236).
     needs: JSON.parse(readFileSync(path.join(rootDir, RBQM_NEEDS.file), 'utf8')).needs,
     badge: rbqmBadge()
   };
+}
+
+/** A copied thing's name and the version its record of the copy names. */
+function copyOf(name, copy) {
+  return { name, version: readRecord(path.join(rootDir, copy.directory)).version };
 }
 
 /**

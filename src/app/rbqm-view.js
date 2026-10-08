@@ -67,6 +67,7 @@ const messageOf = (error) =>
  * @param {{url: string, global: string}} [options.charts] gsm.viz's bundle: where the page serves it and the global it defines. It is loaded when the reader starts R, not before.
  * @param {Array<{what: string, host: ?string, megabytes: number}>} [options.downloads] What starting R downloads: R itself first, then its packages; a null host is the page's own address.
  * @param {?Object} [options.needs] What gsm's workflows need, as desktop R reads it from their specs (site/rbqm/needs.json): the columns of each raw domain's file, and the tables each mapping and metric needs. With it the tab takes a reader's own files; without it the loaded raw files are handed to R as they are named.
+ * @param {?{workflows: {name: string, version: string}, charts: {name: string, version: string}}} [options.copies] What is copied in and not installed in R, each with its version: gsm.kri's metric workflows and gsm.viz's charts. The tab names them beside the versions R reports.
  * @param {?string} [options.unavailable] On a page that cannot start R, the sentence that says so; the tab then offers no control.
  * @param {?{text: string, title: string}} [options.badge] The tab's status badge, with what it means.
  * @param {() => Date} [options.now] The clock; used by the tests.
@@ -78,6 +79,7 @@ export function rbqmTab({
   charts = null,
   downloads = [],
   needs = null,
+  copies = null,
   unavailable = null,
   badge = null,
   now = () => new Date()
@@ -179,7 +181,7 @@ export function rbqmTab({
       });
     }
     if (phase === 'failed' || phase === 'stopped') return failure;
-    if (phase === 'done' && result) return doneSentence(result.answer, result);
+    if (phase === 'done' && result) return doneSentence(result.answer, { ...result, copies });
     if (!files) {
       const any = loaded(app).length || Object.keys((app && app.state.files) || {}).length;
       return any ? NONE_PLACED : NO_FILES;

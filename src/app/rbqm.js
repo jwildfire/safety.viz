@@ -217,10 +217,13 @@ export function metricInputs(answer, metricId) {
  * What the tab says once R has answered: how many metrics ran, on how many
  * files, how long R took, and the versions R reports.
  * @param {Object} answer What `rbqm_run` returned.
- * @param {{files: number, study?: string[], seconds: number, sinceStart: ?number, snapshotDate: string}} run The raw files the run was given, the loaded study's files that stood in for raw tables, how long the run took, how long it was from the press that started R to this result (null for a later run), and the snapshot's date.
+ * @param {{files: number, study?: string[], seconds: number, sinceStart: ?number, snapshotDate: string, copies?: ?{workflows: {name: string, version: string}, charts: {name: string, version: string}}}} run The raw files the run was given, the loaded study's files that stood in for raw tables, how long the run took, how long it was from the press that started R to this result (null for a later run), the snapshot's date, and what is copied in and not installed in R: the metric workflows and the charts, each with its version.
  * @returns {string} The sentences.
  */
-export function doneSentence(answer, { files, study = [], seconds, sinceStart, snapshotDate }) {
+export function doneSentence(
+  answer,
+  { files, study = [], seconds, sinceStart, snapshotDate, copies = null }
+) {
   const metrics = metricList(answer);
   const ran = metrics.filter((metric) => metric.ran).length;
   const versions = isRecord(answer.versions) ? answer.versions : {};
@@ -234,7 +237,12 @@ export function doneSentence(answer, { files, study = [], seconds, sinceStart, s
       ? '.'
       : `, ${counted(sinceStart, 'second')} after Start R was pressed.`) +
     ` The snapshot is dated ${snapshotDate}.` +
-    (named.length ? ` ${listed(named)}.` : '')
+    (named.length ? ` ${listed(named)}.` : '') +
+    // gsm.kri is not installed in R, and gsm.viz is not R's: R reports neither.
+    (copies
+      ? ` The metric workflows are ${copies.workflows.name} ${copies.workflows.version}’s ` +
+        `and the charts ${copies.charts.name} ${copies.charts.version}’s.`
+      : '')
   );
 }
 

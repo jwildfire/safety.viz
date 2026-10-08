@@ -19,8 +19,8 @@ import { presentMeasures, resolveMeasureList } from './measure-list.js';
 import { applyLimitEdit, clearAxisLimits, seedLimitInput, syncAxisLimits } from './axis-limits.js';
 import {
   ALGORITHMS,
-  COMPARISON_DEPRECATED,
-  NORMALITY_DEPRECATED,
+  REMOVED_SETTINGS,
+  removedSetting,
   syncSettings
 } from './histogram/configure.js';
 import { checkInputs } from './histogram/checkInputs.js';
@@ -40,14 +40,7 @@ import {
   normalizeDomain,
   resolveDomain
 } from './histogram/getScales.js';
-import {
-  approximateGroupP,
-  approximateNormalityP,
-  binDescription,
-  normalRangePlugin,
-  selectionColors,
-  statisticalAnnotation
-} from './histogram/getPlugins.js';
+import { binDescription, normalRangePlugin, selectionColors } from './histogram/getPlugins.js';
 import { renderListing } from './histogram/listing.js';
 import {
   buildProfileRows,
@@ -78,10 +71,9 @@ class SafetyHistogram {
   constructor(element = 'body', settings = {}) {
     this.element = typeof element === 'string' ? document.querySelector(element) : element;
     if (!this.element) throw new Error(`Safety Histogram target not found: ${element}`);
+    this.removedWarned = new Set();
+    this.warnRemoved(settings);
     this.settings = syncSettings(settings);
-    this.normalityWarned = false;
-    this.comparisonWarned = false;
-    this.warnDeprecated();
     this.rawData = [];
     this.cleanData = [];
     this.availableMeasures = [];
@@ -269,8 +261,8 @@ class SafetyHistogram {
    * @returns {SafetyHistogram} The instance, for chaining.
    */
   setSettings(settings) {
+    this.warnRemoved(settings);
     this.settings = syncSettings({ ...this.settings, ...settings });
-    this.warnDeprecated();
     if (this.rawData.length) this.validateAndCleanData();
     this.buildProfileRows();
     syncProfileRail(this, () => this.profileSettings());
@@ -748,7 +740,6 @@ class SafetyHistogram {
     chart.$shBins = inputs.bins;
     this.chart = chart;
     this.charts.push(chart);
-    this.drawMainAnnotation(this.filteredData);
   }
 
   /**
@@ -766,56 +757,15 @@ class SafetyHistogram {
   }
 
   /**
-   * Say once per chart, in the console, that `test_normality` or
-   * `compare_distributions` is deprecated, for each that is on (#188).
+   * Say once per chart, in the console, that a setting the caller passed was
+   * removed and is ignored (#188).
    * @private
    */
-  warnDeprecated() {
-    if (this.settings.test_normality && !this.normalityWarned) {
-      this.normalityWarned = true;
-      console.warn(NORMALITY_DEPRECATED);
-    }
-    if (this.settings.compare_distributions && !this.comparisonWarned) {
-      this.comparisonWarned = true;
-      console.warn(COMPARISON_DEPRECATED);
-    }
-  }
-
-  /**
-   * Annotate the main chart with the normality screen when enabled, and say
-   * beside it that the screen, and the grouped panels' comparison when it is
-   * on, are deprecated (#188).
-   * @private
-   */
-  drawMainAnnotation(rows) {
-    this.mainAnnotation.innerHTML = '';
-    if (this.settings.test_normality) {
-      const pValue = approximateNormalityP(rows.map((row) => row.__sh_value));
-      this.mainAnnotation.append(
-        statisticalAnnotation(
-          'Normality',
-          pValue,
-          'Approximate Jarque-Bera normality screen',
-          'https://en.wikipedia.org/wiki/Jarque%E2%80%93Bera_test'
-        ),
-        createElement(
-          'p',
-          'sv-deprecation',
-          'Deprecated: this normality screen (test_normality) will be removed in a later release.'
-        )
-      );
-    }
-    // The group comparison is drawn in each grouped panel; its deprecation is
-    // said once, here, where the panels' layout does not move (#188).
-    const grouped = this.state.groupBy && this.state.groupBy !== 'sh_none';
-    if (this.settings.compare_distributions && grouped) {
-      this.mainAnnotation.append(
-        createElement(
-          'p',
-          'sv-deprecation',
-          'Deprecated: the group comparison (compare_distributions) will be removed in a later release.'
-        )
-      );
+  warnRemoved(settings) {
+    for (const name of REMOVED_SETTINGS) {
+      if (!settings || !settings[name] || this.removedWarned.has(name)) continue;
+      this.removedWarned.add(name);
+      console.warn(removedSetting(name));
     }
   }
 
@@ -833,24 +783,6 @@ class SafetyHistogram {
       );
       const panel = createElement('div', 'sv-multiple');
       panel.append(createElement('h3', null, `${groupValue} (${rows.length} records)`));
-      if (this.settings.compare_distributions) {
-        const groupedValues = Object.fromEntries(
-          groups.map((value) => [
-            value,
-            this.filteredData
-              .filter((row) => String(row[this.state.groupBy]) === String(value))
-              .map((row) => row.__sh_value)
-          ])
-        );
-        panel.append(
-          statisticalAnnotation(
-            'Group comparison',
-            approximateGroupP(groupedValues),
-            'Approximate one-way ANOVA screen',
-            'https://en.wikipedia.org/wiki/One-way_analysis_of_variance'
-          )
-        );
-      }
       const canvasWrap = createElement('div', 'sv-multiple-canvas');
       const canvas = document.createElement('canvas');
       canvasWrap.append(canvas);

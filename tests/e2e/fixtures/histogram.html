@@ -13,7 +13,7 @@
     </p>
     <div id="container"></div>
     <!-- Bundle path tracks the package.json version; bump them together. -->
-    <script src="/dist/safety.viz-1.9.2/safety.viz.js"></script>
+    <script src="/dist/safety.viz-1.10.0/safety.viz.js"></script>
     <script>
       function parseCsv(text) {
         const [header, ...lines] = text.trim().split(/\r?\n/);
@@ -44,9 +44,7 @@
             ],
             display_normal_range: true,
             annotate_bin_boundaries: true,
-            test_normality: true,
             group_by: 'ARM',
-            compare_distributions: true,
             // Docked participant profile (#99, PPRF-SH): the fixture data has
             // no DY/VISIT columns, so the profile falls back to input-order
             // sequencing (the shipped hep-explorer demo baseline);

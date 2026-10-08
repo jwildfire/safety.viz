@@ -133,6 +133,21 @@ describe('the RBQM tab: what it says', () => {
     expect(isoDay(new Date(2026, 9, 7, 23, 59))).toBe('2026-10-07');
     expect(isoDay(new Date(2027, 0, 3, 0, 0))).toBe('2027-01-03');
   });
+
+  it('APP-RBQM-048: beside the versions R reports the tab names what is copied in and not installed in R, which R cannot report: whose the metric workflows are and whose the charts are, each with its version (#255)', () => {
+    const run = { files: 9, seconds: 4.6, sinceStart: null, snapshotDate: '2026-10-07' };
+    const copies = {
+      workflows: { name: 'gsm.kri', version: '1.7.0' },
+      charts: { name: 'gsm.viz', version: '2.4.1' }
+    };
+    const plain = doneSentence(whole, run);
+    // R's own versions name no gsm.kri: the package is not installed in the browser.
+    expect(Object.keys(whole.versions)).not.toContain('gsm.kri');
+    expect(plain).not.toMatch(/gsm\.kri|gsm\.viz/);
+    expect(doneSentence(whole, { ...run, copies })).toBe(
+      `${plain} The metric workflows are gsm.kri 1.7.0’s and the charts gsm.viz 2.4.1’s.`
+    );
+  });
 });
 
 describe('the RBQM tab: what gsm.viz is handed', () => {
