@@ -863,6 +863,49 @@ export function renderEvidencePage({ module, config, coverage, evidence, require
   return html.join('\n');
 }
 
+// A count as a reader would write it in a sentence: a word up to twenty, and
+// digits past that.
+const COUNT_WORDS = [
+  'no',
+  'one',
+  'two',
+  'three',
+  'four',
+  'five',
+  'six',
+  'seven',
+  'eight',
+  'nine',
+  'ten',
+  'eleven',
+  'twelve',
+  'thirteen',
+  'fourteen',
+  'fifteen',
+  'sixteen',
+  'seventeen',
+  'eighteen',
+  'nineteen',
+  'twenty'
+];
+export const countWord = (count) => COUNT_WORDS[count] || String(count);
+
+// The home page's description, for search engines and link previews (#286).
+// Its count is the charts site/config.json lists as available and not
+// Prototype (a Prototype is not counted among the library's charts), so the
+// sentence cannot fall behind the gallery again: it read "Nine" at fourteen.
+export function homeDescription(config) {
+  const count = config.renderers.filter(
+    (renderer) => renderer.status === 'available' && !renderer.prototype
+  ).length;
+  const word = countWord(count);
+  return (
+    `${word.charAt(0).toUpperCase()}${word.slice(1)} classic clinical-safety ` +
+    `${count === 1 ? 'graphic' : 'graphics'} from the safetyGraphics ecosystem, rebuilt on ` +
+    'Chart.js with live demos, requirement-traced test evidence, and generated API references.'
+  );
+}
+
 // Gallery (#21 pillar 1, reframed for v1.0 under site issue #21): the
 // homepage tells the project story — lineage, architecture mirror, audience —
 // then splits the renderer cards into the migrated set and the migration

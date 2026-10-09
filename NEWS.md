@@ -21,6 +21,7 @@ The demo app made ready to show: clearer on first open, and the defects found in
 ## Also in this release
 
 - **On a phone, a link to a tab opens with that tab in view.** Tabs and chart names are 44 pixels tall there, up from 30. [obot.roadmap#402](https://github.com/jwildfire/obot.roadmap/issues/402), [#271](https://github.com/jwildfire/safety.viz/issues/271)
+- **The docs home page's description counts the charts on the site.** It said nine; it now says thirteen, and is built from the site's list of charts, so it follows the list. [obot.roadmap#407](https://github.com/jwildfire/obot.roadmap/issues/407), [#286](https://github.com/jwildfire/safety.viz/issues/286)
 
 # safety.viz v1.10.0
 
