@@ -383,6 +383,8 @@ test.describe('demo app on the demo study', () => {
         .locator('.sva-chart')
         .evaluate((element) => getComputedStyle(element).getPropertyValue('--hue'))
     ).toBe('#c67bb6');
+    // The header as a first-time visitor sees it, with the Biomarkers tab open.
+    await captureEvidence(page.locator('.sva-header'), 'APP-LIB-037', 'tab-colours');
     // The RBQM tab's own page carries its colour too.
     await page.locator('.sva-tab[data-tab="rbqm"]').click();
     expect(
