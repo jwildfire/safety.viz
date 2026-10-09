@@ -8,7 +8,15 @@ from the section here when the release-candidate PR (dev -> main) merges and is 
 
 # safety.viz v1.11.0 (Upcoming)
 
-_Nothing merged yet._
+**See it move:** the [demo app on `dev`](https://jwildfire.github.io/safety.viz/dev/demo/) is the release as it stands; the annotated demo page comes with the release candidate.
+
+The demo app made ready to show: clearer on first open, and the defects found in the review of release 1.10 fixed. No chart and no metric is added, and nothing the app computes changes.
+
+## What's new
+
+## Also in this release
+
+- **The docs home page's description counts the charts on the site.** It said nine; it now says thirteen, and is built from the site's list of charts, so it follows the list. [obot.roadmap#407](https://github.com/jwildfire/obot.roadmap/issues/407), [#286](https://github.com/jwildfire/safety.viz/issues/286)
 
 # safety.viz v1.10.0
 

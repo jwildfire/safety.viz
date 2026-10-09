@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { renderGallery, experimentalBadge } from '../../../scripts/site-lib.mjs';
+import { renderGallery, experimentalBadge, homeDescription } from '../../../scripts/site-lib.mjs';
 
 // Gallery generator (#7): the homepage lists every renderer from
 // site/config.json as a card with a status badge; available renderers link to
@@ -87,5 +87,34 @@ describe('site generator: gallery', () => {
     // The long story block moved to the About page (#29).
     expect(html).not.toContain('class="lead"');
     expect(html).not.toContain('gsm.kri');
+  });
+
+  it('the home page description counts the charts the configuration lists as available and not Prototype, so a change to the list changes the sentence (#286)', () => {
+    // The fixture lists one available chart and two that are queued.
+    expect(homeDescription(config)).toMatch(/^One classic clinical-safety graphic from /);
+    const chart = (module, more = {}) => ({ module, title: module, status: 'available', ...more });
+    const longer = {
+      ...config,
+      renderers: [...config.renderers, chart('second'), chart('third', { prototype: true })]
+    };
+    // A second available chart is counted; a Prototype is not, and nor is a queued one.
+    expect(homeDescription(longer)).toMatch(/^Two classic clinical-safety graphics from /);
+    // Past the words the generator knows, the count is still the configuration's.
+    const many = {
+      ...config,
+      renderers: Array.from({ length: 23 }, (_, index) => chart(`chart-${index}`))
+    };
+    expect(homeDescription(many)).toMatch(/^23 classic clinical-safety graphics from /);
+    // The site's own configuration: the sentence names the number it lists.
+    const site = JSON.parse(
+      readFileSync(new URL('../../../site/config.json', import.meta.url), 'utf8')
+    );
+    const listed = site.renderers.filter(
+      (renderer) => renderer.status === 'available' && !renderer.prototype
+    ).length;
+    expect(listed).toBeGreaterThan(9);
+    const words = { 13: 'Thirteen', 14: 'Fourteen', 15: 'Fifteen', 16: 'Sixteen' };
+    expect(homeDescription(site).split(' ')[0]).toBe(words[listed] || String(listed));
+    expect(homeDescription(site)).not.toMatch(/^Nine /);
   });
 });
