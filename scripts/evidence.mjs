@@ -99,13 +99,40 @@ function run(command, args, env = {}) {
   return result.status;
 }
 
-console.log('▸ Vitest (json reporter)…');
-run('npx', ['vitest', 'run', '--reporter=default', '--reporter=json', `--outputFile=${vitestOut}`]);
+// SPIKE (ci-speed): --vitest-json=<file> and --playwright-json=<file> hand the
+// check a run that has already happened, so the suites are not run again.
+const given = (name) => {
+  const hit = process.argv.find((arg) => arg.startsWith(`--${name}=`));
+  return hit ? path.resolve(hit.slice(name.length + 3)) : null;
+};
+const vitestGiven = given('vitest-json');
+const playwrightGiven = given('playwright-json');
+if ((vitestGiven || playwrightGiven) && mode !== 'check') {
+  console.error('--vitest-json and --playwright-json are for --check only.');
+  process.exit(1);
+}
 
-console.log('▸ Playwright (json reporter)…');
-const playwrightArgs = ['playwright', 'test', '--reporter=json'];
-if (mode === 'update') playwrightArgs.push('--update-snapshots');
-run('npx', playwrightArgs, { PLAYWRIGHT_JSON_OUTPUT_NAME: playwrightOut });
+if (vitestGiven) {
+  console.log(`▸ Vitest results from ${vitestGiven}`);
+} else {
+  console.log('▸ Vitest (json reporter)…');
+  run('npx', [
+    'vitest',
+    'run',
+    '--reporter=default',
+    '--reporter=json',
+    `--outputFile=${vitestOut}`
+  ]);
+}
+
+if (playwrightGiven) {
+  console.log(`▸ Playwright results from ${playwrightGiven}`);
+} else {
+  console.log('▸ Playwright (json reporter)…');
+  const playwrightArgs = ['playwright', 'test', '--reporter=json'];
+  if (mode === 'update') playwrightArgs.push('--update-snapshots');
+  run('npx', playwrightArgs, { PLAYWRIGHT_JSON_OUTPUT_NAME: playwrightOut });
+}
 
 const screenshotsByModule = {};
 for (const module of modules) {
@@ -119,8 +146,8 @@ for (const module of modules) {
 
 const sets = buildEvidenceSets({
   modules,
-  vitest: JSON.parse(readFileSync(vitestOut, 'utf8')),
-  playwright: JSON.parse(readFileSync(playwrightOut, 'utf8')),
+  vitest: JSON.parse(readFileSync(vitestGiven || vitestOut, 'utf8')),
+  playwright: JSON.parse(readFileSync(playwrightGiven || playwrightOut, 'utf8')),
   screenshotsByModule,
   provenance
 });
