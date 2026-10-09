@@ -34,13 +34,15 @@ import { chartStatus, supportedCount } from './status.js';
 import { chartData, chartSettings, isDestination } from './charts.js';
 import {
   OTHER_GROUP,
+  DOMAIN_COLOURS,
   OWN_LIBRARY,
   chartGroups as groupCharts,
   groupLabel,
   groupOf,
   hueClass,
   libraryOf,
-  mergeLibraries
+  mergeLibraries,
+  tabColours
 } from './libraries.js';
 import { renderDataPanel } from './data-panel.js';
 import { DEMO_STUDIES, studyUrls } from './studies.js';
@@ -151,7 +153,7 @@ function sentenceFor(module, status, manifest) {
  * @param {Object} options Mount options.
  * @param {Object} options.charts The chart factories, keyed by export name (the safety.viz module collection).
  * @param {Object} options.manifest The portfolio manifest.
- * @param {Array<{name: string, charts: ?Object, manifest: ?Object, file?: string, settings?: (Object|function(string): Object), action?: {state: function(): {label: string, done: boolean, note: string}, press: function(): void}, view?: {id: string, title: string, badge?: ?{text: string, title: string}, tag: function(): string, render: function(Element, Object): ?{destroy: Function}}}>} [options.libraries] Further chart libraries, each its name, its chart factories keyed by export name, and its chart list in the portfolio manifest's format (version 2). Their charts are listed after safety.viz's, under the groups their entries name; a chart whose library or factory is missing, or whose entry cannot be read, reads "not loaded". A library handed in with no chart list the app can read is named on the page in every view, with `file`, the script the page loaded it from, when given (#193). A library may also bring `settings` added to each of its charts' settings when the chart is drawn (an object, or a function of the module name), and one `action`, a control shown with its charts that redraws the open chart when pressed (#183). A library that brings a `view` (#235) brings a tab of its own in place of charts: its `id` is the tab's address, `title` its name, `badge` a status shown beside the name, `tag()` what the tab's count says, and `render(container, app)` draws it and returns what tears it down. A view whose id is the data view's, a chart's or another view's is left out with a console warning.
+ * @param {Array<{name: string, colour?: string, charts: ?Object, manifest: ?Object, file?: string, settings?: (Object|function(string): Object), action?: {state: function(): {label: string, done: boolean, note: string}, press: function(): void}, view?: {id: string, title: string, badge?: ?{text: string, title: string}, tag: function(): string, render: function(Element, Object): ?{destroy: Function}}}>} [options.libraries] Further chart libraries, each its name, its chart factories keyed by export name, and its chart list in the portfolio manifest's format (version 2). Their charts are listed after safety.viz's, under the groups their entries name, on a tab of the library's `colour`, a six-digit hex colour, or of the first colour no other tab uses when it names none (#268); a chart whose library or factory is missing, or whose entry cannot be read, reads "not loaded". A library handed in with no chart list the app can read is named on the page in every view, with `file`, the script the page loaded it from, when given (#193). A library may also bring `settings` added to each of its charts' settings when the chart is drawn (an object, or a function of the module name), and one `action`, a control shown with its charts that redraws the open chart when pressed (#183). A library that brings a `view` (#235) brings a tab of its own in place of charts: its `id` is the tab's address, `title` its name, `badge` a status shown beside the name, `tag()` what the tab's count says, and `render(container, app)` draws it and returns what tears it down. A view whose id is the data view's, a chart's or another view's is left out with a console warning.
  * @param {{base: string, studies?: Object[]}} [options.demo] Where the demo studies are served from, and which (default: {@link DEMO_STUDIES}); when given, the first study is loaded on mount and the data view offers each by name.
  * @param {{docs?: string, domains?: string, download?: string, github?: string}} [options.links] Where the footer's links go; a link with no address is left out.
  * @param {Object<string, {guide?: string, evidence?: string}>} [options.chartLinks] Each chart's own pages, keyed by module name: its clinical guide and its test evidence. A chart's view carries a footnote linking those it was given an address for (#246).
@@ -193,14 +195,34 @@ export function mountApp(
     problems,
     unloaded,
     libraries: extras,
+    declaredBy,
     factoryOf
   } = mergeLibraries(
     ownManifest,
     charts,
     handed.filter((library) => !bringsView(library))
   );
+  // Every tab has a colour (#268): a standard domain's is its class's, and a
+  // library's is the one it names or the first no other tab uses, in the order
+  // the libraries were handed in (libraries.js::tabColours).
+  const colours = tabColours(
+    handed,
+    groupCharts(manifest)
+      .map(([group]) => group)
+      .filter((group) => !has(declaredBy, group) && has(DOMAIN_COLOURS, group))
+      .map((group) => DOMAIN_COLOURS[group])
+  );
+  /** Paint an element with a library's colour; a standard domain's element is painted by its class. */
+  const paint = (element, library) => {
+    if (colours.has(library)) element.style.setProperty('--hue', colours.get(library));
+    return element;
+  };
+  /** An element of a group, with the group's class and, for a library's group, its colour. */
+  const inGroup = (tag, className, group) =>
+    paint(el(tag, `${className} ${hueClass(group, manifest)}`), declaredBy[group]);
   const views = new Map();
-  for (const { view } of handed.filter(bringsView)) {
+  const viewLibrary = new Map(); // a view's id → the name of the library that brought it
+  for (const { name, view } of handed.filter(bringsView)) {
     const id = typeof view.id === 'string' ? view.id : '';
     if (!id || id === 'data' || has(manifest.modules, id) || views.has(id)) {
       console.warn(
@@ -209,6 +231,7 @@ export function mountApp(
       continue;
     }
     views.set(id, view);
+    viewLibrary.set(id, name);
   }
   // What a library brings besides its charts (#183): settings for each of its
   // charts, and one control. Looked up by the library a chart's entry names,
@@ -382,7 +405,7 @@ export function mountApp(
       // The tab: the domain, and how many of its charts the data supports.
       const states = members.map(([module]) => current[module].state);
       const readyHere = states.filter((value) => value === 'ready').length;
-      const tab = el('button', `sva-tab ${hueClass(group, manifest)}`);
+      const tab = inGroup('button', 'sva-tab', group);
       tab.type = 'button';
       tab.dataset.domain = group;
       tab.setAttribute('aria-pressed', String(open === group));
@@ -396,7 +419,7 @@ export function mountApp(
       tabs.append(tab);
 
       // Its charts: on the page for every domain, shown for the open one.
-      const section = el('div', `sva-group ${hueClass(group, manifest)}`);
+      const section = inGroup('div', 'sva-group', group);
       section.dataset.group = group;
       section.hidden = open !== group;
       section.append(el('h2', 'sva-group-title', groupTitle(group)));
@@ -424,7 +447,10 @@ export function mountApp(
     // A library's view (#235): a tab after the domains', with what the view
     // says of itself where a domain's tab counts its charts.
     for (const [id, view] of views) {
-      const tab = el('button', 'sva-tab sva-view-tab sva-library-group');
+      const tab = paint(
+        el('button', 'sva-tab sva-view-tab sva-library-group'),
+        viewLibrary.get(id)
+      );
       tab.type = 'button';
       tab.dataset.tab = id;
       tab.setAttribute('aria-pressed', String(state.selected === id));
@@ -544,7 +570,7 @@ export function mountApp(
       const view = views.get(state.selected);
       title.textContent = view.title;
       renderNotes(content);
-      const container = el('div', 'sva-view');
+      const container = paint(el('div', 'sva-view'), viewLibrary.get(state.selected));
       content.append(container);
       try {
         instance = view.render(container, handle) || null;
@@ -602,7 +628,7 @@ export function mountApp(
       return true;
     }
 
-    const mount = el('div', `sva-chart ${hueClass(groupOf(entry), manifest)}`);
+    const mount = inGroup('div', 'sva-chart', groupOf(entry));
     content.append(mount);
     try {
       instance = factoryOf(module)(mount, {

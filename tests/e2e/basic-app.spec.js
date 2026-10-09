@@ -345,6 +345,53 @@ test.describe('demo app on the demo study', () => {
     await expect(page.locator('.sva-charts')).toBeHidden();
   });
 
+  test('APP-LIB-037: on the demo app as it opens no tab is grey: Biomarkers is pink and RBQM amber, the colours the rule gives them, the biomarker chart names and the chart’s card carry their tab’s colour, and the standard domains’ tabs keep theirs (#268)', async ({
+    page
+  }) => {
+    await openOnDemo(page);
+    const colourOf = (locator) =>
+      locator.evaluate((element) => getComputedStyle(element).backgroundColor);
+    const hexOf = (locator) => colourOf(locator.locator('.sva-hex'));
+    // The standard domains' tabs: blue, violet, teal, as before.
+    expect(await hexOf(tab(page, 'bds'))).toBe('rgb(81, 159, 221)');
+    expect(await hexOf(tab(page, 'eg'))).toBe('rgb(152, 139, 221)');
+    expect(await hexOf(tab(page, 'ae'))).toBe('rgb(0, 175, 169)');
+    // Neither library names a colour, so the rule gives the first pink, #c67bb6,
+    // and the second amber, #c78a3b.
+    expect(await hexOf(tab(page, 'biomarkers'))).toBe('rgb(198, 123, 182)');
+    expect(await hexOf(page.locator('.sva-tab[data-tab="rbqm"]'))).toBe('rgb(199, 138, 59)');
+    // No hex in the header is the graphite a library's tab used to be, #4a525c.
+    const hexes = await page
+      .locator('.sva-header .sva-hex')
+      .evaluateAll((elements) =>
+        elements.map((element) => getComputedStyle(element).backgroundColor)
+      );
+    expect(hexes.length).toBeGreaterThan(20);
+    expect(hexes).not.toContain('rgb(74, 82, 92)');
+    // The biomarker chart names carry their tab's colour, and so does the open chart's card.
+    await tab(page, 'biomarkers').click();
+    const [first] = bioCharts;
+    await expect(item(page, first[0])).toHaveAttribute('aria-current', 'page');
+    for (const [module] of bioCharts) {
+      expect(await hexOf(item(page, module)), module).toBe('rgb(198, 123, 182)');
+    }
+    expect(
+      await item(page, first[0]).evaluate((element) => getComputedStyle(element).boxShadow)
+    ).toContain('rgb(198, 123, 182)');
+    expect(
+      await page
+        .locator('.sva-chart')
+        .evaluate((element) => getComputedStyle(element).getPropertyValue('--hue'))
+    ).toBe('#c67bb6');
+    // The RBQM tab's own page carries its colour too.
+    await page.locator('.sva-tab[data-tab="rbqm"]').click();
+    expect(
+      await page
+        .locator('.sva-view')
+        .evaluate((element) => getComputedStyle(element).getPropertyValue('--hue'))
+    ).toBe('#c78a3b');
+  });
+
   test('APP-PAGE-025: changing the address opens that view without a reload (#163)', async ({
     page
   }) => {

@@ -12,10 +12,12 @@
 //   red                               something a chart needs is missing
 //   amber                             a guess
 //   plum                              chosen by hand
-//   graphite                          a group another chart library declares
-//                                     (#181): the mark's centre hex, the one
-//                                     colour of the mark no domain or state
-//                                     uses, a shade lighter than the text
+//
+// A group another chart library declares (#181), and a library's own tab, has
+// a colour too (#268): the one the library names, or the first of pink, amber
+// and green that no tab in the header uses (libraries.js::tabColours). The
+// page sets it on the tab, the chart names and the chart's card as --hue. No
+// tab is grey, and red is never given to one.
 //
 // Colour is always on a hex beside words; the words stay graphite, so nothing
 // is said by colour alone.
@@ -44,7 +46,7 @@ const HEX_OUTLINE =
 
 export const STYLES = `
 .sva-app{--bg:#fafaf8;--rail:#f3f4f1;--ink:#1f2328;--soft:#5b6470;--faint:#98a0aa;--accent:#6c3270;--accent-deep:#522456;--accent-soft:rgba(108,50,112,.1);--card:#fff;--rule:#e4e6e3;--line:#cfd3cf;--alarm:#a2423a;
---s0:#d87972;--s1:#c78a3b;--s2:#77a95b;--s3:#00afa9;--s4:#519fdd;--s5:#988bdd;--s6:#c67bb6;--lib:#4a525c;
+--s0:#d87972;--s1:#c78a3b;--s2:#77a95b;--s3:#00afa9;--s4:#519fdd;--s5:#988bdd;--s6:#c67bb6;
 --spec:linear-gradient(90deg,var(--s0),var(--s1),var(--s2),var(--s3),var(--s4),var(--s5),var(--s6));
 --spec-diag:linear-gradient(135deg,var(--s0),var(--s1),var(--s2),var(--s3),var(--s4),var(--s5),var(--s6));
 --sans:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;--serif:"Instrument Serif",Georgia,"Times New Roman",serif;--mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
@@ -53,7 +55,7 @@ display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:v
 .sva-app *,.sva-app *::before,.sva-app *::after{box-sizing:border-box}
 .sva-app :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .sva-app [hidden]{display:none}
-.sva-domain-subject{--hue:var(--s2)}.sva-domain-ae{--hue:var(--s3)}.sva-domain-bds{--hue:var(--s4)}.sva-domain-eg{--hue:var(--s5)}.sva-domain-other{--hue:var(--s6)}.sva-library-group{--hue:var(--lib)}
+.sva-domain-subject{--hue:var(--s2)}.sva-domain-ae{--hue:var(--s3)}.sva-domain-bds{--hue:var(--s4)}.sva-domain-eg{--hue:var(--s5)}.sva-domain-other{--hue:var(--s6)}
 
 .sva-header::before,.sva-footer::before{content:"";position:absolute;left:0;right:0;top:0;height:9px;background:var(--spec);-webkit-mask:${HEX_STRIP} left top/auto 9px repeat-x;mask:${HEX_STRIP} left top/auto 9px repeat-x}
 .sva-hex{display:inline-block;flex:none;width:.74em;height:.84em;background:var(--hue,var(--faint));clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}

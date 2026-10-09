@@ -8,7 +8,13 @@ from the section here when the release-candidate PR (dev -> main) merges and is 
 
 # safety.viz v1.11.0 (Upcoming)
 
-_Nothing merged yet._
+**See it move:** the [demo app on `dev`](https://jwildfire.github.io/safety.viz/dev/demo/) is the release as it stands; the annotated demo page comes with the release candidate.
+
+The demo app made ready to show: clearer on first open, and the defects found in the review of release 1.10 fixed. No chart and no metric is added, and nothing the app computes changes.
+
+## What's new
+
+- **Every tab in the demo app has a colour.** Biomarkers is pink and RBQM amber, where both were grey and read as switched off. A chart library may name its tab's colour; one that names none is given the first colour no other tab uses. [obot.roadmap#402](https://github.com/jwildfire/obot.roadmap/issues/402), [#268](https://github.com/jwildfire/safety.viz/issues/268)
 
 # safety.viz v1.10.0
 

@@ -136,7 +136,7 @@ function entryProblem(entry, domains, groups) {
  * @param {Object} host safety.viz's portfolio manifest.
  * @param {Object} hostCharts safety.viz's chart factories, keyed by export name.
  * @param {Array<{name: string, charts: ?Object, manifest: ?Object, file?: string}>} [libraries] The further libraries; `file` is the script the page loaded the library from, named when it did not load.
- * @returns {{manifest: Object, problems: Object<string, string>, unloaded: string[], libraries: Map<string, Object>, factoryOf: (module: string) => ?Function}} The merged manifest; for each chart that cannot be drawn, the sentence that says why; for each library asked for whose charts are not listed, the sentence that says why; the libraries used, by name; and the factory to draw a chart with, or null.
+ * @returns {{manifest: Object, problems: Object<string, string>, unloaded: string[], libraries: Map<string, Object>, declaredBy: Object<string, string>, factoryOf: (module: string) => ?Function}} The merged manifest; for each chart that cannot be drawn, the sentence that says why; for each library asked for whose charts are not listed, the sentence that says why; the libraries used, by name; the library that declared each group; and the factory to draw a chart with, or null.
  */
 export function mergeLibraries(host, hostCharts, libraries = []) {
   const modules = {};
@@ -144,6 +144,8 @@ export function mergeLibraries(host, hostCharts, libraries = []) {
   const charts = { [OWN_LIBRARY]: hostCharts };
   const used = new Map();
   const unloaded = [];
+  // Which library declared each group: a group is painted with its library's colour (#268).
+  const declaredBy = {};
   const warn = (message) => console.warn(`safety.viz app: ${message}`);
   // A group a library may not declare: one a standard domain or the group
   // outside the set already is, whose tab is safety.viz's own.
@@ -194,7 +196,10 @@ export function mergeLibraries(host, hostCharts, libraries = []) {
         warn(`${name} declares the group ${id}, which is safety.viz's own tab; it was left out.`);
       } else if (has(groups, id)) {
         warn(`${name} declares the group ${id}, which is already declared.`);
-      } else groups[id] = group;
+      } else {
+        groups[id] = group;
+        declaredBy[id] = name;
+      }
     }
     for (const [module, entry] of Object.entries(list.modules)) {
       // Listed, it would be a chip that opens the data view: say so instead.
@@ -250,6 +255,7 @@ export function mergeLibraries(host, hostCharts, libraries = []) {
     problems,
     unloaded,
     libraries: used,
+    declaredBy,
     factoryOf(module) {
       if (!has(modules, module) || has(problems, module)) return null;
       const entry = modules[module];
@@ -312,14 +318,94 @@ export function groupLabel(group, manifest) {
 }
 
 /**
- * The class that gives a group its hue. Each standard domain and the group
- * outside the set has a hue of its own; every declared group takes the
- * library hue, the graphite of the mark's centre hex, which no domain and no
- * state uses (styles.js).
+ * The class a group's tab, chart names and chart card carry. Each standard
+ * domain and the group outside the set has a hue of its own, set by its class
+ * (styles.js). A declared group's class sets none: the page paints it with its
+ * library's colour, which {@link tabColours} gives.
  * @param {string} group A group id.
  * @param {Object} manifest The merged manifest.
  * @returns {string} The class name.
  */
 export function hueClass(group, manifest) {
   return isDeclared(group, manifest) ? 'sva-library-group' : `sva-domain-${group}`;
+}
+
+/**
+ * The hue of each standard domain's tab and of the tab of the charts outside
+ * the standard set, as styles.js sets them: green, teal, blue, violet, pink.
+ */
+export const DOMAIN_COLOURS = {
+  subject: '#77a95b',
+  ae: '#00afa9',
+  bds: '#519fdd',
+  eg: '#988bdd',
+  other: '#c67bb6'
+};
+
+/**
+ * The colours a library's tab is given when the library names none, in the
+ * order they are given out: pink, amber, green (#268). Red is not one of
+ * them: it means "missing" and "did not draw" everywhere in the app.
+ */
+export const TAB_COLOURS = ['#c67bb6', '#c78a3b', '#77a95b'];
+
+const INK = [0x1f, 0x23, 0x28];
+const isHex = (value) => typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value);
+
+/**
+ * A colour mixed 40 percent toward the app's ink, channel by channel: what a
+ * tab is given once every colour of the list is in use.
+ * @param {string} colour A six-digit hex colour.
+ * @returns {string} The darker colour, as a six-digit hex.
+ */
+export function towardInk(colour) {
+  const mixed = [1, 3, 5].map((at, index) =>
+    Math.round(parseInt(colour.slice(at, at + 2), 16) * 0.6 + INK[index] * 0.4)
+  );
+  return `#${mixed.map((value) => value.toString(16).padStart(2, '0')).join('')}`;
+}
+
+/**
+ * The colour of each library's tab (#268, obot.roadmap#402). A library that
+ * names a colour gets it. One that names none is given the first open colour
+ * of {@link TAB_COLOURS}, where open means no tab in the header uses it: not a
+ * standard domain's tab, and not a library before it. When the list runs out
+ * the rule goes round again with each colour mixed 40 percent toward ink, and
+ * past that a colour is used twice: no tab is ever grey.
+ *
+ * The libraries are taken in the order they were handed in, which is the
+ * order the app's build lists them, so the same library has the same colour
+ * on every load and a library added at the end moves nobody. Whether a
+ * library's script loaded changes nothing: it keeps its place in the order.
+ * A second library of a name is left out, as the merge leaves it out.
+ *
+ * @param {Array<{name: string, colour?: string}>} libraries The libraries, in the order the page was handed them.
+ * @param {string[]} [taken] The colours the header's other tabs already use.
+ * @returns {Map<string, string>} Each library's colour, by its name, as a lower-case six-digit hex.
+ */
+export function tabColours(libraries, taken = []) {
+  const used = new Set(taken.filter(isHex).map((colour) => colour.toLowerCase()));
+  const offered = [...TAB_COLOURS, ...TAB_COLOURS.map(towardInk)];
+  const colours = new Map();
+  let given = 0;
+  for (const library of Array.isArray(libraries) ? libraries : []) {
+    const name = isRecord(library) ? library.name : undefined;
+    if (!isText(name) || colours.has(name)) continue;
+    let colour;
+    if (isHex(library.colour)) colour = library.colour.toLowerCase();
+    else {
+      if (library.colour !== undefined) {
+        console.warn(
+          `safety.viz app: ${name} names a tab colour that is not a six-digit hex colour; the app chose one.`
+        );
+      }
+      colour = offered.find((candidate) => !used.has(candidate));
+      // Every colour of both rounds is in use: one is used twice, in the list's order.
+      if (!colour) colour = offered[given % offered.length];
+      given += 1;
+    }
+    used.add(colour);
+    colours.set(name, colour);
+  }
+  return colours;
 }
