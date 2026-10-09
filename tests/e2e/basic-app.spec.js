@@ -300,6 +300,9 @@ test.describe('demo app on the demo study', () => {
       expect(box.height).toBeLessThanOrEqual(1);
     }
     // The chart starts straight under the header.
+    // On first open the welcome line sits between them (#269); once it is closed
+    // the chart starts straight under the header.
+    await page.locator('.sva-welcome').getByRole('button', { name: 'Dismiss' }).click();
     const header = await page.locator('.sva-header').boundingBox();
     const chart = await page.locator('.sva-chart').boundingBox();
     expect(chart.y - (header.y + header.height)).toBeLessThan(30);
