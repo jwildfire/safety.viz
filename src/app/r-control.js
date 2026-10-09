@@ -15,6 +15,7 @@
 // The control starts nothing and knows nothing of R: a tab hands it what to
 // say (src/app/libraries.js::controlState) and what a press does.
 import { el } from './dom.js';
+import { icon } from './icons.js';
 
 /** The phases a control can be in. */
 export const R_PHASES = ['off', 'starting', 'ready', 'failed'];
@@ -51,6 +52,43 @@ function detailsPanel(details, onClose) {
     for (const [term, said] of details.rows)
       list.append(el('dt', null, term), el('dd', null, said));
     panel.append(list);
+  }
+  if (details.columns.length) {
+    // A tab with more to say: its sections, side by side.
+    panel.classList.add('sva-r-wide');
+    const columns = el('div', 'sva-r-cols');
+    for (const sections of details.columns) {
+      const column = el('div', 'sva-r-col');
+      for (const section of sections) {
+        column.append(el('h4', 'sva-r-title', section.title));
+        if (section.steps.length) {
+          const steps = el('ol', 'sva-r-steps');
+          for (const step of section.steps) {
+            const item = el('li');
+            item.dataset.state = step.state;
+            const mark = { done: 'ran', now: 'running', todo: 'todo' }[step.state];
+            item.append(icon(mark), el('span', 'sva-r-step', step.say));
+            if (step.note) item.append(el('span', 'sva-r-note', step.note));
+            steps.append(item);
+          }
+          column.append(steps);
+        }
+        if (section.items.length) {
+          const items = el('ul', 'sva-r-items');
+          for (const sentence of section.items) items.append(el('li', null, sentence));
+          column.append(items);
+        }
+        if (section.rows.length) {
+          const list = el('dl', 'sva-r-list');
+          for (const [term, said] of section.rows)
+            list.append(el('dt', null, term), el('dd', null, said));
+          column.append(list);
+        }
+        for (const sentence of section.text) column.append(el('p', 'sva-r-text', sentence));
+      }
+      columns.append(column);
+    }
+    panel.append(columns);
   }
   if (details.more.length) {
     const more = el('details', 'sva-r-more');
@@ -100,6 +138,7 @@ export function rControl(
   const say = (text, bad = false) => el('span', bad ? 'sva-r-say sva-bad' : 'sva-r-say', text);
   const button = (label) => {
     const control = el('button', 'sva-action', label);
+    if (state.className) control.classList.add(...state.className.split(/\s+/).filter(Boolean));
     control.type = 'button';
     control.disabled = state.disabled;
     control.onclick = onPress;

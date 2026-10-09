@@ -229,9 +229,10 @@ export function createConnection(options = {}) {
      * @param {Object} [request]
      * @param {Object<string, string>} [request.files] Files to write into R's file system before the call, as text by absolute path.
      * @param {Object} [request.args] Named arguments; a nested object becomes a nested R list.
+     * @param {() => void} [request.onFiles] Told once the files are written and before R is called, so a page can say that R has the files and is now at work.
      * @returns {Promise<Object>} The answer; it never rejects.
      */
-    async run(name, { files: given = {}, args = {} } = {}) {
+    async run(name, { files: given = {}, args = {}, onFiles = null } = {}) {
       if (!isText(name)) return { status: 'error', message: 'r-browser: no R function was named.' };
       if (!isRecord(given) || !isRecord(args)) {
         return { status: 'error', message: 'r-browser: files and args must each be an object.' };
@@ -249,6 +250,14 @@ export function createConnection(options = {}) {
       let shelter;
       try {
         for (const [file, text] of Object.entries(given)) await write(webR, file, String(text));
+        // What the page does with the news is the page's: it cannot stop the call.
+        if (typeof onFiles === 'function') {
+          try {
+            onFiles();
+          } catch {
+            // Nothing to do: R is called all the same.
+          }
+        }
         shelter = await new webR.Shelter();
         // The arguments go over as a named R list, built as one: left to
         // itself webR reads an object of equal-length arrays as a data frame.

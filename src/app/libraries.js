@@ -432,6 +432,11 @@ const textOr = (value, otherwise = null) => (isText(value) ? value : otherwise);
  * - `details`: what the panel behind the chip holds: a `heading`, `rows` of a
  *   term and what is said of it, `text` in sentences, `more` sentences behind a
  *   disclosure titled `moreTitle`, and `actions`, each a `label` and a `press`.
+ *   A tab with more to say gives `columns`: each a list of sections, and each
+ *   section a `title` over any of `steps` (each `say`, a `note` at its right
+ *   and its `state`: `done`, `now` or `todo`), `items` in sentences, `rows`
+ *   of a term and what is said of it, and `text`. The panel is then a wide one.
+ * - `className`: a class for the control's button, for a tab that names its own.
  * - `why`: the word on the chip that opens the details of a failure.
  *
  * The control of #183 named `label`, `done`, `note` and `hint`; they are read
@@ -460,19 +465,39 @@ export function controlState(action) {
       ? { say: said.step.say, index: said.step.index, of: said.step.of }
       : null;
   const list = (value) => (Array.isArray(value) ? value : []);
+  const pairs = (value) =>
+    list(value).filter((row) => Array.isArray(row) && isText(row[0]) && isText(row[1]));
+  const section = (given) => ({
+    title: given.title,
+    steps: list(given.steps)
+      .filter((item) => isRecord(item) && isText(item.say))
+      .map((item) => ({
+        say: item.say,
+        note: textOr(item.note),
+        state: ['done', 'now', 'todo'].includes(item.state) ? item.state : 'done'
+      })),
+    items: list(given.items).filter(isText),
+    rows: pairs(given.rows),
+    text: list(given.text).filter(isText)
+  });
   const details =
     isRecord(said.details) && isText(said.details.heading)
       ? {
           heading: said.details.heading,
-          rows: list(said.details.rows).filter(
-            (row) => Array.isArray(row) && isText(row[0]) && isText(row[1])
-          ),
+          rows: pairs(said.details.rows),
           text: list(said.details.text).filter(isText),
           more: list(said.details.more).filter(isText),
           moreTitle: textOr(said.details.moreTitle, 'More'),
           actions: list(said.details.actions).filter(
             (item) => isRecord(item) && isText(item.label) && typeof item.press === 'function'
-          )
+          ),
+          columns: list(said.details.columns)
+            .map((column) =>
+              list(column)
+                .filter((given) => isRecord(given) && isText(given.title))
+                .map(section)
+            )
+            .filter((column) => column.length)
         }
       : null;
   return {
@@ -485,6 +510,7 @@ export function controlState(action) {
     since: Number.isFinite(said.since) ? said.since : null,
     step,
     details,
-    why: textOr(said.why, 'Why')
+    why: textOr(said.why, 'Why'),
+    className: textOr(said.className)
   };
 }
