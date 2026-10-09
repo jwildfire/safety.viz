@@ -1,6 +1,6 @@
 {
   "module": "ae-explorer",
-  "generatedAt": "2026-10-09T01:03:05.166Z",
+  "generatedAt": "2026-10-09T01:40:39.947Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "37867802917",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37867802917"
+    "id": "37870886152",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37870886152"
   },
   "records": [
     {
@@ -8205,6 +8205,30 @@
       "screenshots": []
     },
     {
+      "test": "the site build writes no tag or attribute of an author’s choosing (#258) a link inside an image, or an image inside a link’s destination, adds no attribute",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [258],
+      "screenshots": []
+    },
+    {
+      "test": "the site build writes no tag or attribute of an author’s choosing (#258) five thousand texts put together from the pieces of links, images and attributes add no tag, no attribute and no other scheme",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [258],
+      "screenshots": []
+    },
+    {
+      "test": "the site build writes no tag or attribute of an author’s choosing (#258) what the renderer wrote before is written still: a linked image, bold inside a link, code, and a destination with parentheses",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [258],
+      "screenshots": []
+    },
+    {
       "test": "the vendored bio.viz bundle APP-BIO-001: the copy matches its record, which names bio.viz, the full commit, where it was copied from (the dev branch, or a release tag of the version it records) and the file’s checksum and size (#182, #212)",
       "suite": "unit",
       "status": "pass",
@@ -8485,6 +8509,14 @@
       "screenshots": []
     },
     {
+      "test": "what the review of the v1.10.0 release candidate found (#258) APP-RBQM-050: with lines above the subject-level file’s header that are empty or only spaces or a tab, desktop R reads the header from the first line with anything on it and returns the rows it returns without them",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-050"],
+      "issueRefs": [258],
+      "screenshots": []
+    },
+    {
       "test": "what the review of the v1.10.0 release candidate found (#258) APP-RBQM-051: “after Start R was pressed” is said only of the press that started R: when the study is cleared while R starts, a later press runs the metrics and says how long the run took and nothing of Start R",
       "suite": "unit",
       "status": "pass",
@@ -8501,7 +8533,7 @@
       "screenshots": []
     },
     {
-      "test": "what the review of the v1.10.0 release candidate found (#258) APP-RBQM-052: desktop R, asked to forget while it reads one folder, removes only the one folder beside its own: not its own however spelt, its parent, a folder elsewhere, what a pattern matches, two at once, or one that is not there; and a whole run told of the folder before removes it and returns its rows",
+      "test": "what the review of the v1.10.0 release candidate found (#258) APP-RBQM-052: desktop R, asked to forget while it reads one folder, removes only the one folder beside its own, and reads a name as a name: not its own however spelt, its parent, a folder elsewhere, what a pattern matches, two at once, or one that is not there; and a whole run told of the folder before removes it and returns its rows",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-RBQM-052"],
