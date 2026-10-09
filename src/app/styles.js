@@ -104,7 +104,7 @@ display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:v
 .sva-chart-links{margin:.75rem 0 0;font-family:var(--mono);font-size:.72rem;line-height:1.6;color:var(--soft)}
 .sva-chart-links a{white-space:nowrap;color:var(--ink);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:.2em}
 .sva-chart-links a:hover{color:var(--accent);text-decoration-color:var(--accent)}
-.sva-welcome{display:flex;align-items:center;gap:.8rem;margin:0 0 1.15rem;padding:.5rem .5rem .5rem 1rem;background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:10px;font-size:.9rem}
+.sva-welcome{display:flex;align-items:center;gap:.8rem;margin:0 0 1.15rem;padding:.5rem .5rem .5rem 1rem;background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:10px;font-size:.86rem}
 .sva-app .sva-welcome p{margin:0;flex:1;min-width:0}
 .sva-welcome a{color:var(--accent-deep);text-underline-offset:.2em}
 .sva-close{flex:none;width:1.7rem;height:1.7rem;padding:0;border:0;border-radius:50%;background:none;color:var(--soft);font-family:inherit;font-size:1.15rem;line-height:1;cursor:pointer}
