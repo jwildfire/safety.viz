@@ -560,6 +560,101 @@ test.describe('docs site', () => {
   // the gallery index, and its disclosure button reveals one link per available
   // renderer straight to that chart's demo. The list is data-driven, so its
   // count tracks the config; interaction is hover + click + full keyboard.
+  // The docs site clips sideways overflow on the page, so on a phone whatever
+  // runs past the viewport cannot be reached unless a box of its own scrolls
+  // it. The Hepatic Explorer's demo page opens on the composite view, whose
+  // two tables are wider than a phone (#285).
+  test('the Hepatic Explorer demo page holds at a 390px viewport: in each of its views nothing in the main content runs past the viewport without a scrolling box of its own around it, and the composite view’s tables scroll to their last column (#285)', async ({
+    page
+  }) => {
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/_site/hep-explorer/index.html');
+    await expect(page.locator('.safety-hep-explorer .hep-composite-panels canvas')).toHaveCount(4);
+
+    // What the main content lays out past the viewport, and whether a box that
+    // scrolls sideways holds it.
+    const layout = () =>
+      page.evaluate(() => {
+        const width = document.documentElement.clientWidth;
+        const scrolls = (element) =>
+          ['auto', 'scroll'].includes(getComputedStyle(element).overflowX);
+        const boxOf = (element) => {
+          for (let box = element.parentElement; box; box = box.parentElement) {
+            if (box.matches('main')) return null;
+            if (scrolls(box)) return box;
+          }
+          return null;
+        };
+        const past = [...document.querySelectorAll('main *')].filter(
+          (element) =>
+            element.getClientRects().length > 0 &&
+            element.getBoundingClientRect().right > width + 0.5
+        );
+        const boxes = [...new Set(past.map(boxOf).filter(Boolean))];
+        return {
+          width,
+          page: document.documentElement.scrollWidth,
+          past: past.length,
+          cutOff: past
+            .filter((element) => !boxOf(element))
+            .map((element) => `${element.tagName.toLowerCase()}.${element.className}`),
+          boxes: boxes.map((box) => {
+            const { left, right } = box.getBoundingClientRect();
+            return { left, right, scrollWidth: box.scrollWidth, clientWidth: box.clientWidth };
+          })
+        };
+      });
+
+    const views = await page.locator('.safety-hep-explorer .sv-view-option').allTextContents();
+    expect(views).toHaveLength(3);
+    for (const view of views) {
+      await page.locator('.safety-hep-explorer .sv-view-option', { hasText: view }).click();
+      await expect(page.locator('.safety-hep-explorer .sv-view-option.is-active')).toHaveText(view);
+      const held = await layout();
+      expect(held.width).toBe(390);
+      expect(held.page, view).toBe(390);
+      expect(held.cutOff, view).toEqual([]);
+      // Every box that scrolls is itself inside the viewport.
+      held.boxes.forEach((box) => {
+        expect(box.left).toBeGreaterThanOrEqual(0);
+        expect(box.right).toBeLessThanOrEqual(390);
+      });
+    }
+
+    // The check is not vacuous: the composite view, the last of the three and
+    // the one the page opens on, has two tables wider than their boxes.
+    await expect(page.locator('.safety-hep-explorer .sv-view-option.is-active')).toHaveText(
+      /Composite/
+    );
+    const composite = await layout();
+    expect(composite.past).toBeGreaterThan(0);
+    expect(composite.boxes).toHaveLength(2);
+    composite.boxes.forEach((box) => expect(box.scrollWidth).toBeGreaterThan(box.clientWidth));
+    // Each scrolls to its table's last column.
+    const reached = await page.evaluate(() =>
+      [...document.querySelectorAll('.safety-hep-explorer .hep-composite .hep-migration')].map(
+        (box) => {
+          box.scrollLeft = box.scrollWidth;
+          const last = box.querySelector('thead tr:first-child th:last-child');
+          return {
+            scrolled: box.scrollLeft > 0,
+            lastRight: last.getBoundingClientRect().right,
+            boxRight: box.getBoundingClientRect().right
+          };
+        }
+      )
+    );
+    expect(reached).toHaveLength(2);
+    reached.forEach((table) => {
+      expect(table.scrolled).toBe(true);
+      expect(table.lastRight).toBeLessThanOrEqual(table.boxRight + 0.5);
+    });
+    expect(await page.evaluate(() => window.scrollX)).toBe(0);
+    expect(errors).toEqual([]);
+  });
+
   test.describe('gallery nav dropdown (#71)', () => {
     test('lists one chart link per available renderer, closed by default (#71)', async ({
       page
