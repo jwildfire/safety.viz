@@ -1160,9 +1160,12 @@ function paramsTable(params) {
         `<td>${escapeHtml(param.description)}</td></tr>`
     )
     .join('');
+  // In a box that scrolls sideways, as the settings and data-contract tables
+  // are, so a table wider than a phone cannot widen the page (#162).
   return (
-    `<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th>` +
-    `<th>Description</th></tr></thead><tbody>${rows}</tbody></table>`
+    `<div class="table-scroll api-params"><table class="api"><thead><tr><th>Param</th>` +
+    `<th>Type</th><th>Default</th><th>Description</th></tr></thead>` +
+    `<tbody>${rows}</tbody></table></div>`
   );
 }
 

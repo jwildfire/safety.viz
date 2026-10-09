@@ -31,6 +31,40 @@ const manifest = JSON.parse(readFileSync(manifestFile, 'utf8'));
 const bioManifest = libraryManifest(APP_LIBRARIES[0]);
 const has = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
 
+// What a page's main content lays out past the viewport, and whether a box
+// that scrolls sideways holds it. The docs site clips sideways overflow on the
+// page, so on a phone whatever runs past the viewport with no such box round it
+// is cut off where it cannot be reached (#285, #162).
+const phoneLayout = (page) =>
+  page.evaluate(() => {
+    const width = document.documentElement.clientWidth;
+    const scrolls = (element) => ['auto', 'scroll'].includes(getComputedStyle(element).overflowX);
+    const boxOf = (element) => {
+      for (let box = element.parentElement; box; box = box.parentElement) {
+        if (box.matches('main')) return null;
+        if (scrolls(box)) return box;
+      }
+      return null;
+    };
+    const past = [...document.querySelectorAll('main *')].filter(
+      (element) =>
+        element.getClientRects().length > 0 && element.getBoundingClientRect().right > width + 0.5
+    );
+    const boxes = [...new Set(past.map(boxOf).filter(Boolean))];
+    return {
+      width,
+      page: document.documentElement.scrollWidth,
+      past: past.length,
+      cutOff: past
+        .filter((element) => !boxOf(element))
+        .map((element) => `${element.tagName.toLowerCase()}.${element.className}`),
+      boxes: boxes.map((box) => {
+        const { left, right } = box.getBoundingClientRect();
+        return { left, right, scrollWidth: box.scrollWidth, clientWidth: box.clientWidth };
+      })
+    };
+  });
+
 test.describe('docs site', () => {
   test.beforeAll(() => {
     execSync('npm run site', { stdio: 'inherit', cwd: new URL('../..', import.meta.url) });
@@ -573,39 +607,7 @@ test.describe('docs site', () => {
     await page.goto('/_site/hep-explorer/index.html');
     await expect(page.locator('.safety-hep-explorer .hep-composite-panels canvas')).toHaveCount(4);
 
-    // What the main content lays out past the viewport, and whether a box that
-    // scrolls sideways holds it.
-    const layout = () =>
-      page.evaluate(() => {
-        const width = document.documentElement.clientWidth;
-        const scrolls = (element) =>
-          ['auto', 'scroll'].includes(getComputedStyle(element).overflowX);
-        const boxOf = (element) => {
-          for (let box = element.parentElement; box; box = box.parentElement) {
-            if (box.matches('main')) return null;
-            if (scrolls(box)) return box;
-          }
-          return null;
-        };
-        const past = [...document.querySelectorAll('main *')].filter(
-          (element) =>
-            element.getClientRects().length > 0 &&
-            element.getBoundingClientRect().right > width + 0.5
-        );
-        const boxes = [...new Set(past.map(boxOf).filter(Boolean))];
-        return {
-          width,
-          page: document.documentElement.scrollWidth,
-          past: past.length,
-          cutOff: past
-            .filter((element) => !boxOf(element))
-            .map((element) => `${element.tagName.toLowerCase()}.${element.className}`),
-          boxes: boxes.map((box) => {
-            const { left, right } = box.getBoundingClientRect();
-            return { left, right, scrollWidth: box.scrollWidth, clientWidth: box.clientWidth };
-          })
-        };
-      });
+    const layout = () => phoneLayout(page);
 
     const views = await page.locator('.safety-hep-explorer .sv-view-option').allTextContents();
     expect(views).toHaveLength(3);
@@ -653,6 +655,42 @@ test.describe('docs site', () => {
     });
     expect(await page.evaluate(() => window.scrollX)).toBe(0);
     expect(errors).toEqual([]);
+  });
+
+  // Every chart's API reference (#162): stacked under its contents list on a
+  // phone, the body is held to the viewport, and each table wider than it
+  // scrolls in a box of its own.
+  test('every chart’s API reference page holds at a 390px viewport: the page is no wider than the viewport, and nothing in its main content runs past it without a scrolling box of its own around it (#162)', async ({
+    page
+  }) => {
+    test.setTimeout(60000);
+    await page.setViewportSize({ width: 390, height: 844 });
+    expect(available.length).toBeGreaterThan(9);
+    for (const renderer of available) {
+      await page.goto(`/_site/${renderer.module}/api.html`);
+      await expect(page.locator('.api-layout .api-body h2').first()).toBeVisible();
+      const held = await phoneLayout(page);
+      expect(held.width).toBe(390);
+      expect(held.page, renderer.module).toBe(390);
+      expect(held.cutOff, renderer.module).toEqual([]);
+      held.boxes.forEach((box) => {
+        expect(box.left, renderer.module).toBeGreaterThanOrEqual(0);
+        expect(box.right, renderer.module).toBeLessThanOrEqual(390);
+      });
+      // Not vacuous: the page has tables wider than a phone, in boxes that scroll.
+      expect(held.boxes.length, renderer.module).toBeGreaterThan(0);
+      expect(
+        held.boxes.some((box) => box.scrollWidth > box.clientWidth),
+        renderer.module
+      ).toBe(true);
+      // The contents list and the body are stacked, each as wide as the column.
+      const columns = await page.evaluate(() =>
+        ['.api-toc', '.api-body'].map(
+          (selector) => document.querySelector(selector).getBoundingClientRect().width
+        )
+      );
+      columns.forEach((width) => expect(width, renderer.module).toBeLessThanOrEqual(390));
+    }
   });
 
   test.describe('gallery nav dropdown (#71)', () => {

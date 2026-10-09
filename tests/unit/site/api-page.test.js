@@ -78,6 +78,18 @@ describe('site generator: API page', () => {
     expect(html).toContain('The instance, for chaining.');
   });
 
+  it('puts every table in a box that scrolls sideways, a method’s parameter table included, so none can widen the page on a phone (#162)', () => {
+    const tables = html.match(/<table class="api">/g);
+    const boxed = html.match(/<div class="table-scroll[^"]*"><table class="api">/g);
+    expect(tables.length).toBeGreaterThanOrEqual(3);
+    expect(boxed).toHaveLength(tables.length);
+    // A parameter table's box is marked, so the table keeps the width its
+    // content needs where the page has room for it.
+    expect(html).toContain(
+      '<div class="table-scroll api-params"><table class="api"><thead><tr><th>Param</th>'
+    );
+  });
+
   it('renders the settings table with type, default, and description (#7)', () => {
     expect(html).toContain('measure_col');
     expect(html).toContain('&#39;TEST&#39;');

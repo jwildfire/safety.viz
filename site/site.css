@@ -932,9 +932,11 @@ table.evidence td:first-child {
   padding: 0;
 }
 
+/* Stacked under the contents list on a phone, the body column is held to the
+   viewport (#162): a bare 1fr lets a wide table or code sample stretch it. */
 @media (max-width: 52rem) {
   .api-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .api-toc {
@@ -989,6 +991,19 @@ ol.pipeline strong {
   font-family: var(--mono);
   font-size: 0.85rem;
   letter-spacing: 0.02em;
+}
+
+/* A method's parameter table (#162) keeps the width its content needs, and
+   scrolls in its box only when a phone makes it. The box takes the table's
+   margins, which would otherwise stop collapsing with its neighbours'. */
+
+.table-scroll.api-params {
+  margin: 0.75rem 0 1.25rem;
+}
+
+.table-scroll.api-params > table {
+  min-width: 0;
+  margin: 0;
 }
 
 /* Domains page (#139): its tables are narrow enough to size to content rather
