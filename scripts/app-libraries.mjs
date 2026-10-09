@@ -30,6 +30,9 @@ export const APP_LIBRARIES = [
     path: path.join(BIO_VIZ.directory, BIO_VIZ.files[0].file),
     // What the charts are, in a phrase: "five biomarker charts".
     kind: 'biomarker',
+    // A library may name its tab's colour here, as `colour`, a six-digit hex
+    // colour. This one names none, so the app gives it the first colour no
+    // other tab uses: pink (#268, src/app/libraries.js::tabColours).
     // The released site: the copy is a release's (site/vendor/bio.viz/SOURCE.json).
     site: 'https://jwildfire.github.io/bio.viz/',
     repository: BIO_VIZ.repository,
@@ -56,6 +59,10 @@ export const APP_LIBRARIES = [
  * its repository carries. It is not one of APP_LIBRARIES: its charts take the
  * reporting tables R returns, not a study's domains, so no page loads it with
  * the app. The RBQM tab asks for it when it has tables to draw.
+ *
+ * Like a library of APP_LIBRARIES it may name its tab's colour, as `colour`.
+ * It names none, and its tab follows the libraries', so the app gives it the
+ * next open colour: amber (#268).
  */
 export const RBQM_CHARTS = {
   name: 'gsm.viz',
@@ -200,15 +207,19 @@ function copyOf(name, copy) {
  * that brings a view (src/app/page.js). On a page that can start R the view is
  * given the app's own connection to R in the browser; in the single file it
  * says why it cannot start R.
- * @param {{r?: 'request'|'unavailable', where?: Object}} [options]
+ * @param {{r?: 'request'|'unavailable', where?: Object, colour?: string}} [options] `colour` is the tab's colour, when the tab names one (#268).
  * @returns {string} A JavaScript object expression.
  */
-export function rbqmTabExpression({ r = 'request', where } = {}) {
+export function rbqmTabExpression({ r = 'request', where, colour = RBQM_CHARTS.colour } = {}) {
   const options =
     r === 'request'
       ? `{ createConnection: SafetyVizApp.createRConnection, ...${JSON.stringify(rbqmTabOptions(where))} }`
       : JSON.stringify({ unavailable: FILE_NO_RBQM, badge: rbqmBadge() });
-  return `{ name: ${JSON.stringify(RBQM_CHARTS.name)}, view: SafetyVizApp.rbqmTab(${options}) }`;
+  return (
+    `{ name: ${JSON.stringify(RBQM_CHARTS.name)}, ` +
+    (colour ? `colour: ${JSON.stringify(colour)}, ` : '') +
+    `view: SafetyVizApp.rbqmTab(${options}) }`
+  );
 }
 
 /**
@@ -256,7 +267,7 @@ export function libraryManifest(library) {
  * libraries are inline, names none. A
  * library with no connection factory where the page looks for one is handed
  * the sentence that says so rather than stopping the mount.
- * @param {Object[]} [libraries] Entries of APP_LIBRARIES.
+ * @param {Object[]} [libraries] Entries of APP_LIBRARIES. One that names a `colour` hands it on, for its tab (#268).
  * @param {{r?: ?('request'|'unavailable'), fromFile?: boolean, statisticsUrl?: (library: Object) => string, createConnection?: (library: Object) => string, more?: string[]}} [options] `more` is further entries, each as source text, listed after the libraries': the RBQM tab's (rbqmTabExpression).
  * @returns {string} A JavaScript array expression.
  */
@@ -285,6 +296,7 @@ export function librariesExpression(
     }
     return (
       `{ name: ${JSON.stringify(library.name)}, ` +
+      (library.colour ? `colour: ${JSON.stringify(library.colour)}, ` : '') +
       (fromFile ? `file: ${JSON.stringify(library.file)}, ` : '') +
       `charts: ${global}, manifest: ${global} && ${global}.portfolio${statistics} }`
     );

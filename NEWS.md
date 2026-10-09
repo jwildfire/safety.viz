@@ -14,8 +14,13 @@ The demo app made ready to show: clearer on first open, and the defects found in
 
 ## What's new
 
+- **Every tab in the demo app has a colour.** Biomarkers is pink and RBQM amber, where both were grey and read as switched off. A chart library may name its tab's colour; one that names none is given the first colour no other tab uses. [obot.roadmap#402](https://github.com/jwildfire/obot.roadmap/issues/402), [#268](https://github.com/jwildfire/safety.viz/issues/268)
+- **The first screen says where you are.** The Data tab names the loaded study, and a tab shows one number when every chart draws. A line on first open says whose data this is and where to load your own; it closes with a cross and nothing is stored. [obot.roadmap#402](https://github.com/jwildfire/obot.roadmap/issues/402), [#269](https://github.com/jwildfire/safety.viz/issues/269)
+- **The wordmark leads back to the docs, and the browser tab says where you are.** The tab's title names the open view, as "RBQM · safety.viz demo". The docs site and the app share one favicon, the hex mark. [obot.roadmap#402](https://github.com/jwildfire/obot.roadmap/issues/402), [#270](https://github.com/jwildfire/safety.viz/issues/270)
+
 ## Also in this release
 
+- **On a phone, a link to a tab opens with that tab in view.** Tabs and chart names are 44 pixels tall there, up from 30. [obot.roadmap#402](https://github.com/jwildfire/obot.roadmap/issues/402), [#271](https://github.com/jwildfire/safety.viz/issues/271)
 - **The docs home page's description counts the charts on the site.** It said nine; it now says thirteen, and is built from the site's list of charts, so it follows the list. [obot.roadmap#407](https://github.com/jwildfire/obot.roadmap/issues/407), [#286](https://github.com/jwildfire/safety.viz/issues/286)
 
 # safety.viz v1.10.0

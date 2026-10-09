@@ -2,7 +2,7 @@
 // _site/. Plain Node, no framework, per design #21 — and every internal URL
 // relative, so one build serves the site root, /dev/, and /pr/{N}/ unchanged.
 
-import { LOGO_SVG } from '../src/app/styles.js';
+import { LOGO_HREF } from '../src/app/styles.js';
 import {
   EXPERIMENTAL_MEANING,
   HOSTED_DESCRIPTION,
@@ -1690,7 +1690,6 @@ export function renderDemoAppPage({
   chartLinks = {}
 }) {
   const siteLinks = { ...DEMO_APP_SITE_LINKS, ...links };
-  const icon = encodeURIComponent(LOGO_SVG).replace(/'/g, '%27');
   const js = (value) => `'${String(value).replace(/[\\']/g, '\\$&')}'`;
   const fontUrl = (font) => `./${DEMO_APP_FONT_DIR}/${font.file}`;
   const preloads = DEMO_APP_FONTS.map(
@@ -1708,7 +1707,7 @@ export function renderDemoAppPage({
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="The safety.viz demo app: load a study, check how its columns map, and review it in ${escapeHtml(charts)}. ${libraries.length ? HOSTED_DESCRIPTION : 'It runs in your browser; nothing is uploaded.'}">
 <title>safety.viz demo</title>
-<link rel="icon" href="data:image/svg+xml,${icon}">
+<link rel="icon" href="${LOGO_HREF}">
 ${preloads}
 <style>
 ${faces}
@@ -2137,7 +2136,8 @@ export function renderGalleryNav(renderers, root = '') {
 }
 
 // Shared shell: replaces {{title}}, {{description}}, {{version}}, {{root}},
-// {{galleryNav}}, and {{content}} tokens. {{root}} prefixes shell-level links so
+// {{galleryNav}}, {{icon}} and {{content}} tokens. {{icon}} is the favicon, the
+// hex mark the demo app's page serves too (#270). {{root}} prefixes shell-level links so
 // one shell serves pages at any depth; {{galleryNav}} is built from the passed
 // renderer list (see renderGalleryNav) — empty when none are supplied.
 export function renderShell({
@@ -2154,6 +2154,7 @@ export function renderShell({
     .replaceAll('{{description}}', escapeHtml(description))
     .replaceAll('{{version}}', escapeHtml(version))
     .replaceAll('{{galleryNav}}', renderGalleryNav(renderers, root))
+    .replaceAll('{{icon}}', LOGO_HREF)
     .replaceAll('{{root}}', root)
     .replace('{{content}}', content);
 }

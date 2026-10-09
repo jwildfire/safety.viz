@@ -12,10 +12,12 @@
 //   red                               something a chart needs is missing
 //   amber                             a guess
 //   plum                              chosen by hand
-//   graphite                          a group another chart library declares
-//                                     (#181): the mark's centre hex, the one
-//                                     colour of the mark no domain or state
-//                                     uses, a shade lighter than the text
+//
+// A group another chart library declares (#181), and a library's own tab, has
+// a colour too (#268): the one the library names, or the first of pink, amber
+// and green that no tab in the header uses (libraries.js::tabColours). The
+// page sets it on the tab, the chart names and the chart's card as --hue. No
+// tab is grey, and red is never given to one.
 //
 // Colour is always on a hex beside words; the words stay graphite, so nothing
 // is said by colour alone.
@@ -35,6 +37,12 @@ export const LOGO_SVG =
   '<polygon points="66.0,5.6 80.5,13.9 80.5,30.6 66.0,38.9 51.6,30.6 51.6,13.9" fill="#988bdd"/>' +
   '</svg>';
 
+/**
+ * The mark as an address a page can use for its favicon (#270): the docs site
+ * and the demo app's page both do, so one tab's icon says both are safety.viz.
+ */
+export const LOGO_HREF = `data:image/svg+xml,${encodeURIComponent(LOGO_SVG).replace(/'/g, '%27')}`;
+
 // A row of hex outlines one band tall, and a single hex outline; both are
 // masks, so whatever colour sits behind shows through the strokes.
 const HEX_STRIP =
@@ -44,7 +52,7 @@ const HEX_OUTLINE =
 
 export const STYLES = `
 .sva-app{--bg:#fafaf8;--rail:#f3f4f1;--ink:#1f2328;--soft:#5b6470;--faint:#98a0aa;--accent:#6c3270;--accent-deep:#522456;--accent-soft:rgba(108,50,112,.1);--card:#fff;--rule:#e4e6e3;--line:#cfd3cf;--alarm:#a2423a;
---s0:#d87972;--s1:#c78a3b;--s2:#77a95b;--s3:#00afa9;--s4:#519fdd;--s5:#988bdd;--s6:#c67bb6;--lib:#4a525c;
+--s0:#d87972;--s1:#c78a3b;--s2:#77a95b;--s3:#00afa9;--s4:#519fdd;--s5:#988bdd;--s6:#c67bb6;
 --spec:linear-gradient(90deg,var(--s0),var(--s1),var(--s2),var(--s3),var(--s4),var(--s5),var(--s6));
 --spec-diag:linear-gradient(135deg,var(--s0),var(--s1),var(--s2),var(--s3),var(--s4),var(--s5),var(--s6));
 --sans:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;--serif:"Instrument Serif",Georgia,"Times New Roman",serif;--mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
@@ -53,7 +61,7 @@ display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:v
 .sva-app *,.sva-app *::before,.sva-app *::after{box-sizing:border-box}
 .sva-app :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .sva-app [hidden]{display:none}
-.sva-domain-subject{--hue:var(--s2)}.sva-domain-ae{--hue:var(--s3)}.sva-domain-bds{--hue:var(--s4)}.sva-domain-eg{--hue:var(--s5)}.sva-domain-other{--hue:var(--s6)}.sva-library-group{--hue:var(--lib)}
+.sva-domain-subject{--hue:var(--s2)}.sva-domain-ae{--hue:var(--s3)}.sva-domain-bds{--hue:var(--s4)}.sva-domain-eg{--hue:var(--s5)}.sva-domain-other{--hue:var(--s6)}
 
 .sva-header::before,.sva-footer::before{content:"";position:absolute;left:0;right:0;top:0;height:9px;background:var(--spec);-webkit-mask:${HEX_STRIP} left top/auto 9px repeat-x;mask:${HEX_STRIP} left top/auto 9px repeat-x}
 .sva-hex{display:inline-block;flex:none;width:.74em;height:.84em;background:var(--hue,var(--faint));clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
@@ -63,7 +71,7 @@ display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:v
 
 .sva-header{position:relative;background:var(--rail);border-bottom:1px solid var(--rule);padding-top:9px}
 .sva-bar{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem .7rem;padding:.5rem var(--gutter)}
-.sva-brand{display:flex;align-items:center;gap:.5rem;margin-right:.3rem}
+.sva-brand{display:flex;align-items:center;gap:.5rem;margin-right:.3rem;color:inherit;text-decoration:none}
 .sva-logo{flex:none;width:1.9rem;height:1.9rem}
 .sva-logo svg{display:block;width:100%;height:100%}
 .sva-wordmark{font-family:var(--serif);font-size:1.65rem;line-height:1;letter-spacing:-.01em;color:var(--ink)}
@@ -96,6 +104,11 @@ display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:v
 .sva-chart-links{margin:.75rem 0 0;font-family:var(--mono);font-size:.72rem;line-height:1.6;color:var(--soft)}
 .sva-chart-links a{white-space:nowrap;color:var(--ink);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:.2em}
 .sva-chart-links a:hover{color:var(--accent);text-decoration-color:var(--accent)}
+.sva-welcome{display:flex;align-items:center;gap:.8rem;margin:0 0 1.15rem;padding:.5rem .5rem .5rem 1rem;background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:10px;font-size:.86rem}
+.sva-app .sva-welcome p{margin:0;flex:1;min-width:0}
+.sva-welcome a{color:var(--accent-deep);text-underline-offset:.2em}
+.sva-close{flex:none;width:1.7rem;height:1.7rem;padding:0;border:0;border-radius:50%;background:none;color:var(--soft);font-family:inherit;font-size:1.15rem;line-height:1;cursor:pointer}
+.sva-close:hover{background:var(--accent-soft);color:var(--accent)}
 .sva-notes{margin:0 0 1rem;padding:0;list-style:none;max-width:62rem}
 .sva-note{margin:0 0 .45rem;padding:.6rem 1rem;background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--s1);border-radius:10px;font-size:.92rem}
 
@@ -225,6 +238,7 @@ display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:v
 @media (max-width:760px){
 .sva-tabs{order:3;flex-basis:100%;min-width:0}
 .sva-tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;max-width:100%}
+.sva-tabs .sva-item,.sva-tab,.sva-charts .sva-item{min-height:44px}
 .sva-bar,.sva-charts{min-width:0;max-width:100vw}
 .sva-chart{padding:.6rem}
 .sva-links{margin-left:0}

@@ -10,6 +10,8 @@
  *   id           what the menu's option is keyed by
  *   label        its name in the menu
  *   description  one sentence shown under the menu while the study is loaded
+ *   whose        whose data it is, as a phrase, for the welcome line a
+ *                first-time visitor reads when the app opens on the study (#269)
  *   files        the file names, in the order they are loaded
  *   dir          the study's directory under the demo base, '' for the base itself
  *   source       where the repository keeps the files, for the site build
@@ -21,6 +23,7 @@ export const DEMO_STUDIES = [
   {
     id: 'pilot',
     label: 'Pilot study',
+    whose: 'the CDISC pilot study, a public demo',
     description:
       '254 participants from the CDISC pilot study, with standard column names. The labs file ' +
       'also carries 110 synthetic liver and kidney participants who are in no other file.',
